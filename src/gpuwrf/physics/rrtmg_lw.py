@@ -524,6 +524,18 @@ _LW_NBANDS = 16
 # numerical result is independent of this value (fp64 sum of disjoint per-band
 # contributions; see proofs/v013).
 _LW_GPOINT_CHUNK_BANDS = 1
+# Taumol/optics construction chunking.  When True (default) the OPERATIONAL
+# flux path (`_lw_solver_fluxes`) builds each band's `taumol` `(..., nlay, 16)`
+# `tau`/`frac` lazily inside a band-axis `lax.scan` (the gas chemistry differs
+# per band, so a `lax.switch` over the traced band index selects the per-band
+# `_lw_taumol_band`).  The scan carry forces XLA to free each band's taumol +
+# rtrnmc working set before the next band, so the full `(..., nlay, 16, 16)`
+# `tau`/`fracs` stack (the dominant remaining LW fp64 VRAM floor, plus its dead
+# fallback duplicate) is NEVER materialised.  Bit-identical to the upfront-stack
+# path in fp64 (disjoint per-band g-point sums accumulated in fp64; proofs/v013).
+# Set False to fall back to the upfront-stack flux path (oracle path always uses
+# the full stack regardless of this flag).
+_LW_TAUMOL_CHUNK = True
 
 
 def _leaves(state: RRTMGLWColumnState):
@@ -1301,13 +1313,19 @@ def _lw_fallback_taumol(qv, p_pa, pressure_interfaces_pa, tables: RRTMGTableBund
     return taug, fracs
 
 
-def _lw_taumol(coef: _LWSetCoefState, tables: RRTMGTableBundle):
-    """Ports WRF LW `taumol` reduced-g-point gas optical depth and fractions."""
+def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
+    """One-band LW `taumol`: gas optical depth + g-point fraction for `band`.
 
-    nt = _native_lw_tables()
+    Extracted from the band loop so the chunked flux path can build a single
+    band's `(..., nlay, 16)` `tau`/`frac` lazily inside the rtrnmc band scan,
+    rather than materialising the full `(..., nlay, 16, 16)` stack up front (the
+    dominant LW fp64 VRAM consumer).  `band` is a STATIC Python int — the
+    per-band gas chemistry differs structurally, so the chunked driver resolves
+    it with `lax.switch` over a traced band index.  Returns the gpoint-masked
+    `(tau, frac)`; byte-identical to the per-band slice of `_lw_taumol`.
+    """
+
     chi = nt.chi_mls
-    taug = []
-    fracs = []
 
     def chi_ratio(a_1b, b_1b, level_1b):
         return chi[a_1b - 1, level_1b - 1] / chi[b_1b - 1, level_1b - 1]
@@ -1315,235 +1333,249 @@ def _lw_taumol(coef: _LWSetCoefState, tables: RRTMGTableBundle):
     def chi_layer(gas_1b):
         return jnp.take(chi[gas_1b - 1], coef.jp, axis=0)
 
+    absa = nt.absa[band]
+    absb = nt.absb[band]
+    nspa = nt.nspa[band]
+    nspb = nt.nspb[band]
+    lower_idx0 = ((coef.jp - 1) * 5 + (coef.jt - 1)) * nspa + 1
+    lower_idx1 = (coef.jp * 5 + (coef.jt1 - 1)) * nspa + 1
+    upper_idx0 = ((coef.jp - 13) * 5 + (coef.jt - 1)) * nspb + 1
+    upper_idx1 = ((coef.jp - 12) * 5 + (coef.jt1 - 1)) * nspb + 1
+
+    if band == 0:
+        scalen2 = coef.colbrd * coef.scaleminorn2
+        corr_low = jnp.where(coef.pavel < 250.0, 1.0 - 0.15 * (250.0 - coef.pavel) / 154.4, 1.0)
+        low = corr_low[..., None] * (
+            coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef)
+            + _continuum_lw(band, coef, nt)
+            + scalen2[..., None] * _minor2(nt.ka_mn2[band], coef)
+        )
+        corr_high = 1.0 - 0.15 * (coef.pavel / 95.6)
+        high = corr_high[..., None] * (
+            coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef)
+            + _foreign_lw(band, coef, nt)
+            + scalen2[..., None] * _minor2(nt.kb_mn2[band], coef)
+        )
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
+    elif band == 1:
+        corr = 1.0 - 0.05 * (coef.pavel - 100.0) / 900.0
+        low = corr[..., None] * (coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt))
+        high = coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + _foreign_lw(band, coef, nt)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
+    elif band == 2:
+        speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2, 8.0)
+        speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2_1, 8.0)
+        major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
+        _, _, jmn2o, fmn2o = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 3), 8.0)
+        adjcoln2o = _adj_minor_column(coef.coln2o, coef, chi_layer(4), 1.5, 0.5, 0.65)
+        low = major + _continuum_lw(band, coef, nt) + adjcoln2o[..., None] * _minor_ratio(nt.ka_mn2o_r[band], jmn2o, fmn2o, coef)
+        _, _, jpl, fpl = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 9), 8.0)
+        frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
+
+        speccomb_u, _, js_u, fs_u = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2, 4.0)
+        speccomb1_u, _, js1_u, fs1_u = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2_1, 4.0)
+        major_u = _major_binary_upper(absb, upper_idx0 + js_u - 1, upper_idx1 + js1_u - 1, speccomb_u, fs_u, speccomb1_u, fs1_u, coef)
+        _, _, jmn2o_u, fmn2o_u = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 13), 4.0)
+        high = major_u + _foreign_lw(band, coef, nt) + adjcoln2o[..., None] * _minor_ratio(nt.kb_mn2o_r[band], jmn2o_u, fmn2o_u, coef)
+        _, _, jpl_u, fpl_u = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 13), 4.0)
+        frac_high = _frac_interp(nt.fracrefb[band], jpl_u, fpl_u)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], frac_low, frac_high)
+    elif band == 3:
+        low, frac_low = _binary_band(
+            band,
+            coef,
+            nt,
+            coef.colh2o,
+            coef.colco2,
+            (coef.rat_h2oco2, coef.rat_h2oco2_1),
+            coef.colo3,
+            coef.colco2,
+            (coef.rat_o3co2, coef.rat_o3co2_1),
+            chi_ratio(1, 2, 11),
+            chi_ratio(3, 2, 13),
+        )
+        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.88, 0.943, 1.0, 1.0], dtype=jnp.float64)
+        low_tau = jnp.where(coef.lower_mask[..., None], low, 0.0)
+        high_tau = jnp.where(coef.lower_mask[..., None], 0.0, low * high_factor)
+        tau = low_tau + high_tau
+        frac = frac_low
+    elif band == 4:
+        speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2, 8.0)
+        speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2_1, 8.0)
+        major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
+        _, _, jmo3, fmo3 = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 7), 8.0)
+        low = major + _continuum_lw(band, coef, nt) + coef.colo3[..., None] * _minor_ratio(nt.ka_mo3_r[band], jmo3, fmo3, coef) + coef.wx[..., 0, None] * nt.ccl4[band]
+        _, _, jpl, fpl = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 5), 8.0)
+        frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
+
+        speccomb_u, _, js_u, fs_u = _binary_params(coef.colo3, coef.colco2, coef.rat_o3co2, 4.0)
+        speccomb1_u, _, js1_u, fs1_u = _binary_params(coef.colo3, coef.colco2, coef.rat_o3co2_1, 4.0)
+        high = _major_binary_upper(absb, upper_idx0 + js_u - 1, upper_idx1 + js1_u - 1, speccomb_u, fs_u, speccomb1_u, fs1_u, coef) + coef.wx[..., 0, None] * nt.ccl4[band]
+        _, _, jpl_u, fpl_u = _binary_params(coef.colo3, coef.colco2, chi_ratio(3, 2, 43), 4.0)
+        frac_high = _frac_interp(nt.fracrefb[band], jpl_u, fpl_u)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], frac_low, frac_high)
+    elif band == 5:
+        adjcolco2 = _adj_minor_column(coef.colco2, coef, chi_layer(2), 3.0, 2.0, 0.77)
+        low = (
+            coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef)
+            + _continuum_lw(band, coef, nt)
+            + adjcolco2[..., None] * _minor2(nt.ka_mco2[band], coef)
+            + coef.wx[..., 1, None] * nt.cfc11adj[band]
+            + coef.wx[..., 2, None] * nt.cfc12[band]
+        )
+        high = coef.wx[..., 1, None] * nt.cfc11adj[band] + coef.wx[..., 2, None] * nt.cfc12[band]
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = _frac_const(nt.fracrefa[band], coef)
+    elif band == 6:
+        c = _lw_coef_as_dtype(coef, jnp.float32)
+        absa_r4 = absa.astype(jnp.float32)
+        absb_r4 = absb.astype(jnp.float32)
+        speccomb, specparm, js, fs = _binary_params(c.colh2o, c.colo3, c.rat_h2oo3, 8.0)
+        speccomb1, specparm1, js1, fs1 = _binary_params(c.colh2o, c.colo3, c.rat_h2oo3_1, 8.0)
+        major = _major_binary_lower(absa_r4, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, c)
+        _, _, jmco2, fmco2 = _binary_params(c.colh2o, c.colo3, chi_ratio(1, 3, 3).astype(jnp.float32), 8.0)
+        adjcolco2_l = _adj_minor_column(c.colco2, c, chi_layer(2).astype(jnp.float32), 3.0, 3.0, 0.79)
+        low = major + _continuum_lw(band, c, nt) + adjcolco2_l[..., None] * _minor_ratio(nt.ka_mco2_r[band].astype(jnp.float32), jmco2, fmco2, c)
+        _, _, jpl, fpl = _binary_params(c.colh2o, c.colo3, chi_ratio(1, 3, 3).astype(jnp.float32), 8.0)
+        frac_low = _frac_interp(nt.fracrefa[band].astype(jnp.float32), jpl, fpl)
+
+        adjcolco2_u = _adj_minor_column(c.colco2, c, chi_layer(2).astype(jnp.float32), 3.0, 2.0, 0.79)
+        high = c.colo3[..., None] * _interp_four_rows_lw(absb_r4, upper_idx0, upper_idx1, nspb, c) + adjcolco2_u[..., None] * _minor2(nt.kb_mco2[band].astype(jnp.float32), c)
+        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.855, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=jnp.float64)
+        high = high * high_factor.astype(jnp.float32)
+        tau = jnp.where(c.lower_mask[..., None], low, high).astype(jnp.float64)
+        frac = jnp.where(c.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band].astype(jnp.float32), c)).astype(jnp.float64)
+    elif band == 7:
+        adjcolco2 = _adj_minor_column(coef.colco2, coef, chi_layer(2), 3.0, 2.0, 0.65)
+        low = (
+            coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef)
+            + _continuum_lw(band, coef, nt)
+            + adjcolco2[..., None] * _minor2(nt.ka_mco2[band], coef)
+            + coef.colo3[..., None] * _minor2(nt.ka_mo3[band], coef)
+            + coef.coln2o[..., None] * _minor2(nt.ka_mn2o[band], coef)
+            + coef.wx[..., 2, None] * nt.cfc12[band]
+            + coef.wx[..., 3, None] * nt.cfc22adj[band]
+        )
+        high = (
+            coef.colo3[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef)
+            + adjcolco2[..., None] * _minor2(nt.kb_mco2[band], coef)
+            + coef.coln2o[..., None] * _minor2(nt.kb_mn2o[band], coef)
+            + coef.wx[..., 2, None] * nt.cfc12[band]
+            + coef.wx[..., 3, None] * nt.cfc22adj[band]
+        )
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
+    elif band == 8:
+        speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.colch4, coef.rat_h2och4, 8.0)
+        speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.colch4, coef.rat_h2och4_1, 8.0)
+        major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
+        _, _, jmn2o, fmn2o = _binary_params(coef.colh2o, coef.colch4, chi_ratio(1, 6, 3), 8.0)
+        adjcoln2o = _adj_minor_column(coef.coln2o, coef, chi_layer(4), 1.5, 0.5, 0.65)
+        low = major + _continuum_lw(band, coef, nt) + adjcoln2o[..., None] * _minor_ratio(nt.ka_mn2o_r[band], jmn2o, fmn2o, coef)
+        _, _, jpl, fpl = _binary_params(coef.colh2o, coef.colch4, chi_ratio(1, 6, 9), 8.0)
+        frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
+        high = coef.colch4[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + adjcoln2o[..., None] * _minor2(nt.kb_mn2o[band], coef)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band], coef))
+    elif band == 9:
+        low = coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt)
+        high = coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + _foreign_lw(band, coef, nt)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
+    elif band == 10:
+        scaleo2 = coef.colo2 * coef.scaleminor
+        low = coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt) + scaleo2[..., None] * _minor2(nt.ka_mo2[band], coef)
+        high = coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + _foreign_lw(band, coef, nt) + scaleo2[..., None] * _minor2(nt.kb_mo2[band], coef)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
+    elif band == 11:
+        tau, frac = _binary_band(
+            band,
+            coef,
+            nt,
+            coef.colh2o,
+            coef.colco2,
+            (coef.rat_h2oco2, coef.rat_h2oco2_1),
+            coef.colh2o,
+            coef.colco2,
+            (coef.rat_h2oco2, coef.rat_h2oco2_1),
+            chi_ratio(1, 2, 10),
+            None,
+        )
+    elif band == 12:
+        speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.coln2o, coef.rat_h2on2o, 8.0)
+        speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.coln2o, coef.rat_h2on2o_1, 8.0)
+        major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
+        _, _, jmco2, fmco2 = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 1), 8.0)
+        ratco2 = 1.0e20 * (coef.colco2 / jnp.maximum(coef.coldry, 1.0e-300)) / 3.55e-4
+        adjcolco2 = jnp.where(ratco2 > 3.0, (2.0 + (ratco2 - 2.0) ** 0.68) * 3.55e-4 * coef.coldry * 1.0e-20, coef.colco2)
+        _, _, jmco, fmco = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 3), 8.0)
+        low = (
+            major
+            + _continuum_lw(band, coef, nt)
+            + adjcolco2[..., None] * _minor_ratio(nt.ka_mco2_r[band], jmco2, fmco2, coef)
+            + coef.colco[..., None] * _minor_ratio(nt.ka_mco_r[band], jmco, fmco, coef)
+        )
+        _, _, jpl, fpl = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 5), 8.0)
+        frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
+        high = coef.colo3[..., None] * _minor2(nt.kb_mo3[band], coef)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band], coef))
+    elif band == 13:
+        low = coef.colco2[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt)
+        high = coef.colco2[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef)
+        tau = jnp.where(coef.lower_mask[..., None], low, high)
+        frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
+    elif band == 14:
+        speccomb, specparm, js, fs = _binary_params(coef.coln2o, coef.colco2, coef.rat_n2oco2, 8.0)
+        speccomb1, specparm1, js1, fs1 = _binary_params(coef.coln2o, coef.colco2, coef.rat_n2oco2_1, 8.0)
+        major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
+        _, _, jmn2, fmn2 = _binary_params(coef.coln2o, coef.colco2, chi_ratio(4, 2, 1), 8.0)
+        scalen2 = coef.colbrd * coef.scaleminor
+        low = major + _continuum_lw(band, coef, nt) + scalen2[..., None] * _minor_ratio(nt.ka_mn2_r[band], jmn2, fmn2, coef)
+        _, _, jpl, fpl = _binary_params(coef.coln2o, coef.colco2, chi_ratio(4, 2, 1), 8.0)
+        tau = jnp.where(coef.lower_mask[..., None], low, jnp.zeros_like(low))
+        frac = jnp.where(coef.lower_mask[..., None], _frac_interp(nt.fracrefa[band], jpl, fpl), jnp.zeros_like(low))
+    else:
+        tau, frac = _binary_band(
+            band,
+            coef,
+            nt,
+            coef.colh2o,
+            coef.colch4,
+            (coef.rat_h2och4, coef.rat_h2och4_1),
+            coef.colch4,
+            coef.colh2o,
+            0.0,
+            chi_ratio(1, 6, 6),
+            0.0,
+        )
+        high = coef.colch4[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, jnp.maximum(nspb, 1), coef)
+        tau = jnp.where(coef.lower_mask[..., None], tau, high)
+        frac = jnp.where(coef.lower_mask[..., None], frac, _frac_const(nt.fracrefb[band], coef))
+
+    return tau * tables.lw_gpoint_mask[band], frac * tables.lw_gpoint_mask[band]
+
+
+def _lw_taumol(coef: _LWSetCoefState, tables: RRTMGTableBundle):
+    """Ports WRF LW `taumol` reduced-g-point gas optical depth and fractions.
+
+    Thin wrapper over `_lw_taumol_band` that stacks all 16 bands into the full
+    `(..., nlay, 16, 16)` `tau`/`frac` arrays (oracle / intermediate-parity
+    entry).  The operational flux path uses the chunked per-band driver instead.
+    """
+
+    nt = _native_lw_tables()
+    taug = []
+    fracs = []
     for band in range(16):
-        absa = nt.absa[band]
-        absb = nt.absb[band]
-        nspa = nt.nspa[band]
-        nspb = nt.nspb[band]
-        lower_idx0 = ((coef.jp - 1) * 5 + (coef.jt - 1)) * nspa + 1
-        lower_idx1 = (coef.jp * 5 + (coef.jt1 - 1)) * nspa + 1
-        upper_idx0 = ((coef.jp - 13) * 5 + (coef.jt - 1)) * nspb + 1
-        upper_idx1 = ((coef.jp - 12) * 5 + (coef.jt1 - 1)) * nspb + 1
-
-        if band == 0:
-            scalen2 = coef.colbrd * coef.scaleminorn2
-            corr_low = jnp.where(coef.pavel < 250.0, 1.0 - 0.15 * (250.0 - coef.pavel) / 154.4, 1.0)
-            low = corr_low[..., None] * (
-                coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef)
-                + _continuum_lw(band, coef, nt)
-                + scalen2[..., None] * _minor2(nt.ka_mn2[band], coef)
-            )
-            corr_high = 1.0 - 0.15 * (coef.pavel / 95.6)
-            high = corr_high[..., None] * (
-                coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef)
-                + _foreign_lw(band, coef, nt)
-                + scalen2[..., None] * _minor2(nt.kb_mn2[band], coef)
-            )
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
-        elif band == 1:
-            corr = 1.0 - 0.05 * (coef.pavel - 100.0) / 900.0
-            low = corr[..., None] * (coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt))
-            high = coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + _foreign_lw(band, coef, nt)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
-        elif band == 2:
-            speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2, 8.0)
-            speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2_1, 8.0)
-            major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
-            _, _, jmn2o, fmn2o = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 3), 8.0)
-            adjcoln2o = _adj_minor_column(coef.coln2o, coef, chi_layer(4), 1.5, 0.5, 0.65)
-            low = major + _continuum_lw(band, coef, nt) + adjcoln2o[..., None] * _minor_ratio(nt.ka_mn2o_r[band], jmn2o, fmn2o, coef)
-            _, _, jpl, fpl = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 9), 8.0)
-            frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
-
-            speccomb_u, _, js_u, fs_u = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2, 4.0)
-            speccomb1_u, _, js1_u, fs1_u = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2_1, 4.0)
-            major_u = _major_binary_upper(absb, upper_idx0 + js_u - 1, upper_idx1 + js1_u - 1, speccomb_u, fs_u, speccomb1_u, fs1_u, coef)
-            _, _, jmn2o_u, fmn2o_u = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 13), 4.0)
-            high = major_u + _foreign_lw(band, coef, nt) + adjcoln2o[..., None] * _minor_ratio(nt.kb_mn2o_r[band], jmn2o_u, fmn2o_u, coef)
-            _, _, jpl_u, fpl_u = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 13), 4.0)
-            frac_high = _frac_interp(nt.fracrefb[band], jpl_u, fpl_u)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], frac_low, frac_high)
-        elif band == 3:
-            low, frac_low = _binary_band(
-                band,
-                coef,
-                nt,
-                coef.colh2o,
-                coef.colco2,
-                (coef.rat_h2oco2, coef.rat_h2oco2_1),
-                coef.colo3,
-                coef.colco2,
-                (coef.rat_o3co2, coef.rat_o3co2_1),
-                chi_ratio(1, 2, 11),
-                chi_ratio(3, 2, 13),
-            )
-            high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.88, 0.943, 1.0, 1.0], dtype=jnp.float64)
-            low_tau = jnp.where(coef.lower_mask[..., None], low, 0.0)
-            high_tau = jnp.where(coef.lower_mask[..., None], 0.0, low * high_factor)
-            tau = low_tau + high_tau
-            frac = frac_low
-        elif band == 4:
-            speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2, 8.0)
-            speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.colco2, coef.rat_h2oco2_1, 8.0)
-            major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
-            _, _, jmo3, fmo3 = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 7), 8.0)
-            low = major + _continuum_lw(band, coef, nt) + coef.colo3[..., None] * _minor_ratio(nt.ka_mo3_r[band], jmo3, fmo3, coef) + coef.wx[..., 0, None] * nt.ccl4[band]
-            _, _, jpl, fpl = _binary_params(coef.colh2o, coef.colco2, chi_ratio(1, 2, 5), 8.0)
-            frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
-
-            speccomb_u, _, js_u, fs_u = _binary_params(coef.colo3, coef.colco2, coef.rat_o3co2, 4.0)
-            speccomb1_u, _, js1_u, fs1_u = _binary_params(coef.colo3, coef.colco2, coef.rat_o3co2_1, 4.0)
-            high = _major_binary_upper(absb, upper_idx0 + js_u - 1, upper_idx1 + js1_u - 1, speccomb_u, fs_u, speccomb1_u, fs1_u, coef) + coef.wx[..., 0, None] * nt.ccl4[band]
-            _, _, jpl_u, fpl_u = _binary_params(coef.colo3, coef.colco2, chi_ratio(3, 2, 43), 4.0)
-            frac_high = _frac_interp(nt.fracrefb[band], jpl_u, fpl_u)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], frac_low, frac_high)
-        elif band == 5:
-            adjcolco2 = _adj_minor_column(coef.colco2, coef, chi_layer(2), 3.0, 2.0, 0.77)
-            low = (
-                coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef)
-                + _continuum_lw(band, coef, nt)
-                + adjcolco2[..., None] * _minor2(nt.ka_mco2[band], coef)
-                + coef.wx[..., 1, None] * nt.cfc11adj[band]
-                + coef.wx[..., 2, None] * nt.cfc12[band]
-            )
-            high = coef.wx[..., 1, None] * nt.cfc11adj[band] + coef.wx[..., 2, None] * nt.cfc12[band]
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = _frac_const(nt.fracrefa[band], coef)
-        elif band == 6:
-            c = _lw_coef_as_dtype(coef, jnp.float32)
-            absa_r4 = absa.astype(jnp.float32)
-            absb_r4 = absb.astype(jnp.float32)
-            speccomb, specparm, js, fs = _binary_params(c.colh2o, c.colo3, c.rat_h2oo3, 8.0)
-            speccomb1, specparm1, js1, fs1 = _binary_params(c.colh2o, c.colo3, c.rat_h2oo3_1, 8.0)
-            major = _major_binary_lower(absa_r4, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, c)
-            _, _, jmco2, fmco2 = _binary_params(c.colh2o, c.colo3, chi_ratio(1, 3, 3).astype(jnp.float32), 8.0)
-            adjcolco2_l = _adj_minor_column(c.colco2, c, chi_layer(2).astype(jnp.float32), 3.0, 3.0, 0.79)
-            low = major + _continuum_lw(band, c, nt) + adjcolco2_l[..., None] * _minor_ratio(nt.ka_mco2_r[band].astype(jnp.float32), jmco2, fmco2, c)
-            _, _, jpl, fpl = _binary_params(c.colh2o, c.colo3, chi_ratio(1, 3, 3).astype(jnp.float32), 8.0)
-            frac_low = _frac_interp(nt.fracrefa[band].astype(jnp.float32), jpl, fpl)
-
-            adjcolco2_u = _adj_minor_column(c.colco2, c, chi_layer(2).astype(jnp.float32), 3.0, 2.0, 0.79)
-            high = c.colo3[..., None] * _interp_four_rows_lw(absb_r4, upper_idx0, upper_idx1, nspb, c) + adjcolco2_u[..., None] * _minor2(nt.kb_mco2[band].astype(jnp.float32), c)
-            high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.855, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=jnp.float64)
-            high = high * high_factor.astype(jnp.float32)
-            tau = jnp.where(c.lower_mask[..., None], low, high).astype(jnp.float64)
-            frac = jnp.where(c.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band].astype(jnp.float32), c)).astype(jnp.float64)
-        elif band == 7:
-            adjcolco2 = _adj_minor_column(coef.colco2, coef, chi_layer(2), 3.0, 2.0, 0.65)
-            low = (
-                coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef)
-                + _continuum_lw(band, coef, nt)
-                + adjcolco2[..., None] * _minor2(nt.ka_mco2[band], coef)
-                + coef.colo3[..., None] * _minor2(nt.ka_mo3[band], coef)
-                + coef.coln2o[..., None] * _minor2(nt.ka_mn2o[band], coef)
-                + coef.wx[..., 2, None] * nt.cfc12[band]
-                + coef.wx[..., 3, None] * nt.cfc22adj[band]
-            )
-            high = (
-                coef.colo3[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef)
-                + adjcolco2[..., None] * _minor2(nt.kb_mco2[band], coef)
-                + coef.coln2o[..., None] * _minor2(nt.kb_mn2o[band], coef)
-                + coef.wx[..., 2, None] * nt.cfc12[band]
-                + coef.wx[..., 3, None] * nt.cfc22adj[band]
-            )
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
-        elif band == 8:
-            speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.colch4, coef.rat_h2och4, 8.0)
-            speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.colch4, coef.rat_h2och4_1, 8.0)
-            major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
-            _, _, jmn2o, fmn2o = _binary_params(coef.colh2o, coef.colch4, chi_ratio(1, 6, 3), 8.0)
-            adjcoln2o = _adj_minor_column(coef.coln2o, coef, chi_layer(4), 1.5, 0.5, 0.65)
-            low = major + _continuum_lw(band, coef, nt) + adjcoln2o[..., None] * _minor_ratio(nt.ka_mn2o_r[band], jmn2o, fmn2o, coef)
-            _, _, jpl, fpl = _binary_params(coef.colh2o, coef.colch4, chi_ratio(1, 6, 9), 8.0)
-            frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
-            high = coef.colch4[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + adjcoln2o[..., None] * _minor2(nt.kb_mn2o[band], coef)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band], coef))
-        elif band == 9:
-            low = coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt)
-            high = coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + _foreign_lw(band, coef, nt)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
-        elif band == 10:
-            scaleo2 = coef.colo2 * coef.scaleminor
-            low = coef.colh2o[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt) + scaleo2[..., None] * _minor2(nt.ka_mo2[band], coef)
-            high = coef.colh2o[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef) + _foreign_lw(band, coef, nt) + scaleo2[..., None] * _minor2(nt.kb_mo2[band], coef)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
-        elif band == 11:
-            tau, frac = _binary_band(
-                band,
-                coef,
-                nt,
-                coef.colh2o,
-                coef.colco2,
-                (coef.rat_h2oco2, coef.rat_h2oco2_1),
-                coef.colh2o,
-                coef.colco2,
-                (coef.rat_h2oco2, coef.rat_h2oco2_1),
-                chi_ratio(1, 2, 10),
-                None,
-            )
-        elif band == 12:
-            speccomb, specparm, js, fs = _binary_params(coef.colh2o, coef.coln2o, coef.rat_h2on2o, 8.0)
-            speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.coln2o, coef.rat_h2on2o_1, 8.0)
-            major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
-            _, _, jmco2, fmco2 = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 1), 8.0)
-            ratco2 = 1.0e20 * (coef.colco2 / jnp.maximum(coef.coldry, 1.0e-300)) / 3.55e-4
-            adjcolco2 = jnp.where(ratco2 > 3.0, (2.0 + (ratco2 - 2.0) ** 0.68) * 3.55e-4 * coef.coldry * 1.0e-20, coef.colco2)
-            _, _, jmco, fmco = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 3), 8.0)
-            low = (
-                major
-                + _continuum_lw(band, coef, nt)
-                + adjcolco2[..., None] * _minor_ratio(nt.ka_mco2_r[band], jmco2, fmco2, coef)
-                + coef.colco[..., None] * _minor_ratio(nt.ka_mco_r[band], jmco, fmco, coef)
-            )
-            _, _, jpl, fpl = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 5), 8.0)
-            frac_low = _frac_interp(nt.fracrefa[band], jpl, fpl)
-            high = coef.colo3[..., None] * _minor2(nt.kb_mo3[band], coef)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band], coef))
-        elif band == 13:
-            low = coef.colco2[..., None] * _interp_four_rows_lw(absa, lower_idx0, lower_idx1, nspa, coef) + _continuum_lw(band, coef, nt)
-            high = coef.colco2[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, nspb, coef)
-            tau = jnp.where(coef.lower_mask[..., None], low, high)
-            frac = jnp.where(coef.lower_mask[..., None], _frac_const(nt.fracrefa[band], coef), _frac_const(nt.fracrefb[band], coef))
-        elif band == 14:
-            speccomb, specparm, js, fs = _binary_params(coef.coln2o, coef.colco2, coef.rat_n2oco2, 8.0)
-            speccomb1, specparm1, js1, fs1 = _binary_params(coef.coln2o, coef.colco2, coef.rat_n2oco2_1, 8.0)
-            major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
-            _, _, jmn2, fmn2 = _binary_params(coef.coln2o, coef.colco2, chi_ratio(4, 2, 1), 8.0)
-            scalen2 = coef.colbrd * coef.scaleminor
-            low = major + _continuum_lw(band, coef, nt) + scalen2[..., None] * _minor_ratio(nt.ka_mn2_r[band], jmn2, fmn2, coef)
-            _, _, jpl, fpl = _binary_params(coef.coln2o, coef.colco2, chi_ratio(4, 2, 1), 8.0)
-            tau = jnp.where(coef.lower_mask[..., None], low, jnp.zeros_like(low))
-            frac = jnp.where(coef.lower_mask[..., None], _frac_interp(nt.fracrefa[band], jpl, fpl), jnp.zeros_like(low))
-        else:
-            tau, frac = _binary_band(
-                band,
-                coef,
-                nt,
-                coef.colh2o,
-                coef.colch4,
-                (coef.rat_h2och4, coef.rat_h2och4_1),
-                coef.colch4,
-                coef.colh2o,
-                0.0,
-                chi_ratio(1, 6, 6),
-                0.0,
-            )
-            high = coef.colch4[..., None] * _interp_four_rows_lw(absb, upper_idx0, upper_idx1, jnp.maximum(nspb, 1), coef)
-            tau = jnp.where(coef.lower_mask[..., None], tau, high)
-            frac = jnp.where(coef.lower_mask[..., None], frac, _frac_const(nt.fracrefb[band], coef))
-
-        taug.append(tau * tables.lw_gpoint_mask[band])
-        fracs.append(frac * tables.lw_gpoint_mask[band])
-
+        tau_b, frac_b = _lw_taumol_band(band, coef, nt, tables)
+        taug.append(tau_b)
+        fracs.append(frac_b)
     return jnp.stack(taug, axis=-2), jnp.stack(fracs, axis=-2)
 
 
@@ -1810,6 +1842,236 @@ def _lw_rtrnmc_layer_terms(radld, odepth_raw, odcld, efclfrac, cldfmc, plfrac, b
     }
 
 
+def _lw_rtrnmc_band_fluxes(
+    state,
+    tau_b,
+    frac_b,
+    cldf_b,
+    taucmc_b,
+    sec_raw,
+    scale,
+    valid,
+    plank_b,
+    planklev_b,
+    plankbnd_b,
+    cloud_layer,
+    with_clear_sky: bool,
+):
+    """Per-band `rtrnmc` radiance solve -> `(zfd, zfu, zcd, zcu)` g-point fluxes.
+
+    Band-agnostic: every band-indexed quantity is supplied already sliced by the
+    caller (a static Python ``band`` in the oracle loop, or a traced index +
+    ``lax.switch`` taumol in the chunked flux path).  This is the EXACT body that
+    used to live inline in the ``for band`` loop, so both callers are byte-for-byte
+    the same numerics.  Returns the cloudy/all-sky down/up g-point flux buffers
+    ``zfd``/``zfu`` (and, when ``with_clear_sky``, the clear-sky ``zcd``/``zcu``;
+    otherwise both are ``None``).
+    """
+
+    zcd = None
+    zcu = None
+    tau_b = tau_b
+    frac_b = frac_b
+    cldf_b = cldf_b
+    taucmc_b = taucmc_b
+    sec = sec_raw[..., None]
+    odcld = jnp.where(cldf_b == 1.0, sec[..., None, :] * taucmc_b, 0.0)
+    efclfrac = (1.0 - jnp.exp(-odcld)) * cldf_b
+
+    def layer0(value):
+        return jnp.moveaxis(value, -2, 0)
+
+    plank_b = plank_b
+    dplankdn_b = planklev_b[..., :-1] - plank_b
+    dplankup_b = planklev_b[..., 1:] - plank_b
+
+    # The down-recurrence body broadcasts the per-layer optical depth
+    # (`sec*tau`, batch from `tau`/`sec`), the cloudy overlap terms
+    # (`odcld`/`efclfrac`, batch from the cloud grid) and the per-layer
+    # Planck source (batch from `plank_b`, i.e. the temperature grid).  Any
+    # of these can carry the full (ny,nx) surface batch independently, so
+    # initialize the scan carry at the FULL broadcast batch — this keeps the
+    # lax.scan carry in/out shapes equal for single-column fixtures AND
+    # (ny,nx) operational grids regardless of which input is broadcast.
+    carry_batch = jnp.broadcast_shapes(
+        tau_b[..., 0, :].shape,
+        sec.shape,
+        plank_b[..., :1].shape,
+        odcld[..., 0, :].shape,
+        efclfrac[..., 0, :].shape,
+    )
+    radld = jnp.zeros(carry_batch, dtype=tau_b.dtype)
+    radclrd = jnp.zeros_like(radld)
+    iclddn = jnp.zeros(carry_batch[:-1], dtype=bool)
+    down_xs = (
+        layer0(jnp.flip(tau_b, axis=-2)),
+        layer0(jnp.flip(frac_b, axis=-2)),
+        layer0(jnp.flip(odcld, axis=-2)),
+        layer0(jnp.flip(efclfrac, axis=-2)),
+        layer0(jnp.flip(cldf_b, axis=-2)),
+        jnp.moveaxis(jnp.flip(cloud_layer, axis=-1), -1, 0),
+        jnp.moveaxis(jnp.flip(plank_b, axis=-1), -1, 0),
+        jnp.moveaxis(jnp.flip(dplankdn_b, axis=-1), -1, 0),
+        jnp.moveaxis(jnp.flip(dplankup_b, axis=-1), -1, 0),
+    )
+
+    def down_body(carry, xs):
+        radld, radclrd, iclddn = carry
+        tau_l, frac_l, odcld_l, efclfrac_l, cldf_l, cloud_l, plank_l, dplankdn_l, dplankup_l = xs
+        odepth = jnp.maximum(sec * tau_l, 0.0)
+        terms = _lw_rtrnmc_layer_terms(
+            radld,
+            odepth,
+            odcld_l,
+            efclfrac_l,
+            cldf_l,
+            frac_l,
+            plank_l[..., None],
+            dplankdn_l[..., None],
+            dplankup_l[..., None],
+        )
+        is_cloud = cloud_l[..., None]
+        rad_new = jnp.where(is_cloud, terms["cloud"]["rad"], terms["clear"]["rad"])
+        atrans = jnp.where(is_cloud, terms["cloud"]["atrans"], terms["clear"]["atrans"])
+        atot = jnp.where(is_cloud, terms["cloud"]["atot"], terms["clear"]["atot"])
+        bbugas = jnp.where(is_cloud, terms["cloud"]["bbugas"], terms["clear"]["bbugas"])
+        bbutot = jnp.where(is_cloud, terms["cloud"]["bbutot"], terms["clear"]["bbutot"])
+        bbd = jnp.where(is_cloud, terms["cloud"]["bbd"], terms["clear"]["bbd"])
+        tfn = jnp.where(is_cloud, terms["cloud"]["tfn"], terms["clear"]["tfn"])
+        iclddn_new = jnp.logical_or(iclddn, cloud_l)
+        radclrd_new = jnp.where(iclddn_new[..., None], radclrd + (bbd - radclrd) * atrans, rad_new)
+        # WRF `rtrnmc` :3417-3423 — clear-sky down stream tracks the all-sky
+        # stream until the first cloud above (iclddn), then propagates with the
+        # clear-sky source/transmittance only.  Emit it (and the cumulative
+        # iclddn / clear surface-reflected atrans) for the clear-sky up sweep.
+        return (rad_new, radclrd_new, iclddn_new), (
+            rad_new * scale * valid,
+            atrans,
+            atot,
+            bbugas,
+            bbutot,
+            tfn * valid,
+            radclrd_new * scale * valid,
+            iclddn_new,
+            terms["clear"]["atrans"],
+            terms["clear"]["bbugas"],
+        )
+
+    (radld, radclrd_final, _), down_outputs = lax.scan(down_body, (radld, radclrd, iclddn), down_xs)
+    (
+        zfd_scan,
+        atrans_scan,
+        atot_scan,
+        bbugas_scan,
+        bbutot_scan,
+        tfn_scan,
+        zcd_scan,
+        iclddn_scan,
+        atrans_clear_scan,
+        bbugas_clear_scan,
+    ) = down_outputs
+    zfd_layer0 = jnp.flip(jnp.concatenate((jnp.zeros_like(radld)[None, ...], zfd_scan), axis=0), axis=0)
+    zfd = jnp.moveaxis(zfd_layer0, 0, -2)
+    atrans_layers = jnp.moveaxis(jnp.flip(atrans_scan, axis=0), 0, -2)
+    atot_layers = jnp.moveaxis(jnp.flip(atot_scan, axis=0), 0, -2)
+    bbugas_layers = jnp.moveaxis(jnp.flip(bbugas_scan, axis=0), 0, -2)
+    bbutot_layers = jnp.moveaxis(jnp.flip(bbutot_scan, axis=0), 0, -2)
+    tfn_layers = jnp.moveaxis(jnp.flip(tfn_scan, axis=0), 0, -2)
+
+    radlu = frac_b[..., 0, :] * plankbnd_b[..., None] + (1.0 - state.surface_emissivity[..., None]) * radld
+    up_xs = (
+        layer0(atrans_layers),
+        layer0(atot_layers),
+        layer0(bbugas_layers),
+        layer0(bbutot_layers),
+        layer0(efclfrac),
+        layer0(cldf_b),
+        jnp.moveaxis(cloud_layer, -1, 0),
+    )
+
+    def up_body(radlu, xs):
+        atrans_l, atot_l, bbugas_l, bbutot_l, efclfrac_l, cldf_l, cloud_l = xs
+        is_cloud = cloud_l[..., None]
+        gassrc = bbugas_l * atrans_l
+        rad_cloud = (
+            radlu
+            - radlu * (atrans_l + efclfrac_l * (1.0 - atrans_l))
+            + gassrc
+            + cldf_l * (bbutot_l * atot_l - gassrc)
+        )
+        rad_clear = radlu + (bbugas_l - radlu) * atrans_l
+        radlu = jnp.where(is_cloud, rad_cloud, rad_clear)
+        return radlu, radlu * scale * valid
+
+    _, zfu_scan = lax.scan(up_body, radlu, up_xs)
+    zfu = jnp.moveaxis(jnp.concatenate((radlu[None, ...] * scale * valid, zfu_scan), axis=0), 0, -2)
+
+    if with_clear_sky:
+        # Clear-sky DOWN flux: same interface layout as `zfd`, built from the
+        # clear-sky down radiance `radclrd` (WRF `clrdrad`).  zcd_scan is the
+        # per-layer clear radiance emitted top-to-bottom; prepend the TOA zero
+        # and flip back to bottom-to-top, exactly mirroring the all-sky `zfd`.
+        zcd_layer0 = jnp.flip(jnp.concatenate((jnp.zeros_like(radld)[None, ...], zcd_scan), axis=0), axis=0)
+        zcd = jnp.moveaxis(zcd_layer0, 0, -2)
+        # Clear-sky UP sweep (WRF `rtrnmc` :3436-3467).  Surface boundary uses
+        # the CLEAR down radiance at the surface (`radclrd_final`); the stream
+        # follows the all-sky `radlu` while no cloud is above (iclddn=0) and
+        # diverges with the clear-sky gas source/transmittance once iclddn=1.
+        radclru0 = frac_b[..., 0, :] * plankbnd_b[..., None] + (1.0 - state.surface_emissivity[..., None]) * radclrd_final
+        # The clear stream follows the all-sky up radiance `radlu` while no
+        # cloud is above (iclddn=0); the carry recomputes that all-sky `radlu`
+        # recurrence (identical formula to `up_body`) so no external radiance
+        # series is needed.
+        up_clear_xs = (
+            layer0(jnp.moveaxis(jnp.flip(atrans_clear_scan, axis=0), 0, -2)),
+            layer0(jnp.moveaxis(jnp.flip(bbugas_clear_scan, axis=0), 0, -2)),
+            layer0(jnp.moveaxis(jnp.flip(iclddn_scan, axis=0), 0, -2)),
+            layer0(atrans_layers),
+            layer0(atot_layers),
+            layer0(bbugas_layers),
+            layer0(bbutot_layers),
+            layer0(efclfrac),
+            layer0(cldf_b),
+            jnp.moveaxis(cloud_layer, -1, 0),
+        )
+
+        def up_clear_body(carry, xs):
+            radlu_l, radclru_l = carry
+            (
+                atrans_clr_l,
+                bbugas_clr_l,
+                iclddn_l,
+                atrans_l,
+                atot_l,
+                bbugas_l,
+                bbutot_l,
+                efclfrac_l,
+                cldf_l,
+                cloud_l,
+            ) = xs
+            is_cloud = cloud_l[..., None]
+            gassrc = bbugas_l * atrans_l
+            rad_cloud = (
+                radlu_l
+                - radlu_l * (atrans_l + efclfrac_l * (1.0 - atrans_l))
+                + gassrc
+                + cldf_l * (bbutot_l * atot_l - gassrc)
+            )
+            rad_clear_allsky = radlu_l + (bbugas_l - radlu_l) * atrans_l
+            radlu_new = jnp.where(is_cloud, rad_cloud, rad_clear_allsky)
+            # WRF :3461-3467 — clear stream = all-sky up while no cloud above
+            # (iclddn=0); once a cloud is above, propagate with clear-sky gas
+            # source + clear-sky transmittance.
+            radclru_diverged = radclru_l + (bbugas_clr_l - radclru_l) * atrans_clr_l
+            radclru_new = jnp.where(iclddn_l[..., None], radclru_diverged, radlu_new)
+            return (radlu_new, radclru_new), radclru_new * scale * valid
+
+        _, zcu_scan = lax.scan(up_clear_body, (radlu, radclru0), up_clear_xs)
+        zcu = jnp.moveaxis(jnp.concatenate((radclru0[None, ...] * scale * valid, zcu_scan), axis=0), 0, -2)
+
+    return zfd, zfu, zcd, zcu, tfn_layers
+
+
 def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, tables: RRTMGTableBundle, *, flux_only: bool = False, with_clear_sky: bool = False):
     """Ports WRF `rtrnmc` cloudy-source recurrence and per-g-point flux capture.
 
@@ -1872,201 +2134,15 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
         frac_b = fracs[..., :, band, :]
         cldf_b = cldfmc[..., :, band, :]
         taucmc_b = taucmc[..., :, band, :]
-        sec = secdiff[..., band][..., None]
-        odcld = jnp.where(cldf_b == 1.0, sec[..., None, :] * taucmc_b, 0.0)
-        efclfrac = (1.0 - jnp.exp(-odcld)) * cldf_b
+        sec_raw = secdiff[..., band]
         scale = scale_band[band]
-
-        def layer0(value):
-            return jnp.moveaxis(value, -2, 0)
-
         plank_b = planklay[..., :, band]
-        dplankdn_b = planklev[..., :-1, band] - plank_b
-        dplankup_b = planklev[..., 1:, band] - plank_b
-
-        # The down-recurrence body broadcasts the per-layer optical depth
-        # (`sec*tau`, batch from `tau`/`sec`), the cloudy overlap terms
-        # (`odcld`/`efclfrac`, batch from the cloud grid) and the per-layer
-        # Planck source (batch from `plank_b`, i.e. the temperature grid).  Any
-        # of these can carry the full (ny,nx) surface batch independently, so
-        # initialize the scan carry at the FULL broadcast batch — this keeps the
-        # lax.scan carry in/out shapes equal for single-column fixtures AND
-        # (ny,nx) operational grids regardless of which input is broadcast.
-        carry_batch = jnp.broadcast_shapes(
-            tau_b[..., 0, :].shape,
-            sec.shape,
-            plank_b[..., :1].shape,
-            odcld[..., 0, :].shape,
-            efclfrac[..., 0, :].shape,
+        planklev_b = planklev[..., band]
+        plankbnd_b = plankbnd[..., band]
+        zfd, zfu, zcd, zcu, tfn_layers = _lw_rtrnmc_band_fluxes(
+            state, tau_b, frac_b, cldf_b, taucmc_b, sec_raw, scale, valid,
+            plank_b, planklev_b, plankbnd_b, cloud_layer, with_clear_sky,
         )
-        radld = jnp.zeros(carry_batch, dtype=tau_b.dtype)
-        radclrd = jnp.zeros_like(radld)
-        iclddn = jnp.zeros(carry_batch[:-1], dtype=bool)
-        down_xs = (
-            layer0(jnp.flip(tau_b, axis=-2)),
-            layer0(jnp.flip(frac_b, axis=-2)),
-            layer0(jnp.flip(odcld, axis=-2)),
-            layer0(jnp.flip(efclfrac, axis=-2)),
-            layer0(jnp.flip(cldf_b, axis=-2)),
-            jnp.moveaxis(jnp.flip(cloud_layer, axis=-1), -1, 0),
-            jnp.moveaxis(jnp.flip(plank_b, axis=-1), -1, 0),
-            jnp.moveaxis(jnp.flip(dplankdn_b, axis=-1), -1, 0),
-            jnp.moveaxis(jnp.flip(dplankup_b, axis=-1), -1, 0),
-        )
-
-        def down_body(carry, xs):
-            radld, radclrd, iclddn = carry
-            tau_l, frac_l, odcld_l, efclfrac_l, cldf_l, cloud_l, plank_l, dplankdn_l, dplankup_l = xs
-            odepth = jnp.maximum(sec * tau_l, 0.0)
-            terms = _lw_rtrnmc_layer_terms(
-                radld,
-                odepth,
-                odcld_l,
-                efclfrac_l,
-                cldf_l,
-                frac_l,
-                plank_l[..., None],
-                dplankdn_l[..., None],
-                dplankup_l[..., None],
-            )
-            is_cloud = cloud_l[..., None]
-            rad_new = jnp.where(is_cloud, terms["cloud"]["rad"], terms["clear"]["rad"])
-            atrans = jnp.where(is_cloud, terms["cloud"]["atrans"], terms["clear"]["atrans"])
-            atot = jnp.where(is_cloud, terms["cloud"]["atot"], terms["clear"]["atot"])
-            bbugas = jnp.where(is_cloud, terms["cloud"]["bbugas"], terms["clear"]["bbugas"])
-            bbutot = jnp.where(is_cloud, terms["cloud"]["bbutot"], terms["clear"]["bbutot"])
-            bbd = jnp.where(is_cloud, terms["cloud"]["bbd"], terms["clear"]["bbd"])
-            tfn = jnp.where(is_cloud, terms["cloud"]["tfn"], terms["clear"]["tfn"])
-            iclddn_new = jnp.logical_or(iclddn, cloud_l)
-            radclrd_new = jnp.where(iclddn_new[..., None], radclrd + (bbd - radclrd) * atrans, rad_new)
-            # WRF `rtrnmc` :3417-3423 — clear-sky down stream tracks the all-sky
-            # stream until the first cloud above (iclddn), then propagates with the
-            # clear-sky source/transmittance only.  Emit it (and the cumulative
-            # iclddn / clear surface-reflected atrans) for the clear-sky up sweep.
-            return (rad_new, radclrd_new, iclddn_new), (
-                rad_new * scale * valid,
-                atrans,
-                atot,
-                bbugas,
-                bbutot,
-                tfn * valid,
-                radclrd_new * scale * valid,
-                iclddn_new,
-                terms["clear"]["atrans"],
-                terms["clear"]["bbugas"],
-            )
-
-        (radld, radclrd_final, _), down_outputs = lax.scan(down_body, (radld, radclrd, iclddn), down_xs)
-        (
-            zfd_scan,
-            atrans_scan,
-            atot_scan,
-            bbugas_scan,
-            bbutot_scan,
-            tfn_scan,
-            zcd_scan,
-            iclddn_scan,
-            atrans_clear_scan,
-            bbugas_clear_scan,
-        ) = down_outputs
-        zfd_layer0 = jnp.flip(jnp.concatenate((jnp.zeros_like(radld)[None, ...], zfd_scan), axis=0), axis=0)
-        zfd = jnp.moveaxis(zfd_layer0, 0, -2)
-        atrans_layers = jnp.moveaxis(jnp.flip(atrans_scan, axis=0), 0, -2)
-        atot_layers = jnp.moveaxis(jnp.flip(atot_scan, axis=0), 0, -2)
-        bbugas_layers = jnp.moveaxis(jnp.flip(bbugas_scan, axis=0), 0, -2)
-        bbutot_layers = jnp.moveaxis(jnp.flip(bbutot_scan, axis=0), 0, -2)
-        tfn_layers = jnp.moveaxis(jnp.flip(tfn_scan, axis=0), 0, -2)
-
-        radlu = frac_b[..., 0, :] * plankbnd[..., band][..., None] + (1.0 - state.surface_emissivity[..., None]) * radld
-        up_xs = (
-            layer0(atrans_layers),
-            layer0(atot_layers),
-            layer0(bbugas_layers),
-            layer0(bbutot_layers),
-            layer0(efclfrac),
-            layer0(cldf_b),
-            jnp.moveaxis(cloud_layer, -1, 0),
-        )
-
-        def up_body(radlu, xs):
-            atrans_l, atot_l, bbugas_l, bbutot_l, efclfrac_l, cldf_l, cloud_l = xs
-            is_cloud = cloud_l[..., None]
-            gassrc = bbugas_l * atrans_l
-            rad_cloud = (
-                radlu
-                - radlu * (atrans_l + efclfrac_l * (1.0 - atrans_l))
-                + gassrc
-                + cldf_l * (bbutot_l * atot_l - gassrc)
-            )
-            rad_clear = radlu + (bbugas_l - radlu) * atrans_l
-            radlu = jnp.where(is_cloud, rad_cloud, rad_clear)
-            return radlu, radlu * scale * valid
-
-        _, zfu_scan = lax.scan(up_body, radlu, up_xs)
-        zfu = jnp.moveaxis(jnp.concatenate((radlu[None, ...] * scale * valid, zfu_scan), axis=0), 0, -2)
-
-        if with_clear_sky:
-            # Clear-sky DOWN flux: same interface layout as `zfd`, built from the
-            # clear-sky down radiance `radclrd` (WRF `clrdrad`).  zcd_scan is the
-            # per-layer clear radiance emitted top-to-bottom; prepend the TOA zero
-            # and flip back to bottom-to-top, exactly mirroring the all-sky `zfd`.
-            zcd_layer0 = jnp.flip(jnp.concatenate((jnp.zeros_like(radld)[None, ...], zcd_scan), axis=0), axis=0)
-            zcd = jnp.moveaxis(zcd_layer0, 0, -2)
-            # Clear-sky UP sweep (WRF `rtrnmc` :3436-3467).  Surface boundary uses
-            # the CLEAR down radiance at the surface (`radclrd_final`); the stream
-            # follows the all-sky `radlu` while no cloud is above (iclddn=0) and
-            # diverges with the clear-sky gas source/transmittance once iclddn=1.
-            radclru0 = frac_b[..., 0, :] * plankbnd[..., band][..., None] + (1.0 - state.surface_emissivity[..., None]) * radclrd_final
-            # The clear stream follows the all-sky up radiance `radlu` while no
-            # cloud is above (iclddn=0); the carry recomputes that all-sky `radlu`
-            # recurrence (identical formula to `up_body`) so no external radiance
-            # series is needed.
-            up_clear_xs = (
-                layer0(jnp.moveaxis(jnp.flip(atrans_clear_scan, axis=0), 0, -2)),
-                layer0(jnp.moveaxis(jnp.flip(bbugas_clear_scan, axis=0), 0, -2)),
-                layer0(jnp.moveaxis(jnp.flip(iclddn_scan, axis=0), 0, -2)),
-                layer0(atrans_layers),
-                layer0(atot_layers),
-                layer0(bbugas_layers),
-                layer0(bbutot_layers),
-                layer0(efclfrac),
-                layer0(cldf_b),
-                jnp.moveaxis(cloud_layer, -1, 0),
-            )
-
-            def up_clear_body(carry, xs):
-                radlu_l, radclru_l = carry
-                (
-                    atrans_clr_l,
-                    bbugas_clr_l,
-                    iclddn_l,
-                    atrans_l,
-                    atot_l,
-                    bbugas_l,
-                    bbutot_l,
-                    efclfrac_l,
-                    cldf_l,
-                    cloud_l,
-                ) = xs
-                is_cloud = cloud_l[..., None]
-                gassrc = bbugas_l * atrans_l
-                rad_cloud = (
-                    radlu_l
-                    - radlu_l * (atrans_l + efclfrac_l * (1.0 - atrans_l))
-                    + gassrc
-                    + cldf_l * (bbutot_l * atot_l - gassrc)
-                )
-                rad_clear_allsky = radlu_l + (bbugas_l - radlu_l) * atrans_l
-                radlu_new = jnp.where(is_cloud, rad_cloud, rad_clear_allsky)
-                # WRF :3461-3467 — clear stream = all-sky up while no cloud above
-                # (iclddn=0); once a cloud is above, propagate with clear-sky gas
-                # source + clear-sky transmittance.
-                radclru_diverged = radclru_l + (bbugas_clr_l - radclru_l) * atrans_clr_l
-                radclru_new = jnp.where(iclddn_l[..., None], radclru_diverged, radlu_new)
-                return (radlu_new, radclru_new), radclru_new * scale * valid
-
-            _, zcu_scan = lax.scan(up_clear_body, (radlu, radclru0), up_clear_xs)
-            zcu = jnp.moveaxis(jnp.concatenate((radclru0[None, ...] * scale * valid, zcu_scan), axis=0), 0, -2)
 
         if flux_only:
             # Collect this band into the current tile; flush (g-point-reduce +
@@ -2108,7 +2184,7 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
     return tfn_all, zfd_all, zfu_all, plansum
 
 
-def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle):
+def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, build_taumol: bool = True):
     """Builds LW gas/source state up to the `rtrnmc` transfer entry.
 
     Shared by the operational flux path (`_lw_solver_fluxes`) and the WRF
@@ -2136,15 +2212,33 @@ def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle):
 
     secdiff = _lw_diffusivity(pwvcm)
     coef = _lw_setcoef(qv_ext, p_ext, t_ext, pressure_interfaces, tables)
-    branch_tau, branch_fracs = _lw_taumol_fused(coef, tables)
-    fallback_tau, fallback_fracs = _lw_fallback_taumol(qv_ext, p_ext, pressure_interfaces, tables)
-    accepted = jnp.asarray(_LW_TAUMOL_BRANCH_ACCEPTED, dtype=bool)
-    accepted = accepted.reshape((1,) * (branch_tau.ndim - 2) + (16, 1))
-    tau = jnp.where(accepted, branch_tau, fallback_tau)
-    fracs = jnp.where(accepted, branch_fracs, fallback_fracs)
-    transfer_tau = jnp.clip(tau, 0.0, MAX_OPTICAL_DEPTH) * mask
     cldfmc, taucmc = _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables)
     planklay, planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
+    if not build_taumol:
+        # Chunked flux path: do NOT materialise the full `(..., nlay, 16, 16)`
+        # `tau`/`fracs` stack here — the per-band driver builds one band's taumol
+        # at a time inside its band-scan (the dominant LW fp64 VRAM consumer is
+        # then a single band's `(..., nlay, 16)` rather than the 16-band stack).
+        # `coef` is returned so the driver can call `_lw_taumol_band` lazily.
+        return state, coef, secdiff, planklay, planklev, plankbnd, cldfmc, taucmc, original_layers, layer_mass
+    branch_tau, branch_fracs = _lw_taumol_fused(coef, tables)
+    # VRAM: `_LW_TAUMOL_BRANCH_ACCEPTED` is statically all-True (the branch path
+    # is always accepted), so the nearest-pressure fallback was a dead
+    # `(..., nlay, 16, 16)` fp64 DUPLICATE of `tau`/`fracs` (built, then thrown
+    # away by `jnp.where(True, branch, fallback)`).  Skip building it entirely
+    # when the acceptance mask is all-True — a knob-independent, byte-exact VRAM
+    # win (`where(True, a, b) == a`).  The fallback merge is retained verbatim for
+    # the defensive case where some band is ever marked rejected.
+    if all(bool(x) for x in _LW_TAUMOL_BRANCH_ACCEPTED):
+        tau = branch_tau
+        fracs = branch_fracs
+    else:
+        fallback_tau, fallback_fracs = _lw_fallback_taumol(qv_ext, p_ext, pressure_interfaces, tables)
+        accepted = jnp.asarray(_LW_TAUMOL_BRANCH_ACCEPTED, dtype=bool)
+        accepted = accepted.reshape((1,) * (branch_tau.ndim - 2) + (16, 1))
+        tau = jnp.where(accepted, branch_tau, fallback_tau)
+        fracs = jnp.where(accepted, branch_fracs, fallback_fracs)
+    transfer_tau = jnp.clip(tau, 0.0, MAX_OPTICAL_DEPTH) * mask
     dplankup = planklev[..., 1:, :] - planklay
     dplankdn = planklev[..., :-1, :] - planklay
     intermediate_base = RRTMGLWIntermediateState(
@@ -2185,6 +2279,76 @@ def _lw_solver_state(
     return state, intermediate, original_layers, layer_mass
 
 
+def _lw_solver_fluxes_chunked(
+    state: RRTMGLWColumnState, tables: RRTMGTableBundle, with_clear_sky: bool = False
+):
+    """Band-chunked operational LW flux path: taumol built per-band in a scan.
+
+    Identical numerics to `_lw_solver_fluxes` (the per-band rtrnmc solve is the
+    shared `_lw_rtrnmc_band_fluxes`; the per-band taumol is the shared
+    `_lw_taumol_band`), but the full `(..., nlay, 16, 16)` `tau`/`fracs` stack is
+    never built: a `lax.scan` over the 16 bands carries only the fp64
+    band-summed down/up (and optional clear-sky down/up) interface fluxes, and
+    each band's `(..., nlay, 16)` taumol + rtrnmc temporaries are freed by the
+    scan carry barrier before the next band.  Disjoint per-band g-point sums are
+    accumulated in fp64, so the result is bit-identical to the upfront-stack path
+    (proofs/v013).
+    """
+
+    state, coef, secdiff, planklay, planklev, plankbnd, cldfmc, taucmc, original_layers, layer_mass = _lw_solver_base(
+        state, tables, build_taumol=False
+    )
+    nt = _native_lw_tables()
+    cloud_layer = jnp.any(cldfmc > 0.5, axis=(-1, -2))
+    scale_band = tables.lw_delwave * (jnp.pi * 1.0e4)
+    nlay = int(planklay.shape[-2])
+
+    # Per-band taumol resolved by `lax.switch` over the traced band index: the
+    # gas chemistry differs structurally per band, so each branch is the static
+    # `_lw_taumol_band(b, ...)` closure (uniform `(..., nlay, 16)` output).
+    taumol_branches = [
+        (lambda b=b: _lw_taumol_band(b, coef, nt, tables)) for b in range(16)
+    ]
+
+    flux_shape = planklay.shape[:-2] + (nlay + 1,)
+    zero_flux = jnp.zeros(flux_shape, dtype=jnp.float64)
+    n_acc = 4 if with_clear_sky else 2
+    init = tuple(zero_flux for _ in range(n_acc))
+
+    def body(carry, band):
+        tau_b, frac_b = lax.switch(band, taumol_branches)
+        cldf_b = jnp.take(cldfmc, band, axis=-2)
+        taucmc_b = jnp.take(taucmc, band, axis=-2)
+        sec_raw = jnp.take(secdiff, band, axis=-1)
+        scale = scale_band[band]
+        valid = tables.lw_gpoint_mask[band]
+        plank_b = jnp.take(planklay, band, axis=-1)
+        planklev_b = jnp.take(planklev, band, axis=-1)
+        plankbnd_b = jnp.take(plankbnd, band, axis=-1)
+        zfd, zfu, zcd, zcu, _ = _lw_rtrnmc_band_fluxes(
+            state, tau_b, frac_b, cldf_b, taucmc_b, sec_raw, scale, valid,
+            plank_b, planklev_b, plankbnd_b, cloud_layer, with_clear_sky,
+        )
+        # Reduce this band over g-points (fp64) and add to the running fp64
+        # band-sum — same disjoint-band fp64 accumulation as `_flush_tile`.
+        down_part = jnp.sum(zfd, axis=-1)
+        up_part = jnp.sum(zfu, axis=-1)
+        if with_clear_sky:
+            clear_down_part = jnp.sum(zcd, axis=-1)
+            clear_up_part = jnp.sum(zcu, axis=-1)
+            parts = (down_part, up_part, clear_down_part, clear_up_part)
+        else:
+            parts = (down_part, up_part)
+        return tuple(acc + part for acc, part in zip(carry, parts)), None
+
+    accumulated, _ = lax.scan(body, init, jnp.arange(16, dtype=jnp.int32))
+    if with_clear_sky:
+        flux_down_model, flux_up_model, clear_down, clear_up = accumulated
+        return state, flux_down_model, flux_up_model, original_layers, layer_mass, clear_down, clear_up
+    flux_down_model, flux_up_model = accumulated
+    return state, flux_down_model, flux_up_model, original_layers, layer_mass
+
+
 def _lw_solver_fluxes(
     state: RRTMGLWColumnState, tables: RRTMGTableBundle, with_clear_sky: bool = False
 ) -> tuple[RRTMGLWColumnState, jnp.ndarray, jnp.ndarray, int, jnp.ndarray]:
@@ -2198,6 +2362,8 @@ def _lw_solver_fluxes(
     clear-sky (`totdclfl`/`totuclfl`) band-summed fluxes are also returned.
     """
 
+    if _LW_TAUMOL_CHUNK:
+        return _lw_solver_fluxes_chunked(state, tables, with_clear_sky=with_clear_sky)
     state, intermediate_base, cldfmc, taucmc, transfer_tau, original_layers, layer_mass = _lw_solver_base(state, tables)
     outputs = _lw_rtrnmc_outputs(
         state, intermediate_base, cldfmc, taucmc, transfer_tau, tables, flux_only=True, with_clear_sky=with_clear_sky
