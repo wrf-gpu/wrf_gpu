@@ -3,6 +3,11 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-08 23:20 WEST: the principal authorized unlimited time, CPU/GPU
+use, and parallel agents within resource sanity. After two failed GPT
+search/debug attempts on the same root-cause problem, try one targeted Opus
+4.8 xhigh/max run via `claude --permission-mode auto` if tokens are available.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
@@ -71,7 +76,19 @@ missing-Coriolis causes unless a current regression probe proves them. The next
 useful work is current-code spatial/vertical anatomy, then first-divergence /
 component-tendency localization.
 
-Sidecar deliverables are expected under `.agent/reviews/2026-06-08-gpt-v014-*.md`.
+## Active Wave 1
+
+- `019ea94e-898f-7211-9561-e70af150fcfd` (`Averroes`):
+  all-comparable-field grid-cell envelope harness and report.
+- `019ea950-77c3-7750-9adb-7e1c1e05bc1d` (`Godel`):
+  CPU-only wind/mass vertical-spatial anatomy probe.
+- `019ea950-93c0-7a60-8598-8da51ae2d2fb` (`Planck`):
+  v0.14 memory research integration and memory-fix roadmap.
+- `019ea950-e500-7cd0-8292-15576f327532` (`Descartes`):
+  Switzerland validation prep, no GPU run.
+
+Wave deliverables are expected under `proofs/v014/` and
+`.agent/reviews/2026-06-08-v014-*.md`.
 
 ## Next Manager Actions
 
