@@ -170,3 +170,11 @@ T3 status: microphysics(WSM7 op-pending-qh-leaf), cumulus(oracle-infra, kernels 
 
 **2026-06-08 ~14:37 — GSFC-LW (ra_lw=5) MERGED** (e588f0ba): oracle-infra + reference-only + honest carry-over (12501-LOC NUWRF family, STOP-condition fired correctly — no slop). Default ra_lw=4 byte-unchanged, spec-count 36, 77 tests. v0.13 MERGED so far: #7-knob, #5-2way-VRAM, T3 microphysics(WSM7)/cumulus(oracle-infra)/pbl(MRF)/surface+lsm(2 sfclay+slab-ref)/radiation(GSFC-SW op + GSFC-LW ref), compile-perf(Tier2), dispatch-fix. 
 RUNNING: 9/3km(max-dom=2) 2-way+GWD 24h gate (GPU, #5 capability closure at fitting res); TOST-wrfbdy-fix (CPU). CLOSEABLES remaining: TOST n=15 (unblocking), #7 GPU A/B, mp-batch2 (WDM5+qh-leaf), slab-hook, sub-jit, CPU-flock. DOCUMENTED carry-overs (allowed): cumulus JAX kernels, CAM/NUWRF/GFDL radiation, Shin-Hong/QNSE, RUC-LSM (all multi-thousand-LOC); 2way+GWD+1km+24h + multi-hardware = 32GB-HW-limits.
+
+**2026-06-08 ~14:45 — PRINCIPAL STEERING (positioning + proof + validation):**
+POSITIONING: do NOT claim "perfectly-efficient rewrite" or "completely true/faithful port". Value prop = FAST, GPU-NATIVE, **GPU-SCALABLE** WRF-compatible model (nearly all new HPC is GPU). Imperative = get STRONGER ON PROOF (serious validation), not stronger claims. Apply to README/release messaging.
+3-POINT PLAN:
+ 1. GPT-xhigh #1 = full v0.13 IMPLEMENTATION REVIEW (find+fix bugs; substantial ones → manager opens a roadmap case + alternating Opus-max ↔ GPT-xhigh debug workers). branch worker/gpt/v013-impl-review.
+ 2. GPT-xhigh #2 = build a v0.13 (≤3h wall-clock, full CPU+GPU) + v0.14 (16h) VALIDATION PLAN on known regions (Canary/Switzerland). Primary: WE are sure it runs; Secondary: convince WRF gate-keepers (stable + roughly-equivalent for most couplings). branch worker/gpt/v013-valplan.
+ 3. As soon as the remaining CPU/GPU v0.13 items finish → START the v0.13 validation plan (manager curates from GPT's plan). Any validation failure → immediately dispatch a debug worker. v0.13 ≠ fully-validated, but must be CLEARLY seriously-tested (not an untested bug-heap). Parallelize CPU+GPU.
+CPU BUDGET CHANGE: validation/CPU runs use ~24 threads (taskset -c 0-23), NOT 28 like the nightlies — leave cores 24-31 free for agents + overhead. (Supersedes the old cores-0-3-only rule for the validation window.)
