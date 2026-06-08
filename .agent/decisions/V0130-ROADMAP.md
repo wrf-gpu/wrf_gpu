@@ -200,3 +200,13 @@ CLOSEABLES REMAINING (GPU-serial after #5 frees GPU):
 DOCUMENTED CARRY-OVERS (principal-allowed): cumulus JAX kernels (2400-5300 LOC), CAM/Goddard-NUWRF/GFDL radiation (8-12k LOC), RUC-LSM (7516 LOC), Shin-Hong/QNSE PBL — all have de-risked oracle-infra; qh-State-leaf (→WSM7/WDM7 operational) + slab-LSM-hook = focused future State sprints; 2way+GWD+1km+24h + multi-hardware = 32GB-HW-limits; #7 24h wind-skill closure = open research (lever landed, not closed).
 
 RELEASE v0.13.0 (when closeables + validation done): fill 18 <<MANAGER-FILL>> in RELEASE_NOTES_v0.13.0.md/README.md/docs/KNOWN_ISSUES.md (#5/#7/TOST/validation numbers) + GPU-scalable honest positioning + fix docs/namelist-compatibility.md stale MYJ refs → gap-critic (Opus+GPT) → tag v0.13.0 → push wrfgpu HEAD:main + tag (home=latest) → final report.
+
+**2026-06-08 ~15:08 — POST-COMPACT RESUME (manager).** Principal: finish v0.13 max-efficiency; GPT/codex workers → tmux-window pattern (skill L30) going forward (current 2 headless GPTs left to finish); goal = clean v0.13 release, test-as-much-as-possible, parallelize CPU/GPU/**agents**.
+6 PARALLEL LANES RUNNING:
+ 1. #5 9/3km(max-dom=2) 2-way+GWD 24h gate — GPU nohup, /mnt/data/canairy_meteo/gate_2way_d02_v013/, 14/24/dom @hr14 finite, ~25min left. rc=0+24/dom → CLOSE (proofs/v013/twoway_gwd_9_3km_24h_gate.json).
+ 2. WDM5 mp=14 — Opus agent ac48e9d (auto-notify); caught+fixing real pidep uncapped-ice-diameter bug vs wdm52D. Merge w/ 3-way union catalog + spec-count→37.
+ 3. GPT#1 impl-review — codex headless PID 3092430, /tmp/gpt_impl_review.log, branch worker/gpt/v013-impl-review. On done: merge safe fixes; substantial→roadmap cases + alternate Opus-max↔GPT debug.
+ 4. GPT#2 valplan — codex headless PID 3092432, /tmp/gpt_valplan.log, branches/docs V0130+V0140-VALIDATION-PLAN.md. On done: curate 3h plan.
+ 5. Agent V (aee7e6f9) — CPU bedrock validation (idealized Straka/Skamarock + conservation + restart-bit-identity), worktree, proofs/v013/cpu_bedrock_validation.json. Auto-notify.
+ 6. Agent D (a6d9923d) — gate-keeper docs/namelist-compatibility.md accuracy vs real registry, worktree. Auto-notify.
+NEXT GPU (serial, after #5): TOST n=15 smoke→resume; #7 rad_rk_tendf A/B 24h. NEXT after GPTs: curated validation campaign + debug-on-failure. RELEASE: fill 18 placeholders + GPU-scalable positioning + gap-critic → tag → push wrfgpu home=latest.
