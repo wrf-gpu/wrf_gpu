@@ -1,0 +1,1472 @@
+{
+  "proof": "v0.13 RRTMG leading-column tiling CPU inertness",
+  "branch": "worker/gpt/v013-rrtmg-coltile",
+  "mode": "inertness",
+  "platform": "cpu",
+  "leading_shape": [
+    2,
+    3
+  ],
+  "ncol": 6,
+  "reference": "public solver with column tiling disabled (_*_COLUMN_TILING=False, _*_COLUMN_TILE_COLS=0)",
+  "candidates": {
+    "default": "module default column tiling enabled; one effective tile on this small fixture",
+    "forced_tile4_pad": "column tiling enabled with tile_cols=4; two scan tiles and two padded columns"
+  },
+  "defaults": {
+    "sw_column_tile_cols": 16384,
+    "lw_column_tile_cols": 16384
+  },
+  "sw": {
+    "rows": [
+      {
+        "case": "sw",
+        "candidate": "default",
+        "with_clear_sky": false,
+        "topography": false,
+        "requested_tile_cols": 16384,
+        "effective_tile_cols": 6,
+        "n_tiles": 1,
+        "pad_cols": 0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_direct": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse_fraction": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "topographic_correction_factor": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      },
+      {
+        "case": "sw",
+        "candidate": "forced_tile4_pad",
+        "with_clear_sky": false,
+        "topography": false,
+        "requested_tile_cols": 4,
+        "effective_tile_cols": 4,
+        "n_tiles": 2,
+        "pad_cols": 2,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_direct": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse_fraction": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "topographic_correction_factor": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      },
+      {
+        "case": "sw",
+        "candidate": "default",
+        "with_clear_sky": true,
+        "topography": false,
+        "requested_tile_cols": 16384,
+        "effective_tile_cols": 6,
+        "n_tiles": 1,
+        "pad_cols": 0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_direct": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse_fraction": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "topographic_correction_factor": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      },
+      {
+        "case": "sw",
+        "candidate": "forced_tile4_pad",
+        "with_clear_sky": true,
+        "topography": false,
+        "requested_tile_cols": 4,
+        "effective_tile_cols": 4,
+        "n_tiles": 2,
+        "pad_cols": 2,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_direct": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse_fraction": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "topographic_correction_factor": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      },
+      {
+        "case": "sw",
+        "candidate": "forced_tile4_pad_topography",
+        "with_clear_sky": true,
+        "topography": true,
+        "requested_tile_cols": 4,
+        "effective_tile_cols": 4,
+        "n_tiles": 2,
+        "pad_cols": 2,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_direct": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_diffuse_fraction": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "topographic_correction_factor": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_absorbed_topographic": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      }
+    ],
+    "all_bit_identical": true,
+    "max_abs_over_all": 0.0,
+    "max_rel_over_all": 0.0
+  },
+  "lw": {
+    "rows": [
+      {
+        "case": "lw",
+        "candidate": "default",
+        "with_clear_sky": false,
+        "requested_tile_cols": 16384,
+        "effective_tile_cols": 6,
+        "n_tiles": 1,
+        "pad_cols": 0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_net_heating": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_emission": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      },
+      {
+        "case": "lw",
+        "candidate": "forced_tile4_pad",
+        "with_clear_sky": false,
+        "requested_tile_cols": 4,
+        "effective_tile_cols": 4,
+        "n_tiles": 2,
+        "pad_cols": 2,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_net_heating": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_emission": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      },
+      {
+        "case": "lw",
+        "candidate": "default",
+        "with_clear_sky": true,
+        "requested_tile_cols": 16384,
+        "effective_tile_cols": 6,
+        "n_tiles": 1,
+        "pad_cols": 0,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_net_heating": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_emission": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      },
+      {
+        "case": "lw",
+        "candidate": "forced_tile4_pad",
+        "with_clear_sky": true,
+        "requested_tile_cols": 4,
+        "effective_tile_cols": 4,
+        "n_tiles": 2,
+        "pad_cols": 2,
+        "max_abs": 0.0,
+        "max_rel": 0.0,
+        "bit_equal": true,
+        "per_field": {
+          "heating_rate": {
+            "shape": [
+              2,
+              3,
+              16
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "toa_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_down": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_up": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "column_net_heating": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "surface_emission": {
+            "shape": [
+              2,
+              3
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_down": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          },
+          "clear_flux_up": {
+            "shape": [
+              2,
+              3,
+              18
+            ],
+            "dtype": "float64",
+            "max_abs": 0.0,
+            "max_rel": 0.0,
+            "bit_equal": true
+          }
+        }
+      }
+    ],
+    "all_bit_identical": true,
+    "max_abs_over_all": 0.0,
+    "max_rel_over_all": 0.0
+  },
+  "verdict": {
+    "sw_all_sky_bit_identical": true,
+    "sw_clear_sky_bit_identical": true,
+    "lw_all_sky_bit_identical": true,
+    "lw_clear_sky_bit_identical": true,
+    "all_required_cases_bit_identical": true,
+    "max_abs_over_all": 0.0,
+    "max_rel_over_all": 0.0
+  },
+  "gpu_proof_command": "XLA_PYTHON_CLIENT_PREALLOCATE=false PYTHONPATH=src python proofs/v013/rrtmg_column_tile.py --mode vram-suite --ncol 65536 --nrep 3 --tile-cols 16384"
+}

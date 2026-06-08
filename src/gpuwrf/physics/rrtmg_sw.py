@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from functools import partial
 from typing import NamedTuple
 
@@ -83,6 +84,35 @@ _SW_GPOINT_CHUNK_BANDS = 1
 # upfront-construction path in fp64 (proofs/v013).  Set False for the
 # upfront-construction path; the oracle entry always builds the full arrays.
 _SW_TAUMOL_CHUNK = True
+
+
+def _env_int(name: str, default: int) -> int:
+    """Reads integer tuning knobs without making import-time env errors fatal."""
+
+    try:
+        return int(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    """Reads boolean tuning knobs without making import-time env errors fatal."""
+
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
+# Column tiling over the leading horizontal/batch axes.  Band/g-point and
+# taumol/optics chunking lower per-column spectral transients, but a full 1 km
+# nest still materialises LW/SW temporaries for every column if the public solver
+# sees all columns at once.  The production entry point therefore flattens the
+# arbitrary leading shape to columns and scans over fixed-size column tiles.
+# Set either `_SW_COLUMN_TILING=False` or `_SW_COLUMN_TILE_COLS=0` for the
+# whole-column reference path used by proofs.
+_SW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_SW_COLUMN_TILING", True)
+_SW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_SW_COLUMN_TILE_COLS", 16384))
 
 
 @jax.tree_util.register_pytree_node_class
@@ -347,6 +377,270 @@ def _solar_source_scale(state: RRTMGSWColumnState, dtype) -> jnp.ndarray:
 
     scale = jnp.asarray(state.solar_source_scale, dtype=dtype)
     return jnp.broadcast_to(scale, state.coszen.shape).astype(dtype)
+
+
+def _column_count(leading_shape: tuple[int, ...]) -> int:
+    """Returns the static number of flattened columns for a leading shape."""
+
+    return int(np.prod(leading_shape, dtype=np.int64)) if leading_shape else 1
+
+
+def _flatten_layer_field(arr, leading_shape: tuple[int, ...], ncol: int):
+    """Flattens arbitrary leading axes of a column-layer field to `(ncol, nz)`."""
+
+    arr = jnp.asarray(arr)
+    return jnp.reshape(arr, (ncol,) + arr.shape[len(leading_shape):])
+
+
+def _flatten_surface_field(arr, leading_shape: tuple[int, ...], ncol: int):
+    """Flattens a surface/column field when it carries the state leading axes."""
+
+    arr = jnp.asarray(arr)
+    if arr.shape == ():
+        return jnp.reshape(arr, (ncol,)) if not leading_shape else arr
+    if leading_shape and arr.shape[: len(leading_shape)] == leading_shape:
+        return jnp.reshape(arr, (ncol,) + arr.shape[len(leading_shape):])
+    return arr
+
+
+def _pad_leading_columns(arr, ncol: int, padded_ncol: int):
+    """Pads a flattened leading column axis by repeating the last real column."""
+
+    arr = jnp.asarray(arr)
+    if arr.shape == () or arr.shape[0] != ncol or padded_ncol == ncol:
+        return arr
+    pad_cols = padded_ncol - ncol
+    tail = jnp.broadcast_to(arr[-1:], (pad_cols,) + arr.shape[1:])
+    return jnp.concatenate((arr, tail), axis=0)
+
+
+def _slice_leading_columns(arr, start, tile_cols: int, padded_ncol: int):
+    """Slices one fixed-size tile from arrays that carry the padded column axis."""
+
+    arr = jnp.asarray(arr)
+    if arr.shape == () or arr.shape[0] != padded_ncol:
+        return arr
+    zero = jnp.zeros((), dtype=start.dtype)
+    starts = [zero] * arr.ndim
+    starts[0] = start
+    sizes = list(arr.shape)
+    sizes[0] = tile_cols
+    return lax.dynamic_slice(arr, starts, sizes)
+
+
+def _flatten_sw_state(state: RRTMGSWColumnState, leading_shape: tuple[int, ...], ncol: int) -> RRTMGSWColumnState:
+    """Flattens a SW state from `leading_shape + (nz,)` to `(ncol, nz)`."""
+
+    return state.replace(
+        T=_flatten_layer_field(state.T, leading_shape, ncol),
+        p=_flatten_layer_field(state.p, leading_shape, ncol),
+        qv=_flatten_layer_field(state.qv, leading_shape, ncol),
+        qc=_flatten_layer_field(state.qc, leading_shape, ncol),
+        qi=_flatten_layer_field(state.qi, leading_shape, ncol),
+        qs=_flatten_layer_field(state.qs, leading_shape, ncol),
+        qg=_flatten_layer_field(state.qg, leading_shape, ncol),
+        cloud_fraction=_flatten_layer_field(state.cloud_fraction, leading_shape, ncol),
+        dz=_flatten_layer_field(state.dz, leading_shape, ncol),
+        rho=_flatten_layer_field(state.rho, leading_shape, ncol),
+        surface_albedo=_flatten_surface_field(state.surface_albedo, leading_shape, ncol),
+        coszen=_flatten_surface_field(state.coszen, leading_shape, ncol),
+        solar_source_scale=_flatten_surface_field(state.solar_source_scale, leading_shape, ncol),
+    )
+
+
+def _pad_sw_state(state: RRTMGSWColumnState, ncol: int, padded_ncol: int) -> RRTMGSWColumnState:
+    """Pads all flattened SW state leaves that carry the leading column axis."""
+
+    return state.replace(
+        T=_pad_leading_columns(state.T, ncol, padded_ncol),
+        p=_pad_leading_columns(state.p, ncol, padded_ncol),
+        qv=_pad_leading_columns(state.qv, ncol, padded_ncol),
+        qc=_pad_leading_columns(state.qc, ncol, padded_ncol),
+        qi=_pad_leading_columns(state.qi, ncol, padded_ncol),
+        qs=_pad_leading_columns(state.qs, ncol, padded_ncol),
+        qg=_pad_leading_columns(state.qg, ncol, padded_ncol),
+        cloud_fraction=_pad_leading_columns(state.cloud_fraction, ncol, padded_ncol),
+        surface_albedo=_pad_leading_columns(state.surface_albedo, ncol, padded_ncol),
+        coszen=_pad_leading_columns(state.coszen, ncol, padded_ncol),
+        dz=_pad_leading_columns(state.dz, ncol, padded_ncol),
+        rho=_pad_leading_columns(state.rho, ncol, padded_ncol),
+        solar_source_scale=_pad_leading_columns(state.solar_source_scale, ncol, padded_ncol),
+    )
+
+
+def _slice_sw_state(state: RRTMGSWColumnState, start, tile_cols: int, padded_ncol: int) -> RRTMGSWColumnState:
+    """Slices a fixed-size SW state tile from a padded flattened state."""
+
+    return state.replace(
+        T=_slice_leading_columns(state.T, start, tile_cols, padded_ncol),
+        p=_slice_leading_columns(state.p, start, tile_cols, padded_ncol),
+        qv=_slice_leading_columns(state.qv, start, tile_cols, padded_ncol),
+        qc=_slice_leading_columns(state.qc, start, tile_cols, padded_ncol),
+        qi=_slice_leading_columns(state.qi, start, tile_cols, padded_ncol),
+        qs=_slice_leading_columns(state.qs, start, tile_cols, padded_ncol),
+        qg=_slice_leading_columns(state.qg, start, tile_cols, padded_ncol),
+        cloud_fraction=_slice_leading_columns(state.cloud_fraction, start, tile_cols, padded_ncol),
+        surface_albedo=_slice_leading_columns(state.surface_albedo, start, tile_cols, padded_ncol),
+        coszen=_slice_leading_columns(state.coszen, start, tile_cols, padded_ncol),
+        dz=_slice_leading_columns(state.dz, start, tile_cols, padded_ncol),
+        rho=_slice_leading_columns(state.rho, start, tile_cols, padded_ncol),
+        solar_source_scale=_slice_leading_columns(state.solar_source_scale, start, tile_cols, padded_ncol),
+    )
+
+
+def _flatten_sw_topography(
+    topography: RRTMGSWTopographyState | None,
+    leading_shape: tuple[int, ...],
+    ncol: int,
+) -> RRTMGSWTopographyState | None:
+    """Flattens optional SW topography fields over the same column axis."""
+
+    if topography is None:
+        return None
+    return RRTMGSWTopographyState(
+        latitude_deg=_flatten_surface_field(topography.latitude_deg, leading_shape, ncol),
+        declination_rad=_flatten_surface_field(topography.declination_rad, leading_shape, ncol),
+        hour_angle_rad=_flatten_surface_field(topography.hour_angle_rad, leading_shape, ncol),
+        slope_rad=_flatten_surface_field(topography.slope_rad, leading_shape, ncol),
+        slope_azimuth_rad=_flatten_surface_field(topography.slope_azimuth_rad, leading_shape, ncol),
+        shadow_mask=_flatten_surface_field(topography.shadow_mask, leading_shape, ncol),
+    )
+
+
+def _pad_sw_topography(
+    topography: RRTMGSWTopographyState | None,
+    ncol: int,
+    padded_ncol: int,
+) -> RRTMGSWTopographyState | None:
+    """Pads optional SW topography fields that carry the leading column axis."""
+
+    if topography is None:
+        return None
+    return RRTMGSWTopographyState(
+        latitude_deg=_pad_leading_columns(topography.latitude_deg, ncol, padded_ncol),
+        declination_rad=_pad_leading_columns(topography.declination_rad, ncol, padded_ncol),
+        hour_angle_rad=_pad_leading_columns(topography.hour_angle_rad, ncol, padded_ncol),
+        slope_rad=_pad_leading_columns(topography.slope_rad, ncol, padded_ncol),
+        slope_azimuth_rad=_pad_leading_columns(topography.slope_azimuth_rad, ncol, padded_ncol),
+        shadow_mask=_pad_leading_columns(topography.shadow_mask, ncol, padded_ncol),
+    )
+
+
+def _slice_sw_topography(
+    topography: RRTMGSWTopographyState | None,
+    start,
+    tile_cols: int,
+    padded_ncol: int,
+) -> RRTMGSWTopographyState | None:
+    """Slices optional SW topography for one fixed-size column tile."""
+
+    if topography is None:
+        return None
+    return RRTMGSWTopographyState(
+        latitude_deg=_slice_leading_columns(topography.latitude_deg, start, tile_cols, padded_ncol),
+        declination_rad=_slice_leading_columns(topography.declination_rad, start, tile_cols, padded_ncol),
+        hour_angle_rad=_slice_leading_columns(topography.hour_angle_rad, start, tile_cols, padded_ncol),
+        slope_rad=_slice_leading_columns(topography.slope_rad, start, tile_cols, padded_ncol),
+        slope_azimuth_rad=_slice_leading_columns(topography.slope_azimuth_rad, start, tile_cols, padded_ncol),
+        shadow_mask=_slice_leading_columns(topography.shadow_mask, start, tile_cols, padded_ncol),
+    )
+
+
+def _zero_sw_column_result(total_cols: int, nlayers: int, dtype, with_clear_sky: bool) -> RRTMGSWColumnResult:
+    """Allocates the fixed-shape scan carry for SW tiled column outputs."""
+
+    layer = jnp.zeros((total_cols, nlayers), dtype=dtype)
+    interface = jnp.zeros((total_cols, nlayers + 2), dtype=dtype)
+    column = jnp.zeros((total_cols,), dtype=dtype)
+    clear_down = jnp.zeros_like(interface) if with_clear_sky else None
+    clear_up = jnp.zeros_like(interface) if with_clear_sky else None
+    return RRTMGSWColumnResult(
+        heating_rate=layer,
+        flux_down=interface,
+        flux_up=interface,
+        toa_down=column,
+        toa_up=column,
+        surface_down=column,
+        surface_up=column,
+        column_absorbed=column,
+        surface_absorbed=column,
+        surface_direct=column,
+        surface_diffuse=column,
+        surface_diffuse_fraction=column,
+        topographic_correction_factor=column,
+        surface_down_topographic=column,
+        surface_up_topographic=column,
+        surface_absorbed_topographic=column,
+        clear_flux_down=clear_down,
+        clear_flux_up=clear_up,
+    )
+
+
+def _update_tile(carry, tile, start):
+    """Scatters one fixed-size tile into a padded scan-carry field."""
+
+    zero = jnp.zeros((), dtype=start.dtype)
+    starts = [zero] * carry.ndim
+    starts[0] = start
+    return lax.dynamic_update_slice(carry, tile, starts)
+
+
+def _scatter_sw_result(carry: RRTMGSWColumnResult, tile: RRTMGSWColumnResult, start) -> RRTMGSWColumnResult:
+    """Scatters one SW tile result into the full padded result carry."""
+
+    clear_down = None if carry.clear_flux_down is None else _update_tile(carry.clear_flux_down, tile.clear_flux_down, start)
+    clear_up = None if carry.clear_flux_up is None else _update_tile(carry.clear_flux_up, tile.clear_flux_up, start)
+    return RRTMGSWColumnResult(
+        heating_rate=_update_tile(carry.heating_rate, tile.heating_rate, start),
+        flux_down=_update_tile(carry.flux_down, tile.flux_down, start),
+        flux_up=_update_tile(carry.flux_up, tile.flux_up, start),
+        toa_down=_update_tile(carry.toa_down, tile.toa_down, start),
+        toa_up=_update_tile(carry.toa_up, tile.toa_up, start),
+        surface_down=_update_tile(carry.surface_down, tile.surface_down, start),
+        surface_up=_update_tile(carry.surface_up, tile.surface_up, start),
+        column_absorbed=_update_tile(carry.column_absorbed, tile.column_absorbed, start),
+        surface_absorbed=_update_tile(carry.surface_absorbed, tile.surface_absorbed, start),
+        surface_direct=_update_tile(carry.surface_direct, tile.surface_direct, start),
+        surface_diffuse=_update_tile(carry.surface_diffuse, tile.surface_diffuse, start),
+        surface_diffuse_fraction=_update_tile(carry.surface_diffuse_fraction, tile.surface_diffuse_fraction, start),
+        topographic_correction_factor=_update_tile(carry.topographic_correction_factor, tile.topographic_correction_factor, start),
+        surface_down_topographic=_update_tile(carry.surface_down_topographic, tile.surface_down_topographic, start),
+        surface_up_topographic=_update_tile(carry.surface_up_topographic, tile.surface_up_topographic, start),
+        surface_absorbed_topographic=_update_tile(carry.surface_absorbed_topographic, tile.surface_absorbed_topographic, start),
+        clear_flux_down=clear_down,
+        clear_flux_up=clear_up,
+    )
+
+
+def _unflatten_sw_result(result: RRTMGSWColumnResult, leading_shape: tuple[int, ...], ncol: int) -> RRTMGSWColumnResult:
+    """Restores SW result fields from flat columns to the caller's leading shape."""
+
+    def restore(arr):
+        if arr is None:
+            return None
+        arr = arr[:ncol]
+        return jnp.reshape(arr, leading_shape + arr.shape[1:])
+
+    return RRTMGSWColumnResult(
+        heating_rate=restore(result.heating_rate),
+        flux_down=restore(result.flux_down),
+        flux_up=restore(result.flux_up),
+        toa_down=restore(result.toa_down),
+        toa_up=restore(result.toa_up),
+        surface_down=restore(result.surface_down),
+        surface_up=restore(result.surface_up),
+        column_absorbed=restore(result.column_absorbed),
+        surface_absorbed=restore(result.surface_absorbed),
+        surface_direct=restore(result.surface_direct),
+        surface_diffuse=restore(result.surface_diffuse),
+        surface_diffuse_fraction=restore(result.surface_diffuse_fraction),
+        topographic_correction_factor=restore(result.topographic_correction_factor),
+        surface_down_topographic=restore(result.surface_down_topographic),
+        surface_up_topographic=restore(result.surface_up_topographic),
+        surface_absorbed_topographic=restore(result.surface_absorbed_topographic),
+        clear_flux_down=restore(result.clear_flux_down),
+        clear_flux_up=restore(result.clear_flux_up),
+    )
 
 
 def wrf_topographic_sw_correction_factor(
@@ -1976,6 +2270,43 @@ def _shortwave_impl(
     )
 
 
+def _shortwave_column_tiled_impl(
+    state: RRTMGSWColumnState,
+    tables: RRTMGTableBundle,
+    debug: bool,
+    topography: RRTMGSWTopographyState | None = None,
+    with_clear_sky: bool = False,
+) -> RRTMGSWColumnResult:
+    """Runs the SW solve over fixed-size flattened column tiles."""
+
+    if not _SW_COLUMN_TILING or _SW_COLUMN_TILE_COLS <= 0:
+        return _shortwave_impl(state, tables, debug, topography, with_clear_sky)
+
+    leading_shape = state.p.shape[:-1]
+    ncol = _column_count(leading_shape)
+    tile_cols = min(max(int(_SW_COLUMN_TILE_COLS), 1), ncol)
+    n_tiles = (ncol + tile_cols - 1) // tile_cols
+    padded_ncol = n_tiles * tile_cols
+    nlayers = state.p.shape[-1]
+    out_dtype = jnp.result_type(state.p.dtype, jnp.float32)
+
+    flat_state = _flatten_sw_state(state, leading_shape, ncol)
+    flat_topography = _flatten_sw_topography(topography, leading_shape, ncol)
+    padded_state = _pad_sw_state(flat_state, ncol, padded_ncol)
+    padded_topography = _pad_sw_topography(flat_topography, ncol, padded_ncol)
+    init = _zero_sw_column_result(padded_ncol, nlayers, out_dtype, with_clear_sky)
+
+    def body(carry, tile_index):
+        start = tile_index * tile_cols
+        tile_state = _slice_sw_state(padded_state, start, tile_cols, padded_ncol)
+        tile_topography = _slice_sw_topography(padded_topography, start, tile_cols, padded_ncol)
+        tile_result = _shortwave_impl(tile_state, tables, debug, tile_topography, with_clear_sky)
+        return _scatter_sw_result(carry, tile_result, start), None
+
+    tiled, _ = lax.scan(body, init, jnp.arange(n_tiles, dtype=jnp.int32))
+    return _unflatten_sw_result(tiled, leading_shape, ncol)
+
+
 def compute_rrtmg_sw_intermediates(
     state: RRTMGSWColumnState,
     tables: RRTMGTableBundle = RRTMG_TABLES,
@@ -2176,7 +2507,7 @@ def solve_rrtmg_sw_column(
     main all-sky flux outputs are byte-identical regardless of this flag.
     """
 
-    return _shortwave_impl(state, tables, debug, topography, with_clear_sky)
+    return _shortwave_column_tiled_impl(state, tables, debug, topography, with_clear_sky)
 
 
 @jax.jit
