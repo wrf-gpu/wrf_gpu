@@ -1,0 +1,108 @@
+{
+  "title": "v0.13 Tier2 compile/runtime-hygiene proof (CPU)",
+  "knobs_added": {
+    "parallel_compile": "GPUWRF_XLA_PARALLEL_COMPILE (standalone, default OFF)",
+    "recompile_hygiene": "trace-count audit of hot @jit entrypoints"
+  },
+  "claim1_default_unchanged": {
+    "import_clean_no_abort": true,
+    "two_processes_bit_identical": true,
+    "no_xla_flags_injected_at_import": true,
+    "child1": {
+      "xla_flags": "",
+      "autotune_enabled": false,
+      "parallel_enabled": false,
+      "autotune_opted_in": false,
+      "parallel_opted_in": false,
+      "result_hash": "8395b49e11804e7de5d2f202d3ac25a72dd572a050e35ac4981a48691369b83e",
+      "result_shape": [
+        48,
+        48
+      ],
+      "dtype": "float64"
+    },
+    "child2": {
+      "xla_flags": "",
+      "autotune_enabled": false,
+      "parallel_enabled": false,
+      "autotune_opted_in": false,
+      "parallel_opted_in": false,
+      "result_hash": "8395b49e11804e7de5d2f202d3ac25a72dd572a050e35ac4981a48691369b83e",
+      "result_shape": [
+        48,
+        48
+      ],
+      "dtype": "float64"
+    },
+    "child_returncodes": [
+      0,
+      0
+    ]
+  },
+  "claim2_parallel_flag_graceful_drop": {
+    "default_noop": {
+      "enabled": false,
+      "opted_in": false,
+      "source": "not-opted-in",
+      "xla_flags_unchanged": true
+    },
+    "cpu_pin_no_inject": {
+      "enabled": false,
+      "opted_in": true,
+      "reason": "platform-pinned:cpu",
+      "xla_flags_unchanged": true
+    },
+    "probe_reject_drops_flag": {
+      "enabled": false,
+      "opted_in": true,
+      "rejected_flags": [
+        "--xla_gpu_force_compilation_parallelism=4"
+      ],
+      "injected_flags": null,
+      "xla_flags_unchanged": true,
+      "did_not_abort": true
+    },
+    "probe_accept_injects_one": {
+      "enabled": true,
+      "injected_flags": [
+        "--xla_gpu_force_compilation_parallelism=4"
+      ],
+      "xla_flags": "--xla_gpu_force_compilation_parallelism=4"
+    },
+    "operator_preset_not_clobbered": {
+      "enabled": false,
+      "reason": "CUDA_VISIBLE_DEVICES-set;operator-preset",
+      "single_occurrence": true
+    }
+  },
+  "claim3_recompile_count": {
+    "intervals": [
+      1,
+      7,
+      13,
+      19,
+      7,
+      25
+    ],
+    "traces_hygienic_int32": 1,
+    "traces_naive_pyint_added": 2,
+    "recompiles_avoided": 1,
+    "identical_results_int32_vs_pyint": true,
+    "note": "operational_mode._advance_chunk uses the hygienic int32 pattern AND its callers wrap start_step in jnp.asarray(int32); this proof shows the trace count is 1 (reused across all intervals) and the naive python-int caller would add a 2nd trace -- the recompile this hygiene avoids."
+  },
+  "claim4_gpu_import_clean": "Asserted by tests/test_v0130_compile_speed.py::test_package_import_does_not_inject_xla_flags_by_default and the new tests/test_v013_compile_perf2.py parallel-compile guards. The default `import gpuwrf` injects no --xla_gpu_* flag and never aborts.",
+  "gpu_live_verification": {
+    "note": "Verified on the real GPU (CudaDevice id=0) on 2026-06-08 with a tiny-VRAM (mem_fraction=0.05) coordinated run while a 2-way GPU job was active; kept short (backend-init only, no forecast compile).",
+    "default_import_backend": "gpu",
+    "default_import_xla_flags": "",
+    "default_import_autotune_enabled": false,
+    "default_import_parallel_enabled": false,
+    "default_import_clean_no_abort": true,
+    "parallel_flag_probe_on_real_build": "accepted",
+    "parallel_flag_probe_flag": "--xla_gpu_force_compilation_parallelism=4",
+    "meaning": "The default GPU path is byte-unchanged (no flag injected, no abort) AND the real build's probe ACCEPTS the parallel-compile flag, so the opt-in (GPUWRF_XLA_PARALLEL_COMPILE) genuinely injects+uses it on this hardware. The GPU compile-time wall-clock win from parallel compile is a documented follow-up (not measured here to avoid contending with the running 2-way job)."
+  },
+  "backend": "cpu",
+  "numerically_inert": true,
+  "passed": true
+}
