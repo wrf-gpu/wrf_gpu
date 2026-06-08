@@ -96,7 +96,7 @@ one status:
    ```
    physics.mp_physics=28 (aerosol-aware Thompson (water/ice-friendly)):
    recognized WRF v4 microphysics scheme, NOT YET IMPLEMENTED in the GPU port.
-   Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 16. ...
+   Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 14, 16. ...
    ```
 
    (A value that is not a WRF option at all — e.g. `mp_physics=99` — fails closed
@@ -155,6 +155,7 @@ accepted for a single-column / reference comparison but **refused operationally*
 | 6  | WSM6 | OPERATIONAL | qv..qg; savepoint-parity |
 | 8  | Thompson | OPERATIONAL | **default**; +qni/qnr; Tier-4 RMSE vs CPU-WRF corpus |
 | 10 | Morrison two-moment | OPERATIONAL | +qni/qns/qnr/qng; savepoint-parity |
+| 14 | WDM5 | OPERATIONAL | double-moment 5-class (WDM warm-rain + WSM5 ice, no graupel/hail); reuses WDM6 Nn/Nc/Nr leaves; 6/6 pristine-WRF fp64 oracle |
 | 16 | WDM6 | OPERATIONAL | +qnn/qnc/qnr (additive State leaves Nc/Nn); savepoint-parity |
 
 WSM7 (`mp=24`) and WDM7 are NOT listed: WSM7's column kernel is ported and
@@ -236,7 +237,7 @@ RRTMG-derived regardless of which SW/LW θ-tendency scheme is active.
 
 | Parameter            | OPERATIONAL | REFERENCE-ONLY |
 |----------------------|-------------|----------------|
-| `mp_physics`         | 9 | 0 |
+| `mp_physics`         | 10 | 0 |
 | `cu_physics`         | 5 | 3 |
 | `bl_pbl_physics`     | 7 | 0 |
 | `sf_sfclay_physics`  | 7 | 0 |
