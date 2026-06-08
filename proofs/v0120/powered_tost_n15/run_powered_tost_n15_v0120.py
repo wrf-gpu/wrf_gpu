@@ -170,20 +170,30 @@ def check_finite_all_fields(path: Path, fields=FIELDS + ("U", "V")) -> tuple[boo
 
 def prepare_merged_run_root() -> Path:
     """
-    Create per-case dirs that Gen2Run / execute_daily_pipeline can use:
-      - init files (wrfinput_d01/d02, wrfbdy_d01, namelist.*) ← wrf_l2
-      - d01 wrfout history (73 files)                          ← wrf_l2_backfill_output
-      - d02 wrfout t=0 snapshot (first file)                   ← wrf_l2_backfill_output
+    Create per-case dirs the STANDALONE LIVE-NESTED driver consumes.
+
+    v0.13 KI-5 wrfbdy fix: the per-case GPU forecast now runs through
+    ``gpuwrf.integration.nested_pipeline.execute_nested_pipeline`` (max_dom=2),
+    the SAME native-init path the production nested CLI uses.  That driver needs
+    ONLY real.exe's own outputs -- ``wrfinput_d01`` + ``wrfinput_d02`` +
+    ``wrfbdy_d01`` + ``namelist.input`` -- which the wrf_l2 corpus dirs retain.
+    d01 runs standalone (LBC from wrfbdy_d01); d02 is IC-only and gets its lateral
+    boundary LIVE from the parent d01 each parent step (NO wrfbdy_d02 -- a nest
+    never has one).  So NO CPU-WRF wrfout history is required here, which is what
+    made the old wrfout-replay path fail (wrfout is purged from most corpus dirs).
+
+    The CPU-WRF d02 truth used for scoring is read directly from ``L2_CPU_ROOT``
+    by the orchestrator/scorer, NOT from this merged root.
+
     All files are created as symlinks; existing symlinks are reused.
     """
     MERGED_RUN_ROOT.mkdir(parents=True, exist_ok=True)
     for run_id in CASE_IDS:
         merged_dir = MERGED_RUN_ROOT / run_id
         merged_dir.mkdir(parents=True, exist_ok=True)
-        init_dir     = L2_INIT_ROOT / run_id
-        backfill_dir = L2_CPU_ROOT  / run_id
+        init_dir = L2_INIT_ROOT / run_id
 
-        # Init files
+        # real.exe init/LBC files -- the ONLY inputs the live-nested driver needs.
         for fname in ("wrfinput_d01", "wrfinput_d02", "wrfbdy_d01",
                       "namelist.input", "namelist.output"):
             src = init_dir / fname
@@ -191,21 +201,6 @@ def prepare_merged_run_root() -> Path:
                 dest = merged_dir / fname
                 if not dest.exists():
                     dest.symlink_to(src)
-
-        # d01 wrfout history (boundary forcing for nested run)
-        for src in sorted(backfill_dir.glob("wrfout_d01_*")):
-            if src.is_file():
-                dest = merged_dir / src.name
-                if not dest.exists():
-                    dest.symlink_to(src)
-
-        # d02 wrfout t=0 (metrics_source for build_replay_case)
-        d02_sorted = sorted(backfill_dir.glob("wrfout_d02_*"))
-        if d02_sorted:
-            src = d02_sorted[0]
-            dest = merged_dir / src.name
-            if not dest.exists():
-                dest.symlink_to(src)
 
     return MERGED_RUN_ROOT
 
@@ -265,7 +260,11 @@ def run_gpu_forecast(run_id: str, gpu_out_dir: Path, proof_subdir: Path) -> dict
 def validate_gpu_output(gpu_out_dir: Path, run_id: str) -> dict:
     gpu_files = sorted(gpu_out_dir.glob("wrfout_d02_*"))
     n_files = len(gpu_files)
-    expected = FORECAST_HOURS + 1
+    # The standalone live-nested driver writes one hourly d02 wrfout per forecast
+    # hour (leads 1..FORECAST_HOURS); it does NOT emit a t=0 frame (matching the
+    # daily-pipeline writer).  The scorer only scores leads in (0, FORECAST_HOURS]
+    # anyway, so FORECAST_HOURS hourly files is the complete, correct expectation.
+    expected = FORECAST_HOURS
     nonfinite_hours: list[str] = []
     dtype_fp64 = False
 
@@ -733,7 +732,7 @@ def main(argv=None) -> int:
         gpu_forecast_result: dict = {"elapsed_s": 0.0, "returncode": 0}
         if not args.skip_gpu:
             existing_gpu = list(gpu_dir.glob("wrfout_d02_*"))
-            if len(existing_gpu) >= FORECAST_HOURS + 1:
+            if len(existing_gpu) >= FORECAST_HOURS:
                 print(f"[skip-run] GPU output exists ({len(existing_gpu)} files)", flush=True)
                 gpu_forecast_result = {"run_id": run_id, "returncode": 0, "elapsed_s": 0.0, "skipped": True}
             else:
