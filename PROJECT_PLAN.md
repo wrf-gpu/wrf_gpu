@@ -1,37 +1,51 @@
 # Project Plan
 
-Status (2026-06-04): **v0.9.0 release candidate.** The project completed the 2026-05-28 reset
-(M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt the dycore honestly,
-and advanced through the incremental version chain. v0.9.0 is a **standalone, JAX-native,
-single-GPU WRF v4 ARW forecast system for standard regional configurations** on one RTX 5090:
-**native real-init** (`wrfinput`/`wrfbdy` assembled from met_em-stage forcing, no `real.exe`, no
-CPU-WRF artifact for IC/LBC — proven equivalent to `real.exe` at t=0), a **GPU-operational physics
-menu** with a **fail-closed boundary** on everything not yet ported, a **WRF-compatible namelist**,
-and coupled validation vs CPU-WRF on Canary d02 (3 km) + d03 (1 km). The canonical user-facing scope
-statement is the top of [`README.md`](README.md) (rewritten to the v0.9.0 definition).
+Status (2026-06-08): **v0.13.0 "Validate & Accelerate" release-doc prep.** The project completed
+the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
+the dycore honestly, and advanced through the incremental version chain. The current system is a
+**standalone, JAX-native, single-GPU WRF-compatible v4 ARW forecast system for standard regional
+configurations** on one RTX 5090: **native real-init** (`wrfinput`/`wrfbdy` assembled from
+met_em-stage forcing, no `real.exe`, no CPU-WRF artifact for IC/LBC — proven equivalent to
+`real.exe` at t=0), a **GPU-operational physics menu** with a **fail-closed boundary** on
+everything not yet ported, a **WRF-compatible namelist**, live multi-domain nesting, restart,
+conservation budgets, and a standalone out-of-box CLI. **It is a WRF-compatible reimplementation
+(not a Fortran-source port) and a transparent research artifact (not a full WRF replacement).**
+The canonical user-facing scope statement is the top of [`README.md`](README.md).
 
-- **Version chain:** v0.1.0 single-domain replay → v0.3.0 native metgrid → v0.4.0 native real-init
-  → v0.6.0 expanded physics menu → **v0.9.0** standalone consolidation. Closeouts in
-  [`.agent/decisions/`](.agent/decisions/) (`V0.4.0-CLOSE.md`, `V0.6.0-CLOSE.md`, …).
+- **Version chain:** v0.1.0 replay → v0.3.0 native metgrid → v0.4.0 native real-init → v0.6.0
+  expanded physics menu → v0.9.0 standalone consolidation → v0.10.0 Thompson-sedimentation →
+  v0.11.0 live nesting/restart/conservation/MYNN-EDMF/topo-slope-radiation/slope-diffusion →
+  v0.12.0 standalone out-of-box CLI + persistent JIT cache + fail-closed catalog + PSFC fix +
+  equivalence demo → **v0.13.0 "Validate & Accelerate"** (RRTMG VRAM-floor chunking → GWD-on-nested
+  default-on, compile-speed re-land GPU-validated, MYJ+Janjic operational, moisture flux-advection
+  into RK3, multi-GPU fake-mesh sharding, clear-sky diagnostics, RRTM-LW skeptic-hardening,
+  outsider-reproducibility + community-validation). Closeouts in
+  [`.agent/decisions/`](.agent/decisions/); v0.13 roadmap = `.agent/decisions/V0130-ROADMAP.md`.
 - **GPU-operational menu (scan-wired, WRF-oracle-gated):** MP {1 Kessler, 2 Lin, 3 WSM3, 4 WSM5,
-  6 WSM6, 8 Thompson, 10 Morrison, 16 WDM6}; PBL {1 YSU, 5 MYNN, 7 ACM2, 8 BouLac}; SFCLAY
-  {1 revised-MM5, 5 MYNN-SL, 7 Pleim-Xiu}; CU {1 KF, 2 BMJ, 3 Grell-Freitas, 6 Tiedtke}; RRTMG
-  SW+LW; LSM {2 Noah-classic, 4 Noah-MP}. Source of truth:
-  [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py) +
-  `_SCAN_WIRED_OPTIONS` in [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py).
-- **Parity-proven but fail-closed (recognized, loudly rejected):** MYJ PBL (`bl=2`) + Janjic-SL
-  (`sf=2`), New-Tiedtke (`cu=16`), Dudhia SW (`ra_sw=1`), classic RRTM LW (`ra_lw=1`).
-- **Honest qualifiers:** the binding TOST equivalence (T2/U10/V10, ADR-029 margins) ships at
-  **n=15 — the binding floor, honestly underpowered** vs the n≈27 target; the coupled-skill
-  validation runs the **replay harness** (native-init is proven separately at t=0); diffusion is
-  **flat-slab** (no map-factor / coordinate-slope deformation); two-way nesting / DFI / FDDA /
-  aerosol-MP are post-0.9.0; a documented near-surface westerly excess is a carried dynamical (not
-  fidelity) residual. Skill + speedup numbers are filled by the release worker from the validation
-  burst.
-- **Next:** the post-0.9.0 path to 1.0.0 (full WRF v4 ARW for standard configs) — remaining
-  physics-family ports, terrain-faithful diffusion, full two-way nesting, ADR-gated State/coupler
-  work; see [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md) and the v0.9.0+
-  full-port gap analysis under [`.agent/reviews/`](.agent/reviews/).
+  6 WSM6, 8 Thompson, 10 Morrison, 16 WDM6}; PBL {1 YSU, **2 MYJ (v0.13.0)**, 5 MYNN, 7 ACM2,
+  8 BouLac}; SFCLAY {1 revised-MM5, **2 Janjic-Eta (v0.13.0)**, 5 MYNN-SL, 7 Pleim-Xiu}; CU
+  {1 KF, 2 BMJ, 3 Grell-Freitas, 6 Tiedtke}; RRTMG SW+LW + Dudhia-SW/RRTM-LW + clear-sky
+  diagnostics; GWD `gwd_opt=1` (v0.13.0 default-on nested); LSM {2 Noah-classic, 4 Noah-MP}.
+  Source of truth: [`src/gpuwrf/contracts/physics_registry.py`](src/gpuwrf/contracts/physics_registry.py)
+  + `_SCAN_WIRED_OPTIONS` in [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py).
+- **Parity-proven but fail-closed (recognized, loudly rejected):** New-Tiedtke (`cu=16`).
+  (v0.13.0 promoted MYJ + Janjic to operational; Dudhia SW + RRTM LW were wired in v0.12.0.)
+- **Honest qualifiers:** **the 24 h forecast-skill closure (T2/U10/V10) vs CPU-WRF is NOT closed
+  (KI-9)** — the credibility gate for any "operational/replacement" claim; the equivalence demo's
+  24 h d02 verdict is `NOT_EQUIVALENT`, dominated by lead-time wind divergence. The powered n=15
+  TOST scoring path is unblocked (rc=2 fixed) but the run result is pending; n=15 underpowered vs
+  the n≈27 target. Multi-GPU throughput is fake-mesh-only (real throughput UNMEASURED → per-watt /
+  whole-Earth claims stay PROJECTED). Moisture flux-advection + clear-sky diagnostics are opt-in
+  (default-off, byte-identical when off).
+- **Next (v0.14+ roadmap):** the path to 1.0.0 = **Tier 3 (the scheme long-tail: ~22 microphysics,
+  ~10 cumulus, ~8 PBL, ~12 radiation, ~4 surface-layer + ~6 LSM families, each opt-in/fail-closed
+  until oracle-proven) + the v0.13.0 carry-overs**: the KI-9 skill-closure (hard
+  dynamics-`ph'`/MYNN/`*_tendf` GPU work), moisture-advection cadence refinements (KI-10), 2-way
+  nesting 24 h equivalence (KI-11), the Tier-2 speed remainder (sub-jit, parallel-compile,
+  CPU-flock), and multi-hardware/independent reproduction. See
+  [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md), `.agent/decisions/V0130-ROADMAP.md`,
+  [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md), and the full-port gap analysis
+  under [`.agent/reviews/`](.agent/reviews/).
 
 The sections below are the **historical M0–M7 synthesis layer** (the original backend-bakeoff and
 M6 dycore-blocker planning). They are retained for provenance and are superseded by the reset
