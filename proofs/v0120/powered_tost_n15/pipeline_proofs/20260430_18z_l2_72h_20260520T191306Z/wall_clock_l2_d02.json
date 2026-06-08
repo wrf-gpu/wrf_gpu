@@ -1,0 +1,22 @@
+{
+  "device": "cuda:0",
+  "hours": 24,
+  "orchestration_cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "output_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260430_18z_l2_72h_20260520T191306Z",
+  "pipeline_verdict": "PIPELINE_GREEN",
+  "run_dir": "/tmp/v0120_merged_run_root/20260430_18z_l2_72h_20260520T191306Z",
+  "run_id": "/tmp/v0120_merged_run_root/20260430_18z_l2_72h_20260520T191306Z",
+  "schema": "M7L2D02WallClock",
+  "schema_version": 1,
+  "speedup_status": null,
+  "status": "PASS",
+  "wall_clock_forecast_only_s": 2731.902253647917,
+  "wall_clock_per_forecast_hour_s": null,
+  "wall_clock_per_hour_s": null,
+  "wall_clock_total_s": 2737.4054854349233
+}
