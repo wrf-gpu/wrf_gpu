@@ -5,9 +5,13 @@ gated v0.12.0, turns gravity-wave drag on by default on the nested 1 km path, an
 hardens the validation/reproducibility story so an outside reviewer can reproduce
 the numeric-correctness core from a clone alone.**
 
-The keystone is a two-stage RRTMG VRAM reduction (g-point band-tiling +
-taumol/optics construction chunking) that cut peak shortwave VRAM **−88.6 %** and
-longwave **−43.6 %** at production column depth — bit-identical (`max_rel = 0.0`).
+The keystone is a three-part RRTMG VRAM reduction (g-point band-tiling +
+taumol/optics construction chunking + leading-column tiling) that cut peak
+shortwave VRAM **−88.6 %** and longwave **−43.6 %** at production column depth,
+then capped the formerly full-column g-point transient — bit-identical
+(`max_rel = 0.0`). The large-column GPU suite records LW untiled OOM on a
+32.11 GiB allocation, LW tiled 5.37 GiB; SW 10.03 → 1.62 GiB
+(`proofs/v013/rrtmg_column_tile_vram_suite.json`).
 That headroom unblocked the v0.12.0-deferred **24 h nested 1 km + GWD** run, which
 now passes `PIPELINE_GREEN`, so gravity-wave drag (`gwd_opt=1`) is **default-on on
 the nested path** in v0.13.0 (it was gated-off in v0.12.0 because it OOM'd at
@@ -31,18 +35,23 @@ KF/BMJ/Tiedtke/Grell-Freitas cumulus), all of which carries forward unchanged.
 
 ## Headline features
 
-- **RRTMG VRAM-floor chunking — the keystone (numerically inert).** A two-stage
+- **RRTMG VRAM-floor chunking + column tiling — the keystone (numerically inert).** A three-part
   reduction of the dominant fp64 VRAM consumer: (1) **g-point band-tiling** of the
   SW two-stream/g-point reduction and the LW `rtrnmc` band loop via `lax.scan` over
-  the band axis, and (2) **taumol/optics construction chunking** so the per-band gas
-  optical depths are built one tile at a time instead of stacking all bands upfront.
+  the band axis, (2) **taumol/optics construction chunking** so the per-band gas
+  optical depths are built one tile at a time instead of stacking all bands upfront,
+  and (3) **leading-column tiling** so the largest g-point temporary is not
+  materialized over every column at once.
   Combined peak VRAM at production depth (nlev 48 / ncol 24576): **SW
   16730 → 1906 MiB (−88.6 %)**, **LW 17854 → 10068 MiB (−43.6 %)**. The deep
   nlev 64 / ncol 49152 case (the GWD-nested-1km OOM family) **previously OOM'd and
   now fits**. **Bit-identical** across all tested chunk widths (SW 1/2/3/4/5/7/14,
   LW 1/2/4/8/16; `max_rel = 0.0`), all-sky and clear-sky; energy-closure invariant
-  3.6×10⁻¹⁵ (fp64 machine-eps). Public API + defaults unchanged. Proofs:
-  `proofs/v013/gpoint_chunk_rrtmg.json`, `proofs/v013/optics_taumol_chunk.json`.
+  3.6×10⁻¹⁵ (fp64 machine-eps). The final large-column GPU suite shows LW untiled
+  OOM on a 32.11 GiB allocation, LW tiled peak 5374.84 MiB; SW untiled 10033.1 MiB,
+  SW tiled 1619.54 MiB. Public API + defaults unchanged. Proofs:
+  `proofs/v013/gpoint_chunk_rrtmg.json`, `proofs/v013/optics_taumol_chunk.json`,
+  `proofs/v013/rrtmg_column_tile.json`, `proofs/v013/rrtmg_column_tile_vram_suite.json`.
 - **Gravity-wave drag operational coupling — now default-ON on the nested path.**
   With the chunked RRTMG temporary, the **24 h nested 1 km + GWD** run that OOM'd at
   step 0 / hr 7 in v0.12.0 now fits and runs clean: `PIPELINE_GREEN`, 24/24 `wrfout`
@@ -206,6 +215,10 @@ carry-overs**. See [`PROJECT_PLAN.md`](PROJECT_PLAN.md) and
 - **Multi-hardware / independent reproduction** — v0.13.0 is one RTX 5090, one
   JAX/CUDA stack; a second GPU/driver/stack + an independent reproduction run is a
   carry-over.
+- **Gotthard / Switzerland operational validation** — not a v0.13.0 pass. Case
+  generation and CPU truth exist; the v0.12 128²/150² attempt is documented as
+  fp64 OOM/grid-ceiling evidence. The post-memory-fix GPU-vs-CPU-WRF Switzerland
+  run is v0.14 B7.
 - **Tier-3 scheme long-tail** — ~22 microphysics, ~10 cumulus, ~8 PBL, ~12 radiation,
   ~4 surface-layer + ~6 LSM families, each opt-in / fail-closed until oracle-proven.
 - **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and
