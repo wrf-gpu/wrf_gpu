@@ -98,3 +98,8 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 - ✅ **RRTM-LW findings fix** (T1 #6) MERGED `a5e4973`: F1 `_nbuf` grid-aware (real top_pressure_pa; None→5000 = production bit-identical, 7+7 cases max diff 0.0); F2/F3 masking-clamps→fail-loud NaN guards (forbidden pattern removed). New pristine-WRF non-5000-ptop oracle (100mb/20mb): grid-aware rel ~2e-13 vs hardcoded 4.8e-2/NaN. Oracle OVERALL PASS, 9 wiring tests, /home/enric in proofs/*.py stays 0. → Tier1 #6 DONE.
 - 🔄 g-point-chunk now in GPU VRAM-measurement phase (~21GB held).
 - v0.13 trunk @ a5e4973. DONE: reproducibility (T2), RRTM-LW skeptic+fix (T1#6). BANKED: compile-speed (T1#1, GPU-validate pending). RUNNING: g-point-chunk (T1#3 keystone).
+
+**2026-06-08 ~08:07** — wave 2 cont.:
+- ✅ **PD/mono advection → moisture** (T2) MERGED `6eb4b01`: `advect_moisture_scalars()` pure addition (default moist_adv_opt=0 byte-unchanged), positivity + WRF-parity bit-exact (0.0 diff), 10 tests + 55 dynamics regression green. FOLLOW-UP: function proven but NOT operationally wired (operational path flux-advects theta only; moisture via physics boundary) → ~1-call runtime hookup + investigate "is moisture correctly advected operationally?" (relevant to skill-closure #7).
+- 🔄 g-point-chunk in GPU VRAM-ceiling measurement (~32GB held @0% — watch for hang). MYJ+Janjic actively editing (CPU).
+- v0.13 trunk @ 6eb4b01. DONE: reproducibility(T2), RRTM-LW(T1#6), PD-moisture(T2). BANKED: compile-speed(T1#1).
