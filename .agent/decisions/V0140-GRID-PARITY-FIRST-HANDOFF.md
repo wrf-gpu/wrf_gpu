@@ -131,8 +131,12 @@ remain read-only without a follow-up contract.
   `proofs/v014/switzerland_validation_plan.md` and
   `.agent/reviews/2026-06-08-v014-switzerland-validation-prep.md`.
 - `019ea957-da82-7891-9a9b-3ad594d8b671` (`Nietzsche`):
-  exact-branch memory preflight; short GPU memory checks allowed via
-  `scripts/run_gpu_lowprio.sh`, no TOST or long validation.
+  exact-branch memory preflight. Completed:
+  `proofs/v014/exact_branch_memory_preflight.*` and
+  `.agent/reviews/2026-06-08-v014-exact-branch-memory-preflight.md`. Static
+  memory controls are present; short GPU nested smoke timed out at 600 s with no
+  OOM and peak total VRAM about 3204 MiB, so this is not a full long-validation
+  memory-fit pass.
 
 Wave deliverables are expected under `proofs/v014/` and
 `.agent/reviews/2026-06-08-v014-*.md`.
@@ -143,17 +147,16 @@ Wave deliverables are expected under `proofs/v014/` and
   primary static metric/base-state parity sprint. Write scope is
   `proofs/v014/static_metric_base_parity.*` and
   `.agent/reviews/2026-06-08-v014-static-metric-base-parity.md`; source edits
-  are allowed only if a narrow bug is proven in `vertical_coord.py` or
-  `metrics.py`.
+  are allowed only within the sprint contract. Current uncommitted candidate
+  patch attaches loaded WRF metrics to `GridSpec` in `d02_replay.py`; do not
+  commit until Huygens reruns post-fix proof and writes the missing review.
 - `019ea95f-15e9-70b2-b6bf-cc4c1de48047` (`Curie`):
-  read-only same-state tendency localization design. Write scope is
-  `proofs/v014/same_state_tendency_localization_plan.md`, optional inventory
-  JSON, and
+  read-only same-state tendency localization design. Completed:
+  `proofs/v014/same_state_tendency_localization_plan.md`,
+  `proofs/v014/same_state_tendency_inventory.json`, and
   `.agent/reviews/2026-06-08-v014-same-state-tendency-localization-design.md`.
-- `019ea957-da82-7891-9a9b-3ad594d8b671` (`Nietzsche`):
-  exact-branch memory preflight remains open; manager sent a status check after
-  no completion notice. Do not start a duplicate exact-branch memory preflight
-  unless this worker is confirmed dead or stays silent without proof artifacts.
+  This becomes the next dynamic-debug sprint only after static/base parity is
+  green or formally writer-only.
 - `019ea968-c876-71c3-886a-133a3e740ab2` (`Hypatia`):
   v0.14 grid comparison framework sprint
   `.agent/sprints/2026-06-08-v014-grid-comparison-framework/sprint-contract.md`.
