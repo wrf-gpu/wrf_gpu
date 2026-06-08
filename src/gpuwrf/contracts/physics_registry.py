@@ -63,7 +63,13 @@ ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 1, 2, 4)
 ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 2, 4)
-ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4)
+# ra_lw=5 (GSFC/Goddard NUWRF LW) is a v0.13 Tier-3 reference-only scheme: a
+# single-column fp64 pristine-WRF oracle is staged (proofs/v013/oracle/
+# radiation_lw), but its traceable JAX column kernel is a documented carry-over
+# (the combined NUWRF SW+LW module is ~12.5k LOC / ~11.8k LW coefficients), so it
+# is "accepted" (selectable for a single-column reference comparison) and
+# fail-closes in the operational scan -- NOT in _SCAN_WIRED_OPTIONS["ra_lw_physics"].
+ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4, 5)
 
 ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
     "mp_physics": ACCEPTED_MP_PHYSICS,
@@ -160,6 +166,12 @@ RA_LW_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("ra_lw_physics", 0, "disabled", "none", "accepted", "radiation"),
     1: SchemeOption("ra_lw_physics", 1, "RRTM longwave", "rrtmscheme", "implemented", "radiation"),
     4: SchemeOption("ra_lw_physics", 4, "RRTMG longwave", "rrtmg_lwscheme", "accepted", "radiation"),
+    # GSFC/Goddard NUWRF longwave (5): v0.13 Tier-3 reference-only -- a fp64
+    # single-column pristine-WRF oracle (module_ra_goddard.F:lwrad) is staged
+    # (proofs/v013/oracle/radiation_lw), but the traceable JAX column kernel is a
+    # documented carry-over, so it is "accepted" (selectable for a reference
+    # comparison) and fail-closes in the operational scan.
+    5: SchemeOption("ra_lw_physics", 5, "GSFC/Goddard NUWRF longwave", "goddardlwscheme", "accepted", "radiation"),
 }
 
 

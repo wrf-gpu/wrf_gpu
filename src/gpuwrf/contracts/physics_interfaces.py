@@ -671,6 +671,41 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "proofs/radiation/rrtm_lw_oracle.py (pristine-WRF, NOT a self-compare). The surface GLW "
         "history diagnostic remains RRTMG-derived.",
     ),
+    # GSFC/Goddard NUWRF longwave (ra_lw_physics=5) -- v0.13 Tier-3 REFERENCE-ONLY.
+    # The Goddard LW core (phys/module_ra_goddard.F:lwrad, the Chou-Suarez 1994
+    # 10-band correlated-k IR transfer) is the LW half of the ~12.5k-LOC combined
+    # NUWRF SW+LW module (~11.8k hardcoded LW coefficients). A faithful traceable
+    # JAX column port of that volume is a documented carry-over; NO kernel is wired.
+    # A fp64 single-column pristine-WRF oracle IS staged (NOT a self-compare) so a
+    # future port has a ready reference. This spec exists so the interface freeze
+    # stays consistent with the reference-only accept-matrix; the operational scan
+    # fail-closes ra_lw=5 (it is NOT in _SCAN_WIRED_OPTIONS["ra_lw_physics"]).
+    PhysicsStepSpec(
+        family="radiation",
+        option=5,
+        name="GSFC/Goddard NUWRF longwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/rrtmg_lw.py",
+        oracle="pristine-WRF fp64 single-column savepoint at module_ra_goddard.F:lwrad "
+        "(proofs/v013/t3_gsfc_lw_oracle.py + proofs/v013/oracle/radiation_lw; NOT a self-compare). "
+        "REFERENCE-ONLY: faithful JAX kernel is a v0.13 carry-over.",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb", "t_skin"),
+        writes_state=("theta",),
+        diagnostics=("GLW", "OLR", "RTHRATENLW"),
+        variant="lw",
+        notes="ra_lw_physics=5. GSFC/Goddard Chou-Suarez 10-band correlated-k IR (held-rate "
+        "RTHRATEN theta tendency + surface downwelling GLW). STATUS: REFERENCE-ONLY -- the "
+        "Goddard LW core lwrad is the LW half of the ~12.5k-LOC combined NUWRF SW+LW module "
+        "(~11.8k hardcoded LW coefficients), so a faithful traceable JAX column kernel is a "
+        "documented v0.13 carry-over and NO kernel is shipped (avoiding a silently-wrong port). "
+        "A fp64 pristine-WRF single-column oracle IS staged (proofs/v013/oracle/radiation_lw, "
+        "build via goddard_lw_build_and_run.sh with a checksummed visibility-only public::lwrad "
+        "shim) so a future faithful port has a ready non-self-compare reference. ra_lw=5 is "
+        "namelist-accepted (selectable for a single-column reference comparison) but FAIL-CLOSES "
+        "in the operational scan (OperationalNamelist.ra_lw_physics=5 is not in "
+        "_SCAN_WIRED_OPTIONS); the operational default remains ra_lw=4 (RRTMG), byte-unchanged. "
+        "owner_module points at the RRTMG LW slot used as the operational fallback path.",
+    ),
 )
 
 SCHEME_STEP_SPECS_BY_KEY: Mapping[tuple[str, int, str], PhysicsStepSpec] = {
