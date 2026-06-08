@@ -187,12 +187,15 @@ def test_ra_sw1_rthraten_equals_dudhia_sw_plus_rrtmg_lw() -> None:
 
 def test_unwired_ra_sw_value_fails_closed() -> None:
     grid = _grid()
-    nml = _namelist(grid, ra_sw_physics=2)  # Goddard SW: recognized, NOT scan-wired
+    # ra_sw=3 (CAM) is recognized but NOT scan-wired (no GPU radiation-slot
+    # adapter); ra_sw=2 (GSFC/Chou-Suarez) is now scan-wired, so it no longer
+    # belongs here.
+    nml = _namelist(grid, ra_sw_physics=3)
     with pytest.raises(UnsupportedSchemeSelection):
         _resolve_operational_suite(nml)
 
 
 def test_wired_ra_sw_values_resolve_ok() -> None:
     grid = _grid()
-    for ra_sw in (1, 4):
+    for ra_sw in (1, 2, 4):  # Dudhia, GSFC (Chou-Suarez), RRTMG
         _resolve_operational_suite(_namelist(grid, ra_sw_physics=ra_sw))

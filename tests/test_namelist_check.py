@@ -76,7 +76,7 @@ def test_registry_records_supported_active_suite() -> None:
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 5, 7})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 2, 4})
     assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 6, 16})
-    assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 1, 4})
+    assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 1, 2, 4})
     assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 4})
 
 
@@ -165,7 +165,10 @@ def test_implemented_scheme_passes() -> None:
         ("sf_surface_physics", 5, "CLM4"),
         ("sf_sfclay_physics", 3, "GFS"),
         ("ra_lw_physics", 5, "Goddard"),
-        ("ra_sw_physics", 2, "Goddard"),
+        # ra_sw=2 (GSFC/Chou-Suarez) is now operationally scan-wired (v0.13 Tier3),
+        # so it is no longer a "recognized-but-unimplemented" example. ra_sw=3
+        # (CAM) remains recognized-but-unimplemented (no GPU radiation-slot adapter).
+        ("ra_sw_physics", 3, "CAM"),
     ],
 )
 def test_recognized_but_unimplemented_scheme_names_the_status(
