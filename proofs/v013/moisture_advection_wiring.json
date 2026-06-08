@@ -1,0 +1,179 @@
+{
+  "proof": "v013_moisture_advection_wiring",
+  "platform": "cpu",
+  "precision": "fp64",
+  "summary": {
+    "all_gates_passed": true,
+    "gates": {
+      "default_moist_adv_opt0_byte_identical": true,
+      "closed_domain_total_water_conservation": true,
+      "idealized_dycore_gates_pass_cpu": true,
+      "moisture_advection_wrf_parity": true,
+      "finite_stable_monotonic_moist_adv_opt2": true
+    }
+  },
+  "gates": [
+    {
+      "name": "default_moist_adv_opt0_byte_identical",
+      "passed": true,
+      "steps": 6,
+      "max_abs_leaf_delta": {
+        "u": 0.0,
+        "v": 0.0,
+        "w": 0.0,
+        "theta": 0.0,
+        "p": 0.0,
+        "ph": 0.0,
+        "mu_total": 0.0,
+        "qv": 0.0,
+        "qc": 0.0,
+        "qr": 0.0,
+        "qi": 0.0,
+        "qs": 0.0,
+        "qg": 0.0
+      },
+      "all_leaves_bit_identical": true,
+      "qv_dycore_passthrough_delta": 0.0,
+      "qc_dycore_passthrough_delta": 0.0,
+      "moisture_passthrough_when_off": true,
+      "tolerance": 0.0
+    },
+    {
+      "name": "closed_domain_total_water_conservation",
+      "passed": true,
+      "moist_adv_opt": 2,
+      "steps": 20,
+      "total_water_initial_kg": 5528.625252216861,
+      "total_water_final_kg": 5528.625252216856,
+      "relative_drift": 8.225324201601839e-16,
+      "tolerance": 1e-11
+    },
+    {
+      "name": "idealized_dycore_gates_pass_cpu",
+      "passed": true,
+      "note": "Straka + Skamarock run through the SAME operational dycore (_physics_boundary_step) on CPU with moist_adv_opt at its default 0; both must PASS (the moisture wiring is gated off / never traced here, so the dry dynamics are byte-unchanged).",
+      "density_current": {
+        "status": "RAN_TO_COMPLETION",
+        "verdict": "PASS",
+        "checks_passed": {
+          "all_snapshots_finite": true,
+          "theta_prime_min_900s": true,
+          "max_abs_w_900s": true,
+          "front_position_900s": true,
+          "rotor_count_proxy_900s": true,
+          "relative_mass_drift": true
+        },
+        "check_values": {
+          "all_snapshots_finite": 1.0,
+          "theta_prime_min_900s": -9.971054183169997,
+          "max_abs_w_900s": 14.57511000316096,
+          "front_position_900s": 14150.0,
+          "rotor_count_proxy_900s": 4.0,
+          "relative_mass_drift": 2.2524889656126635e-09
+        }
+      },
+      "warm_bubble": {
+        "status": "RAN_TO_COMPLETION",
+        "verdict": "PASS",
+        "checks_passed": {
+          "all_snapshots_finite": true,
+          "theta_prime_max_500s": true,
+          "max_abs_w_500s": true,
+          "thermal_rise_500s": true,
+          "horizontal_drift_500s": true,
+          "relative_mass_drift": true
+        },
+        "check_values": {
+          "all_snapshots_finite": 1.0,
+          "theta_prime_max_500s": 1.9200603177474136,
+          "max_abs_w_500s": 11.68018811324279,
+          "thermal_rise_500s": 1924.3475896514237,
+          "horizontal_drift_500s": 1.2732925824820995e-11,
+          "relative_mass_drift": 0.0
+        }
+      }
+    },
+    {
+      "name": "moisture_advection_wrf_parity",
+      "passed": true,
+      "parity_4a_max_rel": {
+        "qv": 1.1137145170395635e-16,
+        "qc": 1.1137145170395635e-16,
+        "qr": 1.3921431462994543e-16,
+        "qi": 1.3921431462994543e-16,
+        "qs": 1.3921431462994543e-16,
+        "qg": 1.7401789328743179e-16
+      },
+      "parity_4a_ok": true,
+      "parity_4a_tolerance": 1e-12,
+      "transport_4b": {
+        "u_const_m_s": 30.0,
+        "steps": 100,
+        "qv_x_centroid_shift_cells": 1.1993796434699817,
+        "qc_x_centroid_shift_cells": 1.1993796434699817,
+        "analytic_cfl_displacement_cells": 1.2,
+        "qv_matches_analytic_cfl_20pct": true,
+        "qv_moved_downstream": true,
+        "qc_moved_downstream": true,
+        "qc_changed_at_all": true,
+        "note": "qc had ZERO resolved-wind advection anywhere before this sprint; a nonzero downstream centroid shift proves condensate transport is now wired.  qv's shift matching u*N*dt/dx confirms the transport is quantitatively correct."
+      }
+    },
+    {
+      "name": "finite_stable_monotonic_moist_adv_opt2",
+      "passed": true,
+      "steps": 30,
+      "all_fields_finite": true,
+      "no_new_per_species_extrema": true,
+      "species_min_nonneg": true,
+      "per_species_extrema_breach": {
+        "qv": {
+          "below_min": -9.298118492980176e-16,
+          "above_max": 3.876187601361408e-09,
+          "slack": 3.894003915357025e-08
+        },
+        "qc": {
+          "below_min": -4.649059246490088e-16,
+          "above_max": 1.938093800680704e-09,
+          "slack": 1.9470019576785124e-08
+        },
+        "qr": {
+          "below_min": -2.542916802769558e-16,
+          "above_max": 5.341059101070245e-10,
+          "slack": 7.788007830714049e-09
+        },
+        "qi": {
+          "below_min": -9.298118548814867e-17,
+          "above_max": 3.87618760222877e-10,
+          "slack": 3.8940039153570246e-09
+        },
+        "qs": {
+          "below_min": -4.649059274407434e-17,
+          "above_max": 1.938093801114385e-10,
+          "slack": 1.9470019576785123e-09
+        },
+        "qg": {
+          "below_min": -1.8596237082120098e-17,
+          "above_max": 7.752375214757461e-11,
+          "slack": 7.788007830714051e-10
+        }
+      },
+      "per_species_min": {
+        "qv": 8.801732490592696e-09,
+        "qc": 4.400866245296348e-09,
+        "qr": 1.7603465664478497e-09,
+        "qi": 8.801732490592702e-10,
+        "qs": 4.400866245296351e-10,
+        "qg": 1.7603464981185402e-10
+      }
+    }
+  ],
+  "wiring": {
+    "namelist_field": "moist_adv_opt (static, default 0 = byte-identical)",
+    "owner_files": [
+      "src/gpuwrf/runtime/operational_mode.py"
+    ],
+    "rk3_hookup": "_rk_scan_step.advance_stage: when use_flux_advection AND moist_adv_opt!=0, build coupled d(mu*q)/dt per species with advect_moisture_scalars from the stage-entry haloed state, then apply q_new=(mut_old*q_old + dt_rk*adv_tend)/mut_new AFTER the acoustic loop (WRF moist_variable_loop / rk_scalar_tend cadence).",
+    "wrf_source": "solve_em.F:2282-2408 moist_variable_loop -> rk_scalar_tend"
+  }
+}
