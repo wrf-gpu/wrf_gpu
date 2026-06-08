@@ -78,9 +78,13 @@ from pathlib import Path
 
 __all__ = [
     "AUTOTUNE_STATUS",
+    "PARALLEL_COMPILE_STATUS",
     "configure_autotune_cache",
+    "configure_parallel_compile",
     "resolve_autotune_cache_dir",
+    "resolve_parallel_compile",
     "autotune_env_help",
+    "parallel_compile_env_help",
     "probe_flag_supported",
 ]
 
@@ -114,6 +118,38 @@ def _reset_status() -> None:
             "enabled": False,
             "dir": None,
             "mode": None,
+            "parallelism": None,
+            "injected_flags": None,
+            "source": None,
+            "reason": None,
+            "opted_in": False,
+            "probed": None,
+            "rejected_flags": None,
+            "error": None,
+        }
+    )
+
+
+# Record of the standalone parallel-compile knob, for audit / proof scripts. This
+# is INDEPENDENT of the autotune cache above: a deployment can enable N-way
+# parallel XLA compilation without opting into the persistent autotune cache.
+PARALLEL_COMPILE_STATUS: dict[str, object] = {
+    "enabled": False,
+    "parallelism": None,
+    "injected_flags": None,
+    "source": None,
+    "reason": None,
+    "opted_in": False,
+    "probed": None,
+    "rejected_flags": None,
+    "error": None,
+}
+
+
+def _reset_parallel_status() -> None:
+    PARALLEL_COMPILE_STATUS.update(
+        {
+            "enabled": False,
             "parallelism": None,
             "injected_flags": None,
             "source": None,
@@ -382,6 +418,168 @@ def configure_autotune_cache() -> dict[str, object]:
     return AUTOTUNE_STATUS
 
 
+def resolve_parallel_compile() -> int | None:
+    """Resolve the requested XLA compile-parallelism, or ``None`` if not opted in.
+
+    STANDALONE knob (default OFF), INDEPENDENT of the autotune cache. Precedence:
+
+    1. ``GPUWRF_XLA_PARALLEL_COMPILE`` -- the primary opt-in.
+       * falsey (``0``/``false``/``off``/``no``) -> disabled (``None``).
+       * a positive integer -> that many parallel compile threads.
+       * truthy (``1``/``true``/``on``/``yes``/``force``) without a number ->
+         a default thread count taken from ``GPUWRF_XLA_COMPILE_PARALLELISM`` if
+         set, else ``os.cpu_count()`` capped at 8 (a sane default that does not
+         oversubscribe the box reserved for nightly WRF).
+    2. ``GPUWRF_XLA_COMPILE_PARALLELISM`` alone (legacy var, also consumed by the
+       autotune-cache path) is honoured as an opt-in when ``GPUWRF_XLA_PARALLEL_COMPILE``
+       is UNSET, so a deployment that only sets the parallelism count still gets
+       parallel compile. (If both are set, ``GPUWRF_XLA_PARALLEL_COMPILE`` wins.)
+
+    Records the chosen ``source`` in :data:`PARALLEL_COMPILE_STATUS`. Returns the
+    integer parallelism (>=1) or ``None`` when disabled / not opted in / invalid.
+    """
+    raw = os.environ.get("GPUWRF_XLA_PARALLEL_COMPILE", "").strip().lower()
+    legacy = os.environ.get("GPUWRF_XLA_COMPILE_PARALLELISM", "").strip()
+
+    if raw in _DISABLE_VALUES:
+        PARALLEL_COMPILE_STATUS["source"] = "disabled-by-GPUWRF_XLA_PARALLEL_COMPILE"
+        return None
+
+    if raw == "":
+        # Primary var unset: fall back to the legacy count-only var as an opt-in.
+        if not legacy:
+            PARALLEL_COMPILE_STATUS["source"] = "not-opted-in"
+            return None
+        try:
+            n = int(legacy)
+        except ValueError:
+            PARALLEL_COMPILE_STATUS["error"] = (
+                f"bad GPUWRF_XLA_COMPILE_PARALLELISM={legacy!r}"
+            )
+            PARALLEL_COMPILE_STATUS["source"] = "invalid"
+            return None
+        if n < 1:
+            PARALLEL_COMPILE_STATUS["source"] = "disabled-by-GPUWRF_XLA_COMPILE_PARALLELISM<1"
+            return None
+        PARALLEL_COMPILE_STATUS["source"] = "env:GPUWRF_XLA_COMPILE_PARALLELISM"
+        return n
+
+    # Primary var present and truthy/numeric.
+    # A bare integer in GPUWRF_XLA_PARALLEL_COMPILE is both an opt-in AND the count.
+    try:
+        n = int(raw)
+        if n < 1:
+            PARALLEL_COMPILE_STATUS["source"] = "disabled-by-GPUWRF_XLA_PARALLEL_COMPILE<1"
+            return None
+        PARALLEL_COMPILE_STATUS["source"] = "env:GPUWRF_XLA_PARALLEL_COMPILE(count)"
+        return n
+    except ValueError:
+        pass
+
+    if raw not in _FORCE_VALUES:
+        PARALLEL_COMPILE_STATUS["error"] = (
+            f"bad GPUWRF_XLA_PARALLEL_COMPILE={raw!r}"
+        )
+        PARALLEL_COMPILE_STATUS["source"] = "invalid"
+        return None
+
+    # Truthy keyword: derive the count from the legacy var or a capped cpu_count.
+    if legacy:
+        try:
+            n = int(legacy)
+            if n >= 1:
+                PARALLEL_COMPILE_STATUS["source"] = "env:GPUWRF_XLA_COMPILE_PARALLELISM"
+                return n
+        except ValueError:
+            pass  # fall through to the cpu_count default
+    n = min(os.cpu_count() or 1, 8)
+    PARALLEL_COMPILE_STATUS["source"] = "default:cpu_count(<=8)"
+    return n
+
+
+def configure_parallel_compile() -> dict[str, object]:
+    """Inject the build-validated ``--xla_gpu_force_compilation_parallelism`` flag.
+
+    STANDALONE, default-OFF, GPU-only counterpart to the autotune cache. Must be
+    called BEFORE the first JAX/XLA compile. Idempotent, best-effort, never raises.
+
+    HARD-SAFE by the same construction as :func:`configure_autotune_cache`:
+
+    1. Does NOTHING unless the operator opts in via ``GPUWRF_XLA_PARALLEL_COMPILE``
+       (or the legacy ``GPUWRF_XLA_COMPILE_PARALLELISM`` count). A merely-detected
+       GPU never activates it -> default GPU path byte-unchanged.
+    2. Respects the platform pin (never injects ``--xla_gpu_*`` on a cpu/tpu pin,
+       where a CPU jaxlib could fatally abort on an unknown flag).
+    3. The single candidate flag is PROBED in an isolated subprocess (the SAME
+       :func:`probe_flag_supported` used by the autotune path) and dropped if the
+       build rejects it -- so an unsupported flag can never abort this process
+       (this is the explicit guard against re-introducing the v0.12.0 GPU-abort).
+    4. Never clobbers an operator-set ``--xla_gpu_force_compilation_parallelism``
+       already in ``XLA_FLAGS``.
+
+    NUMERICALLY INERT: compile parallelism only changes how many threads XLA uses
+    to compile; it changes no floating-point op and no executable bytes.
+
+    Returns :data:`PARALLEL_COMPILE_STATUS`.
+    """
+    _reset_parallel_status()
+
+    parallelism = resolve_parallel_compile()
+    PARALLEL_COMPILE_STATUS["opted_in"] = parallelism is not None
+    if parallelism is None:
+        # Disabled / not opted in. Pure no-op: XLA_FLAGS untouched.
+        PARALLEL_COMPILE_STATUS["reason"] = (
+            PARALLEL_COMPILE_STATUS.get("source") or "disabled"
+        )
+        return PARALLEL_COMPILE_STATUS
+
+    is_gpu, reason = _gpu_is_target()
+    PARALLEL_COMPILE_STATUS["reason"] = reason
+    if not is_gpu:
+        # CPU/TPU run: --xla_gpu_* is unknown to the backend (and can abort a
+        # CPU jaxlib). Skip silently; parallel compile is a GPU-compile speedup.
+        PARALLEL_COMPILE_STATUS["parallelism"] = parallelism
+        return PARALLEL_COMPILE_STATUS
+
+    existing_raw = os.environ.get("XLA_FLAGS", "")
+    existing = _parse_existing_flags(existing_raw)
+
+    name = "xla_gpu_force_compilation_parallelism"
+    if name in existing:
+        # Operator already set it: respect their value, inject nothing.
+        PARALLEL_COMPILE_STATUS["parallelism"] = parallelism
+        PARALLEL_COMPILE_STATUS["reason"] = f"{reason};operator-preset"
+        return PARALLEL_COMPILE_STATUS
+
+    token = f"--{name}={parallelism}"
+
+    # Same opt-out as the autotune path: default validate (safe). =0/false trusts
+    # the flag and skips the (slow) subprocess probe (operator's responsibility).
+    validate = (
+        os.environ.get("GPUWRF_XLA_AUTOTUNE_PROBE", "1").strip().lower()
+        not in _DISABLE_VALUES
+    )
+
+    probed: dict[str, str] = {}
+    if validate:
+        ok, detail = probe_flag_supported(token)
+        probed[name] = detail
+        if not ok:
+            PARALLEL_COMPILE_STATUS["parallelism"] = parallelism
+            PARALLEL_COMPILE_STATUS["probed"] = probed
+            PARALLEL_COMPILE_STATUS["rejected_flags"] = [token]
+            return PARALLEL_COMPILE_STATUS
+
+    new_flags = (existing_raw + " " + token).strip()
+    os.environ["XLA_FLAGS"] = new_flags
+
+    PARALLEL_COMPILE_STATUS["enabled"] = True
+    PARALLEL_COMPILE_STATUS["parallelism"] = parallelism
+    PARALLEL_COMPILE_STATUS["injected_flags"] = [token]
+    PARALLEL_COMPILE_STATUS["probed"] = probed or None
+    return PARALLEL_COMPILE_STATUS
+
+
 def autotune_env_help() -> str:
     """One-line human summary of the env vars for ``--help`` / docs / logs."""
     return (
@@ -396,4 +594,20 @@ def autotune_env_help() -> str:
         "GPUWRF_XLA_AUTOTUNE_PROBE=0 skips the per-flag build-validation subprocess "
         "(default 1 = validate each --xla_gpu_* flag in an isolated child before "
         "injecting, so an unknown flag can never abort the main process)."
+    )
+
+
+def parallel_compile_env_help() -> str:
+    """One-line human summary of the standalone parallel-compile env vars."""
+    return (
+        "Parallel XLA compile env vars (GPU only, OFF by default, INDEPENDENT of "
+        "the autotune cache): GPUWRF_XLA_PARALLEL_COMPILE=1 opts in (default thread "
+        "count = GPUWRF_XLA_COMPILE_PARALLELISM if set else min(cpu_count,8)); "
+        "GPUWRF_XLA_PARALLEL_COMPILE=N opts in with N threads directly; "
+        "GPUWRF_XLA_PARALLEL_COMPILE=0 disables; GPUWRF_XLA_COMPILE_PARALLELISM=N "
+        "alone (without GPUWRF_XLA_PARALLEL_COMPILE) also opts in with N threads. "
+        "The single --xla_gpu_force_compilation_parallelism flag is validated in an "
+        "isolated subprocess (GPUWRF_XLA_AUTOTUNE_PROBE=0 to skip) and dropped if "
+        "the build rejects it, so it can never abort the main process. Numerically "
+        "inert (only changes compile-thread count, not the executable)."
     )

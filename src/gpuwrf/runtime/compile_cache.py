@@ -78,6 +78,7 @@ CACHE_STATUS: dict[str, object] = {
     "source": None,
     "error": None,
     "autotune": None,
+    "parallel_compile": None,
 }
 
 
@@ -176,6 +177,25 @@ def configure_compilation_cache() -> dict[str, object]:
         CACHE_STATUS["autotune"] = dict(AUTOTUNE_STATUS)
     except Exception as exc:  # pragma: no cover - never fail the compile cache
         CACHE_STATUS["autotune"] = {"error": f"{type(exc).__name__}: {exc}"}
+
+    # v0.13 Tier2 #1: STANDALONE parallel-compile knob, wired from the same hook
+    # but INDEPENDENT of the autotune cache (a deployment can enable N-way
+    # parallel XLA compile without opting into the persistent autotune cache).
+    # Same HARD-SAFE construction: OFF by default (needs GPUWRF_XLA_PARALLEL_COMPILE
+    # or the legacy GPUWRF_XLA_COMPILE_PARALLELISM), respects the platform pin, and
+    # validates its single --xla_gpu_* flag in an isolated subprocess before
+    # injecting -- so an unknown flag can never abort this (default GPU) path.
+    # Wrapped in try/except as belt-and-braces. Numerically inert.
+    try:
+        from gpuwrf.runtime.xla_autotune import (
+            PARALLEL_COMPILE_STATUS,
+            configure_parallel_compile,
+        )
+
+        configure_parallel_compile()
+        CACHE_STATUS["parallel_compile"] = dict(PARALLEL_COMPILE_STATUS)
+    except Exception as exc:  # pragma: no cover - never fail the compile cache
+        CACHE_STATUS["parallel_compile"] = {"error": f"{type(exc).__name__}: {exc}"}
 
     return CACHE_STATUS
 
