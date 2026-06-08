@@ -2409,7 +2409,10 @@ _SCAN_WIRED_OPTIONS = {
     "bl_pbl_physics": (0, 1, 2, DEFAULT_BL_PBL_PHYSICS, 7, 8, 99),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired;
     # 2 Janjic Eta wired (v0.13, mandatorily paired with bl_pbl_physics=2 MYJ).
-    "sf_sfclay_physics": (0, 1, 2, 5, 7),
+    # 3 NCEP-GFS surface layer + 91 old-MM5 surface layer wired (v0.13 Tier-3,
+    # coupling.scan_adapters.{gfs_sfclay_adapter,sfclay_old_mm5_adapter}; both write
+    # the B2 kinematic flux handles, fp64 pristine-WRF oracle-validated).
+    "sf_sfclay_physics": (0, 1, 2, 3, 5, 7, 91),
     # cu=0 no cumulus, 1 KF, 2 BMJ (fp64 savepoint-parity carry-threaded adapter),
     # 3 Grell-Freitas (v0.9.0 GPU-batched jit/vmap stateless adapter), 6 modified-
     # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). New-Tiedtke(16) not separately
@@ -2441,6 +2444,7 @@ _SCAN_UNWIRED_REASON = {
     "cu_physics=14": "KIM-SAS has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
     "cu_physics=5": "Grell-3D ensemble has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
     "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
+    "sf_surface_physics=1": "thermal-diffusion slab LSM is JAX-ported + fp64 oracle-validated (physics.lsm_slab) but the operational LSM hook (TSLB land carry + GSW/GLW radiation forcing + TMN/THC/EMISS statics) is not yet threaded into the scan",
     # ra_sw=1 (Dudhia) and ra_sw=4 (RRTMG) are scan-wired; any other recognized SW
     # scheme has no operational GPU scan adapter in the radiation slot.
     "ra_sw_physics=2": "Goddard SW has no operational GPU scan adapter in the radiation slot (only Dudhia=1 and RRTMG=4 are wired)",
@@ -2478,6 +2482,13 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     land_opt = suite.land_surface.option
     if land_opt == 4 and not bool(namelist.use_noahmp):
         not_wired.append("sf_surface_physics=4 (set use_noahmp=True to thread Noah-MP)")
+    # slab=1 (thermal-diffusion 5-layer LSM) is JAX-ported + fp64 oracle-validated
+    # (physics.lsm_slab) but NOT scan-wired: the operational LSM slot needs the
+    # TSLB land carry + GSW/GLW radiation forcing + TMN/THC/EMISS statics that the
+    # resident State does not yet carry. Fail closed (reference-only) rather than
+    # silently running the bulk surface path under a slab namelist selection.
+    if land_opt == 1:
+        not_wired.append(f"sf_surface_physics=1 ({_SCAN_UNWIRED_REASON['sf_surface_physics=1']})")
     if _explicit_noahclassic(namelist):
         if getattr(namelist, "noahclassic_static", None) is None or getattr(namelist, "noahclassic_land", None) is None:
             not_wired.append(f"sf_surface_physics=2 ({_SCAN_UNWIRED_REASON['sf_surface_physics=2']})")
@@ -2485,7 +2496,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13 scan-wired "
             "schemes (mp_physics in {0,1,2,3,4,6,8,10,16}, bl_pbl_physics in {0,1,2,5,7,8,99}, "
-            "sf_sfclay_physics in {0,1,2,5,7}, cu_physics in {0,1,2,3,6}, Noah-MP via "
+            "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
             "are NOT scan-wired: "

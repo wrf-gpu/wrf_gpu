@@ -59,9 +59,9 @@ class SchemeOption:
 
 ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 16)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8, 99)
-ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
+ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
-ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
+ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 1, 2, 4)
 ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 4)
 ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4)
 
@@ -110,8 +110,10 @@ SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("sf_sfclay_physics", 0, "disabled", "none", "accepted", "surface_layer"),
     1: SchemeOption("sf_sfclay_physics", 1, "sfclayrev", "sfclayscheme", "accepted", "surface_layer"),
     2: SchemeOption("sf_sfclay_physics", 2, "Janjic Eta surface layer", "myjsfcscheme", "accepted", "surface_layer"),
+    3: SchemeOption("sf_sfclay_physics", 3, "NCEP GFS surface layer", "gfssfcscheme", "implemented", "surface_layer"),
     5: SchemeOption("sf_sfclay_physics", 5, "MYNN surface layer", "mynnsfclayscheme", "implemented", "surface_layer"),
     7: SchemeOption("sf_sfclay_physics", 7, "Pleim-Xiu surface layer", "pxsfclayscheme", "accepted", "surface_layer"),
+    91: SchemeOption("sf_sfclay_physics", 91, "old MM5 surface layer", "sfclayscheme_old", "implemented", "surface_layer"),
 }
 
 CU_SCHEMES: Mapping[int, SchemeOption] = {
@@ -139,6 +141,10 @@ CU_SCHEMES: Mapping[int, SchemeOption] = {
 
 SURFACE_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("sf_surface_physics", 0, "disabled", "none", "accepted", "land_surface"),
+    # slab=1 is a v0.13 Tier-3 JAX port + fp64 oracle (physics.lsm_slab) but not
+    # yet scan-wired (needs the TSLB land carry + GSW/GLW forcing hook); accepted
+    # for a single-column reference comparison, fail-closed in the operational scan.
+    1: SchemeOption("sf_surface_physics", 1, "thermal-diffusion slab LSM", "slabscheme", "accepted", "land_surface"),
     2: SchemeOption("sf_surface_physics", 2, "Noah classic", "lsmscheme", "accepted", "land_surface"),
     4: SchemeOption("sf_surface_physics", 4, "Noah-MP", "noahmpscheme", "implemented", "land_surface"),
 }
@@ -497,6 +503,9 @@ PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
 
 LAND_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
+    # slab=1 carries the 5-layer soil temperature TSLB (reference-only until the
+    # operational LSM hook lands; physics.lsm_slab).
+    1: ("tslb",),
     2: ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn"),
     4: ("NoahMPLandState",),
 }

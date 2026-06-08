@@ -46,6 +46,11 @@ def test_default_suite_is_v020_baseline_and_gpu_ready() -> None:
 
 
 def test_every_accepted_option_routes() -> None:
+    # Every namelist-accepted option is EITHER operationally routable (scheme_entry
+    # returns its entry) OR reference-only (v0.13 Tier-3 e.g. cu=5/14: accepted by the
+    # namelist validator but fail-closes in the operational scan -- not routable).
+    from gpuwrf.coupling.physics_dispatch import _FAMILY_TABLE
+
     for fam, accepted in (
         ("microphysics", ACCEPTED_MP_PHYSICS),
         ("pbl", ACCEPTED_BL_PBL_PHYSICS),
@@ -53,14 +58,22 @@ def test_every_accepted_option_routes() -> None:
         ("cumulus", ACCEPTED_CU_PHYSICS),
         ("land_surface", ACCEPTED_SF_SURFACE_PHYSICS),
     ):
+        table, _ = _FAMILY_TABLE[fam]
         for opt in accepted:
-            entry = scheme_entry(fam, opt)
-            assert entry.family == fam and entry.option == opt
+            if opt in table:
+                entry = scheme_entry(fam, opt)
+                assert entry.family == fam and entry.option == opt
+            else:
+                # reference-only: accepted but fail-closes (not operationally routable)
+                with pytest.raises(UnsupportedSchemeSelection):
+                    scheme_entry(fam, opt)
 
 
 @pytest.mark.parametrize(
     "fam,opt",
-    [("microphysics", 5), ("pbl", 3), ("surface_layer", 3), ("cumulus", 5), ("land_surface", 1)],
+    # surface_layer=3 (GFS) / land_surface=1 (slab) became accepted in v0.13
+    # Tier-3; remaining out-of-matrix: surface_layer=4 (QNSE), land_surface=3 (RUC).
+    [("microphysics", 5), ("pbl", 3), ("surface_layer", 4), ("cumulus", 5), ("land_surface", 3)],
 )
 def test_fail_closed_on_out_of_matrix(fam: str, opt: int) -> None:
     with pytest.raises(UnsupportedSchemeSelection):

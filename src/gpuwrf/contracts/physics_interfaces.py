@@ -380,6 +380,37 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         diagnostics=("T2", "Q2", "U10", "V10", "PSFC", "HFX", "LH", "UST"),
     ),
     PhysicsStepSpec(
+        family="surface_layer",
+        option=3,
+        name="NCEP GFS surface layer",
+        wrf_slot="first_rk_surface_driver",
+        owner_module="src/gpuwrf/physics/sfclay_gfs.py",
+        oracle="v0.13 Tier-3 fp64 savepoint parity vs unmodified WRF module_sf_gfs.F "
+        "(proofs/v013/t3_surface_lsm_oracle.py/.json; faithful fpvs table)",
+        reads_state=("u", "v", "theta", "qv", "t_skin", "soil_moisture", "xland", "roughness_m"),
+        writes_state=("ustar", "theta_flux", "qv_flux", "tau_u", "tau_v", "rhosfc", "fltv"),
+        diagnostics=("U10", "V10", "PSFC", "HFX", "QFX", "LH", "UST", "CHS", "CHS2", "CQS2"),
+        notes="v0.13 OPERATIONAL (jit/vmap-batched sf_gfs_columns, scan-wired via "
+        "coupling.scan_adapters.gfs_sfclay_adapter -> B2 kinematic flux handles). "
+        "NCEP Monin-Obukhov bulk-Richardson exchange-coefficient solve; the GFS "
+        "land/soil/canopy blocks are bypassed in standalone surface-layer mode.",
+    ),
+    PhysicsStepSpec(
+        family="surface_layer",
+        option=91,
+        name="old MM5 surface layer",
+        wrf_slot="first_rk_surface_driver",
+        owner_module="src/gpuwrf/physics/sfclay_old_mm5.py",
+        oracle="v0.13 Tier-3 fp64 savepoint parity vs unmodified WRF module_sf_sfclay.F "
+        "(proofs/v013/t3_surface_lsm_oracle.py/.json)",
+        reads_state=("u", "v", "theta", "qv", "t_skin", "soil_moisture", "xland", "roughness_m"),
+        writes_state=("ustar", "theta_flux", "qv_flux", "tau_u", "tau_v", "rhosfc", "fltv"),
+        diagnostics=("T2", "Q2", "TH2", "U10", "V10", "HFX", "QFX", "LH", "UST", "REGIME"),
+        notes="v0.13 OPERATIONAL (jit/vmap-batched sfclay_old_mm5_columns, scan-wired via "
+        "coupling.scan_adapters.sfclay_old_mm5_adapter -> B2 kinematic flux handles). "
+        "Classic MM5 4-regime Monin-Obukhov surface layer (predecessor of sfclayrev=1).",
+    ),
+    PhysicsStepSpec(
         family="cumulus",
         option=1,
         name="Kain-Fritsch",
@@ -481,6 +512,25 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         diagnostics=("raincv", *CUMULUS_TENDENCY_MEMBERS[14]),
         notes="v0.13 Tier-3 reference-only: oracle staged; traceable JAX column "
         "kernel is a carry-over (fail-closed in the operational scan).",
+    ),
+    PhysicsStepSpec(
+        family="land_surface",
+        option=1,
+        name="thermal-diffusion slab LSM",
+        wrf_slot="first_rk_surface_driver",
+        owner_module="src/gpuwrf/physics/lsm_slab.py",
+        oracle="v0.13 Tier-3 fp64 savepoint parity vs unmodified WRF module_sf_slab.F "
+        "(proofs/v013/t3_surface_lsm_oracle.py/.json)",
+        reads_state=("t_skin", "mavail", "xland"),
+        writes_state=("t_skin",),
+        reads_carry=LAND_CARRY_MEMBERS[1],
+        writes_carry=LAND_CARRY_MEMBERS[1],
+        diagnostics=("TSK", "HFX", "QFX", "LH", "QSFC", "CAPG"),
+        notes="v0.13 Tier-3 REFERENCE-ONLY: 5-layer Blackadar thermal-diffusion slab. "
+        "JAX-ported + fp64 oracle-validated (physics.lsm_slab.slab_columns), but the "
+        "operational LSM scan slot needs a TSLB soil-temperature land carry + GSW/GLW "
+        "radiation forcing + TMN/THC/EMISS statics that the resident State does not yet "
+        "carry; fail-closed in the operational scan until the slab LSM hook lands.",
     ),
     PhysicsStepSpec(
         family="land_surface",
