@@ -154,10 +154,13 @@ Wave deliverables are expected under `proofs/v014/` and
   exact-branch memory preflight remains open; manager sent a status check after
   no completion notice. Do not start a duplicate exact-branch memory preflight
   unless this worker is confirmed dead or stays silent without proof artifacts.
-- Pending dispatch: v0.14 grid comparison framework sprint
-  `.agent/sprints/2026-06-08-v014-grid-comparison-framework/sprint-contract.md`;
-  purpose is a fast complete wrfout-grid comparator with concise top-level
-  output and detailed machine artifacts for Canary and Switzerland.
+- `019ea968-c876-71c3-886a-133a3e740ab2` (`Hypatia`):
+  v0.14 grid comparison framework sprint
+  `.agent/sprints/2026-06-08-v014-grid-comparison-framework/sprint-contract.md`.
+  Purpose is a fast complete wrfout-grid comparator with concise top-level
+  output and detailed machine artifacts for Canary and Switzerland. Write scope:
+  `scripts/compare_wrfout_grid.py`, `proofs/v014/grid_comparison_*`, and one
+  review report; no model code and no GPU.
 
 ## Next Manager Actions
 
