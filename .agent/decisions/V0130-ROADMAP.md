@@ -128,3 +128,8 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 **2026-06-08 ~08:32** — wave 3 results:
 - ✅ **TOST rc=2 fix** (T1#2) MERGED: scoring-path rc=0 proven (real GPU wrfout vs CPU-WRF); GPU n=15 campaign = runbook (proofs/v013/tost_rc2_fix.md), a later GPU step.
 - ✅ **Skill-closure investigation** done (.agent/reviews/2026-06-08-skill-closure-investigation.md). KEY: (1) moisture transport = REAL correctness gap (dycore advects only u/v/w/theta; qv-tend dead code; condensates ZERO advection; NOT WRF-faithful) → #1 fix = wire advect_moisture_scalars into RK3 (CPU-validatable, default-off, GPT-cross-check staged). (2) HONEST: headline T2/U10/V10 closure (credibility gate) needs the HARD GPU sprints (dycore ph' / MYNN-EDMF / faithful *_tendf) — no cheap knob; T2 already PASSES (0.484K), NOT_EQUIVALENT is wind-error-growth (KI-4). So #7 will NOT fully close in this push → land #1 correctness fix + document ranks 2-4 as carry-over (honest, matches "research artifact not full replacement").
+
+**2026-06-08 ~08:44** — wave 3/4:
+- ✅ **clear-sky radiation** (T2) MERGED `f9eb962`: 8 ...C flux vars via WRF-faithful 2nd clear-sky stream, oracle PASS (not self-compare), all-sky byte-unchanged, default-off. (Follow-up: runtime threads with_clear_sky through M9Diagnostics for operational wrfout.)
+- Tier1 done: #1,#2,#3,#6,#8. Tier2 done: reproducibility, PD-moisture, MYJ+Janjic, clear-sky.
+- RUNNING: community-validation, moisture-wiring(#7-correctness core-dycore), GPT-moisture-cross-check (codex), optics/taumol-chunk (NEW: LW _lw_solver_base + SW optics VRAM floor → unblocks #4 GWD-nested).
