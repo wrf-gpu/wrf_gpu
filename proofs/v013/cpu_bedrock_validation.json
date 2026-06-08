@@ -1,0 +1,147 @@
+{
+  "schema": "v013_cpu_bedrock_validation_v1",
+  "title": "v0.13 BEDROCK CPU-only validation slice (RUNS-confidence foundation)",
+  "positioning": "wrf_gpu is a FAST GPU-native WRF-COMPATIBLE reimplementation, NOT a bit-true Fortran port. This slice proves the model RUNS STABLY, CONSERVES mass/water/energy, and RESTARTS bit-identically. It establishes RUNS-stability, not Fortran EQUIVALENCE.",
+  "branch": "validation-cpu-bedrock",
+  "base_commit": "d2314546007887820b061efe3aa5d2be3cf26e8e",
+  "base_commit_subject": "[v013] PRE-COMPACT ANCHOR: running tasks + closeables + validation plan + carry-overs + release steps + positioning",
+  "platform": "cpu",
+  "device_inventory": {"default_backend": "cpu", "devices": ["cpu:0"], "gpu_devices": [], "ok": true},
+  "cpu_affinity": [8, 9, 10, 11, 12, 13, 14, 15],
+  "env_prefix": "JAX_PLATFORMS=cpu PYTHONPATH=src TF_CPP_MIN_LOG_LEVEL=3 taskset -c 8-15",
+  "gpu_used": false,
+  "summary": {"total": 6, "pass": 5, "fail": 0, "skip": 1},
+  "tests": [
+    {
+      "name": "idealized_warm_bubble_skamarock_fp64",
+      "priority": "1 (idealized dycore gate)",
+      "command": "python -m gpuwrf.ic_generators.idealized --case warm_bubble --allow-cpu --proof-dir proofs/v013/cpu_bedrock/f2",
+      "wall_clock_s": 19.79,
+      "grid": "80x40, dx=dz=250m, dt=0.1s, 5000 steps to 500s",
+      "pass_criterion": "verdict==PASS: all 6 declared physics checks (finite, 0.5<=theta'_max<=2.5K, 1<=max|w|<=30 m/s, thermal-centroid rise>=500m, horizontal drift<=250m, relative dry-column mass drift<=1e-8)",
+      "result": "PASS",
+      "key_numbers": {
+        "verdict": "PASS",
+        "status": "RAN_TO_COMPLETION",
+        "all_snapshots_finite": true,
+        "theta_prime_max_K": 1.9200603177474136,
+        "max_abs_w_m_s": 11.68018811324279,
+        "thermal_rise_m": 1924.3475896514237,
+        "horizontal_drift_m": 1.2732925824820995e-11,
+        "relative_mass_drift": 0.0
+      },
+      "proof_artifact": "proofs/v013/cpu_bedrock/f2/skamarock_bubble_diagnostics.json",
+      "what_it_proves": "RUNS-stability: the operational RK3+acoustic dry dycore integrates a rising thermal to completion at fp64 with coherent buoyant rise, bounded perturbation, symmetry (drift ~1e-11 m), and EXACT (0.0) dry-column mass conservation. Not a Fortran-equivalence claim.",
+      "tier": "RUNS-stability"
+    },
+    {
+      "name": "idealized_density_current_straka_fp64",
+      "priority": "1 (idealized dycore gate)",
+      "command": "python -m gpuwrf.ic_generators.idealized --case density_current --allow-cpu --proof-dir proofs/v013/cpu_bedrock/f2",
+      "wall_clock_s": 125.56,
+      "grid": "500x60, dx=dz=100m, dt=0.1s, const_nu=75, 9000 steps to 900s",
+      "pass_criterion": "verdict==PASS: all 6 declared physics checks (finite, -25<=theta'_min<=-5K, 1<=max|w|<=50 m/s, |front-15000m|<=2000m, 2<=rotor proxy<=4, relative dry-column mass drift<=1e-8)",
+      "result": "PASS",
+      "key_numbers": {
+        "verdict": "PASS",
+        "status": "RAN_TO_COMPLETION",
+        "all_snapshots_finite": true,
+        "theta_prime_min_K": -9.971054183169997,
+        "max_abs_w_m_s": 14.57511000316096,
+        "front_position_m": 14150.0,
+        "front_target_m": 15000.0,
+        "rotor_count_proxy": 4.0,
+        "relative_mass_drift": 2.2524889656126635e-09
+      },
+      "proof_artifact": "proofs/v013/cpu_bedrock/f2/straka_density_current_diagnostics.json",
+      "what_it_proves": "RUNS-stability: the cold-pool density current propagates coherently with the canonical ~3-rotor Kelvin-Helmholtz structure, front at 14.15 km (within 850m of the 15 km canonical target), and dry-column mass conserved to 2.25e-9 relative over 9000 steps. Not a Fortran-equivalence claim.",
+      "tier": "RUNS-stability"
+    },
+    {
+      "name": "conservation_budget_controlled_cpu",
+      "priority": "2 (conservation invariants)",
+      "command": "python -m pytest tests/test_conservation_budget.py -v",
+      "wall_clock_s": 2.48,
+      "pass_criterion": "Controlled closed-domain AND open-domain LBC/precip/evap-corrected budget closure: |dry-mass relative residual|<=1e-12, |water relative residual|<=1e-12, |dry/water absolute residual|<=1e-6 kg, |moist-static-energy residual|<=1e-6 J; budget terms reproduce WRF mass/area unit definitions to rtol 1e-13",
+      "result": "PASS",
+      "key_numbers": {
+        "tests_passed": 2,
+        "closed_dry_mass_relative_residual": 0.0,
+        "closed_water_relative_residual": -2.4500888728189126e-16,
+        "open_lbc_corrected_dry_mass_relative_residual": 0.0,
+        "open_lbc_corrected_water_relative_residual": 0.0,
+        "open_moist_static_energy_residual_J": 0.0,
+        "predeclared_relative_tol": 1e-12,
+        "predeclared_absolute_tol_kg": 1e-06
+      },
+      "proof_artifact": "proofs/p0_7/conservation_budget_cpu_controlled.json",
+      "what_it_proves": "RUNS-stability: the diagnostic conservation budget (dry-air mass, total water with precip/evap sinks, dry/moist static energy) closes to machine epsilon on a controlled non-unit-map-factor grid, for both closed and open(LBC-corrected) domains. Validates the conservation accounting that gates operational runs. Not a Fortran-equivalence claim.",
+      "tier": "RUNS-stability"
+    },
+    {
+      "name": "restart_bit_identity_full_carry",
+      "priority": "3 (restart bit-identity)",
+      "command": "python -m pytest tests/test_p0_5_restart_full_carry.py -v",
+      "wall_clock_s": 2.48,
+      "pass_criterion": "wrfrst-equivalent write->read round-trip is BIT-IDENTICAL for every State field, every promoted carry-scratch field, the full NoahMP land state, and the 3 NoahMP rad fields; held rthraten survives non-zero; schema drift and bad format FAIL CLOSED (raise ValueError)",
+      "result": "PASS",
+      "key_numbers": {
+        "tests_passed": 5,
+        "bit_identical_state_fields": true,
+        "bit_identical_noahmp_land": true,
+        "bit_identical_noahmp_rad": true,
+        "held_rthraten_survives_nonzero": true,
+        "schema_drift_fails_closed": true,
+        "bad_format_rejected": true
+      },
+      "proof_artifact": "tests/test_p0_5_restart_full_carry.py (pytest, no JSON sidecar)",
+      "what_it_proves": "RUNS-stability: a full forecast carry (State + scratch + NoahMP land + rad) serialized to wrfrst and re-read is bit-identical, so a restart continues the integration with zero drift; corruption fails closed. Mid-radiation-interval continuity (held rthraten) preserved.",
+      "tier": "RUNS-stability"
+    },
+    {
+      "name": "restart_checkpoint_and_wrfrst_netcdf_roundtrip",
+      "priority": "3 (restart bit-identity, supporting)",
+      "command": "python -m pytest tests/test_m7_restart_checkpoint_roundtrip.py tests/test_v0110_wrfrst_netcdf.py -v",
+      "wall_clock_s": 3.62,
+      "pass_criterion": "checkpoint write->read preserves all State fields bitwise + optional runtime state; wrfrst NetCDF state/carry/nested round-trips bit-identical under the WRF schema; KI3 snow/snso/seed dims written; missing schema fields FAIL CLOSED",
+      "result": "PASS",
+      "key_numbers": {
+        "tests_passed": 7,
+        "checkpoint_bitwise_roundtrip": true,
+        "wrfrst_netcdf_bit_identical": true,
+        "wrf_schema_conformant": true,
+        "missing_schema_fails_closed": true
+      },
+      "proof_artifact": "tests/test_m7_restart_checkpoint_roundtrip.py + tests/test_v0110_wrfrst_netcdf.py (pytest)",
+      "what_it_proves": "RUNS-stability: a second independent restart path (pickle checkpoint) and the NetCDF wrfrst writer both round-trip bit-identically under the WRF restart schema. Corroborates restart bit-identity across both serialization backends.",
+      "tier": "RUNS-stability"
+    },
+    {
+      "name": "qke_finiteness_nan_suppression",
+      "priority": "4 (finiteness smoke)",
+      "command": "python -m pytest tests/test_v0110_qke_finiteness.py -v",
+      "wall_clock_s": 3.62,
+      "pass_criterion": "_wrf_qke_minmax clamps to finite WRF bounds and suppresses NaN/Inf; in-range finite values are unchanged",
+      "result": "PASS",
+      "key_numbers": {"tests_passed": 2, "nan_suppressed": true, "in_range_unchanged": true},
+      "proof_artifact": "tests/test_v0110_qke_finiteness.py (pytest)",
+      "what_it_proves": "RUNS-stability: the MYNN qke finiteness guard (the v0.11 d03-1km cold-start fix) keeps the PBL state finite, preventing NaN propagation in the coupled defaults.",
+      "tier": "RUNS-stability"
+    }
+  ],
+  "skipped": [
+    {
+      "name": "tier2_live_dycore_mass_invariant_small_grid",
+      "command": "python -m pytest tests/test_m4_tier2_invariants.py::test_tier2_small_grid_invariants_pass",
+      "result": "SKIP",
+      "reason": "GPU-required: builds state via State.zeros, which hard-refuses CPU allocation by design (conftest auto-skips). The live-dycore-integration mass-invariant (n_steps with mass_residual_relative<=1e-10) requires the GPU backend. Conservation evidence on CPU instead comes from the idealized-case relative_mass_drift checks (0.0 / 2.25e-9) and the controlled conservation_budget test (residuals ~0). NOT a failure.",
+      "tier": "n/a"
+    }
+  ],
+  "skipped_for_cost": [],
+  "honest_gaps": [
+    "All evidence here is RUNS-stability (the model integrates, conserves, restarts), NOT physics EQUIVALENCE to Fortran WRF. Equivalence (TOST n=15, forecast-vs-obs skill) is a separate GPU campaign.",
+    "The live-coupled-dycore mass invariant over a multi-step integration could not be exercised on CPU (State.zeros is GPU-only by design); covered indirectly by idealized relative_mass_drift + the budget closure, but a direct GPU re-run is still wanted.",
+    "Idealized cases are dry-dynamics; full moist physics + radiation + PBL coupling finiteness over a long real-case integration is a GPU/operational concern not covered by this cheap slice."
+  ]
+}
