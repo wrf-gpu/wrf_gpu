@@ -1,0 +1,48 @@
+{
+  "aggregate_tost_ran": true,
+  "all_rmse_finite": true,
+  "cell_level_field_stats": {
+    "T2": {
+      "bias": 1.3727819297222963,
+      "mae": 1.4327614595638465,
+      "n_cells": 251856,
+      "pearson_r": 0.596704079226211,
+      "rmse": 1.6700323864394269
+    },
+    "U10": {
+      "bias": 1.023427354910596,
+      "mae": 1.376101341861005,
+      "n_cells": 251856,
+      "pearson_r": 0.8594729526744465,
+      "rmse": 1.7696490886676612
+    },
+    "V10": {
+      "bias": 1.3514589359593918,
+      "mae": 1.7237287226593296,
+      "n_cells": 251856,
+      "pearson_r": 0.8589930159484646,
+      "rmse": 2.0733032513298366
+    }
+  },
+  "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260530_18z_l2_72h_20260531T161057Z",
+  "deltas_nonzero": true,
+  "generated_utc": "2026-06-08T07:27:05.010731+00:00",
+  "gpu_dir": "/tmp/wrf_gpu2_v090_for_v0100_validate/proofs/m20/tost_run/gpu_wrfout/case1_L2",
+  "gpu_validation": {
+    "dtype_fp64_first_file": false,
+    "expected_files": 25,
+    "n_files": 72,
+    "nonfinite_hour_files": [],
+    "run_id": "v013_scoring_path_proof_realgpu_vs_cpu",
+    "valid": true
+  },
+  "init_time_utc": "2026-05-30T18:00:00+00:00",
+  "n_common_lead_hours": 24,
+  "platform": "cpu",
+  "purpose": "Prove the powered-TOST scoring code path (score_one_case -> paired_score + score_cell_level + aggregate_tost) runs rc=0 on real retained GPU wrfout data, on CPU only. NOT an equivalence claim: GPU init 2026-05-29 18z vs CPU-WRF init 2026-05-30 18z (different IC) -> deltas are genuine/non-zero by construction.",
+  "schema": "V013TOSTScoringPathCPUProof",
+  "schema_version": 1,
+  "tost_pairs_total_complete_pairs": 5088,
+  "total_cells_scored": 755568,
+  "verdict": "SCORING_PATH_RC0_PROVEN"
+}
