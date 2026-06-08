@@ -1,0 +1,223 @@
+{
+  "aemet_root": "/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations",
+  "aggregate_tost": {
+    "all_variables_equivalent": false,
+    "empirical_sigma": {
+      "T2": 0.7891741892403257,
+      "U10": 0.12267319336591337,
+      "V10": 0.0802735717139929
+    },
+    "n_cases": {
+      "T2": 2,
+      "U10": 2,
+      "V10": 2
+    },
+    "per_case_deltas": {
+      "T2": [
+        0.51322220201384,
+        1.6292830435123
+      ],
+      "U10": [
+        0.08007345498283414,
+        0.253559548780526
+      ],
+      "V10": [
+        -0.09681771491020852,
+        0.01670625890784949
+      ]
+    },
+    "schema": "M21TostResult",
+    "schema_version": 1,
+    "tost": {
+      "T2": {
+        "ci90": [
+          -2.4520127914771286,
+          4.594518037003269
+        ],
+        "equivalent": false,
+        "margin": 0.2148692978020805,
+        "mean_delta": 1.0712526227630699,
+        "n": 2,
+        "p_lower": 0.13030750857969883,
+        "p_upper": 0.8161734200847769,
+        "sd_delta": 0.7891741892403257,
+        "status": "OK",
+        "tost_p": 0.8161734200847769
+      },
+      "U10": {
+        "ci90": [
+          -0.38085754186343623,
+          0.7144905456267964
+        ],
+        "equivalent": false,
+        "margin": 0.23064713972582307,
+        "mean_delta": 0.16681650188168007,
+        "n": 2,
+        "p_lower": 0.06839598845863318,
+        "p_upper": 0.2980676564430215,
+        "sd_delta": 0.12267319336591337,
+        "status": "OK",
+        "tost_p": 0.2980676564430215
+      },
+      "V10": {
+        "ci90": [
+          -0.39843680882402593,
+          0.3183253528216669
+        ],
+        "equivalent": false,
+        "margin": 0.2752320537920854,
+        "mean_delta": -0.040055728001179514,
+        "n": 2,
+        "p_lower": 0.07538527503872962,
+        "p_upper": 0.056698703926405504,
+        "sd_delta": 0.0802735717139929,
+        "status": "OK",
+        "tost_p": 0.07538527503872962
+      }
+    }
+  },
+  "case_scores": [
+    {
+      "case_id": "case2_L2_existing_raw",
+      "domain": "d02",
+      "forecast_hours": 72,
+      "init_time_utc": "2026-05-09T18:00:00+00:00",
+      "per_block": {
+        "T2": {
+          "0-24h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "24-48h": {
+            "cpu_rmse": 2.009108840101971,
+            "gpu_rmse": 2.1635294520575115,
+            "n_pairs": 588,
+            "paired_delta_rmse": 0.15442061195554047,
+            "status": "OK"
+          },
+          "48-72h": {
+            "cpu_rmse": 2.072715943964474,
+            "gpu_rmse": 2.944739736036613,
+            "n_pairs": 1080,
+            "paired_delta_rmse": 0.8720237920721394,
+            "status": "OK"
+          }
+        },
+        "U10": {
+          "0-24h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "24-48h": {
+            "cpu_rmse": 2.3145105912510355,
+            "gpu_rmse": 2.2505302366952207,
+            "n_pairs": 584,
+            "paired_delta_rmse": -0.06398035455581486,
+            "status": "OK"
+          },
+          "48-72h": {
+            "cpu_rmse": 1.964326959389596,
+            "gpu_rmse": 2.188454223911079,
+            "n_pairs": 1079,
+            "paired_delta_rmse": 0.22412726452148313,
+            "status": "OK"
+          }
+        },
+        "V10": {
+          "0-24h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "24-48h": {
+            "cpu_rmse": 2.367525973029045,
+            "gpu_rmse": 2.099585695440442,
+            "n_pairs": 584,
+            "paired_delta_rmse": -0.26794027758860306,
+            "status": "OK"
+          },
+          "48-72h": {
+            "cpu_rmse": 2.0746254565636235,
+            "gpu_rmse": 2.1489303043318095,
+            "n_pairs": 1079,
+            "paired_delta_rmse": 0.07430484776818602,
+            "status": "OK"
+          }
+        }
+      },
+      "schema": "M20PairedCaseScore",
+      "schema_version": 1,
+      "self_test_cpu_vs_cpu": false,
+      "total_complete_pairs": 4994
+    },
+    {
+      "case_id": "case3_L3_existing_raw",
+      "domain": "d02",
+      "forecast_hours": 24,
+      "init_time_utc": "2026-05-21T18:00:00+00:00",
+      "per_block": {
+        "T2": {
+          "0-24h": {
+            "cpu_rmse": 2.148692978020805,
+            "gpu_rmse": 3.777976021533105,
+            "n_pairs": 1639,
+            "paired_delta_rmse": 1.6292830435123,
+            "status": "OK"
+          },
+          "24-48h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "48-72h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          }
+        },
+        "U10": {
+          "0-24h": {
+            "cpu_rmse": 2.3064713972582305,
+            "gpu_rmse": 2.5600309460387565,
+            "n_pairs": 1628,
+            "paired_delta_rmse": 0.253559548780526,
+            "status": "OK"
+          },
+          "24-48h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "48-72h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          }
+        },
+        "V10": {
+          "0-24h": {
+            "cpu_rmse": 2.7523205379208537,
+            "gpu_rmse": 2.7690267968287032,
+            "n_pairs": 1628,
+            "paired_delta_rmse": 0.01670625890784949,
+            "status": "OK"
+          },
+          "24-48h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          },
+          "48-72h": {
+            "n_pairs": 0,
+            "status": "EXCLUDED_LOW_N"
+          }
+        }
+      },
+      "schema": "M20PairedCaseScore",
+      "schema_version": 1,
+      "self_test_cpu_vs_cpu": false,
+      "total_complete_pairs": 4895
+    }
+  ],
+  "caveat": "Uses ADR-029 scorer on existing wrfouts only; it does not launch forecasts.",
+  "excluded": [],
+  "generated_utc": "2026-06-08T16:25:33.025698+00:00",
+  "n_excluded": 0,
+  "n_scored": 2,
+  "schema": "CanaryStationTostExistingPairs",
+  "schema_version": 1
+}
