@@ -95,6 +95,7 @@ from gpuwrf.physics._gf_jax import gfdrv_batched
 from gpuwrf.physics.pbl_acm2 import acm2_columns
 from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
 from gpuwrf.physics.pbl_ysu import ysu_columns
+from gpuwrf.physics.bl_mrf import mrf_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
@@ -869,6 +870,8 @@ def _pbl_surface_forcing(state: State, grid):
     qfx = lh / XLV  # kg m^-2 s^-1 (LH = XLV*QFX)
     u_mass = _u_mass(state)
     v_mass = _v_mass(state)
+    z_mass = 0.5 * (interface_z[:-1] + interface_z[1:])  # (nz, ny, nx) full-level height
+    tsk = jnp.asarray(state.t_skin, jnp.float64)  # (ny, nx)
     return {
         "ncol": ncol, "ny": ny, "nx": nx, "nz": nz,
         "u_mass": u_mass, "v_mass": v_mass,
@@ -876,7 +879,8 @@ def _pbl_surface_forcing(state: State, grid):
         "theta_cols": _cols(state.theta), "T_cols": _cols(T),
         "qv_cols": _cols(jnp.maximum(state.qv, 0.0)),
         "p_cols": _cols(p), "pii_cols": _cols(pii), "rho_cols": _cols(rho),
-        "dz_cols": _cols(dz),
+        "dz_cols": _cols(dz), "z_cols": _cols(z_mass),
+        "tsk": _flat2d(tsk),
         "p_int_cols": jnp.moveaxis(p_int, 0, -1).reshape(ncol, nz + 1),
         # surface forcing (ncol,)
         "hfx": _flat2d(hfx), "qfx": _flat2d(qfx),
@@ -983,6 +987,37 @@ def boulac_pbl_adapter(state: State, dt: float, grid=None) -> State:
     )
 
 
+def mrf_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=99 MRF PBL ``State -> State`` scan adapter (jit/vmap-traceable kernel).
+
+    The MRF (Hong-Pan 1996) nonlocal-K PBL is YSU's predecessor; it consumes the
+    SAME revised-MM5 surface-layer forcing the YSU adapter re-derives, plus the
+    skin temperature ``tsk`` and the ``gz1oz0 = ln(za_1/znt)`` surface-layer log
+    ratio that MRF reads. The momentum increment is applied A2C-faithfully like the
+    other PBL adapters.
+    """
+
+    del grid
+    f = _pbl_surface_forcing(state, None)
+    znt = f["znt"]
+    za1 = 0.5 * f["dz_cols"][:, 0]  # ~mid-height of the lowest mass level
+    gz1oz0 = jnp.log(jnp.maximum(za1, znt) / znt)
+    out = mrf_columns(
+        f["u_cols"], f["v_cols"], f["T_cols"], f["qv_cols"],
+        jnp.zeros_like(f["qv_cols"]),
+        f["p_cols"], f["pii_cols"], f["dz_cols"], f["z_cols"],
+        psfc=f["p_cols"][:, 0], znt=znt, ust=f["ust"], hfx=f["hfx"], qfx=f["qfx"],
+        tsk=f["tsk"], gz1oz0=gz1oz0, wspd=f["wspd"], br=f["br"],
+        psim=f["psim"], psih=f["psih"], xland=f["xland"], dt=float(dt),
+    )
+    # The MRF kernel emits WRF-named tendency RATES (rublten/.../rthblten with the
+    # theta tendency already divided by exner, exactly the WRF wrapper convention);
+    # map them to the shared (u/v/theta/qv) increment-rate contract.
+    tend = {"u": out["rublten"], "v": out["rvblten"],
+            "theta": out["rthblten"], "qv": out["rqvblten"]}
+    return _apply_pbl_increment(state, dt, tend, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+
 # --- dispatch tables ----------------------------------------------------------
 
 # Microphysics options whose State->State scan adapter is threaded into the GPU
@@ -1029,11 +1064,13 @@ CU_STATELESS_SCAN_ADAPTERS = {
 
 # PBL options whose scan adapter is threaded (bl=5 MYNN is the existing
 # physics_couplers.mynn_adapter; bl=0 disables). YSU(1)/ACM2(7)/BouLac(8) are
-# v0.6.0 jax.lax.scan-traceable rewrites -- GPU-operational.
+# v0.6.0 jax.lax.scan-traceable rewrites; MRF(99) is the v0.13 jit/vmap-traceable
+# port of phys/module_bl_mrf.F (savepoint-parity gated, proofs/v013/mrf_oracle.py).
 PBL_SCAN_ADAPTERS = {
     1: ysu_pbl_adapter,
     7: acm2_pbl_adapter,
     8: boulac_pbl_adapter,
+    99: mrf_pbl_adapter,
 }
 
 

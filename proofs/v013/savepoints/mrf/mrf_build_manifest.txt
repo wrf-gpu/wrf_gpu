@@ -1,0 +1,5 @@
+mode=fp32
+full_wrf_exe=false
+wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_bl_mrf.F
+compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none 

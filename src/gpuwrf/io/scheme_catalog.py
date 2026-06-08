@@ -140,7 +140,10 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     "cu_physics": frozenset({0, 1, 2, 3, 6}),
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
-    "bl_pbl_physics": frozenset({0, 1, 2, 5, 7, 8}),
+    # bl=99 MRF is the v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F
+    # (savepoint-parity gated, proofs/v013/mrf_oracle.py); consumes the revised-MM5
+    # surface layer (sf_sfclay=1), no new surface partner needed.
+    "bl_pbl_physics": frozenset({0, 1, 2, 5, 7, 8, 99}),
     "sf_sfclay_physics": frozenset({0, 1, 2, 5, 7}),
     "sf_surface_physics": frozenset({0, 2, 4}),
     # ra_lw=1 (classic AER RRTM 16-band LW) is now operationally scan-wired
@@ -188,8 +191,8 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "operational default).",
     "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch, 3=Grell-"
     "Freitas, 6=Tiedtke are GPU-operational).",
-    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/5/7/8 (5=MYNN, 1=YSU, 2=MYJ "
-    "[pair with sf_sfclay_physics=2], 7=ACM2, 8=BouLac).",
+    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/5/7/8/99 (5=MYNN, 1=YSU, 2=MYJ "
+    "[pair with sf_sfclay_physics=2], 7=ACM2, 8=BouLac, 99=MRF).",
     "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/5/7 (5=MYNN-SL, "
     "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 7=Pleim-Xiu).",
     "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic).",

@@ -156,6 +156,12 @@ _PBL_ENTRIES: dict[int, SchemeEntry] = {
                    "column_state", True,
                    reads_state=("u", "v", "theta", "qv", "qc", "qke"),
                    writes_state=("u", "v", "theta", "qv", "qc", "qke"), carry_members=("qke",)),
+    # MRF(99): v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F, scan-wired as a
+    # State->State adapter (coupling.scan_adapters.mrf_pbl_adapter). Nonlocal-K, no
+    # prognostic PBL carry; consumes the revised-MM5 surface forcing (sf_sfclay=1).
+    99: SchemeEntry("pbl", 99, PBL_SCHEMES[99].name, "gpuwrf.coupling.scan_adapters", "mrf_pbl_adapter",
+                    "state_adapter", True,
+                    reads_state=("u", "v", "theta", "qv"), writes_state=("u", "v", "theta", "qv")),
 }
 
 # --- Surface layer (sf_sfclay_physics) -----------------------------------------
