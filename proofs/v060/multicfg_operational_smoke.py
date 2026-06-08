@@ -272,8 +272,8 @@ SWEEP: tuple[Config, ...] = (
     #     Routed through fast bulk land (the PBL slot is the axis under test). ---
     Config("pbl_ysu", "YSU(1) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_ysu.ysu_columns) + revised-MM5 sfclay + bulk land",
            8, 1, 1, 0, None, "RUN", covers=("bl1-YSU",)),
-    Config("pbl_acm2", "ACM2(7) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_acm2.acm2_columns) + Pleim-Xiu sfclay + bulk land",
-           8, 7, 7, 0, None, "RUN", covers=("bl7-ACM2",)),
+    Config("pbl_acm2", "ACM2(7) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_acm2.acm2_columns) + revised-MM5 sfclay(1) + bulk land. ACM2 consumes revised-MM5 surface forcing; bl7+sf1 is the Issue-A-validated gate-ready pairing (bl7+other-sf fail-closes, no silent substitution).",
+           8, 7, 1, 0, None, "RUN", covers=("bl7-ACM2",)),
     Config("pbl_boulac", "BouLac(8) PBL -- v0.6.0 jax.lax.scan rewrite (pbl_boulac.boulac_columns) + revised-MM5 sfclay + bulk land",
            8, 8, 1, 0, None, "RUN", covers=("bl8-BouLac",)),
     # --- FAIL-CLOSED configs (coupler must REJECT loudly; honest integration finding) ---
@@ -283,11 +283,11 @@ SWEEP: tuple[Config, ...] = (
     # distinct WRF source path -> not scan-wired, must fail closed.
     Config("cu_newtiedtke_unwired", "New-Tiedtke(16) cumulus -- not separately gated (no distinct WRF source path)",
            8, 5, 5, 16, 4, "FAIL_CLOSED", covers=("cu16-NewTiedtke",)),
-    # MYJ(2) PBL + Janjic Eta(2) sfclay: savepoint-parity-proven CPU references with
-    # no operational scan adapter/carry path yet -> must fail closed (the mandatory
-    # MYJ<->Janjic pair is selected together so the suite is otherwise valid).
-    Config("pbl_myj_janjic_unwired", "MYJ(2) PBL + Janjic Eta(2) sfclay -- parity-proven CPU references, no scan adapter yet",
-           8, 2, 2, 0, 4, "FAIL_CLOSED", covers=("bl2-MYJ", "sf2-Janjic")),
+    # MYJ(2) PBL + Janjic Eta(2) sfclay: now OPERATIONAL (wired c612ab9, oracle PASS vs
+    # pristine-WRF savepoints worst PBL 2.7e-11 / SFC 1.6e-10). MYJ re-runs its mandatory
+    # Janjic surface layer, so the bl2<->sf2 pair runs end-to-end through the operational scan.
+    Config("pbl_myj_janjic", "MYJ(2) PBL + Janjic Eta(2) sfclay -- operational (c612ab9); MYJ re-runs the mandatory Janjic sfclay",
+           8, 2, 2, 0, 4, "RUN", covers=("bl2-MYJ", "sf2-Janjic")),
 )
 
 
