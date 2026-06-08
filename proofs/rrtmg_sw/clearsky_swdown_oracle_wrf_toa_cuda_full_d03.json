@@ -3,7 +3,7 @@
   "source_scale": "wrf-toa",
   "generated_utc": "2026-06-02T07:46:22.620623+00:00",
   "command_hint": "taskset -c 0-3 env JAX_PLATFORMS=<cpu|cuda> PYTHONPATH=src python proofs/rrtmg_sw/clearsky_swdown_oracle.py clear --source-scale wrf-toa --max-columns <N> --batch-size <N>",
-  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtmg_sw.F",
+  "wrf_source": "~/src/wrf_pristine/WRF/phys/module_ra_rrtmg_sw.F",
   "results": [
     {
       "lead": 15,

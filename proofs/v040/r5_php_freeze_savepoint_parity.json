@@ -46,9 +46,9 @@
   },
   "linked_wrf_object": {
     "oracle": "standalone driver linked to UNMODIFIED WRF module_small_step_em.o advance_uv",
-    "linked_driver": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r5-php/proofs/v040/_r5_build/wrf_advance_uv_driver",
-    "linked_driver_source": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r5-php/proofs/v040/wrf_advance_uv_driver.F90",
-    "wrf_object": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.o",
+    "linked_driver": "REPO/proofs/v040/_r5_build/wrf_advance_uv_driver",
+    "linked_driver_source": "REPO/proofs/v040/wrf_advance_uv_driver.F90",
+    "wrf_object": "~/src/wrf_pristine/WRF/dyn_em/module_small_step_em.o",
     "wrf_object_sha256": "285722ae513bba55d0cde9f7c4490282a2ca804edf2a51c619a35ca7b54cf43f",
     "rwordsize": 4,
     "tol": {

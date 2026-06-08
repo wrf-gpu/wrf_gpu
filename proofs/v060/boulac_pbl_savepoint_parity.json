@@ -489,9 +489,9 @@
     "compile_precision": "gfortran -fdefault-real-8 -fdefault-double-8",
     "full_wrf_exe_run": false,
     "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/boulac_build_and_run.sh",
-    "saved_checksum_file": "/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-boulac/proofs/v060/savepoints/boulac_wrf_source_checksums.txt",
+    "saved_checksum_file": "REPO/proofs/v060/savepoints/boulac_wrf_source_checksums.txt",
     "type": "single-column Fortran driver compiled against unmodified WRF module_bl_boulac.F",
-    "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_boulac.F",
+    "wrf_source": "~/src/wrf_pristine/WRF/phys/module_bl_boulac.F",
     "wrf_source_sha256": "68285f1457fe62e37ad1d76680d3c69e4a48a6baca93348f6f8a15c5fb40d871"
   },
   "pblh": {

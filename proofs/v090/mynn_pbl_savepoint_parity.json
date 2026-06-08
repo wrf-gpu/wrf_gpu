@@ -216,6 +216,6 @@
   "proof": "v090-mynn-pbl-savepoint-parity",
   "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
   "status": "COMPARED",
-  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F",
+  "wrf_source": "~/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F",
   "wrf_source_sha256": "6e4a7d5b35ce46f01591f2c1d58e545380d546e654b4a59ee1bcf99cfbce2d72"
 }

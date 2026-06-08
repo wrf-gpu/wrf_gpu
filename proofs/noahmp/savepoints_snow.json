@@ -1378,5 +1378,5 @@
     "opt_stc": 1,
     "opt_tbot": 2
   },
-  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F"
+  "wrf_source": "~/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F"
 }

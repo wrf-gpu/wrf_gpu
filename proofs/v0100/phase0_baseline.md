@@ -160,5 +160,5 @@ Proceed only with scopes supported by this Phase 0 evidence:
 - commands run: source `rg/nl` audit, CUDA visibility checks, nsys smoke, CPU StableHLO audit, Thompson histogram, Python/shell/json validation.
 - proof objects produced: `phase0_baseline.md`, `phase0_baseline.json`, `hlo_audit.json`, `thompson_nstep_histogram.json`, and profiling/audit scripts under `proofs/v0100/`.
 - unresolved risks: no fresh nsys, no guards on/off matrix, no production daily-wrapper timing, no GPU buffer-assignment alias report, no graupel wet-column Thompson proof.
-- commit status: attempted, but blocked because Git metadata is read-only: `fatal: Unable to create '/home/enric/src/wrf_gpu2/.git/worktrees/perf-v0100/index.lock': Read-only file system`.
+- commit status: attempted, but blocked because Git metadata is read-only: `fatal: Unable to create 'REPO/.git/worktrees/perf-v0100/index.lock': Read-only file system`.
 - next decision needed: restore GPU/nsys access and rerun Phase 0 GPU lanes before implementation begins.

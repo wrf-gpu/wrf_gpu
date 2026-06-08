@@ -57,7 +57,7 @@
   "kf_cu_physics_1_capability": {
     "decision": "ADOPT TRUNK v0.6.0 KF (cu_physics=1) — do NOT re-apply the older v0.4.0 KF-wire (828ff90/075131e)",
     "reason": "trunk 350a7c6 ALREADY wires Kain-Fritsch-eta into the operational scan via CU_SCAN_ADAPTERS={1: kf_adapter} (scan_adapters.py:547), with initial_kf_carry/kf_adapter/step_kf_column (cumulus_kf.py) and full NCA bookkeeping. This v0.6.0 integration is more complete and more recent than the parallel v0.4.0 KF-wire built for the bias-falsification gate; re-applying the older wiring would conflict with and regress the unified 12-scheme scan.",
-    "kf_oracle_gate": {"test": "tests/test_kf_cumulus_oracle.py", "result": "6 passed", "oracle": "single-column Fortran driver linked against unmodified WRF /home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F"},
+    "kf_oracle_gate": {"test": "tests/test_kf_cumulus_oracle.py", "result": "6 passed", "oracle": "single-column Fortran driver linked against unmodified WRF ~/src/wrf_pristine/WRF/phys/module_cu_kfeta.F"},
     "kf_savepoint_parity": {"proof": "proofs/v060/kf_savepoint_parity_report.json", "verdict": "PASS", "n_cases": 5, "adapter_test": "tests/test_v060_cumulus_kf.py -> 2 passed"},
     "cu_off_replay_safe": "cu_physics=0 leaves cumulus_carry=None and the scan cumulus slot is skipped (operational_mode.py: `if cu_opt in CU_SCAN_ADAPTERS`); structurally identical to the pre-v0.6.0 carry."
   },

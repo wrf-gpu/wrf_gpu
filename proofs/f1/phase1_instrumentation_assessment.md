@@ -4,11 +4,11 @@ Outcome: fallback path selected.
 
 Evidence:
 
-- `find /home/enric/src -type f -name wrf.exe -print` found only legacy deprecated WRF binaries under `/home/enric/src/wrf_gpu_DEPRECATED_archived_on_github_nric_wrf_gpu/builds/`.
-- `find /home/enric/src -type f -name ideal.exe -print` found no `ideal.exe`.
+- `find ~/src -type f -name wrf.exe -print` found only legacy deprecated WRF binaries under `~/src/wrf_gpu_DEPRECATED_archived_on_github_nric_wrf_gpu/builds/`.
+- `find ~/src -type f -name ideal.exe -print` found no `ideal.exe`.
 - `external/wrf_savepoint_patch/HOOK_INVENTORY.md` states all wrapper hook bodies are empty and active emission is still Python-orchestrated.
-- `bash external/wrf_savepoint_patch/build.sh` failed immediately because `/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe` no longer exists in this workstation layout.
-- Direct edits to `/home/enric/src/wrf_gpu/` are prohibited by the sprint contract, and this worktree is the only manager repo write target.
+- `bash external/wrf_savepoint_patch/build.sh` failed immediately because `~/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe` no longer exists in this workstation layout.
+- Direct edits to `~/src/wrf_gpu/` are prohibited by the sprint contract, and this worktree is the only manager repo write target.
 
 Fallback oracle used:
 

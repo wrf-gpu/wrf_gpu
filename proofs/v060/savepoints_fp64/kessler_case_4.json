@@ -2,7 +2,7 @@
   "metadata": {
     "scheme": "Kessler warm rain (mp_physics=1)",
     "case_label": "evaporation",
-    "oracle_source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F",
+    "oracle_source": "~/src/wrf_pristine/WRF/phys/module_mp_kessler.F",
     "full_wrf_exe": false
   },
   "scalars": {

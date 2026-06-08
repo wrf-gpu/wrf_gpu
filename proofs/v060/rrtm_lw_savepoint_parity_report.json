@@ -13,7 +13,7 @@
     "olr_abs": 0.1
   },
   "oracle": {
-    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
+    "source": "~/src/wrf_pristine/WRF/phys/module_ra_rrtm.F",
     "entry": "RRTMLWRAD -> RRTM (AER 16-band k-distribution LW)",
     "lookup_asset": "RRTM_DATA / RRTM_DATA_DBL (big-endian, frecord-marker=4)",
     "source_unmodified": true,
@@ -23,8 +23,8 @@
     "fp64_savepoints": "proofs/v060/savepoints_fp64 (rrtm_lw_case_*.json)",
     "fp32_source_checksums": "9f54e70db6258a521921d89ada864857a45c7b0cd134e25f498350f5aa49428e  module_ra_rrtm.F\nb249f472550dd2d8e594fb5d2474e280f423e5e339a9ff393d42c261098d5182  module_ra_clWRF_support.F\n45dc91514cf018e133301a1b667deeb17f5b65c49ccfaa9140761a8028bc8ae0  RRTM_DATA\n",
     "fp64_source_checksums": "9f54e70db6258a521921d89ada864857a45c7b0cd134e25f498350f5aa49428e  module_ra_rrtm.F\nb249f472550dd2d8e594fb5d2474e280f423e5e339a9ff393d42c261098d5182  module_ra_clWRF_support.F\n4be1fa00674f947f306edde20433dc170b90ea1e71c0d25a98bcb6a0676e71ff  RRTM_DATA\n",
-    "fp32_build_manifest": "build_mode=fp32\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -DRWORDSIZE=4 -DIWORDSIZE=4\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nrrtm_data=/home/enric/src/wrf_pristine/WRF/run/RRTM_DATA\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F\n",
-    "fp64_build_manifest": "build_mode=fp64\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -fdefault-real-8 -fdefault-double-8 -DRWORDSIZE=8 -DIWORDSIZE=4\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nrrtm_data=/home/enric/src/wrf_pristine/WRF/run/RRTM_DATA_DBL\nwrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtm.F\n",
+    "fp32_build_manifest": "build_mode=fp32\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -DRWORDSIZE=4 -DIWORDSIZE=4\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nrrtm_data=~/src/wrf_pristine/WRF/run/RRTM_DATA\nwrf_source=~/src/wrf_pristine/WRF/phys/module_ra_rrtm.F\n",
+    "fp64_build_manifest": "build_mode=fp64\nfflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -fdefault-real-8 -fdefault-double-8 -DRWORDSIZE=8 -DIWORDSIZE=4\ngfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0\nrrtm_data=~/src/wrf_pristine/WRF/run/RRTM_DATA_DBL\nwrf_source=~/src/wrf_pristine/WRF/phys/module_ra_rrtm.F\n",
     "fp64_oracle_summary": {
       "1": {
         "label": "clearsky_warm_land",

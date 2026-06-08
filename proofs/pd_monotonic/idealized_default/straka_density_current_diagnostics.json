@@ -80,7 +80,7 @@
     "theta_perturbation_min_k": -15.0
   },
   "plots": [
-    "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a6339843bee5268fd/proofs/pd_monotonic/idealized_default/plots/density_current_theta_prime_900s.ppm"
+    "REPO/proofs/pd_monotonic/idealized_default/plots/density_current_theta_prime_900s.ppm"
   ],
   "reference": {
     "description": "Cold-pool density current: about three rotors and front position near 15 km by 900 s on 100 m grids.",

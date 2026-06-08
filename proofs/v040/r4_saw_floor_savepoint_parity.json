@@ -121,12 +121,12 @@
     "interpretation": "On this real d03 column, local WRF/JAX kmdz is already above 0.5*s_aw on all interfaces, so the no-floor and fixed U/V tendencies are indistinguishable at WRF-r4 precision. This savepoint gates parity; the 2-date forecast gate measures operational impact."
   },
   "oracle": {
-    "source": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/mynn_edmf/fortran_oracle/oracle_out.txt",
+    "source": "REPO/proofs/mynn_edmf/fortran_oracle/oracle_out.txt",
     "type": "unmodified WRF module_bl_mynnedmf object-linked Fortran oracle",
     "wrf_source_lines": {
-      "du_dv_outputs": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:4055-4062,4116-4123",
-      "kmdz_floor": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3990-3997",
-      "uv_onoff_mf_terms": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3949-3956,4009-4034,4070-4095"
+      "du_dv_outputs": "~/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:4055-4062,4116-4123",
+      "kmdz_floor": "~/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3990-3997",
+      "uv_onoff_mf_terms": "~/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F:3949-3956,4009-4034,4070-4095"
     }
   },
   "predeclared_tolerances": {

@@ -352,7 +352,7 @@
     "source_checksum_sidecar": "proofs/v060/savepoints/kf_wrf_source_checksums.txt",
     "source_sha256": "e6376c2d85c45470f49d545b25d513b5ec111bf36b87beebc740bf42825c6e5f",
     "type": "single-column Fortran driver linked against unmodified WRF module_cu_kfeta.F",
-    "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F"
+    "wrf_source": "~/src/wrf_pristine/WRF/phys/module_cu_kfeta.F"
   },
   "predeclared_tolerances": {
     "cutop_cubot": "abs < 0.5 model level",

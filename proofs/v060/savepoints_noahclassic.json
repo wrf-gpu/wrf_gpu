@@ -2971,5 +2971,5 @@
     "ua_phys": false,
     "usemonalb": false
   },
-  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahlsm.F"
+  "wrf_source": "~/src/wrf_pristine/WRF/phys/module_sf_noahlsm.F"
 }

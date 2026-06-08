@@ -7,7 +7,7 @@
     "taskset -c 0-3 env JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=true PYTHONPATH=src:proofs/v040:. python proofs/v040/idealized_no_regression_report.py"
   ],
   "warm_bubble": {
-    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a501df260e41cdd7d/proofs/verify_run/row1/skamarock_bubble_diagnostics.json",
+    "path": "REPO/proofs/verify_run/row1/skamarock_bubble_diagnostics.json",
     "verdict": "PASS",
     "status": "RAN_TO_COMPLETION",
     "checks_passed": {
@@ -28,7 +28,7 @@
     }
   },
   "density_current": {
-    "path": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a501df260e41cdd7d/proofs/verify_run/row2/straka_density_current_diagnostics.json",
+    "path": "REPO/proofs/verify_run/row2/straka_density_current_diagnostics.json",
     "verdict": "PASS",
     "status": "RAN_TO_COMPLETION",
     "checks_passed": {

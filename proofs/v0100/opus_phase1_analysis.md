@@ -1,7 +1,7 @@
 # Opus-MAX v0.10.0 Phase-1 Kernel-Optimization Analysis (INDEPENDENT)
 
 **Analyst:** Opus 4.8 MAX kernel-optimization analyst
-**Code analyzed:** v0.9.0 kernel @ `/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-v090-final` (commit `016d993`, tag v0.9.0)
+**Code analyzed:** v0.9.0 kernel @ `REPO
 **Mode:** analysis only — NO code changes; NO GPU runs (existing artifacts only). taskset 0-3.
 **Calibration:** principal exit-gate = near-theoretical-optimum, ALL inefficiencies noted (ideally removed), <1% gains out of scope, every not-removed item needs >=5 failed attempts OR a written not-worth-it justification.
 

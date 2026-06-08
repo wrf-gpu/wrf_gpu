@@ -253,7 +253,7 @@
     "attempted": true,
     "status": "BLOCKED_BY_READ_ONLY_GIT_METADATA",
     "command": "git add proofs/v0100/... && git diff --cached --stat && git diff --cached --check",
-    "error": "fatal: Unable to create '/home/enric/src/wrf_gpu2/.git/worktrees/perf-v0100/index.lock': Read-only file system"
+    "error": "fatal: Unable to create 'REPO/.git/worktrees/perf-v0100/index.lock': Read-only file system"
   },
   "proof_objects": [
     "proofs/v0100/phase0_baseline.md",

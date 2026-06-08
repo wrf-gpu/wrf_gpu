@@ -136,7 +136,7 @@
     }
   ],
   "commands": [
-    "git worktree add -B worker/opus/v090-testsweep /home/enric/src/wrf_gpu2/.claude/worktrees/gpt-testsweep worker/opus/trunk-0.9.0",
+    "git worktree add -B worker/opus/v090-testsweep REPO/opus/trunk-0.9.0",
     "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/ -q > proofs/v090/testsweep_baseline_full.log 2>&1",
     "PYTHONFAULTHANDLER=1 JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/ -vv --tb=short > proofs/v090/testsweep_baseline_verbose_crash.log 2>&1",
     "JAX_PLATFORM_NAME=cpu JAX_PLATFORMS=cpu JAX_ENABLE_X64=true PYTHONPATH=src:. taskset -c 0-3 python -m pytest tests/init/real_init/test_s4_comparator.py::test_forecast_gate_is_scaffold_only -q --tb=short",

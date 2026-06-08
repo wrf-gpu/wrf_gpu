@@ -2,9 +2,9 @@
   "schema": "gpuwrf.v060.wsm3_savepoint_parity.v1",
   "scheme": "WSM3 (mp_physics=3)",
   "oracle": {
-    "prognostic_ref": "UNMODIFIED pristine WRF /home/enric/src/wrf_pristine/WRF phys/module_mp_wsm3.F fp64 short single-column savepoints (proofs/v060/savepoints_fp64)",
+    "prognostic_ref": "UNMODIFIED pristine WRF ~/src/wrf_pristine/WRF phys/module_mp_wsm3.F fp64 short single-column savepoints (proofs/v060/savepoints_fp64)",
     "canonical_fp32_shadow": "UNMODIFIED pristine WRF fp32 savepoints (proofs/v060/savepoints); metrics recorded only",
-    "wrf_source": "/home/enric/src/wrf_pristine/WRF",
+    "wrf_source": "~/src/wrf_pristine/WRF",
     "no_self_compare": true,
     "short_run": "6 isolated 40-level single-column cases, one pristine-WRF scheme call per case",
     "source_checksums_fp64": [

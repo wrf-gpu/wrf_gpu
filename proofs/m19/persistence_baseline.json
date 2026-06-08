@@ -2,7 +2,7 @@
   "_doc": "M19 persistence baseline. Persistence = hold t=0 CPU-WRF wrfout_d02 field constant; scored vs the CPU-WRF wrfout_d02 at the lead valid time with the SAME gridded whole-domain RMSE as verdict_3case.score_fields. skill_score = 1 - GPU_RMSE/persistence_RMSE (>0 = GPU beats persistence). Closes .agent/reviews/2026-05-30-agy-verdict-crosscheck.md \u00a7A.2.",
   "metric": "rmse = sqrt(mean((forecast - truth)**2)) over full d02 grid (66x159), float64",
   "skill_score_def": "1 - (GPU_RMSE / persistence_RMSE); >0.02 GPU win, [-0.02,0.02] tie, <-0.02 GPU loss",
-  "gpu_rmse_source": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a4d5d780f57f88354/proofs/m19/verdict_result.json",
+  "gpu_rmse_source": "REPO/proofs/m19/verdict_result.json",
   "scored_leads_note": "only leads the GPU was actually scored at in verdict_result.json are compared (apples-to-apples).",
   "data_availability_note": "case1 (20260528 init) wrfout_d02 history was purged from the corpus after the 2026-05-30T13:42 verdict run (only static met_em/table symlinks remain on disk), so case1 persistence cannot be recomputed. case2 (L2 72h + L3 24h) and case3 (L3 24h) retain full d02 history and cover the 24/48/72h leads.",
   "per_entry": [

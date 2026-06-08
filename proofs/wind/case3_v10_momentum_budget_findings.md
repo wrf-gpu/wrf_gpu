@@ -120,7 +120,7 @@ The operational RK momentum tendency is assembled in
 diffusion + `large_step_horizontal_pgf` (the PGF, faithfully ported from WRF
 `module_em.F` `horizontal_pressure_gradient`), then `rk_addtend_dry`.
 
-Verified against pristine WRF v4 (`/home/enric/src/wrf_pristine/WRF`). In
+Verified against pristine WRF v4 (`~/src/wrf_pristine/WRF`). In
 `dyn_em/module_em.F::rk_tendency` the call sequence is:
 - `module_em.F:717`  `CALL horizontal_pressure_gradient` (PGF — ported)
 - `module_em.F:749/761` `CALL perturbation_coriolis` / `CALL coriolis` (**MISSING**)

@@ -14,9 +14,9 @@ the oracle runs fp32. The pristine `.mod` files are GFORTRAN module version 15
 self-contained sources from the pristine tree:
 
 ```bash
-export PATH=/home/enric/miniconda3/envs/wrfbuild/bin:$PATH
-cp /home/enric/src/wrf_pristine/WRF/phys/ccpp_kind_types.F            ccpp_kind_types.F90
-cp /home/enric/src/wrf_pristine/WRF/phys/physics_mmm/bl_gwdo.F90      bl_gwdo.F90
+export PATH=~/miniconda3/envs/wrfbuild/bin:$PATH
+cp ~/src/wrf_pristine/WRF/phys/ccpp_kind_types.F            ccpp_kind_types.F90
+cp ~/src/wrf_pristine/WRF/phys/physics_mmm/bl_gwdo.F90      bl_gwdo.F90
 gfortran -O2 -ffree-line-length-none -c ccpp_kind_types.F90 -o ccpp_kind_types.o
 gfortran -O2 -ffree-line-length-none -c bl_gwdo.F90        -o bl_gwdo.o
 gfortran -O2 -ffree-line-length-none oracle_driver.F90 ccpp_kind_types.o bl_gwdo.o -o oracle_driver

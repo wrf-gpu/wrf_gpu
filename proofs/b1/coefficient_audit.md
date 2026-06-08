@@ -1,6 +1,6 @@
 # B1 Thompson coefficient audit (mp_physics=8)
 
-WRF source-of-truth: `/home/enric/src/wrf_pristine/WRF/phys/module_mp_thompson.F`
+WRF source-of-truth: `~/src/wrf_pristine/WRF/phys/module_mp_thompson.F`
 (pristine WRF v4, gfortran serial). Config for the oracle: **mp_physics=8**, i.e.
 `is_aerosol_aware = .FALSE.` (init line 468), `is_hail_aware = .FALSE.` (line 63),
 so `nc = Nt_c` (fixed cloud droplet number, line 1842/3487) and graupel uses the

@@ -32,7 +32,7 @@
     "wrf_version": "V4.7.1 (banner in rsl.out.0000)",
     "ranks": 28,
     "decomposition": "nproc_x=7, nproc_y=4",
-    "binary": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+    "binary": "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
     "wall_clock_derivation": "TWO independent methods per run: (1) file-mtime span = mtime(rsl.out.0000) - mtime(freezeH2O.dat) [freezeH2O.dat is loaded by Thompson init immediately before time-stepping; rsl.out.0000 is closed at SUCCESS], giving the true command-to-finish wall; (2) sum / median of per-step 'Timing for main on domain N: X elapsed seconds' lines. On contended days method (2) sum EXCEEDS method (1) because the per-step wall timer counts time the rank-0 process was descheduled; the MEDIAN per-step is robust and is used for the per-domain standalone cost.",
     "completeness_filter": "Only runs with 'SUCCESS COMPLETE WRF' and the full expected per-domain step count are used. Incomplete/crashed runs (e.g. the 31 s/fc-hr L2 outlier, SUCCESS=False, 15694/57600 lines) are excluded.",
     "live_backfill_avoided": "The live 28-rank CPU-WRF backfill is writing /mnt/data/canairy_meteo/runs/wrf_l2_backfill_staging/20260513_..._20260604T062130Z (verified via /proc/<pid>/cwd). This lane read ONLY finished runs under wrf_l2/ and wrf_l3/ and did not touch the staging dir."

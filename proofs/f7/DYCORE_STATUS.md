@@ -235,7 +235,7 @@ front; (2) descending-front w lower-BC; (3) cold-pool front-speed deficit
 (u too weak ⇒ air sinks not spreads). NOT more diffusion (ν=75 is the spec).
 
 ## WRF ground truth (the arbiter — USE IT)
-Pristine WRF **v4.7.1** (same version as Gen2) built at `/home/enric/src/wrf_pristine/WRF` (gfortran serial, conda env `wrfbuild`; `csh -f ./compile`). Center-column (i=20,j=20) per-acoustic-substep `em_quarter_ss` savepoints at:
+Pristine WRF **v4.7.1** (same version as Gen2) built at `~/src/wrf_pristine/WRF` (gfortran serial, conda env `wrfbuild`; `csh -f ./compile`). Center-column (i=20,j=20) per-acoustic-substep `em_quarter_ss` savepoints at:
 - `/mnt/data/wrf_gpu2/wrf_truth/em_quarter_ss_center_savepoints.json` (persistent)
 - `proofs/m9/wrf_em_quarter_ss_savepoints.json`
 Fields per (step,rk,substep)×41 levels: `w_2, ph_2, p, rw_tend, ph_tend, t_2save, muave, muts, mut` + `a, alpha, gamma, cqw, c2a`; scalars `dts_rk=4.0, epssm=0.1`.

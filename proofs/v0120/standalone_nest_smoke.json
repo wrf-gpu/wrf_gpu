@@ -53,7 +53,7 @@
   "wall_clock_total_s": 788.801289272029,
   "wall_clock_forecast_only_s": 782.3165474159177,
   "wall_clock_note": "2 h lead, both domains (d01 9km + d02 3km) compiled cold; includes both-domain XLA compile. Warm per-hour and speedup not claimed by this smoke.",
-  "scratch_dir": "/home/enric/.gpuwrf_scratch_v0120nest",
+  "scratch_dir": "~/.gpuwrf_scratch_v0120nest",
   "scratch_off_tmp": true,
   "precision": "fp64 (force_fp64=True operational namelist, per domain)",
   "qke_coldstart_seeded": true,

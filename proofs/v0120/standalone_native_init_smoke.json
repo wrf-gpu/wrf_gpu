@@ -8,11 +8,11 @@
   "all_finite": true,
   "wrfout_inventory_status": "PASS",
   "wrfout_files": [
-    "/home/enric/.gpuwrf_smoke_v0120/out/wrfout_d01_2026-05-14_19:00:00",
-    "/home/enric/.gpuwrf_smoke_v0120/out/wrfout_d01_2026-05-14_20:00:00"
+    "~/.gpuwrf_smoke_v0120/out/wrfout_d01_2026-05-14_19:00:00",
+    "~/.gpuwrf_smoke_v0120/out/wrfout_d01_2026-05-14_20:00:00"
   ],
   "boundary_source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
-  "scratch_dir": "/home/enric/.gpuwrf_smoke_v0120/scratch",
+  "scratch_dir": "~/.gpuwrf_smoke_v0120/scratch",
   "scratch_off_tmp": true,
   "wall_clock_total_s": 215.6208465959644,
   "wall_clock_per_hour_s": [

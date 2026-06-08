@@ -6,13 +6,13 @@
     "full_wrf_exe": false,
     "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
     "note": "Real WRF-module oracle, not a JAX self-compare; not a coupled wrf.exe run.",
-    "requested_source_path_absent": "/home/enric/src/wrf_pristine/WRF/phys/module_bl_acm2.F",
+    "requested_source_path_absent": "~/src/wrf_pristine/WRF/phys/module_bl_acm2.F",
     "source_checksums_sha256": [
       "f18685f7ea091f567c3f37e983f26357dcd7e9ec2eea9a6e70635c506a66d60c  module_bl_acm.F"
     ],
     "type": "single-column Fortran driver linked against unmodified WRF module_bl_acm.F",
     "wrf_sources": [
-      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_acm.F"
+      "~/src/wrf_pristine/WRF/phys/module_bl_acm.F"
     ]
   },
   "predeclared_tolerances": {

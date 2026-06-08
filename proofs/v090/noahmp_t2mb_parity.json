@@ -2,7 +2,7 @@
   "proof": "Noah-MP 2-m LSM diagnostic (T2MV/T2MB/combined T2) REAL-WRF parity (v0.9.0)",
   "kind": "external oracle: compiled pristine WRF module_sf_noahmplsm.o NOAHMP_SFLX T2MV/T2MB on real Canary d03 land columns vs JAX port; field-wise, predeclared fp64 tol; NOT a self-compare",
   "oracle": "proofs/noahmp/savepoints_energy.json",
-  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F",
+  "wrf_source": "~/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F",
   "wrf_source_sha256": "74b475600ad1c999fe43299bcaf4d3e5eaf59b9f861c47fdbff4d69739e3a45b",
   "wrf_refs": {
     "T2MV": "module_sf_noahmplsm.F:4148-4163 (VEGE_FLUX)",

@@ -13,8 +13,8 @@
     ],
     "type": "single-column Fortran driver linked against unmodified WRF module_bl_ysu.F and bl_ysu.F90",
     "wrf_sources": [
-      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_ysu.F",
-      "/home/enric/src/wrf_pristine/WRF/phys/physics_mmm/bl_ysu.F90"
+      "~/src/wrf_pristine/WRF/phys/module_bl_ysu.F",
+      "~/src/wrf_pristine/WRF/phys/physics_mmm/bl_ysu.F90"
     ]
   },
   "predeclared_tolerances": {

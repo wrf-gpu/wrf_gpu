@@ -110,11 +110,11 @@
   },
   "wrf_source": {
     "advection": {
-      "path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_advect_em.F",
+      "path": "~/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_advect_em.F",
       "sha256": "58253bdbeb188dd47ed0579fcd2891086be1889b75c0c7d3696c9ad1d213559d"
     },
     "pgf": {
-      "path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_big_step_utilities_em.F",
+      "path": "~/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_big_step_utilities_em.F",
       "sha256": "a6eac120af17109af00c18fb6e08277d288067882e7d4865545604f8a9c1d766"
     }
   }

@@ -7,7 +7,7 @@ synthetic happy-path / self-compare.
 
 ## 1. The oracle (non-gameable, no self-compare)
 Source of truth = the UNMODIFIED WRF `module_cu_kfeta.F`
-(`/home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F`). A single-column Fortran
+(`~/src/wrf_pristine/WRF/phys/module_cu_kfeta.F`). A single-column Fortran
 driver (`proofs/p0_4/oracle/kf_oracle_driver.f90`) calls the real `KF_eta_CPS ->
 KF_eta_PARA` on prescribed soundings and dumps the full input state + all output
 tendencies. This is the actual Fortran scheme, not a re-implementation, so the port

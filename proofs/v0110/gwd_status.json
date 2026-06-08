@@ -100,22 +100,22 @@
   },
   "wrf_source_evidence": [
     {
-      "path": "/home/enric/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
+      "path": "~/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
       "lines": "2225-2248",
       "finding": "WRF calls gwdo only when PRESENT(GWD_opt) and GWD_opt == 1."
     },
     {
-      "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F",
+      "path": "~/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F",
       "lines": "1244-1252",
       "finding": "The ARW first RK step passes config_flags%gwd_opt and VAR/CON/OA/OL fields into the PBL driver."
     },
     {
-      "path": "/home/enric/src/wrf_pristine/WRF/share/input_wrf.F",
+      "path": "~/src/wrf_pristine/WRF/share/input_wrf.F",
       "lines": "751-768",
       "finding": "If a domain namelist config has nonzero gwd_opt, WRF checks it against the domain wrfinput GWD_OPT global attribute."
     },
     {
-      "path": "/home/enric/src/wrf_pristine/WRF/share/module_check_a_mundo.F",
+      "path": "~/src/wrf_pristine/WRF/share/module_check_a_mundo.F",
       "lines": "912-924",
       "finding": "WRF requires child gwd_opt values to match d01 or be zero; zero-child domains are valid."
     }
@@ -149,9 +149,9 @@
     "sed -n '1,220p' AGENTS.md",
     "sed -n '1,220p' .agent/skills/validating-physics/SKILL.md",
     "sed -n '1,220p' .agent/skills/building-wrf-oracles/SKILL.md",
-    "rg -n \"gwd_opt|GWDO|gwdo|module_bl_gwdo|gravity wave drag|GWD\" /home/enric/src/wrf_pristine/WRF/dyn_em /home/enric/src/wrf_pristine/WRF/phys /home/enric/src/wrf_pristine/WRF/share /home/enric/src/wrf_pristine/WRF/Registry -S",
-    "sed -n '2200,2290p' /home/enric/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
-    "sed -n '1228,1275p' /home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F",
+    "rg -n \"gwd_opt|GWDO|gwdo|module_bl_gwdo|gravity wave drag|GWD\" ~/src/wrf_pristine/WRF/dyn_em ~/src/wrf_pristine/WRF/phys ~/src/wrf_pristine/WRF/share ~/src/wrf_pristine/WRF/Registry -S",
+    "sed -n '2200,2290p' ~/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
+    "sed -n '1228,1275p' ~/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F",
     "sed -n '70,105p' /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input",
     "ncdump -h /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",
     "ncdump -h /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",

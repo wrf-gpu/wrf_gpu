@@ -8,7 +8,7 @@
   "self_compare": false,
   "self_compare_note": "The reference is the unmodified pristine WRF phys/module_ra_sw.F SWRAD source compiled standalone (proofs/v060/oracle); the JAX wired coupler is never used to make the reference.",
   "oracle": {
-    "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_sw.F",
+    "source": "~/src/wrf_pristine/WRF/phys/module_ra_sw.F",
     "entry": "SWRAD -> SWPARA (Stephens 1984 broadband shortwave)",
     "source_unmodified": true,
     "full_wrf_exe": false,

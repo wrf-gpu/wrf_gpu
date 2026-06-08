@@ -274,9 +274,9 @@
     "source": "single-column Fortran driver linked against pristine WRF sources",
     "unmodified_wrf_module": true,
     "wrf_constants_sha256": "5b80377fecdc18a5f0ad38d3b6c15cfc86ad5d76701adbbbb08a08698d0f7062",
-    "wrf_constants_source": "/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
+    "wrf_constants_source": "~/src/wrf_pristine/WRF/share/module_model_constants.F",
     "wrf_tiedtke_sha256": "3514aaaaf6084edc0f6a6b2097e34607562f0b6f12934cc3c675a9e651566999",
-    "wrf_tiedtke_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_tiedtke.F"
+    "wrf_tiedtke_source": "~/src/wrf_pristine/WRF/phys/module_cu_tiedtke.F"
   },
   "platform": "cpu",
   "predeclared_tolerances": {

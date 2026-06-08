@@ -127,7 +127,7 @@
     "u": "dyn_em/module_advect_em.F:354,479,1395",
     "v": "dyn_em/module_advect_em.F:1784,1897,2875",
     "w": "dyn_em/module_advect_em.F:5220,5930-6028",
-    "wrf_pristine_root": "/home/enric/src/wrf_pristine/WRF"
+    "wrf_pristine_root": "~/src/wrf_pristine/WRF"
   },
   "status": "PASS",
   "tolerance": 1e-11

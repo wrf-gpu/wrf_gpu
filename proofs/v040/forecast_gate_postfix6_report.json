@@ -1,7 +1,7 @@
 {
-  "after_report": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/v040/forecast_gate_postfix6_raw.json",
+  "after_report": "REPO/proofs/v040/forecast_gate_postfix6_raw.json",
   "after_verdict": "STABLE_BUT_CORE_FIELD_MISMATCH",
-  "before_report": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/v040/forecast_gate_24h_report.json",
+  "before_report": "REPO/proofs/v040/forecast_gate_24h_report.json",
   "case_comparison": {
     "20260429_18z_l2_72h_20260524T204451Z": {
       "core_within_margin": false,
@@ -157,7 +157,7 @@
   },
   "question": "Does adding WRF's kmdz=max(kmdz,0.5*s_aw) momentum eddy-diffusivity floor collapse the two-date standalone forecast wind/pressure bias?",
   "s_aw_floor_omission": "real",
-  "savepoint_parity_report": "/home/enric/src/wrf_gpu2/.claude/worktrees/v040-r4-saw/proofs/v040/r4_saw_floor_savepoint_parity.json",
+  "savepoint_parity_report": "REPO/proofs/v040/r4_saw_floor_savepoint_parity.json",
   "savepoint_verdict": "PASS",
   "schema": "v0.4.0-round4-saw-floor-before-after-2026-06-03",
   "two_date_bias_collapsed": "no",

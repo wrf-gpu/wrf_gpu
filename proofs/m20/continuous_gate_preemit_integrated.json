@@ -17,8 +17,8 @@
     }
   },
   "inputs": {
-    "gpu_root": "/home/enric/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout",
-    "manifest": "/home/enric/src/wrf_gpu2/proofs/v010_validation/v010_cases_manifest.json",
+    "gpu_root": "REPO/proofs/m20/tost_run/gpu_wrfout",
+    "manifest": "REPO/proofs/v010_validation/v010_cases_manifest.json",
     "units_requested": [
       "case1_L2",
       "case1_L3",
@@ -139,7 +139,7 @@
       "domain": "d02",
       "init_utc": "2026-05-09T18:00:00+00:00",
       "max_lead_h": 72,
-      "gpu_dir": "/home/enric/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout/case2_L2",
+      "gpu_dir": "REPO/proofs/m20/tost_run/gpu_wrfout/case2_L2",
       "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
       "gpu_frames_found": 34,
       "cpu_frames_found": 73,
@@ -2169,7 +2169,7 @@
       "domain": "d02",
       "init_utc": "2026-05-21T18:00:00+00:00",
       "max_lead_h": 24,
-      "gpu_dir": "/home/enric/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout/case3_L3",
+      "gpu_dir": "REPO/proofs/m20/tost_run/gpu_wrfout/case3_L3",
       "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
       "gpu_frames_found": 24,
       "cpu_frames_found": 25,

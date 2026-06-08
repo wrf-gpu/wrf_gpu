@@ -685,7 +685,7 @@
       "taskset",
       "-c",
       "0-3",
-      "/home/enric/miniconda3/bin/python",
+      "~/miniconda3/bin/python",
       "/tmp/wrf_gpu2_oracle/scripts/m7_daily_pipeline.py",
       "--run-id",
       "20260521_18z_l3_24h_20260522T133443Z",

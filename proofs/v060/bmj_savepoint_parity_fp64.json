@@ -4,11 +4,11 @@
   "wrf_faithful": true,
   "oracle": {
     "type": "unmodified_pristine_wrf_module_cu_bmj_standalone_call_fp64",
-    "source_path": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_bmj.F",
+    "source_path": "~/src/wrf_pristine/WRF/phys/module_cu_bmj.F",
     "source_sha256": "62d2805aae152b58093d07100000b581458b536164d90f9cecc27a157e2bd92f",
     "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/bmj_build_and_run_fp64.sh",
     "build_precision": "fp64 (-fdefault-real-8 -fdefault-double-8)",
-    "savepoint_dir": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a57ac5e30502e0cbd/proofs/v060/savepoints_fp64_oracle",
+    "savepoint_dir": "REPO/proofs/v060/savepoints_fp64_oracle",
     "case_count": 5
   },
   "candidate": {

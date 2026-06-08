@@ -23,7 +23,7 @@
       93
     ],
     "n_land_cells": 2035,
-    "table_dir": "/home/enric/src/wrf_pristine/WRF/run",
+    "table_dir": "~/src/wrf_pristine/WRF/run",
     "prognostic_state_real_from_corpus": [
       "CANWAT",
       "ISLTYP",

@@ -110,5 +110,5 @@ discretely telescope into a saturating response. The WRF `em_quarter_ss` binary
 center-column savepoint comparison (`a/alpha/gamma`, `w`, `ph`, `p`, `t_2ave`,
 `muave` after IC + steps 1-3) is the definitive arbiter and is the gating
 deliverable for the next sprint; the build harness here
-(`/home/enric/src/wrf_ideal_f7i/WRF` + conda `wrfbuild` env) is ~75% landed and
+(`~/src/wrf_ideal_f7i/WRF` + conda `wrfbuild` env) is ~75% landed and
 documented for that follow-up.

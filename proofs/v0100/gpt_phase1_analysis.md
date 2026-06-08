@@ -1,6 +1,6 @@
 # GPT v0.10.0 Phase 1 Optimization Analysis: wrf_gpu2 v0.9.0 Kernel
 
-Scope: shipped v0.9.0 source at `/home/enric/src/wrf_gpu2/.claude/worktrees/gpt-v090-final`, commit `016d993c1b4c28926b8014fe569db71aa6ee712e`, tag `v0.9.0`.
+Scope: shipped v0.9.0 source at `REPO
 
 Mode: analysis and planning only. I made no repository code changes and ran no GPU workloads. All timings below use existing artifacts unless explicitly marked `estimate`.
 
