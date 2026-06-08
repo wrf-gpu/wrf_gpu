@@ -213,10 +213,15 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         implemented="0=disabled, 1=classic AER RRTM longwave (16-band k-distribution; "
         "GPU-operational, scan-wired held-rate RTHRATEN via the JAX-traceable "
         "physics.ra_lw_rrtm_jax port of phys/module_ra_rrtm.F), 4=RRTMG longwave "
-        "(GPU-operational, default)",
+        "(GPU-operational, default), 5=GSFC/Goddard NUWRF longwave (v0.13 Tier-3 "
+        "REFERENCE-ONLY: fp64 pristine-WRF single-column oracle staged at "
+        "module_ra_goddard.F:lwrad, but the traceable JAX kernel is a documented "
+        "carry-over, so it is namelist-accepted for a reference comparison and "
+        "fail-closes in the operational scan)",
         action="Use ra_lw_physics=4 (RRTMG) or 1 (classic RRTM) for the operational LW path, "
-        "or 0 when radiation is disabled. Both are scan-wired; SW and LW are selected "
-        "independently. The surface GLW history diagnostic remains RRTMG-derived.",
+        "or 0 when radiation is disabled. ra_lw=5 (GSFC/Goddard) is reference-only and "
+        "fail-closes in the operational scan. SW and LW are selected independently; the "
+        "surface GLW history diagnostic remains RRTMG-derived.",
     ),
     # Runtime/dynamics controls exposed by OperationalNamelist.
     "rk_order": SupportedOption(

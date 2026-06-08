@@ -1,0 +1,96 @@
+{
+  "carry_over_rationale": "module_ra_goddard.F is the ~12,501-LOC combined NUWRF SW+LW family; the LW core lwrad is ~3,900 LOC + ~1,300 LOC k-distribution helpers with 406 data statements / ~11,853 hardcoded correlated-k coefficients. A faithful traceable JAX port of that volume cannot be completed in one session without degenerating into a self-compare/happy-path/silently-wrong kernel, so per the batch2 STOP condition no kernel is shipped; the fp64 non-self-compare oracle infrastructure is delivered instead (proofs/v013/oracle/radiation_lw/) so a future faithful port has a ready reference. Default ra_lw=4 (RRTMG) is byte-unchanged; ra_lw=5 fail-closes in the operational scan.",
+  "classification": "reference-only (oracle-staged; faithful JAX kernel = carry-over)",
+  "dispatch": {
+    "default_byte_unchanged": true,
+    "default_ra_lw_physics": 4,
+    "expected_operational": [
+      1,
+      4
+    ],
+    "operational_ra_lw_physics": [
+      1,
+      4
+    ],
+    "ra_lw5_fail_closed_ok": true,
+    "ra_lw5_named_reason": "GSFC/Goddard NUWRF longwave has a single-column fp64 pristine-WRF oracle staged (proofs/v013/oracle/radiation_lw, module_ra_goddard.F:lwrad); traceable JAX column kernel is a Tier-3 carry-over (~12.5k-LOC combined NUWRF SW+LW module)",
+    "ra_lw5_namelist_accepts_reference": true,
+    "ra_lw5_namelist_status": "reference_only",
+    "ra_lw5_operationally_wired": false
+  },
+  "gate_pass": true,
+  "generated_utc": "2026-06-08T13:31:45.919476+00:00",
+  "kernel_parity": null,
+  "oracle": {
+    "all_finite": true,
+    "build_shim": "visibility-only",
+    "built": true,
+    "cases_present": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "clear_sky_cools": true,
+    "glw_responds_to_column": true,
+    "has_clear": true,
+    "has_cloudy": true,
+    "nontrivial": true,
+    "per_case": {
+      "1": {
+        "finite": true,
+        "glw_sfc_down_wm2": 394.0606521758812,
+        "olr_toa_up_wm2": -279.8300862446108,
+        "regime": "clear tropical moist",
+        "tten_max_kday": 0.4083136130150432,
+        "tten_min_kday": -3.6127267532314553
+      },
+      "2": {
+        "finite": true,
+        "glw_sfc_down_wm2": 264.0872118167508,
+        "olr_toa_up_wm2": -268.2027628127947,
+        "regime": "clear mid-lat dry",
+        "tten_max_kday": 0.33615352446571317,
+        "tten_min_kday": -2.059888979597605
+      },
+      "3": {
+        "finite": true,
+        "glw_sfc_down_wm2": 121.5494297881882,
+        "olr_toa_up_wm2": -177.3068540085392,
+        "regime": "clear polar cold",
+        "tten_max_kday": 0.045590534499122676,
+        "tten_min_kday": -1.5045402327345838
+      },
+      "4": {
+        "finite": true,
+        "glw_sfc_down_wm2": 421.3917644822133,
+        "olr_toa_up_wm2": -263.7234573319666,
+        "regime": "thick low water cloud",
+        "tten_max_kday": 0.3197168853930098,
+        "tten_min_kday": -31.067633007525668
+      },
+      "5": {
+        "finite": true,
+        "glw_sfc_down_wm2": 330.5251279809244,
+        "olr_toa_up_wm2": -125.0572547743942,
+        "regime": "high thin ice cloud",
+        "tten_max_kday": 39.99940356504755,
+        "tten_min_kday": -30.300776229930104
+      },
+      "6": {
+        "finite": true,
+        "glw_sfc_down_wm2": 439.0655664270189,
+        "olr_toa_up_wm2": -134.5876111450266,
+        "regime": "deep multi-layer cloud",
+        "tten_max_kday": 18.41260264239477,
+        "tten_min_kday": -29.566239034230666
+      }
+    },
+    "schema": "wrf-v013-goddard-lw-column-savepoint-v1",
+    "self_compare": false
+  },
+  "proof": "v013-t3-gsfc-lw-oracle",
+  "scheme": "ra_lw_physics=5 GSFC/Goddard NUWRF longwave (module_ra_goddard.F:lwrad)"
+}

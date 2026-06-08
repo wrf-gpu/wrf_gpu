@@ -205,8 +205,14 @@ def test_reference_only_scheme_passes_namelist_layer() -> None:
     # v0.13: the MYJ PBL + Janjic Eta surface layer pair is now IMPLEMENTED.
     assert classify_scheme("bl_pbl_physics", 2).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_sfclay_physics", 2).status is SupportStatus.IMPLEMENTED
+    # v0.13 Tier-3 batch2: GSFC/Goddard NUWRF longwave (ra_lw=5) is REFERENCE_ONLY
+    # (fp64 pristine-WRF oracle staged; faithful JAX kernel = carry-over). It is
+    # namelist-accepted (for a single-column reference comparison) and fail-closes
+    # in the operational scan.
+    assert classify_scheme("ra_lw_physics", 5).status is SupportStatus.REFERENCE_ONLY
     validate_namelist({"physics": {"cu_physics": [16]}})
     validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+    validate_namelist({"physics": {"ra_lw_physics": [5]}})
 
 
 def test_unsupported_namelist_option_is_an_unsupported_scheme_error() -> None:
