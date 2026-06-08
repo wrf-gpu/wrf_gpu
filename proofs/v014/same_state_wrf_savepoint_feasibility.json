@@ -1,0 +1,579 @@
+{
+  "schema": "v014-same-state-wrf-savepoint-feasibility-v1",
+  "generated_at": "2026-06-09",
+  "agent": "codex",
+  "scope": {
+    "mode": "cpu_only_inspection",
+    "gpu_used": false,
+    "wrf_source_modified": false,
+    "repo_src_modified": false,
+    "hermes_used": false,
+    "objective": "Determine the fastest reliable path to generate CPU-WRF source-derived term savepoints for the selected h8-h14 dynamic divergence case."
+  },
+  "verdict": {
+    "fastest_reliable_path": "Use a disposable instrumented copy of /home/enric/src/wrf_pristine/WRF, because it has a current WRF v4.7.1 source tree and built CPU executables. Run the Case 3 d01/d02 forecast from 2026-05-01_18:00:00 to h10 with a small env-gated Fortran emitter that dumps selected d02 cell patches around existing dycore routine boundaries. Do not use the old external/wrf_savepoint_patch as-is; its hooks are empty and its build paths are stale.",
+    "expected_first_target": {
+      "lead_h": 10,
+      "valid_time_utc": "2026-05-02T04:00:00Z",
+      "domain": "d02",
+      "reason": "h10 is the strongest selected h8-h14 divergence lead in the dynamic attribution plan."
+    },
+    "restart_shortcut_available": false,
+    "build_shortcut_available": true,
+    "source_truth_quality": "source-derived WRF term savepoints are feasible, but the first implementation sprint must record build provenance and validate step/lead mapping before accepting h10 term data."
+  },
+  "target_case": {
+    "case_id": "20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_truth_history_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "case_launch_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+    "gpu_output_for_cell_selection_only": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+    "target_cpu_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+    "input_files": {
+      "namelist_input": {
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
+        "sha256": "1a4711a1df97dfd28ff72f512024c07b3463de7a942f04f4c5b679f2ef690e38"
+      },
+      "wrfinput_d02": {
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+        "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34"
+      },
+      "wrfinput_d01": {
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01"
+      },
+      "wrfbdy_d01": {
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01"
+      },
+      "rsl_error_0000": {
+        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/rsl.error.0000"
+      }
+    },
+    "domain_geometry": {
+      "d02": {
+        "west_east": 159,
+        "south_north": 66,
+        "bottom_top": 44,
+        "west_east_stag": 160,
+        "south_north_stag": 67,
+        "bottom_top_stag": 45,
+        "dt_seconds": 6.0
+      }
+    },
+    "namelist_highlights": {
+      "start_time": "2026-05-01_18:00:00",
+      "end_time": "2026-05-04_18:00:00",
+      "max_dom": 2,
+      "parent_time_step_ratio": [1, 3],
+      "d01_time_step_seconds": 18,
+      "d02_time_step_seconds": 6,
+      "restart": false,
+      "restart_interval_minutes": 100000,
+      "physics_suite": "CONUS",
+      "mp_physics": 8,
+      "bl_pbl_physics": 5,
+      "sf_sfclay_physics": 5,
+      "sf_surface_physics": 4,
+      "ra_lw_physics": 4,
+      "ra_sw_physics": 4,
+      "cu_physics": [1, 0]
+    },
+    "selected_cells": [
+      {"rank": 1, "y": 9, "x": 13, "score": 50.618, "top_channels": ["dW_k0", "dV10", "dV_k0", "dP_k0"]},
+      {"rank": 2, "y": 25, "x": 39, "score": 50.089, "top_channels": ["dW_k0", "dP_k0", "dV10", "dU10"]},
+      {"rank": 3, "y": 41, "x": 14, "score": 48.524, "top_channels": ["dV10", "dV_k0", "dQVAPOR_k0", "dP_k0"]},
+      {"rank": 4, "y": 49, "x": 17, "score": 47.201, "top_channels": ["dV10", "dP_k0", "dV_k0", "dQVAPOR_k0"]},
+      {"rank": 5, "y": 32, "x": 53, "score": 47.178, "top_channels": ["dW_k0", "dV10", "dP_k0", "dQVAPOR_k0"]},
+      {"rank": 6, "y": 27, "x": 143, "score": 46.763, "top_channels": ["dPBLH", "dP_k0", "dV10", "dPSFC"]},
+      {"rank": 7, "y": 44, "x": 15, "score": 45.716, "top_channels": ["dV10", "dV_k0", "dP_k0", "dQVAPOR_k0"]},
+      {"rank": 8, "y": 38, "x": 14, "score": 44.053, "top_channels": ["dV10", "dP_k0", "dQVAPOR_k0", "dV_k0"]},
+      {"rank": 9, "y": 39, "x": 11, "score": 42.651, "top_channels": ["dV10", "dP_k0", "dQVAPOR_k0", "dV_k0"]},
+      {"rank": 10, "y": 36, "x": 73, "score": 42.527, "top_channels": ["dW_k0", "dP_k0", "dU10", "dU_k0"]},
+      {"rank": 11, "y": 22, "x": 37, "score": 41.537, "top_channels": ["dV10", "dP_k0", "dV_k0", "dPSFC"]},
+      {"rank": 12, "y": 30, "x": 50, "score": 39.741, "top_channels": ["dV10", "dP_k0", "dV_k0", "dPSFC"]},
+      {"rank": 13, "y": 38, "x": 76, "score": 39.466, "top_channels": ["dW_k0", "dP_k0", "dV10", "dPSFC"]},
+      {"rank": 14, "y": 13, "x": 89, "score": 39.302, "top_channels": ["dP_k0", "dV10", "dV_k0", "dQVAPOR_k0"]},
+      {"rank": 15, "y": 16, "x": 35, "score": 38.645, "top_channels": ["dV10", "dP_k0", "dV_k0", "dPSFC"]},
+      {"rank": 16, "y": 36, "x": 11, "score": 38.464, "top_channels": ["dV10", "dP_k0", "dQVAPOR_k0", "dV_k0"]},
+      {"rank": 17, "y": 22, "x": 45, "score": 38.229, "top_channels": ["dW_k0", "dP_k0", "dV_k0", "dV10"]},
+      {"rank": 18, "y": 19, "x": 36, "score": 37.438, "top_channels": ["dV10", "dP_k0", "dV_k0", "dPSFC"]},
+      {"rank": 19, "y": 41, "x": 17, "score": 37.259, "top_channels": ["dP_k0", "dV10", "dQVAPOR_k0", "dV_k0"]},
+      {"rank": 20, "y": 38, "x": 145, "score": 37.205, "top_channels": ["dP_k0", "dW_k0", "dPSFC", "dT_k0"]},
+      {"rank": 21, "y": 23, "x": 49, "score": 37.084, "top_channels": ["dV10", "dV_k0", "dP_k0", "dPSFC"]},
+      {"rank": 22, "y": 47, "x": 14, "score": 36.893, "top_channels": ["dP_k0", "dV10", "dQVAPOR_k0", "dV_k0"]},
+      {"rank": 23, "y": 50, "x": 26, "score": 36.776, "top_channels": ["dP_k0", "dPSFC", "dV10", "dQVAPOR_k0"]},
+      {"rank": 24, "y": 27, "x": 146, "score": 36.303, "top_channels": ["dP_k0", "dPSFC", "dT_k0", "dQVAPOR_k0"]}
+    ],
+    "recommended_vertical_levels_first_probe": [0, 1, 2, 16, 17, 18, 24, 25, 26, 28, 29, 30, 31, 32],
+    "patch_halo_radius": 8,
+    "cell_manifest_source": "proofs/v014/dynamic_field_attribution.json"
+  },
+  "wrf_source_paths": [
+    {
+      "path": "/home/enric/src/wrf_pristine/WRF",
+      "role": "fastest_buildable_candidate",
+      "exists": true,
+      "git_repository": true,
+      "git_head": "f52c197ed39d12e087d02c50f412d90d418f6186",
+      "git_describe": "v4.7.1-dirty",
+      "dirty": true,
+      "notable_existing_changes": [
+        "dyn_em/solve_em.F has existing hardcoded idealized text dump probes.",
+        "phys/module_wrfgpu2_oracle.F exists and provides a raw-binary plus sidecar emission pattern for physics oracles.",
+        "physics driver files and generated registry files are modified or untracked."
+      ],
+      "build_available": true,
+      "executables": {
+        "wrf.exe": {
+          "path": "/home/enric/src/wrf_pristine/WRF/main/wrf.exe",
+          "present": true,
+          "size_bytes": 45501808,
+          "mtime_local": "2026-06-04 10:13"
+        },
+        "real.exe": {
+          "path": "/home/enric/src/wrf_pristine/WRF/main/real.exe",
+          "present": true,
+          "size_bytes": 36021856,
+          "mtime_local": "2026-06-04 10:13"
+        }
+      },
+      "configure_summary": {
+        "description": "GNU ($SFC/$SCC)",
+        "sfc": "gfortran",
+        "scc": "gcc",
+        "dmparallel": "disabled/commented serial build",
+        "netcdfpath": "/home/enric/miniconda3/envs/wrfbuild",
+        "fc_optimization": "-O2"
+      },
+      "linkage_summary": [
+        "/home/enric/miniconda3/envs/wrfbuild/lib/libnetcdff.so.7",
+        "/home/enric/miniconda3/envs/wrfbuild/lib/libnetcdf.so.22",
+        "libgfortran.so.5"
+      ],
+      "recommendation": "Use only through a disposable copy/worktree for V0.14 instrumentation; do not patch this tree in place."
+    },
+    {
+      "path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF",
+      "role": "historical_case_source_path_from_rsl",
+      "exists": true,
+      "git_repository": false,
+      "build_available": false,
+      "executables_present": false,
+      "evidence": "Case 3 rsl.error.0000 contains source paths under this tree and reports WRF V4.7.1.",
+      "recommendation": "Use for provenance and source-diff comparison. It is not the fastest path because configure.wrf and main/wrf.exe are absent."
+    },
+    {
+      "path": "/home/enric/src/wrf_ideal_f7i/WRF",
+      "role": "source_reference_only",
+      "exists": true,
+      "git_repository": false,
+      "build_available": false,
+      "executables_present": false,
+      "recommendation": "Do not use for this sprint unless a specific source comparison is needed."
+    },
+    {
+      "path": "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF",
+      "role": "stale_path_referenced_by_old_savepoint_patch",
+      "exists": false,
+      "build_available": false,
+      "recommendation": "Do not use."
+    },
+    {
+      "path": "/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe",
+      "role": "stale_executable_referenced_by_old_savepoint_patch",
+      "exists": false,
+      "build_available": false,
+      "recommendation": "Do not use."
+    }
+  ],
+  "existing_scripts_and_tests": {
+    "usable_patterns": [
+      {
+        "path": "src/gpuwrf/validation/savepoint_io.py",
+        "use": "HDF5 savepoint read/write pattern with payload hashing and metadata_json."
+      },
+      {
+        "path": "src/gpuwrf/validation/savepoint_schema.py",
+        "use": "Metadata conventions and schema validation pattern."
+      },
+      {
+        "path": "scripts/m6b0r_jax_vs_wrf_compare.py",
+        "use": "Comparison/reporting pattern only; not a WRF source truth generator."
+      },
+      {
+        "path": "phys/module_wrfgpu2_oracle.F in /home/enric/src/wrf_pristine/WRF",
+        "use": "Fortran raw binary plus sidecar emission idiom, env-gated outside repo src."
+      }
+    ],
+    "not_sufficient_as_oracle": [
+      {
+        "path": "scripts/m6b0r_wrf_savepoint_extract.py",
+        "reason": "Extracts from wrfout and computes calc_coef_w in Python; not source-derived WRF dycore term truth."
+      },
+      {
+        "path": "external/wrf_savepoint_patch/dyn_em/savepoint_wrapper.F90",
+        "reason": "Hook bodies are empty stubs."
+      },
+      {
+        "path": "external/wrf_savepoint_patch/build.sh",
+        "reason": "References stale source/executable paths that are absent in this checkout."
+      },
+      {
+        "path": "tests/savepoint/README.md",
+        "reason": "Current harness is useful CPU scaffolding but does not produce per-RK/acoustic source-derived WRF term savepoints."
+      }
+    ],
+    "schema_gap": "Existing VALID_OPERATORS does not include V0.14 term groups such as advection, diffusion, pressure_gradient, coriolis, and boundary_spec_relax. A proof-local schema/postprocessor can avoid repo src edits in the implementation sprint, or a separate approved src-changing sprint can extend the validation schema."
+  },
+  "candidate_routines_to_instrument": {
+    "orchestration": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "solve_em", "line": 3, "reason": "Best first hook layer for pre/post snapshots around RK, large-step, small-step, and boundary calls."},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "rk_tendency call", "line": 882, "term_group": "large_step_tendency"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "rk_addtend_dry call", "line": 968, "term_group": "large_step_total"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "small_step_prep call", "line": 1090, "term_group": "small_step_prep"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "calc_p_rho call", "line": 1110, "term_group": "pressure_density"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_uv call", "line": 1280, "term_group": "acoustic_uv"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_mu_t call", "line": 1393, "term_group": "mu_theta"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_w call", "line": 1500, "term_group": "w_ph_pressure"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "calc_p_rho call", "line": 1624, "term_group": "pressure_density"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "small_step_finish call", "line": 1825, "term_group": "stage_finish"}
+    ],
+    "large_step_and_terms": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rk_tendency", "line": 190, "term_group": "large_step_tendency"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rhs_ph call", "line": 668, "term_group": "geopotential"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "horizontal_pressure_gradient call", "line": 717, "term_group": "pressure_gradient"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "pg_buoy_w call", "line": 730, "term_group": "vertical_pressure_buoyancy"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "coriolis call", "line": 761, "term_group": "coriolis"},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rk_addtend_dry", "line": 959, "term_group": "large_step_total"}
+    ],
+    "big_step_utilities": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "rhs_ph", "line": 1365},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "horizontal_pressure_gradient", "line": 2183},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "pg_buoy_w", "line": 2419},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "coriolis", "line": 3640},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "phy_prep", "line": 4730},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "set_tend", "line": 5792}
+    ],
+    "small_step": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "small_step_prep", "line": 16},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "small_step_finish", "line": 295},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "calc_p_rho", "line": 438},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "calc_coef_w", "line": 570},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_uv", "line": 654},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_mu_t", "line": 969},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_w", "line": 1178}
+    ],
+    "advection": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_u", "line": 126},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_v", "line": 1530},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar", "line": 3029},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_w", "line": 4364},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar_pd", "line": 6069},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar_mono", "line": 9495}
+    ],
+    "diffusion": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "cal_deform_and_div", "line": 17},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_u_2", "line": 3118},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_v_2", "line": 3323},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_w_2", "line": 3519},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_s", "line": 3711},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "vertical_diffusion_s", "line": 4789},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "phy_bc", "line": 5901},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "compute_diff_metrics", "line": 6882}
+    ],
+    "boundary_and_relaxation": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/share/module_bc.F", "routine": "set_physical_bc2d", "line": 202},
+      {"file": "/home/enric/src/wrf_pristine/WRF/share/module_bc.F", "routine": "set_physical_bc3d", "line": 651},
+      {"file": "/home/enric/src/wrf_pristine/WRF/share/module_bc.F", "routine": "spec_bdyupdate", "line": 1955},
+      {"file": "/home/enric/src/wrf_pristine/WRF/share/module_bc.F", "routine": "flow_dep_bdy", "line": 2335},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_bc_em.F", "routine": "EM boundary helper module", "line": 1}
+    ],
+    "physics_source_tendency_folding": [
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F", "routine": "first_rk_step_part1", "line": 10},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F", "routine": "phy_prep call", "line": 208},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part2.F", "routine": "first_rk_step_part2", "line": 10},
+      {"file": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part2.F", "routine": "conv_t_tendf_to_moist call", "line": 1009},
+      {"file": "/home/enric/src/wrf_pristine/WRF/phys/module_physics_addtendc.F", "routine": "physics tendency accumulation add_a2a sites", "line_examples": [229, 286, 302, 1126, 1740, 1958, 1974, 2075]}
+    ]
+  },
+  "minimal_patch_strategy": {
+    "patch_location": "outside repo src, in a disposable WRF worktree/copy such as /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF or /tmp/wrf_v014_same_state_savepoint/WRF",
+    "base_tree": "/home/enric/src/wrf_pristine/WRF",
+    "do_not_patch_in_place": true,
+    "phase_0_marker_validation": [
+      "Copy the Case 3 run directory to an output scratch directory.",
+      "Reduce run length to h10 or h10 plus one output in the copied namelist only.",
+      "Add a minimal env-gated marker dump in solve_em.F for d02 near h10.",
+      "Run a short or bounded job to verify grid%itimestep-to-lead mapping and d02 ownership before dumping many fields."
+    ],
+    "phase_1_boundary_snapshots": [
+      "Add a compact Fortran emitter module modelled on the raw-binary/sidecar approach in phys/module_wrfgpu2_oracle.F.",
+      "Gate all emission by env vars and domain id so normal WRF execution is unchanged.",
+      "Dump selected cell patches before and after solve_em routine calls for rk_tendency, rk_addtend_dry, small_step_prep, calc_p_rho, advance_uv, advance_mu_t, advance_w, small_step_finish, and spec_bdyupdate.",
+      "Write raw f64 little-endian payloads plus JSON sidecars during WRF execution; convert to HDF5 or Zarr after the run to avoid Fortran/HDF5 build risk."
+    ],
+    "phase_2_inner_split_if_needed": [
+      "If the first divergence appears inside rk_tendency, add snapshots in module_em.F around rhs_ph, advection, diffusion, horizontal_pressure_gradient, pg_buoy_w, and coriolis.",
+      "If the first divergence appears inside small-step, add snapshots in module_small_step_em.F around calc_p_rho, advance_uv, advance_mu_t, advance_w, and calc_coef_w.",
+      "If boundary/spec relaxation is implicated, add snapshots around share/module_bc.F spec_bdyupdate and set_physical_bc3d.",
+      "If physics source folding is implicated, add focused snapshots around module_physics_addtendc.F accumulation and first_rk_step_part1/part2 tendency handoff."
+    ],
+    "recommended_env_contract": {
+      "WRFGPU2_SAMESTATE": "1 enables all savepoint emission",
+      "WRFGPU2_SAMESTATE_ROOT": "output root for raw payloads and sidecars",
+      "WRFGPU2_SAMESTATE_GRID": "2",
+      "WRFGPU2_SAMESTATE_START_STEP": "first d02 step to dump; expected h10 mapping is near 6000 but must be verified",
+      "WRFGPU2_SAMESTATE_END_STEP": "last d02 step to dump",
+      "WRFGPU2_SAMESTATE_RK_STAGES": "comma-separated RK stage list, expected 1,2,3",
+      "WRFGPU2_SAMESTATE_ACOUSTIC_SUBSTEPS": "first,last or explicit substep ids after marker validation",
+      "WRFGPU2_SAMESTATE_CELLS": "path to selected-cell JSON manifest",
+      "WRFGPU2_SAMESTATE_HALO": "8"
+    },
+    "why_not_full_domain_first": "Full-domain arrays are safest diagnostically, but selected patches with halo 8 and all relevant stagger indices are faster, smaller, and aligned to the accepted localization plan. The marker run should prove indexing before accepting cropped data."
+  },
+  "expected_savepoint_artifact_schema": {
+    "schema": "v014-same-state-wrf-term-savepoint-v1",
+    "preferred_container": "HDF5 after postprocessing raw Fortran payloads",
+    "raw_runtime_payload": {
+      "format": "little-endian f64 stream plus JSON sidecar",
+      "reason": "Minimizes changes to WRF build/linking and follows an existing local oracle pattern."
+    },
+    "root_metadata": [
+      "schema",
+      "case_id",
+      "domain",
+      "valid_time_utc",
+      "lead_h",
+      "wrf_source_path",
+      "wrf_source_git_head",
+      "wrf_source_git_describe",
+      "wrf_source_dirty_status",
+      "wrf_executable_path",
+      "wrf_executable_sha256",
+      "build_mode",
+      "compiler",
+      "compile_flags",
+      "patch_sha256",
+      "namelist_sha256",
+      "wrfinput_sha256",
+      "wrfbdy_sha256",
+      "run_directory",
+      "payload_sha256"
+    ],
+    "timing_metadata": [
+      "wrf_grid_itimestep",
+      "lead_seconds",
+      "domain_dt_seconds",
+      "rk_stage_index",
+      "rk_step_weight",
+      "acoustic_substep_index",
+      "small_step_count",
+      "routine_name",
+      "event_name",
+      "pre_or_post"
+    ],
+    "selection_metadata": [
+      "selected_cells",
+      "mass_indices",
+      "u_stagger_indices",
+      "v_stagger_indices",
+      "w_stagger_indices",
+      "ph_stagger_indices",
+      "patch_bounds",
+      "halo_radius",
+      "vertical_levels",
+      "tile_or_rank_owner"
+    ],
+    "required_variable_metadata": [
+      "name",
+      "role",
+      "term_group",
+      "routine_provenance",
+      "units",
+      "stagger",
+      "dtype",
+      "shape",
+      "memory_order",
+      "index_origin",
+      "checksum"
+    ],
+    "first_pass_fields": {
+      "state_inputs": [
+        "U",
+        "V",
+        "W",
+        "T",
+        "QVAPOR",
+        "P",
+        "PB",
+        "PH",
+        "PHB",
+        "MU",
+        "MUB"
+      ],
+      "metrics_and_maps": [
+        "ZNU",
+        "ZNW",
+        "DN",
+        "DNW",
+        "RDN",
+        "RDNW",
+        "C1H",
+        "C2H",
+        "C1F",
+        "C2F",
+        "MAPFAC_M",
+        "MAPFAC_U",
+        "MAPFAC_V",
+        "F",
+        "E",
+        "SINALPHA",
+        "COSALPHA",
+        "RDX",
+        "RDY"
+      ],
+      "tendencies_and_work_arrays": [
+        "ru_tend",
+        "rv_tend",
+        "rw_tend",
+        "ph_tend",
+        "t_tend",
+        "mu_tend",
+        "ru_tendf",
+        "rv_tendf",
+        "rw_tendf",
+        "ph_tendf",
+        "t_tendf",
+        "mu_tendf",
+        "p",
+        "al",
+        "rho",
+        "ww",
+        "muave",
+        "muts",
+        "mudf",
+        "ru_m",
+        "rv_m",
+        "ww_m",
+        "t_2ave"
+      ],
+      "term_groups": [
+        "stage_input",
+        "mass_coupling",
+        "advection",
+        "diffusion",
+        "pressure_gradient",
+        "coriolis",
+        "source_tendency_folding",
+        "large_step_total",
+        "small_step_prep",
+        "acoustic_uv",
+        "mu_theta",
+        "w_ph_pressure",
+        "boundary_spec_relax",
+        "stage_output"
+      ]
+    }
+  },
+  "runtime_estimate": {
+    "source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/rsl.error.0000",
+    "d02_timing_lines": 43200,
+    "warm_median_seconds_per_d02_step": 0.13411,
+    "warm_mean_seconds_per_d02_step": 0.151967,
+    "warm_p90_seconds_per_d02_step": 0.19338,
+    "median_seconds_per_forecast_hour_d02": 80.466,
+    "estimated_h10_d02_compute_seconds": 804.66,
+    "notes": [
+      "Original run used 28 MPI tasks according to rsl.error.0000.",
+      "Current fastest available executable in /home/enric/src/wrf_pristine/WRF appears serial, so walltime may be materially longer unless the copied tree is rebuilt dmpar.",
+      "No wrfrst files were found in the Case 3 launch directory, so h10 cannot be reached by restart without creating a new restart first."
+    ]
+  },
+  "risks": [
+    {
+      "risk": "No restart files for Case 3.",
+      "impact": "Instrumented source run must start at 2026-05-01_18:00:00 and advance to h10/h8-h14; no direct h10 restart shortcut exists.",
+      "mitigation": "Run copied case only to h10 first, minimize history output, and optionally create wrfrst at h8/h10 for follow-up iterations."
+    },
+    {
+      "risk": "Build provenance mismatch.",
+      "impact": "Usable built tree is serial and dirty, while the truth run was 28-rank dmpar from a different historical source path.",
+      "mitigation": "Use a disposable copied tree, record git/diff/build metadata, and prefer a dmpar rebuild if the next sprint can spend build time."
+    },
+    {
+      "risk": "Old savepoint patch is stale.",
+      "impact": "Using it directly would produce no real source-derived term truth and may fail due to missing paths.",
+      "mitigation": "Treat it only as historical scaffolding; implement new env-gated hooks in the copied WRF tree."
+    },
+    {
+      "risk": "Patch cropping can miss needed stencil or boundary context.",
+      "impact": "A local disagreement may be misattributed if halo/stagger handling is wrong.",
+      "mitigation": "Use halo >= 8, include native stagger patches, and validate one patch against wrfout/global indices before accepting term comparisons."
+    },
+    {
+      "risk": "MPI/tile ownership ambiguity.",
+      "impact": "A dmpar run can duplicate or omit selected cells if each rank writes independently without ownership checks.",
+      "mitigation": "Emit rank/tile owner metadata and use unique per-rank files or a post-merge owner filter."
+    },
+    {
+      "risk": "Nested-domain step mapping may be off by one.",
+      "impact": "Savepoints could target h10 plus or minus one d02 step.",
+      "mitigation": "Make the first marker dump record grid%itimestep, domain time, and wrfout-compatible Times before a full h10 emission."
+    },
+    {
+      "risk": "Source-tendency folding is broad and physics-cadence dependent.",
+      "impact": "The initial hook layer may localize to source tendencies without explaining which physics contributor is responsible.",
+      "mitigation": "Only instrument physics_addtendc and first_rk_step_part1/part2 after the dycore boundary snapshots show this block is implicated."
+    },
+    {
+      "risk": "Existing repo validation schema is too narrow.",
+      "impact": "V0.14 term groups do not fit current VALID_OPERATORS without src changes.",
+      "mitigation": "Use a proof-local schema/postprocessor for the implementation sprint, or start a separate approved schema-extension sprint."
+    }
+  ],
+  "next_implementation_sprint_contract_outline": {
+    "title": "V0.14 same-state WRF source term savepoint generator",
+    "objective": "Generate CPU-WRF source-derived d02 h10 term savepoints for the selected 24 dynamic divergence cells, then compare them to the existing JAX CPU same-state term path without using JAX self-truth.",
+    "constraints": [
+      "CPU only.",
+      "No GPU performance claims.",
+      "No edits to repo src unless a separate schema-extension contract is approved.",
+      "Do not patch /home/enric/src/wrf_pristine/WRF in place; use a disposable copy/worktree.",
+      "All emitted truth must come from instrumented WRF source execution, not wrfout interpolation or Python recomputation."
+    ],
+    "inputs": [
+      "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+      "proofs/v014/dynamic_field_attribution.json",
+      "proofs/v014/same_state_tendency_localization_plan.md",
+      "this feasibility report"
+    ],
+    "implementation_steps": [
+      "Create disposable WRF copy under /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF or /tmp/wrf_v014_same_state_savepoint/WRF.",
+      "Record base source git/diff/build metadata and executable checksums.",
+      "Apply minimal env-gated Fortran emitter and solve_em.F hook patch.",
+      "Run marker validation to prove d02 h10 step mapping and patch indexing.",
+      "Run h10 emission for selected cells and required vertical/stagger contexts.",
+      "Postprocess raw payloads into HDF5 or manifest-backed arrays using v014-same-state-wrf-term-savepoint-v1 metadata.",
+      "Compare WRF source term savepoints against JAX CPU same-state terms at h10, then extend to h8/h12/h14 if h10 identifies a stable failure block."
+    ],
+    "acceptance_gates": [
+      "Proof artifact records exact WRF source path, executable hash, patch hash, namelist/input checksums, and step/time mapping.",
+      "At least one marker field patch matches the corresponding h10 wrfout state at the same native indices within serialization tolerance.",
+      "Savepoints include pre/post data for the requested high-value term groups or explicitly document which group is postponed.",
+      "Comparison report identifies the first failing term group for h10 or states that no tested group reproduces the divergence.",
+      "No source-derived claim relies on JAX-vs-JAX self-comparison."
+    ],
+    "expected_proof_objects": [
+      "proofs/v014/same_state_wrf_savepoints_manifest.json",
+      "proofs/v014/same_state_wrf_step_marker.md",
+      "proofs/v014/same_state_wrf_term_compare_h10.md",
+      "raw/HDF5 savepoint payloads outside git under /mnt/data/wrf_gpu2/v014_same_state_wrf_savepoints/"
+    ],
+    "recommended_first_decision": "Approve a disposable WRF instrumentation sprint using /home/enric/src/wrf_pristine/WRF as the build base, with optional dmpar rebuild if walltime/fidelity matters more than fastest first proof."
+  },
+  "commands_run_summary": [
+    "Read PROJECT_CONSTITUTION.md, AGENTS.md, V0140 handoff, same-state localization plan, sprint contract, and local project skills.",
+    "Inspected existing savepoint schema, IO, scripts, tests, and external WRF savepoint patch scaffolding.",
+    "Inspected WRF source/build candidates under /home/enric/src/wrf_pristine/WRF, /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF, /home/enric/src/wrf_ideal_f7i/WRF, and stale old paths.",
+    "Inspected Case 3 launch/history directories, namelist, rsl logs, and NetCDF dimensions/metadata.",
+    "Extracted routine names/line numbers from WRF source files using ripgrep."
+  ]
+}

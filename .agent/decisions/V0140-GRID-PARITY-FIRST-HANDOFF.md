@@ -236,10 +236,21 @@ Wave deliverables are expected under `proofs/v014/` and
 - `019ea97b-119c-7561-ae35-948a3fc1405a` (`Sartre`):
   CPU-only same-state WRF savepoint feasibility sprint
   `.agent/sprints/2026-06-09-v014-same-state-wrf-savepoint-feasibility/sprint-contract.md`.
-  Write scope: `proofs/v014/same_state_wrf_savepoint_feasibility.*` and
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/same_state_wrf_savepoint_feasibility.*` and
   `.agent/reviews/2026-06-09-v014-same-state-wrf-savepoint-feasibility.md`.
-  Objective: identify exact WRF source/build paths, term-savepoint routines,
-  minimal patch strategy, artifact schema, and next sprint outline.
+  Manager corrected one stale manifest-path string from
+  `dynamic_field_attribution_summary.json` to the real
+  `proofs/v014/dynamic_field_attribution.json` and revalidated JSON. Verdict:
+  fastest reliable source-truth path is a disposable instrumented copy of
+  `/home/enric/src/wrf_pristine/WRF`, which has built CPU `main/wrf.exe` and
+  `main/real.exe` but is dirty/apparently serial. Do not patch it in place. The
+  historical Case 3 path
+  `/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF` exists but has no
+  active build/executable. No Case 3 restart shortcut was found, so h10 source
+  truth requires an instrumented forward run from `2026-05-01_18:00:00` unless
+  the implementation sprint first creates a restart. Old
+  `external/wrf_savepoint_patch` is not usable as-is.
 - `019ea980-b391-7923-a63f-81cd9f6dae48` (`Ampere`):
   CPU-only base-state writer attribution sprint
   `.agent/sprints/2026-06-09-v014-base-state-writer-attribution/sprint-contract.md`.
@@ -265,10 +276,8 @@ Wave deliverables are expected under `proofs/v014/` and
 
 ## Next Manager Actions
 
-1. Integrate Sartre's WRF savepoint feasibility proof so same-state
-   localization starts from exact WRF source/build paths.
-2. Integrate Kierkegaard's savepoint request manifest.
-3. Open the next same-state localization sprint using Helmholtz h10 cell/level
+1. Integrate Kierkegaard's savepoint request manifest.
+2. Open the next same-state localization sprint using Helmholtz h10 cell/level
    manifest plus Sartre's WRF savepoint path, unless Ampere finds a runtime
    base-state blocker. Ampere did not find one; proceed with documented
    `PHB/HGT/XLAT/XLONG` exclusions and treat `PB/MUB` as dynamic symptoms.
