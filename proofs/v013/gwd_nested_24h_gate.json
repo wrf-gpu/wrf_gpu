@@ -1,0 +1,16 @@
+{
+  "gate": "v0.13_GWD_nested_1km_24h (#4)",
+  "date": "2026-06-08",
+  "trunk": "optics/taumol-chunked",
+  "config": "standalone_native_init_nested max_dom=3 (9/3/1km) 24h, GWD ON (gwd_opt=1, GPUWRF_GWD_NESTED default-on)",
+  "verdict": "PIPELINE_GREEN",
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "wrfout_per_domain": 24,
+  "wall_clock_forecast_only_s": 6708.5,
+  "hr24": {
+    "d03": "T2[279.6,300.9] U10[-12.4,8.6] V10[-14.3,4.1] RAINNC[0,11.6] ALLFIN",
+    "d01": "T2[288.8,301.7] ALLFIN"
+  },
+  "note": "GWD-on-nested (#4) GREEN \u2014 the 24h nested-1km+GWD run that OOM'd at step0/hr7 in v0.12.0 now FITS after the v0.13 RRTMG g-point+optics/taumol VRAM chunking (SW -88.6%/LW -43.6%). GWD flipped default-ON (gwd_opt=1 honoured; GPUWRF_GWD_NESTED=0 to force off). Completion+finiteness gate, not skill-vs-truth."
+}
