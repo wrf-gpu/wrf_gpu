@@ -1,0 +1,76 @@
+{
+  "conservation": {
+    "opt1": {
+      "passed": true,
+      "per_species_rel_total_tend": {
+        "qc": 6.669550765781894e-18,
+        "qg": 6.25270384292052e-18,
+        "qi": 6.25270384292052e-18,
+        "qr": 6.669550765781894e-18,
+        "qs": 9.865377174385722e-17,
+        "qv": 5.934121785706417e-19
+      }
+    },
+    "opt2": {
+      "passed": true,
+      "per_species_rel_total_tend": {
+        "qc": 5.78331319028671e-17,
+        "qg": 4.8194276585722636e-18,
+        "qi": 4.819427658572265e-18,
+        "qr": 5.78331319028671e-17,
+        "qs": 1.6064758861907536e-17,
+        "qv": 0.0
+      }
+    }
+  },
+  "default_unchanged": {
+    "limiter_inactive_on_nonfinal_rk_stage": true,
+    "opt0_byte_identical_to_plain_all_species": true,
+    "passed": true
+  },
+  "monotonicity_opt2": {
+    "passed": true,
+    "per_species_max": {
+      "qc": 0.001,
+      "qg": 0.0001,
+      "qi": 0.0002,
+      "qr": 0.0005,
+      "qs": 0.0003,
+      "qv": 0.016
+    },
+    "per_species_min": {
+      "qc": 0.0,
+      "qg": 0.0,
+      "qi": 0.0,
+      "qr": 0.0,
+      "qs": 0.0,
+      "qv": 0.012
+    }
+  },
+  "positivity_opt1": {
+    "passed": true,
+    "per_species_min": {
+      "qc": 0.0,
+      "qg": 0.0,
+      "qi": 0.0,
+      "qr": 0.0,
+      "qs": -2.4606765832034344e-218,
+      "qv": 0.01120153186448972
+    },
+    "plain_qc_min": -0.0002442887067409008
+  },
+  "species": [
+    "qv",
+    "qc",
+    "qr",
+    "qi",
+    "qs",
+    "qg"
+  ],
+  "verdict": "PASS",
+  "wrf_parity": {
+    "loop_vs_single_scalar_limiter_max_abs_diff": 0.0,
+    "passed": true,
+    "wrf_fortran_pd_xrow_transcription_max_abs_diff": 0.0
+  }
+}

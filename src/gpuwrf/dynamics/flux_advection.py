@@ -722,6 +722,131 @@ def advect_scalar_flux_limited(
     return tend
 
 
+# --- moisture-species scalar advection loop (advect_scalar / pd / mono) -------
+#
+# WRF advances EACH moisture species (qv, qc, qr, qi, qs, qg, ...) with the SAME
+# flux-form scalar advection it uses for theta, selected by the namelist option
+# ``moist_adv_opt`` (the moisture analogue of ``scalar_adv_opt``):
+#
+#   solve_em.F:2282-2408 -- ``moist_variable_loop: DO im = PARAM_FIRST_SCALAR,
+#   num_3d_m`` calls ``rk_scalar_tend(im, im, ..., config_flags%moist_adv_opt,
+#   ...)`` per species, which dispatches to ``advect_scalar`` (opt 0),
+#   ``advect_scalar_pd`` (opt 1) or ``advect_scalar_mono`` (opt 2) exactly as the
+#   scalar (theta) loop does for ``scalar_adv_opt``.  The limiter is applied on
+#   the final RK3 stage only (the start-of-step ``moist_old`` / ``mu_1`` feed the
+#   FCT bound), every other stage and ``moist_adv_opt == 0`` use the plain h5/v3
+#   path -- identical cadence to the theta scalar.
+#
+# This helper is field-agnostic: it loops over a tuple of (current, old) moisture
+# arrays and returns the matching tuple of COUPLED tendencies ``d(mu*q)/dt``, so a
+# caller drops it into the moisture loop exactly as it drops ``advect_scalar_flux``
+# / ``advect_scalar_flux_limited`` into the theta loop.  Positivity matters most
+# for moisture (negative mixing ratios are unphysical), which is why WRF defaults
+# real-case moisture to ``moist_adv_opt = 2`` (monotonic) -- but the DEFAULT here
+# stays opt-in: ``moist_adv_opt == 0`` runs the byte-for-byte plain path.
+
+
+def advect_moisture_scalars(
+    fields: tuple[jax.Array, ...],
+    fields_old: tuple[jax.Array, ...] | None,
+    vel: CoupledVelocities,
+    *,
+    moist_adv_opt: int,
+    is_final_rk_stage: bool,
+    mut: jax.Array,
+    mu_old: jax.Array,
+    c1: jax.Array,
+    c2: jax.Array,
+    rdx: float,
+    rdy: float,
+    rdzw: jax.Array,
+    fzm: jax.Array,
+    fzp: jax.Array,
+    dt: float,
+) -> tuple[jax.Array, ...]:
+    """WRF moisture-species flux-form advection loop (h=5/v=3), per species.
+
+    Source: ``solve_em.F:2282-2408`` ``moist_variable_loop`` -> ``rk_scalar_tend``
+    with ``config_flags%moist_adv_opt`` (0 plain / 1 PD / 2 monotonic), the
+    moisture analogue of the theta ``scalar_adv_opt`` loop.  Same WRF routines
+    (``advect_scalar`` / ``advect_scalar_pd`` / ``advect_scalar_mono``).
+
+    ``fields``     -- tuple of CURRENT-stage moisture mixing ratios (each (nz,ny,nx)).
+    ``fields_old`` -- tuple of START-OF-STEP moisture mixing ratios (WRF
+                      ``moist_old``); required only when the limiter is active
+                      (``moist_adv_opt`` in {1,2} on the final RK3 stage).  Must be
+                      the same length / shapes as ``fields``.
+
+    Returns a tuple of COUPLED tendencies ``d(mu*q)/dt`` (same length / order as
+    ``fields``), so the caller adds each to its coupled moisture prognostic
+    exactly as it does the theta tendency.
+
+    Selection (STATIC, compile-time): the limiter runs ONLY when
+    ``moist_adv_opt`` in {1,2} AND ``is_final_rk_stage`` is True AND
+    ``fields_old`` is provided -- mirroring WRF's final-stage-only FCT and the
+    theta wiring.  For ``moist_adv_opt == 0`` (default) or any non-final stage the
+    plain ``advect_scalar_flux`` path runs and ``fields_old`` is ignored, so the
+    default moisture transport is BYTE-FOR-BYTE the plain h5/v3 path (the limiter
+    function is never even traced).
+
+    Mass conservation: each species is limited independently by the same
+    flux-renormalization that conserves theta mass (every flux is a face quantity
+    differenced as ``flux(i+1)-flux(i)``; scaling a face value scales the same
+    number entering both adjacent cells with opposite sign), so the per-species
+    coupled-mass integral telescopes to round-off and the limiter only
+    redistributes each species' mass, never creates or destroys it.
+    """
+
+    use_limiter = (
+        int(moist_adv_opt) in (1, 2)
+        and bool(is_final_rk_stage)
+        and fields_old is not None
+    )
+
+    if use_limiter:
+        if len(fields_old) != len(fields):  # type: ignore[arg-type]
+            raise ValueError(
+                "advect_moisture_scalars: fields_old must match fields length "
+                f"({len(fields_old)} vs {len(fields)}) when the limiter is active."  # type: ignore[arg-type]
+            )
+        return tuple(
+            advect_scalar_flux_limited(
+                field,
+                field_old,
+                vel,
+                scalar_adv_opt=int(moist_adv_opt),
+                mut=mut,
+                mu_old=mu_old,
+                c1=c1,
+                c2=c2,
+                rdx=rdx,
+                rdy=rdy,
+                rdzw=rdzw,
+                fzm=fzm,
+                fzp=fzp,
+                dt=dt,
+            )
+            for field, field_old in zip(fields, fields_old)  # type: ignore[arg-type]
+        )
+
+    # Plain h5/v3 path (moist_adv_opt == 0, or a non-final RK stage): byte-for-byte
+    # identical to the unlimited scalar advection used before this sprint.
+    return tuple(
+        advect_scalar_flux(
+            field,
+            vel,
+            mut=mut,
+            c1=c1,
+            rdx=rdx,
+            rdy=rdy,
+            rdzw=rdzw,
+            fzm=fzm,
+            fzp=fzp,
+        )
+        for field in fields
+    )
+
+
 # --- flux-form momentum advection (advect_u / advect_v / advect_w, h=5/v=3) ---
 #
 # WRF advances momentum with the *conservative* flux-divergence form
@@ -1031,6 +1156,7 @@ __all__ = [
     "flux5_face_periodic",
     "advect_scalar_flux",
     "advect_scalar_flux_limited",
+    "advect_moisture_scalars",
     "advect_u_flux",
     "advect_v_flux",
     "advect_w_flux",
