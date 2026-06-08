@@ -282,6 +282,22 @@ Wave deliverables are expected under `proofs/v014/` and
   `w_ph`, `pressure_rho_refresh`, `boundary_spec_relax`,
   `final_stage_state`.
 
+## Active Wave 4
+
+- Pending dispatch:
+  WRF same-state marker savepoint sprint
+  `.agent/sprints/2026-06-09-v014-wrf-same-state-marker-savepoint/sprint-contract.md`.
+  Write scope in repo: `proofs/v014/wrf_same_state_marker_savepoint.*`,
+  `proofs/v014/wrf_same_state_marker_patch.diff`, and
+  `.agent/reviews/2026-06-09-v014-wrf-same-state-marker-savepoint.md`.
+  External scratch scope:
+  `/mnt/data/wrf_gpu2/v014_same_state_wrf/**` or fallback
+  `/tmp/wrf_gpu2_v014_same_state_wrf/**`. No repo `src` edits, no GPU, no
+  Hermes. Objective: copy `/home/enric/src/wrf_pristine/WRF` to a disposable
+  tree, add env-gated WRF marker hooks, prove h10/d02 step and selected native
+  indices against CPU h10 wrfout, then emit the first routine-boundary
+  source-term layer only if the marker is green.
+
 ## Next Manager Actions
 
 1. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
