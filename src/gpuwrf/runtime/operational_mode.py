@@ -2405,6 +2405,11 @@ _SCAN_UNWIRED_REASON = {
     # cu=3 (Grell-Freitas) and cu=6 (modified Tiedtke) are now GPU-batched +
     # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
     "cu_physics=16": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
+    # v0.13 Tier-3 cumulus: KSAS(14)/Grell-3D(5) have single-column fp64
+    # pristine-WRF oracles staged (proofs/v013/oracle/cumulus); their traceable
+    # JAX column kernels are a documented carry-over, so they fail-close here.
+    "cu_physics=14": "KIM-SAS has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
+    "cu_physics=5": "Grell-3D ensemble has a single-column fp64 pristine-WRF oracle staged (proofs/v013); traceable JAX column kernel is a Tier-3 carry-over",
     "sf_surface_physics=2": "Noah-classic requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry)",
     # ra_sw=1 (Dudhia) and ra_sw=4 (RRTMG) are scan-wired; any other recognized SW
     # scheme has no operational GPU scan adapter in the radiation slot.
