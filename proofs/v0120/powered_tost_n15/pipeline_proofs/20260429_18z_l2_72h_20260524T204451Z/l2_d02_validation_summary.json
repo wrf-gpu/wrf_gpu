@@ -1,0 +1,20 @@
+{
+  "blocked_reason": "FileNotFoundError: standalone native-init requires wrfbdy_d02 for lateral forcing (no CPU-WRF wrfout history present in /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z): /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z/wrfbdy_d02",
+  "output_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+  "proofs": {
+    "bounds": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0120-integration/proofs/v0120/powered_tost_n15/pipeline_proofs/20260429_18z_l2_72h_20260524T204451Z/bounds_check_l2_d02.json",
+    "tier4_rmse": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0120-integration/proofs/v0120/powered_tost_n15/pipeline_proofs/20260429_18z_l2_72h_20260524T204451Z/tier4_rmse_l2_d02.json",
+    "wall_clock": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0120-integration/proofs/v0120/powered_tost_n15/pipeline_proofs/20260429_18z_l2_72h_20260524T204451Z/wall_clock_l2_d02.json"
+  },
+  "run_dir": "/tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z",
+  "run_id": "20260429_18z_l2_72h_20260524T204451Z",
+  "schema": "M7L2D02ReplayValidationSummary",
+  "schema_version": 1,
+  "statuses": {
+    "bounds": "BLOCKED",
+    "pipeline": "PIPELINE_BLOCKED",
+    "rmse": "BLOCKED",
+    "wall_clock": "BLOCKED"
+  },
+  "verdict": "L2_D02_BLOCKED"
+}

@@ -1,0 +1,7 @@
+{
+  "reason": "FileNotFoundError: standalone native-init requires wrfbdy_d02 for lateral forcing (no CPU-WRF wrfout history present in /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z): /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z/wrfbdy_d02",
+  "schema": "M7DailyPipelineSpeedupVsCpu24h",
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "upstream_verdict": "PIPELINE_BLOCKED"
+}

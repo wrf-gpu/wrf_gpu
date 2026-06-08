@@ -1,0 +1,15 @@
+{
+  "excluded_cases": [
+    {
+      "blocked_reason": "FileNotFoundError: standalone native-init requires wrfbdy_d02 for lateral forcing (no CPU-WRF wrfout history present in /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z): /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z/wrfbdy_d02",
+      "reason": "GPU forecast failed (2 attempts) rc=2: FileNotFoundError: standalone native-init requires wrfbdy_d02 for lateral forcing (no CPU-WRF wrfout history present in /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z): /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z/wrfbdy_d02",
+      "run_id": "20260429_18z_l2_72h_20260524T204451Z"
+    }
+  ],
+  "generated_utc": "2026-06-08T11:49:08.466273+00:00",
+  "n_excluded": 1,
+  "n_included": 0,
+  "schema": "PoweredTOSTN15Abort",
+  "schema_version": 1,
+  "verdict": "ABORT_NO_CASES_SCORED"
+}

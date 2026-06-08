@@ -1,0 +1,24 @@
+{
+  "detail": {
+    "detail": {
+      "failure_mode": "FileNotFoundError"
+    },
+    "hours": 24,
+    "orchestration_cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "output_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z",
+    "reason": "FileNotFoundError: standalone native-init requires wrfbdy_d02 for lateral forcing (no CPU-WRF wrfout history present in /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z): /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z/wrfbdy_d02",
+    "run_id": "20260429_18z_l2_72h_20260524T204451Z",
+    "schema": "M7DailyPipelineRun",
+    "schema_version": 1,
+    "verdict": "PIPELINE_BLOCKED"
+  },
+  "reason": "FileNotFoundError: standalone native-init requires wrfbdy_d02 for lateral forcing (no CPU-WRF wrfout history present in /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z): /tmp/v0120_merged_run_root/20260429_18z_l2_72h_20260524T204451Z/wrfbdy_d02",
+  "schema": "M7L2D02BoundsCheck",
+  "schema_version": 1,
+  "status": "BLOCKED"
+}
