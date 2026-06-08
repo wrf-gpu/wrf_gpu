@@ -57,7 +57,7 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 16)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 14, 16)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8, 99)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
@@ -90,6 +90,7 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     6: SchemeOption("mp_physics", 6, "WSM6", "wsm6scheme", "accepted", "microphysics"),
     8: SchemeOption("mp_physics", 8, "Thompson", "thompson", "implemented", "microphysics"),
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
+    14: SchemeOption("mp_physics", 14, "WDM5", "wdm5scheme", "accepted", "microphysics"),
     16: SchemeOption("mp_physics", 16, "WDM6", "wdm6scheme", "accepted", "microphysics"),
 }
 
@@ -197,6 +198,7 @@ MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     6: ("qv", "qc", "qr", "qi", "qs", "qg"),
     8: ("qv", "qc", "qr", "qi", "qs", "qg"),
     10: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    14: ("qv", "qc", "qr", "qi", "qs"),
     16: ("qv", "qc", "qr", "qi", "qs", "qg"),
 }
 
@@ -234,6 +236,7 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     6: (),
     8: ("Ni", "Nr"),
     10: ("Ni", "Ns", "Nr", "Ng"),
+    14: ("Nn", "Nc", "Nr"),
     16: ("Nn", "Nc", "Nr"),
 }
 
