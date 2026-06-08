@@ -229,6 +229,25 @@ _DYNAMICS_IMPLEMENTED: Mapping[str, frozenset[int]] = {
 # does not implement; the operational horizontal-mixing path is the 2-D
 # Smagorinsky (diff_opt=1/km_opt=4) or constant-K (diff_opt=2/km_opt=1).
 _DYNAMICS_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
+    # WSM7 (mp=24): the column microphysics is PORTED and savepoint-parity-proven
+    # against the unmodified pristine WRF Fortran scheme (phys/module_mp_wsm7.F),
+    # fp64 JAX vs fp32/fp64 oracle (gpuwrf.physics.microphysics_wsm7.wsm7_run;
+    # proofs/v013/run_wsm7_parity.py, 6/6 columns PASS). It is NOT operationally
+    # selectable because WSM7 carries a SEPARATE precipitating HAIL class (qh)
+    # that is not in the operational moist-state pytree (MOIST_SPECIES has no
+    # qh leaf), so the dycore does not advect it and the I/O does not carry it;
+    # wiring it operationally is a cross-cutting State/dynamics/I-O addition, not
+    # a microphysics-slot change. Fail-closed (never a silent qh-dropping run).
+    "mp_physics": {
+        24: (
+            "WSM7 (separate hail/graupel) is PORTED and savepoint-parity-proven "
+            "against the unmodified pristine WRF scheme (phys/module_mp_wsm7.F) in "
+            "fp64 (gpuwrf.physics.microphysics_wsm7; proofs/v013/run_wsm7_parity.py, "
+            "6/6 columns PASS), but it carries a separate precipitating HAIL class "
+            "(qh) that the operational moist-state pytree does not yet hold, so it "
+            "is fail-closed in the GPU scan rather than silently dropping hail."
+        ),
+    },
     "km_opt": {
         2: "1.5-order 3-D TKE closure is not implemented (the port mixes "
         "vertically via the PBL scheme, not a prognostic 3-D TKE field).",
