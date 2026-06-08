@@ -44,6 +44,8 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
     assert state_leaves_for_mp(3) == ("qv", "qc", "qr")
     assert state_leaves_for_mp(4) == ("qv", "qc", "qr", "qi", "qs")
     assert state_leaves_for_mp(10) == ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Ns", "Nr", "Ng")
+    # WDM5 (mp=14): 5-class moist (no graupel) + the WDM6 Nn/Nc/Nr number leaves.
+    assert state_leaves_for_mp(14) == ("qv", "qc", "qr", "qi", "qs", "Nn", "Nc", "Nr")
     assert state_leaves_for_mp(16) == ("qv", "qc", "qr", "qi", "qs", "qg", "Nn", "Nc", "Nr")
     assert NUMBER_WRFOUT_NAME["Nn"] == "QNCCN"
     assert "QNCLOUD" in wrfout_names_for_mp(16)
@@ -52,14 +54,14 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # 30 single-option specs (8 microphysics incl. Purdue-Lin + WSM3/WSM5 + 6 PBL
-    # incl. BouLac + MRF(99) + 6 surface-layer incl. v0.13 Tier-3 GFS(3) + old-MM5(91)
-    # + 7 cumulus incl. BMJ cu=2 + v0.13 Tier-3 reference-only Grell-3D cu=5 + KSAS
-    # cu=14 + 3 land-surface incl. v0.13 Tier-3 slab(1)) + 6 radiation variants
-    # (RRTMG LW/SW under option 4, classic RRTM LW + Dudhia SW under option 1,
-    # v0.13 Tier-3 GSFC/Chou-Suarez SW under option 2, v0.13 Tier-3 reference-only
-    # GSFC/Goddard NUWRF LW under option 5).
-    assert len(SCHEME_STEP_SPECS) == 36
+    # 31 single-option specs (9 microphysics incl. Purdue-Lin + WSM3/WSM5 + v0.13
+    # Tier-3 WDM5(14) + 6 PBL incl. BouLac + MRF(99) + 6 surface-layer incl. v0.13
+    # Tier-3 GFS(3) + old-MM5(91) + 7 cumulus incl. BMJ cu=2 + v0.13 Tier-3
+    # reference-only Grell-3D cu=5 + KSAS cu=14 + 3 land-surface incl. v0.13 Tier-3
+    # slab(1)) + 6 radiation variants (RRTMG LW/SW under option 4, classic RRTM LW +
+    # Dudhia SW under option 1, v0.13 Tier-3 GSFC/Chou-Suarez SW under option 2, v0.13
+    # Tier-3 reference-only GSFC/Goddard NUWRF LW under option 5).
+    assert len(SCHEME_STEP_SPECS) == 37
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("pbl", 2).writes_carry == ("tke_pbl", "el_pbl")
     assert scheme_step_spec("surface_layer", 2).owner_module.endswith("sfclay_janjic.py")
