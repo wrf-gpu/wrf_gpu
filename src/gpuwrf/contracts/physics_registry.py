@@ -58,7 +58,7 @@ class SchemeOption:
 
 
 ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 16)
-ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8)
+ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8, 99)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 2, 4)
@@ -100,6 +100,10 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
     8: SchemeOption("bl_pbl_physics", 8, "BouLac", "boulacscheme", "accepted", "pbl"),
+    # MRF(99): v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F, scan-wired
+    # into the operational PBL slot (PBL_SCAN_ADAPTERS[99]); savepoint-parity-proven
+    # against the unmodified WRF source at fp64 (proofs/v013/mrf_oracle.py).
+    99: SchemeOption("bl_pbl_physics", 99, "MRF", "mrfscheme", "implemented", "pbl"),
 }
 
 SFCLAY_SCHEMES: Mapping[int, SchemeOption] = {
@@ -478,6 +482,7 @@ PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     5: ("qke",),
     7: (),
     8: ("qke",),
+    99: (),  # MRF is a nonlocal-K scheme: no prognostic PBL carry (like YSU/ACM2)
 }
 
 PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
@@ -487,6 +492,7 @@ PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
     5: ("pblh", "tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl"),
     7: ("pblh",),
     8: ("pblh", "tke_pbl", "dlk", "exch_h", "exch_m"),
+    99: ("pblh", "kpbl"),  # MRF diagnoses PBL height (PBL0) and KPBL
 }
 
 LAND_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
