@@ -1,17 +1,36 @@
-# Known Issues — v0.12.0
+# Known Issues — v0.13.0
 
-Honest, code-grounded list of the open issues shipped with v0.12.0. Each entry states the
+Honest, code-grounded list of the open issues shipped with v0.13.0. Each entry states the
 symptom, what was ruled out, the current best understanding, the workaround, and the tracked
 follow-up. No spin.
 
-**Changes from v0.11.0:**
+> **The headline known issue is KI-9: 24 h forecast-skill (T2/U10/V10) equivalence vs CPU-WRF
+> is NOT closed.** This is the credibility gate for any "operational / replacement" claim. It is
+> a hard dynamics-`ph'` / MYNN / `*_tendf` GPU effort with **no cheap knob**; v0.13.0 ships
+> several off-by-default fidelity levers toward it (moisture flux-advection into RK3, MYJ+Janjic
+> operational, clear-sky diagnostics) but does **not** close it.
 
-- **PSFC diagnostic offset CLOSED** — the WRF-faithful surface-pressure extrapolation (`PSFC = p8w(kts)` from total-geopotential faces) replaced the old `p0`-based value, closing a systematic ~29 Pa diagnostic offset in the internal surface-pressure definition (proof: `proofs/v0120/psfc_extrapolation_proof.json`, bias 328 → −29 Pa). On the equivalence demo PSFC pooled RMSE dropped 707.8 → 415.3 Pa.
-- **New KI-9** — the runnable equivalence demo's 24 h d02 verdict is `NOT_EQUIVALENT`, dominated by lead-time wind divergence; the residual PSFC excess is now driven by that divergence, not a diagnostic offset.
-- KI-1 / KI-2 remain **RESOLVED** (qke cold-start seed + MYNN IEEE fmax/fmin, v0.11.0); conservation remains **CLOSED**.
+**Changes in v0.13.0:**
 
-KI-3 (focused wrfout writer), KI-4 (U10 episodic), KI-5 (underpowered TOST), KI-6 (RRTMG taug),
-and KI-7 (free-running wide-domain) carry forward unchanged.
+- **GWD on the nested 1 km path — RESOLVED / now default-on.** The v0.12.0 deferral (24 h nested
+  1 km + GWD OOM'd at ~sim-hr 7) is closed: the RRTMG VRAM-floor chunking (SW −88.6 % / LW
+  −43.6 %) gives enough headroom that the run now passes `PIPELINE_GREEN` (24/24 `wrfout`,
+  all-finite at +24 h, ≈ 1.86 h). `gwd_opt=1` is **honoured by default** on the nested path;
+  `GPUWRF_GWD_NESTED=0` forces it off. Proof: `proofs/v013/gwd_nested_24h_gate.json`.
+- **RRTM-LW (`ra_lw=1`) hardened** — independent skeptic pass found no JAX port bug (max div
+  2.7×10⁻¹³); F1 `_nbuf` made grid-aware (production bit-identical) + F2/F3 masking-clamps
+  replaced with fail-loud NaN guards (forbidden-pattern removal).
+- **New KI-10** — moisture-advection cadence refinements (the v0.13.0 opt-in moisture
+  flux-advection shares the theta acoustic-cadence rather than accumulating acoustic fluxes;
+  physics-tendency folding is not yet WRF-cadence-exact). Default-off, no shipped-behavior impact.
+- **New KI-11** — 2-way nesting equivalence vs CPU-WRF is untested (only finite/stable proven).
+- KI-9 (the 24 h equivalence / wind-divergence credibility gate) **carries forward and remains
+  open** — the dominant fidelity gap; v0.13.0 ships levers toward it but does not close it.
+- KI-1 / KI-2 remain **RESOLVED** (qke cold-start seed + MYNN IEEE fmax/fmin, v0.11.0);
+  conservation remains **CLOSED**; the PSFC diagnostic offset remains **CLOSED** (v0.12.0).
+
+KI-3 (focused wrfout writer), KI-4 (U10 episodic), KI-5 (underpowered TOST — scoring path now
+**unblocked**), KI-6 (RRTMG taug), and KI-7 (free-running wide-domain) carry forward.
 
 The **v0.11.0 resolutions** (KI-1, KI-2) and the conservation closure are retained verbatim
 below for the record.
@@ -64,20 +83,20 @@ robust, but it was not separately re-tested for the full 24 h duration.
 
 ---
 
-## KI-3 (OPEN scope boundary, carried from v0.10.0) — operational wrfout writer emits a focused 64-variable subset
+## KI-3 (OPEN scope boundary, carried) — operational wrfout writer emits a focused 104-variable subset
 
 **Severity:** scope boundary, not a forecast-correctness defect.
 
-The v0.11.0 operational writer emits the same focused **64-variable** wrfout as v0.9.0/v0.10.0,
-while CPU-WRF emits **375 variables**. The missing variables are only:
+The operational writer emits a focused **104-variable** wrfout (v0.12.0 expanded it from 64 by
+adding the **B1** radiation-flux diagnostics and the **B3** Noah-MP snow-layer state), while
+CPU-WRF emits **375 variables**. The remaining gap is mostly:
 
 - `seed_dim_stag=8` — SPPT/SKEBS/SPP stochastic-perturbation seed arrays (not used operationally).
-- `snow_layers_stag=3` — Noah-MP internal snow-layer diagnostics `TSNO`, `SNICE`, `SNLIQ`.
-- `snso_layers_stag=7` — Noah-MP snow+soil geometry diagnostic `ZSNSO`.
+- Less-common diagnostic / accumulation variables not on the operational forecast-correctness
+  contract.
 
 All core meteorological, spatial, vertical, and soil dimensions match the CPU-WRF reference.
-The operational forecast-correctness contract is the focused 64-variable writer. Full
-wrfout coverage is deferred to v0.13.0.
+Full 375-variable wrfout coverage is deferred to v0.14+.
 
 ---
 
@@ -95,19 +114,26 @@ the most likely improvement path (v0.13.0). Proof: `proofs/v0110/wind_regression
 
 ---
 
-## KI-5 (scope boundary, carried from v0.9.0) — powered n=15 TOST equivalence not yet scored
+## KI-5 (scope boundary, carried from v0.9.0; scoring path UNBLOCKED in v0.13.0) — powered n=15 TOST equivalence
 
 **Severity:** scope boundary, not a forecast-correctness defect.
 
 Formal TOST statistical equivalence of T2/U10/V10 at the ADR-029 predeclared margins
-(T2 ±0.215 K, U10 ±0.231 m/s, V10 ±0.275 m/s) has **not been scored for v0.11.0**.
-The MAM corpus (n≈15 cases, forcing retained, CPU-WRF references backfilled) is prepared.
-The powered analysis is the paper's deliverable.
+(T2 ±0.215 K, U10 ±0.231 m/s, V10 ±0.275 m/s). The MAM corpus (n≈15 cases, forcing retained,
+CPU-WRF references backfilled) is prepared. The powered analysis is the paper's deliverable.
 
-**n=15 is honestly underpowered** (n≈27 needed to detect a 10% RMSE difference at α=0.05,
-β=0.20; n=15 does not confidently detect the ADR-029 margins). The operational equivalence
-evidence is the d02 coupled-skill single-case result plus the nested 24 h proof. No "TOST
-PASS" is claimed for any version.
+**v0.13.0 unblocked the scoring path.** The GPU `daily_pipeline` / `run_one_case` `rc=2` that
+blocked the powered-TOST campaign in v0.12.0 was root-caused (two conflated sources: a per-case
+`L2_D02_BLOCKED` and an orchestrator `<2-scored` conflation) and **fixed**; the scoring path is
+proven `rc=0` on a real GPU `wrfout` vs CPU-WRF (`SCORING_PATH_RC0_PROVEN`, 7 tests). Proofs:
+`proofs/v013/tost_rc2_fix.json`, `proofs/v013/tost_scoring_path_cpu_proof.json`.
+
+**The powered n=15 TOST result itself is `<<MANAGER-FILL: TOST n=15 verdict + the real
+equivalence numbers (T2/U10/V10), or "not scored" with reason>>`.** **n=15 is honestly
+underpowered** (n≈27 needed to detect a 10 % RMSE difference at α=0.05, β=0.20; n=15 does not
+confidently detect the ADR-029 margins). The operational equivalence evidence remains the d02
+coupled-skill single-case result plus the nested 24 h proof. **No "TOST PASS" is claimed** for
+any version pending the powered result.
 
 ---
 
@@ -211,12 +237,57 @@ run is `NOT_EQUIVALENT`, driven by wind divergence.
 **Workaround / what to use instead.** The validated short-range, boundary-forced operational
 path is usable; the demo documents the lead-time divergence as the tracked gap.
 
-**Follow-up.** The MYNN-EDMF cloud PDF completeness (KI-4 / GPU_PORT_GAPS P1-4) and the wind
-fidelity tier are the most likely improvement path; deferred to v0.13.0.
+**Follow-up — the credibility gate.** This is the dominant remaining fidelity gap and the
+gate for any "operational / replacement" claim. v0.13.0 ships several **off-by-default** levers
+toward it — moisture flux-advection wired into the RK3 large step (`moist_adv_opt`; closes the
+"condensates had zero resolved-wind advection" gap), MYJ+Janjic operational, clear-sky radiation
+diagnostics — but does **not** close it. Closing it is a hard dynamics-`ph'` / MYNN-cloud-PDF /
+`*_tendf`-source-tendency GPU effort with **no cheap knob**; carried to v0.14+ (see KI-10 for the
+moisture-advection cadence refinements still needed, and `PROJECT_PLAN.md`).
 
 **Proof:** `proofs/v0120/equivalence_demo_20260509_d02_FINAL.json`,
 `proofs/v0120/psfc_extrapolation_proof.json`; user-facing writeup in
 `docs/equivalence-demo.md`.
+
+---
+
+## KI-10 (OPEN, new in v0.13.0) — moisture-advection cadence refinements
+
+**Severity:** fidelity refinement; **default-off so zero shipped-behavior impact**. Relevant to
+the skill-closure gate (KI-9) once the moisture flux-advection is turned on operationally.
+
+v0.13.0 wires moisture flux-advection into the RK3 large step (`advect_moisture_scalars`,
+`moist_adv_opt`) — closing the gap where condensates (`qv`/`qc`/`qr`/`qi`/`qs`/`qg`) previously
+had **zero resolved-wind advection** (they moved only through the physics boundary). The function
+is conservation-closed (8.2×10⁻¹⁶), WRF-parity bit-exact (1.7×10⁻¹⁶), and **byte-identical when
+off** (`moist_adv_opt=0`, the production default). Proof:
+`proofs/v013/moisture_advection_wiring.json`.
+
+**What is not yet WRF-cadence-exact (GPT cross-check Q1/Q3 carry-overs):**
+
+1. The opt-in moisture advection currently **shares the theta acoustic-cadence** rather than
+   accumulating the acoustic-substep fluxes the way WRF does for the moist scalars.
+2. **Physics-tendency folding** into the advected scalars is not yet WRF-cadence-exact (tied to
+   the `*_tendf` source-tendency adapter, still deferred).
+
+**Workaround.** Leave `moist_adv_opt=0` (the default); the production path is unchanged. Turning
+moisture advection on operationally — with the cadence refinements above — is part of the
+KI-9 skill-closure work, carried to v0.14+.
+
+---
+
+## KI-11 (OPEN, new in v0.13.0) — two-way nesting equivalence vs CPU-WRF untested
+
+**Severity:** scope boundary; the validated operational path is one-way nesting (proven over a
+24 h window), so this does not affect the shipped forecast path.
+
+The two-way feedback path (scaffolding shipped in v0.12.0, defaults off) is finite/stable but its
+**24 h real-GPU equivalence vs CPU-WRF (feedback=1)** is **untested**. Only one-way live nesting
+(d01→d02→d03) has a 24 h equivalence proof; the in-loop `w` relaxation and
+radiation-in-loop on the nested path are also not long-run-proven.
+
+**Workaround.** Use the validated one-way live-nested path (the default). Full two-way feedback +
+radiation/`w`-relax in loop + 5-domain long-run equivalence is carried to v0.14+.
 
 ---
 
@@ -226,48 +297,55 @@ Dry-mass, total-water, and moist-static-energy relative budget residuals are **0
 Physics state deltas are applied **post-dycore** (the v0.9.0 cadence). A v0.11.0
 attempt to route the aggregate dry-physics delta through `rk_addtend_dry` as RK-stage tendencies
 was found to degrade d02 surface winds (commit `5e8aabe`) and is **disabled**; a proper WRF
-`*_tendf` source-tendency adapter is deferred to v0.13.0. Budget closure is **path-independent**
+`*_tendf` source-tendency adapter is deferred to v0.14+ (it is also the lever for the KI-9
+skill-closure work). Budget closure is **path-independent**
 and was re-confirmed 0.0 on the fixed code (commit `b20abb5`). Post-boundary finite/origin
 guard replacements: 0. Proof: `proofs/v0110/conservation_budgets_closed.json`.
 
 ---
 
-## Deferred to v0.13.0 (deliberate scope boundaries, not silent gaps)
+## Resolved / advanced in v0.13.0 (previously deferred-to-v0.13)
 
-These are intentional boundaries of the v0.12.0 release, carried forward by design:
+- **GWD operational coupling on the nested path — RESOLVED, now default-on.** The RRTMG VRAM
+  chunking (SW −88.6 % / LW −43.6 %) closed the ~sim-hr-7 OOM; the 24 h nested 1 km + GWD run is
+  `PIPELINE_GREEN` (`proofs/v013/gwd_nested_24h_gate.json`). `gwd_opt=1` honoured by default;
+  `GPUWRF_GWD_NESTED=0` forces off.
+- **Compile-speed infra — RE-LANDED + GPU-validated.** The v0.12.0 GPU-abort (XLA autotune-flag
+  injection) is fixed (subprocess flag-probe drops unsupported flags); real-GPU import is clean.
+  The persistent autotune cache is opt-in/default-off; its measured *effect* is gated until
+  measured on the integrated GPU smoke (`proofs/v0130/compile_speed.json`).
+- **MYJ PBL + Janjic-Eta sfclay — reference-only → operational.** `bl_pbl=2` / `sf_sfclay=2`
+  scan-wired (mandatory pairing, fail-closed), oracle PASS vs v0.6.0 pristine-WRF savepoints
+  (`proofs/v013/myj_janjic_oracle.json`). End-to-end coupled-RMSE vs CPU-WRF is the carry-over.
+- **Classic RRTM LW cross-model skeptic pass — DONE.** No JAX port bug (max div 2.7×10⁻¹³); F1
+  grid-aware `_nbuf` + F2/F3 fail-loud guards merged.
+- **Powered n=15 TOST scoring path — UNBLOCKED** (rc=2 fixed, scoring `rc=0` proven). The
+  campaign result itself is `<<MANAGER-FILL: TOST n=15 result>>` — see KI-5.
 
-- **Gotthard / Switzerland operational suite** — v0.12.0 ships the standalone port + the
-  AIFS / 1 km-nest path only.
-- **Scheme scan-wiring of the remaining reference-only families** — MYJ PBL + Janjic-Eta
-  sfclay and New-Tiedtke cumulus are recognized and parity-proven but **fail closed** if
-  selected operationally. (v0.12.0 newly wired **Dudhia SW `ra_sw=1`** and **classic AER RRTM
-  LW `ra_lw=1`** to operational, pristine-WRF oracles PASS, default RRTMG `=4` byte-unchanged.)
-- **Full two-way nesting** — feedback + radiation-in-loop + in-loop `w` relaxation +
-  5-domain long-run equivalence (one-way 24 h is proven via the v0.11.0 replay-boundary proof;
-  v0.12.0 lands the 2-way feedback scaffolding, defaults off → 24 h real-GPU equivalence = v0.13).
-- **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps
-  on this memory-bound workload.
-- **Full 375-variable `wrfout`** — v0.12.0 ships **104 variables** (up from 64; **B1** radiation
-  fluxes + **B3** Noah-MP snow-layer added this release); the full WRF 375-var schema remains a
-  scope boundary. Also deferred: deeper **RRTMG SW `taug` UV-band fidelity** (KI-6) and the
-  **`*_tendf` source-tendency adapter** for RK-stage physics.
-- **GWD operational coupling on the nested path** — `gwd_opt=1` is gated **off by default**
-  (`GPUWRF_GWD_NESTED=1` to enable): the 24 h nested 1 km + GWD run exceeds the single-GPU fp64
-  VRAM ceiling at ~sim-hr 7 (the RRTMG g-point temporary). The kernel is oracle-validated
-  (pristine-WRF, fp64 ~1e-13) and ran clean for 7 sim-hours; the fix (g-point-chunked RRTMG
-  temporary) → v0.13.
-- **Compile-speed infra (AOT + persistent XLA autotune cache)** — CPU-proven (3.8–5.8× cold→warm,
-  bit-identical) but reverted from v0.12.0 because its XLA-autotune flag injection aborts the GPU
-  path; carried to v0.13 with GPU validation.
-- **Classic RRTM LW cross-model skeptic pass** — `ra_lw=1` shipped operational + oracle-PASS, but
-  the author wrote both kernel and oracle; an independent skeptic audit of the band/laytrop
-  vectorization is a v0.13 hardening item.
-- **Standalone nested 24 h 1 km gate — PASS** (resolved, not a deferral): `PIPELINE_GREEN`, 24/24
-  `wrfout` per domain, all fields finite at +24 h, GWD gated-off
-  (`proofs/v0120/nested_24h_1km_gate_FINAL.json`). Completion + finiteness gate on the prod-failing
-  case, not a skill-vs-truth claim.
-- **Powered n=15 TOST scoring** (KI-5) — **not scored** for v0.12.0 (the GPU `daily_pipeline`
-  scoring path needs an rc=2 fix); carried to a v0.12.x point release. **No TOST PASS is claimed.**
+## Deferred to v0.14+ (deliberate scope boundaries, not silent gaps)
+
+The next roadmap is **Tier 3 (the scheme long-tail toward v1.0.0) + these carry-overs**. See
+[`../PROJECT_PLAN.md`](../PROJECT_PLAN.md) and `.agent/decisions/V0130-ROADMAP.md`.
+
+- **24 h forecast-skill closure (T2/U10/V10) vs CPU-WRF** (KI-9) — the credibility gate for any
+  "operational / replacement" claim. Hard dynamics-`ph'` / MYNN / `*_tendf` GPU work, no cheap knob.
+- **Moisture-advection cadence refinements** (KI-10) — acoustic-accumulated fluxes +
+  WRF-cadence-exact physics-tendency folding; then operationalize moisture advection on the
+  default path.
+- **Two-way nesting 24 h real-GPU equivalence vs CPU-WRF** (KI-11) — only finite/stable proven.
+- **Tier-2 speed/architecture remainder** — sub-jit split + recompile hygiene,
+  `--xla_gpu_force_compilation_parallelism` + dev `--fast-compile`, CPU-flock for idle nightly cores.
+- **Multi-hardware / independent reproduction** — v0.13.0 is one RTX 5090, one JAX/CUDA stack.
+- **Gotthard / Switzerland operational suite** — still out of scope; v0.13.0 ships the standalone
+  port + the AIFS / 1 km-nest path.
+- **New-Tiedtke cumulus scan-wiring** — recognized/accepted but not separately source-gated;
+  remains fail-closed if selected operationally.
+- **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps on
+  this memory-bound workload.
+- **Full 375-variable `wrfout`** (KI-3), deeper **RRTMG SW `taug` UV-band fidelity** (KI-6), and
+  the **`*_tendf` source-tendency adapter** for RK-stage physics.
+- **Tier-3 scheme long-tail** — ~22 microphysics, ~10 cumulus, ~8 PBL, ~12 radiation, ~4
+  surface-layer + ~6 LSM families; each opt-in / fail-closed until oracle-proven.
 
 ---
 
