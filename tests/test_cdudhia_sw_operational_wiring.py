@@ -197,5 +197,5 @@ def test_unwired_ra_sw_value_fails_closed() -> None:
 
 def test_wired_ra_sw_values_resolve_ok() -> None:
     grid = _grid()
-    for ra_sw in (1, 2, 4):  # Dudhia, GSFC (Chou-Suarez), RRTMG
+    for ra_sw in (0, 1, 2, 4):  # disabled, Dudhia, GSFC (Chou-Suarez), RRTMG
         _resolve_operational_suite(_namelist(grid, ra_sw_physics=ra_sw))
