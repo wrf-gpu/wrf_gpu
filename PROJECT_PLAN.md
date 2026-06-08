@@ -1,24 +1,35 @@
 # Project Plan
 
-Status (2026-06-08 22:10 WEST): **v0.13.0 "Validate & Accelerate" memory-closure + TOST-gated release.**
-The v0.13 tag is now blocked primarily by resuming and completing the powered TOST n=15 run
-on the memory-fixed release candidate. TOST was intentionally stopped at 2/15 durable cases
-after the 641x321x50 target-geometry probe found the previous all-column RRTMG g-point
-transient drove an approximately 90 GiB fp64 peak on a 32 GiB card. The refreshed memory map
-found no other non-radiation memory item that must block TOST, and RRTMG column tiling is now
-merged plus GPU-proven (`proofs/v013/rrtmg_column_tile_vram_suite.json`: LW untiled OOM,
-LW tiled 5374.84 MiB; SW untiled 10033.1 MiB, SW tiled 1619.54 MiB). FP32 acoustic is
-feasible in principle only as an opt-in v0.14 mixed perturbation-authoritative reformulation,
-not as a v0.13 production path.
+Status (2026-06-08 23:11 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+the next use of GPU time.**
+The release label is secondary to correctness. The current manager directive is:
+
+1. **Find and fix the grid-cell divergence first, across all written WRF fields.**
+   The three durable powered-TOST cases show broad cell-level wind disagreement:
+   `proofs/v014/v10_grid_diagnostics.json` reports V10 grid RMSE above 1.5 m/s in
+   3/3 cases, while station V10 is outside the tight ADR-029 margin in 1/3 cases.
+   This means station TOST cannot be the next arbiter; the model must first be made
+   WRF-close on the actual fields.
+2. **FP32 acoustic is the next highest-value lane after grid divergence.** The
+   completed FP32 de-risk reports make mixed perturbation-authoritative acoustic
+   feasible in principle, but it touches the dycore and must not mask or compound
+   the current cell-level divergence root cause.
+3. **Other memory work follows FP32.** The major v0.13 memory fix is already landed:
+   RRTMG column tiling is merged plus GPU-proven
+   (`proofs/v013/rrtmg_column_tile_vram_suite.json`: LW untiled OOM, LW tiled
+   5374.84 MiB; SW untiled 10033.1 MiB, SW tiled 1619.54 MiB).
+4. **TOST resumes only after grid-field divergence is minimized or explicitly
+   root-caused.** Case 3 completed and the TOST marathon was stopped before Case 4;
+   continuing n=15 statistics on known-divergent fields would waste GPU time.
+
 GPU validation launch is now standardized through `scripts/run_gpu_lowprio.sh` and
 `scripts/run_powered_tost_n15.sh`; the operational runbook is `docs/GPU_RUNBOOK.md`.
 The Switzerland/Gotthard suite is explicitly not a v0.13 pass: case generation and CPU truth
 exist, and the v0.12 128²/150² attempt is documented as fp64 OOM/grid-ceiling evidence
 (`proofs/v0120/switzerland_128_gpu_result.json`); the post-memory-fix GPU-vs-CPU-WRF
 Switzerland run is v0.14 B7.
-The completed FP32 de-risk reports (`2026-06-08-gpt-fp32-*`) make mixed
-perturbation-authoritative acoustic the highest-priority v0.14 lane, but they do not meet the
-threshold for a v0.13 pull-in.
+The durable handoff for this goal shift is
+`.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md`.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
@@ -54,22 +65,23 @@ The canonical user-facing scope statement is the top of [`README.md`](README.md)
   + `_SCAN_WIRED_OPTIONS` in [`src/gpuwrf/runtime/operational_mode.py`](src/gpuwrf/runtime/operational_mode.py).
 - **Parity-proven but fail-closed (recognized, loudly rejected):** New-Tiedtke (`cu=16`).
   (v0.13.0 promoted MYJ + Janjic to operational; Dudhia SW + RRTM LW were wired in v0.12.0.)
-- **Current blockers and honest qualifiers:** **the powered TOST n=15 run blocks the v0.13.0 tag**
-  and must be resumed on memory-fixed code after the RRTMG column-tiling proof. **The 24 h
-  forecast-skill closure (T2/U10/V10) vs CPU-WRF is NOT closed
-  (KI-9)** — the credibility gate for any "operational/replacement" claim; the equivalence demo's
-  24 h d02 verdict is `NOT_EQUIVALENT`, dominated by lead-time wind divergence. The powered n=15
-  TOST scoring path is unblocked (rc=2 fixed); 2/15 cases are durable, and `--resume` continues after
-  the memory fix. n=15 remains underpowered vs the n≈27 target. Multi-GPU throughput is
-  fake-mesh-only (real throughput UNMEASURED → per-watt / whole-Earth claims stay PROJECTED).
-  Moisture flux-advection + clear-sky diagnostics are opt-in (default-off, byte-identical when off).
-- **Next (v0.14+ roadmap):** the path to 1.0.0 = **Tier 3 (the scheme long-tail: ~22 microphysics,
-  ~10 cumulus, ~8 PBL, ~12 radiation, ~4 surface-layer + ~6 LSM families, each opt-in/fail-closed
-  until oracle-proven) + the v0.13.0 carry-overs**: FP32/mixed-precision acoustic reformulation
-  per `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`, the KI-9 skill-closure (hard
-  dynamics-`ph'`/MYNN/`*_tendf` GPU work), moisture-advection cadence refinements (KI-10), 2-way
-  nesting 24 h equivalence (KI-11), the Tier-2 speed remainder (sub-jit, parallel-compile,
-  CPU-flock), and multi-hardware/independent reproduction. See
+- **Current blockers and honest qualifiers:** **the cell-level CPU-WRF vs GPU-WRF field
+  envelope is the blocking credibility gate.** The 24 h forecast-skill closure
+  (T2/U10/V10) vs CPU-WRF is NOT closed (KI-9), and the equivalence demo's 24 h d02
+  verdict is `NOT_EQUIVALENT`, dominated by lead-time wind divergence. The powered n=15
+  TOST scoring path is unblocked (rc=2 fixed), 3/15 cases are durable, and `--resume`
+  is available, but TOST is intentionally paused until the grid-cell divergence is
+  explained or minimized. n=15 remains underpowered vs the n≈27 target. Multi-GPU
+  throughput is fake-mesh-only (real throughput UNMEASURED → per-watt / whole-Earth
+  claims stay PROJECTED). Moisture flux-advection + clear-sky diagnostics are opt-in
+  (default-off, byte-identical when off).
+- **Next (v0.14+ roadmap):** the path to 1.0.0 now starts with **Grid-cell parity
+  and divergence attribution**: compare all written wrfout fields cell-by-cell, lead-by-lead,
+  and region-by-region against CPU-WRF, then fix the responsible dycore/surface/coupling
+  operators. After that: FP32/mixed-precision acoustic reformulation per
+  `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`, remaining memory work, then powered
+  TOST as a final gate. The scheme long-tail remains fail-closed unless oracle-proven.
+  See
   [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md), `.agent/decisions/V0130-ROADMAP.md`,
   [`publish/GPU_PORT_GAPS_TODO.md`](publish/GPU_PORT_GAPS_TODO.md), and the full-port gap analysis
   under [`.agent/reviews/`](.agent/reviews/).
