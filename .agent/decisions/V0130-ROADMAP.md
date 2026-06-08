@@ -156,3 +156,5 @@ v0.13.0 now releases only when ALL closed (Tier1 #7-skill, Tier2 remainder, all 
 - #7-skill/dycore-fidelity (the hard credibility gate: wind-error-growth, dycore-ph'/MYNN-EDMF/*_tendf + moisture-cadence GPT Q1/Q3) — ATTACK, honest if research-wall.
 - Tier3 ×5 physics groups (microphysics, cumulus, PBL, radiation, surface+LSM), top-schemes-first batches, per-family oracle.
 - (next wave) Tier2 compile-perf (sub-jit + parallel-compile-knob) + CPU-flock; multi-hardware = physically HW-limited (1 GPU), honest-not-closeable.
+
+**2026-06-08 ~12:32 — #5 (2-way+GWD 24h) OOM at hr12** (RESOURCE_EXHAUSTED 3.66GiB). GWD-one-way fit 24h GREEN; the 2-way feedback path (child→parent copy_fcn + sm121 smoother) adds resident VRAM that tips over at a later-hour peak. CLOSE (no carry-over): dispatched 2-way-feedback-VRAM-reduction lane (release child-copy post-area-average, chunk/reuse smoother buffers) → then re-test 2-way+GWD 24h on GPU. #5 = VRAM-marginal, fixable (not a feedback-numerical bug — ran finite to hr12).
