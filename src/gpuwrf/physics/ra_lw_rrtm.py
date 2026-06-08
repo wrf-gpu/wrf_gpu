@@ -117,6 +117,12 @@ class RRTMLWColumnState(NamedTuple):
     rho: jnp.ndarray
     emiss: float | jnp.ndarray
     tsk: float | jnp.ndarray
+    # Grid model-top pressure (Pa), used to size the WRF above-model-top buffer
+    # ``nbuf = nint(p_top_mb / deltap)`` exactly as ``module_ra_rrtm.F:6781``
+    # (``NLAYERS = kme + nint(p_top*0.01/deltap) - 1``).  ``None`` falls back to
+    # the legacy hardcoded ``DEFAULT_PTOP_PA`` so existing 5000-Pa callers are
+    # bit-identical.  It is a STATIC float (it sets array shapes), never traced.
+    top_pressure_pa: float | None = None
 
 
 class RRTMLWColumnResult(NamedTuple):
@@ -557,10 +563,18 @@ def _o3_average_from_interfaces(pz_bottom_up: np.ndarray) -> np.ndarray:
     return out
 
 
-def _prepare_atmosphere(T, t8w, p, p8w, qv, qc, qr, qi, qs, qg, cldfra, dz, emiss, tsk):
+def _nbuf_for_ptop(ptop_pa: float | None) -> int:
+    """Above-model-top buffer-layer count, WRF ``module_ra_rrtm.F:6781``
+    (``nint(p_top*0.01/deltap)``).  ``None`` -> legacy ``DEFAULT_PTOP_PA``."""
+
+    ptop = DEFAULT_PTOP_PA if ptop_pa is None else float(ptop_pa)
+    return _nint(ptop * 0.01 / DELTAP_MB)
+
+
+def _prepare_atmosphere(T, t8w, p, p8w, qv, qc, qr, qi, qs, qg, cldfra, dz, emiss, tsk,
+                        ptop_pa: float | None = None):
     nz = T.size
-    ptop_mb = DEFAULT_PTOP_PA * 0.01
-    nbuf = _nint(ptop_mb / DELTAP_MB)
+    nbuf = _nbuf_for_ptop(ptop_pa)
     nlayers = nz + nbuf
 
     pz = np.zeros(nlayers + 1, dtype=np.float64)
@@ -1259,9 +1273,11 @@ def _rtrn(tables: _RRTMTables, tavel, pz, tz, cldfrac, taucloud, itr, pfrac, tbo
     return htr[:model_layers] / 86400.0, totdflux[0], totuflux[model_layers], totdflux, totuflux
 
 
-def _solve_one(T, t8w, p, p8w, qv, qc, qr, qi, qs, qg, cldfra, dz, emiss, tsk):
+def _solve_one(T, t8w, p, p8w, qv, qc, qr, qi, qs, qg, cldfra, dz, emiss, tsk,
+               ptop_pa: float | None = None):
     tables = _load_tables()
-    atm = _prepare_atmosphere(T, t8w, p, p8w, qv, qc, qr, qi, qs, qg, cldfra, dz, emiss, tsk)
+    atm = _prepare_atmosphere(T, t8w, p, p8w, qv, qc, qr, qi, qs, qg, cldfra, dz, emiss, tsk,
+                              ptop_pa=ptop_pa)
     pavel, tavel, pz, tz, cloudfrac, taucloud, coldry, wkl, wx, tbound, semiss, model_layers, _ = atm
     coef = _setcoef(pavel, tavel, coldry, wkl, tables)
     _, pfrac, itr = _gasabs(tables, coef, wx)
@@ -1270,6 +1286,7 @@ def _solve_one(T, t8w, p, p8w, qv, qc, qr, qi, qs, qg, cldfra, dz, emiss, tsk):
 
 def solve_rrtm_lw_column(state: RRTMLWColumnState) -> RRTMLWColumnResult:
     arrays, emiss, tsk = _column_inputs(state)
+    ptop_pa = state.top_pressure_pa
     heating = []
     glw = []
     olr = []
@@ -1291,6 +1308,7 @@ def solve_rrtm_lw_column(state: RRTMLWColumnState) -> RRTMLWColumnResult:
             arrays["dz"][col],
             emiss[col],
             tsk[col],
+            ptop_pa=ptop_pa,
         )
         h, g, o, fd, fu = out
         heating.append(h)
