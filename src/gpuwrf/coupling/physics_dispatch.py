@@ -264,7 +264,7 @@ _SURFACE_ENTRIES: dict[int, SchemeEntry] = {
     # (carries TSLB soil temperatures; not yet threaded into the operational scan --
     # needs the GSW/GLW radiation forcing + TMN/THC/EMISS static hook).
     1: SchemeEntry("land_surface", 1, SURFACE_SCHEMES[1].name, "gpuwrf.physics.lsm_slab",
-                   "slab_columns", "land_step", True,
+                   "slab_columns", "land_step", False,
                    reads_state=("t_skin", "mavail"),
                    writes_state=("t_skin",),
                    carry_members=("tslb",),

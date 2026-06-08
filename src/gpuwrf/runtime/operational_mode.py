@@ -382,23 +382,23 @@ class OperationalNamelist:
     sf_surface_physics: object = None
     # --- radiation-family selection (static aux) ----------------------------
     # ``ra_sw_physics`` selects the SHORTWAVE radiation scheme on the operational
-    # scan: 4 = RRTMG SW (default, byte-unchanged), 1 = Dudhia (Stephens-1984
-    # broadband) SW. ra_sw=1 runs the Dudhia SW theta tendency
-    # (coupling.physics_couplers.dudhia_sw_theta_tendency) PLUS the RRTMG LW
-    # tendency -- WRF runs the SW and LW radiation drivers independently. ra_lw is
-    # always RRTMG-LW here (ra_lw_physics=4); ra_lw=1 stays REFERENCE_ONLY. The
-    # held-rate cadence + topo-shading/slope-rad statics are shared with RRTMG.
-    # NOTE: the surface SWDOWN/flux history diagnostics remain RRTMG-derived
-    # (rrtmg_radiation_diagnostics); ra_sw=1 changes the PROGNOSTIC SW heating
-    # (RTHRATEN added to theta), not the diagnostic surface-flux output fields.
+    # scan: 0 = disabled, 4 = RRTMG SW (default, byte-unchanged), 1 = Dudhia
+    # (Stephens-1984 broadband), 2 = GSFC/Chou-Suarez. WRF runs SW and LW drivers
+    # independently, so a disabled SW component contributes exactly zero heating.
+    # The held-rate cadence + topo-shading/slope-rad statics are shared with RRTMG.
+    # NOTE: for nonzero alternate SW schemes, the surface SWDOWN/flux history
+    # diagnostics remain RRTMG-derived (rrtmg_radiation_diagnostics); ra_sw=1/2
+    # change the PROGNOSTIC SW heating (RTHRATEN added to theta), not the diagnostic
+    # surface-flux output fields. ra_sw=0 zeros the SW diagnostics.
     ra_sw_physics: int = 4
-    # ``ra_lw_physics`` selects the LONGWAVE radiation scheme: 4 = RRTMG LW
+    # ``ra_lw_physics`` selects the LONGWAVE radiation scheme: 0 = disabled, 4 = RRTMG LW
     # (default, byte-unchanged), 1 = classic AER RRTM LW (16-band k-distribution,
     # coupling.physics_couplers.rrtm_lw_theta_tendency, JAX-traceable port of
     # phys/module_ra_rrtm.F). ra_lw=1 changes the PROGNOSTIC LW heating only; the
-    # surface GLW history diagnostic remains RRTMG-derived. SW and LW are selected
-    # independently (WRF runs the two drivers separately), so any (ra_sw, ra_lw)
-    # combination in {1,4}x{1,4} is valid.
+    # surface GLW history diagnostic remains RRTMG-derived for nonzero LW schemes.
+    # ra_lw=0 zeros the LW diagnostics. SW and LW are selected independently (WRF
+    # runs the two drivers separately), so any operationally wired pair is valid and
+    # disabled components are true no-ops.
     ra_lw_physics: int = 4
     # Explicit Noah-classic (sf_surface_physics=2) operational inputs. The JAX SFLX
     # kernel consumes WRF-derived REDPRM/static fields and a 4-layer land carry; if
@@ -2380,6 +2380,10 @@ def noahmp_initial_rad(
     soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)
     lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
     cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)
+    if int(namelist.ra_sw_physics) == 0:
+        soldn = jnp.zeros_like(soldn)
+    if int(namelist.ra_lw_physics) == 0:
+        lwdn = jnp.zeros_like(lwdn)
     return (soldn, lwdn, cosz)
 
 
@@ -2419,16 +2423,16 @@ _SCAN_WIRED_OPTIONS = {
     # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter). New-Tiedtke(16) not separately
     # gated -> NOT wired.
     "cu_physics": (0, 1, 2, 3, 6),
-    # ra_sw=4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
+    # ra_sw=0 disabled, 4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
     # theta tendency via dudhia_sw_theta_tendency), 2 GSFC/Chou-Suarez SW
     # (multi-band delta-Eddington, scan-wired held-rate theta tendency via
     # gsfc_sw_theta_tendency). Any other recognized SW scheme is fail-closed
     # (no GPU scan adapter).
-    "ra_sw_physics": (1, 2, 4),
-    # ra_lw=4 RRTMG LW (default), 1 classic AER RRTM LW (16-band k-distribution,
+    "ra_sw_physics": (0, 1, 2, 4),
+    # ra_lw=0 disabled, 4 RRTMG LW (default), 1 classic AER RRTM LW (16-band k-distribution,
     # scan-wired held-rate theta tendency via rrtm_lw_theta_tendency, JAX-traceable
     # port of phys/module_ra_rrtm.F). SW/LW are selected independently.
-    "ra_lw_physics": (1, 4),
+    "ra_lw_physics": (0, 1, 4),
 }
 
 # Scheme-specific reasons a parity-passed option is NOT yet wired into the scan
@@ -2692,6 +2696,10 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
         soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)
         lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)
         cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)
+        if int(namelist.ra_sw_physics) == 0:
+            soldn = jnp.zeros_like(soldn)
+        if int(namelist.ra_lw_physics) == 0:
+            lwdn = jnp.zeros_like(lwdn)
         return (soldn, lwdn, cosz)
 
     # ``held_rad`` is always a concrete 3-tuple inside the scan (seeded at carry
@@ -2863,10 +2871,11 @@ def _physics_step_forcing(
         next_carry = next_carry.replace(cumulus_carry=cldefi_next)
 
     # --- radiation slot: SW/LW family dispatch -----------------------------
-    # ra_sw_physics selects the SW scheme (4=RRTMG, 1=Dudhia) and ra_lw_physics
-    # the LW scheme (4=RRTMG, 1=classic AER RRTM). WRF runs the SW and LW drivers
-    # independently, so the HELD-RATE RTHRATEN is the SUM of the two chosen
-    # tendencies. The default (ra_sw=4, ra_lw=4) is dispatched through the COMBINED
+    # ra_sw_physics selects the SW scheme (0=disabled, 4=RRTMG, 1=Dudhia, 2=GSFC)
+    # and ra_lw_physics the LW scheme (0=disabled, 4=RRTMG, 1=classic AER RRTM).
+    # WRF runs the SW and LW drivers independently, so the HELD-RATE RTHRATEN is
+    # the SUM of the two chosen tendencies, with disabled components contributing
+    # zero. The default (ra_sw=4, ra_lw=4) is dispatched through the COMBINED
     # rrtmg_theta_tendency (single column-input build, byte-unchanged). Any other
     # combination composes the SW-only and LW-only couplers. The held rate is added
     # into theta at every dynamics step over the radt interval (shared cadence).
@@ -2875,6 +2884,8 @@ def _physics_step_forcing(
     land_for_rad = carry.noahmp_land if bool(namelist.use_noahmp) else None
 
     def _sw_tendency() -> jnp.ndarray:
+        if ra_sw == 0:
+            return jnp.zeros_like(next_state.theta)
         if ra_sw == 1:
             return dudhia_sw_theta_tendency(
                 next_state,
@@ -2906,6 +2917,8 @@ def _physics_step_forcing(
         )
 
     def _lw_tendency() -> jnp.ndarray:
+        if ra_lw == 0:
+            return jnp.zeros_like(next_state.theta)
         if ra_lw == 1:
             return rrtm_lw_theta_tendency(
                 next_state,
@@ -3262,11 +3275,26 @@ def compute_m9_diagnostics(
     # WRF's end-of-step history output carries). Reporting it makes the diagnostic
     # equal the held WRF-cadence field. The non-Noah-MP / noahmp_rad=None path is
     # unchanged (still the output-time recompute).
+    sw_enabled = int(namelist.ra_sw_physics) != 0
+    lw_enabled = int(namelist.ra_lw_physics) != 0
     swdown_out = rad.swnorm if int(namelist.slope_rad) == 1 else rad.swdown
     glw_out = rad.glw
     if noahmp_rad is not None:
         swdown_out = jnp.asarray(noahmp_rad[0], dtype=jnp.float64)
         glw_out = jnp.asarray(noahmp_rad[1], dtype=jnp.float64)
+    if not sw_enabled:
+        swdown_out = jnp.zeros_like(swdown_out)
+    if not lw_enabled:
+        glw_out = jnp.zeros_like(glw_out)
+    swdnb = rad.swdown if sw_enabled else jnp.zeros_like(rad.swdown)
+    swupb = rad.swup if sw_enabled else jnp.zeros_like(rad.swup)
+    swdnt = rad.sw_toa_down if sw_enabled else jnp.zeros_like(rad.sw_toa_down)
+    swupt = rad.sw_toa_up if sw_enabled else jnp.zeros_like(rad.sw_toa_up)
+    swnorm = rad.swnorm if sw_enabled else jnp.zeros_like(rad.swnorm)
+    lwdnb = rad.glw if lw_enabled else jnp.zeros_like(rad.glw)
+    lwupb = rad.glw_up if lw_enabled else jnp.zeros_like(rad.glw_up)
+    lwdnt = rad.lw_toa_down if lw_enabled else jnp.zeros_like(rad.lw_toa_down)
+    lwupt = rad.lw_toa_up if lw_enabled else jnp.zeros_like(rad.lw_toa_up)
     return M9Diagnostics(
         swdown=swdown_out,
         glw=glw_out,
@@ -3283,15 +3311,15 @@ def compute_m9_diagnostics(
         # output-cadence fluxes, consistent with the SWDOWN/GLW recompute path).
         # SWDNB == bottom-of-atmosphere downwelling SW (== SWDOWN in the no-slope
         # config); SWNORM == slope-normal surface SW.
-        swdnb=rad.swdown,
-        swupb=rad.swup,
-        lwdnb=rad.glw,
-        lwupb=rad.glw_up,
-        swdnt=rad.sw_toa_down,
-        swupt=rad.sw_toa_up,
-        lwdnt=rad.lw_toa_down,
-        lwupt=rad.lw_toa_up,
-        swnorm=rad.swnorm,
+        swdnb=swdnb,
+        swupb=swupb,
+        lwdnb=lwdnb,
+        lwupb=lwupb,
+        swdnt=swdnt,
+        swupt=swupt,
+        lwdnt=lwdnt,
+        lwupt=lwupt,
+        swnorm=swnorm,
         coszen=rad.coszen,
     )
 

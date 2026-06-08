@@ -119,6 +119,14 @@ def test_use_noahmp_toggle_maps_land_surface() -> None:
     assert resolve_physics_suite({"use_noahmp": False}).land_surface.option == 2
 
 
+def test_reference_only_slab_lsm_is_not_gpu_gate_ready() -> None:
+    suite = resolve_physics_suite({"sf_surface_physics": 1})
+    assert suite.land_surface.option == 1
+    assert suite.land_surface.gpu_runnable is False
+    assert suite.gpu_gate_ready is False
+    assert suite.non_gpu_schemes == ("sf_surface_physics=1 (thermal-diffusion slab LSM)",)
+
+
 def test_all_routed_entrypoints_exist_on_module() -> None:
     matrix = dispatch_matrix()
     for row in matrix["rows"]:
