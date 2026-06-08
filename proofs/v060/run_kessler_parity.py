@@ -187,7 +187,7 @@ def main() -> int:
         "canonical_fp32_pass": bool(canonical_pass),
         "fp64_precision_audit_pass": bool(fp64_pass),
         "oracle": {
-            "source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_kessler.F",
+            "source": "$WRF_PRISTINE_ROOT/phys/module_mp_kessler.F",
             "source_unmodified": True,
             "full_wrf_exe": False,
             "full_wrf_exe_note": (

@@ -440,7 +440,7 @@ def build_report(*, write_json: bool = False) -> dict[str, Any]:
         "status": status,
         "tolerance": TOLERANCE,
         "source": {
-            "wrf_pristine_root": "/home/enric/src/wrf_pristine/WRF",
+            "wrf_pristine_root": "$WRF_PRISTINE_ROOT",
             "calc_ww_cp": "dyn_em/module_big_step_utilities_em.F:640-782",
             "scalar": "dyn_em/module_advect_em.F:3387-3388,4215-4355",
             "u": "dyn_em/module_advect_em.F:354,479,1395",

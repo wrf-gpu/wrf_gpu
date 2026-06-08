@@ -3,7 +3,7 @@
 S0b WRF-savepoint fixtures are not yet present under ``proofs/noahmp/``; this
 harness stands in by validating the JAX port against an INDEPENDENT NumPy
 re-implementation transcribed 1:1 from pristine WRF
-``/home/enric/src/wrf_pristine/WRF/phys/noahmp/src/module_sf_noahmplsm.F``:
+``$WRF_PRISTINE_ROOT/phys/noahmp/src/module_sf_noahmplsm.F``:
 
   THERMOPROP (:2400-2510) + CSNOW (:2514-2569) + TDFCND (:2573-2680)
   TSNOSOI (:5258-5371) = HRT (:5375-5473) + HSTEP (:5477-5530) + ROSR12 (:5534-5591)

@@ -46,8 +46,8 @@ from tost_ensemble_runner import (  # noqa: E402
     score_case_level,
 )
 
-# tost_ensemble_runner hardcodes ROOT=/home/enric/src/wrf_gpu2 and inserts the
-# SHARED src at sys.path[0] on import -- which would shadow THIS worktree's gpuwrf.
+# tost_ensemble_runner resolves ROOT from its own file location and inserts that
+# repo's src at sys.path[0] on import -- which would shadow THIS worktree's gpuwrf.
 # Re-prepend the worktree src so the S6b-activated gpuwrf wins (gpuwrf is not yet
 # imported at this point; the ensemble runner only imports it inside functions).
 while WT_SRC in sys.path:

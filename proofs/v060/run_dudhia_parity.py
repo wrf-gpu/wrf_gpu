@@ -182,7 +182,7 @@ def main() -> int:
         "canonical_fp32_pass": bool(canonical_pass),
         "fp64_precision_audit_pass": bool(fp64_pass),
         "oracle": {
-            "source": "/home/enric/src/wrf_pristine/WRF/phys/module_ra_sw.F",
+            "source": "$WRF_PRISTINE_ROOT/phys/module_ra_sw.F",
             "entry": "SWRAD -> SWPARA (Stephens 1984 broadband shortwave)",
             "source_unmodified": True,
             "full_wrf_exe": False,

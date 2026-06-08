@@ -258,7 +258,7 @@ if __name__ == '__main__':
             'source_scale': args.source_scale,
             'generated_utc': datetime.now(timezone.utc).isoformat(),
             'command_hint': 'taskset -c 0-3 env JAX_PLATFORMS=<cpu|cuda> PYTHONPATH=src python proofs/rrtmg_sw/clearsky_swdown_oracle.py clear --source-scale wrf-toa --max-columns <N> --batch-size <N>',
-            'wrf_source': '/home/enric/src/wrf_pristine/WRF/phys/module_ra_rrtmg_sw.F',
+            'wrf_source': '$WRF_PRISTINE_ROOT/phys/module_ra_rrtmg_sw.F',
             'results': out,
         }, f, indent=2)
     print('WROTE', outpath)

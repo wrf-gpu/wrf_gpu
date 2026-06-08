@@ -1,0 +1,72 @@
+{
+  "schema": "gpuwrf.reproducibility.assets.v1",
+  "description": "Large binary assets the historical proof collection depends on. An outsider needs these present and sha256-matching for the FULL collection to run. The Thompson lookup-table .npz was the asset flagged as missing in the v0.11 external critique (it was excluded from the v0.0.1 public tree). Each entry says whether the asset is VENDORED in-repo or must be FETCHED/REBUILT, and how to regenerate it deterministically from pristine WRF.",
+  "generated_by": "scripts/verify_reproducibility.sh (asset-pin check) -- regenerate with the rebuild_cmd below",
+  "assets": [
+    {
+      "name": "thompson-tables-v1",
+      "path": "data/fixtures/thompson-tables-v1.npz",
+      "checksum_sha256": "a76b0f28e8b910df0a5dde529f02460b5e7a3ea92d9e543f673c43e2a5b02f9f",
+      "bytes": 29429841,
+      "vendored": true,
+      "consumed_by": [
+        "src/gpuwrf/physics/thompson_tables.py (load_thompson_tables -> THOMPSON_TABLES)",
+        "proofs/b1/coupled_moist_smoke.py",
+        "proofs/v090/thompson_savepoint_parity.py",
+        "tests/test_m5_thompson_tier1.py",
+        "tests/test_m5_thompson_constants.py (pins this exact sha256)"
+      ],
+      "pinned_in": "fixtures/manifests/analytic-thompson-column-v1.yaml",
+      "pin_verified": true,
+      "rebuild_cmd": "JAX_PLATFORMS=cpu WRF_PRISTINE_ROOT=/path/to/WRF python3 scripts/extract_thompson_tables.py",
+      "rebuild_notes": "Compiles a tiny Fortran harness against the UNMODIFIED pristine WRF module_mp_thompson.F, dumps the freezeH2O / qr_acr_qg / qr_acr_qs / collision-efficiency lookup tables, and packs them into the .npz. Requires gfortran + a WRF checkout. The 29 MB binary is vendored in this repo so an outsider does NOT need to rebuild it; rebuild is only for provenance regeneration. This is the asset the v0.11 critique flagged as the FULL-collection blocker (it was excluded from the v0.0.1 public push)."
+    },
+    {
+      "name": "rrtmg-tables-v1",
+      "path": "data/fixtures/rrtmg-tables-v1.npz",
+      "checksum_sha256": "0695e523a5c79025721eb3e660e379ca84d246ec791ecc24b2b6aafd5296a5f4",
+      "bytes": 4201708,
+      "vendored": true,
+      "consumed_by": [
+        "src/gpuwrf/physics/rrtmg_tables.py (load_rrtmg_tables)",
+        "tests/test_m5_rrtmg_tables.py",
+        "proofs/radiation/*, proofs/rrtmg_sw/*"
+      ],
+      "pinned_in": "fixtures/manifests/analytic-rrtmg-sw-column-v1.yaml",
+      "pin_verified": false,
+      "pin_discrepancy": "fixtures/manifests/analytic-rrtmg-{sw,lw}-column-v1.yaml and rrtmg-intermediate-oracle-v1.yaml pin checksum_sha256=5cc63950c81795b02f7bf47147afc4a9d667ae00f14510f7325816fb4f3a06e2, but the on-disk asset is 0695e523a5c79025721eb3e660e379ca84d246ec791ecc24b2b6aafd5296a5f4. The asserting test (test_m5_rrtmg_tables.py) only checks the digest is 64 hex chars, NOT that it matches the manifest pin, so this stale pin does not currently fail any gate. PRE-EXISTING (not introduced by v0.13 reproducibility work); the manifest pin should be refreshed in a radiation-owned sprint.",
+      "rebuild_cmd": "JAX_PLATFORMS=cpu WRF_PRISTINE_ROOT=/path/to/WRF python3 scripts/extract_rrtmg_tables.py"
+    },
+    {
+      "name": "rrtmg-intermediate-oracle-v1",
+      "path": "data/fixtures/rrtmg-intermediate-oracle-v1.npz",
+      "checksum_sha256": "1ba5287b810c3fd1cf2179408d21060650db694f7fcff27838ccd63628284afc",
+      "bytes": 256893,
+      "vendored": true,
+      "consumed_by": [
+        "tests/ rrtmg intermediate-stage parity",
+        "fixtures/manifests/rrtmg-intermediate-oracle-v1.yaml"
+      ],
+      "pinned_in": "fixtures/manifests/rrtmg-intermediate-oracle-v1.yaml",
+      "pin_verified": true
+    }
+  ],
+  "external_inputs_not_vendored": {
+    "WRF_PRISTINE_ROOT": {
+      "what": "An UNMODIFIED pristine WRF v4 source checkout (default: a `wrf_pristine/WRF` sibling of this repo). Override with the WRF_PRISTINE_ROOT env var.",
+      "needed_for": "ONLY oracle (re)generation and Fortran-linked savepoint-parity proofs that recompile/hash the WRF source. The vendored savepoints + .npz tables let the CPU proof collection run WITHOUT it.",
+      "license_note": "WRF is a separate, openly available codebase (UCAR/NCAR); it is intentionally NOT vendored here."
+    },
+    "corpus_runs": {
+      "what": "Real CPU-WRF forecast output (wrfout) + AIFS forcing used by the operational/TOST equivalence proofs.",
+      "location_on_dev_machine": "/mnt/data/canairy_meteo/runs and /mnt/data/wrf_gpu2 (purged from most dirs; see docs/fixture-storage-policy.md)",
+      "needed_for": "proofs/m20/* (TOST), proofs/v0*/ multi-day operational gates, proofs/v090/*_savepoint_parity oracle dirs.",
+      "outsider_status": "NOT reproducible by an outsider without re-running CPU-WRF from the AIFS forcing (data/manifests/aifs_ingest_v0.json documents the source)."
+    },
+    "gpu": {
+      "what": "An NVIDIA GPU + CUDA-enabled JAX for the performance/speedup, multi-GPU, and 1km nested-domain proofs.",
+      "needed_for": "proofs/perf/*, proofs/multigpu_dgx/*, proofs/v0120/* nested-domain gates, any speedup claim.",
+      "outsider_status": "Numeric correctness is reproducible on CPU; speedup/throughput claims require GPU."
+    }
+  }
+}

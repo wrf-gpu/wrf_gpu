@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -54,7 +55,9 @@ import energy_savepoint_gate as eg  # noqa: E402
 from gpuwrf.physics.noahmp.energy import noahmp_energy_canopy  # noqa: E402
 from gpuwrf.physics.noahmp.energy_radiation import radiation_twostream  # noqa: E402
 
-WRF_SOURCE = Path("/home/enric/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F")
+# Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))
+WRF_SOURCE = WRF_PRISTINE_ROOT / "phys/module_sf_noahmplsm.F"
 SAVEPOINTS = ROOT / "proofs" / "noahmp" / "savepoints_energy.json"
 
 # Predeclared fp64 tolerances [K]. The energy gate already shows TAH/TGB/SHG/SHC/SHB and
@@ -87,7 +90,7 @@ def run_column(col):
 def main():
     sp = json.load(open(SAVEPOINTS))
     cols = sp["columns"]
-    src_sha = hashlib.sha256(WRF_SOURCE.read_bytes()).hexdigest()
+    src_sha = hashlib.sha256(WRF_SOURCE.read_bytes()).hexdigest() if WRF_SOURCE.is_file() else "missing"
 
     rows = []
     n_pass = n_fail = 0
