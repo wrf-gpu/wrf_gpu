@@ -1,0 +1,795 @@
+{
+  "scheme": "WSM7 (mp_physics=24)",
+  "oracle": {
+    "prognostic_ref": "WRF phys/module_mp_wsm7.F fp32 single-column savepoints (proofs/v013/savepoints_wsm7)",
+    "diagnostic_ref": "same scheme, -fdefault-real-8 override (proofs/v013/savepoints_wsm7_fp64); used for effective radii to remove the fp32 reference's trace-cell floor dust",
+    "source_checksums": "proofs/v013/savepoints_wsm7/wsm7_source_checksums.txt"
+  },
+  "jax_precision": "fp64",
+  "predeclared_tolerances": {
+    "t_abs": 0.005,
+    "q_rel": 0.006,
+    "q_abs_floor": 1e-07,
+    "precip_rel": 0.01,
+    "precip_abs": 0.0003,
+    "re_rel": 0.005,
+    "re_abs_floor": 1e-07,
+    "sr_abs": 0.008
+  },
+  "overall_pass": true,
+  "notes": [
+    "Prognostic state (theta/t, qv, qc, qr, qi, qs, qg, qh) and surface precip (rain/snow/graupel/hail) are gated against the CANONICAL fp32 WRF oracle.",
+    "WSM7 = WSM6 single-moment rain/snow/graupel + a separate precipitating hail class (Bae, Hong, Tao 2018); the hail process terms (phaci/phacw/phacr/phacs/phacg, phaut, phmlt/pheml, phdep, phevp, pgwet/phwet wet growth) and the 4th semi-Lagrangian fall channel are exercised by cases 2/3/4/5.",
+    "Effective radii (re_cloud, re_ice, re_snow) are diagnostic-only and have categorical detection floors; they are gated against the fp64 oracle, where the JAX fp64 port agrees to ~1e-9 relative. Each re field also records its vs-fp32 error for transparency."
+  ],
+  "cases": {
+    "1": {
+      "pass": true,
+      "fields": {
+        "t": {
+          "ref": "fp32",
+          "max_abs": 1.5197408572475979e-05,
+          "max_rel": 5.1121929506892415e-08,
+          "tol_abs": 0.005,
+          "pass": true
+        },
+        "qv": {
+          "ref": "fp32",
+          "max_abs": 5.026552351433677e-09,
+          "max_rel": 2.5858253522366483e-07,
+          "scale": 0.01943887025117874,
+          "pass": true
+        },
+        "qc": {
+          "ref": "fp32",
+          "max_abs": 4.615131294054969e-09,
+          "max_rel": 4.256799047508676e-06,
+          "scale": 0.00108417880255729,
+          "pass": true
+        },
+        "qr": {
+          "ref": "fp32",
+          "max_abs": 6.159612241920728e-10,
+          "max_rel": 6.350524274148061e-07,
+          "scale": 0.0009699375950731337,
+          "pass": true
+        },
+        "qi": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qs": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qg": {
+          "ref": "fp32",
+          "max_abs": 8.204153414298523e-29,
+          "max_rel": 8.204153414298523e-22,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qh": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "re_cloud": {
+          "ref": "fp64",
+          "max_abs": 5.4059546671368945e-11,
+          "max_rel": 1.8661000178523273e-06,
+          "scale": 2.896926539531651e-05,
+          "pass": true,
+          "vs_fp32_max_abs": 5.98256111974439e-11,
+          "vs_fp32_max_rel": 2.065140006987167e-06
+        },
+        "re_ice": {
+          "ref": "fp64",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 4.99e-06,
+          "pass": true,
+          "vs_fp32_max_abs": 2.0556618032959145e-14,
+          "vs_fp32_max_rel": 4.119562749026738e-09
+        },
+        "re_snow": {
+          "ref": "fp64",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 9.99e-06,
+          "pass": true,
+          "vs_fp32_max_abs": 1.468672409301328e-13,
+          "vs_fp32_max_rel": 1.4701425734663727e-08
+        },
+        "rainncv": {
+          "ref": "fp32",
+          "jax": 0.07867391242694141,
+          "oracle": 0.07867370545864105,
+          "abs_err": 2.0696830035915603e-07,
+          "tol": 0.0007867370545864105,
+          "pass": true
+        },
+        "snowncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "graupelncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "hailncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "sr": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.008,
+          "pass": true
+        }
+      }
+    },
+    "2": {
+      "pass": true,
+      "fields": {
+        "t": {
+          "ref": "fp32",
+          "max_abs": 2.1208682596807193e-05,
+          "max_rel": 7.420018299321245e-08,
+          "tol_abs": 0.005,
+          "pass": true
+        },
+        "qv": {
+          "ref": "fp32",
+          "max_abs": 3.6635879763907697e-09,
+          "max_rel": 3.9177978891677034e-07,
+          "scale": 0.009351140819489956,
+          "pass": true
+        },
+        "qc": {
+          "ref": "fp32",
+          "max_abs": 3.1866746117153056e-09,
+          "max_rel": 1.0060862837658915e-05,
+          "scale": 0.0003167396935168654,
+          "pass": true
+        },
+        "qr": {
+          "ref": "fp32",
+          "max_abs": 6.255129920973435e-10,
+          "max_rel": 8.189257060872004e-07,
+          "scale": 0.0007638214156031609,
+          "pass": true
+        },
+        "qi": {
+          "ref": "fp32",
+          "max_abs": 6.217399619505657e-10,
+          "max_rel": 6.047628385405744e-06,
+          "scale": 0.0001028072365443222,
+          "pass": true
+        },
+        "qs": {
+          "ref": "fp32",
+          "max_abs": 9.198438723223307e-10,
+          "max_rel": 1.0823765628464287e-06,
+          "scale": 0.0008498372044414282,
+          "pass": true
+        },
+        "qg": {
+          "ref": "fp32",
+          "max_abs": 5.676738938132937e-10,
+          "max_rel": 1.1739326923400612e-06,
+          "scale": 0.0004835659638047218,
+          "pass": true
+        },
+        "qh": {
+          "ref": "fp32",
+          "max_abs": 4.027343461742968e-08,
+          "max_rel": 0.00014037452319615146,
+          "scale": 0.0002868998853955418,
+          "pass": true
+        },
+        "re_cloud": {
+          "ref": "fp64",
+          "max_abs": 1.8106655268830454e-10,
+          "max_rel": 9.142791795816543e-06,
+          "scale": 1.980429574817125e-05,
+          "pass": true,
+          "vs_fp32_max_abs": 1.9160593415235298e-10,
+          "vs_fp32_max_rel": 9.67496364425816e-06
+        },
+        "re_ice": {
+          "ref": "fp64",
+          "max_abs": 6.975939496466511e-10,
+          "max_rel": 1.2177933320963314e-05,
+          "scale": 5.728344303263677e-05,
+          "pass": true,
+          "vs_fp32_max_abs": 5.01999964162474e-06,
+          "vs_fp32_max_rel": 0.0876343126052175
+        },
+        "re_snow": {
+          "ref": "fp64",
+          "max_abs": 2.2330162209333732e-10,
+          "max_rel": 5.815939213327429e-07,
+          "scale": 0.0003839476547169438,
+          "pass": true,
+          "vs_fp32_max_abs": 1.7908577572278706e-10,
+          "vs_fp32_max_rel": 4.664324349212123e-07
+        },
+        "rainncv": {
+          "ref": "fp32",
+          "jax": 0.20919941189446276,
+          "oracle": 0.2091989517211914,
+          "abs_err": 4.6017327134939556e-07,
+          "tol": 0.002091989517211914,
+          "pass": true
+        },
+        "snowncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "graupelncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "hailncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "sr": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.008,
+          "pass": true
+        }
+      }
+    },
+    "3": {
+      "pass": true,
+      "fields": {
+        "t": {
+          "ref": "fp32",
+          "max_abs": 1.4939948471237585e-05,
+          "max_rel": 5.810769673386656e-08,
+          "tol_abs": 0.005,
+          "pass": true
+        },
+        "qv": {
+          "ref": "fp32",
+          "max_abs": 9.924902596818164e-10,
+          "max_rel": 7.612258376560074e-07,
+          "scale": 0.001303805271163583,
+          "pass": true
+        },
+        "qc": {
+          "ref": "fp32",
+          "max_abs": 9.67085128273401e-10,
+          "max_rel": 2.6210883601013942e-05,
+          "scale": 3.689631921588443e-05,
+          "pass": true
+        },
+        "qr": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qi": {
+          "ref": "fp32",
+          "max_abs": 3.1428618063079894e-10,
+          "max_rel": 1.956602399724856e-06,
+          "scale": 0.0001606285368325189,
+          "pass": true
+        },
+        "qs": {
+          "ref": "fp32",
+          "max_abs": 3.991857752553077e-10,
+          "max_rel": 7.074506505891909e-07,
+          "scale": 0.0005642595351673663,
+          "pass": true
+        },
+        "qg": {
+          "ref": "fp32",
+          "max_abs": 6.884797684622536e-11,
+          "max_rel": 6.762249840516097e-07,
+          "scale": 0.0001018122347886674,
+          "pass": true
+        },
+        "qh": {
+          "ref": "fp32",
+          "max_abs": 6.966434452199653e-09,
+          "max_rel": 9.112380061645181e-05,
+          "scale": 7.645021833013743e-05,
+          "pass": true
+        },
+        "re_cloud": {
+          "ref": "fp64",
+          "max_abs": 5.3140605668432856e-11,
+          "max_rel": 5.50325910544824e-06,
+          "scale": 9.65620637702185e-06,
+          "pass": true,
+          "vs_fp32_max_abs": 8.038072871831324e-11,
+          "vs_fp32_max_rel": 8.324140364197015e-06
+        },
+        "re_ice": {
+          "ref": "fp64",
+          "max_abs": 2.984382209539121e-11,
+          "max_rel": 4.851968261084922e-07,
+          "scale": 6.150869191530532e-05,
+          "pass": true,
+          "vs_fp32_max_abs": 2.275178306930352e-11,
+          "vs_fp32_max_rel": 3.6989533740607577e-07
+        },
+        "re_snow": {
+          "ref": "fp64",
+          "max_abs": 2.0185925508702483e-10,
+          "max_rel": 1.20429435611124e-06,
+          "scale": 0.0001676162094945326,
+          "pass": true,
+          "vs_fp32_max_abs": 7.158671480036669e-11,
+          "vs_fp32_max_rel": 4.2708636731017235e-07
+        },
+        "rainncv": {
+          "ref": "fp32",
+          "jax": 0.002951395777909078,
+          "oracle": 0.002951375674456358,
+          "abs_err": 2.0103452720229842e-08,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "snowncv": {
+          "ref": "fp32",
+          "jax": 0.002951395777909078,
+          "oracle": 0.002951375674456358,
+          "abs_err": 2.0103452720229842e-08,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "graupelncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "hailncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "sr": {
+          "ref": "fp32",
+          "jax": 0.9999999996611773,
+          "oracle": 1.0,
+          "abs_err": 3.388227476364136e-10,
+          "tol": 0.008,
+          "pass": true
+        }
+      }
+    },
+    "4": {
+      "pass": true,
+      "fields": {
+        "t": {
+          "ref": "fp32",
+          "max_abs": 4.822054523856423e-05,
+          "max_rel": 1.634451202361742e-07,
+          "tol_abs": 0.005,
+          "pass": true
+        },
+        "qv": {
+          "ref": "fp32",
+          "max_abs": 6.478232878956436e-09,
+          "max_rel": 3.831093585629668e-07,
+          "scale": 0.01690961793065071,
+          "pass": true
+        },
+        "qc": {
+          "ref": "fp32",
+          "max_abs": 7.1180538725604606e-09,
+          "max_rel": 2.0388744467475736e-05,
+          "scale": 0.0003491168317850679,
+          "pass": true
+        },
+        "qr": {
+          "ref": "fp32",
+          "max_abs": 3.1400509516773395e-09,
+          "max_rel": 1.0439239667536691e-06,
+          "scale": 0.00300793070346117,
+          "pass": true
+        },
+        "qi": {
+          "ref": "fp32",
+          "max_abs": 3.8533768790562344e-10,
+          "max_rel": 5.41280313881587e-06,
+          "scale": 7.119004294509068e-05,
+          "pass": true
+        },
+        "qs": {
+          "ref": "fp32",
+          "max_abs": 2.9036299641809274e-09,
+          "max_rel": 2.9032475680765876e-06,
+          "scale": 0.001000131713226438,
+          "pass": true
+        },
+        "qg": {
+          "ref": "fp32",
+          "max_abs": 2.420845406515132e-09,
+          "max_rel": 1.1024353941402986e-06,
+          "scale": 0.002195906825363636,
+          "pass": true
+        },
+        "qh": {
+          "ref": "fp32",
+          "max_abs": 2.0075709494739476e-07,
+          "max_rel": 0.00013320023645419014,
+          "scale": 0.001507182721979916,
+          "pass": true
+        },
+        "re_cloud": {
+          "ref": "fp64",
+          "max_abs": 3.920257128868629e-11,
+          "max_rel": 1.9215683893783005e-06,
+          "scale": 2.040134064724586e-05,
+          "pass": true,
+          "vs_fp32_max_abs": 2.0000058464357245e-08,
+          "vs_fp32_max_rel": 0.0009803360718664731
+        },
+        "re_ice": {
+          "ref": "fp64",
+          "max_abs": 1.5242772047682892e-10,
+          "max_rel": 2.8305509160120362e-06,
+          "scale": 5.385090217404899e-05,
+          "pass": true,
+          "vs_fp32_max_abs": 5.01999964162474e-06,
+          "vs_fp32_max_rel": 0.09322028936525016
+        },
+        "re_snow": {
+          "ref": "fp64",
+          "max_abs": 1.0913214581152741e-09,
+          "max_rel": 2.385457864701992e-06,
+          "scale": 0.0004574893039461041,
+          "pass": true,
+          "vs_fp32_max_abs": 1.9812267745985233e-09,
+          "vs_fp32_max_rel": 4.330653996403492e-06
+        },
+        "rainncv": {
+          "ref": "fp32",
+          "jax": 0.2582573301641186,
+          "oracle": 0.2582564353942871,
+          "abs_err": 8.94769831505382e-07,
+          "tol": 0.002582564353942871,
+          "pass": true
+        },
+        "snowncv": {
+          "ref": "fp32",
+          "jax": 0.0021042058797747275,
+          "oracle": 0.002104194136336446,
+          "abs_err": 1.1743438281704155e-08,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "graupelncv": {
+          "ref": "fp32",
+          "jax": 0.0007690245768363381,
+          "oracle": 0.0007690202910453081,
+          "abs_err": 4.285791030010297e-09,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "hailncv": {
+          "ref": "fp32",
+          "jax": 0.0012313789371257407,
+          "oracle": 0.001231356407515705,
+          "abs_err": 2.2529610035643827e-08,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "sr": {
+          "ref": "fp32",
+          "jax": 0.015893486512512524,
+          "oracle": 0.01589339226484299,
+          "abs_err": 9.424766953328167e-08,
+          "tol": 0.008,
+          "pass": true
+        }
+      }
+    },
+    "5": {
+      "pass": true,
+      "fields": {
+        "t": {
+          "ref": "fp32",
+          "max_abs": 2.3382404378935462e-05,
+          "max_rel": 8.295348376099541e-08,
+          "tol_abs": 0.005,
+          "pass": true
+        },
+        "qv": {
+          "ref": "fp32",
+          "max_abs": 4.753395330342816e-10,
+          "max_rel": 1.1218970938131756e-07,
+          "scale": 0.004236926324665546,
+          "pass": true
+        },
+        "qc": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qr": {
+          "ref": "fp32",
+          "max_abs": 1.5348623030094627e-09,
+          "max_rel": 2.6885285957310536e-06,
+          "scale": 0.0005708930548280478,
+          "pass": true
+        },
+        "qi": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qs": {
+          "ref": "fp32",
+          "max_abs": 1.3821890132206783e-09,
+          "max_rel": 3.26238177244457e-06,
+          "scale": 0.0004236748209223151,
+          "pass": true
+        },
+        "qg": {
+          "ref": "fp32",
+          "max_abs": 1.4265118684821804e-09,
+          "max_rel": 2.0507054161474293e-06,
+          "scale": 0.0006956200813874602,
+          "pass": true
+        },
+        "qh": {
+          "ref": "fp32",
+          "max_abs": 4.281407072690953e-08,
+          "max_rel": 0.0001512482666666453,
+          "scale": 0.0002830714802257717,
+          "pass": true
+        },
+        "re_cloud": {
+          "ref": "fp64",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 2.49e-06,
+          "pass": true,
+          "vs_fp32_max_abs": 4.2598695109693574e-14,
+          "vs_fp32_max_rel": 1.7107909389927294e-08
+        },
+        "re_ice": {
+          "ref": "fp64",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 4.99e-06,
+          "pass": true,
+          "vs_fp32_max_abs": 2.0556618032959145e-14,
+          "vs_fp32_max_rel": 4.119562749026738e-09
+        },
+        "re_snow": {
+          "ref": "fp64",
+          "max_abs": 3.964622642389868e-09,
+          "max_rel": 1.3797277241750592e-05,
+          "scale": 0.0002873481900032356,
+          "pass": true,
+          "vs_fp32_max_abs": 1.500999936844688e-05,
+          "vs_fp32_max_rel": 0.05223574499731347
+        },
+        "rainncv": {
+          "ref": "fp32",
+          "jax": 0.049615761011554765,
+          "oracle": 0.04961561784148216,
+          "abs_err": 1.4317007260289394e-07,
+          "tol": 0.0004961561784148216,
+          "pass": true
+        },
+        "snowncv": {
+          "ref": "fp32",
+          "jax": 0.0011530395692667215,
+          "oracle": 0.001153031014837325,
+          "abs_err": 8.55442939639954e-09,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "graupelncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "hailncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "sr": {
+          "ref": "fp32",
+          "jax": 0.02323938090912193,
+          "oracle": 0.02323927544057369,
+          "abs_err": 1.0546854824211582e-07,
+          "tol": 0.008,
+          "pass": true
+        }
+      }
+    },
+    "6": {
+      "pass": true,
+      "fields": {
+        "t": {
+          "ref": "fp32",
+          "max_abs": 1.5517804058617912e-05,
+          "max_rel": 5.275613852774998e-08,
+          "tol_abs": 0.005,
+          "pass": true
+        },
+        "qv": {
+          "ref": "fp32",
+          "max_abs": 2.612629848575132e-09,
+          "max_rel": 1.6334497916305595e-07,
+          "scale": 0.01599455252289772,
+          "pass": true
+        },
+        "qc": {
+          "ref": "fp32",
+          "max_abs": 2.732966091335918e-09,
+          "max_rel": 4.21572030210108e-05,
+          "scale": 6.482797471107915e-05,
+          "pass": true
+        },
+        "qr": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qi": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qs": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qg": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "qh": {
+          "ref": "fp32",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 1e-07,
+          "pass": true
+        },
+        "re_cloud": {
+          "ref": "fp64",
+          "max_abs": 1.8168871338562818e-10,
+          "max_rel": 1.5484932807680114e-05,
+          "scale": 1.173325810593866e-05,
+          "pass": true,
+          "vs_fp32_max_abs": 1.6471487311914995e-10,
+          "vs_fp32_max_rel": 1.403817159233194e-05
+        },
+        "re_ice": {
+          "ref": "fp64",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 4.99e-06,
+          "pass": true,
+          "vs_fp32_max_abs": 2.0556618032959145e-14,
+          "vs_fp32_max_rel": 4.119562749026738e-09
+        },
+        "re_snow": {
+          "ref": "fp64",
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "scale": 9.99e-06,
+          "pass": true,
+          "vs_fp32_max_abs": 1.468672409301328e-13,
+          "vs_fp32_max_rel": 1.4701425734663727e-08
+        },
+        "rainncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "snowncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "graupelncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "hailncv": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.0003,
+          "pass": true
+        },
+        "sr": {
+          "ref": "fp32",
+          "jax": 0.0,
+          "oracle": 0.0,
+          "abs_err": 0.0,
+          "tol": 0.008,
+          "pass": true
+        }
+      }
+    }
+  }
+}
