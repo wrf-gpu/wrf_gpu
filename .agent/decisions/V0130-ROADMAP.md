@@ -114,3 +114,8 @@ closure + outsider-runnable reproducibility + community-standard benchmarks.
 - ✅ **MYJ-PBL + Janjic-sfclay** (T2) MERGED `c612ab9`: reference-only→operational, oracle PASS vs v0.6.0 pristine-WRF savepoints (worst PBL 2.7e-11/SFC 1.6e-10), default byte-unchanged + fail-closed pairing, 101 tests. Follow-up: end-to-end coupled-RMSE (only per-scheme parity proven).
 - RUNNING (max-parallel): GWD-nested-gate (GPU, compiling), TOST-rc2-fix, multi-GPU-fakemesh, clear-sky-radiation, community-validation (CPU).
 - Tier1 done: #1,#3,#6. Tier2 done: reproducibility, PD-moisture, MYJ+Janjic.
+
+**2026-06-08 ~08:26** — wave 3 cont.:
+- ✅ **Multi-GPU fake-mesh** (T1#8) MERGED `9c04a7b`: shard_map + ppermute halo, partition-invariance bit-identical (0.0); CPU fake-mesh only → real throughput HW-deferred (per-watt/Earth PROJECTED). 27 tests.
+- Tier1 DONE: #1,#3,#6,#8 (4/8). RUNNING: GWD-nested-gate(GPU,compiling), TOST-rc2-fix, clear-sky-radiation, community-validation (CPU) + skill-closure-investigation (CPU read-only, front-loading #7).
+- Tier1 remaining: #2(rc2-fix running→then GPU campaign), #4(gate running), #5(2-way-24h), #7(skill-closure, investigating). Tier2 remaining: sub-jit, parallel-compile, CPU-flock, multi-hardware + follow-ups(optics/taumol-chunk, PD-moisture-op-wiring, stale-rrtmg-pin).
