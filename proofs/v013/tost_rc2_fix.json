@@ -1,0 +1,61 @@
+{
+  "schema": "V013TOSTrc2Fix",
+  "schema_version": 1,
+  "sprint": "v0.13 Tier-1 #2 — unblock powered n=15 TOST (KI-5): fix GPU run_one_case/daily_pipeline rc=2",
+  "branch": "worker/opus/v013-tost-rc2-fix",
+  "base_commit": "3240966",
+  "diagnosis_platform": "cpu (JAX_PLATFORMS=cpu, no GPU context)",
+  "rc2_root_cause": {
+    "summary": "rc=2 had TWO distinct, conflated sources in the powered-TOST harness.",
+    "source_A_per_case": {
+      "file": "proofs/v0120/powered_tost_n15/run_one_case_v0120.py",
+      "mechanism": "main() returns 2 whenever the verdict is L2_D02_BLOCKED. L2_D02_BLOCKED is set when execute_daily_pipeline returns PIPELINE_BLOCKED (it catches EVERY exception from the GPU forecast and converts it to PIPELINE_BLOCKED) or produces no wrfout, OR when the post-forecast scoring throws.",
+      "v0120_gpu_trigger": "On v0.12.0 the GPU forecast itself raised inside _run_forecast_sequence -> PIPELINE_BLOCKED -> L2_D02_BLOCKED -> rc=2 per case. The blocked reason was written to the nested pipeline JSON but NOT surfaced in the per-case summary, so the campaign log only showed 'rc=2' with no cause.",
+      "cpu_repro_reason": "On CPU the forecast cannot even start: gpuwrf.contracts.state._gpu_device() raises 'State.zeros requires a GPU device; no JAX GPU backend is visible' -> PIPELINE_BLOCKED -> rc=2. This is the deliberate GPU-only guard, not a bug; it is why the FORECAST half is intrinsically a GPU step and only the SCORING half is CPU-reproducible."
+    },
+    "source_B_orchestrator": {
+      "file": "proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py",
+      "mechanism": "main() returned rc=2 whenever len(all_tost_scores) < 2 ('fewer than 2 included cases — cannot compute TOST'). This conflated THREE different states into one rc=2: (1) 0 cases scored = genuine total failure; (2) 1 case scored in --case single-case DEBUG mode = actually a SUCCESS; (3) 1 case scored in a full 15-case campaign = under-powered. Because of (2), the harness ALWAYS returned rc=2 in single-case debug mode even when the one case scored perfectly — making it impossible to drive a single case through for diagnosis."
+    }
+  },
+  "fixes": [
+    "run_powered_tost_n15_v0120.py: split the <2-cases rc into honest states — 0 scored => rc=2 + powered_tost_abort.json listing every exclusion reason; 1 scored => write powered_tost_single_case.json, rc=0 under --case/--allow-single (scoring proven) else rc=2 (under-powered) ; >=2 => full TOST aggregate rc=0.",
+    "run_powered_tost_n15_v0120.py: added --allow-single flag.",
+    "run_powered_tost_n15_v0120.py: GPU_LOCK_WRAPPER is now only-if-present (env GPUWRF_GPU_LOCK_WRAPPER, default /tmp/wrf_gpu_run_lowprio.sh); when absent the per-case runner launches DIRECTLY. Prevents the flock double-wrap deadlock (the orchestrator must never itself be wrapped in a lock wrapper).",
+    "run_powered_tost_n15_v0120.py: data roots are env-overridable (GPUWRF_L2_INIT_ROOT / GPUWRF_L2_CPU_ROOT / GPUWRF_TOST_MERGED_ROOT / GPUWRF_TOST_GPU_RUNS_ROOT) so the manager can repoint without editing the script.",
+    "run_powered_tost_n15_v0120.py: run_gpu_forecast now reads the per-case summary's blocked_reason on rc!=0 and threads it into the exclusion record + campaign log, so a GPU-forecast failure during the campaign is self-diagnosing.",
+    "run_one_case_v0120.py: per-case summary now carries a top-level 'blocked_reason' field (None on success) surfacing the upstream PIPELINE_BLOCKED/exception cause without opening the nested JSON."
+  ],
+  "files_changed": [
+    "proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py (harness restored to branch + fixes)",
+    "proofs/v0120/powered_tost_n15/run_one_case_v0120.py (harness restored to branch + blocked_reason)",
+    "proofs/v0120/powered_tost_n15/manifest.json (harness restored to branch)",
+    "proofs/v013/tost_scoring_path_cpu_proof.py (CPU scoring-path proof driver)",
+    "proofs/v013/tost_scoring_path_cpu_proof.json (proof artifact)",
+    "tests/test_v013_tost_rc2_fix.py (rc-semantics regression guard, 4 tests, CPU-only)"
+  ],
+  "proof_rc0": {
+    "scoring_path": {
+      "driver": "proofs/v013/tost_scoring_path_cpu_proof.py",
+      "artifact": "proofs/v013/tost_scoring_path_cpu_proof.json",
+      "platform": "cpu",
+      "verdict": "SCORING_PATH_RC0_PROVEN",
+      "data": "RETAINED REAL GPU wrfout (v0.9.0-era case1_L2, 72 d02 files, all finite) scored against CPU-WRF truth 20260530_18z; DIFFERENT-IC so deltas are genuine/non-zero (NOT an equivalence claim).",
+      "result": "score_one_case -> paired_score + score_cell_level + aggregate_tost all ran rc=0; 24 common lead hours; 251856 cells/field; 5088 complete AEMET pairs; T2 rmse=1.67K (r=0.60) U10 rmse=1.77 m/s (r=0.86) V10 rmse=2.07 m/s (r=0.86); aggregate_tost ran."
+    },
+    "single_case_orchestrator": {
+      "command": "JAX_PLATFORMS=cpu PYTHONPATH=src python proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py --skip-gpu --case <RID> (stand-in GPU dir = retained CPU truth)",
+      "before_fix": "rc=2 (n<2 ABORT) even though the case scored",
+      "after_fix": "rc=0 (SCORING-OK) + powered_tost_single_case.json"
+    },
+    "zero_case_abort": {
+      "command": "JAX_PLATFORMS=cpu ... --skip-gpu --case BOGUS_NONEXISTENT_CASE",
+      "result": "rc=2 + powered_tost_abort.json listing the exclusion reason (genuine-failure path preserved)"
+    },
+    "regression_tests": "tests/test_v013_tost_rc2_fix.py — 4 passed (single-case rc0, zero-case rc2+abort-json, allow-single rc0, lock-wrapper only-if-present)."
+  },
+  "remaining_gpu_blocker": {
+    "what": "The FORECAST half (execute_daily_pipeline -> _run_forecast_sequence) is intrinsically a GPU step (State.zeros refuses CPU). The actual v0.12.0 per-case rc=2 was the GPU forecast raising; it was deferred and never root-caused in detail because the 24h nested-1km gate already proved the GPU forecast runs GREEN via the operational pipeline on the SAME corpus.",
+    "to_root_cause_on_gpu": "Run one case (e.g. 20260429_18z) with the fixed harness on the GPU. The new per-case 'blocked_reason' will name the exact failure if it still blocks. Likely candidates to check: (a) the merged-run-root layout (1 d02 t=0 snapshot vs the >=2 wrfout the replay builder may expect) vs build_l2_d02_replay_case; (b) fp64 VRAM ceiling on a 24h d02 run (the same RRTMG g-point temp confluence that capped Switzerland/GWD-nested — mitigated on this base by the merged g-point chunking)."
+  }
+}
