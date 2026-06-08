@@ -295,8 +295,17 @@ def _binary_params(a, b, strrat, mult):
 # --------------------------------------------------------------------------- #
 # Atmosphere prep (vectorised; nlayers is static given nz).
 # --------------------------------------------------------------------------- #
-def _nbuf() -> int:
-    return _nint(DEFAULT_PTOP_PA * 0.01 / DELTAP_MB)
+def _nbuf(ptop_pa: float | None = None) -> int:
+    """Above-model-top buffer-layer count (static int; sizes the kernel arrays).
+
+    Mirrors WRF ``module_ra_rrtm.F:6781`` ``nint(p_top*0.01/deltap)``. ``ptop_pa``
+    is the grid's real model-top pressure; ``None`` falls back to the legacy
+    hardcoded ``DEFAULT_PTOP_PA`` (== 5000 Pa), keeping all existing callers
+    bit-identical.  ``ptop_pa`` MUST be a Python float (it sets the buffer count
+    and thus traced-array shapes), never a JAX-traced value."""
+
+    ptop = DEFAULT_PTOP_PA if ptop_pa is None else float(ptop_pa)
+    return _nint(ptop * 0.01 / DELTAP_MB)
 
 
 def _o3_average_jax(pz_bottom_up, tab: _JaxTables):
@@ -317,12 +326,13 @@ def _o3_average_jax(pz_bottom_up, tab: _JaxTables):
     return acc / jnp.maximum(bottom - top, 1.0e-300)
 
 
-def _prepare_atmosphere_jax(state_col, tab: _JaxTables, nz: int):
+def _prepare_atmosphere_jax(state_col, tab: _JaxTables, nz: int, ptop_pa: float | None = None):
     """Traceable per-column ``_prepare_atmosphere``. ``state_col`` is a dict of
     (nz,) arrays plus scalars ``emiss``/``tsk``. Returns the layer profiles on
-    ``nlayers = nz + nbuf`` model layers (bottom-up)."""
+    ``nlayers = nz + nbuf`` model layers (bottom-up). ``ptop_pa`` is the grid's
+    real model-top pressure (static float; ``None`` -> legacy 5000 Pa)."""
 
-    nbuf = _nbuf()
+    nbuf = _nbuf(ptop_pa)
     nlayers = nz + nbuf
 
     T = state_col["T"]; t8w = state_col["t8w"]; p = state_col["p"]; p8w = state_col["p8w"]
@@ -347,6 +357,24 @@ def _prepare_atmosphere_jax(state_col, tab: _JaxTables, nz: int):
     for l in range(nz + 1, nlayers):
         pavel = pavel.at[l - 1].set(0.5 * (pz[l] + pz[l - 1]))
     pavel = pavel.at[nlayers - 1].set(0.5 * (pz[nlayers] + pz[nlayers - 1]))
+
+    # --- F2 positivity GUARD (NOT a masking clamp) ----------------------------
+    # WRF builds the above-model-top buffer as pz[l]=pz[l-1]-deltap; with the
+    # buffer correctly sized to the grid p_top (F1) every layer mid-pressure
+    # pavel and every interior interface pz[1:nlayers] is strictly positive
+    # (pz[nlayers] is intentionally exactly 0, WRF module_ra_rrtm.F:4068). If a
+    # mis-configured / pathological column drives any of those non-positive, the
+    # atmosphere is unphysical: rather than silently CLAMP it to a finite value
+    # (the forbidden masking-clamp pattern -- it would emit plausible-looking but
+    # meaningless LW heating that passes the finiteness gate), we TAINT pavel/pz
+    # with NaN so the result NaN-propagates and the sanity gate FAILS LOUD. In
+    # production (positive pressures) the guard is a no-op and the path is
+    # bit-identical.
+    pz_interior = pz[1:nlayers]
+    bad = jnp.logical_or(jnp.any(pavel <= 0.0), jnp.any(pz_interior <= 0.0))
+    taint = jnp.where(bad, jnp.nan, 0.0)
+    pavel = pavel + taint
+    pz = pz + taint
 
     tz = jnp.zeros(nlayers + 1, dtype=jnp.float64)
     tz = tz.at[: nz + 1].set(t8w)
@@ -473,7 +501,12 @@ def _setcoef_jax(atm, tab: _JaxTables):
     wkl0, wkl1, wkl2, wkl3, wkl5 = atm["wkl"]
     nlayers = atm["nlayers"]
 
-    plog = jnp.log(jnp.maximum(pavel, 1.0e-300))
+    # F2: positivity GUARD instead of the forbidden ``jnp.maximum(pavel,1e-300)``
+    # masking clamp. A non-positive pavel is unphysical; emit NaN (fail-loud /
+    # NaN-propagate) rather than silently log a clamped floor. In production
+    # (pavel>0, guaranteed by the F1-sized buffer + the prepare-time guard) this
+    # is exactly ``jnp.log(pavel)`` -- bit-identical.
+    plog = jnp.where(pavel > 0.0, jnp.log(jnp.where(pavel > 0.0, pavel, 1.0)), jnp.nan)
     jp = jnp.clip(_fint(36.0 - 5.0 * (plog + 0.04)), 1, 58)
     jp1 = jp + 1
     fp = 5.0 * (_at1(tab.preflog, jp) - plog)
@@ -586,9 +619,18 @@ def _gb2(tab, c):
     def one_layer(idx):
         jp = c.jp[idx]; jt = c.jt[idx]; jt1 = c.jt1[idx]
         fp = c.fac11[idx] + c.fac01[idx]
+        # WRF: ``IFP = 2.E2*FP+0.5 ; IF (IFP.LE.0) IFP=0`` with CORR1/2 dim (0:200)
+        # and FP guaranteed in [0,1] for a physical column => IFP in [0,200].
+        # F2: the upper ``jnp.clip(ifp,0,200)`` was a masking clamp -- on a
+        # pathological (NaN/oob) column it silently swallowed the bad index and
+        # returned a finite CORR. We still clamp the GATHER index (required to keep
+        # it in-bounds for XLA), but multiply by a NaN ``guard`` whenever fp is
+        # non-finite or ifp falls outside the valid [0,200] table range, so a bad
+        # column NaN-propagates (fail-loud) instead of emitting finite garbage.
         ifp = jnp.maximum(0, _fint(200.0 * fp + 0.5))
-        cr2 = jnp.asarray(tab.corr2)[jnp.clip(ifp, 0, 200)]
-        cr1 = jnp.asarray(tab.corr1)[jnp.clip(ifp, 0, 200)]
+        guard = jnp.where(jnp.isfinite(fp) & (ifp >= 0) & (ifp <= 200), 1.0, jnp.nan)
+        cr2 = jnp.asarray(tab.corr2)[jnp.clip(ifp, 0, 200)] * guard
+        cr1 = jnp.asarray(tab.corr1)[jnp.clip(ifp, 0, 200)] * guard
         fc00 = c.fac00[idx] * cr2; fc10 = c.fac10[idx] * cr2
         fc01 = c.fac01[idx] * cr1; fc11 = c.fac11[idx] * cr1
         # low
@@ -1083,8 +1125,8 @@ def _rtrn_jax(tab, atm, c, itr, pfrac):
     return htr / 86400.0, totdflux[0], totuflux  # heating (K/s, all nlayers), GLW, up-flux
 
 
-def _solve_one_jax(state_col, tab, nz):
-    atm = _prepare_atmosphere_jax(state_col, tab, nz)
+def _solve_one_jax(state_col, tab, nz, ptop_pa: float | None = None):
+    atm = _prepare_atmosphere_jax(state_col, tab, nz, ptop_pa)
     c = _setcoef_jax(atm, tab)
     _, pfrac, itr = _gasabs_jax(tab, c)
     htr, glw, totuflux = _rtrn_jax(tab, atm, c, itr, pfrac)
@@ -1105,6 +1147,10 @@ def solve_rrtm_lw_column_jax(state: RRTMLWColumnState) -> RRTMLWColumnResult:
 
     tab = _jax_tables()
     nz = int(state.T.shape[1])
+    # F1: size the above-model-top buffer from the grid's REAL model-top pressure
+    # (static float; controls array shapes), not the hardcoded DEFAULT_PTOP_PA.
+    # ``None`` -> legacy 5000 Pa, keeping existing callers bit-identical.
+    ptop_pa = state.top_pressure_pa
 
     cols = dict(
         T=jnp.asarray(state.T, dtype=jnp.float64),
@@ -1131,7 +1177,7 @@ def solve_rrtm_lw_column_jax(state: RRTMLWColumnState) -> RRTMLWColumnResult:
         sc = {k: v[col_idx] for k, v in cols.items()}
         sc["emiss"] = emiss[col_idx]
         sc["tsk"] = tsk[col_idx]
-        return _solve_one_jax(sc, tab, nz)
+        return _solve_one_jax(sc, tab, nz, ptop_pa)
 
     htr, glw, olr = jax.vmap(per_col)(jnp.arange(ncol))
     return RRTMLWColumnResult(

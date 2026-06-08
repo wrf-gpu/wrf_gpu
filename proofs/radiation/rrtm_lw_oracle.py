@@ -50,6 +50,28 @@ Also asserts the ``laytrop`` contiguity used to vectorise the kernel's
 troposphere/stratosphere branch (pressure monotone-decreasing => ``plog>4.56`` is
 a leading run, so the host scalar ``laytrop`` count equals the per-layer mask).
 
+v0.13 carry-over fixes (rrtm-lw skeptic 2026-06-08) -- THREE additional proofs:
+
+  (F1) NON-5000-PTOP PARITY -- two extra pristine-WRF savepoints at p_top != 5000
+      Pa (low-top 100 mb, high-top 20 mb; proofs/v060/savepoints_fp64/
+      rrtm_lw_ptop_case_*.json from rrtm_lw_ptop_oracle_driver.f90). The kernel,
+      now given the grid's REAL top_pressure_pa, sizes the above-model-top buffer
+      ``nbuf=nint(p_top_mb/4)`` exactly as WRF (module_ra_rrtm.F:6781) and matches
+      the oracle to fp64 round-off, where the OLD hardcoded p_top=5000 (nbuf=13)
+      version mis-sizes the buffer (recorded: the hardcoded path FAILS the parity
+      tol on these tops -> the fix is load-bearing).
+
+  (F2) FAIL-LOUD ON A MIS-SIZED BUFFER -- the high-top (20 mb) column run through
+      the OLD hardcoded buffer (top_pressure_pa=None == legacy 5000 Pa, nbuf=13)
+      drives layer pressures negative; the kernel now NaN-propagates (the sanity
+      gate catches it) instead of the old masking clamps silently emitting finite
+      garbage that passed the gate.
+
+  (F3) DIRECT NEGATIVE-PRESSURE GUARD -- a synthetic negative-pressure column is
+      asserted to yield NaN (not finite garbage) from solve_rrtm_lw_column_jax.
+
+Production (p_top=5000 Pa, positive pressures) is BIT-IDENTICAL to before.
+
 Run (CPU dev):
     JAX_PLATFORMS=cpu PYTHONPATH=src python3 proofs/radiation/rrtm_lw_oracle.py
 """
@@ -102,6 +124,11 @@ SAVE_FP32 = ROOT / "proofs" / "v060" / "savepoints"
 SAVE_FP64 = ROOT / "proofs" / "v060" / "savepoints_fp64"
 REPORT = HERE / "rrtm_lw_oracle.json"
 CASE_IDS = (1, 2, 3, 4, 5, 6, 7)
+# v0.13 F1: non-5000-ptop fp64 savepoints (grid-aware buffer fix). Case 1 low-top
+# 100 mb (hardcoded nbuf=13 undershoots TOA), case 2 high-top 20 mb (hardcoded
+# nbuf=13 -> negative buffer pressure == the Finding-F2 regime).
+PTOP_CASE_IDS = (1, 2)
+PTOP_CASE_FILES = {cid: SAVE_FP64 / f"rrtm_lw_ptop_case_{cid}.json" for cid in PTOP_CASE_IDS}
 
 # PREDECLARED TOLERANCES (frozen before comparison). The fp64 oracle is the
 # canonical verdict; the wired path adds only an Exner round trip + reshape, exact
@@ -145,8 +172,12 @@ def _grid_for(nz: int, ny: int = 1, nx: int = 1) -> GridSpec:
     return GridSpec(projection, terrain_meta, vertical, bc, eta, terrain_height, metrics=metrics)
 
 
-def _case_state_kernel(d: dict) -> RRTMLWColumnState:
-    """Direct kernel-input column state from the savepoint (for part A)."""
+def _case_state_kernel(d: dict, top_pressure_pa: float | None = None) -> RRTMLWColumnState:
+    """Direct kernel-input column state from the savepoint (for part A).
+
+    ``top_pressure_pa`` plumbs the grid's real model-top pressure (F1). ``None``
+    keeps the legacy hardcoded 5000-Pa buffer behaviour (used by the original 7
+    cases, which ARE 5000-Pa, so they stay bit-identical)."""
 
     def c(name: str):
         return jnp.asarray(col(d, name)[None, :])
@@ -156,6 +187,7 @@ def _case_state_kernel(d: dict) -> RRTMLWColumnState:
         qv=c("QV"), qc=c("QC"), qr=c("QR"), qi=c("QI"), qs=c("QS"), qg=c("QG"),
         cloud_fraction=c("CLDFRA"), dz=c("DZ"), rho=c("RHO"),
         emiss=scalar(d, "EMISS"), tsk=scalar(d, "TSK"),
+        top_pressure_pa=top_pressure_pa,
     )
 
 
@@ -316,6 +348,136 @@ def run_case(d: dict):
     }
 
 
+def run_ptop_case(d: dict):
+    """v0.13 F1 + F2: non-5000-ptop parity + fail-loud on the mis-sized buffer.
+
+    F1: the kernel given the grid's REAL ``top_pressure_pa`` reproduces the
+        pristine-WRF oracle (sized buffer ``nbuf=nint(p_top_mb/4)``); the OLD
+        hardcoded path (``top_pressure_pa=None`` == 5000 Pa) is recorded and shown
+        to DIVERGE (case 1 low-top) or NaN (case 2 high-top) -> the fix is needed.
+    F2: on case 2 (20 mb top) the hardcoded buffer drives pressures negative; the
+        kernel now NaN-propagates (no finite garbage).
+    """
+
+    ptop = scalar(d, "PTOP")
+    pi = col(d, "PI")
+    oracle_rth = col(d, "RTHRATEN")
+    oracle_glw = scalar(d, "GLW")
+    oracle_olr = scalar(d, "OLR")
+    scale = max(float(np.max(np.abs(oracle_rth))), PREDECLARED_TOL["rthraten_abs"])
+
+    # --- F1: grid-aware kernel (real ptop) vs WRF oracle ---
+    out_fix = solve_rrtm_lw_column_jax(_case_state_kernel(d, top_pressure_pa=ptop))
+    rth_fix = np.asarray(out_fix.heating_rate)[0] / pi
+    rth_abs = float(np.max(np.abs(rth_fix - oracle_rth)))
+    rth_rel = rth_abs / scale
+    rth_ok = (rth_rel <= PREDECLARED_TOL["rthraten_rel"]) or (rth_abs <= PREDECLARED_TOL["rthraten_abs"])
+    glw_fix = _scalar_status(float(out_fix.glw[0]), oracle_glw,
+                             PREDECLARED_TOL["glw_abs"], PREDECLARED_TOL["glw_rel"])
+    olr_fix = _scalar_status(float(out_fix.olr[0]), oracle_olr,
+                             PREDECLARED_TOL["olr_abs"], PREDECLARED_TOL["olr_rel"])
+    fixed_finite = bool(np.all(np.isfinite(rth_fix)) and np.isfinite(out_fix.glw[0]) and np.isfinite(out_fix.olr[0]))
+    f1_pass = bool(rth_ok and glw_fix["pass"] and olr_fix["pass"] and fixed_finite)
+
+    # --- the OLD hardcoded path (top_pressure_pa=None == legacy 5000 Pa) ---
+    out_hc = solve_rrtm_lw_column_jax(_case_state_kernel(d, top_pressure_pa=None))
+    rth_hc = np.asarray(out_hc.heating_rate)[0] / pi
+    hc_rth_rel = float(np.max(np.abs(rth_hc - oracle_rth))) / scale
+    hc_glw = float(out_hc.glw[0]); hc_olr = float(out_hc.olr[0])
+    hc_finite = bool(np.all(np.isfinite(rth_hc)) and np.isfinite(hc_glw) and np.isfinite(hc_olr))
+    # The hardcoded path must NOT silently match the oracle (else the fix would be
+    # cosmetic). It either fails the parity tol (low-top undershoot) or NaNs
+    # (high-top negative buffer). This asserts the fix is LOAD-BEARING.
+    hc_diverges = (not hc_finite) or (hc_rth_rel > PREDECLARED_TOL["rthraten_rel"])
+
+    # --- F2: on the high-top (negative-buffer) regime the hardcoded path must
+    # fail LOUD (NaN), never emit finite garbage. ---
+    is_negative_buffer_regime = ptop < 5000.0  # nbuf=13 buffer overshoots past 0 mb
+    if is_negative_buffer_regime:
+        f2_pass = bool(not hc_finite)  # NaN-propagated == fail-loud (good)
+        f2_note = "hardcoded nbuf=13 buffer -> negative pressure -> NaN (fail-loud, no finite garbage)"
+    else:
+        f2_pass = True  # not the F2 regime for this case
+        f2_note = "low-top: hardcoded nbuf=13 undershoots TOA (finite but biased); F2 regime not triggered"
+
+    passed = bool(f1_pass and hc_diverges and f2_pass)
+    return passed, {
+        "label": d["scalars"]["REGIME"],
+        "ptop_pa": ptop,
+        "nbuf_grid_aware": int(round(ptop * 0.01 / 4.0)),
+        "nbuf_hardcoded": 13,
+        "F1_grid_aware_vs_oracle": {
+            "RTHRATEN": {"max_abs": rth_abs, "max_rel": rth_rel,
+                          "tol_rel": PREDECLARED_TOL["rthraten_rel"], "pass": bool(rth_ok)},
+            "GLW": glw_fix, "OLR": olr_fix, "finite": fixed_finite, "pass": f1_pass,
+        },
+        "hardcoded_path_diverges": {
+            "rth_rel_vs_oracle": hc_rth_rel, "glw": hc_glw, "olr": hc_olr,
+            "finite": hc_finite, "diverges": bool(hc_diverges),
+            "note": "old DEFAULT_PTOP_PA=5000 buffer; must NOT match oracle (fix is load-bearing)",
+        },
+        "F2_fail_loud": {"negative_buffer_regime": bool(is_negative_buffer_regime),
+                          "hardcoded_finite": hc_finite, "pass": bool(f2_pass), "note": f2_note},
+        "pass": passed,
+    }
+
+
+def run_negative_pressure_guard():
+    """v0.13 F3: a synthetic negative-pressure column must NaN-propagate (fail-loud),
+    NOT emit finite garbage through the old masking clamps.
+
+    Builds a tiny physical column then FORCES a high model top (small p_top) so the
+    legacy hardcoded nbuf=13 buffer (pz[l]=pz[l-1]-4mb) marches past 0 into negative
+    pressures. With the F2 guard the kernel returns NaN; the OLD clamps returned a
+    plausible finite GLW/OLR.
+    """
+
+    nz = 10
+    # A monotone-decreasing pressure column with a ~30 mb model top (p8w[top]=3000
+    # Pa). Hardcoded nbuf=13 buffer: 30,26,...,30-52 = -22 mb -> negative.
+    p8w = np.linspace(100000.0, 3000.0, nz + 1)
+    p = 0.5 * (p8w[:-1] + p8w[1:])
+    T = np.linspace(290.0, 220.0, nz)
+    t8w = np.linspace(291.0, 218.0, nz + 1)
+    dz = np.full(nz, 1500.0)
+    qv = np.full(nz, 1.0e-3)
+    z = np.zeros(nz)
+
+    def c(a):
+        return jnp.asarray(np.asarray(a, dtype=np.float64)[None, :])
+
+    state = RRTMLWColumnState(
+        T=c(T), t8w=c(t8w), p=c(p), p8w=c(p8w),
+        qv=c(qv), qc=c(z), qr=c(z), qi=c(z), qs=c(z), qg=c(z),
+        cloud_fraction=c(z), dz=c(dz), rho=c(np.full(nz, 1.0)),
+        emiss=0.98, tsk=291.0,
+        top_pressure_pa=None,  # legacy hardcoded 5000 Pa -> nbuf=13 -> negative buffer
+    )
+    out = solve_rrtm_lw_column_jax(state)
+    glw = float(out.glw[0]); olr = float(out.olr[0])
+    heating_finite = bool(np.all(np.isfinite(np.asarray(out.heating_rate))))
+    is_nan = bool(np.isnan(glw) or np.isnan(olr) or not heating_finite)
+
+    # And the CORRECTLY-sized buffer (real p_top=3000) must be finite (the same
+    # column is physical once the buffer is grid-aware).
+    state_fix = state._replace(top_pressure_pa=3000.0)
+    out_fix = solve_rrtm_lw_column_jax(state_fix)
+    fix_finite = bool(np.all(np.isfinite(np.asarray(out_fix.heating_rate)))
+                      and np.isfinite(out_fix.glw[0]) and np.isfinite(out_fix.olr[0]))
+
+    passed = bool(is_nan and fix_finite)
+    return passed, {
+        "model_top_pa": float(p8w[-1]),
+        "hardcoded_nbuf13_buffer_goes_negative": True,
+        "hardcoded_result": {"glw": glw, "olr": olr, "is_nan_fail_loud": is_nan},
+        "grid_aware_result_finite": fix_finite,
+        "note": ("legacy nbuf=13 buffer drives pressures negative -> kernel NaN-propagates "
+                 "(fail-loud) instead of the old maximum/clip masking clamps emitting finite "
+                 "garbage; grid-aware buffer makes the same column physical/finite"),
+        "pass": passed,
+    }
+
+
 def _host_callback_free() -> bool:
     """Assert the wired JAX kernel rides the scan with no host callbacks."""
 
@@ -366,7 +528,36 @@ def main() -> int:
         print(f"FP32 CASE {cid} {res['label']:24s} -> {'PASS' if ok else 'FAIL'} | "
               f"kernel RTH_rel={a['RTHRATEN']['max_rel']:.3e} dGLW={a['GLW']['abs_err']:.3e} dOLR={a['OLR']['abs_err']:.3e}")
 
-    overall = bool(fp64_pass and fp32_pass and callback_free)
+    # --- v0.13 F1: non-5000-ptop parity + F2 fail-loud on the hardcoded buffer ---
+    print()
+    ptop_cases = {}
+    ptop_pass = True
+    for cid in PTOP_CASE_IDS:
+        d = json.loads(PTOP_CASE_FILES[cid].read_text(encoding="utf-8"))
+        ok, res = run_ptop_case(d)
+        ptop_cases[str(cid)] = res
+        ptop_pass = ptop_pass and ok
+        f1 = res["F1_grid_aware_vs_oracle"]; hc = res["hardcoded_path_diverges"]
+        print(
+            f"PTOP CASE {cid} {res['label']:20s} (p_top={res['ptop_pa']:.0f}Pa, "
+            f"nbuf {res['nbuf_hardcoded']}->{res['nbuf_grid_aware']}) -> {'PASS' if ok else 'FAIL'} | "
+            f"F1 grid-aware: RTH_rel={f1['RTHRATEN']['max_rel']:.2e} dGLW={f1['GLW']['abs_err']:.2e} "
+            f"dOLR={f1['OLR']['abs_err']:.2e} | hardcoded: RTH_rel={hc['rth_rel_vs_oracle']:.2e} "
+            f"finite={hc['finite']} (F2 fail-loud={res['F2_fail_loud']['pass']})"
+        )
+
+    # --- v0.13 F3: synthetic negative-pressure guard ---
+    print()
+    f3_pass, f3_res = run_negative_pressure_guard()
+    print(
+        f"F3 NEGATIVE-PRESSURE GUARD -> {'PASS' if f3_pass else 'FAIL'} | "
+        f"hardcoded nbuf=13 buffer: glw={f3_res['hardcoded_result']['glw']} "
+        f"olr={f3_res['hardcoded_result']['olr']} is_nan(fail-loud)="
+        f"{f3_res['hardcoded_result']['is_nan_fail_loud']} | grid-aware finite="
+        f"{f3_res['grid_aware_result_finite']}"
+    )
+
+    overall = bool(fp64_pass and fp32_pass and callback_free and ptop_pass and f3_pass)
     report = {
         "scheme": "classic AER RRTM longwave (ra_lw_physics=1) -- OPERATIONAL WIRING",
         "what_is_proven": (
@@ -382,7 +573,30 @@ def main() -> int:
         "overall_pass": overall,
         "canonical_fp64_pass": bool(fp64_pass),
         "secondary_fp32_pass": bool(fp32_pass),
+        "non_5000_ptop_pass": bool(ptop_pass),
+        "negative_pressure_guard_pass": bool(f3_pass),
         "host_callback_free": bool(callback_free),
+        "v013_carryover_fixes": {
+            "F1_grid_aware_buffer": (
+                "ra_lw_rrtm_jax._nbuf / _prepare_atmosphere_jax / solve_rrtm_lw_column_jax now size the "
+                "above-model-top buffer nbuf=nint(p_top_mb/4) from the grid's RRTMLWColumnState.top_pressure_pa "
+                "(plumbed by coupling.physics_couplers._rrtm_lw_column_inputs from grid.vertical.top_pressure_pa), "
+                "matching WRF module_ra_rrtm.F:6781; None falls back to DEFAULT_PTOP_PA=5000 (production bit-identical)."
+            ),
+            "F2_fail_loud_guards": (
+                "the forbidden masking clamps jnp.maximum(pavel,1e-300) and jnp.clip(ifp,0,200) are replaced by "
+                "positivity GUARDS: a non-positive prepared pavel/pz NaN-taints the column and a non-finite/out-of-range "
+                "corr index NaN-taints the correction, so a mis-sized/pathological column NaN-propagates (the sanity gate "
+                "fails loud) instead of emitting silent finite garbage. Positive-pressure production is unaffected."
+            ),
+        },
+        "non_5000_ptop_oracle": {
+            "driver": "proofs/v060/oracle/rrtm_lw_ptop_oracle_driver.f90 (same UNMODIFIED module_ra_rrtm.F:RRTMLWRAD)",
+            "savepoints": "proofs/v060/savepoints_fp64/rrtm_lw_ptop_case_{1,2}.json (low-top 100mb, high-top 20mb)",
+            "source_checksums": read_text_if_present(SAVE_FP64 / "rrtm_lw_ptop_wrf_source_checksums.txt"),
+        },
+        "non_5000_ptop_cases": ptop_cases,
+        "negative_pressure_guard": f3_res,
         "self_compare": False,
         "self_compare_note": (
             "The reference is the unmodified pristine WRF phys/module_ra_rrtm.F RRTMLWRAD "
