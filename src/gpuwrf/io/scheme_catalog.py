@@ -159,6 +159,25 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
 # reason = the named scan-unwired reason; alternative = the operational swap.
 _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
     "cu_physics": {
+        # v0.13 Tier-3 cumulus batch: New-Tiedtke(16) / KSAS(14) / Grell-3D(5) each
+        # have a single-column fp64 pristine-WRF oracle staged
+        # (proofs/v013/oracle/cumulus, savepoints/cumulus), but their traceable JAX
+        # column kernels are a documented carry-over. They are REFERENCE_ONLY:
+        # registry-accepted so a single-column reference comparison can be run, but
+        # fail-closed in the operational GPU scan (never silently wrong).
+        5: (
+            "Grell-3D ensemble has a v0.13 single-column fp64 pristine-WRF oracle "
+            "staged, but its traceable JAX column kernel is not yet ported, so it "
+            "is fail-closed in the operational GPU scan.",
+            "Use cu_physics=3 (Grell-Freitas, GPU-operational) or 1/2/6.",
+        ),
+        14: (
+            "KIM Simplified Arakawa-Schubert has a v0.13 single-column fp64 "
+            "pristine-WRF oracle staged, but its traceable JAX column kernel is not "
+            "yet ported, so it is fail-closed in the operational GPU scan.",
+            "Use cu_physics=1/2/3/6 (Kain-Fritsch / BMJ / Grell-Freitas / Tiedtke "
+            "are GPU-operational).",
+        ),
         16: (
             "New Tiedtke is interface-compatible but not separately savepoint-"
             "gated by a distinct WRF source path; GPU-batching/gating is TODO, so "

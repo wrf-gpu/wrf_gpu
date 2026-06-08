@@ -52,20 +52,24 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
             {
                 "physics": {
                     "mp_physics": [8, 5],
-                    "cu_physics": [5, 0],
+                    # cu=7 (Zhang-McFarlane/CAM5) is a recognized WRF v4 cumulus
+                    # scheme the port does not accept (cu=5 Grell-3D / 14 KSAS are
+                    # now reference-only, accepted-at-namelist; cu=7 stays
+                    # RECOGNIZED_FAIL_CLOSED).
+                    "cu_physics": [7, 0],
                 },
             }
         )
 
     message = str(excinfo.value)
-    # mp=5 (Ferrier) and cu=5 (Grell-3D) are both *recognized* WRF v4 schemes
-    # that are not yet implemented -> the specific "NOT YET IMPLEMENTED" message.
+    # mp=5 (Ferrier) and cu=7 (Zhang-McFarlane) are both *recognized* WRF v4
+    # schemes that are not yet implemented -> the "NOT YET IMPLEMENTED" message.
     assert "physics.mp_physics domain 2=5" in message
     assert "Ferrier" in message
     assert "NOT YET IMPLEMENTED" in message
     assert "Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 16" in message
-    assert "physics.cu_physics domain 1=5" in message
-    assert "Grell 3D ensemble" in message
+    assert "physics.cu_physics domain 1=7" in message
+    assert "Zhang-McFarlane" in message
     assert "1=Kain-Fritsch" in message
     assert "Action:" in message
 
@@ -75,7 +79,7 @@ def test_registry_records_supported_active_suite() -> None:
     assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 5, 7, 8})
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 5, 7})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 2, 4})
-    assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 6, 16})
+    assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 6, 14, 16})
     assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 1, 4})
     assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 4})
 
@@ -160,7 +164,7 @@ def test_implemented_scheme_passes() -> None:
         ("mp_physics", 28, "Thompson"),  # aerosol-aware Thompson
         ("mp_physics", 50, "P3"),
         ("bl_pbl_physics", 4, "QNSE"),
-        ("cu_physics", 5, "Grell 3D"),
+        ("cu_physics", 7, "Zhang-McFarlane"),
         ("sf_surface_physics", 3, "RUC"),
         ("sf_surface_physics", 5, "CLM4"),
         ("sf_sfclay_physics", 3, "GFS"),

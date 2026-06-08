@@ -52,11 +52,12 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # 24 single-option specs (8 microphysics incl. Purdue-Lin + WSM3/WSM5 + 5 PBL
-    # incl. BouLac + 4 surface-layer + 5 cumulus incl. BMJ cu=2 + 2 land-surface)
-    # + 4 radiation variants (RRTMG LW/SW under option 4, classic RRTM LW + Dudhia
-    # SW under option 1).
-    assert len(SCHEME_STEP_SPECS) == 28
+    # 26 single-option specs (8 microphysics incl. Purdue-Lin + WSM3/WSM5 + 5 PBL
+    # incl. BouLac + 4 surface-layer + 7 cumulus incl. BMJ cu=2 + v0.13 Tier-3
+    # reference-only Grell-3D cu=5 + KSAS cu=14 + 2 land-surface) + 4 radiation
+    # variants (RRTMG LW/SW under option 4, classic RRTM LW + Dudhia SW under
+    # option 1).
+    assert len(SCHEME_STEP_SPECS) == 30
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("pbl", 2).writes_carry == ("tke_pbl", "el_pbl")
     assert scheme_step_spec("surface_layer", 2).owner_module.endswith("sfclay_janjic.py")
@@ -100,7 +101,7 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
         {
             "physics": {
                 "mp_physics": [1, 2, 3, 4, 6, 8, 10, 16],
-                "cu_physics": [0, 1, 2, 3, 6, 16],
+                "cu_physics": [0, 1, 2, 3, 5, 6, 14, 16],
                 "bl_pbl_physics": [0, 1, 2, 5, 7],
                 "sf_sfclay_physics": [0, 1, 2, 5, 7],
                 "sf_surface_physics": [0, 2, 4],
