@@ -1,0 +1,270 @@
+{
+  "cpu_gpu_data_gap": {
+    "cpu_reproducible_from_repo_alone": [
+      "Idealized dycore gates (Straka density current, Skamarock/Bryan-Fritsch warm bubble) -- this aggregator re-runs them on CPU.",
+      "Closed-domain dry-mass / total-water / moist-static-energy budget closure (fp64).",
+      "Bitwise restart: full state+carry+stochastic-seed NetCDF wrfrst write->read->compare bit-identity.",
+      "CPU physics savepoint-parity proofs (see scripts/verify_reproducibility.sh)."
+    ],
+    "needs_gpu": [
+      "Speedup / throughput / per-watt and multi-GPU (DGX) claims -- require an NVIDIA GPU + profiler artifacts.",
+      "1km nested live-forecast stability gates (d03) and GWD-nested gates.",
+      "Multi-hour restart forecast-CONTINUITY acceptance (restart trajectory == uninterrupted) -- the structural bit-identity above is CPU; the trajectory match needs GPU + corpus."
+    ],
+    "needs_purged_corpus": [
+      "TOST operational equivalence vs 28-rank CPU-WRF (proofs/m20/*) -- needs real CPU-WRF wrfout + AIFS forcing (not redistributable; /mnt/data).",
+      "Multi-day operational skill-vs-obs gates and station scoring."
+    ]
+  },
+  "cpu_only": true,
+  "gates": {
+    "bitwise_restart": {
+      "bit_identical_full_carry": true,
+      "bit_identical_stochastic_seeds": true,
+      "gate": "v0110_restart_proof._cpu_full_carry_roundtrip + CPU restart pytest suite",
+      "note": "Structural NetCDF wrfrst write->read->compare bit-identity over the full state+carry+stochastic-seed field set. The multi-hour forecast-continuity acceptance gate (restart trajectory == uninterrupted trajectory) needs a GPU + real corpus -- see gap list.",
+      "pass": true,
+      "purpose": "structural full-carry NetCDF wrfrst round-trip; not the forecast-continuity acceptance gate",
+      "schema": {
+        "dimension_count": 28,
+        "dimensions": {
+          "DateStrLen": 19,
+          "Time": 1,
+          "bottom_top": 10,
+          "bottom_top_stag": 11,
+          "gpuwrf_bdy_side": 4,
+          "gpuwrf_bdy_side_index": 9,
+          "gpuwrf_bdy_surface": 1,
+          "gpuwrf_bdy_time": 1,
+          "gpuwrf_bdy_width": 5,
+          "gpuwrf_mu_bdy_time": 1,
+          "gpuwrf_mub_bdy_time": 1,
+          "gpuwrf_p_bdy_time": 1,
+          "gpuwrf_pb_bdy_time": 1,
+          "gpuwrf_ph_bdy_time": 1,
+          "gpuwrf_phb_bdy_time": 1,
+          "gpuwrf_qv_bdy_time": 1,
+          "gpuwrf_theta_bdy_time": 1,
+          "gpuwrf_u_bdy_time": 1,
+          "gpuwrf_v_bdy_time": 1,
+          "gpuwrf_w_bdy_time": 1,
+          "seed_dim_stag": 8,
+          "snow_layers_stag": 3,
+          "snso_layers_stag": 7,
+          "soil_layers_stag": 4,
+          "south_north": 8,
+          "south_north_stag": 9,
+          "west_east": 8,
+          "west_east_stag": 9
+        },
+        "exact_carry_variable_count": 14,
+        "exact_optional_variable_count": 60,
+        "exact_state_variable_count": 56,
+        "noahmp_wrf_variables_present": [
+          "TSLB",
+          "SMOIS",
+          "SH2O",
+          "TSNO",
+          "SNICE",
+          "SNLIQ",
+          "ZSNSO"
+        ],
+        "schema_version": "v0.11.0-wrfrst-netcdf-2",
+        "stochastic_seed_variables_present": [
+          "ISEEDARR_SPPT",
+          "ISEEDARR_SKEBS",
+          "ISEEDARRAY_SPP_CONV",
+          "ISEEDARRAY_SPP_PBL",
+          "ISEEDARRAY_SPP_LSM"
+        ],
+        "variable_count": 203,
+        "wrf_standard_variables_present": [
+          "XTIME",
+          "ITIMESTEP",
+          "XLAT",
+          "XLONG",
+          "XLAT_U",
+          "XLONG_U",
+          "XLAT_V",
+          "XLONG_V",
+          "HGT",
+          "LANDMASK",
+          "ZNU",
+          "ZNW",
+          "P_TOP",
+          "MAPFAC_M",
+          "MAPFAC_U",
+          "MAPFAC_V",
+          "F",
+          "E",
+          "SINALPHA",
+          "COSALPHA",
+          "U",
+          "V",
+          "W",
+          "T",
+          "P",
+          "PB",
+          "PH",
+          "PHB",
+          "MU",
+          "MUB",
+          "QVAPOR",
+          "QCLOUD",
+          "QRAIN",
+          "QICE",
+          "QSNOW",
+          "QGRAUP",
+          "QNICE",
+          "QNRAIN",
+          "QNSNOW",
+          "QNGRAUPEL",
+          "QNCLOUD",
+          "QNCCN",
+          "QKE",
+          "UST",
+          "TSK",
+          "XLAND",
+          "MAVAIL",
+          "ZNT",
+          "LU_INDEX",
+          "RAINC",
+          "RAINNC",
+          "SNOWNC",
+          "GRAUPELNC"
+        ]
+      }
+    },
+    "closed_domain_conservation": {
+      "closed_domain_residuals": {
+        "dry_mass_relative_residual": 0.0,
+        "moist_static_energy_residual_j": 0.0,
+        "passes_predeclared_tolerance": true,
+        "total_water_relative_residual": -2.4500888728189126e-16
+      },
+      "gate": "tests/test_conservation_budget.py",
+      "pass": true,
+      "platform": "cpu",
+      "predeclared_tolerances": {
+        "closed_domain_dry_mass_relative_residual": 1e-10,
+        "closed_domain_total_water_relative_residual": 1e-08,
+        "controlled_cpu_budget_absolute_residual_kg": 1e-06,
+        "controlled_cpu_budget_relative_residual": 1e-12,
+        "open_domain_lbc_corrected_dry_mass_relative_residual_24h": 1e-05,
+        "open_domain_lbc_precip_evap_corrected_water_relative_residual_24h": 0.0001
+      },
+      "proof_object": "proofs/p0_7/conservation_budget_cpu_controlled.json"
+    },
+    "idealized_dycore": {
+      "cases": {
+        "density_current": {
+          "benchmark_spec": {
+            "name": "Straka et al. 1993 density-current benchmark",
+            "published_targets": {
+              "diffusion_nu_m2_s": 75.0,
+              "dx_m": 100.0,
+              "front_position_m_at_900s": 15000.0,
+              "front_speed_m_s": 33.0,
+              "integration_s": 900
+            },
+            "purpose": "cold-pool propagation, sharp-gradient handling, rotor structure",
+            "references": [
+              "https://www2.mmm.ucar.edu/projects/srnwp_tests/density/density.html",
+              "https://journals.ametsoc.org/view/journals/mwre/141/4/mwr-d-12-00144.1.xml"
+            ]
+          },
+          "checks": {
+            "all_snapshots_finite": {
+              "passed": true,
+              "threshold": "all snapshot arrays finite",
+              "value": 1.0
+            },
+            "front_position_900s": {
+              "passed": true,
+              "threshold": "|front position - 15000 m| <= 2000 m",
+              "value": 14150.0
+            },
+            "max_abs_w_900s": {
+              "passed": true,
+              "threshold": "1 <= max(|w|) <= 50 m/s",
+              "value": 14.57511000316096
+            },
+            "relative_mass_drift": {
+              "passed": true,
+              "threshold": "max relative dry-column mass drift <= 1e-8",
+              "value": 2.2524889656126635e-09
+            },
+            "rotor_count_proxy_900s": {
+              "passed": true,
+              "threshold": "2 <= rotor proxy count <= 4",
+              "value": 4.0
+            },
+            "theta_prime_min_900s": {
+              "passed": true,
+              "threshold": "-25 <= min(theta prime) <= -5 K",
+              "value": -9.971054183169997
+            }
+          },
+          "pass": true,
+          "status": "RAN_TO_COMPLETION",
+          "verdict": "PASS",
+          "wall_s": 132.8
+        },
+        "warm_bubble": {
+          "benchmark_spec": {
+            "name": "Bryan and Fritsch 2002 / Skamarock-Klemp dry warm-bubble benchmark",
+            "published_targets": {
+              "integration_s": 500,
+              "theta_perturbation_k": 2.0
+            },
+            "purpose": "buoyant response, acoustic stability, left/right symmetry, mass conservation",
+            "references": [
+              "https://www2.mmm.ucar.edu/people/skamarock/Papers/cv_20.pdf"
+            ]
+          },
+          "checks": {
+            "all_snapshots_finite": {
+              "passed": true,
+              "threshold": "all snapshot arrays finite",
+              "value": 1.0
+            },
+            "horizontal_drift_500s": {
+              "passed": true,
+              "threshold": "positive-theta centroid drift <= 250 m",
+              "value": 1.2732925824820995e-11
+            },
+            "max_abs_w_500s": {
+              "passed": true,
+              "threshold": "1 <= max(|w|) <= 30 m/s",
+              "value": 11.68018811324279
+            },
+            "relative_mass_drift": {
+              "passed": true,
+              "threshold": "max relative dry-column mass drift <= 1e-8",
+              "value": 0.0
+            },
+            "thermal_rise_500s": {
+              "passed": true,
+              "threshold": "positive-theta centroid rises by at least 500 m",
+              "value": 1924.3475896514237
+            },
+            "theta_prime_max_500s": {
+              "passed": true,
+              "threshold": "0.5 <= max(theta prime) <= 2.5 K",
+              "value": 1.9200603177474136
+            }
+          },
+          "pass": true,
+          "status": "RAN_TO_COMPLETION",
+          "verdict": "PASS",
+          "wall_s": 16.9
+        }
+      },
+      "pass": true
+    }
+  },
+  "generated_at": "2026-06-08T07:42:49Z",
+  "jax_backend": "cpu",
+  "pass": true,
+  "schema": "v013_community_validation_v1"
+}
