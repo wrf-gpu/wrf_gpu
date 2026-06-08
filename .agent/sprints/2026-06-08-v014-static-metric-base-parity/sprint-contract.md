@@ -56,11 +56,14 @@ Allowed source write scope only after the proof isolates a narrow bug:
 
 - `src/gpuwrf/init/real_init/vertical_coord.py`
 - `src/gpuwrf/dynamics/metrics.py`
+- `src/gpuwrf/integration/d02_replay.py` only if the bug is proven to be stale
+  `GridSpec.metrics` / loaded-metrics plumbing from `build_replay_case`.
+- `src/gpuwrf/io/wrfout_writer.py` only if the bug is proven to be writer
+  payload selection, and the manager is notified in the handoff.
 
 Read-only unless the manager approves a follow-up contract:
 
 - `src/gpuwrf/contracts/grid.py`
-- `src/gpuwrf/io/wrfout_writer.py`
 - `src/gpuwrf/runtime/operational_mode.py`
 - pressure-gradient, acoustic, diffusion, radiation, and surface-layer code
 
@@ -91,6 +94,9 @@ The probe must answer, separately:
   values for the vertical-coordinate and horizontal metric fields?
 - Base-state fields: are `PB/PHB/MUB` mismatches true input/base-state
   mismatches, writer reconstruction artifacts, or forecast-step changes?
+- Loaded-metrics plumbing: does `case.metrics` / `namelist.metrics` contain the
+  real WRF metrics while `grid.metrics` still contains `DycoreMetrics.flat`, and
+  does the writer emit `grid.metrics`?
 
 ## Commands
 
@@ -118,6 +124,9 @@ running. Use `scripts/run_gpu_lowprio.sh`; do not resume TOST.
   - the new static/base parity probe,
   - `proofs/v014/grid_cell_envelope.py`,
   - a focused import/compile gate for the touched modules.
+- A source fix for stale `grid.metrics` must preserve runtime `namelist.metrics`
+  behavior and only change emitted/static payload or shared grid metadata unless
+  the proof explicitly shows dynamics consumed the wrong metrics.
 - No dynamic operator fix starts until static metric/base payload is exact or
   explicitly root-caused as a harmless writer-only artifact.
 
