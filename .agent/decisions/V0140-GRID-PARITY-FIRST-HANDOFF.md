@@ -26,6 +26,17 @@ Therefore TOST stays paused. The manager cadence now requires a targeted Opus
 xhigh critic/debugger before the next root-cause conclusion. Sprint:
 `.agent/sprints/2026-06-09-v014-dynamic-root-cause-opus-critic/sprint-contract.md`.
 
+Update 2026-06-09 10:55 WEST: Opus critic completed and was accepted
+(`a101a2bb`). Verdict:
+`MANAGER_FINAL_RK_TARGET_NOT_JUSTIFIED_INPUT_ALREADY_DIVERGED`. The critic
+found that `proofs/v014/pre_rk_input_boundary.json` already shows the JAX input
+to step 6000 is divergent before final RK (`MU'` worst about `267` Pa, `P'`
+worst about `590` Pa, `T_OLD` worst about `6.2` K). Therefore final-RK output
+instrumentation is too late as the next proof boundary. Active sprint is now
+`.agent/sprints/2026-06-09-v014-same-input-single-rk-parity/sprint-contract.md`:
+WRF pre-RK input -> one JAX dynamics step -> WRF post-RK/pre-halo output, with
+tendency-control and patch-width blockers preferred over a weak comparison.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:

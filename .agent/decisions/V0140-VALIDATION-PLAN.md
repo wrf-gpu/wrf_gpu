@@ -228,6 +228,12 @@ Current status:
   `post_after_all_rk_steps_pre_halo`. Therefore B4 remains blocked before
   powered TOST; next validation-enabling work is dynamic same-state
   localization/fix, reviewed by the targeted Opus critic sprint.
+- 2026-06-09 Opus critic closeout: the next validation-enabling proof boundary
+  is **not** final-RK output localization from the old JAX carry. Opus found the
+  pre-RK input is already divergent, so the active next sprint is strict
+  same-input single-RK-step parity using WRF's own pre-RK input savepoint. Only
+  if that proof shows a same-input mismatch should a dynamics source edit be
+  considered.
 - 2026-06-09 source sprint update:
   `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
   as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest
