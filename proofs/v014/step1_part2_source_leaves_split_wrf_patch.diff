@@ -1,0 +1,248 @@
+--- /mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/module_first_rk_step_part2.F	2026-05-29 11:08:04.494801243 +0100
++++ /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/dyn_em/module_first_rk_step_part2.F	2026-06-09 23:56:50.257516866 +0100
+@@ -7,6 +7,175 @@
+ 
+ CONTAINS
+ 
++  SUBROUTINE wrfgpu2_v014_emit_part2_source ( surface, grid, config_flags, &
++                             moist_old_qv, moist_tend_qv, t_tendf, mu_tendf, &
++                             ids, ide, jds, jde, kds, kde,                   &
++                             ims, ime, jms, jme, kms, kme,                   &
++                             k_start, k_end                                  )
++    USE module_state_description
++    USE module_model_constants
++    USE module_domain, ONLY : domain
++    USE module_configure, ONLY : grid_config_rec_type
++
++    IMPLICIT NONE
++
++    CHARACTER(LEN=*), INTENT(IN) :: surface
++    TYPE ( domain ), INTENT(IN) :: grid
++    TYPE ( grid_config_rec_type ), INTENT(IN) :: config_flags
++
++    INTEGER, INTENT(IN) :: ids, ide, jds, jde, kds, kde, &
++                           ims, ime, jms, jme, kms, kme, &
++                           k_start, k_end
++
++    REAL, DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(IN) :: moist_old_qv
++    REAL, DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(IN) :: moist_tend_qv
++    REAL, DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(IN) :: t_tendf
++    REAL, DIMENSION(ims:ime,jms:jme), INTENT(IN) :: mu_tendf
++
++    INTEGER :: wrfgpu2_grid, wrfgpu2_start_step, wrfgpu2_end_step
++    INTEGER :: wrfgpu2_ios, wrfgpu2_unit
++    INTEGER :: wrfgpu2_i, wrfgpu2_j, wrfgpu2_k, wrfgpu2_ij
++    INTEGER :: wrfgpu2_mass_k_end
++    LOGICAL :: wrfgpu2_enabled
++    CHARACTER(LEN=64) :: wrfgpu2_env
++    CHARACTER(LEN=512) :: wrfgpu2_root
++    CHARACTER(LEN=768) :: wrfgpu2_path
++    REAL :: wrfgpu2_mass_h, wrfgpu2_rth_all, wrfgpu2_rth_active
++    REAL :: wrfgpu2_rth_active_moist, wrfgpu2_theta_m_factor
++
++    wrfgpu2_enabled = .FALSE.
++    CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT', wrfgpu2_env)
++    IF (TRIM(wrfgpu2_env) == '1') THEN
++      wrfgpu2_grid = 2
++      wrfgpu2_start_step = 1
++      wrfgpu2_end_step = 1
++      wrfgpu2_root = '/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth'
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_GRID', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) THEN
++        READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_grid
++      ENDIF
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_START_STEP', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) THEN
++        READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_start_step
++        wrfgpu2_end_step = wrfgpu2_start_step
++      ENDIF
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_END_STEP', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) THEN
++        READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_end_step
++      ENDIF
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_ROOT', wrfgpu2_root)
++      wrfgpu2_enabled = grid%id == wrfgpu2_grid .AND. &
++                        grid%itimestep >= wrfgpu2_start_step .AND. &
++                        grid%itimestep <= wrfgpu2_end_step
++    ENDIF
++    IF (.NOT. wrfgpu2_enabled) RETURN
++
++    CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_root), wait=.TRUE.)
++    wrfgpu2_mass_k_end = MIN(k_end, kde-1)
++
++    DO wrfgpu2_ij = 1 , grid%num_tiles
++      IF (k_start > wrfgpu2_mass_k_end) CYCLE
++      WRITE(wrfgpu2_path,'(A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++           TRIM(wrfgpu2_root)//'/'//TRIM(surface)//'_d', grid%id, &
++           '_step_', grid%itimestep, '_rk_', 1, &
++           '_is_', grid%i_start(wrfgpu2_ij), '_ie_', grid%i_end(wrfgpu2_ij), &
++           '_js_', grid%j_start(wrfgpu2_ij), '_je_', grid%j_end(wrfgpu2_ij), '.txt'
++      OPEN(NEWUNIT=wrfgpu2_unit, FILE=TRIM(wrfgpu2_path), &
++           STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++      WRITE(wrfgpu2_unit,'(A)') '# WRFGPU2_V014_STEP1_PART2_SOURCE_LEAVES_SPLIT v1'
++      WRITE(wrfgpu2_unit,'(A,1X,A)') 'surface', TRIM(surface)
++      WRITE(wrfgpu2_unit,'(A)') 'routine dyn_em/module_first_rk_step_part2.F'
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'domain_id', grid%id
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'grid_itimestep_after_increment', grid%itimestep
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'rk_step', 1
++      WRITE(wrfgpu2_unit,'(A,4(1X,I0))') 'tile_i_j_bounds_fortran', &
++           grid%i_start(wrfgpu2_ij), grid%i_end(wrfgpu2_ij), &
++           grid%j_start(wrfgpu2_ij), grid%j_end(wrfgpu2_ij)
++      WRITE(wrfgpu2_unit,'(A,4(1X,I0))') 'global_mass_i_j_end_exclusive_fortran', &
++           ids, ide, jds, jde
++      WRITE(wrfgpu2_unit,'(A)') 'tile_record_policy mass_owned_single_owner_no_overlap'
++      WRITE(wrfgpu2_unit,'(A,2(1X,I0))') &
++           'mass_vertical_fortran_k_start_k_end_inclusive', k_start, wrfgpu2_mass_k_end
++      WRITE(wrfgpu2_unit,'(A,7(1X,I0))') &
++           'active_theta_source_flags ra bl cu shcu grid_fdda iau ifire', &
++           MERGE(1,0,config_flags%ra_lw_physics .gt. 0 .or. config_flags%ra_sw_physics .gt. 0), &
++           MERGE(1,0,config_flags%bl_pbl_physics .gt. 0), &
++           MERGE(1,0,config_flags%cu_physics .gt. 0), &
++           MERGE(1,0,config_flags%shcu_physics .gt. 0), &
++           MERGE(1,0,config_flags%grid_fdda .gt. 0), &
++           MERGE(1,0,config_flags%iau .gt. 0), &
++           MERGE(1,0,config_flags%ifire .gt. 0)
++      WRITE(wrfgpu2_unit,'(A)') &
++           'record_schema MASS_PART2 fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE T_OLD T_HIST_SRC T_INIT P PB MU_NEW MUB MUT MSFTY MASS_H T_TENDF H_DIABATIC T_SAVE MU_TENDF RTHRATEN RTHBLTEN RTHCUTEN RTHSHTEN RTHNDGDTEN RTHIAUTEN RTHFRTEN RTH_ALL_SUM RTH_ACTIVE_SUM RTH_ACTIVE_SUM_MOIST QV_OLD QV_TEND THETA_M_FACTOR'
++      DO wrfgpu2_k = k_start, wrfgpu2_mass_k_end
++        DO wrfgpu2_j = grid%j_start(wrfgpu2_ij), MIN(grid%j_end(wrfgpu2_ij), jde-1)
++          DO wrfgpu2_i = grid%i_start(wrfgpu2_ij), MIN(grid%i_end(wrfgpu2_ij), ide-1)
++            wrfgpu2_mass_h = grid%c1h(wrfgpu2_k)*grid%mut(wrfgpu2_i,wrfgpu2_j)+grid%c2h(wrfgpu2_k)
++            wrfgpu2_rth_all = grid%rthraten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j) + &
++                              grid%rthblten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j) + &
++                              grid%rthcuten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j) + &
++                              grid%rthshten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j) + &
++                              grid%RTHNDGDTEN(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j) + &
++                              grid%rthiauten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j) + &
++                              grid%rthfrten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            wrfgpu2_rth_active = 0.0
++            IF (config_flags%ra_lw_physics .gt. 0 .or. config_flags%ra_sw_physics .gt. 0) &
++              wrfgpu2_rth_active = wrfgpu2_rth_active + grid%rthraten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            IF (config_flags%bl_pbl_physics .gt. 0) &
++              wrfgpu2_rth_active = wrfgpu2_rth_active + grid%rthblten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            IF (config_flags%cu_physics .gt. 0) &
++              wrfgpu2_rth_active = wrfgpu2_rth_active + grid%rthcuten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            IF (config_flags%shcu_physics .gt. 0) &
++              wrfgpu2_rth_active = wrfgpu2_rth_active + grid%rthshten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            IF (config_flags%grid_fdda .gt. 0) &
++              wrfgpu2_rth_active = wrfgpu2_rth_active + grid%RTHNDGDTEN(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            IF (config_flags%iau .gt. 0) &
++              wrfgpu2_rth_active = wrfgpu2_rth_active + grid%rthiauten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            IF (config_flags%ifire .gt. 0) &
++              wrfgpu2_rth_active = wrfgpu2_rth_active + grid%rthfrten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            wrfgpu2_theta_m_factor = 1.0 + (R_v/R_d) * moist_old_qv(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            wrfgpu2_rth_active_moist = wrfgpu2_theta_m_factor * wrfgpu2_rth_active + &
++                 (R_v/R_d) * (grid%t_1(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)+T0) / &
++                 wrfgpu2_theta_m_factor * moist_tend_qv(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)
++            WRITE(wrfgpu2_unit,'(A,6(1X,I0),34(1X,E24.16))') 'MASS_PART2', &
++                 wrfgpu2_i, wrfgpu2_j, wrfgpu2_k, &
++                 wrfgpu2_i-1, wrfgpu2_j-1, wrfgpu2_k-1, &
++                 REAL(grid%t_2(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%t_1(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%th_phy_m_t0(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%t_init(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%p(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%pb(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%mu_2(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++                 REAL(grid%mub(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++                 REAL(grid%mut(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++                 REAL(grid%msfty(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++                 REAL(wrfgpu2_mass_h,KIND=8), &
++                 REAL(t_tendf(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%h_diabatic(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%t_save(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(mu_tendf(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++                 REAL(grid%rthraten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%rthblten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%rthcuten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%rthshten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%RTHNDGDTEN(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%rthiauten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%rthfrten(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(wrfgpu2_rth_all,KIND=8), &
++                 REAL(wrfgpu2_rth_active,KIND=8), &
++                 REAL(wrfgpu2_rth_active_moist,KIND=8), &
++                 REAL(moist_old_qv(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(moist_tend_qv(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(wrfgpu2_theta_m_factor,KIND=8)
++          ENDDO
++        ENDDO
++      ENDDO
++      CLOSE(wrfgpu2_unit)
++    ENDDO
++
++  END SUBROUTINE wrfgpu2_v014_emit_part2_source
++
+   SUBROUTINE first_rk_step_part2 (   grid , config_flags        &
+                              , moist , moist_old , moist_tend   &
+                              , chem  , chem_tend                &
+@@ -422,6 +591,13 @@
+       !$OMP END PARALLEL DO
+ BENCH_END(cal_phy_tend)
+ 
++      CALL wrfgpu2_v014_emit_part2_source ( 'after_calculate_phy_tend', grid, config_flags, &
++                           moist_old(ims,kms,jms,P_qv), moist_tend(ims,kms,jms,P_qv), &
++                           t_tendf, mu_tendf,                         &
++                           ids, ide, jds, jde, kds, kde,              &
++                           ims, ime, jms, jme, kms, kme,              &
++                           k_start, k_end                             )
++
+ ! tke diffusion
+ 
+        IF(config_flags%diff_opt .eq. 2 .OR. config_flags%diff_opt .eq. 1) THEN
+@@ -831,6 +1007,13 @@
+        !$OMP END PARALLEL DO
+ BENCH_END(update_phy_ten_tim)
+ 
++      CALL wrfgpu2_v014_emit_part2_source ( 'after_update_phy_ten', grid, config_flags, &
++                           moist_old(ims,kms,jms,P_qv), moist_tend(ims,kms,jms,P_qv), &
++                           t_tendf, mu_tendf,                         &
++                           ids, ide, jds, jde, kds, kde,              &
++                           ims, ime, jms, jme, kms, kme,              &
++                           k_start, k_end                             )
++
+       IF (grid%skebs_on==1) then
+           !$OMP PARALLEL DO   &
+           !$OMP PRIVATE ( ij )
+@@ -1015,7 +1198,14 @@
+                                         k_start    , k_end                        )
+          END DO 
+          !$OMP END PARALLEL DO
+-       END IF ! use moist theta
++	       END IF ! use moist theta
++
++      CALL wrfgpu2_v014_emit_part2_source ( 'after_conv_t_tendf_to_moist', grid, config_flags, &
++                           moist_old(ims,kms,jms,P_qv), moist_tend(ims,kms,jms,P_qv), &
++                           t_tendf, mu_tendf,                         &
++                           ids, ide, jds, jde, kds, kde,              &
++                           ims, ime, jms, jme, kms, kme,              &
++                           k_start, k_end                             )
+ 
+ ! calculate vertical diffusion first and then horizontal
+ ! (keep this order)
+@@ -1129,4 +1319,3 @@
+   END SUBROUTINE first_rk_step_part2
+ 
+ END MODULE module_first_rk_step_part2
+-
+
+--- /mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/solve_em.F	2026-06-09 14:30:54.890166453 +0100
++++ /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/dyn_em/solve_em.F	2026-06-09 23:53:30.834781894 +0100
+@@ -2529,7 +2529,7 @@
+ !  Quantities: w_2, ph_2, grid%p (post-substep calc_p_rho), rw_tend (pg_buoy_w
+ !  forcing), ph_tend (rhs_ph), t_2ave-input t_2save, muave, muts, mut, and the
+ !  calc_coef_w coeffs a/alpha/gamma/cqw/c2a. dts_rk, epssm as scalars.
+-       IF ( grid%itimestep <= 3 ) THEN
++       IF ( .FALSE. .AND. grid%itimestep <= 3 ) THEN
+          block_wrfgpu2_dump: DO
+            ! center column fixed indices
+            IF ( 20 < grid%i_start(ij) .OR. 20 > grid%i_end(ij) ) EXIT block_wrfgpu2_dump
+@@ -2573,7 +2573,7 @@
+ !    t_2save, muave, muts, mut.  The acoustic-PGF u-tendency is recovered offline
+ !    from per-substep u_2 differences; the surface horizontal divergence du/dx is
+ !    recovered from the i / i+1 u-faces in this dump.
+-       IF ( grid%itimestep >= 170 .AND. grid%itimestep <= 205 ) THEN
++       IF ( .FALSE. .AND. grid%itimestep >= 170 .AND. grid%itimestep <= 205 ) THEN
+          block_wrfgpu2_td: DO
+            IF ( 256 < grid%i_start(ij) .OR. 256 > grid%i_end(ij) ) EXIT block_wrfgpu2_td
+            IF ( 2   < grid%j_start(ij) .OR. 2   > grid%j_end(ij) ) EXIT block_wrfgpu2_td
