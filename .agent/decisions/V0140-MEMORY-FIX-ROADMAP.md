@@ -13,6 +13,12 @@ bit-identical cleanup is moisture transport velocity reuse when active moisture
 advection is enabled. Broader MYNN/PBL/post-physics/limiter/acoustic work
 remains measurement-first or grid-parity-gated.
 
+Update 2026-06-09 10:40 WEST: the h12 direct grid-after-base proof is green as a
+run but red as a grid comparison (`GRID_SYMPTOM_NOT_CLOSED`). Memory work should
+not interrupt the dynamic root-cause lane. After grid parity closes, rerun the
+exact-branch memory preflight for the selected long validation config, then do
+only optional bit-identical cleanups unless a measured peak proves otherwise.
+
 ## Decision
 
 The release-critical memory blocker was RRTMG full-column radiation memory. It

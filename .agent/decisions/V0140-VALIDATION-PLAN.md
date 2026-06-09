@@ -218,6 +218,16 @@ Current status:
   (2) V10/grid-field divergence materially improved. A source port may not be
   used to resume TOST or claim grid parity unless an init-override or direct
   grid-field proof closes the symptom.
+- 2026-06-09 direct proof update: the direct falsifier has now run and did
+  **not** close the symptom. `proofs/v014/grid_after_live_nest_base.json`
+  verdict is `GRID_SYMPTOM_NOT_CLOSED` after one h12 GPU run with
+  `L2_D02_GREEN`. h1-h12 `V10` RMSE remains `2.55039100124724` m/s, worst h11
+  RMSE `4.277008742661733`; `PSFC`, `P`, `MU`, and `PH` still have large
+  residuals. `proofs/v014/same_state_momentum_mass.json` independently shows
+  the selected h10 `U` mismatch already exists at
+  `post_after_all_rk_steps_pre_halo`. Therefore B4 remains blocked before
+  powered TOST; next validation-enabling work is dynamic same-state
+  localization/fix, reviewed by the targeted Opus critic sprint.
 - 2026-06-09 source sprint update:
   `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
   as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest
