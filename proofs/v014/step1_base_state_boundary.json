@@ -1,0 +1,3333 @@
+{
+  "commands": {
+    "executed": [
+      "python -m py_compile proofs/v014/step1_base_state_boundary.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_base_state_boundary.py",
+      "python -m json.tool proofs/v014/step1_base_state_boundary.json >/tmp/step1_base_state_boundary.validated.json",
+      "git diff -- src/gpuwrf"
+    ]
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T20:32:08.053164+00:00",
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n",
+      "wall_s": 0.0013391510001383722
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "6ced5a8e293a938504c4bf5e64c1018140f29702\n",
+      "wall_s": 0.0010552190069574863
+    },
+    "log_head": {
+      "command": [
+        "git",
+        "log",
+        "-1",
+        "--oneline",
+        "--decorate"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "6ced5a8e (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 close jax start-domain input split\n",
+      "wall_s": 0.002356340002734214
+    },
+    "required_ancestor": {
+      "commit": "6ced5a8e",
+      "is_ancestor": true,
+      "returncode": 0,
+      "stderr_tail": ""
+    }
+  },
+  "gpu_used": false,
+  "inputs": {
+    "d02_replay": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "sha256": "f3ee90238f7b5bbb0bb4bb5575b0e5ab89aabb5fafac43d464df3736e00d74a3",
+      "size_bytes": 110124
+    },
+    "handoff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "5c48f3bcc79a17868d786d7f8f4d5c19837b0e66f546188d33e2fa143e34b65b",
+      "size_bytes": 80627
+    },
+    "optional_wrf_patch_diff": {
+      "exists": false,
+      "is_dir": false,
+      "is_file": false,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_base_state_boundary_wrf_patch.diff",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "predecessor_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.json",
+      "sha256": "3295e1b7e1f5af6617b4d25d185d562d8194a80b82a31923cb5a431a47b58db8",
+      "size_bytes": 144770
+    },
+    "predecessor_md": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.md",
+      "sha256": "66ed192b5b2e36f98956ba97eacec937476c85f52854436cd26417804c04c5a4",
+      "size_bytes": 3916
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-base-state-boundary/sprint-contract.md",
+      "sha256": "eefae3b77974ebdb5211843a1714a42e655c6869065f878623e29fca012da9d4",
+      "size_bytes": 5791
+    },
+    "wrf_constants": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+      "sha256": "5b80377fecdc18a5f0ad38d3b6c15cfc86ad5d76701adbbbb08a08698d0f7062",
+      "size_bytes": 8280
+    },
+    "wrf_namelist": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/run/namelist.input",
+      "sha256": "62ee978202a410c4967ab5b350cdd52dec816d422906fa4b7614c66ded038f85",
+      "size_bytes": 4151
+    },
+    "wrf_start_em": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+      "sha256": "69b4ca7615978e94aceaf5662001ec360ad4a7de344397b0221351c610ab6d40",
+      "size_bytes": 130593
+    },
+    "wrf_truth_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "next_decision": "Do not patch d02_replay from the current p_surf formula yet. The next source contract should either instrument one disposable WRF boundary immediately around the p_surf expression/MUB assignment to capture p_surf_before_mub and MUB exactly, or implement a narrowly gated WRF-compatible fp32/libm p_surf helper and require P_STATE <= 1 Pa and MU_STATE <= 0.01 Pa in this same proof before production patching.",
+  "no_fp32_source_work": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "production_src_edits": false,
+  "proof": {
+    "current_jax_input_metrics": {
+      "ALB_current_vs_wrf_after_hyp": {
+        "bias": -1.3808794109692655e-07,
+        "count": 461736,
+        "max_abs": 1.0552055318413522e-06,
+        "nonfinite_diff_count": 0,
+        "p95": 6.713742557451496e-07,
+        "p99": 1.0552055318413522e-06,
+        "region": "full_domain",
+        "rmse": 3.139560784383465e-07,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 41
+        },
+        "worst_mismatch_index": [
+          40,
+          0,
+          0
+        ]
+      },
+      "ALT_current_formula_fp64_vs_wrf_after_hyp": {
+        "bias": -9.696594386233928e-07,
+        "count": 461736,
+        "max_abs": 4.4775812162889395e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 9.049422532214635e-06,
+        "p99": 1.1296560851148455e-05,
+        "region": "full_domain",
+        "rmse": 4.00451551730315e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          30,
+          62
+        ]
+      },
+      "AL_current_formula_fp64_vs_wrf_after_hyp": {
+        "bias": -8.315714974587394e-07,
+        "count": 461736,
+        "max_abs": 4.504607755318e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 8.51407804430826e-06,
+        "p99": 1.124524384284458e-05,
+        "region": "full_domain",
+        "rmse": 3.912457199045156e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          30,
+          62
+        ]
+      },
+      "HT_FINE_current_vs_wrf_after_hyp": {
+        "bias": 2.306957823083714e-16,
+        "count": 10494,
+        "max_abs": 4.547473508864641e-13,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 5.684341886080802e-14,
+        "region": "full_domain",
+        "rmse": 2.3210296050260928e-14,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 20,
+          "j": 13
+        },
+        "worst_mismatch_index": [
+          12,
+          19
+        ]
+      },
+      "HT_current_vs_wrf_after_hyp": {
+        "bias": -4.865939701709864e-08,
+        "count": 10494,
+        "max_abs": 2.682152282318384e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 7.82451885141673e-09,
+        "p99": 4.626463169117296e-06,
+        "region": "full_domain",
+        "rmse": 1.076769145490878e-06,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 157,
+          "j": 60
+        },
+        "worst_mismatch_index": [
+          59,
+          156
+        ]
+      },
+      "MUB_current_vs_wrf_after_hyp": {
+        "bias": -0.0014379073126789452,
+        "count": 10494,
+        "max_abs": 0.05002361937658861,
+        "nonfinite_diff_count": 0,
+        "p95": 0.021521761903568408,
+        "p99": 0.035347418212040786,
+        "region": "full_domain",
+        "rmse": 0.008025019829604947,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51
+        },
+        "worst_mismatch_index": [
+          50,
+          155
+        ]
+      },
+      "MU_STATE_current_vs_wrf_before_press": {
+        "bias": 0.0,
+        "count": 10494,
+        "max_abs": 0.0,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "region": "full_domain",
+        "rmse": 0.0,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          0
+        ]
+      },
+      "PB_current_vs_wrf_after_hyp": {
+        "bias": -0.0005600475270968658,
+        "count": 461736,
+        "max_abs": 0.05357326504599769,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0055001466080284445,
+        "p99": 0.022395003079145687,
+        "region": "full_domain",
+        "rmse": 0.004296943965085442,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          50,
+          155
+        ]
+      },
+      "PHB_current_vs_wrf_after_hyp": {
+        "bias": -0.01747610370992694,
+        "count": 472230,
+        "max_abs": 0.10811684231157415,
+        "nonfinite_diff_count": 0,
+        "p95": 0.05131772726599593,
+        "p99": 0.055443795037572415,
+        "region": "full_domain",
+        "rmse": 0.02459295000326211,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 146,
+          "j": 34,
+          "kstag": 42
+        },
+        "worst_mismatch_index": [
+          41,
+          33,
+          145
+        ]
+      },
+      "PH_STATE_current_vs_wrf_after_hyp": {
+        "bias": -1.2187697011322472e-18,
+        "count": 472230,
+        "max_abs": 5.329070518200751e-15,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "region": "full_domain",
+        "rmse": 5.24243169212334e-16,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 1,
+          "kstag": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          0,
+          1
+        ]
+      },
+      "T_STATE_current_vs_wrf_after_hyp": {
+        "bias": 6.787669610538842e-08,
+        "count": 461736,
+        "max_abs": 5.118963662198439e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 2.838121361037338e-05,
+        "p99": 3.358017255550295e-05,
+        "region": "full_domain",
+        "rmse": 1.5094579100085305e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 154,
+          "j": 35,
+          "k": 14
+        },
+        "worst_mismatch_index": [
+          13,
+          34,
+          153
+        ]
+      },
+      "W_STATE_current_vs_wrf_after_w": {
+        "bias": -0.00014780176529095068,
+        "count": 472230,
+        "max_abs": 0.7605466842651367,
+        "nonfinite_diff_count": 0,
+        "p95": 0.004005373129621147,
+        "p99": 0.060004296675324476,
+        "region": "full_domain",
+        "rmse": 0.014918776488287136,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 62,
+          "j": 31,
+          "kstag": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          30,
+          61
+        ]
+      }
+    },
+    "direct_truth_ablation": {
+      "PHB_MUB_to_wrf_fp32_alt_pressure_vs_wrf_P": {
+        "bias": 0.0004310868978025322,
+        "count": 461736,
+        "max_abs": 0.0859375,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0234375,
+        "p99": 0.0390625,
+        "region": "full_domain",
+        "rmse": 0.009877167668418278,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 89,
+          "j": 20,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          19,
+          88
+        ]
+      },
+      "PHB_MUB_to_wrf_fp32_alt_vs_wrf_ALT": {
+        "bias": -9.403645539257766e-08,
+        "count": 461736,
+        "max_abs": 1.9073486328125e-06,
+        "nonfinite_diff_count": 0,
+        "p95": 9.5367431640625e-07,
+        "p99": 9.5367431640625e-07,
+        "region": "full_domain",
+        "rmse": 3.1194185257334005e-07,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 44,
+          "j": 2,
+          "k": 40
+        },
+        "worst_mismatch_index": [
+          39,
+          1,
+          43
+        ]
+      },
+      "direct_WRF_ALT_pressure_vs_wrf_P": {
+        "bias": 0.00018538429342615786,
+        "count": 461736,
+        "max_abs": 0.07605321895971429,
+        "nonfinite_diff_count": 0,
+        "p95": 0.014930810790247051,
+        "p99": 0.02600092516586303,
+        "region": "full_domain",
+        "rmse": 0.006830944106223064,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 27,
+          "j": 5,
+          "k": 4
+        },
+        "worst_mismatch_index": [
+          3,
+          4,
+          26
+        ]
+      },
+      "direct_WRF_AL_ALT_ALB_press_adj_vs_wrf_MU": {
+        "bias": 2.716530634177003e-07,
+        "count": 10494,
+        "max_abs": 6.14762238910771e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 2.9712646278312614e-05,
+        "p99": 5.4692730632268646e-05,
+        "region": "full_domain",
+        "rmse": 1.0947488623833584e-05,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 21,
+          "j": 10
+        },
+        "worst_mismatch_index": [
+          9,
+          20
+        ]
+      }
+    },
+    "exclusions": [
+      "No production src/gpuwrf edit was made.",
+      "No GPU, TOST, Switzerland, FP32 production source, memory production source, or Hermes path was used.",
+      "Terrain was falsified as dominant by substituting WRF HT into the proof-local fp32 formula with no P improvement.",
+      "cp/constants were falsified as dominant: cp=1004.0 vs 1004.5 does not move MUB/PB and leaves the same downstream P gap.",
+      "Coefficient indexing is unlikely: exact WRF MUB with current metrics closes downstream P/MU gates.",
+      "PHB integration order remains a small base residual, but not the dominant downstream P/MU blocker after WRF MUB substitution."
+    ],
+    "jax_loader_metadata": {
+      "live_nest_base_init": {
+        "blend_width": 5,
+        "child_domain": "d02",
+        "cpu_wrfout_dependency": false,
+        "enabled": true,
+        "i_parent_start": 24,
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "j_parent_start": 20,
+        "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+        "parent_domain": "d01",
+        "parent_grid_ratio": 3,
+        "production_inputs": [
+          "parent native initialized terrain",
+          "wrfinput_d02",
+          "namelist.input"
+        ],
+        "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+        "spec_bdy_width": 5,
+        "timestep_loop_transfer": false
+      },
+      "theta_qv_adjust": {
+        "final_base_state_unchanged": true,
+        "perturbation_pressure_unchanged": true,
+        "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+        "theta_m_conversion_applied": true,
+        "timestep_loop_transfer": false,
+        "use_theta_m": 1,
+        "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+      },
+      "transient_adjust_mub": {
+        "blend_width": 5,
+        "child_domain": "d02",
+        "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+        "final_base_state_unchanged": true,
+        "i_parent_start": 24,
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "j_parent_start": 20,
+        "parent_domain": "d01",
+        "parent_grid_ratio": 3,
+        "spec_bdy_width": 5,
+        "surface": "post_blend_terrain_pre_start_domain",
+        "timestep_loop_transfer": false,
+        "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+      }
+    },
+    "next_decision": "Do not patch d02_replay from the current p_surf formula yet. The next source contract should either instrument one disposable WRF boundary immediately around the p_surf expression/MUB assignment to capture p_surf_before_mub and MUB exactly, or implement a narrowly gated WRF-compatible fp32/libm p_surf helper and require P_STATE <= 1 Pa and MU_STATE <= 0.01 Pa in this same proof before production patching.",
+    "patch_decision": {
+      "production_patch_applied": false,
+      "ready_for_d02_replay_patch": false,
+      "reason": "Current/proof-local p_surf formula still leaves P_STATE 2.828125 and MU_STATE 0.011962890625; only WRF-emitted MUB closes P/MU (0.40625, 0.001220703125)."
+    },
+    "ranked_current_jax_input_residuals": [
+      {
+        "bias": -0.00014780176529095068,
+        "max_abs": 0.7605466842651367,
+        "name": "W_STATE_current_vs_wrf_after_w",
+        "rmse": 0.014918776488287136,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 62,
+          "j": 31,
+          "kstag": 1
+        }
+      },
+      {
+        "bias": -0.01747610370992694,
+        "max_abs": 0.10811684231157415,
+        "name": "PHB_current_vs_wrf_after_hyp",
+        "rmse": 0.02459295000326211,
+        "threshold": 0.01,
+        "worst_mismatch_fortran": {
+          "i": 146,
+          "j": 34,
+          "kstag": 42
+        }
+      },
+      {
+        "bias": -0.0005600475270968658,
+        "max_abs": 0.05357326504599769,
+        "name": "PB_current_vs_wrf_after_hyp",
+        "rmse": 0.004296943965085442,
+        "threshold": 1.0,
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51,
+          "k": 1
+        }
+      },
+      {
+        "bias": -0.0014379073126789452,
+        "max_abs": 0.05002361937658861,
+        "name": "MUB_current_vs_wrf_after_hyp",
+        "rmse": 0.008025019829604947,
+        "threshold": 0.01,
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51
+        }
+      },
+      {
+        "bias": 6.787669610538842e-08,
+        "max_abs": 5.118963662198439e-05,
+        "name": "T_STATE_current_vs_wrf_after_hyp",
+        "rmse": 1.5094579100085305e-05,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 154,
+          "j": 35,
+          "k": 14
+        }
+      },
+      {
+        "bias": -8.315714974587394e-07,
+        "max_abs": 4.504607755318e-05,
+        "name": "AL_current_formula_fp64_vs_wrf_after_hyp",
+        "rmse": 3.912457199045156e-06,
+        "threshold": 1e-08,
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        }
+      },
+      {
+        "bias": -9.696594386233928e-07,
+        "max_abs": 4.4775812162889395e-05,
+        "name": "ALT_current_formula_fp64_vs_wrf_after_hyp",
+        "rmse": 4.00451551730315e-06,
+        "threshold": 1e-08,
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        }
+      },
+      {
+        "bias": -4.865939701709864e-08,
+        "max_abs": 2.682152282318384e-05,
+        "name": "HT_current_vs_wrf_after_hyp",
+        "rmse": 1.076769145490878e-06,
+        "threshold": 1e-06,
+        "worst_mismatch_fortran": {
+          "i": 157,
+          "j": 60
+        }
+      },
+      {
+        "bias": -1.3808794109692655e-07,
+        "max_abs": 1.0552055318413522e-06,
+        "name": "ALB_current_vs_wrf_after_hyp",
+        "rmse": 3.139560784383465e-07,
+        "threshold": 1e-08,
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 41
+        }
+      },
+      {
+        "bias": 2.306957823083714e-16,
+        "max_abs": 4.547473508864641e-13,
+        "name": "HT_FINE_current_vs_wrf_after_hyp",
+        "rmse": 2.3210296050260928e-14,
+        "threshold": 1e-06,
+        "worst_mismatch_fortran": {
+          "i": 20,
+          "j": 13
+        }
+      },
+      {
+        "bias": -1.2187697011322472e-18,
+        "max_abs": 5.329070518200751e-15,
+        "name": "PH_STATE_current_vs_wrf_after_hyp",
+        "rmse": 5.24243169212334e-16,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 1,
+          "kstag": 2
+        }
+      },
+      {
+        "bias": 0.0,
+        "max_abs": 0.0,
+        "name": "MU_STATE_current_vs_wrf_before_press",
+        "rmse": 0.0,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1
+        }
+      }
+    ],
+    "ranked_hypotheses": [
+      {
+        "evidence": "The best local fp32/cp=1004.5 formula still leaves MUB max_abs 0.0546875, P_STATE 2.828125, and MU_STATE 0.011962890625; substituting WRF-emitted MUB into the same base/AL/ALT path reduces P_STATE to 0.40625 and MU_STATE to 0.001220703125.",
+        "hypothesis": "The remaining Step-1 base gap is the exact WRF p_surf/MUB source arithmetic feeding AL/ALT.",
+        "rank": 1,
+        "status": "SUPPORTED_LOCALIZED"
+      },
+      {
+        "evidence": "Truth headers report input_from_file=T, hypsometric_opt=2, rebalance=0, restart=F, use_theta_m=1; namelist max_dom=2. Source lines show the initial p_surf/MUB/PHB integration block followed by the max_dom>1 real reconstitution block.",
+        "hypothesis": "The WRF branch is multi-domain real start_domain with rebalance disabled: PB/T_INIT/ALB are reconstituted from MUB, PHB is not re-integrated in that later block.",
+        "rank": 2,
+        "status": "SUPPORTED_BY_SOURCE_AND_FLAGS"
+      },
+      {
+        "evidence": "JAX HT vs WRF HT max_abs 2.682152282318384e-05; using WRF HT instead of JAX HT in the fp32/cp=1004.5 formula leaves P_STATE unchanged at 2.828125.",
+        "hypothesis": "Terrain/blend input is the dominant residual.",
+        "rank": 3,
+        "status": "REFUTED"
+      },
+      {
+        "evidence": "Changing cp affects PHB modestly but not the MUB/PB source. fp32 cp=1004.0 and cp=1004.5 both leave P_STATE 2.828125.",
+        "hypothesis": "Constants or cp=1004.0 vs WRF cp=1004.5 are the dominant residual.",
+        "rank": 4,
+        "status": "REFUTED_AS_DOMINANT"
+      },
+      {
+        "evidence": "The predecessor proved JAX PH and pre-press MU match WRF PH1/MU1 to roundoff/zero. With WRF MUB, current coefficients produce P_STATE 0.40625; with WRF PHB+MUB direct substitution the pressure residual is 0.0859375.",
+        "hypothesis": "Coefficient indexing or PH/MU time-level selection is the cause.",
+        "rank": 5,
+        "status": "REFUTED_BY_PREDECESSOR_AND_CURRENT_ABLATION"
+      }
+    ],
+    "ranked_source_family_rows": [
+      {
+        "ALB_max_abs": 9.5367431640625e-07,
+        "MUB_max_abs": 0.0,
+        "MU_STATE_downstream_max_abs": 0.001220703125,
+        "PB_max_abs": 0.0,
+        "PHB_max_abs": 0.03125,
+        "P_STATE_downstream_max_abs": 0.40625,
+        "cp": 1004.5,
+        "dtype": "float32",
+        "hgt_source": "WRF emitted HT after_hypsometric",
+        "mub_source": "WRF emitted/recovered post-assignment MUB",
+        "source_family": "wrf_boundary_mub_fp32_cp1004_5_wrf_ht"
+      },
+      {
+        "ALB_max_abs": 9.5367431640625e-07,
+        "MUB_max_abs": 0.0546875,
+        "MU_STATE_downstream_max_abs": 0.011962890625,
+        "PB_max_abs": 0.0546875,
+        "PHB_max_abs": 0.0625,
+        "P_STATE_downstream_max_abs": 2.828125,
+        "cp": 1004.0,
+        "dtype": "float32",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula",
+        "source_family": "proof_formula_fp32_cp1004_0_jax_hgt"
+      },
+      {
+        "ALB_max_abs": 9.5367431640625e-07,
+        "MUB_max_abs": 0.0546875,
+        "MU_STATE_downstream_max_abs": 0.011962890625,
+        "PB_max_abs": 0.0546875,
+        "PHB_max_abs": 0.046875,
+        "P_STATE_downstream_max_abs": 2.828125,
+        "cp": 1004.5,
+        "dtype": "float32",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula",
+        "source_family": "proof_formula_fp32_cp1004_5_jax_hgt"
+      },
+      {
+        "ALB_max_abs": 9.5367431640625e-07,
+        "MUB_max_abs": 0.0546875,
+        "MU_STATE_downstream_max_abs": 0.011962890625,
+        "PB_max_abs": 0.0546875,
+        "PHB_max_abs": 0.046875,
+        "P_STATE_downstream_max_abs": 2.828125,
+        "cp": 1004.5,
+        "dtype": "float32",
+        "hgt_source": "WRF emitted HT after_hypsometric",
+        "mub_source": "proof-local p_surf formula",
+        "source_family": "proof_formula_fp32_cp1004_5_wrf_ht"
+      },
+      {
+        "ALB_max_abs": 1.0552055318413522e-06,
+        "MUB_max_abs": 0.05002361937658861,
+        "MU_STATE_downstream_max_abs": 0.025634765624545253,
+        "PB_max_abs": 0.05357326504599769,
+        "PHB_max_abs": 0.10811684231157415,
+        "P_STATE_downstream_max_abs": 4.40625,
+        "cp": 1004.0,
+        "dtype": "float64",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "production _wrf_start_domain_base_from_hgt p_surf formula",
+        "source_family": "production_current_live_child_base_fp64_cp1004_0_jax_hgt"
+      },
+      {
+        "ALB_max_abs": 1.0552055318413522e-06,
+        "MUB_max_abs": 0.0500236193620367,
+        "MU_STATE_downstream_max_abs": 0.025634765624545253,
+        "PB_max_abs": 0.05357326503144577,
+        "PHB_max_abs": 0.10811684231157415,
+        "P_STATE_downstream_max_abs": 4.40625,
+        "cp": 1004.0,
+        "dtype": "float64",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula",
+        "source_family": "proof_formula_fp64_cp1004_0_jax_hgt"
+      },
+      {
+        "ALB_max_abs": 1.0552055318413522e-06,
+        "MUB_max_abs": 0.0500236193620367,
+        "MU_STATE_downstream_max_abs": 0.025634765624545253,
+        "PB_max_abs": 0.05357326503144577,
+        "PHB_max_abs": 0.10811684231157415,
+        "P_STATE_downstream_max_abs": 4.40625,
+        "cp": 1004.5,
+        "dtype": "float64",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula",
+        "source_family": "proof_formula_fp64_cp1004_5_jax_hgt"
+      }
+    ],
+    "shapes": {
+      "mass": [
+        44,
+        66,
+        159
+      ],
+      "mass2d": [
+        66,
+        159
+      ],
+      "wph": [
+        45,
+        66,
+        159
+      ]
+    },
+    "source_boundary": {
+      "classification": "multi_domain_real_input_from_file_rebalance0_hypsometric2",
+      "flags_from_wrf_truth_header": {
+        "allowed_to_read": [
+          "T"
+        ],
+        "current_timestr": [
+          "2026-05-01_18:00:00"
+        ],
+        "cycling": [
+          "F"
+        ],
+        "domain_id": [
+          "2"
+        ],
+        "grid_itimestep": [
+          "0"
+        ],
+        "hypsometric_opt": [
+          "2"
+        ],
+        "input_from_file": [
+          "T"
+        ],
+        "input_from_hires": [
+          "F"
+        ],
+        "moist_index_qv": [
+          "2"
+        ],
+        "press_adj_flag": [
+          "T"
+        ],
+        "rebalance": [
+          "0"
+        ],
+        "restart_flag": [
+          "F"
+        ],
+        "start_of_simulation": [
+          "T"
+        ],
+        "use_input_w": [
+          "F"
+        ],
+        "use_theta_m": [
+          "1"
+        ]
+      },
+      "line_hits": {
+        "constants": {
+          "cp": {
+            "line": 20,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+            "text": "REAL    , PARAMETER :: cp           = 7.*r_d/2.  !"
+          },
+          "cvpm": {
+            "line": 26,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+            "text": "REAL    , PARAMETER :: cvpm         = -cv/cp"
+          },
+          "g": {
+            "line": 17,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+            "text": "REAL    , PARAMETER :: g = 9.81  ! acceleration due to gravity (m {s}^-2)"
+          },
+          "p1000mb": {
+            "line": 36,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+            "text": "REAL    , PARAMETER :: p1000mb      = 100000.    ! pressure at 1000 hPa (pa)"
+          },
+          "r_d": {
+            "line": 19,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+            "text": "REAL    , PARAMETER :: r_d          = 287.       ! gas constant of dry air (J deg^-1 kg^-1)"
+          },
+          "t0": {
+            "line": 37,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+            "text": "REAL    , PARAMETER :: t0           = 300.       ! base state tempertaure (K)"
+          }
+        },
+        "start_em": {
+          "hypsometric_al_alt": {
+            "line": 810,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "grid%al(i,k,j) = (grid%ph_1(i,k+1,j)-grid%ph_1(i,k,j)+grid%phb(i,k+1,j)-grid%phb(i,k,j)) &"
+          },
+          "mub_assignment": {
+            "line": 619,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "grid%MUB(i,j) = p_surf - grid%p_top"
+          },
+          "multidomain_reconstitute_alb": {
+            "line": 616,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "grid%alb(i,k,j) = (r_d/p1000mb)*(grid%t_init(i,k,j)+t0)*(grid%pb(i,k,j)/p1000mb)**cvpm"
+          },
+          "multidomain_reconstitute_pb": {
+            "line": 676,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "grid%pb(i,k,j) = grid%c3h(k  )*grid%MUB(i,j) + grid%c4h(k  ) + grid%p_top"
+          },
+          "multidomain_reconstitute_t_init": {
+            "line": 615,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "grid%t_init(i,k,j) = temp*(p00/grid%pb(i,k,j))**(r_d/cp) - t0"
+          },
+          "p_surf_expression": {
+            "line": 608,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "p_surf = p00 * EXP ( -t00/a + ( (t00/a)**2 - 2.*g*grid%ht(i,j)/a/r_d ) **0.5 )"
+          },
+          "press_adj": {
+            "line": 884,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "grid%MU_2(i,j) = grid%MU_2(i,j) + grid%al(i,1,j) / ( grid%alt(i,1,j) * grid%alb(i,1,j) ) * &"
+          },
+          "pressure_from_alt": {
+            "line": 826,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "grid%p(i,k,j)=p1000mb*( (r_d*(t0+grid%t_1(i,k,j))*qvf)/                     &"
+          },
+          "rebalance_phb_guard": {
+            "line": 700,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "text": "IF ( config_flags%rebalance .EQ. 1 ) THEN"
+          }
+        }
+      },
+      "namelist_hits": {
+        "base_temp": "base_temp                           = 290.,",
+        "input_from_file": "input_from_file                     = .true., .true.,",
+        "max_dom": "max_dom                             = 2,"
+      }
+    },
+    "source_family_candidates": {
+      "_context": {
+        "ht_fine_source": "WRF emitted HT_FINE after_hypsometric for press_adj tests",
+        "raw_child_hgt_summary": {
+          "count": 10494,
+          "max": 2987.11767578125,
+          "mean": 41.59542578693803,
+          "min": 0.0,
+          "name": "raw_child.grid.terrain_height",
+          "sha256_float64": "6a1d2c6ac5ab1671022dbe13bb204954eb12aadab8c53794f387c66b54ad5b04",
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "state_source": "current production live_child state for PH/theta/MU in downstream AL/ALT/P/MU tests"
+      },
+      "production_current_live_child_base_fp64_cp1004_0_jax_hgt": {
+        "array_summaries": {
+          "ALB": {
+            "count": 461736,
+            "max": 10.985119270571289,
+            "mean": 3.1857405403077443,
+            "min": 0.8343290450350763,
+            "name": "ALB",
+            "sha256_float64": "35c51811335d242947d1b7512d7331c61273ad6db3e1ec9f6fac7b2645e757d6",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.04499264229,
+            "min": 64526.03982385865,
+            "name": "MUB",
+            "sha256_float64": "558326a9f11b76cf53e3b4978615629085785a0b7acefbc31e58548d97a6fd92",
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.19857311249,
+            "mean": 44067.67069113695,
+            "min": 5225.250503540039,
+            "name": "PB",
+            "sha256_float64": "a0a7285e9667a71e5e68aad9c79fef662dc86f53afe7c6f7eee5391bdc63380f",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.43639976287,
+            "mean": 84712.80016724906,
+            "min": 0.0,
+            "name": "PHB",
+            "sha256_float64": "04a52c509a4c9ad8a34061ce30a9ba0d144971c140d04e2b9a07a0604bc93ad8",
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "base_residuals": {
+          "ALB": {
+            "bias": -1.3808794109692655e-07,
+            "count": 461736,
+            "max_abs": 1.0552055318413522e-06,
+            "nonfinite_diff_count": 0,
+            "p95": 6.713742557451496e-07,
+            "p99": 1.0552055318413522e-06,
+            "region": "full_domain",
+            "rmse": 3.139560784383465e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 41
+            },
+            "worst_mismatch_index": [
+              40,
+              0,
+              0
+            ]
+          },
+          "MUB": {
+            "bias": -0.0014379073126789452,
+            "count": 10494,
+            "max_abs": 0.05002361937658861,
+            "nonfinite_diff_count": 0,
+            "p95": 0.021521761903568408,
+            "p99": 0.035347418212040786,
+            "region": "full_domain",
+            "rmse": 0.008025019829604947,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 156,
+              "j": 51
+            },
+            "worst_mismatch_index": [
+              50,
+              155
+            ]
+          },
+          "PB": {
+            "bias": -0.0005600475270968658,
+            "count": 461736,
+            "max_abs": 0.05357326504599769,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0055001466080284445,
+            "p99": 0.022395003079145687,
+            "region": "full_domain",
+            "rmse": 0.004296943965085442,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 156,
+              "j": 51,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              50,
+              155
+            ]
+          },
+          "PHB": {
+            "bias": -0.01747610370992694,
+            "count": 472230,
+            "max_abs": 0.10811684231157415,
+            "nonfinite_diff_count": 0,
+            "p95": 0.05131772726599593,
+            "p99": 0.055443795037572415,
+            "region": "full_domain",
+            "rmse": 0.02459295000326211,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 146,
+              "j": 34,
+              "kstag": 42
+            },
+            "worst_mismatch_index": [
+              41,
+              33,
+              145
+            ]
+          },
+          "T_INIT_recovered": {
+            "bias": 0.06399644979365957,
+            "count": 461736,
+            "max_abs": 0.1952371498116463,
+            "nonfinite_diff_count": 0,
+            "p95": 0.1749672191220384,
+            "p99": 0.1952371498116463,
+            "region": "full_domain",
+            "rmse": 0.08627854038822863,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 44
+            },
+            "worst_mismatch_index": [
+              43,
+              0,
+              0
+            ]
+          }
+        },
+        "cp": 1004.0,
+        "downstream_residuals": {
+          "ALT": {
+            "bias": -9.459156024051167e-07,
+            "count": 461736,
+            "max_abs": 3.528594971236032e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 2.3365020751953125e-05,
+            "p99": 2.956390380859375e-05,
+            "region": "full_domain",
+            "rmse": 8.39993309730102e-06,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 152,
+              "j": 51,
+              "k": 44
+            },
+            "worst_mismatch_index": [
+              43,
+              50,
+              151
+            ]
+          },
+          "MU_STATE": {
+            "bias": -5.2927379606733054e-06,
+            "count": 10494,
+            "max_abs": 0.025634765624545253,
+            "nonfinite_diff_count": 0,
+            "p95": 4.547473508864641e-13,
+            "p99": 0.002197265625,
+            "region": "full_domain",
+            "rmse": 0.0007867133521275596,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 158,
+              "j": 59
+            },
+            "worst_mismatch_index": [
+              58,
+              157
+            ]
+          },
+          "P_STATE": {
+            "bias": 0.024356174434295247,
+            "count": 461736,
+            "max_abs": 4.40625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.53125,
+            "p99": 1.6171875,
+            "region": "full_domain",
+            "rmse": 0.2909566874461152,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 8,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              7,
+              18
+            ]
+          }
+        },
+        "dtype": "float64",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "production _wrf_start_domain_base_from_hgt p_surf formula"
+      },
+      "proof_formula_fp32_cp1004_0_jax_hgt": {
+        "array_summaries": {
+          "ALB": {
+            "count": 461736,
+            "max": 10.985119819641113,
+            "mean": 3.185740629597784,
+            "min": 0.8343289494514465,
+            "name": "ALB",
+            "sha256_float64": "6c6beb8eae10ddc3c1ad5aca99b342c7445e808dfc561b7c0999ec6a6465ff63",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464030041,
+            "min": 64526.0546875,
+            "name": "MUB",
+            "sha256_float64": "0daac2cfc9a4a6776b9b2007b6c8d80f9b17522e6564370b8fd666120064e6c0",
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.67124271186,
+            "min": 5225.25048828125,
+            "name": "PB",
+            "sha256_float64": "03917169d44c22a2ed82b0f37850c6645b3209724efe604355a78770dbf0cad5",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.515625,
+            "mean": 84712.817248889,
+            "min": 0.0,
+            "name": "PHB",
+            "sha256_float64": "d4db8777a75e38811b05aa2e8dbe96ee5f77cca334952c65e31e372823827112",
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "base_residuals": {
+          "ALB": {
+            "bias": -4.8797901372829773e-08,
+            "count": 461736,
+            "max_abs": 9.5367431640625e-07,
+            "nonfinite_diff_count": 0,
+            "p95": 4.76837158203125e-07,
+            "p99": 9.5367431640625e-07,
+            "region": "full_domain",
+            "rmse": 2.2000907404486223e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 41
+            },
+            "worst_mismatch_index": [
+              40,
+              0,
+              0
+            ]
+          },
+          "MUB": {
+            "bias": -2.7545502191728606e-05,
+            "count": 10494,
+            "max_abs": 0.0546875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0078125,
+            "p99": 0.0078125,
+            "region": "full_domain",
+            "rmse": 0.0021851994321233654,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 147,
+              "j": 36
+            },
+            "worst_mismatch_index": [
+              35,
+              146
+            ]
+          },
+          "PB": {
+            "bias": -8.472610701786302e-06,
+            "count": 461736,
+            "max_abs": 0.0546875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 0.0078125,
+            "region": "full_domain",
+            "rmse": 0.001148432278778223,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 147,
+              "j": 36,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              35,
+              146
+            ]
+          },
+          "PHB": {
+            "bias": -0.00039446378065050117,
+            "count": 472230,
+            "max_abs": 0.0625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0078125,
+            "p99": 0.015625,
+            "region": "full_domain",
+            "rmse": 0.003802927123592137,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 98,
+              "j": 20,
+              "kstag": 33
+            },
+            "worst_mismatch_index": [
+              32,
+              19,
+              97
+            ]
+          },
+          "T_INIT_recovered": {
+            "bias": -5.505883592296839e-06,
+            "count": 461736,
+            "max_abs": 0.00012687709988767892,
+            "nonfinite_diff_count": 0,
+            "p95": 4.8547493179285084e-05,
+            "p99": 6.187617850628158e-05,
+            "region": "full_domain",
+            "rmse": 2.5246811290610174e-05,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 158,
+              "j": 64,
+              "k": 11
+            },
+            "worst_mismatch_index": [
+              10,
+              63,
+              157
+            ]
+          }
+        },
+        "cp": 1004.0,
+        "downstream_residuals": {
+          "ALT": {
+            "bias": -1.055693195592837e-07,
+            "count": 461736,
+            "max_abs": 1.8596649170810053e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 9.5367431640625e-07,
+            "p99": 2.8014183044433594e-06,
+            "region": "full_domain",
+            "rmse": 7.048516942531212e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 24,
+              "j": 39,
+              "k": 32
+            },
+            "worst_mismatch_index": [
+              31,
+              38,
+              23
+            ]
+          },
+          "MU_STATE": {
+            "bias": -1.465681279474525e-06,
+            "count": 10494,
+            "max_abs": 0.011962890625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 4.547473508864641e-13,
+            "region": "full_domain",
+            "rmse": 0.00012850776895514737,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 8
+            },
+            "worst_mismatch_index": [
+              7,
+              18
+            ]
+          },
+          "P_STATE": {
+            "bias": 0.0014917071710755713,
+            "count": 461736,
+            "max_abs": 2.828125,
+            "nonfinite_diff_count": 0,
+            "p95": 0.046875,
+            "p99": 0.09765625,
+            "region": "full_domain",
+            "rmse": 0.04837643040064735,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 67,
+              "j": 37,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              36,
+              66
+            ]
+          }
+        },
+        "dtype": "float32",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula"
+      },
+      "proof_formula_fp32_cp1004_5_jax_hgt": {
+        "array_summaries": {
+          "ALB": {
+            "count": 461736,
+            "max": 10.985119819641113,
+            "mean": 3.185740647294349,
+            "min": 0.8343289494514465,
+            "name": "ALB",
+            "sha256_float64": "fc8608cf9d3bd1068ea489d3864c89be7d74f7906a3dd557b2c268a4434baa82",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464030041,
+            "min": 64526.0546875,
+            "name": "MUB",
+            "sha256_float64": "0daac2cfc9a4a6776b9b2007b6c8d80f9b17522e6564370b8fd666120064e6c0",
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.67124271186,
+            "min": 5225.25048828125,
+            "name": "PB",
+            "sha256_float64": "03917169d44c22a2ed82b0f37850c6645b3209724efe604355a78770dbf0cad5",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.515625,
+            "mean": 84712.81724469268,
+            "min": 0.0,
+            "name": "PHB",
+            "sha256_float64": "abca1bebd8aa21138c1d13035b2bda6a44899b017dd0699c0a79b0c9a800767f",
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "base_residuals": {
+          "ALB": {
+            "bias": -3.110133634949712e-08,
+            "count": 461736,
+            "max_abs": 9.5367431640625e-07,
+            "nonfinite_diff_count": 0,
+            "p95": 2.384185795456517e-07,
+            "p99": 9.5367431640625e-07,
+            "region": "full_domain",
+            "rmse": 1.854644406797e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 41
+            },
+            "worst_mismatch_index": [
+              40,
+              0,
+              0
+            ]
+          },
+          "MUB": {
+            "bias": -2.7545502191728606e-05,
+            "count": 10494,
+            "max_abs": 0.0546875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0078125,
+            "p99": 0.0078125,
+            "region": "full_domain",
+            "rmse": 0.0021851994321233654,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 147,
+              "j": 36
+            },
+            "worst_mismatch_index": [
+              35,
+              146
+            ]
+          },
+          "PB": {
+            "bias": -8.472610701786302e-06,
+            "count": 461736,
+            "max_abs": 0.0546875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 0.0078125,
+            "region": "full_domain",
+            "rmse": 0.001148432278778223,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 147,
+              "j": 36,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              35,
+              146
+            ]
+          },
+          "PHB": {
+            "bias": -0.00039866010112562714,
+            "count": 472230,
+            "max_abs": 0.046875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0078125,
+            "p99": 0.015625,
+            "region": "full_domain",
+            "rmse": 0.0037584604607993452,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 144,
+              "j": 35,
+              "kstag": 26
+            },
+            "worst_mismatch_index": [
+              25,
+              34,
+              143
+            ]
+          },
+          "T_INIT_recovered": {
+            "bias": -2.0815543176612887e-06,
+            "count": 461736,
+            "max_abs": 0.00012687709988767892,
+            "nonfinite_diff_count": 0,
+            "p95": 4.162461937085027e-05,
+            "p99": 5.640152869546e-05,
+            "region": "full_domain",
+            "rmse": 1.872214959605457e-05,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 158,
+              "j": 64,
+              "k": 11
+            },
+            "worst_mismatch_index": [
+              10,
+              63,
+              157
+            ]
+          }
+        },
+        "cp": 1004.5,
+        "downstream_residuals": {
+          "ALT": {
+            "bias": -1.0448472094578413e-07,
+            "count": 461736,
+            "max_abs": 1.8596649169921875e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 9.5367431640625e-07,
+            "p99": 2.6226043705612767e-06,
+            "region": "full_domain",
+            "rmse": 6.883006973354567e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 12,
+              "k": 32
+            },
+            "worst_mismatch_index": [
+              31,
+              11,
+              18
+            ]
+          },
+          "MU_STATE": {
+            "bias": -1.558740408500635e-06,
+            "count": 10494,
+            "max_abs": 0.011962890625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 4.547473508864641e-13,
+            "region": "full_domain",
+            "rmse": 0.00012830872057432232,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 8
+            },
+            "worst_mismatch_index": [
+              7,
+              18
+            ]
+          },
+          "P_STATE": {
+            "bias": 0.0011841488646244824,
+            "count": 461736,
+            "max_abs": 2.828125,
+            "nonfinite_diff_count": 0,
+            "p95": 0.046875,
+            "p99": 0.1015625,
+            "region": "full_domain",
+            "rmse": 0.04812588194483578,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 67,
+              "j": 37,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              36,
+              66
+            ]
+          }
+        },
+        "dtype": "float32",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula"
+      },
+      "proof_formula_fp32_cp1004_5_wrf_ht": {
+        "array_summaries": {
+          "ALB": {
+            "count": 461736,
+            "max": 10.985119819641113,
+            "mean": 3.185740647307774,
+            "min": 0.8343289494514465,
+            "name": "ALB",
+            "sha256_float64": "be667ed6890b516488edd964c13114e79e5defc0b4034b7777612b642557cb11",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.04639853726,
+            "min": 64526.0546875,
+            "name": "MUB",
+            "sha256_float64": "894594072c56c667e83fb44affc42ba9b7792fa07bf3a6e5a9776a1db73205eb",
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.67124135828,
+            "min": 5225.25048828125,
+            "name": "PB",
+            "sha256_float64": "4a361a80ad90384636dd63d8bc17a3d9c3543981a0368775deee0ac338e392af",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.515625,
+            "mean": 84712.81724581374,
+            "min": -7.796288059580547e-07,
+            "name": "PHB",
+            "sha256_float64": "3abc44b9f3bba639369aa3f0f56b64688de2a558eb70abbad7ecea9020d808d6",
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "base_residuals": {
+          "ALB": {
+            "bias": -3.1087911182179345e-08,
+            "count": 461736,
+            "max_abs": 9.5367431640625e-07,
+            "nonfinite_diff_count": 0,
+            "p95": 2.384185795456517e-07,
+            "p99": 9.5367431640625e-07,
+            "region": "full_domain",
+            "rmse": 1.8544996135865186e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 41
+            },
+            "worst_mismatch_index": [
+              40,
+              0,
+              0
+            ]
+          },
+          "MUB": {
+            "bias": -3.20123403849819e-05,
+            "count": 10494,
+            "max_abs": 0.0546875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0078125,
+            "p99": 0.0078125,
+            "region": "full_domain",
+            "rmse": 0.002136753031551267,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 147,
+              "j": 36
+            },
+            "worst_mismatch_index": [
+              35,
+              146
+            ]
+          },
+          "PB": {
+            "bias": -9.826198033075177e-06,
+            "count": 461736,
+            "max_abs": 0.0546875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 0.0078125,
+            "region": "full_domain",
+            "rmse": 0.001126739390036083,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 147,
+              "j": 36,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              35,
+              146
+            ]
+          },
+          "PHB": {
+            "bias": -0.00039753903478906044,
+            "count": 472230,
+            "max_abs": 0.046875,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0078125,
+            "p99": 0.015625,
+            "region": "full_domain",
+            "rmse": 0.003743226592494921,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 144,
+              "j": 35,
+              "kstag": 26
+            },
+            "worst_mismatch_index": [
+              25,
+              34,
+              143
+            ]
+          },
+          "T_INIT_recovered": {
+            "bias": -2.0813515487265964e-06,
+            "count": 461736,
+            "max_abs": 0.00012687709988767892,
+            "nonfinite_diff_count": 0,
+            "p95": 4.162461937085027e-05,
+            "p99": 5.640152869546e-05,
+            "region": "full_domain",
+            "rmse": 1.872161682374924e-05,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 158,
+              "j": 64,
+              "k": 11
+            },
+            "worst_mismatch_index": [
+              10,
+              63,
+              157
+            ]
+          }
+        },
+        "cp": 1004.5,
+        "downstream_residuals": {
+          "ALT": {
+            "bias": -1.0434608027559863e-07,
+            "count": 461736,
+            "max_abs": 1.8596649169921875e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 9.5367431640625e-07,
+            "p99": 2.6226043705612767e-06,
+            "region": "full_domain",
+            "rmse": 6.867684260757834e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 12,
+              "k": 32
+            },
+            "worst_mismatch_index": [
+              31,
+              11,
+              18
+            ]
+          },
+          "MU_STATE": {
+            "bias": -1.3726221504484147e-06,
+            "count": 10494,
+            "max_abs": 0.011962890625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 4.547473508864641e-13,
+            "region": "full_domain",
+            "rmse": 0.0001276652313648054,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 8
+            },
+            "worst_mismatch_index": [
+              7,
+              18
+            ]
+          },
+          "P_STATE": {
+            "bias": 0.0011728696751904769,
+            "count": 461736,
+            "max_abs": 2.828125,
+            "nonfinite_diff_count": 0,
+            "p95": 0.046875,
+            "p99": 0.1015625,
+            "region": "full_domain",
+            "rmse": 0.047897613043157004,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 67,
+              "j": 37,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              36,
+              66
+            ]
+          }
+        },
+        "dtype": "float32",
+        "hgt_source": "WRF emitted HT after_hypsometric",
+        "mub_source": "proof-local p_surf formula"
+      },
+      "proof_formula_fp64_cp1004_0_jax_hgt": {
+        "array_summaries": {
+          "ALB": {
+            "count": 461736,
+            "max": 10.985119270571289,
+            "mean": 3.185740540307744,
+            "min": 0.8343290450350763,
+            "name": "ALB",
+            "sha256_float64": "c1fcc0b065a9c84acd547187e48d9ea20b39f7fb7a37f1af15b79db049bf5ded",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.04499264229,
+            "min": 64526.03982385865,
+            "name": "MUB",
+            "sha256_float64": "d30df8655d282bf24e8253a46896ebf589121d37d1c8b76cdd1f5a2d04a3387d",
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.19857311249,
+            "mean": 44067.67069113695,
+            "min": 5225.250503540039,
+            "name": "PB",
+            "sha256_float64": "b309f11a6bc7510a58b8e9e39ed262713caa96a449ecd918b34f4c04f3c01fb7",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.43639976287,
+            "mean": 84712.80016724906,
+            "min": 0.0,
+            "name": "PHB",
+            "sha256_float64": "6dd27f7e33b416fe240e707a64b0f9a882a339e735ee543ac8c70fd2005bae39",
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "base_residuals": {
+          "ALB": {
+            "bias": -1.3808794116942637e-07,
+            "count": 461736,
+            "max_abs": 1.0552055318413522e-06,
+            "nonfinite_diff_count": 0,
+            "p95": 6.713742557451496e-07,
+            "p99": 1.0552055318413522e-06,
+            "region": "full_domain",
+            "rmse": 3.1395607844034416e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 41
+            },
+            "worst_mismatch_index": [
+              40,
+              0,
+              0
+            ]
+          },
+          "MUB": {
+            "bias": -0.0014379073128217741,
+            "count": 10494,
+            "max_abs": 0.0500236193620367,
+            "nonfinite_diff_count": 0,
+            "p95": 0.021521761903568408,
+            "p99": 0.035347418225574065,
+            "region": "full_domain",
+            "rmse": 0.008025019829759566,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 156,
+              "j": 51
+            },
+            "worst_mismatch_index": [
+              50,
+              155
+            ]
+          },
+          "PB": {
+            "bias": -0.0005600475271396877,
+            "count": 461736,
+            "max_abs": 0.05357326503144577,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0055001466080284445,
+            "p99": 0.022395003079145687,
+            "region": "full_domain",
+            "rmse": 0.0042969439651573986,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 156,
+              "j": 51,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              50,
+              155
+            ]
+          },
+          "PHB": {
+            "bias": -0.01747610371021977,
+            "count": 472230,
+            "max_abs": 0.10811684231157415,
+            "nonfinite_diff_count": 0,
+            "p95": 0.05131772726599593,
+            "p99": 0.055443795037572415,
+            "region": "full_domain",
+            "rmse": 0.024592950003514993,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 146,
+              "j": 34,
+              "kstag": 42
+            },
+            "worst_mismatch_index": [
+              41,
+              33,
+              145
+            ]
+          },
+          "T_INIT_recovered": {
+            "bias": -1.020418801809456e-05,
+            "count": 461736,
+            "max_abs": 8.08042589710567e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 4.803262777386408e-05,
+            "p99": 5.9276907052208117e-05,
+            "region": "full_domain",
+            "rmse": 2.5509885994486862e-05,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 149,
+              "j": 47,
+              "k": 26
+            },
+            "worst_mismatch_index": [
+              25,
+              46,
+              148
+            ]
+          }
+        },
+        "cp": 1004.0,
+        "downstream_residuals": {
+          "ALT": {
+            "bias": -9.459156024051167e-07,
+            "count": 461736,
+            "max_abs": 3.528594971236032e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 2.3365020751953125e-05,
+            "p99": 2.956390380859375e-05,
+            "region": "full_domain",
+            "rmse": 8.39993309730102e-06,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 152,
+              "j": 51,
+              "k": 44
+            },
+            "worst_mismatch_index": [
+              43,
+              50,
+              151
+            ]
+          },
+          "MU_STATE": {
+            "bias": -5.2927379606733054e-06,
+            "count": 10494,
+            "max_abs": 0.025634765624545253,
+            "nonfinite_diff_count": 0,
+            "p95": 4.547473508864641e-13,
+            "p99": 0.002197265625,
+            "region": "full_domain",
+            "rmse": 0.0007867133521275596,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 158,
+              "j": 59
+            },
+            "worst_mismatch_index": [
+              58,
+              157
+            ]
+          },
+          "P_STATE": {
+            "bias": 0.024356174434295247,
+            "count": 461736,
+            "max_abs": 4.40625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.53125,
+            "p99": 1.6171875,
+            "region": "full_domain",
+            "rmse": 0.2909566874461152,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 8,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              7,
+              18
+            ]
+          }
+        },
+        "dtype": "float64",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula"
+      },
+      "proof_formula_fp64_cp1004_5_jax_hgt": {
+        "array_summaries": {
+          "ALB": {
+            "count": 461736,
+            "max": 10.985119270571289,
+            "mean": 3.1857405403077435,
+            "min": 0.8343290450350763,
+            "name": "ALB",
+            "sha256_float64": "e896ae08a02420f4885463f69b4f000a366cef222c767f0ecc92cbe18326c889",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.04499264229,
+            "min": 64526.03982385865,
+            "name": "MUB",
+            "sha256_float64": "d30df8655d282bf24e8253a46896ebf589121d37d1c8b76cdd1f5a2d04a3387d",
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.19857311249,
+            "mean": 44067.67069113695,
+            "min": 5225.250503540039,
+            "name": "PB",
+            "sha256_float64": "b309f11a6bc7510a58b8e9e39ed262713caa96a449ecd918b34f4c04f3c01fb7",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.43639976287,
+            "mean": 84712.80016724906,
+            "min": 0.0,
+            "name": "PHB",
+            "sha256_float64": "ccb941aa1ca616b109c4f9135e32d86bbb2294ccb119474feb0291b47ac43e0c",
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "base_residuals": {
+          "ALB": {
+            "bias": -1.3808794146618603e-07,
+            "count": 461736,
+            "max_abs": 1.0552055318413522e-06,
+            "nonfinite_diff_count": 0,
+            "p95": 6.713742575215065e-07,
+            "p99": 1.0552055318413522e-06,
+            "region": "full_domain",
+            "rmse": 3.1395607876312057e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 41
+            },
+            "worst_mismatch_index": [
+              40,
+              0,
+              0
+            ]
+          },
+          "MUB": {
+            "bias": -0.0014379073128217741,
+            "count": 10494,
+            "max_abs": 0.0500236193620367,
+            "nonfinite_diff_count": 0,
+            "p95": 0.021521761903568408,
+            "p99": 0.035347418225574065,
+            "region": "full_domain",
+            "rmse": 0.008025019829759566,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 156,
+              "j": 51
+            },
+            "worst_mismatch_index": [
+              50,
+              155
+            ]
+          },
+          "PB": {
+            "bias": -0.0005600475271396877,
+            "count": 461736,
+            "max_abs": 0.05357326503144577,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0055001466080284445,
+            "p99": 0.022395003079145687,
+            "region": "full_domain",
+            "rmse": 0.0042969439651573986,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 156,
+              "j": 51,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              50,
+              155
+            ]
+          },
+          "PHB": {
+            "bias": -0.017476103710643554,
+            "count": 472230,
+            "max_abs": 0.10811684231157415,
+            "nonfinite_diff_count": 0,
+            "p95": 0.05131772727909265,
+            "p99": 0.055443795037572415,
+            "region": "full_domain",
+            "rmse": 0.024592950003916578,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 146,
+              "j": 34,
+              "kstag": 42
+            },
+            "worst_mismatch_index": [
+              41,
+              33,
+              145
+            ]
+          },
+          "T_INIT_recovered": {
+            "bias": -1.020418803985551e-05,
+            "count": 461736,
+            "max_abs": 8.08042589710567e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 4.80326278307075e-05,
+            "p99": 5.9276907052208117e-05,
+            "region": "full_domain",
+            "rmse": 2.5509886021844735e-05,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 149,
+              "j": 47,
+              "k": 26
+            },
+            "worst_mismatch_index": [
+              25,
+              46,
+              148
+            ]
+          }
+        },
+        "cp": 1004.5,
+        "downstream_residuals": {
+          "ALT": {
+            "bias": -9.459156024051167e-07,
+            "count": 461736,
+            "max_abs": 3.528594971236032e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 2.3365020751953125e-05,
+            "p99": 2.956390380859375e-05,
+            "region": "full_domain",
+            "rmse": 8.39993309730102e-06,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 152,
+              "j": 51,
+              "k": 44
+            },
+            "worst_mismatch_index": [
+              43,
+              50,
+              151
+            ]
+          },
+          "MU_STATE": {
+            "bias": -5.2927379606733054e-06,
+            "count": 10494,
+            "max_abs": 0.025634765624545253,
+            "nonfinite_diff_count": 0,
+            "p95": 4.547473508864641e-13,
+            "p99": 0.002197265625,
+            "region": "full_domain",
+            "rmse": 0.0007867133521275596,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 158,
+              "j": 59
+            },
+            "worst_mismatch_index": [
+              58,
+              157
+            ]
+          },
+          "P_STATE": {
+            "bias": 0.024356174434295247,
+            "count": 461736,
+            "max_abs": 4.40625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.53125,
+            "p99": 1.6171875,
+            "region": "full_domain",
+            "rmse": 0.2909566874461152,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 8,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              7,
+              18
+            ]
+          }
+        },
+        "dtype": "float64",
+        "hgt_source": "current JAX live_nest grid.terrain_height",
+        "mub_source": "proof-local p_surf formula"
+      },
+      "wrf_boundary_mub_fp32_cp1004_5_wrf_ht": {
+        "array_summaries": {
+          "ALB": {
+            "count": 461736,
+            "max": 10.985119819641113,
+            "mean": 3.185740647241681,
+            "min": 0.8343289494514465,
+            "name": "ALB",
+            "sha256_float64": "33b0453c67319018620621faaa258cb38c1815f54f07ee775d531ef4b57cb3cc",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464305496,
+            "min": 64526.0546875,
+            "name": "MUB",
+            "sha256_float64": "fc30f29945348f2ae6edd55c01f4daaa730e39fa4267c329a3f2850bd072395b",
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.671251184474,
+            "min": 5225.25048828125,
+            "name": "PB",
+            "sha256_float64": "4ca34959f1113086b1ee521ed64468b2255d58a96a35ee61778e30e13aafa21e",
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.515625,
+            "mean": 84712.81727558452,
+            "min": -7.796288059580547e-07,
+            "name": "PHB",
+            "sha256_float64": "d82445bae6aa10741ae64073debea661b15f5cff43b8053d79831200ff0613e0",
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "base_residuals": {
+          "ALB": {
+            "bias": -3.115400431358994e-08,
+            "count": 461736,
+            "max_abs": 9.5367431640625e-07,
+            "nonfinite_diff_count": 0,
+            "p95": 2.384185795456517e-07,
+            "p99": 9.5367431640625e-07,
+            "region": "full_domain",
+            "rmse": 1.8485067086208926e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 41
+            },
+            "worst_mismatch_index": [
+              40,
+              0,
+              0
+            ]
+          },
+          "MUB": {
+            "bias": 0.0,
+            "count": 10494,
+            "max_abs": 0.0,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "region": "full_domain",
+            "rmse": 0.0,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              0
+            ]
+          },
+          "PB": {
+            "bias": 0.0,
+            "count": 461736,
+            "max_abs": 0.0,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "region": "full_domain",
+            "rmse": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 1,
+              "j": 1,
+              "k": 1
+            },
+            "worst_mismatch_index": [
+              0,
+              0,
+              0
+            ]
+          },
+          "PHB": {
+            "bias": -0.00036776825617449495,
+            "count": 472230,
+            "max_abs": 0.03125,
+            "nonfinite_diff_count": 0,
+            "p95": 0.00390625,
+            "p99": 0.015625,
+            "region": "full_domain",
+            "rmse": 0.0025203026582153775,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 94,
+              "j": 17,
+              "kstag": 27
+            },
+            "worst_mismatch_index": [
+              26,
+              16,
+              93
+            ]
+          },
+          "T_INIT_recovered": {
+            "bias": -6.175229749901425e-06,
+            "count": 461736,
+            "max_abs": 0.00010778870228023152,
+            "nonfinite_diff_count": 0,
+            "p95": 4.1944618544675905e-05,
+            "p99": 9.214104079546814e-05,
+            "region": "full_domain",
+            "rmse": 2.470897280795415e-05,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 67,
+              "j": 25,
+              "k": 13
+            },
+            "worst_mismatch_index": [
+              12,
+              24,
+              66
+            ]
+          }
+        },
+        "cp": 1004.5,
+        "downstream_residuals": {
+          "ALT": {
+            "bias": -1.0433020243348243e-07,
+            "count": 461736,
+            "max_abs": 1.8596649169921875e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 9.5367431640625e-07,
+            "p99": 9.536743199589637e-07,
+            "region": "full_domain",
+            "rmse": 5.364667092452778e-07,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 19,
+              "j": 12,
+              "k": 32
+            },
+            "worst_mismatch_index": [
+              31,
+              11,
+              18
+            ]
+          },
+          "MU_STATE": {
+            "bias": 9.305913171282026e-08,
+            "count": 10494,
+            "max_abs": 0.001220703125,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0,
+            "p99": 4.547473508864641e-13,
+            "region": "full_domain",
+            "rmse": 1.7268283644906297e-05,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 156,
+              "j": 55
+            },
+            "worst_mismatch_index": [
+              54,
+              155
+            ]
+          },
+          "P_STATE": {
+            "bias": 0.0011636525914564817,
+            "count": 461736,
+            "max_abs": 0.40625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0390625,
+            "p99": 0.0703125,
+            "region": "full_domain",
+            "rmse": 0.017142979289894965,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": {
+              "i": 23,
+              "j": 43,
+              "k": 2
+            },
+            "worst_mismatch_index": [
+              1,
+              42,
+              22
+            ]
+          }
+        },
+        "dtype": "float32",
+        "hgt_source": "WRF emitted HT after_hypsometric",
+        "mub_source": "WRF emitted/recovered post-assignment MUB"
+      }
+    },
+    "source_family_split": {
+      "PHB_integration_order": {
+        "evidence": {
+          "wrf_boundary_mub_candidate_PHB": 0.03125,
+          "wrf_boundary_mub_candidate_P_STATE": 0.40625
+        },
+        "status": "SMALL_RESIDUAL_NOT_DOMINANT_DOWNSTREAM"
+      },
+      "coefficient_indexing": {
+        "evidence": "Current metrics with WRF MUB close P/MU below gates.",
+        "status": "REFUTED_AS_DOMINANT"
+      },
+      "dtype_evaluation_order": {
+        "evidence": {
+          "fp32_cp1004_5_P_STATE": 2.828125,
+          "fp64_cp1004_5_P_STATE": 4.40625
+        },
+        "status": "SECONDARY_SUPPORTED_NOT_SUFFICIENT"
+      },
+      "missing_truth_surface": {
+        "evidence": "This proof recovers p_surf from MUB+P_TOP but does not have a WRF-emitted p_surf_before_mub scalar field.",
+        "status": "EXACT_P_SURF_BEFORE_MUB_NOT_EMITTED"
+      },
+      "pressure_surface_formula": {
+        "evidence": {
+          "formula_fp32_cp1004_5_jax_hgt_MUB": 0.0546875,
+          "formula_fp32_cp1004_5_jax_hgt_MU_STATE": 0.011962890625,
+          "formula_fp32_cp1004_5_jax_hgt_P_STATE": 2.828125,
+          "wrf_boundary_mub_MU_STATE": 0.001220703125,
+          "wrf_boundary_mub_P_STATE": 0.40625
+        },
+        "status": "DOMINANT_REMAINING_SOURCE"
+      },
+      "terrain_blend_input": {
+        "evidence": "WRF HT substitution leaves the fp32 formula P residual unchanged.",
+        "status": "REFUTED_AS_DOMINANT"
+      }
+    },
+    "status": "PROOF_EXECUTED",
+    "verdict": "STEP1_BASE_STATE_BOUNDARY_LOCALIZED_P_SURF_MUB_FP32_SOURCE_ARITHMETIC",
+    "wrf_boundary_values": {
+      "ALB_before_AL_ALT_pass": {
+        "count": 461736,
+        "max": 10.98511981964111,
+        "mean": 3.1857406783956854,
+        "min": 0.8343289494514465,
+        "name": "ALB",
+        "sha256_float64": "51aeb131654be7d8a8eb2fc6191a9b84988ad397de76f5ce2fee6896163af73b",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "HT": {
+        "count": 10494,
+        "max": 2987.11767578125,
+        "mean": 41.77768470220116,
+        "min": -7.947286206899662e-08,
+        "name": "HT",
+        "sha256_float64": "0524ceea307b76ae257b83fb649b9c30d54296b4ff42aa9d5d6ed81797831079",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "HT_FINE": {
+        "count": 10494,
+        "max": 2987.11767578125,
+        "mean": 41.59542578693803,
+        "min": 0.0,
+        "name": "HT_FINE",
+        "sha256_float64": "1c62fe8d7992c216c6c05dd78ad65d3dfa85cf686f71d5e4c2e702c55a5d36f1",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "MUB_post_assignment": {
+        "count": 10494,
+        "max": 95000.0,
+        "mean": 94532.0464305496,
+        "min": 64526.0546875,
+        "name": "MUB",
+        "sha256_float64": "fc30f29945348f2ae6edd55c01f4daaa730e39fa4267c329a3f2850bd072395b",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "PB_before_AL_ALT_pass": {
+        "count": 461736,
+        "max": 99706.203125,
+        "mean": 44067.671251184474,
+        "min": 5225.25048828125,
+        "name": "PB",
+        "sha256_float64": "4ca34959f1113086b1ee521ed64468b2255d58a96a35ee61778e30e13aafa21e",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "PHB_after_base_geopotential_integration": {
+        "count": 472230,
+        "max": 195220.53125,
+        "mean": 84712.81764335278,
+        "min": -7.796288059580547e-07,
+        "name": "PHB",
+        "sha256_float64": "711f749cda6a2e7c95571a086fdf2272921f8e80c9f2e80bf09e7779e9aa48d8",
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "T_INIT_recovered_from_ALB_PB": {
+        "count": 461736,
+        "max": 164.82034237750543,
+        "mean": 36.95588552591376,
+        "min": -9.903368156437978,
+        "name": "T_INIT_RECOVERED",
+        "sha256_float64": "2fde3167447b164ec96b8c91ecedeb0223a1215c5bd37780c898628a4ff1cc83",
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "coefficients": {
+        "C3F": {
+          "count": 45,
+          "max": 1.0,
+          "mean": 0.30547864087081206,
+          "min": 0.0,
+          "name": "C3F",
+          "sha256_float64": "c9e1a98efa3c6234190039f4977491f94e976d7d29f06eed142ff4c1dba09163",
+          "shape": [
+            45
+          ],
+          "values": [
+            1.0,
+            0.9937313795089722,
+            0.9855250120162964,
+            0.974787712097168,
+            0.9607656598091125,
+            0.9425269961357117,
+            0.9189695119857788,
+            0.8888758420944214,
+            0.8510424494743347,
+            0.8045000433921814,
+            0.748805820941925,
+            0.6843479871749878,
+            0.6125320196151733,
+            0.5357490181922913,
+            0.45671606063842773,
+            0.377427875995636,
+            0.3001604378223419,
+            0.22905369102954865,
+            0.16968035697937012,
+            0.12124840915203094,
+            0.08275103569030762,
+            0.05308597907423973,
+            0.031136656180024147,
+            0.01582390069961548,
+            0.006138049531728029,
+            0.0011569339549168944,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "C3H": {
+          "count": 44,
+          "max": 0.9968656897544861,
+          "mean": 0.301057700759636,
+          "min": 0.0,
+          "name": "C3H",
+          "sha256_float64": "b29d08b7555bb9afd79f2477e228afa4726581ef591dee0b76641ba4971c6a87",
+          "shape": [
+            44
+          ],
+          "values": [
+            0.9968656897544861,
+            0.9896281957626343,
+            0.9801563620567322,
+            0.9677766561508179,
+            0.9516463279724121,
+            0.9307482242584229,
+            0.9039226770401001,
+            0.8699591159820557,
+            0.8277712464332581,
+            0.7766529321670532,
+            0.7165769338607788,
+            0.6484400033950806,
+            0.5741405487060547,
+            0.4962325394153595,
+            0.41707196831703186,
+            0.33879417181015015,
+            0.2646070718765259,
+            0.19936701655387878,
+            0.14546439051628113,
+            0.10199972242116928,
+            0.06791850924491882,
+            0.042111318558454514,
+            0.023480277508497238,
+            0.01098097488284111,
+            0.0036474918015301228,
+            0.0005784669774584472,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "C4F": {
+          "count": 45,
+          "max": 26782.75,
+          "mean": 10372.335889540778,
+          "min": 0.0,
+          "name": "C4F",
+          "sha256_float64": "fa0977181d2763025f53b08e5e722f9ec9ce09ab93d4a47c4161e11b8fb9c9f2",
+          "shape": [
+            45
+          ],
+          "values": [
+            0.0,
+            7.916092872619629,
+            40.43549346923828,
+            116.52171325683594,
+            265.228759765625,
+            528.7814331054688,
+            964.6535034179688,
+            1644.9617919921875,
+            2650.492431640625,
+            4057.25244140625,
+            5915.830078125,
+            8227.0966796875,
+            10924.3720703125,
+            13870.6025390625,
+            16889.81640625,
+            19817.248046875,
+            22466.51953125,
+            24594.51953125,
+            25990.302734375,
+            26697.494140625,
+            26782.75,
+            26324.162109375,
+            25403.427734375,
+            24100.67578125,
+            22491.27734375,
+            20644.01171875,
+            18625.244140625,
+            16672.513671875,
+            14881.1826171875,
+            13237.9189453125,
+            11730.474609375,
+            10347.626953125,
+            9079.0791015625,
+            7915.3798828125,
+            6847.86572265625,
+            5868.5859375,
+            4970.248046875,
+            4146.1611328125,
+            3390.190185546875,
+            2696.70361328125,
+            2060.53662109375,
+            1476.95068359375,
+            941.60205078125,
+            450.5010070800781,
+            0.0
+          ]
+        },
+        "C4H": {
+          "count": 44,
+          "max": 26740.123046875,
+          "mean": 10608.070577545599,
+          "min": 3.9580464363098145,
+          "name": "C4H",
+          "sha256_float64": "7f876e80d3b928feef8257317bd7e519c416eabfd77bf4d8ce7776750f16a533",
+          "shape": [
+            44
+          ],
+          "values": [
+            3.9580464363098145,
+            24.17862319946289,
+            78.47577667236328,
+            190.88088989257812,
+            397.00506591796875,
+            746.7174682617188,
+            1304.8076171875,
+            2147.72998046875,
+            3353.86962890625,
+            4986.5380859375,
+            7071.46044921875,
+            9575.7314453125,
+            12397.484375,
+            15380.20703125,
+            18353.53125,
+            21141.884765625,
+            23530.517578125,
+            25292.412109375,
+            26343.8984375,
+            26740.123046875,
+            26553.455078125,
+            25863.796875,
+            24752.05078125,
+            23295.974609375,
+            21567.646484375,
+            19634.62890625,
+            17648.87890625,
+            15776.84765625,
+            14059.5498046875,
+            12484.1962890625,
+            11039.05078125,
+            9713.353515625,
+            8497.2294921875,
+            7381.623046875,
+            6358.2255859375,
+            5419.4169921875,
+            4558.20458984375,
+            3768.175537109375,
+            3043.44677734375,
+            2378.6201171875,
+            1768.7435302734375,
+            1209.2763671875,
+            696.051513671875,
+            225.25050354003906
+          ]
+        }
+      },
+      "full_field_source": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
+      "note": "p_surf is recovered from WRF MUB + P_TOP because the predecessor truth starts after the base block; MUB is not mutated by the later observed start_domain surfaces for this branch.",
+      "p_surf_recovered_from_MUB_plus_p_top": {
+        "count": 10494,
+        "max": 100000.0,
+        "mean": 99532.0464305496,
+        "min": 69526.0546875,
+        "name": "P_SURF_RECOVERED",
+        "sha256_float64": "8230448cb4eb4bd0247f54bde0b0c5b323c3df438920fc9544551f403a040c52",
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "scalars": {
+        "production_current_cp": 1004.0,
+        "wrf_module_constants": {
+          "cp": 1004.5,
+          "cv": 717.5,
+          "cvpm": -0.7142857142857143,
+          "g": 9.81,
+          "p1000mb": 100000.0,
+          "r_d": 287.0,
+          "t0": 300.0
+        },
+        "wrfinput_or_namelist_base_scalars": {
+          "P00": 100000.0,
+          "P_STRAT": 0.0,
+          "P_TOP": 5000.0,
+          "T00": 290.0,
+          "TISO": 200.0,
+          "TLP": 50.0,
+          "TLP_STRAT": -11.0
+        }
+      }
+    }
+  },
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_base_state_boundary.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_base_state_boundary.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-base-state-boundary.md",
+    "wrf_truth_root_reused": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth"
+  },
+  "schema": "wrfgpu2.v014.step1_base_state_boundary.v1",
+  "unresolved_risks": [
+    "No production source patch was applied.",
+    "This proof did not emit a fresh WRF p_surf_before_mub scalar; it recovers p_surf from WRF MUB + P_TOP.",
+    "The exact production-compatible p_surf arithmetic helper is still missing; local NumPy/JAX-style fp32 formula remains above P/MU gates."
+  ],
+  "verdict": "STEP1_BASE_STATE_BOUNDARY_LOCALIZED_P_SURF_MUB_FP32_SOURCE_ARITHMETIC",
+  "wrf_instrumentation_used_this_sprint": false
+}
