@@ -336,6 +336,13 @@ the active P/PH/MU debug sprint; it is a parallel drift-control check of
 roadmap, method, sprint sizing, validation gates, and whether the current
 boundary-localization plan is still the fastest rigorous path.
 
+Update 2026-06-09 18:31 WEST: Opus could not run the P/PH/MU sprint or
+Management Review 02 because the Claude session limit is exhausted until about
+21:20 WEST. No P/PH/MU artifact was produced by Opus. The active P/PH/MU
+debug sprint is now running as a GPT-5.5 xhigh tmux worker in window `0:4`.
+Management Review 02 remains opened but pending retry after Opus availability
+returns; it is not on the critical path for the current debug proof.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
