@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from functools import partial
 from typing import Iterable
 
 import jax
-from jax import config
+from jax import config, lax
 import jax.numpy as jnp
 import numpy as np
 
@@ -65,6 +66,42 @@ from gpuwrf.physics.tridiagonal_solver import solve_tridiagonal
 
 
 config.update("jax_enable_x64", True)
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _env_int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    try:
+        return int(value.strip())
+    except ValueError:
+        return default
+
+
+# Leading-column tiling over the flattened batch axis (the RRTMG pattern,
+# proofs/v013/rrtmg_column_tile.json).  The BouLac free-atmosphere length
+# (`_boulac_length`) unrolls the WRF parcel search into dense ``(B, nz, nz)``
+# PE-accumulation matrices: at 641x321x50 fp64 ONE such matrix is ~3.8 GiB and
+# several are live at once, so a whole-domain batch dominates the non-radiation
+# physics peak.  Every MYNN op is per-column (reductions run over the level
+# axis; the EDMF plume sum runs inside a per-column vmap).  Tile-vs-untiled is
+# proven bit-identical on GPU including ragged tiles at the production tile
+# width; on the CPU backend the implicit tridiagonal solves can differ by
+# 1-2 ulp on scattered columns from batch-width-dependent SIMD codegen (all
+# turbulence/diagnostic fields stay bit-exact) -- see
+# proofs/v014/mythos_memory_fixes_260609.json.  CPU test/savepoint batches are
+# below the default tile width, so they take the structurally untiled path.
+# Set `GPUWRF_MYNN_COLUMN_TILING=0` or `GPUWRF_MYNN_COLUMN_TILE_COLS=0` for the
+# whole-batch reference path used by proofs.
+_MYNN_COLUMN_TILING = _env_bool("GPUWRF_MYNN_COLUMN_TILING", True)
+_MYNN_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_MYNN_COLUMN_TILE_COLS", 16384))
 
 CP_MYNN = 7.0 * 287.0 / 2.0
 RCP_MYNN = 287.0 / CP_MYNN
@@ -1205,6 +1242,100 @@ def _mynn_budget_diagnostics(state: MynnPBLColumnState, dt: float, surface=None,
     }
 
 
+def _pad_columns_leaf(arr, ncol: int, padded_ncol: int):
+    """Pads a flattened leading column axis by repeating the last real column."""
+
+    arr = jnp.asarray(arr)
+    if arr.ndim == 0 or arr.shape[0] != ncol or padded_ncol == ncol:
+        return arr
+    tail = jnp.broadcast_to(arr[-1:], (padded_ncol - ncol,) + arr.shape[1:])
+    return jnp.concatenate((arr, tail), axis=0)
+
+
+def _slice_columns_leaf(arr, start, tile_cols: int, padded_ncol: int):
+    """Slices one fixed-size column tile from a padded leading axis."""
+
+    arr = jnp.asarray(arr)
+    if arr.ndim == 0 or arr.shape[0] != padded_ncol:
+        return arr
+    starts = [jnp.zeros((), dtype=start.dtype)] * arr.ndim
+    starts[0] = start
+    sizes = list(arr.shape)
+    sizes[0] = tile_cols
+    return lax.dynamic_slice(arr, starts, sizes)
+
+
+def _scatter_columns_leaf(carry, tile, start):
+    """Writes one result tile back into the padded accumulator."""
+
+    starts = [jnp.zeros((), dtype=start.dtype)] * carry.ndim
+    starts[0] = start
+    return lax.dynamic_update_slice(carry, tile.astype(carry.dtype), starts)
+
+
+def _tiled_mynn_step(state: MynnPBLColumnState, dt: float, debug: bool, surface,
+                     edmf: bool, dx: float):
+    """Runs the MYNN column step over fixed-size leading-column tiles.
+
+    Engages only for a flat ``(B, nz)`` batch larger than the tile width; the
+    whole-batch path is unchanged otherwise.  No MYNN op couples columns, so
+    the tiled result is value-identical per column (GPU bit-identical; CPU
+    tridiagonal solves may differ by ~1 ulp from batch-width SIMD codegen --
+    see the module-level tiling note); the peak live set of the dense BouLac
+    ``(B, nz, nz)`` intermediates shrinks to one tile.
+    """
+
+    profile = jnp.asarray(state.theta)
+    tiling_active = (
+        _MYNN_COLUMN_TILING
+        and _MYNN_COLUMN_TILE_COLS > 0
+        and profile.ndim == 2
+        and int(profile.shape[0]) > _MYNN_COLUMN_TILE_COLS
+    )
+    if not tiling_active:
+        return _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface, edmf, dx)
+
+    ncol = int(profile.shape[0])
+    tile_cols = int(_MYNN_COLUMN_TILE_COLS)
+    n_tiles = (ncol + tile_cols - 1) // tile_cols
+    padded_ncol = n_tiles * tile_cols
+
+    pad = partial(_pad_columns_leaf, ncol=ncol, padded_ncol=padded_ncol)
+    padded_state = jax.tree_util.tree_map(pad, state)
+    padded_surface = jax.tree_util.tree_map(pad, surface) if surface is not None else None
+    init_state = jax.tree_util.tree_map(jnp.zeros_like, padded_state)
+    init_pblh = jnp.zeros((padded_ncol,), dtype=profile.dtype)
+
+    def body(carry, tile_index):
+        start = tile_index * tile_cols
+        tile_state = jax.tree_util.tree_map(
+            lambda a: _slice_columns_leaf(a, start, tile_cols, padded_ncol), padded_state
+        )
+        tile_surface = (
+            jax.tree_util.tree_map(
+                lambda a: _slice_columns_leaf(a, start, tile_cols, padded_ncol),
+                padded_surface,
+            )
+            if padded_surface is not None
+            else None
+        )
+        out_state, out_pblh = _step_mynn_pbl_impl_with_pblh(
+            tile_state, dt, debug, tile_surface, edmf, dx
+        )
+        carry_state, carry_pblh = carry
+        next_state = jax.tree_util.tree_map(
+            lambda c, t: _scatter_columns_leaf(c, t, start), carry_state, out_state
+        )
+        next_pblh = _scatter_columns_leaf(carry_pblh, out_pblh, start)
+        return (next_state, next_pblh), None
+
+    (out_state, out_pblh), _ = lax.scan(
+        body, (init_state, init_pblh), jnp.arange(n_tiles, dtype=jnp.int32)
+    )
+    unpad = lambda a: a[:ncol] if a.ndim >= 1 and a.shape[0] == padded_ncol else a
+    return jax.tree_util.tree_map(unpad, out_state), out_pblh[:ncol]
+
+
 @partial(jax.jit, static_argnames=("dt", "debug", "edmf", "dx"))
 def step_mynn_pbl_column(
     state: MynnPBLColumnState, dt: float, *, debug: bool = False, surface=None,
@@ -1218,7 +1349,8 @@ def step_mynn_pbl_column(
     MYNN-EDMF mass-flux nonlocal scalar transport (``s_awqv``/``s_awthl``); ``dx``
     is the horizontal grid spacing (m) used by the plume sizing."""
 
-    return _step_mynn_pbl_impl(state, dt, debug, surface, edmf, dx)
+    next_state, _pblh = _tiled_mynn_step(state, dt, debug, surface, edmf, dx)
+    return next_state
 
 
 @partial(jax.jit, static_argnames=("dt", "debug", "edmf", "dx"))
@@ -1233,7 +1365,7 @@ def step_mynn_pbl_column_with_pblh(
     ``edmf``/``dx`` enable + size the EDMF mass-flux transport (see
     :func:`step_mynn_pbl_column`)."""
 
-    return _step_mynn_pbl_impl_with_pblh(state, dt, debug, surface, edmf, dx)
+    return _tiled_mynn_step(state, dt, debug, surface, edmf, dx)
 
 
 @partial(jax.jit, static_argnames=("dt",))

@@ -91,6 +91,7 @@ from gpuwrf.dynamics.explicit_diffusion import (
     wrf_deformation_momentum_tendency,
 )
 from gpuwrf.dynamics.flux_advection import (
+    CoupledVelocities,
     advect_moisture_scalars,
     advect_scalar_flux,
     advect_scalar_flux_limited,
@@ -1704,6 +1705,39 @@ def _acoustic_scan(
     return next_carry
 
 
+def _stage_transport_velocities(
+    haloed: State,
+    namelist: OperationalNamelist,
+) -> CoupledVelocities:
+    """Build the stage's WRF mass-coupled transport velocities ``ru/rv/rom``.
+
+    WRF builds ``ru/rv/ww`` ONCE per RK stage (``rk_step_prep``/``calc_ww_cp``,
+    solve_em.F) and every flux-form advection of that stage -- momentum, theta,
+    and each moist scalar -- transports with the SAME arrays.  This helper is the
+    single construction point; ``_augment_large_step_tendencies`` and
+    ``_moisture_coupled_tendencies`` consume the shared value instead of each
+    rebuilding it from the identical inputs.
+    """
+
+    metrics = namelist.metrics
+    grid = namelist.grid
+    return couple_velocities_periodic(
+        haloed.u,
+        haloed.v,
+        haloed.mu_total,
+        c1h=metrics.c1h,
+        c2h=metrics.c2h,
+        dnw=metrics.dnw,
+        rdx=1.0 / float(grid.projection.dx_m),
+        rdy=1.0 / float(grid.projection.dy_m),
+        msfuy=metrics.msfuy,
+        msfvx=metrics.msfvx,
+        msftx=metrics.msftx,
+        msfux=metrics.msfux,
+        msfvy=metrics.msfvy,
+    )
+
+
 def _augment_large_step_tendencies(
     haloed: State,
     tendencies: Tendencies,
@@ -1712,6 +1746,7 @@ def _augment_large_step_tendencies(
     rk_step: int = 3,
     physics_tendencies: DryPhysicsTendencies | None = None,
     step_origin: State | None = None,
+    transport_velocities: CoupledVelocities | None = None,
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -1766,21 +1801,14 @@ def _augment_large_step_tendencies(
     if bool(namelist.use_flux_advection):
         # WRF flux-form mass-coupled advection (h=5/v=3).  The *_flux helpers
         # return the COUPLED tendency d(mu*field)/dt, so they replace the
-        # primitive coupled products built above (not add to them).
-        vel = couple_velocities_periodic(
-            haloed.u,
-            haloed.v,
-            mu_total,
-            c1h=metrics.c1h,
-            c2h=metrics.c2h,
-            dnw=metrics.dnw,
-            rdx=1.0 / dx,
-            rdy=1.0 / dy,
-            msfuy=metrics.msfuy,
-            msfvx=metrics.msfvx,
-            msftx=metrics.msftx,
-            msfux=metrics.msfux,
-            msfvy=metrics.msfvy,
+        # primitive coupled products built above (not add to them).  The
+        # transporting ru/rv/rom is the per-stage shared build (WRF builds it
+        # once per RK stage); the caller may pass it in so the moisture path
+        # reuses the SAME arrays instead of duplicating the construction.
+        vel = (
+            transport_velocities
+            if transport_velocities is not None
+            else _stage_transport_velocities(haloed, namelist)
         )
         # --- momentum: WRF advect_u/advect_v/advect_w (conservative flux form) ---
         # The previous JAX path advanced momentum with the *advective* (non-
@@ -2018,6 +2046,7 @@ def _moisture_coupled_tendencies(
     *,
     rk_step: int,
     step_origin: State | None,
+    transport_velocities: CoupledVelocities | None = None,
 ) -> tuple[jax.Array, ...]:
     """WRF moisture-species coupled large-step tendency ``d(mu*q)/dt`` per stage.
 
@@ -2042,20 +2071,10 @@ def _moisture_coupled_tendencies(
     dx = float(grid.projection.dx_m)
     dy = float(grid.projection.dy_m)
     mu_total = haloed.mu_total
-    vel = couple_velocities_periodic(
-        haloed.u,
-        haloed.v,
-        mu_total,
-        c1h=metrics.c1h,
-        c2h=metrics.c2h,
-        dnw=metrics.dnw,
-        rdx=1.0 / dx,
-        rdy=1.0 / dy,
-        msfuy=metrics.msfuy,
-        msfvx=metrics.msfvx,
-        msftx=metrics.msftx,
-        msfux=metrics.msfux,
-        msfvy=metrics.msfvy,
+    vel = (
+        transport_velocities
+        if transport_velocities is not None
+        else _stage_transport_velocities(haloed, namelist)
     )
     fields = tuple(getattr(haloed, name) for name in _MOISTURE_SPECIES)
     # The limiter (moist_adv_opt 1/2) is the final-RK3-stage FCT; it needs the
@@ -2201,6 +2220,15 @@ def _rk_scan_step(
         # physical state (carried forward across RK stages) is the small-step
         # prognostic ``u_2``; ``rk1_reference`` is the RK reference ``u_1``.
         tendencies = compute_advection_tendencies(haloed, namelist.tendencies, namelist.grid)
+        # The stage's ru/rv/rom transport build is shared between the theta/
+        # momentum flux advection and the moisture scalar advection (WRF builds
+        # them once per RK stage in rk_step_prep/calc_ww_cp).  The branch is a
+        # STATIC Python condition, so with flux advection off nothing changes.
+        stage_velocities = (
+            _stage_transport_velocities(haloed, namelist)
+            if bool(namelist.use_flux_advection)
+            else None
+        )
         tendencies = _augment_large_step_tendencies(
             haloed,
             tendencies,
@@ -2208,6 +2236,7 @@ def _rk_scan_step(
             rk_step=int(stage.rk_step),
             physics_tendencies=physics_tendencies,
             step_origin=rk1_reference,
+            transport_velocities=stage_velocities,
         )
         # WRF advances moisture in the LARGE step (NOT the acoustic substeps):
         # build the coupled moisture tendency d(mu*q)/dt for THIS stage from the
@@ -2227,6 +2256,7 @@ def _rk_scan_step(
                 namelist,
                 rk_step=int(stage.rk_step),
                 step_origin=rk1_reference,
+                transport_velocities=stage_velocities,
             )
             if moisture_advected
             else None
