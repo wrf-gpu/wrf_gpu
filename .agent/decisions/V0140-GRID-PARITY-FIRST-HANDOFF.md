@@ -151,6 +151,19 @@ validation-enabling sprint is a disposable CPU-WRF step-1 truth hook that emits
 `/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz`,
 then reruns `proofs/v014/same_input_contract_builder.py`.
 
+Update 2026-06-09 13:32 WEST: step-1 same-input truth sprint closed with the
+first strict full-domain comparison. Verdict:
+`STEP1_SAME_INPUT_COMPARISON_EXECUTED_FIRST_DIVERGENT_T`.
+The accepted comparison is CPU-WRF d02 step-1 post-RK/pre-halo truth versus JAX
+one-step `_rk_scan_step_with_pre_halo_capture(...).pre_halo_state`, not JAX
+initial state. The truth npz exists at
+`/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz`.
+First divergent schema field is `T`; largest residuals are base/mass fields:
+`MUB` max_abs `2635.640625`, `PB` `2627.3828125`, `PHB` `2237.9423828125`,
+and `P` `1561.1123921205437`. This points the next sprint back to native
+live-nest child base-state initialization or a decisive init-override falsifier
+before any late-RK, FP32, memory, Switzerland, or TOST work.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
