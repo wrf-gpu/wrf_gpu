@@ -1,7 +1,22 @@
 # Project Plan
 
-Status (2026-06-09 07:17 WEST): **Grid-cell parity first; TOST paused as a final gate, not
-the next use of GPU time.**
+Status (2026-06-09 23:15 WEST): **v0.14 is the active closure target. Grid-cell
+parity and proof-backed memory/FP32 integration gate the release; TOST remains a
+final validation gate, not the next blind GPU marathon.**
+
+Current release-manager state:
+
+| Lane | Status | Next manager action |
+|---|---|---|
+| Step-1/grid-cell parity | Active. Latest committed handoff is `5f8916f9`; stale RK1 `P_STATE` was refuted after the Mythos start-domain init fix. The live boundary is WRF `first_rk_step_part2` `T_TENDF`, then RK1 `T_TEND/PH_TEND/RW_TEND` against JAX tendency construction. | Review and close `.agent/sprints/2026-06-09-v014-step1-tendency-contract-split` when the GPT worker reports. No TOST/Switzerland until this boundary is fixed or bounded. |
+| Memory/FP32 | Active in isolated Mythos worktree `.codex/worktrees/mythos-memory-v014`, branch `worker/mythos/v014-memory-fp32`. Claimed closeout is pending manager review and final proof/commit inspection. | Wait for Mythos final marker, review diffs/proofs, rerun focused gates, then merge or reject. |
+| GPU validation hygiene | Runbook and wrappers exist (`docs/GPU_RUNBOOK.md`, `scripts/run_gpu_lowprio.sh`, `scripts/run_powered_tost_n15.sh`). | Keep GPU jobs serialized through the lock wrapper; long validation starts only after grid and memory branches stabilize. |
+| Switzerland/Gotthard | CPU truth/cases exist, but no post-v0.14-fix GPU-vs-CPU proof yet. | Run as v0.14 validation gate after parity/memory stabilization. |
+| Grid-Delta Atlas + TOST | Required final evidence pair: all-cell/all-field atlas plus ADR-029 station TOST. | Implement/run after field divergence is no longer radical; publish compact plots under `docs/assets/v014/grid_delta_atlas/`. |
+
+Durable release checklist: `.agent/decisions/V0140-RELEASE-CHECKLIST.md`.
+
+Earlier context (kept for audit):
 The release label is secondary to correctness. The current manager directive is:
 
 1. **Find and fix the grid-cell divergence first, across all written WRF fields.**
