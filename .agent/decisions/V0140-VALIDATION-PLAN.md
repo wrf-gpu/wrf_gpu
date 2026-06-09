@@ -231,6 +231,10 @@ Current status:
   `t_2`/theta initialization after `med_nest_initial` terrain/base blending and
   `start_domain_em`; validation remains paused until an initialization-only
   source fix is proven or the residual is otherwise explained.
+- 2026-06-09 16:03 WEST manager update: the active proof/fix sprint is
+  `v014-step1-live-nest-theta-semantics`. It must prove WRF
+  `adjust_tempqv` candidate semantics against WRF pre-call truth before any
+  production source edit. Validation remains paused behind this gate.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to

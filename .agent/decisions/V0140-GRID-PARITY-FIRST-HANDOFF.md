@@ -276,6 +276,16 @@ ruled out for this residual. The next sprint is WRF live-nest
 `T_STATE`/theta semantics: prove and port the `med_nest_initial` /
 `start_domain_em` `t_2` initialization path after terrain/base blending.
 
+Update 2026-06-09 16:03 WEST: step-1 live-nest theta semantics sprint opened:
+`.agent/sprints/2026-06-09-v014-step1-live-nest-theta-semantics/sprint-contract.md`.
+The proof/fix target is now exact: WRF `med_nest_initial` blends
+`ht/mub/phb`, then calls `adjust_tempqv(nest%mub, nest%mub_save, nest%c3h,
+nest%c4h, nest%znw, nest%p_top, nest%t_2, nest%p, QVAPOR, use_theta_m, ...)`.
+The worker must transcribe `adjust_tempqv` proof-locally, compare the candidate
+`T_STATE`/`QVAPOR` against accepted WRF pre-call truth, and only then apply an
+initialization-only source patch if the candidate closes the residual. No GPU,
+TOST, Switzerland, FP32, memory source work, Hermes, or validation campaign.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
