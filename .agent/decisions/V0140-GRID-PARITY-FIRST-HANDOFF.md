@@ -81,6 +81,13 @@ into `_rk_scan_step_with_pre_halo_capture`, and `scalar_old`/old-field handling.
 The next sprint should not edit dycore broadly; it should build that wrapper and
 truth surface or name the next exact blocker.
 
+Update 2026-06-09 12:18 WEST: full-domain source/save wrapper sprint opened:
+`.agent/sprints/2026-06-09-v014-full-domain-source-wrapper/sprint-contract.md`.
+It is instrumentation/proof-only, CPU-only, and production `src/gpuwrf/**`
+read-only. The gate is a strict same-input single-RK comparison against
+WRF-emitted post-RK/pre-halo truth, or one exact blocker naming the missing
+wrapper contract, field, old-field strategy, boundary conflict, or patch width.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
