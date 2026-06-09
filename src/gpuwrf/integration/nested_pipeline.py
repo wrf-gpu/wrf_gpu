@@ -355,6 +355,7 @@ class _PerDomainWrfoutWriter:
         self,
         *,
         output_dir: Path,
+        input_dir: Path,
         run_start: datetime,
         bundles: dict[str, DomainBundle],
         output_cadence_steps: dict[str, int],
@@ -367,12 +368,26 @@ class _PerDomainWrfoutWriter:
         # Lazy imports kept off the module top-level so importing this module stays
         # light for non-GPU callers (mirrors daily_pipeline).
         from gpuwrf.integration.daily_pipeline import (
+            _load_static_latlon_writer_diagnostics,
+            _merge_output_diagnostics,
             _surface_diagnostics_for_output,
             finite_summary,
         )
+        from gpuwrf.io.gen2_accessor import Gen2Run
 
         self._surface_diagnostics_for_output = _surface_diagnostics_for_output
+        self._merge_output_diagnostics = _merge_output_diagnostics
         self._finite_summary = finite_summary
+        run = Gen2Run(input_dir)
+        self.writer_diagnostics: dict[str, dict[str, Any]] = {}
+        self.writer_static_latlon_metadata: dict[str, Any] = {}
+        for domain, bundle in bundles.items():
+            diagnostics, meta = _load_static_latlon_writer_diagnostics(
+                run, domain, grid=bundle.grid
+            )
+            self.writer_static_latlon_metadata[domain] = meta
+            if diagnostics:
+                self.writer_diagnostics[domain] = diagnostics
 
     def __call__(self, name: str, own_step: int, state: Any) -> dict[str, Any]:
         cadence = int(self.output_cadence_steps[name])
@@ -380,8 +395,11 @@ class _PerDomainWrfoutWriter:
         valid_time = self.run_start + timedelta(hours=lead_h)
         namelist = self.bundles[name].namelist
         grid = self.bundles[name].grid
-        diagnostics = self._surface_diagnostics_for_output(
+        surface_diagnostics = self._surface_diagnostics_for_output(
             state, namelist, self.run_start, lead_seconds=float(lead_h) * 3600.0
+        )
+        diagnostics = self._merge_output_diagnostics(
+            self.writer_diagnostics.get(name), surface_diagnostics
         )
         path = self.output_dir / f"wrfout_{name}_{valid_time:%Y-%m-%d_%H:%M:%S}"
         write_wrfout_netcdf(
@@ -463,10 +481,13 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=feedback_enabled)
     writer = _PerDomainWrfoutWriter(
         output_dir=config.output_dir,
+        input_dir=Path(config.input_dir),
         run_start=run_start,
         bundles=bundles,
         output_cadence_steps=output_cadence,
     )
+    for domain, latlon_meta in writer.writer_static_latlon_metadata.items():
+        meta.setdefault("domains", {}).setdefault(domain, {})["writer_static_latlon"] = latlon_meta
 
     # MEMORY-BOUNDED segmented host loop (v0.12.0 nested-OOM fix).  The whole
     # forecast was previously ONE run_operational_domain_tree call: a single host

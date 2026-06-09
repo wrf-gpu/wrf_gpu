@@ -912,7 +912,11 @@ def write_wrfout_netcdf(
     ``State``/``GridSpec`` objects. Device arrays, if passed after an operational
     run, are converted only at this output boundary.
 
-    ``diagnostics`` optionally carries operational surface-layer diagnostics
+    ``diagnostics`` optionally carries host-only output diagnostics/metadata.
+    Static latitude/longitude payloads (``XLAT``/``XLONG`` and staggered variants)
+    are selected from this map before the legacy State/projection lookup, so real
+    WRF statics can be routed to output without adding JIT-visible state leaves.
+    It also carries operational surface-layer diagnostics
     (e.g. the M9 surface map: ``T2``/``U10``/``V10``/``Q2``/``PSFC``/``SWDOWN``/
     ``GLW``/``PBLH``/``TSK`` plus the P0-5a additions ``QFX``/``GRDFLX``). When a
     name is present there, it OVERRIDES the state/default for that output field --
@@ -1270,9 +1274,13 @@ def _build_output_fields(
     _w1 = (_phi0 - _phi2) / (_phi1 - _phi2)
     _psfc_default = _w1 * _p_total[0] + (1.0 - _w1) * _p_total[1]
 
-    xlat, xlong = _latlon_fields(state, grid, namelist, shape_xy)
-    xlat_u, xlong_u = _latlon_fields(state, grid, namelist, shape_u_xy, suffix="_u")
-    xlat_v, xlong_v = _latlon_fields(state, grid, namelist, shape_v_xy, suffix="_v")
+    xlat, xlong = _latlon_fields(state, grid, namelist, shape_xy, diagnostics=diagnostics)
+    xlat_u, xlong_u = _latlon_fields(
+        state, grid, namelist, shape_u_xy, suffix="_u", diagnostics=diagnostics
+    )
+    xlat_v, xlong_v = _latlon_fields(
+        state, grid, namelist, shape_v_xy, suffix="_v", diagnostics=diagnostics
+    )
 
     terrain = _grid_or_state_array(state, grid, ("HGT", "hgt", "terrain_height"), shape_xy)
     landmask = _landmask(state, shape_xy)
@@ -1882,9 +1890,14 @@ def _latlon_fields(
     shape: tuple[int, int],
     *,
     suffix: str = "",
+    diagnostics: Mapping[str, Any] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     lat_names = ("XLAT" + suffix.upper(), "xlat" + suffix, "lat" + suffix)
     lon_names = ("XLONG" + suffix.upper(), "xlong" + suffix, "lon" + suffix)
+    lat = _optional_field_array(diagnostics, lat_names, shape)
+    lon = _optional_field_array(diagnostics, lon_names, shape)
+    if lat is not None and lon is not None:
+        return lat, lon
     lat = _optional_field_array(state, lat_names, shape)
     lon = _optional_field_array(state, lon_names, shape)
     if lat is not None and lon is not None:
