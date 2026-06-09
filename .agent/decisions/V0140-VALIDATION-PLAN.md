@@ -865,3 +865,31 @@ The 16h campaign passes only if:
 The highest-value test is B4: it is now the direct field-parity gate using
 retained CPU-WRF truth. Powered TOST remains the final gate after B4b is no
 longer radically red.
+
+## Update 2026-06-09 16:45 WEST
+
+The validation plan remains gated by grid parity, not by station-only TOST.
+Before any long validation campaign, the current Step-1 live-nest divergence
+chain must close or be explicitly bounded.
+
+Latest closed proof:
+
+- `proofs/v014/step1_qvapor_precall_savepoint.{py,json,md}` with verdict
+  `STEP1_QVAPOR_PRECALL_SAVEPOINT_READY`.
+- Same-boundary pre-call QVAPOR root:
+  `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only`.
+- Old fields stayed text-identical to the accepted pre-call dump, max_abs
+  `0.0`; QVAPOR is full shape `[44,66,159]`, all finite.
+
+Immediate pre-validation gate:
+
+1. Rerun the theta semantics proof using this QVAPOR root.
+2. Classify the remaining worst `T_STATE` residual cell as boundary/interior.
+3. Continue to the larger base-state split/V10 driver if the theta tail is
+   bounded and not the main grid-delta cause.
+
+Final v0.14 validation must still include the Grid-Delta Atlas gate from
+`.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`: all paired CPU/GPU wrfout
+times, all cells, all common numeric fields, deterministic plots, and README
+dashboard. TOST station scores are a pillar, not a substitute for cell-field
+delta stability.

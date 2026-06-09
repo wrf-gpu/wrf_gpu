@@ -1,0 +1,162 @@
+{
+  "acceptance": {
+    "no_post_rk_prehallo_qvapor_used": true,
+    "old_fields_max_abs_all_zero": true,
+    "old_fields_text_identical": true,
+    "qvapor_all_finite": true,
+    "qvapor_full_mass_shape": true
+  },
+  "accepted_truth_root": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
+  "created_at_utc": "2026-06-09T15:38:50.576781+00:00",
+  "file_counts": {
+    "accepted_precall_files": 28,
+    "filtered_precall_files": 28,
+    "new_precall_files": 28,
+    "new_raw_all_hook_files": 168
+  },
+  "gpu_used": false,
+  "headers_example": {
+    "accepted": {
+      "current_timestr_before_step": "2026-05-01_18:00:00",
+      "domain_id": "2",
+      "dt_rk_seconds": "0.2000000000000000E+01",
+      "dt_seconds": "0.6000000000000000E+01",
+      "dts_rk_seconds": "0.2000000000000000E+01",
+      "global_mass_i_j_end_exclusive_fortran": "1 160 1 67",
+      "grid_itimestep_after_increment": "1",
+      "mass_vertical_fortran_k_start_k_end_inclusive": "1 44",
+      "number_of_small_timesteps": "1",
+      "record_schemas": "record_schema MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT",
+      "rk_order": "3",
+      "rk_step": "1",
+      "routine": "dyn_em/solve_em.F",
+      "surface": "before_first_rk_step_part1_call",
+      "tile_i_j_bounds_fortran": "115 137 18 33",
+      "tile_record_policy": "mass_owned_single_owner_no_overlap",
+      "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": "1 45"
+    },
+    "new": {
+      "current_timestr_before_step": "2026-05-01_18:00:00",
+      "domain_id": "2",
+      "dt_rk_seconds": "0.2000000000000000E+01",
+      "dt_seconds": "0.6000000000000000E+01",
+      "dts_rk_seconds": "0.2000000000000000E+01",
+      "global_mass_i_j_end_exclusive_fortran": "1 160 1 67",
+      "grid_itimestep_after_increment": "1",
+      "mass_vertical_fortran_k_start_k_end_inclusive": "1 44",
+      "moist_index_qv": "2",
+      "number_of_small_timesteps": "1",
+      "record_schemas": "record_schema MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
+      "rk_order": "3",
+      "rk_step": "1",
+      "routine": "dyn_em/solve_em.F",
+      "surface": "before_first_rk_step_part1_call",
+      "tile_i_j_bounds_fortran": "115 137 18 33",
+      "tile_record_policy": "mass_owned_single_owner_no_overlap",
+      "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": "1 45"
+    }
+  },
+  "new_filtered_precall_truth_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+  "new_raw_truth_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/wrf_truth",
+  "next_use": {
+    "rerun_theta_proof_with_same_boundary_qvapor": true,
+    "suggested_input_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only"
+  },
+  "old_field_comparisons_vs_accepted_precall": {
+    "MUB": {
+      "count": 461736,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "MUT": {
+      "count": 461736,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "MU_STATE": {
+      "count": 461736,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "PB": {
+      "count": 461736,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "PHB": {
+      "count": 472230,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "PH_STATE": {
+      "count": 472230,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "P_STATE": {
+      "count": 461736,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "T_STATE": {
+      "count": 461736,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    },
+    "W_STATE": {
+      "count": 472230,
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "text_identical": true
+    }
+  },
+  "production_source_changed": false,
+  "qvapor": {
+    "all_finite": true,
+    "count": 461736,
+    "finite_count": 461736,
+    "max": 0.01170683559030294,
+    "mean": 0.0021903549088611598,
+    "min": 2.687635060283355e-06
+  },
+  "scratch_only_wrf_source_changed": true,
+  "shapes": {
+    "expected_mass_shape_zyx": [
+      44,
+      66,
+      159
+    ],
+    "expected_wph_shape_zyx": [
+      45,
+      66,
+      159
+    ],
+    "mass_shape_zyx": [
+      44,
+      66,
+      159
+    ],
+    "wph_shape_zyx": [
+      45,
+      66,
+      159
+    ]
+  },
+  "target_glob": "before_first_rk_step_part1_call_d2_step_1_rk_1_*.txt",
+  "verdict": "STEP1_QVAPOR_PRECALL_SAVEPOINT_READY",
+  "wrf_logs": {
+    "compile_env_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/compile_qvapor_precall_savepoint_env.log",
+    "manager_mpirun_stdout": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_manager_stdout.log",
+    "sandboxed_mpirun_failure_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_stdout.log",
+    "sandboxed_singleton_failure_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_singleton_stdout.log"
+  },
+  "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint_wrf_patch.diff"
+}

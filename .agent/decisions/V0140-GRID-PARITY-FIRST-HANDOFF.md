@@ -1052,3 +1052,47 @@ Manager validation reran:
 - No v0.13/v0.14 tag decision based on station TOST alone.
 - No FP32 dycore landing that masks the current fp64 grid divergence.
 - No broad scheme-long-tail work unless it directly supports the divergence fix.
+
+## Current Manager Update 2026-06-09 16:45 WEST
+
+The older "Next Manager Actions" above are superseded by the later Step-1
+source-boundary/theta/QVAPOR proof chain.
+
+Closed since that older wave:
+
+- `step1_rk1_source_boundary`: localized the first material mismatch to WRF
+  `first_rk_step_part1` physics-state mutation of `T_STATE`.
+- `step1_part1_physics_state_mutation`, `step1_pre_part1_handoff`,
+  `step1_jax_loader_tstate`, and `step1_live_nest_theta_semantics`: reduced
+  live-nest pre-call `T_STATE` residual from `5.490173101425171 K` to
+  `0.00541785382188209 K` with WRF `USE_THETA_M=1` moist-theta semantics plus
+  `adjust_tempqv`, but held production patch because same-boundary `QVAPOR`
+  was missing.
+- `step1_qvapor_precall_truth_schema`: proved existing QVAPOR artifacts were
+  post-RK/pre-halo or different-boundary and specified the WRF savepoint.
+- `step1_qvapor_precall_savepoint`: generated and validated same-boundary
+  pre-call `QVAPOR` truth. Verdict:
+  `STEP1_QVAPOR_PRECALL_SAVEPOINT_READY`. Filtered root:
+  `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only`.
+
+Latest proof facts:
+
+- QVAPOR shape `[44,66,159]`, count `461736`, all finite.
+- Prior accepted pre-call fields
+  `T_STATE/P_STATE/PB/MU_STATE/MUB/MUT/W_STATE/PH_STATE/PHB` are
+  text-identical, max_abs `0.0`.
+- No production `src/gpuwrf/**` source has been changed in this savepoint
+  sprint.
+
+Next active debug step:
+
+1. Rerun `proofs/v014/step1_live_nest_theta_semantics.py` using the filtered
+   same-boundary QVAPOR root.
+2. Add worst-cell classification for the remaining `0.0054 K` max_abs:
+   boundary band versus interior, plus field-extreme context.
+3. If the theta tail is bounded/local while p99 remains near `4.5e-5 K`,
+   document the gate semantics and resume the larger base-state split / V10
+   driver chain. If same-boundary QVAPOR materially changes the result, decide
+   on an init-only patch under a new source-changing sprint contract.
+4. Still no TOST, Switzerland, FP32 source landing, or memory source work until
+   grid divergence is fixed or explicitly bounded enough for long validation.

@@ -1,0 +1,28 @@
+--- /mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/backups/solve_em.F.before_qvapor_precall	2026-06-09 15:27:14.885965002 +0100
++++ /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F	2026-06-09 16:26:52.187976855 +0100
+@@ -7013,12 +7013,13 @@
+              'mass_vertical_fortran_k_start_k_end_inclusive', k_start, wrfgpu2_mass_k_end
+         WRITE(wrfgpu2_unit,'(A,2(1X,I0))') &
+              'w_ph_vertical_fortran_kstag_start_kstag_end_inclusive', k_start, wrfgpu2_w_k_end
++        WRITE(wrfgpu2_unit,'(A,1X,I0)') 'moist_index_qv', P_QV
+         WRITE(wrfgpu2_unit,'(A)') &
+-             'record_schema MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT'
++             'record_schema MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR'
+         DO wrfgpu2_k = k_start, wrfgpu2_mass_k_end
+           DO wrfgpu2_j = grid%j_start(wrfgpu2_ij), MIN(grid%j_end(wrfgpu2_ij), jde-1)
+             DO wrfgpu2_i = grid%i_start(wrfgpu2_ij), MIN(grid%i_end(wrfgpu2_ij), ide-1)
+-              WRITE(wrfgpu2_unit,'(A,6(1X,I0),6(1X,E24.16))') 'MASS_PREPART', &
++              WRITE(wrfgpu2_unit,'(A,6(1X,I0),7(1X,E24.16))') 'MASS_PREPART', &
+                    wrfgpu2_i, wrfgpu2_j, wrfgpu2_k, &
+                    wrfgpu2_i-1, wrfgpu2_j-1, wrfgpu2_k-1, &
+                    REAL(grid%t_2(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
+@@ -7026,7 +7027,8 @@
+                    REAL(grid%pb(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
+                    REAL(grid%mu_2(wrfgpu2_i,wrfgpu2_j),KIND=8), &
+                    REAL(grid%mub(wrfgpu2_i,wrfgpu2_j),KIND=8), &
+-                   REAL(grid%mut(wrfgpu2_i,wrfgpu2_j),KIND=8)
++                   REAL(grid%mut(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++                   REAL(moist(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j,P_QV),KIND=8)
+             ENDDO
+           ENDDO
+         ENDDO
