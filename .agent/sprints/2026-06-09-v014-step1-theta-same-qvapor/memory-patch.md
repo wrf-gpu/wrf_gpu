@@ -2,23 +2,39 @@
 
 Date: 2026-06-09
 
-Pending until sprint close.
+## Memory Update
 
-Reason:
+The same-boundary QVAPOR rerun is closed.
 
-- Same-boundary pre-call QVAPOR now exists and must be used before any
-  production theta / `adjust_tempqv` patch decision.
-- The remaining `0.0054 K` theta residual must be classified as boundary-local
-  or interior.
+Record:
 
-Expected memory after close:
+- Verdict: `STEP1_THETA_SAME_QVAPOR_INTERIOR_RESIDUAL_NEEDS_WRF_INTERMEDIATE`.
+- Proof objects: `proofs/v014/step1_theta_same_qvapor.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-step1-theta-same-qvapor.md`.
+- Same-boundary QVAPOR root:
+  `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only`.
+- Final candidate `theta_m_then_adjust_tempqv` max_abs:
+  `0.00541785382188209 K`; p99 `4.546931764011239e-05 K`; p99.9
+  `0.0004691662256855125 K`.
+- Boundary band (`distance_to_edge <= 5`) max_abs:
+  `0.0005722015491755883 K`.
+- Interior (`distance_to_edge > 5`) max_abs:
+  `0.00541785382188209 K`.
+- Worst cell: zero `{k:1,y:9,x:17}`, Fortran `{i:18,j:10,k:2}`, horizontal
+  boundary distance `9`.
+- Candidate QVAPOR after `adjust_tempqv` versus WRF pre-call QVAPOR:
+  max_abs `3.838436518426372e-06`, RMSE `2.852916741433691e-08`.
+- No production `src/gpuwrf/**` source changed.
 
-- Record verdict and whether same-boundary QVAPOR closes or bounds the theta
-  tail.
-- Record worst-cell indices, boundary distance, and final metrics.
-- Record whether the next sprint should implement an init-only patch or return
-  to the larger base-state split/V10 driver.
+Next memory:
+
+- Same-boundary QVAPOR is no longer the blocker.
+- Do not apply a production theta/`adjust_tempqv` patch yet.
+- Next sprint must emit or recover WRF exact theta/`adjust_tempqv`
+  intermediate values for the residual cell/path, especially pre/post `t_2`,
+  QVAPOR, `p_old`, `p_new`, `mub`, `mub_save`, `c3h`, `c4h`, `p_top`, and
+  pressure/base inputs.
 
 ## Reviewer Status:
 
-Pending. Opening sprint only.
+Accepted after manager validation and review.

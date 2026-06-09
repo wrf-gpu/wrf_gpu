@@ -1096,3 +1096,38 @@ Next active debug step:
    on an init-only patch under a new source-changing sprint contract.
 4. Still no TOST, Switzerland, FP32 source landing, or memory source work until
    grid divergence is fixed or explicitly bounded enough for long validation.
+
+## Current Manager Update 2026-06-09 17:00 WEST
+
+The same-boundary QVAPOR rerun is now closed. Verdict:
+`STEP1_THETA_SAME_QVAPOR_INTERIOR_RESIDUAL_NEEDS_WRF_INTERMEDIATE`.
+
+Key facts:
+
+- `proofs/v014/step1_theta_same_qvapor.{py,json,md}` used the validated
+  same-boundary pre-call QVAPOR root:
+  `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only`.
+- The proof corrected the methodology distinction: raw child QVAPOR remains
+  the input to the WRF theta/`adjust_tempqv` transcription; the same-boundary
+  root is the accepted WRF QVAPOR comparator.
+- Candidate QVAPOR after `adjust_tempqv` matches WRF pre-call QVAPOR closely:
+  max_abs `3.838436518426372e-06`.
+- Final `T_STATE` residual remains above the `1e-3 K` max_abs gate:
+  all-cell/interior max_abs `0.00541785382188209 K`.
+- Boundary band (`distance_to_edge <= 5`) max_abs is only
+  `0.0005722015491755883 K`; worst cell is interior by the sprint rule:
+  zero `{k:1,y:9,x:17}`, Fortran `{i:18,j:10,k:2}`, distance `9`.
+- Therefore no production theta/`adjust_tempqv` patch is authorized yet.
+
+Next active debug step:
+
+1. Open a CPU-only disposable-WRF intermediate savepoint sprint for exact
+   `adjust_tempqv` internals on the residual path.
+2. Emit WRF pre/post `t_2`, QVAPOR, `p_old`, `p_new`, `mub`, `mub_save`,
+   `c3h`, `c4h`, `p_top`, and pressure/base inputs for the worst cell or a
+   compact field.
+3. Use that evidence to decide whether the `0.0054 K` interior tail is a
+   formula/transcription issue, pressure/base-input residual, or bounded
+   rounding/source-order tail.
+4. Keep TOST, Switzerland, FP32 source landing, and memory source work paused
+   until this grid-parity branch is fixed or explicitly bounded.
