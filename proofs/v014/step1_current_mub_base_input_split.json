@@ -1,0 +1,487 @@
+{
+  "commands": {
+    "executed": [
+      "git rev-parse HEAD",
+      "git merge-base --is-ancestor 9a7016d9 HEAD",
+      "recovered prior WRF adjust hook from /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src:proofs/v014 python proof-side live-nest target recompute"
+    ],
+    "required_validation": [
+      "python -m py_compile proofs/v014/step1_current_mub_base_input_split.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_current_mub_base_input_split.py",
+      "python -m json.tool proofs/v014/step1_current_mub_base_input_split.json >/tmp/step1_current_mub_base_input_split.validated.json",
+      "git diff -- src/gpuwrf"
+    ]
+  },
+  "comparisons": {
+    "diff_sign": "wrf_minus_jax",
+    "first_divergence_surface": "current MUB passed to WRF adjust_tempqv after blend_terrain(nest%mub_fine,nest%mub) and before the later start_domain base recompute",
+    "formulas": {
+      "delta_p_new_from_mub_delta_source_formula": 17.491717817871955,
+      "formula_freeze_status": "WRF_SOURCE_FORMULA_VERIFIED; requested grouped c3h*(mub+p_top) formula rejected for adjust_tempqv",
+      "jax_direct_blend_source_formula": 92686.18565821453,
+      "jax_final_source_formula": 92668.69349297634,
+      "requested_grouped_formula": "p_new = p + c3h*(mub+p_top) + c4h",
+      "wrf_adjust_hook_p_new": 92686.1875,
+      "wrf_adjust_requested_grouped_formula": 92634.32618960738,
+      "wrf_adjust_requested_minus_hook_p_new": -51.86131039261818,
+      "wrf_adjust_source_formula": 92686.18521079421,
+      "wrf_adjust_source_minus_hook_p_new": -0.00228920578956604,
+      "wrf_source_formula": "p_new = p + c4h + c3h*mub + p_top"
+    },
+    "root_cause": "The theta proof used the final post-start_domain live-nest base MUB. WRF adjust_tempqv uses a transient post-blend/pre-start_domain current MUB. A proof-side direct WRF MUB blend reproduces the WRF adjust_tempqv MUB at the target cell.",
+    "rows": [
+      {
+        "comparison": "WRF adjust_tempqv current MUB minus JAX theta-proof final MUB",
+        "delta_wrf_minus_jax": 17.67503987130476,
+        "field": "mub",
+        "jax": 86794.5749601287,
+        "wrf": 86812.25
+      },
+      {
+        "comparison": "WRF adjust_tempqv current MUB minus JAX direct WRF blend MUB",
+        "delta_wrf_minus_jax": -0.00045210951066110283,
+        "field": "mub",
+        "jax": 86812.25045210951,
+        "wrf": 86812.25
+      },
+      {
+        "comparison": "WRF pre-part1 final MUB minus JAX theta-proof final MUB",
+        "delta_wrf_minus_jax": -0.004647628695238382,
+        "field": "mub",
+        "jax": 86794.5749601287,
+        "wrf": 86794.5703125
+      },
+      {
+        "comparison": "WRF adjust_tempqv current MUB minus WRF pre-part1 final MUB",
+        "delta_adjust_minus_prepart": 17.6796875,
+        "field": "mub",
+        "wrf_adjust": 86812.25,
+        "wrf_prepart": 86794.5703125
+      },
+      {
+        "comparison": "WRF p_new minus JAX theta-proof p_new",
+        "delta_wrf_minus_jax": 17.49400702366256,
+        "field": "p_new",
+        "jax": 92668.69349297634,
+        "wrf": 92686.1875
+      },
+      {
+        "comparison": "WRF pb_new_equiv minus JAX theta-proof live_pb",
+        "delta_wrf_minus_jax": 17.49400702366256,
+        "field": "pb_new_equiv",
+        "jax": 90918.53724297634,
+        "wrf": 90936.03125
+      }
+    ],
+    "secondary_boundary_note": "The previous pressure comparison was also a boundary split: WRF adjust_tempqv current MUB is not the same surface as WRF pre-part1 final MUB.",
+    "status": "COMPARISON_EXECUTED"
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "gpu_used": false,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T16:32:06.537783+00:00",
+  "git": {
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "331e2ba860d390a62aa6cf45118ec0d958574b5b\n",
+      "wall_s": 0.003365006996318698
+    },
+    "required_ancestor": {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "9a7016d9",
+        "HEAD"
+      ],
+      "commit": "9a7016d9",
+      "is_ancestor": true,
+      "returncode": 0
+    },
+    "src_gpuwrf_diff": {
+      "command": [
+        "git",
+        "diff",
+        "--",
+        "src/gpuwrf"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "",
+      "wall_s": 0.002060036000330001
+    },
+    "src_gpuwrf_diff_empty": true
+  },
+  "gpu_used": false,
+  "inputs": {
+    "handoff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "3f99a3a7bba5edbafa1a8983c8e85a568de25750484e761f694cf7bb7952b0e8",
+      "size_bytes": 65635
+    },
+    "jax_loader_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.json",
+      "sha256": "9dd4fb4bfe796a4b03db5cf36b1339b3492d52f7d681594a374baf714da630df",
+      "size_bytes": 194511
+    },
+    "prior_adjust_hook": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+      "sha256": "2db120b4ca59b3b6af5ac42572c8a1d5ffc58f3af10676bafceef9e1c5ceeb38",
+      "size_bytes": 1145
+    },
+    "prior_adjust_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json",
+      "sha256": "4d913f3c019acf2df6c996962a390730a3b4b4829196b1eb1737765d7b39fc6c",
+      "size_bytes": 18225
+    },
+    "prior_theta_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+      "sha256": "8d4ebe82db0c03583a19d699984968b343f705b85bc119baf2613088c947e55f",
+      "size_bytes": 44524
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-current-mub-base-input-split/sprint-contract.md",
+      "sha256": "a865b9a1f14f8edae2bdad6dc7d0b5e2e5994143368258bcc6d8e22bb351b67f",
+      "size_bytes": 5038
+    },
+    "wrf_tree": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "jax_recompute": {
+    "backend": "cpu",
+    "blend_weight": {
+      "blend_width": 5,
+      "fine_weight": 0.8333333333333333,
+      "fortran_i": 18,
+      "fortran_j": 10,
+      "ide": 160,
+      "jde": 67,
+      "matched_blend_cell": 5,
+      "parent_interpolated_weight": 0.16666666666666666,
+      "spec_bdy_width": 5
+    },
+    "grid": {
+      "nx": 159,
+      "ny": 66,
+      "nz": 44
+    },
+    "live_nest_base_init_meta": {
+      "blend_width": 5,
+      "child_domain": "d02",
+      "cpu_wrfout_dependency": false,
+      "enabled": true,
+      "i_parent_start": 24,
+      "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+      "j_parent_start": 20,
+      "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+      "parent_domain": "d01",
+      "parent_grid_ratio": 3,
+      "production_inputs": [
+        "parent native initialized terrain",
+        "wrfinput_d02",
+        "namelist.input"
+      ],
+      "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+      "spec_bdy_width": 5,
+      "timestep_loop_transfer": false
+    },
+    "nest_geometry": {
+      "i_parent_start": 24,
+      "j_parent_start": 20,
+      "parent_grid_ratio": 3
+    },
+    "source_function": "proofs/v014/step1_live_nest_init_rerun.py::build_live_nest_step1_inputs",
+    "status": "READY",
+    "target": {
+      "fortran_index": {
+        "i": 18,
+        "j": 10,
+        "k": 2
+      },
+      "zero_index": {
+        "k": 1,
+        "x": 17,
+        "y": 9
+      }
+    },
+    "values": {
+      "c3h": 0.9896281957626343,
+      "c4h": 24.17862319946289,
+      "ht_child_input_preblend": 800.1885986328125,
+      "ht_direct_post_blend": 721.030285710163,
+      "ht_final_after_start_domain": 721.030285710163,
+      "ht_parent_interp_preinput": 325.23872109691536,
+      "mub_child_input_preblend_save": 85928.6875,
+      "mub_direct_post_blend_for_adjust": 86812.25045210951,
+      "mub_final_after_start_domain": 86794.5749601287,
+      "mub_parent_interp_preinput": 91230.06521265711,
+      "p": 1750.15625,
+      "p_new_direct_post_blend_source_formula": 92686.18565821453,
+      "p_new_final_after_start_domain_source_formula": 92668.69349297634,
+      "p_top": 5000.0,
+      "pb_direct_post_blend_equiv": 90936.02940821453,
+      "pb_final_after_start_domain": 90918.53724297634,
+      "phb_child_input_preblend_k": 8328.845703125,
+      "phb_final_after_start_domain_k": 7553.430348577668,
+      "phb_final_after_start_domain_kp1": 8165.484543478162
+    }
+  },
+  "next_decision": "Open the smallest source-changing sprint to add a transient live-nest adjust base path: compute WRF post-blend/pre-start_domain MUB for adjust_tempqv, use it only for theta/QV adjustment, keep final BaseState from start_domain, and rerun the Step-1 theta proof.",
+  "no_fp32_source_work": true,
+  "no_gpu": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "prior_theta_target": {
+    "candidate_reconstruction": {
+      "adjust_tempqv_p_new": 92668.69349297634,
+      "adjust_tempqv_p_old": 91811.78684807569,
+      "c3h": 0.9896281957626343,
+      "c4h": 24.17862319946289,
+      "live_mub": 86794.5749601287,
+      "live_p_state": 1750.15625,
+      "live_pb": 90918.53724297634,
+      "live_phb_lower_kstag": 7553.430348577668,
+      "live_phb_upper_kstag": 8165.484543478162,
+      "p_top": 5000.0,
+      "raw_mub_save": 85928.6875,
+      "raw_pp": 1750.15625
+    },
+    "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+    "status": "READY",
+    "worst_cell": {
+      "abs_delta": 0.00541785382188209,
+      "available_pressure_base_inputs": {
+        "candidate_reconstruction": {
+          "adjust_tempqv_p_new": 92668.69349297634,
+          "adjust_tempqv_p_old": 91811.78684807569,
+          "c3h": 0.9896281957626343,
+          "c4h": 24.17862319946289,
+          "live_mub": 86794.5749601287,
+          "live_p_state": 1750.15625,
+          "live_pb": 90918.53724297634,
+          "live_phb_lower_kstag": 7553.430348577668,
+          "live_phb_upper_kstag": 8165.484543478162,
+          "p_top": 5000.0,
+          "raw_mub_save": 85928.6875,
+          "raw_pp": 1750.15625
+        },
+        "wrf_precall_truth": {
+          "MUB": 86794.5703125,
+          "MUT": 88406.9921875,
+          "MU_STATE": 1612.423950195312,
+          "PB": 90918.53125,
+          "PHB_lower_kstag": 7553.4384765625,
+          "PHB_upper_kstag": 8165.48876953125,
+          "P_STATE": 1770.203125
+        }
+      },
+      "boundary_band_threshold": 5,
+      "boundary_distance_to_horizontal_edge": 9,
+      "candidate_qv_after_adjust_tempqv": 0.007871171017318369,
+      "candidate_t_state": -0.2382344899281179,
+      "delta_candidate_minus_wrf": 0.00541785382188209,
+      "fortran_index": {
+        "i": 18,
+        "j": 10,
+        "k": 2
+      },
+      "is_boundary_band": false,
+      "qvapor_same_boundary_pre_call": 0.007874930277466774,
+      "status": "OK",
+      "wrf_t_state": -0.24365234375,
+      "zero_index": {
+        "k": 1,
+        "x": 17,
+        "y": 9
+      },
+      "zero_index_order": "k,y,x"
+    },
+    "wrf_precall_truth": {
+      "MUB": 86794.5703125,
+      "MUT": 88406.9921875,
+      "MU_STATE": 1612.423950195312,
+      "PB": 90918.53125,
+      "PHB_lower_kstag": 7553.4384765625,
+      "PHB_upper_kstag": 8165.48876953125,
+      "P_STATE": 1770.203125
+    }
+  },
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-current-mub-base-input-split.md",
+    "script": "/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.py",
+    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff"
+  },
+  "schema": "wrfgpu2.v014.step1_current_mub_base_input_split.v1",
+  "scratch_write_probe": {
+    "parent": "/mnt/data/wrf_gpu2",
+    "parent_exists": true,
+    "parent_writable_by_os_access": true,
+    "path": "/mnt/data/wrf_gpu2/v014_step1_current_mub_base_input_split",
+    "status": "WRITABLE_NOT_USED"
+  },
+  "source_patch_allowed_by_proof": false,
+  "target": {
+    "boundary_distance": 9,
+    "domain": "d02",
+    "fortran_index": {
+      "i": 18,
+      "j": 10,
+      "k": 2
+    },
+    "wrf_grid_id": 2,
+    "zero_index": {
+      "k": 1,
+      "x": 17,
+      "y": 9
+    },
+    "zero_index_order": "k,y,x"
+  },
+  "unresolved_risks": [
+    "Fresh WRF terrain/PHB target emission could not be run because /mnt/data scratch writes are read-only in this sandbox.",
+    "The source-changing sprint should validate the transient MUB blend over the full domain before patching production initialization."
+  ],
+  "verdict": "STEP1_CURRENT_MUB_BASE_SPLIT_WRF_BLEND_UNIMPLEMENTED_OR_MISMATCHED",
+  "wrf_adjust_hook": {
+    "headers": {
+      "domain_bounds_ids_ide_jds_jde_kds_kde": [
+        1,
+        160,
+        1,
+        67,
+        1,
+        45
+      ],
+      "domain_id": 2,
+      "patch_bounds_ips_ipe_jps_jpe_kps_kpe": [
+        1,
+        23,
+        1,
+        17,
+        1,
+        45
+      ],
+      "record_schema": [
+        "scalar",
+        "key",
+        "value"
+      ],
+      "routine": "dyn_em/nest_init_utils.F::adjust_tempqv",
+      "target_fortran_i_j_k": [
+        18,
+        10,
+        2
+      ],
+      "target_zero_k_y_x": [
+        1,
+        9,
+        17
+      ],
+      "use_theta_m": 1
+    },
+    "marker": "# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1",
+    "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+    "status": "READY",
+    "values": {
+      "c3h": 0.9896281957626343,
+      "c4h": 24.17862319946289,
+      "dth": -0.2693585455417633,
+      "dth1": -0.2694810926914215,
+      "e_new": 1158.797119140625,
+      "e_old": 1120.9638671875,
+      "es_new": 1890.697875976562,
+      "es_old": 1828.968994140625,
+      "mub": 86812.25,
+      "mub_save": 85928.6875,
+      "p": 1750.15625,
+      "p_new": 92686.1875,
+      "p_old": 91811.7890625,
+      "p_top": 5000.0,
+      "pb_new_equiv": 90936.03125,
+      "pb_old_equiv": 90061.6328125,
+      "qvapor_post": 0.007874930277466774,
+      "qvapor_pre": 0.007688093464821577,
+      "rh": 0.6128938794136047,
+      "t_2_post": -0.24365234375,
+      "t_2_pre": 0.029022216796875,
+      "tc_new": 16.58895874023438,
+      "tc_old": 16.06820678710938,
+      "thloc": 296.3644104003906,
+      "znw_k": 0.9938147068023682,
+      "znw_kp1": 0.9859506487846375
+    }
+  },
+  "wrf_patch": {
+    "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff",
+    "purpose": "fresh disposable hook for parent-interpolated, child-input, post-blend, and post-start-domain target values",
+    "status": "PROPOSED_NOT_APPLIED_SANDBOX_SCRATCH_READ_ONLY"
+  },
+  "wrf_source_evidence": {
+    "adjust_tempqv": {
+      "evidence": [
+        "p_old = c4(k) + c3(k)*save_mub(i,j) + p_top + pp(i,k,j)",
+        "p_new = c4(k) + c3(k)*mub(i,j) + p_top + pp(i,k,j)"
+      ],
+      "lines": "812-890",
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
+    },
+    "mediation_integrate": {
+      "evidence": [
+        "mub_save is copied before terrain/base blending",
+        "blend_terrain updates ht, mub, and phb",
+        "adjust_tempqv is called with the transient post-blend nest%mub",
+        "start_domain(nest,.TRUE.) runs later and recomputes final base fields"
+      ],
+      "lines": "726-805",
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F"
+    }
+  }
+}

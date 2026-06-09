@@ -938,3 +938,18 @@ Immediate pre-validation gate:
 3. Only resume long validation after this pressure/base-input mismatch is
    patched with field proof or explicitly bounded as not driving the larger
    grid deltas.
+
+## Update 2026-06-09 17:32 WEST
+
+The current `MUB/PB` split gate is closed and points to a small init/theta
+source fix. Verdict:
+`STEP1_CURRENT_MUB_BASE_SPLIT_WRF_BLEND_UNIMPLEMENTED_OR_MISMATCHED`.
+
+Validation remains paused. The next pre-validation gate is now:
+
+1. Add or prove a transient post-`blend_terrain`/pre-`start_domain` current
+   `MUB` path for WRF `adjust_tempqv`.
+2. Use that transient field only for live-nest theta/QV adjustment; keep final
+   post-`start_domain` BaseState unchanged for step-entry.
+3. Rerun the Step-1 theta/QV proof and require a field-level guard before
+   returning to Grid-Delta Atlas, Switzerland, or TOST.
