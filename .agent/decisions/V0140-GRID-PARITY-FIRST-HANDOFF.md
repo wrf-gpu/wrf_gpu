@@ -176,6 +176,14 @@ schema field is `T`; largest residual is now `P` max_abs
 Therefore the next sprint is Step-1 operator/source localization, not more
 base-init work and not TOST/Switzerland/FP32/memory.
 
+Update 2026-06-09 14:00 WEST: step-1 T/P operator-localization sprint opened:
+`.agent/sprints/2026-06-09-v014-step1-t-p-operator-localization/sprint-contract.md`.
+This is the active debug sprint. It must use a focused Step-1
+substage-truth/comparator path to localize the first `T` and dominant
+`P/PH/MU` residuals, or deliver a narrow performance-compatible fix with
+before/after proof. No TOST, Switzerland, FP32, memory source work, GPU, or
+Hermes.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
