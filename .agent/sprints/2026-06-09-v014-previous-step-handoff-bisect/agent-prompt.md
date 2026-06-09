@@ -40,6 +40,8 @@ Rules:
   not practical; record the exact command, backend, allocator, and peak VRAM if
   used.
 - No TOST, no Switzerland validation, no broad validation campaign, no FP32.
+- No Hermes, no Telegram, no `ask-hermes`. If blocked, record the blocker in
+  the sprint artifacts.
 - Keep top-level output compact; no large array dumps.
 
 Required validation:

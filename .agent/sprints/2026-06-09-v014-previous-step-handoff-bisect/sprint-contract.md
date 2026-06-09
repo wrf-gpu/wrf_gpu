@@ -50,6 +50,10 @@ GPU use is allowed only for this targeted replay/snapshot probe if CPU replay is
 not practical. Do not run TOST, Switzerland validation, broad validation
 campaigns, or FP32 source work.
 
+Do not use Hermes, Telegram, `ask-hermes`, or any human-notification bridge in
+this sprint. If blocked, write the blocked verdict and exact next action into
+the JSON/Markdown/review artifacts.
+
 ## Required Work
 
 1. Reproduce the h10 producer path as closely as possible:
