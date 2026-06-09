@@ -61,6 +61,13 @@ step-entry boundary. Next sprint is not broad debugging: place a second WRF
 source/save hook after those leaves exist and before any dynamics state mutation,
 or prove the comparison boundary must move.
 
+Update 2026-06-09 11:45 WEST: source/save-boundary sprint opened:
+`.agent/sprints/2026-06-09-v014-source-save-boundary/sprint-contract.md`. This
+is the active next debug step. It must find the first WRF boundary where
+current-step source/save leaves exist and either preserve the step-entry native
+state or move the whole comparison boundary consistently. No production
+`src/gpuwrf/**` edits are authorized.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
