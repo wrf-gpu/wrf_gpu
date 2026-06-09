@@ -3255,7 +3255,7 @@
             "source": "t_2ave=jnp.zeros_like(state.theta, dtype=jnp.float64),"
           }
         ],
-        "head": "a32efce328520e544d28605d81e5d921db06de1e",
+        "head": "8f735a56f7df53a42e4a6eed6eab022883104a09",
         "precision_mode_plumbing": [
           {
             "file": "src/gpuwrf/contracts/precision.py",
@@ -3882,11 +3882,11 @@
     "long_validation": false,
     "tost": false
   },
-  "generated_utc": "2026-06-09T22:29:42.938498+00:00",
+  "generated_utc": "2026-06-09T22:36:51.960720+00:00",
   "git": {
-    "branch": "worker/mythos/v014-memory-fp32",
+    "branch": "worker/gpt/v013-close-manager",
     "dirty": true,
-    "head": "a32efce328520e544d28605d81e5d921db06de1e"
+    "head": "8f735a56f7df53a42e4a6eed6eab022883104a09"
   },
   "item_table": [
     {

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.5 (2026-06-09, principal-directed)
+
+- Renamed the active high-end lane to Fable/Mythos and marked it as a scarce
+  token budget.
+- Added the validation-failure escalation rule: GPT 5.5 workers collect,
+  localize, and attempt directly solvable fixes first; only the unresolved hard
+  core goes to Fable/Mythos after `/compact`.
+- Kept the manager as the merge/gate owner for all Fable/Mythos output.
+
 ## 0.2.4 (2026-06-09, principal-directed)
 
 - Added the Mythos heavy-problem lane: send extremely hard v0.14 problems to

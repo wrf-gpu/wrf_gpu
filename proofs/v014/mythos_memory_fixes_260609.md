@@ -2,7 +2,7 @@
 
 Verdict: `MYTHOS_MEMORY_LANE_CLOSED_MYNN_TILING_MATERIAL_FIX_R0_LANDED_REST_MEASURED_OR_EXACT_DEFER`.
 
-- Branch: `worker/mythos/v014-memory-fp32` @ `a32efce32852`
+- Branch: `worker/gpt/v013-close-manager` @ `8f735a56f7df`
 - CPU-only proof run; GPU evidence via scripts/run_gpu_lowprio.sh artifacts.
 
 ## Item Table
