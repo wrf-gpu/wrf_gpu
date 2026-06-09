@@ -234,6 +234,13 @@ Current status:
   same-input single-RK-step parity using WRF's own pre-RK input savepoint. Only
   if that proof shows a same-input mismatch should a dynamics source edit be
   considered.
+- 2026-06-09 same-input closeout: the strict comparison is currently blocked by
+  missing instrumentation, not by a proven model source defect.
+  `proofs/v014/same_input_single_rk_parity.json` verdict is
+  `SAME_INPUT_TENDENCY_INPUT_BLOCKED_PRE_RK_FULL_NATIVE_STATE_RK_TENDF_AND_HISTORY_SOURCE_FIELDS`.
+  The next validation-enabling sprint is the full pre-RK native-state/tendency
+  WRF hook plus proof-only JAX loader. Powered TOST and Switzerland validation
+  remain paused until this boundary either runs cleanly or localizes a fix.
 - 2026-06-09 source sprint update:
   `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
   as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest

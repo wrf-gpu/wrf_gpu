@@ -37,6 +37,18 @@ instrumentation is too late as the next proof boundary. Active sprint is now
 WRF pre-RK input -> one JAX dynamics step -> WRF post-RK/pre-halo output, with
 tendency-control and patch-width blockers preferred over a weak comparison.
 
+Update 2026-06-09 10:58 WEST: the same-input sprint is closed and pushed as
+`6bc6402a`. Verdict:
+`SAME_INPUT_TENDENCY_INPUT_BLOCKED_PRE_RK_FULL_NATIVE_STATE_RK_TENDF_AND_HISTORY_SOURCE_FIELDS`.
+No comparison was run because the current WRF pre-RK hook emits only `MASS_K1`
+`T/P/PB/MU/MUB`-related fields, not full native `U/V/W/PH/PHB`, full columns,
+controlled `Tendencies`, `DryPhysicsTendencies`, or an `OperationalCarry`
+loader. The active next sprint is now
+`.agent/sprints/2026-06-09-v014-full-pre-rk-savepoint-hook/sprint-contract.md`:
+build a full WRF pre-RK native-state/tendency savepoint and proof-only JAX
+loader, then rerun the strict same-input one-step boundary or name the next
+exact blocker.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
