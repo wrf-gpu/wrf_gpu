@@ -321,6 +321,14 @@ max_abs `974.9820434775493`, RMSE `135.98147360593399`, worst Fortran
 boundary/operator localization. Do not resume TOST, Switzerland, FP32 source
 work, or memory follow-ups from this artifact.
 
+Update 2026-06-09 18:22 WEST: opened the next sprint:
+`.agent/sprints/2026-06-09-v014-step1-p-ph-mu-boundary-localization`. The
+method is a focused Step-1 boundary/substage comparator, reusing the current
+post-theta/QV-closure proof as baseline. It may apply a production source fix
+only if the exact bug is proven and the fix remains narrow and GPU-performance
+compatible. The immediate target is the boundary-band `P` residual while
+accounting for first divergent `T` and material `PH/MU/W/U`.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
