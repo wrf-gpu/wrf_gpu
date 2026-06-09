@@ -269,6 +269,13 @@ class SurfaceMynnDiagnostics(NamedTuple):
     ustar: object
 
 
+class MynnPBLSourceLeaves(NamedTuple):
+    """MYNN adapter output plus raw WRF PBL source leaves."""
+
+    state: State
+    rthblten: jax.Array
+
+
 class RRTMGRadiationDiagnostics(NamedTuple):
     """Surface radiation diagnostics emitted by the RRTMG adapter inputs."""
 
@@ -1415,6 +1422,37 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     return _state_from_mynn_output(state, out)
 
 
+def mynn_adapter_with_source_leaves(
+    state: State, dt: float, grid: GridSpec | None = None
+) -> MynnPBLSourceLeaves:
+    """Advance MYNN and expose the raw WRF ``RTHBLTEN`` theta tendency.
+
+    WRF's MYNN path writes ``RTHBLTEN = (theta_after - theta_before) / dt``
+    inside ``module_bl_myjpbl``.  The operational adapter already computes the
+    same post-solve theta; this helper returns that scheme-local source rate so
+    the runtime can mass-couple it into ``DryPhysicsTendencies.t_tendf`` without
+    treating an aggregate multi-scheme state delta as a dry source.
+    """
+
+    column = _mynn_column_from_state(state, grid)
+    surface = _surface_fluxes_from_state(state)
+    ny, nx = column.theta.shape[0], column.theta.shape[1]
+    column_b = _flatten_columns_to_batch(column, ny, nx)
+    surface_b = _flatten_columns_to_batch(surface, ny, nx)
+    out_b = step_mynn_pbl_column(
+        column_b, dt, debug=False, surface=surface_b, edmf=_MYNN_EDMF, dx=_mynn_dx(grid)
+    )
+    out = _unflatten_batch_to_columns(out_b, ny, nx)
+    theta_after = _from_columns(out.theta)
+    rthblten = ((theta_after - jnp.asarray(state.theta, jnp.float64)) / float(dt)).astype(
+        _output_dtype(state, "theta")
+    )
+    return MynnPBLSourceLeaves(
+        state=_state_from_mynn_output(state, out),
+        rthblten=rthblten,
+    )
+
+
 def mynn_adapter_with_diagnostics(
     state: State, dt: float, grid: GridSpec | None = None
 ) -> tuple[State, object]:
@@ -2296,6 +2334,7 @@ __all__ = [
     "wrf_radiation_slope_aspect_from_terrain",
     "gwdo_adapter",
     "mynn_adapter",
+    "mynn_adapter_with_source_leaves",
     "mynn_adapter_with_diagnostics",
     "rrtmg_radiation_diagnostics",
     "rrtmg_adapter",

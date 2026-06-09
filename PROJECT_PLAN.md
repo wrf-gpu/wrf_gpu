@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-10 00:17 WEST): **v0.14 is the active closure target. Grid-cell
+Status (2026-06-10 00:43 WEST): **v0.14 is the active closure target. Grid-cell
 parity gates the release; proof-backed v0.14 memory fixes are merged; TOST
 remains a final validation gate, not the next blind GPU marathon.**
 
@@ -8,7 +8,7 @@ Current release-manager state:
 
 | Lane | Status | Next manager action |
 |---|---|---|
-| Step-1/grid-cell parity | Active. Latest accepted proof localizes the first material `T_TENDF` divergence inside WRF `first_rk_step_part2`: `update_phy_ten` adds active raw `RTHRATEN`/`RTHBLTEN` leaves, then `conv_t_tendf_to_moist` closes to roundoff. Current JAX dry `T_TENDF` remains divergent: max_abs `2457.5830078125`, RMSE `21.674279301376934`. | Open implementation sprint for true WRF dry physics source leaves before `_augment_large_step_tendencies`. Gate on the Step-1 proof moving near-zero and then a short grid-field falsifier. No TOST/Switzerland until this boundary is fixed or bounded. |
+| Step-1/grid-cell parity | Active. Source-leaf plumbing sprint is closed as blocked, not fixed. JAX now emits nonzero dry `T_TENDF` in `rad_rk_tendf=1` mode, but the strict Step-1 proof remains red: after-conv residual max_abs `2457.575215120763`, RMSE `21.445918959761645`; WRF active `RTHBLTEN` is still much larger (max_abs `2522.90576171875`) than JAX source leaf (max_abs `260.83156991819124`). | Open one coherent GPT source-fidelity sprint: split MYNN `RTHBLTEN/RQVBLTEN` against WRF, seed/refresh held `RTHRATEN` at Step 1, implement WRF `conv_t_tendf_to_moist`/`QV_TEND` before dry source injection. Gate on strict Step-1 proof collapse or one narrower WRF-anchored blocker. No TOST/Switzerland until fixed or bounded. |
 | Memory/FP32 | Memory lane accepted and merged: MYNN BouLac leading-column tiling (`26815feb`) cuts the measured whole-batch MYNN temp from 14.7 GiB to 3.2 GiB on the 641x321x50 target; shared RK-stage transport velocities landed as exact hygiene; exact-branch memory preflight is green at 8116 MiB compute peak, 378 s warm-cache. FP32 R0 default-inert acoustic precision-mode contract landed (`bc847db2`), but R1/R2 mixed precision remains blocked by the open fp64 dynamics frontier. | Do not spend Fable/Mythos on memory now. After grid parity closes, rerun exact-branch memory preflight on the final candidate and then decide whether FP32 R1 belongs in v0.14 or a post-release lane. |
 | GPU validation hygiene | Runbook and wrappers exist (`docs/GPU_RUNBOOK.md`, `scripts/run_gpu_lowprio.sh`, `scripts/run_powered_tost_n15.sh`). | Keep GPU jobs serialized through the lock wrapper; long validation starts only after grid and memory branches stabilize. |
 | Switzerland/Gotthard | CPU truth/cases exist, but no post-v0.14-fix GPU-vs-CPU proof yet. | Run as v0.14 validation gate after parity/memory stabilization. |

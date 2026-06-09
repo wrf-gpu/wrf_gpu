@@ -1,0 +1,1153 @@
+{
+  "commands": {
+    "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
+    "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_dry_source_leaf_fix.py"
+  },
+  "created_utc": "2026-06-09T23:40:08.237377+00:00",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "forced_radiation_falsifier": {
+    "capture": {
+      "label": "step1_dry_source_leaf_fix_forced_radiation",
+      "namelist": {
+        "acoustic_substeps": 10,
+        "bl_pbl_physics": 5,
+        "cu_physics": 0,
+        "diff_6th_opt": 2,
+        "diff_opt": 0,
+        "dt_s": 6.0,
+        "force_fp64": true,
+        "km_opt": 0,
+        "moist_adv_opt": 0,
+        "mp_physics": 8,
+        "rad_rk_tendf": 1,
+        "radiation_cadence_steps": 1,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "scalar_adv_opt": 0,
+        "sf_sfclay_physics": 5,
+        "use_flux_advection": true
+      },
+      "run_radiation": true,
+      "status": "JAX_TENDENCY_BOUNDARIES_READY"
+    },
+    "metrics": {
+      "after_conv_vs_jax_dry_t_tendf": {
+        "bias": 0.8225220464400177,
+        "count": 442112,
+        "max_abs": 2454.161554535577,
+        "nonfinite_diff_count": 0,
+        "p95": 1.755236019198935,
+        "p99": 51.234471816050295,
+        "rmse": 21.878698621747557,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2457.5830078125,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -3.421453276922923
+      },
+      "after_update_vs_jax_dry_t_tendf": {
+        "bias": 0.45802697550744265,
+        "count": 442112,
+        "max_abs": 2521.858087738702,
+        "nonfinite_diff_count": 0,
+        "p95": 1.7687479313419212,
+        "p99": 29.227965821038623,
+        "rmse": 21.228798175722982,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2525.279541015625,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -3.421453276922923
+      },
+      "derived_candidate_summaries": {
+        "current_jax_dry_t_tendf": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 284.2895997039706,
+          "max_abs": 284.2895997039706,
+          "mean": -0.7495414593265478,
+          "min": -40.15226439095437,
+          "nonzero_count": 461736,
+          "rms": 5.050544490081052,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "jax_physics_state_delta_mass_tendf": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 9.28495502705573e-10,
+          "max_abs": 9.28495502705573e-10,
+          "mean": 1.2323350477606548e-13,
+          "min": -9.280364624923246e-10,
+          "nonzero_count": 18774,
+          "rms": 1.8364597404484637e-10,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "wrf_conv_expected_moist_formula": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2242.130973620906,
+          "max_abs": 2457.5830977761507,
+          "mean": 0.07221553522623346,
+          "min": -2457.5830977761507,
+          "nonzero_count": 442110,
+          "rms": 21.208695089236528,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "wrf_update_expected_pre_plus_active_rth": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2139.64990234375,
+          "max_abs": 2525.279541015625,
+          "mean": -0.294591046657098,
+          "min": -2525.279541015625,
+          "nonzero_count": 461733,
+          "rms": 20.844678742176747,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      }
+    }
+  },
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n"
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "b1f81bf71612b385d63c7e2bbf262c34a16e78d9\n"
+    },
+    "status_short": {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": " M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_dry_source_leaf_fix.json\n?? proofs/v014/step1_dry_source_leaf_fix.md\n?? proofs/v014/step1_dry_source_leaf_fix.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_dry_source_leaf_wiring.py\n"
+    }
+  },
+  "jax_source_leaf_mode": {
+    "derived_candidate_summaries": {
+      "current_jax_dry_t_tendf": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 260.83156991819124,
+        "max_abs": 260.83156991819124,
+        "mean": 0.03512275688912021,
+        "min": -40.270729381590726,
+        "nonzero_count": 451233,
+        "rms": 3.8939509987656393,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "jax_physics_state_delta_mass_tendf": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 9.28495502705573e-10,
+        "max_abs": 9.28495502705573e-10,
+        "mean": 1.2323350477606548e-13,
+        "min": -9.280364624923246e-10,
+        "nonzero_count": 18774,
+        "rms": 1.8364597404484637e-10,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_conv_expected_moist_formula": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 2242.130973620906,
+        "max_abs": 2457.5830977761507,
+        "mean": 0.07221553522623346,
+        "min": -2457.5830977761507,
+        "nonzero_count": 442110,
+        "rms": 21.208695089236528,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_update_expected_pre_plus_active_rth": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 2139.64990234375,
+        "max_abs": 2525.279541015625,
+        "mean": -0.294591046657098,
+        "min": -2525.279541015625,
+        "nonzero_count": 461733,
+        "rms": 20.844678742176747,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      }
+    },
+    "primary_capture": {
+      "label": "step1_dry_source_leaf_fix_rad_rk_tendf_1",
+      "namelist": {
+        "acoustic_substeps": 10,
+        "bl_pbl_physics": 5,
+        "cu_physics": 0,
+        "diff_6th_opt": 2,
+        "diff_opt": 0,
+        "dt_s": 6.0,
+        "force_fp64": true,
+        "km_opt": 0,
+        "moist_adv_opt": 0,
+        "mp_physics": 8,
+        "rad_rk_tendf": 1,
+        "radiation_cadence_steps": 300,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "scalar_adv_opt": 0,
+        "sf_sfclay_physics": 5,
+        "use_flux_advection": true
+      },
+      "run_radiation": false,
+      "status": "JAX_TENDENCY_BOUNDARIES_READY"
+    },
+    "primary_metrics": {
+      "after_conv_vs_jax_dry_t_tendf": {
+        "bias": 0.03896002940609997,
+        "count": 442112,
+        "max_abs": 2457.575215120763,
+        "nonfinite_diff_count": 0,
+        "p95": 2.3217108567354865,
+        "p99": 38.262799413800344,
+        "rmse": 21.445918959761645,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2457.5830078125,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -0.007792691736854582
+      },
+      "after_update_vs_jax_dry_t_tendf": {
+        "bias": -0.3255350415264749,
+        "count": 442112,
+        "max_abs": 2525.271748323888,
+        "nonfinite_diff_count": 0,
+        "p95": 2.3101660307841905,
+        "p99": 15.840376084797951,
+        "rmse": 20.975418240284927,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2525.279541015625,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -0.007792691736854582
+      },
+      "wrf_active_rth_vs_jax_source_leaf": {
+        "bias": -0.28907409541776086,
+        "count": 442112,
+        "max_abs": 2525.279541015625,
+        "nonfinite_diff_count": 0,
+        "p95": 2.3096532344818104,
+        "p99": 13.521042842864995,
+        "rmse": 21.24910416291021,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2525.279541015625,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": 0.0
+      }
+    }
+  },
+  "next_boundary": "Next source boundary: split MYNN PBL adapter/kernel inputs and outputs against WRF `RTHBLTEN`/`RQVBLTEN`, seed or refresh held `RTHRATEN` at the same Step-1 boundary, then implement WRF `conv_t_tendf_to_moist` before feeding `DryPhysicsTendencies.t_tendf`.",
+  "paths": {
+    "handoff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "82a6e6a9055f052c4033142147c887ceb4ce2d838217518020e169a6273e0078",
+      "size_bytes": 97266
+    },
+    "prior_proof": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split.md",
+      "sha256": "7728c3d57f6080b726b110f0459cf2ef1440b096fd9cd6326d9e0a760a299eb4",
+      "size_bytes": 2012
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-10-v014-dry-source-leaf-fix/sprint-contract.md",
+      "sha256": "db3a536cd0e678640fb3e23e36bbba3ecdc592ba85a1be76202a8ee1f123e269",
+      "size_bytes": 4407
+    },
+    "wrf_truth": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "ranked_blockers": [
+    {
+      "evidence": {
+        "jax_source_leaf_summary": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 260.83156991819124,
+          "max_abs": 260.83156991819124,
+          "mean": 0.03512275688912021,
+          "min": -40.270729381590726,
+          "nonzero_count": 451233,
+          "rms": 3.8939509987656393,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "primary_after_update_vs_jax_source_leaf": {
+          "bias": -0.3255350415264749,
+          "count": 442112,
+          "max_abs": 2525.271748323888,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3101660307841905,
+          "p99": 15.840376084797951,
+          "rmse": 20.975418240284927,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2525.279541015625,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.007792691736854582
+        },
+        "wrf_active_sum_summary": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2139.64990234375,
+          "max_abs": 2525.279541015625,
+          "mean": -0.294591046657098,
+          "min": -2525.279541015625,
+          "nonzero_count": 461733,
+          "rms": 20.844678742176747,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      "hypothesis": "JAX MYNN `RTHBLTEN` source is not WRF-compatible at this Step-1 boundary.",
+      "rank": 1,
+      "status": "BLOCKING"
+    },
+    {
+      "evidence": {
+        "forced_radiation_after_conv": {
+          "bias": 0.8225220464400177,
+          "count": 442112,
+          "max_abs": 2454.161554535577,
+          "nonfinite_diff_count": 0,
+          "p95": 1.755236019198935,
+          "p99": 51.234471816050295,
+          "rmse": 21.878698621747557,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -3.421453276922923
+        },
+        "primary_after_conv": {
+          "bias": 0.03896002940609997,
+          "count": 442112,
+          "max_abs": 2457.575215120763,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3217108567354865,
+          "p99": 38.262799413800344,
+          "rmse": 21.445918959761645,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.007792691736854582
+        }
+      },
+      "hypothesis": "The held JAX `rthraten` leaf is zero at Step-1 while WRF has active `RTHRATEN`; forcing radiation only improves the residual marginally.",
+      "rank": 2,
+      "status": "SECONDARY_BLOCKING"
+    },
+    {
+      "evidence": {
+        "bias": -0.364495070932575,
+        "count": 442112,
+        "max_abs": 224.50967407226562,
+        "nonfinite_diff_count": 0,
+        "p95": 0.03153986930847149,
+        "p99": 22.204026584625396,
+        "rmse": 4.572429855170764,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -491.5520324707031,
+        "worst_mismatch_fortran": {
+          "i": 72,
+          "j": 33,
+          "k": 3
+        },
+        "worst_reference": -267.0423583984375
+      },
+      "hypothesis": "WRF `conv_t_tendf_to_moist` and its `QV_TEND` term are not represented in the JAX dry source bundle.",
+      "rank": 3,
+      "status": "SECONDARY_BLOCKING"
+    }
+  ],
+  "schema": "wrfgpu2.v014.step1_dry_source_leaf_fix.v1",
+  "source_patch": {
+    "double_count_guard": "MYNN theta delta is removed from the later non-dry physics state update in source-leaf mode.",
+    "mode": "rad_rk_tendf=1 routes held RTHRATEN plus MYNN RTHBLTEN into DryPhysicsTendencies.t_tendf",
+    "production_files": [
+      "src/gpuwrf/coupling/physics_couplers.py",
+      "src/gpuwrf/runtime/operational_mode.py"
+    ],
+    "test_file": "tests/test_v014_dry_source_leaf_wiring.py"
+  },
+  "status": "PROOF_EXECUTED",
+  "target": {
+    "cpu_only": true,
+    "domain": 2,
+    "pass_target": {
+      "max_abs": 0.001,
+      "rmse": 1e-05
+    },
+    "step": 1
+  },
+  "verdict": "DRY_SOURCE_LEAF_PLUMBING_ACTIVE_BUT_STEP1_T_TENDF_NOT_CLOSED",
+  "wrf_truth": {
+    "active_components": {
+      "active_aggregate_ranked_by_nested_interior_max_abs": [
+        {
+          "active_aggregate": true,
+          "active_leaf": false,
+          "field": "RTH_ACTIVE_SUM_MOIST",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 2171.199951171875,
+            "max_abs": 2562.844970703125,
+            "mean": -0.2923379117390147,
+            "min": -2562.844970703125,
+            "nonzero_count": 461733,
+            "rms": 21.1615564190631,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 2171.199951171875,
+            "max_abs": 2562.844970703125,
+            "mean": -0.28674285538393113,
+            "min": -2562.844970703125,
+            "nonzero_count": 442109,
+            "rms": 21.57211955065789,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": true,
+          "active_leaf": false,
+          "field": "RTH_ACTIVE_SUM",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 2139.64990234375,
+            "max_abs": 2525.279541015625,
+            "mean": -0.294591046657098,
+            "min": -2525.279541015625,
+            "nonzero_count": 461733,
+            "rms": 20.844678742176747,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 2139.64990234375,
+            "max_abs": 2525.279541015625,
+            "mean": -0.2890740954177191,
+            "min": -2525.279541015625,
+            "nonzero_count": 442109,
+            "rms": 21.249104162910232,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        }
+      ],
+      "active_field_names": [
+        "RTHRATEN",
+        "RTHBLTEN"
+      ],
+      "active_flags_from_wrf_header": [
+        "ra",
+        "bl",
+        "cu",
+        "shcu",
+        "grid_fdda",
+        "iau",
+        "ifire",
+        "1",
+        "1",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "active_leaf_ranked_by_nested_interior_max_abs": [
+        {
+          "active_aggregate": false,
+          "active_leaf": true,
+          "field": "RTHBLTEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 2138.7490234375,
+            "max_abs": 2522.90576171875,
+            "mean": 0.3291407827539182,
+            "min": -2522.90576171875,
+            "nonzero_count": 61946,
+            "rms": 20.579344922405234,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 2138.7490234375,
+            "max_abs": 2522.90576171875,
+            "mean": 0.3337582953171923,
+            "min": -2522.90576171875,
+            "nonzero_count": 59337,
+            "rms": 20.984261166424478,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": true,
+          "field": "RTHRATEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 41.89738082885742,
+            "max_abs": 41.89738082885742,
+            "mean": -0.6237318286300935,
+            "min": -12.76959800720215,
+            "nonzero_count": 461733,
+            "rms": 1.5059339544676242,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 39.80049896240234,
+            "max_abs": 39.80049896240234,
+            "mean": -0.6228323899254602,
+            "min": -12.76959800720215,
+            "nonzero_count": 442109,
+            "rms": 1.510482737622993,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        }
+      ],
+      "all_raw_including_inactive_ranked_by_nested_interior_max_abs": [
+        {
+          "active_aggregate": false,
+          "active_leaf": false,
+          "field": "RTHSHTEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 3.518532600778794e+33,
+            "max_abs": 3.518532600778794e+33,
+            "mean": 2.309041366446864e+31,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 245649,
+            "rms": 2.791684592378463e+32,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 3.518532600778794e+33,
+            "max_abs": 3.518532600778794e+33,
+            "mean": 2.338452772857234e+31,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 235910,
+            "rms": 2.809409709503376e+32,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": false,
+          "field": "RTH_ALL_SUM",
+          "full": {
+            "count": 461736,
+            "finite_count": 457710,
+            "max": 3.518532600778794e+33,
+            "max_abs": 3.518532600778794e+33,
+            "mean": 2.4000358771752083e+31,
+            "min": -2525.279541015625,
+            "nonzero_count": 457709,
+            "rms": 2.8048463503925856e+32,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 438350,
+            "max": 3.518532600778794e+33,
+            "max_abs": 3.518532600778794e+33,
+            "mean": 2.42924428195174e+31,
+            "min": -2525.279541015625,
+            "nonzero_count": 438349,
+            "rms": 2.8223450682856483e+32,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": false,
+          "field": "RTHNDGDTEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 459448,
+            "max": 7.618957098799247e+31,
+            "max_abs": 7.618957098799247e+31,
+            "mean": 6.3206140145715706e+29,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 134346,
+            "rms": 6.894738982812084e+30,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 440000,
+            "max": 7.618957098799247e+31,
+            "max_abs": 7.618957098799247e+31,
+            "mean": 6.2996512387408724e+29,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 129405,
+            "rms": 6.883536806178708e+30,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": false,
+          "field": "RTHFRTEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 459998,
+            "max": 7.267001557794185e+31,
+            "max_abs": 7.267001557794185e+31,
+            "mean": 3.515283128688774e+29,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 167988,
+            "rms": 4.902119577455698e+30,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 440462,
+            "max": 7.267001557794185e+31,
+            "max_abs": 7.267001557794185e+31,
+            "mean": 3.516535371253914e+29,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 161111,
+            "rms": 4.9027596060992294e+30,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": false,
+          "field": "RTHIAUTEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 11508205.0,
+            "max_abs": 11508205.0,
+            "mean": 42220.87789766657,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 176044,
+            "rms": 697055.6060695028,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 11508205.0,
+            "max_abs": 11508205.0,
+            "mean": 41804.2876844468,
+            "min": -1.192024777590879e-20,
+            "nonzero_count": 169105,
+            "rms": 693608.1836137652,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": true,
+          "active_leaf": false,
+          "field": "RTH_ACTIVE_SUM_MOIST",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 2171.199951171875,
+            "max_abs": 2562.844970703125,
+            "mean": -0.2923379117390147,
+            "min": -2562.844970703125,
+            "nonzero_count": 461733,
+            "rms": 21.1615564190631,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 2171.199951171875,
+            "max_abs": 2562.844970703125,
+            "mean": -0.28674285538393113,
+            "min": -2562.844970703125,
+            "nonzero_count": 442109,
+            "rms": 21.57211955065789,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": true,
+          "active_leaf": false,
+          "field": "RTH_ACTIVE_SUM",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 2139.64990234375,
+            "max_abs": 2525.279541015625,
+            "mean": -0.294591046657098,
+            "min": -2525.279541015625,
+            "nonzero_count": 461733,
+            "rms": 20.844678742176747,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 2139.64990234375,
+            "max_abs": 2525.279541015625,
+            "mean": -0.2890740954177191,
+            "min": -2525.279541015625,
+            "nonzero_count": 442109,
+            "rms": 21.249104162910232,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": true,
+          "field": "RTHBLTEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 2138.7490234375,
+            "max_abs": 2522.90576171875,
+            "mean": 0.3291407827539182,
+            "min": -2522.90576171875,
+            "nonzero_count": 61946,
+            "rms": 20.579344922405234,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 2138.7490234375,
+            "max_abs": 2522.90576171875,
+            "mean": 0.3337582953171923,
+            "min": -2522.90576171875,
+            "nonzero_count": 59337,
+            "rms": 20.984261166424478,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": true,
+          "field": "RTHRATEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 41.89738082885742,
+            "max_abs": 41.89738082885742,
+            "mean": -0.6237318286300935,
+            "min": -12.76959800720215,
+            "nonzero_count": 461733,
+            "rms": 1.5059339544676242,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 39.80049896240234,
+            "max_abs": 39.80049896240234,
+            "mean": -0.6228323899254602,
+            "min": -12.76959800720215,
+            "nonzero_count": 442109,
+            "rms": 1.510482737622993,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        },
+        {
+          "active_aggregate": false,
+          "active_leaf": false,
+          "field": "RTHCUTEN",
+          "full": {
+            "count": 461736,
+            "finite_count": 461736,
+            "max": 0.0,
+            "max_abs": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "nonzero_count": 0,
+            "rms": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "nested_interior": {
+            "count": 442112,
+            "finite_count": 442112,
+            "max": 0.0,
+            "max_abs": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "nonzero_count": 0,
+            "rms": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          }
+        }
+      ],
+      "inactive_leaf_note": "Inactive RTH leaves can contain uninitialized finite/NaN values in WRF; only leaves enabled by active_theta_source_flags contribute to RTH_ACTIVE_SUM.",
+      "status": "RAW_RTH_COMPONENTS_SUMMARIZED"
+    },
+    "self_consistency": {
+      "after_conv_vs_after_part2": {
+        "bias": 0.0,
+        "count": 442112,
+        "max_abs": 0.0,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "rmse": 0.0,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 30.08966445922852,
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 2,
+          "k": 1
+        },
+        "worst_reference": 30.08966445922852
+      },
+      "after_conv_vs_moist_formula": {
+        "bias": 1.3466279640646712e-08,
+        "count": 442112,
+        "max_abs": 0.00016236981809925055,
+        "nonfinite_diff_count": 0,
+        "p95": 9.974626740127944e-08,
+        "p99": 1.3856209870866126e-06,
+        "rmse": 8.089162788029723e-07,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 2128.967529296875,
+        "worst_mismatch_fortran": {
+          "i": 64,
+          "j": 37,
+          "k": 4
+        },
+        "worst_reference": 2128.967366927057
+      },
+      "after_update_vs_after_conv": {
+        "bias": -0.364495070932575,
+        "count": 442112,
+        "max_abs": 224.50967407226562,
+        "nonfinite_diff_count": 0,
+        "p95": 0.03153986930847149,
+        "p99": 22.204026584625396,
+        "rmse": 4.572429855170764,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -491.5520324707031,
+        "worst_mismatch_fortran": {
+          "i": 72,
+          "j": 33,
+          "k": 3
+        },
+        "worst_reference": -267.0423583984375
+      },
+      "after_update_vs_pre_plus_active_rth": {
+        "bias": 0.0,
+        "count": 442112,
+        "max_abs": 0.0,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "rmse": 0.0,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 13.25869846343994,
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 2,
+          "k": 1
+        },
+        "worst_reference": 13.25869846343994
+      }
+    }
+  }
+}
