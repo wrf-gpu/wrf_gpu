@@ -19,6 +19,13 @@ not interrupt the dynamic root-cause lane. After grid parity closes, rerun the
 exact-branch memory preflight for the selected long validation config, then do
 only optional bit-identical cleanups unless a measured peak proves otherwise.
 
+Update 2026-06-09 19:54 WEST: the parallel memory/FP32 side manager completed
+and was merged as `ee6cbbe1`. It closed the only non-conflicting source cleanup:
+WDM6 `slmsk` now passes a per-column mask instead of materializing `(ncol,nlev)`.
+CPU proof and WDM6 parity/smoke gates passed. All larger memory and FP32 source
+items remain blocked by the active live-nest `P/MU/W` grid-parity locks, not by
+lack of a plan.
+
 ## Decision
 
 The release-critical memory blocker was RRTMG full-column radiation memory. It
@@ -57,7 +64,9 @@ Priority order remains:
 - `proofs/v0120/nested_oom_fix.json`
 - `proofs/v014/fp32_acoustic_probes.json`
 - `proofs/v014/empirical_memory_map.json`
+- `proofs/v014/parallel_memory_fp32_manager.json`
 - `.agent/reviews/2026-06-09-v014-empirical-memory-map.md`
+- `.agent/reviews/2026-06-09-v014-parallel-memory-fp32-manager.md`
 - `PROJECT_PLAN.md`
 - `.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md`
 - `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`
@@ -90,7 +99,7 @@ measurement or tuning task.
 | 4 | Nested allocator and output-interval segmentation | Fixed in v0.12 and retained | Yes for nested long runs, already fixed. | Exact failing L3 case: BFC default h=2 peak 32019 MiB with creep; platform allocator re-exec peak 15806 MiB, flat, about 16.8 GiB headroom. | Medium performance cost, about 1.33x slower nested path in proof. | `src/gpuwrf/cli.py`, `src/gpuwrf/integration/nested_pipeline.py`, `src/gpuwrf/runtime/domain_tree.py` | `proofs/v0120/nested_oom_fix.json`; repeat exact-branch nested memory preflight after major runtime changes. |
 | 5 | Two-way feedback duplicate total/base reconstruction removal | Fixed | No. Keep it. | 9.088 MiB per-feedback-event transient cut, about 11.5 percent of measured parent-field-scaled feedback transient. | Low. | `src/gpuwrf/coupling/boundary_feedback.py`, `src/gpuwrf/runtime/domain_tree.py` | `proofs/v013/twoway_vram.json`: all leaves bit-identical, max abs diff 0.0. |
 | 6 | Moisture advection duplicate transport velocity build | Pending | No. Safe cleanup only after grid-parity work unless it is in an adjacent touched file. | Static estimate 0.45-0.65 GiB on 641x321x50 when `moist_adv_opt != 0`; default-inert when off. | Low/medium. Default-off should be byte-identical, but active moisture path must preserve WRF scalar cadence. | `src/gpuwrf/runtime/operational_mode.py`, possibly `src/gpuwrf/dynamics/flux_advection.py` | Default `moist_adv_opt=0` bit identity; active `moist_adv_opt=1/2` conservation, positivity, and `proofs/v013/moisture_advection_wiring.json` rerun; no new transfers. |
-| 7 | WDM6 `slmsk` full-column broadcast | Pending | No. | About 0.077 GiB at 641x321x50. | Low, scheme-specific and opt-in. | `src/gpuwrf/coupling/scan_adapters.py` | WDM6 oracle/smoke with exact outputs or predeclared tolerance; default suite unchanged. |
+| 7 | WDM6 `slmsk` full-column broadcast | Fixed in `ee6cbbe1` | No, already fixed. | About 0.077 GiB at 641x321x50. | Low, scheme-specific and opt-in. | `src/gpuwrf/coupling/scan_adapters.py` | `proofs/v014/parallel_memory_fp32_manager.json`: old full-column vs new per-column layout exact across State leaves; 85 WDM6 savepoint tests and operational WDM6 smoke passed. |
 | 8 | Whole-domain column tiling for non-radiation physics | Pending | No, measure first. | 1-3+ GiB per active scheme in static source estimates; larger for two-moment schemes and kernel internals. | Medium/high due per-scheme coupling and output shape details. | `src/gpuwrf/coupling/scan_adapters.py`, `src/gpuwrf/coupling/physics_couplers.py`, `src/gpuwrf/physics/thompson_column.py`, `src/gpuwrf/physics/microphysics_*.py`, PBL/cumulus files per scheme | One scheme at a time. CPU exact-output tile-vs-untiled proof, then short GPU VRAM suite, then real-case smoke for that scheme. |
 | 9 | Post-physics non-dry sparse/donated merge | Pending | No. | Static estimate 1.33 GiB output leaves; up to 2.64 GiB if deltas materialize separately. | Medium/high because it changes coupling liveness and donation behavior. | `src/gpuwrf/runtime/operational_mode.py`, `src/gpuwrf/coupling/physics_couplers.py`, `src/gpuwrf/coupling/scan_adapters.py` | Exact default output proof over selected schemes; donation/transfer audit; short coupled GPU run with peak VRAM. |
 | 10 | PBL/surface bottom-only prep and duplicate diagnostics reuse | Pending | No. Keep out of first long validation unless it is needed for a correctness fix. | Static estimate 0.3-0.8 GiB. | Medium/high because selected-sfclay diagnostics also affect PBL semantics. | `src/gpuwrf/coupling/scan_adapters.py`, `src/gpuwrf/coupling/physics_couplers.py`, surface-layer adapters, MYNN/MRF/PBL adapters | Surface/PBL WRF oracle for selected pairs; exact default-config no-regression; coupled real-case smoke. |
@@ -138,11 +147,11 @@ above.
    blocks long validation after grid parity. MYNN BouLac, non-radiation column
    tiling, post-physics merge, and moisture limiter liveness remain
    measurement-first.
-3. **V014-MEM-2: optional small bit-identical cleanup.** If useful after grid
-   parity, implement WDM6 `slmsk` shape-only cleanup first, or moisture velocity
-   reuse if active moisture advection is on the validation path. Both need exact
-   default gates; neither blocks long validation if the exact-branch preflight
-   fits.
+3. **V014-MEM-2: optional small bit-identical cleanup.** WDM6 `slmsk`
+   shape-only cleanup is complete in `ee6cbbe1`. After grid parity, consider
+   moisture velocity reuse if active moisture advection is on the validation
+   path. It needs exact default gates and active-path conservation/positivity
+   proof; it does not block long validation if the exact-branch preflight fits.
 4. **V014-MEM-3: non-radiation column tiling pilot.** Pick one measured offender,
    preferably a physics scheme with strong oracle coverage, and reuse the RRTMG
    tiling pattern.
