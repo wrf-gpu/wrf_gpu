@@ -75,6 +75,14 @@ CPU_TIMING_RE = re.compile(
     r"on domain\s+(?P<domain>\d+):\s+"
     r"(?P<elapsed>[0-9.]+) elapsed seconds"
 )
+WRITER_LATLON_FIELDS: tuple[str, ...] = (
+    "XLAT",
+    "XLONG",
+    "XLAT_U",
+    "XLONG_U",
+    "XLAT_V",
+    "XLONG_V",
+)
 
 
 class PipelineBlocked(RuntimeError):
@@ -152,6 +160,7 @@ class DailyCase:
     namelist: Any
     run_start: datetime
     metadata: dict[str, Any]
+    writer_diagnostics: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -229,6 +238,134 @@ def _domain_namelist_value(run: Gen2Run, group: str, key: str, domain: str, defa
             return value[index]
         return value[-1] if value else default
     return value
+
+
+def _lookup_attr(obj: Any, name: str, default: Any = None) -> Any:
+    if obj is None:
+        return default
+    if isinstance(obj, Mapping):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
+def _static_latlon_expected_shapes(grid: Any | None) -> dict[str, tuple[int, int]]:
+    nx = _lookup_attr(grid, "nx", None)
+    ny = _lookup_attr(grid, "ny", None)
+    projection = _lookup_attr(grid, "projection", None)
+    if nx is None:
+        nx = _lookup_attr(projection, "nx", None)
+    if ny is None:
+        ny = _lookup_attr(projection, "ny", None)
+    if nx is None or ny is None:
+        return {}
+    nx_i = int(nx)
+    ny_i = int(ny)
+    return {
+        "XLAT": (ny_i, nx_i),
+        "XLONG": (ny_i, nx_i),
+        "XLAT_U": (ny_i, nx_i + 1),
+        "XLONG_U": (ny_i, nx_i + 1),
+        "XLAT_V": (ny_i + 1, nx_i),
+        "XLONG_V": (ny_i + 1, nx_i),
+    }
+
+
+def _read_static_latlon(path: Path, name: str) -> np.ndarray | None:
+    with Dataset(path, "r") as dataset:
+        if name not in dataset.variables:
+            return None
+        variable = dataset.variables[name]
+        data = variable[0] if variable.dimensions and variable.dimensions[0] == "Time" else variable[:]
+        return np.asarray(np.ma.filled(data, np.nan), dtype=np.float32)
+
+
+def _candidate_static_latlon_paths(run: Gen2Run, domain: str) -> list[Path]:
+    paths: list[Path] = []
+    try:
+        paths.append(run.wrfinput_file(domain))
+    except (FileNotFoundError, ValueError):
+        pass
+    try:
+        paths.extend(run.history_files(domain))
+    except (FileNotFoundError, ValueError):
+        pass
+    deduped: list[Path] = []
+    seen: set[Path] = set()
+    for path in paths:
+        key = Path(path).resolve()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(Path(path))
+    return deduped
+
+
+def _load_static_latlon_writer_diagnostics(
+    run: Gen2Run,
+    domain: str,
+    *,
+    grid: Any | None = None,
+) -> tuple[dict[str, np.ndarray] | None, dict[str, Any]]:
+    """Load real WRF static lat/lon fields for host-only wrfout diagnostics.
+
+    The payload is intentionally kept out of ``State``/``GridSpec``/``Namelist``:
+    it is writer metadata, loaded once at case setup, and merged into the existing
+    diagnostics map at output boundaries.
+    """
+
+    candidates = _candidate_static_latlon_paths(run, domain)
+    expected_shapes = _static_latlon_expected_shapes(grid)
+    fields: dict[str, np.ndarray] = {}
+    meta_fields: dict[str, Any] = {}
+    errors: dict[str, str] = {}
+    for name in WRITER_LATLON_FIELDS:
+        for path in candidates:
+            try:
+                value = _read_static_latlon(path, name)
+            except Exception as exc:  # noqa: BLE001 -- keep trying other static sources.
+                errors[f"{path}:{name}"] = f"{type(exc).__name__}: {exc}"
+                continue
+            if value is None:
+                continue
+            expected = expected_shapes.get(name)
+            if expected is not None and tuple(value.shape) != expected:
+                raise ValueError(
+                    f"{path}:{name} shape {tuple(value.shape)} does not match grid shape {expected}"
+                )
+            fields[name] = value.astype(np.float32, copy=False)
+            finite = np.isfinite(value)
+            meta_fields[name] = {
+                "source_file": str(path),
+                "shape": list(value.shape),
+                "dtype": str(value.dtype),
+                "finite_fraction": float(finite.sum() / max(value.size, 1)),
+                "min": float(np.nanmin(value)) if value.size else None,
+                "max": float(np.nanmax(value)) if value.size else None,
+            }
+            break
+
+    missing = [name for name in WRITER_LATLON_FIELDS if name not in fields]
+    has_mass_pair = "XLAT" in fields and "XLONG" in fields
+    status = "loaded" if has_mass_pair else ("missing_mass_pair" if candidates else "no_candidate_files")
+    meta = {
+        "status": status,
+        "domain": str(domain),
+        "candidate_files": [str(path) for path in candidates],
+        "loaded_fields": sorted(fields),
+        "missing_fields": missing,
+        "fields": meta_fields,
+        "errors": errors,
+        "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+    }
+    return (fields if fields else None), meta
+
+
+def _merge_output_diagnostics(*diagnostics: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    merged: dict[str, Any] = {}
+    for item in diagnostics:
+        if item:
+            merged.update(item)
+    return merged or None
 
 
 def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
@@ -360,6 +497,9 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         gwdo_statics=gwdo_statics,
     )
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
+    writer_diagnostics, writer_static_latlon_meta = _load_static_latlon_writer_diagnostics(
+        replay.run, config.domain, grid=replay.grid
+    )
     metadata = {
         "run_id": replay.metadata.get("run_id"),
         "run_dir": str(run_dir),
@@ -392,6 +532,7 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         },
         "radiation_static": radiation_static_meta,
         "gwdo_static": gwdo_static_meta,
+        "writer_static_latlon": writer_static_latlon_meta,
         "source": "gpuwrf.integration.d02_replay.build_replay_case",
         # Propagate the auto-detected init mode (replay vs standalone native-init)
         # so the forecast driver and the hourly land-refresh gate can branch on it.
@@ -400,7 +541,17 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         if replay.metadata.get("standalone_native_init", False)
         else "cpu_wrf_replay",
     }
-    return DailyCase(state=state, grid=replay.grid, namelist=namelist, run_start=run_start, metadata=metadata), run_dir
+    return (
+        DailyCase(
+            state=state,
+            grid=replay.grid,
+            namelist=namelist,
+            run_start=run_start,
+            metadata=metadata,
+            writer_diagnostics=writer_diagnostics,
+        ),
+        run_dir,
+    )
 
 
 def _field_items(obj: Any) -> Iterable[tuple[str, Any]]:
@@ -485,6 +636,7 @@ def _emit_auxhist_frame(
         return None
     valid_time = case.run_start + timedelta(minutes=float(lead_minutes))
     aux_path = output_dir / stream.filename(valid_time, config.domain)
+    output_diagnostics = _merge_output_diagnostics(case.writer_diagnostics, diagnostics)
     if prepared is None:
         prepared = prepare_wrfout_payload(
             state,
@@ -494,7 +646,7 @@ def _emit_auxhist_frame(
             valid_time=valid_time,
             lead_hours=float(lead_minutes) / 60.0,
             run_start=case.run_start,
-            diagnostics=diagnostics,
+            diagnostics=output_diagnostics,
         )
     subset = stream.variable_subset
     if writer is not None:
@@ -740,7 +892,7 @@ def _run_forecast_sequence(
                 valid_time=valid_time,
                 lead_hours=float(lead_minutes) / 60.0,
                 run_start=case.run_start,
-                diagnostics=diagnostics,
+                diagnostics=_merge_output_diagnostics(case.writer_diagnostics, diagnostics),
             )
         for stream in firing:
             aux_path = _emit_auxhist_frame(
@@ -777,9 +929,10 @@ def _run_forecast_sequence(
                             "output_files_before_failure": [str(path) for path in files],
                         },
                     )
-                aux_diag = _surface_diagnostics_for_output(
+                aux_surface_diag = _surface_diagnostics_for_output(
                     state, case.namelist, case.run_start, lead_seconds=lead_minutes * 60.0
                 )
+                aux_diag = _merge_output_diagnostics(case.writer_diagnostics, aux_surface_diag)
                 _emit_streams_at(lead_minutes, cur_state=state, diagnostics=aux_diag)
         elapsed = time.perf_counter() - start
         per_hour_wall_s.append(float(elapsed))
@@ -831,9 +984,10 @@ def _run_forecast_sequence(
         # T2 +8K-mean / +34K-summit bias). Mirrors the d02-validate diagnostic
         # source: compute_m9_diagnostics(state, namelist_with_clock, lead_seconds).
         # time_utc is threaded so SWDOWN/GLW follow the real forecast diurnal clock.
-        diagnostics = _surface_diagnostics_for_output(
+        surface_diagnostics = _surface_diagnostics_for_output(
             state, case.namelist, case.run_start, lead_seconds=float(hour) * 3600.0
         )
+        diagnostics = _merge_output_diagnostics(case.writer_diagnostics, surface_diagnostics)
         prepared = None
         if writer is not None:
             # Pull this hour to host now (synchronous device->host), then write on
