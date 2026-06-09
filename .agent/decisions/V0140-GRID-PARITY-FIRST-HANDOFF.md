@@ -242,6 +242,16 @@ This is the active debug sprint. It must compare WRF solve_em call-site state
 immediately before `first_rk_step_part1` with JAX live-nest loader/carry/state
 surfaces, and explicitly validate full-theta vs perturbation-theta mapping.
 
+Update 2026-06-09 15:40 WEST: step-1 pre-part1 handoff sprint closed. Verdict:
+`STEP1_PRE_PART1_LOCALIZED_JAX_LOADER_T_STATE`. WRF `T_STATE` is unchanged from
+`after_step_increment` to `before_first_rk_step_part1_call` (max_abs `0.0`) and
+is continuous with the prior part1-entry hook (max_abs `0.0`). Full-vs-
+perturbation theta mapping was explicitly checked: WRF `grid%t_2`/`T_STATE`
+maps to JAX `State.theta - 300 K`. The full residual remains in raw JAX
+live-nest Step-1 state/carry before `_physics_step_forcing`: max_abs
+`5.490173101425171`, RMSE `1.9175184863907806`. The next sprint is JAX
+live-nest loader/carry construction for `T_STATE`.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
