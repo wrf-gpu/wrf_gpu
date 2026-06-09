@@ -1326,3 +1326,50 @@ Opened sprint:
 `.agent/sprints/2026-06-09-v014-step1-live-nest-theta-qv-wiring`.
 This sprint must wire production live-nest theta/QV initialization and then run
 the Step-1 16-field comparison or name the next exact boundary.
+
+## Current Manager Update 2026-06-09 19:59 WEST
+
+Post-Theta/QV wiring, the debug lane moved upstream through `P/PH/MU/W`
+live-nest initialization rather than TOST, Switzerland, FP32, or broad memory.
+
+Latest committed facts:
+
+- `ee6cbbe1` merged the parallel memory/FP32 side manager. It implemented only
+  the non-conflicting WDM6 `slmsk` shape cleanup in
+  `src/gpuwrf/coupling/scan_adapters.py`; CPU proof, 85 WDM6 savepoint tests,
+  and WDM6 operational smoke passed. Larger FP32/memory source work remains
+  locked behind grid-parity surfaces.
+- `f73542c0` closed live-nest perturb-state init localization. Remaining
+  residuals were reduced but not closed: `P_STATE 69.96875 -> 3.9458582235092763`
+  Pa, `MU_STATE 13.256103515625 -> 0.047773029698646496` Pa, and `W_STATE`
+  essentially closed to `1.2992081932505783e-07` m/s.
+- `211328d2` updated the memory roadmap so WDM6 is no longer stale `Pending`.
+
+Active sprint:
+
+- `.agent/sprints/2026-06-09-v014-step1-start-domain-perturb-subsurface`.
+- Active worker: tmux `0:4` (`gpt-start-domain`).
+- WRF scratch compile and 18-second two-domain CPU replay succeeded.
+- The worker emitted `112` WRF `start_domain(nest,.TRUE.)` internal truth files:
+  28 tiles for each of `after_hypsometric_p_al_alt`, `before_press_adj`,
+  `after_press_adj`, and `after_w_surface_branch`.
+- The only repo artifact currently written by this sprint is
+  `proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff`.
+- Required proof/report/json/review files are still pending; do not close the
+  sprint until they exist and validation commands pass.
+
+Management review:
+
+- `.agent/sprints/2026-06-09-v014-management-review-02` is due/open, but an
+  Opus/Claude launch at 19:58 WEST hit the Claude plan/limit dialog before it
+  could write `.agent/reviews/2026-06-09-v014-management-review-02.md`.
+- The blocked Claude tmux window was closed for hygiene. Reattempt Opus when
+  available; do not fake the review with a manager-authored substitute.
+
+Manager decision:
+
+Continue the current start-domain proof to a strict verdict. If it proves a
+narrow GPU-native `d02_replay.py` fix, validate and commit it. If it only
+localizes the gap, open the next minimal truth-surface sprint. TOST,
+Switzerland, FP32 source work, and broad memory work remain paused until
+per-cell grid parity is explained or bounded by proof.
