@@ -298,6 +298,23 @@ Wave deliverables are expected under `proofs/v014/` and
   indices against CPU h10 wrfout, then emit the first routine-boundary
   source-term layer only if the marker is green.
 
+## Active Wave 5
+
+- `019ea9ad-aa61-7ab0-b3af-6b4734d886c0` (`Sagan`):
+  Lat/Lon writer-only payload sprint
+  `.agent/sprints/2026-06-09-v014-latlon-writer-payload/sprint-contract.md`.
+  Write scope in repo: `src/gpuwrf/io/wrfout_writer.py`,
+  `src/gpuwrf/integration/daily_pipeline.py`,
+  `src/gpuwrf/integration/nested_pipeline.py`,
+  `proofs/v014/latlon_writer_payload.{py,json,md}`, and
+  `.agent/reviews/2026-06-09-v014-latlon-writer-payload.md`. No GPU, no
+  Hermes, no WRF-source or same-state scratch edits. Objective: replace the
+  writer's synthetic projection fallback for `XLAT`/`XLONG` with real WRF
+  host-only lat/lon payloads when available, without adding JIT-visible
+  `State`, `GridSpec`, or `OperationalNamelist` leaves. This is not a dycore
+  correctness fix; it removes a known writer-only comparator distraction before
+  the next fresh wrfout comparison.
+
 ## Next Manager Actions
 
 1. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
