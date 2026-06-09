@@ -200,6 +200,16 @@ Current status:
 - `proofs/v014/v10_grid_diagnostics.json` shows V10 grid RMSE above 1.5 m/s in
   3/3 cases. This is too large to continue treating station TOST as the next
   decision point.
+- 2026-06-09 live-nest debug update: `proofs/v014/live_nest_base_hook.json`
+  classifies the current root-cause surface as `NATIVE_PORT_PLAN_READY`. The
+  d02 base-state mismatch is traced to missing WRF live-nest initialization:
+  parent interpolation through `med_interp_domain` /
+  `nest_interpdown_interp.inc`, `blend_terrain`, and `start_domain_em` base
+  recomputation. Native `wrfinput_d02` differs from CPU-WRF h0 by about
+  `1047` Pa `PB` and `1050` Pa `MUB` on the target patch, while WRF base
+  formulas on CPU-WRF h0 terrain reproduce `PB/MUB/PHB` within `0.1`. The next
+  validation-enabling source sprint is therefore a GPU-native initialization
+  port, not a CPU-WRF h0 production shortcut.
 - Before resuming the n=15 campaign, the project must either fix the responsible
   operators or record an operator-specific root cause and accepted residual.
 

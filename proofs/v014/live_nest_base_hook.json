@@ -1,0 +1,2038 @@
+{
+  "acceptance_notes": {
+    "cpu_wrfout_h0_used_as_validation_only": true,
+    "jax_vs_jax_self_compare_used_as_truth": false,
+    "json_validates": true,
+    "no_fp32_or_memory_cleanup": true,
+    "no_hermes_or_telegram": true,
+    "no_switzerland_validation": true,
+    "no_tost": true,
+    "normal_production_dependency_on_cpu_wrfout_h0": false,
+    "production_source_edited": false,
+    "wrf_source_edited": false
+  },
+  "classification": "NATIVE_PORT_PLAN_READY",
+  "commands": {
+    "required_validation": [
+      "python -m py_compile proofs/v014/live_nest_base_hook.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/live_nest_base_hook.py",
+      "python -m json.tool proofs/v014/live_nest_base_hook.json >/tmp/live_nest_base_hook.validated.json"
+    ],
+    "script_argv": [
+      "proofs/v014/live_nest_base_hook.py"
+    ]
+  },
+  "decision": {
+    "chosen_path": "native implementation plan from WRF source",
+    "why_not_new_wrf_savepoint_this_sprint": "The case is runnable and prior marker runs exist, but no post-blend base payload is present. A fresh oracle would require patching/relinking a disposable 1.6G WRF tree and rerunning. The exact source path plus h0 validation stats are sufficient to start the next source-port sprint.",
+    "wrf_live_oracle_status": "not produced in this sprint"
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "cpu_only": true,
+    "gpu_used": false,
+    "note": "netCDF4/NumPy proof only; no model execution",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T08:24:54.489187+00:00",
+  "implementation_plan": {
+    "classification": "NATIVE_PORT_PLAN_READY",
+    "do_not_do": [
+      "Do not load CPU-WRF wrfout_h0 as production input.",
+      "Do not patch production JAX source in this sprint.",
+      "Do not use simplified bilinear interpolation for this path."
+    ],
+    "next_source_sprint_target": "native live-nest base initialization stage before build_replay_case exposes d02 BaseState",
+    "required_native_stages": [
+      {
+        "inputs": [
+          "parent d01 live grid HGT/HT, MUB, PHB, PB at the nest initialization time",
+          "child i_parent_start, j_parent_start, parent_grid_ratio",
+          "config_flags%shw and interpolation method type; default path dispatches to SINT",
+          "child imask_nostag initialized to one for active nest tasks"
+        ],
+        "name": "parent_to_child_sint_interpolation",
+        "order": 1,
+        "outputs": [
+          "ht_int",
+          "mub_fine",
+          "phb_fine",
+          "pb interpolated if needed for diagnostics"
+        ],
+        "wrf_source": "inc/nest_interpdown_interp.inc + share/interp_fcn.F + share/sint.F"
+      },
+      {
+        "inputs": [
+          "child wrfinput_d02 HGT/HT, MUB, PHB, PB, T, P, QVAPOR, MU"
+        ],
+        "name": "read_child_wrfinput_static_and_base",
+        "order": 2,
+        "outputs": [
+          "ht_fine",
+          "mub_save",
+          "child wrfinput base/dynamic state"
+        ],
+        "wrf_source": "share/mediation_integrate.F::med_initialdata_input_ptr path"
+      },
+      {
+        "formula": "outer spec_bdy_width rows/columns take interpolated parent; blend_cell=blend_width..1 uses ((blend_cell)*child + (blend_width+1-blend_cell)*parent)/(blend_width+1); interior remains child wrfinput",
+        "inputs": [
+          "ter_interpolated = parent-interpolated ht_int/mub_fine/phb_fine",
+          "ter_input = child wrfinput ht/mub/phb",
+          "spec_bdy_width from namelist, observed default 5 for this case",
+          "blend_width from namelist, observed default 5 for this case"
+        ],
+        "name": "blend_terrain_base_fields",
+        "order": 3,
+        "outputs": [
+          "post-blend child HGT/HT, MUB, PHB"
+        ],
+        "wrf_source": "dyn_em/nest_init_utils.F::blend_terrain"
+      },
+      {
+        "formula_summary": [
+          "p_surf = p00 * exp(-t00/a + sqrt((t00/a)^2 - 2*g*ht/a/r_d))",
+          "MUB = p_surf - p_top",
+          "PB(k) = c3h(k)*MUB + c4h(k) + p_top",
+          "T_INIT(k) = temp*(p00/PB(k))^(r_d/cp) - t0",
+          "ALB(k) = (r_d/p1000mb)*(T_INIT(k)+t0)*(PB(k)/p1000mb)^cvpm",
+          "PHB(1) = HGT*g; PHB(k) = PHB(k-1) + ALB(k-1)*PHM*log(PFD/PFU) for hypsometric_opt=2"
+        ],
+        "inputs": [
+          "post-blend HGT/HT",
+          "post-blend MUB",
+          "hybrid arrays C1H/C2H/C3H/C4H/C3F/C4F/DNW",
+          "base constants P_TOP/P00/T00/TLP/TISO/TLP_STRAT/P_STRAT",
+          "hypsometric_opt=2 for this fixture",
+          "rebalance=1 if PHB is recomputed"
+        ],
+        "name": "start_domain_em_base_recompute",
+        "order": 4,
+        "outputs": [
+          "PB",
+          "MUB",
+          "PHB",
+          "T_INIT",
+          "ALB"
+        ],
+        "wrf_source": "dyn_em/start_em.F::start_domain_em multi-domain real-run branch"
+      },
+      {
+        "inputs": [
+          "loaded total/dynamic fields and recomputed base fields"
+        ],
+        "name": "recalculate_perturbation_split",
+        "order": 5,
+        "outputs": [
+          "P perturbation against recomputed PB",
+          "PH perturbation against recomputed PHB",
+          "MU perturbation against recomputed MUB"
+        ],
+        "wrf_source": "dyn_em/start_em.F after base-state-is-finished marker"
+      }
+    ],
+    "validation_gate_for_source_fix": [
+      "CPU-WRF h0 may be used only as validation oracle: HGT/PB/MUB/PHB patch and whole-domain stats against wrfout_h0.",
+      "Formula residuals on CPU h0 HGT should remain within the predeclared BASE_FORMULA_TOL.",
+      "Production source must obtain HGT/MUB/PHB through native parent interpolation and blend, not from wrfout_h0."
+    ]
+  },
+  "inputs": {
+    "agents": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "resolved": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
+      "size_bytes": 2561
+    },
+    "building_wrf_oracles_skill": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "resolved": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
+      "size_bytes": 1128
+    },
+    "cpu_wrfout_h0": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
+      "size_bytes": 10945385
+    },
+    "cpu_wrfout_h1": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "sha256": "df39e031194cdf8c8e7016459b3236bd777fcace30a98ae276cca5a2cc772456",
+      "size_bytes": 15515282
+    },
+    "cpu_wrfout_h10": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+      "sha256": "daeab63574bc0ffd3689af6ad6e2c6724b326e2780cb2eaddfd565706aa3128d",
+      "size_bytes": 15424459
+    },
+    "native_namelist": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": true,
+      "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
+      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
+      "sha256": "1a4711a1df97dfd28ff72f512024c07b3463de7a942f04f4c5b679f2ef690e38",
+      "size_bytes": 4153
+    },
+    "native_wrfbdy_d01": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": true,
+      "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01",
+      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01",
+      "sha256": "32ebf0c703f53cad9fbe6660ea1227fb76a051e0c4dc2cbded7157cb4b01d57b",
+      "size_bytes": 25073698
+    },
+    "native_wrfinput_d01": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": true,
+      "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
+      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
+      "sha256": "94b73381b706b342c4f20b9b3286a8aeebc7f93e1df878c7da781fa1f79c251f",
+      "size_bytes": 7138457
+    },
+    "native_wrfinput_d02": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": true,
+      "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
+      "size_bytes": 11005720
+    },
+    "prior_base_state_split_fix": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
+      "resolved": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
+      "sha256": "7949e3ea9df04b5ba6caab8ebc2ca8fd5301f84dada362cf70b8bc419454b04b",
+      "size_bytes": 35794
+    },
+    "prior_earlier_source_bisect": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+      "resolved": "/home/enric/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+      "sha256": "6e1ccc24a64aced0f1eeaee5375e62c10218c8f03d92a3eb61cb8e32ae5119a7",
+      "size_bytes": 413156
+    },
+    "project_constitution": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "resolved": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
+      "size_bytes": 1157
+    },
+    "reporting_to_human_skill": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
+      "resolved": "/home/enric/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
+      "sha256": "3e857f0fca442e5c069f2873fd20ebf26ca87b966d37a79525e399c1f1f7156b",
+      "size_bytes": 954
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-live-nest-base-hook/sprint-contract.md",
+      "resolved": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-live-nest-base-hook/sprint-contract.md",
+      "sha256": "c05f32c808c216521e6865080bcd1dde5fcdf3641c60c23c19804b43d3d90798",
+      "size_bytes": 3835
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "resolved": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    },
+    "wrf_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "is_symlink": false,
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
+      "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
+      "size_bytes": 4096
+    }
+  },
+  "netcdf_inventory": {
+    "cpu_wrfout_h0": {
+      "ALB": {
+        "present": false
+      },
+      "HGT": {
+        "dimensions": [
+          "Time",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          66,
+          159
+        ]
+      },
+      "MUB": {
+        "dimensions": [
+          "Time",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          66,
+          159
+        ]
+      },
+      "PB": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ]
+      },
+      "PHB": {
+        "dimensions": [
+          "Time",
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          45,
+          66,
+          159
+        ]
+      },
+      "T_INIT": {
+        "present": false
+      }
+    },
+    "native_wrfinput_d02": {
+      "ALB": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ]
+      },
+      "HGT": {
+        "dimensions": [
+          "Time",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          66,
+          159
+        ]
+      },
+      "MUB": {
+        "dimensions": [
+          "Time",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          66,
+          159
+        ]
+      },
+      "PB": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ]
+      },
+      "PHB": {
+        "dimensions": [
+          "Time",
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          45,
+          66,
+          159
+        ]
+      },
+      "T_INIT": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ]
+      }
+    }
+  },
+  "next_decision_needed": "Dispatch native source fix for live-nest base initialization, or explicitly request a disposable WRF savepoint sprint first.",
+  "prior_blocker": {
+    "classification": "BASE_STATE_SPLIT_FIX_BLOCKED_PARENT_INTERP_BLEND_NOT_LOCAL",
+    "detail": "CPU-WRF h0 PB/MUB are generated after live-nest parent interpolation, blend_terrain, and start_domain_em base recomputation. The current build_replay_case child-only path does not have WRF's parent-interpolated ht/mub/phb fields, and a wrfout_h0 fallback would be a CPU-WRF history dependency.",
+    "reason": "PARENT_INTERP_BLEND_NOT_LOCAL"
+  },
+  "source_citations": {
+    "blend_terrain": {
+      "end_line": 785,
+      "end_needle": "END SUBROUTINE blend_terrain",
+      "excerpt": [
+        "712: SUBROUTINE blend_terrain ( ter_interpolated , ter_input , &",
+        "713:                            ids , ide , jds , jde , kds , kde , &",
+        "714:                            ims , ime , jms , jme , kms , kme , &",
+        "715:                            ips , ipe , jps , jpe , kps , kpe )",
+        "716: ",
+        "717:    USE module_configure",
+        "718:    IMPLICIT NONE",
+        "719: ",
+        "720:    INTEGER , INTENT(IN)                       :: ids , ide , jds , jde , kds , kde , &",
+        "721:                                                  ims , ime , jms , jme , kms , kme , &",
+        "722:                                                  ips , ipe , jps , jpe , kps , kpe",
+        "723:    REAL , DIMENSION(ims:ime,kms:kme,jms:jme) , INTENT(IN)    :: ter_interpolated",
+        "724:    REAL , DIMENSION(ims:ime,kms:kme,jms:jme) , INTENT(INOUT) :: ter_input",
+        "725: ",
+        "726:    REAL , DIMENSION(ims:ime,kms:kme,jms:jme) :: ter_temp",
+        "727:    INTEGER :: i , j , k , spec_bdy_width",
+        "728:    REAL    :: r_blend_zones",
+        "729:    INTEGER blend_cell, blend_width",
+        "730: ",
+        "731:    !  The fine grid elevation comes from the horizontally interpolated",
+        "732:    !  parent elevation for the first spec_bdy_width row/columns, so we need",
+        "733:    !  to get that value.  We blend the coarse and fine in the next blend_width",
+        "734:    !  rows and columns.  After that, in the interior, it is 100% fine grid.",
+        "735: ",
+        "736:    CALL nl_get_spec_bdy_width ( 1, spec_bdy_width)",
+        "737:    CALL nl_get_blend_width ( 1, blend_width)",
+        "738: ",
+        "739:    !  Initialize temp values to the nest ter elevation.  This fills in the values",
+        "740:    !  that will not be modified below.",
+        "741: ",
+        "742:    DO j = jps , MIN(jpe, jde-1)",
+        "743:       DO k = kps , kpe",
+        "744:          DO i = ips , MIN(ipe, ide-1)",
+        "745:             ter_temp(i,k,j) = ter_input(i,k,j)",
+        "746:          END DO",
+        "747:       END DO",
+        "748:    END DO",
+        "749: ",
+        "750:    !  To avoid some tricky indexing, we fill in the values inside out.  This allows",
+        "751:    !  us to overwrite incorrect assignments.  There are replicated assignments, and",
+        "752:    !  there is much unnecessary \"IF test inside of a loop\" stuff.  For a large",
+        "753:    !  domain, this is only a patch; for a small domain, this is not a biggy.",
+        "754: ",
+        "755:    r_blend_zones = 1./(blend_width+1)",
+        "756:    DO j = jps , MIN(jpe, jde-1)",
+        "757:       DO k = kps , kpe",
+        "758:          DO i = ips , MIN(ipe, ide-1)",
+        "759:             DO blend_cell = blend_width,1,-1",
+        "760:                IF   ( ( i .EQ.       spec_bdy_width + blend_cell ) .OR.  ( j .EQ.       spec_bdy_width + blend_cell ) .OR. &",
+        "761:                       ( i .EQ. ide - spec_bdy_width - blend_cell ) .OR.  ( j .EQ. jde - spec_bdy_width - blend_cell ) ) THEN",
+        "762:                   ter_temp(i,k,j) = ( (blend_cell)*ter_input(i,k,j) + (blend_width+1-blend_cell)*ter_interpolated(i,k,j) ) &",
+        "763:                                     * r_blend_zones",
+        "764:                END IF",
+        "765:             ENDDO",
+        "766:             IF      ( ( i .LE.       spec_bdy_width     ) .OR.  ( j .LE.       spec_bdy_width     ) .OR. &",
+        "767:                       ( i .GE. ide - spec_bdy_width     ) .OR.  ( j .GE. jde - spec_bdy_width     ) ) THEN",
+        "768:                ter_temp(i,k,j) =      ter_interpolated(i,k,j)",
+        "769:             END IF",
+        "770:          END DO",
+        "771:       END DO",
+        "772:    END DO",
+        "773: ",
+        "774:    !  Set nest elevation with temp values.  All values not overwritten in the above",
+        "775:    !  loops have been previously set in the initial assignment.",
+        "776: ",
+        "777:    DO j = jps , MIN(jpe, jde-1)",
+        "778:       DO k = kps , kpe",
+        "779:          DO i = ips , MIN(ipe, ide-1)",
+        "780:             ter_input(i,k,j) = ter_temp(i,k,j)",
+        "781:          END DO",
+        "782:       END DO",
+        "783:    END DO",
+        "784: ",
+        "785: END SUBROUTINE blend_terrain"
+      ],
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/nest_init_utils.F",
+      "sha256": "07db287108ab031f89e8bb80d830871daf8ba962f60d394e1ff31c845c1b4a14",
+      "start_line": 712,
+      "start_needle": "SUBROUTINE blend_terrain"
+    },
+    "interp_dispatch": {
+      "end_line": 88,
+      "end_needle": "CALL interp_fcn_sint",
+      "excerpt": [
+        "66: ",
+        "67:      IF      ( interp_method_type .EQ. NOT_DEFINED_YET  ) THEN",
+        "68:         interp_method_type = SINT",
+        "69:      END IF",
+        "70: ",
+        "71:      IF      ( interp_method_type .EQ. BILINEAR         ) THEN",
+        "72:        CALL interp_fcn_blint ( cfld,                                 &  ! CD field",
+        "73:                                cids, cide, ckds, ckde, cjds, cjde,   &",
+        "74:                                cims, cime, ckms, ckme, cjms, cjme,   &",
+        "75:                                cits, cite, ckts, ckte, cjts, cjte,   &",
+        "76:                                nfld,                                 &  ! ND field",
+        "77:                                nids, nide, nkds, nkde, njds, njde,   &",
+        "78:                                nims, nime, nkms, nkme, njms, njme,   &",
+        "79:                                nits, nite, nkts, nkte, njts, njte,   &",
+        "80:                                shw,                                  &  ! stencil half width for interp",
+        "81:                                imask,                                &  ! interpolation mask",
+        "82:                                xstag, ystag,                         &  ! staggering of field",
+        "83:                                ipos, jpos,                           &  ! Position of lower left of nest in CD",
+        "84:                                nri, nrj)                                ! Nest ratio, i- and j-directions",
+        "85:      ELSE IF ( MOD(interp_method_type,10) .EQ. SINT             ) THEN",
+        "86:        CALL interp_fcn_sint  ( cfld,                                 &  ! CD field",
+        "87:                                cids, cide, ckds, ckde, cjds, cjde,   &",
+        "88:                                cims, cime, ckms, ckme, cjms, cjme,   &"
+      ],
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/interp_fcn.F",
+      "sha256": "680881db48904396f38856ca1dd2578a84e8eb0a9cdd05d49f4c63cd8ce9bdaa",
+      "start_line": 66,
+      "start_needle": "interp_method_type = SINT"
+    },
+    "interpdown_phb_mub_pb": {
+      "HGT_HT": {
+        "end_line": 3061,
+        "end_needle": "ngrid%ht,  &",
+        "excerpt": [
+          "3053: IF ( SIZE( grid%ht, 1 ) * SIZE( grid%ht, 2 ) .GT. 1 ) THEN",
+          "3054: CALL interp_fcn (  &",
+          "3055:                   grid%ht,   &       ! CD field",
+          "3056:                  cids, cide, 1, 1, cjds, cjde,   &         ! CD dims",
+          "3057:                  cims, cime, 1, 1, cjms, cjme,   &         ! CD dims",
+          "3058:                  cips, cipe, 1, 1, cjps, cjpe,   &         ! CD dims",
+          "3059:                   ngrid%ht,  &   ! ND field",
+          "3060:                  nids, nide, 1, 1, njds, njde,   &         ! ND dims",
+          "3061:                  nims, nime, 1, 1, njms, njme,   &         ! ND dims"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
+        "start_line": 3053,
+        "start_needle": "grid%ht,   &"
+      },
+      "MUB": {
+        "end_line": 341,
+        "end_needle": "ngrid%mub,  &",
+        "excerpt": [
+          "333: IF ( SIZE( grid%mub, 1 ) * SIZE( grid%mub, 2 ) .GT. 1 ) THEN",
+          "334: CALL interp_fcn (  &",
+          "335:                   grid%mub,   &       ! CD field",
+          "336:                  cids, cide, 1, 1, cjds, cjde,   &         ! CD dims",
+          "337:                  cims, cime, 1, 1, cjms, cjme,   &         ! CD dims",
+          "338:                  cips, cipe, 1, 1, cjps, cjpe,   &         ! CD dims",
+          "339:                   ngrid%mub,  &   ! ND field",
+          "340:                  nids, nide, 1, 1, njds, njde,   &         ! ND dims",
+          "341:                  nims, nime, 1, 1, njms, njme,   &         ! ND dims"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
+        "start_line": 333,
+        "start_needle": "grid%mub,   &"
+      },
+      "PB": {
+        "end_line": 373,
+        "end_needle": "ngrid%pb,  &",
+        "excerpt": [
+          "365: IF ( SIZE( grid%pb, 1 ) * SIZE( grid%pb, 3 ) .GT. 1 ) THEN",
+          "366: CALL interp_fcn (  &",
+          "367:                   grid%pb,   &       ! CD field",
+          "368:                  cids, cide, ckds, ckde, cjds, cjde,   &         ! CD dims",
+          "369:                  cims, cime, ckms, ckme, cjms, cjme,   &         ! CD dims",
+          "370:                  cips, cipe, ckps, MIN( (ckde-1), ckpe ), cjps, cjpe,   &         ! CD dims",
+          "371:                   ngrid%pb,  &   ! ND field",
+          "372:                  nids, nide, nkds, nkde, njds, njde,   &         ! ND dims",
+          "373:                  nims, nime, nkms, nkme, njms, njme,   &         ! ND dims"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
+        "start_line": 365,
+        "start_needle": "grid%pb,   &"
+      },
+      "PHB": {
+        "end_line": 261,
+        "end_needle": "ngrid%phb,  &",
+        "excerpt": [
+          "253: IF ( SIZE( grid%phb, 1 ) * SIZE( grid%phb, 3 ) .GT. 1 ) THEN",
+          "254: CALL interp_fcn (  &",
+          "255:                   grid%phb,   &       ! CD field",
+          "256:                  cids, cide, ckds, ckde, cjds, cjde,   &         ! CD dims",
+          "257:                  cims, cime, ckms, ckme, cjms, cjme,   &         ! CD dims",
+          "258:                  cips, cipe, ckps, MIN( ckde, ckpe ), cjps, cjpe,   &         ! CD dims",
+          "259:                   ngrid%phb,  &   ! ND field",
+          "260:                  nids, nide, nkds, nkde, njds, njde,   &         ! ND dims",
+          "261:                  nims, nime, nkms, nkme, njms, njme,   &         ! ND dims"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
+        "start_line": 253,
+        "start_needle": "grid%phb,   &"
+      }
+    },
+    "live_nest_input_branch": {
+      "end_line": 757,
+      "end_needle": "CALL adjust_tempqv",
+      "excerpt": [
+        "677: ! fill in entire fine grid domain with interpolated coarse grid data",
+        "678:      CALL med_interp_domain( parent, nest )",
+        "679: ",
+        "680: !  De-reference dimension information stored in the grid data structure.",
+        "681:      CALL get_ijk_from_grid (  nest ,                   &",
+        "682:                                ids, ide, jds, jde, kds, kde,    &",
+        "683:                                ims, ime, jms, jme, kms, kme,    &",
+        "684:                                ips, ipe, jps, jpe, kps, kpe    )",
+        "685: ",
+        "686: ! get the nest config flags",
+        "687:      CALL model_to_grid_config_rec ( nest%id , model_config_rec , nest_config_flags )",
+        "688: ",
+        "689:      IF ( nest_config_flags%input_from_file .OR. nest_config_flags%input_from_hires ) THEN",
+        "690: ",
+        "691:        WRITE(message,FMT='(A,I2,A)') '*** Initializing nest domain #',nest%id,&",
+        "692:                                       ' from an input file. ***'",
+        "693:        CALL wrf_debug ( 0 , message )",
+        "694: ",
+        "695: ! Store horizontally interpolated terrain-based fields in temp location if the input",
+        "696: ! data is from a pristine, un-cycled model input file.  For the original topo from",
+        "697: ! the real program, we will need to adjust the terrain (and a couple of other base-",
+        "698: ! state fields) so reflect the smoothing and matching between the parent and child",
+        "699: ! domains.",
+        "700: ",
+        "701:        CALL  copy_3d_field ( nest%ht_int  , nest%ht , &",
+        "702:                              ids , ide , jds , jde , 1   , 1   , &",
+        "703:                              ims , ime , jms , jme , 1   , 1   , &",
+        "704:                              ips , ipe , jps , jpe , 1   , 1   )",
+        "705:        CALL  copy_3d_field ( nest%mub_fine , nest%mub , &",
+        "706:                              ids , ide , jds , jde , 1   , 1   , &",
+        "707:                              ims , ime , jms , jme , 1   , 1   , &",
+        "708:                              ips , ipe , jps , jpe , 1   , 1   )",
+        "709:        CALL  copy_3d_field ( nest%phb_fine , nest%phb , &",
+        "710:                              ids , ide , jds , jde , kds , kde , &",
+        "711:                              ims , ime , jms , jme , kms , kme , &",
+        "712:                              ips , ipe , jps , jpe , kps , kpe )",
+        "713: ",
+        "714:        IF ( nest_config_flags%input_from_file ) THEN",
+        "715: ! read input from dataset",
+        "716:           CALL med_initialdata_input_ptr( nest , nest_config_flags )",
+        "717: ",
+        "718:        ELSE IF ( nest_config_flags%input_from_hires ) THEN",
+        "719: ! read in high res topography",
+        "720:           CALL  input_terrain_rsmas ( nest,                               &",
+        "721:                                       ids , ide , jds , jde , 1   , 1   , &",
+        "722:                                       ims , ime , jms , jme , 1   , 1   , &",
+        "723:                                       ips , ipe , jps , jpe , 1   , 1   )",
+        "724:        ENDIF",
+        "725: ",
+        "726:        ! save elevation and mub for temp and qv adjustment",
+        "727: ",
+        "728:        CALL  copy_3d_field ( nest%ht_fine , nest%ht , &",
+        "729:                              ids , ide , jds , jde , 1   , 1   , &",
+        "730:                              ims , ime , jms , jme , 1   , 1   , &",
+        "731:                              ips , ipe , jps , jpe , 1   , 1   )",
+        "732:        CALL  copy_3d_field ( nest%mub_save , nest%mub , &",
+        "733:                              ids , ide , jds , jde , 1   , 1   , &",
+        "734:                              ims , ime , jms , jme , 1   , 1   , &",
+        "735:                              ips , ipe , jps , jpe , 1   , 1   )",
+        "736: ",
+        "737: ! blend parent and nest fields: terrain, mub, and phb.  The ht, mub and phb are used in start_domain.",
+        "738: ",
+        "739:        IF ( nest%save_topo_from_real == 1 ) THEN",
+        "740:           CALL  blend_terrain ( nest%ht_int  , nest%ht , &",
+        "741:                                 ids , ide , jds , jde , 1   , 1   , &",
+        "742:                                 ims , ime , jms , jme , 1   , 1   , &",
+        "743:                                 ips , ipe , jps , jpe , 1   , 1   )",
+        "744:           CALL  blend_terrain ( nest%mub_fine , nest%mub , &",
+        "745:                                 ids , ide , jds , jde , 1   , 1   , &",
+        "746:                                 ims , ime , jms , jme , 1   , 1   , &",
+        "747:                                 ips , ipe , jps , jpe , 1   , 1   )",
+        "748:           CALL  blend_terrain ( nest%phb_fine , nest%phb , &",
+        "749:                                 ids , ide , jds , jde , kds , kde , &",
+        "750:                                 ims , ime , jms , jme , kms , kme , &",
+        "751:                                 ips , ipe , jps , jpe , kps , kpe )",
+        "752:        ENDIF",
+        "753: ",
+        "754:        !  adjust temp and qv",
+        "755: ",
+        "756:        CALL adjust_tempqv ( nest%mub , nest%mub_save , &",
+        "757:                             nest%c3h , nest%c4h , nest%znw , nest%p_top , &"
+      ],
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/mediation_integrate.F",
+      "sha256": "7dc254b60c558d08354389d748c14fa1323f33448c1c6b26f7c91eff70ab9eef",
+      "start_line": 677,
+      "start_needle": "CALL med_interp_domain( parent, nest )"
+    },
+    "sint_formula": {
+      "end_line": 197,
+      "end_needle": "RETURN",
+      "excerpt": [
+        "2:       SUBROUTINE SINT(XF,                        &",
+        "3:                    ims, ime, jms, jme, icmask ,  &",
+        "4:                    its, ite, jts, jte, nf, xstag, ystag )",
+        "5:       IMPLICIT NONE",
+        "6:       INTEGER ims, ime, jms, jme, &",
+        "7:               its, ite, jts, jte",
+        "8: ",
+        "9:       LOGICAL icmask( ims:ime, jms:jme )",
+        "10:       LOGICAL xstag, ystag",
+        "11: ",
+        "12:       INTEGER nf, ior",
+        "13:       REAL    one12, one24, ep",
+        "14:       PARAMETER(one12=1./12.,one24=1./24.)",
+        "15:       PARAMETER(ior=2)",
+        "16: !",
+        "17:       REAL XF(ims:ime,jms:jme,NF)",
+        "18: !",
+        "19:       REAL Y(ims:ime,jms:jme,-IOR:IOR),    &",
+        "20:            Z(ims:ime,jms:jme,-IOR:IOR),    &",
+        "21:            F(ims:ime,jms:jme,0:1)",
+        "22: !",
+        "23:       INTEGER I,J,II,JJ,IIM",
+        "24:       INTEGER N2STAR, N2END, N1STAR, N1END",
+        "25: !",
+        "26:       DATA  EP/ 1.E-10/",
+        "27: ",
+        "28:       REAL W(ims:ime,jms:jme),OV(ims:ime,jms:jme),UN(ims:ime,jms:jme)",
+        "29:       REAL MXM(ims:ime,jms:jme),MN(ims:ime,jms:jme)",
+        "30:       REAL FL(ims:ime,jms:jme,0:1)",
+        "31:       REAL XIG(NF*NF), XJG(NF*NF)  ! NF is parent to child grid refinement ratio",
+        "32:       integer rr",
+        "33: ",
+        "34:       REAL rioff, rjoff",
+        "35: !",
+        "36:       REAL donor, y1, y2, a",
+        "37:       DONOR(Y1,Y2,A)=(Y1*AMAX1(0.,SIGN(1.,A))-Y2*AMIN1(0.,SIGN(1.,A)))*A",
+        "38:       REAL tr4, ym1, y0, yp1, yp2",
+        "39:       TR4(YM1,Y0,YP1,YP2,A)=A*ONE12*(7.*(YP1+Y0)-(YP2+YM1))               &",
+        "40:        -A*A*ONE24*(15.*(YP1-Y0)-(YP2-YM1))-A*A*A*ONE12*((YP1+Y0)          &",
+        "41:        -(YP2+YM1))+A*A*A*A*ONE24*(3.*(YP1-Y0)-(YP2-YM1))",
+        "42:       REAL pp, pn, x",
+        "43:       PP(X)=AMAX1(0.,X)",
+        "44:       PN(X)=AMIN1(0.,X)",
+        "45: ",
+        "46:       rr = nint(sqrt(float(nf)))",
+        "47: !!      write(6,*) ' nf, rr are ',nf,rr",
+        "48: ",
+        "49:       rioff = 0",
+        "50:       rjoff = 0",
+        "51:       if(xstag .and. (mod(rr,2) .eq. 0)) rioff = 1.",
+        "52:       if(ystag .and. (mod(rr,2) .eq. 0)) rjoff = 1.",
+        "53: ",
+        "54:       DO I=1,rr",
+        "55:         DO J=1,rr",
+        "56:           XIG(J+(I-1)*rr)=(float(rr)-1.-rioff)/float(2*rr)-FLOAT(J-1)*1./float(rr)",
+        "57:           XJG(J+(I-1)*rr)=(float(rr)-1.-rjoff)/float(2*rr)-FLOAT(I-1)*1./float(rr)",
+        "58:         ENDDO",
+        "59:       ENDDO",
+        "60: ",
+        "61:       N2STAR = jts",
+        "62:       N2END  = jte",
+        "63:       N1STAR = its",
+        "64:       N1END  = ite",
+        "65: ",
+        "66:       DO 2000 IIM=1,NF",
+        "67: !",
+        "68: !  HERE STARTS RESIDUAL ADVECTION",
+        "69: !",
+        "70:         DO 9000 JJ=N2STAR,N2END",
+        "71:           DO 50 J=-IOR,IOR",
+        "72: ",
+        "73:             DO 51 I=-IOR,IOR",
+        "74:               DO 511 II=N1STAR,N1END",
+        "75:                 IF ( icmask(II,JJ) ) Y(II,JJ,I)=XF(II+I,JJ+J,IIM)",
+        "76:   511         CONTINUE",
+        "77:    51       CONTINUE",
+        "78: ",
+        "79:             DO 811 II=N1STAR,N1END",
+        "80:               IF ( icmask(II,JJ) ) THEN",
+        "81:                 FL(II,JJ,0)=DONOR(Y(II,JJ,-1),Y(II,JJ,0),XIG(IIM))",
+        "82:                 FL(II,JJ,1)=DONOR(Y(II,JJ,0),Y(II,JJ,1),XIG(IIM))",
+        "83:               ENDIF",
+        "84:   811         CONTINUE",
+        "85:             DO 812 II=N1STAR,N1END",
+        "86:               IF ( icmask(II,JJ) ) W(II,JJ)=Y(II,JJ,0)-(FL(II,JJ,1)-FL(II,JJ,0))",
+        "87:   812         CONTINUE",
+        "88:             DO 813 II=N1STAR,N1END",
+        "89:               IF ( icmask(II,JJ) ) THEN",
+        "90:                 MXM(II,JJ)=                                             &",
+        "91:                          AMAX1(Y(II,JJ,-1),Y(II,JJ,0),Y(II,JJ,1),       &",
+        "92:                          W(II,JJ))",
+        "93:                 MN(II,JJ)=AMIN1(Y(II,JJ,-1),Y(II,JJ,0),Y(II,JJ,1),W(II,JJ))",
+        "94:               ENDIF",
+        "95:   813         CONTINUE",
+        "96:             DO 312 II=N1STAR,N1END",
+        "97:               IF ( icmask(II,JJ) ) THEN",
+        "98:                 F(II,JJ,0)=                                               &",
+        "99:                            TR4(Y(II,JJ,-2),Y(II,JJ,-1),Y(II,JJ,0),        &",
+        "100:                            Y(II,JJ,1),XIG(IIM))",
+        "101:                 F(II,JJ,1)=                                                 &",
+        "102:                          TR4(Y(II,JJ,-1),Y(II,JJ,0),Y(II,JJ,1),Y(II,JJ,2),&",
+        "103:                          XIG(IIM))",
+        "104:                 ENDIF",
+        "105:   312         CONTINUE",
+        "106:             DO 822 II=N1STAR,N1END",
+        "107:               IF ( icmask(II,JJ) ) THEN",
+        "108:                 F(II,JJ,0)=F(II,JJ,0)-FL(II,JJ,0)",
+        "109:                 F(II,JJ,1)=F(II,JJ,1)-FL(II,JJ,1)",
+        "110:               ENDIF",
+        "111:   822         CONTINUE",
+        "112:             DO 823 II=N1STAR,N1END",
+        "113:               IF ( icmask(II,JJ) ) THEN",
+        "114:                 OV(II,JJ)=(MXM(II,JJ)-W(II,JJ))/(-PN(F(II,JJ,1))+         &",
+        "115:                         PP(F(II,JJ,0))+EP)",
+        "116:                 UN(II,JJ)=(W(II,JJ)-MN(II,JJ))/(PP(F(II,JJ,1))-             &",
+        "117:                       PN(F(II,JJ,0))+EP)",
+        "118:               ENDIF",
+        "119:   823         CONTINUE",
+        "120:             DO 824 II=N1STAR,N1END",
+        "121:               IF ( icmask(II,JJ) ) THEN",
+        "122:                 F(II,JJ,0)=PP(F(II,JJ,0))*AMIN1(1.,OV(II,JJ))+            &",
+        "123:                            PN(F(II,JJ,0))*AMIN1(1.,UN(II,JJ))",
+        "124:                 F(II,JJ,1)=PP(F(II,JJ,1))*AMIN1(1.,UN(II,JJ))+            &",
+        "125:                            PN(F(II,JJ,1))*AMIN1(1.,OV(II,JJ))",
+        "126:               ENDIF",
+        "127:   824         CONTINUE",
+        "128:             DO 825 II=N1STAR,N1END",
+        "129:               IF ( icmask(II,JJ) ) THEN",
+        "130:                 Y(II,JJ,0)=W(II,JJ)-(F(II,JJ,1)-F(II,JJ,0))",
+        "131:               ENDIF",
+        "132:   825         CONTINUE",
+        "133:             DO 361 II=N1STAR,N1END",
+        "134:               IF ( icmask(II,JJ) ) Z(II,JJ,J)=Y(II,JJ,0)",
+        "135:   361         CONTINUE",
+        "136: !",
+        "137: !  END IF FIRST J LOOP",
+        "138: !",
+        "139:  8000       CONTINUE",
+        "140:    50     CONTINUE",
+        "141: ",
+        "142:           DO 911 II=N1STAR,N1END",
+        "143:             IF ( icmask(II,JJ) ) THEN",
+        "144:               FL(II,JJ,0)=DONOR(Z(II,JJ,-1),Z(II,JJ,0),XJG(IIM))",
+        "145:               FL(II,JJ,1)=DONOR(Z(II,JJ,0),Z(II,JJ,1),XJG(IIM))",
+        "146:             ENDIF",
+        "147:   911       CONTINUE",
+        "148:           DO 912 II=N1STAR,N1END",
+        "149:             IF ( icmask(II,JJ) ) W(II,JJ)=Z(II,JJ,0)-(FL(II,JJ,1)-FL(II,JJ,0))",
+        "150:   912       CONTINUE",
+        "151:           DO 913 II=N1STAR,N1END",
+        "152:             IF ( icmask(II,JJ) ) THEN",
+        "153:               MXM(II,JJ)=AMAX1(Z(II,JJ,-1),Z(II,JJ,0),Z(II,JJ,1),W(II,JJ))",
+        "154:               MN(II,JJ)=AMIN1(Z(II,JJ,-1),Z(II,JJ,0),Z(II,JJ,1),W(II,JJ))",
+        "155:             ENDIF",
+        "156:   913       CONTINUE",
+        "157:           DO 412 II=N1STAR,N1END",
+        "158:             IF ( icmask(II,JJ) ) THEN",
+        "159:               F(II,JJ,0)=                                                 &",
+        "160:                          TR4(Z(II,JJ,-2),Z(II,JJ,-1),Z(II,JJ,0),Z(II,JJ,1)&",
+        "161:                          ,XJG(IIM))",
+        "162:               F(II,JJ,1)=                                                   &",
+        "163:                          TR4(Z(II,JJ,-1),Z(II,JJ,0),Z(II,JJ,1),Z(II,JJ,2),  &",
+        "164:                          XJG(IIM))",
+        "165:             ENDIF",
+        "166:   412       CONTINUE",
+        "167:           DO 922 II=N1STAR,N1END",
+        "168:             IF ( icmask(II,JJ) ) THEN",
+        "169:               F(II,JJ,0)=F(II,JJ,0)-FL(II,JJ,0)",
+        "170:               F(II,JJ,1)=F(II,JJ,1)-FL(II,JJ,1)",
+        "171:             ENDIF",
+        "172:   922       CONTINUE",
+        "173:           DO 923 II=N1STAR,N1END",
+        "174:             IF ( icmask(II,JJ) ) THEN",
+        "175:               OV(II,JJ)=(MXM(II,JJ)-W(II,JJ))/(-PN(F(II,JJ,1))+           &",
+        "176:                         PP(F(II,JJ,0))+EP)",
+        "177:               UN(II,JJ)=(W(II,JJ)-MN(II,JJ))/(PP(F(II,JJ,1))-PN(F(II,JJ,0))+ &",
+        "178:                       EP)",
+        "179:             ENDIF",
+        "180:   923       CONTINUE",
+        "181:           DO 924 II=N1STAR,N1END",
+        "182:             IF ( icmask(II,JJ) ) THEN",
+        "183:               F(II,JJ,0)=PP(F(II,JJ,0))*AMIN1(1.,OV(II,JJ))+PN(F(II,JJ,0))  &",
+        "184:                          *AMIN1(1.,UN(II,JJ))",
+        "185:               F(II,JJ,1)=PP(F(II,JJ,1))*AMIN1(1.,UN(II,JJ))+PN(F(II,JJ,1))  &",
+        "186:                          *AMIN1(1.,OV(II,JJ))",
+        "187:             ENDIF",
+        "188:   924     CONTINUE",
+        "189:  9000   CONTINUE",
+        "190:         DO 925 JJ=N2STAR,N2END",
+        "191:           DO 925 II=N1STAR,N1END",
+        "192:             IF ( icmask(II,JJ) ) XF(II,JJ,IIM)=W(II,JJ)-(F(II,JJ,1)-F(II,JJ,0))",
+        "193:   925     CONTINUE",
+        "194: ",
+        "195: !",
+        "196:  2000 CONTINUE",
+        "197:       RETURN"
+      ],
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/sint.F",
+      "sha256": "5df841aea44c53c745a90fe96d2b9b8404097b457cceb1321faed592b727af1c",
+      "start_line": 2,
+      "start_needle": "SUBROUTINE SINT"
+    },
+    "start_domain_base_formula": {
+      "end_line": 636,
+      "end_needle": "grid%phb(i,k,j) = grid%phb(i,k-1,j) + grid%alb(i,k-1,j)*phm*LOG(pfd/pfu)",
+      "excerpt": [
+        "606:             !  p_strat (pressure at top of isothermal layer), A_strat (lapse rate in",
+        "607:             !  stratosphere above isothermal layer)",
+        "608:             p_surf = p00 * EXP ( -t00/a + ( (t00/a)**2 - 2.*g*grid%ht(i,j)/a/r_d ) **0.5 )",
+        "609:             DO k = 1, kte-1",
+        "610:                grid%pb(i,k,j) = grid%c3h(k)*(p_surf - grid%p_top) + grid%c4h(k) + grid%p_top",
+        "611:                temp = MAX ( tiso, t00 + A*LOG(grid%pb(i,k,j)/p00) )",
+        "612:                IF ( grid%pb(i,k,j) .LT. p_strat ) THEN",
+        "613:                   temp = tiso + A_strat * LOG ( grid%pb(i,k,j)/p_strat )",
+        "614:                ENDIF",
+        "615:                grid%t_init(i,k,j) = temp*(p00/grid%pb(i,k,j))**(r_d/cp) - t0",
+        "616:                grid%alb(i,k,j) = (r_d/p1000mb)*(grid%t_init(i,k,j)+t0)*(grid%pb(i,k,j)/p1000mb)**cvpm",
+        "617:             END DO",
+        "618:             !  Base state mu is defined as base state surface pressure minus grid%p_top",
+        "619:             grid%MUB(i,j) = p_surf - grid%p_top",
+        "620:             !  Integrate base geopotential, starting at terrain elevation.  This assures that",
+        "621:             !  the base state is in exact hydrostatic balance with respect to the model equations.",
+        "622:             !  This field is on full levels.",
+        "623:             grid%phb(i,1,j) = grid%ht(i,j) * g",
+        "624:             IF ( config_flags%hypsometric_opt .EQ. 1 ) THEN",
+        "625:                DO kk  = 2,kte",
+        "626:                   k = kk - 1",
+        "627:                   grid%phb(i,kk,j) = grid%phb(i,kk-1,j) - grid%dnw(kk-1)*(grid%c1h(k)*grid%mub(i,j)+grid%c2h(k))*grid%alb(i,kk-1,j)",
+        "628:                END DO",
+        "629:             ELSE IF ( config_flags%hypsometric_opt .EQ. 2 ) THEN",
+        "630:                DO k  = 2,kte",
+        "631:                   pfu = grid%c3f(k  )*grid%MUB(i,j) + grid%c4f(k  ) + grid%p_top",
+        "632:                   pfd = grid%c3f(k-1)*grid%MUB(i,j) + grid%c4f(k-1) + grid%p_top",
+        "633:                   phm = grid%c3h(k-1)*grid%MUB(i,j) + grid%c4h(k-1) + grid%p_top",
+        "634:                   grid%phb(i,k,j) = grid%phb(i,k-1,j) + grid%alb(i,k-1,j)*phm*LOG(pfd/pfu)",
+        "635:                END DO",
+        "636:             END IF"
+      ],
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "sha256": "4b6c98a06fb2b2c4472af73415099e311502747dc5543d9e9b1323497d83ddb4",
+      "start_line": 606,
+      "start_needle": "p_surf = p00 * EXP"
+    },
+    "start_domain_base_recompute": {
+      "end_line": 763,
+      "end_needle": "!------base state is finished, perturbation values are recalculated below-----",
+      "excerpt": [
+        "669: !  reconstitute base-state fields",
+        "670:     IF(config_flags%max_dom .EQ. 1)THEN",
+        "671: ! with single domain, grid%t_init from wrfinput is OK to use",
+        "672:      DO j = jts,min(jte,jde-1)",
+        "673:      DO k = kts,kte-1",
+        "674:      DO i = its, min(ite,ide-1)",
+        "675:        IF ( grid%imask_nostag(i,j) .EQ. 1 ) THEN",
+        "676:          grid%pb(i,k,j) = grid%c3h(k  )*grid%MUB(i,j) + grid%c4h(k  ) + grid%p_top",
+        "677:          grid%alb(i,k,j) = (r_d/p1000mb)*(grid%t_init(i,k,j)+t0)*(grid%pb(i,k,j)/p1000mb)**cvpm",
+        "678:        ENDIF",
+        "679:      ENDDO",
+        "680:      ENDDO",
+        "681:      ENDDO",
+        "682:     ELSE ! there is more than 1 domain",
+        "683:      IF ( .NOT. grid%this_is_an_ideal_run ) THEN ! this is a real run",
+        "684:         DO j = jts,min(jte,jde-1)",
+        "685:         DO k = kts,kte-1",
+        "686:         DO i = its, min(ite,ide-1)",
+        "687:           IF ( grid%imask_nostag(i,j) .EQ. 1 ) THEN",
+        "688:             grid%pb(i,k,j) = grid%c3h(k  )*grid%MUB(i,j) + grid%c4h(k  ) + grid%p_top",
+        "689:             temp = MAX ( tiso, t00 + A*LOG(grid%pb(i,k,j)/p00) )",
+        "690:             IF ( grid%pb(i,k,j) .LT. p_strat ) THEN",
+        "691:                temp = tiso + A_strat * LOG ( grid%pb(i,k,j)/p_strat )",
+        "692:             ENDIF",
+        "693:             grid%t_init(i,k,j) = temp*(p00/grid%pb(i,k,j))**(r_d/cp) - t0",
+        "694:             grid%alb(i,k,j) = (r_d/p1000mb)*(grid%t_init(i,k,j)+t0)*(grid%pb(i,k,j)/p1000mb)**cvpm",
+        "695:        ENDIF",
+        "696:       ENDDO",
+        "697:       ENDDO",
+        "698:       ENDDO",
+        "699:       !Note that rebalance must be set to 1 for vertical nesting",
+        "700:       IF ( config_flags%rebalance .EQ. 1 ) THEN",
+        "701:         !  Integrate base geopotential, starting at terrain elevation.  This assures that",
+        "702:         !  the base state is in exact hydrostatic balance with respect to the model equations.",
+        "703:         !  This field is on full levels.",
+        "704:        DO j = jts,min(jte,jde-1)",
+        "705:        DO i = its, min(ite,ide-1)",
+        "706:         grid%phb(i,1,j) = grid%ht(i,j) * g",
+        "707:         IF ( config_flags%hypsometric_opt .EQ. 1 ) THEN",
+        "708:            DO kk  = 2,kte",
+        "709:               k = kk - 1",
+        "710:               grid%phb(i,kk,j) = grid%phb(i,kk-1,j) - grid%dnw(kk-1)*(grid%c1h(k)*grid%mub(i,j)+grid%c2h(k))*grid%alb(i,kk-1,j)",
+        "711:            END DO",
+        "712:         ELSE IF ( config_flags%hypsometric_opt .EQ. 2 ) THEN",
+        "713:            DO k  = 2,kte",
+        "714:               pfu = grid%c3f(k  )*grid%MUB(i,j) + grid%c4f(k  ) + grid%p_top",
+        "715:               pfd = grid%c3f(k-1)*grid%MUB(i,j) + grid%c4f(k-1) + grid%p_top",
+        "716:               phm = grid%c3h(k-1)*grid%MUB(i,j) + grid%c4h(k-1) + grid%p_top",
+        "717:               grid%phb(i,k,j) = grid%phb(i,k-1,j) + grid%alb(i,k-1,j)*phm*LOG(pfd/pfu)",
+        "718:             END DO",
+        "719:           ENDIF",
+        "720:        ENDDO",
+        "721:        ENDDO",
+        "722:        END IF",
+        "723:      ELSE",
+        "724:         IF ( config_flags%ideal_init_method .EQ. 1 ) THEN",
+        "725:            DO j = jts,min(jte,jde-1)",
+        "726:            DO k = kts,kte-1",
+        "727:            DO i = its, min(ite,ide-1)",
+        "728:              IF ( grid%imask_nostag(i,j) .EQ. 1 ) THEN",
+        "729:                grid%pb(i,k,j) = grid%c3h(k  )*grid%MUB(i,j) + grid%c4h(k  ) + grid%p_top",
+        "730:                grid%alb(i,k,j) = -grid%rdnw(k)*(grid%phb(i,k+1,j)-grid%phb(i,k,j))/(grid%c1h(k)*grid%mub(i,j)+grid%c2h(k))",
+        "731:                grid%t_init(i,k,j) = grid%alb(i,k,j)*(p1000mb/r_d)/((grid%pb(i,k,j)/p1000mb)**cvpm) - t0",
+        "732:              ENDIF",
+        "733:            ENDDO",
+        "734:            ENDDO",
+        "735:            ENDDO",
+        "736:         ELSE IF ( config_flags%ideal_init_method .EQ. 2 ) THEN",
+        "737:            DO j = jts,min(jte,jde-1)",
+        "738:            DO k = kts,kte-1",
+        "739:            DO i = its, min(ite,ide-1)",
+        "740:              IF ( grid%imask_nostag(i,j) .EQ. 1 ) THEN",
+        "741:                grid%pb(i,k,j) = grid%c3h(k  )*grid%MUB(i,j) + grid%c4h(k  ) + grid%p_top",
+        "742:                grid%alb(i,k,j) = (r_d/p1000mb)*(grid%t_init(i,k,j)+t0)*(grid%pb(i,k,j)/p1000mb)**cvpm",
+        "743:              ENDIF",
+        "744:            ENDDO",
+        "745:            ENDDO",
+        "746:            ENDDO",
+        "747:            !  Integrate base geopotential, starting at terrain elevation.  This assures that",
+        "748:            !  the base state is in exact hydrostatic balance with respect to the model equations.",
+        "749:            !  This field is on full levels.",
+        "750:            DO j = jts,min(jte,jde-1)",
+        "751:            DO i = its, min(ite,ide-1)",
+        "752:             grid%phb(i,1,j) = grid%ht(i,j) * g",
+        "753:             DO kk  = 2,kte",
+        "754:               k = kk - 1",
+        "755:               grid%phb(i,kk,j) = grid%phb(i,kk-1,j) - grid%dnw(kk-1)*(grid%c1h(k)*grid%mub(i,j)+grid%c2h(k))*grid%alb(i,kk-1,j)",
+        "756:             END DO",
+        "757:            ENDDO",
+        "758:            ENDDO",
+        "759:         END IF  ! end if initialization for ideal, use method 1 or 2",
+        "760:      END IF ! end if this is a real or ideal run",
+        "761:     END IF ! end if there is more than 1 domain",
+        "762: ",
+        "763: !------base state is finished, perturbation values are recalculated below-----"
+      ],
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "sha256": "4b6c98a06fb2b2c4472af73415099e311502747dc5543d9e9b1323497d83ddb4",
+      "start_line": 669,
+      "start_needle": "!  reconstitute base-state fields"
+    }
+  },
+  "stats": {
+    "cpu_h0_vs_cpu_h10_whole_domain": {
+      "HGT": {
+        "bias": 0.0,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-02_04:00:00_HGT",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0
+          ],
+          "left": 0.0,
+          "right": 0.0
+        }
+      },
+      "MUB": {
+        "bias": 0.0,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-02_04:00:00_MUB",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0
+          ],
+          "left": 95000.0,
+          "right": 95000.0
+        }
+      },
+      "PB": {
+        "bias": 0.0,
+        "count": 461736,
+        "finite_count": 461736,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-02_04:00:00_PB",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0,
+            0
+          ],
+          "left": 99706.203125,
+          "right": 99706.203125
+        }
+      },
+      "PHB": {
+        "bias": 0.0,
+        "count": 472230,
+        "finite_count": 472230,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-02_04:00:00_PHB",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0,
+            0
+          ],
+          "left": 0.0,
+          "right": 0.0
+        }
+      }
+    },
+    "cpu_h0_vs_cpu_h1_whole_domain": {
+      "HGT": {
+        "bias": 0.0,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-01_19:00:00_HGT",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0
+          ],
+          "left": 0.0,
+          "right": 0.0
+        }
+      },
+      "MUB": {
+        "bias": 0.0,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-01_19:00:00_MUB",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0
+          ],
+          "left": 95000.0,
+          "right": 95000.0
+        }
+      },
+      "PB": {
+        "bias": 0.0,
+        "count": 461736,
+        "finite_count": 461736,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-01_19:00:00_PB",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0,
+            0
+          ],
+          "left": 99706.203125,
+          "right": 99706.203125
+        }
+      },
+      "PHB": {
+        "bias": 0.0,
+        "count": 472230,
+        "finite_count": 472230,
+        "max_abs": 0.0,
+        "name": "wrfout_d02_2026-05-01_18:00:00_vs_wrfout_d02_2026-05-01_19:00:00_PHB",
+        "p99_abs": 0.0,
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0,
+            0
+          ],
+          "left": 0.0,
+          "right": 0.0
+        }
+      }
+    },
+    "native_wrfinput_vs_cpu_h0_patch": {
+      "HGT": {
+        "bias": -5.88435061879224,
+        "count": 289,
+        "finite_count": 289,
+        "max_abs": 89.50347900390625,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_HGT",
+        "p99_abs": 79.46704803466797,
+        "rmse": 19.19829767723655,
+        "scope": "target_patch",
+        "shape": [
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 89.50347900390625,
+          "diff": -89.50347900390625,
+          "index": [
+            6,
+            11
+          ],
+          "left": 0.0,
+          "right": 89.50347900390625
+        }
+      },
+      "MUB": {
+        "bias": 69.54568555363322,
+        "count": 289,
+        "finite_count": 289,
+        "max_abs": 1050.3046875,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_MUB",
+        "p99_abs": 931.3696875,
+        "rmse": 224.12240397269977,
+        "scope": "target_patch",
+        "shape": [
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 1050.3046875,
+          "diff": 1050.3046875,
+          "index": [
+            6,
+            11
+          ],
+          "left": 95000.0,
+          "right": 93949.6953125
+        }
+      },
+      "PB": {
+        "bias": 20.937259776069517,
+        "count": 12716,
+        "finite_count": 12716,
+        "max_abs": 1047.015625,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_PB",
+        "p99_abs": 611.4304687500003,
+        "rmse": 109.23204781815154,
+        "scope": "target_patch",
+        "shape": [
+          44,
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 1047.015625,
+          "diff": 1047.015625,
+          "index": [
+            0,
+            6,
+            11
+          ],
+          "left": 99706.203125,
+          "right": 98659.1875
+        }
+      },
+      "PHB": {
+        "bias": -20.58902527563849,
+        "count": 13005,
+        "finite_count": 13005,
+        "max_abs": 878.0291748046875,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_PHB",
+        "p99_abs": 567.3135937499999,
+        "rmse": 102.94174104987826,
+        "scope": "target_patch",
+        "shape": [
+          45,
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 878.0291748046875,
+          "diff": -878.0291748046875,
+          "index": [
+            0,
+            6,
+            11
+          ],
+          "left": 0.0,
+          "right": 878.0291748046875
+        }
+      }
+    },
+    "native_wrfinput_vs_cpu_h0_whole_domain": {
+      "HGT": {
+        "bias": -0.18225891526312415,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 228.12867736816406,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_HGT",
+        "p99_abs": 35.13709075927727,
+        "rmse": 8.462915340605079,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 228.12867736816406,
+          "diff": 228.12867736816406,
+          "index": [
+            54,
+            155
+          ],
+          "left": 318.86175537109375,
+          "right": 90.73307800292969
+        }
+      },
+      "MUB": {
+        "bias": 2.2379685713264723,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 2635.640625,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_MUB",
+        "p99_abs": 412.8984375,
+        "rmse": 98.13000038547803,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 2635.640625,
+          "diff": -2635.640625,
+          "index": [
+            54,
+            155
+          ],
+          "left": 91299.6640625,
+          "right": 93935.3046875
+        }
+      },
+      "PB": {
+        "bias": 0.6737592570145603,
+        "count": 461736,
+        "finite_count": 461736,
+        "max_abs": 2627.3828125,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_PB",
+        "p99_abs": 64.10488281250082,
+        "rmse": 47.826296821589736,
+        "scope": "whole_domain",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 2627.3828125,
+          "diff": -2627.3828125,
+          "index": [
+            0,
+            54,
+            155
+          ],
+          "left": 96017.4609375,
+          "right": 98644.84375
+        }
+      },
+      "PHB": {
+        "bias": -0.6409489062483751,
+        "count": 472230,
+        "finite_count": 472230,
+        "max_abs": 2237.9423828125,
+        "name": "wrfinput_d02_vs_wrfout_d02_2026-05-01_18:00:00_PHB",
+        "p99_abs": 73.58390625000004,
+        "rmse": 45.35253861292826,
+        "scope": "whole_domain",
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 2237.9423828125,
+          "diff": 2237.9423828125,
+          "index": [
+            0,
+            54,
+            155
+          ],
+          "left": 3128.033935546875,
+          "right": 890.091552734375
+        }
+      }
+    },
+    "start_domain_formula_residuals": {
+      "cpu_h0_patch": {
+        "MUB": {
+          "bias": -0.006273086832976855,
+          "count": 289,
+          "finite_count": 289,
+          "max_abs": 0.044447155625675805,
+          "name": "start_domain_formula_on_wrfout_d02_2026-05-01_18:00:00_MUB",
+          "p99_abs": 0.041252213229308846,
+          "rmse": 0.015225830182013154,
+          "scope": "target_patch",
+          "shape": [
+            17,
+            17
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.044447155625675805,
+            "diff": -0.044447155625675805,
+            "index": [
+              6,
+              11
+            ],
+            "left": 93949.65086534437,
+            "right": 93949.6953125
+          }
+        },
+        "PB": {
+          "bias": -0.002026615568209949,
+          "count": 12716,
+          "finite_count": 12716,
+          "max_abs": 0.04889917548280209,
+          "name": "start_domain_formula_on_wrfout_d02_2026-05-01_18:00:00_PB",
+          "p99_abs": 0.03334467162494548,
+          "rmse": 0.007714972230578163,
+          "scope": "target_patch",
+          "shape": [
+            44,
+            17,
+            17
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.04889917548280209,
+            "diff": -0.04889917548280209,
+            "index": [
+              0,
+              3,
+              10
+            ],
+            "left": 99703.82610082452,
+            "right": 99703.875
+          }
+        },
+        "PHB": {
+          "bias": -0.01582710177461466,
+          "count": 13005,
+          "finite_count": 13005,
+          "max_abs": 0.09328280997578986,
+          "name": "start_domain_formula_on_wrfout_d02_2026-05-01_18:00:00_PHB",
+          "p99_abs": 0.07181472037336789,
+          "rmse": 0.02588783999309302,
+          "scope": "target_patch",
+          "shape": [
+            45,
+            17,
+            17
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.09328280997578986,
+            "diff": -0.09328280997578986,
+            "index": [
+              41,
+              11,
+              14
+            ],
+            "left": 180361.21921719002,
+            "right": 180361.3125
+          }
+        }
+      },
+      "cpu_h0_whole_domain": {
+        "MUB": {
+          "bias": -0.0014384728047889552,
+          "count": 10494,
+          "finite_count": 10494,
+          "max_abs": 0.050037370980135165,
+          "name": "start_domain_formula_on_wrfout_d02_2026-05-01_18:00:00_MUB",
+          "p99_abs": 0.035347418225574065,
+          "rmse": 0.008025459992420022,
+          "scope": "whole_domain",
+          "shape": [
+            66,
+            159
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.050037370980135165,
+            "diff": -0.050037370980135165,
+            "index": [
+              50,
+              155
+            ],
+            "left": 94875.05152512902,
+            "right": 94875.1015625
+          }
+        },
+        "PB": {
+          "bias": -0.000560217772852319,
+          "count": 461736,
+          "finite_count": 461736,
+          "max_abs": 0.05358697354677133,
+          "name": "start_domain_formula_on_wrfout_d02_2026-05-01_18:00:00_PB",
+          "p99_abs": 0.022396598571504025,
+          "rmse": 0.004297154471752132,
+          "scope": "whole_domain",
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.05358697354677133,
+            "diff": -0.05358697354677133,
+            "index": [
+              0,
+              50,
+              155
+            ],
+            "left": 99581.64172552645,
+            "right": 99581.6953125
+          }
+        },
+        "PHB": {
+          "bias": -0.017475933851090114,
+          "count": 472230,
+          "finite_count": 472230,
+          "max_abs": 0.10811684231157415,
+          "name": "start_domain_formula_on_wrfout_d02_2026-05-01_18:00:00_PHB",
+          "p99_abs": 0.055443795037572415,
+          "rmse": 0.0245929534826663,
+          "scope": "whole_domain",
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.10811684231157415,
+            "diff": -0.10811684231157415,
+            "index": [
+              41,
+              33,
+              145
+            ],
+            "left": 180363.4700081577,
+            "right": 180363.578125
+          }
+        }
+      },
+      "native_wrfinput_patch": {
+        "MUB": {
+          "bias": -0.0023928831906358397,
+          "count": 289,
+          "finite_count": 289,
+          "max_abs": 0.043773815807071514,
+          "name": "start_domain_formula_on_wrfinput_d02_MUB",
+          "p99_abs": 0.040640885038883426,
+          "rmse": 0.008957049482746298,
+          "scope": "target_patch",
+          "shape": [
+            17,
+            17
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.043773815807071514,
+            "diff": -0.043773815807071514,
+            "index": [
+              7,
+              16
+            ],
+            "left": 94997.6202886842,
+            "right": 94997.6640625
+          }
+        },
+        "PB": {
+          "bias": -0.0008540359212300207,
+          "count": 12716,
+          "finite_count": 12716,
+          "max_abs": 0.04889360266679432,
+          "name": "start_domain_formula_on_wrfinput_d02_PB",
+          "p99_abs": 0.025441792651690782,
+          "rmse": 0.004723270852963286,
+          "scope": "target_patch",
+          "shape": [
+            44,
+            17,
+            17
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.04889360266679432,
+            "diff": -0.04889360266679432,
+            "index": [
+              0,
+              13,
+              15
+            ],
+            "left": 95890.10735639733,
+            "right": 95890.15625
+          }
+        },
+        "PHB": {
+          "bias": -0.01809354102480001,
+          "count": 13005,
+          "finite_count": 13005,
+          "max_abs": 0.09328280997578986,
+          "name": "start_domain_formula_on_wrfinput_d02_PHB",
+          "p99_abs": 0.0619521544722374,
+          "rmse": 0.025173745244210458,
+          "scope": "target_patch",
+          "shape": [
+            45,
+            17,
+            17
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.09328280997578986,
+            "diff": -0.09328280997578986,
+            "index": [
+              41,
+              11,
+              14
+            ],
+            "left": 180361.21921719002,
+            "right": 180361.3125
+          }
+        }
+      },
+      "native_wrfinput_whole_domain": {
+        "MUB": {
+          "bias": -0.0009589550925524634,
+          "count": 10494,
+          "finite_count": 10494,
+          "max_abs": 0.04953186270722654,
+          "name": "start_domain_formula_on_wrfinput_d02_MUB",
+          "p99_abs": 0.03184029275216742,
+          "rmse": 0.006244090197699161,
+          "scope": "whole_domain",
+          "shape": [
+            66,
+            159
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.04953186270722654,
+            "diff": -0.04953186270722654,
+            "index": [
+              43,
+              151
+            ],
+            "left": 91688.0442181373,
+            "right": 91688.09375
+          }
+        },
+        "PB": {
+          "bias": -0.00041743983161846834,
+          "count": 461736,
+          "finite_count": 461736,
+          "max_abs": 0.05279588139092084,
+          "name": "start_domain_formula_on_wrfinput_d02_PB",
+          "p99_abs": 0.01766879282731682,
+          "rmse": 0.003505033529591366,
+          "scope": "whole_domain",
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.05279588139092084,
+            "diff": -0.05279588139092084,
+            "index": [
+              2,
+              43,
+              151
+            ],
+            "left": 94947.09564161861,
+            "right": 94947.1484375
+          }
+        },
+        "PHB": {
+          "bias": -0.017924938480666893,
+          "count": 472230,
+          "finite_count": 472230,
+          "max_abs": 0.10811684231157415,
+          "name": "start_domain_formula_on_wrfinput_d02_PHB",
+          "p99_abs": 0.05494409936363809,
+          "rmse": 0.024577787746184892,
+          "scope": "whole_domain",
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "MATCH",
+          "tolerance_max_abs": 0.2,
+          "worst": {
+            "abs_diff": 0.10811684231157415,
+            "diff": -0.10811684231157415,
+            "index": [
+              41,
+              33,
+              145
+            ],
+            "left": 180363.4700081577,
+            "right": 180363.578125
+          }
+        }
+      }
+    }
+  },
+  "target": {
+    "domain": "d02",
+    "fields": [
+      "HGT",
+      "PB",
+      "MUB",
+      "PHB"
+    ],
+    "patch_bounds": {
+      "count": 289,
+      "x0": 5,
+      "x1": 22,
+      "y0": 1,
+      "y1": 18
+    },
+    "run_id": "20260501_18z_l2_72h_20260519T173026Z"
+  },
+  "unresolved_risks": [
+    "Native SINT parity still needs implementation-level tests; simplified bilinear interpolation is already rejected by the prior proof.",
+    "CPU h0 does not expose T_INIT/ALB, so those fields must be validated through formula residuals or a future disposable WRF savepoint.",
+    "A source sprint must ensure no host/device transfer is introduced inside timestep loops; this initialization path should run before time stepping."
+  ],
+  "wrf_run_feasibility": {
+    "built_real_exe": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/real.exe",
+      "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/real.exe",
+      "sha256": "32002ed2ea09184ddcbc8945e1dd9c3b8658ea99a7201ba44cd5b9bc192313e0",
+      "size_bytes": 39953592
+    },
+    "built_wrf_exe": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "is_symlink": false,
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe",
+      "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe",
+      "sha256": "9b830e844252c5dc70b858bdfd20cd3a99b84e5c4c7ffcb68607ef658cabcb0c",
+      "size_bytes": 54478104
+    },
+    "native_inputs_present": {
+      "namelist_input": true,
+      "wrfbdy_d01": true,
+      "wrfinput_d01": true,
+      "wrfinput_d02": true
+    },
+    "previous_marker_runs": {
+      "first_28rank_early_marker_run": {
+        "dir": {
+          "exists": true,
+          "is_dir": true,
+          "is_file": false,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run",
+          "size_bytes": 4096
+        },
+        "h0_output": {
+          "exists": true,
+          "is_dir": false,
+          "is_file": true,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/wrfout_d02_2026-05-01_18:00:00",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/wrfout_d02_2026-05-01_18:00:00",
+          "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
+          "size_bytes": 10945385
+        },
+        "rsl_error_0000": {
+          "exists": true,
+          "is_dir": false,
+          "is_file": true,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/rsl.error.0000",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/rsl.error.0000",
+          "sha256": "be8b4fe494ebd05f8fff18f9abb01334d30a9484e9c1b5dbf67707215ebd1063",
+          "size_bytes": 681788
+        },
+        "stdout_log": {
+          "exists": true,
+          "is_dir": false,
+          "is_file": true,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/marker_run_28rank_stdout.log",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/marker_run_28rank_stdout.log",
+          "sha256": "18588a7d6298637e2050e337d40c7bc421314cb0dd4c9b81a76ef4ea093c480f",
+          "size_bytes": 1372
+        }
+      },
+      "no_post_blend_base_payload_found": true,
+      "post_marker_noemit_run": {
+        "dir": {
+          "exists": true,
+          "is_dir": true,
+          "is_file": false,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run",
+          "size_bytes": 4096
+        },
+        "h0_output": {
+          "exists": true,
+          "is_dir": false,
+          "is_file": true,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/wrfout_d02_2026-05-01_18:00:00",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/wrfout_d02_2026-05-01_18:00:00",
+          "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
+          "size_bytes": 10945385
+        },
+        "rsl_error_0000": {
+          "exists": true,
+          "is_dir": false,
+          "is_file": true,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/rsl.error.0000",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/rsl.error.0000",
+          "sha256": "881e052a2111ac76e904cee4f7dfc8cd2e3e5a56206d2adf5dd2e87256219e00",
+          "size_bytes": 681788
+        },
+        "stdout_log": {
+          "exists": true,
+          "is_dir": false,
+          "is_file": true,
+          "is_symlink": false,
+          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/marker_run_post_28rank_stdout.log",
+          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/marker_run_post_28rank_stdout.log",
+          "sha256": "390e3640a660a2378c152b07805eeba8d3f2e0aa9bee9956a3e5aff1cfa019cf",
+          "size_bytes": 1372
+        }
+      },
+      "run_case3": {
+        "exists": true,
+        "is_dir": true,
+        "is_file": false,
+        "is_symlink": false,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3",
+        "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3",
+        "size_bytes": 12288
+      }
+    },
+    "wrf_tree_size_note": "du -sh observed 1.6G for this WRF tree during sprint inspection"
+  }
+}
