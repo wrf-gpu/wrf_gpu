@@ -21,6 +21,19 @@ WRF source target:
   saved/current `MUB`, conserves relative humidity, updates `th`/`t_2` and
   `qv`.
 
+Closed evidence:
+
+- `proofs/v014/step1_live_nest_theta_semantics.json` verdict:
+  `STEP1_LIVE_NEST_THETA_ADJUST_TEMPQV_PARTIAL_NEXT_TSTATE_MILLIKELVIN_RESIDUAL`.
+- Direct `adjust_tempqv` on raw dry NetCDF `T` does not close `T_STATE`.
+- For `USE_THETA_M=1`, WRF solve-time `grid%t_2` uses moist-theta semantics.
+- Dry-to-moist theta conversion plus `adjust_tempqv` reduces `T_STATE` max_abs
+  from `5.490173101425171` to `0.00541785382188209`, RMSE
+  `5.068868142015466e-05`, but this remains above the prior `1e-3 K` material
+  gate.
+- No production source patch is allowed yet because accepted same-boundary WRF
+  pre-call `QVAPOR` truth is missing.
+
 Do not resume TOST, Switzerland, FP32, memory source work, or GPU validation
-until this live-nest theta semantics gap is fixed or proven not to close the
-grid divergence.
+until the same-boundary `QVAPOR` savepoint exists and the live-nest theta
+semantics gap is fixed or proven not to close the grid divergence.
