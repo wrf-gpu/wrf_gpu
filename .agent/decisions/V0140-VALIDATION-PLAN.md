@@ -210,6 +210,14 @@ Current status:
   formulas on CPU-WRF h0 terrain reproduce `PB/MUB/PHB` within `0.1`. The next
   validation-enabling source sprint is therefore a GPU-native initialization
   port, not a CPU-WRF h0 production shortcut.
+- 2026-06-09 Opus critic update:
+  `.agent/reviews/2026-06-09-v014-debug-method-critic.md` accepts the live-nest
+  base port as a real correctness fix but rejects treating it as the
+  V10/grid-field symptom closer without a direct falsifier. The plan now
+  requires separation of two claims: (1) base-state agreement improved and
+  (2) V10/grid-field divergence materially improved. A source port may not be
+  used to resume TOST or claim grid parity unless an init-override or direct
+  grid-field proof closes the symptom.
 - Before resuming the n=15 campaign, the project must either fix the responsible
   operators or record an operator-specific root cause and accepted residual.
 
