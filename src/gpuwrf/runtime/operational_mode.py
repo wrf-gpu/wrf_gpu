@@ -41,6 +41,7 @@ from gpuwrf.coupling.physics_couplers import (
     gsfc_sw_theta_tendency,
     gwdo_adapter,
     mynn_adapter,
+    mynn_adapter_with_source_leaves,
     rrtm_lw_theta_tendency,
     rrtmg_lw_theta_tendency,
     rrtmg_radiation_diagnostics,
@@ -2909,6 +2910,9 @@ def _physics_step_forcing(
     before = carry.state
     next_state = before
     next_carry = carry
+    source_leaf_mode = int(namelist.rad_rk_tendf) != 0
+    rthblten = None
+    pbl_theta_dry_delta = None
 
     mp_opt = int(namelist.mp_physics)
     sf_opt = int(namelist.sf_sfclay_physics)
@@ -2983,7 +2987,18 @@ def _physics_step_forcing(
     elif bl_opt in PBL_SCAN_ADAPTERS:
         next_state = PBL_SCAN_ADAPTERS[bl_opt](next_state, float(namelist.dt_s), namelist.grid)
     elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
-        next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
+        if source_leaf_mode:
+            mynn = mynn_adapter_with_source_leaves(
+                next_state, float(namelist.dt_s), namelist.grid
+            )
+            next_state = mynn.state
+            rthblten = mynn.rthblten
+            pbl_theta_dry_delta = (
+                jnp.asarray(next_state.theta, jnp.float64)
+                - jnp.asarray(pbl_entry_state.theta, jnp.float64)
+            )
+        else:
+            next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
     # bl_opt == 0 -> no PBL mixing.
     qvpblten = (
         (
@@ -3136,18 +3151,27 @@ def _physics_step_forcing(
     # documents the lumped form as NOT WRF-equivalent.  The branch is a STATIC Python
     # condition (rad_rk_tendf is a compile-time constant) so rad_rk_tendf=0 emits the
     # identical XLA program and the operational forecast is bit-for-bit unchanged.
-    if int(namelist.rad_rk_tendf) != 0:
+    if source_leaf_mode:
         metrics = namelist.metrics
         mass_h = (
             metrics.c1h[:, None, None] * next_state.mu_total[None, :, :]
             + metrics.c2h[:, None, None]
         )
-        # COUPLED radiation theta tendency d(mut*theta)/dt = mut*RTHRATEN; rk_addtend_dry
-        # consumes t_tendf already mass-coupled (it only re-divides by msfty).
-        t_tendf_rad = (mass_h * held_rthraten).astype(next_state.theta.dtype)
-        dry = DryPhysicsTendencies(t_tendf=t_tendf_rad)
-        # theta is left WITHOUT the radiation add here; the dycore delivers it via the
-        # RK/acoustic cadence above.
+        # COUPLED dry theta source d(mut*theta)/dt = mut*(RTHRATEN+RTHBLTEN);
+        # rk_addtend_dry consumes t_tendf already mass-coupled (it only re-divides
+        # by msfty).  The MYNN theta state delta is removed from the later
+        # non-dry update state below so the source is not double-applied.
+        rth_source = held_rthraten if rthblten is None else held_rthraten + rthblten
+        t_tendf_source = (mass_h * rth_source).astype(next_state.theta.dtype)
+        dry = DryPhysicsTendencies(t_tendf=t_tendf_source)
+        if pbl_theta_dry_delta is not None:
+            next_state = next_state.replace(
+                theta=(
+                    jnp.asarray(next_state.theta, jnp.float64) - pbl_theta_dry_delta
+                ).astype(next_state.theta.dtype)
+            )
+        # theta is left WITHOUT the radiation add here; the dycore delivers it via
+        # the RK/acoustic cadence above.
     else:
         next_state = next_state.replace(
             theta=next_state.theta + float(namelist.dt_s) * held_rthraten

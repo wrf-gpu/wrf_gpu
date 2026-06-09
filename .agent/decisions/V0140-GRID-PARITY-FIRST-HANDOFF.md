@@ -1830,3 +1830,62 @@ Next active work:
 - This is a normal GPT/manager implementation lane first. Do not spend
   Fable/Mythos unless the direct source-leaf implementation becomes a hard
   unresolved debug core.
+
+## Current Manager Update 2026-06-10 00:43 WEST
+
+The dry source-leaf implementation sprint is closed and manager-gated as a
+valid blocked boundary proof, not as a fix.
+
+Artifacts:
+
+- `proofs/v014/step1_dry_source_leaf_fix.py`
+- `proofs/v014/step1_dry_source_leaf_fix.json`
+- `proofs/v014/step1_dry_source_leaf_fix.md`
+- `.agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md`
+- `.agent/sprints/2026-06-10-v014-dry-source-leaf-fix/manager-closeout.md`
+
+Verdict:
+
+`DRY_SOURCE_LEAF_PLUMBING_ACTIVE_BUT_STEP1_T_TENDF_NOT_CLOSED`.
+
+What changed:
+
+- MYNN now exposes a scheme-local `RTHBLTEN` helper.
+- `rad_rk_tendf=1` source mode now mass-couples `RTHRATEN + RTHBLTEN` into
+  `DryPhysicsTendencies.t_tendf`.
+- The MYNN theta delta is removed from the later non-dry state update in this
+  source mode to avoid double application.
+- Focused CPU regression passes.
+
+Key proof numbers:
+
+- Patched JAX dry `T_TENDF` is active but too small: max_abs
+  `260.83156991819124`.
+- WRF top active source `RTHBLTEN` remains max_abs `2522.90576171875`.
+- Final WRF after-conv vs patched JAX dry residual remains max_abs
+  `2457.575215120763`, RMSE `21.445918959761645`.
+- Forced-radiation falsifier only moves max_abs to `2454.161554535577`, so
+  held `RTHRATEN` is secondary to MYNN source fidelity.
+- WRF `conv_t_tendf_to_moist` also matters: after-update vs after-conv max_abs
+  `224.50967407226562`, RMSE `4.572429855170764`.
+
+Manager validation passed:
+
+- `python -m py_compile proofs/v014/step1_dry_source_leaf_fix.py proofs/v014/step1_part2_source_leaves_split.py tests/test_v014_dry_source_leaf_wiring.py src/gpuwrf/coupling/physics_couplers.py src/gpuwrf/runtime/operational_mode.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_dry_source_leaf_fix.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_part2_source_leaves_split.py`
+- `python -m json.tool proofs/v014/step1_dry_source_leaf_fix.json`
+- `python -m json.tool proofs/v014/step1_part2_source_leaves_split.json`
+- `git diff --check`
+- `python scripts/close_sprint.py .agent/sprints/2026-06-10-v014-dry-source-leaf-fix`
+
+Next active work:
+
+- Open one coherent GPT-5.5 source-fidelity sprint, not Fable/Mythos yet.
+- The sprint must split MYNN PBL adapter/kernel inputs and outputs against WRF
+  `RTHBLTEN/RQVBLTEN`, seed or refresh held `RTHRATEN` at the same Step-1
+  boundary, implement WRF `conv_t_tendf_to_moist` before feeding
+  `DryPhysicsTendencies.t_tendf`, and rerun the strict Step-1 proof.
+- TOST, Switzerland, broad FP32, and broad memory remain paused until this
+  source-fidelity frontier is fixed or explicitly bounded.
