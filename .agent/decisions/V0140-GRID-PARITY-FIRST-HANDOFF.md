@@ -262,6 +262,20 @@ leaving `State.theta` from raw `wrfinput_d02`, but this is only a hypothesis
 until the proof names the exact first material stage. No TOST, Switzerland,
 FP32, memory source work, GPU, Hermes, or broad source edit is authorized.
 
+Update 2026-06-09 15:58 WEST: step-1 JAX loader `T_STATE` sprint closed.
+Verdict:
+`STEP1_JAX_LOADER_TSTATE_LOCALIZED_LIVE_NEST_STATE_BASE_MISMATCH`. `T_STATE`
+max_abs versus WRF pre-call stays `5.490173101425171` through raw, live,
+boundary-package, carry, and haloed-entry stages, with all `T_STATE`
+stage-transition max_abs values `0.0`. At the same time, live-nest base init
+improves `PB` from raw max_abs `2627.3828125` to live max_abs
+`0.05357326504599769` (`PHB/MUB` also close). The residual is not boundary-only:
+haloed-entry interior max_abs is `5.490173101425171`, boundary-band max_abs
+`5.284271240234375`. Therefore boundary package, carry, halo, and physics are
+ruled out for this residual. The next sprint is WRF live-nest
+`T_STATE`/theta semantics: prove and port the `med_nest_initial` /
+`start_domain_em` `t_2` initialization path after terrain/base blending.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:

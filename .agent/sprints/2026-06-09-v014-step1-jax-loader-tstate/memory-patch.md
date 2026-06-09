@@ -2,18 +2,20 @@
 
 ## Scope
 
-Project memory update for opening the v0.14 Step-1 JAX loader `T_STATE` sprint.
+Project memory update for closing the v0.14 Step-1 JAX loader `T_STATE` sprint.
 
 ## Evidence
 
-- `proofs/v014/step1_pre_part1_handoff.json` records verdict
-  `STEP1_PRE_PART1_LOCALIZED_JAX_LOADER_T_STATE`.
-- WRF `T_STATE` is unchanged from `after_step_increment` to
-  `before_first_rk_step_part1_call`, max_abs `0.0`.
-- Full-vs-perturbation theta was checked and concluded
-  `WRF_T_STATE_IS_PERTURBATION_THETA`.
-- WRF pre-call `T_STATE` vs raw JAX live-nest state (`State.theta - 300 K`) has
-  max_abs `5.490173101425171`, RMSE `1.9175184863907806`.
+- `proofs/v014/step1_jax_loader_tstate.json` records verdict
+  `STEP1_JAX_LOADER_TSTATE_LOCALIZED_LIVE_NEST_STATE_BASE_MISMATCH`.
+- `T_STATE` max_abs versus WRF pre-call is `5.490173101425171` for raw, live,
+  boundary-packaged, carry, and haloed step-entry states.
+- `T_STATE` transition max_abs is `0.0` for raw->live, live->boundary,
+  boundary->carry, and carry->halo.
+- `PB` improves from raw max_abs `2627.3828125` to live max_abs
+  `0.05357326504599769`.
+- Haloed step-entry interior max_abs is `5.490173101425171`, so the residual is
+  not boundary-only.
 
 ## Proposed Destination
 
@@ -28,12 +30,13 @@ Also update:
 
 ## Patch
 
-Record that the active v0.14 grid-parity target is the JAX live-nest Step-1
-loader/carry construction for `T_STATE`. The accepted proof ruled out WRF
-pre-call mutation, `first_rk_step_part1`, and theta semantic offset. The next
-stage split is `raw_child_state -> live_child_state -> boundary_package ->
-initial_carry -> haloed_step_entry`.
+Record that v0.14 grid-parity debugging has localized the Step-1 `T_STATE`
+residual to WRF live-nest initialization semantics. JAX live-nest base init
+updates `PB/PHB/MUB` but leaves `State.theta` as raw `wrfinput_d02`; WRF pre-call
+truth reflects a matching `t_2`/theta path after live-nest base setup. Boundary
+package, initial carry, and halo are ruled out for this residual.
 
-## Reviewer Status
+## Reviewer Status:
 
-Pending. Opening sprint only.
+Accepted as sprint-local memory. Next target is WRF `med_nest_initial` /
+`start_domain_em` `t_2` semantics.
