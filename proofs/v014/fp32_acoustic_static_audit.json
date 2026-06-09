@@ -1,0 +1,562 @@
+{
+  "base_is_ancestor": true,
+  "base_reconstruction_from_totals": [
+    {
+      "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+      "line": 218,
+      "source": "return state.p_total - state.p_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+      "line": 226,
+      "source": "return state.ph_total - state.ph_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+      "line": 234,
+      "source": "return state.mu_total - state.mu_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 166,
+      "source": "mub = (state.mu_total - state.mu_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 176,
+      "source": "phb = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 224,
+      "source": "pb = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 225,
+      "source": "mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+      "line": 60,
+      "source": "p_base = state.p_total - state.p_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+      "line": 61,
+      "source": "ph_base = state.ph_total - state.ph_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/small_step_finish.py",
+      "line": 62,
+      "source": "mu_base = state.mu_total - state.mu_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+      "line": 25,
+      "source": "return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+      "line": 259,
+      "source": "pb = jnp.asarray(state.p_total) - jnp.asarray(state.p_perturbation)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/small_step_prep.py",
+      "line": 273,
+      "source": "phb_full = jnp.asarray(state.ph_total) - jnp.asarray(state.ph_perturbation)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 865,
+      "source": "return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1148,
+      "source": "p_base = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1149,
+      "source": "ph_base = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1237,
+      "source": "ph_base = state.ph_total - state.ph_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1490,
+      "source": "phb=state.ph_total - state.ph_perturbation,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1493,
+      "source": "ht=(state.ph_total - state.ph_perturbation)[0, :, :] / GRAVITY_M_S2,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1544,
+      "source": "phb=next_state.ph_total - next_state.ph_perturbation,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1550,
+      "source": "p_base = next_state.p_total - next_state.p_perturbation"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2395,
+      "source": "p_total = template.p_total - template.p_perturbation + p_pert"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2396,
+      "source": "ph_total = template.ph_total - template.ph_perturbation + ph_pert"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2397,
+      "source": "mu_total = template.mu_total - template.mu_perturbation + mu_pert"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_state.py",
+      "line": 114,
+      "source": "return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)"
+    }
+  ],
+  "base_required": "b4901a907948623a7781b6cfc10fbbf42f64dd73",
+  "case": "v014 FP32 acoustic R0/R1 static audit",
+  "default_inert_claim": "The new acoustic_precision_mode label appears only in precision contract and OperationalNamelist static/cache-key plumbing; no dynamics module or operational carry consumes it.",
+  "hard_fp64_casts_in_scope": [
+    {
+      "file": "src/gpuwrf/dynamics/acoustic_wrf.py",
+      "line": 689,
+      "source": "mut = jnp.asarray(mut, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/advance_w.py",
+      "line": 77,
+      "source": "def dry_cqw(nz: int, ny: int, nx: int, dtype=jnp.float64) -> jax.Array:"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 163,
+      "source": "ph_pert = state.ph_perturbation.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 164,
+      "source": "mu_pert = state.mu_perturbation.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 165,
+      "source": "mu_total = state.mu_total.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 166,
+      "source": "mub = (state.mu_total - state.mu_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 168,
+      "source": "state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 172,
+      "source": "p_pert = state.p_perturbation.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 176,
+      "source": "phb = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 224,
+      "source": "pb = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 225,
+      "source": "mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 226,
+      "source": "mu_pert = state.mu_perturbation.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 358,
+      "source": "u = jnp.asarray(state.u, dtype=jnp.float64)  # (nz, ny, nx+1)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 359,
+      "source": "v = jnp.asarray(state.v, dtype=jnp.float64)  # (nz, ny+1, nx)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 360,
+      "source": "w = jnp.asarray(state.w, dtype=jnp.float64)  # (nz+1, ny, nx)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 361,
+      "source": "mu_total = jnp.asarray(state.mu_total, dtype=jnp.float64)  # (ny, nx)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 407,
+      "source": "edge_mask_u = jnp.ones((1, 1, u.shape[2]), dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+      "line": 428,
+      "source": "edge_mask_v = jnp.ones((1, v.shape[1], 1), dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 792,
+      "source": "updates[field] = value.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 902,
+      "source": "origin = jnp.asarray(origin, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 959,
+      "source": "candidate64 = jnp.asarray(candidate, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 960,
+      "source": "origin64 = jnp.asarray(origin, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 961,
+      "source": "mass64 = jnp.asarray(mass, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 962,
+      "source": "lower = jnp.asarray(float(minimum_k), dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 963,
+      "source": "upper = jnp.asarray(float(maximum_k), dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 965,
+      "source": "lower = jnp.maximum(lower, jnp.asarray(lower_bound, dtype=jnp.float64))"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 967,
+      "source": "upper = jnp.minimum(upper, jnp.asarray(upper_bound, dtype=jnp.float64))"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1001,
+      "source": "after_mass = jnp.sum(limited.astype(jnp.float64) * mass64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1138,
+      "source": "theta_pert = (state.theta - theta_offset).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1139,
+      "source": "theta_save_pert = (carry.t_save - theta_offset).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1140,
+      "source": "theta_ave_pert = (carry.t_2ave - theta_offset).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1148,
+      "source": "p_base = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1149,
+      "source": "ph_base = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1151,
+      "source": "state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1153,
+      "source": "c2a = CPOVCV * (p_base + state.p_perturbation.astype(jnp.float64)) / jnp.maximum("
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1198,
+      "source": "cqu=jnp.ones_like(state.u, dtype=jnp.float64),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1199,
+      "source": "cqv=jnp.ones_like(state.v, dtype=jnp.float64),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1207,
+      "source": "cqw=dry_cqw(nz, ny, nx, dtype=jnp.float64),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1212,
+      "source": "ph_1=carry.ph_save.astype(jnp.float64) - ph_base,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1214,
+      "source": "pm1=state.p_perturbation.astype(jnp.float64),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1215,
+      "source": "ru_m=jnp.zeros_like(state.u, dtype=jnp.float64),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1216,
+      "source": "rv_m=jnp.zeros_like(state.v, dtype=jnp.float64),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1220,
+      "source": "w_save=carry.w_save.astype(jnp.float64),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 1236,
+      "source": "theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2501,
+      "source": "zero = jnp.zeros(state.t_skin.shape, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2514,
+      "source": "soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2515,
+      "source": "lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2516,
+      "source": "cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2829,
+      "source": "jnp.asarray(lead_seconds, dtype=jnp.float64) - 0.5 * radt_seconds, 0.0"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2844,
+      "source": "soldn = jnp.maximum(jnp.asarray(rad.swnorm, dtype=jnp.float64), 0.0)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2845,
+      "source": "lwdn = jnp.asarray(rad.glw, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2846,
+      "source": "cosz = jnp.asarray(rad.coszen, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2990,
+      "source": "jnp.asarray(next_state.qv, jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 2991,
+      "source": "- jnp.asarray(pbl_entry_state.qv, jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 3176,
+      "source": "lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 3448,
+      "source": "swdown_out = jnp.asarray(noahmp_rad[0], dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 3449,
+      "source": "glw_out = jnp.asarray(noahmp_rad[1], dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 3609,
+      "source": "diag = _m9_snapshot(carry, namelist, jnp.asarray(float(end) * dt_s, dtype=jnp.float64))"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_state.py",
+      "line": 142,
+      "source": "ph_tend = jnp.zeros_like(state.ph, dtype=jnp.float64)"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_state.py",
+      "line": 151,
+      "source": "t_2ave=jnp.zeros_like(state.theta, dtype=jnp.float64),"
+    }
+  ],
+  "head": "a32efce328520e544d28605d81e5d921db06de1e",
+  "precision_mode_plumbing": [
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 21,
+      "source": "class AcousticPrecisionMode(str, Enum):"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 33,
+      "source": "DEFAULT_ACOUSTIC_PRECISION_MODE = AcousticPrecisionMode.FP64_DEFAULT.value"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 36,
+      "source": "def normalize_acoustic_precision_mode("
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 37,
+      "source": "mode: str | AcousticPrecisionMode | None,"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 38,
+      "source": ") -> AcousticPrecisionMode:"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 42,
+      "source": "return AcousticPrecisionMode.FP64_DEFAULT"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 43,
+      "source": "if isinstance(mode, AcousticPrecisionMode):"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 46,
+      "source": "return AcousticPrecisionMode(str(mode))"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 48,
+      "source": "allowed = \", \".join(item.value for item in AcousticPrecisionMode)"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 50,
+      "source": "f\"unsupported acoustic_precision_mode {mode!r}; expected one of: {allowed}\""
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 54,
+      "source": "def acoustic_precision_mode_label(mode: str | AcousticPrecisionMode | None) -> str:"
+    },
+    {
+      "file": "src/gpuwrf/contracts/precision.py",
+      "line": 57,
+      "source": "return normalize_acoustic_precision_mode(mode).value"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 22,
+      "source": "DEFAULT_ACOUSTIC_PRECISION_MODE,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 25,
+      "source": "acoustic_precision_mode_label,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 463,
+      "source": "acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 468,
+      "source": "\"acoustic_precision_mode\","
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 469,
+      "source": "acoustic_precision_mode_label(self.acoustic_precision_mode),"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 512,
+      "source": "acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 564,
+      "source": "acoustic_precision_mode=acoustic_precision_mode,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 629,
+      "source": "self.acoustic_precision_mode,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 689,
+      "source": "acoustic_precision_mode,"
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "line": 754,
+      "source": "acoustic_precision_mode=acoustic_precision_mode,"
+    }
+  ],
+  "source_files": [
+    "src/gpuwrf/contracts/precision.py",
+    "src/gpuwrf/contracts/state.py",
+    "src/gpuwrf/dynamics/acoustic_wrf.py",
+    "src/gpuwrf/dynamics/core/acoustic.py",
+    "src/gpuwrf/dynamics/core/advance_w.py",
+    "src/gpuwrf/dynamics/core/calc_p_rho.py",
+    "src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+    "src/gpuwrf/dynamics/core/small_step_finish.py",
+    "src/gpuwrf/dynamics/core/small_step_prep.py",
+    "src/gpuwrf/runtime/operational_mode.py",
+    "src/gpuwrf/runtime/operational_state.py"
+  ],
+  "timestep_precision_mode_consumers": []
+}

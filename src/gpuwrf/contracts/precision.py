@@ -8,6 +8,7 @@ surface-stability, and accumulation fields remain FP64.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 
 import jax.numpy as jnp
 
@@ -15,6 +16,45 @@ import jax.numpy as jnp
 FP64 = jnp.float64
 FP32_GATED = jnp.float32
 INT32 = jnp.int32
+
+
+class AcousticPrecisionMode(str, Enum):
+    """Static acoustic precision contract labels.
+
+    These labels are cache-key/report plumbing only. They do not change the
+    state precision matrix unless a later ADR-backed implementation explicitly
+    consumes the non-default mode.
+    """
+
+    FP64_DEFAULT = "fp64_default"
+    MIXED_PERTURB_FP32 = "mixed_perturb_fp32"
+
+
+DEFAULT_ACOUSTIC_PRECISION_MODE = AcousticPrecisionMode.FP64_DEFAULT.value
+
+
+def normalize_acoustic_precision_mode(
+    mode: str | AcousticPrecisionMode | None,
+) -> AcousticPrecisionMode:
+    """Return a validated acoustic precision mode enum."""
+
+    if mode is None:
+        return AcousticPrecisionMode.FP64_DEFAULT
+    if isinstance(mode, AcousticPrecisionMode):
+        return mode
+    try:
+        return AcousticPrecisionMode(str(mode))
+    except ValueError as exc:
+        allowed = ", ".join(item.value for item in AcousticPrecisionMode)
+        raise ValueError(
+            f"unsupported acoustic_precision_mode {mode!r}; expected one of: {allowed}"
+        ) from exc
+
+
+def acoustic_precision_mode_label(mode: str | AcousticPrecisionMode | None) -> str:
+    """Return the stable report/cache-key label for an acoustic precision mode."""
+
+    return normalize_acoustic_precision_mode(mode).value
 
 
 STATE_FIELD_ORDER = (
