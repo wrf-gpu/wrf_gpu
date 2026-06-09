@@ -164,6 +164,18 @@ and `P` `1561.1123921205437`. This points the next sprint back to native
 live-nest child base-state initialization or a decisive init-override falsifier
 before any late-RK, FP32, memory, Switzerland, or TOST work.
 
+Update 2026-06-09 13:51 WEST: step-1 live-nest init rerun sprint closed.
+Verdict:
+`STEP1_LIVE_NEST_INIT_BASE_RESIDUALS_CLOSED_NEXT_T`. The accepted strict
+comparison was rerun with native live-nest child base initialization semantics
+mirrored in the CPU-only proof loader. The large raw-init base residuals are now
+closed: `MUB` max_abs `0.05002361937658861`, `PB` `0.05357326504599769`, `PHB`
+`0.10811684231157415`. The Step-1 comparison still diverges. First divergent
+schema field is `T`; largest residual is now `P` max_abs
+`1561.2503728885986`, RMSE `305.9413510899027`, with `PH/MU/W` also material.
+Therefore the next sprint is Step-1 operator/source localization, not more
+base-init work and not TOST/Switzerland/FP32/memory.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
