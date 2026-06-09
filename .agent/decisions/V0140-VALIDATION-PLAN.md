@@ -269,6 +269,18 @@ Current status:
   validation-enabling work is Step-1 operator/source localization. Do not resume
   powered TOST, Switzerland validation, FP32 source work, or memory follow-ups
   until this grid-parity boundary is explained and reduced.
+- 2026-06-09 step-1 T/P operator-localization closeout:
+  `proofs/v014/step1_t_p_operator_localization.json` verdict is
+  `STEP1_TP_LOCALIZED_RK_STAGE_ENTRY_STATE_AFTER_FIRST_RK_PARTS_RK1_T_STATE`.
+  Disposable WRF instrumentation produced 168 substage truth files and localized
+  the first strict/material T/P-family mismatch to `T_STATE` at
+  `after_rk_addtend_before_small_step_prep`, RK1. The top residual at that
+  boundary is `PH_TEND` max_abs `794096.1875`; `RW_TEND`, `PH_TENDF`,
+  `T_TEND`, and `T_TENDF` are also large. RK1 `after_small_step_prep_calc_p_rho`
+  work arrays `T_WORK` and `P_WORK` then match exactly. B4 remains blocked. The
+  next validation-enabling work is WRF `first_rk_step_part1/part2` versus JAX
+  `_physics_step_forcing` / dry `*_tendf` construction, not acoustic or final
+  pressure refresh.
 - 2026-06-09 full-domain wrapper closeout:
   `proofs/v014/same_input_single_rk_parity_wrapped.json` verdict is
   `FULL_DOMAIN_WRAPPER_BLOCKED_TRUTH_SURFACE_PATCH_ONLY_AND_CARRY_LEAVES`.

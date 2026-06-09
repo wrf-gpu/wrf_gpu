@@ -184,6 +184,20 @@ substage-truth/comparator path to localize the first `T` and dominant
 before/after proof. No TOST, Switzerland, FP32, memory source work, GPU, or
 Hermes.
 
+Update 2026-06-09 14:22 WEST: step-1 T/P operator-localization sprint closed.
+Verdict:
+`STEP1_TP_LOCALIZED_RK_STAGE_ENTRY_STATE_AFTER_FIRST_RK_PARTS_RK1_T_STATE`.
+The worker compiled and ran scratch-only env-gated WRF instrumentation and
+produced 168 substage truth files under
+`/mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth`. The first
+strict and first material T/P-family mismatch is `T_STATE` at
+`after_rk_addtend_before_small_step_prep`, RK1. The largest residual at that
+boundary is tendency-family (`PH_TEND` max_abs `794096.1875`; `RW_TEND`,
+`PH_TENDF`, `T_TEND`, `T_TENDF` also large). RK1 `small_step_prep` work arrays
+then match for `T_WORK` and `P_WORK` max_abs `0.0`. Therefore the next sprint is
+not acoustic: split WRF `first_rk_step_part1/part2` and JAX
+`_physics_step_forcing` / dry `*_tendf` construction.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
