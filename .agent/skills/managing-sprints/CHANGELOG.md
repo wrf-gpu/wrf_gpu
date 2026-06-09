@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.4 (2026-06-09, principal-directed)
+
+- Added the Mythos heavy-problem lane: send extremely hard v0.14 problems to
+  Mythos in tmux `0:1` as whole endpoint-defined assignments while the manager
+  retains contracts, locks, review, gates, and merge control.
+- Added the Mythos context-refresh ritual: before each new Mythos sprint after a
+  completion or context-risk point, send `/compact`, wait about two minutes, then
+  send the full assignment with Enter.
+
 ## 0.2.3 (2026-06-09, principal-directed)
 
 - Added long-roadmap drift prevention: after every 15 closed active-milestone
