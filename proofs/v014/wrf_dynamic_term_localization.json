@@ -1,0 +1,1099 @@
+{
+  "claim_boundary": {
+    "gpu_used_by_this_sprint": false,
+    "jax_same_state_wrapper_run": false,
+    "model_fix": false,
+    "root_cause_claim": false,
+    "wrf_source_truth_layer_emitted": true
+  },
+  "commands": [
+    "mkdir -p /mnt/data/wrf_gpu2/v014_dynamic_terms && rsync -a /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/ /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/ && rsync -a /mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/ /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/ && cp /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms",
+    "diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F > /mnt/data/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff",
+    "find /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3 -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name 'wrf_stdout.log' -o -name 'marker_run_post_thphy_28rank_stdout.log' \\) -delete",
+    "timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log 2>&1",
+    "ln -sf /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/main/wrf.exe /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/wrf.exe",
+    "timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_DYNAMIC_TERMS=1 WRFGPU2_DYNAMIC_TERMS_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output WRFGPU2_DYNAMIC_TERMS_GRID=2 WRFGPU2_DYNAMIC_TERMS_START_STEP=6000 WRFGPU2_DYNAMIC_TERMS_END_STEP=6000 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log 2>&1",
+    "cp /mnt/data/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff proofs/v014/wrf_dynamic_term_localization_patch.diff",
+    "python -m py_compile proofs/v014/wrf_dynamic_term_localization.py",
+    "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/wrf_dynamic_term_localization.py",
+    "python -m json.tool proofs/v014/wrf_dynamic_term_localization.json >/tmp/wrf_dynamic_term_localization.validated.json"
+  ],
+  "emitted_surface": {
+    "duplicate_overlap": {
+      "marker_count": 17,
+      "marker_max_delta": 0.0,
+      "marker_max_delta_by_field": {
+        "V_K1.V": 0.0
+      },
+      "post_count": 17,
+      "post_max_delta": 96731.453125,
+      "post_max_delta_by_field": {
+        "V_K1.MUV": 0.0,
+        "V_K1.MUVS": 96731.453125,
+        "V_K1.RV_TEND": 20.5762825012207,
+        "V_K1.RV_TENDF": 38.78202819824219,
+        "V_K1.V_NEW": 57.9480562210083,
+        "V_K1.V_OLD": 0.0015759468078613281,
+        "V_K1.V_SAVE": 0.0
+      },
+      "pre_count": 17,
+      "pre_max_delta": 96731.453125,
+      "pre_max_delta_by_field": {
+        "V_K1.MUV": 0.0,
+        "V_K1.MUVS": 96731.453125,
+        "V_K1.RV_TEND": 20.5762825012207,
+        "V_K1.RV_TENDF": 38.78202819824219,
+        "V_K1.V_NEW": 0.0,
+        "V_K1.V_OLD": 0.0015759468078613281,
+        "V_K1.V_SAVE": 0.0
+      }
+    },
+    "files": {
+      "post": [
+        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_post_small_step_finish_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_post_small_step_finish_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      ],
+      "post_marker": [
+        "/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      ],
+      "pre": [
+        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_pre_small_step_finish_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_pre_small_step_finish_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      ]
+    },
+    "metadata": {
+      "current_timestr_before_step": "2026-05-02_03:59:54",
+      "domain_id": 2,
+      "grid_itimestep_after_increment": 6000,
+      "lead_seconds_after_step": 36000.0,
+      "rk_order": 3,
+      "rk_step": 4
+    },
+    "name": "final_stage_small_step_finish",
+    "native_layers": "K1 for MASS/U/V and KSTAG 0..1 for W/PH",
+    "post_surface": "final_stage_post_small_step_finish",
+    "pre_surface": "final_stage_pre_small_step_finish",
+    "stage": "rk_step=3/rk_order=3",
+    "unique_counts": {
+      "post": {
+        "MASS_K1": 289,
+        "U_K1": 306,
+        "V_K1": 306,
+        "WPH_KSTAG01": 578
+      },
+      "post_marker": {
+        "MASS_K1": 289,
+        "U_K1": 306,
+        "V_K1": 306,
+        "WPH_KSTAG01": 578
+      },
+      "pre": {
+        "MASS_K1": 289,
+        "U_K1": 306,
+        "V_K1": 306,
+        "WPH_KSTAG01": 578
+      }
+    },
+    "wrf_routine": "dyn_em/solve_em.F::solve_em"
+  },
+  "emitted_term_magnitude_post_surface": {
+    "MASS_K1": {
+      "MU_TEND": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "MU_TENDF": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "T_TEND": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 19.07452392578125,
+        "max_abs": 19.07452392578125,
+        "min": -17.58587646484375,
+        "rmse": 4.34660278647293
+      },
+      "T_TENDF": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 443.5711975097656,
+        "max_abs": 629.6803588867188,
+        "min": -629.6803588867188,
+        "rmse": 88.12666176319277
+      }
+    },
+    "U_K1": {
+      "RU_TEND": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 300.4697875976562,
+        "max_abs": 1119.048217773438,
+        "min": -1119.048217773438,
+        "rmse": 79.78515488608438
+      },
+      "RU_TENDF": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 782.6410522460938,
+        "max_abs": 790.7630004882812,
+        "min": -790.7630004882812,
+        "rmse": 167.45157831342422
+      }
+    },
+    "V_K1": {
+      "RV_TEND": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 934.5704345703125,
+        "max_abs": 934.5704345703125,
+        "min": -267.427734375,
+        "rmse": 71.97687671870604
+      },
+      "RV_TENDF": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 857.056884765625,
+        "max_abs": 857.056884765625,
+        "min": -835.4358520507812,
+        "rmse": 178.28959320940154
+      }
+    },
+    "WPH_KSTAG01": {
+      "PH_TEND": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 2038.6875,
+        "max_abs": 2038.6875,
+        "min": -578.4698486328125,
+        "rmse": 140.55111884773004
+      },
+      "PH_TENDF": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 76.51834106445312,
+        "max_abs": 76.51834106445312,
+        "min": -46.78333282470703,
+        "rmse": 8.779819589944081
+      },
+      "RW_TEND": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 3671.98828125,
+        "max_abs": 6267.04296875,
+        "min": -6267.04296875,
+        "rmse": 559.0956263950739
+      },
+      "RW_TENDF": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 523.9392700195312,
+        "max_abs": 523.9392700195312,
+        "min": -276.1930236816406,
+        "rmse": 46.33932801626103
+      }
+    }
+  },
+  "first_failing_surface": {
+    "evidence": {
+      "post_marker_vs_scratch_h10_wrfout": {
+        "P": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "PH": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 5.329070518200751e-15,
+          "max_abs": 5.329070518200751e-15,
+          "min": -5.329070518200751e-15,
+          "rmse": 2.0806684742968092e-15
+        },
+        "T": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "U": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 8.881784197001252e-16,
+          "max_abs": 8.881784197001252e-16,
+          "min": -8.881784197001252e-16,
+          "rmse": 2.7027201268900864e-16
+        },
+        "V": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 8.881784197001252e-16,
+          "max_abs": 8.881784197001252e-16,
+          "min": -8.881784197001252e-16,
+          "rmse": 2.6017692407882053e-16
+        },
+        "W": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 4.440892098500626e-16,
+          "max_abs": 4.440892098500626e-16,
+          "min": -4.440892098500626e-16,
+          "rmse": 4.0846014518837006e-17
+        }
+      },
+      "post_surface_vs_post_marker": {
+        "PB_vs_marker_PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "PH_NEW_vs_marker_PH": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "P_vs_marker_P": {
+          "count": 289,
+          "finite_count": 289,
+          "max": -1851.9193568229675,
+          "max_abs": 1981.2389628887177,
+          "min": -1981.2389628887177,
+          "rmse": 1937.0772588531227
+        },
+        "T_HIST_SRC_vs_marker_T": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.00128173828125,
+          "max_abs": 0.003509521484375,
+          "min": -0.003509521484375,
+          "rmse": 0.0003686447840350194
+        },
+        "T_THM_vs_marker_T": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 5.702972412109375,
+          "max_abs": 5.702972412109375,
+          "min": 4.734558939933777,
+          "rmse": 5.449877336887554
+        },
+        "U_NEW_vs_marker_U": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "V_NEW_vs_marker_V": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 57.9480562210083,
+          "max_abs": 57.9480562210083,
+          "min": -5.983438014984131,
+          "rmse": 8.125716617719473
+        },
+        "W_NEW_vs_marker_W": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.00010097026824995581,
+          "max_abs": 0.00010097026824995581,
+          "min": -6.127357482910156e-05,
+          "rmse": 6.654755737086828e-06
+        }
+      }
+    },
+    "finding": "The emitted post-small_step_finish tile-local layer is not the history-aligned h10 surface for P/V/W or THM-side T; the post-RK marker remains the green CPU history surface.",
+    "next_exact_layer": "Instrument the pressure/rho/post-RK refresh path between small_step_finish and the accepted marker after after_all_rk_steps, or compare JAX only against the already-green post-RK marker state.",
+    "surface": "final_stage_post_small_step_finish_to_post_rk_history"
+  },
+  "generated_utc": "2026-06-09T02:35:37.905178+00:00",
+  "history_t_lesson": {
+    "T_HIST_SRC_vs_marker_T": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.00128173828125,
+      "max_abs": 0.003509521484375,
+      "min": -0.003509521484375,
+      "rmse": 0.0003686447840350194
+    },
+    "T_THM_vs_marker_T": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 5.702972412109375,
+      "max_abs": 5.702972412109375,
+      "min": 4.734558939933777,
+      "rmse": 5.449877336887554
+    },
+    "history_source": "grid%th_phy_m_t0 / emitted T_HIST_SRC",
+    "thm_side": "grid%t_2 / emitted T_THM"
+  },
+  "inputs_read": {
+    "dynamic_field_attribution_json": "/home/enric/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
+    "marker_verdict": "MARKER_GREEN",
+    "request_selected_cell_count": 24,
+    "same_state_savepoint_request_json": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+    "wrf_same_state_marker_savepoint_json": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json"
+  },
+  "next_jax_wrappers": [
+    "src/gpuwrf/dynamics/core/small_step_finish.py::small_step_finish_wrf",
+    "src/gpuwrf/runtime/operational_mode.py::_carry_from_finished_stage",
+    "src/gpuwrf/runtime/operational_mode.py::_rk_scan_step",
+    "source tendency container feeding src/gpuwrf/dynamics/core/rk_addtend_dry.py::rk_addtend_dry"
+  ],
+  "next_sprint_recommendation": "narrower WRF term emitter around pressure_rho_refresh/post-RK cadence before a broad JAX term wrapper; use the green post-RK marker as the history-state anchor.",
+  "post_marker_vs_provided_cpu_h10_wrfout": {
+    "P": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "PB": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "PH": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 1.9073486328125e-06,
+      "max_abs": 1.9073486328125e-06,
+      "min": -1.9073486328125e-06,
+      "rmse": 4.3090067180366245e-07
+    },
+    "T": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "U": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 4.76837158203125e-07,
+      "max_abs": 4.76837158203125e-07,
+      "min": -4.76837158203125e-07,
+      "rmse": 1.3106758362804406e-07
+    },
+    "V": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 9.5367431640625e-07,
+      "max_abs": 9.5367431640625e-07,
+      "min": -9.5367431640625e-07,
+      "rmse": 3.1466681451378603e-07
+    },
+    "W": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 1.1920928977282585e-07,
+      "max_abs": 1.1920928977282585e-07,
+      "min": -5.960464477539063e-08,
+      "rmse": 9.606584126922052e-09
+    }
+  },
+  "post_marker_vs_retained_gpu_h10_wrfout": {
+    "P": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 590.0020751953125,
+      "max_abs": 590.0020751953125,
+      "min": 434.1485595703125,
+      "rmse": 526.3440071888446
+    },
+    "PB": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 863.171875,
+      "max_abs": 1047.015625,
+      "min": -1047.015625,
+      "rmse": 223.43483393562332
+    },
+    "PH": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 5.097192764282227,
+      "max_abs": 5.097192764282227,
+      "min": -0.3701791763305682,
+      "rmse": 2.336601070572846
+    },
+    "T": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.751983642578125,
+      "max_abs": 3.357818603515625,
+      "min": -3.357818603515625,
+      "rmse": 1.0306179245297085
+    },
+    "U": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 6.29096531867981,
+      "max_abs": 6.29096531867981,
+      "min": -5.899404585361481,
+      "rmse": 2.03052660423855
+    },
+    "V": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 2.858573198318481,
+      "max_abs": 11.590928077697754,
+      "min": -11.590928077697754,
+      "rmse": 4.454532390676284
+    },
+    "W": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 0.9805375635623932,
+      "max_abs": 1.7341964393854141,
+      "min": -1.7341964393854141,
+      "rmse": 0.23850793231592415
+    }
+  },
+  "post_marker_vs_scratch_h10_wrfout": {
+    "P": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "PB": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "PH": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 5.329070518200751e-15,
+      "max_abs": 5.329070518200751e-15,
+      "min": -5.329070518200751e-15,
+      "rmse": 2.0806684742968092e-15
+    },
+    "T": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "U": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 8.881784197001252e-16,
+      "max_abs": 8.881784197001252e-16,
+      "min": -8.881784197001252e-16,
+      "rmse": 2.7027201268900864e-16
+    },
+    "V": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 8.881784197001252e-16,
+      "max_abs": 8.881784197001252e-16,
+      "min": -8.881784197001252e-16,
+      "rmse": 2.6017692407882053e-16
+    },
+    "W": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 4.440892098500626e-16,
+      "max_abs": 4.440892098500626e-16,
+      "min": -4.440892098500626e-16,
+      "rmse": 4.0846014518837006e-17
+    }
+  },
+  "post_surface_vs_post_marker": {
+    "PB_vs_marker_PB": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "PH_NEW_vs_marker_PH": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "P_vs_marker_P": {
+      "count": 289,
+      "finite_count": 289,
+      "max": -1851.9193568229675,
+      "max_abs": 1981.2389628887177,
+      "min": -1981.2389628887177,
+      "rmse": 1937.0772588531227
+    },
+    "T_HIST_SRC_vs_marker_T": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.00128173828125,
+      "max_abs": 0.003509521484375,
+      "min": -0.003509521484375,
+      "rmse": 0.0003686447840350194
+    },
+    "T_THM_vs_marker_T": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 5.702972412109375,
+      "max_abs": 5.702972412109375,
+      "min": 4.734558939933777,
+      "rmse": 5.449877336887554
+    },
+    "U_NEW_vs_marker_U": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "V_NEW_vs_marker_V": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 57.9480562210083,
+      "max_abs": 57.9480562210083,
+      "min": -5.983438014984131,
+      "rmse": 8.125716617719473
+    },
+    "W_NEW_vs_marker_W": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 0.00010097026824995581,
+      "max_abs": 0.00010097026824995581,
+      "min": -6.127357482910156e-05,
+      "rmse": 6.654755737086828e-06
+    }
+  },
+  "post_surface_vs_scratch_h10_wrfout": {
+    "P": {
+      "count": 289,
+      "finite_count": 289,
+      "max": -1851.9193568229675,
+      "max_abs": 1981.2389628887177,
+      "min": -1981.2389628887177,
+      "rmse": 1937.0772588531227
+    },
+    "PB": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "min": 0.0,
+      "rmse": 0.0
+    },
+    "PH_NEW": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 5.329070518200751e-15,
+      "max_abs": 5.329070518200751e-15,
+      "min": -5.329070518200751e-15,
+      "rmse": 2.0806684742968092e-15
+    },
+    "T_HIST_SRC": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 0.00128173828125,
+      "max_abs": 0.003509521484375,
+      "min": -0.003509521484375,
+      "rmse": 0.0003686447840350194
+    },
+    "T_THM": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 5.702972412109375,
+      "max_abs": 5.702972412109375,
+      "min": 4.734558939933777,
+      "rmse": 5.449877336887554
+    },
+    "U_NEW": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 8.881784197001252e-16,
+      "max_abs": 8.881784197001252e-16,
+      "min": -8.881784197001252e-16,
+      "rmse": 2.7027201268900864e-16
+    },
+    "V_NEW": {
+      "count": 306,
+      "finite_count": 306,
+      "max": 57.9480562210083,
+      "max_abs": 57.9480562210083,
+      "min": -5.983438014984131,
+      "rmse": 8.125716617719473
+    },
+    "W_NEW": {
+      "count": 578,
+      "finite_count": 578,
+      "max": 0.00010097026824995581,
+      "max_abs": 0.00010097026824995581,
+      "min": -6.127357482910156e-05,
+      "rmse": 6.654755737082988e-06
+    }
+  },
+  "proof_objects": {
+    "compile_log": "/mnt/data/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log",
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.md",
+    "patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization_patch.diff",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-dynamic-term-localization.md",
+    "rsl_logs": "/mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/rsl.error.*",
+    "run_stdout": "/mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log"
+  },
+  "provenance": {
+    "dynamic_patch_sha256": "84e0bc0d0494147af903c0307d3ec4e5cd94e604ffe1d6d596d349d035111ba4",
+    "green_marker_patch_sha256": "f967f26a8497b0d8ee2a4dbd7051b72c28c96fc54d8b2168ad730e180a1a0ba8",
+    "run_dir": "/mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3",
+    "run_wrf_exe_sha256": "b042810093d715e915372e5dd8a5cdbbab44e32bd28d9b5233767fb61d422ab7",
+    "solve_em_sha256": "2b25eea316b755609a75d76535c240bf7d8bc8824db9342d9f1dcac5f143fbe7",
+    "source_wrf_describe": "v4.7.1-dirty",
+    "source_wrf_dirty_status_first_lines": [
+      "M dyn_em/solve_em.F",
+      " M phys/Makefile",
+      " M phys/module_microphysics_driver.F",
+      " M phys/module_pbl_driver.F",
+      " M phys/module_radiation_driver.F",
+      " M phys/module_surface_driver.F",
+      "?? Registry/Registry",
+      "?? Registry/io_boilerplate_temporary.inc",
+      "?? external/io_grib1/io_grib1.f90",
+      "?? external/io_grib_share/io_grib_share.f90",
+      "?? external/io_int/diffwrf",
+      "?? external/io_int/test_io_idx",
+      "?? external/io_netcdf/diffwrf",
+      "?? frame/md_calls.inc",
+      "?? frame/module_dm.F",
+      "?? frame/module_state_description.F",
+      "?? inc/wrf_io_flags.h",
+      "?? inc/wrf_status_codes.h",
+      "?? phys/module_bl_mynnedmf.F",
+      "?? phys/module_bl_mynnedmf_common.F",
+      "?? phys/module_bl_mynnedmf_driver.F",
+      "?? phys/module_sf_noahmp_glacier.F",
+      "?? phys/module_sf_noahmp_groundwater.F",
+      "?? phys/module_sf_noahmpdrv.F",
+      "?? phys/module_sf_noahmplsm.F",
+      "?? phys/module_wrfgpu2_oracle.F",
+      "?? phys/physics_mmm/",
+      "?? run/MPTABLE.TBL",
+      "?? run/input_sounding",
+      "?? run/namelist.input",
+      "?? run/namelist.input.backup.2026-05-29_11_34_29",
+      "?? run/namelist.input.backup.2026-05-29_14_46_33",
+      "?? run/namelist.input.backup.2026-05-29_16_01_23",
+      "?? run/namelist.input.backup.2026-05-29_22_43_13",
+      "?? run/namelist.input.backup.2026-06-04_10_13_19",
+      "?? test/em_grav2d_x/README.namelist",
+      "?? test/em_real/BROADBAND_CLOUD_GODDARD.bin",
+      "?? test/em_real/README.namelist",
+      "?? test/em_real/README.physics_files",
+      "?? test/em_real/eclipse_besselian_elements.dat",
+      "?? test/em_real/ishmael-gamma-tab.bin",
+      "?? test/em_real/ishmael-qi-qc.bin",
+      "?? test/em_real/ishmael-qi-qr.bin",
+      "?? test/em_real/oracle_run/",
+      "?? test/em_real/oracle_run_v090/",
+      "?? test/em_real/oracle_run_v090_mp28/",
+      "?? test/em_real/p3_lookupTable_1.dat-v5.4_2momI",
+      "?? test/em_real/p3_lookupTable_1.dat-v5.4_3momI",
+      "?? test/em_real/p3_lookupTable_2.dat-v5.3",
+      "?? test/em_real/wind-turbine-1.tbl",
+      "?? tools/fseeko_test",
+      "?? tools/gen_comms.c",
+      "?? tools/registry"
+    ],
+    "source_wrf_head": "f52c197ed39d12e087d02c50f412d90d418f6186",
+    "source_wrf_pristine": "/home/enric/src/wrf_pristine/WRF",
+    "wrf_copy": "/mnt/data/wrf_gpu2/v014_dynamic_terms/WRF",
+    "wrf_exe_sha256": "b042810093d715e915372e5dd8a5cdbbab44e32bd28d9b5233767fb61d422ab7"
+  },
+  "schema": "wrf_dynamic_term_localization_v1",
+  "small_step_finish_delta_post_minus_pre": {
+    "MASS_K1": {
+      "common_count": 289,
+      "field_delta_stats": {
+        "MUT": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "MUTS": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "MU_NEW": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1749.277699945495,
+          "max_abs": 1749.277699945495,
+          "min": 1621.9067691117525,
+          "rmse": 1691.3786949502921
+        },
+        "MU_OLD": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "MU_TEND": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "MU_TENDF": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "P": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "T_HIST_SRC": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "T_OLD": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "T_TEND": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "T_TENDF": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "T_THM": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 50.72845101356507,
+          "max_abs": 58.963478803634644,
+          "min": -58.963478803634644,
+          "rmse": 12.72518383063843
+        }
+      }
+    },
+    "U_K1": {
+      "common_count": 306,
+      "field_delta_stats": {
+        "MUU": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "MUUS": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "RU_TEND": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "RU_TENDF": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "U_NEW": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 1142.947935223579,
+          "max_abs": 1142.947935223579,
+          "min": -741.5819869041443,
+          "rmse": 144.35227947473157
+        },
+        "U_OLD": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "U_SAVE": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        }
+      }
+    },
+    "V_K1": {
+      "common_count": 306,
+      "field_delta_stats": {
+        "MUV": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "MUVS": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "RV_TEND": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "RV_TENDF": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "V_NEW": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 777.985018491745,
+          "max_abs": 926.6135330200195,
+          "min": -926.6135330200195,
+          "rmse": 141.53153315739178
+        },
+        "V_OLD": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "V_SAVE": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        }
+      }
+    },
+    "WPH_KSTAG01": {
+      "common_count": 578,
+      "field_delta_stats": {
+        "PH_NEW": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 16.252461112919264,
+          "max_abs": 16.252461112919264,
+          "min": 0.0,
+          "rmse": 9.995847599948753
+        },
+        "PH_OLD": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "PH_SAVE": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "PH_TEND": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "PH_TENDF": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "RW_TEND": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "RW_TENDF": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "W_NEW": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 179.35646855831146,
+          "max_abs": 345.4159356355667,
+          "min": -345.4159356355667,
+          "rmse": 22.190003744850216
+        },
+        "W_OLD": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        },
+        "W_SAVE": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "min": 0.0,
+          "rmse": 0.0
+        }
+      }
+    }
+  },
+  "target_confirmed": {
+    "domain": "d02",
+    "lead_seconds_after_step": 36000.0,
+    "matches_green_marker_patch": true,
+    "selected_cell_zero_yx": {
+      "south_north": 9,
+      "west_east": 13
+    },
+    "selected_patch_bounds_mass_grid": {
+      "halo_radius_cells": 8,
+      "south_north_start": 1,
+      "south_north_stop_exclusive": 18,
+      "west_east_start": 5,
+      "west_east_stop_exclusive": 22
+    },
+    "valid_time_utc": "2026-05-02T04:00:00+00:00",
+    "valid_time_wrf_history": "2026-05-02_04:00:00",
+    "wrf_step": 6000
+  },
+  "unresolved_risks": [
+    "No JAX same-state wrapper was run; this artifact emits the WRF source layer but does not compare JAX terms.",
+    "Only the first selected h10 patch and K1/KSTAG01 surface layer were emitted; full-column term localization remains follow-up work.",
+    "The tile-local post-small_step_finish surface is not yet the green history surface for P/V/W.",
+    "The post-h10 retained GPU wrfout is from the prior retained run, not a fresh same-state JAX execution."
+  ],
+  "verdict": "TERM_LAYER_EMITTED_final_stage_small_step_finish"
+}
