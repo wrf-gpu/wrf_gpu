@@ -131,6 +131,13 @@ frozen. Next debug step is therefore a tooling/contract sprint: build a
 CPU-compatible proof loader or checkpoint reader plus candidate-step WRF
 post-RK/pre-halo full-field truth surface, then rerun the discriminator.
 
+Update 2026-06-09 12:50 WEST: same-input contract-builder sprint opened:
+`.agent/sprints/2026-06-09-v014-same-input-contract-builder/sprint-contract.md`.
+This is a debug-tooling sprint, not a production source-fix sprint. It must
+build or precisely block the CPU-compatible proof loader/checkpoint reader, WRF
+candidate-step post-RK/pre-halo full-field surface, and frozen field/staggering
+schema needed to make same-input comparisons cheap and strict.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
