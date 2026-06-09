@@ -27,7 +27,20 @@ Project constitution, current milestone, milestone plan, sprint objective, file 
 Match model+effort to task type (principal effort-tiers): **core/correctness-critical** (dycore, physics, coupling, proof generation) → **Opus 4.8 max** in-process `Agent`; **debugging / writing / review / harness** → **Opus 4.8 xhigh** or **GPT-5.5 xhigh**; go **parallel** for independent, file-disjoint work. ONE GPU job at a time (single GPU); fan out only non-GPU work in parallel.
 
 - **Cross-model debug cadence:** for a complex correctness bug, after two focused GPT/debug sprints on the same problem fail to prove a fix or leave the conclusion methodologically uncertain, dispatch one Opus xhigh critic/debugger to challenge the method, hypotheses, evidence chain, performance implications, and candidate bug itself before the manager commits to the next conclusion. This cadence is principal-confirmed after the 2026-06-09 live-nest/base-source critique: Opus use should be more frequent at these proof gaps, but still targeted escalation rather than routine double-agenting.
-- **Debug-tooling check:** before continuing a long runtime-chasing debug ladder, explicitly ask whether the team is using the right tool. Runtime bugs can become expensive when each hypothesis needs a slow reproduction. If a focused harness, savepoint emitter, comparator, schema freezer, or visualization would make the next 5-10 sprints faster or more falsifiable, treat one agent sprint spent building that tool as cheap. Prefer tool-building when it converts repeated ad hoc runs into a fast, reproducible proof loop.
+- **Debug-tooling and wall-clock check:** at every planning step for a hard
+  runtime/kernel-level bug, explicitly ask whether the team is using the right
+  method and whether the current plan is the fastest rigorous wall-clock path.
+  Runtime bugs can become expensive when each hypothesis needs a slow
+  reproduction. It is often faster and cheaper to send one worker in parallel or
+  serially to prove/refute a hypothesis, build a focused harness, savepoint
+  emitter, comparator, schema freezer, or visualization, than to keep narrowing
+  the bug by slow full-runtime steps. Treat one agent sprint spent building a
+  valuable debug tool as cheap if it reduces the next 5-10 proof loops, lowers
+  false-assumption probability, or makes the result more falsifiable. Prefer
+  expert-style debugging methods that minimize number of steps to the target:
+  isolate state boundaries, freeze schemas, create minimal reproducer/savepoint
+  loops, compare exact oracles, and parallelize independent hypothesis tests
+  without colliding on GPU or source ownership.
 - **Opus worker/frontrunner:** in-process `Agent` tool (`subagent_type: general-purpose`, `model: opus`). **DISPATCH WITH `run_in_background: true` — STAY RECEPTIVE (principal directive 2026-06-01).** A foreground `Agent` call BLOCKS the entire manager turn until it returns; a 35-min foreground diagnosis agent locked out both the principal's messages and a finished GPT critic. Background agents auto-notify on completion via task-notification, so the manager stays free for the principal + other agents in between. **NEVER sit in a blocking `sleep`/poll loop** to watch an agent — dispatch, yield, react to the notification; do at most a single one-shot status check, never a waiting loop. Manager reviews diff, runs gates, commits/merges.
 - **tmux hygiene before dispatch:** before launching new tmux agents, close completed/no-longer-needed worker windows from prior sprints so the shared tmux session remains clean. Do not close active workers, the manager pane, or principal-owned panes.
 - **GPT-5.5 critic/debugger (codex):** launch as an **INTERACTIVE codex TUI session in a tmux window** so the principal can attach (`tmux attach`, Ctrl-b <n>) and watch/interject — principal directive 2026-06-01. **`tmux new-window -t <session>:<EXPLICIT-FREE-INDEX>`** (e.g. `-t 0:5`) then `tmux send-keys -t 0:5 'codex -s workspace-write -a never -m gpt-5.5 -c model_reasoning_effort=xhigh "$(cat /tmp/<prompt>.txt)"' Enter`. **GOTCHAS (both bit us 2026-06-01):** (1) `tmux new-window -t 0` means "create AT index 0" → fails "index 0 in use" and the follow-up `send-keys -t 0:` misroutes into the MANAGER's own pane — ALWAYS give an explicit free window index. (2) `--full-auto` is REMOVED in the current codex CLI (`error: unexpected argument '--full-auto'`) — use `-s workspace-write -a never` (sandboxed, auto-progress, no prompts, won't trip the manager's Bash classifier) or `--dangerously-bypass-approvals-and-sandbox` (full access; the principal's own pattern, but the dangerous substring may trip the classifier when sent via Bash). NOT headless `codex exec >log`. The TUI isn't file-logged, so instruct the agent to write its deliverable to an absolute main-repo path + print a unique DONE marker (e.g. `GPT <TOPIC> DONE`); detect via that file + `tmux capture-pane`, then `kill-window`. Completion messages to the manager pane must use delayed repeated Enter presses, for example `tmux send-keys -t 0:2 '<DONE MARKER>' Enter; sleep 1; tmux send-keys -t 0:2 Enter; sleep 1; tmux send-keys -t 0:2 Enter`, because a single Enter can leave text staged in the Codex TUI. See memory [[Launch all agents in the same tmux session, close their windows when done]].
@@ -59,7 +72,10 @@ a periodic Opus 4.8 xhigh **management review**:
 - The reviewer must ask top-level whether more runtime chasing is still the
   cheapest path. If a focused debug tool, savepoint/comparison harness, schema,
   or visualization would make the next proof loop faster and more reliable, the
-  reviewer should recommend that tooling sprint explicitly.
+  reviewer should recommend that tooling sprint explicitly. The reviewer should
+  also challenge whether a parallel or serial worker could cheaply prove/refute
+  a key hypothesis while the main lane continues, and whether the plan matches
+  expert kernel/runtime debugging practice rather than incremental log-chasing.
 - Output must be context-sparing: maximum one short verdict paragraph, one
   ranked table of at most eight findings, one "next 3 sprints" recommendation
   list, and one explicit yes/no on whether the current goal should change.
@@ -89,10 +105,15 @@ Read only:
 
 Critique the manager's current 0.14 roadmap, conclusions, proof chain,
 parallelization, sprint sizing, next-sprint plan, and debug tooling. Decide
-whether the manager is still on the fastest rigorous path to the goal. At top
-level, answer whether we are using the right tools: should the next sprint build
-a focused harness/savepoint/comparator/schema/visualization instead of chasing
-another slow runtime reproduction? Do not propose a goal change unless the
+whether the manager is still on the fastest rigorous wall-clock path to the
+goal. At top level, answer whether we are using the right tools and methods:
+should the next sprint build a focused harness/savepoint/comparator/schema/
+visualization, or dispatch a parallel/serial worker to prove/refute a key
+hypothesis, instead of chasing another slow runtime reproduction? Evaluate the
+method like an expert kernel/runtime debugger: minimize steps to the target,
+minimize false-assumption probability, prefer minimal reproducible proof loops,
+freeze schemas/boundaries, and avoid expensive full-run iteration unless it is
+actually the fastest rigorous path. Do not propose a goal change unless the
 current goal is technically impossible or clearly no longer the smartest useful
 target under the latest evidence.
 
@@ -101,7 +122,8 @@ Output exactly:
 2. Ranked findings table, max 8 rows: severity, issue, evidence, fix.
 3. Next 3 sprints, max 3 bullets, each with objective and proof gate.
 4. Goal-change gate: "NO_GOAL_CHANGE" or "GOAL_CHANGE_RECOMMENDED: <why>".
-5. Tooling verdict: "RIGHT_TOOLS" or "BUILD_DEBUG_TOOL: <tool and why>".
+5. Method/tooling verdict: "RIGHT_TOOLS_FASTEST_WALL_CLOCK" or
+   "CHANGE_METHOD: <tool/worker/hypothesis path and why>".
 6. Context-sparing handoff: max 10 bullets the manager should remember.
 ```
 

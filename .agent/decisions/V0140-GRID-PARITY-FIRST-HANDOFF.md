@@ -155,10 +155,15 @@ Hermes/Telegram process-progress updates. Keep manager/agent handoffs and
 top-level validation output context-sparing: concise verdicts and proof paths in
 text, full field tables in JSON/CSV artifacts.
 
-Tooling directive 2026-06-09 12:45 WEST: for long runtime-debug ladders, ask
-top-level whether the current tools are right. A focused harness, savepoint
-emitter, comparator, schema freezer, or visualization sprint is cheap if it
-turns repeated slow reproductions into a fast falsifiable proof loop.
+Tooling directive 2026-06-09 12:45 WEST, expanded 12:55 WEST: for long
+runtime/kernel-debug ladders, ask at every planning step whether the current
+tools/methods are right and whether the plan is the fastest rigorous wall-clock
+path. A focused harness, savepoint emitter, comparator, schema freezer, or
+visualization sprint is cheap if it turns repeated slow reproductions into a
+fast falsifiable proof loop. It can also be faster to send one worker in
+parallel or serially to prove/refute a hypothesis than to keep narrowing the bug
+through slow runs. Prefer expert runtime-debug methods that minimize steps and
+false assumptions.
 
 ## Current Evidence
 
