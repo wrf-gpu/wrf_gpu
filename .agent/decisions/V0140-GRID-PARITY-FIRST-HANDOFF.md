@@ -1454,6 +1454,67 @@ Memory/FP32 status:
 TOST, Switzerland, FP32 source work, broad memory source work, and long GPU
 validation remain paused.
 
+## Current Manager Update 2026-06-09 22:30 WEST
+
+The Mythos kernel pass landed a validated source fix for the live-nest
+`start_domain` init family:
+
+- Proof:
+  `proofs/v014/mythos_kernel_fix_260609.{py,json,md}`.
+- Review:
+  `.agent/reviews/2026-06-09-v014-mythos-kernel-fix.md`.
+- Changed source:
+  `src/gpuwrf/integration/d02_replay.py` and
+  `src/gpuwrf/nesting/interp.py`.
+- Verdict:
+  `MYTHOS_KERNEL_FIX_START_DOMAIN_P_MU_W_CLOSED_FP32_LIBM_SINT_BLEND_BIT_EXACT`.
+- Manager rerun passed:
+  `py_compile`, CPU-only Mythos proof, JSON validation, and `git diff --check`.
+
+Meaning:
+
+- The remaining `p_surf -> MUB` gap was exact float32 libm provenance and source
+  grouping: CPU-WRF/gfortran calls scalar glibc `expf/logf/powf`, and
+  `(...)**0.5` compiles to `powf(x,0.5)`, not `sqrtf`.
+- The previous live-nest terrain SINT/blend path also evaluated in float64 while
+  WRF uses REAL(4); this is now closed in the init path.
+- Init/start-domain gates versus WRF internal truth now pass:
+  `P_STATE 69.96875 -> 0.0390625 Pa`, `MU_STATE 13.256103515625 ->
+  4.547473508864641e-13 Pa`, and `W_STATE 0.7605466842651367 ->
+  5.551115123125783e-17 m/s`.
+- Base fields after patch are effectively exact against truth:
+  `MUB=0`, `PB=0`, `PHB=4.547473508864641e-13`,
+  `HT=4.547473508864641e-13`.
+
+Honest remaining frontier:
+
+- The strict Step-1 16-field one-RK-step comparison still diverges after the
+  now-closed init:
+  `P max_abs=975.1236470550566`, `PH=63.82327410901786`,
+  `MU=14.007953430216503`, `W=2.6401070776077424`,
+  first divergent field `T`.
+- The Mythos attribution probe shows this is real post-init dynamics state
+  divergence in the `PH/MU/P/W` acoustic/mass/vertical lane or one-step namelist
+  parity, not pressure-diagnosis semantics and not the fixed init family.
+- The next grid-parity debug sprint should first freeze one-step namelist
+  parity (`acoustic_substeps`, `epssm`, damping) and then rerun/rebuild the RK1
+  substage comparator from the now-closed init state before any dycore source
+  edit.
+
+Memory/FP32 handoff:
+
+- The principal now wants the memory improvement/fix lane handed to Mythos as a
+  parallel branch. Endpoint is not a report-only lane: all known memory issues
+  should be fixed where technically safe, any newly found material memory issue
+  should be fixed or proven not worth/possible, and every claim must have proof.
+- Because the grid-parity branch still has a real dynamics frontier, Mythos
+  memory work must run in an isolated worktree/branch and return proof plus a
+  merge recommendation. Default fp64 production behavior must remain
+  bit-identical unless a sprint explicitly declares and proves a semantic or
+  mixed-precision mode.
+- Long validation, Switzerland, and TOST remain paused until grid parity and
+  memory branch interactions are reviewed.
+
 ## Current Manager Update 2026-06-09 21:35 WEST
 
 The base-state boundary sprint is closed locally and ready to commit:
