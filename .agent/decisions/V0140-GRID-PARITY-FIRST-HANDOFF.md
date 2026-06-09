@@ -1609,6 +1609,53 @@ Parallel status:
   started the exact-branch memory preflight plus moisture-reuse work.
 - Do not start TOST, Switzerland, or long GPU validation yet.
 
+## Current Manager Update 2026-06-09 23:33 WEST
+
+The Step-1 tendency contract split sprint is closed:
+
+- Sprint:
+  `.agent/sprints/2026-06-09-v014-step1-tendency-contract-split`.
+- Proof:
+  `proofs/v014/step1_tendency_contract_split.{py,json,md}`.
+- Review:
+  `.agent/reviews/2026-06-09-v014-step1-tendency-contract-split.md`.
+- Verdict:
+  `STEP1_TENDENCY_CONTRACT_LOCALIZED_FIRST_RK_STEP_PART2_T_TENDF_SOURCE_LEAVES`.
+- Manager rerun passed:
+  `py_compile`, CPU-only proof rerun, JSON validation, and `git diff --check`.
+
+Meaning:
+
+- The earlier `P_STATE`/`MU_STATE`/`W_STATE` material frontiers remain closed
+  under patched-init capture.
+- The next exact failure is WRF `first_rk_step_part2` theta source-leaf
+  construction: full-domain `T_TENDF` at `after_first_rk_step_part2` differs
+  from the current JAX dry source bundle by max_abs `2457.5830078125`, RMSE
+  `21.20870100357482`.
+- Source-save pre-addtend `T_TENDF` also differs (max_abs
+  `1326.432250976562`), proving boundary/spec/acoustic explanations are too
+  late for the first failure.
+- Proof-local `rad_rk_tendf=1` did not move the boundary, so the simple
+  radiation-cadence explanation is falsified.
+
+Next active grid-parity boundary:
+
+- WRF `first_rk_step_part2` internals: emit disposable truth after
+  `calculate_phy_tend`, after `update_phy_ten`, and after
+  `conv_t_tendf_to_moist`.
+- Include raw `RTH*TEN` / `T_HIST_SRC` contributors and the current JAX dry
+  physics source bundle.
+- Do not patch `_augment_large_step_tendencies`, `relax_bdy_dry`,
+  `rk_addtend_dry`, `spec_bdy_dry`, or acoustic code before this earlier source
+  boundary is split.
+
+Parallel status:
+
+- Mythos remains active in tmux `0:1` on the isolated memory/FP32 lane. Its
+  final merge is still pending manager review because the memory proof/closeout
+  must be internally consistent before acceptance.
+- Do not start TOST, Switzerland, or long GPU validation yet.
+
 ## Current Manager Update 2026-06-09 21:35 WEST
 
 The base-state boundary sprint is closed locally and ready to commit:
