@@ -1017,3 +1017,34 @@ production live-nest init consumer. The next pre-validation gate is now:
 2. Run the full Step-1 same-input d02 comparison across the 16-field schema.
 3. Only after that comparison closes or names the next boundary should we resume
    Grid-Delta Atlas, Switzerland, or TOST planning.
+
+## Update 2026-06-09 19:42 WEST
+
+The Step-1 live-nest perturb-state boundary is localized but not patched.
+Verdict:
+`STEP1_LIVE_NEST_PERTURB_STATE_LOCALIZED_START_DOMAIN_P_PRESS_ADJ_SET_W_SURFACE_P_AL_ALT_SUBSURFACE_GAP`.
+
+Validation remains paused. Current proof-local residual reductions:
+
+- `P_STATE`: `69.96875` -> `3.9458582235092763` Pa via start-domain pressure
+  recompute.
+- `MU_STATE`: `13.256103515625` -> `0.047773029698646496` Pa via `press_adj`.
+- `W_STATE`: `0.7605466246604919` -> `1.2992081932505783e-07` m/s via
+  `set_w_surface`.
+
+This is not enough to resume B4/Grid-Delta Atlas, Switzerland, or TOST because
+`P_STATE` still lacks an exact internal WRF `start_domain` truth surface.
+
+Immediate pre-validation gate:
+
+1. Emit WRF `start_domain(nest,.TRUE.)` internal surfaces after the hypsometric
+   `P/al/alt` recompute and immediately before/after `press_adj`.
+2. Compare those surfaces against the JAX live-nest Step-1 loader values and the
+   proof-local formula transcriptions.
+3. Patch production `d02_replay` only if the surface closes `P_STATE` with a
+   GPU-native, no-host-transfer initialization path.
+
+Memory update: the disjoint WDM6 `slmsk` shape cleanup is merged
+(`ee6cbbe1`) and validated. It does not unblock validation; it reduces one
+non-critical WDM6 transient by about `76.9 MiB`. FP32 source work remains behind
+the grid-parity lock.
