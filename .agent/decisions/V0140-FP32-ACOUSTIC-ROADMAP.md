@@ -19,10 +19,14 @@ this branch:
 
 ## Priority
 
-This is the highest-priority v0.14 memory/performance lane. It may be pulled into v0.13 only if
-the de-risk agents produce strong evidence that a large memory gain can be implemented with a
-small number of default-inert, proofable sprints and without invalidating the active fp64 TOST
-release candidate. Otherwise v0.13 ships after TOST and this becomes v0.14 P1.
+Current manager decision, updated 2026-06-09: this is the highest-priority
+v0.14 memory/performance lane after the direct grid-cell CPU-WRF-vs-GPU
+divergence root cause is named and fixed or formally bounded.
+
+It is no longer a v0.13 pull-in candidate. The old v0.13 tag plan was
+superseded by the grid-parity-first directive: do not land FP32 acoustic source
+changes while the fp64 production path still has unresolved broad grid-field
+divergence.
 
 ## Decision
 
@@ -31,9 +35,10 @@ fp32 mode remains unsafe, but an opt-in mixed precision acoustic path is feasibl
 if the acoustic state is made perturbation-authoritative and the fp64 islands are deliberately
 kept where the numerics need them.
 
-This is not part of v0.13. v0.13 production remains fp64 and its tag remains gated by the
-RRTMG memory fix plus powered TOST n=15. The de-risk evidence upgrades FP32 acoustic to
-v0.14 P1, not a v0.13 release blocker.
+This is not part of the current fp64 production line. The de-risk evidence
+upgrades FP32 acoustic to v0.14 P1, but the immediate gate is same-state
+grid-cell/root-operator localization. TOST is paused until the grid-field
+envelope is credible; mixed precision gets its own validation lane after that.
 
 ## Scope Boundary
 
@@ -90,7 +95,10 @@ Rejected:
 
 ## First Sprint Recommendation
 
-Start with R0+R1 only after v0.13 is tagged: ADR, explicit base-state plumbing, and fp64-default
-bit identity over focused acoustic prep/finish plus a one-step operational carry test. The
-worker R0 scaffold may be reviewed as a starting patch, but it should not be pulled into the
-active fp64 TOST release candidate.
+Start with R0+R1 only after the same-state/grid-divergence sprint has named the
+first failing operator, or after it proves acoustic `p/ph/mu/w` coupling is not
+on the critical fault surface. The first source sprint should be ADR +
+explicit base-state plumbing with fp64-default bit identity over focused
+acoustic prep/finish plus a one-step operational carry test. The worker R0
+scaffold may be reviewed as a starting patch, but it should not be merged into
+the active fp64 grid-debug line until the root-cause surface is clear.
