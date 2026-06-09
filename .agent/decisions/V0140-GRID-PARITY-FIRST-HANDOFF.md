@@ -113,6 +113,11 @@ same-boundary full wrapper carry/boundary leaves. No strict JAX comparison ran.
 Do not continue the step-6000 wrapper ladder; open the staged early-step
 same-input discriminator.
 
+Update 2026-06-09 12:38 WEST: early-step same-input discriminator sprint
+opened:
+`.agent/sprints/2026-06-09-v014-early-step-discriminator/sprint-contract.md`.
+This is the active next debug step and replaces the step-6000 wrapper ladder.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
