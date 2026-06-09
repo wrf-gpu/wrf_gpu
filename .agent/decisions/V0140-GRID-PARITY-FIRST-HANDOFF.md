@@ -101,6 +101,10 @@ bisection from shared `wrfinput` (for example steps 1, 60, 600, 3000, 5999) and
 must execute at least one strict comparison or name all remaining blockers in one
 pass.
 
+Update 2026-06-09 12:26 WEST: the next-sprint plan is now staged in
+`.agent/decisions/V0140-EARLY-STEP-DISCRIMINATOR-PLAN.md`. It is a pending
+plan, not a second active sprint while the full-domain wrapper worker runs.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
