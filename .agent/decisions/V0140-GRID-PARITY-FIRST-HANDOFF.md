@@ -88,6 +88,19 @@ read-only. The gate is a strict same-input single-RK comparison against
 WRF-emitted post-RK/pre-halo truth, or one exact blocker naming the missing
 wrapper contract, field, old-field strategy, boundary conflict, or patch width.
 
+Update 2026-06-09 12:24 WEST: Opus management review completed:
+`.agent/reviews/2026-06-09-v014-management-review-01.md`. Goal-change gate is
+`NO_GOAL_CHANGE`, but the path needs resequencing. The review accepts grid-first
+and TOST-hold, but flags that the same-input discriminator became a 4-sprint
+blocked instrumentation ladder at the hardest step-6000/h10 instance. Manager
+adopts the method correction: let the current full-domain wrapper sprint finish
+because it is already running and may produce a strict result or exact blocker;
+after that, do not open another one-blocker micro-sprint. The next decisive
+debug step must consolidate early-step same-input parity plus drift-onset
+bisection from shared `wrfinput` (for example steps 1, 60, 600, 3000, 5999) and
+must execute at least one strict comparison or name all remaining blockers in one
+pass.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
