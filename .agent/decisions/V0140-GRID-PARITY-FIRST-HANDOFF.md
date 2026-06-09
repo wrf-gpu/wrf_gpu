@@ -609,28 +609,53 @@ Manager validation reran:
 - `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/prestep_carry_source_trace.py`
 - `python -m json.tool proofs/v014/prestep_carry_source_trace.json`
 
-## Opened Wave 17
+## Completed Wave 17
+
+- GPT tmux worker (`0:4`, completed after manager validation):
+  previous-step handoff bisection sprint
+  `.agent/sprints/2026-06-09-v014-previous-step-handoff-bisect/sprint-contract.md`
+  with deliverables `proofs/v014/previous_step_handoff_bisect.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-previous-step-handoff-bisect.md`.
+
+Verdict: `BAD_BEFORE_FINAL_PARTIAL_SUBCYCLE`. The final producer-shaped replay
+matches the existing bad checkpoint target leaves exactly, so the reproducer is
+valid. The bad state is already present at d02 completed step 5997 before
+parent step 2000, `_operational_force`, or child steps 5998-5999. At that
+earliest captured surface, `MUB` is the worst target field with max_abs
+`1050.3046875`; `PB` is also already wrong with max_abs `1047.015625`.
+
+CPU live replay remains blocked because `_load_domains` reaches `State.zeros`,
+which requires a visible JAX GPU. The targeted replay used `JAX_PLATFORMS=cuda`,
+`CUDA_VISIBLE_DEVICES=0`, platform allocator, peak sampled VRAM `9851` MiB,
+and wall time about `1215` s. The required CPU validation command then reused
+the compact replay artifact and regenerated the repo proof objects.
+
+Manager validation reran:
+
+- `python -m py_compile proofs/v014/previous_step_handoff_bisect.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/previous_step_handoff_bisect.py`
+- `python -m json.tool proofs/v014/previous_step_handoff_bisect.json`
+
+## Opened Wave 18
 
 - Sprint contract opened:
-  `.agent/sprints/2026-06-09-v014-previous-step-handoff-bisect/sprint-contract.md`
+  `.agent/sprints/2026-06-09-v014-earlier-source-bisect/sprint-contract.md`
   with prompt
-  `.agent/sprints/2026-06-09-v014-previous-step-handoff-bisect/agent-prompt.md`.
-  Objective: reproduce and bisect the producer path that writes the bad d02
-  step-5999 carry. Default rule is no production `src/` edits; if a deeper hook
-  is required, emit `BISECTION_BLOCKED_<reason>` naming the exact hook/source
-  file rather than landing a fix in this sprint. A short targeted GPU replay is
-  allowed only if CPU replay is not practical; TOST, Switzerland, broad
-  validation, and FP32 remain excluded.
+  `.agent/sprints/2026-06-09-v014-earlier-source-bisect/agent-prompt.md`.
+  Objective: bisect before d02 step 5997 and decide whether `T/P/PB/MU/MUB`
+  are already wrong at native load / initial carry, become wrong during earlier
+  replay segments, or require a narrower source hook. Default rule is no source
+  fix; TOST, Switzerland, broad validation, and FP32 remain excluded.
 
 ## Next Manager Actions
 
-1. Run the previous-step handoff bisection sprint. Start from
-   `proofs/v014/prestep_carry_source_trace.json`,
-   `/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`,
-   and the producer script metadata. The sprint must decide whether the bad
-   state is already present before the final partial subcycle, appears after
-   parent advance, appears after `_operational_force`, appears after child
-   step 5998/5999, or is blocked behind a missing hook.
+1. Run the earlier-source bisection sprint. Start from
+   `proofs/v014/previous_step_handoff_bisect.json`,
+   `proofs/v014/prestep_carry_source_trace.json`, and the native L2 producer
+   path. The sprint must decide whether the bad state is already present at
+   native load / initial carry, appears during an earlier replay segment before
+   d02 step 5997, reflects a base-state split definition mismatch, or is
+   blocked behind a missing earlier hook.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the previous-step/prestep trace isolates
    ownership.
