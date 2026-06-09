@@ -218,6 +218,13 @@ Current status:
   (2) V10/grid-field divergence materially improved. A source port may not be
   used to resume TOST or claim grid parity unless an init-override or direct
   grid-field proof closes the symptom.
+- 2026-06-09 15:44 WEST manager update: validation remains paused behind the
+  Step-1 grid-parity ladder. The current active boundary is the JAX live-nest
+  loader/carry `T_STATE` construction before `_physics_step_forcing`
+  (`STEP1_PRE_PART1_LOCALIZED_JAX_LOADER_T_STATE`). The next proof must split
+  raw d02 state, live-nest base-init state, boundary package, initial carry, and
+  haloed step-entry. Do not run Switzerland, TOST, FP32, memory source work, or
+  GPU validation until this stage is explained or fixed.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
