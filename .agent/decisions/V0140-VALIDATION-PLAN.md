@@ -893,3 +893,26 @@ Final v0.14 validation must still include the Grid-Delta Atlas gate from
 times, all cells, all common numeric fields, deterministic plots, and README
 dashboard. TOST station scores are a pillar, not a substitute for cell-field
 delta stability.
+
+## Update 2026-06-09 17:00 WEST
+
+Same-boundary QVAPOR validation is complete, but it does not yet unblock long
+validation. Verdict:
+`STEP1_THETA_SAME_QVAPOR_INTERIOR_RESIDUAL_NEEDS_WRF_INTERMEDIATE`.
+
+Validation implications:
+
+- The QVAPOR truth gap is closed: candidate QVAPOR versus WRF pre-call QVAPOR
+  max_abs is `3.838436518426372e-06`.
+- The remaining `T_STATE` max_abs `0.00541785382188209 K` is an interior
+  residual, not a horizontal boundary-only tail.
+- Long GPU validation, TOST, and Switzerland remain paused until the next
+  WRF-intermediate proof explains or bounds this residual.
+
+Immediate pre-validation gate:
+
+1. Emit WRF exact `adjust_tempqv` intermediates for the residual path.
+2. Decide whether an init-only production patch is warranted or whether the
+   lane returns to the larger base-state/V10 driver.
+3. Only after this grid-parity branch is fixed or explicitly bounded should the
+   v0.14 Grid-Delta Atlas and TOST/Switzerland campaign resume.

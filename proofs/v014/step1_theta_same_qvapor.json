@@ -1,0 +1,1743 @@
+{
+  "candidate_array_summaries": {
+    "candidate_qv": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 0.01170683902429544,
+      "mean": 0.0021903539844050535,
+      "min": 2.6876396077568643e-06,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "current_live_t_state": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.99581909179688,
+      "mean": 46.79830247231415,
+      "min": -10.63446044921875,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "live_mub": {
+      "all_finite": true,
+      "count": 10494,
+      "finite_count": 10494,
+      "max": 95000.0,
+      "mean": 94532.04499264229,
+      "min": 64526.03982385865,
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "live_p_state": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 2256.5078125,
+      "mean": 545.6276892227106,
+      "min": -0.013671875,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "live_pb": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 99706.19857311249,
+      "mean": 44067.67069113695,
+      "min": 5225.250503540039,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "live_phb": {
+      "all_finite": true,
+      "count": 472230,
+      "finite_count": 472230,
+      "max": 195220.43639976287,
+      "mean": 84712.80016724906,
+      "min": 0.0,
+      "shape": [
+        45,
+        66,
+        159
+      ]
+    },
+    "raw_mub": {
+      "all_finite": true,
+      "count": 10494,
+      "finite_count": 10494,
+      "max": 95000.0,
+      "mean": 94534.28439912092,
+      "min": 64526.0546875,
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "raw_pp": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 2256.5078125,
+      "mean": 545.6276892227106,
+      "min": -0.013671875,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "raw_qv": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 0.01170683465898037,
+      "mean": 0.002190501906384948,
+      "min": 2.6876396077568643e-06,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "raw_t_dry": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.99581909179688,
+      "mean": 46.79830247231415,
+      "min": -10.63446044921875,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "theta_m_conversion_only": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.99822268968086,
+      "mean": 47.8422411953531,
+      "min": -6.618466084535726,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "theta_m_then_adjust_tempqv": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.99822268968086,
+      "mean": 47.8424676184342,
+      "min": -6.618466084535726,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "theta_m_then_adjust_tempqv_fp32": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.99822998046875,
+      "mean": 47.842467551812426,
+      "min": -6.61846923828125,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    }
+  },
+  "candidate_capture": {
+    "metadata": {
+      "candidate_inputs_match_contract": {
+        "c3h_c4h_p_top": "live child DycoreMetrics from wrfinput_d02",
+        "mub": "live-nest recomputed MUB via live_state.mu_total-live_state.mu_perturbation",
+        "pp": "raw wrfinput_d02 P via raw_state.p_perturbation",
+        "qv": "raw child input QVAPOR via raw_state.qv for the WRF formula transcription; accepted WRF pre-call QVAPOR truth parsed only from /mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+        "save_mub": "raw wrfinput_d02 MUB via raw_state.mu_total-raw_state.mu_perturbation",
+        "th": "raw wrfinput_d02 T, with WRF use_theta_m=1 dry-to-moist conversion tested explicitly"
+      },
+      "grid": {
+        "domain": "d02",
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "mass_shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "live_nest_base_init": {
+        "blend_width": 5,
+        "child_domain": "d02",
+        "cpu_wrfout_dependency": false,
+        "enabled": true,
+        "i_parent_start": 24,
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "j_parent_start": 20,
+        "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+        "parent_domain": "d01",
+        "parent_grid_ratio": 3,
+        "production_inputs": [
+          "parent native initialized terrain",
+          "wrfinput_d02",
+          "namelist.input"
+        ],
+        "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+        "spec_bdy_width": 5,
+        "timestep_loop_transfer": false
+      },
+      "p_top": 5000.0,
+      "use_theta_m": {
+        "namelist_output": "USE_THETA_M=1          ,",
+        "wrfinput_attr": 1,
+        "wrfout_attr": 1
+      }
+    },
+    "status": "CANDIDATE_ARRAYS_READY"
+  },
+  "commands": {
+    "required_validation": [
+      "python -m py_compile proofs/v014/step1_theta_same_qvapor.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_theta_same_qvapor.py",
+      "python -m json.tool proofs/v014/step1_theta_same_qvapor.json >/tmp/step1_theta_same_qvapor.validated.json",
+      "git diff -- src/gpuwrf"
+    ]
+  },
+  "comparisons": {
+    "best_candidate": {
+      "bias": 7.272626223389566e-07,
+      "closes_to_material_threshold": false,
+      "closure_ratio_raw_max_abs_to_best_max_abs": 1013.3483260938107,
+      "material_threshold_K": 0.001,
+      "max_abs": 0.00541785382188209,
+      "name": "theta_m_then_adjust_tempqv",
+      "p95": 3.0235542394230208e-05,
+      "p99": 4.546931764011239e-05,
+      "p99_9": 0.0004691662256855125,
+      "rmse": 5.068868142015466e-05
+    },
+    "continuity_vs_wrf_precall": {
+      "MUB": {
+        "bias": -0.0014379073126789452,
+        "count": 10494,
+        "domain_count": 10494,
+        "first_mismatch_fortran": {
+          "i": 6,
+          "j": 1
+        },
+        "first_mismatch_index": [
+          0,
+          5
+        ],
+        "max_abs": 0.05002361937658861,
+        "nonfinite_diff_count": 0,
+        "p95": 0.021521761903568408,
+        "p99": 0.035347418212040786,
+        "p99_9": 0.04436549756729825,
+        "region": "full_domain",
+        "rmse": 0.008025019829604947,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51
+        },
+        "worst_mismatch_index": [
+          50,
+          155
+        ]
+      },
+      "PB": {
+        "bias": -0.0005600475270967555,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 0.05357326504599769,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0055001466080284445,
+        "p99": 0.022395003079145687,
+        "p99_9": 0.03842883462079103,
+        "region": "full_domain",
+        "rmse": 0.004296943965085139,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          50,
+          155
+        ]
+      },
+      "PHB": {
+        "bias": -0.017476103709544593,
+        "count": 472230,
+        "domain_count": 472230,
+        "first_mismatch_fortran": {
+          "i": 6,
+          "j": 1,
+          "kstag": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          5
+        ],
+        "max_abs": 0.10811684231157415,
+        "nonfinite_diff_count": 0,
+        "p95": 0.05131772726599593,
+        "p99": 0.055443795037572415,
+        "p99_9": 0.08096992955842994,
+        "region": "full_domain",
+        "rmse": 0.024592950003076288,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 146,
+          "j": 34,
+          "kstag": 42
+        },
+        "worst_mismatch_index": [
+          41,
+          33,
+          145
+        ]
+      },
+      "P_STATE": {
+        "bias": 0.0187159801204043,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 2,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          1
+        ],
+        "max_abs": 69.96875,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0234375,
+        "p99": 2.65625,
+        "p99_9": 17.1637304687531,
+        "region": "full_domain",
+        "rmse": 1.161700383780558,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 55,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          54,
+          155
+        ]
+      }
+    },
+    "diff_sign": "candidate_minus_wrf",
+    "final_candidate_residual": {
+      "all_cells": {
+        "bias": 7.272626223389566e-07,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 0.00541785382188209,
+        "nonfinite_diff_count": 0,
+        "p95": 3.0235542394230208e-05,
+        "p99": 4.546931764011239e-05,
+        "p99_9": 0.0004691662256855125,
+        "region": "full_domain",
+        "rmse": 5.068868142015466e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 18,
+          "j": 10,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          9,
+          17
+        ]
+      },
+      "boundary_decomposition": {
+        "boundary_distance_le_5": {
+          "bias": -1.5145454873478274e-07,
+          "count": 112464,
+          "domain_count": 461736,
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.0005722015491755883,
+          "nonfinite_diff_count": 0,
+          "p95": 3.118898149239157e-05,
+          "p99": 7.462152534738909e-05,
+          "p99_9": 0.0003082591272069537,
+          "region": "boundary_distance_le_5",
+          "rmse": 2.6153316080892344e-05,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 17,
+            "j": 6,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            5,
+            16
+          ]
+        },
+        "interior_distance_gt_5": {
+          "bias": 1.0102055663128139e-06,
+          "count": 349272,
+          "domain_count": 461736,
+          "first_mismatch_fortran": {
+            "i": 7,
+            "j": 7,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            6,
+            6
+          ],
+          "max_abs": 0.00541785382188209,
+          "nonfinite_diff_count": 0,
+          "p95": 2.9988976052663933e-05,
+          "p99": 4.3000604440521745e-05,
+          "p99_9": 0.0006121642677166802,
+          "region": "interior_distance_gt_5",
+          "rmse": 5.635969695643974e-05,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 18,
+            "j": 10,
+            "k": 2
+          },
+          "worst_mismatch_index": [
+            1,
+            9,
+            17
+          ]
+        }
+      },
+      "candidate": "theta_m_then_adjust_tempqv",
+      "diff_sign": "candidate_minus_wrf",
+      "worst_cell": {
+        "abs_delta": 0.00541785382188209,
+        "available_pressure_base_inputs": {
+          "candidate_reconstruction": {
+            "adjust_tempqv_p_new": 92668.69349297634,
+            "adjust_tempqv_p_old": 91811.78684807569,
+            "c3h": 0.9896281957626343,
+            "c4h": 24.17862319946289,
+            "live_mub": 86794.5749601287,
+            "live_p_state": 1750.15625,
+            "live_pb": 90918.53724297634,
+            "live_phb_lower_kstag": 7553.430348577668,
+            "live_phb_upper_kstag": 8165.484543478162,
+            "p_top": 5000.0,
+            "raw_mub_save": 85928.6875,
+            "raw_pp": 1750.15625
+          },
+          "wrf_precall_truth": {
+            "MUB": 86794.5703125,
+            "MUT": 88406.9921875,
+            "MU_STATE": 1612.423950195312,
+            "PB": 90918.53125,
+            "PHB_lower_kstag": 7553.4384765625,
+            "PHB_upper_kstag": 8165.48876953125,
+            "P_STATE": 1770.203125
+          }
+        },
+        "boundary_band_threshold": 5,
+        "boundary_distance_to_horizontal_edge": 9,
+        "candidate_qv_after_adjust_tempqv": 0.007871171017318369,
+        "candidate_t_state": -0.2382344899281179,
+        "delta_candidate_minus_wrf": 0.00541785382188209,
+        "fortran_index": {
+          "i": 18,
+          "j": 10,
+          "k": 2
+        },
+        "is_boundary_band": false,
+        "qvapor_same_boundary_pre_call": 0.007874930277466774,
+        "status": "OK",
+        "wrf_t_state": -0.24365234375,
+        "zero_index": {
+          "k": 1,
+          "x": 17,
+          "y": 9
+        },
+        "zero_index_order": "k,y,x"
+      }
+    },
+    "qvapor_vs_wrf_precall": {
+      "accepted_wrf_precall_qvapor_present": true,
+      "accepted_wrf_precall_schema_fields": [
+        "MUB",
+        "MUT",
+        "MU_STATE",
+        "PB",
+        "PHB",
+        "PH_STATE",
+        "P_STATE",
+        "QVAPOR",
+        "T_STATE",
+        "W_STATE"
+      ],
+      "candidate_qv_fp32_vs_same_boundary_pre_call_qvapor": {
+        "bias": -9.584491046247433e-10,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 2,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          1
+        ],
+        "max_abs": 3.820285201072693e-06,
+        "nonfinite_diff_count": 0,
+        "p95": 5.3551048040390015e-09,
+        "p99": 2.048909663807108e-08,
+        "p99_9": 2.4319859221581005e-07,
+        "region": "full_domain",
+        "rmse": 2.8309645024805813e-08,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 18,
+          "j": 10,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          9,
+          17
+        ]
+      },
+      "candidate_qv_vs_same_boundary_pre_call_qvapor": {
+        "bias": -9.244561065426162e-10,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 3.838436518426372e-06,
+        "nonfinite_diff_count": 0,
+        "p95": 1.5832483768463135e-08,
+        "p99": 2.1420419221360176e-08,
+        "p99_9": 2.427533676304701e-07,
+        "region": "full_domain",
+        "rmse": 2.852916741433691e-08,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 18,
+          "j": 10,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          9,
+          17
+        ]
+      },
+      "raw_child_qvapor_input_summary": {
+        "all_finite": true,
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 0.01170683465898037,
+        "mean": 0.002190501906384948,
+        "min": 2.6876396077568643e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "same_boundary_qvapor_truth_summary": {
+        "all_finite": true,
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 0.01170683559030294,
+        "mean": 0.0021903549088611598,
+        "min": 2.687635060283355e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "source_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+      "status": "SAME_BOUNDARY_PRECALL_QVAPOR_USED"
+    },
+    "status": "STEP1_THETA_SAME_QVAPOR_COMPARISON_EXECUTED",
+    "t_state_metrics": {
+      "adjust_tempqv_direct_raw_dry_use_theta_m1": {
+        "bias": -1.0439407333302306,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 5.490177290476879,
+        "nonfinite_diff_count": 0,
+        "p95": 4.531829595565796,
+        "p99": 4.916401755809785,
+        "p99_9": 5.237931213378911,
+        "region": "full_domain",
+        "rmse": 1.9170329088342564,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 28,
+          "j": 54,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          53,
+          27
+        ]
+      },
+      "current_live_t_state": {
+        "bias": -1.0441644188574306,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 5.490173101425171,
+        "nonfinite_diff_count": 0,
+        "p95": 4.5333099365234375,
+        "p99": 4.918405234813692,
+        "p99_9": 5.238785705566411,
+        "region": "full_domain",
+        "rmse": 1.9175184863907806,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 28,
+          "j": 54,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          53,
+          27
+        ]
+      },
+      "dry_adjust_then_theta_m_wrong_order": {
+        "bias": -6.937111205809483e-05,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 0.27921682023503536,
+        "nonfinite_diff_count": 0,
+        "p95": 3.257719162608197e-05,
+        "p99": 0.0029063828003798413,
+        "p99_9": 0.06616923173720063,
+        "region": "full_domain",
+        "rmse": 0.004224426857826712,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 55,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          54,
+          155
+        ]
+      },
+      "raw_t_dry": {
+        "bias": -1.0441644188574306,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 5.490173101425171,
+        "nonfinite_diff_count": 0,
+        "p95": 4.5333099365234375,
+        "p99": 4.918405234813692,
+        "p99_9": 5.238785705566411,
+        "region": "full_domain",
+        "rmse": 1.9175184863907806,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 28,
+          "j": 54,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          53,
+          27
+        ]
+      },
+      "theta_m_conversion_only": {
+        "bias": -0.00022569581848795237,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 0.753296811070129,
+        "nonfinite_diff_count": 0,
+        "p95": 3.6317326301826824e-05,
+        "p99": 0.02784353240520165,
+        "p99_9": 0.23475143595160664,
+        "region": "full_domain",
+        "rmse": 0.015916793982291767,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 55,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          54,
+          155
+        ]
+      },
+      "theta_m_then_adjust_tempqv": {
+        "bias": 7.272626223389566e-07,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 0.00541785382188209,
+        "nonfinite_diff_count": 0,
+        "p95": 3.0235542394230208e-05,
+        "p99": 4.546931764011239e-05,
+        "p99_9": 0.0004691662256855125,
+        "region": "full_domain",
+        "rmse": 5.068868142015466e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 18,
+          "j": 10,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          9,
+          17
+        ]
+      },
+      "theta_m_then_adjust_tempqv_fp32": {
+        "bias": 6.606408471143721e-07,
+        "count": 461736,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 0.00543212890625,
+        "nonfinite_diff_count": 0,
+        "p95": 3.2424926754259786e-05,
+        "p99": 6.1035156246447286e-05,
+        "p99_9": 0.000457763671875,
+        "region": "full_domain",
+        "rmse": 5.171032344972347e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 18,
+          "j": 10,
+          "k": 5
+        },
+        "worst_mismatch_index": [
+          4,
+          9,
+          17
+        ]
+      }
+    }
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T15:58:25.151503+00:00",
+  "git_head": {
+    "command": [
+      "git",
+      "log",
+      "-1",
+      "--oneline",
+      "--decorate"
+    ],
+    "cwd": "/home/enric/src/wrf_gpu2",
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": "9b4cb3a9 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open theta same qvapor sprint\n",
+    "wall_s": 0.0026436610060045496
+  },
+  "gpu_used": false,
+  "inputs": {
+    "previous_qvapor_proof_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
+      "sha256": "8dae3298e9781ba5d3b8d71e6a9b96af38f5bc50ad374082cbaf830baf6bcae9",
+      "size_bytes": 5283
+    },
+    "previous_theta_proof_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.json",
+      "sha256": "ec4c7a47e52f63b5c727426cc01610c761b3fad3467756ce653c7832c91ab0a3",
+      "size_bytes": 35811
+    },
+    "previous_theta_proof_script": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.py",
+      "sha256": "04efd98420b48ba76ad7fd5267883284d918d4600555fd09c152072b13d9f0bd",
+      "size_bytes": 35565
+    },
+    "qvapor_savepoint_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
+      "sha256": "8dae3298e9781ba5d3b8d71e6a9b96af38f5bc50ad374082cbaf830baf6bcae9",
+      "size_bytes": 5283
+    },
+    "run_case3": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "same_boundary_qvapor_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "scratch_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_theta_same_qvapor",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-theta-same-qvapor/sprint-contract.md",
+      "sha256": "d1ead6c7cf8b80b36cf6a46efcc41f6c20b78169524c143d56842b7817f4b3ca",
+      "size_bytes": 4399
+    },
+    "wrfinput_d02": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
+      "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
+      "size_bytes": 11005720
+    },
+    "wrfout_h0_d02_for_use_theta_m_attr_only": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfout_d02_2026-05-01_18:00:00",
+      "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
+      "size_bytes": 10945385
+    }
+  },
+  "next_decision": "Emit or recover WRF theta_m/adjust_tempqv intermediate inputs for the residual cell before patching production.",
+  "no_fp32_source_work": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "no_wrf_run": true,
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-theta-same-qvapor.md",
+    "same_boundary_qvapor_root_reused": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only"
+  },
+  "qvapor_source_rule": {
+    "candidate_formula_qvapor_source": "raw child input state, matching the prior theta proof logic",
+    "same_boundary_qvapor_root_required": true,
+    "wrf_qvapor_truth_source": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+    "wrfout_qvapor_loaded": false
+  },
+  "required_ancestor_912b7371": {
+    "command": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "912b7371",
+      "HEAD"
+    ],
+    "is_ancestor": true,
+    "returncode": 0,
+    "stderr_tail": ""
+  },
+  "schema": "wrfgpu2.v014.step1_theta_same_qvapor.v1",
+  "source_patch_allowed_by_proof": false,
+  "target": {
+    "boundary_distance_threshold": 5,
+    "domain": "d02",
+    "step": 1,
+    "t_state_material_threshold_K": 0.001,
+    "theta_offset_K": 300.0,
+    "wrf_grid_id": 2,
+    "wrf_surface": "before_first_rk_step_part1_call"
+  },
+  "theta_contract_resolution": {
+    "final_candidate": "theta_m_then_adjust_tempqv",
+    "tested_sequence": "raw dry T -> theta_m conversion with raw child QVAPOR -> adjust_tempqv transcription; same-boundary pre-call QVAPOR is the accepted QVAPOR truth comparator",
+    "use_theta_m": {
+      "namelist_output": "USE_THETA_M=1          ,",
+      "wrfinput_attr": 1,
+      "wrfout_attr": 1
+    },
+    "wrf_in_memory_t_state": "grid%t_2 is perturbation moist theta when use_theta_m=1"
+  },
+  "unresolved_risks": [
+    "The final same-boundary QVAPOR candidate still has an interior residual above 1e-3 K.",
+    "A source patch is not authorized without WRF intermediate theta/adjust_tempqv pressure inputs or an equivalent proof."
+  ],
+  "verdict": "STEP1_THETA_SAME_QVAPOR_INTERIOR_RESIDUAL_NEEDS_WRF_INTERMEDIATE",
+  "wrf_precall_truth": {
+    "duplicate_stats": {
+      "MUB": {
+        "duplicates": 451242,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "MUT": {
+        "duplicates": 451242,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "MU_STATE": {
+        "duplicates": 451242,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "PB": {
+        "duplicates": 0,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "PHB": {
+        "duplicates": 0,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "PH_STATE": {
+        "duplicates": 0,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "P_STATE": {
+        "duplicates": 0,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "QVAPOR": {
+        "duplicates": 0,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "T_STATE": {
+        "duplicates": 0,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      },
+      "W_STATE": {
+        "duplicates": 0,
+        "first_mismatch": null,
+        "max_delta": 0.0,
+        "mismatches": 0
+      }
+    },
+    "expected_record_counts": {
+      "MASS_PREPART": 461736,
+      "WPH_PREPART": 472230
+    },
+    "headers": [
+      {
+        "current_timestr_before_step": [
+          "2026-05-01_18:00:00"
+        ],
+        "domain_id": [
+          "2"
+        ],
+        "dt_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "dt_seconds": [
+          "0.6000000000000000E+01"
+        ],
+        "dts_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "global_mass_i_j_end_exclusive_fortran": [
+          "1",
+          "160",
+          "1",
+          "67"
+        ],
+        "grid_itimestep_after_increment": [
+          "1"
+        ],
+        "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+        "mass_vertical_fortran_k_start_k_end_inclusive": [
+          "1",
+          "44"
+        ],
+        "moist_index_qv": [
+          "2"
+        ],
+        "number_of_small_timesteps": [
+          "1"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+        "record_schemas": [
+          [
+            "MASS_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_k",
+            "zero_x",
+            "zero_y",
+            "zero_k",
+            "T_STATE",
+            "P_STATE",
+            "PB",
+            "MU_STATE",
+            "MUB",
+            "MUT",
+            "QVAPOR"
+          ],
+          [
+            "WPH_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_kstag",
+            "zero_x",
+            "zero_y",
+            "zero_kstag",
+            "W_STATE",
+            "PH_STATE",
+            "PHB"
+          ]
+        ],
+        "rk_order": [
+          "3"
+        ],
+        "rk_step": [
+          "1"
+        ],
+        "routine": [
+          "dyn_em/solve_em.F"
+        ],
+        "surface": [
+          "before_first_rk_step_part1_call"
+        ],
+        "tile_i_j_bounds_fortran": [
+          "115",
+          "137",
+          "18",
+          "33"
+        ],
+        "tile_record_policy": [
+          "mass_owned_single_owner_no_overlap"
+        ],
+        "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+          "1",
+          "45"
+        ]
+      },
+      {
+        "current_timestr_before_step": [
+          "2026-05-01_18:00:00"
+        ],
+        "domain_id": [
+          "2"
+        ],
+        "dt_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "dt_seconds": [
+          "0.6000000000000000E+01"
+        ],
+        "dts_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "global_mass_i_j_end_exclusive_fortran": [
+          "1",
+          "160",
+          "1",
+          "67"
+        ],
+        "grid_itimestep_after_increment": [
+          "1"
+        ],
+        "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+        "mass_vertical_fortran_k_start_k_end_inclusive": [
+          "1",
+          "44"
+        ],
+        "moist_index_qv": [
+          "2"
+        ],
+        "number_of_small_timesteps": [
+          "1"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+        "record_schemas": [
+          [
+            "MASS_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_k",
+            "zero_x",
+            "zero_y",
+            "zero_k",
+            "T_STATE",
+            "P_STATE",
+            "PB",
+            "MU_STATE",
+            "MUB",
+            "MUT",
+            "QVAPOR"
+          ],
+          [
+            "WPH_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_kstag",
+            "zero_x",
+            "zero_y",
+            "zero_kstag",
+            "W_STATE",
+            "PH_STATE",
+            "PHB"
+          ]
+        ],
+        "rk_order": [
+          "3"
+        ],
+        "rk_step": [
+          "1"
+        ],
+        "routine": [
+          "dyn_em/solve_em.F"
+        ],
+        "surface": [
+          "before_first_rk_step_part1_call"
+        ],
+        "tile_i_j_bounds_fortran": [
+          "115",
+          "137",
+          "1",
+          "17"
+        ],
+        "tile_record_policy": [
+          "mass_owned_single_owner_no_overlap"
+        ],
+        "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+          "1",
+          "45"
+        ]
+      },
+      {
+        "current_timestr_before_step": [
+          "2026-05-01_18:00:00"
+        ],
+        "domain_id": [
+          "2"
+        ],
+        "dt_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "dt_seconds": [
+          "0.6000000000000000E+01"
+        ],
+        "dts_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "global_mass_i_j_end_exclusive_fortran": [
+          "1",
+          "160",
+          "1",
+          "67"
+        ],
+        "grid_itimestep_after_increment": [
+          "1"
+        ],
+        "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+        "mass_vertical_fortran_k_start_k_end_inclusive": [
+          "1",
+          "44"
+        ],
+        "moist_index_qv": [
+          "2"
+        ],
+        "number_of_small_timesteps": [
+          "1"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+        "record_schemas": [
+          [
+            "MASS_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_k",
+            "zero_x",
+            "zero_y",
+            "zero_k",
+            "T_STATE",
+            "P_STATE",
+            "PB",
+            "MU_STATE",
+            "MUB",
+            "MUT",
+            "QVAPOR"
+          ],
+          [
+            "WPH_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_kstag",
+            "zero_x",
+            "zero_y",
+            "zero_kstag",
+            "W_STATE",
+            "PH_STATE",
+            "PHB"
+          ]
+        ],
+        "rk_order": [
+          "3"
+        ],
+        "rk_step": [
+          "1"
+        ],
+        "routine": [
+          "dyn_em/solve_em.F"
+        ],
+        "surface": [
+          "before_first_rk_step_part1_call"
+        ],
+        "tile_i_j_bounds_fortran": [
+          "115",
+          "137",
+          "34",
+          "50"
+        ],
+        "tile_record_policy": [
+          "mass_owned_single_owner_no_overlap"
+        ],
+        "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+          "1",
+          "45"
+        ]
+      },
+      {
+        "current_timestr_before_step": [
+          "2026-05-01_18:00:00"
+        ],
+        "domain_id": [
+          "2"
+        ],
+        "dt_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "dt_seconds": [
+          "0.6000000000000000E+01"
+        ],
+        "dts_rk_seconds": [
+          "0.2000000000000000E+01"
+        ],
+        "global_mass_i_j_end_exclusive_fortran": [
+          "1",
+          "160",
+          "1",
+          "67"
+        ],
+        "grid_itimestep_after_increment": [
+          "1"
+        ],
+        "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+        "mass_vertical_fortran_k_start_k_end_inclusive": [
+          "1",
+          "44"
+        ],
+        "moist_index_qv": [
+          "2"
+        ],
+        "number_of_small_timesteps": [
+          "1"
+        ],
+        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+        "record_schemas": [
+          [
+            "MASS_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_k",
+            "zero_x",
+            "zero_y",
+            "zero_k",
+            "T_STATE",
+            "P_STATE",
+            "PB",
+            "MU_STATE",
+            "MUB",
+            "MUT",
+            "QVAPOR"
+          ],
+          [
+            "WPH_PREPART",
+            "fortran_i",
+            "fortran_j",
+            "fortran_kstag",
+            "zero_x",
+            "zero_y",
+            "zero_kstag",
+            "W_STATE",
+            "PH_STATE",
+            "PHB"
+          ]
+        ],
+        "rk_order": [
+          "3"
+        ],
+        "rk_step": [
+          "1"
+        ],
+        "routine": [
+          "dyn_em/solve_em.F"
+        ],
+        "surface": [
+          "before_first_rk_step_part1_call"
+        ],
+        "tile_i_j_bounds_fortran": [
+          "115",
+          "137",
+          "51",
+          "67"
+        ],
+        "tile_record_policy": [
+          "mass_owned_single_owner_no_overlap"
+        ],
+        "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+          "1",
+          "45"
+        ]
+      }
+    ],
+    "raw_file_count": 28,
+    "record_counts": {
+      "MASS_PREPART": 461736,
+      "WPH_PREPART": 472230
+    },
+    "root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+    "shapes": {
+      "mass": [
+        44,
+        66,
+        159
+      ],
+      "mass2d": [
+        66,
+        159
+      ],
+      "wph": [
+        45,
+        66,
+        159
+      ]
+    },
+    "status": "WRF_SURFACE_READY",
+    "summaries": {
+      "MUB": {
+        "all_finite": true,
+        "count": 10494,
+        "finite_count": 10494,
+        "max": 95000.0,
+        "mean": 94532.0464305496,
+        "min": 64526.0546875,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "MUT": {
+        "all_finite": true,
+        "count": 10494,
+        "finite_count": 10494,
+        "max": 96791.6171875,
+        "mean": 96215.33842106204,
+        "min": 66157.6328125,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "MU_STATE": {
+        "all_finite": true,
+        "count": 10494,
+        "finite_count": 10494,
+        "max": 1812.1484375,
+        "mean": 1683.2920161967552,
+        "min": 1519.0859375,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "PB": {
+        "all_finite": true,
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 99706.203125,
+        "mean": 44067.671251184474,
+        "min": 5225.25048828125,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "PHB": {
+        "all_finite": true,
+        "count": 472230,
+        "finite_count": 472230,
+        "max": 195220.53125,
+        "mean": 84712.81764335278,
+        "min": -7.796288059580547e-07,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "PH_STATE": {
+        "all_finite": true,
+        "count": 472230,
+        "finite_count": 472230,
+        "max": 8099.03173828125,
+        "mean": 3348.4396499362247,
+        "min": 0.0,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      },
+      "P_STATE": {
+        "all_finite": true,
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 2256.5078125,
+        "mean": 545.6089732425902,
+        "min": -0.0478515625,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "QVAPOR": {
+        "all_finite": true,
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 0.01170683559030294,
+        "mean": 0.0021903549088611598,
+        "min": 2.687635060283355e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "T_STATE": {
+        "all_finite": true,
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 194.9982452392578,
+        "mean": 47.842466891171576,
+        "min": -6.61846923828125,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "W_STATE": {
+        "all_finite": true,
+        "count": 472230,
+        "finite_count": 472230,
+        "max": 0.7605466246604919,
+        "mean": 0.00015118409117375716,
+        "min": -0.7173507809638977,
+        "shape": [
+          45,
+          66,
+          159
+        ]
+      }
+    },
+    "surface": "before_first_rk_step_part1_call",
+    "target_glob": "before_first_rk_step_part1_call_d2_step_1_rk_1_*.txt"
+  },
+  "wrf_source_evidence": {
+    "adjust_tempqv": {
+      "evidence": [
+        "lines 846-859 compute p_old and relative humidity from save_mub, pp, th, and qv",
+        "lines 863-884 compute p_new, dth, updated th, and updated qv while conserving RH",
+        "lines 852-855 and 869-879 branch on use_theta_m; use_theta_m=1 treats th as moist theta"
+      ],
+      "lines": "812-890",
+      "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F"
+    },
+    "mediation_integrate_live_nest_call": {
+      "evidence": [
+        "lines 726-735 save elevation and mub for temp and qv adjustment; nest%mub_save receives nest%mub",
+        "lines 737-751 blend parent and nest terrain, mub, and phb",
+        "lines 754-762 call adjust_tempqv(nest%mub, nest%mub_save, nest%c3h, nest%c4h, nest%znw, nest%p_top, nest%t_2, nest%p, QVAPOR, use_theta_m, ...)"
+      ],
+      "lines": "726-762",
+      "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F"
+    },
+    "theta_m_conversion": {
+      "evidence": [
+        "lines 4918-4920 state dry potential temperature is turned into moist potential temperature before halo communications",
+        "lines 4923-4928 apply grid%t_2 = (grid%t_2 + T0) * (1 + R_v/R_d * QVAPOR) - T0 when use_theta_m=1"
+      ],
+      "lines": "4918-4928",
+      "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F"
+    }
+  }
+}
