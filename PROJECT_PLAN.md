@@ -75,11 +75,17 @@ serialization/load corruption and classified the producer path as
 checkpoint API runtime state, top-level State payload, and a `/tmp` round-trip
 all preserve `T/P/PB/MU/MUB` exactly, so the bad values are already in the live
 nested replay `OperationalCarry` passed to
-`write_checkpoint(..., runtime_state=d02_carry)`. The active next sprint is a
-previous-step handoff bisection around the producer's final d02 steps
-5997-5999, parent step 2000, `_operational_force`, and child `_advance_chunk`;
-production dycore fixes remain blocked until that path names the first wrong
-write, handoff, or cadence.
+`write_checkpoint(..., runtime_state=d02_carry)`. The previous-step handoff
+bisection then classified the final partial subcycle as downstream, not causal:
+`proofs/v014/previous_step_handoff_bisect.json` verdict
+`BAD_BEFORE_FINAL_PARTIAL_SUBCYCLE`, with final producer-shaped replay exact
+against the existing bad checkpoint and `PB/MUB` already wrong at d02 completed
+step 5997 before parent step 2000, `_operational_force`, and child steps
+5998-5999 (`MUB` max_abs `1050.3046875`, `PB` `1047.015625`). The active next
+sprint is an earlier-source bisection before d02 step 5997: native load /
+initial carry, earlier replay segment drift, base-state split, or a narrower
+handoff hook. Production dycore fixes remain blocked until that path names the
+first wrong write, handoff, or cadence.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
