@@ -241,6 +241,13 @@ Current status:
   The next validation-enabling sprint is the full pre-RK native-state/tendency
   WRF hook plus proof-only JAX loader. Powered TOST and Switzerland validation
   remain paused until this boundary either runs cleanly or localizes a fix.
+- 2026-06-09 full pre-RK hook closeout:
+  `proofs/v014/same_input_single_rk_parity_full.json` verdict is
+  `FULL_PRE_RK_JAX_LOADER_BLOCKED_RK_FIXED_SOURCE_BOUNDARY`. The CPU-WRF hook
+  now provides full native pre-RK state at `d02` step `6000`, but current-step
+  `*_tendf`/`*_save` source leaves are not available at the step-entry boundary.
+  B4 remains blocked. The next validation-enabling proof is a WRF source/save
+  boundary after those leaves exist and before any dynamics state mutation.
 - 2026-06-09 source sprint update:
   `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
   as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest

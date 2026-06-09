@@ -1,0 +1,236 @@
+--- a/dyn_em/solve_em.F
++++ b/dyn_em/solve_em.F
+@@ -195,13 +195,22 @@
+    INTEGER :: wrfgpu2_marker_grid, wrfgpu2_marker_start_step, wrfgpu2_marker_end_step
+    INTEGER :: wrfgpu2_marker_ios, wrfgpu2_marker_unit
+    INTEGER :: wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_k
++   INTEGER :: wrfgpu2_full_grid, wrfgpu2_full_start_step, wrfgpu2_full_end_step
++   INTEGER :: wrfgpu2_full_ios, wrfgpu2_full_unit
++   INTEGER :: wrfgpu2_full_i, wrfgpu2_full_j, wrfgpu2_full_k, wrfgpu2_full_m
++   INTEGER :: wrfgpu2_full_mass_k_end, wrfgpu2_full_w_k_end
+    REAL    :: dclat
+    INTEGER :: debug_level
+    LOGICAL :: wrfgpu2_marker_enabled
++   LOGICAL :: wrfgpu2_full_enabled
+    CHARACTER(LEN=64)  :: wrfgpu2_marker_env
++   CHARACTER(LEN=64)  :: wrfgpu2_full_env
+    CHARACTER(LEN=256) :: wrfgpu2_marker_time
++   CHARACTER(LEN=256) :: wrfgpu2_full_time
+    CHARACTER(LEN=512) :: wrfgpu2_marker_root
++   CHARACTER(LEN=512) :: wrfgpu2_full_root
+    CHARACTER(LEN=768) :: wrfgpu2_marker_path
++   CHARACTER(LEN=768) :: wrfgpu2_full_path
+ 
+ ! urban related variables
+    INTEGER :: NUM_ROOF_LAYERS, NUM_WALL_LAYERS, NUM_ROAD_LAYERS   ! urban
+@@ -384,6 +393,210 @@
+ 
+    grid%itimestep = grid%itimestep + 1
+    grid%dtbc = grid%dtbc + grid%dt
++   wrfgpu2_full_enabled = .FALSE.
++   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_FULL_PRE_RK', wrfgpu2_full_env)
++   IF (TRIM(wrfgpu2_full_env) == '1') THEN
++     wrfgpu2_full_grid = 2
++     wrfgpu2_full_start_step = 6000
++     wrfgpu2_full_end_step = 6000
++     wrfgpu2_full_root = '/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output'
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_FULL_PRE_RK_GRID', wrfgpu2_full_env)
++     IF (LEN_TRIM(wrfgpu2_full_env) > 0) THEN
++       READ(wrfgpu2_full_env,*,IOSTAT=wrfgpu2_full_ios) wrfgpu2_full_grid
++     ENDIF
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_FULL_PRE_RK_START_STEP', wrfgpu2_full_env)
++     IF (LEN_TRIM(wrfgpu2_full_env) > 0) THEN
++       READ(wrfgpu2_full_env,*,IOSTAT=wrfgpu2_full_ios) wrfgpu2_full_start_step
++       wrfgpu2_full_end_step = wrfgpu2_full_start_step
++     ENDIF
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_FULL_PRE_RK_END_STEP', wrfgpu2_full_env)
++     IF (LEN_TRIM(wrfgpu2_full_env) > 0) THEN
++       READ(wrfgpu2_full_env,*,IOSTAT=wrfgpu2_full_ios) wrfgpu2_full_end_step
++     ENDIF
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_FULL_PRE_RK_ROOT', wrfgpu2_full_root)
++     wrfgpu2_full_enabled = grid%id == wrfgpu2_full_grid .AND. &
++                              grid%itimestep >= wrfgpu2_full_start_step .AND. &
++                              grid%itimestep <= wrfgpu2_full_end_step
++   ENDIF
++   IF (wrfgpu2_full_enabled) THEN
++     wrfgpu2_full_mass_k_end = MIN(k_end, kde-1)
++     wrfgpu2_full_w_k_end = MIN(k_end+1, kde)
++     DO ij = 1 , grid%num_tiles
++       block_wrfgpu2_v014_full_pre_rk: DO
++         IF (23 < grid%i_start(ij) .OR. 6 > grid%i_end(ij)+1) EXIT block_wrfgpu2_v014_full_pre_rk
++         IF (19 < grid%j_start(ij) .OR. 2 > grid%j_end(ij)+1) EXIT block_wrfgpu2_v014_full_pre_rk
++         IF (k_start > wrfgpu2_full_mass_k_end) EXIT block_wrfgpu2_v014_full_pre_rk
++         CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_full_root), wait=.TRUE.)
++         CALL domain_clock_get(grid, current_timestr=wrfgpu2_full_time)
++         WRITE(wrfgpu2_full_path,'(A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++              TRIM(wrfgpu2_full_root)//'/full_pre_rk_step_entry_d', grid%id, &
++              '_step_', grid%itimestep, '_is_', grid%i_start(ij), &
++              '_ie_', grid%i_end(ij), '_js_', grid%j_start(ij), &
++              '_je_', grid%j_end(ij), '.txt'
++         OPEN(NEWUNIT=wrfgpu2_full_unit, FILE=TRIM(wrfgpu2_full_path), &
++              STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++         WRITE(wrfgpu2_full_unit,'(A)') '# WRFGPU2_V014_FULL_PRE_RK_SAVEPOINT v1'
++         WRITE(wrfgpu2_full_unit,'(A)') 'surface full_pre_rk_step_entry'
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'routine dyn_em/solve_em.F after grid%itimestep increment before current-step physics/RK'
++         WRITE(wrfgpu2_full_unit,'(A,1X,I0)') 'domain_id', grid%id
++         WRITE(wrfgpu2_full_unit,'(A,1X,A)') &
++              'current_timestr_before_step', TRIM(wrfgpu2_full_time)
++         WRITE(wrfgpu2_full_unit,'(A,1X,I0)') &
++              'grid_itimestep_after_increment', grid%itimestep
++         WRITE(wrfgpu2_full_unit,'(A,1X,I0)') 'rk_order_config', config_flags%rk_ord
++         WRITE(wrfgpu2_full_unit,'(A,1X,E24.16)') 'dt_seconds', REAL(grid%dt,KIND=8)
++         WRITE(wrfgpu2_full_unit,'(A,1X,E24.16)') 'dx_m', REAL(grid%dx,KIND=8)
++         WRITE(wrfgpu2_full_unit,'(A,1X,E24.16)') 'dy_m', REAL(grid%dy,KIND=8)
++         WRITE(wrfgpu2_full_unit,'(A,1X,E24.16)') 'lead_seconds_before_step', curr_secs2_r8
++         WRITE(wrfgpu2_full_unit,'(A,1X,E24.16)') &
++              'lead_seconds_after_step', curr_secs2_r8 + REAL(grid%dt,KIND=8)
++         WRITE(wrfgpu2_full_unit,'(A,4(1X,I0))') 'tile_i_j_bounds_fortran', &
++              grid%i_start(ij), grid%i_end(ij), grid%j_start(ij), grid%j_end(ij)
++         WRITE(wrfgpu2_full_unit,'(A)') 'tile_record_policy owned_tile_overlap_only'
++         WRITE(wrfgpu2_full_unit,'(A,4(1X,I0))') &
++              'selected_mass_cell_zero_yx_fortran_ji', 9, 13, 10, 14
++         WRITE(wrfgpu2_full_unit,'(A,6(1X,I0))') &
++              'mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1', 1, 18, 5, 22, 2, 18
++         WRITE(wrfgpu2_full_unit,'(A,6(1X,I0))') &
++              'u_patch_zero_y0_y1_xstag0_xstag1_fortran_j0_j1_i0_i1', 1, 18, 5, 23, 2, 18
++         WRITE(wrfgpu2_full_unit,'(A,6(1X,I0))') &
++              'v_patch_zero_ystag0_ystag1_x0_x1_fortran_j0_j1_i0_i1', 1, 19, 5, 22, 2, 19
++         WRITE(wrfgpu2_full_unit,'(A,6(1X,I0))') &
++              'w_ph_patch_zero_kstag0_kstag1_y0_y1_x0_x1', 0, wrfgpu2_full_w_k_end, 1, 18, 5, 22
++         WRITE(wrfgpu2_full_unit,'(A,2(1X,I0))') &
++              'mass_vertical_fortran_k_start_k_end_inclusive', k_start, wrfgpu2_full_mass_k_end
++         WRITE(wrfgpu2_full_unit,'(A,2(1X,I0))') &
++              'w_ph_vertical_fortran_kstag_start_kstag_end_inclusive', k_start, wrfgpu2_full_w_k_end
++         WRITE(wrfgpu2_full_unit,'(A,3(1X,I0))') &
++              'active_moisture_indices_param_first_num3d_numall', PARAM_FIRST_SCALAR, num_3d_m, num_moist
++         WRITE(wrfgpu2_full_unit,'(A,3(1X,I0))') &
++              'active_scalar_indices_param_first_num3d_numall', PARAM_FIRST_SCALAR, num_3d_s, num_scalar
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'rk_fixed_source_boundary_status unavailable_at_step_entry_before_first_rk_step_part1_part2_and_rk_tendency'
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'missing_current_step_dry_tendency_fields ru_tendf rv_tendf rw_tendf ph_tendf t_tendf mu_tendf h_diabatic'
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'missing_current_step_save_family_fields u_save v_save w_save ph_save t_save'
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'missing_current_step_old_scalar_fields moist_old scalar_old local_arrays_not_initialized_at_this_boundary'
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'record_schema MASS_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k T_THM T_OLD T_HIST_SRC P PB MU_NEW MU_OLD MUB T_INIT'
++         DO wrfgpu2_full_k = k_start, wrfgpu2_full_mass_k_end
++           DO wrfgpu2_full_j = 2, 18
++             DO wrfgpu2_full_i = 6, 22
++               IF (wrfgpu2_full_i >= grid%i_start(ij) .AND. wrfgpu2_full_i <= grid%i_end(ij) .AND. &
++                   wrfgpu2_full_j >= grid%j_start(ij) .AND. wrfgpu2_full_j <= grid%j_end(ij)) THEN
++                 WRITE(wrfgpu2_full_unit,'(A,6(1X,I0),9(1X,E24.16))') 'MASS_FULL', &
++                      wrfgpu2_full_i, wrfgpu2_full_j, wrfgpu2_full_k, &
++                      wrfgpu2_full_i-1, wrfgpu2_full_j-1, wrfgpu2_full_k-1, &
++                      REAL(grid%t_2(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%t_1(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%th_phy_m_t0(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%p(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%pb(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%mu_2(wrfgpu2_full_i,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%mu_1(wrfgpu2_full_i,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%mub(wrfgpu2_full_i,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%t_init(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++         ENDDO
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'record_schema U_FULL fortran_i fortran_j fortran_k zero_xstag zero_y zero_k U_NEW U_OLD'
++         DO wrfgpu2_full_k = k_start, wrfgpu2_full_mass_k_end
++           DO wrfgpu2_full_j = 2, 18
++             DO wrfgpu2_full_i = 6, 23
++               IF (wrfgpu2_full_i >= grid%i_start(ij) .AND. wrfgpu2_full_i <= grid%i_end(ij)+1 .AND. &
++                   wrfgpu2_full_j >= grid%j_start(ij) .AND. wrfgpu2_full_j <= grid%j_end(ij)) THEN
++                 WRITE(wrfgpu2_full_unit,'(A,6(1X,I0),2(1X,E24.16))') 'U_FULL', &
++                      wrfgpu2_full_i, wrfgpu2_full_j, wrfgpu2_full_k, &
++                      wrfgpu2_full_i-1, wrfgpu2_full_j-1, wrfgpu2_full_k-1, &
++                      REAL(grid%u_2(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%u_1(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++         ENDDO
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'record_schema V_FULL fortran_i fortran_j fortran_k zero_x zero_ystag zero_k V_NEW V_OLD'
++         DO wrfgpu2_full_k = k_start, wrfgpu2_full_mass_k_end
++           DO wrfgpu2_full_j = 2, 19
++             DO wrfgpu2_full_i = 6, 22
++               IF (wrfgpu2_full_i >= grid%i_start(ij) .AND. wrfgpu2_full_i <= grid%i_end(ij) .AND. &
++                   wrfgpu2_full_j >= grid%j_start(ij) .AND. wrfgpu2_full_j <= grid%j_end(ij)+1) THEN
++                 WRITE(wrfgpu2_full_unit,'(A,6(1X,I0),2(1X,E24.16))') 'V_FULL', &
++                      wrfgpu2_full_i, wrfgpu2_full_j, wrfgpu2_full_k, &
++                      wrfgpu2_full_i-1, wrfgpu2_full_j-1, wrfgpu2_full_k-1, &
++                      REAL(grid%v_2(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%v_1(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++         ENDDO
++         WRITE(wrfgpu2_full_unit,'(A)') &
++              'record_schema WPH_FULL fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_NEW W_OLD PH_NEW PH_OLD PHB'
++         DO wrfgpu2_full_k = k_start, wrfgpu2_full_w_k_end
++           DO wrfgpu2_full_j = 2, 18
++             DO wrfgpu2_full_i = 6, 22
++               IF (wrfgpu2_full_i >= grid%i_start(ij) .AND. wrfgpu2_full_i <= grid%i_end(ij) .AND. &
++                   wrfgpu2_full_j >= grid%j_start(ij) .AND. wrfgpu2_full_j <= grid%j_end(ij)) THEN
++                 WRITE(wrfgpu2_full_unit,'(A,6(1X,I0),5(1X,E24.16))') 'WPH_FULL', &
++                      wrfgpu2_full_i, wrfgpu2_full_j, wrfgpu2_full_k, &
++                      wrfgpu2_full_i-1, wrfgpu2_full_j-1, wrfgpu2_full_k-1, &
++                      REAL(grid%w_2(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%w_1(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%ph_2(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%ph_1(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8), &
++                      REAL(grid%phb(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++         ENDDO
++         IF (num_3d_m >= PARAM_FIRST_SCALAR) THEN
++           WRITE(wrfgpu2_full_unit,'(A)') &
++                'record_schema MOIST_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k moist_index MOIST'
++           DO wrfgpu2_full_m = PARAM_FIRST_SCALAR, num_3d_m
++             DO wrfgpu2_full_k = k_start, wrfgpu2_full_mass_k_end
++               DO wrfgpu2_full_j = 2, 18
++                 DO wrfgpu2_full_i = 6, 22
++                   IF (wrfgpu2_full_i >= grid%i_start(ij) .AND. wrfgpu2_full_i <= grid%i_end(ij) .AND. &
++                       wrfgpu2_full_j >= grid%j_start(ij) .AND. wrfgpu2_full_j <= grid%j_end(ij)) THEN
++                     WRITE(wrfgpu2_full_unit,'(A,7(1X,I0),1(1X,E24.16))') 'MOIST_FULL', &
++                          wrfgpu2_full_i, wrfgpu2_full_j, wrfgpu2_full_k, &
++                          wrfgpu2_full_i-1, wrfgpu2_full_j-1, wrfgpu2_full_k-1, wrfgpu2_full_m, &
++                          REAL(moist(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j,wrfgpu2_full_m),KIND=8)
++                   ENDIF
++                 ENDDO
++               ENDDO
++             ENDDO
++           ENDDO
++         ENDIF
++         IF (num_3d_s >= PARAM_FIRST_SCALAR) THEN
++           WRITE(wrfgpu2_full_unit,'(A)') &
++                'record_schema SCALAR_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k scalar_index SCALAR'
++           DO wrfgpu2_full_m = PARAM_FIRST_SCALAR, num_3d_s
++             DO wrfgpu2_full_k = k_start, wrfgpu2_full_mass_k_end
++               DO wrfgpu2_full_j = 2, 18
++                 DO wrfgpu2_full_i = 6, 22
++                   IF (wrfgpu2_full_i >= grid%i_start(ij) .AND. wrfgpu2_full_i <= grid%i_end(ij) .AND. &
++                       wrfgpu2_full_j >= grid%j_start(ij) .AND. wrfgpu2_full_j <= grid%j_end(ij)) THEN
++                     WRITE(wrfgpu2_full_unit,'(A,7(1X,I0),1(1X,E24.16))') 'SCALAR_FULL', &
++                          wrfgpu2_full_i, wrfgpu2_full_j, wrfgpu2_full_k, &
++                          wrfgpu2_full_i-1, wrfgpu2_full_j-1, wrfgpu2_full_k-1, wrfgpu2_full_m, &
++                          REAL(scalar(wrfgpu2_full_i,wrfgpu2_full_k,wrfgpu2_full_j,wrfgpu2_full_m),KIND=8)
++                   ENDIF
++                 ENDDO
++               ENDDO
++             ENDDO
++           ENDDO
++         ENDIF
++         CLOSE(wrfgpu2_full_unit)
++         EXIT block_wrfgpu2_v014_full_pre_rk
++       ENDDO block_wrfgpu2_v014_full_pre_rk
++     ENDDO
++   ENDIF
+ 
+    IF( coupler_on ) CALL cpl_store_input( grid, config_flags )
+ 
