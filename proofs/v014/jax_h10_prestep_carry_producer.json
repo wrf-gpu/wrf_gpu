@@ -1,0 +1,593 @@
+{
+  "artifact_root": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry",
+  "blocked": null,
+  "checkpoint": {
+    "exists": true,
+    "grid_shape": {
+      "nx": 159,
+      "ny": 66,
+      "nz": 44
+    },
+    "has_runtime_state": true,
+    "is_file": true,
+    "namelist_type": "OperationalNamelist",
+    "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+    "runtime_state_type": "OperationalCarry",
+    "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+    "size_bytes": 163257218,
+    "status": "LOAD_OK",
+    "step_index": 5999,
+    "wall_s": 2.032662772999174
+  },
+  "checkpoint_produced": true,
+  "checkpoint_provenance": {
+    "checkpoint": {
+      "cpu_loadable": true,
+      "exists": true,
+      "format": "gpuwrf-runtime-checkpoint",
+      "has_runtime_state": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "runtime_state_type": "OperationalCarry",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218,
+      "step_index": 5999
+    },
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "0",
+      "OMP_NUM_THREADS": "4",
+      "PYTHONPATH": "src",
+      "jax_default_backend": "gpu",
+      "jax_devices": [
+        "CudaDevice(id=0)"
+      ]
+    },
+    "gpu_used": true,
+    "nvidia_smi_after": {
+      "command": "nvidia-smi --query-gpu=timestamp,index,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits",
+      "stdout": "2026/06/09 05:20:03.750, 0, 1519, 32607, 0"
+    },
+    "nvidia_smi_before": {
+      "command": "nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits",
+      "stdout": "0, NVIDIA GeForce RTX 5090, 1625, 32607, 1"
+    },
+    "observed_vram_mib": {
+      "max_periodic_sample_mib": 8075,
+      "samples": [
+        7888,
+        7586,
+        7879,
+        4135,
+        8075,
+        4299,
+        1519
+      ]
+    },
+    "produced_utc": "2026-06-09T05:19:00+01:00",
+    "producer_command_display": "WRFGPU2_H10_PRODUCER_ALLOW_GPU=1 CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry_producer.py",
+    "producer_command_note": "Successful GPU checkpoint-producing run completed before the provenance sidecar patch; segment progress and nvidia-smi samples were captured in the worker terminal output.",
+    "producer_summary": {
+      "nesting": {
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      },
+      "partial_parent_subcycle": {
+        "child_steps": 2,
+        "d02": 5999,
+        "parent_step": 2000,
+        "wall_s": 111.5
+      },
+      "segments": [
+        {
+          "d01": 200,
+          "d02": 600,
+          "segment": 1,
+          "wall_s": 153.7
+        },
+        {
+          "d01": 400,
+          "d02": 1200,
+          "segment": 2,
+          "wall_s": 103.3
+        },
+        {
+          "d01": 600,
+          "d02": 1800,
+          "segment": 3,
+          "wall_s": 103.4
+        },
+        {
+          "d01": 800,
+          "d02": 2400,
+          "segment": 4,
+          "wall_s": 103.7
+        },
+        {
+          "d01": 1000,
+          "d02": 3000,
+          "segment": 5,
+          "wall_s": 103.2
+        },
+        {
+          "d01": 1200,
+          "d02": 3600,
+          "segment": 6,
+          "wall_s": 103.1
+        },
+        {
+          "d01": 1400,
+          "d02": 4200,
+          "segment": 7,
+          "wall_s": 103.3
+        },
+        {
+          "d01": 1600,
+          "d02": 4800,
+          "segment": 8,
+          "wall_s": 103.3
+        },
+        {
+          "d01": 1800,
+          "d02": 5400,
+          "segment": 9,
+          "wall_s": 103.5
+        },
+        {
+          "d01": 1999,
+          "d02": 5997,
+          "segment": 10,
+          "wall_s": 103.0
+        }
+      ],
+      "status": "PRODUCED",
+      "target": {
+        "domain": "d02",
+        "dt_s": 6.0,
+        "prestep_completed_steps": 5999,
+        "target_step": 6000
+      }
+    },
+    "schema": "wrfgpu2.v014.h10_prestep_carry_checkpoint_provenance.v1"
+  },
+  "checkpoint_reused_existing": true,
+  "commands": {
+    "argv": [
+      "proofs/v014/jax_h10_prestep_carry_producer.py"
+    ],
+    "comparison_command": "cd /mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree && WRFGPU2_H10_PRESTEP_CARRY=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry.py",
+    "run_or_validation": [
+      "python -m py_compile proofs/v014/jax_h10_prestep_carry_producer.py",
+      "WRFGPU2_H10_PRODUCER_ALLOW_GPU=1 CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry_producer.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry_producer.py",
+      "python -m json.tool proofs/v014/jax_h10_prestep_carry_producer.json >/tmp/jax_h10_prestep_carry_producer.validated.json"
+    ]
+  },
+  "comparison_run": {
+    "blocked": null,
+    "command_result": {
+      "command": [
+        "/home/enric/miniconda3/bin/python",
+        "proofs/v014/jax_h10_prestep_carry.py"
+      ],
+      "cwd": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
+      "returncode": 0,
+      "stderr_tail": "nni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 05:49:26.422239  916085 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-gather is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 05:49:26.422255  916085 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-scatter is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\n",
+      "stdout_tail": "JAX_MISMATCH_T\njson=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.json\nmarkdown=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.md\nreview=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md\n",
+      "wall_s": 24.671680450999702
+    },
+    "comparison": {
+      "checkpoint_path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "comparison": {
+        "MU": {
+          "count": 289,
+          "finite_count": 289,
+          "max": -137.3988920808672,
+          "max_abs": 267.1935248522832,
+          "min": -267.1935248522832,
+          "rmse": 195.97477055691238,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 267.1935248522832,
+            "diff_jax_minus_wrf": -267.1935248522832,
+            "jax_candidate": 1467.6774468274048,
+            "native_key": [
+              13,
+              18
+            ],
+            "wrf_truth": 1734.870971679688
+          }
+        },
+        "MUB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1050.3046875,
+          "max_abs": 1050.3046875,
+          "min": -865.8828125,
+          "rmse": 224.13660680282618,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 1050.3046875,
+            "diff_jax_minus_wrf": 1050.3046875,
+            "jax_candidate": 95000.0,
+            "native_key": [
+              7,
+              16
+            ],
+            "wrf_truth": 93949.6953125
+          }
+        },
+        "P": {
+          "count": 289,
+          "finite_count": 289,
+          "max": -434.1485925419363,
+          "max_abs": 590.0020891006836,
+          "min": -590.0020891006836,
+          "rmse": 526.3359359284732,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 590.0020891006836,
+            "diff_jax_minus_wrf": -590.0020891006836,
+            "jax_candidate": 1384.2010358993164,
+            "native_key": [
+              13,
+              17
+            ],
+            "wrf_truth": 1974.203125
+          }
+        },
+        "PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1047.015625,
+          "max_abs": 1047.015625,
+          "min": -863.171875,
+          "rmse": 223.43483550580925,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 1047.015625,
+            "diff_jax_minus_wrf": 1047.015625,
+            "jax_candidate": 99706.203125,
+            "native_key": [
+              7,
+              16
+            ],
+            "wrf_truth": 98659.1875
+          }
+        },
+        "PH": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.37017926983722127,
+          "max_abs": 5.097192302780417,
+          "min": -5.097192302780417,
+          "rmse": 2.336601078950881,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 5.097192302780417,
+            "diff_jax_minus_wrf": -5.097192302780417,
+            "jax_candidate": 9.914760097427102,
+            "native_key": [
+              1,
+              8,
+              19
+            ],
+            "wrf_truth": 15.01195240020752
+          }
+        },
+        "T": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 3.3545763228707983,
+          "max_abs": 3.3545763228707983,
+          "min": -0.754810969454752,
+          "rmse": 1.0296598586362888,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 3.3545763228707983,
+            "diff_jax_minus_wrf": 3.3545763228707983,
+            "jax_candidate": -5.813209321660452,
+            "native_key": [
+              12,
+              17
+            ],
+            "wrf_truth": -9.16778564453125
+          }
+        },
+        "U": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 5.901345727281765,
+          "max_abs": 6.292358893898424,
+          "min": -6.292358893898424,
+          "rmse": 2.032497018496295,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 6.292358893898424,
+            "diff_jax_minus_wrf": -6.292358893898424,
+            "jax_candidate": -4.735481996086533,
+            "native_key": [
+              4,
+              13
+            ],
+            "wrf_truth": 1.55687689781189
+          }
+        },
+        "V": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 11.594389190354377,
+          "max_abs": 11.594389190354377,
+          "min": -2.8575219252050674,
+          "rmse": 4.454165526807795,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 11.594389190354377,
+            "diff_jax_minus_wrf": 11.594389190354377,
+            "jax_candidate": 3.248521079697638,
+            "native_key": [
+              9,
+              13
+            ],
+            "wrf_truth": -8.345868110656738
+          }
+        },
+        "W": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 1.7341964464592572,
+          "max_abs": 1.7341964464592572,
+          "min": -0.9805375737457879,
+          "rmse": 0.2385078386197167,
+          "status": "DIFF",
+          "worst": {
+            "abs_diff": 1.7341964464592572,
+            "diff_jax_minus_wrf": 1.7341964464592572,
+            "jax_candidate": 0.19623603634115416,
+            "native_key": [
+              1,
+              9,
+              16
+            ],
+            "wrf_truth": -1.537960410118103
+          }
+        }
+      },
+      "first_mismatch": {
+        "field": "T",
+        "max_abs": 3.3545763228707983,
+        "rmse": 1.0296598586362888,
+        "tolerance": 2e-06,
+        "worst": {
+          "abs_diff": 3.3545763228707983,
+          "diff_jax_minus_wrf": 3.3545763228707983,
+          "jax_candidate": -5.813209321660452,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      "grid_shape": {
+        "nx": 159,
+        "ny": 66,
+        "nz": 44
+      },
+      "lead_seconds": 36000.0,
+      "loader": "gpuwrf.runtime.checkpoint.read_checkpoint_with_runtime_state",
+      "run_radiation_for_step": true,
+      "status": "RAN",
+      "step_index": 5999,
+      "target_step": 6000
+    },
+    "output_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.json",
+      "sha256": "b4fee7937cfc617b03090a9b60b9ac71193ee8ef46a8a2718cd5ce3c4dc9643b",
+      "size_bytes": 33492
+    },
+    "output_md": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.md",
+      "sha256": "e9bac36a73c5fffc391e3951af49a6d0a1e0db1f69aaeb68485fca03c85c6550",
+      "size_bytes": 526
+    },
+    "output_review": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md",
+      "sha256": "9c1e59d1b3bd7acbf87523cfc3f19b4715f9ccfe8f7297b1ef2e11da3294d43b",
+      "size_bytes": 1265
+    },
+    "payload_summary": {
+      "comparison_run": true,
+      "first_mismatch": {
+        "field": "T",
+        "max_abs": 3.3545763228707983,
+        "rmse": 1.0296598586362888,
+        "tolerance": 2e-06,
+        "worst": {
+          "abs_diff": 3.3545763228707983,
+          "diff_jax_minus_wrf": 3.3545763228707983,
+          "jax_candidate": -5.813209321660452,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      }
+    },
+    "setup": {
+      "compare_root": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
+      "script": {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.py",
+        "sha256": "b88e1aefc87ec7a479d7d85cfc8fbd5c1054e741d74aa65fe31af3a5502d9fea",
+        "size_bytes": 38406
+      },
+      "src_symlink": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/src"
+    },
+    "status": "RAN",
+    "verdict": "JAX_MISMATCH_T"
+  },
+  "cpu_only_default": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "XLA_PYTHON_CLIENT_ALLOCATOR": "platform",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false",
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fp32_source_landing": false,
+  "generated_utc": "2026-06-09T04:49:27.271906+00:00",
+  "gpu_policy": {
+    "cpu_insufficient_reason": "The full producer is a 10 h live-nested L2 replay to d02 step 5999. The required CPU validation command is used to load the host checkpoint and run the comparison; the heavy checkpoint production was allowed only with WRFGPU2_H10_PRODUCER_ALLOW_GPU=1.",
+    "default_cpu_only": true,
+    "gpu_allowed_by_env": false,
+    "nvidia_smi_after": null,
+    "nvidia_smi_before": null
+  },
+  "gpu_used": true,
+  "inputs_read": {
+    "agents": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
+      "size_bytes": 2561
+    },
+    "building_wrf_oracles_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
+      "size_bytes": 1128
+    },
+    "handoff": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "9a0efb53ed28e0fc135dde57cd76d46aacbb705fadf6e8035dfe0e6862c5f9e8",
+      "size_bytes": 29308
+    },
+    "jax_h10_prestep_carry_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
+      "size_bytes": 35739
+    },
+    "jax_pre_halo_capture_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+      "sha256": "fc480540f075cb894d2c3bae181e332eabf510302057a00473406040ffbd6a69",
+      "size_bytes": 24406
+    },
+    "project_constitution": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
+      "size_bytes": 1157
+    },
+    "same_state_savepoint_request_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
+      "size_bytes": 269809
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-producer/sprint-contract.md",
+      "sha256": "0da197e2aa5897c6278470498d62757c935d9afd35d407caa4a4f4cef7f31fb1",
+      "size_bytes": 3789
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    },
+    "wrf_post_rk_refresh_localization_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
+      "size_bytes": 34079
+    }
+  },
+  "next_decision": "Open a T history/source-attribution sprint before any production source fix; compare JAX theta/history candidates against WRF T_HIST_SRC/grid%th_phy_m_t0 and THM-side candidates.",
+  "no_hermes": true,
+  "producer": {
+    "checkpoint": {
+      "exists": true,
+      "grid_shape": {
+        "nx": 159,
+        "ny": 66,
+        "nz": 44
+      },
+      "has_runtime_state": true,
+      "is_file": true,
+      "namelist_type": "OperationalNamelist",
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "runtime_state_type": "OperationalCarry",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218,
+      "status": "LOAD_OK",
+      "step_index": 5999,
+      "wall_s": 2.032662772999174
+    },
+    "status": "REUSED_EXISTING"
+  },
+  "production_src_edits": false,
+  "proof_objects": {
+    "checkpoint": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+    "checkpoint_provenance": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
+    "comparison_tree": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-producer.md"
+  },
+  "schema": "wrfgpu2.v014.jax_h10_prestep_carry_producer.v1",
+  "switzerland_validation_run": false,
+  "target": {
+    "domain": "d02",
+    "dt_s": 6.0,
+    "lead_seconds_after_step": 36000.0,
+    "prestep_completed_steps": 5999,
+    "run_request": {
+      "cpu_wrf_truth_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+      "domain": "d02",
+      "retained_jax_output_dir_for_selection_only": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+      "run_id": "20260501_18z_l2_72h_20260519T173026Z",
+      "selected_lead_h": 10,
+      "selected_valid_time_utc": "2026-05-02T04:00:00+00:00",
+      "selection_source": "proofs/v014/dynamic_field_attribution.json localization_manifest.selected_cells"
+    },
+    "valid_time_utc": "2026-05-02T04:00:00+00:00",
+    "wrf_step": 6000,
+    "wrf_verdict": "REFRESH_LAYER_GREEN_post_after_all_rk_steps_pre_halo"
+  },
+  "tost_run": false,
+  "unresolved_risks": [
+    "The comparison covers Boole's selected h10 patch, not the full grid.",
+    "The producer uses private proof/runtime helpers, intentionally without landing a public checkpoint API."
+  ],
+  "verdict": "JAX_MISMATCH_T",
+  "wall_s": 26.944692173001386,
+  "wrf_source_edits": false
+}

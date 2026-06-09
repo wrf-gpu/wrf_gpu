@@ -1,27 +1,39 @@
 {
   "acceptance_notes": {
-    "compared_against_wrf_green_target": false,
+    "compared_against_wrf_green_target": true,
     "gpu_launched": false,
     "jax_vs_jax_self_compare": false,
     "json_records_real_checkpoint_status": true,
     "production_source_edited": false,
     "retained_wrfout_used_as_verdict": false
   },
-  "blocked": {
-    "full_cpu_replay_not_run": "This sprint tested resumable checkpoint availability. It did not launch a 5999-step CPU replay because that is a long forecast producer, not an existing checkpoint load.",
-    "missing_api": "Current public forecast APIs return State only. daily_pipeline checkpoint_at_hour writes State-only runtime.checkpoint payloads. d02_replay.run_replay_scan is State+previous_pressure, not OperationalCarry. A full-carry writer exists, but no current driver writes it at arbitrary d02 step 5999 for this h10 case.",
-    "missing_input": "A CPU-loadable d02 OperationalCarry with paired OperationalNamelist/grid at completed step_index=5999, immediately before WRF/JAX step 6000. The checkpoint must include State, promoted carry leaves t_2ave/ww/mudf/muave/muts/ph_tend/u_save/v_save/w_save/t_save/ph_save/mu_save/ww_save/rthraten, active physics carry leaves, boundary leaves, real d02 metrics, tendencies, and boundary_config.",
-    "narrower_checkpoint_sprint": "Add or run a proof-only CPU producer that builds the real d02 case, advances _advance_chunk to completed step 5999, and writes either runtime.checkpoint.write_checkpoint(..., runtime_state=carry) or io.restart.write_restart(carry, namelist, grid, 5999, ...).",
-    "next_command": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src WRFGPU2_H10_PRESTEP_CARRY=/abs/path/to/d02_step5999_full_carry.pkl python proofs/v014/jax_h10_prestep_carry.py",
-    "reason": "NO_CPU_LOADABLE_JAX_H10_PRESTEP_OPERATIONAL_CARRY",
-    "status": "BLOCKED"
-  },
+  "blocked": null,
   "checkpoint_probe": {
     "accepted_formats": [
       "gpuwrf-runtime-checkpoint with runtime_state=OperationalCarry",
       "gpuwrf-operational-restart"
     ],
     "candidates": [
+      {
+        "exists": true,
+        "is_file": true,
+        "metadata": {
+          "format": "gpuwrf-runtime-checkpoint",
+          "format_version": 3,
+          "has_full_restart_carry": false,
+          "has_grid": true,
+          "has_namelist": true,
+          "has_runtime_state": true,
+          "status": "READ",
+          "step_index": 5999
+        },
+        "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+        "size_bytes": 163257218,
+        "source": "env:WRFGPU2_H10_PRESTEP_CARRY",
+        "usable_h10_prestep_candidate": true,
+        "why_not_usable": null
+      },
       {
         "exists": false,
         "is_file": false,
@@ -102,7 +114,28 @@
       }
     ],
     "required_step_index": 5999,
-    "usable_candidates": []
+    "usable_candidates": [
+      {
+        "exists": true,
+        "is_file": true,
+        "metadata": {
+          "format": "gpuwrf-runtime-checkpoint",
+          "format_version": 3,
+          "has_full_restart_carry": false,
+          "has_grid": true,
+          "has_namelist": true,
+          "has_runtime_state": true,
+          "status": "READ",
+          "step_index": 5999
+        },
+        "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+        "size_bytes": 163257218,
+        "source": "env:WRFGPU2_H10_PRESTEP_CARRY",
+        "usable_h10_prestep_candidate": true,
+        "why_not_usable": null
+      }
+    ]
   },
   "commands": {
     "generator_argv": [
@@ -114,8 +147,212 @@
       "python -m json.tool proofs/v014/jax_h10_prestep_carry.json >/tmp/jax_h10_prestep_carry.validated.json"
     ]
   },
-  "comparison": null,
-  "comparison_run": false,
+  "comparison": {
+    "checkpoint_path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+    "comparison": {
+      "MU": {
+        "count": 289,
+        "finite_count": 289,
+        "max": -137.3988920808672,
+        "max_abs": 267.1935248522832,
+        "min": -267.1935248522832,
+        "rmse": 195.97477055691238,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 267.1935248522832,
+          "diff_jax_minus_wrf": -267.1935248522832,
+          "jax_candidate": 1467.6774468274048,
+          "native_key": [
+            13,
+            18
+          ],
+          "wrf_truth": 1734.870971679688
+        }
+      },
+      "MUB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 1050.3046875,
+        "max_abs": 1050.3046875,
+        "min": -865.8828125,
+        "rmse": 224.13660680282618,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 1050.3046875,
+          "diff_jax_minus_wrf": 1050.3046875,
+          "jax_candidate": 95000.0,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 93949.6953125
+        }
+      },
+      "P": {
+        "count": 289,
+        "finite_count": 289,
+        "max": -434.1485925419363,
+        "max_abs": 590.0020891006836,
+        "min": -590.0020891006836,
+        "rmse": 526.3359359284732,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 590.0020891006836,
+          "diff_jax_minus_wrf": -590.0020891006836,
+          "jax_candidate": 1384.2010358993164,
+          "native_key": [
+            13,
+            17
+          ],
+          "wrf_truth": 1974.203125
+        }
+      },
+      "PB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 1047.015625,
+        "max_abs": 1047.015625,
+        "min": -863.171875,
+        "rmse": 223.43483550580925,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 1047.015625,
+          "diff_jax_minus_wrf": 1047.015625,
+          "jax_candidate": 99706.203125,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 98659.1875
+        }
+      },
+      "PH": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 0.37017926983722127,
+        "max_abs": 5.097192302780417,
+        "min": -5.097192302780417,
+        "rmse": 2.336601078950881,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 5.097192302780417,
+          "diff_jax_minus_wrf": -5.097192302780417,
+          "jax_candidate": 9.914760097427102,
+          "native_key": [
+            1,
+            8,
+            19
+          ],
+          "wrf_truth": 15.01195240020752
+        }
+      },
+      "T": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 3.3545763228707983,
+        "max_abs": 3.3545763228707983,
+        "min": -0.754810969454752,
+        "rmse": 1.0296598586362888,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 3.3545763228707983,
+          "diff_jax_minus_wrf": 3.3545763228707983,
+          "jax_candidate": -5.813209321660452,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      "U": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 5.901345727281765,
+        "max_abs": 6.292358893898424,
+        "min": -6.292358893898424,
+        "rmse": 2.032497018496295,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 6.292358893898424,
+          "diff_jax_minus_wrf": -6.292358893898424,
+          "jax_candidate": -4.735481996086533,
+          "native_key": [
+            4,
+            13
+          ],
+          "wrf_truth": 1.55687689781189
+        }
+      },
+      "V": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 11.594389190354377,
+        "max_abs": 11.594389190354377,
+        "min": -2.8575219252050674,
+        "rmse": 4.454165526807795,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 11.594389190354377,
+          "diff_jax_minus_wrf": 11.594389190354377,
+          "jax_candidate": 3.248521079697638,
+          "native_key": [
+            9,
+            13
+          ],
+          "wrf_truth": -8.345868110656738
+        }
+      },
+      "W": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 1.7341964464592572,
+        "max_abs": 1.7341964464592572,
+        "min": -0.9805375737457879,
+        "rmse": 0.2385078386197167,
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 1.7341964464592572,
+          "diff_jax_minus_wrf": 1.7341964464592572,
+          "jax_candidate": 0.19623603634115416,
+          "native_key": [
+            1,
+            9,
+            16
+          ],
+          "wrf_truth": -1.537960410118103
+        }
+      }
+    },
+    "first_mismatch": {
+      "field": "T",
+      "max_abs": 3.3545763228707983,
+      "rmse": 1.0296598586362888,
+      "tolerance": 2e-06,
+      "worst": {
+        "abs_diff": 3.3545763228707983,
+        "diff_jax_minus_wrf": 3.3545763228707983,
+        "jax_candidate": -5.813209321660452,
+        "native_key": [
+          12,
+          17
+        ],
+        "wrf_truth": -9.16778564453125
+      }
+    },
+    "grid_shape": {
+      "nx": 159,
+      "ny": 66,
+      "nz": 44
+    },
+    "lead_seconds": 36000.0,
+    "loader": "gpuwrf.runtime.checkpoint.read_checkpoint_with_runtime_state",
+    "run_radiation_for_step": true,
+    "status": "RAN",
+    "step_index": 5999,
+    "target_step": 6000
+  },
+  "comparison_run": true,
   "cpu_only": true,
   "environment": {
     "CUDA_VISIBLE_DEVICES": "",
@@ -130,7 +367,7 @@
     "python": "3.13.11"
   },
   "fp32_source_landing": false,
-  "generated_utc": "2026-06-09T03:47:53.715286+00:00",
+  "generated_utc": "2026-06-09T04:48:59.388479+00:00",
   "gpu_used": false,
   "inputs_read": {
     "dynamic_field_attribution_json": {
@@ -144,8 +381,8 @@
       "exists": true,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "3d3648ddb229a688b26aef030e5e0a504c36e896d4c7d18ac6b51dc14e2f549c",
-      "size_bytes": 26702
+      "sha256": "9a0efb53ed28e0fc135dde57cd76d46aacbb705fadf6e8035dfe0e6862c5f9e8",
+      "size_bytes": 29308
     },
     "jax_pre_halo_capture_json": {
       "exists": true,
@@ -190,7 +427,7 @@
       "size_bytes": 3217
     }
   },
-  "next_decision": "Open a narrower checkpoint producer sprint; do not start a source-fix sprint yet.",
+  "next_decision": "Open a T history/source-attribution sprint before any production source fix; compare JAX theta/history candidates against WRF T_HIST_SRC/grid%th_phy_m_t0 and THM-side candidates.",
   "no_hermes": true,
   "production_src_edits": false,
   "proof_objects": {
@@ -616,10 +853,9 @@
   "switzerland_validation_run": false,
   "tost_run": false,
   "unresolved_risks": [
-    "No first numerical JAX operator mismatch is named because no real h10 pre-step carry was available.",
-    "The retained GPU/JAX h10 wrfout mismatch remains diagnostic only, not same-surface CPU evidence."
+    "Only the selected Boole h10 patch was compared; broader field coverage remains a follow-up."
   ],
-  "verdict": "CHECKPOINT_BLOCKED_NO_H10_PRESTEP_CARRY",
+  "verdict": "JAX_MISMATCH_T",
   "wrf_source_edits": false,
   "wrf_surface_parse": {
     "duplicate_count": 17,

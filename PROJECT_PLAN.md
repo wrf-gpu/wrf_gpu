@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 04:45 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 05:47 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -42,12 +42,16 @@ now the state immediately after `dyn_em/solve_em.F::after_all_rk_steps` and befo
 halo exchanges: it is exact/roundoff against CPU h10 for `T/P/PB/U/V/W/PH/MU/MUB`.
 The first JAX wrapper sprint proved the current public runtime exposes only post-halo /
 post-guard state; the follow-up hook sprint added a default-off private pre-halo capture
-path and proved normal RK returns are unchanged when disabled. The next blocker is now
-the actual produced h10 JAX pre-step `OperationalCarry`: the checkpoint probe found no
-CPU-loadable full carry at completed step 5999. The next sprint must produce that
-checkpoint with existing carry/checkpoint APIs, then run the pre-halo hook against
-Boole's green WRF target. Only after that same-surface comparison names a mismatch should
-production dycore/source code change.
+path and proved normal RK returns are unchanged when disabled. The missing h10 JAX
+pre-step `OperationalCarry` has now been produced at completed step 5999:
+`/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`
+(`OperationalCarry`, paired `OperationalNamelist`, grid `159 x 66 x 44`, SHA256
+`0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde`). The
+canonical same-surface comparison now runs and returns `JAX_MISMATCH_T`: first
+mismatch is `T` max_abs `3.3545763228707983`, RMSE `1.0296598586362888`, worst
+native key `[12, 17]`. Because WRF's accepted history `T` source is
+`grid%th_phy_m_t0`, the next sprint is a T history/source-attribution sprint,
+not a blind production dycore fix.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt

@@ -454,7 +454,7 @@ the hook against Boole's WRF green target.
   `proofs/v014/jax_h10_prestep_carry.{py,json,md}` and
   `.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md`.
 
-Verdict: `CHECKPOINT_BLOCKED_NO_H10_PRESTEP_CARRY`. Euler inspected existing
+Original verdict: `CHECKPOINT_BLOCKED_NO_H10_PRESTEP_CARRY`. Euler inspected existing
 candidate checkpoints and found no CPU-loadable `OperationalCarry` at completed
 step 5999, immediately before `d02` step 6000/h10. Existing APIs can serialize
 full carries (`runtime.checkpoint.write_checkpoint(..., runtime_state=carry)`
@@ -464,13 +464,41 @@ step-5999 full carry checkpoint with existing APIs if possible, then rerun
 `proofs/v014/jax_h10_prestep_carry.py` with
 `WRFGPU2_H10_PRESTEP_CARRY=/abs/path/to/d02_step5999_full_carry.pkl`.
 
+## Completed Wave 11
+
+- `019eaa81-0fee-7cf3-82b4-8879b3026c09` (`McClintock`):
+  h10 pre-step carry producer sprint
+  `.agent/sprints/2026-06-09-v014-h10-prestep-carry-producer/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/jax_h10_prestep_carry_producer.{py,json,md}`,
+  `.agent/reviews/2026-06-09-v014-h10-prestep-carry-producer.md`, and the
+  external checkpoint
+  `/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`.
+  The manager then reran the canonical compare and updated
+  `proofs/v014/jax_h10_prestep_carry.{json,md}` plus
+  `.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md`.
+
+Verdict: `JAX_MISMATCH_T`. The checkpoint is CPU-loadable, contains an
+`OperationalCarry`, paired `OperationalNamelist`, step index `5999`, grid
+shape `159 x 66 x 44`, and SHA256
+`0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde`.
+The canonical same-surface comparison now runs. First mismatch by the proof's
+field order is `T`: max_abs `3.3545763228707983`, RMSE
+`1.0296598586362888`, worst native key `[12, 17]`, JAX candidate
+`-5.813209321660452`, WRF truth `-9.16778564453125`. Other fields remain far
+from WRF on the same patch (`P=590`, `PB=1047`, `MU=267`, `MUB=1050`,
+`U=6.29`, `V=11.59`, `W=1.73`, `PH=5.10` max_abs), so this is not a narrow
+writer-only success. However, WRF's green history `T` source is
+`grid%th_phy_m_t0`; the next sprint must attribute JAX theta/history source
+semantics before any production dycore source fix.
+
 ## Next Manager Actions
 
-1. Open the next checkpoint producer sprint to write a full `OperationalCarry`
-   checkpoint at completed step 5999 for `d02`, preferably using existing
-   checkpoint APIs and no production source edits. Then rerun the pre-halo hook
-   comparison against Boole's WRF green target. Do not start a source fix until
-   that same-surface comparison names the first mismatch.
+1. Open the T history/source-attribution sprint. Compare JAX theta/history
+   candidates from the produced h10 carry and hook-captured pre-halo state
+   against WRF `T_HIST_SRC` (`grid%th_phy_m_t0`) and THM-side candidates before
+   deciding whether `JAX_MISMATCH_T` is source/cadence mapping or a real theta
+   evolution bug.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.
