@@ -829,7 +829,9 @@ def main() -> int:
         blocked = None
         comparison_run = True
         next_decision = (
-            "Open a source-fix sprint for the first same-surface mismatch."
+            "Open a T history/source-attribution sprint before any production "
+            "source fix; compare JAX theta/history candidates against WRF "
+            "T_HIST_SRC/grid%th_phy_m_t0 and THM-side candidates."
             if first
             else "Escalate grid-parity investigation beyond this same-surface patch."
         )

@@ -1,6 +1,6 @@
 # Review: V0.14 H10 Pre-Step Carry Checkpoint
 
-Verdict: `CHECKPOINT_BLOCKED_NO_H10_PRESTEP_CARRY`.
+Verdict: `JAX_MISMATCH_T`.
 
 objective: complete the CPU-only H10 pre-step carry checkpoint and compare through the JAX pre-halo hook if a real carry is available.
 
@@ -21,12 +21,9 @@ proof objects produced:
 - `.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md`
 
 result:
-- `NO_CPU_LOADABLE_JAX_H10_PRESTEP_OPERATIONAL_CARRY`.
-- No retained wrfout or JAX-vs-JAX diagnostic was used as a same-surface verdict.
-- Existing full-carry serialization APIs are present, but no h10 step-5999 full-carry artifact was found.
+- Same-surface comparison ran with verdict `JAX_MISMATCH_T`.
 
 unresolved risks:
-- No first numerical JAX operator mismatch is named because no real h10 pre-step carry was available.
-- The retained GPU/JAX h10 wrfout mismatch remains diagnostic only, not same-surface CPU evidence.
+- Only the selected Boole h10 patch was compared; broader field coverage remains a follow-up.
 
-next decision needed: Open a narrower checkpoint producer sprint; do not start a source-fix sprint yet.
+next decision needed: Open a T history/source-attribution sprint before any production source fix; compare JAX theta/history candidates against WRF T_HIST_SRC/grid%th_phy_m_t0 and THM-side candidates.
