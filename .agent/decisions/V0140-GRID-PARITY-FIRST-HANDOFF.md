@@ -105,6 +105,14 @@ Update 2026-06-09 12:26 WEST: the next-sprint plan is now staged in
 `.agent/decisions/V0140-EARLY-STEP-DISCRIMINATOR-PLAN.md`. It is a pending
 plan, not a second active sprint while the full-domain wrapper worker runs.
 
+Update 2026-06-09 12:35 WEST: full-domain source-wrapper sprint closed
+fail-closed. Verdict:
+`FULL_DOMAIN_WRAPPER_BLOCKED_TRUTH_SURFACE_PATCH_ONLY_AND_CARRY_LEAVES`.
+Existing step-6000 source/save and post-RK surfaces are patch-only and lack the
+same-boundary full wrapper carry/boundary leaves. No strict JAX comparison ran.
+Do not continue the step-6000 wrapper ladder; open the staged early-step
+same-input discriminator.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
