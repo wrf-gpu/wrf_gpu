@@ -1187,3 +1187,8 @@ Open a narrow source-changing sprint to add a transient live-nest adjust-base
 path for theta/QV adjustment only, while keeping final post-`start_domain`
 BaseState unchanged. Rerun the Step-1 theta/QV proof after that change. TOST,
 Switzerland, FP32 source landing, and memory source work remain paused.
+
+Opened sprint:
+`.agent/sprints/2026-06-09-v014-step1-transient-adjust-base-fix`.
+This is the first source-changing sprint after the MUB split and is limited to
+`src/gpuwrf/integration/d02_replay.py` plus proof artifacts.
