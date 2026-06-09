@@ -92,6 +92,16 @@ source-changing fix for
 `src/gpuwrf/integration/d02_replay.py::build_replay_case` native child
 base-state split construction. TOST, Switzerland, FP32, and broad memory work
 remain paused until this base-state split bug is fixed or explicitly bounded.
+The first source-fix attempt then correctly blocked rather than patching:
+`proofs/v014/base_state_split_fix.json` verdict
+`BASE_STATE_SPLIT_FIX_BLOCKED_PARENT_INTERP_BLEND_NOT_LOCAL`. CPU-WRF h0
+`PB/MUB` are base-formula values on post-nest blended h0 terrain (formula
+residuals below `0.06` Pa), but the missing production input is WRF's
+parent-interpolated/blended `HGT/MUB/PHB` surface from `med_interp_domain` /
+`blend_terrain` before `start_domain_em` recomputes `PB/MUB/PHB/theta_base`.
+Simplified bilinear+blend remains hundreds of Pa off. The active next sprint is
+a WRF live-nest base hook/oracle sprint; do not patch `PB/MUB` alone and do not
+use CPU-WRF `wrfout_h0` as production input.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt

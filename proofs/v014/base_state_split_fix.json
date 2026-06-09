@@ -1,0 +1,1114 @@
+{
+  "acceptance_notes": {
+    "cpu_only": true,
+    "jax_vs_jax_self_compare_used_as_truth": false,
+    "json_validates": true,
+    "no_fp32_source_work": true,
+    "no_hermes_or_telegram": true,
+    "no_switzerland_validation": true,
+    "no_tost": true,
+    "normal_production_dependency_on_cpu_wrfout_history": false,
+    "production_source_edited": false,
+    "uses_cpu_wrf_h0_h1_h10_wrfouts": true,
+    "uses_cpu_wrf_pre_rk_truth_from_existing_earlier_source_artifact": true,
+    "uses_wrfout_h0_as_validation_only_oracle": true,
+    "wrf_source_edited": false
+  },
+  "blocked": {
+    "detail": "CPU-WRF h0 PB/MUB are generated after live-nest parent interpolation, blend_terrain, and start_domain_em base recomputation. The current build_replay_case child-only path does not have WRF's parent-interpolated ht/mub/phb fields, and a wrfout_h0 fallback would be a CPU-WRF history dependency.",
+    "exact_wrf_routine_formula_hook_needed": [
+      "share/mediation_integrate.F live-nest input_from_file branch after med_interp_domain and after blend_terrain for nest%ht/nest%mub/nest%phb",
+      "inc/nest_interpdown_interp.inc generated interp_fcn calls for phb/mub/pb plus share/interp_fcn.F::interp_fcn_sint and share/sint.F",
+      "dyn_em/nest_init_utils.F::blend_terrain formula with spec_bdy_width=5 and blend_width=5",
+      "dyn_em/start_em.F::start_domain_em base-state recomputation after the terrain/base blend and before perturbation values are recalculated"
+    ],
+    "production_fix_needed": "Add a native live-nest initialization stage that reproduces WRF parent interpolation/blend for child HGT/MUB/PHB, then recomputes PB/MUB/PHB/theta_base consistently; or add a WRF savepoint hook for those post-blend/pre-start-domain fields before porting it.",
+    "reason": "PARENT_INTERP_BLEND_NOT_LOCAL"
+  },
+  "classification": "BASE_STATE_SPLIT_FIX_BLOCKED_PARENT_INTERP_BLEND_NOT_LOCAL",
+  "commands": {
+    "argv": [
+      "proofs/v014/base_state_split_fix.py"
+    ],
+    "backend_allocator_peak_vram": "not applicable; CPU-only proof",
+    "gpu_replay_command_used": null,
+    "required_validation": [
+      "python -m py_compile src/gpuwrf/integration/d02_replay.py proofs/v014/base_state_split_fix.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/base_state_split_fix.py",
+      "python -m json.tool proofs/v014/base_state_split_fix.json >/tmp/base_state_split_fix.validated.json"
+    ]
+  },
+  "dynamic_fields_not_made_worse": {
+    "fields": [
+      "T",
+      "P",
+      "MU"
+    ],
+    "initial_native_vs_cpu_h0_patch": {
+      "MU": {
+        "bias": -0.7789640327638409,
+        "count": 289,
+        "field": "MU",
+        "finite_count": 289,
+        "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+        "max_abs": 12.2550048828125,
+        "name": "native_wrfinput_vs_cpu_h0_MU_patch",
+        "p99_abs": 10.598417968750002,
+        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "rmse": 2.442524419374578,
+        "scope": "target_patch",
+        "shape": [
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 12.2550048828125,
+          "diff": -12.2550048828125,
+          "index": [
+            6,
+            11
+          ],
+          "left": 1664.8671875,
+          "right": 1677.1221923828125
+        }
+      },
+      "P": {
+        "bias": 0.6150471800413849,
+        "count": 12716,
+        "field": "P",
+        "finite_count": 12716,
+        "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+        "max_abs": 33.4765625,
+        "name": "native_wrfinput_vs_cpu_h0_P_patch",
+        "p99_abs": 15.00371093750001,
+        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "rmse": 2.923556314010176,
+        "scope": "target_patch",
+        "shape": [
+          44,
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 33.4765625,
+          "diff": 33.4765625,
+          "index": [
+            0,
+            6,
+            11
+          ],
+          "left": 2049.5703125,
+          "right": 2016.09375
+        }
+      },
+      "T": {
+        "bias": 0.0,
+        "count": 12716,
+        "field": "T",
+        "finite_count": 12716,
+        "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+        "max_abs": 0.0,
+        "name": "native_wrfinput_vs_cpu_h0_T_patch",
+        "p99_abs": 0.0,
+        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "rmse": 0.0,
+        "scope": "target_patch",
+        "shape": [
+          44,
+          17,
+          17
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0,
+            0
+          ],
+          "left": -8.351898193359375,
+          "right": -8.351898193359375
+        }
+      }
+    },
+    "no_source_patch": true,
+    "same_step_truth_note": "Initial h0 wrfout truth is available and recorded above. No candidate source patch was applied, so T/P/MU are unchanged. h10 same-step internal truth remains unavailable except the existing pre-RK hook records summarized by earlier_source_bisect.",
+    "status": "NOT_APPLICABLE_NO_SOURCE_PATCH"
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "cpu_only": true,
+    "gpu_used": false,
+    "note": "Uses netCDF4/NumPy only; no model execution and no GPU replay.",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T08:05:39.667859+00:00",
+  "h0_static_invariance": {
+    "h0_vs_h1": {
+      "MUB": {
+        "bias": 0.0,
+        "count": 10494,
+        "field": "MUB",
+        "finite_count": 10494,
+        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "max_abs": 0.0,
+        "name": "cpu_h0_vs_cpu_h1_MUB",
+        "p99_abs": 0.0,
+        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0
+          ],
+          "left": 95000.0,
+          "right": 95000.0
+        }
+      },
+      "PB": {
+        "bias": 0.0,
+        "count": 461736,
+        "field": "PB",
+        "finite_count": 461736,
+        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "max_abs": 0.0,
+        "name": "cpu_h0_vs_cpu_h1_PB",
+        "p99_abs": 0.0,
+        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0,
+            0
+          ],
+          "left": 99706.203125,
+          "right": 99706.203125
+        }
+      }
+    },
+    "h0_vs_h10": {
+      "MUB": {
+        "bias": 0.0,
+        "count": 10494,
+        "field": "MUB",
+        "finite_count": 10494,
+        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "max_abs": 0.0,
+        "name": "cpu_h0_vs_cpu_h10_MUB",
+        "p99_abs": 0.0,
+        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0
+          ],
+          "left": 95000.0,
+          "right": 95000.0
+        }
+      },
+      "PB": {
+        "bias": 0.0,
+        "count": 461736,
+        "field": "PB",
+        "finite_count": 461736,
+        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "max_abs": 0.0,
+        "name": "cpu_h0_vs_cpu_h10_PB",
+        "p99_abs": 0.0,
+        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+        "rmse": 0.0,
+        "scope": "whole_domain",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 0.0,
+          "diff": 0.0,
+          "index": [
+            0,
+            0,
+            0
+          ],
+          "left": 99706.203125,
+          "right": 99706.203125
+        }
+      }
+    },
+    "h0_vs_h10_pre_rk_from_earlier_source": {
+      "all_static_base_match": true,
+      "fields": {
+        "MUB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "rmse": 0.0,
+          "status": "MATCH",
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 0.0,
+            "diff": 0.0,
+            "native_key": [
+              1,
+              5
+            ],
+            "netcdf": 94999.4296875,
+            "pre_rk": 94999.4296875
+          }
+        },
+        "PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "rmse": 0.0,
+          "status": "MATCH",
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 0.0,
+            "diff": 0.0,
+            "native_key": [
+              1,
+              5
+            ],
+            "netcdf": 99705.6328125,
+            "pre_rk": 99705.6328125
+          }
+        }
+      },
+      "name": "cpu_wrf_h0_wrfout_vs_h10_pre_rk_static_base",
+      "netcdf": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "pre_rk_files": [
+        "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      ]
+    }
+  },
+  "inputs": {
+    "agents": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
+      "size_bytes": 2561
+    },
+    "base_state_writer_attribution": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_writer_attribution.json",
+      "sha256": "9cc58cc1146d3d56bb291af6b16287dcb70580e4aea76fee550904a1df155594",
+      "size_bytes": 80754
+    },
+    "building_wrf_oracles_skill": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
+      "size_bytes": 1128
+    },
+    "cpu_h0": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
+      "size_bytes": 10945385
+    },
+    "cpu_h1": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "sha256": "df39e031194cdf8c8e7016459b3236bd777fcace30a98ae276cca5a2cc772456",
+      "size_bytes": 15515282
+    },
+    "cpu_h10": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+      "sha256": "daeab63574bc0ffd3689af6ad6e2c6724b326e2780cb2eaddfd565706aa3128d",
+      "size_bytes": 15424459
+    },
+    "d02_replay": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "sha256": "cef435fd9d78851944955810263d95c72efe1861a9611403f46f20de0c1a7655",
+      "size_bytes": 88775
+    },
+    "earlier_source_bisect": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+      "sha256": "6e1ccc24a64aced0f1eeaee5375e62c10218c8f03d92a3eb61cb8e32ae5119a7",
+      "size_bytes": 413156
+    },
+    "native_wrfinput_d01": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
+      "sha256": "94b73381b706b342c4f20b9b3286a8aeebc7f93e1df878c7da781fa1f79c251f",
+      "size_bytes": 7138457
+    },
+    "native_wrfinput_d02": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
+      "size_bytes": 11005720
+    },
+    "pre_rk_input_boundary": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+      "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
+      "size_bytes": 43617
+    },
+    "project_constitution": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
+      "size_bytes": 1157
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-base-state-split-fix/sprint-contract.md",
+      "sha256": "12e1c41ff9e024cce36520a1320637203cbfed6fe9a56506e9e1a1af885e2cfe",
+      "size_bytes": 4215
+    },
+    "static_metric_base_parity": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
+      "sha256": "f66883d32749a0d9fc9c6ea386307a14db4b0bf5810c7f928c06b0f2f3092bb7",
+      "size_bytes": 272492
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    }
+  },
+  "native_wrfinput_vs_cpu_h0_patch": {
+    "MU": {
+      "bias": -0.7789640327638409,
+      "count": 289,
+      "field": "MU",
+      "finite_count": 289,
+      "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "max_abs": 12.2550048828125,
+      "name": "native_wrfinput_vs_cpu_h0_MU_patch",
+      "p99_abs": 10.598417968750002,
+      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "rmse": 2.442524419374578,
+      "scope": "target_patch",
+      "shape": [
+        17,
+        17
+      ],
+      "status": "DIFF",
+      "tolerance_max_abs": 2e-06,
+      "worst": {
+        "abs_diff": 12.2550048828125,
+        "diff": -12.2550048828125,
+        "index": [
+          6,
+          11
+        ],
+        "left": 1664.8671875,
+        "right": 1677.1221923828125
+      }
+    },
+    "MUB": {
+      "bias": 69.54568555363322,
+      "count": 289,
+      "field": "MUB",
+      "finite_count": 289,
+      "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "max_abs": 1050.3046875,
+      "name": "native_wrfinput_vs_cpu_h0_MUB_patch",
+      "p99_abs": 931.3696875,
+      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "rmse": 224.12240397269977,
+      "scope": "target_patch",
+      "shape": [
+        17,
+        17
+      ],
+      "status": "DIFF",
+      "tolerance_max_abs": 2e-06,
+      "worst": {
+        "abs_diff": 1050.3046875,
+        "diff": 1050.3046875,
+        "index": [
+          6,
+          11
+        ],
+        "left": 95000.0,
+        "right": 93949.6953125
+      }
+    },
+    "P": {
+      "bias": 0.6150471800413849,
+      "count": 12716,
+      "field": "P",
+      "finite_count": 12716,
+      "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "max_abs": 33.4765625,
+      "name": "native_wrfinput_vs_cpu_h0_P_patch",
+      "p99_abs": 15.00371093750001,
+      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "rmse": 2.923556314010176,
+      "scope": "target_patch",
+      "shape": [
+        44,
+        17,
+        17
+      ],
+      "status": "DIFF",
+      "tolerance_max_abs": 2e-06,
+      "worst": {
+        "abs_diff": 33.4765625,
+        "diff": 33.4765625,
+        "index": [
+          0,
+          6,
+          11
+        ],
+        "left": 2049.5703125,
+        "right": 2016.09375
+      }
+    },
+    "PB": {
+      "bias": 20.937259776069517,
+      "count": 12716,
+      "field": "PB",
+      "finite_count": 12716,
+      "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "max_abs": 1047.015625,
+      "name": "native_wrfinput_vs_cpu_h0_PB_patch",
+      "p99_abs": 611.4304687500003,
+      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "rmse": 109.23204781815154,
+      "scope": "target_patch",
+      "shape": [
+        44,
+        17,
+        17
+      ],
+      "status": "DIFF",
+      "tolerance_max_abs": 2e-06,
+      "worst": {
+        "abs_diff": 1047.015625,
+        "diff": 1047.015625,
+        "index": [
+          0,
+          6,
+          11
+        ],
+        "left": 99706.203125,
+        "right": 98659.1875
+      }
+    },
+    "T": {
+      "bias": 0.0,
+      "count": 12716,
+      "field": "T",
+      "finite_count": 12716,
+      "left": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "max_abs": 0.0,
+      "name": "native_wrfinput_vs_cpu_h0_T_patch",
+      "p99_abs": 0.0,
+      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "rmse": 0.0,
+      "scope": "target_patch",
+      "shape": [
+        44,
+        17,
+        17
+      ],
+      "status": "MATCH",
+      "tolerance_max_abs": 2e-06,
+      "worst": {
+        "abs_diff": 0.0,
+        "diff": 0.0,
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "left": -8.351898193359375,
+        "right": -8.351898193359375
+      }
+    }
+  },
+  "next_decision": "Instrument or port WRF live-nest initialization: capture/reproduce med_interp_domain parent-interpolated HGT/MUB/PHB, blend_terrain, and start_domain_em base recomputation before changing build_replay_case.",
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-base-state-split-fix.md",
+    "script": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.py"
+  },
+  "schema": "wrfgpu2.v014.base_state_split_fix.v1",
+  "scope_impact": {
+    "BaseState": "unchanged; a real fix must recompute pb/mub/phb/theta_base together",
+    "live_nested_child_init": "blocked; would need parent-interpolated/blended base fields before child carry construction",
+    "restart_output": "unchanged",
+    "standalone_native_init": "unchanged",
+    "wrfbdy_boundary_leaves": "unchanged",
+    "writer_reconstruction": "unchanged"
+  },
+  "simplified_local_reconstruction": {
+    "accepted_as_fix": false,
+    "base_fields": {
+      "MUB_patch": {
+        "bias": -69.82624893219321,
+        "count": 289,
+        "finite_count": 289,
+        "max_abs": 798.7609739865584,
+        "name": "bilinear_blend_base_mub_vs_cpu_h0_patch",
+        "p99_abs": 662.8736001406331,
+        "rmse": 171.96735391639817,
+        "shape": [
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 798.7609739865584,
+          "diff": -798.7609739865584,
+          "index": [
+            4,
+            10
+          ],
+          "left": 93830.61402601344,
+          "right": 94629.375
+        }
+      },
+      "MUB_whole_domain": {
+        "bias": -1.4677867709175694,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 798.7609739865584,
+        "name": "bilinear_blend_base_mub_vs_cpu_h0_whole_domain",
+        "p99_abs": 225.98848122891627,
+        "rmse": 40.86081817480332,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 798.7609739865584,
+          "diff": -798.7609739865584,
+          "index": [
+            5,
+            15
+          ],
+          "left": 93830.61402601344,
+          "right": 94629.375
+        }
+      },
+      "PB_patch": {
+        "bias": -21.021868010665695,
+        "count": 12716,
+        "finite_count": 12716,
+        "max_abs": 796.2565574348409,
+        "name": "bilinear_blend_base_pb_vs_cpu_h0_patch",
+        "p99_abs": 459.25154111953987,
+        "rmse": 83.81300997506303,
+        "shape": [
+          44,
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 796.2565574348409,
+          "diff": -796.2565574348409,
+          "index": [
+            0,
+            4,
+            10
+          ],
+          "left": 98540.47781756516,
+          "right": 99336.734375
+        }
+      },
+      "PB_whole_domain": {
+        "bias": -0.4420156649154914,
+        "count": 461736,
+        "finite_count": 461736,
+        "max_abs": 796.2565574348409,
+        "name": "bilinear_blend_base_pb_vs_cpu_h0_whole_domain",
+        "p99_abs": 49.01234107379465,
+        "rmse": 19.914623270376147,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 796.2565574348409,
+          "diff": -796.2565574348409,
+          "index": [
+            0,
+            5,
+            15
+          ],
+          "left": 98540.47781756516,
+          "right": 99336.734375
+        }
+      }
+    },
+    "hgt": {
+      "bilinear_blend_vs_cpu_h0_patch": {
+        "bias": 5.958098338094065,
+        "count": 289,
+        "finite_count": 289,
+        "max_abs": 68.20364146762441,
+        "name": "bilinear_blend_hgt_vs_cpu_h0_hgt_patch",
+        "p99_abs": 56.57776906073112,
+        "rmse": 14.66695824364639,
+        "shape": [
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 68.20364146762441,
+          "diff": 68.20364146762441,
+          "index": [
+            4,
+            10
+          ],
+          "left": 99.69649844699453,
+          "right": 31.492856979370117
+        }
+      },
+      "bilinear_blend_vs_cpu_h0_whole_domain": {
+        "bias": 0.12424120389811072,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 68.20364146762441,
+        "name": "bilinear_blend_hgt_vs_cpu_h0_hgt_whole_domain",
+        "p99_abs": 19.36923319604648,
+        "rmse": 3.490814794592666,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 68.20364146762441,
+          "diff": 68.20364146762441,
+          "index": [
+            5,
+            15
+          ],
+          "left": 99.69649844699453,
+          "right": 31.492856979370117
+        }
+      },
+      "native_wrfinput_vs_cpu_h0_patch": {
+        "bias": -5.88435061879224,
+        "count": 289,
+        "finite_count": 289,
+        "max_abs": 89.50347900390625,
+        "name": "native_wrfinput_hgt_vs_cpu_h0_hgt_patch",
+        "p99_abs": 79.46704803466797,
+        "rmse": 19.19829767723655,
+        "shape": [
+          17,
+          17
+        ],
+        "status": "DIFF",
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 89.50347900390625,
+          "diff": -89.50347900390625,
+          "index": [
+            6,
+            11
+          ],
+          "left": 0.0,
+          "right": 89.50347900390625
+        }
+      }
+    },
+    "purpose": "negative control: existing-helper-shaped bilinear parent interpolation plus WRF blend weights",
+    "rejection_reason": "WRF default interp_method_type=2 uses share/interp_fcn.F::interp_fcn_sint plus share/sint.F, not this bilinear helper; the candidate also misses the frozen 2e-6 tolerance.",
+    "source_inputs": {
+      "blend_width": 5,
+      "child_hgt": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "i_parent_start": 24,
+      "j_parent_start": 20,
+      "parent_grid_ratio": 3,
+      "parent_hgt": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
+      "spec_bdy_width": 5
+    }
+  },
+  "source_patch": {
+    "applied": false,
+    "cpu_wrfout_h0_fallback": "not used; would be validation-only/fail-closed, not production",
+    "d02_replay_changed_in_worktree": false,
+    "reason_not_patched": "WRF transformation is not local to build_replay_case without parent-interpolated/blended live-nest fields."
+  },
+  "starting_facts": {
+    "cpu_wrf_uses_stable_different_split": true,
+    "earlier_source_bisect_verdict": "BASE_STATE_SPLIT_DEFINITION_MISMATCH",
+    "expected_starting_verdict": "BASE_STATE_SPLIT_DEFINITION_MISMATCH",
+    "native_initial_split_matches_wrfinput": true
+  },
+  "target": {
+    "domain": "d02",
+    "fields": [
+      "T",
+      "P",
+      "PB",
+      "MU",
+      "MUB"
+    ],
+    "patch_bounds": {
+      "count": 289,
+      "x0": 5,
+      "x1": 22,
+      "y0": 1,
+      "y1": 18
+    },
+    "static_fields": [
+      "PB",
+      "MUB"
+    ],
+    "tolerance_max_abs": 2e-06
+  },
+  "unresolved_risks": [
+    "No native source fix was landed; live-nested child init still needs WRF parent interpolation/blend parity.",
+    "The h0-HGT formula check is validation-only and cannot be used as a production dependency.",
+    "A production fix will also need terrain/metrics/BaseState consistency, not PB/MUB replacement alone."
+  ],
+  "validation_only_h0_hgt_formula": {
+    "cpu_h0_hgt_formula": {
+      "MUB_patch": {
+        "bias": -0.006273086832976855,
+        "count": 289,
+        "finite_count": 289,
+        "max_abs": 0.044447155625675805,
+        "name": "base_formula_on_cpu_h0_hgt_vs_cpu_h0_mub_patch",
+        "p99_abs": 0.041252213229308846,
+        "rmse": 0.015225830182013154,
+        "shape": [
+          17,
+          17
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.044447155625675805,
+          "diff": -0.044447155625675805,
+          "index": [
+            6,
+            11
+          ],
+          "left": 93949.65086534437,
+          "right": 93949.6953125
+        }
+      },
+      "MUB_whole_domain": {
+        "bias": -0.0014384728047889552,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 0.050037370980135165,
+        "name": "base_formula_on_cpu_h0_hgt_vs_cpu_h0_mub_whole_domain",
+        "p99_abs": 0.035347418225574065,
+        "rmse": 0.008025459992420022,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.050037370980135165,
+          "diff": -0.050037370980135165,
+          "index": [
+            50,
+            155
+          ],
+          "left": 94875.05152512902,
+          "right": 94875.1015625
+        }
+      },
+      "PB_patch": {
+        "bias": -0.002026615568209949,
+        "count": 12716,
+        "finite_count": 12716,
+        "max_abs": 0.04889917548280209,
+        "name": "base_formula_on_cpu_h0_hgt_vs_cpu_h0_pb_patch",
+        "p99_abs": 0.03334467162494548,
+        "rmse": 0.007714972230578163,
+        "shape": [
+          44,
+          17,
+          17
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.04889917548280209,
+          "diff": -0.04889917548280209,
+          "index": [
+            0,
+            3,
+            10
+          ],
+          "left": 99703.82610082452,
+          "right": 99703.875
+        }
+      },
+      "PB_whole_domain": {
+        "bias": -0.000560217772852319,
+        "count": 461736,
+        "finite_count": 461736,
+        "max_abs": 0.05358697354677133,
+        "name": "base_formula_on_cpu_h0_hgt_vs_cpu_h0_pb_whole_domain",
+        "p99_abs": 0.022396598571504025,
+        "rmse": 0.004297154471752132,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.05358697354677133,
+          "diff": -0.05358697354677133,
+          "index": [
+            0,
+            50,
+            155
+          ],
+          "left": 99581.64172552645,
+          "right": 99581.6953125
+        }
+      }
+    },
+    "formula_roundoff_tolerance_pa": 0.06,
+    "native_wrfinput_formula_sanity": {
+      "MUB_patch": {
+        "bias": -0.0023928831906358397,
+        "count": 289,
+        "finite_count": 289,
+        "max_abs": 0.043773815807071514,
+        "name": "base_formula_on_wrfinput_hgt_vs_wrfinput_mub_patch",
+        "p99_abs": 0.040640885038883426,
+        "rmse": 0.008957049482746298,
+        "shape": [
+          17,
+          17
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.043773815807071514,
+          "diff": -0.043773815807071514,
+          "index": [
+            7,
+            16
+          ],
+          "left": 94997.6202886842,
+          "right": 94997.6640625
+        }
+      },
+      "MUB_whole_domain": {
+        "bias": -0.0009589550925524634,
+        "count": 10494,
+        "finite_count": 10494,
+        "max_abs": 0.04953186270722654,
+        "name": "base_formula_on_wrfinput_hgt_vs_wrfinput_mub_whole_domain",
+        "p99_abs": 0.03184029275216742,
+        "rmse": 0.006244090197699161,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.04953186270722654,
+          "diff": -0.04953186270722654,
+          "index": [
+            43,
+            151
+          ],
+          "left": 91688.0442181373,
+          "right": 91688.09375
+        }
+      },
+      "PB_patch": {
+        "bias": -0.0008540359212300207,
+        "count": 12716,
+        "finite_count": 12716,
+        "max_abs": 0.04889360266679432,
+        "name": "base_formula_on_wrfinput_hgt_vs_wrfinput_pb_patch",
+        "p99_abs": 0.025441792651690782,
+        "rmse": 0.004723270852963286,
+        "shape": [
+          44,
+          17,
+          17
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.04889360266679432,
+          "diff": -0.04889360266679432,
+          "index": [
+            0,
+            13,
+            15
+          ],
+          "left": 95890.10735639733,
+          "right": 95890.15625
+        }
+      },
+      "PB_whole_domain": {
+        "bias": -0.00041743983161846834,
+        "count": 461736,
+        "finite_count": 461736,
+        "max_abs": 0.05279588139092084,
+        "name": "base_formula_on_wrfinput_hgt_vs_wrfinput_pb_whole_domain",
+        "p99_abs": 0.01766879282731682,
+        "rmse": 0.003505033529591366,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "MATCH",
+        "tolerance_max_abs": 0.06,
+        "worst": {
+          "abs_diff": 0.05279588139092084,
+          "diff": -0.05279588139092084,
+          "index": [
+            2,
+            43,
+            151
+          ],
+          "left": 94947.09564161861,
+          "right": 94947.1484375
+        }
+      }
+    },
+    "purpose": "validation-only oracle check; CPU-WRF h0 HGT is not an accepted production dependency"
+  },
+  "verdict": "BASE_STATE_SPLIT_FIX_BLOCKED_PARENT_INTERP_BLEND_NOT_LOCAL",
+  "wrf_source_refs": {
+    "mediation_integrate_live_nest_input_from_file": {
+      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/mediation_integrate.F",
+      "lines": "688-756",
+      "role": "med_interp_domain(parent,nest), save parent-interpolated ht/mub/phb, read wrfinput child, blend ht/mub/phb, then adjust_tempqv"
+    },
+    "nest_interp_generated_fields": {
+      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+      "lines": "253-347",
+      "role": "generated parent-to-child interp_fcn calls for phb, mu_2, mub and nearby base fields"
+    },
+    "press_adj_dynamic_split": {
+      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "lines": "878-886",
+      "role": "optional pressure adjustment modifies MU_2 after base recomputation; not part of PB/MUB static-base fix"
+    },
+    "start_domain_base_recompute": {
+      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "lines": "599-647,675-721",
+      "role": "start_domain_em recomputes MUB/PB/T_INIT/ALB/PHB from the modified HGT/MUB base surface"
+    },
+    "wrf_blend_formula": {
+      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/nest_init_utils.F",
+      "lines": "712-785",
+      "role": "blend_terrain sets the spec_bdy_width ring to parent-interpolated values and blends the next blend_width rows"
+    },
+    "wrf_default_interpolation": {
+      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/interp_fcn.F",
+      "lines": "34-131,874-993",
+      "role": "interp_method_type default 2 dispatches to interp_fcn_sint; sint implementation is in share/sint.F"
+    },
+    "wrf_sint_kernel": {
+      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/sint.F",
+      "lines": "2-202",
+      "role": "Smolarkiewicz positive-definite monotonic interpolation used by interp_fcn_sint"
+    }
+  }
+}
