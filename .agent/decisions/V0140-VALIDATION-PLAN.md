@@ -227,6 +227,14 @@ Current status:
   continuity remains exact. Validation campaigns, Switzerland, TOST, FP32, and
   memory work stay behind the grid-parity gate until the internal
   `first_rk_step_part1` mutation is explained or fixed.
+- 2026-06-09 Part1 update:
+  `proofs/v014/step1_part1_physics_state_mutation.json` rules out
+  `first_rk_step_part1` internals for the current `T_STATE` residual. The full
+  residual is already present at `part1_entry_before_init_zero_tendency`
+  (max_abs `5.490173101425171`, RMSE `1.9175184863907806`), and WRF's largest
+  internal `T_STATE` delta from that entry is max_abs `0.0`. The next validation
+  enabler is upstream call-site/state-handoff localization before
+  `first_rk_step_part1`.
 - 2026-06-09 direct proof update: the direct falsifier has now run and did
   **not** close the symptom. `proofs/v014/grid_after_live_nest_base.json`
   verdict is `GRID_SYMPTOM_NOT_CLOSED` after one h12 GPU run with

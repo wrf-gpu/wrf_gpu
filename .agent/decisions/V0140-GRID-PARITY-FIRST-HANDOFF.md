@@ -226,6 +226,16 @@ This is the active debug sprint. It must instrument/compare internal WRF
 scheme-adapter state/tendency outputs. The target is an exact T-state mutation
 source, an input-already-diverged proof, or one exact missing-truth blocker.
 
+Update 2026-06-09 15:24 WEST: step-1 part1 physics-state mutation sprint
+closed. Verdict:
+`STEP1_PART1_INPUT_ALREADY_DIVERGED_T_STATE`. The full `T_STATE` residual is
+already present at WRF `part1_entry_before_init_zero_tendency`: max_abs
+`5.490173101425171`, RMSE `1.9175184863907806` against JAX live-nest
+step-entry state. WRF `first_rk_step_part1` does not materially change
+`T_STATE`; largest internal delta from entry is max_abs `0.0`. The next sprint
+must move upstream to the live-nest/WRF call-site handoff immediately before
+`first_rk_step_part1`, not into radiation/surface/PBL/cumulus or acoustic.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
