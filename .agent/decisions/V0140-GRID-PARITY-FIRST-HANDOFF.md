@@ -1405,3 +1405,51 @@ Opened next sprint:
 
 TOST, Switzerland, FP32 source work, broad memory work, and GPU validation stay
 paused.
+
+## Current Manager Update 2026-06-09 20:36 WEST
+
+The JAX start-domain input split sprint is closed locally and ready to commit:
+
+- Sprint:
+  `.agent/sprints/2026-06-09-v014-step1-jax-start-domain-input-split`.
+- Verdict:
+  `STEP1_JAX_START_DOMAIN_INPUT_SPLIT_LOCALIZED_BASE_STATE_RECONSTRUCTION_FP32_ALT_SOURCE_ORDER_GAP`.
+- Manager validation passed:
+  `py_compile`, CPU-only proof rerun, JSON validation, and
+  `git diff -- src/gpuwrf` empty.
+- No production source was changed.
+
+Meaning:
+
+- The dominant residual is now diagnosed `AL/ALT`, fed by base-state
+  reconstruction.
+- Direct WRF ALT substitution reduces pressure max_abs from
+  `3.9458582235092763` to `0.07605321895971429`.
+- FP32 ALT diagnosis with WRF `PHB+MUB` reduces pressure max_abs to
+  `0.0859375`.
+- A production patch is still not safe: the best proof-local WRF-order
+  fp32/cp=1004.5 base candidate still leaves `P_STATE` max_abs `2.828125` and
+  `MU_STATE` max_abs `0.011962890625`.
+- Refuted as dominant: terrain/final blend, time-level selection, `PH_STATE`,
+  pre-press `MU`, `PB` alone, and theta alone.
+
+Next required sprint:
+
+- Emit or reproduce the exact WRF `start_domain_em` base-state boundary before
+  the hypsometric `AL/ALT` pass: `p_surf`, post-assignment `MUB`,
+  `PB/T_INIT/ALB`, `PHB`, active hybrid coefficients, flags, and scalar
+  constants.
+- Once WRF-equivalent `PHB+MUB` reconstruction is closed, apply the already
+  proven `P/MU/W` perturbation init path under a narrow source-changing
+  `d02_replay.py` sprint.
+
+Memory/FP32 status:
+
+- The previous parallel memory/FP32 side manager was merged as `ee6cbbe1`.
+  It closed only the non-conflicting WDM6 `slmsk` cleanup. Larger memory and
+  FP32 source work remains blocked by this live-nest/grid-parity lock.
+- A manual relaunch contract for a secondary memory manager now exists at
+  `memory_manager_contract_260609.md`; it must respect the same source locks.
+
+TOST, Switzerland, FP32 source work, broad memory source work, and long GPU
+validation remain paused.
