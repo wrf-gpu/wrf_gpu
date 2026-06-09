@@ -1157,3 +1157,8 @@ a CPU-only current-`MUB/PB` base-input split around WRF live-nest terrain/base
 blending and the JAX live-nest base-init reconstruction. TOST, Switzerland,
 FP32 source landing, and memory source work remain paused until this branch is
 fixed or explicitly bounded.
+
+Opened sprint:
+`.agent/sprints/2026-06-09-v014-step1-current-mub-base-input-split`.
+The contract is proof-only and must classify the `17.5 Pa` current-`mub` /
+`pb_new` mismatch before any production source patch.
