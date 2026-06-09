@@ -12,17 +12,17 @@
 
 ## GPU Run
 
-- Command: `/home/enric/miniconda3/bin/python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --output-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out --scratch-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/scratch --proof-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/proofs --max-dom 3 --hours 1`
-- Output path: `/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out`
-- Duration: `933.402` s
+- Command: `/home/enric/miniconda3/bin/python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --output-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T214357Z/nested_1h_out --scratch-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T214357Z/scratch --proof-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T214357Z/proofs --max-dom 3 --hours 1`
+- Output path: `/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T214357Z/nested_1h_out`
+- Duration: `465.315` s
 - Return code: `0`
 - Nested payload verdict: `PIPELINE_GREEN`
 - All finite: `True`
 - All outputs present: `True`
 - Output count: `3`
-- Peak total VRAM: `9265` MiB
-- Peak compute-app VRAM: `8116` MiB
-- Peak increment over baseline: `6672` MiB
+- Peak total VRAM: `9259` MiB
+- Peak compute-app VRAM: `8169` MiB
+- Peak increment over baseline: `6686` MiB
 - Allocator re-exec line seen: `True`
 - OOM markers: `0`
 

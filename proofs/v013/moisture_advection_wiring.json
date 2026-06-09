@@ -65,8 +65,8 @@
         },
         "check_values": {
           "all_snapshots_finite": 1.0,
-          "theta_prime_min_900s": -9.971054183169997,
-          "max_abs_w_900s": 14.57511000316096,
+          "theta_prime_min_900s": -9.971054183170054,
+          "max_abs_w_900s": 14.575110003157299,
           "front_position_900s": 14150.0,
           "rotor_count_proxy_900s": 4.0,
           "relative_mass_drift": 2.2524889656126635e-09
