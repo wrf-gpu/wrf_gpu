@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 04:09 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 04:28 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -40,8 +40,10 @@ The marker proves the native h10/`d02` patch/index mapping and the correct
 history-backed WRF `T` source (`grid%th_phy_m_t0`). The accepted WRF compare target is
 now the state immediately after `dyn_em/solve_em.F::after_all_rk_steps` and before RK
 halo exchanges: it is exact/roundoff against CPU h10 for `T/P/PB/U/V/W/PH/MU/MUB`.
-The next blocker is a JAX CPU same-state wrapper against that exact surface; only after
-that comparison names a mismatch should production dycore/source code change.
+The first JAX wrapper sprint proved the current public runtime exposes only post-halo /
+post-guard state, so the next blocker is a narrow, default-off CPU-only pre-halo
+capture hook in `runtime/operational_mode.py`; only after that same-surface comparison
+names a mismatch should production dycore/source code change.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt

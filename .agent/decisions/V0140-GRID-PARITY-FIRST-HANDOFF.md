@@ -400,12 +400,34 @@ same patch (`T=3.36`, `P=590`, `PB=1047`, `U=6.29`, `V=11.59`, `W=1.73`,
 `PH=5.10`, `MU=267`, `MUB=1050` max_abs), so the next sprint is a JAX CPU
 same-state wrapper at this surface, not another WRF-only emitter.
 
+## Completed Wave 8
+
+- `019eaa5c-e784-7291-8294-2e83b3b597b9` (`Ramanujan`):
+  CPU-only JAX after-all-RK same-state wrapper sprint
+  `.agent/sprints/2026-06-09-v014-jax-after-all-rk-wrapper/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/jax_after_all_rk_wrapper.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-jax-after-all-rk-wrapper.md`.
+  Manager validation reran JSON validation and Python compilation.
+
+Verdict: `WRAPPER_BLOCKED_NO_JAX_PRE_HALO_STATE_API`. The WRF truth surface is
+green and parsed, but the current JAX runtime exposes only post-halo/post-guard
+state. In `runtime/operational_mode.py`, `_acoustic_scan` reaches the desired
+state via `_carry_from_finished_stage(...)`, then immediately wraps it in
+`apply_halo(...)` before returning; `_rk_scan_step` also applies halo before
+returning each stage. A public forecast/API run would therefore compare the
+wrong cadence surface. The retained GPU/JAX h10 wrfout mismatch remains a
+diagnostic only, not same-surface CPU evidence. Next sprint: add a narrow,
+default-off CPU-only pre-halo capture/debug hook around `_acoustic_scan` before
+its `apply_halo` return, then rerun the JAX same-state comparison.
+
 ## Next Manager Actions
 
-1. Open the next same-state JAX CPU wrapper sprint against
-   `post dyn_em/solve_em.F::after_all_rk_steps state before RK halo exchanges`.
-   Use Boole's green refresh layer as WRF truth and retain Ampere's documented
-   `PHB/HGT/XLAT/XLONG` exclusions; `PB/MUB` are now dynamic compare fields.
+1. Open the next narrow source-changing sprint for a default-off CPU-only
+   pre-halo capture hook in `src/gpuwrf/runtime/operational_mode.py`, around
+   `_acoustic_scan` immediately before its `apply_halo` return. The hook exists
+   solely to emit/return the JAX state corresponding to Boole's green WRF target.
+   After the hook is proven off-by-default, rerun the same-surface JAX compare.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.
