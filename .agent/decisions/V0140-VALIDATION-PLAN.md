@@ -275,6 +275,15 @@ Current status:
   before powered TOST or Switzerland. The next validation-enabling sprint must
   build that comparison contract/tooling and rerun the discriminator before any
   production dynamics source edit.
+- 2026-06-09 same-input contract-builder closeout:
+  `proofs/v014/same_input_contract_builder.json` verdict is
+  `SAME_INPUT_CONTRACT_BLOCKED_NO_CANDIDATE_WRF_POST_RK_PRE_HALO_TRUTH_STEP_1`.
+  The initial d02 CPU/JAX same-input loader and 16-field schema are now ready.
+  B4 remains blocked because the full-domain CPU-WRF d02 step-1
+  `post_after_all_rk_steps_pre_halo` truth surface is missing. The next
+  validation-enabling task is a disposable CPU-WRF hook that emits the accepted
+  npz truth contract, followed by a rerun of the contract builder for the first
+  strict WRF-vs-JAX residual table.
 - 2026-06-09 management-review correction:
   `.agent/reviews/2026-06-09-v014-management-review-01.md` records
   `NO_GOAL_CHANGE` but criticizes the step-6000 same-input path as a blocked

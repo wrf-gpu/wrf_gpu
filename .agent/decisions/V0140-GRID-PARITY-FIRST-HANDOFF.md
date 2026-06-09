@@ -138,6 +138,19 @@ build or precisely block the CPU-compatible proof loader/checkpoint reader, WRF
 candidate-step post-RK/pre-halo full-field surface, and frozen field/staggering
 schema needed to make same-input comparisons cheap and strict.
 
+Update 2026-06-09 13:03 WEST: same-input contract-builder sprint closed
+fail-closed. Verdict:
+`SAME_INPUT_CONTRACT_BLOCKED_NO_CANDIDATE_WRF_POST_RK_PRE_HALO_TRUTH_STEP_1`.
+The JAX/CPU side is now ready for initial d02 same-input construction:
+`State`, `Tendencies`, `BaseState`/metrics, `OperationalNamelist`, parent
+boundary package, and initial `OperationalCarry` build under CPU-only JAX
+without `State.zeros`. The WRF/JAX schema is frozen for 16 comparison fields.
+No strict numerical comparison ran because the required full-domain CPU-WRF d02
+step-1 `post_after_all_rk_steps_pre_halo` truth surface does not exist. The next
+validation-enabling sprint is a disposable CPU-WRF step-1 truth hook that emits
+`/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz`,
+then reruns `proofs/v014/same_input_contract_builder.py`.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
