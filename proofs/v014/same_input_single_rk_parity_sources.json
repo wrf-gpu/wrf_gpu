@@ -1,0 +1,373 @@
+{
+  "accepted_boundary": {
+    "name": "source_save_after_rk_tendency",
+    "native_state_and_sources_same_boundary": true,
+    "ordering": "after first_rk_step_part1/part2 and rk_tendency; before relax_bdy_dry, rk_addtend_dry, spec_bdy_dry, small_step_prep, advance_uv",
+    "ordering_conflict": false
+  },
+  "blocked": {
+    "existing_checkpoint": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218
+    },
+    "existing_checkpoint_not_used_reason": "It is a JAX-produced step5999 OperationalCarry, not WRF-emitted state at the accepted source/save boundary; mixing it with WRF source leaves would violate the same-input rule.",
+    "existing_checkpoint_used": false,
+    "missing_field_surface": "full-domain same-boundary promoted carry leaves are not WRF-emitted: t_2ave, ww, mudf, muave, muts, ph_tend, mu_save, ww_save, rthraten, active physics carry, and boundary leaves; source hook emits the dry source/save family only",
+    "missing_wrapper": "proof-only loader/wrapper that maps WRF-emitted full-domain source_save_after_rk_tendency records into State, OperationalCarry, OperationalNamelist/GridSpec/DycoreMetrics, and DryPhysicsTendencies, then calls _rk_scan_step_with_pre_halo_capture",
+    "patch_and_truth_limitation": "source hook is a 17x17 patch with one 8-cell-halo-valid mass cell, while the existing post-RK/pre-halo truth emits only K1 mass/U/V and kstag 0/1 W/PH records, not a full 44-level full-domain State output",
+    "scalar_limiter_blocker": "namelist has moist_adv_opt=1 and scalar_adv_opt=1; WRF initializes only P_QV moist_old before this boundary, and scalar_old is not valid here. A full final-stage scalar-limiter comparison needs a consistent old-field strategy or a narrower dry-only wrapper."
+  },
+  "commands": {
+    "validation": [
+      "python -m py_compile proofs/v014/same_input_single_rk_parity_sources.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/same_input_single_rk_parity_sources.py",
+      "python -m json.tool proofs/v014/same_input_single_rk_parity_sources.json >/tmp/same_input_single_rk_parity_sources.validated.json"
+    ]
+  },
+  "comparison": {
+    "jax_step_executed": false,
+    "per_field_metrics": {},
+    "ranked_residuals": [],
+    "strict_same_input_comparison_run": false,
+    "weak_comparison_avoided": true
+  },
+  "cpu_only": true,
+  "decision": {
+    "jax_step_executed": false,
+    "reason": "WRF source/save leaves are present at a consistent pre-mutation boundary, but no strict JAX wrapper can construct a full same-boundary OperationalCarry from WRF-emitted fields only.",
+    "source_save_boundary_ready": true,
+    "strict_same_input_comparison_run": false,
+    "unique_counts": {
+      "MASS2D_SOURCE": 289,
+      "MASS_SOURCE": 12716,
+      "MOIST_OLD_QV": 12716,
+      "U_SOURCE": 13464,
+      "V_SOURCE": 13464,
+      "WPH_SOURCE": 13005
+    },
+    "verdict": "SOURCE_SAVE_BOUNDARY_READY_NO_JAX_WRAPPER_FULL_DOMAIN_PATCH_AND_SCALAR_OLD_LIMITER"
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T11:17:24.960171+00:00",
+  "gpu_used": false,
+  "inputs": {
+    "namelist": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input",
+      "sha256": "4109f2e69988f7f263f4172a03c66f38b2da9812918ebb34cc09d6ca98cff3a5",
+      "size_bytes": 4153
+    },
+    "post_rk_truth_dir": {
+      "exists": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output",
+      "sha256": null,
+      "size_bytes": 4096
+    },
+    "source_save_hook_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.json",
+      "sha256": "0e69931e482d7f1c2987cda795c884ff51372c83d5d46cb3232f4bcdb4d755f2",
+      "size_bytes": 6005415
+    },
+    "source_save_hook_md": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.md",
+      "sha256": "4684f39de28799b2c937b50d0c35713e7899571f29c9eac30a5edd27c1871c70",
+      "size_bytes": 828
+    },
+    "source_save_patch_diff": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/source_save_boundary_hook_wrf_patch.diff",
+      "sha256": "9f194e15d6b7703c4018662d7c06230dffd5616d3403eccc313c50a3c1e282c5",
+      "size_bytes": 17713
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-source-save-boundary/sprint-contract.md",
+      "sha256": "198bab6c0eb59204b32e6a46505158e0dba61b34b8d648f23d18f862916824e1",
+      "size_bytes": 6743
+    }
+  },
+  "namelist_options": {
+    "bl_pbl_physics": [
+      5,
+      5
+    ],
+    "cu_physics": [
+      1,
+      0
+    ],
+    "diff_opt": 1,
+    "exists": true,
+    "km_opt": 4,
+    "moist_adv_opt": [
+      1,
+      1
+    ],
+    "mp_physics": [
+      8,
+      8
+    ],
+    "parent_time_step_ratio": [
+      1,
+      3
+    ],
+    "scalar_adv_opt": [
+      1,
+      1
+    ],
+    "sf_surface_physics": [
+      4,
+      4
+    ],
+    "spec_bdy_width": 5,
+    "time_step": 18
+  },
+  "no_hermes": true,
+  "operational_carry_fields": [
+    "state",
+    "t_2ave",
+    "ww",
+    "mudf",
+    "muave",
+    "muts",
+    "ph_tend",
+    "u_save",
+    "v_save",
+    "w_save",
+    "t_save",
+    "ph_save",
+    "mu_save",
+    "ww_save",
+    "rthraten",
+    "noahmp_land",
+    "noahmp_rad",
+    "cumulus_carry",
+    "noahclassic_land",
+    "noahclassic_rad"
+  ],
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_sources.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_sources.md"
+  },
+  "required_dry_physics_tendency_fields": [
+    "ru_tendf",
+    "rv_tendf",
+    "rw_tendf",
+    "ph_tendf",
+    "t_tendf",
+    "mu_tendf",
+    "h_diabatic",
+    "u_save",
+    "v_save",
+    "w_save",
+    "ph_save",
+    "t_save"
+  ],
+  "schema": "wrfgpu2.v014.same_input_single_rk_parity_sources.v1",
+  "source_contract": {
+    "classes": {
+      "DryPhysicsTendencies": {
+        "class": "DryPhysicsTendencies",
+        "fields": [
+          "ru_tendf",
+          "rv_tendf",
+          "rw_tendf",
+          "ph_tendf",
+          "t_tendf",
+          "mu_tendf",
+          "h_diabatic",
+          "u_save",
+          "v_save",
+          "w_save",
+          "ph_save",
+          "t_save"
+        ],
+        "line_end": 124,
+        "line_start": 103,
+        "module": "src/gpuwrf/dynamics/core/rk_addtend_dry.py"
+      },
+      "OperationalCarry": {
+        "class": "OperationalCarry",
+        "fields": [
+          "state",
+          "t_2ave",
+          "ww",
+          "mudf",
+          "muave",
+          "muts",
+          "ph_tend",
+          "u_save",
+          "v_save",
+          "w_save",
+          "t_save",
+          "ph_save",
+          "mu_save",
+          "ww_save",
+          "rthraten",
+          "noahmp_land",
+          "noahmp_rad",
+          "cumulus_carry",
+          "noahclassic_land",
+          "noahclassic_rad"
+        ],
+        "line_end": 108,
+        "line_start": 32,
+        "module": "src/gpuwrf/runtime/operational_state.py"
+      },
+      "State": {
+        "class": "State",
+        "line_end": 700,
+        "line_start": 365,
+        "module": "src/gpuwrf/contracts/state.py",
+        "slots": [
+          "u",
+          "v",
+          "w",
+          "theta",
+          "qv",
+          "p",
+          "ph",
+          "mu",
+          "p_total",
+          "p_perturbation",
+          "ph_total",
+          "ph_perturbation",
+          "mu_total",
+          "mu_perturbation",
+          "qc",
+          "qr",
+          "qi",
+          "qs",
+          "qg",
+          "Ni",
+          "Nr",
+          "Ns",
+          "Ng",
+          "qke",
+          "ustar",
+          "theta_flux",
+          "qv_flux",
+          "tau_u",
+          "tau_v",
+          "rhosfc",
+          "fltv",
+          "t_skin",
+          "soil_moisture",
+          "xland",
+          "lakemask",
+          "mavail",
+          "roughness_m",
+          "rain_acc",
+          "snow_acc",
+          "graupel_acc",
+          "ice_acc",
+          "u_bdy",
+          "v_bdy",
+          "theta_bdy",
+          "qv_bdy",
+          "ph_bdy",
+          "mu_bdy",
+          "w_bdy",
+          "p_bdy",
+          "pb_bdy",
+          "phb_bdy",
+          "mub_bdy",
+          "lu_index",
+          "Nc",
+          "Nn",
+          "rainc_acc"
+        ]
+      },
+      "Tendencies": {
+        "class": "Tendencies",
+        "line_end": 361,
+        "line_start": 306,
+        "module": "src/gpuwrf/contracts/state.py",
+        "slots": [
+          "u",
+          "v",
+          "w",
+          "theta",
+          "qv",
+          "p",
+          "ph",
+          "mu"
+        ]
+      }
+    },
+    "entry_point": {
+      "module": "src/gpuwrf/runtime/operational_mode.py",
+      "name": "_rk_scan_step_with_pre_halo_capture"
+    },
+    "files": {
+      "operational_mode_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
+        "size_bytes": 175388
+      },
+      "operational_state_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+        "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
+        "size_bytes": 8390
+      },
+      "rk_addtend_dry_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+        "sha256": "2152716c17ffd78d5521e4674b280b18751c03f7440e74385122d6ade74453e7",
+        "size_bytes": 24911
+      },
+      "state_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
+        "size_bytes": 25734
+      }
+    }
+  },
+  "target": {
+    "domain": "d02",
+    "fields": [
+      "T",
+      "P",
+      "PB",
+      "PH",
+      "PHB",
+      "MU",
+      "MUB",
+      "U",
+      "V",
+      "W"
+    ],
+    "wrf_step": 6000
+  },
+  "verdict": "SOURCE_SAVE_BOUNDARY_READY_NO_JAX_WRAPPER_FULL_DOMAIN_PATCH_AND_SCALAR_OLD_LIMITER"
+}

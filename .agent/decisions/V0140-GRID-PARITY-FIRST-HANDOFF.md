@@ -68,6 +68,19 @@ current-step source/save leaves exist and either preserve the step-entry native
 state or move the whole comparison boundary consistently. No production
 `src/gpuwrf/**` edits are authorized.
 
+Update 2026-06-09 12:15 WEST: source/save-boundary sprint completed. Final
+verdict:
+`SOURCE_SAVE_BOUNDARY_READY_NO_JAX_WRAPPER_FULL_DOMAIN_PATCH_AND_SCALAR_OLD_LIMITER`.
+WRF now emits the current-step dry source/save leaves at a valid boundary after
+`first_rk_step_part1/part2` and `rk_tendency`, before dry/acoustic mutation.
+Native dry state preservation versus the full pre-RK savepoint is exact on
+overlap, worst max abs `0.0`. The strict JAX comparison still did not run. The
+remaining blocker is proof construction: full-domain same-boundary
+carry/boundary leaves, full-domain/full-vertical truth, a proof-only wrapper
+into `_rk_scan_step_with_pre_halo_capture`, and `scalar_old`/old-field handling.
+The next sprint should not edit dycore broadly; it should build that wrapper and
+truth surface or name the next exact blocker.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
