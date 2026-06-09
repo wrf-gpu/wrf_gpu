@@ -1,6 +1,6 @@
 # Review: V0.14 Step-1 T/P Operator Localization
 
-Verdict: `STEP1_TP_LOCALIZED_RK_STAGE_ENTRY_STATE_AFTER_FIRST_RK_PARTS_RK1_T_STATE`.
+Verdict: `STEP1_TP_LOCALIZED_RK_STAGE_ENTRY_STATE_AFTER_FIRST_RK_PARTS_RK1_P_STATE`.
 
 objective: localize the remaining Step-1 strict same-input T/P divergence after live-nest base initialization closure.
 
@@ -30,4 +30,4 @@ unresolved risks:
 - Only two early WRF substage boundaries were emitted; if this boundary is fixed and residuals remain, acoustic/pre-finish substep truth is the next surface.
 - The proof-local CPU loader still mirrors production live-nest init because build_replay_case is GPU-only at State.zeros.
 
-next decision: Resolve the WRF/JAX RK1 stage-entry state mismatch after WRF first_rk_step_part1/part2 and before JAX small_step_prep, starting with field T_STATE; do not continue acoustic debugging yet.
+next decision: Resolve the WRF/JAX RK1 stage-entry state mismatch after WRF first_rk_step_part1/part2 and before JAX small_step_prep, starting with field P_STATE; do not continue acoustic debugging yet.

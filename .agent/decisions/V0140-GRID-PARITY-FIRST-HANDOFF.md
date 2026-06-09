@@ -1515,6 +1515,56 @@ Memory/FP32 handoff:
 - Long validation, Switzerland, and TOST remain paused until grid parity and
   memory branch interactions are reviewed.
 
+## Current Manager Update 2026-06-09 23:05 WEST
+
+The manager reran the focused Step-1 RK1 substage comparator on the committed
+Mythos-init branch:
+
+- Proof:
+  `proofs/v014/step1_t_p_operator_localization.{py,json,md}`.
+- Review:
+  `.agent/reviews/2026-06-09-v014-step1-t-p-operator-localization.md`.
+- Validation:
+  CPU-only rerun, JSON validation, `git diff --check` for proof artifacts.
+- Verdict changed from stale pre-Mythos
+  `...RK1_T_STATE` to
+  `STEP1_TP_LOCALIZED_RK_STAGE_ENTRY_STATE_AFTER_FIRST_RK_PARTS_RK1_P_STATE`.
+
+Meaning:
+
+- The previous `T_STATE` frontier was partly stale because it was measured
+  before the init/start-domain patch.
+- With init now closed, the first strict substage mismatch is still `T_STATE`,
+  but the first **material** T/P-family mismatch is now `P_STATE` at
+  `after_rk_addtend_before_small_step_prep`, RK1.
+- Top material residuals at that same boundary are tendency-family:
+  `PH_TEND max_abs=794096.1875`, `RW_TEND max_abs=131390.765625`,
+  `PH_TENDF max_abs=27082.453125`.
+- RK1 `small_step_prep` work arrays still match for `T_WORK=0.0` and
+  `P_WORK=0.0`, so the next proof target remains before small-step prep, not
+  inside acoustic substeps.
+- Final strict Step-1 comparison remains divergent but improved versus the
+  stale pre-Mythos base: top `P max_abs=975.1236470550566`,
+  `PH=67.35257977855315`, `MU=14.123722376832347`,
+  `W=2.6401070783205864`.
+
+Next active grid-parity sprint:
+
+- `.agent/sprints/2026-06-09-v014-step1-rk1-p-state-source-split`.
+- Objective: split WRF/JAX RK1 stage-entry construction after WRF
+  `first_rk_step_part1/part2` and before JAX `small_step_prep`, starting with
+  `P_STATE` and the huge `PH/RW` tendency-family residuals.
+- Do not continue acoustic-substep debugging until this earlier boundary is
+  closed.
+
+Parallel status:
+
+- Mythos is active in tmux `0:1` on the isolated memory/FP32 lane. It created or
+  is creating `.codex/worktrees/mythos-memory-v014` and must not edit the main
+  worktree.
+- TOST, Switzerland, long GPU validation, and direct merge of Mythos work remain
+  paused until manager review.
+
 ## Current Manager Update 2026-06-09 21:35 WEST
 
 The base-state boundary sprint is closed locally and ready to commit:
