@@ -10,7 +10,7 @@
     "CUDA_VISIBLE_DEVICES": "",
     "JAX_PLATFORMS": "cpu"
   },
-  "generated_utc": "2026-06-09T00:07:46.209646+00:00",
+  "generated_utc": "2026-06-09T00:10:37.050482+00:00",
   "inputs": {
     "cpu_wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
     "domain": "d02",

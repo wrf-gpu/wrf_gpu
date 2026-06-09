@@ -298,7 +298,7 @@ Wave deliverables are expected under `proofs/v014/` and
   indices against CPU h10 wrfout, then emit the first routine-boundary
   source-term layer only if the marker is green.
 
-## Active Wave 5
+## Completed Wave 5
 
 - `019ea9ad-aa61-7ab0-b3af-6b4734d886c0` (`Sagan`):
   Lat/Lon writer-only payload sprint
@@ -315,22 +315,40 @@ Wave deliverables are expected under `proofs/v014/` and
   correctness fix; it removes a known writer-only comparator distraction before
   the next fresh wrfout comparison.
 
+Manager closeout 2026-06-09 01:13 WEST: Sagan completed and the sprint is
+accepted. Local commit `2b7d022c` routes host-only static lat/lon payloads
+through the daily and nested writers and keeps the synthetic fallback for callers
+without payloads. Manager validation reran:
+
+- `python -m json.tool proofs/v014/latlon_writer_payload.json`
+- `python -m py_compile src/gpuwrf/io/wrfout_writer.py src/gpuwrf/integration/daily_pipeline.py src/gpuwrf/integration/nested_pipeline.py proofs/v014/latlon_writer_payload.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src taskset -c 24-31 python proofs/v014/latlon_writer_payload.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src pytest -q tests/test_m7_netcdf_writer.py tests/test_m7_daily_pipeline.py tests/test_auxhist_stream.py tests/test_auxhist_multistream.py`
+
+Verdict: `XLAT`, `XLONG`, `XLAT_U`, `XLONG_U`, `XLAT_V`, and `XLONG_V`
+are exact against the GPU-native `wrfinput_d02` payload
+(`rmse=max_abs=0.0`); the listed pytest set passed `26 passed, 1 skipped`.
+This is a writer-only cleanup and does not change the dynamic divergence root
+cause queue.
+
 ## Next Manager Actions
 
-1. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
+1. Let the active WRF same-state marker run reach h10 and validate its proof
+   object before launching dynamic source changes.
+2. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
    cell/level manifest plus Sartre's WRF savepoint path. Ampere did not find a
    runtime base-state blocker; proceed with documented `PHB/HGT/XLAT/XLONG`
    exclusions and treat `PB/MUB` as dynamic symptoms.
-4. Keep `wrfout_writer.py`, runtime dycore, pressure-gradient, acoustic,
-   radiation, and surface-layer code read-only unless the static/base parity
-   proof isolates their ownership.
-5. Launch source-changing dynamic fixes only after a same-state/term proof
+3. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
+   surface-layer code read-only until the same-state/term proof isolates their
+   ownership.
+4. Launch source-changing dynamic fixes only after a same-state/term proof
    names the first failing operator or cadence path.
-6. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
+5. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
    failed GPT attempts on the same static/base or tendency root-cause problem.
-7. Keep GPU time for short targeted probes only; no powered TOST, no Switzerland
-   equivalence, no FP32 source landing until the static/base gate is green or
-   explicitly explained.
+6. Keep GPU time for short targeted probes only; no powered TOST, no
+   Switzerland equivalence, no FP32 source landing until the dynamic grid
+   divergence is named, fixed, or explicitly bounded.
 
 ## Non-Goals Until Grid Parity Moves
 
