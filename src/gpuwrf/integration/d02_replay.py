@@ -1100,6 +1100,142 @@ def _wrf_live_nest_transient_adjust_mub(
     return save_mub, transient_mub, meta
 
 
+def _wrf_use_theta_m(run: Gen2Run, domain: str) -> int:
+    """Resolve WRF ``use_theta_m`` for ``domain`` (WRF default ``1``).
+
+    Prefers the authoritative ``USE_THETA_M`` global attribute on
+    ``wrfinput_<domain>`` (the file the live-nest child IC is read from), then the
+    ``dynamics`` namelist scalar, then the WRF default of ``1``.  This decides
+    whether the live-nest child temperature is the moist potential temperature
+    ``theta_m`` (``dyn_em/module_initialize_real.F:4918-4928``).
+    """
+
+    try:
+        from netCDF4 import Dataset  # noqa: PLC0415
+
+        with Dataset(run.wrfinput_file(domain), "r") as dataset:
+            if hasattr(dataset, "USE_THETA_M"):
+                value = getattr(dataset, "USE_THETA_M")
+                return int(value.item() if hasattr(value, "item") else value)
+    except Exception:
+        pass
+    raw = run.namelist.get("dynamics", {}).get("use_theta_m")
+    if isinstance(raw, (list, tuple)):
+        raw = raw[0] if raw else None
+    if raw is not None:
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            pass
+    return 1
+
+
+# WRF adjust_tempqv constants (dyn_em/nest_init_utils.F::adjust_tempqv).
+_ADJ_P0_PA = 1.0e5            # reference pressure for the Exner factor
+_ADJ_RCP = 2.0 / 7.0         # R_d/c_p for dry air (kappa)
+_ADJ_T_FREEZE_C = 273.15     # K -> C offset
+_ADJ_ES_A = 610.78           # Tetens saturation-vapor-pressure coefficients
+_ADJ_ES_B = 17.0809
+_ADJ_ES_C = 234.175
+_ADJ_EPS = 0.622             # R_d/R_v mixing-ratio factor
+_ADJ_HYDRO_COEF = -191.86e-3  # g/(c_p) hydrostatic theta increment coefficient
+
+
+def _wrf_live_nest_adjust_tempqv(
+    *,
+    theta: Any,
+    qv: Any,
+    p_perturbation: Any,
+    save_mub: Any,
+    transient_mub: Any,
+    metrics: DycoreMetrics,
+    use_theta_m: int,
+) -> tuple[jax.Array, jax.Array, dict[str, Any]]:
+    """WRF live-nest child temperature/moisture adjustment for blended base mass.
+
+    Transcribes ``share/mediation_integrate.F`` ``med_nest_initial`` calling
+    ``dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)`` after
+    ``blend_terrain``, with the ``dyn_em/module_initialize_real.F:4918-4928``
+    dry->moist ``theta_m`` conversion applied first when ``use_theta_m == 1``.
+
+    ``theta`` is the loaded FULL potential temperature (WRF ``T`` + ``t0``);
+    ``save_mub`` is the pre-blend child input column mass (``nest%mub_save``);
+    ``transient_mub`` is the post-blend current column mass
+    (:func:`_wrf_live_nest_transient_adjust_mub`).  The perturbation pressure
+    ``p_perturbation`` is unchanged by WRF here, and the base state (``PB``/``MUB``/
+    ``PHB``) recomputed by ``start_domain`` is intentionally untouched.
+
+    Returns ``(theta_full_out, qv_out, meta)``: the adjusted FULL potential
+    temperature (still moist when ``use_theta_m == 1``) and the RH-conserving
+    adjusted ``QVAPOR``, both cast back to the input dtypes.  Initialization-only;
+    no timestep-loop transfer.
+    """
+
+    theta_dtype = jnp.asarray(theta).dtype
+    qv_dtype = jnp.asarray(qv).dtype
+    th_full = jnp.asarray(theta, dtype=jnp.float64)
+    qv_in = jnp.asarray(qv, dtype=jnp.float64)
+    pp = jnp.asarray(p_perturbation, dtype=jnp.float64)
+    save = jnp.asarray(save_mub, dtype=jnp.float64)[None, :, :]
+    cur = jnp.asarray(transient_mub, dtype=jnp.float64)[None, :, :]
+    c3 = jnp.asarray(metrics.c3h, dtype=jnp.float64)[:, None, None]
+    c4 = jnp.asarray(metrics.c4h, dtype=jnp.float64)[:, None, None]
+    p_top = jnp.reshape(jnp.asarray(metrics.p_top, dtype=jnp.float64), ())
+
+    t0 = jnp.asarray(P0_THETA_OFFSET_K, dtype=jnp.float64)
+    one = jnp.asarray(1.0, dtype=jnp.float64)
+    rv_over_rd = jnp.asarray(_RVOVRD, dtype=jnp.float64)
+    moist = int(use_theta_m) == 1
+
+    # module_initialize_real.F:4923-4928: dry -> moist theta_m before halos.
+    th_pert = th_full - t0
+    if moist:
+        th_pert = (th_pert + t0) * (one + rv_over_rd * qv_in) - t0
+
+    # nest_init_utils.F::adjust_tempqv: RH-conserving temp/qv adjust from the
+    # pre-blend base pressure (save_mub) to the post-blend base pressure (mub).
+    p_old = c4 + c3 * save + p_top + pp
+    p_new = c4 + c3 * cur + p_top + pp
+    exner_old = (p_old / _ADJ_P0_PA) ** _ADJ_RCP
+    if moist:
+        tc = (th_pert + t0) * exner_old / (one + rv_over_rd * qv_in) - _ADJ_T_FREEZE_C
+        thloc = (th_pert + t0) / (one + rv_over_rd * qv_in)
+    else:
+        tc = (th_pert + t0) * exner_old - _ADJ_T_FREEZE_C
+        thloc = th_pert + t0
+    es = _ADJ_ES_A * jnp.exp(_ADJ_ES_B * tc / (_ADJ_ES_C + tc))
+    e = qv_in * p_old / (_ADJ_EPS + qv_in)
+    rh = e / es
+
+    dth1 = _ADJ_HYDRO_COEF * thloc / (p_new + p_old) * (p_new - p_old)
+    dth = _ADJ_HYDRO_COEF * (thloc + jnp.asarray(0.5, dtype=jnp.float64) * dth1) / (p_new + p_old) * (p_new - p_old)
+    if moist:
+        th_pert_out = (thloc + dth) * (one + rv_over_rd * qv_in) - t0
+    else:
+        th_pert_out = thloc + dth - t0
+
+    tc_new = (thloc + dth) * (p_new / _ADJ_P0_PA) ** _ADJ_RCP - _ADJ_T_FREEZE_C
+    es_new = _ADJ_ES_A * jnp.exp(_ADJ_ES_B * tc_new / (_ADJ_ES_C + tc_new))
+    e_new = rh * es_new
+    qv_out = _ADJ_EPS * e_new / (p_new - e_new)
+
+    theta_full_out = (th_pert_out + t0).astype(theta_dtype)
+    qv_out_cast = qv_out.astype(qv_dtype)
+    meta = {
+        "use_theta_m": int(use_theta_m),
+        "theta_m_conversion_applied": bool(moist),
+        "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+        "perturbation_pressure_unchanged": True,
+        "final_base_state_unchanged": True,
+        "wrf_reference": (
+            "dyn_em/module_initialize_real.F:4918-4928 theta_m; "
+            "dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+        ),
+        "timestep_loop_transfer": False,
+    }
+    return theta_full_out, qv_out_cast, meta
+
+
 # WRF MYNN cold-start TKE constants (phys/module_bl_mynnedmf.F).
 _MYNN_B1 = 24.0          # module_bl_mynnedmf.F:282  b1 = 24.0
 _MYNN_PMZ = 1.0          # phi_m-zeta at z1, =1 on cold start (mym_initialize)
@@ -1509,8 +1645,13 @@ def build_replay_case(
     mu_perturbation = _load(run, domain, "MU", 0)
     mub = _load(run, domain, "MUB", 0)
     theta = _load(run, domain, "T", 0) + P0_THETA_OFFSET_K
+    qv_initial = _load(run, domain, "QVAPOR", 0)
     live_nest_base_meta: dict[str, Any] = {"enabled": False}
     if live_nest_parent is not None:
+        # ``nest%mub_save`` is the pre-blend child input column mass; capture it
+        # before ``start_domain`` recomputes the final base ``MUB`` from blended
+        # terrain (``_apply_live_nest_base_init`` overwrites ``mub`` below).
+        child_input_mub = mub
         grid, metrics, pb, phb, mub, live_nest_base_meta = _apply_live_nest_base_init(
             run,
             domain=domain,
@@ -1519,6 +1660,37 @@ def build_replay_case(
             parent_case=live_nest_parent,
         )
         _debug(f"live-nest base init complete parent={live_nest_base_meta.get('parent_domain')} child={domain}")
+        # WRF ``med_nest_initial`` adjusts the child temperature/moisture to the
+        # transient post-``blend_terrain`` base mass via ``adjust_tempqv`` (with
+        # the dry->moist ``theta_m`` conversion first when ``use_theta_m=1``). The
+        # final ``start_domain`` base state above is intentionally left unchanged.
+        parent_mub = live_nest_parent.base_state.mub
+        save_mub_arr, transient_mub_arr, transient_mub_meta = _wrf_live_nest_transient_adjust_mub(
+            run,
+            domain=domain,
+            grid=grid,
+            parent_mub=parent_mub,
+            child_mub=child_input_mub,
+        )
+        use_theta_m = _wrf_use_theta_m(run, domain)
+        theta, qv_initial, theta_qv_adjust_meta = _wrf_live_nest_adjust_tempqv(
+            theta=theta,
+            qv=qv_initial,
+            p_perturbation=p_perturbation,
+            save_mub=save_mub_arr,
+            transient_mub=transient_mub_arr,
+            metrics=metrics,
+            use_theta_m=use_theta_m,
+        )
+        live_nest_base_meta = {
+            **live_nest_base_meta,
+            "transient_adjust_mub": transient_mub_meta,
+            "theta_qv_adjust": theta_qv_adjust_meta,
+        }
+        _debug(
+            f"live-nest theta_m/adjust_tempqv applied use_theta_m={use_theta_m} "
+            f"theta_max={float(jnp.max(theta)):.4f}"
+        )
     # WRF-faithful base potential temperature ``t0 + t_init``, recovered by
     # inverting the loaded discrete base state (PB/PHB/MUB) so the dycore's
     # recomputed base inverse density ``alb`` matches the discrete ``alb`` the
@@ -1546,7 +1718,7 @@ def build_replay_case(
         v=_load(run, domain, "V", 0),
         w=_load(run, domain, "W", 0),
         theta=theta,
-        qv=_load(run, domain, "QVAPOR", 0),
+        qv=qv_initial,
         p_total=pb + p_perturbation,
         p_perturbation=p_perturbation,
         ph_total=phb + ph_perturbation,

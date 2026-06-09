@@ -747,7 +747,7 @@
         "source": "live parent d01 state over live-nest-initialized d02 state"
       },
       "build_replay_case_cpu_blocker": "State.zeros requires a GPU device; proof uses direct constructors",
-      "live_child_construction": "proof-local direct constructor plus production gpuwrf.integration.d02_replay._apply_live_nest_base_init",
+      "live_child_construction": "proof-local direct constructor plus production gpuwrf.integration.d02_replay._apply_live_nest_base_init + _wrf_live_nest_transient_adjust_mub + _wrf_live_nest_adjust_tempqv",
       "live_nest_base_init": {
         "blend_width": 5,
         "child_domain": "d02",
@@ -783,7 +783,7 @@
     },
     "per_field_metrics": {
       "MU": {
-        "bias": -0.025278900796567527,
+        "bias": -0.019220372138149762,
         "count": 10494,
         "first_mismatch_fortran": {
           "i": 1,
@@ -793,22 +793,22 @@
           0,
           0
         ],
-        "max_abs": 36.543234083976586,
+        "max_abs": 14.125275642998986,
         "nonfinite_diff_count": 0,
-        "p95": 3.1264491469750517,
-        "p99": 6.846304472289018,
-        "rmse": 1.6018856311784238,
+        "p95": 1.7988863076760275,
+        "p99": 3.8324571349900403,
+        "rmse": 0.9041845253003058,
         "shape": [
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 156,
-          "j": 55
+          "i": 158,
+          "j": 58
         },
         "worst_mismatch_index": [
-          54,
-          155
+          57,
+          157
         ]
       },
       "MUB": {
@@ -841,7 +841,7 @@
         ]
       },
       "P": {
-        "bias": -192.34679144277268,
+        "bias": 51.111903017660055,
         "count": 461736,
         "first_mismatch_fortran": {
           "i": 1,
@@ -853,11 +853,11 @@
           0,
           0
         ],
-        "max_abs": 1561.2503728885986,
+        "max_abs": 974.9820434775493,
         "nonfinite_diff_count": 0,
-        "p95": 625.7741479511847,
-        "p99": 799.9634244694986,
-        "rmse": 305.9413510899027,
+        "p95": 326.6302086520588,
+        "p99": 440.5376458747496,
+        "rmse": 135.98147360593399,
         "shape": [
           44,
           66,
@@ -865,12 +865,12 @@
         ],
         "worst_mismatch_fortran": {
           "i": 1,
-          "j": 29,
+          "j": 30,
           "k": 1
         },
         "worst_mismatch_index": [
           0,
-          28,
+          29,
           0
         ]
       },
@@ -909,7 +909,7 @@
         ]
       },
       "PH": {
-        "bias": -11.004826214149018,
+        "bias": 7.904431250159732,
         "count": 472230,
         "first_mismatch_fortran": {
           "i": 1,
@@ -921,25 +921,25 @@
           0,
           0
         ],
-        "max_abs": 77.6192303625287,
+        "max_abs": 67.3623167023926,
         "nonfinite_diff_count": 0,
-        "p95": 49.93867847492128,
-        "p99": 59.441216795715754,
-        "rmse": 19.320745387744648,
+        "p95": 44.72887849524055,
+        "p99": 53.33582603590116,
+        "rmse": 17.41457632317551,
         "shape": [
           45,
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 23,
-          "j": 52,
+          "i": 20,
+          "j": 47,
           "kstag": 11
         },
         "worst_mismatch_index": [
           10,
-          51,
-          22
+          46,
+          19
         ]
       },
       "PHB": {
@@ -1107,7 +1107,7 @@
         ]
       },
       "QVAPOR": {
-        "bias": 8.003572624136406e-08,
+        "bias": -6.696463443895479e-08,
         "count": 461736,
         "first_mismatch_fortran": {
           "i": 1,
@@ -1119,29 +1119,29 @@
           0,
           0
         ],
-        "max_abs": 0.0005934704095125198,
+        "max_abs": 0.000181070063263177,
         "nonfinite_diff_count": 0,
-        "p95": 2.2501335479319638e-06,
-        "p99": 2.02049151994293e-05,
-        "rmse": 9.870726838391995e-06,
+        "p95": 1.7126487037165438e-06,
+        "p99": 9.712518658492844e-06,
+        "rmse": 3.2924861300033162e-06,
         "shape": [
           44,
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 156,
-          "j": 55,
-          "k": 1
+          "i": 98,
+          "j": 20,
+          "k": 2
         },
         "worst_mismatch_index": [
-          0,
-          54,
-          155
+          1,
+          19,
+          97
         ]
       },
       "T": {
-        "bias": -1.044146156423635,
+        "bias": -7.639212932361404e-06,
         "count": 461736,
         "first_mismatch_fortran": {
           "i": 1,
@@ -1153,29 +1153,29 @@
           0,
           0
         ],
-        "max_abs": 5.483713205511606,
+        "max_abs": 0.15948589853104567,
         "nonfinite_diff_count": 0,
-        "p95": 4.533809511884513,
-        "p99": 4.918935414472891,
-        "rmse": 1.9175729083315645,
+        "p95": 0.0020474327568393846,
+        "p99": 0.009069835832951869,
+        "rmse": 0.0022423526798351734,
         "shape": [
           44,
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 28,
-          "j": 54,
-          "k": 1
+          "i": 159,
+          "j": 59,
+          "k": 9
         },
         "worst_mismatch_index": [
-          0,
-          53,
-          27
+          8,
+          58,
+          158
         ]
       },
       "U": {
-        "bias": -0.0009601405383201629,
+        "bias": 0.0003927418205324313,
         "count": 464640,
         "first_mismatch_fortran": {
           "i_xstag": 1,
@@ -1187,11 +1187,11 @@
           0,
           0
         ],
-        "max_abs": 0.8832666192416931,
+        "max_abs": 0.7835467705023085,
         "nonfinite_diff_count": 0,
-        "p95": 0.026320805777867527,
-        "p99": 0.10910070997967161,
-        "rmse": 0.025537447763305653,
+        "p95": 0.019235272594340408,
+        "p99": 0.08499707631476305,
+        "rmse": 0.02056418486197857,
         "shape": [
           44,
           66,
@@ -1209,7 +1209,7 @@
         ]
       },
       "V": {
-        "bias": 0.001055669627892776,
+        "bias": 0.00025580020690027993,
         "count": 468732,
         "first_mismatch_fortran": {
           "i": 1,
@@ -1221,29 +1221,29 @@
           0,
           0
         ],
-        "max_abs": 0.5774764749956539,
+        "max_abs": 0.6461783471280546,
         "nonfinite_diff_count": 0,
-        "p95": 0.025753973791993758,
-        "p99": 0.15700051430492906,
-        "rmse": 0.031174658203372372,
+        "p95": 0.01978144045518135,
+        "p99": 0.12280853824103065,
+        "rmse": 0.026235940758993572,
         "shape": [
           44,
           67,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 62,
-          "j_ystag": 33,
+          "i": 23,
+          "j_ystag": 51,
           "k": 1
         },
         "worst_mismatch_index": [
           0,
-          32,
-          61
+          50,
+          22
         ]
       },
       "W": {
-        "bias": -0.2909661004251431,
+        "bias": 0.1982071689464284,
         "count": 472230,
         "first_mismatch_fortran": {
           "i": 3,
@@ -1255,32 +1255,32 @@
           0,
           2
         ],
-        "max_abs": 3.1874938762548055,
+        "max_abs": 2.640715693903735,
         "nonfinite_diff_count": 0,
-        "p95": 1.2838225094809315,
-        "p99": 1.4825951702010514,
-        "rmse": 0.494677581885109,
+        "p95": 1.1678199817109667,
+        "p99": 1.4206160273714465,
+        "rmse": 0.4497356728466974,
         "shape": [
           45,
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 80,
+          "i": 78,
           "j": 66,
           "kstag": 9
         },
         "worst_mismatch_index": [
           8,
           65,
-          79
+          77
         ]
       }
     },
     "radiation_cadence_steps": 300,
     "ranked_residuals": [
       {
-        "bias": -192.34679144277268,
+        "bias": 51.111903017660055,
         "count": 461736,
         "field": "P",
         "first_mismatch_fortran": {
@@ -1293,11 +1293,11 @@
           0,
           0
         ],
-        "max_abs": 1561.2503728885986,
+        "max_abs": 974.9820434775493,
         "nonfinite_diff_count": 0,
-        "p95": 625.7741479511847,
-        "p99": 799.9634244694986,
-        "rmse": 305.9413510899027,
+        "p95": 326.6302086520588,
+        "p99": 440.5376458747496,
+        "rmse": 135.98147360593399,
         "shape": [
           44,
           66,
@@ -1305,17 +1305,17 @@
         ],
         "worst_mismatch_fortran": {
           "i": 1,
-          "j": 29,
+          "j": 30,
           "k": 1
         },
         "worst_mismatch_index": [
           0,
-          28,
+          29,
           0
         ]
       },
       {
-        "bias": -11.004826214149018,
+        "bias": 7.904431250159732,
         "count": 472230,
         "field": "PH",
         "first_mismatch_fortran": {
@@ -1328,29 +1328,29 @@
           0,
           0
         ],
-        "max_abs": 77.6192303625287,
+        "max_abs": 67.3623167023926,
         "nonfinite_diff_count": 0,
-        "p95": 49.93867847492128,
-        "p99": 59.441216795715754,
-        "rmse": 19.320745387744648,
+        "p95": 44.72887849524055,
+        "p99": 53.33582603590116,
+        "rmse": 17.41457632317551,
         "shape": [
           45,
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 23,
-          "j": 52,
+          "i": 20,
+          "j": 47,
           "kstag": 11
         },
         "worst_mismatch_index": [
           10,
-          51,
-          22
+          46,
+          19
         ]
       },
       {
-        "bias": -0.025278900796567527,
+        "bias": -0.019220372138149762,
         "count": 10494,
         "field": "MU",
         "first_mismatch_fortran": {
@@ -1361,61 +1361,26 @@
           0,
           0
         ],
-        "max_abs": 36.543234083976586,
+        "max_abs": 14.125275642998986,
         "nonfinite_diff_count": 0,
-        "p95": 3.1264491469750517,
-        "p99": 6.846304472289018,
-        "rmse": 1.6018856311784238,
+        "p95": 1.7988863076760275,
+        "p99": 3.8324571349900403,
+        "rmse": 0.9041845253003058,
         "shape": [
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 156,
-          "j": 55
+          "i": 158,
+          "j": 58
         },
         "worst_mismatch_index": [
-          54,
-          155
+          57,
+          157
         ]
       },
       {
-        "bias": -1.044146156423635,
-        "count": 461736,
-        "field": "T",
-        "first_mismatch_fortran": {
-          "i": 1,
-          "j": 1,
-          "k": 1
-        },
-        "first_mismatch_index": [
-          0,
-          0,
-          0
-        ],
-        "max_abs": 5.483713205511606,
-        "nonfinite_diff_count": 0,
-        "p95": 4.533809511884513,
-        "p99": 4.918935414472891,
-        "rmse": 1.9175729083315645,
-        "shape": [
-          44,
-          66,
-          159
-        ],
-        "worst_mismatch_fortran": {
-          "i": 28,
-          "j": 54,
-          "k": 1
-        },
-        "worst_mismatch_index": [
-          0,
-          53,
-          27
-        ]
-      },
-      {
-        "bias": -0.2909661004251431,
+        "bias": 0.1982071689464284,
         "count": 472230,
         "field": "W",
         "first_mismatch_fortran": {
@@ -1428,29 +1393,29 @@
           0,
           2
         ],
-        "max_abs": 3.1874938762548055,
+        "max_abs": 2.640715693903735,
         "nonfinite_diff_count": 0,
-        "p95": 1.2838225094809315,
-        "p99": 1.4825951702010514,
-        "rmse": 0.494677581885109,
+        "p95": 1.1678199817109667,
+        "p99": 1.4206160273714465,
+        "rmse": 0.4497356728466974,
         "shape": [
           45,
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 80,
+          "i": 78,
           "j": 66,
           "kstag": 9
         },
         "worst_mismatch_index": [
           8,
           65,
-          79
+          77
         ]
       },
       {
-        "bias": -0.0009601405383201629,
+        "bias": 0.0003927418205324313,
         "count": 464640,
         "field": "U",
         "first_mismatch_fortran": {
@@ -1463,11 +1428,11 @@
           0,
           0
         ],
-        "max_abs": 0.8832666192416931,
+        "max_abs": 0.7835467705023085,
         "nonfinite_diff_count": 0,
-        "p95": 0.026320805777867527,
-        "p99": 0.10910070997967161,
-        "rmse": 0.025537447763305653,
+        "p95": 0.019235272594340408,
+        "p99": 0.08499707631476305,
+        "rmse": 0.02056418486197857,
         "shape": [
           44,
           66,
@@ -1485,7 +1450,7 @@
         ]
       },
       {
-        "bias": 0.001055669627892776,
+        "bias": 0.00025580020690027993,
         "count": 468732,
         "field": "V",
         "first_mismatch_fortran": {
@@ -1498,25 +1463,60 @@
           0,
           0
         ],
-        "max_abs": 0.5774764749956539,
+        "max_abs": 0.6461783471280546,
         "nonfinite_diff_count": 0,
-        "p95": 0.025753973791993758,
-        "p99": 0.15700051430492906,
-        "rmse": 0.031174658203372372,
+        "p95": 0.01978144045518135,
+        "p99": 0.12280853824103065,
+        "rmse": 0.026235940758993572,
         "shape": [
           44,
           67,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 62,
-          "j_ystag": 33,
+          "i": 23,
+          "j_ystag": 51,
           "k": 1
         },
         "worst_mismatch_index": [
           0,
-          32,
-          61
+          50,
+          22
+        ]
+      },
+      {
+        "bias": -7.639212932361404e-06,
+        "count": 461736,
+        "field": "T",
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 0.15948589853104567,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0020474327568393846,
+        "p99": 0.009069835832951869,
+        "rmse": 0.0022423526798351734,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "worst_mismatch_fortran": {
+          "i": 159,
+          "j": 59,
+          "k": 9
+        },
+        "worst_mismatch_index": [
+          8,
+          58,
+          158
         ]
       },
       {
@@ -1620,7 +1620,7 @@
         ]
       },
       {
-        "bias": 8.003572624136406e-08,
+        "bias": -6.696463443895479e-08,
         "count": 461736,
         "field": "QVAPOR",
         "first_mismatch_fortran": {
@@ -1633,25 +1633,25 @@
           0,
           0
         ],
-        "max_abs": 0.0005934704095125198,
+        "max_abs": 0.000181070063263177,
         "nonfinite_diff_count": 0,
-        "p95": 2.2501335479319638e-06,
-        "p99": 2.02049151994293e-05,
-        "rmse": 9.870726838391995e-06,
+        "p95": 1.7126487037165438e-06,
+        "p99": 9.712518658492844e-06,
+        "rmse": 3.2924861300033162e-06,
         "shape": [
           44,
           66,
           159
         ],
         "worst_mismatch_fortran": {
-          "i": 156,
-          "j": 55,
-          "k": 1
+          "i": 98,
+          "j": 20,
+          "k": 2
         },
         "worst_mismatch_index": [
-          0,
-          54,
-          155
+          1,
+          19,
+          97
         ]
       },
       {
@@ -1829,7 +1829,7 @@
     "QSNOW",
     "QGRAUP"
   ],
-  "generated_utc": "2026-06-09T12:50:31.729658+00:00",
+  "generated_utc": "2026-06-09T17:14:52.554487+00:00",
   "git_head": {
     "command": [
       "git",
@@ -1841,8 +1841,8 @@
     "cwd": "/home/enric/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
-    "stdout_tail": "1d761fe7 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 live-nest init rerun sprint\n",
-    "wall_s": 0.004057420002936851
+    "stdout_tail": "91c0647d (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open live nest theta qv wiring sprint\n",
+    "wall_s": 0.006709964000037871
   },
   "gpu_used": false,
   "initial_delta_fields": [
@@ -1884,8 +1884,8 @@
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
-      "sha256": "360eced25ef4db037913a7936ac2b2a638a568f51cf88dcdbfe39383f5b91d8c",
-      "size_bytes": 98563
+      "sha256": "f3ee90238f7b5bbb0bb4bb5575b0e5ab89aabb5fafac43d464df3736e00d74a3",
+      "size_bytes": 110124
     },
     "live_nest_base_source_fix_json": {
       "exists": true,

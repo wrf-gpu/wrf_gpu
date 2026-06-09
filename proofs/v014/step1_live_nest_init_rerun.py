@@ -402,6 +402,9 @@ def apply_live_nest_base_init(run: Any, parent: Mapping[str, Any], raw_child: Ma
     from gpuwrf.integration.d02_replay import (  # noqa: PLC0415
         _apply_live_nest_base_init,
         _wrf_base_theta_from_loaded_state,
+        _wrf_live_nest_adjust_tempqv,
+        _wrf_live_nest_transient_adjust_mub,
+        _wrf_use_theta_m,
     )
 
     parent_case = SimpleNamespace(grid=parent["grid"], metadata={"domain": "d01"})
@@ -416,7 +419,31 @@ def apply_live_nest_base_init(run: Any, parent: Mapping[str, Any], raw_child: Ma
     p_perturbation = state.p_perturbation
     ph_perturbation = state.ph_perturbation
     mu_perturbation = state.mu_perturbation
+    # Production live-nest temperature/moisture adjustment (theta_m + adjust_tempqv)
+    # against the transient post-blend base mass; mirrors build_replay_case so this
+    # proof-local constructor stays a faithful surrogate of production init.
+    child_input_mub = raw_child["base_state"].mub
+    parent_mub = parent["base_state"].mub
+    save_mub_arr, transient_mub_arr, transient_mub_meta = _wrf_live_nest_transient_adjust_mub(
+        run,
+        domain="d02",
+        grid=grid,
+        parent_mub=parent_mub,
+        child_mub=child_input_mub,
+    )
+    use_theta_m = _wrf_use_theta_m(run, "d02")
+    theta_adjusted, qv_adjusted, theta_qv_adjust_meta = _wrf_live_nest_adjust_tempqv(
+        theta=state.theta,
+        qv=state.qv,
+        p_perturbation=p_perturbation,
+        save_mub=save_mub_arr,
+        transient_mub=transient_mub_arr,
+        metrics=metrics,
+        use_theta_m=use_theta_m,
+    )
     state = state.replace(
+        theta=theta_adjusted,
+        qv=qv_adjusted,
         p_total=pb + p_perturbation,
         p_perturbation=p_perturbation,
         ph_total=phb + ph_perturbation,
@@ -439,9 +466,12 @@ def apply_live_nest_base_init(run: Any, parent: Mapping[str, Any], raw_child: Ma
         "state": state,
         "base_state": base_state,
         "live_nest_base_init": live_meta,
+        "transient_adjust_mub": transient_mub_meta,
+        "theta_qv_adjust": theta_qv_adjust_meta,
         "construction": (
             "proof-local direct constructor plus production "
-            "gpuwrf.integration.d02_replay._apply_live_nest_base_init"
+            "gpuwrf.integration.d02_replay._apply_live_nest_base_init + "
+            "_wrf_live_nest_transient_adjust_mub + _wrf_live_nest_adjust_tempqv"
         ),
     }
 

@@ -307,6 +307,20 @@ Next required sprint is a CPU-only WRF savepoint extension at
 `before_first_rk_step_part1_call` to emit `moist(i,k,j,P_QV)` as `QVAPOR`, then
 rerun the theta proof.
 
+Update 2026-06-09 18:17 WEST: step-1 live-nest theta/QV production wiring is
+closed as `STEP1_LIVE_NEST_THETA_QV_WIRING_INIT_CLOSED_NEXT_FIELD`. The
+production `build_replay_case(..., live_nest_parent=...)` path now applies WRF
+`USE_THETA_M=1` theta conversion plus `adjust_tempqv` using the transient
+post-`blend_terrain`/pre-`start_domain` `MUB` surface. The final
+post-`start_domain` BaseState is unchanged. Corrected theta max_abs vs
+same-boundary WRF pre-call truth is `5.788684885033035e-05 K`; corrected
+QVAPOR max_abs is `5.970267497393267e-08`. The Step-1 16-field comparison
+still diverges: first divergent schema field `T`, largest residual field `P`
+max_abs `974.9820434775493`, RMSE `135.98147360593399`, worst Fortran
+`i=1,j=30,k=1`, boundary band true. Next active work is Step-1 `P/PH/MU`
+boundary/operator localization. Do not resume TOST, Switzerland, FP32 source
+work, or memory follow-ups from this artifact.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
