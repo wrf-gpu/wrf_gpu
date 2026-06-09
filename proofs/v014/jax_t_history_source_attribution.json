@@ -1,0 +1,1905 @@
+{
+  "acceptance_notes": {
+    "distinguishes_T_HIST_SRC_from_T_THM": true,
+    "jax_vs_jax_self_compare": false,
+    "production_source_edited": false,
+    "retained_wrfout_used_as_verdict": false,
+    "uses_boole_same_surface_wrf_target": true,
+    "uses_produced_h10_carry_checkpoint": true
+  },
+  "best_matches": {
+    "wrf_history_T__MASS_K1_T_HIST_SRC": [
+      {
+        "candidate": "captured_pre_halo_state.theta_minus_300",
+        "max_abs": 3.3545763228707983,
+        "rmse": 1.0296598586362888,
+        "worst": {
+          "abs_diff": 3.3545763228707983,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.3545763228707983,
+          "jax_candidate": -5.813209321660452,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      {
+        "candidate": "captured_post_halo_carry.state.theta_minus_300",
+        "max_abs": 3.3545763228707983,
+        "rmse": 1.0296598586362888,
+        "worst": {
+          "abs_diff": 3.3545763228707983,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.3545763228707983,
+          "jax_candidate": -5.813209321660452,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      {
+        "candidate": "captured_final_carry.t_save_minus_300",
+        "max_abs": 3.356384688581045,
+        "rmse": 1.0300584843288976,
+        "worst": {
+          "abs_diff": 3.356384688581045,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.356384688581045,
+          "jax_candidate": -5.811400955950205,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.t_save_minus_300",
+        "max_abs": 3.3567233047927516,
+        "rmse": 1.0299191049611263,
+        "worst": {
+          "abs_diff": 3.3567233047927516,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.3567233047927516,
+          "jax_candidate": -5.811062339738498,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.state.theta_minus_300",
+        "max_abs": 3.3581935716514977,
+        "rmse": 1.03048156240767,
+        "worst": {
+          "abs_diff": 3.3581935716514977,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.3581935716514977,
+          "jax_candidate": -5.809592072879752,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      {
+        "candidate": "physics_state.theta_minus_300",
+        "max_abs": 3.361435949903637,
+        "rmse": 1.031404174605919,
+        "worst": {
+          "abs_diff": 3.361435949903637,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.361435949903637,
+          "jax_candidate": -5.806349694627613,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      {
+        "candidate": "captured_final_carry.t_2ave_minus_300",
+        "max_abs": 9.302824441859968,
+        "rmse": 8.008461406911792,
+        "worst": {
+          "abs_diff": 9.302824441859968,
+          "array_index": [
+            0,
+            12,
+            16
+          ],
+          "diff_jax_minus_wrf": 9.302824441859968,
+          "jax_candidate": -1.4858744066259533e-06,
+          "native_key": [
+            12,
+            16
+          ],
+          "wrf_truth": -9.302825927734375
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.t_2ave_minus_300",
+        "max_abs": 9.302825498847085,
+        "rmse": 8.008461468382055,
+        "worst": {
+          "abs_diff": 9.302825498847085,
+          "array_index": [
+            0,
+            12,
+            16
+          ],
+          "diff_jax_minus_wrf": 9.302825498847085,
+          "jax_candidate": -4.288872901270224e-07,
+          "native_key": [
+            12,
+            16
+          ],
+          "wrf_truth": -9.302825927734375
+        }
+      },
+      {
+        "candidate": "captured_final_carry.t_2ave_raw",
+        "max_abs": 309.30282444185997,
+        "rmse": 307.9778944455246,
+        "worst": {
+          "abs_diff": 309.30282444185997,
+          "array_index": [
+            0,
+            12,
+            16
+          ],
+          "diff_jax_minus_wrf": 309.30282444185997,
+          "jax_candidate": 299.9999985141256,
+          "native_key": [
+            12,
+            16
+          ],
+          "wrf_truth": -9.302825927734375
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.t_2ave_raw",
+        "max_abs": 309.3028254988471,
+        "rmse": 307.977894508823,
+        "worst": {
+          "abs_diff": 309.3028254988471,
+          "array_index": [
+            0,
+            12,
+            16
+          ],
+          "diff_jax_minus_wrf": 309.3028254988471,
+          "jax_candidate": 299.9999995711127,
+          "native_key": [
+            12,
+            16
+          ],
+          "wrf_truth": -9.302825927734375
+        }
+      }
+    ],
+    "wrf_thm_side__MASS_K1_T_THM": [
+      {
+        "candidate": "captured_final_carry.t_2ave_minus_300",
+        "max_abs": 3.677881697025043,
+        "rmse": 2.6121909969239896,
+        "worst": {
+          "abs_diff": 3.677881697025043,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.677881697025043,
+          "jax_candidate": -5.265865581804974e-06,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -3.677886962890625
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.t_2ave_minus_300",
+        "max_abs": 3.677882024133112,
+        "rmse": 2.6121910497910905,
+        "worst": {
+          "abs_diff": 3.677882024133112,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 3.677882024133112,
+          "jax_candidate": -4.9387575131731865e-06,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -3.677886962890625
+        }
+      },
+      {
+        "candidate": "physics_state.theta_minus_300",
+        "max_abs": 6.2164342971682345,
+        "rmse": 4.638106603411917,
+        "worst": {
+          "abs_diff": 6.2164342971682345,
+          "array_index": [
+            0,
+            8,
+            19
+          ],
+          "diff_jax_minus_wrf": -6.2164342971682345,
+          "jax_candidate": -7.9037206741213595,
+          "native_key": [
+            8,
+            19
+          ],
+          "wrf_truth": -1.687286376953125
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.state.theta_minus_300",
+        "max_abs": 6.219254650376172,
+        "rmse": 4.638767406133128,
+        "worst": {
+          "abs_diff": 6.219254650376172,
+          "array_index": [
+            0,
+            8,
+            19
+          ],
+          "diff_jax_minus_wrf": -6.219254650376172,
+          "jax_candidate": -7.906541027329297,
+          "native_key": [
+            8,
+            19
+          ],
+          "wrf_truth": -1.687286376953125
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.t_save_minus_300",
+        "max_abs": 6.220292179567309,
+        "rmse": 4.639179299294447,
+        "worst": {
+          "abs_diff": 6.220292179567309,
+          "array_index": [
+            0,
+            8,
+            19
+          ],
+          "diff_jax_minus_wrf": -6.220292179567309,
+          "jax_candidate": -7.907578556520434,
+          "native_key": [
+            8,
+            19
+          ],
+          "wrf_truth": -1.687286376953125
+        }
+      },
+      {
+        "candidate": "captured_final_carry.t_save_minus_300",
+        "max_abs": 6.220748842436137,
+        "rmse": 4.639096819300894,
+        "worst": {
+          "abs_diff": 6.220748842436137,
+          "array_index": [
+            0,
+            8,
+            19
+          ],
+          "diff_jax_minus_wrf": -6.220748842436137,
+          "jax_candidate": -7.908035219389262,
+          "native_key": [
+            8,
+            19
+          ],
+          "wrf_truth": -1.687286376953125
+        }
+      },
+      {
+        "candidate": "captured_pre_halo_state.theta_minus_300",
+        "max_abs": 6.222218196017252,
+        "rmse": 4.639409384117662,
+        "worst": {
+          "abs_diff": 6.222218196017252,
+          "array_index": [
+            0,
+            8,
+            19
+          ],
+          "diff_jax_minus_wrf": -6.222218196017252,
+          "jax_candidate": -7.909504572970377,
+          "native_key": [
+            8,
+            19
+          ],
+          "wrf_truth": -1.687286376953125
+        }
+      },
+      {
+        "candidate": "captured_post_halo_carry.state.theta_minus_300",
+        "max_abs": 6.222218196017252,
+        "rmse": 4.639409384117662,
+        "worst": {
+          "abs_diff": 6.222218196017252,
+          "array_index": [
+            0,
+            8,
+            19
+          ],
+          "diff_jax_minus_wrf": -6.222218196017252,
+          "jax_candidate": -7.909504572970377,
+          "native_key": [
+            8,
+            19
+          ],
+          "wrf_truth": -1.687286376953125
+        }
+      },
+      {
+        "candidate": "captured_final_carry.t_2ave_raw",
+        "max_abs": 303.67788169702504,
+        "rmse": 302.5310179245645,
+        "worst": {
+          "abs_diff": 303.67788169702504,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 303.67788169702504,
+          "jax_candidate": 299.9999947341344,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -3.677886962890625
+        }
+      },
+      {
+        "candidate": "checkpoint_prestep_carry.t_2ave_raw",
+        "max_abs": 303.6778820241331,
+        "rmse": 302.5310179878318,
+        "worst": {
+          "abs_diff": 303.6778820241331,
+          "array_index": [
+            0,
+            12,
+            17
+          ],
+          "diff_jax_minus_wrf": 303.6778820241331,
+          "jax_candidate": 299.9999950612425,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -3.677886962890625
+        }
+      }
+    ]
+  },
+  "canonical_h10_context": {
+    "comparison_run": true,
+    "first_mismatch": {
+      "field": "T",
+      "max_abs": 3.3545763228707983,
+      "rmse": 1.0296598586362888,
+      "tolerance": 2e-06,
+      "worst": {
+        "abs_diff": 3.3545763228707983,
+        "diff_jax_minus_wrf": 3.3545763228707983,
+        "jax_candidate": -5.813209321660452,
+        "native_key": [
+          12,
+          17
+        ],
+        "wrf_truth": -9.16778564453125
+      }
+    },
+    "verdict": "JAX_MISMATCH_T"
+  },
+  "checkpoint_identity": {
+    "actual_checkpoint": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218
+    },
+    "matches_canonical_h10_usable_candidate": {
+      "path_match": true,
+      "record_present": true,
+      "recorded_path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "recorded_sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "recorded_size_bytes": 163257218,
+      "recorded_step_index": 5999,
+      "sha256_match": true,
+      "size_match": true
+    },
+    "matches_producer_checkpoint_record": {
+      "path_match": true,
+      "record_present": true,
+      "recorded_path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "recorded_sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "recorded_size_bytes": 163257218,
+      "recorded_step_index": 5999,
+      "sha256_match": true,
+      "size_match": true
+    },
+    "same_artifact_as_canonical_h10_compared": true,
+    "same_artifact_as_producer_recorded": true
+  },
+  "commands": {
+    "argv": [
+      "proofs/v014/jax_t_history_source_attribution.py"
+    ],
+    "minimum_contract_commands": [
+      "python -m py_compile proofs/v014/jax_t_history_source_attribution.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/jax_t_history_source_attribution.py",
+      "python -m json.tool proofs/v014/jax_t_history_source_attribution.json >/tmp/jax_t_history_source_attribution.validated.json"
+    ]
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "native_stderr_capture": {
+      "exists": true,
+      "note": "Native XLA CPU AOT warnings, if emitted, are redirected here to keep terminal output compact.",
+      "path": "/tmp/jax_t_history_source_attribution.stderr",
+      "size_bytes": 0
+    },
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fp32_source_landing": false,
+  "generated_utc": "2026-06-09T05:02:13.880935+00:00",
+  "gpu_used": false,
+  "inputs_read": {
+    "agents": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
+      "size_bytes": 2561
+    },
+    "checkpoint": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218
+    },
+    "handoff": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "9a0efb53ed28e0fc135dde57cd76d46aacbb705fadf6e8035dfe0e6862c5f9e8",
+      "size_bytes": 29308
+    },
+    "jax_h10_prestep_carry_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
+      "size_bytes": 35739
+    },
+    "jax_h10_prestep_carry_producer_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+      "sha256": "59eb1f936d51874825aeae1de531ba7d13ac674a5e5cbef1fe859f8f1e511bbb",
+      "size_bytes": 24206
+    },
+    "project_constitution": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
+      "size_bytes": 1157
+    },
+    "same_state_savepoint_request_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
+      "size_bytes": 269809
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-t-history-source-attribution/sprint-contract.md",
+      "sha256": "eb923be6ee2c3bcd0429f21c95ec3b9719665fd99f90cc6386e812ab52b6ef6d",
+      "size_bytes": 3959
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    },
+    "wrf_post_rk_refresh_localization_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
+      "size_bytes": 34079
+    },
+    "wrf_same_state_marker_savepoint_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json",
+      "sha256": "4bb28da001ebabe53ce57ce8ff11ca2a5a8ab160eef2493cb45f233f4586935c",
+      "size_bytes": 18006
+    }
+  },
+  "jax_capture": {
+    "candidate_count": 10,
+    "candidate_results": {
+      "captured_final_carry.t_2ave_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 0.0011304542131256312,
+          "mean": 1.3135361732750835e-07,
+          "min": -0.0013230001893020926,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 9.302824441859968,
+            "max_abs": 9.302824441859968,
+            "mean": 7.977080021654533,
+            "min": 4.871576449643328,
+            "rmse": 8.008461406911792,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 9.302824441859968,
+              "array_index": [
+                0,
+                12,
+                16
+              ],
+              "diff_jax_minus_wrf": 9.302824441859968,
+              "jax_candidate": -1.4858744066259533e-06,
+              "native_key": [
+                12,
+                16
+              ],
+              "wrf_truth": -9.302825927734375
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.677881697025043,
+            "max_abs": 3.677881697025043,
+            "mean": 2.5303221077812643,
+            "min": -0.20065865777854697,
+            "rmse": 2.6121909969239896,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.677881697025043,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.677881697025043,
+              "jax_candidate": -5.265865581804974e-06,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -3.677886962890625
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "captured_final_carry.t_2ave_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "OperationalCarry.t_2ave is stored with the total-theta offset restored; subtract 300 K for perturbation comparison.",
+        "source_expression": "result.carry.t_2ave - 300",
+        "stage": "final RK3 carry scratch",
+        "verdict_eligible": true
+      },
+      "captured_final_carry.t_2ave_raw": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 300.0011304542131,
+          "mean": 300.0000001313536,
+          "min": 299.9986769998107,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 309.30282444185997,
+            "max_abs": 309.30282444185997,
+            "mean": 307.97708002165456,
+            "min": 304.8715764496433,
+            "rmse": 307.9778944455246,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 309.30282444185997,
+              "array_index": [
+                0,
+                12,
+                16
+              ],
+              "diff_jax_minus_wrf": 309.30282444185997,
+              "jax_candidate": 299.9999985141256,
+              "native_key": [
+                12,
+                16
+              ],
+              "wrf_truth": -9.302825927734375
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 303.67788169702504,
+            "max_abs": 303.67788169702504,
+            "mean": 302.5303221077813,
+            "min": 299.79934134222145,
+            "rmse": 302.5310179245645,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 303.67788169702504,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 303.67788169702504,
+              "jax_candidate": 299.9999947341344,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -3.677886962890625
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "captured_final_carry.t_2ave_raw",
+        "offset_applied_k": null,
+        "offset_convention": "Raw diagnostic only; production storage includes the 300 K offset and should not be compared directly to WRF T.",
+        "source_expression": "result.carry.t_2ave",
+        "stage": "final RK3 carry scratch diagnostic",
+        "verdict_eligible": true
+      },
+      "captured_final_carry.t_save_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 194.49153035920466,
+          "mean": 46.70821478174869,
+          "min": -9.42252099996756,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.356384688581045,
+            "max_abs": 3.356384688581045,
+            "mean": 0.8490473328951412,
+            "min": -0.7533416158736372,
+            "rmse": 1.0300584843288976,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.356384688581045,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.356384688581045,
+              "jax_candidate": -5.811400955950205,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -9.16778564453125
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": -1.8565506156371043,
+            "max_abs": 6.220748842436137,
+            "mean": -4.597710580978129,
+            "min": -6.220748842436137,
+            "rmse": 4.639096819300894,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 6.220748842436137,
+              "array_index": [
+                0,
+                8,
+                19
+              ],
+              "diff_jax_minus_wrf": -6.220748842436137,
+              "jax_candidate": -7.908035219389262,
+              "native_key": [
+                8,
+                19
+              ],
+              "wrf_truth": -1.687286376953125
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "captured_final_carry.t_save_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "OperationalCarry.t_save is stored as total theta (see _carry_from_finished_stage); subtract 300 K.",
+        "source_expression": "result.carry.t_save - 300",
+        "stage": "final RK3 carry save family",
+        "verdict_eligible": true
+      },
+      "captured_post_halo_carry.state.theta_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 194.4921239498434,
+          "mean": 46.70840031004294,
+          "min": -9.421222758086572,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.3545763228707983,
+            "max_abs": 3.3545763228707983,
+            "mean": 0.848697409759311,
+            "min": -0.754810969454752,
+            "rmse": 1.0296598586362888,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.3545763228707983,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.3545763228707983,
+              "jax_candidate": -5.813209321660452,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -9.16778564453125
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": -1.858513573542666,
+            "max_abs": 6.222218196017252,
+            "mean": -4.598060504113959,
+            "min": -6.222218196017252,
+            "rmse": 4.639409384117662,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 6.222218196017252,
+              "array_index": [
+                0,
+                8,
+                19
+              ],
+              "diff_jax_minus_wrf": -6.222218196017252,
+              "jax_candidate": -7.909504572970377,
+              "native_key": [
+                8,
+                19
+              ],
+              "wrf_truth": -1.687286376953125
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "captured_post_halo_carry.state.theta_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "State.theta is total theta; post-halo is not the green WRF target but is a plausible wrong source.",
+        "source_expression": "result.carry.state.theta - 300",
+        "stage": "final RK3 post-halo carry",
+        "verdict_eligible": true
+      },
+      "captured_pre_halo_state.theta_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 194.4921239498434,
+          "mean": 46.70840031004294,
+          "min": -9.421222758086572,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.3545763228707983,
+            "max_abs": 3.3545763228707983,
+            "mean": 0.848697409759311,
+            "min": -0.754810969454752,
+            "rmse": 1.0296598586362888,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.3545763228707983,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.3545763228707983,
+              "jax_candidate": -5.813209321660452,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -9.16778564453125
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": -1.858513573542666,
+            "max_abs": 6.222218196017252,
+            "mean": -4.598060504113959,
+            "min": -6.222218196017252,
+            "rmse": 4.639409384117662,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 6.222218196017252,
+              "array_index": [
+                0,
+                8,
+                19
+              ],
+              "diff_jax_minus_wrf": -6.222218196017252,
+              "jax_candidate": -7.909504572970377,
+              "native_key": [
+                8,
+                19
+              ],
+              "wrf_truth": -1.687286376953125
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "captured_pre_halo_state.theta_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "State.theta is total theta; WRF history T is perturbation theta, so subtract 300 K.",
+        "source_expression": "result.pre_halo_state.theta - 300",
+        "stage": "final RK3 after_all_rk_steps pre-halo capture",
+        "verdict_eligible": true
+      },
+      "checkpoint_prestep_carry.state.theta_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 194.490934930442,
+          "mean": 46.70802980814804,
+          "min": -9.423864025038654,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.3581935716514977,
+            "max_abs": 3.3581935716514977,
+            "mean": 0.8494163762684258,
+            "min": -0.7518474238136719,
+            "rmse": 1.03048156240767,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.3581935716514977,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.3581935716514977,
+              "jax_candidate": -5.809592072879752,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -9.16778564453125
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": -1.8546064536936342,
+            "max_abs": 6.219254650376172,
+            "mean": -4.597341537604844,
+            "min": -6.219254650376172,
+            "rmse": 4.638767406133128,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 6.219254650376172,
+              "array_index": [
+                0,
+                8,
+                19
+              ],
+              "diff_jax_minus_wrf": -6.219254650376172,
+              "jax_candidate": -7.906541027329297,
+              "native_key": [
+                8,
+                19
+              ],
+              "wrf_truth": -1.687286376953125
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "checkpoint_prestep_carry.state.theta_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "State.theta is total theta; subtract 300 K.",
+        "source_expression": "carry.state.theta - 300",
+        "stage": "checkpoint completed step 5999 before target step 6000",
+        "verdict_eligible": true
+      },
+      "checkpoint_prestep_carry.t_2ave_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 0.0011298057556814456,
+          "mean": 1.3520972775579913e-07,
+          "min": -0.001323619608797344,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 9.302825498847085,
+            "max_abs": 9.302825498847085,
+            "mean": 7.977080084995276,
+            "min": 4.8715763911556,
+            "rmse": 8.008461468382055,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 9.302825498847085,
+              "array_index": [
+                0,
+                12,
+                16
+              ],
+              "diff_jax_minus_wrf": 9.302825498847085,
+              "jax_candidate": -4.288872901270224e-07,
+              "native_key": [
+                12,
+                16
+              ],
+              "wrf_truth": -9.302825927734375
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.677882024133112,
+            "max_abs": 3.677882024133112,
+            "mean": 2.5303221711220063,
+            "min": -0.2006587162662754,
+            "rmse": 2.6121910497910905,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.677882024133112,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.677882024133112,
+              "jax_candidate": -4.9387575131731865e-06,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -3.677886962890625
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "checkpoint_prestep_carry.t_2ave_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "OperationalCarry.t_2ave is stored with the 300 K offset restored; subtract 300 K.",
+        "source_expression": "carry.t_2ave - 300",
+        "stage": "checkpoint small-step scratch before target step 6000",
+        "verdict_eligible": true
+      },
+      "checkpoint_prestep_carry.t_2ave_raw": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 300.0011298057557,
+          "mean": 300.00000013520975,
+          "min": 299.9986763803912,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 309.3028254988471,
+            "max_abs": 309.3028254988471,
+            "mean": 307.9770800849953,
+            "min": 304.8715763911556,
+            "rmse": 307.977894508823,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 309.3028254988471,
+              "array_index": [
+                0,
+                12,
+                16
+              ],
+              "diff_jax_minus_wrf": 309.3028254988471,
+              "jax_candidate": 299.9999995711127,
+              "native_key": [
+                12,
+                16
+              ],
+              "wrf_truth": -9.302825927734375
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 303.6778820241331,
+            "max_abs": 303.6778820241331,
+            "mean": 302.530322171122,
+            "min": 299.7993412837337,
+            "rmse": 302.5310179878318,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 303.6778820241331,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 303.6778820241331,
+              "jax_candidate": 299.9999950612425,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -3.677886962890625
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "checkpoint_prestep_carry.t_2ave_raw",
+        "offset_applied_k": null,
+        "offset_convention": "Raw diagnostic only; included to prove an offset mistake is not the hidden match.",
+        "source_expression": "carry.t_2ave",
+        "stage": "checkpoint small-step scratch diagnostic before target step 6000",
+        "verdict_eligible": true
+      },
+      "checkpoint_prestep_carry.t_save_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 194.49040261984732,
+          "mean": 46.70784905377566,
+          "min": -9.422730044895502,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.3567233047927516,
+            "max_abs": 3.3567233047927516,
+            "mean": 0.8489532043644856,
+            "min": -0.7528849530048092,
+            "rmse": 1.0299191049611263,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.3567233047927516,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.3567233047927516,
+              "jax_candidate": -5.811062339738498,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -9.16778564453125
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": -1.8562113137465417,
+            "max_abs": 6.220292179567309,
+            "mean": -4.597804709508785,
+            "min": -6.220292179567309,
+            "rmse": 4.639179299294447,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 6.220292179567309,
+              "array_index": [
+                0,
+                8,
+                19
+              ],
+              "diff_jax_minus_wrf": -6.220292179567309,
+              "jax_candidate": -7.907578556520434,
+              "native_key": [
+                8,
+                19
+              ],
+              "wrf_truth": -1.687286376953125
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "checkpoint_prestep_carry.t_save_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "OperationalCarry.t_save is total theta; subtract 300 K.",
+        "source_expression": "carry.t_save - 300",
+        "stage": "checkpoint save family before target step 6000",
+        "verdict_eligible": true
+      },
+      "physics_state.theta_minus_300": {
+        "array_summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 194.4908702621857,
+          "mean": 46.7079603607377,
+          "min": -9.440813831830383,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "comparisons": {
+          "wrf_history_T__MASS_K1_T_HIST_SRC": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": 3.361435949903637,
+            "max_abs": 3.361435949903637,
+            "mean": 0.8501691334391231,
+            "min": -0.7490270706057345,
+            "rmse": 1.031404174605919,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 3.361435949903637,
+              "array_index": [
+                0,
+                12,
+                17
+              ],
+              "diff_jax_minus_wrf": 3.361435949903637,
+              "jax_candidate": -5.806349694627613,
+              "native_key": [
+                12,
+                17
+              ],
+              "wrf_truth": -9.16778564453125
+            },
+            "wrf_field": "T_HIST_SRC"
+          },
+          "wrf_thm_side__MASS_K1_T_THM": {
+            "candidate_dtype": "float64",
+            "candidate_shape": [
+              44,
+              66,
+              159
+            ],
+            "count": 289,
+            "finite_count": 289,
+            "max": -1.851075334054599,
+            "max_abs": 6.2164342971682345,
+            "mean": -4.596588780434146,
+            "min": -6.2164342971682345,
+            "rmse": 4.638106603411917,
+            "skipped_record_count": 0,
+            "skipped_records": [],
+            "status": "DIFF",
+            "worst": {
+              "abs_diff": 6.2164342971682345,
+              "array_index": [
+                0,
+                8,
+                19
+              ],
+              "diff_jax_minus_wrf": -6.2164342971682345,
+              "jax_candidate": -7.9037206741213595,
+              "native_key": [
+                8,
+                19
+              ],
+              "wrf_truth": -1.687286376953125
+            },
+            "wrf_field": "T_THM"
+          }
+        },
+        "name": "physics_state.theta_minus_300",
+        "offset_applied_k": 300.0,
+        "offset_convention": "State.theta is total theta; this checks a possible cadence/source confusion before the dycore.",
+        "source_expression": "physics.state.theta - 300",
+        "stage": "non-timesplit physics result before RK3",
+        "verdict_eligible": true
+      }
+    },
+    "carry_theta_shaped_leaf_inventory": [
+      {
+        "dtype": "float64",
+        "leaf": "t_2ave",
+        "role": "theta_history_candidate",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 300.0011298057557,
+          "mean": 300.00000013520975,
+          "min": 299.9986763803912,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "unit_or_convention": "K total-theta storage"
+      },
+      {
+        "dtype": "float64",
+        "leaf": "t_save",
+        "role": "theta_history_candidate",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 494.4904026198473,
+          "mean": 346.70784905377565,
+          "min": 290.5772699551045,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "unit_or_convention": "K total-theta storage"
+      },
+      {
+        "dtype": "float64",
+        "leaf": "rthraten",
+        "role": "not_T_history_candidate",
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "summary": {
+          "all_finite": true,
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 0.0005208857072602917,
+          "mean": -1.6543849414820318e-05,
+          "min": -0.0014699435232376323,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "unit_or_convention": "K/s held radiative theta tendency"
+      }
+    ],
+    "checkpoint_step_index": 5999,
+    "context_pre_halo_mass_pressure": {
+      "MU": {
+        "candidate_dtype": "float64",
+        "candidate_shape": [
+          66,
+          159
+        ],
+        "count": 289,
+        "finite_count": 289,
+        "max": -137.3988920808672,
+        "max_abs": 267.1935248522832,
+        "mean": -194.52705015728034,
+        "min": -267.1935248522832,
+        "rmse": 195.97477055691238,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 267.1935248522832,
+          "array_index": [
+            13,
+            18
+          ],
+          "diff_jax_minus_wrf": -267.1935248522832,
+          "jax_candidate": 1467.6774468274048,
+          "native_key": [
+            13,
+            18
+          ],
+          "wrf_truth": 1734.870971679688
+        },
+        "wrf_field": "MU_NEW"
+      },
+      "MUB": {
+        "candidate_dtype": "float64",
+        "candidate_shape": [
+          66,
+          159
+        ],
+        "count": 289,
+        "finite_count": 289,
+        "max": 1050.3046875,
+        "max_abs": 1050.3046875,
+        "mean": 69.00035380787983,
+        "min": -865.8828125,
+        "rmse": 224.13660680282618,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 1050.3046875,
+          "array_index": [
+            7,
+            16
+          ],
+          "diff_jax_minus_wrf": 1050.3046875,
+          "jax_candidate": 95000.0,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 93949.6953125
+        },
+        "wrf_field": "MUB"
+      },
+      "P": {
+        "candidate_dtype": "float64",
+        "candidate_shape": [
+          44,
+          66,
+          159
+        ],
+        "count": 289,
+        "finite_count": 289,
+        "max": -434.1485925419363,
+        "max_abs": 590.0020891006836,
+        "mean": -525.5546631237859,
+        "min": -590.0020891006836,
+        "rmse": 526.3359359284732,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 590.0020891006836,
+          "array_index": [
+            0,
+            13,
+            17
+          ],
+          "diff_jax_minus_wrf": -590.0020891006836,
+          "jax_candidate": 1384.2010358993164,
+          "native_key": [
+            13,
+            17
+          ],
+          "wrf_truth": 1974.203125
+        },
+        "wrf_field": "P"
+      },
+      "PB": {
+        "candidate_dtype": "float64",
+        "candidate_shape": [
+          44,
+          66,
+          159
+        ],
+        "count": 289,
+        "finite_count": 289,
+        "max": 1047.015625,
+        "max_abs": 1047.015625,
+        "mean": 68.78500782362863,
+        "min": -863.171875,
+        "rmse": 223.43483550580925,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "status": "DIFF",
+        "worst": {
+          "abs_diff": 1047.015625,
+          "array_index": [
+            0,
+            7,
+            16
+          ],
+          "diff_jax_minus_wrf": 1047.015625,
+          "jax_candidate": 99706.203125,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 98659.1875
+        },
+        "wrf_field": "PB"
+      }
+    },
+    "grid_shape": {
+      "nx": 159,
+      "ny": 66,
+      "nz": 44
+    },
+    "lead_seconds": 36000.0,
+    "loader": "gpuwrf.runtime.checkpoint.read_checkpoint_with_runtime_state",
+    "namelist": {
+      "acoustic_substeps": 10,
+      "dt_s": 6.0,
+      "rad_rk_tendf": 0,
+      "radiation_cadence_steps": 300,
+      "run_boundary": true,
+      "run_physics": true,
+      "type": "OperationalNamelist"
+    },
+    "run_radiation_for_step": true,
+    "runtime_state_type": "OperationalCarry",
+    "status": "RAN",
+    "target_step": 6000,
+    "wall_s": 21.864985911997792
+  },
+  "next_decision": "Open a theta-evolution localization sprint; do not spend the next sprint on JAX-vs-WRF history source remapping for `T`.",
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-t-history-source-attribution.md"
+  },
+  "schema": "wrfgpu2.v014.jax_t_history_source_attribution.v1",
+  "switzerland_validation_run": false,
+  "tolerance": {
+    "max_abs": 2e-06,
+    "policy": "No artificial tolerance widening; inherited from the canonical h10 proof."
+  },
+  "tost_run": false,
+  "unresolved_risks": [
+    "Only Boole's selected h10 patch was compared; this attributes the first mismatch, not full-domain parity.",
+    "The proof is CPU-only and intentionally does not run TOST or Switzerland validation."
+  ],
+  "verdict": "T_EVOLUTION_MISMATCH_CONFIRMED",
+  "verdict_reason": "No inspected JAX theta/history candidate matches WRF history T or WRF T_THM within the frozen tolerance.",
+  "wall_s": 24.497559241001,
+  "wrf_source_edits": false,
+  "wrf_surface": {
+    "T_THM_minus_T_HIST_SRC": {
+      "count": 289,
+      "finite_count": 289,
+      "max": 5.702972412109375,
+      "max_abs": 5.702972412109375,
+      "mean": 5.44675791387327,
+      "min": 4.777557373046875,
+      "rmse": 5.4497435060612585,
+      "status": "DIFF",
+      "worst": {
+        "abs_diff": 5.702972412109375,
+        "diff_left_minus_right": 5.702972412109375,
+        "left_field": "T_THM",
+        "left_value": -2.546539306640625,
+        "native_key": [
+          10,
+          21
+        ],
+        "right_field": "T_HIST_SRC",
+        "right_value": -8.24951171875
+      }
+    },
+    "duplicate_count": 17,
+    "duplicate_max_delta": 0.0,
+    "field_stats": {
+      "MUB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 95000.0,
+        "max_abs": 95000.0,
+        "mean": 94221.34969723184,
+        "min": 82711.3984375,
+        "rmse": 94245.8541126981
+      },
+      "MU_NEW": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 1749.256225585938,
+        "max_abs": 1749.256225585938,
+        "mean": 1691.1224804518545,
+        "min": 1621.89111328125,
+        "rmse": 1691.3495882359107
+      },
+      "P": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 1979.7734375,
+        "max_abs": 1979.7734375,
+        "mean": 1936.7261570069204,
+        "min": 1854.5625,
+        "rmse": 1936.9704102345931
+      },
+      "PB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 99706.203125,
+        "max_abs": 99706.203125,
+        "mean": 98929.99205233564,
+        "min": 87456.1171875,
+        "rmse": 98953.18439372662
+      },
+      "T_HIST_SRC": {
+        "count": 289,
+        "finite_count": 289,
+        "max": -4.87158203125,
+        "max_abs": 9.302825927734375,
+        "mean": -7.9770817212167495,
+        "min": -9.302825927734375,
+        "rmse": 8.008463023043383
+      },
+      "T_THM": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.200653076171875,
+        "max_abs": 3.677886962890625,
+        "mean": -2.5303238073434797,
+        "min": -3.677886962890625,
+        "rmse": 2.61219245008747
+      }
+    },
+    "files": [
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "source_semantics": {
+      "wrf_history_T__MASS_K1_T_HIST_SRC": {
+        "description": "WRF history T source, grid%th_phy_m_t0.",
+        "field": "T_HIST_SRC",
+        "tag": "MASS_K1"
+      },
+      "wrf_thm_side__MASS_K1_T_THM": {
+        "description": "WRF THM-side candidate; not the accepted history T source.",
+        "field": "T_THM",
+        "tag": "MASS_K1"
+      }
+    },
+    "unique_counts": {
+      "MASS_K1": 289,
+      "U_K1": 306,
+      "V_K1": 306,
+      "WPH_KSTAG01": 578
+    }
+  },
+  "wrf_target": {
+    "accepted_wrf_verdict": "REFRESH_LAYER_GREEN_post_after_all_rk_steps_pre_halo",
+    "domain": "d02",
+    "lead_seconds_after_step": 36000.0,
+    "native_staggered_coordinates": {
+      "mass_zero": "y [1,18), x [5,22); Fortran j 2..18, i 6..22",
+      "u_zero": "y [1,18), x_stag [5,23); Fortran j 2..18, i 6..23",
+      "v_zero": "y_stag [1,19), x [5,22); Fortran j 2..19, i 6..22",
+      "w_ph_zero": "kstag [0,2), y [1,18), x [5,22); Fortran k 1..2, j 2..18, i 6..22"
+    },
+    "prestep_completed_steps_required": 5999,
+    "selected_patch_bounds_mass_grid": {
+      "halo_radius_cells": 8,
+      "south_north_start": 1,
+      "south_north_stop_exclusive": 18,
+      "west_east_start": 5,
+      "west_east_stop_exclusive": 22
+    },
+    "source_file_info": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
+        "size_bytes": 11774
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
+        "size_bytes": 159441
+      }
+    ],
+    "source_files": [
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "target_surface": "post dyn_em/solve_em.F::after_all_rk_steps state before RK halo exchanges",
+    "valid_time_utc": "2026-05-02T04:00:00+00:00",
+    "wrf_step": 6000
+  }
+}

@@ -492,13 +492,33 @@ writer-only success. However, WRF's green history `T` source is
 `grid%th_phy_m_t0`; the next sprint must attribute JAX theta/history source
 semantics before any production dycore source fix.
 
+## Completed Wave 12
+
+- GPT tmux worker (`0:4`, closed after DONE):
+  T history/source-attribution sprint
+  `.agent/sprints/2026-06-09-v014-t-history-source-attribution/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/jax_t_history_source_attribution.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-t-history-source-attribution.md`.
+
+Verdict: `T_EVOLUTION_MISMATCH_CONFIRMED`. The proof uses the produced h10
+step-5999 carry checkpoint and Boole's same-surface WRF target, confirms the
+checkpoint hash/size matches both the producer and canonical h10 compare
+records, and explicitly separates WRF history `T_HIST_SRC`
+(`grid%th_phy_m_t0`) from WRF `T_THM`. Best WRF history `T_HIST_SRC` match is
+still `captured_pre_halo_state.theta_minus_300` with max_abs
+`3.3545763228707983`, RMSE `1.0296598586362888`. Best WRF `T_THM` match is
+`captured_final_carry.t_2ave_minus_300` with max_abs `3.677881697025043`.
+P/PB/MU/MUB remain divergent on the same patch (`P=590`, `PB=1047`, `MU=267`,
+`MUB=1050` max_abs), so this is not a lone history/source artifact.
+
 ## Next Manager Actions
 
-1. Open the T history/source-attribution sprint. Compare JAX theta/history
-   candidates from the produced h10 carry and hook-captured pre-halo state
-   against WRF `T_HIST_SRC` (`grid%th_phy_m_t0`) and THM-side candidates before
-   deciding whether `JAX_MISMATCH_T` is source/cadence mapping or a real theta
-   evolution bug.
+1. Open the theta-evolution localization sprint. Attribute the `T` evolution
+   mismatch by stage/cadence/component from the produced prestep carry through
+   physics forcing, RK stage inputs, theta tendency/advection/diffusion/radiation
+   folding, acoustic finish, and post-RK refresh. Do not spend the next sprint
+   on history-source remapping for `T`.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.

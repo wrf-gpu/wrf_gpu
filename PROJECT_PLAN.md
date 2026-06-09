@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 05:47 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 06:03 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -49,8 +49,12 @@ pre-step `OperationalCarry` has now been produced at completed step 5999:
 `0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde`). The
 canonical same-surface comparison now runs and returns `JAX_MISMATCH_T`: first
 mismatch is `T` max_abs `3.3545763228707983`, RMSE `1.0296598586362888`, worst
-native key `[12, 17]`. Because WRF's accepted history `T` source is
-`grid%th_phy_m_t0`, the next sprint is a T history/source-attribution sprint,
+native key `[12, 17]`. The T history/source-attribution sprint then closed the
+source-mapping branch: no inspected JAX theta/history candidate matches WRF
+history `T_HIST_SRC` or WRF `T_THM` within the frozen tolerance
+(`proofs/v014/jax_t_history_source_attribution.json` verdict
+`T_EVOLUTION_MISMATCH_CONFIRMED`). The next sprint is theta-evolution
+localization by stage/cadence/component, not JAX-vs-WRF history remapping and
 not a blind production dycore fix.
 
 The project completed
