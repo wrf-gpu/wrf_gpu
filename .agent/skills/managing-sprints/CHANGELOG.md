@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.3 (2026-06-09, principal-directed)
+
+- Added long-roadmap drift prevention: after every 15 closed active-milestone
+  sprints, dispatch an Opus 4.8 xhigh management review to critique roadmap
+  direction, proof chain, sprint sizing, parallelization, and next steps.
+- Added a compact reusable Opus management-review prompt and output contract.
+- Added the v0.14 goal-change gate: the milestone goal may change only when an
+  Opus 4.8 xhigh management review explicitly agrees that the current goal is
+  technically impossible or no longer the smartest useful target under the
+  latest evidence.
+
 ## 0.2.2 (2026-06-09, principal-confirmed)
 
 - Tightened the cross-model debug cadence: after two focused GPT/debug sprints
