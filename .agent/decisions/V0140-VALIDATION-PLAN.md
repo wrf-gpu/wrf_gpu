@@ -284,6 +284,16 @@ Current status:
   validation-enabling task is a disposable CPU-WRF hook that emits the accepted
   npz truth contract, followed by a rerun of the contract builder for the first
   strict WRF-vs-JAX residual table.
+- 2026-06-09 step-1 same-input truth closeout:
+  `proofs/v014/step1_same_input_truth.json` verdict is
+  `STEP1_SAME_INPUT_COMPARISON_EXECUTED_FIRST_DIVERGENT_T`. The first strict
+  full-domain d02 step-1 comparison executed against CPU-WRF
+  `post_after_all_rk_steps_pre_halo` truth. First divergent schema field is `T`,
+  while the largest residuals are `MUB/PB/PHB/P` (`MUB` max_abs `2635.640625`,
+  `PB` `2627.3828125`, `PHB` `2237.9423828125`). B4 remains blocked. The next
+  validation-enabling work is native live-nest child base-state initialization
+  or a decisive init-override falsifier, followed by a rerun of
+  `proofs/v014/step1_same_input_truth.py`.
 - 2026-06-09 management-review correction:
   `.agent/reviews/2026-06-09-v014-management-review-01.md` records
   `NO_GOAL_CHANGE` but criticizes the step-6000 same-input path as a blocked
