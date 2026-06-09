@@ -1,0 +1,797 @@
+{
+  "commands": {
+    "build": "cd /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real >/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/compile_full_pre_rk.log 2>&1",
+    "minimum_validation": [
+      "python -m py_compile proofs/v014/full_pre_rk_savepoint_hook.py",
+      "python -m json.tool proofs/v014/full_pre_rk_savepoint_hook.json >/tmp/full_pre_rk_savepoint_hook.validated.json"
+    ],
+    "run": "ln -sf /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/main/wrf.exe /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/wrf.exe && cd /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3 && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_FULL_PRE_RK=1 WRFGPU2_FULL_PRE_RK_ROOT=/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output WRFGPU2_FULL_PRE_RK_GRID=2 WRFGPU2_FULL_PRE_RK_START_STEP=6000 WRFGPU2_FULL_PRE_RK_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe >/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/full_pre_rk_28rank_stdout.log 2>&1",
+    "setup": [
+      "mkdir -p /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook",
+      "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/ /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/",
+      "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/ /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/",
+      "cd /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF && patch -p1 < /home/enric/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff"
+    ]
+  },
+  "cpu_only": true,
+  "emitted_surface": {
+    "duplicate_count": 748,
+    "duplicate_max_delta": 0.0,
+    "duplicate_max_delta_by_field": {
+      "V_FULL.V_NEW": 0.0,
+      "V_FULL.V_OLD": 0.0
+    },
+    "field_ranges": {
+      "MASS_FULL": {
+        "MUB": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 95000.0,
+          "min": 82711.3984375
+        },
+        "MU_NEW": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 1749.322387695312,
+          "min": 1621.944213867188
+        },
+        "MU_OLD": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 1749.403442382812,
+          "min": 1622.026123046875
+        },
+        "P": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 1980.96875,
+          "min": -5.072265625
+        },
+        "PB": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 99706.203125,
+          "min": 5225.25048828125
+        },
+        "T_HIST_SRC": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 192.8493347167969,
+          "min": -9.306549072265625
+        },
+        "T_INIT": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 164.8203430175781,
+          "min": -9.903350830078125
+        },
+        "T_OLD": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 192.85205078125,
+          "min": -4.089019775390625
+        },
+        "T_THM": {
+          "count": 12716,
+          "finite_count": 12716,
+          "max": 192.851806640625,
+          "min": -4.08935546875
+        }
+      },
+      "MOIST_FULL": {
+        "MOIST": {
+          "count": 76296,
+          "finite_count": 76296,
+          "max": 0.01215292885899544,
+          "min": 0.0
+        }
+      },
+      "SCALAR_FULL": {
+        "SCALAR": {
+          "count": 38148,
+          "finite_count": 38148,
+          "max": 33.5966796875,
+          "min": -0.01450939290225506
+        }
+      },
+      "U_FULL": {
+        "U_NEW": {
+          "count": 13464,
+          "finite_count": 13464,
+          "max": 28.91657066345215,
+          "min": -6.745539665222168
+        },
+        "U_OLD": {
+          "count": 13464,
+          "finite_count": 13464,
+          "max": 28.91405868530273,
+          "min": -6.744515419006348
+        }
+      },
+      "V_FULL": {
+        "V_NEW": {
+          "count": 13464,
+          "finite_count": 13464,
+          "max": 3.391519784927368,
+          "min": -10.09753131866455
+        },
+        "V_OLD": {
+          "count": 13464,
+          "finite_count": 13464,
+          "max": 3.392600059509277,
+          "min": -10.09749317169189
+        }
+      },
+      "WPH_FULL": {
+        "PHB": {
+          "count": 13005,
+          "finite_count": 13005,
+          "max": 195220.515625,
+          "min": 0.0
+        },
+        "PH_NEW": {
+          "count": 13005,
+          "finite_count": 13005,
+          "max": 7956.6044921875,
+          "min": 0.0
+        },
+        "PH_OLD": {
+          "count": 13005,
+          "finite_count": 13005,
+          "max": 7956.671875,
+          "min": 0.0
+        },
+        "W_NEW": {
+          "count": 13005,
+          "finite_count": 13005,
+          "max": 0.7524136304855347,
+          "min": -1.722158789634705
+        },
+        "W_OLD": {
+          "count": 13005,
+          "finite_count": 13005,
+          "max": 0.7526752948760986,
+          "min": -1.722116947174072
+        }
+      }
+    },
+    "files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "9b87194063639617c64ab31372201ed2374094df622e80cf4c724ae5244bd247",
+        "size_bytes": 848336
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "e863b61d0ec1834eb2439da2abdee054465f2cce3c8eddfc0a6cfce7f3ba1f88",
+        "size_bytes": 12545265
+      }
+    ],
+    "key_ranges": {
+      "MASS_FULL": {
+        "key_convention": "MASS/U/V/WPH=(zero_k, zero_y, zero_x); MOIST/SCALAR=(index, zero_k, zero_y, zero_x)",
+        "max": [
+          43,
+          17,
+          21
+        ],
+        "min": [
+          0,
+          1,
+          5
+        ]
+      },
+      "MOIST_FULL": {
+        "key_convention": "MASS/U/V/WPH=(zero_k, zero_y, zero_x); MOIST/SCALAR=(index, zero_k, zero_y, zero_x)",
+        "max": [
+          7,
+          43,
+          17,
+          21
+        ],
+        "min": [
+          2,
+          0,
+          1,
+          5
+        ]
+      },
+      "SCALAR_FULL": {
+        "key_convention": "MASS/U/V/WPH=(zero_k, zero_y, zero_x); MOIST/SCALAR=(index, zero_k, zero_y, zero_x)",
+        "max": [
+          4,
+          43,
+          17,
+          21
+        ],
+        "min": [
+          2,
+          0,
+          1,
+          5
+        ]
+      },
+      "U_FULL": {
+        "key_convention": "MASS/U/V/WPH=(zero_k, zero_y, zero_x); MOIST/SCALAR=(index, zero_k, zero_y, zero_x)",
+        "max": [
+          43,
+          17,
+          22
+        ],
+        "min": [
+          0,
+          1,
+          5
+        ]
+      },
+      "V_FULL": {
+        "key_convention": "MASS/U/V/WPH=(zero_k, zero_y, zero_x); MOIST/SCALAR=(index, zero_k, zero_y, zero_x)",
+        "max": [
+          43,
+          18,
+          21
+        ],
+        "min": [
+          0,
+          1,
+          5
+        ]
+      },
+      "WPH_FULL": {
+        "key_convention": "MASS/U/V/WPH=(zero_k, zero_y, zero_x); MOIST/SCALAR=(index, zero_k, zero_y, zero_x)",
+        "max": [
+          44,
+          17,
+          21
+        ],
+        "min": [
+          0,
+          1,
+          5
+        ]
+      }
+    },
+    "metadata": {
+      "active_moisture_indices_param_first_num3d_numall": [
+        "2 7 7",
+        "2 7 7"
+      ],
+      "active_scalar_indices_param_first_num3d_numall": [
+        "2 4 4",
+        "2 4 4"
+      ],
+      "comment": [
+        "WRFGPU2_V014_FULL_PRE_RK_SAVEPOINT v1",
+        "WRFGPU2_V014_FULL_PRE_RK_SAVEPOINT v1"
+      ],
+      "current_timestr_before_step": [
+        "2026-05-02_03:59:54",
+        "2026-05-02_03:59:54"
+      ],
+      "domain_id": [
+        "2",
+        "2"
+      ],
+      "dt_seconds": [
+        "0.6000000000000000E+01",
+        "0.6000000000000000E+01"
+      ],
+      "dx_m": [
+        "0.3000000000000000E+04",
+        "0.3000000000000000E+04"
+      ],
+      "dy_m": [
+        "0.3000000000000000E+04",
+        "0.3000000000000000E+04"
+      ],
+      "grid_itimestep_after_increment": [
+        "6000",
+        "6000"
+      ],
+      "lead_seconds_after_step": [
+        "0.3600000000000000E+05",
+        "0.3600000000000000E+05"
+      ],
+      "lead_seconds_before_step": [
+        "0.3599400000000000E+05",
+        "0.3599400000000000E+05"
+      ],
+      "mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 18 5 22 2 18",
+        "1 18 5 22 2 18"
+      ],
+      "mass_vertical_fortran_k_start_k_end_inclusive": [
+        "1 44",
+        "1 44"
+      ],
+      "missing_current_step_dry_tendency_fields": [
+        "ru_tendf rv_tendf rw_tendf ph_tendf t_tendf mu_tendf h_diabatic",
+        "ru_tendf rv_tendf rw_tendf ph_tendf t_tendf mu_tendf h_diabatic"
+      ],
+      "missing_current_step_old_scalar_fields": [
+        "moist_old scalar_old local_arrays_not_initialized_at_this_boundary",
+        "moist_old scalar_old local_arrays_not_initialized_at_this_boundary"
+      ],
+      "missing_current_step_save_family_fields": [
+        "u_save v_save w_save ph_save t_save",
+        "u_save v_save w_save ph_save t_save"
+      ],
+      "rk_fixed_source_boundary_status": [
+        "unavailable_at_step_entry_before_first_rk_step_part1_part2_and_rk_tendency",
+        "unavailable_at_step_entry_before_first_rk_step_part1_part2_and_rk_tendency"
+      ],
+      "rk_order_config": [
+        "3",
+        "3"
+      ],
+      "routine": [
+        "dyn_em/solve_em.F after grid%itimestep increment before current-step physics/RK",
+        "dyn_em/solve_em.F after grid%itimestep increment before current-step physics/RK"
+      ],
+      "selected_mass_cell_zero_yx_fortran_ji": [
+        "9 13 10 14",
+        "9 13 10 14"
+      ],
+      "surface": [
+        "full_pre_rk_step_entry",
+        "full_pre_rk_step_entry"
+      ],
+      "tile_i_j_bounds_fortran": [
+        "1 23 18 33",
+        "1 23 1 17"
+      ],
+      "tile_record_policy": [
+        "owned_tile_overlap_only",
+        "owned_tile_overlap_only"
+      ],
+      "u_patch_zero_y0_y1_xstag0_xstag1_fortran_j0_j1_i0_i1": [
+        "1 18 5 23 2 18",
+        "1 18 5 23 2 18"
+      ],
+      "v_patch_zero_ystag0_ystag1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 19 5 22 2 19",
+        "1 19 5 22 2 19"
+      ],
+      "w_ph_patch_zero_kstag0_kstag1_y0_y1_x0_x1": [
+        "0 45 1 18 5 22",
+        "0 45 1 18 5 22"
+      ],
+      "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+        "1 45",
+        "1 45"
+      ]
+    },
+    "schema_lines": [
+      "record_schema MASS_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k T_THM T_OLD T_HIST_SRC P PB MU_NEW MU_OLD MUB T_INIT",
+      "record_schema U_FULL fortran_i fortran_j fortran_k zero_xstag zero_y zero_k U_NEW U_OLD",
+      "record_schema V_FULL fortran_i fortran_j fortran_k zero_x zero_ystag zero_k V_NEW V_OLD",
+      "record_schema WPH_FULL fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_NEW W_OLD PH_NEW PH_OLD PHB",
+      "record_schema MOIST_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k moist_index MOIST",
+      "record_schema SCALAR_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k scalar_index SCALAR",
+      "record_schema MASS_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k T_THM T_OLD T_HIST_SRC P PB MU_NEW MU_OLD MUB T_INIT",
+      "record_schema U_FULL fortran_i fortran_j fortran_k zero_xstag zero_y zero_k U_NEW U_OLD",
+      "record_schema V_FULL fortran_i fortran_j fortran_k zero_x zero_ystag zero_k V_NEW V_OLD",
+      "record_schema WPH_FULL fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_NEW W_OLD PH_NEW PH_OLD PHB",
+      "record_schema MOIST_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k moist_index MOIST",
+      "record_schema SCALAR_FULL fortran_i fortran_j fortran_k zero_x zero_y zero_k scalar_index SCALAR"
+    ],
+    "schemas": {
+      "MASS_FULL": {
+        "fields": [
+          "T_THM",
+          "T_OLD",
+          "T_HIST_SRC",
+          "P",
+          "PB",
+          "MU_NEW",
+          "MU_OLD",
+          "MUB",
+          "T_INIT"
+        ],
+        "index_count": 6
+      },
+      "MOIST_FULL": {
+        "fields": [
+          "MOIST"
+        ],
+        "index_count": 7
+      },
+      "SCALAR_FULL": {
+        "fields": [
+          "SCALAR"
+        ],
+        "index_count": 7
+      },
+      "U_FULL": {
+        "fields": [
+          "U_NEW",
+          "U_OLD"
+        ],
+        "index_count": 6
+      },
+      "V_FULL": {
+        "fields": [
+          "V_NEW",
+          "V_OLD"
+        ],
+        "index_count": 6
+      },
+      "WPH_FULL": {
+        "fields": [
+          "W_NEW",
+          "W_OLD",
+          "PH_NEW",
+          "PH_OLD",
+          "PHB"
+        ],
+        "index_count": 6
+      }
+    },
+    "unique_counts": {
+      "MASS_FULL": 12716,
+      "MOIST_FULL": 76296,
+      "SCALAR_FULL": 38148,
+      "U_FULL": 13464,
+      "V_FULL": 13464,
+      "WPH_FULL": 13005
+    }
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T10:32:55.780531+00:00",
+  "gpu_used": false,
+  "hook_sufficiency": {
+    "active_moisture_present": true,
+    "full_native_state_present": true,
+    "missing_for_strict_same_input": [
+      "ru_tendf",
+      "rv_tendf",
+      "rw_tendf",
+      "ph_tendf",
+      "t_tendf",
+      "mu_tendf",
+      "h_diabatic",
+      "u_save",
+      "v_save",
+      "w_save",
+      "ph_save",
+      "t_save",
+      "moist_old",
+      "scalar_old"
+    ],
+    "present_tags": [
+      "MASS_FULL",
+      "U_FULL",
+      "V_FULL",
+      "WPH_FULL",
+      "MOIST_FULL",
+      "SCALAR_FULL"
+    ],
+    "reason": "The exact post-itimestep step-entry boundary is before WRF computes current-step first_rk_step_part1/part2 physics tendencies and before rk_tendency zeroes/populates the save-family fields.",
+    "rk_fixed_source_boundary_status": [
+      "unavailable_at_step_entry_before_first_rk_step_part1_part2_and_rk_tendency",
+      "unavailable_at_step_entry_before_first_rk_step_part1_part2_and_rk_tendency"
+    ],
+    "strict_same_input_ready": false,
+    "verdict": "FULL_PRE_RK_HOOK_BLOCKED_RK_FIXED_SOURCE_UNAVAILABLE_AT_STEP_ENTRY"
+  },
+  "no_hermes": true,
+  "patch_width_assessment": {
+    "candidate_valid_mass_bounds_after_halo": {
+      "south_north_start": 9,
+      "south_north_stop_exclusive": 10,
+      "west_east_start": 13,
+      "west_east_stop_exclusive": 14
+    },
+    "candidate_valid_mass_cell_count": 1,
+    "conservative_halo_radius_cells": 8,
+    "mass_patch_zero_based_bounds": {
+      "south_north_start": 1,
+      "south_north_stop_exclusive": 18,
+      "west_east_start": 5,
+      "west_east_stop_exclusive": 22
+    },
+    "status": "NOT_PRIMARY_BLOCKER"
+  },
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook.md",
+    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff"
+  },
+  "schema": "wrfgpu2.v014.full_pre_rk_savepoint_hook.v1",
+  "switzerland_validation_run": false,
+  "target": {
+    "boundary": "after grid%itimestep increment before current-step physics/RK",
+    "domain": "d02",
+    "fields_requested": [
+      "T",
+      "P",
+      "PB",
+      "PH",
+      "PHB",
+      "MU",
+      "MUB",
+      "U",
+      "V",
+      "W"
+    ],
+    "step": 6000
+  },
+  "tost_run": false,
+  "verdict": "FULL_PRE_RK_HOOK_BLOCKED_RK_FIXED_SOURCE_UNAVAILABLE_AT_STEP_ENTRY",
+  "wrf_provenance": {
+    "compile_log": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/compile_full_pre_rk.log",
+      "sha256": "1f389f8700e02198043a3d5d1fd8150719ba8db75107bb7c33cccfa991f62f64",
+      "size_bytes": 73459
+    },
+    "compile_log_tail": [
+      "             ln -sf ../../run/CLM_ALB_ICE_DRC_DATA . ;              \\",
+      "             ln -sf ../../run/CLM_ASM_ICE_DFS_DATA . ;              \\",
+      "             ln -sf ../../run/CLM_ASM_ICE_DRC_DATA . ;              \\",
+      "             ln -sf ../../run/CLM_DRDSDT0_DATA . ;                  \\",
+      "             ln -sf ../../run/CLM_EXT_ICE_DFS_DATA . ;              \\",
+      "             ln -sf ../../run/CLM_EXT_ICE_DRC_DATA . ;              \\",
+      "             ln -sf ../../run/CLM_KAPPA_DATA . ;                    \\",
+      "             ln -sf ../../run/CLM_TAU_DATA . ;                      \\",
+      "             ln -sf ../../run/ozone.formatted . ;                   \\",
+      "             ln -sf ../../run/ozone_lat.formatted . ;               \\",
+      "             ln -sf ../../run/ozone_plev.formatted . ;              \\",
+      "             ln -sf ../../run/aerosol.formatted . ;                 \\",
+      "             ln -sf ../../run/aerosol_lat.formatted . ;             \\",
+      "             ln -sf ../../run/aerosol_lon.formatted . ;             \\",
+      "             ln -sf ../../run/aerosol_plev.formatted . ;            \\",
+      "             ln -sf ../../run/eclipse_besselian_elements.dat . ;    \\",
+      "             ln -sf ../../run/capacity.asc . ;                      \\",
+      "             ln -sf ../../run/coeff_p.asc . ;                       \\",
+      "             ln -sf ../../run/coeff_q.asc . ;                       \\",
+      "             ln -sf ../../run/constants.asc . ;                     \\",
+      "             ln -sf ../../run/masses.asc . ;                        \\",
+      "             ln -sf ../../run/termvels.asc . ;                      \\",
+      "             ln -sf ../../run/kernels.asc_s_0_03_0_9 . ;            \\",
+      "             ln -sf ../../run/kernels_z.asc . ;                     \\",
+      "             ln -sf ../../run/bulkdens.asc_s_0_03_0_9 . ;           \\",
+      "             ln -sf ../../run/bulkradii.asc_s_0_03_0_9 . ;          \\",
+      "             ln -sf ../../run/CCN_ACTIVATE.BIN . ;                  \\",
+      "             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_2momI . ;   \\",
+      "             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_3momI . ;   \\",
+      "             ln -sf ../../run/p3_lookupTable_2.dat-v5.3 . ;         \\",
+      "             ln -sf ../../run/HLC.TBL . ;                           \\",
+      "             ln -sf ../../run/wind-turbine-1.tbl . ;                \\",
+      "             ln -sf ../../run/ishmael-gamma-tab.bin . ;             \\",
+      "             ln -sf ../../run/ishmael-qi-qc.bin . ;                 \\",
+      "             ln -sf ../../run/ishmael-qi-qr.bin . ;                 \\",
+      "             ln -sf ../../run/BROADBAND_CLOUD_GODDARD.bin . ;       \\",
+      "             ln -sf ../../run/STOCHPERT.TBL . ;                     \\",
+      "             if [ -n \"\" ] ; then                       \\",
+      "                ln -sf ../../run/ETAMPNEW_DATA_DBL ETAMPNEW_DATA ;  \\",
+      "                ln -sf ../../run/ETAMPNEW_DATA.expanded_rain_DBL ETAMPNEW_DATA.expanded_rain ;   \\",
+      "                ln -sf ../../run/RRTM_DATA_DBL RRTM_DATA ;          \\",
+      "                ln -sf ../../run/RRTMG_LW_DATA_DBL RRTMG_LW_DATA ;  \\",
+      "                ln -sf ../../run/RRTMG_SW_DATA_DBL RRTMG_SW_DATA ;  \\",
+      "             fi )",
+      "( cd test/em_real ; if test -d ../../run/SBM_input_33 ; then\t\t\t\t\\",
+      "             ln -sf ../../run/SBM_input_33 . ;\t\t\t\t\t\t\\",
+      "             ln -sf ../../run/scattering_tables_2layer_high_quad_1dT_1%fw_110 . ;\t\\",
+      "             fi )",
+      "( cd test/em_real ; /bin/rm -f GENPARM.TBL ; ln -s ../../run/GENPARM.TBL . )",
+      "( cd test/em_real ; /bin/rm -f LANDUSE.TBL ; ln -s ../../run/LANDUSE.TBL . )",
+      "( cd test/em_real ; /bin/rm -f SOILPARM.TBL ; ln -s ../../run/SOILPARM.TBL . )",
+      "( cd test/em_real ; /bin/rm -f URBPARM.TBL ; ln -s ../../run/URBPARM.TBL . )",
+      "( cd test/em_real ; /bin/rm -f URBPARM_LCZ.TBL ; ln -s ../../run/URBPARM_LCZ.TBL . )",
+      "( cd test/em_real ; /bin/rm -f VEGPARM.TBL ; ln -s ../../run/VEGPARM.TBL . )",
+      "( cd test/em_real ; /bin/rm -f MPTABLE.TBL ; ln -s ../../run/MPTABLE.TBL . )",
+      "( cd test/em_real ; /bin/rm -f tr49t67 ; ln -s ../../run/tr49t67 . )",
+      "( cd test/em_real ; /bin/rm -f tr49t85 ; ln -s ../../run/tr49t85 . )",
+      "( cd test/em_real ; /bin/rm -f tr67t85 ; ln -s ../../run/tr67t85 . )",
+      "( cd test/em_real ; /bin/rm -f gribmap.txt ; ln -s ../../run/gribmap.txt . )",
+      "( cd test/em_real ; /bin/rm -f grib2map.tbl ; ln -s ../../run/grib2map.tbl . )",
+      "( cd run ; /bin/rm -f real.exe ; ln -s ../main/real.exe . )",
+      "( cd run ; /bin/rm -f tc.exe ; ln -s ../main/tc.exe . )",
+      "( cd run ; /bin/rm -f ndown.exe ; ln -s ../main/ndown.exe . )",
+      "( cd run ; if test -f namelist.input ; then \\",
+      "\t/bin/cp -f namelist.input namelist.input.backup.`date +%Y-%m-%d_%H_%M_%S` ; fi ; \\",
+      "\t/bin/rm -f namelist.input ; cp ../test/em_real/namelist.input . )",
+      " ",
+      "==========================================================================",
+      "build started:   Tue Jun  9 11:07:31 WEST 2026",
+      "build completed: Tue Jun 9 11:09:37 WEST 2026",
+      " ",
+      "--->                  Executables successfully built                  <---",
+      " ",
+      "-rwxrwxr-x 1 enric enric 43533144 Jun  9 11:09 main/ndown.exe",
+      "-rwxrwxr-x 1 enric enric 39953592 Jun  9 11:09 main/real.exe",
+      "-rwxrwxr-x 1 enric enric 39093608 Jun  9 11:09 main/tc.exe",
+      "-rwxrwxr-x 1 enric enric 54514968 Jun  9 11:09 main/wrf.exe",
+      " ",
+      "==========================================================================",
+      " "
+    ],
+    "output_dir": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output",
+    "output_files": [
+      "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "patch_diff": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff",
+      "sha256": "efa776216a22c24acffbce3d30c93033d2c814c861d7e94184f44eb9936fb2d7",
+      "size_bytes": 14519
+    },
+    "rsl_error_0000": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/rsl.error.0000",
+      "sha256": "4c52bdf3685978f04e6b34f8c74c638fd61eb554d422e6eaf25e962cebc84ea2",
+      "size_bytes": 681788
+    },
+    "rsl_error_0000_tail": [
+      "Timing for main: time 2026-05-02_03:54:36 on domain   1:    0.53583 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:54:42 on domain   2:    0.15624 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:54:48 on domain   2:    0.13669 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:54:54 on domain   2:    0.13025 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:54:54 on domain   1:    0.55274 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:00 on domain   2:    0.13815 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:06 on domain   2:    0.13983 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:12 on domain   2:    0.13340 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:12 on domain   1:    0.54818 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:18 on domain   2:    0.13229 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:24 on domain   2:    0.12710 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:30 on domain   2:    0.12806 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:30 on domain   1:    0.52013 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:36 on domain   2:    0.12889 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:42 on domain   2:    0.12354 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:48 on domain   2:    0.12647 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:48 on domain   1:    0.50982 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:55:54 on domain   2:    0.13348 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:00 on domain   2:    0.12382 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:06 on domain   2:    0.12416 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:06 on domain   1:    0.50834 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:12 on domain   2:    0.13793 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:18 on domain   2:    0.12643 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:24 on domain   2:    0.12967 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:24 on domain   1:    0.51564 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:30 on domain   2:    0.12713 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:36 on domain   2:    0.12372 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:42 on domain   2:    0.12652 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:42 on domain   1:    0.50546 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:48 on domain   2:    0.13979 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:56:54 on domain   2:    0.12818 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:00 on domain   2:    0.12815 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:00 on domain   1:    0.52140 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:06 on domain   2:    0.15199 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:12 on domain   2:    0.14126 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:18 on domain   2:    0.12995 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:18 on domain   1:    0.55275 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:24 on domain   2:    0.13341 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:30 on domain   2:    0.13012 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:36 on domain   2:    0.12924 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:36 on domain   1:    0.54363 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:42 on domain   2:    0.13193 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:48 on domain   2:    0.13075 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:54 on domain   2:    0.12781 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:57:54 on domain   1:    0.53597 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:00 on domain   2:    0.13977 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:06 on domain   2:    0.12972 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:12 on domain   2:    0.13511 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:12 on domain   1:    0.53963 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:18 on domain   2:    0.13990 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:24 on domain   2:    0.12668 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:30 on domain   2:    0.13088 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:30 on domain   1:    0.52544 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:36 on domain   2:    0.12986 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:42 on domain   2:    0.12776 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:48 on domain   2:    0.12867 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:48 on domain   1:    0.51759 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:58:54 on domain   2:    0.12976 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:00 on domain   2:    0.12320 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:06 on domain   2:    0.12677 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:06 on domain   1:    0.50842 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:12 on domain   2:    0.12967 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:18 on domain   2:    0.12993 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:24 on domain   2:    0.12512 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:24 on domain   1:    0.51384 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:30 on domain   2:    0.13467 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:36 on domain   2:    0.12566 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:42 on domain   2:    0.12966 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:42 on domain   1:    0.51823 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:48 on domain   2:    0.13362 elapsed seconds",
+      "Timing for main: time 2026-05-02_03:59:54 on domain   2:    0.13031 elapsed seconds",
+      "Timing for main: time 2026-05-02_04:00:00 on domain   2:    0.43450 elapsed seconds",
+      " mediation_integrate.G        1249 DATASET=HISTORY",
+      " mediation_integrate.G        1250  grid%id            2  grid%oid            2",
+      "Timing for Writing wrfout_d02_2026-05-02_04:00:00 for domain        2:    0.55804 elapsed seconds",
+      "Timing for main: time 2026-05-02_04:00:00 on domain   1:    1.38588 elapsed seconds",
+      " mediation_integrate.G        1249 DATASET=HISTORY",
+      " mediation_integrate.G        1250  grid%id            1  grid%oid            2",
+      "Timing for Writing wrfout_d01_2026-05-02_04:00:00 for domain        1:    0.37318 elapsed seconds",
+      "d01 2026-05-02_04:00:00 wrf: SUCCESS COMPLETE WRF"
+    ],
+    "run_dir": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3",
+    "run_log": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/full_pre_rk_28rank_stdout.log",
+      "sha256": "bb72e5499b28ad3eccb868de80051120f67bd691a5c3e0728a26adb2a27b50e7",
+      "size_bytes": 1372
+    },
+    "run_log_tail": [
+      " starting wrf task           13  of           28",
+      " starting wrf task           20  of           28",
+      " starting wrf task           11  of           28",
+      " starting wrf task            2  of           28",
+      " starting wrf task           18  of           28",
+      " starting wrf task           21  of           28",
+      " starting wrf task            9  of           28",
+      " starting wrf task            6  of           28",
+      " starting wrf task           27  of           28",
+      " starting wrf task            4  of           28",
+      " starting wrf task           23  of           28",
+      " starting wrf task           14  of           28",
+      " starting wrf task            5  of           28",
+      " starting wrf task            0  of           28",
+      " starting wrf task           26  of           28",
+      " starting wrf task            7  of           28",
+      " starting wrf task           22  of           28",
+      " starting wrf task           24  of           28",
+      " starting wrf task           19  of           28",
+      " starting wrf task           25  of           28",
+      " starting wrf task            8  of           28",
+      " starting wrf task           15  of           28",
+      " starting wrf task           10  of           28",
+      " starting wrf task           16  of           28",
+      " starting wrf task           17  of           28",
+      " starting wrf task            1  of           28",
+      " starting wrf task           12  of           28",
+      " starting wrf task            3  of           28"
+    ],
+    "run_wrf_exe": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/wrf.exe",
+      "sha256": "cc33f2b49293e74a19a96ddac1a7e401311dcfe556a2e9b27033ae4353dd91c7",
+      "size_bytes": 54514968
+    },
+    "scratch_root": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook",
+    "solve_em": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/dyn_em/solve_em.F",
+      "sha256": "9544de46bd18bb24bb3b30c90bf20d514189b209523a62b200a2b58761213563",
+      "size_bytes": 348681
+    },
+    "wrf_exe": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/main/wrf.exe",
+      "sha256": "cc33f2b49293e74a19a96ddac1a7e401311dcfe556a2e9b27033ae4353dd91c7",
+      "size_bytes": 54514968
+    },
+    "wrf_source_path": {
+      "exists": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF",
+      "sha256": null,
+      "size_bytes": 4096
+    }
+  }
+}

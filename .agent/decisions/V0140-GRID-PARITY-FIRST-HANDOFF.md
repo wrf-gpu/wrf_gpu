@@ -49,6 +49,18 @@ build a full WRF pre-RK native-state/tendency savepoint and proof-only JAX
 loader, then rerun the strict same-input one-step boundary or name the next
 exact blocker.
 
+Update 2026-06-09 11:36 WEST: the full pre-RK savepoint sprint completed.
+Final verdict:
+`FULL_PRE_RK_JAX_LOADER_BLOCKED_RK_FIXED_SOURCE_BOUNDARY`. CPU-WRF successfully
+compiled, ran to `2026-05-02_04:00:00`, and emitted two full native pre-RK hook
+files at `d02` step `6000`; duplicate tile overlap max delta is `0.0`. Full dry
+state, active moisture, and scalar records are present. The strict one-step JAX
+comparison still did not run because WRF has not yet produced current-step
+`*_tendf`, `h_diabatic`, `*_save`, `moist_old`, and `scalar_old` leaves at the
+step-entry boundary. Next sprint is not broad debugging: place a second WRF
+source/save hook after those leaves exist and before any dynamics state mutation,
+or prove the comparison boundary must move.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
