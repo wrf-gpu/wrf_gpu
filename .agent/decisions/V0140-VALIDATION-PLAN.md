@@ -278,6 +278,17 @@ Current status:
   post-RK/pre-halo. B4 remains blocked; next validation-enabling sprint is the
   minimal CPU-WRF `before_first_rk_step_part1_call` QVAPOR savepoint, then a
   rerun of the theta proof.
+- 2026-06-09 18:17 WEST manager update: production live-nest theta/QV wiring is
+  now closed by `proofs/v014/step1_live_nest_theta_qv_wiring.json` with verdict
+  `STEP1_LIVE_NEST_THETA_QV_WIRING_INIT_CLOSED_NEXT_FIELD`. The live-nest
+  `build_replay_case` path applies WRF `USE_THETA_M=1` theta conversion plus
+  `adjust_tempqv`; corrected theta max_abs is `5.788684885033035e-05 K` and
+  QVAPOR max_abs is `5.970267497393267e-08`. B4 remains blocked because the
+  Step-1 16-field comparison still diverges: first divergent schema field `T`,
+  largest residual `P` max_abs `974.9820434775493`, worst Fortran
+  `i=1,j=30,k=1`, boundary band true. The next validation-enabling sprint is
+  Step-1 `P/PH/MU` boundary/operator localization, not TOST, Switzerland, FP32,
+  or memory work.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to

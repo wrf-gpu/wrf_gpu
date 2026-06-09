@@ -9,6 +9,6 @@ Verdict: `STEP1_LIVE_NEST_INIT_BASE_RESIDUALS_CLOSED_NEXT_T`.
 - Strict comparison run: `True`.
 - Base residual status: `CLOSED`.
 - First divergent field in schema order: `T`.
-- Largest max_abs field: `P` max_abs `1561.2503728885986` rmse `305.9413510899027`.
+- Largest max_abs field: `P` max_abs `974.9820434775493` rmse `135.98147360593399`.
 
 Detailed per-field and initial-delta tables are in `proofs/v014/step1_live_nest_init_rerun.json`.
