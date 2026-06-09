@@ -81,11 +81,17 @@ bisection then classified the final partial subcycle as downstream, not causal:
 `BAD_BEFORE_FINAL_PARTIAL_SUBCYCLE`, with final producer-shaped replay exact
 against the existing bad checkpoint and `PB/MUB` already wrong at d02 completed
 step 5997 before parent step 2000, `_operational_force`, and child steps
-5998-5999 (`MUB` max_abs `1050.3046875`, `PB` `1047.015625`). The active next
-sprint is an earlier-source bisection before d02 step 5997: native load /
-initial carry, earlier replay segment drift, base-state split, or a narrower
-handoff hook. Production dycore fixes remain blocked until that path names the
-first wrong write, handoff, or cadence.
+5998-5999 (`MUB` max_abs `1050.3046875`, `PB` `1047.015625`). The earlier-source
+bisection then found the first wrong surface: `proofs/v014/earlier_source_bisect.json`
+verdict `BASE_STATE_SPLIT_DEFINITION_MISMATCH`. The initial d02 JAX
+`OperationalCarry` matches native `wrfinput_d02` `PB/MUB`, but CPU-WRF
+h0/h1/h10 and h10 pre-RK truth share a stable different `PB/MUB` split
+(`MUB` max_abs `1050.3046875`, `PB` `1047.015625`), so replay-time drift is not
+needed to explain the bad h10 base carry. The active next sprint is a narrow
+source-changing fix for
+`src/gpuwrf/integration/d02_replay.py::build_replay_case` native child
+base-state split construction. TOST, Switzerland, FP32, and broad memory work
+remain paused until this base-state split bug is fixed or explicitly bounded.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt

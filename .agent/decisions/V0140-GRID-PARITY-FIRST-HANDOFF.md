@@ -636,29 +636,57 @@ Manager validation reran:
 - `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/previous_step_handoff_bisect.py`
 - `python -m json.tool proofs/v014/previous_step_handoff_bisect.json`
 
-## Opened Wave 18
+## Completed Wave 18
+
+- GPT tmux worker (`0:4`, completed after manager validation):
+  earlier-source bisection sprint
+  `.agent/sprints/2026-06-09-v014-earlier-source-bisect/sprint-contract.md`
+  with deliverables `proofs/v014/earlier_source_bisect.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-earlier-source-bisect.md`.
+
+Verdict: `BASE_STATE_SPLIT_DEFINITION_MISMATCH`. Initial d02
+`OperationalCarry` `PB/MUB` match native `wrfinput_d02`, but not CPU-WRF
+h0/h1/h10 or h10 pre-RK truth. CPU-WRF `PB/MUB` are stable across those
+surfaces on the target patch, so replay-time drift is not needed to explain the
+bad h10 base carry. Worst base leaf remains `MUB` with max_abs `1050.3046875`;
+`PB` max_abs is `1047.015625`.
+
+Targeted GPU replay was required because `_load_domains` reaches
+`State.zeros`, which is GPU-gated in this branch. The run used
+`JAX_PLATFORMS=cuda`, `CUDA_VISIBLE_DEVICES=0`, platform allocator, and peak
+sampled VRAM `9091` MiB. The required CPU validation command then reused the
+compact replay artifact and regenerated the repo proof objects.
+
+Manager validation reran:
+
+- `python -m py_compile proofs/v014/earlier_source_bisect.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/earlier_source_bisect.py`
+- `python -m json.tool proofs/v014/earlier_source_bisect.json`
+
+## Opened Wave 19
 
 - Sprint contract opened:
-  `.agent/sprints/2026-06-09-v014-earlier-source-bisect/sprint-contract.md`
+  `.agent/sprints/2026-06-09-v014-base-state-split-fix/sprint-contract.md`
   with prompt
-  `.agent/sprints/2026-06-09-v014-earlier-source-bisect/agent-prompt.md`.
-  Objective: bisect before d02 step 5997 and decide whether `T/P/PB/MU/MUB`
-  are already wrong at native load / initial carry, become wrong during earlier
-  replay segments, or require a narrower source hook. Default rule is no source
-  fix; TOST, Switzerland, broad validation, and FP32 remain excluded.
+  `.agent/sprints/2026-06-09-v014-base-state-split-fix/agent-prompt.md`.
+  Objective: patch or precisely block
+  `src/gpuwrf/integration/d02_replay.py::build_replay_case` native child
+  base-state split construction. The fix must reproduce WRF's
+  post-initialization `PB/MUB` split or name the exact WRF routine/formula/hook
+  needed; a hidden normal production dependency on CPU-WRF `wrfout` history is
+  not acceptable.
 
 ## Next Manager Actions
 
-1. Run the earlier-source bisection sprint. Start from
-   `proofs/v014/previous_step_handoff_bisect.json`,
-   `proofs/v014/prestep_carry_source_trace.json`, and the native L2 producer
-   path. The sprint must decide whether the bad state is already present at
-   native load / initial carry, appears during an earlier replay segment before
-   d02 step 5997, reflects a base-state split definition mismatch, or is
-   blocked behind a missing earlier hook.
+1. Run the base-state split fix sprint. Start from
+   `proofs/v014/earlier_source_bisect.json` and
+   `src/gpuwrf/integration/d02_replay.py::build_replay_case`. The sprint must
+   either reproduce WRF's post-initialization `PB/MUB` split in the native d02
+   child path or emit a blocked verdict naming the exact WRF routine/formula or
+   hook needed.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
-   surface-layer code read-only until the previous-step/prestep trace isolates
-   ownership.
+   surface-layer code read-only unless the base-state split fix proof directly
+   requires a narrower follow-up contract.
 3. Launch source-changing dynamic fixes only after a proof names the first
    failing operator, write, state handoff, or cadence path.
 4. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
