@@ -1565,6 +1565,50 @@ Parallel status:
 - TOST, Switzerland, long GPU validation, and direct merge of Mythos work remain
   paused until manager review.
 
+## Current Manager Update 2026-06-09 23:25 WEST
+
+The RK1 `P_STATE` source-split sprint is closed:
+
+- Sprint:
+  `.agent/sprints/2026-06-09-v014-step1-rk1-p-state-source-split`.
+- Proof:
+  `proofs/v014/step1_rk1_p_state_source_split.{py,json,md}`.
+- Review:
+  `.agent/reviews/2026-06-09-v014-step1-rk1-p-state-source-split.md`.
+- Verdict:
+  `STEP1_RK1_P_STATE_SOURCE_REFUTED_STALE_PROOF_LOADER_BYPASS_NEXT_T_TENDF`.
+- Manager rerun passed:
+  `py_compile`, CPU-only proof rerun, JSON validation, and `git diff --check`.
+
+Meaning:
+
+- The previous post-Mythos `P_STATE` material frontier was a stale proof-loader
+  artifact. The proof-local live-nest Step-1 helper still bypassed Mythos'
+  production `start_domain` perturbation init.
+- With the production Mythos perturbation init applied in the proof capture,
+  RK1 `P_STATE` at `after_rk_addtend_before_small_step_prep` drops from
+  `69.96875 Pa` to `0.0390625 Pa`, below the `1.0 Pa` material gate.
+- `P_STATE/MU_STATE/W_STATE/PH_STATE` are below material gates through
+  `after_first_rk_step_part1`, `after_first_rk_step_part2`, and RK1
+  `after_rk_addtend_before_small_step_prep` under patched-init capture.
+- RK1 `T_WORK/P_WORK/PH_WORK/MU_WORK/W_WORK` remain exact at
+  `small_step_prep/calc_p_rho(step=0)`.
+
+Next active grid-parity boundary:
+
+- Split WRF `first_rk_step_part2` `T_TENDF`.
+- Then split RK1 `after_rk_addtend` `T_TEND/PH_TEND/RW_TEND`.
+- Compare against JAX `compute_advection_tendencies` and
+  `_augment_large_step_tendencies` under patched-init capture.
+- Do not enter acoustic substeps for this issue; the earlier tendency boundary
+  is still open.
+
+Parallel status:
+
+- Mythos remains active in tmux `0:1` on the isolated memory/FP32 lane and has
+  started the exact-branch memory preflight plus moisture-reuse work.
+- Do not start TOST, Switzerland, or long GPU validation yet.
+
 ## Current Manager Update 2026-06-09 21:35 WEST
 
 The base-state boundary sprint is closed locally and ready to commit:
