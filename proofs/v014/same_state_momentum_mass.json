@@ -1,0 +1,535 @@
+{
+  "acceptance_notes": {
+    "compared_against_wrf_green_target": true,
+    "gpu_launched": false,
+    "jax_vs_jax_self_compare": false,
+    "json_validates": true,
+    "phb_truth_from_wrfout_static_field": true,
+    "production_source_edited": false,
+    "retained_wrfout_used_as_verdict": false,
+    "wrapper_needed_verdict_if_blocked": false,
+    "wrf_source_edited": false
+  },
+  "base_source_priority": {
+    "checkpoint_precedes_live_nest_base_fix_proof": true,
+    "live_nest_base_fix_classification": "LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF",
+    "priority_effect": "The base-source proof is a partial correctness fix and was produced after this h10 carry. It should trigger a fresh h10 carry before attributing PB/MUB/PHB residuals, but it does not lower the priority of the dynamic momentum/mass hypothesis because this same-surface comparison first fails `U` in sprint field order."
+  },
+  "blocked": null,
+  "checkpoint_probe": {
+    "candidate_count": 7,
+    "default_checkpoint": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218
+    },
+    "required_step_index": 5999,
+    "usable_candidate_count": 1,
+    "usable_candidates": [
+      {
+        "exists": true,
+        "is_file": true,
+        "metadata": {
+          "format": "gpuwrf-runtime-checkpoint",
+          "format_version": 3,
+          "has_full_restart_carry": false,
+          "has_grid": true,
+          "has_namelist": true,
+          "has_runtime_state": true,
+          "status": "READ",
+          "step_index": 5999
+        },
+        "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+        "size_bytes": 163257218,
+        "source": "default:/mnt/data/wrf_gpu2/v014_h10_prestep_carry",
+        "usable_h10_prestep_candidate": true,
+        "why_not_usable": null
+      }
+    ]
+  },
+  "commands": {
+    "generator_argv": [
+      "proofs/v014/same_state_momentum_mass.py"
+    ],
+    "minimum_contract_commands": [
+      "python -m py_compile proofs/v014/same_state_momentum_mass.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/same_state_momentum_mass.py",
+      "python -m json.tool proofs/v014/same_state_momentum_mass.json >/tmp/same_state_momentum_mass.validated.json"
+    ]
+  },
+  "comparison_result": {
+    "checkpoint_path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+    "checkpoint_produced_before_live_nest_base_source_fix": true,
+    "checkpoint_sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+    "checkpoint_step_index": 5999,
+    "comparison": {
+      "MU": {
+        "count": 289,
+        "finite_count": 289,
+        "max": -137.3988920808672,
+        "max_abs": 267.1935248522832,
+        "min": -267.1935248522832,
+        "rmse": 195.97477055691238,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "MASS_K1",
+        "worst": {
+          "abs_diff": 267.1935248522832,
+          "diff_jax_minus_wrf": -267.1935248522832,
+          "jax_candidate": 1467.6774468274048,
+          "native_key": [
+            13,
+            18
+          ],
+          "wrf_truth": 1734.870971679688
+        }
+      },
+      "MUB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 1050.3046875,
+        "max_abs": 1050.3046875,
+        "min": -865.8828125,
+        "rmse": 224.13660680282618,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "MASS_K1",
+        "worst": {
+          "abs_diff": 1050.3046875,
+          "diff_jax_minus_wrf": 1050.3046875,
+          "jax_candidate": 95000.0,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 93949.6953125
+        }
+      },
+      "P": {
+        "count": 289,
+        "finite_count": 289,
+        "max": -434.1485925419363,
+        "max_abs": 590.0020891006836,
+        "min": -590.0020891006836,
+        "rmse": 526.3359359284732,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "MASS_K1",
+        "worst": {
+          "abs_diff": 590.0020891006836,
+          "diff_jax_minus_wrf": -590.0020891006836,
+          "jax_candidate": 1384.2010358993164,
+          "native_key": [
+            13,
+            17
+          ],
+          "wrf_truth": 1974.203125
+        }
+      },
+      "PB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 1047.015625,
+        "max_abs": 1047.015625,
+        "min": -863.171875,
+        "rmse": 223.43483550580925,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "MASS_K1",
+        "worst": {
+          "abs_diff": 1047.015625,
+          "diff_jax_minus_wrf": 1047.015625,
+          "jax_candidate": 99706.203125,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 98659.1875
+        }
+      },
+      "PH": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 0.37017926983722127,
+        "max_abs": 5.097192302780417,
+        "min": -5.097192302780417,
+        "rmse": 2.336601078950881,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "WPH_KSTAG01",
+        "worst": {
+          "abs_diff": 5.097192302780417,
+          "diff_jax_minus_wrf": -5.097192302780417,
+          "jax_candidate": 9.914760097427102,
+          "native_key": [
+            1,
+            8,
+            19
+          ],
+          "wrf_truth": 15.01195240020752
+        }
+      },
+      "PHB": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 776.54345703125,
+        "max_abs": 878.0291748046875,
+        "min": -878.0291748046875,
+        "rmse": 188.2021628878216,
+        "status": "DIFF",
+        "truth_source": "green_wrf_h10_wrfout_static_field",
+        "truth_tag": "WPH_KSTAG01",
+        "worst": {
+          "abs_diff": 878.0291748046875,
+          "diff_jax_minus_wrf": -878.0291748046875,
+          "jax_candidate": 0.0,
+          "native_key": [
+            0,
+            7,
+            16
+          ],
+          "wrf_truth": 878.0291748046875
+        }
+      },
+      "T": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 3.3545763228707983,
+        "max_abs": 3.3545763228707983,
+        "min": -0.754810969454752,
+        "rmse": 1.0296598586362888,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "MASS_K1",
+        "worst": {
+          "abs_diff": 3.3545763228707983,
+          "diff_jax_minus_wrf": 3.3545763228707983,
+          "jax_candidate": -5.813209321660452,
+          "native_key": [
+            12,
+            17
+          ],
+          "wrf_truth": -9.16778564453125
+        }
+      },
+      "U": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 5.901345727281765,
+        "max_abs": 6.292358893898424,
+        "min": -6.292358893898424,
+        "rmse": 2.032497018496295,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "U_K1",
+        "worst": {
+          "abs_diff": 6.292358893898424,
+          "diff_jax_minus_wrf": -6.292358893898424,
+          "jax_candidate": -4.735481996086533,
+          "native_key": [
+            4,
+            13
+          ],
+          "wrf_truth": 1.55687689781189
+        }
+      },
+      "V": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 11.594389190354377,
+        "max_abs": 11.594389190354377,
+        "min": -2.8575219252050674,
+        "rmse": 4.454165526807795,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "V_K1",
+        "worst": {
+          "abs_diff": 11.594389190354377,
+          "diff_jax_minus_wrf": 11.594389190354377,
+          "jax_candidate": 3.248521079697638,
+          "native_key": [
+            9,
+            13
+          ],
+          "wrf_truth": -8.345868110656738
+        }
+      },
+      "W": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 1.7341964464592572,
+        "max_abs": 1.7341964464592572,
+        "min": -0.9805375737457879,
+        "rmse": 0.2385078386197167,
+        "status": "DIFF",
+        "truth_source": "wrf_text_surface",
+        "truth_tag": "WPH_KSTAG01",
+        "worst": {
+          "abs_diff": 1.7341964464592572,
+          "diff_jax_minus_wrf": 1.7341964464592572,
+          "jax_candidate": 0.19623603634115416,
+          "native_key": [
+            1,
+            9,
+            16
+          ],
+          "wrf_truth": -1.537960410118103
+        }
+      }
+    },
+    "comparison_kind": "JAX OperationalCarry step5999 -> one CPU RK step -> pre-halo State, compared to WRF post_after_all_rk_steps_pre_halo h10 patch",
+    "first_mismatch": {
+      "field": "U",
+      "max_abs": 6.292358893898424,
+      "rmse": 2.032497018496295,
+      "surface": "post_after_all_rk_steps_pre_halo",
+      "tolerance": 2e-06,
+      "truth_source": "wrf_text_surface",
+      "worst": {
+        "abs_diff": 6.292358893898424,
+        "diff_jax_minus_wrf": -6.292358893898424,
+        "jax_candidate": -4.735481996086533,
+        "native_key": [
+          4,
+          13
+        ],
+        "wrf_truth": 1.55687689781189
+      }
+    },
+    "grid_shape": {
+      "nx": 159,
+      "ny": 66,
+      "nz": 44
+    },
+    "lead_seconds_after_step": 36000.0,
+    "loader": "gpuwrf.runtime.checkpoint.read_checkpoint_with_runtime_state",
+    "run_radiation_for_step": true,
+    "status": "RAN",
+    "strict_same_input_wrf_savepoint": false,
+    "target_step": 6000,
+    "wrfout_truth_for_phb": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/wrfout_d02_2026-05-02_04:00:00",
+      "sha256": "4cf24a5b32d4d512aa3f81851afd221dce397460803fcfc3a0d5aebe7682ff48",
+      "size_bytes": 15375926
+    }
+  },
+  "comparison_run": true,
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "JAX_PLATFORMS": "cpu",
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T09:15:55.442220+00:00",
+  "gpu_used": false,
+  "inputs_read": {
+    "building_wrf_oracles_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
+      "size_bytes": 1128
+    },
+    "debug_method_critic": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-debug-method-critic.md",
+      "sha256": "719d3f86198a4cc657713d1149c92c86500ec6ed22d936c60f4b3d6d1b80e3c7",
+      "size_bytes": 12171
+    },
+    "dynamic_field_attribution_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
+      "sha256": "a8979ebd844d6aa6a05319bbfdaf548e119f2a8f0165c0ceed56c0854a84c020",
+      "size_bytes": 1798878
+    },
+    "jax_h10_prestep_carry_py": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.py",
+      "sha256": "b88e1aefc87ec7a479d7d85cfc8fbd5c1054e741d74aa65fe31af3a5502d9fea",
+      "size_bytes": 38406
+    },
+    "jax_pre_halo_capture_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+      "sha256": "fc480540f075cb894d2c3bae181e332eabf510302057a00473406040ffbd6a69",
+      "size_bytes": 24406
+    },
+    "live_nest_base_source_fix_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/live_nest_base_source_fix.json",
+      "sha256": "0add2cbe0075394b6dfc7f3537762e78722f3b772180b07b5192683e941eae93",
+      "size_bytes": 69804
+    },
+    "same_state_tendency_inventory_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_tendency_inventory.json",
+      "sha256": "78bc434738536eb62adc3b27020a5a8e8c943c96333e254302a48861f7cd62a2",
+      "size_bytes": 11251
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-state-momentum-mass/sprint-contract.md",
+      "sha256": "6de9472d99cebc88f342f669158e62267096c83ad06a6d27741e5b99e8cd7dcb",
+      "size_bytes": 3097
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    },
+    "wrf_dynamic_term_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
+      "sha256": "357e986b782856d4d5390a442aeaece99aeda8d4f3446b33b6a096cccba237fe",
+      "size_bytes": 33285
+    },
+    "wrf_post_rk_refresh_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
+      "size_bytes": 34079
+    },
+    "wrf_post_rk_refresh_md": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
+      "sha256": "28a831c5c1d3c74f85e5259c7fcfdf14f78e473b92469006cc84c3e3f7358eab",
+      "size_bytes": 3217
+    }
+  },
+  "next_sprint_recommendation": "Regenerate the h10 step-5999 carry after the base partial fix, rerun this proof, then instrument one layer earlier inside final RK U/V large-step/acoustic and mass/theta-pressure source assembly.",
+  "no_fp32_source": true,
+  "no_hermes": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-same-state-momentum-mass.md"
+  },
+  "schema": "wrfgpu2.v014.same_state_momentum_mass.v1",
+  "target_fields": [
+    "U",
+    "V",
+    "W",
+    "T",
+    "P",
+    "PB",
+    "PH",
+    "PHB",
+    "MU",
+    "MUB"
+  ],
+  "tolerance": {
+    "max_abs_green": 2e-06,
+    "policy": "frozen from prior h10 wrapper proofs; not widened for this result"
+  },
+  "unresolved_risks": [
+    "Checkpoint predates live_nest_base_source_fix.json; regenerate before assigning PB/MUB/PHB residuals to current code.",
+    "Only selected h10 K1/KSTAG01 native patch was compared."
+  ],
+  "verdict": "JAX_MISMATCH_U_post_after_all_rk_steps_pre_halo",
+  "wrf_target": {
+    "current_timestr_before_step": "2026-05-02_03:59:54",
+    "domain": "d02",
+    "function_boundary": "post dyn_em/solve_em.F::after_all_rk_steps state before RK halo exchanges",
+    "green_candidate_vs_wrfout": {
+      "MU": {
+        "max_abs": 4.547473508864641e-13,
+        "rmse": 3.4568416978372316e-13
+      },
+      "MUB": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "P": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PB": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PH": {
+        "max_abs": 5.329070518200751e-15,
+        "rmse": 2.0806684742968092e-15
+      },
+      "T": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "U": {
+        "max_abs": 8.881784197001252e-16,
+        "rmse": 2.7027201268900864e-16
+      },
+      "V": {
+        "max_abs": 8.881784197001252e-16,
+        "rmse": 2.6017692407882053e-16
+      },
+      "W": {
+        "max_abs": 4.440892098500626e-16,
+        "rmse": 4.0846014518837006e-17
+      }
+    },
+    "native_staggered_coordinates": {
+      "mass_zero": "y [1,18), x [5,22); Fortran j 2..18, i 6..22",
+      "u_zero": "y [1,18), x_stag [5,23); Fortran j 2..18, i 6..23",
+      "v_zero": "y_stag [1,19), x [5,22); Fortran j 2..19, i 6..22",
+      "w_ph_zero": "kstag [0,2), y [1,18), x [5,22); Fortran k 1..2, j 2..18, i 6..22"
+    },
+    "phb_note": "PHB is not emitted by the post-RK text hook; it is compared from the green WRF h10 wrfout static field.",
+    "prestep_completed_steps_required": 5999,
+    "selected_cell_zero_yx": {
+      "south_north": 9,
+      "west_east": 13
+    },
+    "selected_patch_bounds_mass_grid": {
+      "halo_radius_cells": 8,
+      "south_north_start": 1,
+      "south_north_stop_exclusive": 18,
+      "west_east_start": 5,
+      "west_east_stop_exclusive": 22
+    },
+    "surface": "post_after_all_rk_steps_pre_halo",
+    "surface_duplicate_count": 17,
+    "surface_duplicate_max_delta": 0.0,
+    "surface_files": [
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "surface_unique_counts": {
+      "MASS_K1": 289,
+      "U_K1": 306,
+      "V_K1": 306,
+      "WPH_KSTAG01": 578
+    },
+    "valid_time_utc": "2026-05-02T04:00:00+00:00",
+    "wrf_step": 6000,
+    "wrf_verdict": "REFRESH_LAYER_GREEN_post_after_all_rk_steps_pre_halo"
+  }
+}
