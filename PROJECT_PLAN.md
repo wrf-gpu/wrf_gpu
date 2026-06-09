@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 06:59 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 07:17 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -68,9 +68,18 @@ it to the produced JAX h10 step-5999 carry. Verdict:
 (`proofs/v014/pre_rk_input_boundary.json`): all target fields already differ
 before current-step physics/RK (`T` max_abs `6.218735851548047`, `P`
 `589.6789731315657`, `PB` `1047.015625`, `MU` `267.01919069732367`, `MUB`
-`1050.3046875`). The next sprint traces the JAX checkpoint/prestep carry
-producer and previous-step WRF/JAX update path; production dycore fixes remain
-blocked until that path names the first wrong write or cadence.
+`1050.3046875`). The prestep carry source trace then ruled out checkpoint
+serialization/load corruption and classified the producer path as
+`PRODUCER_WRITES_BAD_FINAL_CARRY`
+(`proofs/v014/prestep_carry_source_trace.json`): raw pickle runtime state,
+checkpoint API runtime state, top-level State payload, and a `/tmp` round-trip
+all preserve `T/P/PB/MU/MUB` exactly, so the bad values are already in the live
+nested replay `OperationalCarry` passed to
+`write_checkpoint(..., runtime_state=d02_carry)`. The active next sprint is a
+previous-step handoff bisection around the producer's final d02 steps
+5997-5999, parent step 2000, `_operational_force`, and child `_advance_chunk`;
+production dycore fixes remain blocked until that path names the first wrong
+write, handoff, or cadence.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt

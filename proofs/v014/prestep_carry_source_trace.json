@@ -1,0 +1,1614 @@
+{
+  "acceptance_notes": {
+    "checkpoint_write_read_preserves_target_leaves": true,
+    "distinguishes_serialization_from_bad_carry_production": true,
+    "jax_vs_jax_self_compare_used_as_verdict": false,
+    "production_source_edited": false,
+    "uses_cpu_wrf_pre_rk_truth_from_pre_rk_input_boundary": true,
+    "wrf_source_edited": false
+  },
+  "blocked": null,
+  "candidate_summary": {
+    "any_same_checkpoint_candidate_matches_tolerance": false,
+    "current_step_rk_or_acoustic_run": false,
+    "fields_with_closer_but_still_wrong_same_checkpoint_leaf": [
+      "T",
+      "MU",
+      "MUB"
+    ],
+    "prior_artifacts_used_as_truth": false,
+    "retained_wrfout_used_as_truth": false
+  },
+  "checkpoint_identity": {
+    "actual_checkpoint": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218
+    },
+    "matches_pre_rk_input_boundary_record": {
+      "path_match": true,
+      "record_present": true,
+      "recorded_step_index": 5999,
+      "sha256_match": true,
+      "size_match": true
+    },
+    "matches_producer_record": {
+      "path_match": true,
+      "record_present": true,
+      "recorded_step_index": 5999,
+      "sha256_match": true,
+      "size_match": true
+    },
+    "step_index": 5999
+  },
+  "classification": "PRODUCER_WRITES_BAD_FINAL_CARRY",
+  "classification_rationale": [
+    "The raw pickle runtime_state, checkpoint API runtime_state, top-level State payload, and local roundtrip all preserve target leaves exactly.",
+    "The preserved target leaves are the same leaves that differ from CPU-WRF pre-RK truth.",
+    "The producer path writes the d02 live-nested replay carry directly as runtime_state=d02_carry at completed step 5999.",
+    "No same-surface inspected checkpoint scratch leaf or prior proof artifact matches all target fields within tolerance."
+  ],
+  "commands": {
+    "argv": [
+      "proofs/v014/prestep_carry_source_trace.py"
+    ],
+    "required_validation": [
+      "python -m py_compile proofs/v014/prestep_carry_source_trace.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/prestep_carry_source_trace.py",
+      "python -m json.tool proofs/v014/prestep_carry_source_trace.json >/tmp/prestep_carry_source_trace.validated.json"
+    ]
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "field_trace": {
+    "MU": {
+      "any_same_checkpoint_alternative_closer_than_checkpoint_leaf": true,
+      "any_same_checkpoint_candidate_matches_tolerance": false,
+      "checkpoint_leaf_source_expression": "carry.state.mu_perturbation",
+      "checkpoint_leaf_vs_wrf_pre_rk_truth": {
+        "array_summary": {
+          "count": 10494,
+          "dtype": "float64",
+          "finite_count": 10494,
+          "max": 1853.9808638024656,
+          "max_abs": 1853.9808638024656,
+          "mean": 1426.4250333223101,
+          "min": 261.5879089563695,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "count": 289,
+        "field": "MU",
+        "finite_count": 289,
+        "max": -137.2676726126008,
+        "max_abs": 267.01919069732367,
+        "mean": -194.42697944074854,
+        "min": -267.01919069732367,
+        "name": "checkpoint_prestep_carry.MU",
+        "rmse": 195.8714431231374,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "source_expression": "carry.state.mu_perturbation",
+        "status": "DIFF",
+        "target_leaf_eligible": true,
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 267.01919069732367,
+          "array_index": [
+            13,
+            18
+          ],
+          "diff_jax_minus_wrf": -267.01919069732367,
+          "jax_candidate": 1467.8757067636143,
+          "native_key": [
+            13,
+            18
+          ],
+          "wrf_truth": 1734.894897460938
+        },
+        "wrf_source_convention": "grid%mu_2 perturbation dry-air column mass",
+        "wrf_source_field": "MU_NEW"
+      },
+      "closest_same_checkpoint_candidate": {
+        "max_abs": 266.9440572350254,
+        "name": "checkpoint_prestep_carry.mu_save",
+        "rmse": 195.7945106253025,
+        "status": "DIFF",
+        "target_leaf_eligible": false
+      },
+      "conclusion": "checkpoint_prestep_carry.mu_save is closer than the target State leaf for MU, but still differs by more than tolerance and is scratch/non-target state.",
+      "prior_artifact_candidates": [
+        {
+          "artifact": "proofs/v014/jax_h10_prestep_carry.json",
+          "candidate": "current-step captured pre-halo/post-RK comparison",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 267.1935248522832,
+          "rmse": 195.97477055691238,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo, not pre-RK input"
+        },
+        {
+          "artifact": "proofs/v014/jax_t_history_source_attribution.json",
+          "candidate": "context_pre_halo_mass_pressure.MU",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 267.1935248522832,
+          "rmse": 195.97477055691238,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo context, not pre-RK input"
+        }
+      ],
+      "same_checkpoint_alternative_leaves": [
+        {
+          "array_summary": {
+            "count": 10494,
+            "dtype": "float64",
+            "finite_count": 10494,
+            "max": 1917.9257009416344,
+            "max_abs": 1917.9257009416344,
+            "mean": 1426.4542939957134,
+            "min": 234.76520432349287,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": true,
+          "count": 289,
+          "field": "MU",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": -137.18429201160666,
+          "max_abs": 266.9440572350254,
+          "mean": -194.34934061350728,
+          "min": -266.9440572350254,
+          "name": "checkpoint_prestep_carry.mu_save",
+          "rmse": 195.7945106253025,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.mu_save",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 266.9440572350254,
+            "array_index": [
+              13,
+              18
+            ],
+            "diff_jax_minus_wrf": -266.9440572350254,
+            "jax_candidate": 1467.9508402259125,
+            "native_key": [
+              13,
+              18
+            ],
+            "wrf_truth": 1734.894897460938
+          },
+          "wrf_source_convention": "grid%mu_2 perturbation dry-air column mass",
+          "wrf_source_field": "MU_NEW"
+        },
+        {
+          "array_summary": {
+            "count": 10494,
+            "dtype": "float64",
+            "finite_count": 10494,
+            "max": 1982.3535204852524,
+            "max_abs": 1982.3535204852524,
+            "mean": 1426.4205809540285,
+            "min": 209.9332406601461,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": false,
+          "count": 289,
+          "field": "MU",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": -137.2676726125942,
+          "max_abs": 267.0191906973346,
+          "mean": -194.4215930503555,
+          "min": -267.0191906973346,
+          "name": "checkpoint_prestep_carry.muts_minus_state_MUB",
+          "rmse": 195.86819629057663,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.muts - (carry.state.mu_total - carry.state.mu_perturbation)",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 267.0191906973346,
+            "array_index": [
+              13,
+              18
+            ],
+            "diff_jax_minus_wrf": -267.0191906973346,
+            "jax_candidate": 1467.8757067636034,
+            "native_key": [
+              13,
+              18
+            ],
+            "wrf_truth": 1734.894897460938
+          },
+          "wrf_source_convention": "grid%mu_2 perturbation dry-air column mass",
+          "wrf_source_field": "MU_NEW"
+        },
+        {
+          "array_summary": {
+            "count": 10494,
+            "dtype": "float64",
+            "finite_count": 10494,
+            "max": 61.39854351363968,
+            "max_abs": 67.25596603636644,
+            "mean": -0.03201258491136576,
+            "min": -67.25596603636644,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": false,
+          "count": 289,
+          "field": "MU",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": -1622.0077267581396,
+          "max_abs": 1749.3879658130127,
+          "mean": -1691.2465591719506,
+          "min": -1749.3879658130127,
+          "name": "checkpoint_prestep_carry.muave",
+          "rmse": 1691.4737428221156,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.muave",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 1749.3879658130127,
+            "array_index": [
+              12,
+              18
+            ],
+            "diff_jax_minus_wrf": -1749.3879658130127,
+            "jax_candidate": -0.06557811770064476,
+            "native_key": [
+              12,
+              18
+            ],
+            "wrf_truth": 1749.322387695312
+          },
+          "wrf_source_convention": "grid%mu_2 perturbation dry-air column mass",
+          "wrf_source_field": "MU_NEW"
+        }
+      ]
+    },
+    "MUB": {
+      "any_same_checkpoint_alternative_closer_than_checkpoint_leaf": true,
+      "any_same_checkpoint_candidate_matches_tolerance": false,
+      "checkpoint_leaf_source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
+      "checkpoint_leaf_vs_wrf_pre_rk_truth": {
+        "array_summary": {
+          "count": 10494,
+          "dtype": "float64",
+          "finite_count": 10494,
+          "max": 95002.68661805251,
+          "max_abs": 95002.68661805251,
+          "mean": 94535.23626224023,
+          "min": 64526.05468749989,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "count": 289,
+        "field": "MUB",
+        "finite_count": 289,
+        "max": 1050.3046875,
+        "max_abs": 1050.3046875,
+        "mean": 69.00035380787983,
+        "min": -865.8828125,
+        "name": "checkpoint_prestep_carry.MUB",
+        "rmse": 224.13660680282618,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
+        "status": "DIFF",
+        "target_leaf_eligible": true,
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 1050.3046875,
+          "array_index": [
+            7,
+            16
+          ],
+          "diff_jax_minus_wrf": 1050.3046875,
+          "jax_candidate": 95000.0,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 93949.6953125
+        },
+        "wrf_source_convention": "grid%mub base dry-air column mass",
+        "wrf_source_field": "MUB"
+      },
+      "closest_same_checkpoint_candidate": {
+        "max_abs": 1050.2069387110678,
+        "name": "checkpoint_prestep_carry.mu_total_minus_mu_save",
+        "rmse": 224.11673736069417,
+        "status": "DIFF",
+        "target_leaf_eligible": false
+      },
+      "conclusion": "checkpoint_prestep_carry.mu_total_minus_mu_save, checkpoint_prestep_carry.muts_minus_mu_save is closer than the target State leaf for MUB, but still differs by more than tolerance and is scratch/non-target state.",
+      "prior_artifact_candidates": [
+        {
+          "artifact": "proofs/v014/jax_h10_prestep_carry.json",
+          "candidate": "current-step captured pre-halo/post-RK comparison",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 1050.3046875,
+          "rmse": 224.13660680282618,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo, not pre-RK input"
+        },
+        {
+          "artifact": "proofs/v014/jax_t_history_source_attribution.json",
+          "candidate": "context_pre_halo_mass_pressure.MUB",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 1050.3046875,
+          "rmse": 224.13660680282618,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo context, not pre-RK input"
+        }
+      ],
+      "same_checkpoint_alternative_leaves": [
+        {
+          "array_summary": {
+            "count": 10494,
+            "dtype": "float64",
+            "finite_count": 10494,
+            "max": 95003.26639269521,
+            "max_abs": 95003.26639269521,
+            "mean": 94535.20700156681,
+            "min": 64526.01943564496,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": true,
+          "count": 289,
+          "field": "MUB",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": 1050.2069387110678,
+          "max_abs": 1050.2069387110678,
+          "mean": 68.92271498063867,
+          "min": -865.9503237262834,
+          "name": "checkpoint_prestep_carry.mu_total_minus_mu_save",
+          "rmse": 224.11673736069417,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.state.mu_total - carry.mu_save",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 1050.2069387110678,
+            "array_index": [
+              7,
+              16
+            ],
+            "diff_jax_minus_wrf": 1050.2069387110678,
+            "jax_candidate": 94999.90225121107,
+            "native_key": [
+              7,
+              16
+            ],
+            "wrf_truth": 93949.6953125
+          },
+          "wrf_source_convention": "grid%mub base dry-air column mass",
+          "wrf_source_field": "MUB"
+        },
+        {
+          "array_summary": {
+            "count": 10494,
+            "dtype": "float64",
+            "finite_count": 10494,
+            "max": 95002.57301703308,
+            "max_abs": 95002.57301703308,
+            "mean": 94535.20254919854,
+            "min": 64526.01943564494,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": true,
+          "count": 289,
+          "field": "MUB",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": 1050.2069387110678,
+          "max_abs": 1050.2069387110678,
+          "mean": 68.92810137103156,
+          "min": -865.9503237262979,
+          "name": "checkpoint_prestep_carry.muts_minus_mu_save",
+          "rmse": 224.11570721487982,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.muts - carry.mu_save",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 1050.2069387110678,
+            "array_index": [
+              7,
+              16
+            ],
+            "diff_jax_minus_wrf": 1050.2069387110678,
+            "jax_candidate": 94999.90225121107,
+            "native_key": [
+              7,
+              16
+            ],
+            "wrf_truth": 93949.6953125
+          },
+          "wrf_source_convention": "grid%mub base dry-air column mass",
+          "wrf_source_field": "MUB"
+        },
+        {
+          "array_summary": {
+            "count": 10494,
+            "dtype": "float64",
+            "finite_count": 10494,
+            "max": 96517.23313351753,
+            "max_abs": 96517.23313351753,
+            "mean": 95961.69330814744,
+            "min": 66082.69848926742,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": false,
+          "count": 289,
+          "field": "MUB",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": 2524.5809354119847,
+          "max_abs": 2524.5809354119847,
+          "mean": 1565.819933539082,
+          "min": 650.9282841981767,
+          "name": "checkpoint_prestep_carry.mu_total_minus_muave",
+          "rmse": 1579.6087383143297,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.state.mu_total - carry.muave",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 2524.5809354119847,
+            "array_index": [
+              7,
+              16
+            ],
+            "diff_jax_minus_wrf": 2524.5809354119847,
+            "jax_candidate": 96474.27624791198,
+            "native_key": [
+              7,
+              16
+            ],
+            "wrf_truth": 93949.6953125
+          },
+          "wrf_source_convention": "grid%mub base dry-air column mass",
+          "wrf_source_field": "MUB"
+        }
+      ]
+    },
+    "P": {
+      "any_same_checkpoint_alternative_closer_than_checkpoint_leaf": false,
+      "any_same_checkpoint_candidate_matches_tolerance": false,
+      "checkpoint_leaf_source_expression": "carry.state.p_perturbation, k=1",
+      "checkpoint_leaf_vs_wrf_pre_rk_truth": {
+        "array_summary": {
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 1475.3303954528383,
+          "max_abs": 1475.3303954528383,
+          "mean": 346.38311945817964,
+          "min": -127.64021329528939,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "count": 289,
+        "field": "P",
+        "finite_count": 289,
+        "max": -433.6800955753133,
+        "max_abs": 589.6789731315657,
+        "mean": -525.7226167626527,
+        "min": -589.6789731315657,
+        "name": "checkpoint_prestep_carry.P",
+        "rmse": 526.4973831519894,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "source_expression": "carry.state.p_perturbation, k=1",
+        "status": "DIFF",
+        "target_leaf_eligible": true,
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 589.6789731315657,
+          "array_index": [
+            0,
+            13,
+            17
+          ],
+          "diff_jax_minus_wrf": -589.6789731315657,
+          "jax_candidate": 1384.4460268684343,
+          "native_key": [
+            13,
+            17
+          ],
+          "wrf_truth": 1974.125
+        },
+        "wrf_source_convention": "grid%p perturbation pressure at k=1",
+        "wrf_source_field": "P"
+      },
+      "closest_same_checkpoint_candidate": {
+        "max_abs": 589.6789731315657,
+        "name": "checkpoint_prestep_carry.P",
+        "rmse": 526.4973831519894,
+        "status": "DIFF",
+        "target_leaf_eligible": true
+      },
+      "conclusion": "No inspected same-checkpoint or prior artifact improves the target State leaf on the required pre-RK source.",
+      "prior_artifact_candidates": [
+        {
+          "artifact": "proofs/v014/jax_h10_prestep_carry.json",
+          "candidate": "current-step captured pre-halo/post-RK comparison",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 590.0020891006836,
+          "rmse": 526.3359359284732,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo, not pre-RK input"
+        },
+        {
+          "artifact": "proofs/v014/jax_t_history_source_attribution.json",
+          "candidate": "context_pre_halo_mass_pressure.P",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 590.0020891006836,
+          "rmse": 526.3359359284732,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo context, not pre-RK input"
+        }
+      ],
+      "same_checkpoint_alternative_leaves": []
+    },
+    "PB": {
+      "any_same_checkpoint_alternative_closer_than_checkpoint_leaf": false,
+      "any_same_checkpoint_candidate_matches_tolerance": false,
+      "checkpoint_leaf_source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
+      "checkpoint_leaf_vs_wrf_pre_rk_truth": {
+        "array_summary": {
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 99708.88125377275,
+          "max_abs": 99708.88125377275,
+          "mean": 44068.63157649161,
+          "min": 5225.25048828125,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "count": 289,
+        "field": "PB",
+        "finite_count": 289,
+        "max": 1047.015625,
+        "max_abs": 1047.015625,
+        "mean": 68.78500782362858,
+        "min": -863.171875,
+        "name": "checkpoint_prestep_carry.PB",
+        "rmse": 223.43483550580925,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
+        "status": "DIFF",
+        "target_leaf_eligible": true,
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 1047.015625,
+          "array_index": [
+            0,
+            7,
+            16
+          ],
+          "diff_jax_minus_wrf": 1047.015625,
+          "jax_candidate": 99706.203125,
+          "native_key": [
+            7,
+            16
+          ],
+          "wrf_truth": 98659.1875
+        },
+        "wrf_source_convention": "grid%pb base pressure at k=1",
+        "wrf_source_field": "PB"
+      },
+      "closest_same_checkpoint_candidate": {
+        "max_abs": 1047.015625,
+        "name": "checkpoint_prestep_carry.PB",
+        "rmse": 223.43483550580925,
+        "status": "DIFF",
+        "target_leaf_eligible": true
+      },
+      "conclusion": "No inspected same-checkpoint or prior artifact improves the target State leaf on the required pre-RK source.",
+      "prior_artifact_candidates": [
+        {
+          "artifact": "proofs/v014/jax_h10_prestep_carry.json",
+          "candidate": "current-step captured pre-halo/post-RK comparison",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 1047.015625,
+          "rmse": 223.43483550580925,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo, not pre-RK input"
+        },
+        {
+          "artifact": "proofs/v014/jax_t_history_source_attribution.json",
+          "candidate": "context_pre_halo_mass_pressure.PB",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 1047.015625,
+          "rmse": 223.43483550580925,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo context, not pre-RK input"
+        }
+      ],
+      "same_checkpoint_alternative_leaves": []
+    },
+    "T": {
+      "any_same_checkpoint_alternative_closer_than_checkpoint_leaf": true,
+      "any_same_checkpoint_candidate_matches_tolerance": false,
+      "checkpoint_leaf_source_expression": "carry.state.theta - 300 K, k=1",
+      "checkpoint_leaf_vs_wrf_pre_rk_truth": {
+        "array_summary": {
+          "count": 461736,
+          "dtype": "float64",
+          "finite_count": 461736,
+          "max": 194.490934930442,
+          "max_abs": 194.490934930442,
+          "mean": 46.70802980814804,
+          "min": -9.423864025038654,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "count": 289,
+        "field": "T",
+        "finite_count": 289,
+        "max": -1.8544233482248842,
+        "max_abs": 6.218735851548047,
+        "mean": -4.597396025737414,
+        "min": -6.218735851548047,
+        "name": "checkpoint_prestep_carry.T",
+        "rmse": 4.638818160588427,
+        "skipped_record_count": 0,
+        "skipped_records": [],
+        "source_expression": "carry.state.theta - 300 K, k=1",
+        "status": "DIFF",
+        "target_leaf_eligible": true,
+        "tolerance_max_abs": 2e-06,
+        "worst": {
+          "abs_diff": 6.218735851548047,
+          "array_index": [
+            0,
+            8,
+            19
+          ],
+          "diff_jax_minus_wrf": -6.218735851548047,
+          "jax_candidate": -7.906541027329297,
+          "native_key": [
+            8,
+            19
+          ],
+          "wrf_truth": -1.68780517578125
+        },
+        "wrf_source_convention": "grid%t_2 perturbation potential temperature at k=1",
+        "wrf_source_field": "T_THM"
+      },
+      "closest_same_checkpoint_candidate": {
+        "max_abs": 3.677698918664362,
+        "name": "checkpoint_prestep_carry.t_2ave_minus_300",
+        "rmse": 2.6121328691890726,
+        "status": "DIFF",
+        "target_leaf_eligible": false
+      },
+      "conclusion": "checkpoint_prestep_carry.t_2ave_minus_300 is closer than the target State leaf for T, but still differs by more than tolerance and is scratch/non-target state.",
+      "prior_artifact_candidates": [
+        {
+          "artifact": "proofs/v014/jax_h10_prestep_carry.json",
+          "candidate": "current-step captured pre-halo/post-RK comparison",
+          "closer_than_checkpoint_leaf_max_abs": true,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 3.3545763228707983,
+          "rmse": 1.0296598586362888,
+          "same_surface_as_this_proof": false,
+          "surface": "after_all_rk_steps_pre_halo, not pre-RK input"
+        },
+        {
+          "artifact": "proofs/v014/jax_t_history_source_attribution.json",
+          "candidate": "captured_final_carry.t_2ave_minus_300",
+          "closer_than_checkpoint_leaf_max_abs": true,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 3.677881697025043,
+          "rmse": 2.6121909969239896,
+          "same_surface_as_this_proof": false,
+          "surface": "WRF THM-side after current-step all-RK, not pre-RK input"
+        },
+        {
+          "artifact": "proofs/v014/jax_theta_evolution_localization.json",
+          "candidate": "checkpoint_prestep_carry.state.theta_minus_300",
+          "closer_than_checkpoint_leaf_max_abs": false,
+          "eligible_as_prestep_source": false,
+          "matches_tolerance": false,
+          "max_abs": 6.218735851548047,
+          "rmse": 4.638818160588427,
+          "same_surface_as_this_proof": false,
+          "surface": "earliest previous WRF T_OLD reference, adjacent but not explicit T_THM pre-RK truth"
+        }
+      ],
+      "same_checkpoint_alternative_leaves": [
+        {
+          "array_summary": {
+            "count": 461736,
+            "dtype": "float64",
+            "finite_count": 461736,
+            "max": 194.49040261984732,
+            "max_abs": 194.49040261984732,
+            "mean": 46.70784905377566,
+            "min": -9.422730044895502,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": false,
+          "count": 289,
+          "field": "T",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": -1.8560282082777917,
+          "max_abs": 6.219773380739184,
+          "mean": -4.597859197641354,
+          "min": -6.219773380739184,
+          "name": "checkpoint_prestep_carry.t_save_minus_300",
+          "rmse": 4.639230063808711,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.t_save - 300 K, k=1",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 6.219773380739184,
+            "array_index": [
+              0,
+              8,
+              19
+            ],
+            "diff_jax_minus_wrf": -6.219773380739184,
+            "jax_candidate": -7.907578556520434,
+            "native_key": [
+              8,
+              19
+            ],
+            "wrf_truth": -1.68780517578125
+          },
+          "wrf_source_convention": "grid%t_2 perturbation potential temperature at k=1",
+          "wrf_source_field": "T_THM"
+        },
+        {
+          "array_summary": {
+            "count": 461736,
+            "dtype": "float64",
+            "finite_count": 461736,
+            "max": 0.0011298057556814456,
+            "max_abs": 0.001323619608797344,
+            "mean": 1.3520972775579913e-07,
+            "min": -0.001323619608797344,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "closer_than_checkpoint_leaf": true,
+          "count": 289,
+          "field": "T",
+          "finite_count": 289,
+          "matches_tolerance": false,
+          "max": 3.677698918664362,
+          "max_abs": 3.677698918664362,
+          "mean": 2.5302676829894373,
+          "min": -0.2008723393131504,
+          "name": "checkpoint_prestep_carry.t_2ave_minus_300",
+          "rmse": 2.6121328691890726,
+          "skipped_record_count": 0,
+          "skipped_records": [],
+          "source_expression": "carry.t_2ave - 300 K, k=1",
+          "status": "DIFF",
+          "target_leaf_eligible": false,
+          "tolerance_max_abs": 2e-06,
+          "worst": {
+            "abs_diff": 3.677698918664362,
+            "array_index": [
+              0,
+              12,
+              17
+            ],
+            "diff_jax_minus_wrf": 3.677698918664362,
+            "jax_candidate": -4.9387575131731865e-06,
+            "native_key": [
+              12,
+              17
+            ],
+            "wrf_truth": -3.677703857421875
+          },
+          "wrf_source_convention": "grid%t_2 perturbation potential temperature at k=1",
+          "wrf_source_field": "T_THM"
+        }
+      ]
+    }
+  },
+  "fp32_source_landing": false,
+  "generated_utc": "2026-06-09T06:16:31.466071+00:00",
+  "gpu_used": false,
+  "inputs_read": {
+    "agents": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
+      "size_bytes": 2561
+    },
+    "checkpoint": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218
+    },
+    "checkpoint_module": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/checkpoint.py",
+      "sha256": "bec8f1ac9d213f5e7ca212928dc7e02043de34fc256a80a207d6bb781b59720b",
+      "size_bytes": 10705
+    },
+    "handoff": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "43781958716108a4cb406c33621e72ba16e712e53d44ab001b23ff5fd70f677c",
+      "size_bytes": 34413
+    },
+    "jax_h10_prestep_carry_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
+      "size_bytes": 35739
+    },
+    "jax_t_history_source_attribution_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.json",
+      "sha256": "81340e58be285a10b9348f2c822f4c83059faba1012c0c76439f3b91caa14b4e",
+      "size_bytes": 57546
+    },
+    "jax_theta_evolution_localization_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_theta_evolution_localization.json",
+      "sha256": "d1a77beb4b7ac1bbe16e240c05c32595c619601ac2a6026b6e0d132c54e0f44e",
+      "size_bytes": 767749
+    },
+    "operational_state_module": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+      "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
+      "size_bytes": 8390
+    },
+    "pre_rk_input_boundary_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+      "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
+      "size_bytes": 43617
+    },
+    "producer_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+      "sha256": "59eb1f936d51874825aeae1de531ba7d13ac674a5e5cbef1fe859f8f1e511bbb",
+      "size_bytes": 24206
+    },
+    "producer_provenance": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
+      "sha256": "5d5534cdd19c5b467d94b7790ecee4e45400069410e75c7bc84d2b33d95d008d",
+      "size_bytes": 3185
+    },
+    "producer_script": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.py",
+      "sha256": "134dbba08d1802cdf928846f14db24557fe21af7b3f76e755d9f164396ed3271",
+      "size_bytes": 34212
+    },
+    "project_constitution": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
+      "size_bytes": 1157
+    },
+    "reporting_to_human_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
+      "sha256": "3e857f0fca442e5c069f2873fd20ebf26ca87b966d37a79525e399c1f1f7156b",
+      "size_bytes": 954
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-prestep-carry-source-trace/sprint-contract.md",
+      "sha256": "441580b6375c5e204999518382d282172b35ac2e09755a81c435196dedcc4ed2",
+      "size_bytes": 3654
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    }
+  },
+  "next_decision": "Open a narrow previous-step handoff bisection sprint: capture CPU-only JAX d02 carries at steps 5997, 5998, and 5999 immediately before/after _operational_force, _advance_chunk, and _carry_from_finished_stage, then compare State theta/p/mu target leaves plus t_2ave/t_save/mu_save/muts against the existing CPU-WRF pre-RK truth. Do not edit current-step RK/acoustic first.",
+  "producer_trace": {
+    "checkpoint_write_expression": "write_checkpoint(d02_carry.state, d02_bundle.namelist, d02_bundle.grid, 5999, path, runtime_state=d02_carry)",
+    "classification": "live_nested_replay_generated_operational_carry",
+    "does_not_start_from": [
+      "retained GPU wrfout",
+      "WRF restart",
+      "JAX restart readback",
+      "previous-step WRF live state"
+    ],
+    "handoff_path": [
+      "_load_domains(config, domain_names_for(2))",
+      "DomainTree.from_domains(..., feedback_enabled=False)",
+      "run_operational_domain_tree(..., carries=carries, initial_own_steps=own_steps) through d01=1999/d02=5997",
+      "_operational_advance_factory(tree) advances parent d01 step 2000 for the partial subcycle",
+      "_operational_force(edge, carries[parent], carries[d02]) refreshes d02 from parent",
+      "advance(d02, carries[d02], child_start_step=5998, child_steps=2) produces completed d02 step 5999",
+      "write_checkpoint(... runtime_state=d02_carry) writes the produced carry"
+    ],
+    "producer_json_checkpoint_record": {
+      "exists": true,
+      "grid_shape": {
+        "nx": 159,
+        "ny": 66,
+        "nz": 44
+      },
+      "has_runtime_state": true,
+      "is_file": true,
+      "namelist_type": "OperationalNamelist",
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "runtime_state_type": "OperationalCarry",
+      "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
+      "size_bytes": 163257218,
+      "status": "LOAD_OK",
+      "step_index": 5999,
+      "wall_s": 2.032662772999174
+    },
+    "producer_provenance": {
+      "gpu_used_for_original_production": true,
+      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
+      "present": true,
+      "producer_command_display": "WRFGPU2_H10_PRODUCER_ALLOW_GPU=1 CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry_producer.py",
+      "producer_summary": {
+        "nesting": {
+          "parent": "d01",
+          "parent_grid_ratio": 3
+        },
+        "partial_parent_subcycle": {
+          "child_steps": 2,
+          "d02": 5999,
+          "parent_step": 2000,
+          "wall_s": 111.5
+        },
+        "segments": [
+          {
+            "d01": 200,
+            "d02": 600,
+            "segment": 1,
+            "wall_s": 153.7
+          },
+          {
+            "d01": 400,
+            "d02": 1200,
+            "segment": 2,
+            "wall_s": 103.3
+          },
+          {
+            "d01": 600,
+            "d02": 1800,
+            "segment": 3,
+            "wall_s": 103.4
+          },
+          {
+            "d01": 800,
+            "d02": 2400,
+            "segment": 4,
+            "wall_s": 103.7
+          },
+          {
+            "d01": 1000,
+            "d02": 3000,
+            "segment": 5,
+            "wall_s": 103.2
+          },
+          {
+            "d01": 1200,
+            "d02": 3600,
+            "segment": 6,
+            "wall_s": 103.1
+          },
+          {
+            "d01": 1400,
+            "d02": 4200,
+            "segment": 7,
+            "wall_s": 103.3
+          },
+          {
+            "d01": 1600,
+            "d02": 4800,
+            "segment": 8,
+            "wall_s": 103.3
+          },
+          {
+            "d01": 1800,
+            "d02": 5400,
+            "segment": 9,
+            "wall_s": 103.5
+          },
+          {
+            "d01": 1999,
+            "d02": 5997,
+            "segment": 10,
+            "wall_s": 103.0
+          }
+        ],
+        "status": "PRODUCED",
+        "target": {
+          "domain": "d02",
+          "dt_s": 6.0,
+          "prestep_completed_steps": 5999,
+          "target_step": 6000
+        }
+      }
+    },
+    "source_nodes": [
+      {
+        "contains_device_tree": false,
+        "contains_hostify_tree": false,
+        "contains_load_domains": false,
+        "contains_operational_advance_factory": false,
+        "contains_operational_force": false,
+        "contains_run_operational_domain_tree": false,
+        "contains_runtime_state": false,
+        "contains_write_checkpoint": false,
+        "line_end": 221,
+        "line_start": 215,
+        "module_path": "proofs/v014/jax_h10_prestep_carry_producer.py",
+        "name": "input_run_dir",
+        "source_sha256": "d69a1a9edcc69758b424582b4d18af4f541b17fda8e86cf9017aa59cc8429fbc"
+      },
+      {
+        "contains_device_tree": false,
+        "contains_hostify_tree": false,
+        "contains_load_domains": true,
+        "contains_operational_advance_factory": true,
+        "contains_operational_force": true,
+        "contains_run_operational_domain_tree": true,
+        "contains_runtime_state": true,
+        "contains_write_checkpoint": true,
+        "line_end": 433,
+        "line_start": 279,
+        "module_path": "proofs/v014/jax_h10_prestep_carry_producer.py",
+        "name": "produce_checkpoint",
+        "source_sha256": "7ce02e544db2906f1376915b04f5705c4377380888e7d638597d3ec67fa0af7e"
+      },
+      {
+        "contains_device_tree": false,
+        "contains_hostify_tree": true,
+        "contains_load_domains": false,
+        "contains_operational_advance_factory": false,
+        "contains_operational_force": false,
+        "contains_run_operational_domain_tree": false,
+        "contains_runtime_state": true,
+        "contains_write_checkpoint": true,
+        "line_end": 142,
+        "line_start": 90,
+        "module_path": "src/gpuwrf/runtime/checkpoint.py",
+        "name": "write_checkpoint",
+        "source_sha256": "5fcdb3e18a623bda7029981d3d142bcedc87491ca5adbac24c30183b1362b016"
+      },
+      {
+        "contains_device_tree": true,
+        "contains_hostify_tree": false,
+        "contains_load_domains": false,
+        "contains_operational_advance_factory": false,
+        "contains_operational_force": false,
+        "contains_run_operational_domain_tree": false,
+        "contains_runtime_state": true,
+        "contains_write_checkpoint": false,
+        "line_end": 219,
+        "line_start": 211,
+        "module_path": "src/gpuwrf/runtime/checkpoint.py",
+        "name": "read_checkpoint_with_runtime_state",
+        "source_sha256": "3291bf47a9baa27bd1f8fdbe309f61f3906ce9d27321f6839731cfe74b76a63c"
+      },
+      {
+        "contains_device_tree": false,
+        "contains_hostify_tree": false,
+        "contains_load_domains": false,
+        "contains_operational_advance_factory": false,
+        "contains_operational_force": false,
+        "contains_run_operational_domain_tree": false,
+        "contains_runtime_state": false,
+        "contains_write_checkpoint": false,
+        "line_end": 108,
+        "line_start": 32,
+        "module_path": "src/gpuwrf/runtime/operational_state.py",
+        "name": "OperationalCarry",
+        "source_sha256": "61dc0fb48bce58c48bf88f9e3614a2b4c25d7cb14a0ff735a000b7682b262fd6"
+      }
+    ],
+    "starts_from": "native L2 wrfinput/wrfbdy domain load via _load_domains, then generated OperationalCarry advanced by DomainTree/run_operational_domain_tree"
+  },
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-prestep-carry-source-trace.md",
+    "roundtrip_checkpoint": "/tmp/wrf_gpu2_v014_prestep_carry_source_trace/d02_step5999_roundtrip.pkl"
+  },
+  "schema": "wrfgpu2.v014.prestep_carry_source_trace.v1",
+  "serialization": {
+    "all_target_leaf_checks_exact": true,
+    "checkpoint_format": "gpuwrf-runtime-checkpoint",
+    "checkpoint_format_version": 3,
+    "field_checks": {
+      "MU": {
+        "api_runtime_state_vs_roundtrip_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "MU.api_runtime_state_vs_roundtrip_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_runtime_state_vs_api_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "MU.raw_runtime_state_vs_api_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_top_level_state_fields_vs_raw_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "MU.raw_top_level_state_fields_vs_raw_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "EXACT"
+        }
+      },
+      "MUB": {
+        "api_runtime_state_vs_roundtrip_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "MUB.api_runtime_state_vs_roundtrip_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_runtime_state_vs_api_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "MUB.raw_runtime_state_vs_api_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_top_level_state_fields_vs_raw_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "MUB.raw_top_level_state_fields_vs_raw_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "EXACT"
+        }
+      },
+      "P": {
+        "api_runtime_state_vs_roundtrip_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "P.api_runtime_state_vs_roundtrip_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_runtime_state_vs_api_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "P.raw_runtime_state_vs_api_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_top_level_state_fields_vs_raw_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "P.raw_top_level_state_fields_vs_raw_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        }
+      },
+      "PB": {
+        "api_runtime_state_vs_roundtrip_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "PB.api_runtime_state_vs_roundtrip_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_runtime_state_vs_api_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "PB.raw_runtime_state_vs_api_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_top_level_state_fields_vs_raw_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "PB.raw_top_level_state_fields_vs_raw_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        }
+      },
+      "T": {
+        "api_runtime_state_vs_roundtrip_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "T.api_runtime_state_vs_roundtrip_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_runtime_state_vs_api_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "T.raw_runtime_state_vs_api_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        },
+        "raw_top_level_state_fields_vs_raw_runtime_state": {
+          "array_equal": true,
+          "left_dtype": "float64",
+          "max_abs": 0.0,
+          "name": "T.raw_top_level_state_fields_vs_raw_runtime_state",
+          "right_dtype": "float64",
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "EXACT"
+        }
+      }
+    },
+    "raw_payload_has_runtime_state": true,
+    "raw_payload_state_field_count": 56,
+    "roundtrip": {
+      "file_info": {
+        "exists": true,
+        "is_file": true,
+        "path": "/tmp/wrf_gpu2_v014_prestep_carry_source_trace/d02_step5999_roundtrip.pkl",
+        "sha256": "90b8a936a25336134a18a179535d29ec994ac79f89e55357edb10da14fb98e0e",
+        "size_bytes": 268713987
+      },
+      "path": "/tmp/wrf_gpu2_v014_prestep_carry_source_trace/d02_step5999_roundtrip.pkl",
+      "step_index": 5999
+    },
+    "step_index": 5999,
+    "verdict": "CHECKPOINT_READ_WRITE_PRESERVES_TARGET_LEAVES"
+  },
+  "switzerland_validation_run": false,
+  "target": {
+    "domain": "d02",
+    "prestep_completed_steps": 5999,
+    "target_fields": [
+      "T",
+      "P",
+      "PB",
+      "MU",
+      "MUB"
+    ],
+    "tolerance_max_abs": 2e-06,
+    "valid_time_utc": "2026-05-02T04:00:00Z",
+    "wrf_step": 6000,
+    "wrf_surface": "dyn_em/solve_em.F after grid%itimestep increment before current-step physics/RK"
+  },
+  "tost_run": false,
+  "unresolved_risks": [
+    "This proves the persisted producer carry is bad; it does not split the deeper cause between previous-step final carry assembly, parent/child force packaging, and earlier step integration because no d02 step-5997/5998/5999 in-memory snapshots are present.",
+    "Only the selected pre-RK h10 d02 mass patch was compared.",
+    "The original checkpoint was produced in a prior GPU-enabled producer run; this trace only loads and round-trips it CPU-side."
+  ],
+  "verdict": "PRODUCER_WRITES_BAD_FINAL_CARRY",
+  "wall_s": 2.6054667229982442,
+  "wrf_pre_rk_truth": {
+    "duplicate_count": 0,
+    "duplicate_max_delta": 0.0,
+    "field_source": {
+      "MU": [
+        "MASS_K1",
+        "MU_NEW",
+        "grid%mu_2 perturbation dry-air column mass"
+      ],
+      "MUB": [
+        "MASS_K1",
+        "MUB",
+        "grid%mub base dry-air column mass"
+      ],
+      "P": [
+        "MASS_K1",
+        "P",
+        "grid%p perturbation pressure at k=1"
+      ],
+      "PB": [
+        "MASS_K1",
+        "PB",
+        "grid%pb base pressure at k=1"
+      ],
+      "T": [
+        "MASS_K1",
+        "T_THM",
+        "grid%t_2 perturbation potential temperature at k=1"
+      ]
+    },
+    "file_info": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "b7fdf7b72b9a9b8ab74c4399ce71c1f1340cb8939d88e12bdb092e4152be17b3",
+        "size_bytes": 4474
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "9c7f7308e32daf296727ee29138b1462b7575cb7eefb1254f7393e3560d30697",
+        "size_bytes": 60149
+      }
+    ],
+    "files": [
+      "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "metadata": {
+      "current_timestr_before_step": [
+        "2026-05-02_03:59:54",
+        "2026-05-02_03:59:54"
+      ],
+      "domain_id": [
+        "2",
+        "2"
+      ],
+      "dt_seconds": [
+        "0.6000000000000000E+01",
+        "0.6000000000000000E+01"
+      ],
+      "dx_m": [
+        "0.3000000000000000E+04",
+        "0.3000000000000000E+04"
+      ],
+      "dy_m": [
+        "0.3000000000000000E+04",
+        "0.3000000000000000E+04"
+      ],
+      "grid_itimestep_after_increment": [
+        "6000",
+        "6000"
+      ],
+      "lead_seconds_after_step": [
+        "0.3600000000000000E+05",
+        "0.3600000000000000E+05"
+      ],
+      "lead_seconds_before_step": [
+        "0.3599400000000000E+05",
+        "0.3599400000000000E+05"
+      ],
+      "mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 18 5 22 2 18",
+        "1 18 5 22 2 18"
+      ],
+      "rk_order_config": [
+        "3",
+        "3"
+      ],
+      "routine": [
+        "dyn_em/solve_em.F after grid%itimestep increment before RK loop",
+        "dyn_em/solve_em.F after grid%itimestep increment before RK loop"
+      ],
+      "selected_mass_cell_zero_yx_fortran_ji": [
+        "9 13 10 14",
+        "9 13 10 14"
+      ],
+      "surface": [
+        "pre_rk_input_boundary",
+        "pre_rk_input_boundary"
+      ],
+      "tile_i_j_bounds_fortran": [
+        "1 23 18 33",
+        "1 23 1 17"
+      ],
+      "tile_record_policy": [
+        "owned_tile_overlap_only",
+        "owned_tile_overlap_only"
+      ]
+    },
+    "source_json": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+    "source_verdict": "PRE_RK_INPUT_JAX_PRESTEP_MISMATCH_CONFIRMED",
+    "unique_counts": {
+      "MASS_K1": 289
+    }
+  },
+  "wrf_source_edits": false
+}
