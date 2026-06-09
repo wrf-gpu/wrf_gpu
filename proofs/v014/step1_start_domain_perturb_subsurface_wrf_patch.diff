@@ -1,0 +1,176 @@
+--- /mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/backups/start_em.F.before_start_domain_perturb_subsurface	2026-05-29 11:08:04.498801271 +0100
++++ /mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F	2026-06-09 19:49:33.466329316 +0100
+@@ -7,7 +7,7 @@
+ )
+ 
+    USE module_domain, ONLY : domain, wrfu_timeinterval, get_ijk_from_grid, &
+-        domain_setgmtetc
++        domain_setgmtetc, domain_clock_get
+    USE module_state_description
+    USE module_driver_constants
+    USE module_wrf_error
+@@ -843,6 +843,7 @@
+     ENDDO
+     ENDDO
+   ENDIF ! Various rebalancing options
++   CALL wrfgpu2_dump_start_domain_surface('after_hypsometric_p_al_alt')
+     IF ( .NOT. grid%this_is_an_ideal_run ) THEN
+        DO j=jts,min(jte,jde-1)
+           DO i=its,min(ite,ide-1)
+@@ -875,6 +876,7 @@
+       ENDDO
+    ENDDO
+ 
++   CALL wrfgpu2_dump_start_domain_surface('before_press_adj')
+    IF ( grid%press_adj .and. ( grid%id .NE. 1 ) .AND. .NOT. ( config_flags%restart ) .AND. &
+        ( ( config_flags%input_from_hires ) .OR. ( config_flags%input_from_file ) ) ) THEN
+       DO j = jts, MIN(jte,jde-1)
+@@ -890,6 +892,7 @@
+        ENDDO
+ 
+    END IF
++   CALL wrfgpu2_dump_start_domain_surface('after_press_adj')
+ 
+ ! set GMT outside of phy_init because phy_init may not be called on this
+ ! process if, for example, it is a moving nest and if this part of the domain is not
+@@ -1531,6 +1534,7 @@
+                               its, ite, jts, jte, kts, kte                     )
+       END IF
+    END IF
++   CALL wrfgpu2_dump_start_domain_surface('after_w_surface_branch')
+ 
+    IF ( .NOT. config_flags%restart ) THEN
+ ! set up slope-radiation constant arrays based on topography
+@@ -2235,6 +2239,132 @@
+ 
+      RETURN
+ 
++   CONTAINS
++
++   SUBROUTINE wrfgpu2_dump_start_domain_surface(wrfgpu2_surface)
++      CHARACTER(LEN=*), INTENT(IN) :: wrfgpu2_surface
++      CHARACTER(LEN=512) :: wrfgpu2_env
++      CHARACTER(LEN=1024) :: wrfgpu2_root, wrfgpu2_path
++      CHARACTER(LEN=256) :: wrfgpu2_time
++      INTEGER :: wrfgpu2_grid, wrfgpu2_ios, wrfgpu2_unit
++      INTEGER :: wrfgpu2_i, wrfgpu2_j, wrfgpu2_k
++      INTEGER :: wrfgpu2_mass_k_end, wrfgpu2_w_k_end
++
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_START_DOMAIN_SUBSURFACE', wrfgpu2_env)
++      IF (TRIM(wrfgpu2_env) /= '1') RETURN
++
++      wrfgpu2_grid = 2
++      wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/wrf_truth'
++
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_START_DOMAIN_SUBSURFACE_GRID', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_grid
++
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_START_DOMAIN_SUBSURFACE_ROOT', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) wrfgpu2_root = TRIM(wrfgpu2_env)
++
++      IF (grid%id /= wrfgpu2_grid) RETURN
++      IF (.NOT. grid%press_adj) RETURN
++
++      wrfgpu2_mass_k_end = MIN(kpe, kde-1)
++      wrfgpu2_w_k_end = MIN(kpe+1, kde)
++      IF (kps > wrfgpu2_mass_k_end) RETURN
++
++      CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_root), wait=.TRUE.)
++      CALL domain_clock_get(grid, current_timestr=wrfgpu2_time)
++
++      WRITE(wrfgpu2_path,'(A,A,A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++           TRIM(wrfgpu2_root)//'/', TRIM(wrfgpu2_surface), '_d', &
++           grid%id, '_step_', grid%itimestep, &
++           '_ips_', ips, '_ipe_', ipe, '_jps_', jps, '_jpe_', jpe, '.txt'
++      OPEN(NEWUNIT=wrfgpu2_unit, FILE=TRIM(wrfgpu2_path), &
++           STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++      WRITE(wrfgpu2_unit,'(A)') '# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1'
++      WRITE(wrfgpu2_unit,'(A,1X,A)') 'surface', TRIM(wrfgpu2_surface)
++      WRITE(wrfgpu2_unit,'(A)') 'routine dyn_em/start_em.F::start_domain_em'
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'domain_id', grid%id
++      WRITE(wrfgpu2_unit,'(A,1X,A)') 'current_timestr', TRIM(wrfgpu2_time)
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'grid_itimestep', grid%itimestep
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'allowed_to_read', allowed_to_read
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'press_adj_flag', grid%press_adj
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'restart_flag', config_flags%restart
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'input_from_file', config_flags%input_from_file
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'input_from_hires', config_flags%input_from_hires
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'hypsometric_opt', config_flags%hypsometric_opt
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'rebalance', config_flags%rebalance
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'use_theta_m', config_flags%use_theta_m
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'use_input_w', config_flags%use_input_w
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'start_of_simulation', start_of_simulation
++      WRITE(wrfgpu2_unit,'(A,1X,L1)') 'cycling', config_flags%cycling
++      WRITE(wrfgpu2_unit,'(A,4(1X,I0))') 'patch_i_j_bounds_fortran', ips, ipe, jps, jpe
++      WRITE(wrfgpu2_unit,'(A,4(1X,I0))') 'global_mass_i_j_end_exclusive_fortran', ids, ide, jds, jde
++      WRITE(wrfgpu2_unit,'(A)') 'patch_record_policy mass_owned_single_owner_no_overlap'
++      WRITE(wrfgpu2_unit,'(A,2(1X,I0))') &
++           'mass_vertical_fortran_k_start_k_end_inclusive', kps, wrfgpu2_mass_k_end
++      WRITE(wrfgpu2_unit,'(A,2(1X,I0))') &
++           'w_ph_vertical_fortran_kstag_start_kstag_end_inclusive', kps, wrfgpu2_w_k_end
++      WRITE(wrfgpu2_unit,'(A,1X,I0)') 'moist_index_qv', P_QV
++      WRITE(wrfgpu2_unit,'(A)') &
++           'record_schema MASS_START fortran_i fortran_j fortran_k ' // &
++           'zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL ' // &
++           'THETA2_FULL QVAPOR P_STATE PB AL ALT ALB'
++      DO wrfgpu2_k = kps, wrfgpu2_mass_k_end
++        DO wrfgpu2_j = jps, MIN(jpe,jde-1)
++          DO wrfgpu2_i = ips, MIN(ipe,ide-1)
++            WRITE(wrfgpu2_unit,'(A,6(1X,I0),10(1X,E24.16))') 'MASS_START', &
++                 wrfgpu2_i, wrfgpu2_j, wrfgpu2_k, &
++                 wrfgpu2_i-1, wrfgpu2_j-1, wrfgpu2_k-1, &
++                 REAL(grid%t_1(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%t_2(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%t_1(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)+t0,KIND=8), &
++                 REAL(grid%t_2(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j)+t0,KIND=8), &
++                 REAL(moist(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j,P_QV),KIND=8), &
++                 REAL(grid%p(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%pb(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%al(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%alt(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%alb(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8)
++          ENDDO
++        ENDDO
++      ENDDO
++      WRITE(wrfgpu2_unit,'(A)') &
++           'record_schema SURF_START fortran_i fortran_j zero_x zero_y ' // &
++           'MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE'
++      DO wrfgpu2_j = jps, MIN(jpe,jde-1)
++        DO wrfgpu2_i = ips, MIN(ipe,ide-1)
++          WRITE(wrfgpu2_unit,'(A,4(1X,I0),7(1X,E24.16))') 'SURF_START', &
++               wrfgpu2_i, wrfgpu2_j, wrfgpu2_i-1, wrfgpu2_j-1, &
++               REAL(grid%mu_1(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++               REAL(grid%mu_2(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++               REAL(grid%mut(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++               REAL(grid%mub(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++               REAL(grid%ht(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++               REAL(grid%ht_fine(wrfgpu2_i,wrfgpu2_j),KIND=8), &
++               REAL(grid%ht(wrfgpu2_i,wrfgpu2_j)-grid%ht_fine(wrfgpu2_i,wrfgpu2_j),KIND=8)
++        ENDDO
++      ENDDO
++      WRITE(wrfgpu2_unit,'(A)') &
++           'record_schema WPH_START fortran_i fortran_j fortran_kstag ' // &
++           'zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB'
++      DO wrfgpu2_k = kps, wrfgpu2_w_k_end
++        DO wrfgpu2_j = jps, MIN(jpe,jde-1)
++          DO wrfgpu2_i = ips, MIN(ipe,ide-1)
++            WRITE(wrfgpu2_unit,'(A,6(1X,I0),5(1X,E24.16))') 'WPH_START', &
++                 wrfgpu2_i, wrfgpu2_j, wrfgpu2_k, &
++                 wrfgpu2_i-1, wrfgpu2_j-1, wrfgpu2_k-1, &
++                 REAL(grid%w_1(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%w_2(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%ph_1(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%ph_2(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8), &
++                 REAL(grid%phb(wrfgpu2_i,wrfgpu2_k,wrfgpu2_j),KIND=8)
++          ENDDO
++        ENDDO
++      ENDDO
++      CLOSE(wrfgpu2_unit)
++   END SUBROUTINE wrfgpu2_dump_start_domain_surface
++
+    END SUBROUTINE start_domain_em
+ 
+ !-------------------------------------------------------------------

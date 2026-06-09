@@ -1,0 +1,5164 @@
+{
+  "commands": {
+    "executed": [
+      "date +%Y%m%d_%H%M%S",
+      "rm -rf /mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
+      "cp --reflink=auto -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF work_clean_20260609_194715/WRF",
+      "cp --reflink=auto -a /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run work_clean_20260609_194715/run",
+      "apply_patch work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+      "diff -u backup/start_em.F.before_start_domain_perturb_subsurface WRF/dyn_em/start_em.F > proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
+      "./compile em_real (failed: /bin/csh missing, exit 126)",
+      "PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH /home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/tcsh ./compile em_real (first env-missing check failed in log, then rerun with PATH/NETCDF/PNETCDF)",
+      "PATH=wrf-build/bin:$PATH NETCDF=wrf-build PNETCDF=wrf-build tcsh ./compile em_real",
+      "mpirun -np 28 ./wrf.exe (failed: insufficient slots)",
+      "mpirun --map-by :OVERSUBSCRIBE -np 28 ./wrf.exe",
+      "python -m py_compile proofs/v014/step1_start_domain_perturb_subsurface.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_start_domain_perturb_subsurface.py",
+      "python -m json.tool proofs/v014/step1_start_domain_perturb_subsurface.json >/tmp/step1_start_domain_perturb_subsurface.validated.json",
+      "git diff -- src/gpuwrf"
+    ],
+    "log_tails": {
+      "compile_success": "          ln -sf ../../run/capacity.asc . ;                      \\\n             ln -sf ../../run/coeff_p.asc . ;                       \\\n             ln -sf ../../run/coeff_q.asc . ;                       \\\n             ln -sf ../../run/constants.asc . ;                     \\\n             ln -sf ../../run/masses.asc . ;                        \\\n             ln -sf ../../run/termvels.asc . ;                      \\\n             ln -sf ../../run/kernels.asc_s_0_03_0_9 . ;            \\\n             ln -sf ../../run/kernels_z.asc . ;                     \\\n             ln -sf ../../run/bulkdens.asc_s_0_03_0_9 . ;           \\\n             ln -sf ../../run/bulkradii.asc_s_0_03_0_9 . ;          \\\n             ln -sf ../../run/CCN_ACTIVATE.BIN . ;                  \\\n             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_2momI . ;   \\\n             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_3momI . ;   \\\n             ln -sf ../../run/p3_lookupTable_2.dat-v5.3 . ;         \\\n             ln -sf ../../run/HLC.TBL . ;                           \\\n             ln -sf ../../run/wind-turbine-1.tbl . ;                \\\n             ln -sf ../../run/ishmael-gamma-tab.bin . ;             \\\n             ln -sf ../../run/ishmael-qi-qc.bin . ;                 \\\n             ln -sf ../../run/ishmael-qi-qr.bin . ;                 \\\n             ln -sf ../../run/BROADBAND_CLOUD_GODDARD.bin . ;       \\\n             ln -sf ../../run/STOCHPERT.TBL . ;                     \\\n             if [ -n \"\" ] ; then                       \\\n                ln -sf ../../run/ETAMPNEW_DATA_DBL ETAMPNEW_DATA ;  \\\n                ln -sf ../../run/ETAMPNEW_DATA.expanded_rain_DBL ETAMPNEW_DATA.expanded_rain ;   \\\n                ln -sf ../../run/RRTM_DATA_DBL RRTM_DATA ;          \\\n                ln -sf ../../run/RRTMG_LW_DATA_DBL RRTMG_LW_DATA ;  \\\n                ln -sf ../../run/RRTMG_SW_DATA_DBL RRTMG_SW_DATA ;  \\\n             fi )\n( cd test/em_real ; if test -d ../../run/SBM_input_33 ; then\t\t\t\t\\\n             ln -sf ../../run/SBM_input_33 . ;\t\t\t\t\t\t\\\n             ln -sf ../../run/scattering_tables_2layer_high_quad_1dT_1%fw_110 . ;\t\\\n             fi )\n( cd test/em_real ; /bin/rm -f GENPARM.TBL ; ln -s ../../run/GENPARM.TBL . )\n( cd test/em_real ; /bin/rm -f LANDUSE.TBL ; ln -s ../../run/LANDUSE.TBL . )\n( cd test/em_real ; /bin/rm -f SOILPARM.TBL ; ln -s ../../run/SOILPARM.TBL . )\n( cd test/em_real ; /bin/rm -f URBPARM.TBL ; ln -s ../../run/URBPARM.TBL . )\n( cd test/em_real ; /bin/rm -f URBPARM_LCZ.TBL ; ln -s ../../run/URBPARM_LCZ.TBL . )\n( cd test/em_real ; /bin/rm -f VEGPARM.TBL ; ln -s ../../run/VEGPARM.TBL . )\n( cd test/em_real ; /bin/rm -f MPTABLE.TBL ; ln -s ../../run/MPTABLE.TBL . )\n( cd test/em_real ; /bin/rm -f tr49t67 ; ln -s ../../run/tr49t67 . )\n( cd test/em_real ; /bin/rm -f tr49t85 ; ln -s ../../run/tr49t85 . )\n( cd test/em_real ; /bin/rm -f tr67t85 ; ln -s ../../run/tr67t85 . )\n( cd test/em_real ; /bin/rm -f gribmap.txt ; ln -s ../../run/gribmap.txt . )\n( cd test/em_real ; /bin/rm -f grib2map.tbl ; ln -s ../../run/grib2map.tbl . )\n( cd run ; /bin/rm -f real.exe ; ln -s ../main/real.exe . )\n( cd run ; /bin/rm -f tc.exe ; ln -s ../main/tc.exe . )\n( cd run ; /bin/rm -f ndown.exe ; ln -s ../main/ndown.exe . )\n( cd run ; if test -f namelist.input ; then \\\n\t/bin/cp -f namelist.input namelist.input.backup.`date +%Y-%m-%d_%H_%M_%S` ; fi ; \\\n\t/bin/rm -f namelist.input ; cp ../test/em_real/namelist.input . )\n \n==========================================================================\nbuild started:   Tue Jun  9 19:51:23 WEST 2026\nbuild completed: Tue Jun 9 19:52:34 WEST 2026\n \n--->                  Executables successfully built                  <---\n \n-rwxrwxr-x 1 enric enric 43660176 Jun  9 19:52 main/ndown.exe\n-rwxrwxr-x 1 enric enric 40076536 Jun  9 19:52 main/real.exe\n-rwxrwxr-x 1 enric enric 39216552 Jun  9 19:52 main/tc.exe\n-rwxrwxr-x 1 enric enric 54605136 Jun  9 19:52 main/wrf.exe\n \n==========================================================================\n \n",
+      "run_success": "      ppm\n N2O   range =    274.37200000000001        359.79800000000000       ppb\n CH4   range =    738.98599999999999        997.31100000000004       ppb\n CFC11 range =    0.0000000000000000        1.4000000000000000E-002  ppt\n CFC12 range =    0.0000000000000000        2.8809999999999998       ppt\n Normal ending of CAMtr_volume_mixing_ratio file\n GHG annual values from CAM trace gas file\n Year =         2026 , Julian day =          121\n CO2   =    4.3165164227391349E-004  volume mixing ratio\n N2O   =    3.3668267016245353E-007  volume mixing ratio\n CH4   =    1.9684692584420169E-006  volume mixing ratio\n CFC11 =    2.0198148261540234E-010  volume mixing ratio\n CFC12 =    4.6758969875045946E-010  volume mixing ratio\nINPUT LandUse = \"MODIFIED_IGBP_MODIS_NOAH\"\n LANDUSE TYPE = \"MODIFIED_IGBP_MODIS_NOAH\" FOUND          61  CATEGORIES           2  SEASONS WATER CATEGORY =           17  SNOW CATEGORY =           15\n SOIL TEXTURE CLASSIFICATION = STAS FOUND          19  CATEGORIES\nMax map factor in domain 1 =  1.00. Scale the dt in the model accordingly.\n D01: Time step                              =    18.0000000      (s)\n D01: Grid Distance                          =    9.00000000      (km)\n D01: Grid Distance Ratio dt/dx              =    2.00000000      (s/km)\n D01: Ratio Including Maximum Map Factor     =    2.00112772      (s/km)\n D01: NML defined reasonable_time_step_ratio =    6.00000000\n Climate GHG input from file from year         1765  to         2499\n CO2   range =    277.91300000000001        579.26400000000001       ppm\n N2O   range =    274.37200000000001        359.79800000000000       ppb\n CH4   range =    738.98599999999999        997.31100000000004       ppb\n CFC11 range =    0.0000000000000000        1.4000000000000000E-002  ppt\n CFC12 range =    0.0000000000000000        2.8809999999999998       ppt\n Normal ending of CAMtr_volume_mixing_ratio file\n GHG annual values from CAM trace gas file\n Year =         2026 , Julian day =          121\n CO2   =    4.3165164227391349E-004  volume mixing ratio\n N2O   =    3.3668267016245353E-007  volume mixing ratio\n CH4   =    1.9684692584420169E-006  volume mixing ratio\n CFC11 =    2.0198148261540234E-010  volume mixing ratio\n CFC12 =    4.6758969875045946E-010  volume mixing ratio\nINPUT LandUse = \"MODIFIED_IGBP_MODIS_NOAH\"\n LANDUSE TYPE = \"MODIFIED_IGBP_MODIS_NOAH\" FOUND          61  CATEGORIES           2  SEASONS WATER CATEGORY =           17  SNOW CATEGORY =           15\n SOIL TEXTURE CLASSIFICATION = STAS FOUND          19  CATEGORIES\n mediation_integrate.G        1249 DATASET=HISTORY\n mediation_integrate.G        1250  grid%id            1  grid%oid            1\nTiming for Writing wrfout_d01_2026-05-01_18:00:00 for domain        1:    0.30614 elapsed seconds\nd01 2026-05-01_18:00:00  Input data is acceptable to use: wrfbdy_d01\nTiming for processing lateral boundary for domain        1:    0.06340 elapsed seconds\n Tile Strategy is not specified. Assuming 1D-Y\nWRF TILE   1 IS      1 IE     14 JS      1 JE     15\nWRF NUMBER OF TILES =   1\nd01 2026-05-01_18:00:00  ----------------------------------------\nd01 2026-05-01_18:00:00  W-DAMPING  BEGINS AT W-COURANT NUMBER =    1.00000000\nd01 2026-05-01_18:00:00  ----------------------------------------\n mediation_integrate.G        1249 DATASET=HISTORY\n mediation_integrate.G        1250  grid%id            2  grid%oid            2\nTiming for Writing wrfout_d02_2026-05-01_18:00:00 for domain        2:    0.47041 elapsed seconds\n Tile Strategy is not specified. Assuming 1D-Y\nWRF TILE   1 IS      1 IE     23 JS      1 JE     17\nWRF NUMBER OF TILES =   1\nTiming for main: time 2026-05-01_18:00:06 on domain   2:    0.93868 elapsed seconds\nTiming for main: time 2026-05-01_18:00:12 on domain   2:    0.12501 elapsed seconds\nTiming for main: time 2026-05-01_18:00:18 on domain   2:    0.12600 elapsed seconds\nTiming for main: time 2026-05-01_18:00:18 on domain   1:    3.33240 elapsed seconds\nd01 2026-05-01_18:00:18 wrf: SUCCESS COMPLETE WRF\n"
+    },
+    "logs": {
+      "compile_bad_shebang": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface.log",
+      "compile_missing_env": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface_tcsh.log",
+      "compile_success": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface_wrfbuild.log",
+      "run_insufficient_slots": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/wrf_start_domain_perturb_subsurface_28rank_stdout.log",
+      "run_success": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/wrf_start_domain_perturb_subsurface_28rank_oversub_stdout.log"
+    }
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T19:03:34.801536+00:00",
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n",
+      "wall_s": 0.0008531869971193373
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "b0de9ad254f8b06113e144ac4f925e1bcd27d607\n",
+      "wall_s": 0.0012747000000672415
+    },
+    "log_head": {
+      "command": [
+        "git",
+        "log",
+        "-1",
+        "--oneline",
+        "--decorate"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "b0de9ad2 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 refresh grid parity manager handoff\n",
+      "wall_s": 0.0019863050110870972
+    },
+    "required_ancestor": {
+      "commit": "ee6cbbe1",
+      "is_ancestor": true,
+      "returncode": 0,
+      "stderr_tail": ""
+    }
+  },
+  "gpu_used": false,
+  "hygiene": {
+    "checks": {
+      "fresh_rebuilt_wrf_exe": {
+        "exists": true,
+        "is_dir": false,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/main/wrf.exe",
+        "sha256": "fca4099bc98e4a39f8d9d3ceb24555784dadf6d7214bd7781f2a49b0351bda81",
+        "size_bytes": 54605136
+      },
+      "no_nested_wrf_wrf": true,
+      "run_dir_exists": true,
+      "run_wrf_exe_symlink_target": "../WRF/main/wrf.exe",
+      "surface_file_counts": {
+        "after_hypsometric_p_al_alt": 28,
+        "after_press_adj": 28,
+        "after_w_surface_branch": 28,
+        "before_press_adj": 28
+      },
+      "truth_file_count_after_run": 112,
+      "work_dir_exists": true,
+      "wrf_backup": {
+        "exists": true,
+        "is_dir": false,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/backups/start_em.F.before_start_domain_perturb_subsurface",
+        "sha256": "4b6c98a06fb2b2c4472af73415099e311502747dc5543d9e9b1323497d83ddb4",
+        "size_bytes": 123365
+      },
+      "wrf_patch_diff": {
+        "exists": true,
+        "is_dir": false,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
+        "sha256": "2c29aa2da766cd08a422b8b720e13901c2feff8b639897f6a90c180da3f63f9f",
+        "size_bytes": 8991
+      },
+      "wrf_tree_exists": true
+    },
+    "clean_work_dirs": [
+      "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715"
+    ],
+    "prefilled_root_state": {
+      "ignored_for_this_proof": true,
+      "legacy_root_run_exists": true,
+      "legacy_root_wrf_exists": true,
+      "legacy_root_wrf_truth_file_count": 0
+    },
+    "scratch_root": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface",
+    "selected_clean_work_dir": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
+    "source_copy_roots": {
+      "run_source": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run",
+      "wrf_source": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF"
+    }
+  },
+  "inputs": {
+    "handoff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "5e543d6aa1ebb6c4cd196ac89c02f7142c25c1930be78ea21a9f2dfec485105e",
+      "size_bytes": 77290
+    },
+    "precall_qv_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "predecessor_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.json",
+      "sha256": "9a473a7b685b74d99f27ac2818dffbf04d94f95769da53cac9ccd72260716f76",
+      "size_bytes": 87776
+    },
+    "predecessor_md": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.md",
+      "sha256": "b3d2e91eebc18af9c4198d762bc3a6d7ef8665ab38adc89634e54897eb93b19b",
+      "size_bytes": 3137
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-start-domain-perturb-subsurface/sprint-contract.md",
+      "sha256": "72f26241d2496854e21e94f4302ef408b1c84765ab60fbf05c424c50729ec06f",
+      "size_bytes": 5880
+    },
+    "wrf_patch_diff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
+      "sha256": "2c29aa2da766cd08a422b8b720e13901c2feff8b639897f6a90c180da3f63f9f",
+      "size_bytes": 8991
+    },
+    "wrf_run_dir": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/run",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "wrf_tree": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "wrf_truth_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "next_decision": "Split current JAX live-nest start_domain input construction for AL/ALT: compare final blended HT, PB/MUB/PHB, PH_STATE, MU before press_adj, and diagnosed AL/ALT against the WRF internal after_hypsometric surface. Patch P/MU only after that current-input gap is below the material gate.",
+  "no_fp32_source_work": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "production_src_edits": false,
+  "proof": {
+    "exclusions": [
+      "The prefilled scratch-root WRF/run was ignored; all trusted WRF files came from the timestamped clean workdir.",
+      "The hook is gated on grid%press_adj=.TRUE. and grid id 2, so ordinary non-live-nest d02 start_domain calls are excluded.",
+      "WRF after_hypsometric P_STATE is continuous with accepted pre-call P_STATE; press_adj and W branch do not mutate P.",
+      "WRF after_press_adj MU_STATE is continuous with accepted pre-call MU_STATE; remaining current-JAX MU gap is formula/input, not later solve_em.",
+      "WRF after_w_surface_branch W_STATE is continuous with accepted pre-call W_STATE; W is not an acoustic or physics tendency source here.",
+      "Boundary package, carry, halo, first_rk_step_part1, phy_prep, and acoustic refresh remain excluded by predecessor proofs."
+    ],
+    "formula_metrics": {
+      "jax_current_press_adj_fp32_vs_wrf_after_press_MU": {
+        "bias": -5.2927379606733054e-06,
+        "count": 10494,
+        "max_abs": 0.025634765624545253,
+        "nonfinite_diff_count": 0,
+        "p95": 4.547473508864641e-13,
+        "p99": 0.002197265625,
+        "rmse": 0.0007867133521275596,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 158,
+          "j": 59
+        },
+        "worst_mismatch_index": [
+          58,
+          157
+        ]
+      },
+      "jax_current_press_adj_fp64_vs_wrf_after_press_MU": {
+        "bias": 1.4794499316646246e-05,
+        "count": 10494,
+        "max_abs": 0.047773029698646496,
+        "nonfinite_diff_count": 0,
+        "p95": 4.775559752943084e-05,
+        "p99": 0.002854282405910437,
+        "rmse": 0.0010454860097534014,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 55
+        },
+        "worst_mismatch_index": [
+          54,
+          155
+        ]
+      },
+      "jax_current_pressure_formula_fp32_vs_wrf_after_hyp_P": {
+        "bias": 0.024356174434295247,
+        "count": 461736,
+        "max_abs": 4.40625,
+        "nonfinite_diff_count": 0,
+        "p95": 0.53125,
+        "p99": 1.6171875,
+        "rmse": 0.2909566874461152,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 19,
+          "j": 8,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          7,
+          18
+        ]
+      },
+      "jax_current_pressure_formula_fp64_vs_wrf_after_hyp_P": {
+        "bias": 0.022002322755003835,
+        "count": 461736,
+        "max_abs": 3.9458582235092763,
+        "nonfinite_diff_count": 0,
+        "p95": 0.8694734643249831,
+        "p99": 1.8580557844186865,
+        "rmse": 0.3832298992869327,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 151,
+          "j": 46,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          45,
+          150
+        ]
+      },
+      "wrf_after_w_surface_vs_precall_W": {
+        "bias": -4.407877864962751e-13,
+        "count": 472230,
+        "max_abs": 5.960464477539063e-08,
+        "nonfinite_diff_count": 0,
+        "p95": 1.8189893967695929e-12,
+        "p99": 9.31322579819649e-10,
+        "rmse": 7.351352471267985e-10,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 61,
+          "j": 29,
+          "kstag": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          28,
+          60
+        ]
+      },
+      "wrf_internal_press_adj_fp32_vs_after_press_MU": {
+        "bias": 2.6867100967181984e-15,
+        "count": 10494,
+        "max_abs": 4.547473508864641e-13,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 4.547473508864641e-13,
+        "rmse": 9.500192094660529e-14,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 6,
+          "j": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          5
+        ]
+      },
+      "wrf_internal_press_adj_fp64_vs_after_press_MU": {
+        "bias": 2.747883025181201e-07,
+        "count": 10494,
+        "max_abs": 6.1028507616356364e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 2.966733836728965e-05,
+        "p99": 5.469279154112882e-05,
+        "rmse": 1.0944969852658133e-05,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 146,
+          "j": 63
+        },
+        "worst_mismatch_index": [
+          62,
+          145
+        ]
+      },
+      "wrf_internal_pressure_from_alt_fp32_vs_after_hyp_P": {
+        "bias": -0.00021691236983904222,
+        "count": 461736,
+        "max_abs": 0.015625,
+        "nonfinite_diff_count": 0,
+        "p95": 0.00390625,
+        "p99": 0.0078125,
+        "rmse": 0.0017691372004962024,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 141,
+          "j": 3,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          2,
+          140
+        ]
+      },
+      "wrf_internal_pressure_from_alt_fp64_vs_after_hyp_P": {
+        "bias": -0.00037970994650819907,
+        "count": 461736,
+        "max_abs": 0.02709226109436713,
+        "nonfinite_diff_count": 0,
+        "p95": 0.008954292970884126,
+        "p99": 0.013533754787931718,
+        "rmse": 0.003939297645330801,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 6,
+          "j": 30,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          29,
+          5
+        ]
+      }
+    },
+    "jax_input_metrics": {
+      "ALB_current_vs_wrf_after_hyp": {
+        "bias": -1.3808794109692655e-07,
+        "count": 461736,
+        "max_abs": 1.0552055318413522e-06,
+        "nonfinite_diff_count": 0,
+        "p95": 6.713742557451496e-07,
+        "p99": 1.0552055318413522e-06,
+        "rmse": 3.139560784383465e-07,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 41
+        },
+        "worst_mismatch_index": [
+          40,
+          0,
+          0
+        ]
+      },
+      "ALT_current_formula_vs_wrf_after_hyp": {
+        "bias": -9.696594386233928e-07,
+        "count": 461736,
+        "max_abs": 4.4775812162889395e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 9.049422532214635e-06,
+        "p99": 1.1296560851148455e-05,
+        "rmse": 4.00451551730315e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          30,
+          62
+        ]
+      },
+      "AL_current_formula_vs_wrf_after_hyp": {
+        "bias": -8.315714974587394e-07,
+        "count": 461736,
+        "max_abs": 4.504607755318e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 8.51407804430826e-06,
+        "p99": 1.124524384284458e-05,
+        "rmse": 3.912457199045156e-06,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          30,
+          62
+        ]
+      },
+      "HT_FINE_current_vs_wrf_after_hyp": {
+        "bias": 2.306957823083714e-16,
+        "count": 10494,
+        "max_abs": 4.547473508864641e-13,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 5.684341886080802e-14,
+        "rmse": 2.3210296050260928e-14,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 20,
+          "j": 13
+        },
+        "worst_mismatch_index": [
+          12,
+          19
+        ]
+      },
+      "HT_current_vs_wrf_after_hyp": {
+        "bias": -4.865939701709864e-08,
+        "count": 10494,
+        "max_abs": 2.682152282318384e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 7.82451885141673e-09,
+        "p99": 4.626463169117296e-06,
+        "rmse": 1.076769145490878e-06,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 157,
+          "j": 60
+        },
+        "worst_mismatch_index": [
+          59,
+          156
+        ]
+      },
+      "MUB_current_vs_wrf_after_hyp": {
+        "bias": -0.0014379073126789452,
+        "count": 10494,
+        "max_abs": 0.05002361937658861,
+        "nonfinite_diff_count": 0,
+        "p95": 0.021521761903568408,
+        "p99": 0.035347418212040786,
+        "rmse": 0.008025019829604947,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51
+        },
+        "worst_mismatch_index": [
+          50,
+          155
+        ]
+      },
+      "MU_STATE_raw_current_vs_wrf_before_press": {
+        "bias": 0.0,
+        "count": 10494,
+        "max_abs": 0.0,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "rmse": 0.0,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          0
+        ]
+      },
+      "PB_current_vs_wrf_after_hyp": {
+        "bias": -0.0005600475270968658,
+        "count": 461736,
+        "max_abs": 0.05357326504599769,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0055001466080284445,
+        "p99": 0.022395003079145687,
+        "rmse": 0.004296943965085442,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          50,
+          155
+        ]
+      },
+      "PHB_current_vs_wrf_after_hyp": {
+        "bias": -0.01747610370992694,
+        "count": 472230,
+        "max_abs": 0.10811684231157415,
+        "nonfinite_diff_count": 0,
+        "p95": 0.05131772726599593,
+        "p99": 0.055443795037572415,
+        "rmse": 0.02459295000326211,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 146,
+          "j": 34,
+          "kstag": 42
+        },
+        "worst_mismatch_index": [
+          41,
+          33,
+          145
+        ]
+      },
+      "PH_STATE_current_vs_wrf_after_hyp": {
+        "bias": -1.2187697011322472e-18,
+        "count": 472230,
+        "max_abs": 5.329070518200751e-15,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "rmse": 5.24243169212334e-16,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 1,
+          "kstag": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          0,
+          1
+        ]
+      },
+      "P_STATE_raw_current_vs_wrf_after_hyp": {
+        "bias": 0.0187159801204043,
+        "count": 461736,
+        "max_abs": 69.96875,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0234375,
+        "p99": 2.65625,
+        "rmse": 1.161700383780558,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 55,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          54,
+          155
+        ]
+      },
+      "QVAPOR_current_vs_wrf_after_hyp": {
+        "bias": -3.141856203880397e-12,
+        "count": 461736,
+        "max_abs": 5.970267497393267e-08,
+        "nonfinite_diff_count": 0,
+        "p95": 1.4901161193847656e-08,
+        "p99": 1.9557774070394496e-08,
+        "rmse": 4.711906338035755e-09,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 11,
+          "j": 6,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          5,
+          10
+        ]
+      },
+      "T_STATE_current_vs_wrf_after_hyp": {
+        "bias": 6.787669610538842e-08,
+        "count": 461736,
+        "max_abs": 5.118963662198439e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 2.838121361037338e-05,
+        "p99": 3.358017255550295e-05,
+        "rmse": 1.5094579100085305e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 154,
+          "j": 35,
+          "k": 14
+        },
+        "worst_mismatch_index": [
+          13,
+          34,
+          153
+        ]
+      },
+      "W_STATE_raw_current_vs_wrf_after_w": {
+        "bias": -0.0001511840907329694,
+        "count": 472230,
+        "max_abs": 0.7605466842651367,
+        "nonfinite_diff_count": 0,
+        "p95": 0.004590864432975644,
+        "p99": 0.056111272126436774,
+        "rmse": 0.014709815601114631,
+        "shape": [
+          45,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 62,
+          "j": 31,
+          "kstag": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          30,
+          61
+        ]
+      }
+    },
+    "jax_loader_metadata": {
+      "live_nest_base_init": {
+        "blend_width": 5,
+        "child_domain": "d02",
+        "cpu_wrfout_dependency": false,
+        "enabled": true,
+        "i_parent_start": 24,
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "j_parent_start": 20,
+        "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+        "parent_domain": "d01",
+        "parent_grid_ratio": 3,
+        "production_inputs": [
+          "parent native initialized terrain",
+          "wrfinput_d02",
+          "namelist.input"
+        ],
+        "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+        "spec_bdy_width": 5,
+        "timestep_loop_transfer": false
+      },
+      "theta_qv_adjust": {
+        "final_base_state_unchanged": true,
+        "perturbation_pressure_unchanged": true,
+        "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+        "theta_m_conversion_applied": true,
+        "timestep_loop_transfer": false,
+        "use_theta_m": 1,
+        "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+      },
+      "transient_adjust_mub": {
+        "blend_width": 5,
+        "child_domain": "d02",
+        "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+        "final_base_state_unchanged": true,
+        "i_parent_start": 24,
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "j_parent_start": 20,
+        "parent_domain": "d01",
+        "parent_grid_ratio": 3,
+        "spec_bdy_width": 5,
+        "surface": "post_blend_terrain_pre_start_domain",
+        "timestep_loop_transfer": false,
+        "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+      }
+    },
+    "next_truth_surface": "Split current JAX live-nest start_domain input construction for AL/ALT: compare final blended HT, PB/MUB/PHB, PH_STATE, MU before press_adj, and diagnosed AL/ALT against the WRF internal after_hypsometric surface. Patch P/MU only after that current-input gap is below the material gate.",
+    "patch_decision": {
+      "production_patch_applied": false,
+      "ready_for_patch": false,
+      "reason": "No production patch was applied because current JAX AL/ALT/base/PH inputs still leave P max_abs 3.9458582235092763 Pa, above the 1 Pa material gate."
+    },
+    "precall_truth": {
+      "duplicate_stats": {
+        "MUB": {
+          "duplicates": 451242,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "MUT": {
+          "duplicates": 451242,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "MU_STATE": {
+          "duplicates": 451242,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "PB": {
+          "duplicates": 0,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "PHB": {
+          "duplicates": 0,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "PH_STATE": {
+          "duplicates": 0,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "P_STATE": {
+          "duplicates": 0,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "QVAPOR": {
+          "duplicates": 0,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "T_STATE": {
+          "duplicates": 0,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        },
+        "W_STATE": {
+          "duplicates": 0,
+          "first_mismatch": null,
+          "max_delta": 0.0,
+          "mismatches": 0
+        }
+      },
+      "headers": [
+        {
+          "current_timestr_before_step": [
+            "2026-05-01_18:00:00"
+          ],
+          "domain_id": [
+            "2"
+          ],
+          "dt_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "dt_seconds": [
+            "0.6000000000000000E+01"
+          ],
+          "dts_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "global_mass_i_j_end_exclusive_fortran": [
+            "1",
+            "160",
+            "1",
+            "67"
+          ],
+          "grid_itimestep_after_increment": [
+            "1"
+          ],
+          "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+          "mass_vertical_fortran_k_start_k_end_inclusive": [
+            "1",
+            "44"
+          ],
+          "moist_index_qv": [
+            "2"
+          ],
+          "number_of_small_timesteps": [
+            "1"
+          ],
+          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+          "record_schema": [
+            "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
+            "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
+          ],
+          "rk_order": [
+            "3"
+          ],
+          "rk_step": [
+            "1"
+          ],
+          "routine": [
+            "dyn_em/solve_em.F"
+          ],
+          "surface": [
+            "before_first_rk_step_part1_call"
+          ],
+          "tile_i_j_bounds_fortran": [
+            "115",
+            "137",
+            "18",
+            "33"
+          ],
+          "tile_record_policy": [
+            "mass_owned_single_owner_no_overlap"
+          ],
+          "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+            "1",
+            "45"
+          ]
+        },
+        {
+          "current_timestr_before_step": [
+            "2026-05-01_18:00:00"
+          ],
+          "domain_id": [
+            "2"
+          ],
+          "dt_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "dt_seconds": [
+            "0.6000000000000000E+01"
+          ],
+          "dts_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "global_mass_i_j_end_exclusive_fortran": [
+            "1",
+            "160",
+            "1",
+            "67"
+          ],
+          "grid_itimestep_after_increment": [
+            "1"
+          ],
+          "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+          "mass_vertical_fortran_k_start_k_end_inclusive": [
+            "1",
+            "44"
+          ],
+          "moist_index_qv": [
+            "2"
+          ],
+          "number_of_small_timesteps": [
+            "1"
+          ],
+          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+          "record_schema": [
+            "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
+            "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
+          ],
+          "rk_order": [
+            "3"
+          ],
+          "rk_step": [
+            "1"
+          ],
+          "routine": [
+            "dyn_em/solve_em.F"
+          ],
+          "surface": [
+            "before_first_rk_step_part1_call"
+          ],
+          "tile_i_j_bounds_fortran": [
+            "115",
+            "137",
+            "1",
+            "17"
+          ],
+          "tile_record_policy": [
+            "mass_owned_single_owner_no_overlap"
+          ],
+          "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+            "1",
+            "45"
+          ]
+        },
+        {
+          "current_timestr_before_step": [
+            "2026-05-01_18:00:00"
+          ],
+          "domain_id": [
+            "2"
+          ],
+          "dt_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "dt_seconds": [
+            "0.6000000000000000E+01"
+          ],
+          "dts_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "global_mass_i_j_end_exclusive_fortran": [
+            "1",
+            "160",
+            "1",
+            "67"
+          ],
+          "grid_itimestep_after_increment": [
+            "1"
+          ],
+          "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+          "mass_vertical_fortran_k_start_k_end_inclusive": [
+            "1",
+            "44"
+          ],
+          "moist_index_qv": [
+            "2"
+          ],
+          "number_of_small_timesteps": [
+            "1"
+          ],
+          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+          "record_schema": [
+            "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
+            "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
+          ],
+          "rk_order": [
+            "3"
+          ],
+          "rk_step": [
+            "1"
+          ],
+          "routine": [
+            "dyn_em/solve_em.F"
+          ],
+          "surface": [
+            "before_first_rk_step_part1_call"
+          ],
+          "tile_i_j_bounds_fortran": [
+            "115",
+            "137",
+            "34",
+            "50"
+          ],
+          "tile_record_policy": [
+            "mass_owned_single_owner_no_overlap"
+          ],
+          "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+            "1",
+            "45"
+          ]
+        },
+        {
+          "current_timestr_before_step": [
+            "2026-05-01_18:00:00"
+          ],
+          "domain_id": [
+            "2"
+          ],
+          "dt_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "dt_seconds": [
+            "0.6000000000000000E+01"
+          ],
+          "dts_rk_seconds": [
+            "0.2000000000000000E+01"
+          ],
+          "global_mass_i_j_end_exclusive_fortran": [
+            "1",
+            "160",
+            "1",
+            "67"
+          ],
+          "grid_itimestep_after_increment": [
+            "1"
+          ],
+          "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+          "mass_vertical_fortran_k_start_k_end_inclusive": [
+            "1",
+            "44"
+          ],
+          "moist_index_qv": [
+            "2"
+          ],
+          "number_of_small_timesteps": [
+            "1"
+          ],
+          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+          "record_schema": [
+            "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
+            "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
+          ],
+          "rk_order": [
+            "3"
+          ],
+          "rk_step": [
+            "1"
+          ],
+          "routine": [
+            "dyn_em/solve_em.F"
+          ],
+          "surface": [
+            "before_first_rk_step_part1_call"
+          ],
+          "tile_i_j_bounds_fortran": [
+            "115",
+            "137",
+            "51",
+            "67"
+          ],
+          "tile_record_policy": [
+            "mass_owned_single_owner_no_overlap"
+          ],
+          "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+            "1",
+            "45"
+          ]
+        }
+      ],
+      "parser": "precall_qv",
+      "pattern": "before_first_rk_step_part1_call_d2_step_1_rk_1_*.txt",
+      "raw_file_count": 28,
+      "record_counts": {
+        "MASS_PREPART": 461736,
+        "WPH_PREPART": 472230
+      },
+      "status": "WRF_SURFACE_READY",
+      "summaries": {
+        "MUB": {
+          "count": 10494,
+          "max": 95000.0,
+          "mean": 94532.0464305496,
+          "min": 64526.0546875,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "MUT": {
+          "count": 10494,
+          "max": 96791.6171875,
+          "mean": 96215.33842106204,
+          "min": 66157.6328125,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "MU_STATE": {
+          "count": 10494,
+          "max": 1812.1484375,
+          "mean": 1683.2920161967552,
+          "min": 1519.0859375,
+          "shape": [
+            66,
+            159
+          ]
+        },
+        "PB": {
+          "count": 461736,
+          "max": 99706.203125,
+          "mean": 44067.671251184474,
+          "min": 5225.25048828125,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "PHB": {
+          "count": 472230,
+          "max": 195220.53125,
+          "mean": 84712.81764335278,
+          "min": -7.796288059580547e-07,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "PH_STATE": {
+          "count": 472230,
+          "max": 8099.03173828125,
+          "mean": 3348.4396499362247,
+          "min": 0.0,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        },
+        "P_STATE": {
+          "count": 461736,
+          "max": 2256.5078125,
+          "mean": 545.6089732425902,
+          "min": -0.0478515625,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "QVAPOR": {
+          "count": 461736,
+          "max": 0.01170683559030294,
+          "mean": 0.0021903549088611598,
+          "min": 2.687635060283355e-06,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "T_STATE": {
+          "count": 461736,
+          "max": 194.9982452392578,
+          "mean": 47.842466891171576,
+          "min": -6.61846923828125,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "W_STATE": {
+          "count": 472230,
+          "max": 0.7605466246604919,
+          "mean": 0.00015118409117375716,
+          "min": -0.7173507809638977,
+          "shape": [
+            45,
+            66,
+            159
+          ]
+        }
+      },
+      "surface": "before_first_rk_step_part1_call"
+    },
+    "predecessor_reductions": {
+      "MU_STATE": {
+        "candidate_max_abs": 0.047773029698646496,
+        "candidate_vs_raw_delta": {
+          "bias": 0.02208432530263014,
+          "count": 10494,
+          "max_abs": 13.303876545323646,
+          "nonfinite_diff_count": 0,
+          "p95": 0.009777382998879616,
+          "p99": 2.3828636426303285,
+          "rmse": 0.596900515910288,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            54,
+            155
+          ]
+        },
+        "max_abs_reduction": 13.208330485926354,
+        "raw_max_abs": 13.256103515625
+      },
+      "P_STATE": {
+        "candidate_max_abs": 3.9458582235092763,
+        "candidate_vs_raw_delta": {
+          "bias": 0.003286342634599535,
+          "count": 461736,
+          "max_abs": 67.40122423076537,
+          "nonfinite_diff_count": 0,
+          "p95": 1.097319694406906,
+          "p99": 2.7932208679143535,
+          "rmse": 1.215890062258246,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            54,
+            155
+          ]
+        },
+        "max_abs_reduction": 66.02289177649072,
+        "raw_max_abs": 69.96875
+      },
+      "W_STATE": {
+        "candidate_max_abs": 1.2992081932505783e-07,
+        "candidate_vs_raw_delta": {
+          "bias": 0.0001511840926406764,
+          "count": 472230,
+          "max_abs": 0.7605466992387644,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0045908648508756695,
+          "p99": 0.05611126913733416,
+          "rmse": 0.014709815542065843,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            30,
+            61
+          ]
+        },
+        "max_abs_reduction": 0.7605464947396726,
+        "raw_max_abs": 0.7605466246604919
+      }
+    },
+    "ranked_hypotheses": [
+      {
+        "evidence": "WRF internal P-from-ALT fp32 max_abs=0.015625; press_adj fp32 max_abs=4.547473508864641e-13; after-w-surface vs pre-call W max_abs=5.960464477539063e-08.",
+        "hypothesis": "WRF live-nest start_domain recomputes P/al/alt, then press_adj updates MU, then set_w_surface updates W.",
+        "rank": 1,
+        "status": "SUPPORTED_BY_INTERNAL_SURFACES"
+      },
+      {
+        "evidence": "Current JAX pressure formula vs WRF internal P max_abs=3.9458582235092763; current JAX press_adj formula vs WRF after_press MU max_abs=0.047773029698646496. Patch threshold for P is 1 Pa and MU is 0.01 Pa.",
+        "hypothesis": "A narrow production patch using current JAX inputs is exact enough now.",
+        "rank": 2,
+        "status": "REFUTED_FOR_P_IF_THRESHOLD_EXCEEDED"
+      },
+      {
+        "evidence": "WRF internal formula/order closes against WRF internal truth, while current JAX AL/ALT/base/PH inputs still have ranked residuals headed by [{'field': 'P_STATE_raw_current_vs_wrf_after_hyp', 'max_abs': 69.96875, 'rmse': 1.161700383780558, 'bias': 0.0187159801204043, 'threshold': None, 'worst_mismatch_fortran': {'i': 156, 'j': 55, 'k': 1}}, {'field': 'W_STATE_raw_current_vs_wrf_after_w', 'max_abs': 0.7605466842651367, 'rmse': 0.014709815601114631, 'bias': -0.0001511840907329694, 'threshold': None, 'worst_mismatch_fortran': {'i': 62, 'j': 31, 'kstag': 1}}, {'field': 'PHB_current_vs_wrf_after_hyp', 'max_abs': 0.10811684231157415, 'rmse': 0.02459295000326211, 'bias': -0.01747610370992694, 'threshold': None, 'worst_mismatch_fortran': {'i': 146, 'j': 34, 'kstag': 42}}].",
+        "hypothesis": "Remaining P gap is in current JAX start_domain input surfaces, not source ordering.",
+        "rank": 3,
+        "status": "SUPPORTED"
+      }
+    ],
+    "ranked_jax_input_residuals": [
+      {
+        "bias": 0.0187159801204043,
+        "field": "P_STATE_raw_current_vs_wrf_after_hyp",
+        "max_abs": 69.96875,
+        "rmse": 1.161700383780558,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 55,
+          "k": 1
+        }
+      },
+      {
+        "bias": -0.0001511840907329694,
+        "field": "W_STATE_raw_current_vs_wrf_after_w",
+        "max_abs": 0.7605466842651367,
+        "rmse": 0.014709815601114631,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 62,
+          "j": 31,
+          "kstag": 1
+        }
+      },
+      {
+        "bias": -0.01747610370992694,
+        "field": "PHB_current_vs_wrf_after_hyp",
+        "max_abs": 0.10811684231157415,
+        "rmse": 0.02459295000326211,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 146,
+          "j": 34,
+          "kstag": 42
+        }
+      },
+      {
+        "bias": -0.0005600475270968658,
+        "field": "PB_current_vs_wrf_after_hyp",
+        "max_abs": 0.05357326504599769,
+        "rmse": 0.004296943965085442,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51,
+          "k": 1
+        }
+      },
+      {
+        "bias": -0.0014379073126789452,
+        "field": "MUB_current_vs_wrf_after_hyp",
+        "max_abs": 0.05002361937658861,
+        "rmse": 0.008025019829604947,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51
+        }
+      },
+      {
+        "bias": 6.787669610538842e-08,
+        "field": "T_STATE_current_vs_wrf_after_hyp",
+        "max_abs": 5.118963662198439e-05,
+        "rmse": 1.5094579100085305e-05,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 154,
+          "j": 35,
+          "k": 14
+        }
+      },
+      {
+        "bias": -8.315714974587394e-07,
+        "field": "AL_current_formula_vs_wrf_after_hyp",
+        "max_abs": 4.504607755318e-05,
+        "rmse": 3.912457199045156e-06,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        }
+      },
+      {
+        "bias": -9.696594386233928e-07,
+        "field": "ALT_current_formula_vs_wrf_after_hyp",
+        "max_abs": 4.4775812162889395e-05,
+        "rmse": 4.00451551730315e-06,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 63,
+          "j": 31,
+          "k": 2
+        }
+      },
+      {
+        "bias": -4.865939701709864e-08,
+        "field": "HT_current_vs_wrf_after_hyp",
+        "max_abs": 2.682152282318384e-05,
+        "rmse": 1.076769145490878e-06,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 157,
+          "j": 60
+        }
+      },
+      {
+        "bias": -1.3808794109692655e-07,
+        "field": "ALB_current_vs_wrf_after_hyp",
+        "max_abs": 1.0552055318413522e-06,
+        "rmse": 3.139560784383465e-07,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 41
+        }
+      },
+      {
+        "bias": -3.141856203880397e-12,
+        "field": "QVAPOR_current_vs_wrf_after_hyp",
+        "max_abs": 5.970267497393267e-08,
+        "rmse": 4.711906338035755e-09,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 11,
+          "j": 6,
+          "k": 2
+        }
+      },
+      {
+        "bias": 2.306957823083714e-16,
+        "field": "HT_FINE_current_vs_wrf_after_hyp",
+        "max_abs": 4.547473508864641e-13,
+        "rmse": 2.3210296050260928e-14,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 20,
+          "j": 13
+        }
+      },
+      {
+        "bias": -1.2187697011322472e-18,
+        "field": "PH_STATE_current_vs_wrf_after_hyp",
+        "max_abs": 5.329070518200751e-15,
+        "rmse": 5.24243169212334e-16,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 1,
+          "kstag": 2
+        }
+      },
+      {
+        "bias": 0.0,
+        "field": "MU_STATE_raw_current_vs_wrf_before_press",
+        "max_abs": 0.0,
+        "rmse": 0.0,
+        "threshold": null,
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1
+        }
+      }
+    ],
+    "shapes": {
+      "mass": [
+        44,
+        66,
+        159
+      ],
+      "mass2d": [
+        66,
+        159
+      ],
+      "wph": [
+        45,
+        66,
+        159
+      ]
+    },
+    "start_internal_deltas": {
+      "after_hyp_to_before_press": {
+        "AL->AL": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "ALB->ALB": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "ALT->ALT": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "MU2_STATE->MU2_STATE": {
+          "bias": 0.0,
+          "count": 10494,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        "P_STATE->P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "after_press_to_after_w": {
+        "MU2_STATE->MU2_STATE": {
+          "bias": 0.0,
+          "count": 10494,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        "P_STATE->P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "W2_STATE->W2_STATE": {
+          "bias": 3.3823254420187025e-06,
+          "count": 472230,
+          "max_abs": 0.13826078921556467,
+          "nonfinite_diff_count": 0,
+          "p95": 1.4981189224272359e-05,
+          "p99": 0.0031687660334865095,
+          "rmse": 0.0019100926973920891,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 155,
+            "j": 55,
+            "kstag": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            54,
+            154
+          ]
+        }
+      },
+      "before_press_to_after_press": {
+        "MU2_STATE->MU2_STATE": {
+          "bias": 0.022069530803313493,
+          "count": 10494,
+          "max_abs": 13.256103515625,
+          "nonfinite_diff_count": 0,
+          "p95": 0.009765625,
+          "p99": 2.377672119140642,
+          "rmse": 0.5968840909134501,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 156,
+            "j": 55
+          },
+          "worst_mismatch_index": [
+            54,
+            155
+          ]
+        },
+        "P_STATE->P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "W2_STATE->W2_STATE": {
+          "bias": 0.0,
+          "count": 472230,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "kstag": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "status": "PROOF_EXECUTED",
+    "surface_vs_precall": {
+      "after_hypsometric_p_al_alt": {
+        "MUB->MUB": {
+          "bias": 0.0,
+          "count": 10494,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        "PB->PB": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "PH2_STATE->PH_STATE": {
+          "bias": -7.696709320775355e-05,
+          "count": 472230,
+          "max_abs": 0.00048828125,
+          "nonfinite_diff_count": 0,
+          "p95": 0.00048828125,
+          "p99": 0.00048828125,
+          "rmse": 0.00020545794801247642,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 125,
+            "j": 1,
+            "kstag": 25
+          },
+          "worst_mismatch_index": [
+            24,
+            0,
+            124
+          ]
+        },
+        "PHB->PHB": {
+          "bias": 0.0,
+          "count": 472230,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "kstag": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "P_STATE->P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "QVAPOR->QVAPOR": {
+          "bias": 3.049642484180689e-13,
+          "count": 461736,
+          "max_abs": 9.313225815543724e-10,
+          "nonfinite_diff_count": 0,
+          "p95": 2.328306440875505e-10,
+          "p99": 9.313225746154785e-10,
+          "rmse": 1.556042970314356e-10,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 85,
+            "j": 2,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            1,
+            84
+          ]
+        },
+        "T2_STATE->T_STATE": {
+          "bias": -1.243436175690153e-06,
+          "count": 461736,
+          "max_abs": 1.525878911934342e-05,
+          "nonfinite_diff_count": 0,
+          "p95": 7.629394602304274e-06,
+          "p99": 1.525878909092171e-05,
+          "rmse": 3.714014555667309e-06,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 119,
+            "j": 14,
+            "k": 39
+          },
+          "worst_mismatch_index": [
+            38,
+            13,
+            118
+          ]
+        }
+      },
+      "after_press_adj": {
+        "MU2_STATE->MU_STATE": {
+          "bias": 0.0,
+          "count": 10494,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        "PH2_STATE->PH_STATE": {
+          "bias": -7.696709320775355e-05,
+          "count": 472230,
+          "max_abs": 0.00048828125,
+          "nonfinite_diff_count": 0,
+          "p95": 0.00048828125,
+          "p99": 0.00048828125,
+          "rmse": 0.00020545794801247642,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 125,
+            "j": 1,
+            "kstag": 25
+          },
+          "worst_mismatch_index": [
+            24,
+            0,
+            124
+          ]
+        },
+        "P_STATE->P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "after_w_surface_branch": {
+        "MU2_STATE->MU_STATE": {
+          "bias": 0.0,
+          "count": 10494,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        "PH2_STATE->PH_STATE": {
+          "bias": -7.696709320775355e-05,
+          "count": 472230,
+          "max_abs": 0.00048828125,
+          "nonfinite_diff_count": 0,
+          "p95": 0.00048828125,
+          "p99": 0.00048828125,
+          "rmse": 0.00020545794801247642,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 125,
+            "j": 1,
+            "kstag": 25
+          },
+          "worst_mismatch_index": [
+            24,
+            0,
+            124
+          ]
+        },
+        "P_STATE->P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "W2_STATE->W_STATE": {
+          "bias": -4.407877864962751e-13,
+          "count": 472230,
+          "max_abs": 5.960464477539063e-08,
+          "nonfinite_diff_count": 0,
+          "p95": 1.8189893967695929e-12,
+          "p99": 9.31322579819649e-10,
+          "rmse": 7.351352471267985e-10,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 61,
+            "j": 29,
+            "kstag": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            28,
+            60
+          ]
+        }
+      },
+      "before_press_adj": {
+        "MU2_STATE->MU_STATE": {
+          "bias": -0.022069530803313493,
+          "count": 10494,
+          "max_abs": 13.256103515625,
+          "nonfinite_diff_count": 0,
+          "p95": 0.009765625,
+          "p99": 2.377672119140642,
+          "rmse": 0.5968840909134501,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 156,
+            "j": 55
+          },
+          "worst_mismatch_index": [
+            54,
+            155
+          ]
+        },
+        "P_STATE->P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "W2_STATE->W_STATE": {
+          "bias": -3.3823258828064887e-06,
+          "count": 472230,
+          "max_abs": 0.13826078921556467,
+          "nonfinite_diff_count": 0,
+          "p95": 1.4981188814999739e-05,
+          "p99": 0.0031687660334865095,
+          "rmse": 0.0019100926939876665,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": {
+            "i": 155,
+            "j": 55,
+            "kstag": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            54,
+            154
+          ]
+        }
+      }
+    },
+    "verdict": "STEP1_START_DOMAIN_PERTURB_SUBSURFACE_LOCALIZED_CURRENT_JAX_AL_ALT_BASE_INPUT_GAP",
+    "wrf_surfaces": {
+      "after_hypsometric_p_al_alt": {
+        "duplicate_stats": {
+          "AL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_MINUS_HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PHB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "P_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "QVAPOR": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA1_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA2_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          }
+        },
+        "headers": [
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "18",
+              "33"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_hypsometric_p_al_alt"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "1",
+              "17"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_hypsometric_p_al_alt"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "34",
+              "50"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_hypsometric_p_al_alt"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "51",
+              "67"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_hypsometric_p_al_alt"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          }
+        ],
+        "parser": "start_domain:after_hypsometric_p_al_alt",
+        "pattern": "after_hypsometric_p_al_alt_d2_step_0_*.txt",
+        "raw_file_count": 28,
+        "record_counts": {
+          "MASS_START": 461736,
+          "SURF_START": 10494,
+          "WPH_START": 472230
+        },
+        "status": "WRF_SURFACE_READY",
+        "summaries": {
+          "AL": {
+            "count": 461736,
+            "max": 0.7132091522216797,
+            "mean": 0.12106688813856742,
+            "min": -0.001914143562316895,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALB": {
+            "count": 461736,
+            "max": 10.98511981964111,
+            "mean": 3.1857406783956854,
+            "min": 0.8343289494514465,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALT": {
+            "count": 461736,
+            "max": 11.69832897186279,
+            "mean": 3.306807566534253,
+            "min": 0.8324148058891296,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "HT": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.77768470220116,
+            "min": -7.947286206899662e-08,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_FINE": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.59542578693803,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_MINUS_HT_FINE": {
+            "count": 10494,
+            "max": 98.62179565429688,
+            "mean": 0.1822589150302491,
+            "min": -228.1286773681641,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU1_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.269946665952,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU2_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.269946665952,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464305496,
+            "min": 64526.0546875,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUT": {
+            "count": 10494,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.671251184474,
+            "min": 5225.25048828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PH1_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PH2_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.53125,
+            "mean": 84712.81764335278,
+            "min": -7.796288059580547e-07,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "P_STATE": {
+            "count": 461736,
+            "max": 2256.5078125,
+            "mean": 545.6089732425902,
+            "min": -0.0478515625,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "QVAPOR": {
+            "count": 461736,
+            "max": 0.01170683559030294,
+            "mean": 0.002190354909166124,
+            "min": 2.687635060283355e-06,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T1_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T2_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA1_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA2_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "W1_STATE": {
+            "count": 472230,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "W2_STATE": {
+            "count": 472230,
+            "max": 0.7605466842651367,
+            "mean": 0.00014780176529095068,
+            "min": -0.7173507213592529,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "surface": "after_hypsometric_p_al_alt"
+      },
+      "after_press_adj": {
+        "duplicate_stats": {
+          "AL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_MINUS_HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PHB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "P_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "QVAPOR": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA1_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA2_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          }
+        },
+        "headers": [
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "18",
+              "33"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "1",
+              "17"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "34",
+              "50"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "51",
+              "67"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          }
+        ],
+        "parser": "start_domain:after_press_adj",
+        "pattern": "after_press_adj_d2_step_0_*.txt",
+        "raw_file_count": 28,
+        "record_counts": {
+          "MASS_START": 461736,
+          "SURF_START": 10494,
+          "WPH_START": 472230
+        },
+        "status": "WRF_SURFACE_READY",
+        "summaries": {
+          "AL": {
+            "count": 461736,
+            "max": 0.7132091522216797,
+            "mean": 0.12106688813856742,
+            "min": -0.001914143562316895,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALB": {
+            "count": 461736,
+            "max": 10.98511981964111,
+            "mean": 3.1857406783956854,
+            "min": 0.8343289494514465,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALT": {
+            "count": 461736,
+            "max": 11.69832897186279,
+            "mean": 3.306807566534253,
+            "min": 0.8324148058891296,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "HT": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.77768470220116,
+            "min": -7.947286206899662e-08,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_FINE": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.59542578693803,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_MINUS_HT_FINE": {
+            "count": 10494,
+            "max": 98.62179565429688,
+            "mean": 0.1822589150302491,
+            "min": -228.1286773681641,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU1_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.2920161967552,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU2_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.2920161967552,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464305496,
+            "min": 64526.0546875,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUT": {
+            "count": 10494,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.671251184474,
+            "min": 5225.25048828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PH1_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PH2_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.53125,
+            "mean": 84712.81764335278,
+            "min": -7.796288059580547e-07,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "P_STATE": {
+            "count": 461736,
+            "max": 2256.5078125,
+            "mean": 545.6089732425902,
+            "min": -0.0478515625,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "QVAPOR": {
+            "count": 461736,
+            "max": 0.01170683559030294,
+            "mean": 0.002190354909166124,
+            "min": 2.687635060283355e-06,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T1_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T2_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA1_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA2_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "W1_STATE": {
+            "count": 472230,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "W2_STATE": {
+            "count": 472230,
+            "max": 0.7605466842651367,
+            "mean": 0.00014780176529095068,
+            "min": -0.7173507213592529,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "surface": "after_press_adj"
+      },
+      "after_w_surface_branch": {
+        "duplicate_stats": {
+          "AL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_MINUS_HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PHB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "P_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "QVAPOR": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA1_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA2_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          }
+        },
+        "headers": [
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "18",
+              "33"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_w_surface_branch"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "1",
+              "17"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_w_surface_branch"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "34",
+              "50"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_w_surface_branch"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "51",
+              "67"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "after_w_surface_branch"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          }
+        ],
+        "parser": "start_domain:after_w_surface_branch",
+        "pattern": "after_w_surface_branch_d2_step_0_*.txt",
+        "raw_file_count": 28,
+        "record_counts": {
+          "MASS_START": 461736,
+          "SURF_START": 10494,
+          "WPH_START": 472230
+        },
+        "status": "WRF_SURFACE_READY",
+        "summaries": {
+          "AL": {
+            "count": 461736,
+            "max": 0.7132091522216797,
+            "mean": 0.12106688813856742,
+            "min": -0.001914143562316895,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALB": {
+            "count": 461736,
+            "max": 10.98511981964111,
+            "mean": 3.1857406783956854,
+            "min": 0.8343289494514465,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALT": {
+            "count": 461736,
+            "max": 11.69832897186279,
+            "mean": 3.306807566534253,
+            "min": 0.8324148058891296,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "HT": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.77768470220116,
+            "min": -7.947286206899662e-08,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_FINE": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.59542578693803,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_MINUS_HT_FINE": {
+            "count": 10494,
+            "max": 98.62179565429688,
+            "mean": 0.1822589150302491,
+            "min": -228.1286773681641,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU1_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.2920161967552,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU2_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.2920161967552,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464305496,
+            "min": 64526.0546875,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUT": {
+            "count": 10494,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.671251184474,
+            "min": 5225.25048828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PH1_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PH2_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.53125,
+            "mean": 84712.81764335278,
+            "min": -7.796288059580547e-07,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "P_STATE": {
+            "count": 461736,
+            "max": 2256.5078125,
+            "mean": 545.6089732425902,
+            "min": -0.0478515625,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "QVAPOR": {
+            "count": 461736,
+            "max": 0.01170683559030294,
+            "mean": 0.002190354909166124,
+            "min": 2.687635060283355e-06,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T1_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T2_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA1_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA2_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "W1_STATE": {
+            "count": 472230,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "W2_STATE": {
+            "count": 472230,
+            "max": 0.7605466842651367,
+            "mean": 0.0001511840907329694,
+            "min": -0.7173507213592529,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "surface": "after_w_surface_branch"
+      },
+      "before_press_adj": {
+        "duplicate_stats": {
+          "AL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "ALT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "HT_MINUS_HT_FINE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUT": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PHB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "P_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "QVAPOR": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA1_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "THETA2_FULL": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W1_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W2_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          }
+        },
+        "headers": [
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "18",
+              "33"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "before_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "1",
+              "17"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "before_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "34",
+              "50"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "before_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "allowed_to_read": [
+              "T"
+            ],
+            "current_timestr": [
+              "2026-05-01_18:00:00"
+            ],
+            "cycling": [
+              "F"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep": [
+              "0"
+            ],
+            "hypsometric_opt": [
+              "2"
+            ],
+            "input_from_file": [
+              "T"
+            ],
+            "input_from_hires": [
+              "F"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_START_DOMAIN_PERTURB_SUBSURFACE v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "moist_index_qv": [
+              "2"
+            ],
+            "patch_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "51",
+              "67"
+            ],
+            "patch_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "press_adj_flag": [
+              "T"
+            ],
+            "rebalance": [
+              "0"
+            ],
+            "record_schema": [
+              "MASS_START fortran_i fortran_j fortran_k zero_x zero_y zero_k T1_STATE T2_STATE THETA1_FULL THETA2_FULL QVAPOR P_STATE PB AL ALT ALB",
+              "SURF_START fortran_i fortran_j zero_x zero_y MU1_STATE MU2_STATE MUT MUB HT HT_FINE HT_MINUS_HT_FINE",
+              "WPH_START fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W1_STATE W2_STATE PH1_STATE PH2_STATE PHB"
+            ],
+            "restart_flag": [
+              "F"
+            ],
+            "routine": [
+              "dyn_em/start_em.F::start_domain_em"
+            ],
+            "start_of_simulation": [
+              "T"
+            ],
+            "surface": [
+              "before_press_adj"
+            ],
+            "use_input_w": [
+              "F"
+            ],
+            "use_theta_m": [
+              "1"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          }
+        ],
+        "parser": "start_domain:before_press_adj",
+        "pattern": "before_press_adj_d2_step_0_*.txt",
+        "raw_file_count": 28,
+        "record_counts": {
+          "MASS_START": 461736,
+          "SURF_START": 10494,
+          "WPH_START": 472230
+        },
+        "status": "WRF_SURFACE_READY",
+        "summaries": {
+          "AL": {
+            "count": 461736,
+            "max": 0.7132091522216797,
+            "mean": 0.12106688813856742,
+            "min": -0.001914143562316895,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALB": {
+            "count": 461736,
+            "max": 10.98511981964111,
+            "mean": 3.1857406783956854,
+            "min": 0.8343289494514465,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ALT": {
+            "count": 461736,
+            "max": 11.69832897186279,
+            "mean": 3.306807566534253,
+            "min": 0.8324148058891296,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "HT": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.77768470220116,
+            "min": -7.947286206899662e-08,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_FINE": {
+            "count": 10494,
+            "max": 2987.11767578125,
+            "mean": 41.59542578693803,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "HT_MINUS_HT_FINE": {
+            "count": 10494,
+            "max": 98.62179565429688,
+            "mean": 0.1822589150302491,
+            "min": -228.1286773681641,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU1_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.269946665952,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU2_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.269946665952,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464305496,
+            "min": 64526.0546875,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUT": {
+            "count": 10494,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.671251184474,
+            "min": 5225.25048828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PH1_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PH2_STATE": {
+            "count": 472230,
+            "max": 8099.03125,
+            "mean": 3348.4395729691314,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.53125,
+            "mean": 84712.81764335278,
+            "min": -7.796288059580547e-07,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "P_STATE": {
+            "count": 461736,
+            "max": 2256.5078125,
+            "mean": 545.6089732425902,
+            "min": -0.0478515625,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "QVAPOR": {
+            "count": 461736,
+            "max": 0.01170683559030294,
+            "mean": 0.002190354909166124,
+            "min": 2.687635060283355e-06,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T1_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T2_STATE": {
+            "count": 461736,
+            "max": 194.9982299804688,
+            "mean": 47.8424656477354,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA1_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "THETA2_FULL": {
+            "count": 461736,
+            "max": 494.9982299804688,
+            "mean": 347.8424656477354,
+            "min": 293.3815307617188,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "W1_STATE": {
+            "count": 472230,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "W2_STATE": {
+            "count": 472230,
+            "max": 0.7605466842651367,
+            "mean": 0.00014780176529095068,
+            "min": -0.7173507213592529,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "surface": "before_press_adj"
+      }
+    }
+  },
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-start-domain-perturb-subsurface.md",
+    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
+    "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth"
+  },
+  "schema": "wrfgpu2.v014.step1_start_domain_perturb_subsurface.v1",
+  "unresolved_risks": [
+    "No production source patch was applied in this sprint.",
+    "WRF source ordering is now proven, but current JAX AL/ALT/base/PH inputs still need a smaller split before a safe P/MU patch.",
+    "The WRF truth is text savepoint data outside git; the repo commits only script, diff, JSON, and report metadata/checksums."
+  ],
+  "verdict": "STEP1_START_DOMAIN_PERTURB_SUBSURFACE_LOCALIZED_CURRENT_JAX_AL_ALT_BASE_INPUT_GAP"
+}
