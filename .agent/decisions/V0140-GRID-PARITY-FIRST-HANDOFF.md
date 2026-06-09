@@ -1778,3 +1778,55 @@ Resource policy:
   prompt with delayed repeated Enter presses.
 - No TOST, Switzerland, Grid-Delta Atlas campaign, or FP32 R1/R2 implementation
   until the current fp64 grid-parity frontier is fixed or explicitly bounded.
+
+## Current Manager Update 2026-06-10 00:17 WEST
+
+The Step-1 part2 source-leaves split sprint is closed and manager-gated.
+
+Artifacts:
+
+- `proofs/v014/step1_part2_source_leaves_split.py`
+- `proofs/v014/step1_part2_source_leaves_split.json`
+- `proofs/v014/step1_part2_source_leaves_split.md`
+- `proofs/v014/step1_part2_source_leaves_split_wrf_patch.diff`
+- `.agent/reviews/2026-06-09-v014-step1-part2-source-leaves-split.md`
+
+Verdict:
+
+`STEP1_PART2_SOURCE_LEAVES_LOCALIZED_UPDATE_PHY_TEN_RAW_RTH_TO_T_TENDF_MISSING_IN_JAX_DRY_BUNDLE`.
+
+Key facts:
+
+- WRF `update_phy_ten` closes exactly as `T_TENDF = pre + active RTH` on the
+  nested interior, max_abs `0.0`.
+- WRF `conv_t_tendf_to_moist` closes to roundoff, nested-interior max_abs
+  `0.00016236981809925055`.
+- post-conversion equals `after_first_rk_step_part2`, max_abs `0.0`.
+- current patched-init JAX dry `T_TENDF` remains divergent: max_abs
+  `2457.5830078125`, RMSE `21.674279301376934`.
+- source-save sparse `T_TENDF` also remains divergent versus current JAX dry:
+  max_abs `1326.432250976562`, RMSE `97.71886125389001`.
+- active raw WRF leaves for this case are `RTHRATEN` and `RTHBLTEN`; dominant
+  active raw leaf is `RTHBLTEN`.
+- inactive WRF `RTH*TEN` leaves can contain uninitialized junk/NaNs and must not
+  be ranked causally.
+
+Manager validation passed:
+
+- `python -m py_compile proofs/v014/step1_part2_source_leaves_split.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_part2_source_leaves_split.py`
+- `python -m json.tool proofs/v014/step1_part2_source_leaves_split.json >/tmp/manager_step1_part2_source_leaves_split.validated.json`
+- `git diff --check`
+- `python scripts/close_sprint.py .agent/sprints/2026-06-09-v014-step1-part2-source-leaves-split`
+
+Next active work:
+
+- Open an implementation sprint for true WRF dry physics source leaves for
+  active `RTHRATEN`/`RTHBLTEN` before `_augment_large_step_tendencies`.
+- Gate the fix on the same Step-1 proof moving near-zero, then rerun the strict
+  short grid-field falsifier.
+- Do not use aggregate post-physics state deltas as the fix unless a
+  scheme-level raw-leaf proof closes this same gate.
+- This is a normal GPT/manager implementation lane first. Do not spend
+  Fable/Mythos unless the direct source-leaf implementation becomes a hard
+  unresolved debug core.

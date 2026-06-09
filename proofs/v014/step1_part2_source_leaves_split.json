@@ -1,0 +1,4781 @@
+{
+  "accepted_boundary": {
+    "boundary_spec_acoustic": "too late for first failure",
+    "first_material_full_domain_field": "T_TENDF at WRF after_first_rk_step_part2",
+    "patched_init_p_mu_w_ph_frontiers": "closed by prior proof",
+    "prior_reported_after_part2_t_tendf_max_abs": 2457.5830078125,
+    "prior_reported_after_part2_t_tendf_rmse": 21.20870100357482
+  },
+  "created_utc": "2026-06-09T23:17:16.300701+00:00",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n",
+      "wall_s": 0.0008363359957002103
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "0b09b81f80a52234b26ae395151b9a6836c7d25e\n",
+      "wall_s": 0.0009301980026066303
+    },
+    "status_short": {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": " M proofs/v060/sfclayrev1_savepoint_parity_report.json\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-09-v014-step1-part2-source-leaves-split.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_part2_source_leaves_split.json\n?? proofs/v014/step1_part2_source_leaves_split.md\n?? proofs/v014/step1_part2_source_leaves_split.py\n?? proofs/v014/step1_part2_source_leaves_split_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n",
+      "wall_s": 0.008141023994539864
+    }
+  },
+  "jax_capture": {
+    "label": "step1_part2_source_leaves_split_patched_init",
+    "namelist": {
+      "acoustic_substeps": 10,
+      "bl_pbl_physics": 5,
+      "cu_physics": 0,
+      "diff_6th_opt": 2,
+      "diff_opt": 0,
+      "dt_s": 6.0,
+      "force_fp64": true,
+      "km_opt": 0,
+      "moist_adv_opt": 0,
+      "mp_physics": 8,
+      "rad_rk_tendf": 0,
+      "radiation_cadence_steps": 300,
+      "rk_order": 3,
+      "run_boundary": true,
+      "run_physics": true,
+      "scalar_adv_opt": 0,
+      "sf_sfclay_physics": 5,
+      "use_flux_advection": true
+    },
+    "patched_init_metadata": {
+      "cpu_wrfout_dependency": false,
+      "hypsometric_opt": 2,
+      "libm_provider": "glibc-libm-float32",
+      "surfaces": [
+        "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+        "press_adj MU correction",
+        "set_w_surface(fill_w_flag=.true.)"
+      ],
+      "timestep_loop_transfer": false,
+      "use_theta_m_qvf": 1.0,
+      "w_needs_to_be_set": true,
+      "w_surface_input_max_abs": 0.0,
+      "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+    },
+    "run_radiation": false,
+    "status": "JAX_TENDENCY_BOUNDARIES_READY"
+  },
+  "paths": {
+    "handoff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "1d3ec3eb8c1d10565885938a8a79069c859e8f2d0065ac5664282847bc9a73f3",
+      "size_bytes": 94935
+    },
+    "scratch": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-part2-source-leaves-split/sprint-contract.md",
+      "sha256": "515015ccf07f3b652bdf0bd6c113f821ca30c91abc0982ffa71f0769a18ff1f8",
+      "size_bytes": 3398
+    },
+    "wrf_rsl_error": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run/rsl.error.0000",
+      "sha256": "54f9c79f4f1746dae7436b6bf6bdf34e3b7a828e056e6ecc609ca9735261b037",
+      "size_bytes": 9559
+    },
+    "wrf_run_log": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run/step1_part2_single_rank.stdout",
+      "sha256": "accd93e6cec8143d775ef2db1cb523e1c62e39793a41ba9c2fedb9e053f81f01",
+      "size_bytes": 140
+    },
+    "wrf_truth": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "proof": {
+    "derived_candidate_summaries": {
+      "current_jax_dry_t_tendf": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "nonzero_count": 0,
+        "rms": 0.0,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "jax_physics_state_delta_mass_tendf": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 260.8315541142262,
+        "max_abs": 260.8315541142262,
+        "mean": 0.03512275561594965,
+        "min": -40.27073005184022,
+        "nonzero_count": 452730,
+        "rms": 3.8939508662797193,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_conv_expected_moist_formula": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 2242.130973620906,
+        "max_abs": 2457.5830977761507,
+        "mean": 0.07221553522623346,
+        "min": -2457.5830977761507,
+        "nonzero_count": 442110,
+        "rms": 21.208695089236528,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_update_expected_pre_plus_active_rth": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 2139.64990234375,
+        "max_abs": 2525.279541015625,
+        "mean": -0.294591046657098,
+        "min": -2525.279541015625,
+        "nonzero_count": 461733,
+        "rms": 20.844678742176747,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      }
+    },
+    "next_boundary": "Implement true WRF dry physics source leaves for active RTHRATEN/RTHBLTEN before `_augment_large_step_tendencies`; do not use aggregate post-physics state deltas unless a scheme-level raw-leaf proof closes this same gate.",
+    "ranked_alternatives": [
+      {
+        "evidence": {
+          "after_conv_vs_current_jax_dry_nested_max_abs": 2457.5830078125,
+          "after_conv_vs_moist_formula_nested_max_abs": 0.00016236981809925055,
+          "after_update_vs_pre_plus_active_rth_nested_max_abs": 0.0,
+          "dominant_component": "RTHBLTEN",
+          "dominant_component_nested_max_abs": 2522.90576171875
+        },
+        "hypothesis": "WRF raw active RTH source leaves are missing from the current JAX dry bundle",
+        "rank": 1,
+        "status": "SUPPORTED"
+      },
+      {
+        "evidence": {
+          "after_conv_vs_moist_formula_nested_max_abs": 0.00016236981809925055
+        },
+        "hypothesis": "moist-theta conversion after update_phy_ten is the first wrong boundary",
+        "rank": 2,
+        "status": "FALSIFIED"
+      },
+      {
+        "evidence": {
+          "after_conv_vs_after_first_rk_step_part2_nested_max_abs": 0.0
+        },
+        "hypothesis": "boundary, spec-zone, or acoustic code mutates T_TENDF before the accepted final surface",
+        "rank": 3,
+        "status": "FALSIFIED"
+      },
+      {
+        "evidence": {
+          "after_conv_vs_jax_physics_state_delta_mass_tendf_nested_max_abs": 2457.575215120311
+        },
+        "hypothesis": "the aggregate JAX physics state delta can be used as a narrow T_TENDF source fix",
+        "rank": 4,
+        "status": "FALSIFIED"
+      }
+    ],
+    "stage_formula_comparisons": {
+      "after_calculate_t_tendf_vs_zero": {
+        "full": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 0.0,
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_reference": 0.0
+        },
+        "nested_interior": {
+          "bias": 0.0,
+          "count": 442112,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 0.0,
+          "worst_mismatch_fortran": {
+            "i": 2,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": 0.0
+        }
+      },
+      "after_conv_t_tendf_vs_after_first_rk_step_part2": {
+        "full": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 0.0,
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_reference": 0.0
+        },
+        "nested_interior": {
+          "bias": 0.0,
+          "count": 442112,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 30.08966445922852,
+          "worst_mismatch_fortran": {
+            "i": 2,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": 30.08966445922852
+        }
+      },
+      "after_conv_t_tendf_vs_current_jax_dry_t_tendf": {
+        "full": {
+          "bias": 0.07221554812018978,
+          "count": 461736,
+          "max_abs": 2457.5830078125,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3012734055519104,
+          "p99": 35.68107471466091,
+          "rmse": 21.20869510640995,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": 0.0
+        },
+        "nested_interior": {
+          "bias": 0.07542097551485585,
+          "count": 442112,
+          "max_abs": 2457.5830078125,
+          "nonfinite_diff_count": 0,
+          "p95": 2.321899890899658,
+          "p99": 36.21192813873292,
+          "rmse": 21.674279301376934,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": 0.0
+        }
+      },
+      "after_conv_t_tendf_vs_jax_physics_state_delta_mass_tendf": {
+        "full": {
+          "bias": 0.037092792504240114,
+          "count": 461736,
+          "max_abs": 2457.575215120311,
+          "nonfinite_diff_count": 0,
+          "p95": 2.304900177057178,
+          "p99": 37.6191813005616,
+          "rmse": 20.99773012213904,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.007792692189042476
+        },
+        "nested_interior": {
+          "bias": 0.038960030791698665,
+          "count": 442112,
+          "max_abs": 2457.575215120311,
+          "nonfinite_diff_count": 0,
+          "p95": 2.321710856728805,
+          "p99": 38.2627994489121,
+          "rmse": 21.445918955246317,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.007792692189042476
+        }
+      },
+      "after_conv_t_tendf_vs_moist_formula": {
+        "full": {
+          "bias": 1.2893956339738722e-08,
+          "count": 461736,
+          "max_abs": 0.00016236981809925055,
+          "nonfinite_diff_count": 0,
+          "p95": 9.76441593136812e-08,
+          "p99": 1.3248614346039754e-06,
+          "rmse": 7.915399854911922e-07,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 2128.967529296875,
+          "worst_mismatch_fortran": {
+            "i": 64,
+            "j": 37,
+            "k": 4
+          },
+          "worst_reference": 2128.967366927057
+        },
+        "nested_interior": {
+          "bias": 1.3466279640646712e-08,
+          "count": 442112,
+          "max_abs": 0.00016236981809925055,
+          "nonfinite_diff_count": 0,
+          "p95": 9.974626740127944e-08,
+          "p99": 1.3856209870866126e-06,
+          "rmse": 8.089162788029723e-07,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 2128.967529296875,
+          "worst_mismatch_fortran": {
+            "i": 64,
+            "j": 37,
+            "k": 4
+          },
+          "worst_reference": 2128.967366927057
+        }
+      },
+      "after_update_t_tendf_vs_current_jax_dry_t_tendf": {
+        "full": {
+          "bias": -0.2767883086294303,
+          "count": 461736,
+          "max_abs": 2525.279541015625,
+          "nonfinite_diff_count": 0,
+          "p95": 2.289630055427551,
+          "p99": 13.264616680145295,
+          "rmse": 20.792653135501457,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2525.279541015625,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": 0.0
+        },
+        "nested_interior": {
+          "bias": -0.2890740954177191,
+          "count": 442112,
+          "max_abs": 2525.279541015625,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3096532344818104,
+          "p99": 13.521042842864995,
+          "rmse": 21.249104162910232,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2525.279541015625,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": 0.0
+        }
+      },
+      "after_update_t_tendf_vs_pre_plus_active_rth": {
+        "full": {
+          "bias": 0.017802738027667693,
+          "count": 461736,
+          "max_abs": 310.2263793945312,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 1.5218058288097431,
+          "rmse": 1.4718041484098112,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 0.0,
+          "worst_mismatch_fortran": {
+            "i": 18,
+            "j": 1,
+            "k": 2
+          },
+          "worst_reference": -310.2263793945312
+        },
+        "nested_interior": {
+          "bias": 0.0,
+          "count": 442112,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 13.25869846343994,
+          "worst_mismatch_fortran": {
+            "i": 2,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": 13.25869846343994
+        }
+      },
+      "source_save_sparse_vs_after_first_rk_step_part2": {
+        "H_DIABATIC": {
+          "bias": 0.0,
+          "count": 12716,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            12716
+          ],
+          "status": "OK",
+          "worst_candidate": 0.0,
+          "worst_mismatch_fortran": {
+            "i": 6,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": 0.0
+        },
+        "T_HIST_SRC": {
+          "bias": 0.0,
+          "count": 12716,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            12716
+          ],
+          "status": "OK",
+          "worst_candidate": -8.351654052734375,
+          "worst_mismatch_fortran": {
+            "i": 6,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": -8.351654052734375
+        },
+        "T_SAVE": {
+          "bias": 0.0,
+          "count": 12716,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            12716
+          ],
+          "status": "OK",
+          "worst_candidate": 0.0,
+          "worst_mismatch_fortran": {
+            "i": 6,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": 0.0
+        },
+        "T_TENDF": {
+          "bias": 0.02147640687596087,
+          "count": 12716,
+          "max_abs": 1199.2587877810001,
+          "nonfinite_diff_count": 0,
+          "p95": 59.18517494201661,
+          "p99": 266.97752101421395,
+          "rmse": 60.73177653089401,
+          "shape": [
+            12716
+          ],
+          "status": "OK",
+          "worst_candidate": -0.03808465600013733,
+          "worst_mismatch_fortran": {
+            "i": 17,
+            "j": 10,
+            "k": 4
+          },
+          "worst_reference": 1199.220703125
+        }
+      },
+      "source_save_sparse_vs_current_jax_dry_t_tendf": {
+        "T_TENDF": {
+          "bias": 0.7070764991616165,
+          "count": 12716,
+          "max_abs": 1326.432250976562,
+          "nonfinite_diff_count": 0,
+          "p95": 108.13677406311038,
+          "p99": 488.474682617188,
+          "rmse": 97.71886125389001,
+          "shape": [
+            12716
+          ],
+          "status": "OK",
+          "worst_candidate": 0.0,
+          "worst_mismatch_fortran": {
+            "i": 17,
+            "j": 14,
+            "k": 3
+          },
+          "worst_reference": 1326.432250976562
+        }
+      },
+      "wrf_active_rth_vs_jax_physics_state_delta_mass_tendf": {
+        "full": {
+          "bias": -0.32971380227304753,
+          "count": 461736,
+          "max_abs": 2525.271748323436,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3079010160540188,
+          "p99": 15.827967635557853,
+          "rmse": 20.56715968270077,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2525.279541015625,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.007792692189042476
+        },
+        "nested_interior": {
+          "bias": -0.3255350401408763,
+          "count": 442112,
+          "max_abs": 2525.271748323436,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3101660307532654,
+          "p99": 15.840376025367163,
+          "rmse": 20.975418237046735,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2525.279541015625,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.007792692189042476
+        }
+      }
+    }
+  },
+  "raw_rth_components": {
+    "active_aggregate_ranked_by_nested_interior_max_abs": [
+      {
+        "active_aggregate": true,
+        "active_leaf": false,
+        "field": "RTH_ACTIVE_SUM_MOIST",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2171.199951171875,
+          "max_abs": 2562.844970703125,
+          "mean": -0.2923379117390147,
+          "min": -2562.844970703125,
+          "nonzero_count": 461733,
+          "rms": 21.1615564190631,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 2171.199951171875,
+          "max_abs": 2562.844970703125,
+          "mean": -0.28674285538393113,
+          "min": -2562.844970703125,
+          "nonzero_count": 442109,
+          "rms": 21.57211955065789,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": true,
+        "active_leaf": false,
+        "field": "RTH_ACTIVE_SUM",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2139.64990234375,
+          "max_abs": 2525.279541015625,
+          "mean": -0.294591046657098,
+          "min": -2525.279541015625,
+          "nonzero_count": 461733,
+          "rms": 20.844678742176747,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 2139.64990234375,
+          "max_abs": 2525.279541015625,
+          "mean": -0.2890740954177191,
+          "min": -2525.279541015625,
+          "nonzero_count": 442109,
+          "rms": 21.249104162910232,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      }
+    ],
+    "active_field_names": [
+      "RTHRATEN",
+      "RTHBLTEN"
+    ],
+    "active_flags_from_wrf_header": [
+      "ra",
+      "bl",
+      "cu",
+      "shcu",
+      "grid_fdda",
+      "iau",
+      "ifire",
+      "1",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "active_leaf_ranked_by_nested_interior_max_abs": [
+      {
+        "active_aggregate": false,
+        "active_leaf": true,
+        "field": "RTHBLTEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2138.7490234375,
+          "max_abs": 2522.90576171875,
+          "mean": 0.3291407827539182,
+          "min": -2522.90576171875,
+          "nonzero_count": 61946,
+          "rms": 20.579344922405234,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 2138.7490234375,
+          "max_abs": 2522.90576171875,
+          "mean": 0.3337582953171923,
+          "min": -2522.90576171875,
+          "nonzero_count": 59337,
+          "rms": 20.984261166424478,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": true,
+        "field": "RTHRATEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 41.89738082885742,
+          "max_abs": 41.89738082885742,
+          "mean": -0.6237318286300935,
+          "min": -12.76959800720215,
+          "nonzero_count": 461733,
+          "rms": 1.5059339544676242,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 39.80049896240234,
+          "max_abs": 39.80049896240234,
+          "mean": -0.6228323899254602,
+          "min": -12.76959800720215,
+          "nonzero_count": 442109,
+          "rms": 1.510482737622993,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      }
+    ],
+    "all_raw_including_inactive_ranked_by_nested_interior_max_abs": [
+      {
+        "active_aggregate": false,
+        "active_leaf": false,
+        "field": "RTHSHTEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 3.518532600778794e+33,
+          "max_abs": 3.518532600778794e+33,
+          "mean": 2.309041366446864e+31,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 245649,
+          "rms": 2.791684592378463e+32,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 3.518532600778794e+33,
+          "max_abs": 3.518532600778794e+33,
+          "mean": 2.338452772857234e+31,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 235910,
+          "rms": 2.809409709503376e+32,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": false,
+        "field": "RTH_ALL_SUM",
+        "full": {
+          "count": 461736,
+          "finite_count": 457710,
+          "max": 3.518532600778794e+33,
+          "max_abs": 3.518532600778794e+33,
+          "mean": 2.4000358771752083e+31,
+          "min": -2525.279541015625,
+          "nonzero_count": 457709,
+          "rms": 2.8048463503925856e+32,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 438350,
+          "max": 3.518532600778794e+33,
+          "max_abs": 3.518532600778794e+33,
+          "mean": 2.42924428195174e+31,
+          "min": -2525.279541015625,
+          "nonzero_count": 438349,
+          "rms": 2.8223450682856483e+32,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": false,
+        "field": "RTHNDGDTEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 459448,
+          "max": 7.618957098799247e+31,
+          "max_abs": 7.618957098799247e+31,
+          "mean": 6.3206140145715706e+29,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 134346,
+          "rms": 6.894738982812084e+30,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 440000,
+          "max": 7.618957098799247e+31,
+          "max_abs": 7.618957098799247e+31,
+          "mean": 6.2996512387408724e+29,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 129405,
+          "rms": 6.883536806178708e+30,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": false,
+        "field": "RTHFRTEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 459998,
+          "max": 7.267001557794185e+31,
+          "max_abs": 7.267001557794185e+31,
+          "mean": 3.515283128688774e+29,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 167988,
+          "rms": 4.902119577455698e+30,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 440462,
+          "max": 7.267001557794185e+31,
+          "max_abs": 7.267001557794185e+31,
+          "mean": 3.516535371253914e+29,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 161111,
+          "rms": 4.9027596060992294e+30,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": false,
+        "field": "RTHIAUTEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 11508205.0,
+          "max_abs": 11508205.0,
+          "mean": 42220.87789766657,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 176044,
+          "rms": 697055.6060695028,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 11508205.0,
+          "max_abs": 11508205.0,
+          "mean": 41804.2876844468,
+          "min": -1.192024777590879e-20,
+          "nonzero_count": 169105,
+          "rms": 693608.1836137652,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": true,
+        "active_leaf": false,
+        "field": "RTH_ACTIVE_SUM_MOIST",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2171.199951171875,
+          "max_abs": 2562.844970703125,
+          "mean": -0.2923379117390147,
+          "min": -2562.844970703125,
+          "nonzero_count": 461733,
+          "rms": 21.1615564190631,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 2171.199951171875,
+          "max_abs": 2562.844970703125,
+          "mean": -0.28674285538393113,
+          "min": -2562.844970703125,
+          "nonzero_count": 442109,
+          "rms": 21.57211955065789,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": true,
+        "active_leaf": false,
+        "field": "RTH_ACTIVE_SUM",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2139.64990234375,
+          "max_abs": 2525.279541015625,
+          "mean": -0.294591046657098,
+          "min": -2525.279541015625,
+          "nonzero_count": 461733,
+          "rms": 20.844678742176747,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 2139.64990234375,
+          "max_abs": 2525.279541015625,
+          "mean": -0.2890740954177191,
+          "min": -2525.279541015625,
+          "nonzero_count": 442109,
+          "rms": 21.249104162910232,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": true,
+        "field": "RTHBLTEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2138.7490234375,
+          "max_abs": 2522.90576171875,
+          "mean": 0.3291407827539182,
+          "min": -2522.90576171875,
+          "nonzero_count": 61946,
+          "rms": 20.579344922405234,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 2138.7490234375,
+          "max_abs": 2522.90576171875,
+          "mean": 0.3337582953171923,
+          "min": -2522.90576171875,
+          "nonzero_count": 59337,
+          "rms": 20.984261166424478,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": true,
+        "field": "RTHRATEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 41.89738082885742,
+          "max_abs": 41.89738082885742,
+          "mean": -0.6237318286300935,
+          "min": -12.76959800720215,
+          "nonzero_count": 461733,
+          "rms": 1.5059339544676242,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 39.80049896240234,
+          "max_abs": 39.80049896240234,
+          "mean": -0.6228323899254602,
+          "min": -12.76959800720215,
+          "nonzero_count": 442109,
+          "rms": 1.510482737622993,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      {
+        "active_aggregate": false,
+        "active_leaf": false,
+        "field": "RTHCUTEN",
+        "full": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "nonzero_count": 0,
+          "rms": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "nested_interior": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 0.0,
+          "max_abs": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "nonzero_count": 0,
+          "rms": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      }
+    ],
+    "inactive_leaf_note": "Inactive RTH leaves can contain uninitialized finite/NaN values in WRF; only leaves enabled by active_theta_source_flags contribute to RTH_ACTIVE_SUM.",
+    "status": "RAW_RTH_COMPONENTS_SUMMARIZED"
+  },
+  "schema": "wrfgpu2.v014.step1_part2_source_leaves_split.v1",
+  "status": "PROOF_EXECUTED",
+  "target": {
+    "cpu_only": true,
+    "domain": 2,
+    "step": 1
+  },
+  "tooling": {
+    "wrf_fixture_commands": {
+      "compile": "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real",
+      "run": "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run && timeout 1800 env CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT=1 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_ROOT=/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_GRID=2 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_START_STEP=1 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_END_STEP=1 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY=1 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_ROOT=/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_GRID=2 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_START_STEP=1 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_END_STEP=1 WRFGPU2_SOURCE_SAVE_BOUNDARY=1 WRFGPU2_SOURCE_SAVE_BOUNDARY_ROOT=/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth WRFGPU2_SOURCE_SAVE_BOUNDARY_GRID=2 WRFGPU2_SOURCE_SAVE_BOUNDARY_START_STEP=1 WRFGPU2_SOURCE_SAVE_BOUNDARY_END_STEP=1 ./wrf.exe"
+    },
+    "wrf_patch_diff": {
+      "inputs": {
+        "dyn_em/module_first_rk_step_part2.F": {
+          "base": {
+            "exists": true,
+            "is_dir": false,
+            "is_file": true,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/module_first_rk_step_part2.F",
+            "sha256": "9c8c06b246c1cb1bb1632c25e5683a0cfd8545e6832df6eeaa1c744524325738",
+            "size_bytes": 64799
+          },
+          "patched": {
+            "exists": true,
+            "is_dir": false,
+            "is_file": true,
+            "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/dyn_em/module_first_rk_step_part2.F",
+            "sha256": "b8b73295304b20ac5b99c33a6c740ed12f3f0d634ca0c7ac9696ae5ddfa6649d",
+            "size_bytes": 76351
+          },
+          "returncode": 1,
+          "status": "DIFFED",
+          "stderr_tail": ""
+        },
+        "dyn_em/solve_em.F": {
+          "base": {
+            "exists": true,
+            "is_dir": false,
+            "is_file": true,
+            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/solve_em.F",
+            "sha256": "27703b7cb58e6da2a1d1b435847b13f50b013c8d60f471e53dbdc84a88b027b5",
+            "size_bytes": 402400
+          },
+          "patched": {
+            "exists": true,
+            "is_dir": false,
+            "is_file": true,
+            "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/dyn_em/solve_em.F",
+            "sha256": "ceed07efa1d5788e27cfe1dd2a35085ed5056d580c0457f86759a52b1deb013a",
+            "size_bytes": 402428
+          },
+          "returncode": 1,
+          "status": "DIFFED",
+          "stderr_tail": ""
+        }
+      },
+      "output": {
+        "exists": true,
+        "is_dir": false,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split_wrf_patch.diff",
+        "sha256": "6d35bf6584881ebac439fdc98ae9709a88baa180ce083dce77bba912b8e29885",
+        "size_bytes": 14360
+      },
+      "status": "WRF_PATCH_DIFF_WRITTEN"
+    }
+  },
+  "verdict": "STEP1_PART2_SOURCE_LEAVES_LOCALIZED_UPDATE_PHY_TEN_RAW_RTH_TO_T_TENDF_MISSING_IN_JAX_DRY_BUNDLE",
+  "wrf_truth": {
+    "part2": {
+      "status": "WRF_PART2_TRUTH_READY",
+      "surfaces": {
+        "after_calculate_phy_tend": {
+          "duplicate_stats": {
+            "H_DIABATIC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MASS_H": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MSFTY": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_NEW": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "P": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "PB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "QV_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "QV_TEND": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHBLTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHCUTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHFRTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHIAUTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHNDGDTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHRATEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHSHTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ACTIVE_SUM": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ACTIVE_SUM_MOIST": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ALL_SUM": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "THETA_M_FACTOR": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_HIST_SRC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_INIT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_SAVE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            }
+          },
+          "headers": [
+            {
+              "active_theta_source_flags": [
+                [
+                  "ra",
+                  "bl",
+                  "cu",
+                  "shcu",
+                  "grid_fdda",
+                  "iau",
+                  "ifire",
+                  "1",
+                  "1",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0"
+                ]
+              ],
+              "domain_id": [
+                [
+                  "2"
+                ]
+              ],
+              "global_mass_i_j_end_exclusive_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "grid_itimestep_after_increment": [
+                [
+                  "1"
+                ]
+              ],
+              "marker": "# WRFGPU2_V014_STEP1_PART2_SOURCE_LEAVES_SPLIT v1",
+              "mass_vertical_fortran_k_start_k_end_inclusive": [
+                [
+                  "1",
+                  "44"
+                ]
+              ],
+              "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_calculate_phy_tend_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt",
+              "record_schema": [
+                [
+                  "MASS_PART2",
+                  "fortran_i",
+                  "fortran_j",
+                  "fortran_k",
+                  "zero_x",
+                  "zero_y",
+                  "zero_k",
+                  "T_STATE",
+                  "T_OLD",
+                  "T_HIST_SRC",
+                  "T_INIT",
+                  "P",
+                  "PB",
+                  "MU_NEW",
+                  "MUB",
+                  "MUT",
+                  "MSFTY",
+                  "MASS_H",
+                  "T_TENDF",
+                  "H_DIABATIC",
+                  "T_SAVE",
+                  "MU_TENDF",
+                  "RTHRATEN",
+                  "RTHBLTEN",
+                  "RTHCUTEN",
+                  "RTHSHTEN",
+                  "RTHNDGDTEN",
+                  "RTHIAUTEN",
+                  "RTHFRTEN",
+                  "RTH_ALL_SUM",
+                  "RTH_ACTIVE_SUM",
+                  "RTH_ACTIVE_SUM_MOIST",
+                  "QV_OLD",
+                  "QV_TEND",
+                  "THETA_M_FACTOR"
+                ]
+              ],
+              "rk_step": [
+                [
+                  "1"
+                ]
+              ],
+              "routine": [
+                [
+                  "dyn_em/module_first_rk_step_part2.F"
+                ]
+              ],
+              "surface": [
+                [
+                  "after_calculate_phy_tend"
+                ]
+              ],
+              "tile_i_j_bounds_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "tile_record_policy": [
+                [
+                  "mass_owned_single_owner_no_overlap"
+                ]
+              ]
+            }
+          ],
+          "nonfinite_counts": {
+            "H_DIABATIC": 0,
+            "MASS_H": 0,
+            "MSFTY": 0,
+            "MUB": 0,
+            "MUT": 0,
+            "MU_NEW": 0,
+            "MU_TENDF": 0,
+            "P": 0,
+            "PB": 0,
+            "QV_OLD": 0,
+            "QV_TEND": 0,
+            "RTHBLTEN": 0,
+            "RTHCUTEN": 0,
+            "RTHFRTEN": 1738,
+            "RTHIAUTEN": 0,
+            "RTHNDGDTEN": 2288,
+            "RTHRATEN": 0,
+            "RTHSHTEN": 0,
+            "RTH_ACTIVE_SUM": 0,
+            "RTH_ACTIVE_SUM_MOIST": 0,
+            "RTH_ALL_SUM": 4026,
+            "THETA_M_FACTOR": 0,
+            "T_HIST_SRC": 0,
+            "T_INIT": 0,
+            "T_OLD": 0,
+            "T_SAVE": 0,
+            "T_STATE": 0,
+            "T_TENDF": 0
+          },
+          "raw_files": [
+            "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_calculate_phy_tend_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt"
+          ],
+          "record_count": 461736,
+          "status": "WRF_PART2_SURFACE_READY",
+          "summaries": {
+            "H_DIABATIC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MASS_H": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 98005.59375,
+              "max_abs": 98005.59375,
+              "mean": 95825.84853733383,
+              "min": 46614.57421875,
+              "nonzero_count": 461736,
+              "rms": 95853.51195049346,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MSFTY": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.9994949698448181,
+              "max_abs": 0.9994949698448181,
+              "mean": 0.9991923368315663,
+              "min": 0.999048113822937,
+              "nonzero_count": 461736,
+              "rms": 0.9991923458980373,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 95000.0,
+              "max_abs": 95000.0,
+              "mean": 94532.0464305496,
+              "min": 64526.0546875,
+              "nonzero_count": 461736,
+              "rms": 94559.0642422093,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 96791.6171875,
+              "max_abs": 96791.6171875,
+              "mean": 96215.33842106204,
+              "min": 66157.6328125,
+              "nonzero_count": 461736,
+              "rms": 96242.101393567,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_NEW": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1812.1484375,
+              "max_abs": 1812.1484375,
+              "mean": 1683.2920161967552,
+              "min": 1519.0859375,
+              "nonzero_count": 461736,
+              "rms": 1683.5384332106312,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "P": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2256.5078125,
+              "max_abs": 2256.5078125,
+              "mean": 545.6089732425902,
+              "min": -0.0478515625,
+              "nonzero_count": 459265,
+              "rms": 890.5438679424697,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "PB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 99706.203125,
+              "max_abs": 99706.203125,
+              "mean": 44067.671251184474,
+              "min": 5225.25048828125,
+              "nonzero_count": 461736,
+              "rms": 55261.95828751553,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "QV_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.01170683559030294,
+              "max_abs": 0.01170683559030294,
+              "mean": 0.0021903549088611598,
+              "min": 2.687635060283355e-06,
+              "nonzero_count": 461736,
+              "rms": 0.0040612413667409555,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "QV_TEND": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHBLTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2138.7490234375,
+              "max_abs": 2522.90576171875,
+              "mean": 0.3291407827539182,
+              "min": -2522.90576171875,
+              "nonzero_count": 61946,
+              "rms": 20.579344922405234,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHCUTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHFRTEN": {
+              "count": 461736,
+              "finite_count": 459998,
+              "max": 7.267001557794185e+31,
+              "max_abs": 7.267001557794185e+31,
+              "mean": 3.515283128688774e+29,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 167988,
+              "rms": 4.902119577455698e+30,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHIAUTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 11508205.0,
+              "max_abs": 11508205.0,
+              "mean": 42220.87789766657,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 176044,
+              "rms": 697055.6060695028,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHNDGDTEN": {
+              "count": 461736,
+              "finite_count": 459448,
+              "max": 7.618957098799247e+31,
+              "max_abs": 7.618957098799247e+31,
+              "mean": 6.3206140145715706e+29,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 134346,
+              "rms": 6.894738982812084e+30,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHRATEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 41.89738082885742,
+              "max_abs": 41.89738082885742,
+              "mean": -0.6237318286300935,
+              "min": -12.76959800720215,
+              "nonzero_count": 461733,
+              "rms": 1.5059339544676242,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHSHTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 3.518532600778794e+33,
+              "max_abs": 3.518532600778794e+33,
+              "mean": 2.309041366446864e+31,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 245649,
+              "rms": 2.791684592378463e+32,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ACTIVE_SUM": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2139.64990234375,
+              "max_abs": 2525.279541015625,
+              "mean": -0.294591046657098,
+              "min": -2525.279541015625,
+              "nonzero_count": 461733,
+              "rms": 20.844678742176747,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ACTIVE_SUM_MOIST": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2171.199951171875,
+              "max_abs": 2562.844970703125,
+              "mean": -0.2923379117390147,
+              "min": -2562.844970703125,
+              "nonzero_count": 461733,
+              "rms": 21.1615564190631,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ALL_SUM": {
+              "count": 461736,
+              "finite_count": 457710,
+              "max": 3.518532600778794e+33,
+              "max_abs": 3.518532600778794e+33,
+              "mean": 2.4000358771752083e+31,
+              "min": -2525.279541015625,
+              "nonzero_count": 457709,
+              "rms": 2.8048463503925856e+32,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "THETA_M_FACTOR": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1.018828868865967,
+              "max_abs": 1.018828868865967,
+              "mean": 1.0035228844676087,
+              "min": 1.000004291534424,
+              "nonzero_count": 461736,
+              "rms": 1.0035379590630071,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_HIST_SRC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9958190917969,
+              "max_abs": 194.9958190917969,
+              "mean": 46.798593548778136,
+              "min": -10.63446044921875,
+              "nonzero_count": 461736,
+              "rms": 72.40252476398827,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_INIT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 164.8203430175781,
+              "max_abs": 164.8203430175781,
+              "mean": 36.9558802851087,
+              "min": -9.903350830078125,
+              "nonzero_count": 461736,
+              "rms": 61.250426453119765,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982299804688,
+              "max_abs": 194.9982299804688,
+              "mean": 47.8424656477354,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840226727508,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_SAVE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982452392578,
+              "max_abs": 194.9982452392578,
+              "mean": 47.842466891171576,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840442192889,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            }
+          },
+          "surface": "after_calculate_phy_tend"
+        },
+        "after_conv_t_tendf_to_moist": {
+          "duplicate_stats": {
+            "H_DIABATIC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MASS_H": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MSFTY": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_NEW": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "P": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "PB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "QV_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "QV_TEND": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHBLTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHCUTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHFRTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHIAUTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHNDGDTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHRATEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHSHTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ACTIVE_SUM": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ACTIVE_SUM_MOIST": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ALL_SUM": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "THETA_M_FACTOR": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_HIST_SRC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_INIT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_SAVE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            }
+          },
+          "headers": [
+            {
+              "active_theta_source_flags": [
+                [
+                  "ra",
+                  "bl",
+                  "cu",
+                  "shcu",
+                  "grid_fdda",
+                  "iau",
+                  "ifire",
+                  "1",
+                  "1",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0"
+                ]
+              ],
+              "domain_id": [
+                [
+                  "2"
+                ]
+              ],
+              "global_mass_i_j_end_exclusive_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "grid_itimestep_after_increment": [
+                [
+                  "1"
+                ]
+              ],
+              "marker": "# WRFGPU2_V014_STEP1_PART2_SOURCE_LEAVES_SPLIT v1",
+              "mass_vertical_fortran_k_start_k_end_inclusive": [
+                [
+                  "1",
+                  "44"
+                ]
+              ],
+              "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_conv_t_tendf_to_moist_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt",
+              "record_schema": [
+                [
+                  "MASS_PART2",
+                  "fortran_i",
+                  "fortran_j",
+                  "fortran_k",
+                  "zero_x",
+                  "zero_y",
+                  "zero_k",
+                  "T_STATE",
+                  "T_OLD",
+                  "T_HIST_SRC",
+                  "T_INIT",
+                  "P",
+                  "PB",
+                  "MU_NEW",
+                  "MUB",
+                  "MUT",
+                  "MSFTY",
+                  "MASS_H",
+                  "T_TENDF",
+                  "H_DIABATIC",
+                  "T_SAVE",
+                  "MU_TENDF",
+                  "RTHRATEN",
+                  "RTHBLTEN",
+                  "RTHCUTEN",
+                  "RTHSHTEN",
+                  "RTHNDGDTEN",
+                  "RTHIAUTEN",
+                  "RTHFRTEN",
+                  "RTH_ALL_SUM",
+                  "RTH_ACTIVE_SUM",
+                  "RTH_ACTIVE_SUM_MOIST",
+                  "QV_OLD",
+                  "QV_TEND",
+                  "THETA_M_FACTOR"
+                ]
+              ],
+              "rk_step": [
+                [
+                  "1"
+                ]
+              ],
+              "routine": [
+                [
+                  "dyn_em/module_first_rk_step_part2.F"
+                ]
+              ],
+              "surface": [
+                [
+                  "after_conv_t_tendf_to_moist"
+                ]
+              ],
+              "tile_i_j_bounds_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "tile_record_policy": [
+                [
+                  "mass_owned_single_owner_no_overlap"
+                ]
+              ]
+            }
+          ],
+          "nonfinite_counts": {
+            "H_DIABATIC": 0,
+            "MASS_H": 0,
+            "MSFTY": 0,
+            "MUB": 0,
+            "MUT": 0,
+            "MU_NEW": 0,
+            "MU_TENDF": 0,
+            "P": 0,
+            "PB": 0,
+            "QV_OLD": 0,
+            "QV_TEND": 0,
+            "RTHBLTEN": 0,
+            "RTHCUTEN": 0,
+            "RTHFRTEN": 1738,
+            "RTHIAUTEN": 0,
+            "RTHNDGDTEN": 2288,
+            "RTHRATEN": 0,
+            "RTHSHTEN": 0,
+            "RTH_ACTIVE_SUM": 0,
+            "RTH_ACTIVE_SUM_MOIST": 0,
+            "RTH_ALL_SUM": 4026,
+            "THETA_M_FACTOR": 0,
+            "T_HIST_SRC": 0,
+            "T_INIT": 0,
+            "T_OLD": 0,
+            "T_SAVE": 0,
+            "T_STATE": 0,
+            "T_TENDF": 0
+          },
+          "raw_files": [
+            "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_conv_t_tendf_to_moist_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt"
+          ],
+          "record_count": 461736,
+          "status": "WRF_PART2_SURFACE_READY",
+          "summaries": {
+            "H_DIABATIC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MASS_H": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 98005.59375,
+              "max_abs": 98005.59375,
+              "mean": 95825.84853733383,
+              "min": 46614.57421875,
+              "nonzero_count": 461736,
+              "rms": 95853.51195049346,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MSFTY": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.9994949698448181,
+              "max_abs": 0.9994949698448181,
+              "mean": 0.9991923368315663,
+              "min": 0.999048113822937,
+              "nonzero_count": 461736,
+              "rms": 0.9991923458980373,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 95000.0,
+              "max_abs": 95000.0,
+              "mean": 94532.0464305496,
+              "min": 64526.0546875,
+              "nonzero_count": 461736,
+              "rms": 94559.0642422093,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 96791.6171875,
+              "max_abs": 96791.6171875,
+              "mean": 96215.33842106204,
+              "min": 66157.6328125,
+              "nonzero_count": 461736,
+              "rms": 96242.101393567,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_NEW": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1812.1484375,
+              "max_abs": 1812.1484375,
+              "mean": 1683.2920161967552,
+              "min": 1519.0859375,
+              "nonzero_count": 461736,
+              "rms": 1683.5384332106312,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "P": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2256.5078125,
+              "max_abs": 2256.5078125,
+              "mean": 545.6089732425902,
+              "min": -0.0478515625,
+              "nonzero_count": 459265,
+              "rms": 890.5438679424697,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "PB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 99706.203125,
+              "max_abs": 99706.203125,
+              "mean": 44067.671251184474,
+              "min": 5225.25048828125,
+              "nonzero_count": 461736,
+              "rms": 55261.95828751553,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "QV_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.01170683559030294,
+              "max_abs": 0.01170683559030294,
+              "mean": 0.0021903549088611598,
+              "min": 2.687635060283355e-06,
+              "nonzero_count": 461736,
+              "rms": 0.0040612413667409555,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "QV_TEND": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.4930315017700195,
+              "max_abs": 0.4930315017700195,
+              "mean": 0.0007410112948897904,
+              "min": -0.4547699093818665,
+              "nonzero_count": 197585,
+              "rms": 0.009573706534172083,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHBLTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2138.7490234375,
+              "max_abs": 2522.90576171875,
+              "mean": 0.3291407827539182,
+              "min": -2522.90576171875,
+              "nonzero_count": 61946,
+              "rms": 20.579344922405234,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHCUTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHFRTEN": {
+              "count": 461736,
+              "finite_count": 459998,
+              "max": 7.267001557794185e+31,
+              "max_abs": 7.267001557794185e+31,
+              "mean": 3.515283128688774e+29,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 167988,
+              "rms": 4.902119577455698e+30,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHIAUTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 11508205.0,
+              "max_abs": 11508205.0,
+              "mean": 42220.87789766657,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 176044,
+              "rms": 697055.6060695028,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHNDGDTEN": {
+              "count": 461736,
+              "finite_count": 459448,
+              "max": 7.618957098799247e+31,
+              "max_abs": 7.618957098799247e+31,
+              "mean": 6.3206140145715706e+29,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 134346,
+              "rms": 6.894738982812084e+30,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHRATEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 41.89738082885742,
+              "max_abs": 41.89738082885742,
+              "mean": -0.6237318286300935,
+              "min": -12.76959800720215,
+              "nonzero_count": 461733,
+              "rms": 1.5059339544676242,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHSHTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 3.518532600778794e+33,
+              "max_abs": 3.518532600778794e+33,
+              "mean": 2.309041366446864e+31,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 245649,
+              "rms": 2.791684592378463e+32,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ACTIVE_SUM": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2139.64990234375,
+              "max_abs": 2525.279541015625,
+              "mean": -0.294591046657098,
+              "min": -2525.279541015625,
+              "nonzero_count": 461733,
+              "rms": 20.844678742176747,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ACTIVE_SUM_MOIST": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2242.130859375,
+              "max_abs": 2457.5830078125,
+              "mean": 0.0544337837890024,
+              "min": -2457.5830078125,
+              "nonzero_count": 461734,
+              "rms": 21.261273304814424,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ALL_SUM": {
+              "count": 461736,
+              "finite_count": 457710,
+              "max": 3.518532600778794e+33,
+              "max_abs": 3.518532600778794e+33,
+              "mean": 2.4000358771752083e+31,
+              "min": -2525.279541015625,
+              "nonzero_count": 457709,
+              "rms": 2.8048463503925856e+32,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "THETA_M_FACTOR": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1.018828868865967,
+              "max_abs": 1.018828868865967,
+              "mean": 1.0035228844676087,
+              "min": 1.000004291534424,
+              "nonzero_count": 461736,
+              "rms": 1.0035379590630071,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_HIST_SRC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9958190917969,
+              "max_abs": 194.9958190917969,
+              "mean": 46.798593548778136,
+              "min": -10.63446044921875,
+              "nonzero_count": 461736,
+              "rms": 72.40252476398827,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_INIT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 164.8203430175781,
+              "max_abs": 164.8203430175781,
+              "mean": 36.9558802851087,
+              "min": -9.903350830078125,
+              "nonzero_count": 461736,
+              "rms": 61.250426453119765,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982299804688,
+              "max_abs": 194.9982299804688,
+              "mean": 47.8424656477354,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840226727508,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_SAVE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982452392578,
+              "max_abs": 194.9982452392578,
+              "mean": 47.842466891171576,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840442192889,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2242.130859375,
+              "max_abs": 2457.5830078125,
+              "mean": 0.07221554812018978,
+              "min": -2457.5830078125,
+              "nonzero_count": 442110,
+              "rms": 21.20869510640995,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            }
+          },
+          "surface": "after_conv_t_tendf_to_moist"
+        },
+        "after_update_phy_ten": {
+          "duplicate_stats": {
+            "H_DIABATIC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MASS_H": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MSFTY": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_NEW": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "P": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "PB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "QV_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "QV_TEND": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHBLTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHCUTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHFRTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHIAUTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHNDGDTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHRATEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTHSHTEN": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ACTIVE_SUM": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ACTIVE_SUM_MOIST": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "RTH_ALL_SUM": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "THETA_M_FACTOR": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_HIST_SRC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_INIT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_SAVE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            }
+          },
+          "headers": [
+            {
+              "active_theta_source_flags": [
+                [
+                  "ra",
+                  "bl",
+                  "cu",
+                  "shcu",
+                  "grid_fdda",
+                  "iau",
+                  "ifire",
+                  "1",
+                  "1",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0"
+                ]
+              ],
+              "domain_id": [
+                [
+                  "2"
+                ]
+              ],
+              "global_mass_i_j_end_exclusive_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "grid_itimestep_after_increment": [
+                [
+                  "1"
+                ]
+              ],
+              "marker": "# WRFGPU2_V014_STEP1_PART2_SOURCE_LEAVES_SPLIT v1",
+              "mass_vertical_fortran_k_start_k_end_inclusive": [
+                [
+                  "1",
+                  "44"
+                ]
+              ],
+              "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_update_phy_ten_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt",
+              "record_schema": [
+                [
+                  "MASS_PART2",
+                  "fortran_i",
+                  "fortran_j",
+                  "fortran_k",
+                  "zero_x",
+                  "zero_y",
+                  "zero_k",
+                  "T_STATE",
+                  "T_OLD",
+                  "T_HIST_SRC",
+                  "T_INIT",
+                  "P",
+                  "PB",
+                  "MU_NEW",
+                  "MUB",
+                  "MUT",
+                  "MSFTY",
+                  "MASS_H",
+                  "T_TENDF",
+                  "H_DIABATIC",
+                  "T_SAVE",
+                  "MU_TENDF",
+                  "RTHRATEN",
+                  "RTHBLTEN",
+                  "RTHCUTEN",
+                  "RTHSHTEN",
+                  "RTHNDGDTEN",
+                  "RTHIAUTEN",
+                  "RTHFRTEN",
+                  "RTH_ALL_SUM",
+                  "RTH_ACTIVE_SUM",
+                  "RTH_ACTIVE_SUM_MOIST",
+                  "QV_OLD",
+                  "QV_TEND",
+                  "THETA_M_FACTOR"
+                ]
+              ],
+              "rk_step": [
+                [
+                  "1"
+                ]
+              ],
+              "routine": [
+                [
+                  "dyn_em/module_first_rk_step_part2.F"
+                ]
+              ],
+              "surface": [
+                [
+                  "after_update_phy_ten"
+                ]
+              ],
+              "tile_i_j_bounds_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "tile_record_policy": [
+                [
+                  "mass_owned_single_owner_no_overlap"
+                ]
+              ]
+            }
+          ],
+          "nonfinite_counts": {
+            "H_DIABATIC": 0,
+            "MASS_H": 0,
+            "MSFTY": 0,
+            "MUB": 0,
+            "MUT": 0,
+            "MU_NEW": 0,
+            "MU_TENDF": 0,
+            "P": 0,
+            "PB": 0,
+            "QV_OLD": 0,
+            "QV_TEND": 0,
+            "RTHBLTEN": 0,
+            "RTHCUTEN": 0,
+            "RTHFRTEN": 1738,
+            "RTHIAUTEN": 0,
+            "RTHNDGDTEN": 2288,
+            "RTHRATEN": 0,
+            "RTHSHTEN": 0,
+            "RTH_ACTIVE_SUM": 0,
+            "RTH_ACTIVE_SUM_MOIST": 0,
+            "RTH_ALL_SUM": 4026,
+            "THETA_M_FACTOR": 0,
+            "T_HIST_SRC": 0,
+            "T_INIT": 0,
+            "T_OLD": 0,
+            "T_SAVE": 0,
+            "T_STATE": 0,
+            "T_TENDF": 0
+          },
+          "raw_files": [
+            "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_update_phy_ten_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt"
+          ],
+          "record_count": 461736,
+          "status": "WRF_PART2_SURFACE_READY",
+          "summaries": {
+            "H_DIABATIC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MASS_H": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 98005.59375,
+              "max_abs": 98005.59375,
+              "mean": 95825.84853733383,
+              "min": 46614.57421875,
+              "nonzero_count": 461736,
+              "rms": 95853.51195049346,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MSFTY": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.9994949698448181,
+              "max_abs": 0.9994949698448181,
+              "mean": 0.9991923368315663,
+              "min": 0.999048113822937,
+              "nonzero_count": 461736,
+              "rms": 0.9991923458980373,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 95000.0,
+              "max_abs": 95000.0,
+              "mean": 94532.0464305496,
+              "min": 64526.0546875,
+              "nonzero_count": 461736,
+              "rms": 94559.0642422093,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 96791.6171875,
+              "max_abs": 96791.6171875,
+              "mean": 96215.33842106204,
+              "min": 66157.6328125,
+              "nonzero_count": 461736,
+              "rms": 96242.101393567,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_NEW": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1812.1484375,
+              "max_abs": 1812.1484375,
+              "mean": 1683.2920161967552,
+              "min": 1519.0859375,
+              "nonzero_count": 461736,
+              "rms": 1683.5384332106312,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "P": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2256.5078125,
+              "max_abs": 2256.5078125,
+              "mean": 545.6089732425902,
+              "min": -0.0478515625,
+              "nonzero_count": 459265,
+              "rms": 890.5438679424697,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "PB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 99706.203125,
+              "max_abs": 99706.203125,
+              "mean": 44067.671251184474,
+              "min": 5225.25048828125,
+              "nonzero_count": 461736,
+              "rms": 55261.95828751553,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "QV_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.01170683559030294,
+              "max_abs": 0.01170683559030294,
+              "mean": 0.0021903549088611598,
+              "min": 2.687635060283355e-06,
+              "nonzero_count": 461736,
+              "rms": 0.0040612413667409555,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "QV_TEND": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.4930315017700195,
+              "max_abs": 0.4930315017700195,
+              "mean": 0.0007410112948897904,
+              "min": -0.4547699093818665,
+              "nonzero_count": 197585,
+              "rms": 0.009573706534172083,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHBLTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2138.7490234375,
+              "max_abs": 2522.90576171875,
+              "mean": 0.3291407827539182,
+              "min": -2522.90576171875,
+              "nonzero_count": 61946,
+              "rms": 20.579344922405234,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHCUTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHFRTEN": {
+              "count": 461736,
+              "finite_count": 459998,
+              "max": 7.267001557794185e+31,
+              "max_abs": 7.267001557794185e+31,
+              "mean": 3.515283128688774e+29,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 167988,
+              "rms": 4.902119577455698e+30,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHIAUTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 11508205.0,
+              "max_abs": 11508205.0,
+              "mean": 42220.87789766657,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 176044,
+              "rms": 697055.6060695028,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHNDGDTEN": {
+              "count": 461736,
+              "finite_count": 459448,
+              "max": 7.618957098799247e+31,
+              "max_abs": 7.618957098799247e+31,
+              "mean": 6.3206140145715706e+29,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 134346,
+              "rms": 6.894738982812084e+30,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHRATEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 41.89738082885742,
+              "max_abs": 41.89738082885742,
+              "mean": -0.6237318286300935,
+              "min": -12.76959800720215,
+              "nonzero_count": 461733,
+              "rms": 1.5059339544676242,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTHSHTEN": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 3.518532600778794e+33,
+              "max_abs": 3.518532600778794e+33,
+              "mean": 2.309041366446864e+31,
+              "min": -1.192024777590879e-20,
+              "nonzero_count": 245649,
+              "rms": 2.791684592378463e+32,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ACTIVE_SUM": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2139.64990234375,
+              "max_abs": 2525.279541015625,
+              "mean": -0.294591046657098,
+              "min": -2525.279541015625,
+              "nonzero_count": 461733,
+              "rms": 20.844678742176747,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ACTIVE_SUM_MOIST": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2242.130859375,
+              "max_abs": 2457.5830078125,
+              "mean": 0.0544337837890024,
+              "min": -2457.5830078125,
+              "nonzero_count": 461734,
+              "rms": 21.261273304814424,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "RTH_ALL_SUM": {
+              "count": 461736,
+              "finite_count": 457710,
+              "max": 3.518532600778794e+33,
+              "max_abs": 3.518532600778794e+33,
+              "mean": 2.4000358771752083e+31,
+              "min": -2525.279541015625,
+              "nonzero_count": 457709,
+              "rms": 2.8048463503925856e+32,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "THETA_M_FACTOR": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1.018828868865967,
+              "max_abs": 1.018828868865967,
+              "mean": 1.0035228844676087,
+              "min": 1.000004291534424,
+              "nonzero_count": 461736,
+              "rms": 1.0035379590630071,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_HIST_SRC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9958190917969,
+              "max_abs": 194.9958190917969,
+              "mean": 46.798593548778136,
+              "min": -10.63446044921875,
+              "nonzero_count": 461736,
+              "rms": 72.40252476398827,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_INIT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 164.8203430175781,
+              "max_abs": 164.8203430175781,
+              "mean": 36.9558802851087,
+              "min": -9.903350830078125,
+              "nonzero_count": 461736,
+              "rms": 61.250426453119765,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982299804688,
+              "max_abs": 194.9982299804688,
+              "mean": 47.8424656477354,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840226727508,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_SAVE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982452392578,
+              "max_abs": 194.9982452392578,
+              "mean": 47.842466891171576,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840442192889,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2139.64990234375,
+              "max_abs": 2525.279541015625,
+              "mean": -0.2767883086294303,
+              "min": -2525.279541015625,
+              "nonzero_count": 442109,
+              "rms": 20.792653135501457,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            }
+          },
+          "surface": "after_update_phy_ten"
+        }
+      }
+    },
+    "source_save": {
+      "compact": {
+        "duplicate_count": 0,
+        "duplicate_max_delta": 0.0,
+        "duplicate_max_delta_by_field": {},
+        "field_ranges": {
+          "MASS2D_SOURCE": {
+            "MUB": {
+              "count": 289,
+              "finite_count": 289,
+              "max": 95000.0,
+              "min": 82711.3984375
+            },
+            "MUT": {
+              "count": 289,
+              "finite_count": 289,
+              "max": 96675.625,
+              "min": 84305.2421875
+            },
+            "MU_NEW": {
+              "count": 289,
+              "finite_count": 289,
+              "max": 1688.781005859375,
+              "min": 1593.84375
+            },
+            "MU_OLD": {
+              "count": 289,
+              "finite_count": 289,
+              "max": 1688.781005859375,
+              "min": 1593.84375
+            },
+            "MU_SAVE": {
+              "count": 289,
+              "finite_count": 289,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "MU_TENDF": {
+              "count": 289,
+              "finite_count": 289,
+              "max": 0.0,
+              "min": 0.0
+            }
+          },
+          "MASS_SOURCE": {
+            "H_DIABATIC": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "MUB": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 95000.0,
+              "min": 82711.3984375
+            },
+            "MU_NEW": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 1688.781005859375,
+              "min": 1593.84375
+            },
+            "MU_OLD": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 1688.781005859375,
+              "min": 1593.84375
+            },
+            "P": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 2067.7265625,
+              "min": -0.033203125
+            },
+            "PB": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 99706.203125,
+              "min": 5225.25048828125
+            },
+            "T_HIST_SRC": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 193.2069396972656,
+              "min": -9.036346435546875
+            },
+            "T_INIT": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 164.8203430175781,
+              "min": -9.903350830078125
+            },
+            "T_OLD": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 193.2094116210938,
+              "min": -4.08917236328125
+            },
+            "T_SAVE": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "T_TENDF": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 1326.432250976562,
+              "min": -1285.795776367188
+            },
+            "T_THM": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 193.2094116210938,
+              "min": -4.08917236328125
+            }
+          },
+          "MOIST_OLD_QV": {
+            "MOIST": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 0.01121037732809782,
+              "min": 2.789162408589618e-06
+            },
+            "MOIST_OLD": {
+              "count": 12716,
+              "finite_count": 12716,
+              "max": 0.01121037732809782,
+              "min": 2.789162408589618e-06
+            }
+          },
+          "U_SOURCE": {
+            "RU_TEND": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 2512.243896484375,
+              "min": -2542.128662109375
+            },
+            "RU_TENDF": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 522.4750366210938,
+              "min": -600.2674560546875
+            },
+            "U_NEW": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 31.36733627319336,
+              "min": -0.5980654358863831
+            },
+            "U_OLD": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "U_SAVE": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 0.0,
+              "min": 0.0
+            }
+          },
+          "V_SOURCE": {
+            "RV_TEND": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 5368.56494140625,
+              "min": -2975.209228515625
+            },
+            "RV_TENDF": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 1502.156005859375,
+              "min": -1398.983032226562
+            },
+            "V_NEW": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 4.084489822387695,
+              "min": -3.483731746673584
+            },
+            "V_OLD": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "V_SAVE": {
+              "count": 13464,
+              "finite_count": 13464,
+              "max": 0.0,
+              "min": 0.0
+            }
+          },
+          "WPH_SOURCE": {
+            "PHB": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 195220.515625,
+              "min": 0.0
+            },
+            "PH_NEW": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 7999.18798828125,
+              "min": 0.0
+            },
+            "PH_OLD": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 7999.1875,
+              "min": 0.0
+            },
+            "PH_SAVE": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "PH_TEND": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 395196.21875,
+              "min": -484007.8125
+            },
+            "PH_TENDF": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "RW_TEND": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 123630.0,
+              "min": -6811.54931640625
+            },
+            "RW_TENDF": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 86.976806640625,
+              "min": -66.83271026611328
+            },
+            "W_NEW": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 0.2106517404317856,
+              "min": -0.2699169516563416
+            },
+            "W_OLD": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 0.0,
+              "min": 0.0
+            },
+            "W_SAVE": {
+              "count": 13005,
+              "finite_count": 13005,
+              "max": 0.0,
+              "min": 0.0
+            }
+          }
+        },
+        "files": [
+          {
+            "exists": true,
+            "is_file": true,
+            "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_160_js_1_je_67.txt",
+            "sha256": "ab7f7c4709c29a1431bfe1df728a6165849a17c39f2856ef8d7646be8540a788",
+            "size_bytes": 13224053
+          }
+        ],
+        "key_ranges": {
+          "MASS2D_SOURCE": {
+            "max": [
+              17,
+              21
+            ],
+            "min": [
+              1,
+              5
+            ]
+          },
+          "MASS_SOURCE": {
+            "max": [
+              43,
+              17,
+              21
+            ],
+            "min": [
+              0,
+              1,
+              5
+            ]
+          },
+          "MOIST_OLD_QV": {
+            "max": [
+              2,
+              43,
+              17,
+              21
+            ],
+            "min": [
+              2,
+              0,
+              1,
+              5
+            ]
+          },
+          "U_SOURCE": {
+            "max": [
+              43,
+              17,
+              22
+            ],
+            "min": [
+              0,
+              1,
+              5
+            ]
+          },
+          "V_SOURCE": {
+            "max": [
+              43,
+              18,
+              21
+            ],
+            "min": [
+              0,
+              1,
+              5
+            ]
+          },
+          "WPH_SOURCE": {
+            "max": [
+              44,
+              17,
+              21
+            ],
+            "min": [
+              0,
+              1,
+              5
+            ]
+          }
+        },
+        "metadata": {
+          "active_moisture_indices_param_first_num3d_numall": "2 7 7",
+          "active_scalar_indices_param_first_num3d_numall": "2 4 4",
+          "boundary_ordering": "before_relax_bdy_dry_rk_addtend_dry_spec_bdy_dry_small_step_prep",
+          "boundary_position": "after_first_rk_step_part1_part2_and_rk_tendency",
+          "comment": "WRFGPU2_V014_SOURCE_SAVE_BOUNDARY v1",
+          "current_timestr_before_step": "2026-05-01_18:00:00",
+          "domain_id": "2",
+          "dry_source_semantics": "raw_tendf_before_rk_addtend_dry_in_place_save_add",
+          "dt_seconds": "0.6000000000000000E+01",
+          "dx_m": "0.3000000000000000E+04",
+          "dy_m": "0.3000000000000000E+04",
+          "grid_itimestep_after_increment": "1",
+          "lead_seconds_after_step": "0.6000000000000000E+01",
+          "lead_seconds_before_step": "0.0000000000000000E+00",
+          "mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1": "1 18 5 22 2 18",
+          "mass_vertical_fortran_k_start_k_end_inclusive": "1 44",
+          "moist_old_status": "only_P_QV_initialized_before_RK_loop_and_emitted",
+          "rk_order_config": "3",
+          "rk_step": "1",
+          "routine": "dyn_em/solve_em.F after rk_tendency before relax_bdy_dry",
+          "scalar_old_status": "not_initialized_at_this_boundary_not_DryPhysicsTendencies_input",
+          "source_generation_status": "current_step_tendf_and_save_family_available",
+          "state_mutation_status": "before_first_dry_acoustic_state_update_advance_uv",
+          "surface": "source_save_after_rk_tendency",
+          "tile_i_j_bounds_fortran": "1 160 1 67",
+          "tile_record_policy": "owned_tile_overlap_only",
+          "u_patch_zero_y0_y1_xstag0_xstag1_fortran_j0_j1_i0_i1": "1 18 5 23 2 18",
+          "v_patch_zero_ystag0_ystag1_x0_x1_fortran_j0_j1_i0_i1": "1 19 5 22 2 19",
+          "w_ph_patch_zero_kstag0_kstag1_y0_y1_x0_x1": "0 45 1 18 5 22",
+          "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": "1 45"
+        },
+        "schema_lines": [
+          "record_schema MASS_SOURCE fortran_i fortran_j fortran_k zero_x zero_y zero_k T_THM T_OLD T_HIST_SRC P PB MU_NEW MU_OLD MUB T_INIT T_TENDF H_DIABATIC T_SAVE",
+          "record_schema MASS2D_SOURCE fortran_i fortran_j zero_x zero_y MU_NEW MU_OLD MUB MUT MU_TENDF MU_SAVE",
+          "record_schema U_SOURCE fortran_i fortran_j fortran_k zero_xstag zero_y zero_k U_NEW U_OLD RU_TENDF U_SAVE RU_TEND",
+          "record_schema V_SOURCE fortran_i fortran_j fortran_k zero_x zero_ystag zero_k V_NEW V_OLD RV_TENDF V_SAVE RV_TEND",
+          "record_schema WPH_SOURCE fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_NEW W_OLD PH_NEW PH_OLD PHB RW_TENDF PH_TENDF W_SAVE PH_SAVE RW_TEND PH_TEND",
+          "record_schema MOIST_OLD_QV fortran_i fortran_j fortran_k zero_x zero_y zero_k moist_index MOIST MOIST_OLD"
+        ],
+        "schemas": {
+          "MASS2D_SOURCE": {
+            "fields": [
+              "MU_NEW",
+              "MU_OLD",
+              "MUB",
+              "MUT",
+              "MU_TENDF",
+              "MU_SAVE"
+            ],
+            "index_count": 4
+          },
+          "MASS_SOURCE": {
+            "fields": [
+              "T_THM",
+              "T_OLD",
+              "T_HIST_SRC",
+              "P",
+              "PB",
+              "MU_NEW",
+              "MU_OLD",
+              "MUB",
+              "T_INIT",
+              "T_TENDF",
+              "H_DIABATIC",
+              "T_SAVE"
+            ],
+            "index_count": 6
+          },
+          "MOIST_OLD_QV": {
+            "fields": [
+              "MOIST",
+              "MOIST_OLD"
+            ],
+            "index_count": 7
+          },
+          "U_SOURCE": {
+            "fields": [
+              "U_NEW",
+              "U_OLD",
+              "RU_TENDF",
+              "U_SAVE",
+              "RU_TEND"
+            ],
+            "index_count": 6
+          },
+          "V_SOURCE": {
+            "fields": [
+              "V_NEW",
+              "V_OLD",
+              "RV_TENDF",
+              "V_SAVE",
+              "RV_TEND"
+            ],
+            "index_count": 6
+          },
+          "WPH_SOURCE": {
+            "fields": [
+              "W_NEW",
+              "W_OLD",
+              "PH_NEW",
+              "PH_OLD",
+              "PHB",
+              "RW_TENDF",
+              "PH_TENDF",
+              "W_SAVE",
+              "PH_SAVE",
+              "RW_TEND",
+              "PH_TEND"
+            ],
+            "index_count": 6
+          }
+        },
+        "unique_counts": {
+          "MASS2D_SOURCE": 289,
+          "MASS_SOURCE": 12716,
+          "MOIST_OLD_QV": 12716,
+          "U_SOURCE": 13464,
+          "V_SOURCE": 13464,
+          "WPH_SOURCE": 13005
+        }
+      },
+      "files": [
+        "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_160_js_1_je_67.txt"
+      ],
+      "status": "SOURCE_SAVE_READY"
+    },
+    "source_surfaces": {
+      "status": "WRF_SOURCE_SURFACES_READY",
+      "surfaces": {
+        "after_first_rk_step_part1": {
+          "duplicate_stats": {
+            "H_DIABATIC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "PB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "P_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_SAVE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            }
+          },
+          "headers": [
+            {
+              "current_timestr_before_step": [
+                [
+                  "2026-05-01_18:00:00"
+                ]
+              ],
+              "domain_id": [
+                [
+                  "2"
+                ]
+              ],
+              "global_mass_i_j_end_exclusive_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "grid_itimestep_after_increment": [
+                [
+                  "1"
+                ]
+              ],
+              "marker": "# WRFGPU2_V014_STEP1_RK1_SOURCE_BOUNDARY v1",
+              "mass_vertical_fortran_k_start_k_end_inclusive": [
+                [
+                  "1",
+                  "44"
+                ]
+              ],
+              "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt",
+              "record_schema": [
+                [
+                  "MASS_SOURCE",
+                  "fortran_i",
+                  "fortran_j",
+                  "fortran_k",
+                  "zero_x",
+                  "zero_y",
+                  "zero_k",
+                  "T_STATE",
+                  "P_STATE",
+                  "PB",
+                  "MU_STATE",
+                  "MUB",
+                  "MUT",
+                  "T_TENDF",
+                  "H_DIABATIC",
+                  "MU_TENDF",
+                  "T_SAVE",
+                  "T_OLD"
+                ],
+                [
+                  "WPH_SOURCE",
+                  "fortran_i",
+                  "fortran_j",
+                  "fortran_kstag",
+                  "zero_x",
+                  "zero_y",
+                  "zero_kstag",
+                  "W_STATE",
+                  "PH_STATE",
+                  "PHB",
+                  "RW_TENDF",
+                  "PH_TENDF",
+                  "W_SAVE",
+                  "PH_SAVE"
+                ]
+              ],
+              "rk_order": [
+                [
+                  "3"
+                ]
+              ],
+              "rk_step": [
+                [
+                  "1"
+                ]
+              ],
+              "routine": [
+                [
+                  "dyn_em/solve_em.F",
+                  "after",
+                  "first_rk_step_part1"
+                ]
+              ],
+              "surface": [
+                [
+                  "after_first_rk_step_part1"
+                ]
+              ],
+              "tile_i_j_bounds_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "tile_record_policy": [
+                [
+                  "mass_owned_single_owner_no_overlap"
+                ]
+              ],
+              "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+                [
+                  "1",
+                  "45"
+                ]
+              ]
+            }
+          ],
+          "nonfinite_counts": {
+            "H_DIABATIC": 0,
+            "MUB": 0,
+            "MUT": 0,
+            "MU_STATE": 0,
+            "MU_TENDF": 0,
+            "PB": 0,
+            "P_STATE": 0,
+            "T_OLD": 0,
+            "T_SAVE": 0,
+            "T_STATE": 0,
+            "T_TENDF": 0
+          },
+          "raw_files": [
+            "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt"
+          ],
+          "record_count": 461736,
+          "status": "WRF_SOURCE_MASS_SURFACE_READY",
+          "summaries": {
+            "H_DIABATIC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 95000.0,
+              "max_abs": 95000.0,
+              "mean": 94532.0464305496,
+              "min": 64526.0546875,
+              "nonzero_count": 461736,
+              "rms": 94559.0642422093,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 96791.6171875,
+              "max_abs": 96791.6171875,
+              "mean": 96215.33842106204,
+              "min": 66157.6328125,
+              "nonzero_count": 461736,
+              "rms": 96242.101393567,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1812.1484375,
+              "max_abs": 1812.1484375,
+              "mean": 1683.2920161967552,
+              "min": 1519.0859375,
+              "nonzero_count": 461736,
+              "rms": 1683.5384332106312,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "PB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 99706.203125,
+              "max_abs": 99706.203125,
+              "mean": 44067.671251184474,
+              "min": 5225.25048828125,
+              "nonzero_count": 461736,
+              "rms": 55261.95828751553,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "P_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2256.5078125,
+              "max_abs": 2256.5078125,
+              "mean": 545.6089732425902,
+              "min": -0.0478515625,
+              "nonzero_count": 459265,
+              "rms": 890.5438679424697,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982299804688,
+              "max_abs": 194.9982299804688,
+              "mean": 47.8424656477354,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840226727508,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_SAVE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982452392578,
+              "max_abs": 194.9982452392578,
+              "mean": 47.842466891171576,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840442192889,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            }
+          },
+          "surface": "after_first_rk_step_part1"
+        },
+        "after_first_rk_step_part2": {
+          "duplicate_stats": {
+            "H_DIABATIC": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MUT": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "MU_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "PB": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "P_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_OLD": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_SAVE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_STATE": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            },
+            "T_TENDF": {
+              "duplicates": 0,
+              "first_mismatch": null,
+              "max_delta": 0.0,
+              "mismatches": 0
+            }
+          },
+          "headers": [
+            {
+              "current_timestr_before_step": [
+                [
+                  "2026-05-01_18:00:00"
+                ]
+              ],
+              "domain_id": [
+                [
+                  "2"
+                ]
+              ],
+              "global_mass_i_j_end_exclusive_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "grid_itimestep_after_increment": [
+                [
+                  "1"
+                ]
+              ],
+              "marker": "# WRFGPU2_V014_STEP1_RK1_SOURCE_BOUNDARY v1",
+              "mass_vertical_fortran_k_start_k_end_inclusive": [
+                [
+                  "1",
+                  "44"
+                ]
+              ],
+              "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt",
+              "record_schema": [
+                [
+                  "MASS_SOURCE",
+                  "fortran_i",
+                  "fortran_j",
+                  "fortran_k",
+                  "zero_x",
+                  "zero_y",
+                  "zero_k",
+                  "T_STATE",
+                  "P_STATE",
+                  "PB",
+                  "MU_STATE",
+                  "MUB",
+                  "MUT",
+                  "T_TENDF",
+                  "H_DIABATIC",
+                  "MU_TENDF",
+                  "T_SAVE",
+                  "T_OLD"
+                ],
+                [
+                  "WPH_SOURCE",
+                  "fortran_i",
+                  "fortran_j",
+                  "fortran_kstag",
+                  "zero_x",
+                  "zero_y",
+                  "zero_kstag",
+                  "W_STATE",
+                  "PH_STATE",
+                  "PHB",
+                  "RW_TENDF",
+                  "PH_TENDF",
+                  "W_SAVE",
+                  "PH_SAVE"
+                ]
+              ],
+              "rk_order": [
+                [
+                  "3"
+                ]
+              ],
+              "rk_step": [
+                [
+                  "1"
+                ]
+              ],
+              "routine": [
+                [
+                  "dyn_em/solve_em.F",
+                  "after",
+                  "first_rk_step_part2"
+                ]
+              ],
+              "surface": [
+                [
+                  "after_first_rk_step_part2"
+                ]
+              ],
+              "tile_i_j_bounds_fortran": [
+                [
+                  "1",
+                  "160",
+                  "1",
+                  "67"
+                ]
+              ],
+              "tile_record_policy": [
+                [
+                  "mass_owned_single_owner_no_overlap"
+                ]
+              ],
+              "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+                [
+                  "1",
+                  "45"
+                ]
+              ]
+            }
+          ],
+          "nonfinite_counts": {
+            "H_DIABATIC": 0,
+            "MUB": 0,
+            "MUT": 0,
+            "MU_STATE": 0,
+            "MU_TENDF": 0,
+            "PB": 0,
+            "P_STATE": 0,
+            "T_OLD": 0,
+            "T_SAVE": 0,
+            "T_STATE": 0,
+            "T_TENDF": 0
+          },
+          "raw_files": [
+            "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt"
+          ],
+          "record_count": 461736,
+          "status": "WRF_SOURCE_MASS_SURFACE_READY",
+          "summaries": {
+            "H_DIABATIC": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 95000.0,
+              "max_abs": 95000.0,
+              "mean": 94532.0464305496,
+              "min": 64526.0546875,
+              "nonzero_count": 461736,
+              "rms": 94559.0642422093,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MUT": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 96791.6171875,
+              "max_abs": 96791.6171875,
+              "mean": 96215.33842106204,
+              "min": 66157.6328125,
+              "nonzero_count": 461736,
+              "rms": 96242.101393567,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 1812.1484375,
+              "max_abs": 1812.1484375,
+              "mean": 1683.2920161967552,
+              "min": 1519.0859375,
+              "nonzero_count": 461736,
+              "rms": 1683.5384332106312,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "MU_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "PB": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 99706.203125,
+              "max_abs": 99706.203125,
+              "mean": 44067.671251184474,
+              "min": 5225.25048828125,
+              "nonzero_count": 461736,
+              "rms": 55261.95828751553,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "P_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2256.5078125,
+              "max_abs": 2256.5078125,
+              "mean": 545.6089732425902,
+              "min": -0.0478515625,
+              "nonzero_count": 459265,
+              "rms": 890.5438679424697,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_OLD": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982299804688,
+              "max_abs": 194.9982299804688,
+              "mean": 47.8424656477354,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840226727508,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_SAVE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 0.0,
+              "max_abs": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "nonzero_count": 0,
+              "rms": 0.0,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_STATE": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 194.9982452392578,
+              "max_abs": 194.9982452392578,
+              "mean": 47.842466891171576,
+              "min": -6.61846923828125,
+              "nonzero_count": 461736,
+              "rms": 72.37840442192889,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            },
+            "T_TENDF": {
+              "count": 461736,
+              "finite_count": 461736,
+              "max": 2242.130859375,
+              "max_abs": 2457.5830078125,
+              "mean": 0.07221554812018978,
+              "min": -2457.5830078125,
+              "nonzero_count": 442110,
+              "rms": 21.20869510640995,
+              "shape": [
+                44,
+                66,
+                159
+              ]
+            }
+          },
+          "surface": "after_first_rk_step_part2"
+        }
+      }
+    }
+  }
+}
