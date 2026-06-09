@@ -553,17 +553,48 @@ moisture transport velocity reuse when active moisture advection matters
 tiling, post-physics merge, moisture limiter workspace, acoustic carry split,
 and FP32 acoustic remain measurement-first or grid-parity-gated.
 
+## Completed Wave 15
+
+- GPT tmux worker (`0:4`, closed after manager superseded the sandbox-blocked
+  WRF run with a successful dmpar manager run):
+  pre-RK input-boundary sprint
+  `.agent/sprints/2026-06-09-v014-pre-rk-input-boundary/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/pre_rk_input_boundary.{py,json,md}`,
+  `proofs/v014/pre_rk_input_boundary_wrf_patch.diff`, and
+  `.agent/reviews/2026-06-09-v014-pre-rk-input-boundary.md`.
+
+Verdict: `PRE_RK_INPUT_JAX_PRESTEP_MISMATCH_CONFIRMED`. The proof emits
+explicit CPU-WRF d02 h10 step-6000 pre-RK truth at
+`dyn_em/solve_em.F` after `grid%itimestep` increment and before
+`cpl_store_input` / current-step physics/RK. The worker initially reached a
+PMIx/socket sandbox blocker; the manager reran the hook outside the worker
+sandbox using the existing dmpar `v014_post_rk_refresh` WRF lineage. Two hook
+tiles were emitted and parsed with no duplicate disagreement.
+
+All target fields differ before the current step begins: `T` max_abs
+`6.218735851548047`, RMSE `4.638818160588427`; `P` max_abs
+`589.6789731315657`, RMSE `526.4973831519894`; `PB` max_abs `1047.015625`;
+`MU` max_abs `267.01919069732367`; `MUB` max_abs `1050.3046875`. Therefore the
+first source-changing fix should not target current-step RK/acoustic,
+`small_step_finish`, post-RK refresh, or history-source remapping. The next
+debug sprint must trace the JAX h10 step-5999 checkpoint/prestep carry producer
+and previous-step WRF/JAX update path until it names the first wrong write,
+state handoff, restart/load, or cadence boundary.
+
 ## Next Manager Actions
 
-1. Open a WRF/JAX input-boundary emitter or hook sprint for explicit step-6000
-   pre-RK `T/P/PB/MU/MUB`, starting from the produced h10 step-5999 carry and
-   the green CPU-WRF h10 marker. Do not start by editing final
-   `small_step_finish`, post-RK refresh, or history-source mapping.
+1. Open a JAX checkpoint/prestep-carry producer trace sprint. Start from
+   `/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`,
+   `proofs/v014/pre_rk_input_boundary.json`, and the producer script metadata.
+   The sprint must decide whether the bad state is written during checkpoint
+   extraction/loading, previous-step final carry assembly, previous-step
+   boundary/tendency packaging, or earlier integration.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
-   surface-layer code read-only until the same-state/term proof isolates their
+   surface-layer code read-only until the previous-step/prestep trace isolates
    ownership.
-3. Launch source-changing dynamic fixes only after a same-state/term proof
-   names the first failing operator or cadence path.
+3. Launch source-changing dynamic fixes only after a proof names the first
+   failing operator, write, state handoff, or cadence path.
 4. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
    failed GPT attempts on the same static/base or tendency root-cause problem.
 5. Keep GPU time for short targeted probes only; no powered TOST, no
