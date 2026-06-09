@@ -1739,3 +1739,42 @@ Principal-directed pause:
 
 TOST, Switzerland, FP32 source work, broad memory source work, and long GPU
 validation remain paused.
+
+## Current Manager Update 2026-06-09 23:59 WEST
+
+The principal resumed the manager goal: complete and publish v0.14. The
+experimental Mythos kernel lane already landed its accepted fix before this
+handoff section; the Mythos memory/FP32 lane is also manager-reviewed, merged,
+gated, committed, and pushed.
+
+Current commits to preserve across compaction:
+
+- `26815feb`: MYNN BouLac column tiling plus shared stage transport velocities.
+- `bc847db2`: FP32 R0 default-inert acoustic precision-mode contract.
+- `8f735a56`: Mythos memory/FP32 proofs, roadmaps, and sprint closeout.
+- `e0091707`: Fable/Mythos token-conservation policy plus post-merge proof
+  refresh.
+- `374e8c8f`: opened the active Step-1 part2 source-leaves split sprint.
+- `dc6955f4`: refreshed `PROJECT_PLAN.md` and the v0.14 release checklist after
+  the memory merge.
+
+Active work:
+
+- GPT-5.5 xhigh in `tmux 0:3`, sprint
+  `.agent/sprints/2026-06-09-v014-step1-part2-source-leaves-split`, CPU-only.
+- The sprint is splitting WRF `first_rk_step_part2` internals after
+  `calculate_phy_tend`, `update_phy_ten`, and `conv_t_tendf_to_moist`, including
+  raw `RTH*TEN` / `T_HIST_SRC` and the current JAX dry source bundle.
+- The worker compiled a disposable WRF copy and is currently clearing local run
+  setup blockers caused by old hard-coded WRF instrumentation paths. This is not
+  a Fable/Mythos escalation case.
+
+Resource policy:
+
+- Do not send Hermes updates.
+- Conserve Fable/Mythos (`tmux 0:1`) for unresolved hard debug cores only. Use
+  GPT first for validation failure collection/localization/direct fixes. Before
+  any new Fable assignment, send `/compact`, wait, then send one endpoint-defined
+  prompt with delayed repeated Enter presses.
+- No TOST, Switzerland, Grid-Delta Atlas campaign, or FP32 R1/R2 implementation
+  until the current fp64 grid-parity frontier is fixed or explicitly bounded.
