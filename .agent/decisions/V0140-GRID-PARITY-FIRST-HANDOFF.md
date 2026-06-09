@@ -198,6 +198,13 @@ then match for `T_WORK` and `P_WORK` max_abs `0.0`. Therefore the next sprint is
 not acoustic: split WRF `first_rk_step_part1/part2` and JAX
 `_physics_step_forcing` / dry `*_tendf` construction.
 
+Update 2026-06-09 14:27 WEST: step-1 RK1 source-boundary sprint opened:
+`.agent/sprints/2026-06-09-v014-step1-rk1-source-boundary/sprint-contract.md`.
+This is the active debug sprint. It must split WRF `first_rk_step_part1/part2`,
+`rk_tendency`, `rk_addtend_dry/spec_bdy_dry` against JAX
+`_physics_step_forcing`, `_augment_large_step_tendencies`, and dry `*_tendf`
+construction. No acoustic continuation unless this earlier boundary is closed.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
