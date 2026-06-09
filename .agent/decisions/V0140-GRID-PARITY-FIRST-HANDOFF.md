@@ -329,6 +329,13 @@ only if the exact bug is proven and the fix remains narrow and GPU-performance
 compatible. The immediate target is the boundary-band `P` residual while
 accounting for first divergent `T` and material `PH/MU/W/U`.
 
+Update 2026-06-09 18:26 WEST: opened read-only Management Review 02 because 18
+v0.14 sprints have closed since Management Review 01. Review sprint:
+`.agent/sprints/2026-06-09-v014-management-review-02`. This does not replace
+the active P/PH/MU debug sprint; it is a parallel drift-control check of
+roadmap, method, sprint sizing, validation gates, and whether the current
+boundary-localization plan is still the fastest rigorous path.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
