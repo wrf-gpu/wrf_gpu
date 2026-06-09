@@ -1162,3 +1162,28 @@ Opened sprint:
 `.agent/sprints/2026-06-09-v014-step1-current-mub-base-input-split`.
 The contract is proof-only and must classify the `17.5 Pa` current-`mub` /
 `pb_new` mismatch before any production source patch.
+
+## Current Manager Update 2026-06-09 17:32 WEST
+
+The current-`MUB/PB` split sprint is closed. Verdict:
+`STEP1_CURRENT_MUB_BASE_SPLIT_WRF_BLEND_UNIMPLEMENTED_OR_MISMATCHED`.
+
+Key facts:
+
+- WRF `adjust_tempqv` consumes transient post-`blend_terrain` /
+  pre-`start_domain` current `MUB`.
+- The prior JAX theta proof used final post-`start_domain` base `MUB` for that
+  earlier call.
+- WRF adjust hook current `MUB`: `86812.25`.
+- Proof-side direct WRF blend `MUB`: `86812.250452109511`.
+- JAX final base `MUB`: `86794.574960128695`.
+- WRF pre-part1 final `MUB`: `86794.5703125`.
+- WRF source formula is `p_new = p + c4h + c3h*mub + p_top`, not the grouped
+  `p + c3h*(mub+p_top) + c4h` form.
+
+Next active step:
+
+Open a narrow source-changing sprint to add a transient live-nest adjust-base
+path for theta/QV adjustment only, while keeping final post-`start_domain`
+BaseState unchanged. Rerun the Step-1 theta/QV proof after that change. TOST,
+Switzerland, FP32 source landing, and memory source work remain paused.

@@ -1,0 +1,116 @@
+diff --git a/share/mediation_integrate.F b/share/mediation_integrate.F
+--- a/share/mediation_integrate.F
++++ b/share/mediation_integrate.F
+@@ -535,6 +535,17 @@ SUBROUTINE med_nest_initial ( parent , nest , config_flags )
+    INTEGER                :: ids , ide , jds , jde , kds , kde , &
+                              ims , ime , jms , jme , kms , kme , &
+                              ips , ipe , jps , jpe , kps , kpe
++   CHARACTER(LEN=512)     :: wrfgpu2_env
++   CHARACTER(LEN=1024)    :: wrfgpu2_root, wrfgpu2_path
++   INTEGER                :: wrfgpu2_target_domain, wrfgpu2_target_i
++   INTEGER                :: wrfgpu2_target_j, wrfgpu2_target_k, wrfgpu2_ios
++   INTEGER                :: wrfgpu2_unit
++   LOGICAL                :: wrfgpu2_enabled, wrfgpu2_owner
++   REAL                   :: wrfgpu2_ht_parent, wrfgpu2_ht_child
++   REAL                   :: wrfgpu2_ht_post, wrfgpu2_mub_parent
++   REAL                   :: wrfgpu2_mub_child, wrfgpu2_mub_post
++   REAL                   :: wrfgpu2_phb_parent, wrfgpu2_phb_child
++   REAL                   :: wrfgpu2_phb_post, wrfgpu2_mub_after_start
+ 
+ #if (EM_CORE == 1)
+@@ -650,6 +661,31 @@ SUBROUTINE med_nest_initial ( parent , nest , config_flags )
+ 
+    CALL interp_init
+ 
++   wrfgpu2_enabled = .FALSE.
++   wrfgpu2_owner = .FALSE.
++   wrfgpu2_target_domain = 2
++   wrfgpu2_target_i = 18
++   wrfgpu2_target_j = 10
++   wrfgpu2_target_k = 2
++   wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_current_mub_base_input_split/wrf_truth'
++   wrfgpu2_env = ''
++   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT', wrfgpu2_env)
++   IF (TRIM(wrfgpu2_env) == '1') wrfgpu2_enabled = .TRUE.
++   IF (wrfgpu2_enabled) THEN
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT_ROOT', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) wrfgpu2_root = TRIM(wrfgpu2_env)
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT_I', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_target_i
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT_J', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_target_j
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT_K', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_target_k
++   END IF
++
+    CALL domain_clock_get( parent, start_time=strt_time, current_time=cur_time )
+ 
+    IF ( .not. ( config_flags%restart .AND. strt_time .EQ. cur_time ) ) THEN
+@@ -730,6 +766,21 @@ SUBROUTINE med_nest_initial ( parent , nest , config_flags )
+        CALL  copy_3d_field ( nest%mub_save , nest%mub , &
+                              ids , ide , jds , jde , 1   , 1   , &
+                              ims , ime , jms , jme , 1   , 1   , &
+                              ips , ipe , jps , jpe , 1   , 1   )
++       IF (wrfgpu2_enabled .AND. nest%id .EQ. wrfgpu2_target_domain .AND. &
++           wrfgpu2_target_i .GE. ips .AND. wrfgpu2_target_i .LE. MIN(ipe,ide-1) .AND. &
++           wrfgpu2_target_j .GE. jps .AND. wrfgpu2_target_j .LE. MIN(jpe,jde-1)) THEN
++          wrfgpu2_owner = .TRUE.
++          wrfgpu2_ht_parent = nest%ht_int(wrfgpu2_target_i,wrfgpu2_target_j)
++          wrfgpu2_ht_child = nest%ht(wrfgpu2_target_i,wrfgpu2_target_j)
++          wrfgpu2_mub_parent = nest%mub_fine(wrfgpu2_target_i,wrfgpu2_target_j)
++          wrfgpu2_mub_child = nest%mub_save(wrfgpu2_target_i,wrfgpu2_target_j)
++          wrfgpu2_phb_parent = nest%phb_fine(wrfgpu2_target_i,wrfgpu2_target_k,wrfgpu2_target_j)
++          wrfgpu2_phb_child = nest%phb(wrfgpu2_target_i,wrfgpu2_target_k,wrfgpu2_target_j)
++       END IF
+ 
+ ! blend parent and nest fields: terrain, mub, and phb.  The ht, mub and phb are used in start_domain.
+ 
+@@ -750,6 +801,12 @@ SUBROUTINE med_nest_initial ( parent , nest , config_flags )
+                                 ims , ime , jms , jme , kms , kme , &
+                                 ips , ipe , jps , jpe , kps , kpe )
+        ENDIF
++       IF (wrfgpu2_owner) THEN
++          wrfgpu2_ht_post = nest%ht(wrfgpu2_target_i,wrfgpu2_target_j)
++          wrfgpu2_mub_post = nest%mub(wrfgpu2_target_i,wrfgpu2_target_j)
++          wrfgpu2_phb_post = nest%phb(wrfgpu2_target_i,wrfgpu2_target_k,wrfgpu2_target_j)
++       END IF
+ 
+        !  adjust temp and qv
+ 
+@@ -803,6 +860,38 @@ SUBROUTINE med_nest_initial ( parent , nest , config_flags )
+        nest%press_adj = .TRUE.
+        CALL push_communicators_for_domain( nest%id )
+        CALL start_domain ( nest , .TRUE. )
++       IF (wrfgpu2_owner) THEN
++          wrfgpu2_mub_after_start = nest%mub(wrfgpu2_target_i,wrfgpu2_target_j)
++          CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_root), wait=.TRUE.)
++          WRITE(wrfgpu2_path,'(A,I0,A,I0,A,I0,A,I0,A)') &
++               TRIM(wrfgpu2_root)//'/current_mub_base_split_d', nest%id, &
++               '_i', wrfgpu2_target_i, '_j', wrfgpu2_target_j, &
++               '_k', wrfgpu2_target_k, '.txt'
++          OPEN(NEWUNIT=wrfgpu2_unit, FILE=TRIM(wrfgpu2_path), STATUS='REPLACE', ACTION='WRITE')
++          WRITE(wrfgpu2_unit,'(A)') '# WRFGPU2_V014_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT v1'
++          WRITE(wrfgpu2_unit,'(A,1X,I0)') 'domain_id', nest%id
++          WRITE(wrfgpu2_unit,'(A,3(1X,I0))') 'target_fortran_i_j_k', &
++               wrfgpu2_target_i, wrfgpu2_target_j, wrfgpu2_target_k
++          WRITE(wrfgpu2_unit,'(A,6(1X,I0))') 'domain_bounds_ids_ide_jds_jde_kds_kde', &
++               ids, ide, jds, jde, kds, kde
++          WRITE(wrfgpu2_unit,'(A,1X,I0)') 'save_topo_from_real', nest%save_topo_from_real
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'ht_parent_interp_preinput', REAL(wrfgpu2_ht_parent,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'ht_child_input_preblend', REAL(wrfgpu2_ht_child,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'ht_post_blend', REAL(wrfgpu2_ht_post,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'mub_parent_interp_preinput', REAL(wrfgpu2_mub_parent,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'mub_child_input_preblend_save', REAL(wrfgpu2_mub_child,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'mub_post_blend_for_adjust', REAL(wrfgpu2_mub_post,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'mub_after_start_domain', REAL(wrfgpu2_mub_after_start,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'phb_parent_interp_preinput_k', REAL(wrfgpu2_phb_parent,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'phb_child_input_preblend_k', REAL(wrfgpu2_phb_child,KIND=8)
++          WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'phb_post_blend_k', REAL(wrfgpu2_phb_post,KIND=8)
++          CLOSE(wrfgpu2_unit)
++       END IF
+        CALL pop_communicators_for_domain
+      ENDIF
