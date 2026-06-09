@@ -1,0 +1,1145 @@
+{
+  "proof": "v0.14 empirical/static memory map for remaining non-radiation memory risks",
+  "generated_utc": "2026-06-09T05:26:56.422331+00:00",
+  "execution_constraints": {
+    "cpu_only": true,
+    "gpu_used": false,
+    "tost_run": false,
+    "switzerland_validation_run": false,
+    "production_src_edited": false,
+    "fp32_source_work_started": false
+  },
+  "git": {
+    "branch": "worker/gpt/v013-close-manager",
+    "head": "cdbfb05c4f922365ca0617fb68e3757a66f235cf",
+    "dirty": true,
+    "status_short": [
+      "## worker/gpt/v013-close-manager...origin/worker/gpt/v013-close-manager",
+      " M proofs/v060/sfclayrev1_savepoint_parity_report.json",
+      "?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md",
+      "?? .agent/reviews/2026-05-29-agy-phaseB.stderr",
+      "?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md",
+      "?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md",
+      "?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md",
+      "?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md",
+      "?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md",
+      "?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md",
+      "?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md",
+      "?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md",
+      "?? .agent/reviews/2026-06-03-opus-v060-morrison.md",
+      "?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md",
+      "?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md",
+      "?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md",
+      "?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md",
+      "?? .agent/reviews/2026-06-04-opus-backfill-case15.md",
+      "?? .agent/reviews/2026-06-04-opus-v050-close-critic.md",
+      "?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md",
+      "?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md",
+      "?? .agent/reviews/2026-06-09-v014-empirical-memory-map.md",
+      "?? .claude/worktrees/",
+      "?? .codex/",
+      "?? cache/",
+      "?? proofs/v014/empirical_memory_map.json",
+      "?? proofs/v014/empirical_memory_map.md",
+      "?? proofs/v014/empirical_memory_map.py",
+      "?? proofs/v040/expand_dates_gate_report.json",
+      "?? proofs/v090/backfill_case15_0530.json",
+      "?? proofs/v090/backfill_case15_finalize.json",
+      "?? proofs/v090/thompson_aero_oracle/",
+      "?? tests/savepoint/fixtures/wrf_b6_100step/golden/",
+      "?? tests/savepoint/fixtures/wrf_b6_100step/patch16/"
+    ]
+  },
+  "target_geometry": {
+    "nx": 641,
+    "ny": 321,
+    "nz": 50,
+    "dtype": "fp64",
+    "bytes_per_value": 8
+  },
+  "shape_byte_estimates": {
+    "surface_2d": {
+      "formula": "ny*nx",
+      "shape": [
+        321,
+        641
+      ],
+      "bytes": 1646088,
+      "mib": 1.57,
+      "gib": 0.001533
+    },
+    "mass_3d": {
+      "formula": "nz*ny*nx",
+      "shape": [
+        50,
+        321,
+        641
+      ],
+      "bytes": 82304400,
+      "mib": 78.492,
+      "gib": 0.076652
+    },
+    "w_face_3d": {
+      "formula": "(nz+1)*ny*nx",
+      "shape": [
+        51,
+        321,
+        641
+      ],
+      "bytes": 83950488,
+      "mib": 80.061,
+      "gib": 0.078185
+    },
+    "u_face_3d": {
+      "formula": "nz*ny*(nx+1)",
+      "shape": [
+        50,
+        321,
+        642
+      ],
+      "bytes": 82432800,
+      "mib": 78.614,
+      "gib": 0.076772
+    },
+    "v_face_3d": {
+      "formula": "nz*(ny+1)*nx",
+      "shape": [
+        50,
+        322,
+        641
+      ],
+      "bytes": 82560800,
+      "mib": 78.736,
+      "gib": 0.076891
+    },
+    "dense_column_pair": {
+      "formula": "ny*nx*nz*nz",
+      "shape": [
+        205761,
+        50,
+        50
+      ],
+      "bytes": 4115220000,
+      "mib": 3924.58,
+      "gib": 3.832597
+    }
+  },
+  "prior_radiation_evidence_treated_as_fixed": {
+    "exact_branch_memory_preflight": {
+      "path": "proofs/v014/exact_branch_memory_preflight.json",
+      "loaded": true,
+      "branch_controls_ok": true,
+      "rrtmg_column_tiling_present": true,
+      "nested_allocator_controls_present": true,
+      "verdict": "NO_RUN_PLAN"
+    },
+    "rrtmg_column_tile_vram_suite": {
+      "path": "proofs/v013/rrtmg_column_tile_vram_suite.json",
+      "loaded": true,
+      "summary": [
+        {
+          "kind": "lw",
+          "mode": "untiled",
+          "result": "OOM",
+          "peak_mib": null
+        },
+        {
+          "kind": "lw",
+          "mode": "tiled",
+          "result": "OK",
+          "peak_mib": 5374.84
+        },
+        {
+          "kind": "sw",
+          "mode": "untiled",
+          "result": "OK",
+          "peak_mib": 10033.1
+        },
+        {
+          "kind": "sw",
+          "mode": "tiled",
+          "result": "OK",
+          "peak_mib": 1619.54
+        }
+      ]
+    },
+    "gpoint_chunk_rrtmg": {
+      "path": "proofs/v013/gpoint_chunk_rrtmg.json",
+      "loaded": true,
+      "sw_bit_identical": true,
+      "lw_bit_identical": true
+    },
+    "optics_taumol_chunk": {
+      "path": "proofs/v013/optics_taumol_chunk.json",
+      "loaded": true,
+      "sw_bit_identical": true,
+      "lw_bit_identical": true
+    }
+  },
+  "source_evidence": {
+    "checks": {
+      "moisture_velocity_two_build_sites": {
+        "path": "src/gpuwrf/runtime/operational_mode.py",
+        "pattern": "vel = couple_velocities_periodic\\(",
+        "min_count": 2,
+        "count": 2,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1770,
+            "text": "vel = couple_velocities_periodic("
+          },
+          {
+            "line": 2045,
+            "text": "vel = couple_velocities_periodic("
+          }
+        ],
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16"
+      },
+      "moisture_active_gate": {
+        "path": "src/gpuwrf/runtime/operational_mode.py",
+        "pattern": "moisture_advected = \\(",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 2221,
+            "text": "moisture_advected = ("
+          }
+        ],
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16"
+      },
+      "moisture_species_loop": {
+        "path": "src/gpuwrf/dynamics/flux_advection.py",
+        "pattern": "def advect_moisture_scalars\\(",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 749,
+            "text": "def advect_moisture_scalars("
+          }
+        ],
+        "sha256": "25358f86f4a09bd9fcc6fde800bf985c07804bec9b0a90f1db218f50ae530b5e"
+      },
+      "limited_scalar_workspace": {
+        "path": "src/gpuwrf/dynamics/flux_advection.py",
+        "pattern": "def advect_scalar_flux_limited\\(",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 504,
+            "text": "def advect_scalar_flux_limited("
+          }
+        ],
+        "sha256": "25358f86f4a09bd9fcc6fde800bf985c07804bec9b0a90f1db218f50ae530b5e"
+      },
+      "wdm6_full_column_slmsk_broadcast": {
+        "path": "src/gpuwrf/coupling/scan_adapters.py",
+        "pattern": "slmsk = _mp_in\\(jnp\\.broadcast_to\\(slmsk_2d\\[None, :, :\\], state\\.theta\\.shape\\)",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 330,
+            "text": "slmsk = _mp_in(jnp.broadcast_to(slmsk_2d[None, :, :], state.theta.shape), ny, nx, nz)"
+          }
+        ],
+        "sha256": "bf2956553232370cfffefa38e945c3b7787377a40da1d83abd2cedc5ec1570cf"
+      },
+      "wdm6_kernel_expects_column_slmsk": {
+        "path": "src/gpuwrf/physics/microphysics_wdm6.py",
+        "pattern": "pass a \\(ncol,\\) array",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1338,
+            "text": "pass a (ncol,) array. Returns a dict with updated t, qv, qc, qr, qi, qs, qg,"
+          }
+        ],
+        "sha256": "e2e0a7c59fa4372c9271134140820a039e7c0ade3e8ec667dc893d623f620e6c"
+      },
+      "nonradiation_mp_column_flatten": {
+        "path": "src/gpuwrf/coupling/scan_adapters.py",
+        "pattern": "def _mp_in\\(field3d: jax\\.Array, ny: int, nx: int, nz: int\\)",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 118,
+            "text": "def _mp_in(field3d: jax.Array, ny: int, nx: int, nz: int) -> jax.Array:"
+          }
+        ],
+        "sha256": "bf2956553232370cfffefa38e945c3b7787377a40da1d83abd2cedc5ec1570cf"
+      },
+      "thompson_column_inputs": {
+        "path": "src/gpuwrf/coupling/physics_couplers.py",
+        "pattern": "def _thompson_column_from_state",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1076,
+            "text": "def _thompson_column_from_state(state: State, grid: GridSpec | None = None) -> ThompsonColumnState:"
+          }
+        ],
+        "sha256": "5832a85efab8c292ba9076fe1baaa711f5bcf9d6473a358bfaa80aa2d3e6292d"
+      },
+      "thompson_output_replacements": {
+        "path": "src/gpuwrf/coupling/physics_couplers.py",
+        "pattern": "updates = dict\\(",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1122,
+            "text": "updates = dict("
+          }
+        ],
+        "sha256": "5832a85efab8c292ba9076fe1baaa711f5bcf9d6473a358bfaa80aa2d3e6292d"
+      },
+      "pbl_surface_forcing_rederived": {
+        "path": "src/gpuwrf/coupling/scan_adapters.py",
+        "pattern": "diag = surface_layer_with_diagnostics\\(_surface_column_view\\(state\\)\\)",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 979,
+            "text": "diag = surface_layer_with_diagnostics(_surface_column_view(state))"
+          }
+        ],
+        "sha256": "bf2956553232370cfffefa38e945c3b7787377a40da1d83abd2cedc5ec1570cf"
+      },
+      "surface_column_view_full_profiles": {
+        "path": "src/gpuwrf/coupling/physics_couplers.py",
+        "pattern": "def _surface_column_view\\(state: State\\)",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1436,
+            "text": "def _surface_column_view(state: State) -> _SurfaceColumnState:"
+          }
+        ],
+        "sha256": "5832a85efab8c292ba9076fe1baaa711f5bcf9d6473a358bfaa80aa2d3e6292d"
+      },
+      "mynn_boulac_dense_source": {
+        "path": "src/gpuwrf/physics/mynn_pbl.py",
+        "pattern": "\\(nz x nz\\) PE-accumulation matrices",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 389,
+            "text": "(nz x nz) PE-accumulation matrices and the first TKE-crossing is selected"
+          }
+        ],
+        "sha256": "3eac563f7baea6d6ed8635457e892f1ac72bea3cd093cbdb97c12dea75ee52b9"
+      },
+      "mynn_boulac_dense_broadcast": {
+        "path": "src/gpuwrf/physics/mynn_pbl.py",
+        "pattern": "theta_i = theta\\[\\.\\.\\., :, None\\]",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 410,
+            "text": "theta_i = theta[..., :, None]             # theta(iz) broadcast over izz"
+          }
+        ],
+        "sha256": "3eac563f7baea6d6ed8635457e892f1ac72bea3cd093cbdb97c12dea75ee52b9"
+      },
+      "post_physics_mynn_increment": {
+        "path": "src/gpuwrf/coupling/physics_couplers.py",
+        "pattern": "return state\\.replace\\(",
+        "min_count": 4,
+        "count": 5,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1143,
+            "text": "return state.replace(**updates)"
+          },
+          {
+            "line": 1333,
+            "text": "return state.replace("
+          },
+          {
+            "line": 1470,
+            "text": "return state.replace("
+          },
+          {
+            "line": 1644,
+            "text": "return state.replace(theta=_theta_from_temperature(T_next, state.p, _output_dtype(state, \"theta\")))"
+          },
+          {
+            "line": 2283,
+            "text": "return state.replace(u=u_new, v=v_new)"
+          }
+        ],
+        "sha256": "5832a85efab8c292ba9076fe1baaa711f5bcf9d6473a358bfaa80aa2d3e6292d"
+      },
+      "acoustic_reverted_carry_split_note": {
+        "path": "src/gpuwrf/runtime/operational_mode.py",
+        "pattern": "reverted carry-split",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1668,
+            "text": "# NOTE on the reverted carry-split (Opus#2): threading only the ~19"
+          }
+        ],
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16"
+      },
+      "acoustic_scan_full_pytree": {
+        "path": "src/gpuwrf/runtime/operational_mode.py",
+        "pattern": "acoustic, _ = jax\\.lax\\.scan\\(",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 1686,
+            "text": "acoustic, _ = jax.lax.scan("
+          }
+        ],
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16"
+      },
+      "acoustic_core_state": {
+        "path": "src/gpuwrf/dynamics/core/acoustic.py",
+        "pattern": "class AcousticCoreState",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 104,
+            "text": "class AcousticCoreState:"
+          }
+        ],
+        "sha256": "eeb8f900c19ecaa84eee19bc99130135e0f141ec41a70bdcac22d8fcf9b6f72a"
+      },
+      "acoustic_full_state_fields": {
+        "path": "src/gpuwrf/dynamics/core/acoustic.py",
+        "pattern": "FULL_STATE_FIELDS = \\(",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 49,
+            "text": "FULL_STATE_FIELDS = ("
+          }
+        ],
+        "sha256": "eeb8f900c19ecaa84eee19bc99130135e0f141ec41a70bdcac22d8fcf9b6f72a"
+      },
+      "state_total_perturbation_aliases": {
+        "path": "src/gpuwrf/contracts/state.py",
+        "pattern": "p_total|ph_total|mu_total",
+        "min_count": 6,
+        "count": 26,
+        "ok": true,
+        "matches": [
+          {
+            "line": 53,
+            "text": "\"p_total\": mass_3d,"
+          },
+          {
+            "line": 56,
+            "text": "\"ph_total\": (nz + 1, ny, nx),"
+          },
+          {
+            "line": 59,
+            "text": "\"mu_total\": surface_2d,"
+          },
+          {
+            "line": 272,
+            "text": "pb=getattr(state, \"pb_bdy\", jnp.zeros_like(state.theta_bdy, dtype=state.p_total.dtype)),"
+          },
+          {
+            "line": 274,
+            "text": "phb=getattr(state, \"phb_bdy\", jnp.zeros_like(state.ph_bdy, dtype=state.ph_total.dtype)),"
+          },
+          {
+            "line": 276,
+            "text": "mub=getattr(state, \"mub_bdy\", jnp.zeros_like(state.mu_bdy, dtype=state.mu_total.dtype)),"
+          },
+          {
+            "line": 371,
+            "text": "- `p`/`p_total`: Pa total pressure on mass points; `p_perturbation`"
+          },
+          {
+            "line": 375,
+            "text": "- `ph`/`ph_total`: m2 s^-2 total geopotential on vertical faces;"
+          },
+          {
+            "line": 378,
+            "text": "- `mu`/`mu_total`: Pa column dry mass on mass points; `mu_perturbation`"
+          },
+          {
+            "line": 406,
+            "text": "\"p_total\","
+          },
+          {
+            "line": 408,
+            "text": "\"ph_total\","
+          },
+          {
+            "line": 410,
+            "text": "\"mu_total\","
+          },
+          {
+            "line": 472,
+            "text": "p_total: jax.Array,"
+          },
+          {
+            "line": 474,
+            "text": "ph_total: jax.Array,"
+          },
+          {
+            "line": 476,
+            "text": "mu_total: jax.Array,"
+          },
+          {
+            "line": 530,
+            "text": "self.p_total = p_total"
+          },
+          {
+            "line": 532,
+            "text": "self.ph_total = ph_total"
+          },
+          {
+            "line": 534,
+            "text": "self.mu_total = mu_total"
+          },
+          {
+            "line": 569,
+            "text": "self.pb_bdy = jnp.zeros_like(theta_bdy, dtype=p_total.dtype) if pb_bdy is None else pb_bdy"
+          },
+          {
+            "line": 571,
+            "text": "self.phb_bdy = jnp.zeros_like(ph_bdy, dtype=ph_total.dtype) if phb_bdy is None else phb_bdy"
+          },
+          {
+            "line": 573,
+            "text": "self.mub_bdy = jnp.zeros_like(mu_bdy, dtype=mu_total.dtype) if mub_bdy is None else mub_bdy"
+          },
+          {
+            "line": 617,
+            "text": "``p_total`` is authoritative; ``p_perturbation`` is a delta the caller"
+          },
+          {
+            "line": 619,
+            "text": "``p_perturbation`` alone does not auto-recompute ``p_total`` because"
+          },
+          {
+            "line": 652,
+            "text": "sync_total_legacy_perturbation(\"p_total\", \"p\", \"p_perturbation\")"
+          },
+          {
+            "line": 653,
+            "text": "sync_total_legacy_perturbation(\"ph_total\", \"ph\", \"ph_perturbation\")"
+          },
+          {
+            "line": 654,
+            "text": "sync_total_legacy_perturbation(\"mu_total\", \"mu\", \"mu_perturbation\")"
+          }
+        ],
+        "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa"
+      },
+      "small_step_prep_large_stage_bundle": {
+        "path": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "pattern": "class SmallStepPrepState",
+        "min_count": 1,
+        "count": 1,
+        "ok": true,
+        "matches": [
+          {
+            "line": 69,
+            "text": "class SmallStepPrepState:"
+          }
+        ],
+        "sha256": "24c03fb3d567697620f9ee8d4f16ae9381c7be678d8290ceea3e2120381f2670"
+      }
+    },
+    "all_required_patterns_ok": true
+  },
+  "candidates": [
+    {
+      "id": "wdm6_slmsk_full_column_broadcast",
+      "rank": 1,
+      "recommendation": "FIX_NOW_BIT_IDENTICAL",
+      "recommendation_scope": "smallest safe post-grid-parity memory-only source sprint",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static with kernel API source evidence",
+      "current_source_shape": "(nz,ny,nx) broadcast from xland, then _mp_in to (ncol,nz)",
+      "target_shape": "(ncol,) scalar per column; preserve current 1/0 values for a pure layout proof",
+      "fp64_estimate": {
+        "current_gib": 0.076652,
+        "target_gib": 0.001533,
+        "recoverable_gib": 0.075119
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "slmsk_2d",
+          "shape_key": "surface_2d",
+          "shape_formula": "ny*nx",
+          "role": "land/sea mask before broadcast",
+          "count": 1,
+          "fp64_gib": 0.001533
+        },
+        {
+          "name": "slmsk_broadcast_current",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "full-column temporary in current adapter",
+          "count": 1,
+          "fp64_gib": 0.076652
+        },
+        {
+          "name": "slmsk_column_target",
+          "shape_key": "surface_2d",
+          "shape_formula": "ny*nx",
+          "role": "per-column replacement target",
+          "count": 1,
+          "fp64_gib": 0.001533
+        }
+      ],
+      "correctness_risk": "low for shape-only/current-value-preserving change; medium if also changing sea value from 0 to WRF 2",
+      "required_proof_gate": [
+        "WDM6 adapter shape-only exact-output proof on CPU",
+        "WDM6 scheme oracle/smoke with xland containing both land and sea",
+        "default suite unchanged because mp_physics=16 is opt-in"
+      ],
+      "source_refs": [
+        "src/gpuwrf/coupling/scan_adapters.py:329",
+        "src/gpuwrf/coupling/scan_adapters.py:330",
+        "src/gpuwrf/physics/microphysics_wdm6.py:1337"
+      ]
+    },
+    {
+      "id": "moisture_advection_duplicate_transport_velocity",
+      "rank": 2,
+      "recommendation": "FIX_NOW_BIT_IDENTICAL",
+      "recommendation_scope": "safe only after grid parity, or adjacent to flux-advection work",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static, not measured peak",
+      "activation": "only when use_flux_advection is true and moist_adv_opt != 0",
+      "current_source_shape": "couple_velocities_periodic is built once in _augment_large_step_tendencies and again in _moisture_coupled_tendencies",
+      "fp64_estimate": {
+        "recoverable_lower_gib": 0.237621,
+        "recoverable_upper_source_static_gib": 0.620881,
+        "roadmap_static_range_gib": [
+          0.45,
+          0.65
+        ]
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "ru",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "x-face coupled transport velocity collapsed to mass-column count",
+          "count": 1,
+          "fp64_gib": 0.076652
+        },
+        {
+          "name": "rv",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "y-face coupled transport velocity collapsed to mass-column count",
+          "count": 1,
+          "fp64_gib": 0.076652
+        },
+        {
+          "name": "rom",
+          "shape_key": "w_face_3d",
+          "shape_formula": "(nz+1)*ny*nx",
+          "role": "vertical mass-coupled omega at w faces",
+          "count": 1,
+          "fp64_gib": 0.078185
+        },
+        {
+          "name": "msftx/msfux/msfvy/msfvx",
+          "shape_key": "surface_2d",
+          "shape_formula": "ny*nx",
+          "role": "map-factor leaves returned in CoupledVelocities",
+          "count": 4,
+          "fp64_gib": 0.006132
+        },
+        {
+          "name": "divv/increments/cum/mass_u/mass_v",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "construction transients that may overlap",
+          "count": 5,
+          "fp64_gib": 0.38326
+        }
+      ],
+      "correctness_risk": "low/medium: reuse must preserve exact WRF scalar cadence and active moisture limiter ordering",
+      "required_proof_gate": [
+        "default moist_adv_opt=0 bit identity",
+        "active moist_adv_opt=1/2 conservation, positivity, and cadence proof",
+        "rerun proofs/v013/moisture_advection_wiring.json or successor",
+        "no new host/device transfers in timestep loop"
+      ],
+      "source_refs": [
+        "src/gpuwrf/runtime/operational_mode.py:1770",
+        "src/gpuwrf/runtime/operational_mode.py:2045",
+        "src/gpuwrf/runtime/operational_mode.py:2221",
+        "src/gpuwrf/dynamics/flux_advection.py:171"
+      ]
+    },
+    {
+      "id": "mynn_boulac_dense_column_pair_matrices",
+      "rank": 3,
+      "recommendation": "MEASURE_FIRST",
+      "recommendation_scope": "first HLO/RSS/short VRAM target if MYNN is the selected PBL path",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static dense-shape evidence; no current exact-branch peak measurement",
+      "current_source_shape": "MYNN _boulac_length vectorizes nested searches into (...,nz,nz) matrices",
+      "fp64_estimate": {
+        "one_dense_matrix_gib": 3.832597,
+        "three_dense_matrices_gib": 11.497791,
+        "six_dense_matrices_gib": 22.995582
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "up_incr/zup/rad_up/etc.",
+          "shape_key": "dense_column_pair",
+          "shape_formula": "ny*nx*nz*nz",
+          "role": "upward BouLac displacement dense intermediates",
+          "count": 3,
+          "fp64_gib": 11.497791
+        },
+        {
+          "name": "do_incr/zdo/rad_do/etc.",
+          "shape_key": "dense_column_pair",
+          "shape_formula": "ny*nx*nz*nz",
+          "role": "downward BouLac displacement dense intermediates",
+          "count": 3,
+          "fp64_gib": 11.497791
+        }
+      ],
+      "correctness_risk": "high: changing this alters MYNN length-scale search structure and can change PBL mixing",
+      "required_proof_gate": [
+        "CPU HLO/static liveness or RSS proof that dense arrays materialize",
+        "MYNN WRF oracle and column exactness/tolerance proof",
+        "coupled PBL real-case smoke before any long validation reuse"
+      ],
+      "source_refs": [
+        "src/gpuwrf/physics/mynn_pbl.py:381",
+        "src/gpuwrf/physics/mynn_pbl.py:388",
+        "src/gpuwrf/physics/mynn_pbl.py:410"
+      ]
+    },
+    {
+      "id": "non_radiation_column_physics_tiling",
+      "rank": 4,
+      "recommendation": "MEASURE_FIRST",
+      "recommendation_scope": "one scheme at a time after a measured offender is identified",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static adapter shape inventory, inferred peak",
+      "current_source_shape": "whole-domain column batches (ncol,nz) for microphysics/PBL/cumulus adapters",
+      "fp64_estimate": {
+        "one_profile_leaf_gib": 0.076652,
+        "typical_visible_input_output_range_gib": [
+          1.0,
+          3.0
+        ],
+        "thompson_visible_input_approx_gib": 1.14978,
+        "thompson_output_replacements_approx_gib": 0.843172
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "microphysics profile inputs",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "8-15 full-domain column leaves depending on scheme",
+          "count": 12,
+          "fp64_gib": 0.919824
+        },
+        {
+          "name": "microphysics replacements",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "scheme output replacement leaves",
+          "count": 6,
+          "fp64_gib": 0.459912
+        },
+        {
+          "name": "surface accumulators",
+          "shape_key": "surface_2d",
+          "shape_formula": "ny*nx",
+          "role": "precip/cumulus increments",
+          "count": 4,
+          "fp64_gib": 0.006132
+        }
+      ],
+      "correctness_risk": "medium/high due per-scheme output shape, precipitation accumulators, and coupling order",
+      "required_proof_gate": [
+        "CPU tile-vs-untiled exact-output proof for selected scheme",
+        "short GPU peak-VRAM suite for selected scheme",
+        "real-case smoke with that scheme enabled"
+      ],
+      "source_refs": [
+        "src/gpuwrf/coupling/scan_adapters.py:118",
+        "src/gpuwrf/coupling/physics_couplers.py:1076",
+        "src/gpuwrf/coupling/physics_couplers.py:1190"
+      ]
+    },
+    {
+      "id": "post_physics_non_dry_sparse_donated_merge",
+      "rank": 5,
+      "recommendation": "MEASURE_FIRST",
+      "recommendation_scope": "defer source work until donation/liveness measurement exists",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "inferred from State.replace replacement leaves and roadmap arithmetic",
+      "current_source_shape": "adapters build replacement leaves, then State.replace returns a full next State pytree",
+      "fp64_estimate": {
+        "output_leaves_static_gib": 1.303084,
+        "with_separate_deltas_static_gib": 2.606168,
+        "roadmap_static_range_gib": [
+          1.33,
+          2.64
+        ]
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "non-dry replacement leaves",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "theta/moisture/number/qke-style outputs",
+          "count": 17,
+          "fp64_gib": 1.303084
+        },
+        {
+          "name": "optional deltas",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "increment or pre-merge deltas if not donated/fused",
+          "count": 17,
+          "fp64_gib": 1.303084
+        }
+      ],
+      "correctness_risk": "medium/high: changes coupling liveness, donation behavior, and exact leaf ownership",
+      "required_proof_gate": [
+        "exact default output proof over selected physics schemes",
+        "JAX donation/alias audit and transfer audit",
+        "short coupled GPU peak-VRAM run"
+      ],
+      "source_refs": [
+        "src/gpuwrf/coupling/physics_couplers.py:1122",
+        "src/gpuwrf/coupling/physics_couplers.py:1333",
+        "src/gpuwrf/coupling/scan_adapters.py:1048"
+      ]
+    },
+    {
+      "id": "moisture_limiter_and_species_workspace",
+      "rank": 6,
+      "recommendation": "MEASURE_FIRST",
+      "recommendation_scope": "do not rewrite until active moist_adv_opt path is a validation target",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static workspace inventory, inferred peak",
+      "activation": "moist_adv_opt in {1,2} on final RK stage; plain path otherwise",
+      "fp64_estimate": {
+        "six_plain_outputs_gib": 0.459912,
+        "one_limited_scalar_visible_workspace_floor_gib": 0.847771,
+        "roadmap_limited_workspace_range_gib": [
+          1.0,
+          3.0
+        ]
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "q_tendencies for six species",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "tuple outputs retained before moisture large-step update",
+          "count": 6,
+          "fp64_gib": 0.459912
+        },
+        {
+          "name": "fqx/fqy/fqz low/high/limited",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "horizontal flux and scale work per limited scalar",
+          "count": 8,
+          "fp64_gib": 0.613216
+        },
+        {
+          "name": "vertical flux faces",
+          "shape_key": "w_face_3d",
+          "shape_formula": "(nz+1)*ny*nx",
+          "role": "fqzl/fqz/fqz_lim style work per limited scalar",
+          "count": 3,
+          "fp64_gib": 0.234555
+        }
+      ],
+      "correctness_risk": "medium: limiter order, positivity, monotonicity, and conservation are semantic",
+      "required_proof_gate": [
+        "per-species WRF transcription parity",
+        "total water conservation and positivity/monotonicity proof",
+        "active real-case smoke with moist_adv_opt=1/2"
+      ],
+      "source_refs": [
+        "src/gpuwrf/dynamics/flux_advection.py:504",
+        "src/gpuwrf/dynamics/flux_advection.py:579",
+        "src/gpuwrf/dynamics/flux_advection.py:812",
+        "src/gpuwrf/runtime/operational_mode.py:2224"
+      ]
+    },
+    {
+      "id": "pbl_surface_bottom_only_prep_and_duplicate_diagnostics",
+      "rank": 7,
+      "recommendation": "DEFER_SEMANTIC_OR_DYCORE",
+      "recommendation_scope": "treat as PBL/surface correctness plumbing, not memory-only cleanup",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static plus roadmap estimate",
+      "current_source_shape": "surface diagnostics and PBL surface forcing are rederived from full column views",
+      "fp64_estimate": {
+        "full_surface_column_view_six_profiles_gib": 0.459912,
+        "roadmap_recoverable_range_gib": [
+          0.3,
+          0.8
+        ]
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "surface_column_view profiles",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "u/v/theta/qv/p/dz-style profiles for surface layer",
+          "count": 6,
+          "fp64_gib": 0.459912
+        },
+        {
+          "name": "pbl_surface_forcing profiles",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "u/v/theta/T/qv/p/pii/rho/dz/z views for PBL",
+          "count": 10,
+          "fp64_gib": 0.76652
+        },
+        {
+          "name": "surface diagnostics",
+          "shape_key": "surface_2d",
+          "shape_formula": "ny*nx",
+          "role": "hfx/lh/br/psim/psih/u10/v10/znt/etc.",
+          "count": 10,
+          "fp64_gib": 0.01533
+        }
+      ],
+      "correctness_risk": "high: selected sfclay diagnostics and PBL handoff semantics are coupled",
+      "required_proof_gate": [
+        "WRF surface-driver to PBL-driver contract proof for selected pairs",
+        "fail-close unproven pairs",
+        "coupled real-case PBL/surface gate"
+      ],
+      "source_refs": [
+        "src/gpuwrf/coupling/scan_adapters.py:969",
+        "src/gpuwrf/coupling/scan_adapters.py:979",
+        "src/gpuwrf/coupling/physics_couplers.py:1436",
+        "src/gpuwrf/coupling/physics_couplers.py:1490"
+      ]
+    },
+    {
+      "id": "acoustic_scan_carry_split_evolving_only",
+      "rank": 8,
+      "recommendation": "DO_NOT_DO_BEFORE_GRID_PARITY",
+      "recommendation_scope": "dycore-adjacent; co-design with later acoustic precision/base-state work",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static plus prior reverted-attempt note",
+      "current_source_shape": "full AcousticCoreState pytree is carried through lax.scan; source note says ~19 evolving and ~50 stage-constant leaves",
+      "fp64_estimate": {
+        "roadmap_recoverable_static_gib": 1.56,
+        "twenty_mass_grid_arrays_gib": 1.53304
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "evolving acoustic leaves",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "mu/theta/u/v/w/ph/p/t_2ave family, staggered in real code",
+          "count": 19,
+          "fp64_gib": 1.456388
+        },
+        {
+          "name": "stage-constant leaves in carry",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "prep/metric/reference fields closed over instead of carried by split design",
+          "count": 20,
+          "fp64_gib": 1.53304
+        }
+      ],
+      "correctness_risk": "high: acoustic substep liveness and prior split attempt were reverted",
+      "required_proof_gate": [
+        "default fp64 bit identity",
+        "acoustic savepoint parity",
+        "warm-bubble/Straka/terrain-rest gates",
+        "short GPU smoke with corrected cache-hit timing and transfer audit"
+      ],
+      "source_refs": [
+        "src/gpuwrf/runtime/operational_mode.py:1667",
+        "src/gpuwrf/runtime/operational_mode.py:1686",
+        "src/gpuwrf/dynamics/core/acoustic.py:104"
+      ]
+    },
+    {
+      "id": "state_total_perturbation_base_alias_reduction",
+      "rank": 9,
+      "recommendation": "DEFER_SEMANTIC_OR_DYCORE",
+      "recommendation_scope": "ADR-required ABI/schema work, not a v0.14 memory cleanup",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "source-static State schema",
+      "current_source_shape": "State carries total and perturbation/base-adjacent p/ph/mu families",
+      "fp64_estimate": {
+        "one_mass_3d_leaf_gib": 0.076652,
+        "one_w_face_leaf_gib": 0.078185,
+        "roadmap_recoverable_range_gib": [
+          0.16,
+          0.32
+        ]
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "p/p_total/p_perturbation family",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "state ABI duplicate family",
+          "count": 1,
+          "fp64_gib": 0.076652
+        },
+        {
+          "name": "ph/ph_total/ph_perturbation family",
+          "shape_key": "w_face_3d",
+          "shape_formula": "(nz+1)*ny*nx",
+          "role": "state ABI duplicate family",
+          "count": 1,
+          "fp64_gib": 0.078185
+        },
+        {
+          "name": "mu/mu_total/mu_perturbation family",
+          "shape_key": "surface_2d",
+          "shape_formula": "ny*nx",
+          "role": "state ABI duplicate family",
+          "count": 1,
+          "fp64_gib": 0.001533
+        }
+      ],
+      "correctness_risk": "high ABI risk across init, restart, wrfout, boundaries, and comparators",
+      "required_proof_gate": [
+        "ADR first",
+        "restart roundtrip and wrfout compatibility",
+        "boundary/savepoint parity"
+      ],
+      "source_refs": [
+        "src/gpuwrf/contracts/state.py:397",
+        "src/gpuwrf/contracts/state.py:462"
+      ]
+    },
+    {
+      "id": "small_dycore_masks_and_pad_helpers",
+      "rank": 10,
+      "recommendation": "NOT_WORTH_STANDALONE",
+      "recommendation_scope": "only do adjacent to acoustic/dycore correctness work",
+      "blocks_v014_long_validation_after_grid_parity": false,
+      "evidence_strength": "roadmap/static only",
+      "current_source_shape": "small full-column dycore helper masks/pad buffers such as dry cqw paths",
+      "fp64_estimate": {
+        "one_mass_3d_leaf_gib": 0.076652,
+        "roadmap_individual_range_gib": [
+          0.078,
+          0.3
+        ]
+      },
+      "likely_concurrent_arrays": [
+        {
+          "name": "dry_cqw/full face masks",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "small dycore helper buffers",
+          "count": 1,
+          "fp64_gib": 0.076652
+        },
+        {
+          "name": "pad-based face helper transient",
+          "shape_key": "mass_3d",
+          "shape_formula": "nz*ny*nx",
+          "role": "legacy dycore helper transient",
+          "count": 2,
+          "fp64_gib": 0.153304
+        }
+      ],
+      "correctness_risk": "medium because even tiny dycore buffers sit in implicit-w/acoustic paths",
+      "required_proof_gate": [
+        "focused dycore unit tests",
+        "warm-bubble/Straka/terrain-rest CPU gates"
+      ],
+      "source_refs": [
+        "src/gpuwrf/runtime/operational_mode.py:1623",
+        "src/gpuwrf/dynamics/core/acoustic.py:927"
+      ]
+    }
+  ],
+  "recommendation": {
+    "verdict": "NO_REMAINING_NON_RADIATION_MEMORY_FIX_SHOULD_BLOCK_LONG_VALIDATION_AFTER_GRID_PARITY",
+    "smallest_safe_memory_source_sprint": "WDM6 slmsk shape-only cleanup, preserving current values and proving exact WDM6 output equality",
+    "only_material_bit_identical_cleanup": "moisture transport velocity reuse when active moisture advection matters",
+    "must_measure_before_rewrite": [
+      "MYNN BouLac dense matrices",
+      "non-radiation whole-domain column physics tiling",
+      "post-physics donated/sparse merge",
+      "moisture limiter workspace"
+    ],
+    "do_not_start_before_grid_parity": [
+      "acoustic carry split / evolving-only carry",
+      "FP32 acoustic source work",
+      "PBL/surface semantic diagnostic threading"
+    ],
+    "ranked_ids": [
+      "wdm6_slmsk_full_column_broadcast",
+      "moisture_advection_duplicate_transport_velocity",
+      "mynn_boulac_dense_column_pair_matrices",
+      "non_radiation_column_physics_tiling",
+      "post_physics_non_dry_sparse_donated_merge",
+      "moisture_limiter_and_species_workspace",
+      "pbl_surface_bottom_only_prep_and_duplicate_diagnostics",
+      "acoustic_scan_carry_split_evolving_only",
+      "state_total_perturbation_base_alias_reduction",
+      "small_dycore_masks_and_pad_helpers"
+    ]
+  },
+  "validation": {
+    "script": "proofs/v014/empirical_memory_map.py",
+    "json": "proofs/v014/empirical_memory_map.json",
+    "markdown": "proofs/v014/empirical_memory_map.md",
+    "source_patterns_ok": true,
+    "required_commands": [
+      "python -m py_compile proofs/v014/empirical_memory_map.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/empirical_memory_map.py",
+      "python -m json.tool proofs/v014/empirical_memory_map.json >/tmp/empirical_memory_map.validated.json"
+    ]
+  }
+}

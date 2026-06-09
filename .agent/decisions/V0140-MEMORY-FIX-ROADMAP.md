@@ -4,6 +4,15 @@ Date: 2026-06-08
 Owner: GPT-5.5 xhigh manager-side analyst
 Scope: integrate memory research before the next long validation campaign.
 
+Update 2026-06-09 06:29 WEST: `V014-MEM-1` empirical/static memory map is
+complete (`proofs/v014/empirical_memory_map.*`). Verdict:
+`NO_REMAINING_NON_RADIATION_MEMORY_FIX_SHOULD_BLOCK_LONG_VALIDATION_AFTER_GRID_PARITY`.
+No candidate blocks the first post-grid-parity long validation. The smallest
+safe optional cleanup is WDM6 `slmsk` shape-only cleanup; the only material
+bit-identical cleanup is moisture transport velocity reuse when active moisture
+advection is enabled. Broader MYNN/PBL/post-physics/limiter/acoustic work
+remains measurement-first or grid-parity-gated.
+
 ## Decision
 
 The release-critical memory blocker was RRTMG full-column radiation memory. It
@@ -41,6 +50,8 @@ Priority order remains:
 - `proofs/v013/twoway_vram.json`
 - `proofs/v0120/nested_oom_fix.json`
 - `proofs/v014/fp32_acoustic_probes.json`
+- `proofs/v014/empirical_memory_map.json`
+- `.agent/reviews/2026-06-09-v014-empirical-memory-map.md`
 - `PROJECT_PLAN.md`
 - `.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md`
 - `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`
@@ -116,11 +127,16 @@ above.
 1. **V014-MEM-0: exact-branch memory preflight.** After grid-parity branch
    stabilizes, run a short memory proof for the intended long validation config.
    Produce `proofs/v014/exact_branch_memory_preflight.json`.
-2. **V014-MEM-1: empirical memory map.** Measure MYNN BouLac, non-radiation
-   column physics, post-physics merge, and moisture limiter liveness on the
-   exact branch. No semantic fixes.
-3. **V014-MEM-2: small bit-identical cleanup.** If useful after MEM-1, implement
-   moisture velocity reuse and/or WDM6 `slmsk` cleanup with exact default gates.
+2. **V014-MEM-1: empirical/static memory map.** Completed 2026-06-09:
+   `proofs/v014/empirical_memory_map.*`. No remaining non-radiation memory fix
+   blocks long validation after grid parity. MYNN BouLac, non-radiation column
+   tiling, post-physics merge, and moisture limiter liveness remain
+   measurement-first.
+3. **V014-MEM-2: optional small bit-identical cleanup.** If useful after grid
+   parity, implement WDM6 `slmsk` shape-only cleanup first, or moisture velocity
+   reuse if active moisture advection is on the validation path. Both need exact
+   default gates; neither blocks long validation if the exact-branch preflight
+   fits.
 4. **V014-MEM-3: non-radiation column tiling pilot.** Pick one measured offender,
    preferably a physics scheme with strong oracle coverage, and reuse the RRTMG
    tiling pattern.

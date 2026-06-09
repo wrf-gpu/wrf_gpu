@@ -17,7 +17,10 @@ The release label is secondary to correctness. The current manager directive is:
 3. **Other memory work follows FP32.** The major v0.13 memory fix is already landed:
    RRTMG column tiling is merged plus GPU-proven
    (`proofs/v013/rrtmg_column_tile_vram_suite.json`: LW untiled OOM, LW tiled
-   5374.84 MiB; SW untiled 10033.1 MiB, SW tiled 1619.54 MiB).
+   5374.84 MiB; SW untiled 10033.1 MiB, SW tiled 1619.54 MiB). The v0.14
+   empirical/static memory map is now complete and says no remaining
+   non-radiation memory fix should block long validation after grid parity
+   (`proofs/v014/empirical_memory_map.json`).
 4. **TOST resumes only after grid-field divergence is minimized or explicitly
    root-caused.** Case 3 completed and the TOST marathon was stopped before Case 4;
    continuing n=15 statistics on known-divergent fields would waste GPU time.
