@@ -1215,3 +1215,8 @@ This closes the candidate/helper proof, not full production Step-1. Next active
 step is a source-changing wiring sprint for WRF theta_m conversion plus
 `adjust_tempqv` in the production live-nest init consumer, using the new helper.
 TOST, Switzerland, FP32 source landing, and memory source work remain paused.
+
+Opened sprint:
+`.agent/sprints/2026-06-09-v014-step1-live-nest-theta-qv-wiring`.
+This sprint must wire production live-nest theta/QV initialization and then run
+the Step-1 16-field comparison or name the next exact boundary.
