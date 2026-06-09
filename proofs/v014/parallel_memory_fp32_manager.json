@@ -1,0 +1,510 @@
+{
+  "collision_map": {
+    "active_primary_debug_surface": "live-nest raw child -> live child perturbation-state initialization for P_STATE/MU_STATE/W_STATE",
+    "fp32_candidates": [
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/runtime/operational_mode.py",
+          "namelist/cache/static-aux consumers"
+        ],
+        "name": "R0 precision-mode scaffold",
+        "reason": "runtime source is locked; default-inert scaffold still changes cache/static surface",
+        "status": "source_blocked"
+      },
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/dynamics/core/small_step_prep.py",
+          "src/gpuwrf/dynamics/core/small_step_finish.py",
+          "src/gpuwrf/runtime/operational_mode.py",
+          "boundary/restart/init/carry staging"
+        ],
+        "name": "R1 explicit base-state plumbing",
+        "reason": "direct overlap with active live-nest P/MU/W perturbation-state initialization debug",
+        "status": "source_blocked"
+      },
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/dynamics/core/acoustic.py",
+          "src/gpuwrf/dynamics/core/advance_w.py",
+          "src/gpuwrf/dynamics/core/calc_p_rho.py",
+          "src/gpuwrf/dynamics/core/rk_addtend_dry.py"
+        ],
+        "name": "R2 perturbation-authoritative acoustic storage",
+        "reason": "dycore production source is locked during fp64 grid-parity localization",
+        "status": "source_blocked"
+      },
+      {
+        "collision": false,
+        "files": [
+          "proofs/v014/fp32_acoustic_probes.py"
+        ],
+        "name": "R3 CPU scalar/one-column probes",
+        "reason": "proof-only CPU NumPy probe; no production source mutation",
+        "status": "refreshed"
+      }
+    ],
+    "locked_patterns": [
+      "src/gpuwrf/dynamics/**",
+      "src/gpuwrf/runtime/operational_mode.py",
+      "src/gpuwrf/integration/d02_replay.py",
+      "src/gpuwrf/nesting/**",
+      "src/gpuwrf/boundary*",
+      "src/gpuwrf/contracts/state.py",
+      "live-nest/base-state/init/restart/boundary/carry files"
+    ],
+    "memory_candidates": [
+      {
+        "collision": false,
+        "files": [
+          "src/gpuwrf/coupling/scan_adapters.py"
+        ],
+        "name": "wdm6_slmsk_shape_only_cleanup",
+        "reason": "single allowed adapter file; no dycore/runtime/nesting/boundary/state edit",
+        "status": "implemented"
+      },
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/runtime/operational_mode.py",
+          "src/gpuwrf/dynamics/flux_advection.py"
+        ],
+        "name": "moisture_transport_velocity_reuse",
+        "reason": "runtime and dynamics are locked by the active fp64 grid-parity debug",
+        "status": "blocked_by_lock"
+      },
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/runtime/operational_mode.py",
+          "src/gpuwrf/coupling/physics_couplers.py",
+          "src/gpuwrf/coupling/scan_adapters.py"
+        ],
+        "name": "post_physics_sparse_merge",
+        "reason": "needs locked runtime and changes coupling liveness/donation semantics",
+        "status": "blocked_by_lock_and_measure_first"
+      },
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/dynamics/flux_advection.py",
+          "src/gpuwrf/runtime/operational_mode.py"
+        ],
+        "name": "moisture_limiter_workspace_reduction",
+        "reason": "dynamics/runtime locked; active scalar path requires conservation proof",
+        "status": "blocked_by_lock"
+      },
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/dynamics/core/acoustic.py",
+          "src/gpuwrf/dynamics/core/small_step_prep.py",
+          "src/gpuwrf/dynamics/core/small_step_finish.py",
+          "src/gpuwrf/runtime/operational_mode.py"
+        ],
+        "name": "acoustic_carry_split_or_pad_cleanup",
+        "reason": "same fault surface as current P/MU/W live-nest fp64 debug",
+        "status": "blocked_by_lock"
+      },
+      {
+        "collision": true,
+        "files": [
+          "src/gpuwrf/contracts/state.py",
+          "init/restart/wrfout/boundary compatibility paths"
+        ],
+        "name": "state_total_perturbation_base_alias_reduction",
+        "reason": "state contract and compatibility surfaces are locked and ADR-required",
+        "status": "blocked_by_lock_and_adr"
+      }
+    ],
+    "source_audit": {
+      "moisture_velocity_runtime_sites": {
+        "count": 2,
+        "hits": [
+          {
+            "line": 1770,
+            "text": "vel = couple_velocities_periodic("
+          },
+          {
+            "line": 2045,
+            "text": "vel = couple_velocities_periodic("
+          }
+        ],
+        "path": "src/gpuwrf/runtime/operational_mode.py",
+        "pattern": "vel = couple_velocities_periodic\\(",
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16"
+      },
+      "small_step_base_recovery_finish": {
+        "count": 3,
+        "hits": [
+          {
+            "line": 60,
+            "text": "p_base = state.p_total - state.p_perturbation"
+          },
+          {
+            "line": 61,
+            "text": "ph_base = state.ph_total - state.ph_perturbation"
+          },
+          {
+            "line": 62,
+            "text": "mu_base = state.mu_total - state.mu_perturbation"
+          }
+        ],
+        "path": "src/gpuwrf/dynamics/core/small_step_finish.py",
+        "pattern": "state\\.(p_total|ph_total|mu_total).*state\\.(p_perturbation|ph_perturbation|mu_perturbation)",
+        "sha256": "41c210106a7eaeae3d971dad4ac8da29d926d5a50ec3a9a93737ee7101abbf66"
+      },
+      "small_step_base_recovery_prep": {
+        "count": 3,
+        "hits": [
+          {
+            "line": 25,
+            "text": "return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)"
+          },
+          {
+            "line": 259,
+            "text": "pb = jnp.asarray(state.p_total) - jnp.asarray(state.p_perturbation)"
+          },
+          {
+            "line": 273,
+            "text": "phb_full = jnp.asarray(state.ph_total) - jnp.asarray(state.ph_perturbation)"
+          }
+        ],
+        "path": "src/gpuwrf/dynamics/core/small_step_prep.py",
+        "pattern": "state\\.(p_total|ph_total|mu_total).*state\\.(p_perturbation|ph_perturbation|mu_perturbation)",
+        "sha256": "24c03fb3d567697620f9ee8d4f16ae9381c7be678d8290ceea3e2120381f2670"
+      },
+      "wdm6_slmsk_adapter": {
+        "count": 5,
+        "hits": [
+          {
+            "line": 285,
+            "text": "takes no ``slmsk`` argument."
+          },
+          {
+            "line": 318,
+            "text": "prognostic actually evolves (it would otherwise be lost). ``slmsk`` (land/sea"
+          },
+          {
+            "line": 329,
+            "text": "slmsk_2d = jnp.where(jnp.asarray(state.xland) < 1.5, 1.0, 0.0)"
+          },
+          {
+            "line": 332,
+            "text": "slmsk = jnp.asarray(slmsk_2d).reshape(ny * nx)"
+          },
+          {
+            "line": 337,
+            "text": "mp(pii), mp(rho), mp(state.p), mp(dz), float(dt), slmsk,"
+          }
+        ],
+        "path": "src/gpuwrf/coupling/scan_adapters.py",
+        "pattern": "slmsk",
+        "sha256": "804abbd5cefed5b1dcacaa47df57438e06f388b0b61749ff788624b311c559c0"
+      }
+    }
+  },
+  "environment": {
+    "cpu_only": true,
+    "gpu_used": false,
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_version": "0.10.0",
+    "numpy_version": "2.4.4",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fp32_refresh": {
+    "absolute_total_millipascal_fresh_delta_pa": 0.0,
+    "absolute_total_millipascal_recurrent_delta_pa": 0.0,
+    "cpu_only": true,
+    "fp32_ulp_at_90100_pa": 0.0078125,
+    "one_column_p_error_ratio_absolute_over_perturbation": 1361217.3938719633,
+    "one_column_ph_error_ratio_absolute_over_perturbation": 1841160.8323650132,
+    "perturbation_millipascal_delta_pa": 0.00099945068359375,
+    "perturbation_millipascal_relative_error": -0.0005493164062500208,
+    "shape_only_memory_savings_mib": {
+      "core_candidate_set": 754.0697479248047,
+      "core_plus_prep_candidate_set": 1191.6348915100098,
+      "prep_carry_candidate_set": 437.5651435852051
+    },
+    "source": "proofs/v014/fp32_acoustic_probes.py",
+    "source_sha256": "19abeb3aa68c6b150e8964288e7ec2f09c6bcec3484151c07f6f3837b1517585",
+    "source_work_blocker": "R0/R1/R2 touch locked runtime, dycore, boundary/restart/init/carry surfaces while primary debug targets live-nest P/MU/W perturbation-state initialization.",
+    "source_work_verdict": "FP32_SOURCE_WORK_INFEASIBLE_WITH_CURRENT_LOCKS"
+  },
+  "generated_utc": "2026-06-09T18:33:46.484459+00:00",
+  "git": {
+    "base_131b27cd_is_ancestor": true,
+    "branch": "worker/gpt/v013-close-manager",
+    "dirty": true,
+    "head": "f73542c05543582cb46a0cd6c2c3ce52de87e685",
+    "status_short": [
+      "## worker/gpt/v013-close-manager...origin/worker/gpt/v013-close-manager",
+      "A  .agent/reviews/2026-06-09-v014-parallel-memory-fp32-manager.md",
+      "A  .agent/sprints/2026-06-09-v014-parallel-memory-fp32-manager/agent-prompt.md",
+      "A  .agent/sprints/2026-06-09-v014-parallel-memory-fp32-manager/sprint-contract.md",
+      "M  proofs/v014/exact_branch_memory_preflight.json",
+      "M  proofs/v014/exact_branch_memory_preflight.md",
+      "A  proofs/v014/parallel_memory_fp32_manager.json",
+      "A  proofs/v014/parallel_memory_fp32_manager.md",
+      "A  proofs/v014/parallel_memory_fp32_manager.py",
+      " M proofs/v060/sfclayrev1_savepoint_parity_report.json",
+      "M  src/gpuwrf/coupling/scan_adapters.py",
+      "?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md",
+      "?? .agent/reviews/2026-05-29-agy-phaseB.stderr",
+      "?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md",
+      "?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md",
+      "?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md",
+      "?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md",
+      "?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md",
+      "?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md",
+      "?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md",
+      "?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md",
+      "?? .agent/reviews/2026-06-03-opus-v060-morrison.md",
+      "?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md",
+      "?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md",
+      "?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md",
+      "?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md",
+      "?? .agent/reviews/2026-06-04-opus-backfill-case15.md",
+      "?? .agent/reviews/2026-06-04-opus-v050-close-critic.md",
+      "?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md",
+      "?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md",
+      "?? .claude/worktrees/",
+      "?? .codex/",
+      "?? cache/",
+      "?? proofs/v040/expand_dates_gate_report.json",
+      "?? proofs/v090/backfill_case15_0530.json",
+      "?? proofs/v090/backfill_case15_finalize.json",
+      "?? proofs/v090/thompson_aero_oracle/",
+      "?? tests/savepoint/fixtures/wrf_b6_100step/golden/",
+      "?? tests/savepoint/fixtures/wrf_b6_100step/patch16/"
+    ]
+  },
+  "memory_fix": {
+    "all_state_leaves_exact": true,
+    "all_state_leaves_finite": true,
+    "cpu_only": true,
+    "dt_s": 12.0,
+    "jax_platforms": [
+      "cpu"
+    ],
+    "legacy_slmsk_shape": [
+      12,
+      10
+    ],
+    "legacy_slmsk_unique": [
+      0.0,
+      1.0
+    ],
+    "new_slmsk_shape": [
+      12
+    ],
+    "new_slmsk_unique": [
+      0.0,
+      1.0
+    ],
+    "preserved_value_semantics": "kept existing adapter 1.0 land / 0.0 water values; no 1/2 land-sea semantic change",
+    "reported_leaf_rows": [
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "theta",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "qv",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "qc",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "qr",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "qi",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "qs",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "qg",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "Nr",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "rain_acc",
+        "max_abs": 0.0,
+        "shape": [
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "snow_acc",
+        "max_abs": 0.0,
+        "shape": [
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float64",
+        "exact": true,
+        "finite": true,
+        "leaf": "graupel_acc",
+        "max_abs": 0.0,
+        "shape": [
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float32",
+        "exact": true,
+        "finite": true,
+        "leaf": "Nc",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      },
+      {
+        "dtype": "float32",
+        "exact": true,
+        "finite": true,
+        "leaf": "Nn",
+        "max_abs": 0.0,
+        "shape": [
+          10,
+          3,
+          4
+        ]
+      }
+    ],
+    "synthetic_grid": {
+      "ncol": 12,
+      "nx": 4,
+      "ny": 3,
+      "nz": 10
+    },
+    "target_641x321x50_fp64_bytes": {
+      "new_per_column": 1646088,
+      "old_full_column": 82304400,
+      "saved_bytes": 80658312,
+      "saved_gib": 0.07511890679597855,
+      "saved_mib": 76.92176055908203
+    },
+    "verdict": "WDM6_SLMSK_SHAPE_CLEANUP_EXACT"
+  },
+  "proof": "v0.14 parallel memory/FP32 manager",
+  "recommendation": "MERGE_NOW",
+  "source_edits": [
+    {
+      "change": "WDM6 slmsk uses per-column vector instead of full vertical broadcast",
+      "exact_output_proof": "memory_fix.all_state_leaves_exact",
+      "locked_path": false,
+      "path": "src/gpuwrf/coupling/scan_adapters.py"
+    }
+  ],
+  "unresolved_risks": [
+    "WDM6 adapter still preserves the pre-existing 1.0/0.0 slmsk values; correcting WRF 1/2 land-sea semantics would be a separate non-bit-identical physics fix.",
+    "Exact-branch memory preflight remains a short audit/capped observation, not a full validation campaign.",
+    "FP32 acoustic source work remains blocked until the live-nest P/MU/W fp64 grid-parity surface is fixed or released."
+  ],
+  "validation_requirements": {
+    "gpu_validation": "not run; not required for shape-only CPU exact proof and avoided to yield to primary manager",
+    "source_edit_minimum": [
+      "python -m py_compile src/gpuwrf/coupling/scan_adapters.py proofs/v014/parallel_memory_fp32_manager.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/parallel_memory_fp32_manager.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python -m pytest -q tests/test_wdm6_savepoint_parity.py",
+      "python -m json.tool proofs/v014/parallel_memory_fp32_manager.json >/tmp/parallel_memory_fp32_manager.validated.json",
+      "git diff --check",
+      "git diff -- src/gpuwrf"
+    ]
+  }
+}
