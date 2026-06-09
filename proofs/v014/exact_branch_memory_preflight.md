@@ -1,8 +1,8 @@
 # v0.14 Exact-Branch Memory Preflight
 
 - Verdict: `NO_RUN_PLAN`
-- Branch: `worker/gpt/v013-close-manager`
-- HEAD: `5865d41112c6f36ebc648834da29a06b7919d8a2`
+- Branch: `worker/gpt/v014-memory-fp32-manager`
+- HEAD: `cfb3ad6c6bb8bac39d84f410435d00be2d476abe`
 - Dirty worktree: `True`
 
 ## Static Controls
@@ -15,19 +15,6 @@
 - Run attempted: `False`
 - Reason: `audit-only mode; pass --run-gpu through scripts/run_gpu_lowprio.sh`
 - Planned command: `scripts/run_gpu_lowprio.sh --cores 0-23 -- python proofs/v014/exact_branch_memory_preflight.py --run-gpu --nested-input /mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --max-dom 3 --hours 1 --timeout-s 600.0`
-
-## Observed Timed-Out Attempt
-
-- Command: `scripts/run_gpu_lowprio.sh --cores 0-23 -- python proofs/v014/exact_branch_memory_preflight.py --run-gpu --timeout-s 600.0`
-- Run root: `/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260608T223250Z`
-- Duration class: `timed_out_or_reached_cap`
-- Duration cap: `600.0` s
-- Peak total VRAM observed: `3204.0` MiB
-- Baseline total VRAM observed: `1539.0` MiB
-- Peak increment observed: `1665.0` MiB
-- Output count: `0`
-- Completed: `False`
-- No OOM observed: `True`
 
 ## Caveats
 

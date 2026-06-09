@@ -327,7 +327,9 @@ def wdm6_adapter(state: State, dt: float, grid=None) -> State:
     interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
     dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
     slmsk_2d = jnp.where(jnp.asarray(state.xland) < 1.5, 1.0, 0.0)
-    slmsk = _mp_in(jnp.broadcast_to(slmsk_2d[None, :, :], state.theta.shape), ny, nx, nz)
+    # The WDM6 kernel vmaps over columns and accepts one scalar land/sea mask per
+    # column; keep the existing 1/0 values without materializing a full column.
+    slmsk = jnp.asarray(slmsk_2d).reshape(ny * nx)
     tend = wdm6_physics_tendency(
         mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
         mp(state.qi), mp(state.qs), mp(state.qg),
