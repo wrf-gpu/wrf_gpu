@@ -1,0 +1,314 @@
+--- a/dyn_em/solve_em.F
++++ b/dyn_em/solve_em.F
+@@ -1830,6 +1830,155 @@
+                            k_start    , k_end               )
+ BENCH_END(calc_mu_uv_tim)
+ BENCH_START(small_step_finish_tim)
++       wrfgpu2_marker_enabled = .FALSE.
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS', wrfgpu2_marker_env)
++       IF (TRIM(wrfgpu2_marker_env) == '1') THEN
++         wrfgpu2_marker_grid = 2
++         wrfgpu2_marker_start_step = 6000
++         wrfgpu2_marker_end_step = 6000
++         wrfgpu2_marker_root = '/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output'
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_GRID', wrfgpu2_marker_env)
++         IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
++           READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_grid
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_START_STEP', wrfgpu2_marker_env)
++         IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
++           READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_start_step
++           wrfgpu2_marker_end_step = wrfgpu2_marker_start_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_END_STEP', wrfgpu2_marker_env)
++         IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
++           READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_end_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_ROOT', wrfgpu2_marker_root)
++         wrfgpu2_marker_enabled = grid%id == wrfgpu2_marker_grid .AND. &
++                                  grid%itimestep >= wrfgpu2_marker_start_step .AND. &
++                                  grid%itimestep <= wrfgpu2_marker_end_step .AND. &
++                                  rk_step == rk_order
++       ENDIF
++       IF (wrfgpu2_marker_enabled) THEN
++         block_wrfgpu2_v014_terms_pre_finish: DO
++           IF (23 < grid%i_start(ij) .OR. 6 > grid%i_end(ij)+1) EXIT block_wrfgpu2_v014_terms_pre_finish
++           IF (19 < grid%j_start(ij) .OR. 2 > grid%j_end(ij)+1) EXIT block_wrfgpu2_v014_terms_pre_finish
++           IF (1 < k_start .OR. 2 > k_end) EXIT block_wrfgpu2_v014_terms_pre_finish
++           CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_marker_root), wait=.TRUE.)
++           CALL domain_clock_get(grid, current_timestr=wrfgpu2_marker_time)
++           WRITE(wrfgpu2_marker_path,'(A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++                TRIM(wrfgpu2_marker_root)//'/terms_final_stage_pre_small_step_finish_d', &
++                grid%id, '_step_', grid%itimestep, '_is_', grid%i_start(ij), &
++                '_ie_', grid%i_end(ij), '_js_', grid%j_start(ij), '_je_', grid%j_end(ij), '.txt'
++           OPEN(NEWUNIT=wrfgpu2_marker_unit, FILE=TRIM(wrfgpu2_marker_path), &
++                STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++           WRITE(wrfgpu2_marker_unit,'(A)') '# WRFGPU2_V014_DYNAMIC_TERM_LOCALIZATION v1'
++           WRITE(wrfgpu2_marker_unit,'(A)') 'surface final_stage_pre_small_step_finish'
++           WRITE(wrfgpu2_marker_unit,'(A)') 'routine dyn_em/solve_em.F::solve_em before small_step_finish'
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'domain_id', grid%id
++           WRITE(wrfgpu2_marker_unit,'(A,1X,A)') 'current_timestr_before_step', TRIM(wrfgpu2_marker_time)
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'grid_itimestep_after_increment', grid%itimestep
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'rk_step', rk_step
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'rk_order', rk_order
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'dt_seconds', REAL(grid%dt,KIND=8)
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'dts_rk_seconds', REAL(dts_rk,KIND=8)
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'number_of_small_timesteps', number_of_small_timesteps
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'lead_seconds_before_step', curr_secs2_r8
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'lead_seconds_after_step', curr_secs2_r8 + REAL(grid%dt,KIND=8)
++           WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0))') 'tile_i_j_bounds_fortran', &
++                grid%i_start(ij), grid%i_end(ij), grid%j_start(ij), grid%j_end(ij)
++           WRITE(wrfgpu2_marker_unit,'(A)') 'tile_record_policy owned_tile_overlap_only'
++           WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0))') 'selected_mass_cell_zero_yx_fortran_ji', 9, 13, 10, 14
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1', &
++                1, 18, 5, 22, 2, 18
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'u_patch_zero_y0_y1_xstag0_xstag1_fortran_j0_j1_i0_i1', &
++                1, 18, 5, 23, 2, 18
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'v_patch_zero_ystag0_ystag1_x0_x1_fortran_j0_j1_i0_i1', &
++                1, 19, 5, 22, 2, 19
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'w_ph_patch_zero_kstag0_kstag1_y0_y1_x0_x1', &
++                0, 2, 1, 18, 5, 22
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_HIST_SRC T_THM T_OLD P PB MU_NEW MU_OLD MUT MUTS T_TEND T_TENDF MU_TEND MU_TENDF'
++           DO wrfgpu2_marker_j = 2, 18
++             DO wrfgpu2_marker_i = 6, 22
++               IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij) .AND. &
++                   wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij)) THEN
++                 WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0),13(1X,E24.16))') 'MASS_K1', &
++                      wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, &
++                      REAL(grid%th_phy_m_t0(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%t_2(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%t_1(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%p(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%pb(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%mu_2(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%mu_1(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%mut(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muts(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(t_tend(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(t_tendf(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(mu_tend(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(mu_tendf(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema U_K1 fortran_i fortran_j zero_xstag zero_y U_NEW U_OLD U_SAVE RU_TEND RU_TENDF MUU MUUS'
++           DO wrfgpu2_marker_j = 2, 18
++             DO wrfgpu2_marker_i = 6, 23
++               IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij)+1 .AND. &
++                   wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij)) THEN
++                 WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0),7(1X,E24.16))') 'U_K1', &
++                      wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, &
++                      REAL(grid%u_2(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%u_1(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%u_save(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%ru_tend(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(ru_tendf(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muu(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muus(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema V_K1 fortran_i fortran_j zero_x zero_ystag V_NEW V_OLD V_SAVE RV_TEND RV_TENDF MUV MUVS'
++           DO wrfgpu2_marker_j = 2, 19
++             DO wrfgpu2_marker_i = 6, 22
++               IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij) .AND. &
++                   wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij)+1) THEN
++                 WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0),7(1X,E24.16))') 'V_K1', &
++                      wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, &
++                      REAL(grid%v_2(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%v_1(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%v_save(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%rv_tend(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(rv_tendf(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muv(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muvs(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema WPH_KSTAG01 fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_NEW W_OLD W_SAVE PH_NEW PH_OLD PH_SAVE RW_TEND RW_TENDF PH_TEND PH_TENDF'
++           DO wrfgpu2_marker_k = 1, 2
++             DO wrfgpu2_marker_j = 2, 18
++               DO wrfgpu2_marker_i = 6, 22
++                 IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij) .AND. &
++                     wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij) .AND. &
++                     wrfgpu2_marker_k >= k_start .AND. wrfgpu2_marker_k <= k_end) THEN
++                   WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0),10(1X,E24.16))') 'WPH_KSTAG01', &
++                        wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_k, &
++                        wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, wrfgpu2_marker_k-1, &
++                        REAL(grid%w_2(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(grid%w_1(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(w_save(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(grid%ph_2(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(grid%ph_1(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(ph_save(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(rw_tend(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(rw_tendf(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(ph_tend(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(ph_tendf(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8)
++                 ENDIF
++               ENDDO
++             ENDDO
++           ENDDO
++           CLOSE(wrfgpu2_marker_unit)
++           EXIT block_wrfgpu2_v014_terms_pre_finish
++         ENDDO block_wrfgpu2_v014_terms_pre_finish
++       ENDIF
+        CALL small_step_finish( grid%u_2, grid%u_1, grid%v_2, grid%v_1, grid%w_2, grid%w_1,     &
+                                grid%t_2, grid%t_1, grid%ph_2, grid%ph_1, grid%ww, ww1,    &
+                                grid%mu_2, grid%mu_1,                       &
+@@ -1848,6 +1997,155 @@
+                                grid%j_start(ij), grid%j_end(ij), &
+                                k_start    , k_end               )
+        wrfgpu2_marker_enabled = .FALSE.
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS', wrfgpu2_marker_env)
++       IF (TRIM(wrfgpu2_marker_env) == '1') THEN
++         wrfgpu2_marker_grid = 2
++         wrfgpu2_marker_start_step = 6000
++         wrfgpu2_marker_end_step = 6000
++         wrfgpu2_marker_root = '/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output'
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_GRID', wrfgpu2_marker_env)
++         IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
++           READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_grid
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_START_STEP', wrfgpu2_marker_env)
++         IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
++           READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_start_step
++           wrfgpu2_marker_end_step = wrfgpu2_marker_start_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_END_STEP', wrfgpu2_marker_env)
++         IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
++           READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_end_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_DYNAMIC_TERMS_ROOT', wrfgpu2_marker_root)
++         wrfgpu2_marker_enabled = grid%id == wrfgpu2_marker_grid .AND. &
++                                  grid%itimestep >= wrfgpu2_marker_start_step .AND. &
++                                  grid%itimestep <= wrfgpu2_marker_end_step .AND. &
++                                  rk_step == rk_order
++       ENDIF
++       IF (wrfgpu2_marker_enabled) THEN
++         block_wrfgpu2_v014_terms_post_finish: DO
++           IF (23 < grid%i_start(ij) .OR. 6 > grid%i_end(ij)+1) EXIT block_wrfgpu2_v014_terms_post_finish
++           IF (19 < grid%j_start(ij) .OR. 2 > grid%j_end(ij)+1) EXIT block_wrfgpu2_v014_terms_post_finish
++           IF (1 < k_start .OR. 2 > k_end) EXIT block_wrfgpu2_v014_terms_post_finish
++           CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_marker_root), wait=.TRUE.)
++           CALL domain_clock_get(grid, current_timestr=wrfgpu2_marker_time)
++           WRITE(wrfgpu2_marker_path,'(A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++                TRIM(wrfgpu2_marker_root)//'/terms_final_stage_post_small_step_finish_d', &
++                grid%id, '_step_', grid%itimestep, '_is_', grid%i_start(ij), &
++                '_ie_', grid%i_end(ij), '_js_', grid%j_start(ij), '_je_', grid%j_end(ij), '.txt'
++           OPEN(NEWUNIT=wrfgpu2_marker_unit, FILE=TRIM(wrfgpu2_marker_path), &
++                STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++           WRITE(wrfgpu2_marker_unit,'(A)') '# WRFGPU2_V014_DYNAMIC_TERM_LOCALIZATION v1'
++           WRITE(wrfgpu2_marker_unit,'(A)') 'surface final_stage_post_small_step_finish'
++           WRITE(wrfgpu2_marker_unit,'(A)') 'routine dyn_em/solve_em.F::solve_em after small_step_finish'
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'domain_id', grid%id
++           WRITE(wrfgpu2_marker_unit,'(A,1X,A)') 'current_timestr_before_step', TRIM(wrfgpu2_marker_time)
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'grid_itimestep_after_increment', grid%itimestep
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'rk_step', rk_step
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'rk_order', rk_order
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'dt_seconds', REAL(grid%dt,KIND=8)
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'dts_rk_seconds', REAL(dts_rk,KIND=8)
++           WRITE(wrfgpu2_marker_unit,'(A,1X,I0)') 'number_of_small_timesteps', number_of_small_timesteps
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'lead_seconds_before_step', curr_secs2_r8
++           WRITE(wrfgpu2_marker_unit,'(A,1X,E24.16)') 'lead_seconds_after_step', curr_secs2_r8 + REAL(grid%dt,KIND=8)
++           WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0))') 'tile_i_j_bounds_fortran', &
++                grid%i_start(ij), grid%i_end(ij), grid%j_start(ij), grid%j_end(ij)
++           WRITE(wrfgpu2_marker_unit,'(A)') 'tile_record_policy owned_tile_overlap_only'
++           WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0))') 'selected_mass_cell_zero_yx_fortran_ji', 9, 13, 10, 14
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1', &
++                1, 18, 5, 22, 2, 18
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'u_patch_zero_y0_y1_xstag0_xstag1_fortran_j0_j1_i0_i1', &
++                1, 18, 5, 23, 2, 18
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'v_patch_zero_ystag0_ystag1_x0_x1_fortran_j0_j1_i0_i1', &
++                1, 19, 5, 22, 2, 19
++           WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0))') 'w_ph_patch_zero_kstag0_kstag1_y0_y1_x0_x1', &
++                0, 2, 1, 18, 5, 22
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_HIST_SRC T_THM T_OLD P PB MU_NEW MU_OLD MUT MUTS T_TEND T_TENDF MU_TEND MU_TENDF'
++           DO wrfgpu2_marker_j = 2, 18
++             DO wrfgpu2_marker_i = 6, 22
++               IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij) .AND. &
++                   wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij)) THEN
++                 WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0),13(1X,E24.16))') 'MASS_K1', &
++                      wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, &
++                      REAL(grid%th_phy_m_t0(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%t_2(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%t_1(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%p(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%pb(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%mu_2(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%mu_1(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%mut(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muts(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(t_tend(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(t_tendf(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(mu_tend(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(mu_tendf(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema U_K1 fortran_i fortran_j zero_xstag zero_y U_NEW U_OLD U_SAVE RU_TEND RU_TENDF MUU MUUS'
++           DO wrfgpu2_marker_j = 2, 18
++             DO wrfgpu2_marker_i = 6, 23
++               IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij)+1 .AND. &
++                   wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij)) THEN
++                 WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0),7(1X,E24.16))') 'U_K1', &
++                      wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, &
++                      REAL(grid%u_2(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%u_1(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%u_save(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%ru_tend(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(ru_tendf(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muu(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muus(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema V_K1 fortran_i fortran_j zero_x zero_ystag V_NEW V_OLD V_SAVE RV_TEND RV_TENDF MUV MUVS'
++           DO wrfgpu2_marker_j = 2, 19
++             DO wrfgpu2_marker_i = 6, 22
++               IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij) .AND. &
++                   wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij)+1) THEN
++                 WRITE(wrfgpu2_marker_unit,'(A,4(1X,I0),7(1X,E24.16))') 'V_K1', &
++                      wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, &
++                      REAL(grid%v_2(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%v_1(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%v_save(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%rv_tend(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(rv_tendf(wrfgpu2_marker_i,1,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muv(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8), &
++                      REAL(grid%muvs(wrfgpu2_marker_i,wrfgpu2_marker_j),KIND=8)
++               ENDIF
++             ENDDO
++           ENDDO
++           WRITE(wrfgpu2_marker_unit,'(A)') 'record_schema WPH_KSTAG01 fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_NEW W_OLD W_SAVE PH_NEW PH_OLD PH_SAVE RW_TEND RW_TENDF PH_TEND PH_TENDF'
++           DO wrfgpu2_marker_k = 1, 2
++             DO wrfgpu2_marker_j = 2, 18
++               DO wrfgpu2_marker_i = 6, 22
++                 IF (wrfgpu2_marker_i >= grid%i_start(ij) .AND. wrfgpu2_marker_i <= grid%i_end(ij) .AND. &
++                     wrfgpu2_marker_j >= grid%j_start(ij) .AND. wrfgpu2_marker_j <= grid%j_end(ij) .AND. &
++                     wrfgpu2_marker_k >= k_start .AND. wrfgpu2_marker_k <= k_end) THEN
++                   WRITE(wrfgpu2_marker_unit,'(A,6(1X,I0),10(1X,E24.16))') 'WPH_KSTAG01', &
++                        wrfgpu2_marker_i, wrfgpu2_marker_j, wrfgpu2_marker_k, &
++                        wrfgpu2_marker_i-1, wrfgpu2_marker_j-1, wrfgpu2_marker_k-1, &
++                        REAL(grid%w_2(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(grid%w_1(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(w_save(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(grid%ph_2(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(grid%ph_1(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(ph_save(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(rw_tend(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(rw_tendf(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(ph_tend(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8), &
++                        REAL(ph_tendf(wrfgpu2_marker_i,wrfgpu2_marker_k,wrfgpu2_marker_j),KIND=8)
++                 ENDIF
++               ENDDO
++             ENDDO
++           ENDDO
++           CLOSE(wrfgpu2_marker_unit)
++           EXIT block_wrfgpu2_v014_terms_post_finish
++         ENDDO block_wrfgpu2_v014_terms_post_finish
++       ENDIF
++       wrfgpu2_marker_enabled = .FALSE.
+        CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_SAMESTATE', wrfgpu2_marker_env)
+        IF (TRIM(wrfgpu2_marker_env) == '1') THEN
+          wrfgpu2_marker_grid = 2

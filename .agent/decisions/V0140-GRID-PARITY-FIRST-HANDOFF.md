@@ -353,12 +353,37 @@ are exact against the GPU-native `wrfinput_d02` payload
 This is a writer-only cleanup and does not change the dynamic divergence root
 cause queue.
 
+## Completed Wave 6
+
+- `019eaa1d-13b8-7e02-a1b3-ebabb5e2d44a` (`Ptolemy`):
+  CPU-only dynamic same-state term localization sprint
+  `.agent/sprints/2026-06-09-v014-dynamic-term-localization/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/wrf_dynamic_term_localization.{py,json,md}`,
+  `proofs/v014/wrf_dynamic_term_localization_patch.diff`, and
+  `.agent/reviews/2026-06-09-v014-dynamic-term-localization.md`.
+  Manager validation reran JSON validation and Python compilation; no WRF/GPU
+  process remained active.
+
+Verdict: `TERM_LAYER_EMITTED_final_stage_small_step_finish`. The sprint emitted
+compact CPU-WRF source-derived values immediately before and after final-stage
+`small_step_finish` at `d02` step 6000 / h10. The accepted post-RK marker remains
+green vs CPU h10 (`T/P/PB=0`; `U/V/W/PH <= 1.91e-6` max_abs), while retained
+GPU/JAX h10 on the same marker patch still diverges (`T=3.36`, `P=590.0`,
+`PB=1047.0`, `U=6.29`, `V=11.59`, `W=1.73`, `PH=5.10` max_abs). The
+tile-local post-`small_step_finish` surface is not yet history-aligned for
+`P/V/W`, so no root cause is claimed. The next exact WRF layer is the
+pressure/rho/post-RK refresh path before or around `after_all_rk_steps`, then a
+JAX CPU same-state wrapper against the green post-marker surface.
+
 ## Next Manager Actions
 
-1. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
-   cell/level manifest plus Sartre's WRF savepoint path. Ampere did not find a
-   runtime base-state blocker; proceed with documented `PHB/HGT/XLAT/XLONG`
-   exclusions and treat `PB/MUB` as dynamic symptoms.
+1. Open the next same-state localization sprint around the pressure/rho/post-RK
+   refresh path before or around `after_all_rk_steps`. Use Ptolemy's
+   `small_step_finish` layer and Herschel's green post-marker as the bounding
+   surfaces. Ampere did not find a runtime base-state blocker; proceed with
+   documented `PHB/HGT/XLAT/XLONG` exclusions and treat `PB/MUB` as dynamic
+   symptoms.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.
