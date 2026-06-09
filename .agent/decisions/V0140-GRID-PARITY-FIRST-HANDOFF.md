@@ -1192,3 +1192,26 @@ Opened sprint:
 `.agent/sprints/2026-06-09-v014-step1-transient-adjust-base-fix`.
 This is the first source-changing sprint after the MUB split and is limited to
 `src/gpuwrf/integration/d02_replay.py` plus proof artifacts.
+
+## Current Manager Update 2026-06-09 17:48 WEST
+
+The transient adjust-base helper sprint is closed. Verdict:
+`STEP1_TRANSIENT_ADJUST_BASE_FIX_THETA_CLOSED`.
+
+Key facts:
+
+- `src/gpuwrf/integration/d02_replay.py` now has
+  `_wrf_live_nest_transient_adjust_mub`.
+- The helper exposes WRF's transient post-`blend_terrain`/pre-`start_domain`
+  current `MUB` for live-nest `adjust_tempqv`.
+- Final post-`start_domain` BaseState semantics are unchanged.
+- Corrected theta max_abs against same-boundary WRF pre-call truth is
+  `5.788684885033035e-05 K`, versus prior `0.00541785382188209 K`.
+- Corrected QVAPOR max_abs is `5.970267497393267e-08`.
+
+Manager decision:
+
+This closes the candidate/helper proof, not full production Step-1. Next active
+step is a source-changing wiring sprint for WRF theta_m conversion plus
+`adjust_tempqv` in the production live-nest init consumer, using the new helper.
+TOST, Switzerland, FP32 source landing, and memory source work remain paused.

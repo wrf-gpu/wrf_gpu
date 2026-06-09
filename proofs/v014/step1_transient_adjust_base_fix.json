@@ -1,0 +1,736 @@
+{
+  "blocker": null,
+  "candidate_array_summaries": {
+    "corrected_qv": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 0.011706834658980328,
+      "mean": 0.002190354906024268,
+      "min": 2.6876396077568643e-06,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "corrected_theta": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.99822268968086,
+      "mean": 47.8424657156121,
+      "min": -6.618466084535726,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "final_base_mub": {
+      "all_finite": true,
+      "count": 10494,
+      "finite_count": 10494,
+      "max": 95000.0,
+      "mean": 94532.04499264229,
+      "min": 64526.03982385865,
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "prior_theta": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.99822268968086,
+      "mean": 47.8424676184342,
+      "min": -6.618466084535726,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "raw_mub_save": {
+      "all_finite": true,
+      "count": 10494,
+      "finite_count": 10494,
+      "max": 95000.0,
+      "mean": 94534.28439912092,
+      "min": 64526.0546875,
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "transient_adjust_mub": {
+      "all_finite": true,
+      "count": 10494,
+      "finite_count": 10494,
+      "max": 95000.0,
+      "mean": 94532.06249430767,
+      "min": 64526.0546875,
+      "shape": [
+        66,
+        159
+      ]
+    }
+  },
+  "candidate_capture": {
+    "backend": "cpu",
+    "grid": {
+      "nx": 159,
+      "ny": 66,
+      "nz": 44
+    },
+    "helper_meta": {
+      "blend_width": 5,
+      "child_domain": "d02",
+      "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+      "final_base_state_unchanged": true,
+      "i_parent_start": 24,
+      "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+      "j_parent_start": 20,
+      "parent_domain": "d01",
+      "parent_grid_ratio": 3,
+      "spec_bdy_width": 5,
+      "surface": "post_blend_terrain_pre_start_domain",
+      "timestep_loop_transfer": false,
+      "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+    },
+    "helper_source_function": "gpuwrf.integration.d02_replay._wrf_live_nest_transient_adjust_mub",
+    "live_nest_base_init": {
+      "blend_width": 5,
+      "child_domain": "d02",
+      "cpu_wrfout_dependency": false,
+      "enabled": true,
+      "i_parent_start": 24,
+      "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+      "j_parent_start": 20,
+      "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+      "parent_domain": "d01",
+      "parent_grid_ratio": 3,
+      "production_inputs": [
+        "parent native initialized terrain",
+        "wrfinput_d02",
+        "namelist.input"
+      ],
+      "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+      "spec_bdy_width": 5,
+      "timestep_loop_transfer": false
+    },
+    "p_top": 5000.0,
+    "status": "CANDIDATE_ARRAYS_READY"
+  },
+  "commands": {
+    "required_validation": [
+      "python -m py_compile src/gpuwrf/integration/d02_replay.py proofs/v014/step1_transient_adjust_base_fix.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_transient_adjust_base_fix.py",
+      "python -m json.tool proofs/v014/step1_transient_adjust_base_fix.json >/tmp/step1_transient_adjust_base_fix.validated.json",
+      "git diff --stat"
+    ]
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "gpu_used": false,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T16:48:39.909582+00:00",
+  "git": {
+    "branch": "worker/gpt/v013-close-manager",
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "9ff658db7762f5d4aef6af8b53c1f18989643254\n",
+      "wall_s": 0.0011834890028694645
+    },
+    "required_ancestor": {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "43173cb2",
+        "HEAD"
+      ],
+      "commit": "43173cb2",
+      "is_ancestor": true,
+      "returncode": 0
+    },
+    "src_gpuwrf_additive_only": true,
+    "src_gpuwrf_deletions": 0,
+    "src_gpuwrf_files": [
+      "src/gpuwrf/integration/d02_replay.py"
+    ],
+    "src_gpuwrf_insertions": 89
+  },
+  "gpu_used": false,
+  "inputs": {
+    "d02_replay": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "sha256": "c35d2a2a2d17afc6381b46a0127b738b2a37b7c9571ce800c59f4df099fc93e4",
+      "size_bytes": 102611
+    },
+    "prior_adjust_hook": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+      "sha256": "2db120b4ca59b3b6af5ac42572c8a1d5ffc58f3af10676bafceef9e1c5ceeb38",
+      "size_bytes": 1145
+    },
+    "prior_split_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json",
+      "sha256": "a8ec7684fd16f02828ec491458cb57443d486c861c9a1452d2ed191639fc785f",
+      "size_bytes": 16960
+    },
+    "prior_theta_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+      "sha256": "8d4ebe82db0c03583a19d699984968b343f705b85bc119baf2613088c947e55f",
+      "size_bytes": 44524
+    },
+    "same_boundary_qvapor_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-transient-adjust-base-fix/sprint-contract.md",
+      "sha256": "b285f36c956542bb53797598f2a399560a2e2c3c02cab3351390998bde786543",
+      "size_bytes": 4787
+    }
+  },
+  "mub_comparisons": {
+    "final_base_mub_vs_wrf_prepart_final": {
+      "delta_final_minus_prepart": 0.004647628695238382,
+      "field": "mub",
+      "final_base_mub_target": 86794.5749601287,
+      "full_domain": {
+        "bias": -0.0014379073126789452,
+        "count": 10494,
+        "domain_count": 10494,
+        "first_mismatch_fortran": {
+          "i": 6,
+          "j": 1
+        },
+        "first_mismatch_index": [
+          0,
+          5
+        ],
+        "max_abs": 0.05002361937658861,
+        "nonfinite_diff_count": 0,
+        "p95": 0.021521761903568408,
+        "p99": 0.035347418212040786,
+        "p99_9": 0.04436549756729825,
+        "region": "full_domain",
+        "rmse": 0.008025019829604947,
+        "shape": [
+          66,
+          159
+        ],
+        "worst_mismatch_fortran": {
+          "i": 156,
+          "j": 51
+        },
+        "worst_mismatch_index": [
+          50,
+          155
+        ]
+      },
+      "matches_within_tolerance": true,
+      "surface": "post_start_domain final BaseState",
+      "tolerance_pa": 0.01,
+      "wrf_prepart_final_mub_target": 86794.5703125
+    },
+    "helper_save_mub_vs_child_input": {
+      "field": "mub_save",
+      "helper_save_mub_max_abs_vs_raw_child_mub": 0.0,
+      "helper_save_mub_target": 85928.6875,
+      "note": "helper save_mub is the pre-blend child input column mass (nest%mub_save)",
+      "wrf_adjust_hook_mub_save": 85928.6875
+    },
+    "transient_adjust_mub_vs_wrf_adjust_hook": {
+      "delta_transient_minus_hook": 0.00045210951066110283,
+      "field": "mub",
+      "matches_within_tolerance": true,
+      "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+      "tolerance_pa": 0.01,
+      "transient_adjust_mub": 86812.25045210951,
+      "wrf_adjust_hook_mub": 86812.25
+    },
+    "transient_minus_final_base": {
+      "delta_transient_minus_final_base": 17.675491980815423,
+      "field": "mub",
+      "note": "the two legitimate WRF base surfaces differ; the fix uses the transient surface for adjust_tempqv only"
+    }
+  },
+  "next_decision": "Wire WRF theta_m conversion + adjust_tempqv (with the transient adjust-base MUB) into the production live-nest init consumer of _apply_live_nest_base_init, then run the next larger grid-parity step: the full step-1 same-input d02 comparison (step1_live_nest_init_rerun) across all 16 fields.",
+  "no_fp32_source_work": true,
+  "no_gpu": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "production_src_edits": true,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_transient_adjust_base_fix.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_transient_adjust_base_fix.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-transient-adjust-base-fix.md",
+    "script": "/home/enric/src/wrf_gpu2/proofs/v014/step1_transient_adjust_base_fix.py"
+  },
+  "schema": "wrfgpu2.v014.step1_transient_adjust_base_fix.v1",
+  "source_fix": {
+    "apply_live_nest_base_init_unchanged": true,
+    "file": "src/gpuwrf/integration/d02_replay.py",
+    "final_base_state_unchanged": true,
+    "helper": "gpuwrf.integration.d02_replay._wrf_live_nest_transient_adjust_mub",
+    "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...); start_domain recomputes final base"
+  },
+  "target": {
+    "domain": "d02",
+    "fortran_index": {
+      "i": 18,
+      "j": 10,
+      "k": 2
+    },
+    "wrf_grid_id": 2,
+    "zero_index": {
+      "k": 1,
+      "x": 17,
+      "y": 9
+    },
+    "zero_index_order": "k,y,x"
+  },
+  "theta_qv_comparisons": {
+    "closure_ratio_prior_to_corrected": 93.593863364203,
+    "corrected_max_abs": 5.788684885033035e-05,
+    "corrected_qv_vs_wrf_precall": {
+      "bias": -2.836891958549973e-12,
+      "count": 461736,
+      "domain_count": 461736,
+      "first_mismatch_fortran": {
+        "i": 1,
+        "j": 1,
+        "k": 1
+      },
+      "first_mismatch_index": [
+        0,
+        0,
+        0
+      ],
+      "max_abs": 5.970267497393267e-08,
+      "nonfinite_diff_count": 0,
+      "p95": 1.4901161192980295e-08,
+      "p99": 1.955777407212922e-08,
+      "p99_9": 2.4450715499806614e-08,
+      "region": "full_domain",
+      "rmse": 4.714587793408254e-09,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_mismatch_fortran": {
+        "i": 11,
+        "j": 6,
+        "k": 2
+      },
+      "worst_mismatch_index": [
+        1,
+        5,
+        10
+      ]
+    },
+    "corrected_theta_boundary_decomposition": {
+      "boundary_distance_le_5": {
+        "bias": -1.1029133380283199e-06,
+        "count": 112464,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 1,
+          "j": 1,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          0,
+          0
+        ],
+        "max_abs": 5.788684885033035e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 2.9310459593645533e-05,
+        "p99": 3.712513668897794e-05,
+        "p99_9": 4.6360671378238435e-05,
+        "region": "boundary_distance_le_5",
+        "rmse": 1.561905054270297e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 49,
+          "j": 62,
+          "k": 43
+        },
+        "worst_mismatch_index": [
+          42,
+          61,
+          48
+        ]
+      },
+      "interior_distance_gt_5": {
+        "bias": -1.19895120770498e-06,
+        "count": 349272,
+        "domain_count": 461736,
+        "first_mismatch_fortran": {
+          "i": 7,
+          "j": 7,
+          "k": 1
+        },
+        "first_mismatch_index": [
+          0,
+          6,
+          6
+        ],
+        "max_abs": 5.762945258425134e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 2.9151177787412053e-05,
+        "p99": 3.694557885040694e-05,
+        "p99_9": 4.660156705833174e-05,
+        "region": "interior_distance_gt_5",
+        "rmse": 1.5501355247143662e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_mismatch_fortran": {
+          "i": 48,
+          "j": 34,
+          "k": 42
+        },
+        "worst_mismatch_index": [
+          41,
+          33,
+          47
+        ]
+      }
+    },
+    "corrected_theta_vs_wrf_precall": {
+      "bias": -1.1755594795847645e-06,
+      "count": 461736,
+      "domain_count": 461736,
+      "first_mismatch_fortran": {
+        "i": 1,
+        "j": 1,
+        "k": 1
+      },
+      "first_mismatch_index": [
+        0,
+        0,
+        0
+      ],
+      "max_abs": 5.788684885033035e-05,
+      "nonfinite_diff_count": 0,
+      "p95": 2.918862558942692e-05,
+      "p99": 3.699252157858269e-05,
+      "p99_9": 4.657611257400175e-05,
+      "region": "full_domain",
+      "rmse": 1.5530104194219152e-05,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_mismatch_fortran": {
+        "i": 49,
+        "j": 62,
+        "k": 43
+      },
+      "worst_mismatch_index": [
+        42,
+        61,
+        48
+      ]
+    },
+    "diff_sign": "candidate_minus_wrf",
+    "material_threshold_K": 0.001,
+    "prior_final_base_qv_vs_wrf_precall": {
+      "bias": -9.244561065426162e-10,
+      "count": 461736,
+      "domain_count": 461736,
+      "first_mismatch_fortran": {
+        "i": 1,
+        "j": 1,
+        "k": 1
+      },
+      "first_mismatch_index": [
+        0,
+        0,
+        0
+      ],
+      "max_abs": 3.838436518426372e-06,
+      "nonfinite_diff_count": 0,
+      "p95": 1.5832483768463135e-08,
+      "p99": 2.1420419221360176e-08,
+      "p99_9": 2.427533676304701e-07,
+      "region": "full_domain",
+      "rmse": 2.852916741433691e-08,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_mismatch_fortran": {
+        "i": 18,
+        "j": 10,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        9,
+        17
+      ]
+    },
+    "prior_final_base_theta_vs_wrf_precall": {
+      "bias": 7.272626223389566e-07,
+      "count": 461736,
+      "domain_count": 461736,
+      "first_mismatch_fortran": {
+        "i": 1,
+        "j": 1,
+        "k": 1
+      },
+      "first_mismatch_index": [
+        0,
+        0,
+        0
+      ],
+      "max_abs": 0.00541785382188209,
+      "nonfinite_diff_count": 0,
+      "p95": 3.0235542394230208e-05,
+      "p99": 4.546931764011239e-05,
+      "p99_9": 0.0004691662256855125,
+      "region": "full_domain",
+      "rmse": 5.068868142015466e-05,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_mismatch_fortran": {
+        "i": 18,
+        "j": 10,
+        "k": 2
+      },
+      "worst_mismatch_index": [
+        1,
+        9,
+        17
+      ]
+    },
+    "prior_max_abs": 0.00541785382188209,
+    "target_cell": {
+      "corrected_p_new": 92686.18565821453,
+      "corrected_qvapor": 0.007874929777307155,
+      "corrected_t_state": -0.24366182404384062,
+      "delta_corrected_minus_wrf": -9.480293840624654e-06,
+      "delta_prior_minus_wrf": 0.00541785382188209,
+      "delta_qv_corrected_minus_wrf": -5.001596185827406e-10,
+      "fortran_index": {
+        "i": 18,
+        "j": 10,
+        "k": 2
+      },
+      "prior_p_new": 92668.69349297634,
+      "prior_t_state": -0.2382344899281179,
+      "wrf_qvapor": 0.007874930277466774,
+      "wrf_t_state": -0.24365234375,
+      "zero_index": {
+        "k": 1,
+        "x": 17,
+        "y": 9
+      }
+    },
+    "worst_cell_corrected": {
+      "boundary_distance_to_horizontal_edge": 4,
+      "corrected_t_state": 180.80742197154956,
+      "delta_corrected_minus_wrf": -5.788684885033035e-05,
+      "delta_prior_minus_wrf": -5.788684885033035e-05,
+      "fortran_index": {
+        "i": 49,
+        "j": 62,
+        "k": 43
+      },
+      "is_boundary_band": true,
+      "prior_t_state": 180.80742197154956,
+      "status": "OK",
+      "wrf_t_state": 180.8074798583984,
+      "zero_index": {
+        "k": 42,
+        "x": 48,
+        "y": 61
+      },
+      "zero_index_order": "k,y,x"
+    }
+  },
+  "unresolved_risks": [
+    "The corrected theta/QV candidate is validated in this CPU proof; wiring theta_m+adjust_tempqv into the production live-nest init consumer is a separate, larger grid-parity step."
+  ],
+  "verdict": "STEP1_TRANSIENT_ADJUST_BASE_FIX_THETA_CLOSED",
+  "wrf_adjust_hook": {
+    "headers": {
+      "domain_bounds_ids_ide_jds_jde_kds_kde": [
+        "1",
+        "160",
+        "1",
+        "67",
+        "1",
+        "45"
+      ],
+      "patch_bounds_ips_ipe_jps_jpe_kps_kpe": [
+        "1",
+        "23",
+        "1",
+        "17",
+        "1",
+        "45"
+      ],
+      "record_schema": [
+        "scalar",
+        "key",
+        "value"
+      ],
+      "routine": [
+        "dyn_em/nest_init_utils.F::adjust_tempqv"
+      ],
+      "target_fortran_i_j_k": [
+        "18",
+        "10",
+        "2"
+      ],
+      "target_zero_k_y_x": [
+        "1",
+        "9",
+        "17"
+      ]
+    },
+    "marker": "# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1",
+    "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+    "status": "READY",
+    "values": {
+      "c3h": 0.9896281957626343,
+      "c4h": 24.17862319946289,
+      "domain_id": 2.0,
+      "dth": -0.2693585455417633,
+      "dth1": -0.2694810926914215,
+      "e_new": 1158.797119140625,
+      "e_old": 1120.9638671875,
+      "es_new": 1890.697875976562,
+      "es_old": 1828.968994140625,
+      "mub": 86812.25,
+      "mub_save": 85928.6875,
+      "p": 1750.15625,
+      "p_new": 92686.1875,
+      "p_old": 91811.7890625,
+      "p_top": 5000.0,
+      "pb_new_equiv": 90936.03125,
+      "pb_old_equiv": 90061.6328125,
+      "qvapor_post": 0.007874930277466774,
+      "qvapor_pre": 0.007688093464821577,
+      "rh": 0.6128938794136047,
+      "t_2_post": -0.24365234375,
+      "t_2_pre": 0.029022216796875,
+      "tc_new": 16.58895874023438,
+      "tc_old": 16.06820678710938,
+      "thloc": 296.3644104003906,
+      "use_theta_m": 1.0,
+      "znw_k": 0.9938147068023682,
+      "znw_kp1": 0.9859506487846375
+    }
+  },
+  "wrf_precall_truth_summary": {
+    "MUB_summary": {
+      "all_finite": true,
+      "count": 10494,
+      "finite_count": 10494,
+      "max": 95000.0,
+      "mean": 94532.0464305496,
+      "min": 64526.0546875,
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "QVAPOR_summary": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 0.01170683559030294,
+      "mean": 0.0021903549088611598,
+      "min": 2.687635060283355e-06,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "T_STATE_summary": {
+      "all_finite": true,
+      "count": 461736,
+      "finite_count": 461736,
+      "max": 194.9982452392578,
+      "mean": 47.842466891171576,
+      "min": -6.61846923828125,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "record_counts": {
+      "MASS_PREPART": 461736,
+      "WPH_PREPART": 472230
+    },
+    "root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+    "status": "WRF_SURFACE_READY"
+  }
+}

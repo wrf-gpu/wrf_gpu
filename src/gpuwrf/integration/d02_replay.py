@@ -1011,6 +1011,95 @@ def _apply_live_nest_base_init(
     return grid, metrics, pb, phb, mub, meta
 
 
+def _wrf_live_nest_transient_adjust_mub(
+    run: Gen2Run,
+    *,
+    domain: str,
+    grid: GridSpec,
+    parent_mub: Any,
+    child_mub: Any,
+) -> tuple[jax.Array, jax.Array, dict[str, Any]]:
+    """Transient post-``blend_terrain`` current ``MUB`` consumed by ``adjust_tempqv``.
+
+    WRF ``share/mediation_integrate.F`` ``med_nest_initial`` copies ``nest%mub``
+    into ``nest%mub_save`` (the pre-blend child input column mass), then
+    ``blend_terrain`` blends the parent-interpolated ``nest%mub_fine`` into the
+    current ``nest%mub`` BEFORE calling
+    ``adjust_tempqv(nest%mub, nest%mub_save, ...)`` (``dyn_em/nest_init_utils.F``).
+    The temp/qv adjustment therefore sees this TRANSIENT post-blend column mass.
+
+    The FINAL base state (``PB``/``MUB``/``PHB``) is recomputed LATER by
+    ``start_domain`` from the blended terrain (``_wrf_start_domain_base_from_hgt``
+    inside :func:`_apply_live_nest_base_init`).  That final ``MUB`` is a DIFFERENT
+    surface and is intentionally left unchanged by this helper -- this helper only
+    exposes the transient adjust-base ``MUB`` for theta/qv adjustment.
+
+    ``parent_mub`` is the parent-grid base column mass (``MUB``); ``child_mub`` is
+    the child-grid input base column mass (``nest%mub_save``).  Returns
+    ``(save_mub, transient_mub, meta)`` with both arrays on the child mass grid.
+    This is an initialization-only host transcription; no timestep-loop transfer.
+    """
+
+    child_meta = run.grid(domain)
+    expected_parent = f"d{int(child_meta.parent_id):02d}"
+    ratio = int(child_meta.parent_grid_ratio)
+    if ratio <= 1:
+        raise ValueError(
+            f"{domain}: live-nest transient adjust MUB requires parent_grid_ratio > 1, got {ratio}"
+        )
+    spec_bdy_width = _namelist_int_any(run, "spec_bdy_width", 5, domain=domain)
+    blend_width = _namelist_int_any(run, "blend_width", 5, domain=domain)
+
+    parent_mub_np = np.asarray(jax.device_get(parent_mub), dtype=np.float64)
+    child_mub_np = np.asarray(jax.device_get(child_mub), dtype=np.float64)
+    expected_shape = (int(grid.ny), int(grid.nx))
+    if child_mub_np.shape != expected_shape:
+        raise ValueError(
+            f"{domain}: live-nest child MUB shape {child_mub_np.shape} != mass grid {expected_shape}"
+        )
+    parent_mub_on_child = sint_to_child_reference(
+        parent_mub_np,
+        ratio=ratio,
+        i_parent_start=int(child_meta.i_parent_start),
+        j_parent_start=int(child_meta.j_parent_start),
+        child_ny=int(grid.ny),
+        child_nx=int(grid.nx),
+    )
+    if not np.isfinite(parent_mub_on_child).all():
+        raise ValueError(
+            f"{domain}: live-nest SINT MUB interpolation produced non-finite values; "
+            "the parent stencil halo or nest geometry is insufficient"
+        )
+    transient_mub_np = _wrf_blend_terrain_host(
+        parent_mub_on_child,
+        child_mub_np,
+        spec_bdy_width=spec_bdy_width,
+        blend_width=blend_width,
+    )
+    dtype = jnp.asarray(child_mub).dtype
+    save_mub = jnp.asarray(child_mub_np, dtype=dtype)
+    transient_mub = jnp.asarray(transient_mub_np, dtype=dtype)
+    meta = {
+        "surface": "post_blend_terrain_pre_start_domain",
+        "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+        "parent_domain": expected_parent,
+        "child_domain": domain,
+        "parent_grid_ratio": ratio,
+        "i_parent_start": int(child_meta.i_parent_start),
+        "j_parent_start": int(child_meta.j_parent_start),
+        "spec_bdy_width": int(spec_bdy_width),
+        "blend_width": int(blend_width),
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "wrf_reference": (
+            "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); "
+            "blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+        ),
+        "final_base_state_unchanged": True,
+        "timestep_loop_transfer": False,
+    }
+    return save_mub, transient_mub, meta
+
+
 # WRF MYNN cold-start TKE constants (phys/module_bl_mynnedmf.F).
 _MYNN_B1 = 24.0          # module_bl_mynnedmf.F:282  b1 = 24.0
 _MYNN_PMZ = 1.0          # phi_m-zeta at z1, =1 on cold start (mym_initialize)

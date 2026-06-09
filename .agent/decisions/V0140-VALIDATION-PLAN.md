@@ -953,3 +953,17 @@ Validation remains paused. The next pre-validation gate is now:
    post-`start_domain` BaseState unchanged for step-entry.
 3. Rerun the Step-1 theta/QV proof and require a field-level guard before
    returning to Grid-Delta Atlas, Switzerland, or TOST.
+
+## Update 2026-06-09 17:48 WEST
+
+The transient adjust-base helper proof is green:
+`STEP1_TRANSIENT_ADJUST_BASE_FIX_THETA_CLOSED`.
+
+Validation remains paused because the helper is not yet wired into the
+production live-nest init consumer. The next pre-validation gate is now:
+
+1. Wire WRF theta_m conversion plus `adjust_tempqv` into live-nest init using
+   `_wrf_live_nest_transient_adjust_mub`.
+2. Run the full Step-1 same-input d02 comparison across the 16-field schema.
+3. Only after that comparison closes or names the next boundary should we resume
+   Grid-Delta Atlas, Switzerland, or TOST planning.
