@@ -1,0 +1,2982 @@
+{
+  "commands": {
+    "required_validation": [
+      "python -m py_compile proofs/v014/step1_live_nest_perturb_state_init.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_live_nest_perturb_state_init.py",
+      "python -m json.tool proofs/v014/step1_live_nest_perturb_state_init.json >/tmp/step1_live_nest_perturb_state_init.validated.json",
+      "git diff -- src/gpuwrf"
+    ],
+    "wrf_instrumentation": [
+      "No new WRF run; reused existing CPU-only WRF truth surfaces and inspected existing WRF source."
+    ]
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T18:30:47.109208+00:00",
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n",
+      "wall_s": 0.0009516170102870092
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "86fd69011cf9301c2f2b895c5efaa9780f5db09f\n",
+      "wall_s": 0.001263729005586356
+    },
+    "log_head": {
+      "command": [
+        "git",
+        "log",
+        "-1",
+        "--oneline",
+        "--decorate"
+      ],
+      "cwd": "/home/enric/src/wrf_gpu2",
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "86fd6901 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open live nest perturb state sprint\n",
+      "wall_s": 0.002005845002713613
+    },
+    "required_ancestor": {
+      "commit": "131b27cd",
+      "is_ancestor": true,
+      "returncode": 0,
+      "stderr_tail": ""
+    }
+  },
+  "gpu_used": false,
+  "inputs": {
+    "accepted_step1_truth_npz": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+      "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
+      "size_bytes": 12179669
+    },
+    "handoff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "316242310ca56012428b471ac67eb67d8c6f7362a983a025910cfd5c46f41132",
+      "size_bytes": 73081
+    },
+    "predecessor_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
+      "sha256": "52fc4a636185408c45f5ca9c265e28404661d2123eeda3ec823f2ee6612054ff",
+      "size_bytes": 444932
+    },
+    "predecessor_md": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
+      "sha256": "6ea827fdf3ca833e28a0822bc700e2fe6f58af3c64d6159e49f6af1cf905fe65",
+      "size_bytes": 2227
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-live-nest-perturb-state-init/sprint-contract.md",
+      "sha256": "0d171e6c5e58132d34ac6025024b53f65d04f048486fb07b656fee717a9df285",
+      "size_bytes": 6662
+    },
+    "wrf_precall_truth_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "wrf_source_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "next_decision": "Open one narrow WRF savepoint/source sprint at start_domain live-nest perturbation init, then patch d02_replay only if P_STATE closes with the exact al/alt/pre-press-MU contract.",
+  "no_fp32_source_work": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "predecessor_baseline": {
+    "markdown": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
+      "sha256": "6ea827fdf3ca833e28a0822bc700e2fe6f58af3c64d6159e49f6af1cf905fe65",
+      "size_bytes": 2227
+    },
+    "path_info": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
+      "sha256": "52fc4a636185408c45f5ca9c265e28404661d2123eeda3ec823f2ee6612054ff",
+      "size_bytes": 444932
+    },
+    "source": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
+    "stage_residuals_max_abs": {
+      "haloed_step_entry_state": {
+        "MU_STATE": 13.256103515625,
+        "PH_STATE": 0.00048828125,
+        "P_STATE": 69.96875,
+        "W_STATE": 0.7605466246604919
+      },
+      "live_child_state": {
+        "MU_STATE": 13.256103515625,
+        "PH_STATE": 0.00048828125,
+        "P_STATE": 69.96875,
+        "W_STATE": 0.7605466246604919
+      },
+      "raw_child_state": {
+        "MU_STATE": 13.256103515625,
+        "PH_STATE": 0.00048828125,
+        "P_STATE": 69.96875,
+        "W_STATE": 0.7605466246604919
+      }
+    },
+    "verdict": "STEP1_FIRST_RK_PART1_P_STATE_LOCALIZED_PRE_PART1_RAW_CHILD_STATE"
+  },
+  "production_src_edits": false,
+  "proof": {
+    "candidate_formulas": {
+      "press_adj_mu": {
+        "metric": {
+          "bias": 1.4794499316646246e-05,
+          "count": 10494,
+          "max_abs": 0.047773029698646496,
+          "nonfinite_diff_count": 0,
+          "p95": 4.775559752943084e-05,
+          "p99": 0.002854282405910437,
+          "rmse": 0.0010454860097534014,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            54,
+            155
+          ]
+        },
+        "source": "dyn_em/start_em.F press_adj terrain-delta correction"
+      },
+      "set_w_surface": {
+        "branch_evidence": {
+          "raw_child_surface_w_absmax": 0.0,
+          "raw_surface_zero_implies_w_needs_to_be_set": true,
+          "use_input_w_default_false": true,
+          "wrf_precall_surface_w_absmax": 0.7605466246604919
+        },
+        "metric": {
+          "bias": 1.4669192189864678e-12,
+          "count": 472230,
+          "max_abs": 1.2992081932505783e-07,
+          "nonfinite_diff_count": 0,
+          "p95": 4.1110413124927067e-10,
+          "p99": 5.5010624793079645e-09,
+          "rmse": 1.5541190232422376e-09,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            6,
+            29,
+            60
+          ]
+        },
+        "source": "dyn_em/module_bc_em.F::set_w_surface with fill_w_flag=.true."
+      },
+      "start_domain_pressure": {
+        "current_jax_inputs_fp32_metric": {
+          "bias": 0.024356174434295247,
+          "count": 461736,
+          "max_abs": 4.40625,
+          "nonfinite_diff_count": 0,
+          "p95": 0.53125,
+          "p99": 1.6171875,
+          "rmse": 0.2909566874461152,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            7,
+            18
+          ]
+        },
+        "current_jax_inputs_metric": {
+          "bias": 0.022002322755003835,
+          "count": 461736,
+          "max_abs": 3.9458582235092763,
+          "nonfinite_diff_count": 0,
+          "p95": 0.8694734643249831,
+          "p99": 1.8580557844186865,
+          "rmse": 0.3832298992869327,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            45,
+            150
+          ]
+        },
+        "exact_patch_status": "NOT_SAFE_YET_NEEDS_PRE_PRESS_MU_OR_AL_ALT_START_DOMAIN_SUBSURFACE",
+        "rebalance": 0,
+        "source": "dyn_em/start_em.F hypsometric_opt=2 al from PH, then EOS pressure",
+        "use_theta_m": 1,
+        "wrf_exact_base_ph_theta_fp32_metric": {
+          "bias": -0.00022796314141089281,
+          "count": 461736,
+          "max_abs": 0.3828125,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0234375,
+          "p99": 0.0546875,
+          "rmse": 0.010425595574407165,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            1,
+            26,
+            61
+          ]
+        }
+      }
+    },
+    "exclusions": [
+      "WRF after_step_increment -> before_first_rk_step_part1_call is exact for P/MU/W/PH in reused pre-part1 truth.",
+      "Prior proof showed WRF before_first_rk_step_part1_call -> after_first_rk_step_part1 is exact for P/MU/W/PH.",
+      "Prior proof showed JAX raw/live/boundary/carry/halo all retain the same raw P/MU/W residuals.",
+      "Boundary package, initial carry, halo application, _physics_step_forcing, first_rk_step_part1, phy_prep, and acoustic refresh are not the first cause for this boundary.",
+      "W_STATE is not an unknown physics tendency: raw surface W is zero and WRF default use_input_w=.false. forces set_w_surface."
+    ],
+    "jax_capture": {
+      "live_nest_init_meta": {
+        "base": {
+          "blend_width": 5,
+          "child_domain": "d02",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 24,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 20,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d01",
+          "parent_grid_ratio": 3,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d02",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+          "spec_bdy_width": 5,
+          "timestep_loop_transfer": false
+        },
+        "theta_qv_adjust": {
+          "final_base_state_unchanged": true,
+          "perturbation_pressure_unchanged": true,
+          "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+          "theta_m_conversion_applied": true,
+          "timestep_loop_transfer": false,
+          "use_theta_m": 1,
+          "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+        },
+        "transient_adjust_mub": {
+          "blend_width": 5,
+          "child_domain": "d02",
+          "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+          "final_base_state_unchanged": true,
+          "i_parent_start": 24,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 20,
+          "parent_domain": "d01",
+          "parent_grid_ratio": 3,
+          "spec_bdy_width": 5,
+          "surface": "post_blend_terrain_pre_start_domain",
+          "timestep_loop_transfer": false,
+          "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+        }
+      },
+      "stage_capture": {
+        "grid": {
+          "domain": "d02",
+          "dx_m": 3000.0,
+          "dy_m": 3000.0,
+          "mass_shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "loader": {
+          "boundary_package": {
+            "bdy_width": 5,
+            "builder": "gpuwrf.nesting.boundary_construction.build_child_boundary_package",
+            "registration": "sint",
+            "source": "live parent d01 state over live-nest-initialized d02 state"
+          },
+          "halo_spec": {
+            "edge_type": "periodic",
+            "fields_to_exchange": [
+              "u",
+              "v",
+              "w",
+              "theta",
+              "qv",
+              "p",
+              "ph",
+              "mu"
+            ],
+            "sharding_enabled": false,
+            "width": 2
+          },
+          "initial_deltas": {
+            "live_nest_init_minus_raw_init": {
+              "HGT": {
+                "bias": 0.1822588666037269,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 228.12867150362268,
+                "nonfinite_diff_count": 0,
+                "p95": 0.1169357055172183,
+                "p99": 35.13708791983736,
+                "rmse": 8.462915451787524,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55
+                },
+                "worst_mismatch_index": [
+                  54,
+                  155
+                ]
+              },
+              "MUB": {
+                "bias": -2.239406478639151,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 2635.620856727095,
+                "nonfinite_diff_count": 0,
+                "p95": 1.3782683271660083,
+                "p99": 412.9076752937063,
+                "rmse": 98.13024660935488,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55
+                },
+                "worst_mismatch_index": [
+                  54,
+                  155
+                ]
+              },
+              "MU_TOTAL": {
+                "bias": -2.239406478639151,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 2635.620856727095,
+                "nonfinite_diff_count": 0,
+                "p95": 1.3782683271660083,
+                "p99": 412.9076752937063,
+                "rmse": 98.13024660935488,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55
+                },
+                "worst_mismatch_index": [
+                  54,
+                  155
+                ]
+              },
+              "PB": {
+                "bias": -0.6743193045416572,
+                "count": 461736,
+                "first_mismatch_fortran": {
+                  "i": 1,
+                  "j": 1,
+                  "k": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  0
+                ],
+                "max_abs": 2627.3597022258036,
+                "nonfinite_diff_count": 0,
+                "p95": 0.021820149439008674,
+                "p99": 64.10725915164281,
+                "rmse": 47.82642357707112,
+                "shape": [
+                  44,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "k": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              },
+              "PHB": {
+                "bias": 0.6234728025384482,
+                "count": 472230,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1,
+                  "kstag": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  5
+                ],
+                "max_abs": 2237.942382806984,
+                "nonfinite_diff_count": 0,
+                "p95": 0.07032314430252881,
+                "p99": 73.58477304813435,
+                "rmse": 45.352556482915105,
+                "shape": [
+                  45,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "kstag": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              },
+              "PH_TOTAL": {
+                "bias": 0.6234728025388304,
+                "count": 472230,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1,
+                  "kstag": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  5
+                ],
+                "max_abs": 2237.942382806984,
+                "nonfinite_diff_count": 0,
+                "p95": 0.07032314430252881,
+                "p99": 73.58477304813435,
+                "rmse": 45.352556482915105,
+                "shape": [
+                  45,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "kstag": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              },
+              "P_TOTAL": {
+                "bias": -0.6743193045416572,
+                "count": 461736,
+                "first_mismatch_fortran": {
+                  "i": 1,
+                  "j": 1,
+                  "k": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  0
+                ],
+                "max_abs": 2627.3597022258036,
+                "nonfinite_diff_count": 0,
+                "p95": 0.021820149439008674,
+                "p99": 64.10725915164281,
+                "rmse": 47.82642357707112,
+                "shape": [
+                  44,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "k": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              }
+            },
+            "live_nest_init_vs_cpu_wrf_h0": {
+              "HGT": {
+                "bias": -4.8659397219003e-08,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 2.682152285160555e-05,
+                "nonfinite_diff_count": 0,
+                "p95": 7.824518849161591e-09,
+                "p99": 4.62646317242132e-06,
+                "rmse": 1.0767691452035232e-06,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 157,
+                  "j": 60
+                },
+                "worst_mismatch_index": [
+                  59,
+                  156
+                ]
+              },
+              "MUB": {
+                "bias": -0.0014379073126789452,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 0.05002361937658861,
+                "nonfinite_diff_count": 0,
+                "p95": 0.021521761903568408,
+                "p99": 0.035347418212040786,
+                "rmse": 0.008025019829604947,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 51
+                },
+                "worst_mismatch_index": [
+                  50,
+                  155
+                ]
+              },
+              "MU_TOTAL": {
+                "bias": -0.023507438115995125,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 13.236335242720088,
+                "nonfinite_diff_count": 0,
+                "p95": 0.03647424231094192,
+                "p99": 2.37784965677811,
+                "rmse": 0.5973900214640216,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55
+                },
+                "worst_mismatch_index": [
+                  54,
+                  155
+                ]
+              },
+              "PB": {
+                "bias": -0.0005600475270968658,
+                "count": 461736,
+                "first_mismatch_fortran": {
+                  "i": 1,
+                  "j": 1,
+                  "k": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  0
+                ],
+                "max_abs": 0.05357326504599769,
+                "nonfinite_diff_count": 0,
+                "p95": 0.0055001466080284445,
+                "p99": 0.022395003079145687,
+                "rmse": 0.004296943965085442,
+                "shape": [
+                  44,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 51,
+                  "k": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  50,
+                  155
+                ]
+              },
+              "PHB": {
+                "bias": -0.01747610370992694,
+                "count": 472230,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1,
+                  "kstag": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  5
+                ],
+                "max_abs": 0.10811684231157415,
+                "nonfinite_diff_count": 0,
+                "p95": 0.05131772726599593,
+                "p99": 0.055443795037572415,
+                "rmse": 0.024592950003262108,
+                "shape": [
+                  45,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 146,
+                  "j": 34,
+                  "kstag": 42
+                },
+                "worst_mismatch_index": [
+                  41,
+                  33,
+                  145
+                ]
+              },
+              "PH_TOTAL": {
+                "bias": -0.01755307080275217,
+                "count": 472230,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1,
+                  "kstag": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  5
+                ],
+                "max_abs": 0.10860512356157415,
+                "nonfinite_diff_count": 0,
+                "p95": 0.051804982213070616,
+                "p99": 0.05571196453005542,
+                "rmse": 0.024706480230863106,
+                "shape": [
+                  45,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 146,
+                  "j": 34,
+                  "kstag": 42
+                },
+                "worst_mismatch_index": [
+                  41,
+                  33,
+                  145
+                ]
+              },
+              "P_TOTAL": {
+                "bias": 0.018155932593307545,
+                "count": 461736,
+                "first_mismatch_fortran": {
+                  "i": 1,
+                  "j": 1,
+                  "k": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  0
+                ],
+                "max_abs": 69.99186027419637,
+                "nonfinite_diff_count": 0,
+                "p95": 0.02798938751220703,
+                "p99": 2.657827664034643,
+                "rmse": 1.1615776229065053,
+                "shape": [
+                  44,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "k": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              }
+            },
+            "raw_init_vs_cpu_wrf_h0": {
+              "HGT": {
+                "bias": -0.18225891526312415,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 228.12867736816406,
+                "nonfinite_diff_count": 0,
+                "p95": 0.11693572998046893,
+                "p99": 35.13709075927727,
+                "rmse": 8.462915340605079,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55
+                },
+                "worst_mismatch_index": [
+                  54,
+                  155
+                ]
+              },
+              "MUB": {
+                "bias": 2.2379685713264723,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 2635.640625,
+                "nonfinite_diff_count": 0,
+                "p95": 1.3828125,
+                "p99": 412.8984375,
+                "rmse": 98.13000038547803,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55
+                },
+                "worst_mismatch_index": [
+                  54,
+                  155
+                ]
+              },
+              "MU_TOTAL": {
+                "bias": 2.2158990405231562,
+                "count": 10494,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  5
+                ],
+                "max_abs": 2622.384521484375,
+                "nonfinite_diff_count": 0,
+                "p95": 1.3719482421875,
+                "p99": 410.492139892578,
+                "rmse": 97.57858815378462,
+                "shape": [
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55
+                },
+                "worst_mismatch_index": [
+                  54,
+                  155
+                ]
+              },
+              "PB": {
+                "bias": 0.6737592570145603,
+                "count": 461736,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1,
+                  "k": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  5
+                ],
+                "max_abs": 2627.3828125,
+                "nonfinite_diff_count": 0,
+                "p95": 0.001953125,
+                "p99": 64.10488281250082,
+                "rmse": 47.826296821589736,
+                "shape": [
+                  44,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "k": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              },
+              "PHB": {
+                "bias": -0.6409489062483751,
+                "count": 472230,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1,
+                  "kstag": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  5
+                ],
+                "max_abs": 2237.9423828125,
+                "nonfinite_diff_count": 0,
+                "p95": 0.046875,
+                "p99": 73.58390625000004,
+                "rmse": 45.35253861292826,
+                "shape": [
+                  45,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "kstag": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              },
+              "PH_TOTAL": {
+                "bias": -0.6410258733415827,
+                "count": 472230,
+                "first_mismatch_fortran": {
+                  "i": 6,
+                  "j": 1,
+                  "kstag": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  5
+                ],
+                "max_abs": 2237.9423828125,
+                "nonfinite_diff_count": 0,
+                "p95": 0.046875,
+                "p99": 73.58390625000004,
+                "rmse": 45.35253860127546,
+                "shape": [
+                  45,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "kstag": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              },
+              "P_TOTAL": {
+                "bias": 0.6924752371349646,
+                "count": 461736,
+                "first_mismatch_fortran": {
+                  "i": 2,
+                  "j": 1,
+                  "k": 1
+                },
+                "first_mismatch_index": [
+                  0,
+                  0,
+                  1
+                ],
+                "max_abs": 2697.3515625,
+                "nonfinite_diff_count": 0,
+                "p95": 0.03125,
+                "p99": 66.68437500000073,
+                "rmse": 48.9012283224014,
+                "shape": [
+                  44,
+                  66,
+                  159
+                ],
+                "status": "OK",
+                "worst_mismatch_fortran": {
+                  "i": 156,
+                  "j": 55,
+                  "k": 1
+                },
+                "worst_mismatch_index": [
+                  0,
+                  54,
+                  155
+                ]
+              }
+            }
+          },
+          "live_child_construction": "proof-local direct constructor plus production gpuwrf.integration.d02_replay._apply_live_nest_base_init + _wrf_live_nest_transient_adjust_mub + _wrf_live_nest_adjust_tempqv",
+          "live_nest_base_init": {
+            "blend_width": 5,
+            "child_domain": "d02",
+            "cpu_wrfout_dependency": false,
+            "enabled": true,
+            "i_parent_start": 24,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 20,
+            "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+            "parent_domain": "d01",
+            "parent_grid_ratio": 3,
+            "production_inputs": [
+              "parent native initialized terrain",
+              "wrfinput_d02",
+              "namelist.input"
+            ],
+            "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+            "spec_bdy_width": 5,
+            "timestep_loop_transfer": false
+          },
+          "raw_child_construction": "proof-local direct constructors; no State.zeros/Tendencies.zeros/BaseState.zeros"
+        },
+        "namelist": {
+          "acoustic_substeps": 10,
+          "cu_physics": 0,
+          "dt_s": 6.0,
+          "force_fp64": true,
+          "moist_adv_opt": 0,
+          "radiation_cadence_steps": 300,
+          "rk_order": 3,
+          "run_boundary": true,
+          "run_physics": true,
+          "use_flux_advection": true
+        },
+        "status": "JAX_STAGE_CAPTURE_READY"
+      },
+      "stage_vs_wrf_precall": [
+        {
+          "metrics": {
+            "MU_STATE": {
+              "bias": -0.022069530803313493,
+              "count": 10494,
+              "max_abs": 13.256103515625,
+              "nonfinite_diff_count": 0,
+              "p95": 0.009765625,
+              "p99": 2.377672119140642,
+              "rmse": 0.5968840909134501,
+              "shape": [
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                54,
+                155
+              ]
+            },
+            "PH_STATE": {
+              "bias": -7.696709320775477e-05,
+              "count": 472230,
+              "max_abs": 0.00048828125,
+              "nonfinite_diff_count": 0,
+              "p95": 0.00048828125,
+              "p99": 0.00048828125,
+              "rmse": 0.00020545794801247642,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                24,
+                0,
+                124
+              ]
+            },
+            "P_STATE": {
+              "bias": 0.0187159801204043,
+              "count": 461736,
+              "max_abs": 69.96875,
+              "nonfinite_diff_count": 0,
+              "p95": 0.0234375,
+              "p99": 2.65625,
+              "rmse": 1.161700383780558,
+              "shape": [
+                44,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                54,
+                155
+              ]
+            },
+            "W_STATE": {
+              "bias": -0.00015118409117375716,
+              "count": 472230,
+              "max_abs": 0.7605466246604919,
+              "nonfinite_diff_count": 0,
+              "p95": 0.004590864432975644,
+              "p99": 0.056111268401146476,
+              "rmse": 0.01470981557635803,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                30,
+                61
+              ]
+            }
+          },
+          "stage": "raw_child_state"
+        },
+        {
+          "metrics": {
+            "MU_STATE": {
+              "bias": -0.022069530803313493,
+              "count": 10494,
+              "max_abs": 13.256103515625,
+              "nonfinite_diff_count": 0,
+              "p95": 0.009765625,
+              "p99": 2.377672119140642,
+              "rmse": 0.5968840909134501,
+              "shape": [
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                54,
+                155
+              ]
+            },
+            "PH_STATE": {
+              "bias": -7.696709320775477e-05,
+              "count": 472230,
+              "max_abs": 0.00048828125,
+              "nonfinite_diff_count": 0,
+              "p95": 0.00048828125,
+              "p99": 0.00048828125,
+              "rmse": 0.00020545794801247642,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                24,
+                0,
+                124
+              ]
+            },
+            "P_STATE": {
+              "bias": 0.0187159801204043,
+              "count": 461736,
+              "max_abs": 69.96875,
+              "nonfinite_diff_count": 0,
+              "p95": 0.0234375,
+              "p99": 2.65625,
+              "rmse": 1.161700383780558,
+              "shape": [
+                44,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                54,
+                155
+              ]
+            },
+            "W_STATE": {
+              "bias": -0.00015118409117375716,
+              "count": 472230,
+              "max_abs": 0.7605466246604919,
+              "nonfinite_diff_count": 0,
+              "p95": 0.004590864432975644,
+              "p99": 0.056111268401146476,
+              "rmse": 0.01470981557635803,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                30,
+                61
+              ]
+            }
+          },
+          "stage": "live_child_state"
+        },
+        {
+          "metrics": {
+            "MU_STATE": {
+              "bias": -0.022069530803313493,
+              "count": 10494,
+              "max_abs": 13.256103515625,
+              "nonfinite_diff_count": 0,
+              "p95": 0.009765625,
+              "p99": 2.377672119140642,
+              "rmse": 0.5968840909134501,
+              "shape": [
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                54,
+                155
+              ]
+            },
+            "PH_STATE": {
+              "bias": -7.696709320775477e-05,
+              "count": 472230,
+              "max_abs": 0.00048828125,
+              "nonfinite_diff_count": 0,
+              "p95": 0.00048828125,
+              "p99": 0.00048828125,
+              "rmse": 0.00020545794801247642,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                24,
+                0,
+                124
+              ]
+            },
+            "P_STATE": {
+              "bias": 0.0187159801204043,
+              "count": 461736,
+              "max_abs": 69.96875,
+              "nonfinite_diff_count": 0,
+              "p95": 0.0234375,
+              "p99": 2.65625,
+              "rmse": 1.161700383780558,
+              "shape": [
+                44,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                54,
+                155
+              ]
+            },
+            "W_STATE": {
+              "bias": -0.00015118409117375716,
+              "count": 472230,
+              "max_abs": 0.7605466246604919,
+              "nonfinite_diff_count": 0,
+              "p95": 0.004590864432975644,
+              "p99": 0.056111268401146476,
+              "rmse": 0.01470981557635803,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                30,
+                61
+              ]
+            }
+          },
+          "stage": "boundary_packaged_state"
+        },
+        {
+          "metrics": {
+            "MU_STATE": {
+              "bias": -0.022069530803313493,
+              "count": 10494,
+              "max_abs": 13.256103515625,
+              "nonfinite_diff_count": 0,
+              "p95": 0.009765625,
+              "p99": 2.377672119140642,
+              "rmse": 0.5968840909134501,
+              "shape": [
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                54,
+                155
+              ]
+            },
+            "PH_STATE": {
+              "bias": -7.696709320775477e-05,
+              "count": 472230,
+              "max_abs": 0.00048828125,
+              "nonfinite_diff_count": 0,
+              "p95": 0.00048828125,
+              "p99": 0.00048828125,
+              "rmse": 0.00020545794801247642,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                24,
+                0,
+                124
+              ]
+            },
+            "P_STATE": {
+              "bias": 0.0187159801204043,
+              "count": 461736,
+              "max_abs": 69.96875,
+              "nonfinite_diff_count": 0,
+              "p95": 0.0234375,
+              "p99": 2.65625,
+              "rmse": 1.161700383780558,
+              "shape": [
+                44,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                54,
+                155
+              ]
+            },
+            "W_STATE": {
+              "bias": -0.00015118409117375716,
+              "count": 472230,
+              "max_abs": 0.7605466246604919,
+              "nonfinite_diff_count": 0,
+              "p95": 0.004590864432975644,
+              "p99": 0.056111268401146476,
+              "rmse": 0.01470981557635803,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                30,
+                61
+              ]
+            }
+          },
+          "stage": "initial_carry_state"
+        },
+        {
+          "metrics": {
+            "MU_STATE": {
+              "bias": -0.022069530803313493,
+              "count": 10494,
+              "max_abs": 13.256103515625,
+              "nonfinite_diff_count": 0,
+              "p95": 0.009765625,
+              "p99": 2.377672119140642,
+              "rmse": 0.5968840909134501,
+              "shape": [
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                54,
+                155
+              ]
+            },
+            "PH_STATE": {
+              "bias": -7.696709320775477e-05,
+              "count": 472230,
+              "max_abs": 0.00048828125,
+              "nonfinite_diff_count": 0,
+              "p95": 0.00048828125,
+              "p99": 0.00048828125,
+              "rmse": 0.00020545794801247642,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                24,
+                0,
+                124
+              ]
+            },
+            "P_STATE": {
+              "bias": 0.0187159801204043,
+              "count": 461736,
+              "max_abs": 69.96875,
+              "nonfinite_diff_count": 0,
+              "p95": 0.0234375,
+              "p99": 2.65625,
+              "rmse": 1.161700383780558,
+              "shape": [
+                44,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                54,
+                155
+              ]
+            },
+            "W_STATE": {
+              "bias": -0.00015118409117375716,
+              "count": 472230,
+              "max_abs": 0.7605466246604919,
+              "nonfinite_diff_count": 0,
+              "p95": 0.004590864432975644,
+              "p99": 0.056111268401146476,
+              "rmse": 0.01470981557635803,
+              "shape": [
+                45,
+                66,
+                159
+              ],
+              "status": "OK",
+              "worst_mismatch_fortran": null,
+              "worst_mismatch_index": [
+                0,
+                30,
+                61
+              ]
+            }
+          },
+          "stage": "haloed_step_entry_state"
+        }
+      ]
+    },
+    "next_truth_surface": "Emit WRF start_domain live-nest surfaces after the hypsometric P/al/alt recompute and immediately before/after press_adj, including P_STATE, MU_STATE, al, alt, alb, PH_STATE, PB, MUB, PHB, theta, qv, HT, and HT_FINE. That is the smallest surface needed before a GPU-native source patch.",
+    "ranked_hypotheses": [
+      {
+        "evidence": "P start_domain recompute reduces max_abs from 69.96875 to 3.945858; MU press_adj reduces 13.2561 to 0.04777; W set_w_surface reduces 0.76055 to 1.3e-7.",
+        "hypothesis": "Missing WRF start_domain perturbation-state initialization after live-nest base/theta/QV correction.",
+        "rank": 1,
+        "status": "SUPPORTED_LOCALIZED"
+      },
+      {
+        "evidence": "Even WRF exact PB/PHB/PH/T plus FP32 formula leaves P max_abs 0.3828125 Pa; MU is near-closed but still not exact enough to prove the source sequencing without pre/post press_adj truth. A source patch would still be a guess.",
+        "hypothesis": "Exact P/MU closure needs internal start_domain pre/post-press_adj and al/alt truth surfaces or stricter Fortran evaluation order.",
+        "rank": 2,
+        "status": "REMAINING_GAP"
+      },
+      {
+        "evidence": "Base/theta/QV are already close; W closes through set_w_surface and MU/P both point into start_domain, not a new parent interpolation surface.",
+        "hypothesis": "Parent interpolation/blending alone explains P/MU/W.",
+        "rank": 3,
+        "status": "LOWER_RANKED"
+      }
+    ],
+    "raw_vs_candidate_summary": {
+      "candidate_metrics": {
+        "MU_STATE": {
+          "bias": 1.4794499316646246e-05,
+          "count": 10494,
+          "max_abs": 0.047773029698646496,
+          "nonfinite_diff_count": 0,
+          "p95": 4.775559752943084e-05,
+          "p99": 0.002854282405910437,
+          "rmse": 0.0010454860097534014,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            54,
+            155
+          ]
+        },
+        "P_STATE": {
+          "bias": 0.022002322755003835,
+          "count": 461736,
+          "max_abs": 3.9458582235092763,
+          "nonfinite_diff_count": 0,
+          "p95": 0.8694734643249831,
+          "p99": 1.8580557844186865,
+          "rmse": 0.3832298992869327,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            45,
+            150
+          ]
+        },
+        "P_STATE_fp32_current_formula": {
+          "bias": 0.024356174434295247,
+          "count": 461736,
+          "max_abs": 4.40625,
+          "nonfinite_diff_count": 0,
+          "p95": 0.53125,
+          "p99": 1.6171875,
+          "rmse": 0.2909566874461152,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            7,
+            18
+          ]
+        },
+        "P_STATE_fp32_wrf_exact_inputs_formula": {
+          "bias": -0.00022796314141089281,
+          "count": 461736,
+          "max_abs": 0.3828125,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0234375,
+          "p99": 0.0546875,
+          "rmse": 0.010425595574407165,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            1,
+            26,
+            61
+          ]
+        },
+        "W_STATE": {
+          "bias": 1.4669192189864678e-12,
+          "count": 472230,
+          "max_abs": 1.2992081932505783e-07,
+          "nonfinite_diff_count": 0,
+          "p95": 4.1110413124927067e-10,
+          "p99": 5.5010624793079645e-09,
+          "rmse": 1.5541190232422376e-09,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            6,
+            29,
+            60
+          ]
+        }
+      },
+      "improvement": {
+        "MU_STATE": {
+          "candidate_max_abs": 0.047773029698646496,
+          "candidate_vs_raw_delta": {
+            "bias": 0.02208432530263014,
+            "count": 10494,
+            "max_abs": 13.303876545323646,
+            "nonfinite_diff_count": 0,
+            "p95": 0.009777382998879616,
+            "p99": 2.3828636426303285,
+            "rmse": 0.596900515910288,
+            "shape": [
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": null,
+            "worst_mismatch_index": [
+              54,
+              155
+            ]
+          },
+          "max_abs_reduction": 13.208330485926354,
+          "raw_max_abs": 13.256103515625
+        },
+        "P_STATE": {
+          "candidate_max_abs": 3.9458582235092763,
+          "candidate_vs_raw_delta": {
+            "bias": 0.003286342634599535,
+            "count": 461736,
+            "max_abs": 67.40122423076537,
+            "nonfinite_diff_count": 0,
+            "p95": 1.097319694406906,
+            "p99": 2.7932208679143535,
+            "rmse": 1.215890062258246,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": null,
+            "worst_mismatch_index": [
+              0,
+              54,
+              155
+            ]
+          },
+          "max_abs_reduction": 66.02289177649072,
+          "raw_max_abs": 69.96875
+        },
+        "W_STATE": {
+          "candidate_max_abs": 1.2992081932505783e-07,
+          "candidate_vs_raw_delta": {
+            "bias": 0.0001511840926406764,
+            "count": 472230,
+            "max_abs": 0.7605466992387644,
+            "nonfinite_diff_count": 0,
+            "p95": 0.0045908648508756695,
+            "p99": 0.05611126913733416,
+            "rmse": 0.014709815542065843,
+            "shape": [
+              45,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_mismatch_fortran": null,
+            "worst_mismatch_index": [
+              0,
+              30,
+              61
+            ]
+          },
+          "max_abs_reduction": 0.7605464947396726,
+          "raw_max_abs": 0.7605466246604919
+        }
+      },
+      "ranked_candidate_residuals": [
+        {
+          "bias": 0.022002322755003835,
+          "field": "P_STATE",
+          "max_abs": 3.9458582235092763,
+          "rmse": 0.3832298992869327,
+          "worst_mismatch_fortran": null
+        },
+        {
+          "bias": 1.4794499316646246e-05,
+          "field": "MU_STATE",
+          "max_abs": 0.047773029698646496,
+          "rmse": 0.0010454860097534014,
+          "worst_mismatch_fortran": null
+        },
+        {
+          "bias": 1.4669192189864678e-12,
+          "field": "W_STATE",
+          "max_abs": 1.2992081932505783e-07,
+          "rmse": 1.5541190232422376e-09,
+          "worst_mismatch_fortran": null
+        }
+      ],
+      "raw_metrics": {
+        "MU_STATE": {
+          "bias": -0.022069530803313493,
+          "count": 10494,
+          "max_abs": 13.256103515625,
+          "nonfinite_diff_count": 0,
+          "p95": 0.009765625,
+          "p99": 2.377672119140642,
+          "rmse": 0.5968840909134501,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            54,
+            155
+          ]
+        },
+        "P_STATE": {
+          "bias": 0.0187159801204043,
+          "count": 461736,
+          "max_abs": 69.96875,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0234375,
+          "p99": 2.65625,
+          "rmse": 1.161700383780558,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            54,
+            155
+          ]
+        },
+        "W_STATE": {
+          "bias": -0.00015118409117375716,
+          "count": 472230,
+          "max_abs": 0.7605466246604919,
+          "nonfinite_diff_count": 0,
+          "p95": 0.004590864432975644,
+          "p99": 0.056111268401146476,
+          "rmse": 0.01470981557635803,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            30,
+            61
+          ]
+        }
+      }
+    },
+    "status": "PROOF_EXECUTED",
+    "verdict": "STEP1_LIVE_NEST_PERTURB_STATE_LOCALIZED_START_DOMAIN_P_PRESS_ADJ_SET_W_SURFACE_P_AL_ALT_SUBSURFACE_GAP",
+    "wrf_source_semantics": {
+      "med_nest_initial": {
+        "exists": true,
+        "hits": {
+          "adjust_tempqv": {
+            "line": 756,
+            "text": "CALL adjust_tempqv ( nest%mub , nest%mub_save , &"
+          },
+          "blend_mub": {
+            "line": 744,
+            "text": "CALL  blend_terrain ( nest%mub_fine , nest%mub , &"
+          },
+          "copy_mub_save": {
+            "line": 732,
+            "text": "CALL  copy_3d_field ( nest%mub_save , nest%mub , &"
+          },
+          "press_adj_true": {
+            "line": 802,
+            "text": "nest%press_adj = .TRUE."
+          },
+          "start_domain_nest": {
+            "line": 804,
+            "text": "CALL start_domain ( nest , .TRUE. )"
+          }
+        },
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/mediation_integrate.F"
+      },
+      "module_configure_defaults": {
+        "exists": true,
+        "hits": {
+          "adjust_heights_default": {
+            "line": 9423,
+            "text": "adjust_heights = .false."
+          },
+          "blend_width_default": {
+            "line": 9449,
+            "text": "blend_width = 5"
+          },
+          "hypsometric_opt_default": {
+            "line": 9408,
+            "text": "hypsometric_opt = 2"
+          },
+          "rebalance_default": {
+            "line": 9403,
+            "text": "rebalance = 0"
+          },
+          "use_input_w_default": {
+            "line": 9936,
+            "text": "use_input_w = .false."
+          },
+          "use_theta_m_default": {
+            "line": 9928,
+            "text": "use_theta_m = 1"
+          }
+        },
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/frame/module_configure.f90"
+      },
+      "set_w_surface": {
+        "exists": true,
+        "hits": {
+          "subroutine": {
+            "line": 1196,
+            "text": "SUBROUTINE set_w_surface( config_flags, znw, fill_w_flag,              &"
+          },
+          "surface_formula": {
+            "line": 1268,
+            "text": "w(i,1,j)=  msfty(i,j)*                              &"
+          },
+          "vertical_fill": {
+            "line": 1289,
+            "text": "w(i,k,j) = w(i,1,j)*znw(k)*znw(k)"
+          }
+        },
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/module_bc_em.F"
+      },
+      "start_domain_em": {
+        "exists": true,
+        "hits": {
+          "hypsometric_opt_2_al": {
+            "line": 810,
+            "text": "grid%al(i,k,j) = (grid%ph_1(i,k+1,j)-grid%ph_1(i,k,j)+grid%phb(i,k+1,j)-grid%phb(i,k,j)) &"
+          },
+          "press_adj_guard": {
+            "line": 878,
+            "text": "IF ( grid%press_adj .and. ( grid%id .NE. 1 ) .AND. .NOT. ( config_flags%restart ) .AND. &"
+          },
+          "press_adj_mu": {
+            "line": 882,
+            "text": "grid%MU_2(i,j) = grid%MU_2(i,j) + grid%al(i,1,j) / ( grid%alt(i,1,j) * grid%alb(i,1,j) ) * &"
+          },
+          "pressure_recompute": {
+            "line": 826,
+            "text": "grid%p(i,k,j)=p1000mb*( (r_d*(t0+grid%t_1(i,k,j))*qvf)/                     &"
+          },
+          "pressure_recompute_comment": {
+            "line": 793,
+            "text": "! Use equations from calc_p_rho_phi to derive p and al from ph: linear in log p"
+          },
+          "set_w_surface": {
+            "line": 1520,
+            "text": "CALL set_w_surface(  config_flags, grid%znw, fill_w_flag,             &"
+          },
+          "w_branch": {
+            "line": 1515,
+            "text": "IF ( w_needs_to_be_set ) THEN"
+          }
+        },
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F"
+      }
+    },
+    "wrf_truth": {
+      "after_step_increment": {
+        "duplicate_stats": {
+          "MUB": {
+            "duplicates": 451242,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUT": {
+            "duplicates": 451242,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU_STATE": {
+            "duplicates": 451242,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PHB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "P_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          }
+        },
+        "headers": [
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "0"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_18_je_33.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "0"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "after_step_increment"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "18",
+              "33"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "0"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_1_je_17.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "0"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "after_step_increment"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "1",
+              "17"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "0"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_34_je_50.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "0"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "after_step_increment"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "34",
+              "50"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.0000000000000000E+00"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "0"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_51_je_67.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "0"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "after_step_increment"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "51",
+              "67"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          }
+        ],
+        "raw_file_count": 28,
+        "record_counts": {
+          "MASS_PREPART": 461736,
+          "WPH_PREPART": 472230
+        },
+        "rk_values": [
+          0
+        ],
+        "status": "WRF_SURFACE_READY",
+        "summaries": {
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464305496,
+            "min": 64526.0546875,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUT": {
+            "count": 10494,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.2920161967552,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.671251184474,
+            "min": 5225.25048828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.53125,
+            "mean": 84712.81764335278,
+            "min": -7.796288059580547e-07,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PH_STATE": {
+            "count": 472230,
+            "max": 8099.03173828125,
+            "mean": 3348.4396499362247,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "P_STATE": {
+            "count": 461736,
+            "max": 2256.5078125,
+            "mean": 545.6089732425902,
+            "min": -0.0478515625,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T_STATE": {
+            "count": 461736,
+            "max": 194.9982452392578,
+            "mean": 47.842466891171576,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "W_STATE": {
+            "count": 472230,
+            "max": 0.7605466246604919,
+            "mean": 0.00015118409117375716,
+            "min": -0.7173507809638977,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "surface": "after_step_increment"
+      },
+      "after_step_increment_to_precall": {
+        "MU_STATE": {
+          "bias": 0.0,
+          "count": 10494,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        "PH_STATE": {
+          "bias": 0.0,
+          "count": 472230,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "P_STATE": {
+          "bias": 0.0,
+          "count": 461736,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "W_STATE": {
+          "bias": 0.0,
+          "count": 472230,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_mismatch_fortran": null,
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      "precall": {
+        "duplicate_stats": {
+          "MUB": {
+            "duplicates": 451242,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MUT": {
+            "duplicates": 451242,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "MU_STATE": {
+            "duplicates": 451242,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PHB": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "PH_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "P_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "T_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          },
+          "W_STATE": {
+            "duplicates": 0,
+            "first_mismatch": null,
+            "max_delta": 0.0,
+            "mismatches": 0
+          }
+        },
+        "headers": [
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "1"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "1"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "before_first_rk_step_part1_call"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "18",
+              "33"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "1"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "1"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "before_first_rk_step_part1_call"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "1",
+              "17"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "1"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "1"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "before_first_rk_step_part1_call"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "34",
+              "50"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          },
+          {
+            "current_timestr_before_step": [
+              "2026-05-01_18:00:00"
+            ],
+            "domain_id": [
+              "2"
+            ],
+            "dt_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "dt_seconds": [
+              "0.6000000000000000E+01"
+            ],
+            "dts_rk_seconds": [
+              "0.2000000000000000E+01"
+            ],
+            "global_mass_i_j_end_exclusive_fortran": [
+              "1",
+              "160",
+              "1",
+              "67"
+            ],
+            "grid_itimestep_after_increment": [
+              "1"
+            ],
+            "marker": "# WRFGPU2_V014_STEP1_PRE_PART1_HANDOFF v1",
+            "mass_vertical_fortran_k_start_k_end_inclusive": [
+              "1",
+              "44"
+            ],
+            "number_of_small_timesteps": [
+              "1"
+            ],
+            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "record_schema": [
+              "WPH_PREPART",
+              "fortran_i",
+              "fortran_j",
+              "fortran_kstag",
+              "zero_x",
+              "zero_y",
+              "zero_kstag",
+              "W_STATE",
+              "PH_STATE",
+              "PHB"
+            ],
+            "rk_order": [
+              "3"
+            ],
+            "rk_step": [
+              "1"
+            ],
+            "routine": [
+              "dyn_em/solve_em.F"
+            ],
+            "surface": [
+              "before_first_rk_step_part1_call"
+            ],
+            "tile_i_j_bounds_fortran": [
+              "115",
+              "137",
+              "51",
+              "67"
+            ],
+            "tile_record_policy": [
+              "mass_owned_single_owner_no_overlap"
+            ],
+            "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": [
+              "1",
+              "45"
+            ]
+          }
+        ],
+        "raw_file_count": 28,
+        "record_counts": {
+          "MASS_PREPART": 461736,
+          "WPH_PREPART": 472230
+        },
+        "rk_values": [
+          1
+        ],
+        "status": "WRF_SURFACE_READY",
+        "summaries": {
+          "MUB": {
+            "count": 10494,
+            "max": 95000.0,
+            "mean": 94532.0464305496,
+            "min": 64526.0546875,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MUT": {
+            "count": 10494,
+            "max": 96791.6171875,
+            "mean": 96215.33842106204,
+            "min": 66157.6328125,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "MU_STATE": {
+            "count": 10494,
+            "max": 1812.1484375,
+            "mean": 1683.2920161967552,
+            "min": 1519.0859375,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "PB": {
+            "count": 461736,
+            "max": 99706.203125,
+            "mean": 44067.671251184474,
+            "min": 5225.25048828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "PHB": {
+            "count": 472230,
+            "max": 195220.53125,
+            "mean": 84712.81764335278,
+            "min": -7.796288059580547e-07,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "PH_STATE": {
+            "count": 472230,
+            "max": 8099.03173828125,
+            "mean": 3348.4396499362247,
+            "min": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "P_STATE": {
+            "count": 461736,
+            "max": 2256.5078125,
+            "mean": 545.6089732425902,
+            "min": -0.0478515625,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "T_STATE": {
+            "count": 461736,
+            "max": 194.9982452392578,
+            "mean": 47.842466891171576,
+            "min": -6.61846923828125,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "W_STATE": {
+            "count": 472230,
+            "max": 0.7605466246604919,
+            "mean": 0.00015118409117375716,
+            "min": -0.7173507809638977,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "surface": "before_first_rk_step_part1_call"
+      }
+    }
+  },
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-live-nest-perturb-state-init.md"
+  },
+  "schema": "wrfgpu2.v014.step1_live_nest_perturb_state_init.v1",
+  "tooling_verdict": "YES_FASTEST_RIGOROUS_WALL_CLOCK_CPU_ONLY_SAVEPOINT_REUSE_PLUS_FORMULA_FALSIFIERS",
+  "unresolved_risks": [
+    "The proof-local P_STATE formula is localized but not exact enough for a production patch.",
+    "A safe source edit needs WRF start_domain sub-surfaces for al/alt and pre/post press_adj MU.",
+    "No full Step-1 rerun was attempted because no production source changed."
+  ],
+  "verdict": "STEP1_LIVE_NEST_PERTURB_STATE_LOCALIZED_START_DOMAIN_P_PRESS_ADJ_SET_W_SURFACE_P_AL_ALT_SUBSURFACE_GAP"
+}
