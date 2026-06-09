@@ -248,6 +248,16 @@ Current status:
   `*_tendf`/`*_save` source leaves are not available at the step-entry boundary.
   B4 remains blocked. The next validation-enabling proof is a WRF source/save
   boundary after those leaves exist and before any dynamics state mutation.
+- 2026-06-09 source/save-boundary closeout:
+  `proofs/v014/same_input_single_rk_parity_sources.json` verdict is
+  `SOURCE_SAVE_BOUNDARY_READY_NO_JAX_WRAPPER_FULL_DOMAIN_PATCH_AND_SCALAR_OLD_LIMITER`.
+  WRF now emits the current-step dry source/save leaves at a consistent
+  pre-mutation boundary, and native dry state preservation versus the full
+  pre-RK savepoint is exact on overlap. B4 remains blocked because no strict JAX
+  comparison has executed. The next validation-enabling work is a proof-only
+  full-domain wrapper/truth-surface sprint, including same-boundary
+  carry/boundary leaves, full-domain/full-vertical post-RK truth, and a
+  consistent old-field strategy.
 - 2026-06-09 source sprint update:
   `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
   as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest
