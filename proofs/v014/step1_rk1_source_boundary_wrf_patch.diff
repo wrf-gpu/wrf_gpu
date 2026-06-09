@@ -1,0 +1,224 @@
+--- /mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/WRF/dyn_em/solve_em.F	2026-06-09 14:03:55.709216649 +0100
++++ /mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/solve_em.F	2026-06-09 14:30:54.890166453 +0100
+@@ -1076,6 +1076,110 @@
+                              , feedback_is_ready=feedback_is_ready    &
+                             )
+
++       wrfgpu2_tp_enabled = .FALSE.
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY', wrfgpu2_tp_env)
++       IF (TRIM(wrfgpu2_tp_env) == '1') THEN
++         wrfgpu2_tp_grid = 2
++         wrfgpu2_tp_start_step = 1
++         wrfgpu2_tp_end_step = 1
++         wrfgpu2_tp_root = '/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth'
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_GRID', wrfgpu2_tp_env)
++         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
++           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_grid
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_START_STEP', wrfgpu2_tp_env)
++         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
++           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_start_step
++           wrfgpu2_tp_end_step = wrfgpu2_tp_start_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_END_STEP', wrfgpu2_tp_env)
++         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
++           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_end_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_ROOT', wrfgpu2_tp_root)
++         wrfgpu2_tp_enabled = grid%id == wrfgpu2_tp_grid .AND. &
++                                grid%itimestep >= wrfgpu2_tp_start_step .AND. &
++                                grid%itimestep <= wrfgpu2_tp_end_step .AND. &
++                                rk_step == 1
++       ENDIF
++       IF (wrfgpu2_tp_enabled) THEN
++         wrfgpu2_tp_mass_k_end = MIN(k_end, kde-1)
++         wrfgpu2_tp_w_k_end = MIN(k_end+1, kde)
++         DO ij = 1 , grid%num_tiles
++           block_wrfgpu2_v014_source_after_part1: DO
++             IF (k_start > wrfgpu2_tp_w_k_end) EXIT block_wrfgpu2_v014_source_after_part1
++             CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_tp_root), wait=.TRUE.)
++             CALL domain_clock_get(grid, current_timestr=wrfgpu2_tp_time)
++             WRITE(wrfgpu2_tp_path,'(A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++                  TRIM(wrfgpu2_tp_root)//'/after_first_rk_step_part1_d', &
++                  grid%id, '_step_', grid%itimestep, '_rk_', rk_step, &
++                  '_is_', grid%i_start(ij), '_ie_', grid%i_end(ij), &
++                  '_js_', grid%j_start(ij), '_je_', grid%j_end(ij), '.txt'
++             OPEN(NEWUNIT=wrfgpu2_tp_unit, FILE=TRIM(wrfgpu2_tp_path), &
++                  STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++             WRITE(wrfgpu2_tp_unit,'(A)') '# WRFGPU2_V014_STEP1_RK1_SOURCE_BOUNDARY v1'
++             WRITE(wrfgpu2_tp_unit,'(A)') 'surface after_first_rk_step_part1'
++             WRITE(wrfgpu2_tp_unit,'(A)') 'routine dyn_em/solve_em.F after first_rk_step_part1'
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'domain_id', grid%id
++             WRITE(wrfgpu2_tp_unit,'(A,1X,A)') 'current_timestr_before_step', TRIM(wrfgpu2_tp_time)
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'grid_itimestep_after_increment', grid%itimestep
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'rk_step', rk_step
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'rk_order', rk_order
++             WRITE(wrfgpu2_tp_unit,'(A,4(1X,I0))') 'tile_i_j_bounds_fortran', &
++                  grid%i_start(ij), grid%i_end(ij), grid%j_start(ij), grid%j_end(ij)
++             WRITE(wrfgpu2_tp_unit,'(A,4(1X,I0))') 'global_mass_i_j_end_exclusive_fortran', &
++                  ids, ide, jds, jde
++             WRITE(wrfgpu2_tp_unit,'(A)') 'tile_record_policy mass_owned_single_owner_no_overlap'
++             WRITE(wrfgpu2_tp_unit,'(A,2(1X,I0))') &
++                  'mass_vertical_fortran_k_start_k_end_inclusive', k_start, wrfgpu2_tp_mass_k_end
++             WRITE(wrfgpu2_tp_unit,'(A,2(1X,I0))') &
++                  'w_ph_vertical_fortran_kstag_start_kstag_end_inclusive', k_start, wrfgpu2_tp_w_k_end
++             WRITE(wrfgpu2_tp_unit,'(A)') &
++                  'record_schema MASS_SOURCE fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT T_TENDF H_DIABATIC MU_TENDF T_SAVE T_OLD'
++             DO wrfgpu2_tp_k = k_start, wrfgpu2_tp_mass_k_end
++               DO wrfgpu2_tp_j = grid%j_start(ij), MIN(grid%j_end(ij), jde-1)
++                 DO wrfgpu2_tp_i = grid%i_start(ij), MIN(grid%i_end(ij), ide-1)
++                   WRITE(wrfgpu2_tp_unit,'(A,6(1X,I0),11(1X,E24.16))') 'MASS_SOURCE', &
++                        wrfgpu2_tp_i, wrfgpu2_tp_j, wrfgpu2_tp_k, &
++                        wrfgpu2_tp_i-1, wrfgpu2_tp_j-1, wrfgpu2_tp_k-1, &
++                        REAL(grid%t_2(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%p(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%pb(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%mu_2(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%mub(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%mut(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(t_tendf(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%h_diabatic(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(mu_tendf(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%t_save(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%t_1(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8)
++                 ENDDO
++               ENDDO
++             ENDDO
++             WRITE(wrfgpu2_tp_unit,'(A)') &
++                  'record_schema WPH_SOURCE fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB RW_TENDF PH_TENDF W_SAVE PH_SAVE'
++             DO wrfgpu2_tp_k = k_start, wrfgpu2_tp_w_k_end
++               DO wrfgpu2_tp_j = grid%j_start(ij), MIN(grid%j_end(ij), jde-1)
++                 DO wrfgpu2_tp_i = grid%i_start(ij), MIN(grid%i_end(ij), ide-1)
++                   WRITE(wrfgpu2_tp_unit,'(A,6(1X,I0),7(1X,E24.16))') 'WPH_SOURCE', &
++                        wrfgpu2_tp_i, wrfgpu2_tp_j, wrfgpu2_tp_k, &
++                        wrfgpu2_tp_i-1, wrfgpu2_tp_j-1, wrfgpu2_tp_k-1, &
++                        REAL(grid%w_2(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%ph_2(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%phb(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(rw_tendf(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(ph_tendf(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(w_save(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(ph_save(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8)
++                 ENDDO
++               ENDDO
++             ENDDO
++             CLOSE(wrfgpu2_tp_unit)
++             EXIT block_wrfgpu2_v014_source_after_part1
++           ENDDO block_wrfgpu2_v014_source_after_part1
++         ENDDO
++       ENDIF
++
+ #ifdef DM_PARALLEL
+        IF ( config_flags%bl_pbl_physics == MYNNPBLSCHEME ) THEN
+ #        include "HALO_EM_SCALAR_E_5.inc"
+@@ -1110,6 +1214,110 @@
+                              , k_start , k_end                  &
+                             )
+
++       wrfgpu2_tp_enabled = .FALSE.
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY', wrfgpu2_tp_env)
++       IF (TRIM(wrfgpu2_tp_env) == '1') THEN
++         wrfgpu2_tp_grid = 2
++         wrfgpu2_tp_start_step = 1
++         wrfgpu2_tp_end_step = 1
++         wrfgpu2_tp_root = '/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth'
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_GRID', wrfgpu2_tp_env)
++         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
++           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_grid
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_START_STEP', wrfgpu2_tp_env)
++         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
++           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_start_step
++           wrfgpu2_tp_end_step = wrfgpu2_tp_start_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_END_STEP', wrfgpu2_tp_env)
++         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
++           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_end_step
++         ENDIF
++         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_ROOT', wrfgpu2_tp_root)
++         wrfgpu2_tp_enabled = grid%id == wrfgpu2_tp_grid .AND. &
++                                grid%itimestep >= wrfgpu2_tp_start_step .AND. &
++                                grid%itimestep <= wrfgpu2_tp_end_step .AND. &
++                                rk_step == 1
++       ENDIF
++       IF (wrfgpu2_tp_enabled) THEN
++         wrfgpu2_tp_mass_k_end = MIN(k_end, kde-1)
++         wrfgpu2_tp_w_k_end = MIN(k_end+1, kde)
++         DO ij = 1 , grid%num_tiles
++           block_wrfgpu2_v014_source_after_part2: DO
++             IF (k_start > wrfgpu2_tp_w_k_end) EXIT block_wrfgpu2_v014_source_after_part2
++             CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_tp_root), wait=.TRUE.)
++             CALL domain_clock_get(grid, current_timestr=wrfgpu2_tp_time)
++             WRITE(wrfgpu2_tp_path,'(A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++                  TRIM(wrfgpu2_tp_root)//'/after_first_rk_step_part2_d', &
++                  grid%id, '_step_', grid%itimestep, '_rk_', rk_step, &
++                  '_is_', grid%i_start(ij), '_ie_', grid%i_end(ij), &
++                  '_js_', grid%j_start(ij), '_je_', grid%j_end(ij), '.txt'
++             OPEN(NEWUNIT=wrfgpu2_tp_unit, FILE=TRIM(wrfgpu2_tp_path), &
++                  STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++             WRITE(wrfgpu2_tp_unit,'(A)') '# WRFGPU2_V014_STEP1_RK1_SOURCE_BOUNDARY v1'
++             WRITE(wrfgpu2_tp_unit,'(A)') 'surface after_first_rk_step_part2'
++             WRITE(wrfgpu2_tp_unit,'(A)') 'routine dyn_em/solve_em.F after first_rk_step_part2'
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'domain_id', grid%id
++             WRITE(wrfgpu2_tp_unit,'(A,1X,A)') 'current_timestr_before_step', TRIM(wrfgpu2_tp_time)
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'grid_itimestep_after_increment', grid%itimestep
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'rk_step', rk_step
++             WRITE(wrfgpu2_tp_unit,'(A,1X,I0)') 'rk_order', rk_order
++             WRITE(wrfgpu2_tp_unit,'(A,4(1X,I0))') 'tile_i_j_bounds_fortran', &
++                  grid%i_start(ij), grid%i_end(ij), grid%j_start(ij), grid%j_end(ij)
++             WRITE(wrfgpu2_tp_unit,'(A,4(1X,I0))') 'global_mass_i_j_end_exclusive_fortran', &
++                  ids, ide, jds, jde
++             WRITE(wrfgpu2_tp_unit,'(A)') 'tile_record_policy mass_owned_single_owner_no_overlap'
++             WRITE(wrfgpu2_tp_unit,'(A,2(1X,I0))') &
++                  'mass_vertical_fortran_k_start_k_end_inclusive', k_start, wrfgpu2_tp_mass_k_end
++             WRITE(wrfgpu2_tp_unit,'(A,2(1X,I0))') &
++                  'w_ph_vertical_fortran_kstag_start_kstag_end_inclusive', k_start, wrfgpu2_tp_w_k_end
++             WRITE(wrfgpu2_tp_unit,'(A)') &
++                  'record_schema MASS_SOURCE fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT T_TENDF H_DIABATIC MU_TENDF T_SAVE T_OLD'
++             DO wrfgpu2_tp_k = k_start, wrfgpu2_tp_mass_k_end
++               DO wrfgpu2_tp_j = grid%j_start(ij), MIN(grid%j_end(ij), jde-1)
++                 DO wrfgpu2_tp_i = grid%i_start(ij), MIN(grid%i_end(ij), ide-1)
++                   WRITE(wrfgpu2_tp_unit,'(A,6(1X,I0),11(1X,E24.16))') 'MASS_SOURCE', &
++                        wrfgpu2_tp_i, wrfgpu2_tp_j, wrfgpu2_tp_k, &
++                        wrfgpu2_tp_i-1, wrfgpu2_tp_j-1, wrfgpu2_tp_k-1, &
++                        REAL(grid%t_2(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%p(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%pb(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%mu_2(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%mub(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%mut(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(t_tendf(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%h_diabatic(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(mu_tendf(wrfgpu2_tp_i,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%t_save(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%t_1(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8)
++                 ENDDO
++               ENDDO
++             ENDDO
++             WRITE(wrfgpu2_tp_unit,'(A)') &
++                  'record_schema WPH_SOURCE fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB RW_TENDF PH_TENDF W_SAVE PH_SAVE'
++             DO wrfgpu2_tp_k = k_start, wrfgpu2_tp_w_k_end
++               DO wrfgpu2_tp_j = grid%j_start(ij), MIN(grid%j_end(ij), jde-1)
++                 DO wrfgpu2_tp_i = grid%i_start(ij), MIN(grid%i_end(ij), ide-1)
++                   WRITE(wrfgpu2_tp_unit,'(A,6(1X,I0),7(1X,E24.16))') 'WPH_SOURCE', &
++                        wrfgpu2_tp_i, wrfgpu2_tp_j, wrfgpu2_tp_k, &
++                        wrfgpu2_tp_i-1, wrfgpu2_tp_j-1, wrfgpu2_tp_k-1, &
++                        REAL(grid%w_2(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%ph_2(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(grid%phb(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(rw_tendf(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(ph_tendf(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(w_save(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8), &
++                        REAL(ph_save(wrfgpu2_tp_i,wrfgpu2_tp_k,wrfgpu2_tp_j),KIND=8)
++                 ENDDO
++               ENDDO
++             ENDDO
++             CLOSE(wrfgpu2_tp_unit)
++             EXIT block_wrfgpu2_v014_source_after_part2
++           ENDDO block_wrfgpu2_v014_source_after_part2
++         ENDDO
++       ENDIF
++
+      END IF rk_step_is_one
+
+ BENCH_START(rk_tend_tim)
