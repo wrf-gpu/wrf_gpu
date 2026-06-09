@@ -376,6 +376,14 @@ boundary package, initial carry, haloed step entry, and
 is live-nest raw-child to live/pre-part1 perturbation-state initialization for
 `P_STATE/MU_STATE/W_STATE`, not WRF part1, carry, halo, or acoustic refresh.
 
+Update 2026-06-09 19:15 WEST: opened sprint
+`.agent/sprints/2026-06-09-v014-step1-live-nest-perturb-state-init`. The worker
+starts from the hypothesis that live-nest base/theta/QV correction still leaves
+`P/MU/W` perturbation leaves from raw `wrfinput_d02`, but the contract now asks
+the worker to actively disprove that hypothesis, rank alternate causes, and try
+cheap proof-local falsifiers if the hypothesis fails. Production edits are
+limited to a narrow GPU-native live-nest/init fix only after formula proof.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
