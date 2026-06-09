@@ -118,6 +118,19 @@ opened:
 `.agent/sprints/2026-06-09-v014-early-step-discriminator/sprint-contract.md`.
 This is the active next debug step and replaces the step-6000 wrapper ladder.
 
+Update 2026-06-09 12:45 WEST: early-step same-input discriminator sprint closed
+fail-closed. Verdict:
+`EARLY_STEP_DISCRIMINATOR_BLOCKED_CPU_REALCASE_LOADER_GPU_ONLY_NO_CANDIDATE_WRF_PREHALO_TRUTH_NO_SAME_INPUT_CARRY_CONTRACT`.
+The proof covers candidate steps `1`, `60`, `600`, `3000`, and `5999` in one
+pass. No strict comparison ran; weak WRF-output, JAX-vs-JAX, one-cell, and
+mixed-source comparisons were avoided. Common blockers:
+CPU-only real-case replay loader is GPU-only at `State.zeros`, no candidate-step
+WRF post-RK/pre-halo full-field surface exists, no WRF-controlled same-input
+`OperationalCarry` sequence exists, and the field/staggering schema is not yet
+frozen. Next debug step is therefore a tooling/contract sprint: build a
+CPU-compatible proof loader or checkpoint reader plus candidate-step WRF
+post-RK/pre-halo full-field truth surface, then rerun the discriminator.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
@@ -134,6 +147,11 @@ Principal communication directive 2026-06-08 late WEST: do not send
 Hermes/Telegram process-progress updates. Keep manager/agent handoffs and
 top-level validation output context-sparing: concise verdicts and proof paths in
 text, full field tables in JSON/CSV artifacts.
+
+Tooling directive 2026-06-09 12:45 WEST: for long runtime-debug ladders, ask
+top-level whether the current tools are right. A focused harness, savepoint
+emitter, comparator, schema freezer, or visualization sprint is cheap if it
+turns repeated slow reproductions into a fast falsifiable proof loop.
 
 ## Current Evidence
 

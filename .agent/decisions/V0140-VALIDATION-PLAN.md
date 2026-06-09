@@ -258,6 +258,23 @@ Current status:
   full-domain wrapper/truth-surface sprint, including same-boundary
   carry/boundary leaves, full-domain/full-vertical post-RK truth, and a
   consistent old-field strategy.
+- 2026-06-09 full-domain wrapper closeout:
+  `proofs/v014/same_input_single_rk_parity_wrapped.json` verdict is
+  `FULL_DOMAIN_WRAPPER_BLOCKED_TRUTH_SURFACE_PATCH_ONLY_AND_CARRY_LEAVES`.
+  Existing h10/step-6000 surfaces are patch-only and do not satisfy the full
+  same-input wrapper contract. B4 remains blocked; per management review, do
+  not continue the step-6000 wrapper ladder.
+- 2026-06-09 early-step discriminator closeout:
+  `proofs/v014/early_step_discriminator.json` verdict is
+  `EARLY_STEP_DISCRIMINATOR_BLOCKED_CPU_REALCASE_LOADER_GPU_ONLY_NO_CANDIDATE_WRF_PREHALO_TRUTH_NO_SAME_INPUT_CARRY_CONTRACT`.
+  It covers steps `1`, `60`, `600`, `3000`, and `5999` in one fail-closed proof.
+  The current blocker is comparison infrastructure: CPU-only real-case replay
+  loading is GPU-only at `State.zeros`, no candidate-step WRF post-RK/pre-halo
+  full-field truth surface exists, no WRF-controlled same-input carry sequence
+  exists, and the field/staggering schema is not frozen. B4 remains blocked
+  before powered TOST or Switzerland. The next validation-enabling sprint must
+  build that comparison contract/tooling and rerun the discriminator before any
+  production dynamics source edit.
 - 2026-06-09 management-review correction:
   `.agent/reviews/2026-06-09-v014-management-review-01.md` records
   `NO_GOAL_CHANGE` but criticizes the step-6000 same-input path as a blocked

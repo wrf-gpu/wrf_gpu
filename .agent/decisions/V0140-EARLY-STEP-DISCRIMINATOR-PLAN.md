@@ -1,7 +1,14 @@
 # V0.14 Early-Step Same-Input Discriminator Plan
 
 Date: 2026-06-09
-Status: pending next sprint after the already-running full-domain wrapper sprint
+Status: executed 2026-06-09; closed fail-closed, see
+`proofs/v014/early_step_discriminator.*`
+
+Update 2026-06-09 12:45 WEST: execution verdict is
+`EARLY_STEP_DISCRIMINATOR_BLOCKED_CPU_REALCASE_LOADER_GPU_ONLY_NO_CANDIDATE_WRF_PREHALO_TRUTH_NO_SAME_INPUT_CARRY_CONTRACT`.
+The sprint covered steps `1`, `60`, `600`, `3000`, and `5999`, but no strict
+same-input comparison ran. Next plan is not another discriminator attempt; build
+the missing comparison contract/tooling first.
 
 ## Why
 
@@ -10,8 +17,8 @@ step-6000 same-input path has become a blocked instrumentation ladder. Opus
 management review `2026-06-09-v014-management-review-01.md` recommends
 bisecting from the clean end where instrumentation is cheaper.
 
-This plan is the next sprint template, not an active implementation sprint. Do
-not dispatch it until the current full-domain source-wrapper worker closes.
+This plan has now been executed. Keep it as the record of the intended
+discriminator and use the closeout proof to seed the contract-builder sprint.
 
 ## Objective
 

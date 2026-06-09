@@ -1,0 +1,899 @@
+{
+  "blockers": [
+    {
+      "applies_to_steps": [
+        1,
+        60,
+        600,
+        3000,
+        5999
+      ],
+      "evidence": "CPU probe of build_replay_case(run_case3, domain='d02', load_lateral_boundaries=False) returned BLOCKED_GPU_ONLY_STATE_ZERO; production State.zeros/Tendencies.zeros allocate via _gpu_device.",
+      "id": "CPU_REALCASE_REPLAY_LOADER_GPU_ONLY",
+      "missing_contract": "A CPU-compatible real-case wrfinput loader or checkpoint reader that constructs State, Tendencies, BaseState/metrics, OperationalNamelist, and initial OperationalCarry without GPU allocation."
+    },
+    {
+      "applies_to_steps": [
+        1,
+        60,
+        600,
+        3000,
+        5999
+      ],
+      "evidence": "No files matching candidate steps 1/60/600/3000/5999 were found in the allowed scratch root or inspected prior WRF proof roots.",
+      "id": "NO_CANDIDATE_WRF_POST_RK_PRE_HALO_TRUTH",
+      "missing_contract": "Disposable CPU-WRF candidate-step surface at post_after_all_rk_steps_pre_halo, or an exactly named equivalent boundary, covering the required dynamic fields and active moisture."
+    },
+    {
+      "applies_to_steps": [
+        1,
+        60,
+        600,
+        3000,
+        5999
+      ],
+      "evidence": "The available h10 checkpoint is a JAX-produced trajectory artifact for a different boundary; mixing it with WRF leaves is disallowed, and no candidate-step WRF-controlled OperationalCarry exists.",
+      "id": "NO_SAME_INPUT_CARRY_SEQUENCE",
+      "missing_contract": "For each candidate start, a WRF-controlled or exactly reproduced same-input carry, including promoted RK/acoustic scratch leaves and live d01->d02 boundary forcing."
+    },
+    {
+      "applies_to_steps": [
+        1,
+        60,
+        600,
+        3000,
+        5999
+      ],
+      "evidence": "Prior post-RK WRF refresh outputs are patch/K1-oriented and do not define a full required-field schema for PHB and active moisture at the accepted comparison boundary.",
+      "id": "MISSING_REQUIRED_FIELD_SURFACE_SCHEMA",
+      "missing_contract": "A WRF/JAX field map with units, staggering, counts, first/worst index semantics, and static/base field exclusion from headline dynamic selectors."
+    }
+  ],
+  "candidate_steps": [
+    {
+      "jax_same_input_start": {
+        "available": false,
+        "reason": "Existing real-case replay/domain loaders cannot construct d02 State/Tendencies on CPU under the sprint rule."
+      },
+      "missing_contracts": [
+        "CPU-loadable real-case wrfinput State/Tendencies/OperationalNamelist loader",
+        "matching WRF post-RK/pre-halo truth for the candidate step",
+        "same-input live-parent/boundary package contract for d02",
+        "field/staggering schema for T/P/PB/PH/PHB/MU/MUB/U/V/W plus active moisture"
+      ],
+      "status": "BLOCKED",
+      "step": 1,
+      "strict_same_input_comparison_run": false,
+      "weak_comparison_avoided": true,
+      "wrf_post_rk_pre_halo_truth": {
+        "available": false,
+        "matching_files_found": [],
+        "missing": "No candidate-step WRF post_after_all_rk_steps_pre_halo or exactly named equivalent surface exists under allowed scratch or inspected prior proof roots."
+      }
+    },
+    {
+      "jax_same_input_start": {
+        "available": false,
+        "reason": "Existing real-case replay/domain loaders cannot construct d02 State/Tendencies on CPU under the sprint rule."
+      },
+      "missing_contracts": [
+        "CPU-loadable real-case wrfinput State/Tendencies/OperationalNamelist loader",
+        "matching WRF post-RK/pre-halo truth for the candidate step",
+        "same-input live-parent/boundary package contract for d02",
+        "field/staggering schema for T/P/PB/PH/PHB/MU/MUB/U/V/W plus active moisture"
+      ],
+      "status": "BLOCKED",
+      "step": 60,
+      "strict_same_input_comparison_run": false,
+      "weak_comparison_avoided": true,
+      "wrf_post_rk_pre_halo_truth": {
+        "available": false,
+        "matching_files_found": [],
+        "missing": "No candidate-step WRF post_after_all_rk_steps_pre_halo or exactly named equivalent surface exists under allowed scratch or inspected prior proof roots."
+      }
+    },
+    {
+      "jax_same_input_start": {
+        "available": false,
+        "reason": "Existing real-case replay/domain loaders cannot construct d02 State/Tendencies on CPU under the sprint rule."
+      },
+      "missing_contracts": [
+        "CPU-loadable real-case wrfinput State/Tendencies/OperationalNamelist loader",
+        "matching WRF post-RK/pre-halo truth for the candidate step",
+        "same-input live-parent/boundary package contract for d02",
+        "field/staggering schema for T/P/PB/PH/PHB/MU/MUB/U/V/W plus active moisture"
+      ],
+      "status": "BLOCKED",
+      "step": 600,
+      "strict_same_input_comparison_run": false,
+      "weak_comparison_avoided": true,
+      "wrf_post_rk_pre_halo_truth": {
+        "available": false,
+        "matching_files_found": [],
+        "missing": "No candidate-step WRF post_after_all_rk_steps_pre_halo or exactly named equivalent surface exists under allowed scratch or inspected prior proof roots."
+      }
+    },
+    {
+      "jax_same_input_start": {
+        "available": false,
+        "reason": "Existing real-case replay/domain loaders cannot construct d02 State/Tendencies on CPU under the sprint rule."
+      },
+      "missing_contracts": [
+        "CPU-loadable real-case wrfinput State/Tendencies/OperationalNamelist loader",
+        "matching WRF post-RK/pre-halo truth for the candidate step",
+        "same-input live-parent/boundary package contract for d02",
+        "field/staggering schema for T/P/PB/PH/PHB/MU/MUB/U/V/W plus active moisture"
+      ],
+      "status": "BLOCKED",
+      "step": 3000,
+      "strict_same_input_comparison_run": false,
+      "weak_comparison_avoided": true,
+      "wrf_post_rk_pre_halo_truth": {
+        "available": false,
+        "matching_files_found": [],
+        "missing": "No candidate-step WRF post_after_all_rk_steps_pre_halo or exactly named equivalent surface exists under allowed scratch or inspected prior proof roots."
+      }
+    },
+    {
+      "jax_same_input_start": {
+        "available": false,
+        "reason": "Existing real-case replay/domain loaders cannot construct d02 State/Tendencies on CPU under the sprint rule."
+      },
+      "missing_contracts": [
+        "CPU-loadable real-case wrfinput State/Tendencies/OperationalNamelist loader",
+        "matching WRF post-RK/pre-halo truth for the candidate step",
+        "same-input live-parent/boundary package contract for d02",
+        "field/staggering schema for T/P/PB/PH/PHB/MU/MUB/U/V/W plus active moisture"
+      ],
+      "status": "BLOCKED",
+      "step": 5999,
+      "strict_same_input_comparison_run": false,
+      "weak_comparison_avoided": true,
+      "wrf_post_rk_pre_halo_truth": {
+        "available": false,
+        "matching_files_found": [],
+        "missing": "No candidate-step WRF post_after_all_rk_steps_pre_halo or exactly named equivalent surface exists under allowed scratch or inspected prior proof roots."
+      }
+    }
+  ],
+  "candidate_surface_summary": {
+    "candidate_surface_available": false,
+    "candidate_surface_file_count": 0,
+    "search_roots": [
+      "/mnt/data/wrf_gpu2/v014_early_step_discriminator",
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output",
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output",
+      "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output",
+      "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"
+    ]
+  },
+  "commands": {
+    "loader_probe": [
+      "/home/enric/miniconda3/bin/python",
+      "-c",
+      "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
+    ],
+    "validation": [
+      "python -m py_compile proofs/v014/early_step_discriminator.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/early_step_discriminator.py",
+      "python -m json.tool proofs/v014/early_step_discriminator.json >/tmp/early_step_discriminator.validated.json",
+      "git diff -- src/gpuwrf"
+    ]
+  },
+  "comparison": {
+    "per_field_metrics": {},
+    "ranked_residuals": [],
+    "why_empty": "No strict same-input comparison was authorized or executed."
+  },
+  "cpu_loader_probe": {
+    "command": [
+      "/home/enric/miniconda3/bin/python",
+      "-c",
+      "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
+    ],
+    "cwd": "/home/enric/src/wrf_gpu2",
+    "gpu_only_state_zero_observed": true,
+    "probe_purpose": "Can the existing real-case wrfinput replay loader construct a d02 State/Tendencies under JAX_PLATFORMS=cpu without production source edits?",
+    "returncode": 1,
+    "status": "BLOCKED_GPU_ONLY_STATE_ZERO",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 2, in <module>\n    build_replay_case(\n    ~~~~~~~~~~~~~~~~~^\n        '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        domain='d02',\n        ^^^^^^^^^^^^^\n        load_lateral_boundaries=False,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1357, in build_replay_case\n    state = State.zeros(grid)\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
+    "stdout_tail": "",
+    "strict_cpu_realcase_loader_available": false,
+    "wall_s": 2.9292168149986537
+  },
+  "cpu_only": true,
+  "decision": {
+    "reason": "Under CPU-only/no-production-edit rules the current real-case loader cannot construct the same-input JAX start state, and no candidate-step WRF post-RK/pre-halo truth surface exists.",
+    "strict_execution_blocked_for_all_candidates": true,
+    "technical_possibility_under_sprint_rules": false
+  },
+  "domain_inventory": {
+    "active_moisture_present": [
+      "QVAPOR",
+      "QCLOUD",
+      "QRAIN",
+      "QICE",
+      "QSNOW",
+      "QGRAUP"
+    ],
+    "dims": {
+      "DIM0010": 5,
+      "DateStrLen": 19,
+      "Time": 1,
+      "bottom_top": 44,
+      "bottom_top_stag": 45,
+      "crop_types_stag": 5,
+      "dust_erosion_dimension": 3,
+      "land_cat_stag": 21,
+      "num_ext_model_couple_dom_stag": 1,
+      "snow_layers_stag": 3,
+      "snso_layers_stag": 7,
+      "soil_cat_stag": 16,
+      "soil_composition_layers_stag": 8,
+      "soil_layers_stag": 4,
+      "south_north": 66,
+      "south_north_stag": 67,
+      "west_east": 159,
+      "west_east_stag": 160
+    },
+    "status": "OK",
+    "target_fields": {
+      "MU": {
+        "dimensions": [
+          "Time",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          66,
+          159
+        ],
+        "wrf_variable": "MU"
+      },
+      "MUB": {
+        "dimensions": [
+          "Time",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          66,
+          159
+        ],
+        "wrf_variable": "MUB"
+      },
+      "P": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "P"
+      },
+      "PB": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "PB"
+      },
+      "PH": {
+        "dimensions": [
+          "Time",
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          45,
+          66,
+          159
+        ],
+        "wrf_variable": "PH"
+      },
+      "PHB": {
+        "dimensions": [
+          "Time",
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          45,
+          66,
+          159
+        ],
+        "wrf_variable": "PHB"
+      },
+      "QCLOUD": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "QCLOUD"
+      },
+      "QGRAUP": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "QGRAUP"
+      },
+      "QICE": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "QICE"
+      },
+      "QRAIN": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "QRAIN"
+      },
+      "QSNOW": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "QSNOW"
+      },
+      "QVAPOR": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "QVAPOR"
+      },
+      "T": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          159
+        ],
+        "wrf_variable": "T"
+      },
+      "U": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north",
+          "west_east_stag"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          66,
+          160
+        ],
+        "wrf_variable": "U"
+      },
+      "V": {
+        "dimensions": [
+          "Time",
+          "bottom_top",
+          "south_north_stag",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          44,
+          67,
+          159
+        ],
+        "wrf_variable": "V"
+      },
+      "W": {
+        "dimensions": [
+          "Time",
+          "bottom_top_stag",
+          "south_north",
+          "west_east"
+        ],
+        "dtype": "float32",
+        "present": true,
+        "shape": [
+          1,
+          45,
+          66,
+          159
+        ],
+        "wrf_variable": "W"
+      }
+    },
+    "time_records": 1
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fp32_work": false,
+  "generated_utc": "2026-06-09T11:47:16.234487+00:00",
+  "gpu_used": false,
+  "hermes_used": false,
+  "inputs": {
+    "agents": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
+      "size_bytes": 2561
+    },
+    "managing_sprints_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "sha256": "bf9bfd3ab37fc1af814c7b816cf5cc563a86334ab64d57e9a93e824ca90a3f88",
+      "size_bytes": 10774
+    },
+    "namelist_input": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input",
+      "sha256": "4109f2e69988f7f263f4172a03c66f38b2da9812918ebb34cc09d6ca98cff3a5",
+      "size_bytes": 4153
+    },
+    "plan": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-EARLY-STEP-DISCRIMINATOR-PLAN.md",
+      "sha256": "5f4861c1bb84c901744fae3fcb3f333a54c73e8dd274a700de934844dbdabd71",
+      "size_bytes": 3284
+    },
+    "project_constitution": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
+      "size_bytes": 1157
+    },
+    "run_case3": {
+      "exists": true,
+      "is_dir": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3"
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-early-step-discriminator/sprint-contract.md",
+      "sha256": "a135336780c94ee4ab6815fc0434744c1e659e00637d546e120527dc51966647",
+      "size_bytes": 5190
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    },
+    "wrf_oracle_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
+      "size_bytes": 1128
+    },
+    "wrfbdy_d01": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfbdy_d01",
+      "sha256": "32ebf0c703f53cad9fbe6660ea1227fb76a051e0c4dc2cbded7157cb4b01d57b",
+      "size_bytes": 25073698
+    },
+    "wrfinput_d02": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
+      "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
+      "size_bytes": 11005720
+    }
+  },
+  "jax_step_executed": false,
+  "jax_vs_jax_self_compare": false,
+  "log_tails": {
+    "run_case3_rsl_error_0000": "5-02_03:57:54 on domain   2:    0.12486 elapsed seconds\nTiming for main: time 2026-05-02_03:57:54 on domain   1:    0.51407 elapsed seconds\nTiming for main: time 2026-05-02_03:58:00 on domain   2:    0.13278 elapsed seconds\nTiming for main: time 2026-05-02_03:58:06 on domain   2:    0.13412 elapsed seconds\nTiming for main: time 2026-05-02_03:58:12 on domain   2:    0.12638 elapsed seconds\nTiming for main: time 2026-05-02_03:58:12 on domain   1:    0.52472 elapsed seconds\nTiming for main: time 2026-05-02_03:58:18 on domain   2:    0.13017 elapsed seconds\nTiming for main: time 2026-05-02_03:58:24 on domain   2:    0.12656 elapsed seconds\nTiming for main: time 2026-05-02_03:58:30 on domain   2:    0.13714 elapsed seconds\nTiming for main: time 2026-05-02_03:58:30 on domain   1:    0.52517 elapsed seconds\nTiming for main: time 2026-05-02_03:58:36 on domain   2:    0.13043 elapsed seconds\nTiming for main: time 2026-05-02_03:58:42 on domain   2:    0.13232 elapsed seconds\nTiming for main: time 2026-05-02_03:58:48 on domain   2:    0.12442 elapsed seconds\nTiming for main: time 2026-05-02_03:58:48 on domain   1:    0.52632 elapsed seconds\nTiming for main: time 2026-05-02_03:58:54 on domain   2:    0.12687 elapsed seconds\nTiming for main: time 2026-05-02_03:59:00 on domain   2:    0.12546 elapsed seconds\nTiming for main: time 2026-05-02_03:59:06 on domain   2:    0.13407 elapsed seconds\nTiming for main: time 2026-05-02_03:59:06 on domain   1:    0.52040 elapsed seconds\nTiming for main: time 2026-05-02_03:59:12 on domain   2:    0.12736 elapsed seconds\nTiming for main: time 2026-05-02_03:59:18 on domain   2:    0.12956 elapsed seconds\nTiming for main: time 2026-05-02_03:59:24 on domain   2:    0.12241 elapsed seconds\nTiming for main: time 2026-05-02_03:59:24 on domain   1:    0.50954 elapsed seconds\nTiming for main: time 2026-05-02_03:59:30 on domain   2:    0.12857 elapsed seconds\nTiming for main: time 2026-05-02_03:59:36 on domain   2:    0.12320 elapsed seconds\nTiming for main: time 2026-05-02_03:59:42 on domain   2:    0.12305 elapsed seconds\nTiming for main: time 2026-05-02_03:59:42 on domain   1:    0.50128 elapsed seconds\nTiming for main: time 2026-05-02_03:59:48 on domain   2:    0.12377 elapsed seconds\nTiming for main: time 2026-05-02_03:59:54 on domain   2:    0.12882 elapsed seconds\nTiming for main: time 2026-05-02_04:00:00 on domain   2:    0.41108 elapsed seconds\n mediation_integrate.G        1249 DATASET=HISTORY\n mediation_integrate.G        1250  grid%id            2  grid%oid            2\nTiming for Writing wrfout_d02_2026-05-02_04:00:00 for domain        2:    0.54580 elapsed seconds\nTiming for main: time 2026-05-02_04:00:00 on domain   1:    1.34336 elapsed seconds\n mediation_integrate.G        1249 DATASET=HISTORY\n mediation_integrate.G        1250  grid%id            1  grid%oid            2\nTiming for Writing wrfout_d01_2026-05-02_04:00:00 for domain        1:    0.35350 elapsed seconds\nd01 2026-05-02_04:00:00 wrf: SUCCESS COMPLETE WRF\n"
+  },
+  "next_decision": "Authorize one contract-building sprint for a CPU-compatible wrfinput->OperationalCarry loader plus candidate-step WRF post-RK/pre-halo full-field surface, then rerun this discriminator.",
+  "noncandidate_step6000_inventory": {
+    "available": true,
+    "candidate_step": false,
+    "files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "9b87194063639617c64ab31372201ed2374094df622e80cf4c724ae5244bd247",
+        "size_bytes": 848336
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "e863b61d0ec1834eb2439da2abdee054465f2cce3c8eddfc0a6cfce7f3ba1f88",
+        "size_bytes": 12545265
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
+        "size_bytes": 11774
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
+        "size_bytes": 159441
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "2d859d3cc1eca06c6205727a42c03b4fc7d6486ec811519959c0fb05947c46d0",
+        "size_bytes": 11753
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "0b94f36f58db4e64f5fbe0470ae9dd219047c9af23b429ac6fe6e67c0f289201",
+        "size_bytes": 159420
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "89cd5a4bf070f1fde86e927f6fb3470492fd0412156858c9685f7ccff1e3ab6b",
+        "size_bytes": 890178
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "f8b811a5abed3630fe54dd7f4db90b6e964df1d736ddc475a2f59ae015243de8",
+        "size_bytes": 12449131
+      }
+    ],
+    "why_not_sufficient": "Existing step-6000 surfaces are outside the requested candidate sequence and were previously classified as patch-only / missing wrapper carry contracts."
+  },
+  "one_cell_proof": false,
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/early_step_discriminator.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/early_step_discriminator.md"
+  },
+  "required_fields": {
+    "active_moisture_candidates": [
+      "QVAPOR",
+      "QCLOUD",
+      "QRAIN",
+      "QICE",
+      "QSNOW",
+      "QGRAUP"
+    ],
+    "dynamic_or_perturbation_headline_fields": [
+      "T",
+      "P",
+      "PH",
+      "MU",
+      "U",
+      "V",
+      "W"
+    ],
+    "minimum_requested_fields": [
+      "T",
+      "P",
+      "PB",
+      "PH",
+      "PHB",
+      "MU",
+      "MUB",
+      "U",
+      "V",
+      "W"
+    ],
+    "static_or_base_fields_excluded_from_headline_selector": [
+      "PB",
+      "PHB",
+      "MUB"
+    ]
+  },
+  "schema": "wrfgpu2.v014.early_step_discriminator.v1",
+  "scratch": {
+    "exists": true,
+    "root": "/mnt/data/wrf_gpu2/v014_early_step_discriminator"
+  },
+  "source_contract_inspection": {
+    "d02_replay": {
+      "nodes": [
+        {
+          "contains_gpu_device_guard": false,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": true,
+          "contains_tendencies_zeros": true,
+          "line_end": 1553,
+          "line_start": 1310,
+          "module_path": "src/gpuwrf/integration/d02_replay.py",
+          "name": "build_replay_case",
+          "sha256": "f4733b2fd10b554cf508c283ffede07fce868aefa06716840d91daf2f70e8642"
+        },
+        {
+          "contains_gpu_device_guard": false,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 1287,
+          "line_start": 1167,
+          "module_path": "src/gpuwrf/integration/d02_replay.py",
+          "name": "load_wrfbdy_boundary_leaves",
+          "sha256": "d386c09b1671def0c7c102a618d58ed83852ba9f07358ce18e77ee44c9d8d246"
+        }
+      ],
+      "path": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+        "sha256": "360eced25ef4db037913a7936ac2b2a638a568f51cf88dcdbfe39383f5b91d8c",
+        "size_bytes": 98563
+      }
+    },
+    "nested_pipeline": {
+      "nodes": [
+        {
+          "contains_gpu_device_guard": false,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 360,
+          "line_start": 240,
+          "module_path": "src/gpuwrf/integration/nested_pipeline.py",
+          "name": "_load_domains",
+          "sha256": "7c1839296357b260e60210516d68181f9d40c3932db5dc948f397d62c78462d0"
+        }
+      ],
+      "path": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
+        "sha256": "e6d5535f19de70d38f8e6a65a775bb4da3a80409f663deb40a6a5a89363de2bf",
+        "size_bytes": 26757
+      }
+    },
+    "operational": {
+      "nodes": [
+        {
+          "contains_gpu_device_guard": false,
+          "contains_pre_halo_capture": true,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 2292,
+          "line_start": 2173,
+          "module_path": "src/gpuwrf/runtime/operational_mode.py",
+          "name": "_rk_scan_step",
+          "sha256": "f1d3e7074e14958849061d7d90ffbe476df84c96f654ef56a7d78f5e0ec71ab1"
+        },
+        {
+          "contains_gpu_device_guard": false,
+          "contains_pre_halo_capture": true,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 2313,
+          "line_start": 2295,
+          "module_path": "src/gpuwrf/runtime/operational_mode.py",
+          "name": "_rk_scan_step_with_pre_halo_capture",
+          "sha256": "d02d291748041b46dc71fa06d23d41904056920a5b5f8e8b86e7937488094b77"
+        }
+      ],
+      "path": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
+        "size_bytes": 175388
+      }
+    },
+    "operational_state": {
+      "nodes": [
+        {
+          "contains_gpu_device_guard": false,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 177,
+          "line_start": 117,
+          "module_path": "src/gpuwrf/runtime/operational_state.py",
+          "name": "initial_operational_carry",
+          "sha256": "a93136aa92f949c09a63f662572e0eb412398dfea401e8b8094ff642c2725cf6"
+        }
+      ],
+      "path": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+        "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
+        "size_bytes": 8390
+      }
+    },
+    "state_contract": {
+      "nodes": [
+        {
+          "contains_gpu_device_guard": true,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": true,
+          "contains_tendencies_zeros": false,
+          "line_end": 26,
+          "line_start": 20,
+          "module_path": "src/gpuwrf/contracts/state.py",
+          "name": "_gpu_device",
+          "sha256": "8168aee726e2172b11bb5e35cf938c5a6bdeb8c3a213a8cd50c6176637557ee2"
+        },
+        {
+          "contains_gpu_device_guard": true,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 700,
+          "line_start": 365,
+          "module_path": "src/gpuwrf/contracts/state.py",
+          "name": "State",
+          "sha256": "b6625a959b3ec5127beb9be8b10ab74cb865f4708beff3b8137eb39ff503c17b"
+        },
+        {
+          "contains_gpu_device_guard": true,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 361,
+          "line_start": 306,
+          "module_path": "src/gpuwrf/contracts/state.py",
+          "name": "Tendencies",
+          "sha256": "689b6e816f3d54ac3b43802e69ef9ba8e7dbf1165cc1c8d0a1364916bf9d1012"
+        },
+        {
+          "contains_gpu_device_guard": true,
+          "contains_pre_halo_capture": false,
+          "contains_state_zeros": false,
+          "contains_tendencies_zeros": false,
+          "line_end": 192,
+          "line_start": 125,
+          "module_path": "src/gpuwrf/contracts/state.py",
+          "name": "BaseState",
+          "sha256": "14c3c7f2c6ef58b3895cb0d38b246539dcb4b5069aaee7a65757fdb299372ccc"
+        }
+      ],
+      "path": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
+        "size_bytes": 25734
+      }
+    }
+  },
+  "strict_same_input_comparison_run": false,
+  "switzerland_validation_run": false,
+  "tost_run": false,
+  "unresolved_risks": [
+    "No numerical first-divergent field/operator is named because no strict candidate-step comparison could run.",
+    "A direct CPU-only proof loader might be possible, but it would need an explicit accepted contract to avoid fabricating a state outside production loader semantics."
+  ],
+  "verdict": "EARLY_STEP_DISCRIMINATOR_BLOCKED_CPU_REALCASE_LOADER_GPU_ONLY_NO_CANDIDATE_WRF_PREHALO_TRUTH_NO_SAME_INPUT_CARRY_CONTRACT",
+  "weak_comparison_avoided": true,
+  "wrf_run_executed": false
+}
