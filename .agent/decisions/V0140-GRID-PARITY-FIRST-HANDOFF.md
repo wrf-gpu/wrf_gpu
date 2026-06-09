@@ -421,13 +421,37 @@ diagnostic only, not same-surface CPU evidence. Next sprint: add a narrow,
 default-off CPU-only pre-halo capture/debug hook around `_acoustic_scan` before
 its `apply_halo` return, then rerun the JAX same-state comparison.
 
+## Completed Wave 9
+
+- `019eaa68-cbe4-7af3-bded-ac00ed10d98a` (`Gauss`):
+  source-changing but non-corrective JAX pre-halo capture hook sprint
+  `.agent/sprints/2026-06-09-v014-pre-halo-capture-hook/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `src/gpuwrf/runtime/operational_mode.py`,
+  `proofs/v014/jax_pre_halo_capture.{py,json,md}`,
+  `tests/test_v014_pre_halo_capture.py`, and
+  `.agent/reviews/2026-06-09-v014-pre-halo-capture-hook.md`.
+
+Verdict: `HOOK_GREEN_COMPARE_BLOCKED_NO_JAX_H10_PRESTEP_CARRY`. The hook is
+private/proof-only and default-off. Normal `_rk_scan_step` still returns
+`OperationalCarry`, public forecast signatures do not expose capture arguments,
+and the focused tests passed. The capture path returns the same normal carry
+plus the final RK3 pre-halo `State`; manager validation reran compile, proof
+script, JSON validation, `tests/test_v014_pre_halo_capture.py`, and
+`tests/test_m6_guard_disabled_debug.py` (`14 passed`). The h10 same-surface
+JAX-vs-WRF comparison remains blocked because no CPU-loadable JAX
+`OperationalCarry` exists immediately before `d02` step 6000/h10 with the real
+state, promoted carry leaves, metrics/tendencies/boundary config, and boundary
+leaves. Next sprint: build or locate that h10 pre-step carry checkpoint and run
+the hook against Boole's WRF green target.
+
 ## Next Manager Actions
 
-1. Open the next narrow source-changing sprint for a default-off CPU-only
-   pre-halo capture hook in `src/gpuwrf/runtime/operational_mode.py`, around
-   `_acoustic_scan` immediately before its `apply_halo` return. The hook exists
-   solely to emit/return the JAX state corresponding to Boole's green WRF target.
-   After the hook is proven off-by-default, rerun the same-surface JAX compare.
+1. Open the next checkpoint/wrapper sprint to build or locate a CPU-loadable JAX
+   `OperationalCarry` immediately before `d02` step 6000/h10, then run
+   `_rk_scan_step_with_pre_halo_capture` against Boole's WRF green target.
+   Do not start a source fix until that same-surface comparison names the first
+   mismatch.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.

@@ -1,0 +1,776 @@
+{
+  "acceptance_notes": {
+    "compares_against_wrf_green_target": false,
+    "fp32_source_landing": false,
+    "gpu_launched": false,
+    "h10_compare_blocked_with_exact_missing_input": true,
+    "hook_default_off": true,
+    "jax_vs_jax_self_compare": false,
+    "normal_forecast_api_capture_parameter_absent": true,
+    "normal_rk_return_identical_when_capture_enabled_for_auxiliary_carry": true,
+    "retained_wrfout_only_verdict": false,
+    "switzerland_validation_run": false,
+    "tost_run": false,
+    "wrf_green_target_parsed": true,
+    "wrf_source_edited": false
+  },
+  "commands": {
+    "generator_argv": [
+      "proofs/v014/jax_pre_halo_capture.py"
+    ],
+    "minimum_contract_commands": [
+      "python -m py_compile src/gpuwrf/runtime/operational_mode.py proofs/v014/jax_pre_halo_capture.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/jax_pre_halo_capture.py",
+      "python -m json.tool proofs/v014/jax_pre_halo_capture.json >/tmp/jax_pre_halo_capture.validated.json"
+    ]
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T03:36:55.584790+00:00",
+  "gpu_used": false,
+  "h10_same_surface_compare": {
+    "exact_missing_input": "A CPU-loadable JAX OperationalCarry immediately before d02 step 6000 (current_timestr_before_step=2026-05-02_03:59:54, lead before step 35994 s), including State plus promoted carry leaves t_2ave, ww, mudf, muave, muts, ph_tend, u_save/v_save/w_save/t_save/ph_save/mu_save/ww_save, rthraten, and any active physics carry; paired with the real d02 OperationalNamelist metrics, tendencies, boundary_config, and boundary leaves. An equivalent checkpoint/restart from which _rk_scan_step_with_pre_halo_capture can execute the single step is sufficient.",
+    "exact_missing_input_short": "CPU-loadable JAX OperationalCarry immediately before d02 step 6000/h10.",
+    "reason": "NO_JAX_H10_PRESTEP_CARRY",
+    "same_surface_comparison_run": false,
+    "status": "BLOCKED",
+    "why_not_full_cpu_replay": "The contract inputs provide the WRF green truth surface and retained writer diagnostics, but no JAX checkpoint/carry at h10. A public 6000-step CPU replay would be a long forecast and still needs validation that its start/carry matches the retained GPU/JAX trajectory."
+  },
+  "hook_probe": {
+    "all_captured_target_fields_finite": true,
+    "apply_halo_captured_state_vs_capture_return_state": {
+      "array_equal": true,
+      "compared_leaf_count": 56,
+      "first_difference": null,
+      "leaf_count_left": 56,
+      "leaf_count_right": 56,
+      "max_abs": 0.0,
+      "tree_structure_equal": true
+    },
+    "capture_path": {
+      "call": "_rk_scan_step_with_pre_halo_capture(carry, namelist)",
+      "captured_cadence": "final RK3 _carry_from_finished_stage(..., namelist) -> _maybe_exchange_sharded_carry_halos(...) -> before apply_halo(next_carry.state, halo_spec(...))",
+      "captured_source_function": "_acoustic_scan",
+      "carry_return_type": "OperationalCarry",
+      "pre_halo_state_type": "State",
+      "return_type": "_PreHaloCaptureResult"
+    },
+    "captured_target_field_views": {
+      "MU": {
+        "all_finite": true,
+        "count": 80,
+        "dtype": "float64",
+        "finite_count": 80,
+        "max": 0.07713679773722583,
+        "max_abs": 0.1007122431394627,
+        "min": -0.1007122431394627,
+        "shape": [
+          1,
+          80
+        ]
+      },
+      "MUB": {
+        "all_finite": true,
+        "count": 80,
+        "dtype": "float64",
+        "finite_count": 80,
+        "max": 74802.39903020964,
+        "max_abs": 74802.39903020964,
+        "min": 74802.39903020964,
+        "shape": [
+          1,
+          80
+        ]
+      },
+      "P": {
+        "all_finite": true,
+        "count": 3200,
+        "dtype": "float64",
+        "finite_count": 3200,
+        "max": 0.11562007802637098,
+        "max_abs": 0.14424802908017753,
+        "min": -0.14424802908017753,
+        "shape": [
+          40,
+          1,
+          80
+        ]
+      },
+      "PB": {
+        "all_finite": true,
+        "count": 3200,
+        "dtype": "float64",
+        "finite_count": 3200,
+        "max": 98590.29926373679,
+        "max_abs": 98590.29926373679,
+        "min": 25737.783244084043,
+        "shape": [
+          40,
+          1,
+          80
+        ]
+      },
+      "PH": {
+        "all_finite": true,
+        "count": 3280,
+        "dtype": "float64",
+        "finite_count": 3280,
+        "max": 131.82738277021667,
+        "max_abs": 131.82738277021667,
+        "min": -0.0002041299019805348,
+        "shape": [
+          41,
+          1,
+          80
+        ]
+      },
+      "T": {
+        "all_finite": true,
+        "count": 3200,
+        "dtype": "float64",
+        "finite_count": 3200,
+        "max": 2.000000764068716,
+        "max_abs": 2.000000764068716,
+        "min": -9.928533017955488e-08,
+        "shape": [
+          40,
+          1,
+          80
+        ]
+      },
+      "U": {
+        "all_finite": true,
+        "count": 3240,
+        "dtype": "float64",
+        "finite_count": 3240,
+        "max": 0.010894242484674866,
+        "max_abs": 0.010894242484674866,
+        "min": -0.010894242484674866,
+        "shape": [
+          40,
+          1,
+          81
+        ]
+      },
+      "V": {
+        "all_finite": true,
+        "count": 6400,
+        "dtype": "float64",
+        "finite_count": 6400,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "shape": [
+          40,
+          2,
+          80
+        ]
+      },
+      "W": {
+        "all_finite": true,
+        "count": 3280,
+        "dtype": "float64",
+        "finite_count": 3280,
+        "max": 4.539081847062063e-06,
+        "max_abs": 4.539081847062063e-06,
+        "min": -4.0215094613306595e-06,
+        "shape": [
+          41,
+          1,
+          80
+        ]
+      }
+    },
+    "disabled_path": {
+      "call": "_rk_scan_step(carry, namelist)",
+      "is_capture_tuple": false,
+      "return_type": "OperationalCarry"
+    },
+    "fixture": {
+      "acoustic_substeps": 1,
+      "dt_s": 0.1,
+      "grid": {
+        "nx": 80,
+        "ny": 1,
+        "nz": 40
+      },
+      "name": "gpuwrf.ic_generators.idealized.build_warm_bubble_setup(require_gpu=False)",
+      "run_boundary": false,
+      "run_physics": false,
+      "use_vertical_solver": true
+    },
+    "normal_forecast_api_signature": {
+      "has_capture_parameter": false,
+      "run_forecast_operational": "(state: 'State', namelist: 'OperationalNamelist', hours: 'float') -> 'State'"
+    },
+    "normal_return_vs_capture_carry": {
+      "array_equal": true,
+      "compared_leaf_count": 70,
+      "first_difference": null,
+      "leaf_count_left": 70,
+      "leaf_count_right": 70,
+      "max_abs": 0.0,
+      "tree_structure_equal": true
+    },
+    "status": "HOOK_GREEN"
+  },
+  "inputs_read": {
+    "handoff": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "10e048ffc24a2c23857f19f8ba5016928474ab746f9f9e8c8ae1fef51569a22e",
+      "size_bytes": 25418
+    },
+    "jax_after_all_rk_wrapper_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_after_all_rk_wrapper.json",
+      "sha256": "f8730e3cdbca4641ae25c8ac3f00eaa9f4c00bb240f828bd302d244c16eddfea",
+      "size_bytes": 29113
+    },
+    "same_state_savepoint_request_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
+      "size_bytes": 269809
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-pre-halo-capture-hook/sprint-contract.md",
+      "sha256": "1358fd6f63a1d2b3ebea650a86b4781c9a65cc32f3e2e039d9a5f28fc6489c77",
+      "size_bytes": 4090
+    },
+    "wrf_refresh_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
+      "size_bytes": 34079
+    },
+    "wrf_refresh_md": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
+      "sha256": "28a831c5c1d3c74f85e5259c7fcfdf14f78e473b92469006cc84c3e3f7358eab",
+      "size_bytes": 3217
+    }
+  },
+  "next_decision": "Build/provide the JAX h10 pre-step carry checkpoint, then run the hook against Boole's WRF green target before any source-fix sprint.",
+  "no_hermes": true,
+  "previous_wrapper_verdict": "WRAPPER_BLOCKED_NO_JAX_PRE_HALO_STATE_API",
+  "production_forecast_api_return_changed": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-pre-halo-capture-hook.md"
+  },
+  "retained_writer_diagnostic_not_used": {
+    "available": true,
+    "first_mismatch_vs_wrf_truth": {
+      "field": "T",
+      "max_abs": 3.357818603515625,
+      "rmse": 1.0306179245297085,
+      "tolerance": 2e-06,
+      "worst": {
+        "abs_diff": 3.357818603515625,
+        "candidate": -5.809967041015625,
+        "diff_truth_minus_candidate": -3.357818603515625,
+        "native_key": [
+          12,
+          17
+        ],
+        "wrf_truth": -9.16778564453125
+      }
+    },
+    "used_for_verdict": false
+  },
+  "schema": "wrfgpu2.v014.jax_pre_halo_capture.v1",
+  "source_inspection": {
+    "nodes": [
+      {
+        "contains_apply_halo": false,
+        "contains_capture_pre_halo": false,
+        "contains_carry_from_finished_stage": false,
+        "contains_pre_halo_result": true,
+        "contains_sharded_carry_halo_handling": false,
+        "line_end": 259,
+        "line_start": 255,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_PreHaloCaptureResult",
+        "source_sha256": "2ab831c520b38b104248afc098c4575fdddc8d61e7b4f5530d12b1d7dae9dc01"
+      },
+      {
+        "contains_apply_halo": true,
+        "contains_capture_pre_halo": true,
+        "contains_carry_from_finished_stage": true,
+        "contains_pre_halo_result": true,
+        "contains_sharded_carry_halo_handling": true,
+        "line_end": 1704,
+        "line_start": 1608,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_acoustic_scan",
+        "source_sha256": "5ef0a3c6c4870f60df6e5dcf242312f672651a17f4c674bd6b0c2b9035c25d30"
+      },
+      {
+        "contains_apply_halo": true,
+        "contains_capture_pre_halo": true,
+        "contains_carry_from_finished_stage": false,
+        "contains_pre_halo_result": true,
+        "contains_sharded_carry_halo_handling": false,
+        "line_end": 2292,
+        "line_start": 2173,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_rk_scan_step",
+        "source_sha256": "f1d3e7074e14958849061d7d90ffbe476df84c96f654ef56a7d78f5e0ec71ab1"
+      },
+      {
+        "contains_apply_halo": false,
+        "contains_capture_pre_halo": true,
+        "contains_carry_from_finished_stage": false,
+        "contains_pre_halo_result": true,
+        "contains_sharded_carry_halo_handling": false,
+        "line_end": 2313,
+        "line_start": 2295,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_rk_scan_step_with_pre_halo_capture",
+        "source_sha256": "d02d291748041b46dc71fa06d23d41904056920a5b5f8e8b86e7937488094b77"
+      },
+      {
+        "contains_apply_halo": false,
+        "contains_capture_pre_halo": false,
+        "contains_carry_from_finished_stage": false,
+        "contains_pre_halo_result": false,
+        "contains_sharded_carry_halo_handling": false,
+        "line_end": 3584,
+        "line_start": 3571,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "run_forecast_operational",
+        "source_sha256": "dc13d0c61779d4ceecc48277850420d7f8d3f86feab5c6e3b62906986bd623ae"
+      },
+      {
+        "contains_apply_halo": false,
+        "contains_capture_pre_halo": false,
+        "contains_carry_from_finished_stage": false,
+        "contains_pre_halo_result": false,
+        "contains_sharded_carry_halo_handling": false,
+        "line_end": 3712,
+        "line_start": 3647,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "run_forecast_operational_segmented",
+        "source_sha256": "5efc37956a19fded766e6de8ab3406305b78dc67555d99bb8242e11c3089ef26"
+      },
+      {
+        "contains_apply_halo": false,
+        "contains_capture_pre_halo": false,
+        "contains_carry_from_finished_stage": false,
+        "contains_pre_halo_result": false,
+        "contains_sharded_carry_halo_handling": false,
+        "line_end": 3762,
+        "line_start": 3716,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "run_forecast_operational_single_scan",
+        "source_sha256": "94aea51d1843d13cb28d019b81413c8de3ab166426e0f8efbaaaca032b892ec7"
+      }
+    ],
+    "runtime_operational_mode": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+      "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
+      "size_bytes": 175388
+    }
+  },
+  "unresolved_risks": [
+    "No h10 same-surface numerical JAX comparison ran because no JAX h10 pre-step carry/checkpoint was available.",
+    "The first failing JAX operator/cadence remains unnamed until that same-surface comparison runs."
+  ],
+  "verdict": "HOOK_GREEN_COMPARE_BLOCKED_NO_JAX_H10_PRESTEP_CARRY",
+  "wrf_green_target": {
+    "accepted_wrf_verdict": "REFRESH_LAYER_GREEN_post_after_all_rk_steps_pre_halo",
+    "current_timestr_before_step": "2026-05-02_03:59:54",
+    "domain": "d02",
+    "green_candidate_vs_provided_cpu_h10_wrfout": {
+      "MU": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 4.547473508864641e-13,
+        "max_abs": 4.547473508864641e-13,
+        "min": -4.547473508864641e-13,
+        "rmse": 3.4568416978372316e-13
+      },
+      "MUB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "P": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "PB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "PH": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 1.9073486328125e-06,
+        "max_abs": 1.9073486328125e-06,
+        "min": -1.9073486328125e-06,
+        "rmse": 4.3090067180366245e-07
+      },
+      "T": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "U": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 4.76837158203125e-07,
+        "max_abs": 4.76837158203125e-07,
+        "min": -4.76837158203125e-07,
+        "rmse": 1.3106758362804406e-07
+      },
+      "V": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 9.5367431640625e-07,
+        "max_abs": 9.5367431640625e-07,
+        "min": -9.5367431640625e-07,
+        "rmse": 3.1466681451378603e-07
+      },
+      "W": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 1.1920928977282585e-07,
+        "max_abs": 1.1920928977282585e-07,
+        "min": -5.960464477539063e-08,
+        "rmse": 9.606584126922052e-09
+      }
+    },
+    "green_candidate_vs_scratch_h10_wrfout": {
+      "MU": {
+        "max_abs": 4.547473508864641e-13,
+        "rmse": 3.4568416978372316e-13
+      },
+      "MUB": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "P": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PB": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PH": {
+        "max_abs": 5.329070518200751e-15,
+        "rmse": 2.0806684742968092e-15
+      },
+      "T": {
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "U": {
+        "max_abs": 8.881784197001252e-16,
+        "rmse": 2.7027201268900864e-16
+      },
+      "V": {
+        "max_abs": 8.881784197001252e-16,
+        "rmse": 2.6017692407882053e-16
+      },
+      "W": {
+        "max_abs": 4.440892098500626e-16,
+        "rmse": 4.0846014518837006e-17
+      }
+    },
+    "lead_seconds_after_step": 36000.0,
+    "native_staggered_coordinates": {
+      "mass_zero": "y [1,18), x [5,22); Fortran j 2..18, i 6..22",
+      "u_zero": "y [1,18), x_stag [5,23); Fortran j 2..18, i 6..23",
+      "v_zero": "y_stag [1,19), x [5,22); Fortran j 2..19, i 6..22",
+      "w_ph_zero": "kstag [0,2), y [1,18), x [5,22); Fortran k 1..2, j 2..18, i 6..22"
+    },
+    "savepoint_request_first_cell": {
+      "mass_index_fortran_1based": {
+        "south_north": 10,
+        "west_east": 14
+      },
+      "mass_index_zero_based": {
+        "south_north": 9,
+        "west_east": 13
+      },
+      "native_patch_bounds": {
+        "mass_scalar_3d": {
+          "bottom_top": {
+            "all_levels": true,
+            "axis": "bottom_top",
+            "fortran_1based_inclusive": {
+              "count": 44,
+              "end": 44,
+              "start": 1
+            },
+            "zero_based": {
+              "count": 44,
+              "start": 0,
+              "stop_exclusive": 44
+            }
+          },
+          "south_north": {
+            "axis": "south_north",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 18,
+              "start": 2
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 1,
+              "stop_exclusive": 18
+            }
+          },
+          "west_east": {
+            "axis": "west_east",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 22,
+              "start": 6
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 5,
+              "stop_exclusive": 22
+            }
+          }
+        },
+        "surface_2d": {
+          "south_north": {
+            "axis": "south_north",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 18,
+              "start": 2
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 1,
+              "stop_exclusive": 18
+            }
+          },
+          "west_east": {
+            "axis": "west_east",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 22,
+              "start": 6
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 5,
+              "stop_exclusive": 22
+            }
+          }
+        },
+        "u_staggered": {
+          "bottom_top": {
+            "all_levels": true,
+            "axis": "bottom_top",
+            "fortran_1based_inclusive": {
+              "count": 44,
+              "end": 44,
+              "start": 1
+            },
+            "zero_based": {
+              "count": 44,
+              "start": 0,
+              "stop_exclusive": 44
+            }
+          },
+          "south_north": {
+            "axis": "south_north",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 18,
+              "start": 2
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 1,
+              "stop_exclusive": 18
+            }
+          },
+          "west_east_stag": {
+            "axis": "west_east_stag",
+            "fortran_1based_inclusive": {
+              "count": 18,
+              "end": 23,
+              "start": 6
+            },
+            "zero_based": {
+              "count": 18,
+              "start": 5,
+              "stop_exclusive": 23
+            }
+          }
+        },
+        "v_staggered": {
+          "bottom_top": {
+            "all_levels": true,
+            "axis": "bottom_top",
+            "fortran_1based_inclusive": {
+              "count": 44,
+              "end": 44,
+              "start": 1
+            },
+            "zero_based": {
+              "count": 44,
+              "start": 0,
+              "stop_exclusive": 44
+            }
+          },
+          "south_north_stag": {
+            "axis": "south_north_stag",
+            "fortran_1based_inclusive": {
+              "count": 18,
+              "end": 19,
+              "start": 2
+            },
+            "zero_based": {
+              "count": 18,
+              "start": 1,
+              "stop_exclusive": 19
+            }
+          },
+          "west_east": {
+            "axis": "west_east",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 22,
+              "start": 6
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 5,
+              "stop_exclusive": 22
+            }
+          }
+        },
+        "w_ph_staggered": {
+          "bottom_top_stag": {
+            "all_levels": true,
+            "axis": "bottom_top_stag",
+            "fortran_1based_inclusive": {
+              "count": 45,
+              "end": 45,
+              "start": 1
+            },
+            "zero_based": {
+              "count": 45,
+              "start": 0,
+              "stop_exclusive": 45
+            }
+          },
+          "south_north": {
+            "axis": "south_north",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 18,
+              "start": 2
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 1,
+              "stop_exclusive": 18
+            }
+          },
+          "west_east": {
+            "axis": "west_east",
+            "fortran_1based_inclusive": {
+              "count": 17,
+              "end": 22,
+              "start": 6
+            },
+            "zero_based": {
+              "count": 17,
+              "start": 5,
+              "stop_exclusive": 22
+            }
+          }
+        }
+      },
+      "selection_rank": 1
+    },
+    "selected_cell_zero_yx": {
+      "south_north": 9,
+      "west_east": 13
+    },
+    "selected_patch_bounds_mass_grid": {
+      "halo_radius_cells": 8,
+      "south_north_start": 1,
+      "south_north_stop_exclusive": 18,
+      "west_east_start": 5,
+      "west_east_stop_exclusive": 22
+    },
+    "source_file_info": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
+        "size_bytes": 11774
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
+        "size_bytes": 159441
+      }
+    ],
+    "source_files": [
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "target_surface": "post dyn_em/solve_em.F::after_all_rk_steps state before RK halo exchanges",
+    "unique_counts": {
+      "MASS_K1": 289,
+      "U_K1": 306,
+      "V_K1": 306,
+      "WPH_KSTAG01": 578
+    },
+    "valid_time_utc": "2026-05-02T04:00:00+00:00",
+    "wrf_step": 6000
+  },
+  "wrf_source_edited": false
+}
