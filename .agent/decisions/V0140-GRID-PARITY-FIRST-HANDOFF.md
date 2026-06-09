@@ -205,6 +205,19 @@ This is the active debug sprint. It must split WRF `first_rk_step_part1/part2`,
 `_physics_step_forcing`, `_augment_large_step_tendencies`, and dry `*_tendf`
 construction. No acoustic continuation unless this earlier boundary is closed.
 
+Update 2026-06-09 14:58 WEST: step-1 RK1 source-boundary sprint closed.
+Verdict:
+`STEP1_RK1_SOURCE_LOCALIZED_FIRST_RK_STEP_PART1_PHYSICS_STATE_MUTATION_T_STATE`.
+The first material source-boundary mismatch is now `T_STATE` immediately after
+WRF `first_rk_step_part1`. WRF vs JAX operational carry has max_abs
+`5.490173101425171`, RMSE `1.9175184863907806`; WRF vs
+`_physics_step_forcing.state` has max_abs `5.490142455570492`, RMSE
+`1.9174736017582765`. RK1 `small_step_prep` continuity remains exact for
+`T_WORK` and `P_WORK` max_abs `0.0`. The next sprint must split internal WRF
+`first_rk_step_part1` surfaces against the JAX physics adapter output. Do not
+continue acoustic, TOST, Switzerland, FP32, or memory work until this earlier
+T-state mutation is explained or fixed.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:

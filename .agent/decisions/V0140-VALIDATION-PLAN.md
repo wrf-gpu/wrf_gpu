@@ -218,6 +218,15 @@ Current status:
   (2) V10/grid-field divergence materially improved. A source port may not be
   used to resume TOST or claim grid parity unless an init-override or direct
   grid-field proof closes the symptom.
+- 2026-06-09 Step-1 debug update:
+  `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
+  Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
+  acoustic/small-step pressure refresh. The residual is material against both
+  JAX operational carry and `_physics_step_forcing.state` (max_abs about
+  `5.49` K, RMSE about `1.92` K), while `small_step_prep` `T_WORK/P_WORK`
+  continuity remains exact. Validation campaigns, Switzerland, TOST, FP32, and
+  memory work stay behind the grid-parity gate until the internal
+  `first_rk_step_part1` mutation is explained or fixed.
 - 2026-06-09 direct proof update: the direct falsifier has now run and did
   **not** close the symptom. `proofs/v014/grid_after_live_nest_base.json`
   verdict is `GRID_SYMPTOM_NOT_CLOSED` after one h12 GPU run with
