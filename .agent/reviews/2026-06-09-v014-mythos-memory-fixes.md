@@ -1,7 +1,7 @@
 # 2026-06-09 v0.14 Mythos Memory/FP32 Lane Review
 
 - Verdict: `MYTHOS_MEMORY_LANE_CLOSED_MYNN_TILING_MATERIAL_FIX_R0_LANDED_REST_MEASURED_OR_EXACT_DEFER`
-- Branch: `worker/mythos/v014-memory-fp32` @ `a32efce32852`
+- Branch: `worker/gpt/v013-close-manager` @ `8f735a56f7df`
 - Merge recommendation: `MERGE_NOW`
 
 ## What changed

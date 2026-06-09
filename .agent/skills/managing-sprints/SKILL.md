@@ -48,16 +48,20 @@ Match model+effort to task type (principal effort-tiers): **core/correctness-cri
 - **Long GPU runs:** detach (`systemd-run --user --scope` / `nohup setsid`) + commit each proof immediately. The box hibernates; a CUDA context does NOT survive suspend → kill+rerun anything that spanned one. Kill orphan model GPU procs before each launch.
 - **Worktree isolation caveat (bit us 2026-06-01):** `isolation: "worktree"` may branch from a STALE commit, not the current HEAD — a nesting agent's worktree came up at an M5-era commit missing recent fixes. Tell worktree agents to verify their base (`git log -1`) and `checkout -b <fresh> <current-tip>` if stale (never hard-reset — auto-denied). Worktree agents commit on their own branch; the manager merges after review + after any GPU sibling frees the branch/index (don't merge into a branch another agent is actively committing to).
 - **GPU hand-off between agents:** an agent that arms a "GPU-free monitor" to auto-run its gates will GRAB the GPU the instant it drops free — which can be a GAP BETWEEN a sibling's multi-run sequence, not the sibling's true end. Risk: collision/box-crash. The manager must not dispatch a competing GPU job into that window, and should verify GPU sanity when the holding agent's completion notification arrives.
-- **Mythos heavy-problem lane (principal directive 2026-06-09):** all
-  extremely hard v0.14 problems should go to the Mythos model in tmux `0:1` as
-  whole endpoint-defined assignments, not narrow micro-prompts. The manager
-  remains manager: write the contract, freeze file/GPU locks, require proof
-  objects, review the diff, run gates, merge or reject, and continue the
-  milestone. Before sending each new Mythos sprint after a completion or context
-  risk, first send `/compact` to `tmux 0:1`, wait about two minutes for the TUI
-  to finish compaction and return to a prompt, then send the full assignment and
-  press Enter. Use delayed repeated Enter presses when needed because the TUI can
-  leave text staged.
+- **Fable/Mythos heavy-problem lane (principal directive 2026-06-09):** Fable
+  (Mythos, tmux `0:1`) is a scarce high-end debug resource. Conserve its tokens:
+  do not use it for routine polling, proof grooming, simple instrumentation,
+  standard validation triage, or issues likely solvable by one focused GPT 5.5
+  sprint. For validation failures, first send GPT 5.5 workers to collect,
+  localize, and attempt direct fixes when feasible. Escalate only the unresolved
+  hard core to Fable/Mythos, and frame it as one whole endpoint-defined
+  assignment, not narrow micro-prompts. The manager remains manager: write the
+  contract, freeze file/GPU locks, require proof objects, review the diff, run
+  gates, merge or reject, and continue the milestone. Before sending each new
+  Fable/Mythos sprint after a completion or context risk, first send `/compact`
+  to `tmux 0:1`, wait about two minutes for the TUI to finish compaction and
+  return to a prompt, then send the full assignment and press Enter. Use delayed
+  repeated Enter presses when needed because the TUI can leave text staged.
 - Manager stays manager: re-dispatch dead agents; don't hand-debug.
 
 ## Long-roadmap drift prevention

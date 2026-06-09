@@ -22,7 +22,7 @@
     "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
     "python": "3.13.11"
   },
-  "generated_utc": "2026-06-09T22:31:02.362188+00:00",
+  "generated_utc": "2026-06-09T22:37:41.579173+00:00",
   "git": {
     "branch": {
       "command": [
@@ -35,7 +35,7 @@
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
-      "wall_s": 0.0011787590046878904
+      "wall_s": 0.00126457899750676
     },
     "head": {
       "command": [
@@ -46,8 +46,8 @@
       "cwd": "/home/enric/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "d6c74c9c0218fcfff9a9d2feb884a284973cf499\n",
-      "wall_s": 0.0016346619959222153
+      "stdout_tail": "8f735a56f7df53a42e4a6eed6eab022883104a09\n",
+      "wall_s": 0.0013558899954659864
     },
     "log_head": {
       "command": [
@@ -60,8 +60,8 @@
       "cwd": "/home/enric/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "d6c74c9c (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 refresh release manager checklist\n",
-      "wall_s": 0.0027073609962826595
+      "stdout_tail": "8f735a56 (HEAD -> worker/gpt/v013-close-manager) v014 close mythos memory/fp32 lane: proofs, roadmaps, sprint closeout\n",
+      "wall_s": 0.0025304090086137876
     },
     "status_short_branch": {
       "command": [
@@ -73,8 +73,8 @@
       "cwd": "/home/enric/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "## worker/gpt/v013-close-manager...origin/worker/gpt/v013-close-manager\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-09-v014-step1-tendency-contract-split.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_tendency_contract_split.json\n?? proofs/v014/step1_tendency_contract_split.md\n?? proofs/v014/step1_tendency_contract_split.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n",
-      "wall_s": 0.008205202000681311
+      "stdout_tail": "## worker/gpt/v013-close-manager...origin/worker/gpt/v013-close-manager [ahead 3]\n M .agent/memory/stable/mythos-heavy-lane.md\n M .agent/reviews/2026-06-09-v014-mythos-memory-fixes.md\n M .agent/skills/managing-sprints/CHANGELOG.md\n M .agent/skills/managing-sprints/SKILL.md\n M proofs/v014/fp32_acoustic_static_audit.json\n M proofs/v014/mythos_memory_fixes_260609.json\n M proofs/v014/mythos_memory_fixes_260609.md\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n",
+      "wall_s": 0.008280804002424702
     }
   },
   "gpu_used": false,
@@ -93,8 +93,8 @@
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "9fa387961a5408975fd1ee5a8e4f9846040152f5864306c3de0b6f145e2869cd",
-      "size_bytes": 89561
+      "sha256": "dee4d4a85e1447bda39bce2ee4f26a9a7d32d83ae39548e87efae115f5378aa0",
+      "size_bytes": 91477
     },
     "p_state_split_json": {
       "exists": true,
