@@ -1453,3 +1453,52 @@ Memory/FP32 status:
 
 TOST, Switzerland, FP32 source work, broad memory source work, and long GPU
 validation remain paused.
+
+## Current Manager Update 2026-06-09 21:35 WEST
+
+The base-state boundary sprint is closed locally and ready to commit:
+
+- Sprint:
+  `.agent/sprints/2026-06-09-v014-step1-base-state-boundary`.
+- Verdict:
+  `STEP1_BASE_STATE_BOUNDARY_LOCALIZED_P_SURF_MUB_FP32_SOURCE_ARITHMETIC`.
+- Manager validation passed:
+  `py_compile`, CPU-only proof rerun, JSON validation, `close_sprint.py`, and
+  `git diff -- src/gpuwrf` empty.
+- No production source was changed.
+
+Meaning:
+
+- The prior base-state hypothesis is supported and narrowed further.
+- The decisive remaining surface is exact WRF `p_surf -> MUB` arithmetic before
+  the `AL/ALT` pass.
+- Current/proof-local fp32/cp=1004.5 `p_surf` formula still leaves
+  `P_STATE=2.828125 Pa` and `MU_STATE=0.011962890625 Pa`.
+- Substituting WRF-emitted `MUB` into the same proof-local base/AL/ALT path
+  reduces downstream `P_STATE` to `0.40625 Pa` and `MU_STATE` to
+  `0.001220703125 Pa`, below the sprint gates.
+- Refuted as dominant: terrain/blend input, cp constant alone,
+  coefficient indexing, PH/MU time-level selection, and PHB integration order.
+
+Memory/FP32 side-manager status:
+
+- `proofs/v014/memory_manager_260609.*` and
+  `.agent/reviews/2026-06-09-v014-memory-manager-260609.md` now exist.
+- Recommendation is `REVIEW_ONLY`: no source changes, GPU not used, and all
+  remaining memory/FP32 source work stays blocked by grid-parity locks until
+  this live-nest/start-domain bug is fixed.
+
+Principal-directed pause:
+
+- `mythos_kernel_contract_260609.md` is written for the experimental model.
+- The primary manager should not launch another normal debug sprint while the
+  principal tests the Mythos model.
+- If Mythos does not land a validated fix, resume with a sprint that emits a
+  disposable WRF truth surface immediately around the `p_surf` expression and
+  `grid%MUB(i,j) = p_surf - grid%p_top`, or proves a WRF-compatible fp32/libm
+  helper. Gate any production `d02_replay.py` patch on `P_STATE <= 1 Pa`,
+  `MU_STATE <= 0.01 Pa`, no production CPU-WRF dependency, and no timestep-loop
+  host/device transfer.
+
+TOST, Switzerland, FP32 source work, broad memory source work, and long GPU
+validation remain paused.
