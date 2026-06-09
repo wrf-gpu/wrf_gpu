@@ -676,14 +676,55 @@ Manager validation reran:
   needed; a hidden normal production dependency on CPU-WRF `wrfout` history is
   not acceptable.
 
+## Completed Wave 19
+
+- GPT tmux worker (`0:4`, completed after manager validation):
+  base-state split fix sprint
+  `.agent/sprints/2026-06-09-v014-base-state-split-fix/sprint-contract.md`
+  with deliverables `proofs/v014/base_state_split_fix.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-base-state-split-fix.md`.
+
+Verdict: `BASE_STATE_SPLIT_FIX_BLOCKED_PARENT_INTERP_BLEND_NOT_LOCAL`. No
+production source patch was applied. CPU-WRF h0 `PB/MUB` are WRF base-formula
+values on post-nest blended h0 terrain, and formula-on-h0-HGT matches within
+about `0.06` Pa. A simplified local bilinear+blend reconstruction is rejected:
+`PB` patch max `796.2565574348409` Pa and `MUB` patch max
+`798.7609739865584` Pa.
+
+Exact missing WRF chain:
+
+- `share/mediation_integrate.F` live-nest `input_from_file` branch after
+  `med_interp_domain` and after `blend_terrain` for `nest%ht/nest%mub/nest%phb`.
+- generated `inc/nest_interpdown_interp.inc` parent-to-child interpolation for
+  `phb/mub/pb`, via `share/interp_fcn.F::interp_fcn_sint` and `share/sint.F`.
+- `dyn_em/nest_init_utils.F::blend_terrain` with `spec_bdy_width=5` and
+  `blend_width=5`.
+- `dyn_em/start_em.F::start_domain_em` base-state recomputation after terrain /
+  base blend.
+
+Manager validation reran:
+
+- `python -m py_compile src/gpuwrf/integration/d02_replay.py proofs/v014/base_state_split_fix.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/base_state_split_fix.py`
+- `python -m json.tool proofs/v014/base_state_split_fix.json`
+
+## Opened Wave 20
+
+- Sprint contract opened:
+  `.agent/sprints/2026-06-09-v014-live-nest-base-hook/sprint-contract.md`
+  with prompt
+  `.agent/sprints/2026-06-09-v014-live-nest-base-hook/agent-prompt.md`.
+  Objective: capture or reproduce the WRF live-nest parent-interpolated /
+  blended `HGT/MUB/PHB` and post-`start_domain_em` base recomputation oracle
+  needed for the next source-fix sprint.
+
 ## Next Manager Actions
 
-1. Run the base-state split fix sprint. Start from
-   `proofs/v014/earlier_source_bisect.json` and
-   `src/gpuwrf/integration/d02_replay.py::build_replay_case`. The sprint must
-   either reproduce WRF's post-initialization `PB/MUB` split in the native d02
-   child path or emit a blocked verdict naming the exact WRF routine/formula or
-   hook needed.
+1. Run the live-nest base hook/oracle sprint. Start from
+   `proofs/v014/base_state_split_fix.json`. The sprint must either produce a
+   disposable-WRF savepoint/oracle for post-`blend_terrain` and
+   post-`start_domain_em` base fields, or provide a native-port plan precise
+   enough to implement WRF's parent interpolation/blend/base recomputation.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only unless the base-state split fix proof directly
    requires a narrower follow-up contract.
