@@ -295,6 +295,17 @@ Current status:
   for the current `P/PH/MU` residual. B4 remains paused until this sprint either
   closes the residual, names the exact next operator, or records a precise
   missing-truth blocker.
+- 2026-06-09 18:50 WEST manager update: P/PH/MU boundary localization closed as
+  `STEP1_P_PH_MU_LOCALIZED_FIRST_RK_STEP_PART1_P_STATE`. The current first
+  material P-family state residual is WRF `after_first_rk_step_part1` versus
+  JAX `_physics_step_forcing.carry.state`, `P_STATE` max_abs `69.96875`;
+  `MU_STATE` and `W_STATE` are material at the same checked boundary. RK1
+  `small_step_prep`/`calc_p_rho(step=0)` work arrays are exact for the checked
+  work fields. B4 remains blocked because final strict Step-1 still has `P`
+  max_abs `974.9820434775493`. Next validation-enabling sprint is an internal
+  WRF `first_rk_step_part1` split around `phy_prep`/`calc_p_rho_phi` state
+  writes for `P/MU/W`, or a post-acoustic/pre-refresh pressure split before any
+  source edit.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to

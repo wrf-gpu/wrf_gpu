@@ -2,7 +2,7 @@
 
 Date: 2026-06-09
 
-Reviewer Status: Pending. Opening sprint only.
+Reviewer Status: APPROVED_FOR_PENDING_MEMORY.
 
 Scope:
 
@@ -11,26 +11,29 @@ Scope:
 
 Reason:
 
-- Production live-nest theta/QV initialization is closed, but the strict Step-1
-  comparison still has a large `P/PH/MU` residual.
-- This sprint should record the exact boundary/operator, blocker, or narrow fix
-  that determines the next grid-parity decision.
+- The sprint localized the current post-theta/QV `P/PH/MU` residual to the
+  first checked P-family state mismatch after WRF `first_rk_step_part1`.
+- No source fix was applied because a narrower internal WRF split is still
+  needed before editing production code.
 
 Evidence:
 
-- Opening evidence:
-  `proofs/v014/step1_live_nest_theta_qv_wiring.json`.
-- Closing evidence expected:
-  `proofs/v014/step1_p_ph_mu_boundary_localization.json`.
+- `proofs/v014/step1_p_ph_mu_boundary_localization.json`
+- `proofs/v014/step1_p_ph_mu_boundary_localization.md`
+- `.agent/reviews/2026-06-09-v014-step1-p-ph-mu-boundary-localization.md`
 
 Proposed Destination:
 
 - `.agent/memory/pending/2026-06-09-v014-step1-p-ph-mu-boundary-localization.md`
 
-Expected memory after close:
+Approved pending memory:
 
-- Whether the remaining Step-1 `P/PH/MU` residual is boundary construction,
-  boundary application, RK tendency/source, small-step/acoustic, pressure
-  refresh, schema/comparison, or blocked by missing truth.
-- Whether any source fix was made and the before/after top residuals.
-- Exact next manager decision for the grid-parity chain.
+- Current first material P-family state residual is WRF
+  `after_first_rk_step_part1` vs JAX `_physics_step_forcing.carry.state`,
+  `P_STATE` max_abs `69.96875`; `MU_STATE` and `W_STATE` are material there too.
+- RK1 `small_step_prep`/`calc_p_rho(step=0)` work arrays are exact for checked
+  work fields.
+- No source fix was made.
+- Next sprint should emit an internal WRF `first_rk_step_part1` split around
+  `phy_prep`/`calc_p_rho_phi` state writes for `P/MU/W`, or split
+  post-acoustic/pre-refresh pressure before source edits.

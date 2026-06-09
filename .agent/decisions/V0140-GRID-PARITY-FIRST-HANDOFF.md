@@ -343,6 +343,18 @@ debug sprint is now running as a GPT-5.5 xhigh tmux worker in window `0:4`.
 Management Review 02 remains opened but pending retry after Opus availability
 returns; it is not on the critical path for the current debug proof.
 
+Update 2026-06-09 18:50 WEST: P/PH/MU boundary-localization closed as
+`STEP1_P_PH_MU_LOCALIZED_FIRST_RK_STEP_PART1_P_STATE`. The current first
+material P-family state residual is WRF `after_first_rk_step_part1` versus JAX
+`_physics_step_forcing.carry.state`, field `P_STATE`, max_abs `69.96875`.
+`MU_STATE` and `W_STATE` are material at that same checked boundary. RK1
+`small_step_prep`/`calc_p_rho(step=0)` work arrays are exact for checked
+`T_WORK/P_WORK/PH_WORK/MU_WORK/W_WORK`. The final strict Step-1 residual still
+has `P` max_abs `974.9820434775493`, so this is localization, not closure. Next
+debug sprint should emit one internal WRF `first_rk_step_part1` surface around
+`phy_prep`/`calc_p_rho_phi` state writes for `P/MU/W`, or split
+post-acoustic/pre-refresh pressure before source edits.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
