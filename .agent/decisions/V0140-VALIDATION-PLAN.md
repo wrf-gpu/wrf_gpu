@@ -289,6 +289,12 @@ Current status:
   `i=1,j=30,k=1`, boundary band true. The next validation-enabling sprint is
   Step-1 `P/PH/MU` boundary/operator localization, not TOST, Switzerland, FP32,
   or memory work.
+- 2026-06-09 18:22 WEST manager update: the active validation-enabling sprint is
+  `.agent/sprints/2026-06-09-v014-step1-p-ph-mu-boundary-localization`. Its
+  gate is a focused Step-1 boundary/operator proof or narrow before/after fix
+  for the current `P/PH/MU` residual. B4 remains paused until this sprint either
+  closes the residual, names the exact next operator, or records a precise
+  missing-truth blocker.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
