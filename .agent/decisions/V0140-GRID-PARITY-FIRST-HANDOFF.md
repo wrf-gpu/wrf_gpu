@@ -1656,6 +1656,41 @@ Parallel status:
   must be internally consistent before acceptance.
 - Do not start TOST, Switzerland, or long GPU validation yet.
 
+## Current Manager Update 2026-06-09 23:40 WEST
+
+Memory/FP32 lane has been reviewed, merged, and pushed:
+
+- `26815feb`: MYNN BouLac column tiling plus shared stage transport velocities.
+- `bc847db2`: FP32 R0 default-inert acoustic precision-mode contract.
+- `8f735a56`: Mythos memory/FP32 proofs, roadmaps, and sprint closeout.
+- `e0091707`: Fable/Mythos token-conservation policy plus post-merge proof
+  refresh.
+
+Post-merge manager checks passed:
+
+- `close_sprint.py` for the Mythos memory lane;
+- `py_compile` and JSON validation for Mythos/FP32/Step-1 proofs;
+- `tests/test_operational_namelist_cache_key.py` (5 passed);
+- CPU rerun of `proofs/v014/mythos_memory_fixes_260609.py`;
+- CPU rerun of `proofs/v014/fp32_acoustic_static_audit.py`;
+- CPU rerun of `proofs/v014/step1_tendency_contract_split.py`, which kept the
+  same verdict:
+  `STEP1_TENDENCY_CONTRACT_LOCALIZED_FIRST_RK_STEP_PART2_T_TENDF_SOURCE_LEAVES`.
+
+Fable/Mythos policy is now durable: conserve Fable tokens; use GPT 5.5 first for
+normal validation failure collection/localization/direct fixes; escalate only
+the unresolved hard core to Fable after `/compact`.
+
+Next active grid-parity sprint:
+
+- `.agent/sprints/2026-06-09-v014-step1-part2-source-leaves-split`.
+- Objective: split WRF `first_rk_step_part2` internals after
+  `calculate_phy_tend`, `update_phy_ten`, and `conv_t_tendf_to_moist`, including
+  raw `RTH*TEN` / `T_HIST_SRC` contributors and the current JAX dry source
+  bundle.
+- This is a GPT CPU-only sprint. Do not use GPU, TOST, Switzerland, FP32/memory
+  source work, Hermes, or Fable/Mythos.
+
 ## Current Manager Update 2026-06-09 21:35 WEST
 
 The base-state boundary sprint is closed locally and ready to commit:
