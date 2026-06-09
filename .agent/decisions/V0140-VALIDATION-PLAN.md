@@ -235,6 +235,14 @@ Current status:
   internal `T_STATE` delta from that entry is max_abs `0.0`. The next validation
   enabler is upstream call-site/state-handoff localization before
   `first_rk_step_part1`.
+- 2026-06-09 Pre-part1 update:
+  `proofs/v014/step1_pre_part1_handoff.json` localizes the current `T_STATE`
+  residual to JAX live-nest Step-1 loader/carry construction before
+  `_physics_step_forcing`. WRF solve_em does not change `grid%t_2` before
+  `first_rk_step_part1` (max_abs `0.0`), the solve_em pre-call hook is
+  continuous with prior part1-entry truth (max_abs `0.0`), and WRF `T_STATE`
+  maps to JAX `State.theta - 300 K`, not full theta. Validation campaigns stay
+  paused until the JAX loader/carry source is split and fixed or explained.
 - 2026-06-09 direct proof update: the direct falsifier has now run and did
   **not** close the symptom. `proofs/v014/grid_after_live_nest_base.json`
   verdict is `GRID_SYMPTOM_NOT_CLOSED` after one h12 GPU run with
