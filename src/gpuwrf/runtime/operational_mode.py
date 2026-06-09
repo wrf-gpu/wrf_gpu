@@ -252,6 +252,13 @@ class _PhysicsStepForcing(NamedTuple):
     enabled: bool
 
 
+class _PreHaloCaptureResult(NamedTuple):
+    """Proof-only return carrying the normal post-halo carry plus captured State."""
+
+    carry: OperationalCarry
+    pre_halo_state: State
+
+
 @jax.tree_util.register_pytree_node_class
 @dataclass(frozen=True)
 class OperationalNamelist:
@@ -1607,7 +1614,8 @@ def _acoustic_scan(
     pressure: CalcPRhoStep0,
     tendencies: Tendencies,
     lead_seconds=None,
-) -> OperationalCarry:
+    capture_pre_halo: bool = False,
+) -> OperationalCarry | _PreHaloCaptureResult:
     acoustic = _acoustic_core_state_from_prep(
         carry, prep, pressure, namelist, tendencies, lead_seconds=lead_seconds
     )
@@ -1684,10 +1692,16 @@ def _acoustic_scan(
         )
         next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist)
         next_carry = _maybe_exchange_sharded_carry_halos(next_carry)
-        return next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
+        post_halo_carry = next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
+        if capture_pre_halo:
+            return _PreHaloCaptureResult(post_halo_carry, next_carry.state)
+        return post_halo_carry
 
     del tendencies
-    return _maybe_exchange_sharded_carry_halos(_with_save_family(carry, carry.state))
+    next_carry = _maybe_exchange_sharded_carry_halos(_with_save_family(carry, carry.state))
+    if capture_pre_halo:
+        return _PreHaloCaptureResult(next_carry, next_carry.state)
+    return next_carry
 
 
 def _augment_large_step_tendencies(
@@ -2163,11 +2177,17 @@ def _rk_scan_step(
     debug: bool = False,
     lead_seconds=None,
     physics_tendencies: DryPhysicsTendencies | None = None,
-) -> OperationalCarry:
+    capture_pre_halo: bool = False,
+) -> OperationalCarry | _PreHaloCaptureResult:
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
     rk1_reference = origin
 
-    def advance_stage(stage_carry: OperationalCarry, stage: _RKStageDescriptor) -> OperationalCarry:
+    def advance_stage(
+        stage_carry: OperationalCarry,
+        stage: _RKStageDescriptor,
+        *,
+        capture_stage_pre_halo: bool = False,
+    ) -> OperationalCarry | _PreHaloCaptureResult:
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         # WRF rk_tendency builds the per-stage large-step tendencies (advection,
         # diffusion, and the LARGE-STEP horizontal PGF; module_em.F:1325) and
@@ -2221,7 +2241,7 @@ def _rk_scan_step(
             ww=stage_carry.ww,
         )
         pressure = calc_p_rho_wrf(prep, step=0, non_hydrostatic=True)
-        stage_carry = _acoustic_scan(
+        acoustic_result = _acoustic_scan(
             stage_carry.replace(state=candidate),
             namelist,
             stage=stage,
@@ -2229,7 +2249,14 @@ def _rk_scan_step(
             pressure=pressure,
             tendencies=tendencies,
             lead_seconds=lead_seconds,
+            capture_pre_halo=capture_stage_pre_halo,
         )
+        captured_pre_halo_state = None
+        if capture_stage_pre_halo:
+            captured_pre_halo_state = acoustic_result.pre_halo_state
+            stage_carry = acoustic_result.carry
+        else:
+            stage_carry = acoustic_result
         if moisture_advected:
             stage_carry = stage_carry.replace(
                 state=_apply_moisture_large_step(
@@ -2240,7 +2267,10 @@ def _rk_scan_step(
                     metrics=namelist.metrics,
                 )
             )
-        return stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
+        stage_carry = stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
+        if capture_stage_pre_halo:
+            return _PreHaloCaptureResult(stage_carry, captured_pre_halo_state)
+        return stage_carry
 
     # Static RK sequencing avoids per-stage scalar dispatch inside the profiled
     # timestep loop. WRF solve_em.F:1472-1479 runs one RK1 acoustic small step
@@ -2259,7 +2289,28 @@ def _rk_scan_step(
     carry = carry.replace(state=origin)
     carry = advance_stage(carry, stages[0])
     carry = advance_stage(carry, stages[1])
-    return advance_stage(carry, stages[2])
+    return advance_stage(carry, stages[2], capture_stage_pre_halo=capture_pre_halo)
+
+
+def _rk_scan_step_with_pre_halo_capture(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    *,
+    debug: bool = False,
+    lead_seconds=None,
+    physics_tendencies: DryPhysicsTendencies | None = None,
+) -> _PreHaloCaptureResult:
+    """Proof-only helper for final-RK post-refresh state before RK halo exchange."""
+
+    result = _rk_scan_step(
+        carry,
+        namelist,
+        debug=debug,
+        lead_seconds=lead_seconds,
+        physics_tendencies=physics_tendencies,
+        capture_pre_halo=True,
+    )
+    return result
 
 
 def _coupled_core_extras(state: State) -> dict[str, jax.Array]:
