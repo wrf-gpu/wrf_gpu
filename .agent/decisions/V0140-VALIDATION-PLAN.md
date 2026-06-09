@@ -916,3 +916,25 @@ Immediate pre-validation gate:
    lane returns to the larger base-state/V10 driver.
 3. Only after this grid-parity branch is fixed or explicitly bounded should the
    v0.14 Grid-Delta Atlas and TOST/Switzerland campaign resume.
+
+## Update 2026-06-09 17:16 WEST
+
+The WRF-intermediate gate is now classified, not blocked. Verdict:
+`STEP1_ADJUST_TEMPQV_INTERMEDIATE_PRESSURE_INPUT_MISMATCH`.
+
+Validation remains paused. The exact WRF hook showed that saved inputs match,
+but current `mub`/`pb_new_equiv`/`p_new` differ by about `17.5 Pa` at the
+interior worst cell. This is enough to explain the remaining `0.0054 K`
+theta residual and means the next validation-enabling work is a current
+live-nest base-input split/fix, not TOST, Switzerland, FP32, or memory source
+work.
+
+Immediate pre-validation gate:
+
+1. Split WRF current `MUB/PB` construction around live-nest `blend_terrain`,
+   base recomputation, and `adjust_tempqv` call-site inputs.
+2. Compare against the JAX live-nest base-init reconstruction used by
+   `step1_theta_same_qvapor`.
+3. Only resume long validation after this pressure/base-input mismatch is
+   patched with field proof or explicitly bounded as not driving the larger
+   grid deltas.

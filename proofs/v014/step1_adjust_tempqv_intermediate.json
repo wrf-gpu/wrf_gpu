@@ -1,0 +1,497 @@
+{
+  "commands": {
+    "executed": [
+      "git rev-parse HEAD",
+      "git merge-base --is-ancestor c3620d09 HEAD",
+      "diff -u disposable WRF backups vs patched files > proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
+      "cd /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && /home/enric/miniconda3/bin/tcsh ./compile em_real",
+      "cd /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run && WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE=1 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_DOMAIN=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_I=18 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J=10 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT=/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth /home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe"
+    ],
+    "required_validation": [
+      "python -m py_compile proofs/v014/step1_adjust_tempqv_intermediate.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_adjust_tempqv_intermediate.py",
+      "python -m json.tool proofs/v014/step1_adjust_tempqv_intermediate.json >/tmp/step1_adjust_tempqv_intermediate.validated.json",
+      "git diff -- src/gpuwrf"
+    ]
+  },
+  "comparisons": {
+    "diff_sign": "wrf_minus_jax",
+    "max_abs_pressure_delta": 17.67503987130476,
+    "reason": "WRF in-routine pressure/base inputs differ materially from the JAX reconstruction.",
+    "rows": [
+      {
+        "abs_delta": 0.00541785382188209,
+        "delta_wrf_minus_jax": -0.00541785382188209,
+        "field": "t_2_post",
+        "jax": -0.2382344899281179,
+        "status": "OK",
+        "wrf": -0.24365234375
+      },
+      {
+        "abs_delta": 3.7592601484053023e-06,
+        "delta_wrf_minus_jax": 3.7592601484053023e-06,
+        "field": "qvapor_post",
+        "jax": 0.007871171017318369,
+        "status": "OK",
+        "wrf": 0.007874930277466774
+      },
+      {
+        "abs_delta": 0.0,
+        "delta_wrf_minus_jax": 0.0,
+        "field": "p",
+        "jax": 1750.15625,
+        "status": "OK",
+        "wrf": 1750.15625
+      },
+      {
+        "abs_delta": 0.0022144243121147156,
+        "delta_wrf_minus_jax": 0.0022144243121147156,
+        "field": "p_old",
+        "jax": 91811.78684807569,
+        "status": "OK",
+        "wrf": 91811.7890625
+      },
+      {
+        "abs_delta": 17.49400702366256,
+        "delta_wrf_minus_jax": 17.49400702366256,
+        "field": "p_new",
+        "jax": 92668.69349297634,
+        "status": "OK",
+        "wrf": 92686.1875
+      },
+      {
+        "abs_delta": 0.0022144243121147156,
+        "delta_wrf_minus_jax": 0.0022144243121147156,
+        "field": "pb_old_equiv",
+        "jax": 90061.63059807569,
+        "status": "OK",
+        "wrf": 90061.6328125
+      },
+      {
+        "abs_delta": 17.49400702366256,
+        "delta_wrf_minus_jax": 17.49400702366256,
+        "field": "pb_new_equiv",
+        "jax": 90918.53724297634,
+        "status": "OK",
+        "wrf": 90936.03125
+      },
+      {
+        "abs_delta": 17.67503987130476,
+        "delta_wrf_minus_jax": 17.67503987130476,
+        "field": "mub",
+        "jax": 86794.5749601287,
+        "status": "OK",
+        "wrf": 86812.25
+      },
+      {
+        "abs_delta": 0.0,
+        "delta_wrf_minus_jax": 0.0,
+        "field": "mub_save",
+        "jax": 85928.6875,
+        "status": "OK",
+        "wrf": 85928.6875
+      },
+      {
+        "abs_delta": 0.0,
+        "delta_wrf_minus_jax": 0.0,
+        "field": "c3h",
+        "jax": 0.9896281957626343,
+        "status": "OK",
+        "wrf": 0.9896281957626343
+      },
+      {
+        "abs_delta": 0.0,
+        "delta_wrf_minus_jax": 0.0,
+        "field": "c4h",
+        "jax": 24.17862319946289,
+        "status": "OK",
+        "wrf": 24.17862319946289
+      },
+      {
+        "abs_delta": 0.0,
+        "delta_wrf_minus_jax": 0.0,
+        "field": "p_top",
+        "jax": 5000.0,
+        "status": "OK",
+        "wrf": 5000.0
+      }
+    ],
+    "status": "COMPARISON_EXECUTED",
+    "t_2_post_abs_delta": 0.00541785382188209,
+    "verdict": "STEP1_ADJUST_TEMPQV_INTERMEDIATE_PRESSURE_INPUT_MISMATCH"
+  },
+  "cpu_only": true,
+  "environment": {
+    "jax": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "JAX_PLATFORMS": "cpu",
+      "backend": "cpu",
+      "devices": [
+        "cpu:0"
+      ],
+      "gpu_used": false
+    },
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11 | packaged by Anaconda, Inc. | (main, Dec 10 2025, 21:28:48) [GCC 14.3.0]"
+  },
+  "generated_utc": "2026-06-09T16:15:47.226635+00:00",
+  "git": {
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "5b5427c104be21e3c07d738bfb783ed1004acab1\n"
+    },
+    "required_ancestor": {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "c3620d09",
+        "HEAD"
+      ],
+      "commit": "c3620d09",
+      "is_ancestor": true,
+      "returncode": 0
+    },
+    "src_gpuwrf_diff": {
+      "command": [
+        "git",
+        "diff",
+        "--",
+        "src/gpuwrf"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    "src_gpuwrf_diff_empty": true
+  },
+  "gpu_used": false,
+  "inputs": {
+    "critic_md": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-theta-qvapor-opus-critic.md",
+      "sha256": "69eca974b56c8f8ea5550c2bbc7c340da6e76d2a0a9d991596ba148fc958eb12",
+      "size_bytes": 6270
+    },
+    "precall_qvapor_md": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.md",
+      "sha256": "ae6713905c4f2e734e0db77a0366fa44ba98a9dfef9512397190258f86e03679",
+      "size_bytes": 1929
+    },
+    "prior_theta_json": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+      "sha256": "8d4ebe82db0c03583a19d699984968b343f705b85bc119baf2613088c947e55f",
+      "size_bytes": 44524
+    },
+    "prior_theta_md": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
+      "sha256": "ffc489ed3286ecc217d0f8efaf4b23f70f895cccd6d3c1fee77d8a0cd95f31ca",
+      "size_bytes": 2538
+    },
+    "run_dir": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "scratch_root": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate",
+      "sha256": null,
+      "size_bytes": null
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-adjust-tempqv-intermediate/sprint-contract.md",
+      "sha256": "f209cd5ebc8418f896c48caebca926012ee198204d18ef270b715cbf5a4c47ea",
+      "size_bytes": 5605
+    },
+    "wrf_tree": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "jax_reference": {
+    "jax_available_values": {
+      "c3h": 0.9896281957626343,
+      "c4h": 24.17862319946289,
+      "mub": 86794.5749601287,
+      "mub_save": 85928.6875,
+      "p": 1750.15625,
+      "p_new": 92668.69349297634,
+      "p_old": 91811.78684807569,
+      "p_top": 5000.0,
+      "pb_new_equiv": 90918.53724297634,
+      "pb_old_equiv": 90061.63059807569,
+      "qvapor_post": 0.007871171017318369,
+      "t_2_post": -0.2382344899281179
+    },
+    "source": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+    "status": "READY",
+    "target_worst_cell": {
+      "abs_delta": 0.00541785382188209,
+      "available_pressure_base_inputs": {
+        "candidate_reconstruction": {
+          "adjust_tempqv_p_new": 92668.69349297634,
+          "adjust_tempqv_p_old": 91811.78684807569,
+          "c3h": 0.9896281957626343,
+          "c4h": 24.17862319946289,
+          "live_mub": 86794.5749601287,
+          "live_p_state": 1750.15625,
+          "live_pb": 90918.53724297634,
+          "live_phb_lower_kstag": 7553.430348577668,
+          "live_phb_upper_kstag": 8165.484543478162,
+          "p_top": 5000.0,
+          "raw_mub_save": 85928.6875,
+          "raw_pp": 1750.15625
+        },
+        "wrf_precall_truth": {
+          "MUB": 86794.5703125,
+          "MUT": 88406.9921875,
+          "MU_STATE": 1612.423950195312,
+          "PB": 90918.53125,
+          "PHB_lower_kstag": 7553.4384765625,
+          "PHB_upper_kstag": 8165.48876953125,
+          "P_STATE": 1770.203125
+        }
+      },
+      "boundary_band_threshold": 5,
+      "boundary_distance_to_horizontal_edge": 9,
+      "candidate_qv_after_adjust_tempqv": 0.007871171017318369,
+      "candidate_t_state": -0.2382344899281179,
+      "delta_candidate_minus_wrf": 0.00541785382188209,
+      "fortran_index": {
+        "i": 18,
+        "j": 10,
+        "k": 2
+      },
+      "is_boundary_band": false,
+      "qvapor_same_boundary_pre_call": 0.007874930277466774,
+      "status": "OK",
+      "wrf_t_state": -0.24365234375,
+      "zero_index": {
+        "k": 1,
+        "x": 17,
+        "y": 9
+      },
+      "zero_index_order": "k,y,x"
+    },
+    "wrf_precall_values": {
+      "MUB": 86794.5703125,
+      "MUT": 88406.9921875,
+      "MU_STATE": 1612.423950195312,
+      "PB": 90918.53125,
+      "PHB_lower_kstag": 7553.4384765625,
+      "PHB_upper_kstag": 8165.48876953125,
+      "P_STATE": 1770.203125
+    }
+  },
+  "next_decision": "Use the classified mismatch to decide whether to patch pressure/base inputs or formula transcription.",
+  "no_fp32_source_work": true,
+  "no_gpu": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md",
+    "script": "/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.py",
+    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff"
+  },
+  "schema": "wrfgpu2.v014.step1_adjust_tempqv_intermediate.v1",
+  "source_patch_allowed_by_proof": false,
+  "target": {
+    "boundary_distance": 9,
+    "domain": "d02",
+    "fortran_index": {
+      "i": 18,
+      "j": 10,
+      "k": 2
+    },
+    "wrf_grid_id": 2,
+    "zero_index": {
+      "k": 1,
+      "x": 17,
+      "y": 9
+    },
+    "zero_index_order": "k,y,x"
+  },
+  "unresolved_risks": [
+    "Only one target cell was emitted; broader savepoint may still be needed for neighborhood effects."
+  ],
+  "verdict": "STEP1_ADJUST_TEMPQV_INTERMEDIATE_PRESSURE_INPUT_MISMATCH",
+  "verdict_reason": "WRF in-routine pressure/base inputs differ materially from the JAX reconstruction.",
+  "wrf_build": {
+    "compile_command": "cd /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && /home/enric/miniconda3/bin/tcsh ./compile em_real",
+    "compile_log": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real_tcsh.log",
+    "compile_log_info": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real_tcsh.log",
+      "sha256": "96b8f38858c70faeb1ebcc2766d16f91bfdcbcd2ea8ceb77157005c1982def4f",
+      "size_bytes": 79230
+    },
+    "hook_string_check": {
+      "command": [
+        "bash",
+        "-lc",
+        "strings /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe | rg 'WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE'"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1\n"
+    },
+    "hook_string_present": true,
+    "shebang_compile_blocker_log": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real.log",
+    "wrf_exe": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe",
+      "sha256": "8c9496d5a7d2d1aafbd47a7d34d58929987ed8bac5fa6762d551723a9b7dbad4",
+      "size_bytes": 54654336
+    }
+  },
+  "wrf_capture": {
+    "headers": {
+      "domain_bounds_ids_ide_jds_jde_kds_kde": [
+        1,
+        160,
+        1,
+        67,
+        1,
+        45
+      ],
+      "domain_id": 2,
+      "patch_bounds_ips_ipe_jps_jpe_kps_kpe": [
+        1,
+        23,
+        1,
+        17,
+        1,
+        45
+      ],
+      "record_schema": [
+        "scalar",
+        "key",
+        "value"
+      ],
+      "routine": "dyn_em/nest_init_utils.F::adjust_tempqv",
+      "target_fortran_i_j_k": [
+        18,
+        10,
+        2
+      ],
+      "target_zero_k_y_x": [
+        1,
+        9,
+        17
+      ],
+      "use_theta_m": 1
+    },
+    "marker": "# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1",
+    "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+    "status": "READY",
+    "values": {
+      "c3h": 0.9896281957626343,
+      "c4h": 24.17862319946289,
+      "dth": -0.2693585455417633,
+      "dth1": -0.2694810926914215,
+      "e_new": 1158.797119140625,
+      "e_old": 1120.9638671875,
+      "es_new": 1890.697875976562,
+      "es_old": 1828.968994140625,
+      "mub": 86812.25,
+      "mub_save": 85928.6875,
+      "p": 1750.15625,
+      "p_new": 92686.1875,
+      "p_old": 91811.7890625,
+      "p_top": 5000.0,
+      "pb_new_equiv": 90936.03125,
+      "pb_old_equiv": 90061.6328125,
+      "qvapor_post": 0.007874930277466774,
+      "qvapor_pre": 0.007688093464821577,
+      "rh": 0.6128938794136047,
+      "t_2_post": -0.24365234375,
+      "t_2_pre": 0.029022216796875,
+      "tc_new": 16.58895874023438,
+      "tc_old": 16.06820678710938,
+      "thloc": 296.3644104003906,
+      "znw_k": 0.9938147068023682,
+      "znw_kp1": 0.9859506487846375
+    }
+  },
+  "wrf_patch": {
+    "info": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
+      "sha256": "41d7708c44ccb57e20fe6453a596f7babada3cb1b5dfa4712942d150d8b52102",
+      "size_bytes": 10372
+    },
+    "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
+    "touched_disposable_files": [
+      "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F",
+      "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
+    ]
+  },
+  "wrf_run": {
+    "command": "cd /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run && WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE=1 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_DOMAIN=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_I=18 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J=10 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT=/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth /home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe",
+    "log": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_mpirun_np28_manager.log",
+    "log_tail": " starting wrf task           12  of           28\n starting wrf task           14  of           28\n starting wrf task           22  of           28\n starting wrf task            5  of           28\n starting wrf task           25  of           28\n starting wrf task            1  of           28\n starting wrf task           17  of           28\n starting wrf task           24  of           28\n starting wrf task            4  of           28\n starting wrf task            0  of           28\n starting wrf task           23  of           28\n starting wrf task           10  of           28\n starting wrf task           26  of           28\n starting wrf task           13  of           28\n starting wrf task           15  of           28\n starting wrf task           11  of           28\n starting wrf task           27  of           28\n starting wrf task            6  of           28\n starting wrf task           18  of           28\n starting wrf task           21  of           28\n starting wrf task            9  of           28\n starting wrf task           20  of           28\n starting wrf task            7  of           28\n starting wrf task            2  of           28\n starting wrf task            3  of           28\n starting wrf task           16  of           28\n starting wrf task           19  of           28\n starting wrf task            8  of           28\n",
+    "returncode": 0,
+    "status_file": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_status.txt"
+  },
+  "wrf_source_evidence": {
+    "adjust_tempqv": {
+      "evidence": [
+        "first loop computes p_old, tc_old, es_old, e_old, and rh",
+        "second loop computes p_new, thloc, dth1, dth, post t_2, tc_new, es_new, e_new, and post QVAPOR",
+        "env-gated hook emits the target d02 Fortran cell i=18,j=10,k=2"
+      ],
+      "lines": "812-1017",
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
+    },
+    "mediation_integrate_live_nest_call": {
+      "evidence": [
+        "mub_save is copied before terrain blending",
+        "blend_terrain updates terrain, mub, and phb",
+        "adjust_tempqv is called with nest%mub, nest%mub_save, c3h, c4h, znw, p_top, t_2, p, QVAPOR, and nest%id"
+      ],
+      "lines": "726-763",
+      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F"
+    }
+  }
+}

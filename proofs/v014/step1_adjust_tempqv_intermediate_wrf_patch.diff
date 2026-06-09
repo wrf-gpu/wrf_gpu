@@ -1,0 +1,178 @@
+--- /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/backups/mediation_integrate.F.before_adjust_tempqv_intermediate	2026-05-29 11:08:05.062805183 +0100
++++ /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F	2026-06-09 17:05:40.225530979 +0100
+@@ -756,6 +756,7 @@
+        CALL adjust_tempqv ( nest%mub , nest%mub_save , &
+                             nest%c3h , nest%c4h , nest%znw , nest%p_top , &
+                             nest%t_2 , nest%p , nest%moist(ims,kms,jms,P_QV) , &
++                            nest%id, &
+                             nest_config_flags%use_theta_m, &
+                             ids , ide , jds , jde , kds , kde , &
+                             ims , ime , jms , jme , kms , kme , &
+--- /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/backups/nest_init_utils.F.before_adjust_tempqv_intermediate	2026-05-29 11:08:04.497801263 +0100
++++ /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F	2026-06-09 17:05:40.280248368 +0100
+@@ -811,6 +811,7 @@
+ 
+ SUBROUTINE adjust_tempqv ( mub, save_mub, c3, c4, znw, p_top, &
+                            th, pp, qv,  &
++                           domain_id, &
+                            use_theta_m, &
+                            ids , ide , jds , jde , kds , kde , &
+                            ims , ime , jms , jme , kms , kme , &
+@@ -834,14 +835,56 @@
+    REAL , DIMENSION(kms:kme) , INTENT(IN)    :: znw
+    REAL , DIMENSION(kms:kme) , INTENT(IN)    :: c3, c4
+    REAL , DIMENSION(ims:ime,kms:kme,jms:jme) , INTENT(INOUT) :: th, pp, qv
++   INTEGER , INTENT(IN)                       :: domain_id
+    INTEGER , INTENT(IN)                       :: use_theta_m
+ 
+    REAL , DIMENSION(ims:ime,kms:kme,jms:jme) :: p_old, p_new, rh
+    REAL :: es,dth,tc,e,dth1,thloc
+    INTEGER :: i , j , k
++   CHARACTER(LEN=512) :: wrfgpu2_env
++   CHARACTER(LEN=1024) :: wrfgpu2_root, wrfgpu2_path
++   INTEGER :: wrfgpu2_target_domain, wrfgpu2_target_i, wrfgpu2_target_j
++   INTEGER :: wrfgpu2_target_k, wrfgpu2_ios, wrfgpu2_unit
++   LOGICAL :: wrfgpu2_enabled, wrfgpu2_target_owner
++   REAL :: wrfgpu2_t_pre, wrfgpu2_t_post, wrfgpu2_qv_pre, wrfgpu2_qv_post
++   REAL :: wrfgpu2_pp, wrfgpu2_p_old, wrfgpu2_p_new
++   REAL :: wrfgpu2_pb_old, wrfgpu2_pb_new, wrfgpu2_mub, wrfgpu2_save_mub
++   REAL :: wrfgpu2_c3, wrfgpu2_c4, wrfgpu2_znw_k, wrfgpu2_znw_kp1
++   REAL :: wrfgpu2_tc_old, wrfgpu2_tc_new, wrfgpu2_es_old, wrfgpu2_es_new
++   REAL :: wrfgpu2_e_old, wrfgpu2_e_new, wrfgpu2_rh, wrfgpu2_thloc
++   REAL :: wrfgpu2_dth1, wrfgpu2_dth
+ 
+    real p_top
+ 
++   wrfgpu2_enabled = .FALSE.
++   wrfgpu2_target_owner = .FALSE.
++   wrfgpu2_target_domain = 2
++   wrfgpu2_target_i = 18
++   wrfgpu2_target_j = 10
++   wrfgpu2_target_k = 2
++   wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth'
++
++   wrfgpu2_env = ''
++   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE', wrfgpu2_env)
++   IF (TRIM(wrfgpu2_env) == '1') wrfgpu2_enabled = .TRUE.
++   IF (wrfgpu2_enabled) THEN
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_DOMAIN', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_target_domain
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_I', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_target_i
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_target_j
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) READ(wrfgpu2_env,*,IOSTAT=wrfgpu2_ios) wrfgpu2_target_k
++      wrfgpu2_env = ''
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT', wrfgpu2_env)
++      IF (LEN_TRIM(wrfgpu2_env) > 0) wrfgpu2_root = TRIM(wrfgpu2_env)
++      wrfgpu2_enabled = domain_id == wrfgpu2_target_domain
++   END IF
+ 
+ ! p_old = full pressure before terrain blending; also compute initial RH
+ ! which is going to be conserved during terrain blending
+@@ -857,6 +900,25 @@
+             es = 610.78*exp(17.0809*tc/(234.175+tc))
+             e = qv(i,k,j)*p_old(i,k,j)/(0.622+qv(i,k,j))
+             rh(i,k,j) = e/es
++            IF (wrfgpu2_enabled .AND. i .EQ. wrfgpu2_target_i .AND. &
++                j .EQ. wrfgpu2_target_j .AND. k .EQ. wrfgpu2_target_k) THEN
++               wrfgpu2_target_owner = .TRUE.
++               wrfgpu2_t_pre = th(i,k,j)
++               wrfgpu2_qv_pre = qv(i,k,j)
++               wrfgpu2_pp = pp(i,k,j)
++               wrfgpu2_p_old = p_old(i,k,j)
++               wrfgpu2_pb_old = c4(k) + c3(k)*save_mub(i,j) + p_top
++               wrfgpu2_mub = mub(i,j)
++               wrfgpu2_save_mub = save_mub(i,j)
++               wrfgpu2_c3 = c3(k)
++               wrfgpu2_c4 = c4(k)
++               wrfgpu2_znw_k = znw(k)
++               wrfgpu2_znw_kp1 = znw(k+1)
++               wrfgpu2_tc_old = tc
++               wrfgpu2_es_old = es
++               wrfgpu2_e_old = e
++               wrfgpu2_rh = rh(i,k,j)
++            END IF
+          END DO
+       END DO
+    END DO
+@@ -873,6 +935,14 @@
+             END IF
+             dth1 = -191.86e-3*(thloc         )/(p_new(i,k,j)+p_old(i,k,j))*(p_new(i,k,j)-p_old(i,k,j))
+             dth  = -191.86e-3*(thloc+0.5*dth1)/(p_new(i,k,j)+p_old(i,k,j))*(p_new(i,k,j)-p_old(i,k,j))
++            IF (wrfgpu2_target_owner .AND. i .EQ. wrfgpu2_target_i .AND. &
++                j .EQ. wrfgpu2_target_j .AND. k .EQ. wrfgpu2_target_k) THEN
++               wrfgpu2_p_new = p_new(i,k,j)
++               wrfgpu2_pb_new = c4(k) + c3(k)*mub(i,j) + p_top
++               wrfgpu2_thloc = thloc
++               wrfgpu2_dth1 = dth1
++               wrfgpu2_dth = dth
++            END IF
+             IF ( use_theta_m .EQ. 1 ) THEN
+                th(i,k,j) = (thloc+dth)*(1.+R_v/R_d*qv(i,k,j))-300.
+             ELSE
+@@ -882,6 +952,59 @@
+             es = 610.78*exp(17.0809*tc/(234.175+tc))
+             e = rh(i,k,j)*es
+             qv(i,k,j) = 0.622*e/(p_new(i,k,j)-e)
++            IF (wrfgpu2_target_owner .AND. i .EQ. wrfgpu2_target_i .AND. &
++                j .EQ. wrfgpu2_target_j .AND. k .EQ. wrfgpu2_target_k) THEN
++               wrfgpu2_t_post = th(i,k,j)
++               wrfgpu2_qv_post = qv(i,k,j)
++               wrfgpu2_tc_new = tc
++               wrfgpu2_es_new = es
++               wrfgpu2_e_new = e
++               CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_root), wait=.TRUE.)
++               WRITE(wrfgpu2_path,'(A,I0,A,I0,A,I0,A,I0,A)') &
++                    TRIM(wrfgpu2_root)//'/adjust_tempqv_d', domain_id, &
++                    '_i', wrfgpu2_target_i, '_j', wrfgpu2_target_j, &
++                    '_k', wrfgpu2_target_k, '.txt'
++               OPEN(NEWUNIT=wrfgpu2_unit, FILE=TRIM(wrfgpu2_path), &
++                    STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++               WRITE(wrfgpu2_unit,'(A)') '# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1'
++               WRITE(wrfgpu2_unit,'(A)') 'routine dyn_em/nest_init_utils.F::adjust_tempqv'
++               WRITE(wrfgpu2_unit,'(A,1X,I0)') 'domain_id', domain_id
++               WRITE(wrfgpu2_unit,'(A,1X,I0)') 'use_theta_m', use_theta_m
++               WRITE(wrfgpu2_unit,'(A,3(1X,I0))') 'target_fortran_i_j_k', i, j, k
++               WRITE(wrfgpu2_unit,'(A,3(1X,I0))') 'target_zero_k_y_x', k-1, j-1, i-1
++               WRITE(wrfgpu2_unit,'(A,6(1X,I0))') 'patch_bounds_ips_ipe_jps_jpe_kps_kpe', &
++                    ips, ipe, jps, jpe, kps, kpe
++               WRITE(wrfgpu2_unit,'(A,6(1X,I0))') 'domain_bounds_ids_ide_jds_jde_kds_kde', &
++                    ids, ide, jds, jde, kds, kde
++               WRITE(wrfgpu2_unit,'(A)') 'record_schema scalar key value'
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 't_2_pre', REAL(wrfgpu2_t_pre,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'qvapor_pre', REAL(wrfgpu2_qv_pre,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 't_2_post', REAL(wrfgpu2_t_post,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'qvapor_post', REAL(wrfgpu2_qv_post,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'p', REAL(wrfgpu2_pp,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'p_old', REAL(wrfgpu2_p_old,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'p_new', REAL(wrfgpu2_p_new,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'pb_old_equiv', REAL(wrfgpu2_pb_old,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'pb_new_equiv', REAL(wrfgpu2_pb_new,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'mub', REAL(wrfgpu2_mub,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'mub_save', REAL(wrfgpu2_save_mub,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'c3h', REAL(wrfgpu2_c3,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'c4h', REAL(wrfgpu2_c4,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'znw_k', REAL(wrfgpu2_znw_k,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'znw_kp1', REAL(wrfgpu2_znw_kp1,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'p_top', REAL(p_top,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'tc_old', REAL(wrfgpu2_tc_old,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'tc_new', REAL(wrfgpu2_tc_new,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'es_old', REAL(wrfgpu2_es_old,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'es_new', REAL(wrfgpu2_es_new,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'e_old', REAL(wrfgpu2_e_old,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'e_new', REAL(wrfgpu2_e_new,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'rh', REAL(wrfgpu2_rh,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'thloc', REAL(wrfgpu2_thloc,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'dth1', REAL(wrfgpu2_dth1,KIND=8)
++               WRITE(wrfgpu2_unit,'(A,1X,E24.16)') 'dth', REAL(wrfgpu2_dth,KIND=8)
++               CLOSE(wrfgpu2_unit)
++            END IF
+          END DO
+       END DO
+    END DO
