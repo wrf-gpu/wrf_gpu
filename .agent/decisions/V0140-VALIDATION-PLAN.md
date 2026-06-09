@@ -225,6 +225,12 @@ Current status:
   raw d02 state, live-nest base-init state, boundary package, initial carry, and
   haloed step-entry. Do not run Switzerland, TOST, FP32, memory source work, or
   GPU validation until this stage is explained or fixed.
+- 2026-06-09 15:58 WEST manager update: the JAX loader split is closed as
+  `STEP1_JAX_LOADER_TSTATE_LOCALIZED_LIVE_NEST_STATE_BASE_MISMATCH`. Boundary
+  package, carry, and halo are ruled out. The next blocker is WRF live-nest
+  `t_2`/theta initialization after `med_nest_initial` terrain/base blending and
+  `start_domain_em`; validation remains paused until an initialization-only
+  source fix is proven or the residual is otherwise explained.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
