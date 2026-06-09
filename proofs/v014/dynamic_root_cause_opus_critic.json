@@ -1,0 +1,76 @@
+{
+  "schema": "wrfgpu2.v014.dynamic_root_cause_opus_critic.v1",
+  "generated_utc": "2026-06-09T00:00:00+00:00",
+  "reviewer": "claude-opus-xhigh",
+  "mode": "read_only_critic",
+  "branch": "worker/gpt/v013-close-manager",
+  "constraints_respected": {
+    "no_src_edits": true,
+    "no_gpu": true,
+    "no_tost": true,
+    "no_switzerland": true,
+    "no_fp32": true,
+    "no_memory_work": true,
+    "no_hermes": true
+  },
+  "manager_conclusion_under_review": "next target = final-RK dynamic coupling (PGF/mass-wind/theta-pressure around PSFC, MU, P, PH, U/V, V10)",
+  "verdict": "MANAGER_FINAL_RK_TARGET_NOT_JUSTIFIED_INPUT_ALREADY_DIVERGED",
+  "key_findings": {
+    "pre_rk_input_already_diverged": {
+      "source": "proofs/v014/pre_rk_input_boundary.json",
+      "wrf_verdict": "PRE_RK_INPUT_JAX_PRESTEP_MISMATCH_CONFIRMED",
+      "mu_perturbation_worst_pa": 267.0,
+      "p_perturbation_k1_worst_pa": 590.0,
+      "t_old_worst_k": 6.2,
+      "implication": "final-RK output mismatch is non-probative; input to the step is already off by hundreds of Pa and several K"
+    },
+    "same_state_is_stale_and_non_same_input": {
+      "source": "proofs/v014/same_state_momentum_mass.json",
+      "strict_same_input_wrf_savepoint": false,
+      "mub_worst_pa": 1050.3046875,
+      "pb_worst_pa": 1047.015625,
+      "matches_prefix_base_bug": true,
+      "base_bug_now_closed_to_pa": 0.05,
+      "implication": "MUB/PB DIFF is the already-fixed base bug carried by a stale checkpoint; 'first mismatch U' is sprint field order, not localization"
+    },
+    "grid_after_is_the_clean_trigger": {
+      "source": "proofs/v014/grid_after_live_nest_base.json",
+      "verdict": "GRID_SYMPTOM_NOT_CLOSED",
+      "v10_rmse_h1_h12": 2.55,
+      "v10_worst_h11": 4.28,
+      "implication": "base fix did NOT close V10 -> residual is genuinely dynamic/upstream (confirms prior debug-method critic F2/F4)"
+    }
+  },
+  "ranked_hypotheses": [
+    {"id": "H4", "label": "stale-base / non-same-input contamination of trigger proofs", "rank": 1, "status": "CONFIRMED_ARTIFACT"},
+    {"id": "H1", "label": "upstream accumulated per-step trajectory drift", "rank": 2, "status": "STRONGLY_FAVORED"},
+    {"id": "H2", "label": "carry-producer / previous-step handoff writes bad final carry", "rank": 2, "status": "FAVORED", "corroborating": ["PRODUCER_WRITES_BAD_FINAL_CARRY", "BAD_BEFORE_FINAL_PARTIAL_SUBCYCLE"]},
+    {"id": "H5", "label": "theta / physics-tendency source folded into RK", "rank": 3, "status": "FAVORED_OVER_PGF", "evidence": "T_OLD 6.2K, T_EVOLUTION_MISMATCH_CONFIRMED"},
+    {"id": "H3", "label": "final-RK PGF/mass-wind coupling (manager target)", "rank": 4, "status": "LEAST_SUPPORTED_UNTESTABLE_UNDER_DIVERGED_INPUT"}
+  ],
+  "recommended_next_sprint": {
+    "title": "strict same-input single-RK-step parity at d02 step 6000",
+    "input": "WRF pre_rk_input savepoint (on disk: /tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output)",
+    "action": "WRF pre-RK state -> one gpuwrf.dynamics.step.step / rk3.rk3_step -> compare to WRF post_after_all_rk_steps_pre_halo step 6000",
+    "discriminates": ["H1", "H2", "H3", "H5"],
+    "match_outcome": "DYNAMICS_CLEAN_SINGLE_STEP -> falsifies H3, redirect to upstream H1/H2",
+    "mismatch_outcome": "term-localizable: T-dominated => H5, U/V/PGF-dominated => H3",
+    "caveats": [
+      "control tendency input (use WRF rk_tendency savepoint or post_final_calc_p_rho_phi dynamics-only boundary) to isolate dycore from physics",
+      "pre_rk_input patch i 1..23 with 8-cell halo => only ~i 9..15 stencil-valid; widen emit via existing hook if needed"
+    ],
+    "expected_proof_object": "proofs/v014/same_input_single_rk_parity.json"
+  },
+  "backup_sprint": {
+    "title": "per-step drift-onset bisection + carry-producer trace",
+    "condition": "if same-input single step MATCHES (dynamics clean)",
+    "action": "binary-search strict same-input single-step parity 0->5999 to find first divergent step/operator; else resume PRODUCER_WRITES_BAD_FINAL_CARRY trace on d02_replay/coupled_step/mu_t_advance",
+    "expected_proof_object": "proofs/v014/per_step_drift_onset.json"
+  },
+  "production_edits_justified_now": false,
+  "edit_gate": "strict same-input single-RK-step parity at step 6000 must turn green-or-red before any src/gpuwrf/dynamics edit",
+  "deliverables": {
+    "review_md": ".agent/reviews/2026-06-09-v014-dynamic-root-cause-opus-critic.md",
+    "json": "proofs/v014/dynamic_root_cause_opus_critic.json"
+  }
+}
