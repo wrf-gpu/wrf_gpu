@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-08 23:11 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 01:08 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -30,6 +30,12 @@ exist, and the v0.12 128²/150² attempt is documented as fp64 OOM/grid-ceiling 
 Switzerland run is v0.14 B7.
 The durable handoff for this goal shift is
 `.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md`.
+Current v0.14 grid-parity work has already fixed and proven the stale static-metric writer
+payload (`C1/C2/C3/C4`, `DN/DNW/RDN/RDNW`, and `MAPFAC_*` exact in the fresh h1 smoke),
+classified the remaining base/static fields, packaged the h10 same-state savepoint request,
+and is running an instrumented CPU-WRF same-state marker sprint. A separate writer-only
+`XLAT`/`XLONG` payload sprint is active to remove a known comparator distraction; it is not a
+dycore/runtime fix.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
