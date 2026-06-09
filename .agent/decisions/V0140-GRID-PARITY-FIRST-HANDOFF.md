@@ -376,14 +376,36 @@ tile-local post-`small_step_finish` surface is not yet history-aligned for
 pressure/rho/post-RK refresh path before or around `after_all_rk_steps`, then a
 JAX CPU same-state wrapper against the green post-marker surface.
 
+## Completed Wave 7
+
+- `019eaa42-3b01-7b10-8a19-145943a0e9a2` (`Boole`):
+  CPU-only pressure/rho post-RK refresh localization sprint
+  `.agent/sprints/2026-06-09-v014-pressure-rho-post-rk-localization/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/wrf_post_rk_refresh_localization.{py,json,md}`,
+  `proofs/v014/wrf_post_rk_refresh_localization_patch.diff`, and
+  `.agent/reviews/2026-06-09-v014-post-rk-refresh-localization.md`.
+  Manager validation reran JSON validation and Python compilation; no WRF/GPU
+  process remained active.
+
+Verdict: `REFRESH_LAYER_GREEN_post_after_all_rk_steps_pre_halo`. The final
+`calc_p_rho_phi` boundary closes the large `P` gap from Ptolemy's
+post-`small_step_finish` layer, and `after_all_rk_steps` closes the remaining
+`V/W` gap to the green marker. The accepted JAX compare target is now the state
+immediately after `dyn_em/solve_em.F::after_all_rk_steps` and before RK halo
+exchanges. Candidate vs provided CPU h10 is exact/roundoff:
+`T/P/PB=0`, `U=4.77e-7`, `V=9.54e-7`, `W=1.19e-7`, `PH=1.91e-6`,
+`MU=4.55e-13`, `MUB=0` max_abs. Retained GPU/JAX h10 remains far away on the
+same patch (`T=3.36`, `P=590`, `PB=1047`, `U=6.29`, `V=11.59`, `W=1.73`,
+`PH=5.10`, `MU=267`, `MUB=1050` max_abs), so the next sprint is a JAX CPU
+same-state wrapper at this surface, not another WRF-only emitter.
+
 ## Next Manager Actions
 
-1. Open the next same-state localization sprint around the pressure/rho/post-RK
-   refresh path before or around `after_all_rk_steps`. Use Ptolemy's
-   `small_step_finish` layer and Herschel's green post-marker as the bounding
-   surfaces. Ampere did not find a runtime base-state blocker; proceed with
-   documented `PHB/HGT/XLAT/XLONG` exclusions and treat `PB/MUB` as dynamic
-   symptoms.
+1. Open the next same-state JAX CPU wrapper sprint against
+   `post dyn_em/solve_em.F::after_all_rk_steps state before RK halo exchanges`.
+   Use Boole's green refresh layer as WRF truth and retain Ampere's documented
+   `PHB/HGT/XLAT/XLONG` exclusions; `PB/MUB` are now dynamic compare fields.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.
