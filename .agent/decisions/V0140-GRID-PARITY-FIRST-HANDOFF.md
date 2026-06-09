@@ -298,6 +298,28 @@ Wave deliverables are expected under `proofs/v014/` and
   indices against CPU h10 wrfout, then emit the first routine-boundary
   source-term layer only if the marker is green.
 
+Manager closeout 2026-06-09 02:58 WEST: Herschel completed and the sprint is
+accepted. Deliverables:
+`proofs/v014/wrf_same_state_marker_savepoint.{json,md}`,
+`proofs/v014/wrf_same_state_marker_patch.diff`, and
+`.agent/reviews/2026-06-09-v014-wrf-same-state-marker-savepoint.md`.
+Verdict: `MARKER_GREEN`. The final CPU-only dmpar run used 28 MPI ranks and no
+GPU/Hermes. It proves `d02` h10 maps to `grid%itimestep=6000`,
+`current_timestr_before_step=2026-05-02_03:59:54`, `lead_seconds_after_step=36000`,
+and the selected mass/U/V/W/PH patch indices match the requested native WRF
+coordinates. The final post marker samples WRF history `T` from
+`grid%th_phy_m_t0`; earlier `grid%t_2`/`grid%t_1` attempts were useful but
+misleading for wrfout history `T`.
+
+Final comparison against the scratch h10 wrfout is roundoff-level
+(`T/P/PB=0`, `U/V<=8.88e-16`, `W=4.44e-16`, `PH=5.33e-15`). Against the
+provided CPU h10 wrfout, `T/P/PB=0`, `U=4.77e-7`, `V=9.54e-7`,
+`W=1.19e-7`, and `PH=1.91e-6` max_abs. Repo `src/` stayed untouched; marker
+hooks live only in the disposable WRF scratch tree and are preserved as a patch
+diff proof. No WRF process remains running. Next sprint: dynamic localization
+from this green post-marker point, with routine-boundary term emitters around
+the same location before any GPU or FP32 work.
+
 ## Completed Wave 5
 
 - `019ea9ad-aa61-7ab0-b3af-6b4734d886c0` (`Sagan`):
@@ -333,20 +355,18 @@ cause queue.
 
 ## Next Manager Actions
 
-1. Let the active WRF same-state marker run reach h10 and validate its proof
-   object before launching dynamic source changes.
-2. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
+1. Open the next same-state localization sprint using Helmholtz/Kierkegaard h10
    cell/level manifest plus Sartre's WRF savepoint path. Ampere did not find a
    runtime base-state blocker; proceed with documented `PHB/HGT/XLAT/XLONG`
    exclusions and treat `PB/MUB` as dynamic symptoms.
-3. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
+2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.
-4. Launch source-changing dynamic fixes only after a same-state/term proof
+3. Launch source-changing dynamic fixes only after a same-state/term proof
    names the first failing operator or cadence path.
-5. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
+4. Use Opus 4.8 xhigh/max via `claude --permission-mode auto` only after two
    failed GPT attempts on the same static/base or tendency root-cause problem.
-6. Keep GPU time for short targeted probes only; no powered TOST, no
+5. Keep GPU time for short targeted probes only; no powered TOST, no
    Switzerland equivalence, no FP32 source landing until the dynamic grid
    divergence is named, fixed, or explicitly bounded.
 
