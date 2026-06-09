@@ -1,0 +1,440 @@
+{
+  "attempt_verdicts": {
+    "aborted_single_rank_marker_run": {
+      "finding": "Single-rank nested run was too slow; preserved logs and switched to dmpar CPU.",
+      "path": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/aborted_single_rank_marker_run",
+      "verdict": "bounded_abort_slow"
+    },
+    "current_thphy_marker": {
+      "finding": "Post hook sampled Registry-backed history T via grid%th_phy_m_t0 plus P/PB/U/V/W/PH; all compared green.",
+      "marker_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output",
+      "run_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3",
+      "verdict": "MARKER_GREEN"
+    },
+    "failed_serial_before_dmpar": {
+      "finding": "Serial wrf.exe could not run this nested case; WRF fatal said nesting requires MPI or -DSTUBMPI.",
+      "path": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/failed_serial_rsl_before_dmpar_marker",
+      "verdict": "blocked_by_serial_nested_requirement"
+    },
+    "first_28rank_early_marker": {
+      "compare_to_run_wrfout": {
+        "P": {
+          "count": 289,
+          "max_abs": 1981.2389628887177,
+          "rmse": 1937.0772588531222
+        },
+        "PB": {
+          "count": 289,
+          "max_abs": 0.0,
+          "rmse": 0.0
+        },
+        "PH": {
+          "count": 578,
+          "max_abs": 5.329070518200751e-15,
+          "rmse": 2.0806684742968092e-15
+        },
+        "T": {
+          "count": 289,
+          "max_abs": 5.702972412109375,
+          "rmse": 5.449877336887554
+        },
+        "U": {
+          "count": 306,
+          "max_abs": 8.881784197001252e-16,
+          "rmse": 2.7027201268900864e-16
+        },
+        "V": {
+          "count": 306,
+          "max_abs": 57.9480562210083,
+          "rmse": 8.12571661771947
+        },
+        "W": {
+          "count": 578,
+          "max_abs": 0.00010097026824995581,
+          "rmse": 6.654755737082988e-06
+        }
+      },
+      "finding": "Proved d02 h10 step/index mapping, but early hook was before final same-state history point; T/P/V/W mismatched h10.",
+      "marker_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output/first_28rank_early_marker",
+      "run_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/first_28rank_early_marker_run",
+      "verdict": "mapping_green_not_same_state"
+    },
+    "post_marker_noemit": {
+      "finding": "Post hook with rk_step == rk_order gate emitted no post files because after the RK loop rk_step was 4 while rk_order was 3.",
+      "marker_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output/post_marker_noemit_run",
+      "run_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/post_marker_noemit_run",
+      "verdict": "noemit_due_rk_step_gate"
+    },
+    "post_t1_marker": {
+      "compare_to_run_wrfout": {
+        "P": {
+          "count": 289,
+          "max_abs": 0.0,
+          "rmse": 0.0
+        },
+        "PB": {
+          "count": 289,
+          "max_abs": 0.0,
+          "rmse": 0.0
+        },
+        "PH": {
+          "count": 578,
+          "max_abs": 5.329070518200751e-15,
+          "rmse": 2.0806684742968092e-15
+        },
+        "T": {
+          "count": 289,
+          "max_abs": 5.702606201171875,
+          "rmse": 5.449797325866424
+        },
+        "U": {
+          "count": 306,
+          "max_abs": 8.881784197001252e-16,
+          "rmse": 2.7027201268900864e-16
+        },
+        "V": {
+          "count": 306,
+          "max_abs": 8.881784197001252e-16,
+          "rmse": 2.6017692407882053e-16
+        },
+        "W": {
+          "count": 578,
+          "max_abs": 4.440892098500626e-16,
+          "rmse": 4.0846014518837006e-17
+        }
+      },
+      "finding": "Post hook sampled P/PB/U/V/W/PH at h10 correctly, but T sampled grid%t_1/THM-side state and missed wrfout T by max_abs 5.702606201171875.",
+      "marker_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output/post_t1_marker_run",
+      "run_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/post_t1_marker_run",
+      "verdict": "green_except_history_T"
+    },
+    "post_t2_marker": {
+      "compare_to_run_wrfout": {
+        "P": {
+          "count": 289,
+          "max_abs": 0.0,
+          "rmse": 0.0
+        },
+        "PB": {
+          "count": 289,
+          "max_abs": 0.0,
+          "rmse": 0.0
+        },
+        "PH": {
+          "count": 578,
+          "max_abs": 5.329070518200751e-15,
+          "rmse": 2.0806684742968092e-15
+        },
+        "T": {
+          "count": 289,
+          "max_abs": 5.702972412109375,
+          "rmse": 5.4497435060612585
+        },
+        "U": {
+          "count": 306,
+          "max_abs": 8.881784197001252e-16,
+          "rmse": 2.7027201268900864e-16
+        },
+        "V": {
+          "count": 306,
+          "max_abs": 8.881784197001252e-16,
+          "rmse": 2.6017692407882053e-16
+        },
+        "W": {
+          "count": 578,
+          "max_abs": 4.440892098500626e-16,
+          "rmse": 4.0846014518837006e-17
+        }
+      },
+      "finding": "Post hook sampled P/PB/U/V/W/PH at h10 correctly, but T sampled grid%t_2/THM and missed wrfout T by max_abs 5.702972412109375.",
+      "marker_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output/post_t2_marker_run",
+      "run_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/post_t2_marker_run",
+      "verdict": "green_except_history_T"
+    }
+  },
+  "commands": [
+    "rsync -a /home/enric/src/wrf_pristine/WRF/ /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/",
+    "rsync -a /mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/ /mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/",
+    "env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 sh -c \"printf '34\\n1\\n' | ./configure > /mnt/data/wrf_gpu2/v014_same_state_wrf/configure_dmpar.log 2>&1\"",
+    "timeout 5400 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar.log 2>&1",
+    "timeout 1800 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar_post_thphy_marker.log 2>&1",
+    "timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/marker_run_post_thphy_28rank_stdout.log 2>&1",
+    "python - <<'PY'  # parsed marker_post_d2_step_6000_*.txt and compared to scratch/provided CPU h10 wrfout; wrote /mnt/data/wrf_gpu2/v014_same_state_wrf/compare_post_thphy_marker.json",
+    "python - <<'PY'  # parsed archived marker attempts; wrote /mnt/data/wrf_gpu2/v014_same_state_wrf/compare_archived_marker_runs.json",
+    "diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/dyn_em/solve_em.F.before_v014_marker /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/dyn_em/solve_em.F > proofs/v014/wrf_same_state_marker_patch.diff"
+  ],
+  "cpu_only": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "OMP_NUM_THREADS": "1",
+    "mpi_ranks": 28,
+    "nproc_x": 7,
+    "nproc_y": 4,
+    "wrf_config": "dmpar"
+  },
+  "final_thphy_run": {
+    "green_checks": {
+      "post_duplicate_max_delta_zero": true,
+      "post_marker_files": true,
+      "post_vs_provided_cpu_all_max_abs_le_2e-6": true,
+      "post_vs_scratch_all_max_abs_le_1e-12": true
+    },
+    "marker_files": [
+      "marker_post_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "marker_post_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "post_duplicate_count": 17,
+    "post_duplicate_max_delta": 0.0,
+    "post_unique_counts": {
+      "P": 289,
+      "PB": 289,
+      "PH": 578,
+      "T": 289,
+      "U": 306,
+      "V": 306,
+      "W": 578
+    },
+    "post_vs_provided_cpu_h10": {
+      "P": {
+        "count": 289,
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PB": {
+        "count": 289,
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PH": {
+        "count": 578,
+        "max_abs": 1.9073486328125e-06,
+        "rmse": 4.3090067180366245e-07
+      },
+      "T": {
+        "count": 289,
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "U": {
+        "count": 306,
+        "max_abs": 4.76837158203125e-07,
+        "rmse": 1.3106758362804406e-07
+      },
+      "V": {
+        "count": 306,
+        "max_abs": 9.5367431640625e-07,
+        "rmse": 3.1466681451378603e-07
+      },
+      "W": {
+        "count": 578,
+        "max_abs": 1.1920928977282585e-07,
+        "rmse": 9.606584126922052e-09
+      }
+    },
+    "post_vs_scratch_thphy_h10": {
+      "P": {
+        "count": 289,
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PB": {
+        "count": 289,
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "PH": {
+        "count": 578,
+        "max_abs": 5.329070518200751e-15,
+        "rmse": 2.0806684742968092e-15
+      },
+      "T": {
+        "count": 289,
+        "max_abs": 0.0,
+        "rmse": 0.0
+      },
+      "U": {
+        "count": 306,
+        "max_abs": 8.881784197001252e-16,
+        "rmse": 2.7027201268900864e-16
+      },
+      "V": {
+        "count": 306,
+        "max_abs": 8.881784197001252e-16,
+        "rmse": 2.6017692407882053e-16
+      },
+      "W": {
+        "count": 578,
+        "max_abs": 4.440892098500626e-16,
+        "rmse": 4.0846014518837006e-17
+      }
+    },
+    "rsl_log_glob": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/rsl.error.*",
+    "stdout_log": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/marker_run_post_thphy_28rank_stdout.log",
+    "verdict": "MARKER_GREEN",
+    "wrfout_d02_h10": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/wrfout_d02_2026-05-02_04:00:00"
+  },
+  "generated_at_local": "2026-06-09T02:57:09",
+  "gpu_used": false,
+  "inputs": [
+    "proofs/v014/same_state_savepoint_request.json",
+    "proofs/v014/same_state_wrf_savepoint_feasibility.json",
+    "proofs/v014/dynamic_field_attribution.json",
+    "proofs/v014/base_state_writer_attribution.json"
+  ],
+  "logs_and_scratch_outputs": {
+    "archived_comparison_json": "/mnt/data/wrf_gpu2/v014_same_state_wrf/compare_archived_marker_runs.json",
+    "archived_marker_root": "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output",
+    "comparison_json": "/mnt/data/wrf_gpu2/v014_same_state_wrf/compare_post_thphy_marker.json",
+    "compile_logs": [
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar.log",
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar_tile_marker.log",
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar_post_marker.log",
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar_post_gate_marker.log",
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar_post_t1_marker.log",
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar_post_thphy_marker.log"
+    ],
+    "configure_dmpar_log": "/mnt/data/wrf_gpu2/v014_same_state_wrf/configure_dmpar.log",
+    "current_marker_files": [
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ]
+  },
+  "marker_mapping": {
+    "current_timestr_before_step": "2026-05-02_03:59:54",
+    "domain_id": "2",
+    "dt_seconds": "0.6000000000000000E+01",
+    "grid_itimestep_after_increment": "6000",
+    "h10_conclusion": "d02 step 6000 advances from 2026-05-02_03:59:54 to 2026-05-02_04:00:00, i.e. 36000 s lead time.",
+    "index_conversion": {
+      "mass_patch_fortran_inclusive": {
+        "i": [
+          6,
+          22
+        ],
+        "j": [
+          2,
+          18
+        ]
+      },
+      "mass_patch_zero_yx_half_open": {
+        "x": [
+          5,
+          22
+        ],
+        "y": [
+          1,
+          18
+        ]
+      },
+      "selected_mass_cell_fortran_ji": [
+        10,
+        14
+      ],
+      "selected_mass_cell_zero_yx": [
+        9,
+        13
+      ],
+      "u_patch_fortran_inclusive": {
+        "i": [
+          6,
+          23
+        ],
+        "j": [
+          2,
+          18
+        ]
+      },
+      "u_patch_zero_half_open": {
+        "x_stag": [
+          5,
+          23
+        ],
+        "y": [
+          1,
+          18
+        ]
+      },
+      "v_patch_fortran_inclusive": {
+        "i": [
+          6,
+          22
+        ],
+        "j": [
+          2,
+          19
+        ]
+      },
+      "v_patch_zero_half_open": {
+        "x": [
+          5,
+          22
+        ],
+        "y_stag": [
+          1,
+          19
+        ]
+      },
+      "w_ph_patch_zero_half_open": {
+        "kstag": [
+          0,
+          2
+        ],
+        "x": [
+          5,
+          22
+        ],
+        "y": [
+          1,
+          18
+        ]
+      }
+    },
+    "lead_seconds_after_step": "0.3600000000000000E+05",
+    "lead_seconds_before_step": "0.3599400000000000E+05",
+    "rk_order": "3",
+    "rk_step": "4"
+  },
+  "next_sprint_recommendation": "Run V0.15 dynamic localization on the same CPU h10/d02 marker: keep the th_phy_m_t0 history-backed T source, add routine-boundary term-group emitters around the post-RK same-state point, and localize dynamic-field terms for T/P/PB/U/V/W/PH against the green marker patch before any GPU work.",
+  "no_hermes": true,
+  "proof_paths": {
+    "json": "proofs/v014/wrf_same_state_marker_savepoint.json",
+    "markdown": "proofs/v014/wrf_same_state_marker_savepoint.md",
+    "patch_diff": "proofs/v014/wrf_same_state_marker_patch.diff",
+    "review": ".agent/reviews/2026-06-09-v014-wrf-same-state-marker-savepoint.md"
+  },
+  "provenance": {
+    "disposable_wrf_copy": "/mnt/data/wrf_gpu2/v014_same_state_wrf/WRF",
+    "hashes": {
+      "compare_archived_marker_runs_json": "1098336141c33d7842566d036fda994433e46f8764589793eeac253a88dcaca4",
+      "compare_post_thphy_marker_json": "88f2c212d31ea516187c125d41f94cf9b46678f74e13544048de4c28def7588d",
+      "patch_diff": "f967f26a8497b0d8ee2a4dbd7051b72c28c96fc54d8b2168ad730e180a1a0ba8",
+      "pristine_solve_em_F_current": "de58116cf306e40e60f9c9bb1aa74ed5090fbe8631e122ec73e77487ef55e271",
+      "scratch_solve_em_after_marker": "95905729e482845c087618428d735de832832a89542f5d345661a3cde52dfafa",
+      "scratch_solve_em_before_marker": "de58116cf306e40e60f9c9bb1aa74ed5090fbe8631e122ec73e77487ef55e271",
+      "scratch_wrf_exe_final": "96fc731fd818936e0f59c2ae745c8b4e9c24091c04b0fb7f4f4e9ee2321678dd"
+    },
+    "marker_root": "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output",
+    "run_dir": "/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3",
+    "source_wrf": "/home/enric/src/wrf_pristine/WRF",
+    "source_wrf_describe": "v4.7.1-dirty",
+    "source_wrf_head": "f52c197ed39d12e087d02c50f412d90d418f6186",
+    "source_wrf_status_head": "M dyn_em/solve_em.F\n M phys/Makefile\n M phys/module_microphysics_driver.F\n M phys/module_pbl_driver.F\n M phys/module_radiation_driver.F\n M phys/module_surface_driver.F\n?? Registry/Registry\n?? Registry/io_boilerplate_temporary.inc\n?? external/io_grib1/io_grib1.f90\n?? external/io_grib_share/io_grib_share.f90\n?? external/io_int/diffwrf\n?? external/io_int/test_io_idx\n?? external/io_netcdf/diffwrf\n?? frame/md_calls.inc\n?? frame/module_dm.F\n?? frame/module_state_description.F\n?? inc/wrf_io_flags.h\n?? inc/wrf_status_codes.h\n?? phys/module_bl_mynnedmf.F\n?? phys/module_bl_mynnedmf_common.F\n?? phys/module_bl_mynnedmf_driver.F\n?? phys/module_sf_noahmp_glacier.F\n?? phys/module_sf_noahmp_groundwater.F\n?? phys/module_sf_noahmpdrv.F\n?? phys/module_sf_noahmplsm.F\n?? phys/module_wrfgpu2_oracle.F\n?? phys/physics_mmm/\n?? run/MPTABLE.TBL\n?? run/input_sounding\n?? run/namelist.input\n?? run/namelist.input.backup.2026-05-29_11_34_29\n?? run/namelist.input.backup.2026-05-29_14_46_33\n?? run/namelist.input.backup.2026-05-29_16_01_23\n?? run/namelist.input.backup.2026-05-29_22_43_13\n?? run/namelist.input.backup.2026-06-04_10_13_19\n?? test/em_grav2d_x/README.namelist\n?? test/em_real/BROADBAND_CLOUD_GODDARD.bin\n?? test/em_real/README.namelist\n?? test/em_real/README.physics_files\n?? test/em_real/eclipse_besselian_elements.dat\n?? test/em_real/ishmael-gamma-tab.bin\n?? test/em_real/ishmael-qi-qc.bin\n?? test/em_real/ishmael-qi-qr.bin\n?? test/em_real/oracle_run/\n?? test/em_real/oracle_run_v090/\n?? test/em_real/oracle_run_v090_mp28/\n?? test/em_real/p3_lookupTable_1.dat-v5.4_2momI\n?? test/em_real/p3_lookupTable_1.dat-v5.4_3momI\n?? test/em_real/p3_lookupTable_2.dat-v5.3\n?? test/em_real/wind-turbine-1.tbl",
+    "target_domain": "d02",
+    "target_h10_valid_time": "2026-05-02_04:00:00",
+    "target_run": "20260501_18z_l2_72h_20260519T173026Z"
+  },
+  "schema": "wrf_gpu2.v014.same_state_marker_savepoint.v1",
+  "verdict": "MARKER_GREEN",
+  "write_scope": {
+    "external_scratch_root": "/mnt/data/wrf_gpu2/v014_same_state_wrf",
+    "original_wrf_tree_patched": false,
+    "repo_files_written": [
+      "proofs/v014/wrf_same_state_marker_savepoint.json",
+      "proofs/v014/wrf_same_state_marker_savepoint.md",
+      "proofs/v014/wrf_same_state_marker_patch.diff",
+      ".agent/reviews/2026-06-09-v014-wrf-same-state-marker-savepoint.md"
+    ],
+    "repo_src_edited": false,
+    "repo_src_status": ""
+  }
+}

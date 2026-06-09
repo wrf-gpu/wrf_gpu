@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 01:13 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 02:58 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -33,9 +33,12 @@ The durable handoff for this goal shift is
 Current v0.14 grid-parity work has already fixed and proven the stale static-metric writer
 payload (`C1/C2/C3/C4`, `DN/DNW/RDN/RDNW`, and `MAPFAC_*` exact in the fresh h1 smoke),
 classified the remaining base/static fields, packaged the h10 same-state savepoint request,
-completed the writer-only `XLAT`/`XLONG` payload fix, and is running an instrumented
-CPU-WRF same-state marker sprint. The `XLAT`/`XLONG` fix removes a known comparator
-distraction; it is not a dycore/runtime fix.
+completed the writer-only `XLAT`/`XLONG` payload fix, and achieved a green CPU-WRF h10
+same-state marker at step 6000. The marker proves the native h10/`d02` patch/index mapping
+and the correct history-backed WRF `T` source (`grid%th_phy_m_t0`); final post-marker
+comparison against CPU h10 is exact for `T/P/PB` and within `2e-6` max_abs for
+`U/V/W/PH`. The next blocker is dynamic routine-boundary term localization from that green
+same-state point.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
