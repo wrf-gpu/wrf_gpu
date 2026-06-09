@@ -384,6 +384,35 @@ the worker to actively disprove that hypothesis, rank alternate causes, and try
 cheap proof-local falsifiers if the hypothesis fails. Production edits are
 limited to a narrow GPU-native live-nest/init fix only after formula proof.
 
+Update 2026-06-09 19:36 WEST: live-nest perturb-state init sprint closed and
+pushed as `f73542c0`. Verdict:
+`STEP1_LIVE_NEST_PERTURB_STATE_LOCALIZED_START_DOMAIN_P_PRESS_ADJ_SET_W_SURFACE_P_AL_ALT_SUBSURFACE_GAP`.
+WRF recomputes/adjusts `P/MU/W` before `first_rk_step_part1_call`, while JAX
+keeps raw `wrfinput_d02` perturbation leaves through raw child, live child,
+boundary package, initial carry, halo entry, and `_physics_step_forcing`.
+Proof-local WRF transcriptions reduce residuals:
+`P_STATE 69.96875 -> 3.9458582235092763 Pa`, `MU_STATE
+13.256103515625 -> 0.047773029698646496 Pa`, and `W_STATE
+0.7605466246604919 -> 1.2992081932505783e-07 m/s`. No production source edit
+was applied because `P_STATE` still needs one internal WRF `start_domain`
+`al/alt` plus pre/post-`press_adj` truth surface before patching.
+
+Update 2026-06-09 19:42 WEST: non-colliding Memory/FP32 side-manager branch
+merged and pushed as `ee6cbbe1`. Source edit is limited to
+`src/gpuwrf/coupling/scan_adapters.py`: WDM6 `slmsk` now passes a per-column
+vector instead of materializing a full-column broadcast. Proof verdict:
+`WDM6_SLMSK_SHAPE_CLEANUP_EXACT`; WDM6 savepoint parity `85 passed`, WDM6
+operational smoke `1 passed`, target saving `76.92176055908203 MiB`. FP32
+source work remains blocked by the live-nest/dycore grid-parity lock.
+
+Next active debug step: open a CPU-only disposable-WRF start-domain subsurface
+sprint. It must emit WRF live-nest `start_domain(nest,.TRUE.)` internal
+surfaces after the hypsometric `P/al/alt` recompute and immediately before/after
+`press_adj`, including `P_STATE`, `MU_STATE`, `al`, `alt`, `alb`, `PH_STATE`,
+`PB`, `MUB`, `PHB`, `theta`, `qv`, `HT`, and `HT_FINE`. Only after that surface
+closes `P_STATE` should a narrow GPU-native `d02_replay` source patch be
+attempted. TOST, Switzerland, and FP32 source work remain paused.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
