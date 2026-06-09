@@ -205,7 +205,7 @@ This is the active debug sprint. It must split WRF `first_rk_step_part1/part2`,
 `_physics_step_forcing`, `_augment_large_step_tendencies`, and dry `*_tendf`
 construction. No acoustic continuation unless this earlier boundary is closed.
 
-Update 2026-06-09 14:58 WEST: step-1 RK1 source-boundary sprint closed.
+Update 2026-06-09 14:50 WEST: step-1 RK1 source-boundary sprint closed.
 Verdict:
 `STEP1_RK1_SOURCE_LOCALIZED_FIRST_RK_STEP_PART1_PHYSICS_STATE_MUTATION_T_STATE`.
 The first material source-boundary mismatch is now `T_STATE` immediately after
@@ -217,6 +217,14 @@ WRF `first_rk_step_part1`. WRF vs JAX operational carry has max_abs
 `first_rk_step_part1` surfaces against the JAX physics adapter output. Do not
 continue acoustic, TOST, Switzerland, FP32, or memory work until this earlier
 T-state mutation is explained or fixed.
+
+Update 2026-06-09 14:50 WEST: step-1 part1 physics-state mutation sprint
+opened:
+`.agent/sprints/2026-06-09-v014-step1-part1-physics-state-mutation/sprint-contract.md`.
+This is the active debug sprint. It must instrument/compare internal WRF
+`first_rk_step_part1` surfaces against JAX `_physics_step_forcing` and
+scheme-adapter state/tendency outputs. The target is an exact T-state mutation
+source, an input-already-diverged proof, or one exact missing-truth blocker.
 
 ## Manager Directive
 
