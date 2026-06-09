@@ -1,0 +1,118 @@
+--- a/dyn_em/solve_em.F
++++ b/dyn_em/solve_em.F
+@@ -192,8 +192,16 @@
+ 
+    INTEGER :: ii, jj !kk is above after l,kte
+    INTEGER :: itd    ! WRFGPU2 touchdown-column dump loop index (F7N)
++   INTEGER :: wrfgpu2_prerk_grid, wrfgpu2_prerk_start_step, wrfgpu2_prerk_end_step
++   INTEGER :: wrfgpu2_prerk_ios, wrfgpu2_prerk_unit
++   INTEGER :: wrfgpu2_prerk_i, wrfgpu2_prerk_j
+    REAL    :: dclat
+    INTEGER :: debug_level
++   LOGICAL :: wrfgpu2_prerk_enabled
++   CHARACTER(LEN=64)  :: wrfgpu2_prerk_env
++   CHARACTER(LEN=256) :: wrfgpu2_prerk_time
++   CHARACTER(LEN=512) :: wrfgpu2_prerk_root
++   CHARACTER(LEN=768) :: wrfgpu2_prerk_path
+ 
+ ! urban related variables
+    INTEGER :: NUM_ROOF_LAYERS, NUM_WALL_LAYERS, NUM_ROAD_LAYERS   ! urban
+@@ -376,6 +386,98 @@
+ 
+    grid%itimestep = grid%itimestep + 1
+    grid%dtbc = grid%dtbc + grid%dt
++   wrfgpu2_prerk_enabled = .FALSE.
++   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_PRE_RK_INPUT', wrfgpu2_prerk_env)
++   IF (TRIM(wrfgpu2_prerk_env) == '1') THEN
++     wrfgpu2_prerk_grid = 2
++     wrfgpu2_prerk_start_step = 6000
++     wrfgpu2_prerk_end_step = 6000
++     wrfgpu2_prerk_root = '/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output'
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_PRE_RK_INPUT_GRID', wrfgpu2_prerk_env)
++     IF (LEN_TRIM(wrfgpu2_prerk_env) > 0) THEN
++       READ(wrfgpu2_prerk_env,*,IOSTAT=wrfgpu2_prerk_ios) wrfgpu2_prerk_grid
++     ENDIF
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_PRE_RK_INPUT_START_STEP', wrfgpu2_prerk_env)
++     IF (LEN_TRIM(wrfgpu2_prerk_env) > 0) THEN
++       READ(wrfgpu2_prerk_env,*,IOSTAT=wrfgpu2_prerk_ios) wrfgpu2_prerk_start_step
++       wrfgpu2_prerk_end_step = wrfgpu2_prerk_start_step
++     ENDIF
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_PRE_RK_INPUT_END_STEP', wrfgpu2_prerk_env)
++     IF (LEN_TRIM(wrfgpu2_prerk_env) > 0) THEN
++       READ(wrfgpu2_prerk_env,*,IOSTAT=wrfgpu2_prerk_ios) wrfgpu2_prerk_end_step
++     ENDIF
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_PRE_RK_INPUT_ROOT', wrfgpu2_prerk_root)
++     wrfgpu2_prerk_enabled = grid%id == wrfgpu2_prerk_grid .AND. &
++                              grid%itimestep >= wrfgpu2_prerk_start_step .AND. &
++                              grid%itimestep <= wrfgpu2_prerk_end_step
++   ENDIF
++   IF (wrfgpu2_prerk_enabled) THEN
++     DO ij = 1 , grid%num_tiles
++       block_wrfgpu2_v014_pre_rk_input: DO
++         IF (22 < grid%i_start(ij) .OR. 6 > grid%i_end(ij)) EXIT block_wrfgpu2_v014_pre_rk_input
++         IF (18 < grid%j_start(ij) .OR. 2 > grid%j_end(ij)) EXIT block_wrfgpu2_v014_pre_rk_input
++         IF (1 < k_start .OR. 1 > k_end) EXIT block_wrfgpu2_v014_pre_rk_input
++         CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_prerk_root), wait=.TRUE.)
++         CALL domain_clock_get(grid, current_timestr=wrfgpu2_prerk_time)
++         WRITE(wrfgpu2_prerk_path,'(A,I0,A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
++              TRIM(wrfgpu2_prerk_root)//'/pre_rk_input_d', grid%id, &
++              '_step_', grid%itimestep, '_is_', grid%i_start(ij), &
++              '_ie_', grid%i_end(ij), '_js_', grid%j_start(ij), &
++              '_je_', grid%j_end(ij), '.txt'
++         OPEN(NEWUNIT=wrfgpu2_prerk_unit, FILE=TRIM(wrfgpu2_prerk_path), &
++              STATUS='REPLACE', ACTION='WRITE', FORM='FORMATTED')
++         WRITE(wrfgpu2_prerk_unit,'(A)') '# WRFGPU2_V014_PRE_RK_INPUT_BOUNDARY v1'
++         WRITE(wrfgpu2_prerk_unit,'(A)') 'surface pre_rk_input_boundary'
++         WRITE(wrfgpu2_prerk_unit,'(A)') &
++              'routine dyn_em/solve_em.F after grid%itimestep increment before RK loop'
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,I0)') 'domain_id', grid%id
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,A)') &
++              'current_timestr_before_step', TRIM(wrfgpu2_prerk_time)
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,I0)') &
++              'grid_itimestep_after_increment', grid%itimestep
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,I0)') 'rk_order_config', config_flags%rk_ord
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,E24.16)') 'dt_seconds', REAL(grid%dt,KIND=8)
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,E24.16)') 'dx_m', REAL(grid%dx,KIND=8)
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,E24.16)') 'dy_m', REAL(grid%dy,KIND=8)
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,E24.16)') &
++              'lead_seconds_before_step', curr_secs2_r8
++         WRITE(wrfgpu2_prerk_unit,'(A,1X,E24.16)') &
++              'lead_seconds_after_step', curr_secs2_r8 + REAL(grid%dt,KIND=8)
++         WRITE(wrfgpu2_prerk_unit,'(A,4(1X,I0))') 'tile_i_j_bounds_fortran', &
++              grid%i_start(ij), grid%i_end(ij), grid%j_start(ij), grid%j_end(ij)
++         WRITE(wrfgpu2_prerk_unit,'(A)') 'tile_record_policy owned_tile_overlap_only'
++         WRITE(wrfgpu2_prerk_unit,'(A,4(1X,I0))') &
++              'selected_mass_cell_zero_yx_fortran_ji', 9, 13, 10, 14
++         WRITE(wrfgpu2_prerk_unit,'(A,6(1X,I0))') &
++              'mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1', &
++              1, 18, 5, 22, 2, 18
++         WRITE(wrfgpu2_prerk_unit,'(A)') &
++              'record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_THM T_OLD T_HIST_SRC P PB MU_NEW MU_OLD MUB'
++         DO wrfgpu2_prerk_j = 2, 18
++           DO wrfgpu2_prerk_i = 6, 22
++             IF (wrfgpu2_prerk_i >= grid%i_start(ij) .AND. &
++                 wrfgpu2_prerk_i <= grid%i_end(ij) .AND. &
++                 wrfgpu2_prerk_j >= grid%j_start(ij) .AND. &
++                 wrfgpu2_prerk_j <= grid%j_end(ij)) THEN
++               WRITE(wrfgpu2_prerk_unit,'(A,4(1X,I0),8(1X,E24.16))') 'MASS_K1', &
++                    wrfgpu2_prerk_i, wrfgpu2_prerk_j, &
++                    wrfgpu2_prerk_i-1, wrfgpu2_prerk_j-1, &
++                    REAL(grid%t_2(wrfgpu2_prerk_i,1,wrfgpu2_prerk_j),KIND=8), &
++                    REAL(grid%t_1(wrfgpu2_prerk_i,1,wrfgpu2_prerk_j),KIND=8), &
++                    REAL(grid%th_phy_m_t0(wrfgpu2_prerk_i,1,wrfgpu2_prerk_j),KIND=8), &
++                    REAL(grid%p(wrfgpu2_prerk_i,1,wrfgpu2_prerk_j),KIND=8), &
++                    REAL(grid%pb(wrfgpu2_prerk_i,1,wrfgpu2_prerk_j),KIND=8), &
++                    REAL(grid%mu_2(wrfgpu2_prerk_i,wrfgpu2_prerk_j),KIND=8), &
++                    REAL(grid%mu_1(wrfgpu2_prerk_i,wrfgpu2_prerk_j),KIND=8), &
++                    REAL(grid%mub(wrfgpu2_prerk_i,wrfgpu2_prerk_j),KIND=8)
++             ENDIF
++           ENDDO
++         ENDDO
++         CLOSE(wrfgpu2_prerk_unit)
++         EXIT block_wrfgpu2_v014_pre_rk_input
++       ENDDO block_wrfgpu2_v014_pre_rk_input
++     ENDDO
++   ENDIF
+ 
+    IF( coupler_on ) CALL cpl_store_input( grid, config_flags )
+ 

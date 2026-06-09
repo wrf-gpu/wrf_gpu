@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 06:21 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 06:59 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -61,10 +61,16 @@ proved the mismatch is already present at the earliest currently available
 input/reference theta boundary, before current-step physics or RK
 (`proofs/v014/jax_theta_evolution_localization.json` verdict
 `THETA_MISMATCH_PRESTEP_OR_INPUT`; `T_OLD` max_abs `6.218735851548047`, RMSE
-`4.638818160588427`; `MU_OLD` max_abs `267.01919069732367`). The next sprint is
-an explicit WRF/JAX step-6000 pre-RK input-boundary emitter or hook for
-`T/P/PB/MU/MUB`, not history-source remapping, final `small_step_finish`, or a
-blind production dycore fix.
+`4.638818160588427`; `MU_OLD` max_abs `267.01919069732367`). The explicit
+step-6000 pre-RK input-boundary sprint then emitted CPU-WRF truth and compared
+it to the produced JAX h10 step-5999 carry. Verdict:
+`PRE_RK_INPUT_JAX_PRESTEP_MISMATCH_CONFIRMED`
+(`proofs/v014/pre_rk_input_boundary.json`): all target fields already differ
+before current-step physics/RK (`T` max_abs `6.218735851548047`, `P`
+`589.6789731315657`, `PB` `1047.015625`, `MU` `267.01919069732367`, `MUB`
+`1050.3046875`). The next sprint traces the JAX checkpoint/prestep carry
+producer and previous-step WRF/JAX update path; production dycore fixes remain
+blocked until that path names the first wrong write or cadence.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
