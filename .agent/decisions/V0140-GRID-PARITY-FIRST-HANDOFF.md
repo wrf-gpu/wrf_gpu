@@ -252,6 +252,16 @@ live-nest Step-1 state/carry before `_physics_step_forcing`: max_abs
 `5.490173101425171`, RMSE `1.9175184863907806`. The next sprint is JAX
 live-nest loader/carry construction for `T_STATE`.
 
+Update 2026-06-09 15:44 WEST: step-1 JAX loader `T_STATE` sprint opened:
+`.agent/sprints/2026-06-09-v014-step1-jax-loader-tstate/sprint-contract.md`.
+This is the active debug sprint. It must split the JAX stages
+`raw_child_state -> live_child_state -> boundary_package -> initial_carry ->
+haloed_step_entry` against the accepted WRF solve_em pre-call truth. The main
+current suspicion is live-nest base initialization updating `PB/PHB/MUB` while
+leaving `State.theta` from raw `wrfinput_d02`, but this is only a hypothesis
+until the proof names the exact first material stage. No TOST, Switzerland,
+FP32, memory source work, GPU, Hermes, or broad source edit is authorized.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
