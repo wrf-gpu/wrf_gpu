@@ -18,7 +18,12 @@ import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 from gpuwrf.contracts.state import BaseState, State, Tendencies
-from gpuwrf.contracts.precision import DEFAULT_DTYPES, STATE_FIELD_ORDER
+from gpuwrf.contracts.precision import (
+    DEFAULT_ACOUSTIC_PRECISION_MODE,
+    DEFAULT_DTYPES,
+    STATE_FIELD_ORDER,
+    acoustic_precision_mode_label,
+)
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import (
     BoundaryConfig,
@@ -451,6 +456,18 @@ class OperationalNamelist:
     # scheme).  Wind-skill impact is GPU-measured (manager); default 0 keeps the
     # operational forecast bit-for-bit unchanged.
     rad_rk_tendf: int = 0
+    # v0.14 R0 default-inert acoustic precision contract label (ADR-031 DRAFT).
+    # NO timestep code consumes this field yet; it rides in static aux so a
+    # future explicit mixed acoustic mode gets a separate JIT/cache variant and
+    # report label, and unknown mode strings fail closed at construction.
+    acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "acoustic_precision_mode",
+            acoustic_precision_mode_label(self.acoustic_precision_mode),
+        )
 
     @classmethod
     def from_grid(
@@ -492,6 +509,7 @@ class OperationalNamelist:
         gwd_opt: int = 0,
         gwdo_statics: object = None,
         rad_rk_tendf: int = 0,
+        acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -543,6 +561,7 @@ class OperationalNamelist:
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
             rad_rk_tendf=rad_rk_tendf,
+            acoustic_precision_mode=acoustic_precision_mode,
         )
 
     def tree_flatten(self):
@@ -607,6 +626,7 @@ class OperationalNamelist:
             int(self.ra_sw_physics),
             int(self.ra_lw_physics),
             int(self.rad_rk_tendf),
+            self.acoustic_precision_mode,
         )
         return children, aux
 
@@ -666,6 +686,7 @@ class OperationalNamelist:
             ra_sw_physics,
             ra_lw_physics,
             rad_rk_tendf,
+            acoustic_precision_mode,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -730,6 +751,7 @@ class OperationalNamelist:
             ra_sw_physics=ra_sw_physics,
             ra_lw_physics=ra_lw_physics,
             rad_rk_tendf=rad_rk_tendf,
+            acoustic_precision_mode=acoustic_precision_mode,
         )
 
 
