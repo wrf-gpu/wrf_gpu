@@ -258,6 +258,14 @@ Current status:
   full-domain wrapper/truth-surface sprint, including same-boundary
   carry/boundary leaves, full-domain/full-vertical post-RK truth, and a
   consistent old-field strategy.
+- 2026-06-09 management-review correction:
+  `.agent/reviews/2026-06-09-v014-management-review-01.md` records
+  `NO_GOAL_CHANGE` but criticizes the step-6000 same-input path as a blocked
+  micro-sprint ladder at the hardest instance. B4 remains blocked. After the
+  already-running full-domain wrapper sprint closes, the next validation-enabling
+  discriminator must be a consolidated early-step/drift-onset sprint, starting
+  from shared `wrfinput` where instrumentation is cheap, with at least one strict
+  same-input comparison executed or all remaining blockers named in one pass.
 - 2026-06-09 source sprint update:
   `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
   as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest
