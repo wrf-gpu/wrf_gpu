@@ -322,6 +322,12 @@ Current status:
   Validation remains paused. The next validation-enabling work is a narrow
   live-nest perturbation-state initialization proof/fix for
   `P_STATE/MU_STATE/W_STATE`.
+- 2026-06-09 19:15 WEST manager update: active validation-enabling sprint is
+  `.agent/sprints/2026-06-09-v014-step1-live-nest-perturb-state-init`. It must
+  prove/fix/refute the live-nest `P/MU/W` perturbation-state initialization
+  hypothesis and report ranked alternatives if the hypothesis fails. B4,
+  Switzerland, TOST, FP32 source work, and memory source work remain paused for
+  the primary debug lane.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
