@@ -445,13 +445,32 @@ state, promoted carry leaves, metrics/tendencies/boundary config, and boundary
 leaves. Next sprint: build or locate that h10 pre-step carry checkpoint and run
 the hook against Boole's WRF green target.
 
+## Completed Wave 10
+
+- `019eaa76-c97e-7730-9e2e-66397a3c5096` (`Euler`):
+  CPU-only h10 pre-step carry checkpoint availability sprint
+  `.agent/sprints/2026-06-09-v014-h10-prestep-carry-checkpoint/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/jax_h10_prestep_carry.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md`.
+
+Verdict: `CHECKPOINT_BLOCKED_NO_H10_PRESTEP_CARRY`. Euler inspected existing
+candidate checkpoints and found no CPU-loadable `OperationalCarry` at completed
+step 5999, immediately before `d02` step 6000/h10. Existing APIs can serialize
+full carries (`runtime.checkpoint.write_checkpoint(..., runtime_state=carry)`
+and restart carry helpers), but current drivers do not write this required
+artifact. No same-surface JAX-vs-WRF comparison ran. Next sprint: produce the
+step-5999 full carry checkpoint with existing APIs if possible, then rerun
+`proofs/v014/jax_h10_prestep_carry.py` with
+`WRFGPU2_H10_PRESTEP_CARRY=/abs/path/to/d02_step5999_full_carry.pkl`.
+
 ## Next Manager Actions
 
-1. Open the next checkpoint/wrapper sprint to build or locate a CPU-loadable JAX
-   `OperationalCarry` immediately before `d02` step 6000/h10, then run
-   `_rk_scan_step_with_pre_halo_capture` against Boole's WRF green target.
-   Do not start a source fix until that same-surface comparison names the first
-   mismatch.
+1. Open the next checkpoint producer sprint to write a full `OperationalCarry`
+   checkpoint at completed step 5999 for `d02`, preferably using existing
+   checkpoint APIs and no production source edits. Then rerun the pre-halo hook
+   comparison against Boole's WRF green target. Do not start a source fix until
+   that same-surface comparison names the first mismatch.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.

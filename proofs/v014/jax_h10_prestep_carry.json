@@ -1,0 +1,761 @@
+{
+  "acceptance_notes": {
+    "compared_against_wrf_green_target": false,
+    "gpu_launched": false,
+    "jax_vs_jax_self_compare": false,
+    "json_records_real_checkpoint_status": true,
+    "production_source_edited": false,
+    "retained_wrfout_used_as_verdict": false
+  },
+  "blocked": {
+    "full_cpu_replay_not_run": "This sprint tested resumable checkpoint availability. It did not launch a 5999-step CPU replay because that is a long forecast producer, not an existing checkpoint load.",
+    "missing_api": "Current public forecast APIs return State only. daily_pipeline checkpoint_at_hour writes State-only runtime.checkpoint payloads. d02_replay.run_replay_scan is State+previous_pressure, not OperationalCarry. A full-carry writer exists, but no current driver writes it at arbitrary d02 step 5999 for this h10 case.",
+    "missing_input": "A CPU-loadable d02 OperationalCarry with paired OperationalNamelist/grid at completed step_index=5999, immediately before WRF/JAX step 6000. The checkpoint must include State, promoted carry leaves t_2ave/ww/mudf/muave/muts/ph_tend/u_save/v_save/w_save/t_save/ph_save/mu_save/ww_save/rthraten, active physics carry leaves, boundary leaves, real d02 metrics, tendencies, and boundary_config.",
+    "narrower_checkpoint_sprint": "Add or run a proof-only CPU producer that builds the real d02 case, advances _advance_chunk to completed step 5999, and writes either runtime.checkpoint.write_checkpoint(..., runtime_state=carry) or io.restart.write_restart(carry, namelist, grid, 5999, ...).",
+    "next_command": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src WRFGPU2_H10_PRESTEP_CARRY=/abs/path/to/d02_step5999_full_carry.pkl python proofs/v014/jax_h10_prestep_carry.py",
+    "reason": "NO_CPU_LOADABLE_JAX_H10_PRESTEP_OPERATIONAL_CARRY",
+    "status": "BLOCKED"
+  },
+  "checkpoint_probe": {
+    "accepted_formats": [
+      "gpuwrf-runtime-checkpoint with runtime_state=OperationalCarry",
+      "gpuwrf-operational-restart"
+    ],
+    "candidates": [
+      {
+        "exists": false,
+        "is_file": false,
+        "metadata": {
+          "status": "MISSING"
+        },
+        "path": "/home/enric/src/wrf_gpu2/proofs/v0110/wrfrst_d02_hour01.nc",
+        "sha256": null,
+        "size_bytes": null,
+        "source": "/home/enric/src/wrf_gpu2/proofs/v0110/restart_continuity.json",
+        "usable_h10_prestep_candidate": false,
+        "why_not_usable": "path does not exist"
+      },
+      {
+        "exists": false,
+        "is_file": false,
+        "metadata": {
+          "status": "MISSING"
+        },
+        "path": "/home/enric/src/wrf_gpu2/proofs/v0110/wrfrst_full_carry_roundtrip.nc",
+        "sha256": null,
+        "size_bytes": null,
+        "source": "/home/enric/src/wrf_gpu2/proofs/v0110/restart_continuity.json",
+        "usable_h10_prestep_candidate": false,
+        "why_not_usable": "path does not exist"
+      },
+      {
+        "exists": false,
+        "is_file": false,
+        "metadata": {
+          "status": "MISSING"
+        },
+        "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_overhead.json",
+        "sha256": null,
+        "size_bytes": null,
+        "source": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "usable_h10_prestep_candidate": false,
+        "why_not_usable": "path does not exist"
+      },
+      {
+        "exists": false,
+        "is_file": false,
+        "metadata": {
+          "status": "MISSING"
+        },
+        "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_work/20260521_step20_reference.pkl",
+        "sha256": null,
+        "size_bytes": null,
+        "source": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "usable_h10_prestep_candidate": false,
+        "why_not_usable": "path does not exist"
+      },
+      {
+        "exists": false,
+        "is_file": false,
+        "metadata": {
+          "status": "MISSING"
+        },
+        "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_work/20260521_step10.pkl",
+        "sha256": null,
+        "size_bytes": null,
+        "source": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "usable_h10_prestep_candidate": false,
+        "why_not_usable": "path does not exist"
+      },
+      {
+        "exists": false,
+        "is_file": false,
+        "metadata": {
+          "status": "MISSING"
+        },
+        "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_work/20260521_step20_restarted.pkl",
+        "sha256": null,
+        "size_bytes": null,
+        "source": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "usable_h10_prestep_candidate": false,
+        "why_not_usable": "path does not exist"
+      }
+    ],
+    "required_step_index": 5999,
+    "usable_candidates": []
+  },
+  "commands": {
+    "generator_argv": [
+      "proofs/v014/jax_h10_prestep_carry.py"
+    ],
+    "minimum_contract_commands": [
+      "python -m py_compile proofs/v014/jax_h10_prestep_carry.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry.py",
+      "python -m json.tool proofs/v014/jax_h10_prestep_carry.json >/tmp/jax_h10_prestep_carry.validated.json"
+    ]
+  },
+  "comparison": null,
+  "comparison_run": false,
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fp32_source_landing": false,
+  "generated_utc": "2026-06-09T03:47:53.715286+00:00",
+  "gpu_used": false,
+  "inputs_read": {
+    "dynamic_field_attribution_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
+      "sha256": "a8979ebd844d6aa6a05319bbfdaf548e119f2a8f0165c0ceed56c0854a84c020",
+      "size_bytes": 1798878
+    },
+    "handoff": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "3d3648ddb229a688b26aef030e5e0a504c36e896d4c7d18ac6b51dc14e2f549c",
+      "size_bytes": 26702
+    },
+    "jax_pre_halo_capture_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+      "sha256": "fc480540f075cb894d2c3bae181e332eabf510302057a00473406040ffbd6a69",
+      "size_bytes": 24406
+    },
+    "same_state_savepoint_request_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
+      "size_bytes": 269809
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-checkpoint/sprint-contract.md",
+      "sha256": "2c454878fb0f847ff8b2178f4175bf7f2f2815c0d5bdd2e59220a77f092bd729",
+      "size_bytes": 3561
+    },
+    "validating_physics_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
+      "size_bytes": 1208
+    },
+    "wrf_post_rk_refresh_localization_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
+      "size_bytes": 34079
+    },
+    "wrf_post_rk_refresh_localization_md": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
+      "sha256": "28a831c5c1d3c74f85e5259c7fcfdf14f78e473b92469006cc84c3e3f7358eab",
+      "size_bytes": 3217
+    }
+  },
+  "next_decision": "Open a narrower checkpoint producer sprint; do not start a source-fix sprint yet.",
+  "no_hermes": true,
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md"
+  },
+  "schema": "wrfgpu2.v014.jax_h10_prestep_carry.v1",
+  "source_inspection": {
+    "api_findings": [
+      {
+        "api": "gpuwrf.runtime.checkpoint.write_checkpoint(..., runtime_state=carry)",
+        "can_store_full_operational_carry": true,
+        "current_daily_pipeline_usage": "State-only; checkpoint_at_hour does not pass runtime_state.",
+        "usable_for_h10_if_artifact_exists": true
+      },
+      {
+        "api": "gpuwrf.io.restart.write_restart/read_restart",
+        "can_store_full_operational_carry": true,
+        "current_forecast_driver_usage_found": false,
+        "usable_for_h10_if_artifact_exists": true
+      },
+      {
+        "api": "gpuwrf.io.wrfrst_netcdf.write_wrfrst_carry/read_wrfrst_carry",
+        "can_store_full_operational_carry": true,
+        "limitation_for_this_sprint": "read_wrfrst_carry restores carry and metadata, not the paired OperationalNamelist/grid needed by the hook."
+      },
+      {
+        "api": "gpuwrf.integration.d02_replay.run_replay_scan",
+        "can_produce_operational_carry": false,
+        "reason": "ReplayCase carries State, Tendencies, metrics, BaseState, and previous_pressure, not OperationalCarry scratch leaves."
+      },
+      {
+        "api": "gpuwrf.runtime.operational_mode._advance_chunk",
+        "can_build_prestep_carry_from_initial_state": true,
+        "not_run_here": "A CPU-only 5999-step h10 replay is a new long forecast, not a resumable checkpoint test."
+      }
+    ],
+    "files": {
+      "integration_d02_replay": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+        "sha256": "cef435fd9d78851944955810263d95c72efe1861a9611403f46f20de0c1a7655",
+        "size_bytes": 88775
+      },
+      "integration_daily_pipeline": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/daily_pipeline.py",
+        "sha256": "2586eaf18be90b50b36106ffefe501b33c9605133c977f6d1024f2e98a6e4628",
+        "size_bytes": 71814
+      },
+      "integration_nested_pipeline": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
+        "sha256": "80daf87cf24ed77260af69359ca80508407a8c1250df898b8fa37f6cd08634d9",
+        "size_bytes": 26134
+      },
+      "io_restart": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/io/restart.py",
+        "sha256": "36e95118365039d3948d61b808dc5703c5035b60b41fbcf0161b40b95b06c409",
+        "size_bytes": 12753
+      },
+      "io_wrfrst_netcdf": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/io/wrfrst_netcdf.py",
+        "sha256": "d4893a248aac821a3ffcdb1949d7e8b1d7ce5bd9055c47c39125718a1500505b",
+        "size_bytes": 55934
+      },
+      "runtime_checkpoint": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/checkpoint.py",
+        "sha256": "bec8f1ac9d213f5e7ca212928dc7e02043de34fc256a80a207d6bb781b59720b",
+        "size_bytes": 10705
+      },
+      "runtime_operational_mode": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
+        "size_bytes": 175388
+      },
+      "runtime_operational_state": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+        "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
+        "size_bytes": 8390
+      }
+    },
+    "nodes": [
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 108,
+        "line_start": 32,
+        "module_path": "src/gpuwrf/runtime/operational_state.py",
+        "name": "OperationalCarry",
+        "source_sha256": "61dc0fb48bce58c48bf88f9e3614a2b4c25d7cb14a0ff735a000b7682b262fd6"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 177,
+        "line_start": 117,
+        "module_path": "src/gpuwrf/runtime/operational_state.py",
+        "name": "initial_operational_carry",
+        "source_sha256": "a93136aa92f949c09a63f662572e0eb412398dfea401e8b8094ff642c2725cf6"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": true,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 2313,
+        "line_start": 2295,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_rk_scan_step_with_pre_halo_capture",
+        "source_sha256": "d02d291748041b46dc71fa06d23d41904056920a5b5f8e8b86e7937488094b77"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": true,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": true,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 2292,
+        "line_start": 2173,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_rk_scan_step",
+        "source_sha256": "f1d3e7074e14958849061d7d90ffbe476df84c96f654ef56a7d78f5e0ec71ab1"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 3108,
+        "line_start": 2845,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_physics_step_forcing",
+        "source_sha256": "b5dd67e9a7d26a5e4a3b81e54847405719cf57e290b066bdb72ee3c99949727f"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 3173,
+        "line_start": 3111,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_physics_boundary_step_with_limiter_diagnostics",
+        "source_sha256": "4dd6786bb0085bdf2eaa4ead3e566cf80e620b1c69a72e027832c774f13f004f"
+      },
+      {
+        "contains_advance_chunk": true,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 3474,
+        "line_start": 3441,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_advance_chunk",
+        "source_sha256": "d9957b0e059b0f5b09030bdf606d8b5db8690f79d3a8a3861ce4d752aeca6c80"
+      },
+      {
+        "contains_advance_chunk": true,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 3712,
+        "line_start": 3647,
+        "module_path": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "run_forecast_operational_segmented",
+        "source_sha256": "5efc37956a19fded766e6de8ab3406305b78dc67555d99bb8242e11c3089ef26"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": true,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": true,
+        "contains_write_restart": false,
+        "line_end": 142,
+        "line_start": 90,
+        "module_path": "src/gpuwrf/runtime/checkpoint.py",
+        "name": "write_checkpoint",
+        "source_sha256": "5fcdb3e18a623bda7029981d3d142bcedc87491ca5adbac24c30183b1362b016"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": true,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": true,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 219,
+        "line_start": 211,
+        "module_path": "src/gpuwrf/runtime/checkpoint.py",
+        "name": "read_checkpoint_with_runtime_state",
+        "source_sha256": "3291bf47a9baa27bd1f8fdbe309f61f3906ce9d27321f6839731cfe74b76a63c"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": true,
+        "line_end": 186,
+        "line_start": 147,
+        "module_path": "src/gpuwrf/io/restart.py",
+        "name": "write_restart",
+        "source_sha256": "18112d0589c55b50c577916770db55acc4dde187cff0e0218b5f7f9f2399962b"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": true,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 277,
+        "line_start": 266,
+        "module_path": "src/gpuwrf/io/restart.py",
+        "name": "read_restart",
+        "source_sha256": "fd00b16e1855cf9435cf294fc07a546a892fcabff349f81a7c9b51230d3f2112"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 543,
+        "line_start": 518,
+        "module_path": "src/gpuwrf/io/wrfrst_netcdf.py",
+        "name": "write_wrfrst_carry",
+        "source_sha256": "cbc849dcaf2d7492e1f8b3364b8af63ee4f30033468a68173efd98744115b308"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": true,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 578,
+        "line_start": 561,
+        "module_path": "src/gpuwrf/io/wrfrst_netcdf.py",
+        "name": "read_wrfrst_carry",
+        "source_sha256": "2735c4bac15c6f5ab42fafd7302ca21b9c52deb4fe6d562858a8e5e503b2e58e"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": true,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 195,
+        "line_start": 185,
+        "module_path": "src/gpuwrf/integration/d02_replay.py",
+        "name": "ReplayCase",
+        "source_sha256": "ec7999351d2ccde9bb37ce578c342b997db3233e73aba02fa4d38703df4395b6"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 1309,
+        "line_start": 1085,
+        "module_path": "src/gpuwrf/integration/d02_replay.py",
+        "name": "build_replay_case",
+        "source_sha256": "db2c71786dad70dd3b33eb717646bd367565940836347fd59235f4ec00d55a7e"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": true,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 1773,
+        "line_start": 1699,
+        "module_path": "src/gpuwrf/integration/d02_replay.py",
+        "name": "run_replay_scan",
+        "source_sha256": "23de28c817e7dcf5899aa012bc783f47c30b6f59530dbf1e3d1b4505ec55e06f"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": true,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": true,
+        "contains_write_restart": false,
+        "line_end": 1090,
+        "line_start": 820,
+        "module_path": "src/gpuwrf/integration/daily_pipeline.py",
+        "name": "_run_forecast_sequence",
+        "source_sha256": "3b9e09e1164ff403e73463de6c3b3e01214a33320d94b1e583b3e431436813b2"
+      },
+      {
+        "contains_advance_chunk": false,
+        "contains_apply_halo": false,
+        "contains_operational_carry": false,
+        "contains_read_checkpoint": false,
+        "contains_read_restart": false,
+        "contains_rk_capture": false,
+        "contains_runtime_state": false,
+        "contains_state_previous_pressure": false,
+        "contains_write_checkpoint": false,
+        "contains_write_restart": false,
+        "line_end": 619,
+        "line_start": 432,
+        "module_path": "src/gpuwrf/integration/nested_pipeline.py",
+        "name": "execute_nested_pipeline",
+        "source_sha256": "770d6f7403f531ed89700f624560a4460e0511b5e6245d69a05fa7c59e79b1ce"
+      }
+    ]
+  },
+  "switzerland_validation_run": false,
+  "tost_run": false,
+  "unresolved_risks": [
+    "No first numerical JAX operator mismatch is named because no real h10 pre-step carry was available.",
+    "The retained GPU/JAX h10 wrfout mismatch remains diagnostic only, not same-surface CPU evidence."
+  ],
+  "verdict": "CHECKPOINT_BLOCKED_NO_H10_PRESTEP_CARRY",
+  "wrf_source_edits": false,
+  "wrf_surface_parse": {
+    "duplicate_count": 17,
+    "duplicate_max_delta": 0.0,
+    "files": [
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "unique_counts": {
+      "MASS_K1": 289,
+      "U_K1": 306,
+      "V_K1": 306,
+      "WPH_KSTAG01": 578
+    }
+  },
+  "wrf_target": {
+    "accepted_wrf_verdict": "REFRESH_LAYER_GREEN_post_after_all_rk_steps_pre_halo",
+    "current_timestr_before_step": "2026-05-02_03:59:54",
+    "domain": "d02",
+    "green_candidate_vs_provided_cpu_h10_wrfout": {
+      "MU": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 4.547473508864641e-13,
+        "max_abs": 4.547473508864641e-13,
+        "min": -4.547473508864641e-13,
+        "rmse": 3.4568416978372316e-13
+      },
+      "MUB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "P": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "PB": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "PH": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 1.9073486328125e-06,
+        "max_abs": 1.9073486328125e-06,
+        "min": -1.9073486328125e-06,
+        "rmse": 4.3090067180366245e-07
+      },
+      "T": {
+        "count": 289,
+        "finite_count": 289,
+        "max": 0.0,
+        "max_abs": 0.0,
+        "min": 0.0,
+        "rmse": 0.0
+      },
+      "U": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 4.76837158203125e-07,
+        "max_abs": 4.76837158203125e-07,
+        "min": -4.76837158203125e-07,
+        "rmse": 1.3106758362804406e-07
+      },
+      "V": {
+        "count": 306,
+        "finite_count": 306,
+        "max": 9.5367431640625e-07,
+        "max_abs": 9.5367431640625e-07,
+        "min": -9.5367431640625e-07,
+        "rmse": 3.1466681451378603e-07
+      },
+      "W": {
+        "count": 578,
+        "finite_count": 578,
+        "max": 1.1920928977282585e-07,
+        "max_abs": 1.1920928977282585e-07,
+        "min": -5.960464477539063e-08,
+        "rmse": 9.606584126922052e-09
+      }
+    },
+    "lead_seconds_after_step": 36000.0,
+    "native_staggered_coordinates": {
+      "mass_zero": "y [1,18), x [5,22); Fortran j 2..18, i 6..22",
+      "u_zero": "y [1,18), x_stag [5,23); Fortran j 2..18, i 6..23",
+      "v_zero": "y_stag [1,19), x [5,22); Fortran j 2..19, i 6..22",
+      "w_ph_zero": "kstag [0,2), y [1,18), x [5,22); Fortran k 1..2, j 2..18, i 6..22"
+    },
+    "prestep_completed_steps_required": 5999,
+    "selected_patch_bounds_mass_grid": {
+      "halo_radius_cells": 8,
+      "south_north_start": 1,
+      "south_north_stop_exclusive": 18,
+      "west_east_start": 5,
+      "west_east_stop_exclusive": 22
+    },
+    "source_file_info": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
+        "size_bytes": 11774
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
+        "size_bytes": 159441
+      }
+    ],
+    "source_files": [
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+    ],
+    "target_surface": "post dyn_em/solve_em.F::after_all_rk_steps state before RK halo exchanges",
+    "unique_counts": {
+      "MASS_K1": 289,
+      "U_K1": 306,
+      "V_K1": 306,
+      "WPH_KSTAG01": 578
+    },
+    "valid_time_utc": "2026-05-02T04:00:00+00:00",
+    "wrf_step": 6000
+  }
+}
