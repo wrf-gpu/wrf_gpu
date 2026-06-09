@@ -582,14 +582,55 @@ debug sprint must trace the JAX h10 step-5999 checkpoint/prestep carry producer
 and previous-step WRF/JAX update path until it names the first wrong write,
 state handoff, restart/load, or cadence boundary.
 
+## Completed Wave 16
+
+- GPT tmux worker (`0:4`, completed after manager validation):
+  prestep carry source trace sprint
+  `.agent/sprints/2026-06-09-v014-prestep-carry-source-trace/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/prestep_carry_source_trace.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-prestep-carry-source-trace.md`.
+
+Verdict: `PRODUCER_WRITES_BAD_FINAL_CARRY`. The proof rules out checkpoint
+serialization/load corruption: raw pickle runtime state, checkpoint API runtime
+state, top-level State payload, and `/tmp` round-trip all preserve
+`T/P/PB/MU/MUB` exactly. The live nested replay producer starts from native L2
+domain load and writes the generated d02 `OperationalCarry` directly via
+`write_checkpoint(..., runtime_state=d02_carry)`. The target leaves in that
+carry still differ from CPU-WRF h10 step-6000 pre-RK truth: `T` max_abs
+`6.218735851548047`, `P` `589.6789731315657`, `PB` `1047.015625`, `MU`
+`267.01919069732367`, and `MUB` `1050.3046875`. Scratch leaves such as
+`t_2ave` and `mu_save` are sometimes closer but still outside tolerance and are
+not eligible as the target pre-RK State leaves.
+
+Manager validation reran:
+
+- `python -m py_compile proofs/v014/prestep_carry_source_trace.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/prestep_carry_source_trace.py`
+- `python -m json.tool proofs/v014/prestep_carry_source_trace.json`
+
+## Opened Wave 17
+
+- Sprint contract opened:
+  `.agent/sprints/2026-06-09-v014-previous-step-handoff-bisect/sprint-contract.md`
+  with prompt
+  `.agent/sprints/2026-06-09-v014-previous-step-handoff-bisect/agent-prompt.md`.
+  Objective: reproduce and bisect the producer path that writes the bad d02
+  step-5999 carry. Default rule is no production `src/` edits; if a deeper hook
+  is required, emit `BISECTION_BLOCKED_<reason>` naming the exact hook/source
+  file rather than landing a fix in this sprint. A short targeted GPU replay is
+  allowed only if CPU replay is not practical; TOST, Switzerland, broad
+  validation, and FP32 remain excluded.
+
 ## Next Manager Actions
 
-1. Open a JAX checkpoint/prestep-carry producer trace sprint. Start from
+1. Run the previous-step handoff bisection sprint. Start from
+   `proofs/v014/prestep_carry_source_trace.json`,
    `/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`,
-   `proofs/v014/pre_rk_input_boundary.json`, and the producer script metadata.
-   The sprint must decide whether the bad state is written during checkpoint
-   extraction/loading, previous-step final carry assembly, previous-step
-   boundary/tendency packaging, or earlier integration.
+   and the producer script metadata. The sprint must decide whether the bad
+   state is already present before the final partial subcycle, appears after
+   parent advance, appears after `_operational_force`, appears after child
+   step 5998/5999, or is blocked behind a missing hook.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the previous-step/prestep trace isolates
    ownership.
