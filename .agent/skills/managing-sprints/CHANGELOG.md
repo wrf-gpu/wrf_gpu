@@ -7,6 +7,8 @@
   before committing to the next conclusion.
 - Added the tmux delayed repeated-Enter completion pattern for worker done
   markers into the manager pane.
+- Added tmux session hygiene before dispatch: close completed/no-longer-needed
+  worker windows before launching new agents.
 
 ## 0.2.0 (2026-06-01, principal-authorized)
 
