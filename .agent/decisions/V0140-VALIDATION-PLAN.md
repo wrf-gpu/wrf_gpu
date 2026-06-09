@@ -258,6 +258,17 @@ Current status:
   full-domain wrapper/truth-surface sprint, including same-boundary
   carry/boundary leaves, full-domain/full-vertical post-RK truth, and a
   consistent old-field strategy.
+- 2026-06-09 step-1 live-nest init rerun closeout:
+  `proofs/v014/step1_live_nest_init_rerun.json` verdict is
+  `STEP1_LIVE_NEST_INIT_BASE_RESIDUALS_CLOSED_NEXT_T`. The live-nest/base
+  initialization residual is closed in the strict Step-1 proof:
+  `MUB/PB/PHB` max_abs are about `0.05/0.05/0.11`, respectively. B4 remains
+  blocked because the Step-1 comparison still diverges: first divergent field
+  `T`, largest residual `P` max_abs `1561.2503728885986`, RMSE
+  `305.9413510899027`, with `PH/MU/W` also material. The next
+  validation-enabling work is Step-1 operator/source localization. Do not resume
+  powered TOST, Switzerland validation, FP32 source work, or memory follow-ups
+  until this grid-parity boundary is explained and reduced.
 - 2026-06-09 full-domain wrapper closeout:
   `proofs/v014/same_input_single_rk_parity_wrapped.json` verdict is
   `FULL_DOMAIN_WRAPPER_BLOCKED_TRUTH_SURFACE_PATCH_ONLY_AND_CARRY_LEAVES`.
