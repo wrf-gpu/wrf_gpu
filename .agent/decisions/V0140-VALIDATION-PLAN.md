@@ -194,6 +194,30 @@ Resource: GPU serial campaign plus CPU scoring
 
 Estimate: 6h00m
 
+Release-gate update 2026-06-09 16:08 WEST:
+
+TOST is still required before v0.14 close, but it is not sufficient as a
+station-only artifact. The final validation output must have two pillars:
+
+- **Pillar A — ADR-029 powered station TOST** for AEMET T2/U10/V10 RMSE
+  equivalence.
+- **Pillar B — Grid-Delta Atlas** comparing GPU wrfout against CPU-WRF wrfout
+  for every paired case, lead time, grid cell, and common numeric field.
+
+The atlas requirement is now recorded in
+`.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. It must generate compact
+release plots and a README-embeddable dashboard before tag:
+
+- field x lead heatmaps for RMSE, bias, p99, and max_abs;
+- lead-time drift/stability plots for mandatory core fields;
+- delta-distribution plots and worst-case spatial maps;
+- a machine-readable pass/fail manifest and tolerance envelope.
+
+The correct claim is not "bitwise identity" unless proven. The v0.14 claim
+should be near-equivalence under predeclared field envelopes, stable bounded
+drift, and full inventory transparency for every common numeric wrfout field.
+Station TOST must be interpreted together with this grid-delta atlas.
+
 Current status:
 
 - TOST is paused after 3 durable cases.
@@ -235,6 +259,11 @@ Current status:
   `v014-step1-live-nest-theta-semantics`. It must prove WRF
   `adjust_tempqv` candidate semantics against WRF pre-call truth before any
   production source edit. Validation remains paused behind this gate.
+- 2026-06-09 16:08 WEST principal validation update: when validation resumes,
+  powered TOST must produce a full Grid-Delta Atlas over all paired CPU/GPU
+  wrfout fields, times, cells, and cases, with release plots committed and
+  README-linked. The existing limited cell-level stats in the old powered-TOST
+  runner are not enough for v0.14.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
