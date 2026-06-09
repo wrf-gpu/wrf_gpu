@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 03:20 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 04:09 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -34,13 +34,14 @@ Current v0.14 grid-parity work has already fixed and proven the stale static-met
 payload (`C1/C2/C3/C4`, `DN/DNW/RDN/RDNW`, and `MAPFAC_*` exact in the fresh h1 smoke),
 classified the remaining base/static fields, packaged the h10 same-state savepoint request,
 completed the writer-only `XLAT`/`XLONG` payload fix, achieved a green CPU-WRF h10
-same-state marker at step 6000, and emitted the first CPU-WRF source-derived dynamic layer
-around final-stage `small_step_finish`. The marker proves the native h10/`d02` patch/index
-mapping and the correct history-backed WRF `T` source (`grid%th_phy_m_t0`); final
-post-marker comparison against CPU h10 is exact for `T/P/PB` and within `2e-6` max_abs
-for `U/V/W/PH`. The first dynamic layer is useful but not yet history-aligned for
-`P/V/W`; the next blocker is the pressure/rho/post-RK refresh path before or around
-`after_all_rk_steps`, then a JAX same-state compare against that green surface.
+same-state marker at step 6000, emitted the first CPU-WRF source-derived dynamic layer
+around final-stage `small_step_finish`, and found the green post-RK refresh target.
+The marker proves the native h10/`d02` patch/index mapping and the correct
+history-backed WRF `T` source (`grid%th_phy_m_t0`). The accepted WRF compare target is
+now the state immediately after `dyn_em/solve_em.F::after_all_rk_steps` and before RK
+halo exchanges: it is exact/roundoff against CPU h10 for `T/P/PB/U/V/W/PH/MU/MUB`.
+The next blocker is a JAX CPU same-state wrapper against that exact surface; only after
+that comparison names a mismatch should production dycore/source code change.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt
