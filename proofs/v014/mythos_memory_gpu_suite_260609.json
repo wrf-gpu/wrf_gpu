@@ -1,0 +1,302 @@
+{
+  "constraints": {
+    "long_validation": false,
+    "one_gpu_job": true,
+    "tost": false,
+    "wrapper": "scripts/run_gpu_lowprio.sh (flock held by parent)"
+  },
+  "device": {
+    "device_kind": "NVIDIA GeForce RTX 5090",
+    "jax_version": "0.10.0",
+    "platform": "gpu"
+  },
+  "generated_utc": "2026-06-09T22:29:07.096778+00:00",
+  "gpu_after": {
+    "memory_total_mib": 32607,
+    "memory_used_mib": 15715,
+    "ok": true
+  },
+  "gpu_before": {
+    "memory_total_mib": 32607,
+    "memory_used_mib": 2926,
+    "ok": true
+  },
+  "moisture_limiter_workspace": {
+    "limiter_extra_temp_gib": 1.904037,
+    "monotonic_opt2": {
+      "alias_size_gib": 0.0,
+      "alias_size_in_bytes": 0,
+      "argument_size_gib": 0.615107,
+      "argument_size_in_bytes": 660466088,
+      "generated_code_size_gib": 0.000403,
+      "generated_code_size_in_bytes": 432520,
+      "ok": true,
+      "output_size_gib": 0.459912,
+      "output_size_in_bytes": 493826448,
+      "temp_size_gib": 3.296039,
+      "temp_size_in_bytes": 3539095400
+    },
+    "nx": 641,
+    "ny": 321,
+    "nz": 50,
+    "plain_opt0": {
+      "alias_size_gib": 0.0,
+      "alias_size_in_bytes": 0,
+      "argument_size_gib": 0.615107,
+      "argument_size_in_bytes": 660466088,
+      "generated_code_size_gib": 0.000174,
+      "generated_code_size_in_bytes": 186888,
+      "ok": true,
+      "output_size_gib": 0.459912,
+      "output_size_in_bytes": 493826448,
+      "temp_size_gib": 1.392003,
+      "temp_size_in_bytes": 1494651480
+    }
+  },
+  "moisture_velocity_reuse": {
+    "duplicate_build": {
+      "alias_size_gib": 0.0,
+      "alias_size_in_bytes": 0,
+      "argument_size_gib": 0.691759,
+      "argument_size_in_bytes": 742770488,
+      "generated_code_size_gib": 0.000195,
+      "generated_code_size_in_bytes": 209656,
+      "ok": true,
+      "output_size_gib": 0.536564,
+      "output_size_in_bytes": 576130856,
+      "temp_size_gib": 1.700144,
+      "temp_size_in_bytes": 1825515624
+    },
+    "nx": 641,
+    "ny": 321,
+    "nz": 50,
+    "shared_build": {
+      "alias_size_gib": 0.0,
+      "alias_size_in_bytes": 0,
+      "argument_size_gib": 0.691759,
+      "argument_size_in_bytes": 742770488,
+      "generated_code_size_gib": 0.000195,
+      "generated_code_size_in_bytes": 209368,
+      "ok": true,
+      "output_size_gib": 0.536564,
+      "output_size_in_bytes": 576130856,
+      "temp_size_gib": 1.700144,
+      "temp_size_in_bytes": 1825515624
+    },
+    "temp_delta_gib": 0.0,
+    "value_bit_identical": true
+  },
+  "mynn_boulac_materialization": {
+    "cases": [
+      {
+        "batch": 205761,
+        "nz": 50,
+        "temp_delta_gib": 11.532576,
+        "tiled_16384": {
+          "alias_size_gib": 0.0,
+          "alias_size_in_bytes": 0,
+          "argument_size_gib": 0.85237,
+          "argument_size_in_bytes": 915224928,
+          "batch": 205761,
+          "generated_code_size_gib": 0.001192,
+          "generated_code_size_in_bytes": 1280104,
+          "nz": 50,
+          "ok": true,
+          "output_size_gib": 1.07466,
+          "output_size_in_bytes": 1153907808,
+          "temp_size_gib": 3.178478,
+          "temp_size_in_bytes": 3412865296,
+          "tile_cols": 16384
+        },
+        "untiled": {
+          "alias_size_gib": 0.0,
+          "alias_size_in_bytes": 0,
+          "argument_size_gib": 0.85237,
+          "argument_size_in_bytes": 915224928,
+          "batch": 205761,
+          "generated_code_size_gib": 0.001021,
+          "generated_code_size_in_bytes": 1096464,
+          "nz": 50,
+          "ok": true,
+          "output_size_gib": 1.07466,
+          "output_size_in_bytes": 1153907808,
+          "temp_size_gib": 14.711055,
+          "temp_size_in_bytes": 15795874496,
+          "tile_cols": null
+        }
+      },
+      {
+        "batch": 97969,
+        "nz": 50,
+        "temp_delta_gib": 4.912331,
+        "tiled_16384": {
+          "alias_size_gib": 0.0,
+          "alias_size_in_bytes": 0,
+          "argument_size_gib": 0.405839,
+          "argument_size_in_bytes": 435766112,
+          "batch": 97969,
+          "generated_code_size_gib": 0.001192,
+          "generated_code_size_in_bytes": 1279800,
+          "nz": 50,
+          "ok": true,
+          "output_size_gib": 0.511678,
+          "output_size_in_bytes": 549410272,
+          "temp_size_gib": 2.092053,
+          "temp_size_in_bytes": 2246324496,
+          "tile_cols": 16384
+        },
+        "untiled": {
+          "alias_size_gib": 0.0,
+          "alias_size_in_bytes": 0,
+          "argument_size_gib": 0.405839,
+          "argument_size_in_bytes": 435766112,
+          "batch": 97969,
+          "generated_code_size_gib": 0.001026,
+          "generated_code_size_in_bytes": 1102056,
+          "nz": 50,
+          "ok": true,
+          "output_size_gib": 0.511678,
+          "output_size_in_bytes": 549410272,
+          "temp_size_gib": 7.004383,
+          "temp_size_in_bytes": 7520899264,
+          "tile_cols": null
+        }
+      }
+    ]
+  },
+  "mynn_gpu_tile_bit_identity": {
+    "all_bit_identical": true,
+    "batch": 40000,
+    "fields": {
+      "dz": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "el": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "kh": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "km": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "p": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "pblh": {
+        "bit_identical": true
+      },
+      "qc": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "qi": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "qv": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "rho": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "theta": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "tke": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "u": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "v": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "w": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      }
+    },
+    "nz": 50,
+    "tile_cols": 4096
+  },
+  "mynn_gpu_tile_bit_identity_production": {
+    "all_bit_identical": true,
+    "batch": 97969,
+    "fields": {
+      "dz": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "el": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "kh": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "km": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "p": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "pblh": {
+        "bit_identical": true
+      },
+      "qc": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "qi": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "qv": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "rho": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "theta": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "tke": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "u": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "v": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      },
+      "w": {
+        "bit_identical": true,
+        "max_abs": 0.0
+      }
+    },
+    "nz": 50,
+    "tile_cols": 16384
+  },
+  "proof": "mythos_memory_gpu_suite_260609"
+}

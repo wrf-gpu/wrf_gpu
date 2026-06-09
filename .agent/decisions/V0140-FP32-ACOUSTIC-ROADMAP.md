@@ -26,6 +26,39 @@ preempt the active fp64 grid-divergence root cause. The latest direct grid proof
 localization/fix on fp64; mixed FP32 resumes after the failing operator is named
 or bounded.
 
+Update 2026-06-09 ~24:00 WEST (Mythos memory/FP32 lane, branch
+`worker/mythos/v014-memory-fp32`, manager to review/merge):
+
+- **R0 LANDED, default-inert**: `AcousticPrecisionMode` labels in
+  `src/gpuwrf/contracts/precision.py`, `OperationalNamelist.
+  acoustic_precision_mode` (default `fp64_default`) riding in static aux for a
+  separate JIT/cache variant, fail-closed on unknown mode strings, and the
+  5-test cache-key suite (`tests/test_operational_namelist_cache_key.py`)
+  green. The static audit regenerated on this exact branch
+  (`proofs/v014/fp32_acoustic_static_audit.json`): 25 base-reconstruction-from-
+  totals lines, 60 hard fp64 casts in scope, **0 timestep consumers** of the
+  mode — the default fp64 program is untouched.
+- **R1/R2 EXACT BLOCKER (do not start yet)**: the strict Step-1 one-RK-step
+  comparison still shows REAL fp64 dynamics divergence concentrated in the
+  P/PH/MU (acoustic/mass/vertical) lane — WRF-EOS pressure rederived from the
+  JAX post-step state sits at p95 ≈ 770 Pa vs ≈ 0.02 Pa for WRF's own state
+  (`proofs/v014/mythos_kernel_fix_260609.json`), with one-step namelist parity
+  (acoustic substep count, epssm, damping) not yet frozen. R1's explicit
+  base-state plumbing touches exactly those acoustic prep/finish/staging
+  files: editing them now would unfreeze the active root-cause lane's fault
+  surface, and any mixed-mode validation delta would be confounded by the
+  open fp64 defect (no WRF-anchored acceptance gate can pass). This is a
+  correctness-gate blocker, not a feasibility refutation — the CPU probes
+  (`proofs/v014/fp32_acoustic_probes.json`, perturbation-form rescue ratio
+  ~1.4e6) still support the mixed-perturbation design.
+- **Minimal remaining roadmap** (unchanged in substance, now precisely gated):
+  (1) freeze one-step namelist parity and close the RK1 substage divergence on
+  fp64 (the active grid-parity lane); (2) then R1 explicit base-state plumbing
+  with fp64-default bit-identity tests over acoustic prep/finish plus a
+  one-step operational carry test; (3) R2 perturbation-authoritative loop
+  behind `mixed_perturb_fp32`; (4) R3-R8 as written below. ADR-031 stays
+  DRAFT pending manager review.
+
 ## Priority
 
 Current manager decision, updated 2026-06-09: this is the highest-priority

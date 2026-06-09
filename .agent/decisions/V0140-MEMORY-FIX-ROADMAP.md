@@ -26,6 +26,57 @@ CPU proof and WDM6 parity/smoke gates passed. All larger memory and FP32 source
 items remain blocked by the active live-nest `P/MU/W` grid-parity locks, not by
 lack of a plan.
 
+Update 2026-06-09 ~24:00 WEST (Mythos memory lane, branch
+`worker/mythos/v014-memory-fp32` @ base `a32efce3`, manager to review/merge —
+proof: `proofs/v014/mythos_memory_fixes_260609.*`):
+
+- **V014-MEM-0 exact-branch preflight: PASS** on the stabilized `a32efce3`
+  lineage (nested L3 1h, max-dom 3): `PASS_SHORT_GPU_PREFLIGHT`,
+  `PIPELINE_GREEN`, all finite, peak compute VRAM 8169 MiB, allocator re-exec
+  seen, 0 OOM (`proofs/v014/exact_branch_memory_preflight.json`, rerun again on
+  the final branch tree — see the mythos proof for the post-fix peak).
+- **Row 8 / S3 (MYNN BouLac dense matrices): MEASURED MATERIAL AND FIXED.**
+  AOT-compiled temp memory of the whole-batch MYNN step at 641x321x50 is
+  ~14.7 GiB; RRTMG-pattern leading-column tiling (`GPUWRF_MYNN_COLUMN_TILE_COLS`
+  default 16384, `src/gpuwrf/physics/mynn_pbl.py`) cuts compiled temp by
+  **11.53 GiB** (4.91 GiB at a 313x313 d03-like geometry). Tile-vs-untiled is
+  bit-identical on GPU incl. ragged production-tile case (EDMF on, mixed
+  land/water); on CPU the tridiag solves carry 1-2 ulp batch-width SIMD
+  codegen differences on scattered columns (turbulence chain bit-exact; CPU
+  default paths stay below the tile width and thus structurally untiled)
+  (`proofs/v014/mythos_memory_gpu_suite_260609.json`). This was the
+  largest remaining non-radiation transient; the structural BouLac rewrite (old
+  S3) is superseded by tiling and stays closed unless profiling reopens it.
+- **Row 6 (moisture transport velocity reuse): IMPLEMENTED, MEASURED
+  NON-MATERIAL.** The duplicate `couple_velocities_periodic` build is now shared
+  per RK stage at source level (`_stage_transport_velocities`,
+  `operational_mode.py`), value-bit-identical; but compiled GPU temp delta of
+  duplicate-vs-shared is **0.0 GiB** — XLA CSE already deduplicated it. The
+  0.45-0.65 GiB static estimate does not materialize at runtime; row kept as
+  source hygiene, not a VRAM gain.
+- **Row 11 (limiter workspace): MEASURED, DEFERRED.** Active `moist_adv_opt=2`
+  costs **+1.90 GiB** compiled temp over the plain path at target geometry.
+  Material only when active moisture advection is on the validation path;
+  rewrite remains semantic (limiter order/positivity) — defer until that path
+  is a validation target and the dycore locks lift.
+- **Row 9 (post-physics merge): NON-MATERIAL NOW.** Static 1.3-2.6 GiB vs
+  measured real-case preflight peak 8.2/32 GiB and the MYNN fix removing
+  ~11.5 GiB: not the binding constraint; revisit only if a future exact-branch
+  preflight shows pressure.
+- **Row 10 (PBL/surface bottom-only prep): DEFER unchanged** — semantic
+  surface→PBL contract risk, 0.3-0.8 GiB, not binding.
+- **Rows 12/13 (acoustic pad/mask helpers), S2 (carry split), row 14 (state
+  alias): EXACT DEFER** — same fault surface as the OPEN one-RK-step dynamics
+  divergence (P/PH/MU lane, see `proofs/v014/mythos_kernel_fix_260609.md`);
+  S2 additionally has a prior reverted attempt; row 14 is ADR-gated. No
+  acoustic-adjacent memory edit before the dynamics frontier closes.
+- **FP32 R0 landed default-inert** (see `V0140-FP32-ACOUSTIC-ROADMAP.md`
+  update); R1+ has an exact blocker recorded there.
+
+Note: the row numbers above refer to the ranked tables below (bit-identical
+table rows 6/8-15 and semantic rows S1-S3); the GiB numbers are measured
+compiled-memory/nvidia-smi artifacts, not static estimates.
+
 ## Decision
 
 The release-critical memory blocker was RRTMG full-column radiation memory. It

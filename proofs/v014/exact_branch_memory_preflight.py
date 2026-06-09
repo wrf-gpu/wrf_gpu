@@ -225,6 +225,9 @@ def gpu_idle_ok(sample: dict[str, Any]) -> tuple[bool, str]:
         "/usr/bin/kwin",
         "Xorg",
         "wayland",
+        # Resident principal-side bridge process on this workstation; steady
+        # ~0.5 GiB, captured by the baseline VRAM sample like the desktop apps.
+        "/.hermes/hermes-agent/",
     )
     non_desktop_apps = [
         app
