@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 (2026-06-09, principal-confirmed)
+
+- Tightened the cross-model debug cadence: after two focused GPT/debug sprints
+  still leave a complex correctness fix unproven, escalate to one Opus xhigh
+  critic/debugger to review method, hypotheses, evidence, performance impact,
+  and the candidate bug before the manager draws the next conclusion.
+
 ## 0.2.1 (2026-06-09, principal-authorized)
 
 - Added the cross-model debug cadence: after two inconclusive GPT/debug sprints
