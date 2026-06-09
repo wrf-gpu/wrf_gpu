@@ -82,9 +82,11 @@ useful work is current-code spatial/vertical anatomy, then first-divergence /
 component-tendency localization.
 
 Memory verdict: RRTMG column tiling is fixed and was the only true memory
-blocker. Before long validation, run an exact-branch memory preflight and an
-empirical memory map for MYNN BouLac/non-radiation physics/post-physics
-merge/moisture limiter liveness; do not rewrite these blindly.
+blocker. Exact-branch memory preflight exists, and the empirical/static memory
+map is now complete (`proofs/v014/empirical_memory_map.*`). No remaining
+non-radiation memory fix blocks the first long validation after grid parity if
+the selected exact-branch preflight fits. Do not rewrite MYNN/PBL/post-physics
+merge/moisture limiter/acoustic memory paths blindly.
 
 Wave-1 grid attribution verdict: the first fix target is static grid,
 vertical-coordinate, and base-state parity, not a dynamic operator edit. Case 3
@@ -531,6 +533,25 @@ differs with max_abs `267.01919069732367`. The current WRF input/reference
 surface does not expose explicit step-6000 pre-RK `P/PB/MUB`, so source-changing
 dycore edits remain premature. The next sprint must emit or hook explicit WRF
 and JAX step-6000 pre-RK `T/P/PB/MU/MUB`.
+
+## Completed Wave 14
+
+- GPT tmux worker (`0:5`, closed after manager validation):
+  empirical/static memory map sprint
+  `.agent/sprints/2026-06-09-v014-empirical-memory-map/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/empirical_memory_map.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-empirical-memory-map.md`.
+
+Verdict:
+`NO_REMAINING_NON_RADIATION_MEMORY_FIX_SHOULD_BLOCK_LONG_VALIDATION_AFTER_GRID_PARITY`.
+All candidates have `blocks_v014_long_validation_after_grid_parity=false`.
+Smallest safe optional memory source sprint is WDM6 `slmsk` shape-only cleanup
+(`0.075119 GiB` fp64 at 641x321x50); the only material bit-identical cleanup is
+moisture transport velocity reuse when active moisture advection matters
+(`0.237621-0.620881 GiB` static estimate). MYNN BouLac, non-radiation column
+tiling, post-physics merge, moisture limiter workspace, acoustic carry split,
+and FP32 acoustic remain measurement-first or grid-parity-gated.
 
 ## Next Manager Actions
 
