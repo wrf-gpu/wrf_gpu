@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-09 06:03 WEST): **Grid-cell parity first; TOST paused as a final gate, not
+Status (2026-06-09 06:21 WEST): **Grid-cell parity first; TOST paused as a final gate, not
 the next use of GPU time.**
 The release label is secondary to correctness. The current manager directive is:
 
@@ -53,9 +53,15 @@ native key `[12, 17]`. The T history/source-attribution sprint then closed the
 source-mapping branch: no inspected JAX theta/history candidate matches WRF
 history `T_HIST_SRC` or WRF `T_THM` within the frozen tolerance
 (`proofs/v014/jax_t_history_source_attribution.json` verdict
-`T_EVOLUTION_MISMATCH_CONFIRMED`). The next sprint is theta-evolution
-localization by stage/cadence/component, not JAX-vs-WRF history remapping and
-not a blind production dycore fix.
+`T_EVOLUTION_MISMATCH_CONFIRMED`). The theta-evolution localization sprint then
+proved the mismatch is already present at the earliest currently available
+input/reference theta boundary, before current-step physics or RK
+(`proofs/v014/jax_theta_evolution_localization.json` verdict
+`THETA_MISMATCH_PRESTEP_OR_INPUT`; `T_OLD` max_abs `6.218735851548047`, RMSE
+`4.638818160588427`; `MU_OLD` max_abs `267.01919069732367`). The next sprint is
+an explicit WRF/JAX step-6000 pre-RK input-boundary emitter or hook for
+`T/P/PB/MU/MUB`, not history-source remapping, final `small_step_finish`, or a
+blind production dycore fix.
 
 The project completed
 the 2026-05-28 reset (M8–M23 roadmap in `.agent/decisions/PROJECT-RESET-PLAN-FINAL.md`), rebuilt

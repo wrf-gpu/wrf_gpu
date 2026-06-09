@@ -512,13 +512,32 @@ still `captured_pre_halo_state.theta_minus_300` with max_abs
 P/PB/MU/MUB remain divergent on the same patch (`P=590`, `PB=1047`, `MU=267`,
 `MUB=1050` max_abs), so this is not a lone history/source artifact.
 
+## Completed Wave 13
+
+- GPT tmux worker (`0:4`, closed after artifact validation):
+  theta-evolution localization sprint
+  `.agent/sprints/2026-06-09-v014-theta-evolution-localization/sprint-contract.md`.
+  Completed and manager-validated 2026-06-09. Deliverables:
+  `proofs/v014/jax_theta_evolution_localization.{py,json,md}` and
+  `.agent/reviews/2026-06-09-v014-theta-evolution-localization.md`.
+
+Verdict: `THETA_MISMATCH_PRESTEP_OR_INPUT`. The proof uses the produced h10
+step-5999 carry checkpoint and existing WRF source-derived surfaces, and proves
+the proof-local RK mirror agrees with the existing pre-halo helper for theta
+(`max_abs=0.0`). The first reachable mismatch is already present before
+current-step physics/RK: WRF `T_OLD` / `grid%t_1` versus JAX prestep theta has
+max_abs `6.218735851548047`, RMSE `4.638818160588427`; `MU_OLD` context also
+differs with max_abs `267.01919069732367`. The current WRF input/reference
+surface does not expose explicit step-6000 pre-RK `P/PB/MUB`, so source-changing
+dycore edits remain premature. The next sprint must emit or hook explicit WRF
+and JAX step-6000 pre-RK `T/P/PB/MU/MUB`.
+
 ## Next Manager Actions
 
-1. Open the theta-evolution localization sprint. Attribute the `T` evolution
-   mismatch by stage/cadence/component from the produced prestep carry through
-   physics forcing, RK stage inputs, theta tendency/advection/diffusion/radiation
-   folding, acoustic finish, and post-RK refresh. Do not spend the next sprint
-   on history-source remapping for `T`.
+1. Open a WRF/JAX input-boundary emitter or hook sprint for explicit step-6000
+   pre-RK `T/P/PB/MU/MUB`, starting from the produced h10 step-5999 carry and
+   the green CPU-WRF h10 marker. Do not start by editing final
+   `small_step_finish`, post-RK refresh, or history-source mapping.
 2. Keep runtime dycore, pressure-gradient, acoustic, radiation, and
    surface-layer code read-only until the same-state/term proof isolates their
    ownership.
