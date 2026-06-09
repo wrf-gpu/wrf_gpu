@@ -1,0 +1,1403 @@
+{
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "numpy": "2.4.4",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T21:27:09.083104+00:00",
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n",
+      "wall_s": 0.002247537995572202
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "8a6a63dd40e17bbf7098b0ad693098d35db84300\n",
+      "wall_s": 0.001463780994527042
+    },
+    "required_ancestor": {
+      "commit": "6ced5a8e",
+      "is_ancestor": true
+    }
+  },
+  "gpu_used": false,
+  "inputs": {
+    "accepted_step1_truth_npz": {
+      "exists": true,
+      "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+      "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
+      "size_bytes": 12179669
+    },
+    "d02_replay": {
+      "exists": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "sha256": "f9996886da6954b17426b5e4cdb12935da56f2720ffbb24abfdaef2abe2e97b7",
+      "size_bytes": 125534
+    },
+    "interp": {
+      "exists": true,
+      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/nesting/interp.py",
+      "sha256": "dfe49114946609f1053c9522d56357314cefe29d180ee9fbbed0b9d05bb73f91",
+      "size_bytes": 18277
+    },
+    "wrf_configure": {
+      "exists": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/configure.wrf",
+      "sha256": "28916217d7be75d762955736011fe575da88c2f00a341862778244b44ff6005a",
+      "size_bytes": 21292
+    },
+    "wrf_module_bc_em": {
+      "exists": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/module_bc_em.F",
+      "sha256": "6cfb52b849e3dd0b24769709cf502faa75886da454d9b668af725cccdc56d47f",
+      "size_bytes": 90222
+    },
+    "wrf_nest_init_utils": {
+      "exists": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/nest_init_utils.F",
+      "sha256": "07db287108ab031f89e8bb80d830871daf8ba962f60d394e1ff31c845c1b4a14",
+      "size_bytes": 48692
+    },
+    "wrf_sint": {
+      "exists": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/sint.F",
+      "sha256": "5df841aea44c53c745a90fe96d2b9b8404097b457cceb1321faed592b727af1c",
+      "size_bytes": 17878
+    },
+    "wrf_start_em": {
+      "exists": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+      "sha256": "69b4ca7615978e94aceaf5662001ec360ad4a7de344397b0221351c610ab6d40",
+      "size_bytes": 130593
+    },
+    "wrf_truth_root": {
+      "exists": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "no_fp32_source_work": true,
+  "no_hermes": true,
+  "no_memory_source_work": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "production_src_edits": true,
+  "proof": {
+    "all_gates_pass": true,
+    "coordination": {
+      "base_boundary_worker_finished": true,
+      "gpu_used": false,
+      "memory_manager_untouched": true,
+      "no_hermes": true,
+      "no_tost_no_switzerland_no_fp32_no_memory_source_work": true
+    },
+    "declared_gates": {
+      "MU_STATE": {
+        "after_max_abs": 4.547473508864641e-13,
+        "before_max_abs": 13.256103515625,
+        "pass": true,
+        "threshold": 0.01
+      },
+      "P_STATE": {
+        "after_max_abs": 0.0390625,
+        "before_max_abs": 69.96875,
+        "pass": true,
+        "threshold": 1.0
+      },
+      "W_STATE": {
+        "after_max_abs": 5.551115123125783e-17,
+        "before_max_abs": 0.7605466842651367,
+        "pass": true,
+        "threshold": 0.001
+      }
+    },
+    "exclusions": [
+      "Terrain values, coefficients, cp constants, theta/QV, PH/MU time levels were excluded by predecessor proofs.",
+      "No dycore, runtime, state-contract, boundary-ABI, wrfout, memory, or FP32 source was modified.",
+      "The W branch keeps the WRF w_needs_to_be_set gate; inputs carrying real W are not overwritten."
+    ],
+    "next_decision": "Init-time P/MU/W is closed to WRF start_domain truth (bit-exact base, P 0.039 Pa). The strict Step-1 16-field one-RK-step comparison is now the authoritative post-init divergence frontier, and the attribution probe shows it is REAL one-step dynamics state divergence in the PH/MU/P (acoustic/mass/vertical) lane, not init and not pressure-diagnosis semantics. Next sprint: (1) freeze one-step namelist parity (acoustic substep count, epssm, damping) between the proof surrogate and the WRF case3 namelist; (2) rerun the existing RK1 substage comparator chain (/mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth is still valid WRF-side) against JAX substages built from the NOW-CLOSED init state. No dycore source edit is justified before that localization.",
+    "perturb_init_meta": {
+      "cpu_wrfout_dependency": false,
+      "hypsometric_opt": 2,
+      "libm_provider": "glibc-libm-float32",
+      "surfaces": [
+        "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+        "press_adj MU correction",
+        "set_w_surface(fill_w_flag=.true.)"
+      ],
+      "timestep_loop_transfer": false,
+      "use_theta_m_qvf": 1.0,
+      "w_needs_to_be_set": true,
+      "w_surface_input_max_abs": 0.0,
+      "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+    },
+    "post_step_residual_attribution": {
+      "P_wrf_eos_of_jax_post_step_state_vs_wrf_P": {
+        "count": 461736,
+        "max_abs": 955.3671875,
+        "nonzero_count": 461163,
+        "rmse": 285.51252240353875,
+        "worst_index_zero_based": [
+          0,
+          10,
+          90
+        ]
+      },
+      "captured_jax_p_perturbation_vs_wrf_P": {
+        "count": 461736,
+        "max_abs": 975.1236470550566,
+        "nonzero_count": 461736,
+        "rmse": 135.95494353894753,
+        "worst_index_zero_based": [
+          0,
+          29,
+          0
+        ]
+      },
+      "interpretation": "WRF-EOS pressure from the JAX post-step (PH, MU, theta) stays far from WRF P while the same diagnostic on WRF's own post-step state is ~0: the residual is REAL one-step dynamics state divergence (PH/MU evolve differently), not a pressure-diagnosis semantic gap. Theta/U/V p95 are tiny while P/PH/MU are broad, pointing at the acoustic/mass/vertical lane or one-step namelist parity (acoustic substep count, epssm, damping) rather than physics or horizontal advection. NOTE: the proof surrogate namelist hardcodes acoustic_substeps=10/epssm=0.5/damp_opt=3; namelist parity with the WRF case3 run must be frozen before instrumenting dycore substages.",
+      "sanity_P_wrf_eos_of_wrf_post_step_state_vs_wrf_P": {
+        "count": 461736,
+        "max_abs": 2.90625,
+        "nonzero_count": 312860,
+        "rmse": 0.07339449919424673,
+        "worst_index_zero_based": [
+          0,
+          63,
+          93
+        ]
+      }
+    },
+    "production_base_after_patch": {
+      "HT": {
+        "count": 10494,
+        "max_abs": 4.547473508864641e-13,
+        "nonzero_count": 821,
+        "rmse": 2.3220792699113213e-14,
+        "worst_index_zero_based": [
+          12,
+          19
+        ]
+      },
+      "MUB": {
+        "count": 10494,
+        "max_abs": 0.0,
+        "nonzero_count": 0,
+        "rmse": 0.0,
+        "worst_index_zero_based": [
+          0,
+          0
+        ]
+      },
+      "PB": {
+        "count": 461736,
+        "max_abs": 0.0,
+        "nonzero_count": 0,
+        "rmse": 0.0,
+        "worst_index_zero_based": [
+          0,
+          0,
+          0
+        ]
+      },
+      "PHB": {
+        "count": 472230,
+        "max_abs": 4.547473508864641e-13,
+        "nonzero_count": 1571,
+        "rmse": 1.8923118348432175e-14,
+        "worst_index_zero_based": [
+          0,
+          7,
+          18
+        ]
+      }
+    },
+    "production_perturb_init_after_patch": {
+      "MU_STATE": {
+        "count": 10494,
+        "max_abs": 4.547473508864641e-13,
+        "nonzero_count": 458,
+        "rmse": 9.500192094660529e-14,
+        "worst_index_zero_based": [
+          0,
+          5
+        ]
+      },
+      "P_STATE": {
+        "count": 461736,
+        "max_abs": 0.0390625,
+        "nonzero_count": 133372,
+        "rmse": 0.005008208494048622,
+        "worst_index_zero_based": [
+          0,
+          0,
+          110
+        ]
+      },
+      "W_STATE": {
+        "count": 472230,
+        "max_abs": 5.551115123125783e-17,
+        "nonzero_count": 62549,
+        "rmse": 1.9852670056994173e-18,
+        "worst_index_zero_based": [
+          0,
+          9,
+          18
+        ]
+      }
+    },
+    "production_perturb_init_before_patch_raw": {
+      "MU_STATE": {
+        "count": 10494,
+        "max_abs": 13.256103515625,
+        "nonzero_count": 930,
+        "rmse": 0.5968840909134501,
+        "worst_index_zero_based": [
+          54,
+          155
+        ]
+      },
+      "P_STATE": {
+        "count": 461736,
+        "max_abs": 69.96875,
+        "nonzero_count": 150799,
+        "rmse": 1.161700383780558,
+        "worst_index_zero_based": [
+          0,
+          54,
+          155
+        ]
+      },
+      "W_STATE": {
+        "count": 472230,
+        "max_abs": 0.7605466842651367,
+        "nonzero_count": 142868,
+        "rmse": 0.014709815601114631,
+        "worst_index_zero_based": [
+          0,
+          30,
+          61
+        ]
+      }
+    },
+    "ranked_hypotheses": [
+      {
+        "evidence": "glibc expf + glibc powf(x,0.5) reproduces WRF MUB exactly: max_abs 0.0 over 10494 cells; numpy SIMD fp32 exp leaves 660 cells (max 0.0546875 Pa); glibc expf + sqrtss leaves 2 cells (max 0.046875 Pa).",
+        "hypothesis": "The remaining p_surf->MUB gap was float32 libm provenance: WRF calls scalar glibc expf, and gfortran compiles (...)**0.5 to a glibc powf(x,0.5) call (1 ulp from sqrtf on rare inputs).",
+        "rank": 1,
+        "status": "PROVEN_BIT_EXACT"
+      },
+      {
+        "evidence": "fp64 SINT/blend HT max_abs 2.682152282318384e-05 m -> fp32 WRF-order SINT/blend 4.547473508864641e-13 m (truth-dump text precision).",
+        "hypothesis": "The residual production P gap after exact-libm base was the float64 SINT/blend terrain (<= 1 fp32 ulp HT error amplified ~50x through the AL/ALT layer-thickness division).",
+        "rank": 2,
+        "status": "PROVEN_AND_CLOSED"
+      },
+      {
+        "evidence": "P_STATE 69.96875 -> 0.0390625 Pa; MU_STATE 13.256103515625 -> 4.547473508864641e-13 Pa; W_STATE 0.7605466842651367 -> 5.551115123125783e-17 m/s.",
+        "hypothesis": "Raw wrfinput perturbation P/MU/W leaves miss three WRF start_domain mutations (hypsometric P rederivation, press_adj MU, set_w_surface W).",
+        "rank": 3,
+        "status": "CONFIRMED_BY_PREDECESSORS_AND_CLOSED_IN_PRODUCTION"
+      },
+      {
+        "evidence": "float64-rounded exp leaves 3 MUB cells at max 0.046875 Pa and (full chain, measured in scratch) P_STATE ~2.23 Pa > 1 Pa gate; it remains only the non-glibc fallback.",
+        "hypothesis": "float64-rounded transcendentals are a sufficient production formula.",
+        "rank": 4,
+        "status": "REFUTED_AS_PRIMARY_KEPT_AS_FALLBACK"
+      }
+    ],
+    "root_cause_mub_candidates": {
+      "A_numpy_simd_fp32_exp_sqrtss": {
+        "count": 10494,
+        "max_abs": 0.0546875,
+        "nonzero_count": 660,
+        "rmse": 0.002136753031551267,
+        "worst_index_zero_based": [
+          35,
+          146
+        ]
+      },
+      "B_float64_rounded_exp_sqrt": {
+        "count": 10494,
+        "max_abs": 0.046875,
+        "nonzero_count": 3,
+        "rmse": 0.0006515997822142267,
+        "worst_index_zero_based": [
+          35,
+          146
+        ]
+      },
+      "C_glibc_expf_sqrtss": {
+        "count": 10494,
+        "max_abs": 0.046875,
+        "nonzero_count": 2,
+        "rmse": 0.0006471213801270174,
+        "worst_index_zero_based": [
+          35,
+          146
+        ]
+      },
+      "D_glibc_expf_glibc_powf05": {
+        "count": 10494,
+        "max_abs": 0.0,
+        "nonzero_count": 0,
+        "rmse": 0.0,
+        "worst_index_zero_based": [
+          0,
+          0
+        ]
+      }
+    },
+    "root_cause_terrain_sint_blend": {
+      "fp32_sint_blend_patched": {
+        "count": 10494,
+        "max_abs": 4.547473508864641e-13,
+        "nonzero_count": 821,
+        "rmse": 2.3220792699113213e-14,
+        "worst_index_zero_based": [
+          12,
+          19
+        ]
+      },
+      "fp64_sint_blend_previous_behaviour": {
+        "count": 10494,
+        "max_abs": 2.682152282318384e-05,
+        "nonzero_count": 1512,
+        "rmse": 1.0767691457001149e-06,
+        "worst_index_zero_based": [
+          59,
+          156
+        ]
+      }
+    },
+    "scalars_fp32": {
+      "a": 50.0,
+      "a_strat": -11.0,
+      "p00": 100000.0,
+      "p_strat": 0.0,
+      "p_top": 5000.0,
+      "t00": 290.0,
+      "tiso": 200.0
+    },
+    "status": "PROOF_EXECUTED",
+    "strict_step1_16field_with_patched_init": {
+      "first_divergent_field": "T",
+      "per_field_metrics": {
+        "MU": {
+          "bias": 0.0029090037094647676,
+          "count": 10494,
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0
+          ],
+          "max_abs": 14.007953430216503,
+          "nonfinite_diff_count": 0,
+          "p95": 1.5516685441383637,
+          "p99": 3.512402343749997,
+          "rmse": 0.7485993568714623,
+          "shape": [
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 22,
+            "j": 50
+          },
+          "worst_mismatch_index": [
+            49,
+            21
+          ]
+        },
+        "MUB": {
+          "bias": 0.0,
+          "count": 10494,
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        "P": {
+          "bias": 51.10011145654609,
+          "count": 461736,
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 975.1236470550566,
+          "nonfinite_diff_count": 0,
+          "p95": 326.534420358952,
+          "p99": 440.49260473909766,
+          "rmse": 135.95494353894753,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 30,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            29,
+            0
+          ]
+        },
+        "PB": {
+          "bias": 0.0,
+          "count": 461736,
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "PH": {
+          "bias": 7.906789942093917,
+          "count": 472230,
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "kstag": 2
+          },
+          "first_mismatch_index": [
+            1,
+            0,
+            0
+          ],
+          "max_abs": 63.82327410901786,
+          "nonfinite_diff_count": 0,
+          "p95": 44.745813859356296,
+          "p99": 53.33530707757223,
+          "rmse": 17.415390008787018,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 24,
+            "j": 53,
+            "kstag": 11
+          },
+          "worst_mismatch_index": [
+            10,
+            52,
+            23
+          ]
+        },
+        "PHB": {
+          "bias": -1.1092848096360065e-18,
+          "count": 472230,
+          "first_mismatch_fortran": {
+            "i": 6,
+            "j": 1,
+            "kstag": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            5
+          ],
+          "max_abs": 4.547473508864641e-13,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 1.8923118348432175e-14,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 19,
+            "j": 8,
+            "kstag": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            7,
+            18
+          ]
+        },
+        "QCLOUD": {
+          "bias": 0.0,
+          "count": 461736,
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "QGRAUP": {
+          "bias": 0.0,
+          "count": 461736,
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "QICE": {
+          "bias": 0.0,
+          "count": 461736,
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "QRAIN": {
+          "bias": 0.0,
+          "count": 461736,
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "QSNOW": {
+          "bias": 0.0,
+          "count": 461736,
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        "QVAPOR": {
+          "bias": -6.695550286055386e-08,
+          "count": 461736,
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.000181070063263177,
+          "nonfinite_diff_count": 0,
+          "p95": 1.7125774040432928e-06,
+          "p99": 9.712518658492844e-06,
+          "rmse": 3.2924865537392053e-06,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 98,
+            "j": 20,
+            "k": 2
+          },
+          "worst_mismatch_index": [
+            1,
+            19,
+            97
+          ]
+        },
+        "T": {
+          "bias": -7.665410595775577e-06,
+          "count": 461736,
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.15948589853104567,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0020460304785254735,
+          "p99": 0.00907048101811087,
+          "rmse": 0.002242006507629072,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 159,
+            "j": 59,
+            "k": 9
+          },
+          "worst_mismatch_index": [
+            8,
+            58,
+            158
+          ]
+        },
+        "U": {
+          "bias": 0.000455513281795524,
+          "count": 464640,
+          "first_mismatch_fortran": {
+            "i_xstag": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.7838795148321176,
+          "nonfinite_diff_count": 0,
+          "p95": 0.019151568442269607,
+          "p99": 0.08481314851247385,
+          "rmse": 0.02035888890860235,
+          "shape": [
+            44,
+            66,
+            160
+          ],
+          "worst_mismatch_fortran": {
+            "i_xstag": 159,
+            "j": 2,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            1,
+            158
+          ]
+        },
+        "V": {
+          "bias": 0.00022848908590819835,
+          "count": 468732,
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j_ystag": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.6215864259938341,
+          "nonfinite_diff_count": 0,
+          "p95": 0.019608727666687996,
+          "p99": 0.12248464446302884,
+          "rmse": 0.02583415598943992,
+          "shape": [
+            44,
+            67,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 23,
+            "j_ystag": 51,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            50,
+            22
+          ]
+        },
+        "W": {
+          "bias": 0.19822801024607803,
+          "count": 472230,
+          "first_mismatch_fortran": {
+            "i": 3,
+            "j": 1,
+            "kstag": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            2
+          ],
+          "max_abs": 2.6401070776077424,
+          "nonfinite_diff_count": 0,
+          "p95": 1.1677870720541574,
+          "p99": 1.4198935011912976,
+          "rmse": 0.44965939977129343,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 78,
+            "j": 66,
+            "kstag": 9
+          },
+          "worst_mismatch_index": [
+            8,
+            65,
+            77
+          ]
+        }
+      },
+      "ranked_residuals": [
+        {
+          "bias": 51.10011145654609,
+          "count": 461736,
+          "field": "P",
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 975.1236470550566,
+          "nonfinite_diff_count": 0,
+          "p95": 326.534420358952,
+          "p99": 440.49260473909766,
+          "rmse": 135.95494353894753,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 30,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            29,
+            0
+          ]
+        },
+        {
+          "bias": 7.906789942093917,
+          "count": 472230,
+          "field": "PH",
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "kstag": 2
+          },
+          "first_mismatch_index": [
+            1,
+            0,
+            0
+          ],
+          "max_abs": 63.82327410901786,
+          "nonfinite_diff_count": 0,
+          "p95": 44.745813859356296,
+          "p99": 53.33530707757223,
+          "rmse": 17.415390008787018,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 24,
+            "j": 53,
+            "kstag": 11
+          },
+          "worst_mismatch_index": [
+            10,
+            52,
+            23
+          ]
+        },
+        {
+          "bias": 0.0029090037094647676,
+          "count": 10494,
+          "field": "MU",
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0
+          ],
+          "max_abs": 14.007953430216503,
+          "nonfinite_diff_count": 0,
+          "p95": 1.5516685441383637,
+          "p99": 3.512402343749997,
+          "rmse": 0.7485993568714623,
+          "shape": [
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 22,
+            "j": 50
+          },
+          "worst_mismatch_index": [
+            49,
+            21
+          ]
+        },
+        {
+          "bias": 0.19822801024607803,
+          "count": 472230,
+          "field": "W",
+          "first_mismatch_fortran": {
+            "i": 3,
+            "j": 1,
+            "kstag": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            2
+          ],
+          "max_abs": 2.6401070776077424,
+          "nonfinite_diff_count": 0,
+          "p95": 1.1677870720541574,
+          "p99": 1.4198935011912976,
+          "rmse": 0.44965939977129343,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 78,
+            "j": 66,
+            "kstag": 9
+          },
+          "worst_mismatch_index": [
+            8,
+            65,
+            77
+          ]
+        },
+        {
+          "bias": 0.000455513281795524,
+          "count": 464640,
+          "field": "U",
+          "first_mismatch_fortran": {
+            "i_xstag": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.7838795148321176,
+          "nonfinite_diff_count": 0,
+          "p95": 0.019151568442269607,
+          "p99": 0.08481314851247385,
+          "rmse": 0.02035888890860235,
+          "shape": [
+            44,
+            66,
+            160
+          ],
+          "worst_mismatch_fortran": {
+            "i_xstag": 159,
+            "j": 2,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            1,
+            158
+          ]
+        },
+        {
+          "bias": 0.00022848908590819835,
+          "count": 468732,
+          "field": "V",
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j_ystag": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.6215864259938341,
+          "nonfinite_diff_count": 0,
+          "p95": 0.019608727666687996,
+          "p99": 0.12248464446302884,
+          "rmse": 0.02583415598943992,
+          "shape": [
+            44,
+            67,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 23,
+            "j_ystag": 51,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            50,
+            22
+          ]
+        },
+        {
+          "bias": -7.665410595775577e-06,
+          "count": 461736,
+          "field": "T",
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.15948589853104567,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0020460304785254735,
+          "p99": 0.00907048101811087,
+          "rmse": 0.002242006507629072,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 159,
+            "j": 59,
+            "k": 9
+          },
+          "worst_mismatch_index": [
+            8,
+            58,
+            158
+          ]
+        },
+        {
+          "bias": -6.695550286055386e-08,
+          "count": 461736,
+          "field": "QVAPOR",
+          "first_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            0
+          ],
+          "max_abs": 0.000181070063263177,
+          "nonfinite_diff_count": 0,
+          "p95": 1.7125774040432928e-06,
+          "p99": 9.712518658492844e-06,
+          "rmse": 3.2924865537392053e-06,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 98,
+            "j": 20,
+            "k": 2
+          },
+          "worst_mismatch_index": [
+            1,
+            19,
+            97
+          ]
+        },
+        {
+          "bias": -1.1092848096360065e-18,
+          "count": 472230,
+          "field": "PHB",
+          "first_mismatch_fortran": {
+            "i": 6,
+            "j": 1,
+            "kstag": 1
+          },
+          "first_mismatch_index": [
+            0,
+            0,
+            5
+          ],
+          "max_abs": 4.547473508864641e-13,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 1.8923118348432175e-14,
+          "shape": [
+            45,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 19,
+            "j": 8,
+            "kstag": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            7,
+            18
+          ]
+        },
+        {
+          "bias": 0.0,
+          "count": 461736,
+          "field": "PB",
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "bias": 0.0,
+          "count": 10494,
+          "field": "MUB",
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0
+          ]
+        },
+        {
+          "bias": 0.0,
+          "count": 461736,
+          "field": "QCLOUD",
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "bias": 0.0,
+          "count": 461736,
+          "field": "QRAIN",
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "bias": 0.0,
+          "count": 461736,
+          "field": "QICE",
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "bias": 0.0,
+          "count": 461736,
+          "field": "QSNOW",
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "bias": 0.0,
+          "count": 461736,
+          "field": "QGRAUP",
+          "first_mismatch_fortran": null,
+          "first_mismatch_index": null,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "worst_mismatch_fortran": {
+            "i": 1,
+            "j": 1,
+            "k": 1
+          },
+          "worst_mismatch_index": [
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "status": "COMPARISON_EXECUTED",
+      "strict_live_nest_init_comparison_run": true,
+      "truth_file": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
+    },
+    "verdict": "MYTHOS_KERNEL_FIX_START_DOMAIN_P_MU_W_CLOSED_FP32_LIBM_SINT_BLEND_BIT_EXACT",
+    "wrf_build_facts": {
+      "compiler": "gfortran (serial/dmpar; configure.wrf FCOPTIM=-O2 -ftree-vectorize -funroll-loops)",
+      "glibc_version_this_host": "2.43",
+      "libm": "scalar glibc expf/logf/powf (math errno blocks vectorization of EXP/LOG loops)",
+      "no_fast_math_no_fma": true,
+      "numpy_version": "2.4.4"
+    }
+  },
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-mythos-kernel-fix.md"
+  },
+  "schema": "wrfgpu2.v014.mythos_kernel_fix_260609.v1",
+  "verdict": "MYTHOS_KERNEL_FIX_START_DOMAIN_P_MU_W_CLOSED_FP32_LIBM_SINT_BLEND_BIT_EXACT"
+}

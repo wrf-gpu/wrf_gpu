@@ -300,19 +300,26 @@ def interp_sint_linear(field: jax.Array, weights: InterpWeights) -> jax.Array:
 # ---------------------------------------------------------------------------
 
 
-def _sint_sub_offsets(ratio: int, *, xstag: bool, ystag: bool):
-    """``XIG``/``XJG`` per-sub-cell offsets (``sint.F:46-59``)."""
+def _sint_sub_offsets(ratio: int, *, xstag: bool, ystag: bool, dtype: type = np.float64):
+    """``XIG``/``XJG`` per-sub-cell offsets (``sint.F:46-59``).
 
+    ``dtype=np.float32`` reproduces the WRF REAL(4) constant arithmetic bit-exactly
+    (WRF evaluates these offsets in single precision); the default ``float64`` keeps
+    the historical fidelity-proof behaviour.
+    """
+
+    f = np.dtype(dtype).type
     rr = int(round(np.sqrt(float(ratio * ratio))))
-    rioff = 1.0 if (xstag and rr % 2 == 0) else 0.0
-    rjoff = 1.0 if (ystag and rr % 2 == 0) else 0.0
+    rioff = f(1.0) if (xstag and rr % 2 == 0) else f(0.0)
+    rjoff = f(1.0) if (ystag and rr % 2 == 0) else f(0.0)
     nf = rr * rr
-    xig = np.zeros(nf)
-    xjg = np.zeros(nf)
+    xig = np.zeros(nf, dtype=dtype)
+    xjg = np.zeros(nf, dtype=dtype)
     for i in range(1, rr + 1):
         for j in range(1, rr + 1):
-            xig[j + (i - 1) * rr - 1] = (rr - 1.0 - rioff) / (2.0 * rr) - (j - 1) * 1.0 / rr
-            xjg[j + (i - 1) * rr - 1] = (rr - 1.0 - rjoff) / (2.0 * rr) - (i - 1) * 1.0 / rr
+            # XIG(J+(I-1)*rr)=(float(rr)-1.-rioff)/float(2*rr)-FLOAT(J-1)*1./float(rr)
+            xig[j + (i - 1) * rr - 1] = (f(rr) - f(1.0) - rioff) / f(2 * rr) - f(j - 1) * f(1.0) / f(rr)
+            xjg[j + (i - 1) * rr - 1] = (f(rr) - f(1.0) - rjoff) / f(2 * rr) - f(i - 1) * f(1.0) / f(rr)
     return xig, xjg, rr
 
 
@@ -322,6 +329,7 @@ def sint_block_reference(
     *,
     xstag: bool = False,
     ystag: bool = False,
+    dtype: type = np.float64,
 ) -> np.ndarray:
     """Faithful NumPy transcription of WRF ``sintb`` (``share/sint.F``).
 
@@ -335,19 +343,27 @@ def sint_block_reference(
     This is the proof-grade fidelity reference -- it includes the DONOR flux and
     the OV/UN monotone limiter exactly as WRF.  It is host-only NumPy; the device
     path uses the linear registration (:func:`interp_sint_linear`).
+
+    ``dtype=np.float32`` evaluates every operation in WRF's REAL(4) precision with
+    the exact ``sint.F`` expression grouping, reproducing the CPU-WRF interpolated
+    values bit-exactly (required by the live-nest base-state init, where 1-ulp HT
+    differences amplify ~50x through the hypsometric layer-thickness division into
+    ~Pa-level base/perturbation pressure errors).
     """
 
-    one12, one24, ep = 1.0 / 12.0, 1.0 / 24.0, 1.0e-10
-    xig, xjg, rr = _sint_sub_offsets(int(ratio), xstag=xstag, ystag=ystag)
+    f = np.dtype(dtype).type
+    one12, one24, ep = f(1.0) / f(12.0), f(1.0) / f(24.0), f(1.0e-10)
+    zero, one = f(0.0), f(1.0)
+    xig, xjg, rr = _sint_sub_offsets(int(ratio), xstag=xstag, ystag=ystag, dtype=dtype)
     nf = rr * rr
     ny, nx = coarse.shape
 
     def tr4(ym1, y0, yp1, yp2, a):
         return (
-            a * one12 * (7.0 * (yp1 + y0) - (yp2 + ym1))
-            - a * a * one24 * (15.0 * (yp1 - y0) - (yp2 - ym1))
+            a * one12 * (f(7.0) * (yp1 + y0) - (yp2 + ym1))
+            - a * a * one24 * (f(15.0) * (yp1 - y0) - (yp2 - ym1))
             - a * a * a * one12 * ((yp1 + y0) - (yp2 + ym1))
-            + a * a * a * a * one24 * (3.0 * (yp1 - y0) - (yp2 - ym1))
+            + a * a * a * a * one24 * (f(3.0) * (yp1 - y0) - (yp2 - ym1))
         )
 
     def limited_vec(ym2, ym1, y0, yp1, yp2, a):
@@ -355,32 +371,34 @@ def sint_block_reference(
 
         Faithful transcription of the scalar ``sint.F`` inner block, applied
         elementwise over numpy arrays (``a`` is the scalar sub-cell offset
-        ``XIG``/``XJG``).  ``DONOR``/``PP``/``PN`` become ``np.sign``/
+        ``XIG``/``XJG``).  ``DONOR``/``PP``/``PN`` become sign selection/
         ``np.maximum``/``np.minimum`` -- identical arithmetic per element.
+        Fortran ``SIGN(1.,A)`` is ``+1`` at ``A == 0`` (the donor flux is then
+        multiplied by ``A == 0`` either way, so the result is unchanged).
         """
 
-        sa = float(np.sign(a))
-        fl0 = (ym1 * max(0.0, sa) - y0 * min(0.0, sa)) * a
-        fl1 = (y0 * max(0.0, sa) - yp1 * min(0.0, sa)) * a
+        sa = one if float(a) >= 0.0 else -one
+        fl0 = (ym1 * max(zero, sa) - y0 * min(zero, sa)) * a
+        fl1 = (y0 * max(zero, sa) - yp1 * min(zero, sa)) * a
         w = y0 - (fl1 - fl0)
         mxm = np.maximum(np.maximum(ym1, y0), np.maximum(yp1, w))
         mn = np.minimum(np.minimum(ym1, y0), np.minimum(yp1, w))
         f0 = tr4(ym2, ym1, y0, yp1, a) - fl0
         f1 = tr4(ym1, y0, yp1, yp2, a) - fl1
-        ov = (mxm - w) / (-np.minimum(0.0, f1) + np.maximum(0.0, f0) + ep)
-        un = (w - mn) / (np.maximum(0.0, f1) - np.minimum(0.0, f0) + ep)
-        f0 = np.maximum(0.0, f0) * np.minimum(1.0, ov) + np.minimum(0.0, f0) * np.minimum(1.0, un)
-        f1 = np.maximum(0.0, f1) * np.minimum(1.0, un) + np.minimum(0.0, f1) * np.minimum(1.0, ov)
+        ov = (mxm - w) / (-np.minimum(zero, f1) + np.maximum(zero, f0) + ep)
+        un = (w - mn) / (np.maximum(zero, f1) - np.minimum(zero, f0) + ep)
+        f0 = np.maximum(zero, f0) * np.minimum(one, ov) + np.minimum(zero, f0) * np.minimum(one, un)
+        f1 = np.maximum(zero, f1) * np.minimum(one, un) + np.minimum(zero, f1) * np.minimum(one, ov)
         return w - (f1 - f0)
 
-    out = np.full((ny, nx, nf), np.nan, dtype=np.float64)
-    cf = np.asarray(coarse, dtype=np.float64)
+    out = np.full((ny, nx, nf), np.nan, dtype=dtype)
+    cf = np.asarray(coarse, dtype=dtype)
     ii = np.arange(2, nx - 2)
     jj = np.arange(2, ny - 2)
     II, JJ = np.meshgrid(ii, jj)  # interior cell centers (with full 2-cell halo)
     for iim in range(nf):
         # x-pass: for each row offset jrel in -2..2 build Z[:, :, jrel+2]
-        z = np.full((ny, nx, 5), np.nan, dtype=np.float64)
+        z = np.full((ny, nx, 5), np.nan, dtype=dtype)
         for jrel in range(-2, 3):
             row = JJ + jrel
             z[JJ, II, jrel + 2] = limited_vec(
@@ -404,6 +422,7 @@ def sint_to_child_reference(
     child_nx: int,
     xstag: bool = False,
     ystag: bool = False,
+    dtype: type = np.float64,
 ) -> np.ndarray:
     """Full-grid child field from the WRF monotone ``sint`` (host reference).
 
@@ -416,8 +435,8 @@ def sint_to_child_reference(
     """
 
     rr = int(ratio)
-    block = sint_block_reference(coarse, rr, xstag=xstag, ystag=ystag)
-    out = np.zeros((int(child_ny), int(child_nx)), dtype=np.float64)
+    block = sint_block_reference(coarse, rr, xstag=xstag, ystag=ystag, dtype=dtype)
+    out = np.zeros((int(child_ny), int(child_nx)), dtype=dtype)
     for nj in range(int(child_ny)):
         nj1 = nj + 1  # 1-based fine index
         cj = int(j_parent_start) + (nj1 - 1) // rr - 1  # 0-based parent row

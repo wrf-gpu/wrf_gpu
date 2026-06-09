@@ -165,6 +165,98 @@ _EOS_CP_D = 1004.0
 _EOS_P0_PA = 100000.0
 _EOS_CVPM = -(_EOS_CP_D - _EOS_R_D) / _EOS_CP_D
 _WRF_BASE_GRAVITY_M_S2 = 9.81
+
+# WRF ``share/module_model_constants.F`` REAL(4) parameters as compile-time fp32
+# folds, used by the live-nest ``start_domain_em`` init transcription.  These are
+# deliberately separate from the fp64 ``_EOS_*`` constants above (cp here is the
+# WRF 1004.5, not the dycore's 1004.0).
+_WRF32_R_D = np.float32(287.0)
+_WRF32_CP = np.float32(7.0) * _WRF32_R_D / np.float32(2.0)      # 1004.5
+_WRF32_CV = _WRF32_CP - _WRF32_R_D                              # 717.5
+_WRF32_CVPM = -(_WRF32_CV / _WRF32_CP)
+_WRF32_RDOCP = _WRF32_R_D / _WRF32_CP
+_WRF32_CPOVCV = _WRF32_CP / _WRF32_CV
+_WRF32_P1000MB = np.float32(100000.0)
+_WRF32_T0 = np.float32(300.0)
+_WRF32_G = np.float32(9.81)
+
+
+class _WRFInitLibm32:
+    """float32 ``expf``/``logf``/``powf`` bit-matched to the CPU-WRF build's libm.
+
+    The CPU-WRF truth is gfortran ``-O2`` REAL(4) calling scalar glibc
+    ``expf``/``logf``/``powf`` (math-errno blocks vectorization, no fast-math, no
+    FMA).  NumPy's float32 SIMD ``exp``/``log`` differ from glibc by 1-4 ulp and
+    glibc ``powf(x, 0.5)`` differs from ``sqrtf`` by 1 ulp on rare inputs; those
+    ulps are amplified ~50x by the hypsometric layer-thickness division into
+    ~Pa-level base/perturbation pressure errors (proofs/v014/
+    mythos_kernel_fix_260609.*).  Calling the same libm closes the chain
+    bit-exactly.  Initialization-only host helper; never on the device hot path.
+    Falls back to float64-computed correctly-rounded float32 when libm is not
+    loadable (residual then bounded ~2.3 Pa worst-case instead of ~0.04 Pa).
+    """
+
+    def __init__(self) -> None:
+        self._libm = None
+        self.provider = "float64-rounded-fallback"
+        try:
+            import ctypes
+            import ctypes.util
+
+            path = ctypes.util.find_library("m")
+            libm = ctypes.CDLL(path) if path else ctypes.CDLL(None)
+            for name, nargs in (("expf", 1), ("logf", 1), ("powf", 2)):
+                fn = getattr(libm, name)
+                fn.restype = ctypes.c_float
+                fn.argtypes = [ctypes.c_float] * nargs
+            self._ctypes = ctypes
+            self._libm = libm
+            self.provider = "glibc-libm-float32"
+        except Exception:  # pragma: no cover - non-glibc fallback
+            self._libm = None
+
+    def _map1(self, name: str, x: np.ndarray) -> np.ndarray:
+        x32 = np.asarray(x, dtype=np.float32)
+        if self._libm is None:
+            fn64 = np.exp if name == "expf" else np.log
+            return fn64(x32.astype(np.float64)).astype(np.float32)
+        fn = getattr(self._libm, name)
+        c_float = self._ctypes.c_float
+        out = np.empty_like(x32)
+        fi, fo = x32.ravel(), out.ravel()
+        for i in range(fi.size):
+            fo[i] = fn(c_float(float(fi[i])))
+        return out
+
+    def exp(self, x: np.ndarray) -> np.ndarray:
+        return self._map1("expf", x)
+
+    def log(self, x: np.ndarray) -> np.ndarray:
+        return self._map1("logf", x)
+
+    def pow(self, x: np.ndarray, y: np.float32) -> np.ndarray:
+        x32 = np.asarray(x, dtype=np.float32)
+        y32 = np.float32(y)
+        if self._libm is None:
+            return np.power(x32.astype(np.float64), np.float64(y32)).astype(np.float32)
+        c_float = self._ctypes.c_float
+        c_y = c_float(float(y32))
+        out = np.empty_like(x32)
+        fi, fo = x32.ravel(), out.ravel()
+        for i in range(fi.size):
+            fo[i] = self._libm.powf(c_float(float(fi[i])), c_y)
+        return out
+
+    def sqrt_via_pow(self, x: np.ndarray) -> np.ndarray:
+        """WRF ``(...)**0.5`` compiles to ``powf(x, 0.5)`` (not ``sqrtss``)."""
+
+        if self._libm is None:
+            # float64 sqrt rounds to the correctly-rounded float32 sqrt.
+            return np.sqrt(np.asarray(x, dtype=np.float32).astype(np.float64)).astype(np.float32)
+        return self.pow(x, np.float32(0.5))
+
+
+_WRF_INIT_LIBM32 = _WRFInitLibm32()
 DEFAULT_REPLAY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_OUTPUT_FIELD_PATH = Path("/home/enric/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz")
 DEFAULT_TRACE_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/enric/.cache/gpuwrf_tmp"))
@@ -814,24 +906,32 @@ def _wrf_blend_terrain_host(
     *,
     spec_bdy_width: int,
     blend_width: int,
+    dtype: type = np.float32,
 ) -> np.ndarray:
     """Host transcription of WRF ``nest_init_utils.F::blend_terrain``.
 
     Initialization-only: no timestep-loop transfer.  Supports mass 2-D fields and
     vertical-stack 3-D fields with horizontal axes last.
+
+    The default ``dtype=np.float32`` evaluates the blend in WRF's REAL(4)
+    precision with the exact source grouping
+    ``(blend_cell*ter_input + (blend_width+1-blend_cell)*ter_interpolated) *
+    r_blend_zones`` (``r_blend_zones = 1./(blend_width+1)``), reproducing the
+    CPU-WRF blended field bit-exactly when the inputs are bit-exact.
     """
 
-    out = np.array(fine, dtype=np.float64, copy=True)
-    parent = np.asarray(interpolated, dtype=np.float64)
+    f = np.dtype(dtype).type
+    fine_arr = np.asarray(fine, dtype=dtype)
+    out = np.array(fine_arr, copy=True)
+    parent = np.asarray(interpolated, dtype=dtype)
     ny, nx = out.shape[-2:]
     ide = nx + 1
     jde = ny + 1
-    r_blend = 1.0 / float(int(blend_width) + 1)
+    r_blend = f(1.0) / f(int(blend_width) + 1)
     for jj in range(ny):
         j = jj + 1
         for ii in range(nx):
             i = ii + 1
-            weights: tuple[float, float] | None = None
             for blend_cell in range(int(blend_width), 0, -1):
                 if (
                     i == int(spec_bdy_width) + blend_cell
@@ -839,20 +939,17 @@ def _wrf_blend_terrain_host(
                     or i == ide - int(spec_bdy_width) - blend_cell
                     or j == jde - int(spec_bdy_width) - blend_cell
                 ):
-                    weights = (
-                        blend_cell * r_blend,
-                        (int(blend_width) + 1 - blend_cell) * r_blend,
-                    )
+                    out[..., jj, ii] = (
+                        f(blend_cell) * fine_arr[..., jj, ii]
+                        + f(int(blend_width) + 1 - blend_cell) * parent[..., jj, ii]
+                    ) * r_blend
             if (
                 i <= int(spec_bdy_width)
                 or j <= int(spec_bdy_width)
                 or i >= ide - int(spec_bdy_width)
                 or j >= jde - int(spec_bdy_width)
             ):
-                weights = (0.0, 1.0)
-            if weights is not None:
-                fine_w, parent_w = weights
-                out[..., jj, ii] = fine_w * out[..., jj, ii] + parent_w * parent[..., jj, ii]
+                out[..., jj, ii] = parent[..., jj, ii]
     return out
 
 
@@ -878,6 +975,23 @@ def _metrics_with_terrain(
     )
 
 
+def _wrf_start_domain_base_scalars32(run: Gen2Run, domain: str) -> dict[str, np.float32]:
+    """fp32 base-profile scalars exactly as ``start_domain_em`` reads them."""
+
+    def f32_scalar(name: str) -> np.float32:
+        return np.float32(float(np.asarray(jax.device_get(_load(run, domain, name, 0))).ravel()[0]))
+
+    return {
+        "p_top": f32_scalar("P_TOP"),
+        "p00": f32_scalar("P00"),
+        "t00": f32_scalar("T00"),
+        "a": f32_scalar("TLP"),
+        "tiso": f32_scalar("TISO"),
+        "a_strat": f32_scalar("TLP_STRAT"),
+        "p_strat": f32_scalar("P_STRAT"),
+    }
+
+
 def _wrf_start_domain_base_from_hgt(
     run: Gen2Run,
     domain: str,
@@ -887,42 +1001,60 @@ def _wrf_start_domain_base_from_hgt(
 ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
     """WRF real-run ``start_domain_em`` base recompute from terrain.
 
-    Returns ``(PB, MUB, PHB, T_INIT, ALB)`` for the multi-domain, non-ideal path.
-    The formula mirrors ``dyn_em/start_em.F`` and is initialization-only.
+    Returns ``(PB, MUB, PHB, T_INIT, ALB)`` for the multi-domain, non-ideal path
+    (``input_from_file``, ``hypsometric_opt=2``, ``rebalance=0``), as float64
+    arrays whose values are the WRF REAL(4) results exactly.
+
+    The chain is evaluated on the host in WRF's fp32 precision with the exact
+    ``dyn_em/start_em.F`` expression grouping and the WRF build's float32 libm
+    (``_WRFInitLibm32``).  fp64 evaluation (the previous behaviour) leaves MUB up
+    to 0.05 Pa from WRF, which the fp32 ``AL/ALT`` hypsometric diagnosis amplifies
+    into a ~3-4 Pa perturbation-pressure error (proofs/v014/
+    step1_base_state_boundary.* and mythos_kernel_fix_260609.*).
+    Initialization-only; no timestep-loop transfer.
     """
 
-    p_top = _scalar0(_load(run, domain, "P_TOP", 0))
-    p00 = _scalar0(_load(run, domain, "P00", 0))
-    t00 = _scalar0(_load(run, domain, "T00", 0))
-    lapse = _scalar0(_load(run, domain, "TLP", 0))
-    tiso = _scalar0(_load(run, domain, "TISO", 0))
-    lapse_strat = _scalar0(_load(run, domain, "TLP_STRAT", 0))
-    p_strat = _scalar0(_load(run, domain, "P_STRAT", 0))
+    m = _WRF_INIT_LIBM32
+    s = _wrf_start_domain_base_scalars32(run, domain)
+    p_top, p00, t00, a = s["p_top"], s["p00"], s["t00"], s["a"]
+    tiso, a_strat, p_strat = s["tiso"], s["a_strat"], s["p_strat"]
 
-    hgt64 = jnp.asarray(hgt, dtype=jnp.float64)
-    p_surf = p00 * jnp.exp(
-        -t00 / lapse
-        + jnp.sqrt((t00 / lapse) ** 2 - 2.0 * _WRF_BASE_GRAVITY_M_S2 * hgt64 / lapse / _EOS_R_D)
-    )
+    ht32 = np.asarray(jax.device_get(hgt), dtype=np.float32)
+    c3h = np.asarray(jax.device_get(metrics.c3h), dtype=np.float32)
+    c4h = np.asarray(jax.device_get(metrics.c4h), dtype=np.float32)
+    c3f = np.asarray(jax.device_get(metrics.c3f), dtype=np.float32)
+    c4f = np.asarray(jax.device_get(metrics.c4f), dtype=np.float32)
+
+    # p_surf = p00 * EXP ( -t00/a + ( (t00/a)**2 - 2.*g*ht/a/r_d ) **0.5 )
+    t00_over_a = t00 / a
+    root = (t00_over_a * t00_over_a - np.float32(2.0) * _WRF32_G * ht32 / a / _WRF32_R_D).astype(np.float32)
+    p_surf = (p00 * m.exp((-t00_over_a + m.sqrt_via_pow(root)).astype(np.float32))).astype(np.float32)
     mub = p_surf - p_top
-    pb = metrics.c3h[:, None, None] * mub[None, :, :] + metrics.c4h[:, None, None] + p_top
+    pb = (c3h[:, None, None] * mub[None, :, :] + c4h[:, None, None] + p_top).astype(np.float32)
 
-    temp = jnp.maximum(tiso, t00 + lapse * jnp.log(pb / p00))
-    safe_p_strat = jnp.maximum(p_strat, jnp.asarray(1.0, dtype=jnp.float64))
-    strat_temp = tiso + lapse_strat * jnp.log(pb / safe_p_strat)
-    temp = jnp.where((p_strat > 0.0) & (pb < p_strat), strat_temp, temp)
-    t_init = temp * (p00 / pb) ** (_EOS_R_D / _EOS_CP_D) - P0_THETA_OFFSET_K
-    alb = (_EOS_R_D / _EOS_P0_PA) * (t_init + P0_THETA_OFFSET_K) * (pb / _EOS_P0_PA) ** _EOS_CVPM
+    # temp = MAX(tiso, t00 + A*LOG(pb/p00)); stratosphere branch when p_strat > 0
+    temp = np.maximum(tiso, (t00 + a * m.log((pb / p00).astype(np.float32))).astype(np.float32))
+    if float(p_strat) > 0.0:
+        strat_temp = (tiso + a_strat * m.log((pb / p_strat).astype(np.float32))).astype(np.float32)
+        temp = np.where(pb < p_strat, strat_temp, temp).astype(np.float32)
+    t_init = (temp * m.pow((p00 / pb).astype(np.float32), _WRF32_RDOCP) - _WRF32_T0).astype(np.float32)
+    alb = (
+        _WRF32_R_D / _WRF32_P1000MB * (t_init + _WRF32_T0) * m.pow((pb / _WRF32_P1000MB).astype(np.float32), _WRF32_CVPM)
+    ).astype(np.float32)
 
-    phb_levels = [hgt64 * _WRF_BASE_GRAVITY_M_S2]
-    for full_k in range(1, int(pb.shape[0]) + 1):
+    # hypsometric_opt=2 base geopotential integration from terrain elevation
+    nz = int(pb.shape[0])
+    phb = np.empty((nz + 1,) + pb.shape[1:], dtype=np.float32)
+    phb[0] = (ht32 * _WRF32_G).astype(np.float32)
+    for full_k in range(1, nz + 1):
         half_k = full_k - 1
-        pfu = metrics.c3f[full_k] * mub + metrics.c4f[full_k] + p_top
-        pfd = metrics.c3f[full_k - 1] * mub + metrics.c4f[full_k - 1] + p_top
-        phm = metrics.c3h[half_k] * mub + metrics.c4h[half_k] + p_top
-        phb_levels.append(phb_levels[-1] + alb[half_k, :, :] * phm * jnp.log(pfd / pfu))
-    phb = jnp.stack(phb_levels, axis=0)
-    return pb, mub, phb, t_init, alb
+        pfu = (c3f[full_k] * mub + c4f[full_k] + p_top).astype(np.float32)
+        pfd = (c3f[full_k - 1] * mub + c4f[full_k - 1] + p_top).astype(np.float32)
+        phm = (c3h[half_k] * mub + c4h[half_k] + p_top).astype(np.float32)
+        phb[full_k] = (phb[full_k - 1] + alb[half_k] * phm * m.log((pfd / pfu).astype(np.float32))).astype(np.float32)
+
+    as64 = lambda arr: jnp.asarray(np.asarray(arr, dtype=np.float64))  # noqa: E731
+    return as64(pb), as64(mub), as64(phb), as64(t_init), as64(alb)
 
 
 def _apply_live_nest_base_init(
@@ -948,8 +1080,12 @@ def _apply_live_nest_base_init(
 
     spec_bdy_width = _namelist_int_any(run, "spec_bdy_width", 5, domain=domain)
     blend_width = _namelist_int_any(run, "blend_width", 5, domain=domain)
-    parent_hgt = np.asarray(jax.device_get(parent_case.grid.terrain_height), dtype=np.float64)
-    child_hgt = np.asarray(jax.device_get(grid.terrain_height), dtype=np.float64)
+    # WRF interpolates and blends the nest terrain in REAL(4); evaluating this
+    # chain in float64 leaves the blended HT up to 1 fp32 ulp (~2.7e-5 m) from
+    # WRF, which the hypsometric AL/ALT diagnosis amplifies into ~2 Pa local
+    # perturbation-pressure errors (proofs/v014/mythos_kernel_fix_260609.*).
+    parent_hgt = np.asarray(jax.device_get(parent_case.grid.terrain_height), dtype=np.float32)
+    child_hgt = np.asarray(jax.device_get(grid.terrain_height), dtype=np.float32)
     parent_hgt_on_child = sint_to_child_reference(
         parent_hgt,
         ratio=ratio,
@@ -957,6 +1093,7 @@ def _apply_live_nest_base_init(
         j_parent_start=int(child_meta.j_parent_start),
         child_ny=int(grid.ny),
         child_nx=int(grid.nx),
+        dtype=np.float32,
     )
     if not np.isfinite(parent_hgt_on_child).all():
         raise ValueError(
@@ -1050,8 +1187,10 @@ def _wrf_live_nest_transient_adjust_mub(
     spec_bdy_width = _namelist_int_any(run, "spec_bdy_width", 5, domain=domain)
     blend_width = _namelist_int_any(run, "blend_width", 5, domain=domain)
 
-    parent_mub_np = np.asarray(jax.device_get(parent_mub), dtype=np.float64)
-    child_mub_np = np.asarray(jax.device_get(child_mub), dtype=np.float64)
+    # WRF interpolates/blends nest%mub in REAL(4); see the terrain comment in
+    # _apply_live_nest_base_init for the fp32-faithfulness rationale.
+    parent_mub_np = np.asarray(jax.device_get(parent_mub), dtype=np.float32)
+    child_mub_np = np.asarray(jax.device_get(child_mub), dtype=np.float32)
     expected_shape = (int(grid.ny), int(grid.nx))
     if child_mub_np.shape != expected_shape:
         raise ValueError(
@@ -1064,6 +1203,7 @@ def _wrf_live_nest_transient_adjust_mub(
         j_parent_start=int(child_meta.j_parent_start),
         child_ny=int(grid.ny),
         child_nx=int(grid.nx),
+        dtype=np.float32,
     )
     if not np.isfinite(parent_mub_on_child).all():
         raise ValueError(
@@ -1234,6 +1374,153 @@ def _wrf_live_nest_adjust_tempqv(
         "timestep_loop_transfer": False,
     }
     return theta_full_out, qv_out_cast, meta
+
+
+def _wrf_live_nest_start_domain_perturb_init(
+    run: Gen2Run,
+    *,
+    domain: str,
+    grid: GridSpec,
+    metrics: DycoreMetrics,
+    ph_perturbation: Any,
+    mu_perturbation: Any,
+    theta_full: Any,
+    w: Any,
+    u: Any,
+    v: Any,
+    ht_fine: Any,
+) -> tuple[jax.Array, jax.Array, jax.Array, dict[str, Any]]:
+    """WRF live-nest ``start_domain_em`` perturbation-state initialization.
+
+    Transcribes, in REAL(4) precision with the WRF build's float32 libm, the
+    three ``start_domain(nest,.TRUE.)`` mutations that follow the base-state
+    recompute and that raw ``wrfinput_<domain>`` perturbation leaves are missing
+    (proofs/v014/step1_live_nest_perturb_state_init.* localized these as the
+    remaining Step-1 ``P/MU/W`` gap):
+
+    1. ``P``: the ``calc_p_rho_phi``-equation rederivation of ``al``/``p`` from
+       ``ph_1`` for ``hypsometric_opt=2`` (``dyn_em/start_em.F``,
+       "Use equations from calc_p_rho_phi to derive p and al from ph"), with
+       ``qvf = 1`` under ``use_theta_m=1``.
+    2. ``MU``: the ``press_adj`` terrain-delta column-mass correction
+       ``MU_2 += al(1)/(alt(1)*alb(1)) * g * (ht - ht_fine)``.
+    3. ``W``: ``module_bc_em.F::set_w_surface`` with ``fill_w_flag=.true.``,
+       applied only when the input surface ``W`` is identically ~0 (the WRF
+       ``w_needs_to_be_set`` gate; real-init nests carry no input ``W``).
+
+    ``theta_full`` must be the POST-``adjust_tempqv`` full (moist when
+    ``use_theta_m=1``) potential temperature -- WRF runs ``start_domain`` after
+    ``med_nest_initial``'s temperature adjustment.  ``ht_fine`` is the nest's own
+    pre-blend input terrain (WRF ``grid%ht_fine``); ``grid`` must already carry
+    the blended terrain.  Returns ``(p_perturbation, mu_perturbation, w)`` as
+    float64 arrays holding the WRF REAL(4) values exactly.
+    Initialization-only host transcription; no timestep-loop transfer.
+    """
+
+    m = _WRF_INIT_LIBM32
+    pb64, mub64, phb64, _t_init64, alb64 = _wrf_start_domain_base_from_hgt(
+        run,
+        domain,
+        hgt=grid.terrain_height,
+        metrics=metrics,
+    )
+    pb = np.asarray(jax.device_get(pb64), dtype=np.float32)
+    mub = np.asarray(jax.device_get(mub64), dtype=np.float32)
+    phb = np.asarray(jax.device_get(phb64), dtype=np.float32)
+    alb = np.asarray(jax.device_get(alb64), dtype=np.float32)
+
+    c3h = np.asarray(jax.device_get(metrics.c3h), dtype=np.float32)
+    c4h = np.asarray(jax.device_get(metrics.c4h), dtype=np.float32)
+    c3f = np.asarray(jax.device_get(metrics.c3f), dtype=np.float32)
+    c4f = np.asarray(jax.device_get(metrics.c4f), dtype=np.float32)
+    p_top = np.float32(float(np.asarray(jax.device_get(metrics.p_top)).ravel()[0]))
+
+    ph32 = np.asarray(jax.device_get(ph_perturbation), dtype=np.float32)
+    mu32 = np.asarray(jax.device_get(mu_perturbation), dtype=np.float32)
+    # WRF stores the perturbation theta t_1 in REAL(4); recover it from the fp64
+    # full theta so the EOS sees (t0 + t_1) exactly as start_em.F does.
+    t1_32 = (np.asarray(jax.device_get(theta_full), dtype=np.float64) - float(P0_THETA_OFFSET_K)).astype(np.float32)
+
+    # --- 1. AL (hypsometric_opt=2) and P from the calc_p_rho_phi equations ---
+    full_mu = (mub + mu32).astype(np.float32)
+    pfu = (c3f[1:, None, None] * full_mu[None] + c4f[1:, None, None] + p_top).astype(np.float32)
+    pfd = (c3f[:-1, None, None] * full_mu[None] + c4f[:-1, None, None] + p_top).astype(np.float32)
+    phm = (c3h[:, None, None] * full_mu[None] + c4h[:, None, None] + p_top).astype(np.float32)
+    dph = (ph32[1:] - ph32[:-1] + phb[1:] - phb[:-1]).astype(np.float32)
+    # grid%al = (dph)/phm/LOG(pfd/pfu) - alb  (two sequential divisions, as in WRF)
+    al = (dph / phm / m.log((pfd / pfu).astype(np.float32)) - alb).astype(np.float32)
+    alt = (al + alb).astype(np.float32)
+    theta_eos = (_WRF32_T0 + t1_32).astype(np.float32)  # qvf = 1 for use_theta_m=1
+    ratio = ((_WRF32_R_D * theta_eos) / (_WRF32_P1000MB * alt)).astype(np.float32)
+    p_new = (_WRF32_P1000MB * m.pow(ratio, _WRF32_CPOVCV) - pb).astype(np.float32)
+
+    # --- 2. press_adj column-mass correction (press_adj=T for the live nest) ---
+    ht32 = np.asarray(jax.device_get(grid.terrain_height), dtype=np.float32)
+    ht_fine32 = np.asarray(jax.device_get(ht_fine), dtype=np.float32)
+    mu_new = (mu32 + al[0] / (alt[0] * alb[0]) * _WRF32_G * (ht32 - ht_fine32)).astype(np.float32)
+
+    # --- 3. set_w_surface(fill_w_flag=.true.) under the WRF w_needs_to_be_set gate ---
+    w32 = np.asarray(jax.device_get(w), dtype=np.float32)
+    w_surface_input_max = float(np.abs(w32[0]).max())
+    w_needs_to_be_set = w_surface_input_max < 1.0e-6
+    if w_needs_to_be_set:
+        u32 = np.asarray(jax.device_get(u), dtype=np.float32)
+        v32 = np.asarray(jax.device_get(v), dtype=np.float32)
+        msftx = np.asarray(jax.device_get(metrics.msftx), dtype=np.float32)
+        msfty = np.asarray(jax.device_get(metrics.msfty), dtype=np.float32)
+        znw = np.asarray(jax.device_get(grid.vertical.eta_levels), dtype=np.float32)
+        cf1 = np.float32(float(np.asarray(jax.device_get(metrics.cf1)).ravel()[0]))
+        cf2 = np.float32(float(np.asarray(jax.device_get(metrics.cf2)).ravel()[0]))
+        cf3 = np.float32(float(np.asarray(jax.device_get(metrics.cf3)).ravel()[0]))
+        rdx = np.float32(1.0) / np.float32(float(grid.projection.dx_m))
+        rdy = np.float32(1.0) / np.float32(float(grid.projection.dy_m))
+        half = np.float32(0.5)
+
+        ny, nx = ht32.shape
+        jp1 = np.minimum(np.arange(ny) + 1, ny - 1)
+        jm1 = np.maximum(np.arange(ny) - 1, 0)
+        ip1 = np.minimum(np.arange(nx) + 1, nx - 1)
+        im1 = np.maximum(np.arange(nx) - 1, 0)
+        # cf1*v(.,1,.)+cf2*v(.,2,.)+cf3*v(.,3,.) at the v-rows j and j+1
+        vv = (cf1 * v32[0] + cf2 * v32[1] + cf3 * v32[2]).astype(np.float32)  # (ny+1, nx)
+        uu = (cf1 * u32[0] + cf2 * u32[1] + cf3 * u32[2]).astype(np.float32)  # (ny, nx+1)
+        w_sfc = (
+            msfty
+            * half
+            * rdy
+            * ((ht32[jp1, :] - ht32) * vv[1:, :] + (ht32 - ht32[jm1, :]) * vv[:-1, :])
+            + msftx
+            * half
+            * rdx
+            * ((ht32[:, ip1] - ht32) * uu[:, 1:] + (ht32 - ht32[:, im1]) * uu[:, :-1])
+        ).astype(np.float32)
+        w_new = np.empty_like(w32)
+        w_new[0] = w_sfc
+        for k in range(1, w32.shape[0]):
+            w_new[k] = (w_sfc * znw[k] * znw[k]).astype(np.float32)
+    else:
+        w_new = w32
+
+    meta = {
+        "surfaces": [
+            "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+            "press_adj MU correction",
+            "set_w_surface(fill_w_flag=.true.)" if w_needs_to_be_set else "input W kept (surface W nonzero)",
+        ],
+        "hypsometric_opt": 2,
+        "use_theta_m_qvf": 1.0,
+        "w_needs_to_be_set": bool(w_needs_to_be_set),
+        "w_surface_input_max_abs": w_surface_input_max,
+        "libm_provider": m.provider,
+        "wrf_reference": (
+            "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); "
+            "dyn_em/module_bc_em.F::set_w_surface"
+        ),
+        "cpu_wrfout_dependency": False,
+        "timestep_loop_transfer": False,
+    }
+    as64 = lambda arr: jnp.asarray(np.asarray(arr, dtype=np.float64))  # noqa: E731
+    return as64(p_new), as64(mu_new), as64(w_new), meta
 
 
 # WRF MYNN cold-start TKE constants (phys/module_bl_mynnedmf.F).
@@ -1646,12 +1933,18 @@ def build_replay_case(
     mub = _load(run, domain, "MUB", 0)
     theta = _load(run, domain, "T", 0) + P0_THETA_OFFSET_K
     qv_initial = _load(run, domain, "QVAPOR", 0)
+    u_initial = _load(run, domain, "U", 0)
+    v_initial = _load(run, domain, "V", 0)
+    w_initial = _load(run, domain, "W", 0)
     live_nest_base_meta: dict[str, Any] = {"enabled": False}
     if live_nest_parent is not None:
         # ``nest%mub_save`` is the pre-blend child input column mass; capture it
         # before ``start_domain`` recomputes the final base ``MUB`` from blended
         # terrain (``_apply_live_nest_base_init`` overwrites ``mub`` below).
+        # ``nest%ht_fine`` is likewise the pre-blend child input terrain consumed
+        # by the ``press_adj`` column-mass correction below.
         child_input_mub = mub
+        child_input_terrain = grid.terrain_height
         grid, metrics, pb, phb, mub, live_nest_base_meta = _apply_live_nest_base_init(
             run,
             domain=domain,
@@ -1682,14 +1975,40 @@ def build_replay_case(
             metrics=metrics,
             use_theta_m=use_theta_m,
         )
+        # WRF ``start_domain(nest,.TRUE.)`` then re-derives the perturbation
+        # pressure from ``ph_1`` (calc_p_rho_phi equations), applies the
+        # ``press_adj`` column-mass correction, and sets the kinematic surface
+        # ``W`` -- raw ``wrfinput_<domain>`` perturbation leaves are missing all
+        # three (the Step-1 ``P/MU/W`` divergence family).
+        p_perturbation, mu_perturbation, w_initial, perturb_init_meta = (
+            _wrf_live_nest_start_domain_perturb_init(
+                run,
+                domain=domain,
+                grid=grid,
+                metrics=metrics,
+                ph_perturbation=ph_perturbation,
+                mu_perturbation=mu_perturbation,
+                theta_full=theta,
+                w=w_initial,
+                u=u_initial,
+                v=v_initial,
+                ht_fine=child_input_terrain,
+            )
+        )
         live_nest_base_meta = {
             **live_nest_base_meta,
             "transient_adjust_mub": transient_mub_meta,
             "theta_qv_adjust": theta_qv_adjust_meta,
+            "start_domain_perturb_init": perturb_init_meta,
         }
         _debug(
             f"live-nest theta_m/adjust_tempqv applied use_theta_m={use_theta_m} "
             f"theta_max={float(jnp.max(theta)):.4f}"
+        )
+        _debug(
+            "live-nest start_domain perturb init applied "
+            f"(w_set={perturb_init_meta.get('w_needs_to_be_set')}, "
+            f"libm={perturb_init_meta.get('libm_provider')})"
         )
     # WRF-faithful base potential temperature ``t0 + t_init``, recovered by
     # inverting the loaded discrete base state (PB/PHB/MUB) so the dycore's
@@ -1714,9 +2033,9 @@ def build_replay_case(
         _debug("load_wrfbdy_boundary_leaves complete (standalone)")
 
     state = state.replace(
-        u=_load(run, domain, "U", 0),
-        v=_load(run, domain, "V", 0),
-        w=_load(run, domain, "W", 0),
+        u=u_initial,
+        v=v_initial,
+        w=w_initial,
         theta=theta,
         qv=qv_initial,
         p_total=pb + p_perturbation,
