@@ -364,6 +364,18 @@ around `phy_prep` / `calc_p_rho_phi` for `P/MU/W`, compare it to current JAX
 narrow performance-compatible fix, or exact missing-truth blocker. TOST,
 Switzerland, FP32 source work, and memory source work remain paused.
 
+Update 2026-06-09 19:08 WEST: first-RK part1 P-state split closed as
+`STEP1_FIRST_RK_PART1_P_STATE_LOCALIZED_PRE_PART1_RAW_CHILD_STATE`. WRF
+`before_first_rk_step_part1_call -> after_first_rk_step_part1` is exact for
+`P_STATE/MU_STATE/W_STATE/PH_STATE`; WRF part1 entry to `after_phy_prep` is
+exact for `P_STATE/MU_STATE`. JAX `raw_child_state` already differs from WRF
+pre-call for `P/MU/W` and the same residuals persist through `live_child_state`,
+boundary package, initial carry, haloed step entry, and
+`_physics_step_forcing.carry.state`: `P_STATE=69.96875`,
+`MU_STATE=13.256103515625`, `W_STATE=0.7605466246604919`. The exact next target
+is live-nest raw-child to live/pre-part1 perturbation-state initialization for
+`P_STATE/MU_STATE/W_STATE`, not WRF part1, carry, halo, or acoustic refresh.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
