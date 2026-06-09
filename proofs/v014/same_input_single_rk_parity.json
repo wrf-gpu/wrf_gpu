@@ -1,0 +1,1421 @@
+{
+  "blocked": {
+    "available_pre_rk_fields": {
+      "MASS_K1": [
+        "T_THM",
+        "T_OLD",
+        "T_HIST_SRC",
+        "P",
+        "PB",
+        "MU_NEW",
+        "MU_OLD",
+        "MUB"
+      ]
+    },
+    "available_pre_rk_tags": [
+      "MASS_K1"
+    ],
+    "missing_input_groups": [
+      {
+        "group": "pre_rk_full_native_state",
+        "missing": [
+          "U on native x-stagger for all vertical levels",
+          "V on native y-stagger for all vertical levels",
+          "W on native vertical faces for all vertical levels",
+          "PH and PHB on native vertical faces for all vertical levels",
+          "T/P/PB full mass-column, not only K1",
+          "QV and active moisture/scalar state needed by the operational carry",
+          "surface/coupling leaves carried by State when physics/boundary are active"
+        ]
+      },
+      {
+        "group": "jax_base_tendencies",
+        "missing": [
+          "u",
+          "v",
+          "w",
+          "theta",
+          "qv",
+          "p",
+          "ph",
+          "mu"
+        ],
+        "required_by": "src/gpuwrf/contracts/state.py::Tendencies",
+        "required_fields": [
+          "u",
+          "v",
+          "w",
+          "theta",
+          "qv",
+          "p",
+          "ph",
+          "mu"
+        ]
+      },
+      {
+        "group": "wrf_rk_fixed_physics_and_boundary_tendencies",
+        "missing": [
+          "ru_tendf",
+          "rv_tendf",
+          "rw_tendf",
+          "ph_tendf",
+          "t_tendf",
+          "mu_tendf",
+          "h_diabatic",
+          "u_save",
+          "v_save",
+          "w_save",
+          "ph_save",
+          "t_save"
+        ],
+        "required_by": "src/gpuwrf/dynamics/core/rk_addtend_dry.py::DryPhysicsTendencies",
+        "required_fields": [
+          "ru_tendf",
+          "rv_tendf",
+          "rw_tendf",
+          "ph_tendf",
+          "t_tendf",
+          "mu_tendf",
+          "h_diabatic",
+          "u_save",
+          "v_save",
+          "w_save",
+          "ph_save",
+          "t_save"
+        ]
+      },
+      {
+        "group": "history_source_reference",
+        "missing": [
+          "full native rk1/start-of-step reference state used as _1/_old history",
+          "full T_HIST_SRC/theta history source across all levels",
+          "full MU_OLD and mass-coupled scalar reference needed for final-stage limiters"
+        ]
+      },
+      {
+        "group": "proof_load_wrapper",
+        "missing": [
+          "proof-only loader that maps a WRF full pre-RK savepoint into OperationalCarry",
+          "paired OperationalNamelist/GridSpec/DycoreMetrics/boundary_config from the same WRF case",
+          "call boundary to feed WRF DryPhysicsTendencies into _rk_scan_step_with_pre_halo_capture"
+        ]
+      }
+    ],
+    "next_exact_action": "Add a CPU WRF pre-RK hook at solve_em after grid%itimestep increment and before the RK loop that emits the full native-staggered step-entry state plus WRF rk_tendency/rk_addtend_dry inputs: U,V,W,T,P,PB,PH,PHB,MU,MUB,QV/moisture full columns; rk1/_old history/source fields; ru_tendf, rv_tendf, rw_tendf, ph_tendf, t_tendf, mu_tendf, h_diabatic, u_save, v_save, w_save, ph_save, t_save; and the boundary/carry leaves needed by _rk_scan_step_with_pre_halo_capture. Then add a proof-only JAX loader/wrapper that constructs OperationalCarry and feeds those exact WRF tendency leaves before scoring halo-valid cells.",
+    "reason": "The current WRF pre-RK input hook emits only MASS_K1 T/P/PB/MU/MUB fields. It cannot build a WRF-equivalent JAX State, Tendencies, DryPhysicsTendencies, or OperationalCarry for one RK step.",
+    "state_contract_slots_count": 56,
+    "state_contract_slots_sample": [
+      "u",
+      "v",
+      "w",
+      "theta",
+      "qv",
+      "p",
+      "ph",
+      "mu",
+      "p_total",
+      "p_perturbation",
+      "ph_total",
+      "ph_perturbation",
+      "mu_total",
+      "mu_perturbation",
+      "qc",
+      "qr",
+      "qi",
+      "qs",
+      "qg",
+      "Ni"
+    ],
+    "strict_same_input_comparison_run": false,
+    "verdict": "SAME_INPUT_TENDENCY_INPUT_BLOCKED_PRE_RK_FULL_NATIVE_STATE_RK_TENDF_AND_HISTORY_SOURCE_FIELDS"
+  },
+  "commands": {
+    "argv": [
+      "proofs/v014/same_input_single_rk_parity.py"
+    ],
+    "minimum_validation": [
+      "python -m py_compile proofs/v014/same_input_single_rk_parity.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/same_input_single_rk_parity.py",
+      "python -m json.tool proofs/v014/same_input_single_rk_parity.json >/tmp/same_input_single_rk_parity.validated.json",
+      "git diff -- src"
+    ]
+  },
+  "comparison": {
+    "jax_step_executed": false,
+    "jax_vs_jax_self_compare": false,
+    "reason": "Required WRF-equivalent state/tendency/source inputs and proof wrapper are absent.",
+    "strict_same_input_comparison_run": false,
+    "weak_comparison_avoided": true
+  },
+  "cpu_only": true,
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_COMPILATION_CACHE": "false",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T09:49:56.320397+00:00",
+  "gpu_used": false,
+  "inputs_read": {
+    "agents": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
+      "size_bytes": 2561
+    },
+    "managing_sprints_skill": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "sha256": "7f6186ecf4f6c972464ba3f5c28c0554b0e595728764dc86ffbd6529d28c3350",
+      "size_bytes": 6556
+    },
+    "project_constitution": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
+      "size_bytes": 1157
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-input-single-rk-parity/sprint-contract.md",
+      "sha256": "c580913457f2af183e0b613facc2dc631e7d1647a5843b8612b3ca6b06f9fec3",
+      "size_bytes": 5134
+    },
+    "trigger_evidence": {
+      "grid_after_live_nest_base_json": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/proofs/v014/grid_after_live_nest_base.json",
+        "sha256": "da0fce3d2d9c5edef2fd84348b845315a9b2e95762342336f537e222046eea59",
+        "size_bytes": 1659506
+      },
+      "opus_critic_json": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/proofs/v014/dynamic_root_cause_opus_critic.json",
+        "sha256": "aa7b782c73e7952bd24f566cee134348a81265e349fe657f18a3e8278edab7be",
+        "size_bytes": 4470
+      },
+      "pre_rk_input_boundary_json": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+        "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
+        "size_bytes": 43617
+      },
+      "same_state_momentum_mass_json": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.json",
+        "sha256": "b979a7e48d59cd0f772927421eedd7babc74a4924d435764ccd7e7f9a2a3d08a",
+        "size_bytes": 17805
+      },
+      "wrf_post_rk_refresh_json": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+        "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
+        "size_bytes": 34079
+      }
+    },
+    "wrf_optional_final_calc_files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "2d859d3cc1eca06c6205727a42c03b4fc7d6486ec811519959c0fb05947c46d0",
+        "size_bytes": 11753
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "0b94f36f58db4e64f5fbe0470ae9dd219047c9af23b429ac6fe6e67c0f289201",
+        "size_bytes": 159420
+      }
+    ],
+    "wrf_post_rk_files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
+        "size_bytes": 11774
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
+        "size_bytes": 159441
+      }
+    ],
+    "wrf_pre_rk_files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "b7fdf7b72b9a9b8ab74c4399ce71c1f1340cb8939d88e12bdb092e4152be17b3",
+        "size_bytes": 4474
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "9c7f7308e32daf296727ee29138b1462b7575cb7eefb1254f7393e3560d30697",
+        "size_bytes": 60149
+      }
+    ]
+  },
+  "interpretation": {
+    "do_not_overclaim": "This proof is an instrumentation blocker only.",
+    "supports_blocked_instrumentation": true,
+    "supports_final_rk_pgf_mass_wind": false,
+    "supports_theta_or_tendency_source": false,
+    "supports_upstream_drift": false
+  },
+  "no_fp32_or_memory_implementation": true,
+  "no_hermes": true,
+  "no_switzerland": true,
+  "no_tost": true,
+  "optional_final_calc_assessment": {
+    "adds_missing_prestep_state_or_tendencies": false,
+    "post_after_all_rk_tags": {
+      "MASS_K1": [
+        "T_HIST_SRC",
+        "T_THM",
+        "P",
+        "PB",
+        "MU_NEW",
+        "MU_OLD",
+        "MUB",
+        "MUT",
+        "MUTS",
+        "AL",
+        "ALB",
+        "ALT",
+        "RHO"
+      ],
+      "U_K1": [
+        "U"
+      ],
+      "V_K1": [
+        "V"
+      ],
+      "WPH_KSTAG01": [
+        "W",
+        "PH"
+      ]
+    },
+    "post_final_calc_tags": {
+      "MASS_K1": [
+        "T_HIST_SRC",
+        "T_THM",
+        "P",
+        "PB",
+        "MU_NEW",
+        "MU_OLD",
+        "MUB",
+        "MUT",
+        "MUTS",
+        "AL",
+        "ALB",
+        "ALT",
+        "RHO"
+      ],
+      "U_K1": [
+        "U"
+      ],
+      "V_K1": [
+        "V"
+      ],
+      "WPH_KSTAG01": [
+        "W",
+        "PH"
+      ]
+    },
+    "reason": "The optional post_final_calc_p_rho_phi files are output surfaces with the same native field schema as post_after_all_rk_steps_pre_halo. They do not provide pre-RK U/V/W/PH state, full columns, WRF *_tendf physics/source tendencies, or a JAX load wrapper.",
+    "same_schema_as_post_after_all_rk": true,
+    "usable_as_narrower_dynamics_only_boundary": false
+  },
+  "patch_width_assessment": {
+    "candidate_valid_mass_bounds_after_halo": {
+      "south_north_start": 9,
+      "south_north_stop_exclusive": 10,
+      "west_east_start": 13,
+      "west_east_stop_exclusive": 14
+    },
+    "candidate_valid_mass_cell_count_if_full_state_existed": 1,
+    "conservative_halo_radius_cells": 8,
+    "mass_patch_zero_based_bounds": {
+      "south_north_start": 1,
+      "south_north_stop_exclusive": 18,
+      "west_east_start": 5,
+      "west_east_stop_exclusive": 22
+    },
+    "note": "Horizontal width would leave only the selected central mass cell under an 8-cell halo. The proof does not reach scoring because the WRF pre-RK input lacks full native state and RK-fixed tendency/source fields.",
+    "status": "NOT_PRIMARY_BLOCKER"
+  },
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity.md",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-same-input-single-rk-parity.md"
+  },
+  "schema": "wrfgpu2.v014.same_input_single_rk_parity.v1",
+  "source_contract": {
+    "classes": {
+      "DryPhysicsTendencies": {
+        "class": "DryPhysicsTendencies",
+        "fields": [
+          "ru_tendf",
+          "rv_tendf",
+          "rw_tendf",
+          "ph_tendf",
+          "t_tendf",
+          "mu_tendf",
+          "h_diabatic",
+          "u_save",
+          "v_save",
+          "w_save",
+          "ph_save",
+          "t_save"
+        ],
+        "line_end": 124,
+        "line_start": 103,
+        "module": "src/gpuwrf/dynamics/core/rk_addtend_dry.py"
+      },
+      "State": {
+        "class": "State",
+        "line_end": 700,
+        "line_start": 365,
+        "module": "src/gpuwrf/contracts/state.py",
+        "slots": [
+          "u",
+          "v",
+          "w",
+          "theta",
+          "qv",
+          "p",
+          "ph",
+          "mu",
+          "p_total",
+          "p_perturbation",
+          "ph_total",
+          "ph_perturbation",
+          "mu_total",
+          "mu_perturbation",
+          "qc",
+          "qr",
+          "qi",
+          "qs",
+          "qg",
+          "Ni",
+          "Nr",
+          "Ns",
+          "Ng",
+          "qke",
+          "ustar",
+          "theta_flux",
+          "qv_flux",
+          "tau_u",
+          "tau_v",
+          "rhosfc",
+          "fltv",
+          "t_skin",
+          "soil_moisture",
+          "xland",
+          "lakemask",
+          "mavail",
+          "roughness_m",
+          "rain_acc",
+          "snow_acc",
+          "graupel_acc",
+          "ice_acc",
+          "u_bdy",
+          "v_bdy",
+          "theta_bdy",
+          "qv_bdy",
+          "ph_bdy",
+          "mu_bdy",
+          "w_bdy",
+          "p_bdy",
+          "pb_bdy",
+          "phb_bdy",
+          "mub_bdy",
+          "lu_index",
+          "Nc",
+          "Nn",
+          "rainc_acc"
+        ]
+      },
+      "Tendencies": {
+        "class": "Tendencies",
+        "line_end": 361,
+        "line_start": 306,
+        "module": "src/gpuwrf/contracts/state.py",
+        "slots": [
+          "u",
+          "v",
+          "w",
+          "theta",
+          "qv",
+          "p",
+          "ph",
+          "mu"
+        ]
+      }
+    },
+    "entry_points": [
+      {
+        "line_end": 29,
+        "line_start": 26,
+        "module": "src/gpuwrf/dynamics/step.py",
+        "name": "step"
+      },
+      {
+        "line_end": 62,
+        "line_start": 42,
+        "module": "src/gpuwrf/dynamics/rk3.py",
+        "name": "rk3_step"
+      },
+      {
+        "line_end": 2292,
+        "line_start": 2173,
+        "module": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_rk_scan_step"
+      },
+      {
+        "line_end": 2313,
+        "line_start": 2295,
+        "module": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_rk_scan_step_with_pre_halo_capture"
+      },
+      {
+        "line_end": 3108,
+        "line_start": 2845,
+        "module": "src/gpuwrf/runtime/operational_mode.py",
+        "name": "_physics_step_forcing"
+      }
+    ],
+    "files": {
+      "operational_mode_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
+        "size_bytes": 175388
+      },
+      "rk3_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/rk3.py",
+        "sha256": "c17fb525fecbec3fabf9a4a91bfc8b3a19774e7168ee3c149d08bb383d28f9f2",
+        "size_bytes": 3190
+      },
+      "rk_addtend_dry_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+        "sha256": "2152716c17ffd78d5521e4674b280b18751c03f7440e74385122d6ade74453e7",
+        "size_bytes": 24911
+      },
+      "state_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
+        "size_bytes": 25734
+      },
+      "step_py": {
+        "exists": true,
+        "is_file": true,
+        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/step.py",
+        "sha256": "7a31f18e6951f9a91df05dba07cbae3d0c9bbe163b18ea050eb83912d9a00725",
+        "size_bytes": 1582
+      }
+    }
+  },
+  "target_fields_requested": [
+    "T",
+    "P",
+    "PB",
+    "PH",
+    "PHB",
+    "MU",
+    "MUB",
+    "U",
+    "V",
+    "W"
+  ],
+  "target_step": 6000,
+  "verdict": "SAME_INPUT_TENDENCY_INPUT_BLOCKED_PRE_RK_FULL_NATIVE_STATE_RK_TENDF_AND_HISTORY_SOURCE_FIELDS",
+  "wrf_optional_final_calc_surface": {
+    "duplicate_count": 17,
+    "duplicate_max_delta": 57.9480562210083,
+    "duplicate_max_delta_by_field": {
+      "V_K1.V": 57.9480562210083
+    },
+    "field_ranges": {
+      "MASS_K1": {
+        "AL": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.01277267932891846,
+          "min": 0.001080155372619629
+        },
+        "ALB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.9296846985816956,
+          "min": 0.8343289494514465
+        },
+        "ALT": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.9317339062690735,
+          "min": 0.840414822101593
+        },
+        "MUB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 95000.0,
+          "min": 82711.3984375
+        },
+        "MUT": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 96735.234375,
+          "min": 84439.90625
+        },
+        "MUTS": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 96735.203125,
+          "min": 84439.890625
+        },
+        "MU_NEW": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1749.256225585938,
+          "min": 1621.89111328125
+        },
+        "MU_OLD": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1749.322387695312,
+          "min": 1621.944213867188
+        },
+        "P": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1979.7734375,
+          "min": 1854.5625
+        },
+        "PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 99706.203125,
+          "min": 87456.1171875
+        },
+        "RHO": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1.189876914024353,
+          "min": 1.073269844055176
+        },
+        "T_HIST_SRC": {
+          "count": 289,
+          "finite_count": 289,
+          "max": -4.87158203125,
+          "min": -9.302825927734375
+        },
+        "T_THM": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.200653076171875,
+          "min": -3.677886962890625
+        }
+      },
+      "U_K1": {
+        "U": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 3.905516624450684,
+          "min": -6.528703689575195
+        }
+      },
+      "V_K1": {
+        "V": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 53.04121780395508,
+          "min": -11.64874267578125
+        }
+      },
+      "WPH_KSTAG01": {
+        "PH": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 16.25147247314453,
+          "min": 0.0
+        },
+        "W": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.7064207792282104,
+          "min": -1.633887887001038
+        }
+      }
+    },
+    "files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "2d859d3cc1eca06c6205727a42c03b4fc7d6486ec811519959c0fb05947c46d0",
+        "size_bytes": 11753
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "0b94f36f58db4e64f5fbe0470ae9dd219047c9af23b429ac6fe6e67c0f289201",
+        "size_bytes": 159420
+      }
+    ],
+    "key_ranges": {
+      "MASS_K1": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          17,
+          21
+        ],
+        "min": [
+          1,
+          5
+        ]
+      },
+      "U_K1": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          17,
+          22
+        ],
+        "min": [
+          1,
+          5
+        ]
+      },
+      "V_K1": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          18,
+          21
+        ],
+        "min": [
+          1,
+          5
+        ]
+      },
+      "WPH_KSTAG01": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          1,
+          17,
+          21
+        ],
+        "min": [
+          0,
+          1,
+          5
+        ]
+      }
+    },
+    "metadata": {
+      "comment": [
+        "WRFGPU2_V014_POST_RK_REFRESH_LOCALIZATION v1",
+        "WRFGPU2_V014_POST_RK_REFRESH_LOCALIZATION v1"
+      ],
+      "current_timestr_before_step": [
+        "2026-05-02_03:59:54",
+        "2026-05-02_03:59:54"
+      ],
+      "domain_id": [
+        "2",
+        "2"
+      ],
+      "dt_seconds": [
+        "0.6000000000000000E+01",
+        "0.6000000000000000E+01"
+      ],
+      "grid_itimestep_after_increment": [
+        "6000",
+        "6000"
+      ],
+      "lead_seconds_after_step": [
+        "0.3600000000000000E+05",
+        "0.3600000000000000E+05"
+      ],
+      "lead_seconds_before_step": [
+        "0.3599400000000000E+05",
+        "0.3599400000000000E+05"
+      ],
+      "mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 18 5 22 2 18",
+        "1 18 5 22 2 18"
+      ],
+      "rk_order": [
+        "3",
+        "3"
+      ],
+      "rk_step": [
+        "4",
+        "4"
+      ],
+      "routine": [
+        "dyn_em/solve_em.F::solve_em after final calc_p_rho_phi",
+        "dyn_em/solve_em.F::solve_em after final calc_p_rho_phi"
+      ],
+      "selected_mass_cell_zero_yx_fortran_ji": [
+        "9 13 10 14",
+        "9 13 10 14"
+      ],
+      "surface": [
+        "post_final_calc_p_rho_phi",
+        "post_final_calc_p_rho_phi"
+      ],
+      "tile_i_j_bounds_fortran": [
+        "1 23 18 33",
+        "1 23 1 17"
+      ],
+      "tile_record_policy": [
+        "owned_tile_overlap_only",
+        "owned_tile_overlap_only"
+      ],
+      "u_patch_zero_y0_y1_xstag0_xstag1_fortran_j0_j1_i0_i1": [
+        "1 18 5 23 2 18",
+        "1 18 5 23 2 18"
+      ],
+      "v_patch_zero_ystag0_ystag1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 19 5 22 2 19",
+        "1 19 5 22 2 19"
+      ],
+      "w_ph_patch_zero_kstag0_kstag1_y0_y1_x0_x1": [
+        "0 2 1 18 5 22",
+        "0 2 1 18 5 22"
+      ]
+    },
+    "schema_lines": [
+      "record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_HIST_SRC T_THM P PB MU_NEW MU_OLD MUB MUT MUTS AL ALB ALT RHO",
+      "record_schema U_K1 fortran_i fortran_j zero_xstag zero_y U",
+      "record_schema V_K1 fortran_i fortran_j zero_x zero_ystag V",
+      "record_schema WPH_KSTAG01 fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W PH",
+      "record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_HIST_SRC T_THM P PB MU_NEW MU_OLD MUB MUT MUTS AL ALB ALT RHO",
+      "record_schema U_K1 fortran_i fortran_j zero_xstag zero_y U",
+      "record_schema V_K1 fortran_i fortran_j zero_x zero_ystag V",
+      "record_schema WPH_KSTAG01 fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W PH"
+    ],
+    "schemas": {
+      "MASS_K1": {
+        "fields": [
+          "T_HIST_SRC",
+          "T_THM",
+          "P",
+          "PB",
+          "MU_NEW",
+          "MU_OLD",
+          "MUB",
+          "MUT",
+          "MUTS",
+          "AL",
+          "ALB",
+          "ALT",
+          "RHO"
+        ],
+        "index_count": 4,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "zero_x",
+          "zero_y"
+        ]
+      },
+      "U_K1": {
+        "fields": [
+          "U"
+        ],
+        "index_count": 4,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "zero_xstag",
+          "zero_y"
+        ]
+      },
+      "V_K1": {
+        "fields": [
+          "V"
+        ],
+        "index_count": 4,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "zero_x",
+          "zero_ystag"
+        ]
+      },
+      "WPH_KSTAG01": {
+        "fields": [
+          "W",
+          "PH"
+        ],
+        "index_count": 6,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "fortran_kstag",
+          "zero_x",
+          "zero_y",
+          "zero_kstag"
+        ]
+      }
+    },
+    "unique_counts": {
+      "MASS_K1": 289,
+      "U_K1": 306,
+      "V_K1": 306,
+      "WPH_KSTAG01": 578
+    }
+  },
+  "wrf_post_rk_surface": {
+    "duplicate_count": 17,
+    "duplicate_max_delta": 0.0,
+    "duplicate_max_delta_by_field": {
+      "V_K1.V": 0.0
+    },
+    "field_ranges": {
+      "MASS_K1": {
+        "AL": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.01277267932891846,
+          "min": 0.001080155372619629
+        },
+        "ALB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.9296846985816956,
+          "min": 0.8343289494514465
+        },
+        "ALT": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.9317339062690735,
+          "min": 0.840414822101593
+        },
+        "MUB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 95000.0,
+          "min": 82711.3984375
+        },
+        "MUT": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 96735.234375,
+          "min": 84439.90625
+        },
+        "MUTS": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 96735.203125,
+          "min": 84439.890625
+        },
+        "MU_NEW": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1749.256225585938,
+          "min": 1621.89111328125
+        },
+        "MU_OLD": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1749.322387695312,
+          "min": 1621.944213867188
+        },
+        "P": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1979.7734375,
+          "min": 1854.5625
+        },
+        "PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 99706.203125,
+          "min": 87456.1171875
+        },
+        "RHO": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1.189876914024353,
+          "min": 1.073269844055176
+        },
+        "T_HIST_SRC": {
+          "count": 289,
+          "finite_count": 289,
+          "max": -4.87158203125,
+          "min": -9.302825927734375
+        },
+        "T_THM": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.200653076171875,
+          "min": -3.677886962890625
+        }
+      },
+      "U_K1": {
+        "U": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 3.905516624450684,
+          "min": -6.528703689575195
+        }
+      },
+      "V_K1": {
+        "V": {
+          "count": 306,
+          "finite_count": 306,
+          "max": 1.407354831695557,
+          "min": -9.168634414672852
+        }
+      },
+      "WPH_KSTAG01": {
+        "PH": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 16.25147247314453,
+          "min": 0.0
+        },
+        "W": {
+          "count": 578,
+          "finite_count": 578,
+          "max": 0.7064207792282104,
+          "min": -1.633887887001038
+        }
+      }
+    },
+    "files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
+        "size_bytes": 11774
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
+        "size_bytes": 159441
+      }
+    ],
+    "key_ranges": {
+      "MASS_K1": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          17,
+          21
+        ],
+        "min": [
+          1,
+          5
+        ]
+      },
+      "U_K1": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          17,
+          22
+        ],
+        "min": [
+          1,
+          5
+        ]
+      },
+      "V_K1": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          18,
+          21
+        ],
+        "min": [
+          1,
+          5
+        ]
+      },
+      "WPH_KSTAG01": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          1,
+          17,
+          21
+        ],
+        "min": [
+          0,
+          1,
+          5
+        ]
+      }
+    },
+    "metadata": {
+      "comment": [
+        "WRFGPU2_V014_POST_RK_REFRESH_LOCALIZATION v1",
+        "WRFGPU2_V014_POST_RK_REFRESH_LOCALIZATION v1"
+      ],
+      "current_timestr_before_step": [
+        "2026-05-02_03:59:54",
+        "2026-05-02_03:59:54"
+      ],
+      "domain_id": [
+        "2",
+        "2"
+      ],
+      "dt_seconds": [
+        "0.6000000000000000E+01",
+        "0.6000000000000000E+01"
+      ],
+      "grid_itimestep_after_increment": [
+        "6000",
+        "6000"
+      ],
+      "lead_seconds_after_step": [
+        "0.3600000000000000E+05",
+        "0.3600000000000000E+05"
+      ],
+      "lead_seconds_before_step": [
+        "0.3599400000000000E+05",
+        "0.3599400000000000E+05"
+      ],
+      "mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 18 5 22 2 18",
+        "1 18 5 22 2 18"
+      ],
+      "rk_order": [
+        "3",
+        "3"
+      ],
+      "rk_step": [
+        "4",
+        "4"
+      ],
+      "routine": [
+        "dyn_em/solve_em.F::solve_em after after_all_rk_steps before RK halos",
+        "dyn_em/solve_em.F::solve_em after after_all_rk_steps before RK halos"
+      ],
+      "selected_mass_cell_zero_yx_fortran_ji": [
+        "9 13 10 14",
+        "9 13 10 14"
+      ],
+      "surface": [
+        "post_after_all_rk_steps_pre_halo",
+        "post_after_all_rk_steps_pre_halo"
+      ],
+      "tile_i_j_bounds_fortran": [
+        "1 23 18 33",
+        "1 23 1 17"
+      ],
+      "tile_record_policy": [
+        "owned_tile_overlap_only",
+        "owned_tile_overlap_only"
+      ],
+      "u_patch_zero_y0_y1_xstag0_xstag1_fortran_j0_j1_i0_i1": [
+        "1 18 5 23 2 18",
+        "1 18 5 23 2 18"
+      ],
+      "v_patch_zero_ystag0_ystag1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 19 5 22 2 19",
+        "1 19 5 22 2 19"
+      ],
+      "w_ph_patch_zero_kstag0_kstag1_y0_y1_x0_x1": [
+        "0 2 1 18 5 22",
+        "0 2 1 18 5 22"
+      ]
+    },
+    "schema_lines": [
+      "record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_HIST_SRC T_THM P PB MU_NEW MU_OLD MUB MUT MUTS AL ALB ALT RHO",
+      "record_schema U_K1 fortran_i fortran_j zero_xstag zero_y U",
+      "record_schema V_K1 fortran_i fortran_j zero_x zero_ystag V",
+      "record_schema WPH_KSTAG01 fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W PH",
+      "record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_HIST_SRC T_THM P PB MU_NEW MU_OLD MUB MUT MUTS AL ALB ALT RHO",
+      "record_schema U_K1 fortran_i fortran_j zero_xstag zero_y U",
+      "record_schema V_K1 fortran_i fortran_j zero_x zero_ystag V",
+      "record_schema WPH_KSTAG01 fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W PH"
+    ],
+    "schemas": {
+      "MASS_K1": {
+        "fields": [
+          "T_HIST_SRC",
+          "T_THM",
+          "P",
+          "PB",
+          "MU_NEW",
+          "MU_OLD",
+          "MUB",
+          "MUT",
+          "MUTS",
+          "AL",
+          "ALB",
+          "ALT",
+          "RHO"
+        ],
+        "index_count": 4,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "zero_x",
+          "zero_y"
+        ]
+      },
+      "U_K1": {
+        "fields": [
+          "U"
+        ],
+        "index_count": 4,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "zero_xstag",
+          "zero_y"
+        ]
+      },
+      "V_K1": {
+        "fields": [
+          "V"
+        ],
+        "index_count": 4,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "zero_x",
+          "zero_ystag"
+        ]
+      },
+      "WPH_KSTAG01": {
+        "fields": [
+          "W",
+          "PH"
+        ],
+        "index_count": 6,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "fortran_kstag",
+          "zero_x",
+          "zero_y",
+          "zero_kstag"
+        ]
+      }
+    },
+    "unique_counts": {
+      "MASS_K1": 289,
+      "U_K1": 306,
+      "V_K1": 306,
+      "WPH_KSTAG01": 578
+    }
+  },
+  "wrf_pre_rk_surface": {
+    "duplicate_count": 0,
+    "duplicate_max_delta": 0.0,
+    "duplicate_max_delta_by_field": {},
+    "field_ranges": {
+      "MASS_K1": {
+        "MUB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 95000.0,
+          "min": 82711.3984375
+        },
+        "MU_NEW": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1749.322387695312,
+          "min": 1621.944213867188
+        },
+        "MU_OLD": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1749.403442382812,
+          "min": 1622.026123046875
+        },
+        "P": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 1980.96875,
+          "min": 1853.0234375
+        },
+        "PB": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 99706.203125,
+          "min": 87456.1171875
+        },
+        "T_HIST_SRC": {
+          "count": 289,
+          "finite_count": 289,
+          "max": -4.8714599609375,
+          "min": -9.3028564453125
+        },
+        "T_OLD": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.2012939453125,
+          "min": -3.677520751953125
+        },
+        "T_THM": {
+          "count": 289,
+          "finite_count": 289,
+          "max": 0.20086669921875,
+          "min": -3.677703857421875
+        }
+      }
+    },
+    "files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "b7fdf7b72b9a9b8ab74c4399ce71c1f1340cb8939d88e12bdb092e4152be17b3",
+        "size_bytes": 4474
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "9c7f7308e32daf296727ee29138b1462b7575cb7eefb1254f7393e3560d30697",
+        "size_bytes": 60149
+      }
+    ],
+    "key_ranges": {
+      "MASS_K1": {
+        "key_convention": "MASS/U/V=(zero_y_or_ystag, zero_x_or_xstag); WPH=(zero_kstag, zero_y, zero_x)",
+        "max": [
+          17,
+          21
+        ],
+        "min": [
+          1,
+          5
+        ]
+      }
+    },
+    "metadata": {
+      "comment": [
+        "WRFGPU2_V014_PRE_RK_INPUT_BOUNDARY v1",
+        "WRFGPU2_V014_PRE_RK_INPUT_BOUNDARY v1"
+      ],
+      "current_timestr_before_step": [
+        "2026-05-02_03:59:54",
+        "2026-05-02_03:59:54"
+      ],
+      "domain_id": [
+        "2",
+        "2"
+      ],
+      "dt_seconds": [
+        "0.6000000000000000E+01",
+        "0.6000000000000000E+01"
+      ],
+      "dx_m": [
+        "0.3000000000000000E+04",
+        "0.3000000000000000E+04"
+      ],
+      "dy_m": [
+        "0.3000000000000000E+04",
+        "0.3000000000000000E+04"
+      ],
+      "grid_itimestep_after_increment": [
+        "6000",
+        "6000"
+      ],
+      "lead_seconds_after_step": [
+        "0.3600000000000000E+05",
+        "0.3600000000000000E+05"
+      ],
+      "lead_seconds_before_step": [
+        "0.3599400000000000E+05",
+        "0.3599400000000000E+05"
+      ],
+      "mass_patch_zero_y0_y1_x0_x1_fortran_j0_j1_i0_i1": [
+        "1 18 5 22 2 18",
+        "1 18 5 22 2 18"
+      ],
+      "rk_order_config": [
+        "3",
+        "3"
+      ],
+      "routine": [
+        "dyn_em/solve_em.F after grid%itimestep increment before RK loop",
+        "dyn_em/solve_em.F after grid%itimestep increment before RK loop"
+      ],
+      "selected_mass_cell_zero_yx_fortran_ji": [
+        "9 13 10 14",
+        "9 13 10 14"
+      ],
+      "surface": [
+        "pre_rk_input_boundary",
+        "pre_rk_input_boundary"
+      ],
+      "tile_i_j_bounds_fortran": [
+        "1 23 18 33",
+        "1 23 1 17"
+      ],
+      "tile_record_policy": [
+        "owned_tile_overlap_only",
+        "owned_tile_overlap_only"
+      ]
+    },
+    "schema_lines": [
+      "record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_THM T_OLD T_HIST_SRC P PB MU_NEW MU_OLD MUB",
+      "record_schema MASS_K1 fortran_i fortran_j zero_x zero_y T_THM T_OLD T_HIST_SRC P PB MU_NEW MU_OLD MUB"
+    ],
+    "schemas": {
+      "MASS_K1": {
+        "fields": [
+          "T_THM",
+          "T_OLD",
+          "T_HIST_SRC",
+          "P",
+          "PB",
+          "MU_NEW",
+          "MU_OLD",
+          "MUB"
+        ],
+        "index_count": 4,
+        "index_names": [
+          "fortran_i",
+          "fortran_j",
+          "zero_x",
+          "zero_y"
+        ]
+      }
+    },
+    "unique_counts": {
+      "MASS_K1": 289
+    }
+  }
+}
