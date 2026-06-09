@@ -36,6 +36,65 @@ Match model+effort to task type (principal effort-tiers): **core/correctness-cri
 - **GPU hand-off between agents:** an agent that arms a "GPU-free monitor" to auto-run its gates will GRAB the GPU the instant it drops free — which can be a GAP BETWEEN a sibling's multi-run sequence, not the sibling's true end. Risk: collision/box-crash. The manager must not dispatch a competing GPU job into that window, and should verify GPU sanity when the holding agent's completion notification arrives.
 - Manager stays manager: re-dispatch dead agents; don't hand-debug.
 
+## Long-roadmap drift prevention
+
+For long, correctness-critical roadmaps such as v0.14, prevent manager drift with
+a periodic Opus 4.8 xhigh **management review**:
+
+- Dispatch one Opus 4.8 xhigh management reviewer after every 15 closed sprints
+  on the active milestone, and sooner if the roadmap direction changes, the
+  proof chain becomes hard to summarize, or the manager considers changing the
+  milestone goal.
+- The reviewer reads only the compact current handoff/roadmap, the last 15
+  sprint closeouts/reviews/proof summaries, and the manager's current
+  conclusions. Do not ask it to reread broad source trees unless it identifies a
+  specific gap.
+- The review goal is drift control, not pair programming: challenge whether the
+  manager is still taking the most efficient, highest-leverage, validated path
+  to the milestone goal; identify waste, stale assumptions, missing gates,
+  under-parallelization, unsafe parallelization, and over-narrow or over-broad
+  sprints.
+- Output must be context-sparing: maximum one short verdict paragraph, one
+  ranked table of at most eight findings, one "next 3 sprints" recommendation
+  list, and one explicit yes/no on whether the current goal should change.
+- v0.14 goal changes are not allowed merely because the path is hard or long.
+  A v0.14 goal change is allowed only if Opus 4.8 xhigh explicitly agrees in a
+  management review that the current goal is technically impossible or no longer
+  the smartest useful target under the latest evidence, and the manager records
+  the evidence-backed replacement goal in the roadmap.
+- Re-anchor major decisions to the project goal: build a WRF-faithful-enough,
+  GPU-optimized, near compute- and memory-optimal, scalable GPU rewrite, not a
+  station-score workaround or CPU-WRF wrapper.
+
+Reusable Opus management-review prompt:
+
+```text
+You are Opus 4.8 xhigh, independent management reviewer for wrf_gpu2 v0.14.
+Goal: prevent roadmap drift. The project goal is a WRF-faithful-enough,
+GPU-optimized, near compute- and memory-optimal, scalable GPU rewrite.
+
+Read only:
+- PROJECT_CONSTITUTION.md
+- AGENTS.md
+- .agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md
+- .agent/decisions/V0140-VALIDATION-PLAN.md
+- the last 15 sprint folders' sprint-contract.md, manager-closeout.md,
+  memory-patch.md, and linked proof/review summaries
+
+Critique the manager's current 0.14 roadmap, conclusions, proof chain,
+parallelization, sprint sizing, and next-sprint plan. Decide whether the manager
+is still on the fastest rigorous path to the goal. Do not propose a goal change
+unless the current goal is technically impossible or clearly no longer the
+smartest useful target under the latest evidence.
+
+Output exactly:
+1. Verdict paragraph, max 120 words.
+2. Ranked findings table, max 8 rows: severity, issue, evidence, fix.
+3. Next 3 sprints, max 3 bullets, each with objective and proof gate.
+4. Goal-change gate: "NO_GOAL_CHANGE" or "GOAL_CHANGE_RECOMMENDED: <why>".
+5. Context-sparing handoff: max 10 bullets the manager should remember.
+```
+
 ## Hard rules
 
 - No implementation without a sprint contract.
