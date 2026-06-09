@@ -1373,3 +1373,35 @@ narrow GPU-native `d02_replay.py` fix, validate and commit it. If it only
 localizes the gap, open the next minimal truth-surface sprint. TOST,
 Switzerland, FP32 source work, and broad memory work remain paused until
 per-cell grid parity is explained or bounded by proof.
+
+## Current Manager Update 2026-06-09 20:05 WEST
+
+The start-domain perturbation subsurface sprint is closed and pushed:
+
+- Proof commit: `b659a3dc`.
+- Formal closeout commit: `66c091fc`.
+- Verdict:
+  `STEP1_START_DOMAIN_PERTURB_SUBSURFACE_LOCALIZED_CURRENT_JAX_AL_ALT_BASE_INPUT_GAP`.
+- Validation rerun: CPU-only proof, JSON validation, `git diff -- src/gpuwrf`
+  empty, `git diff --check` clean for sprint artifacts.
+
+Meaning:
+
+- WRF source ordering around live-nest `start_domain(nest,.TRUE.)` is now
+  proven closely enough: hypsometric `P/al/alt`, `press_adj`, and W-surface
+  handling are not the remaining unknown.
+- A production `P/MU` patch is still not safe: current JAX inputs leave `P`
+  max_abs `3.9458582235092763 Pa` and `MU` max_abs
+  `0.047773029698646496 Pa`.
+
+Opened next sprint:
+
+- `.agent/sprints/2026-06-09-v014-step1-jax-start-domain-input-split`.
+- Objective: split current JAX live-nest `start_domain` inputs for final
+  blended `HT`, `PB/MUB/PHB`, `PH_STATE`, pre-`press_adj` `MU`, and diagnosed
+  `AL/ALT` against the existing WRF internal `after_hypsometric` truth.
+- Optional source edit is limited to `src/gpuwrf/integration/d02_replay.py`
+  only if the source/input bug is exact, narrow, and GPU-native.
+
+TOST, Switzerland, FP32 source work, broad memory work, and GPU validation stay
+paused.
