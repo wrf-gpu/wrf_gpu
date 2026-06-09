@@ -17,6 +17,15 @@ this branch:
   R0/R1 contract and static audit. Its default-inert source scaffold is **not merged into
   v0.13**.
 
+Update 2026-06-09 10:40 WEST: FP32 acoustic remains v0.14 P1, but it must not
+preempt the active fp64 grid-divergence root cause. The latest direct grid proof
+(`proofs/v014/grid_after_live_nest_base.json`) is
+`GRID_SYMPTOM_NOT_CLOSED`, and same-state localization
+(`proofs/v014/same_state_momentum_mass.json`) shows `U` already mismatching at
+`post_after_all_rk_steps_pre_halo`. The next action is dynamic root-cause
+localization/fix on fp64; mixed FP32 resumes after the failing operator is named
+or bounded.
+
 ## Priority
 
 Current manager decision, updated 2026-06-09: this is the highest-priority

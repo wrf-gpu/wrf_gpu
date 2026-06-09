@@ -8,6 +8,24 @@ use, and parallel agents within resource sanity. After two failed GPT
 search/debug attempts on the same root-cause problem, try one targeted Opus
 4.8 xhigh/max run via `claude --permission-mode auto` if tokens are available.
 
+Update 2026-06-09 10:40 WEST: the live-nest base-source fix is confirmed useful
+but **not** a grid-symptom closer. Two fresh GPT proof sprints are closed and
+committed:
+
+- `fab94a79` / `proofs/v014/same_state_momentum_mass.*`: selected h10 dynamic
+  state already mismatches CPU-WRF at `post_after_all_rk_steps_pre_halo`;
+  first failing field is `U`, max_abs `6.292358893898424`, RMSE
+  `2.032497018496295`.
+- `6d1f7cf9` / `proofs/v014/grid_after_live_nest_base.*`: one bounded h12 GPU
+  run after the base-source fix is `L2_D02_GREEN`, but direct d02 h1-h12 grid
+  comparison verdict is `GRID_SYMPTOM_NOT_CLOSED`. `V10` RMSE remains
+  `2.55039100124724` m/s, worst h11 RMSE `4.277008742661733`; `PSFC/P/MU/PH`
+  remain large.
+
+Therefore TOST stays paused. The manager cadence now requires a targeted Opus
+xhigh critic/debugger before the next root-cause conclusion. Sprint:
+`.agent/sprints/2026-06-09-v014-dynamic-root-cause-opus-critic/sprint-contract.md`.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
@@ -86,7 +104,9 @@ blocker. Exact-branch memory preflight exists, and the empirical/static memory
 map is now complete (`proofs/v014/empirical_memory_map.*`). No remaining
 non-radiation memory fix blocks the first long validation after grid parity if
 the selected exact-branch preflight fits. Do not rewrite MYNN/PBL/post-physics
-merge/moisture limiter/acoustic memory paths blindly.
+merge/moisture limiter/acoustic memory paths blindly. The 2026-06-09 direct
+grid-after-base proof confirms memory is not the next gate; dynamic grid
+divergence is.
 
 Wave-1 grid attribution verdict: the first fix target is static grid,
 vertical-coordinate, and base-state parity, not a dynamic operator edit. Case 3
