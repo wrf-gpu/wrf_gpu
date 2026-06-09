@@ -218,6 +218,16 @@ Current status:
   (2) V10/grid-field divergence materially improved. A source port may not be
   used to resume TOST or claim grid parity unless an init-override or direct
   grid-field proof closes the symptom.
+- 2026-06-09 source sprint update:
+  `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
+  as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest
+  base fields now match CPU-WRF h0 as validation oracle to formula-level
+  residuals on the target patch (PB `0.0489` Pa, MUB `0.0444` Pa, PHB
+  `0.0933`, HGT `2.42e-05` m), without a CPU-WRF h0 production dependency and
+  without timestep-loop host/device transfer. This is accepted only as a
+  base-state source fix. It does not close or materially reduce V10/grid-field
+  divergence until an init-override/direct grid-field proof shows that symptom
+  improvement. TOST remains paused.
 - Before resuming the n=15 campaign, the project must either fix the responsible
   operators or record an operator-specific root cause and accepted residual.
 

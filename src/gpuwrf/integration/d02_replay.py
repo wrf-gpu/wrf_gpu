@@ -34,12 +34,13 @@ from gpuwrf.coupling.physics_couplers import mynn_adapter, rrtmg_adapter, surfac
 from gpuwrf.dynamics.acoustic_wrf import AcousticConfig, run_acoustic_scan
 from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.damping import RayleighConfig
-from gpuwrf.dynamics.metrics import load_wrfinput_metrics
+from gpuwrf.dynamics.metrics import load_wrfinput_metrics, terrain_slope_metrics
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
 from gpuwrf.io.boundary_replay import decode_wrfbdy, wrfbdy_path_for_run
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.gen2_wrfout_loader import normalize_valid_time
 from gpuwrf.io.land_state import load_prescribed_land_state
+from gpuwrf.nesting.interp import sint_to_child_reference
 from gpuwrf.profiling.transfer_audit import block_until_ready, visible_gpu_name
 
 
@@ -163,6 +164,7 @@ _EOS_R_D = 287.0
 _EOS_CP_D = 1004.0
 _EOS_P0_PA = 100000.0
 _EOS_CVPM = -(_EOS_CP_D - _EOS_R_D) / _EOS_CP_D
+_WRF_BASE_GRAVITY_M_S2 = 9.81
 DEFAULT_REPLAY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_OUTPUT_FIELD_PATH = Path("/home/enric/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz")
 DEFAULT_TRACE_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/enric/.cache/gpuwrf_tmp"))
@@ -786,6 +788,229 @@ def _wrf_base_theta_from_loaded_state(
     return theta_base
 
 
+def _namelist_int_any(run: Gen2Run, key: str, default: int, *, domain: str | None = None) -> int:
+    """Read a scalar/list namelist integer from the groups WRF uses for nest init."""
+
+    index = max(int(domain[1:]) - 1, 0) if domain else 0
+    for group in ("domains", "bdy_control"):
+        raw = run.namelist.get(group, {}).get(key)
+        if raw is None:
+            continue
+        if isinstance(raw, (list, tuple)):
+            if index < len(raw):
+                return int(raw[index])
+            return int(raw[-1]) if raw else int(default)
+        return int(raw)
+    return int(default)
+
+
+def _scalar0(value: jax.Array) -> jax.Array:
+    return jnp.reshape(jnp.asarray(value, dtype=jnp.float64), ())
+
+
+def _wrf_blend_terrain_host(
+    interpolated: np.ndarray,
+    fine: np.ndarray,
+    *,
+    spec_bdy_width: int,
+    blend_width: int,
+) -> np.ndarray:
+    """Host transcription of WRF ``nest_init_utils.F::blend_terrain``.
+
+    Initialization-only: no timestep-loop transfer.  Supports mass 2-D fields and
+    vertical-stack 3-D fields with horizontal axes last.
+    """
+
+    out = np.array(fine, dtype=np.float64, copy=True)
+    parent = np.asarray(interpolated, dtype=np.float64)
+    ny, nx = out.shape[-2:]
+    ide = nx + 1
+    jde = ny + 1
+    r_blend = 1.0 / float(int(blend_width) + 1)
+    for jj in range(ny):
+        j = jj + 1
+        for ii in range(nx):
+            i = ii + 1
+            weights: tuple[float, float] | None = None
+            for blend_cell in range(int(blend_width), 0, -1):
+                if (
+                    i == int(spec_bdy_width) + blend_cell
+                    or j == int(spec_bdy_width) + blend_cell
+                    or i == ide - int(spec_bdy_width) - blend_cell
+                    or j == jde - int(spec_bdy_width) - blend_cell
+                ):
+                    weights = (
+                        blend_cell * r_blend,
+                        (int(blend_width) + 1 - blend_cell) * r_blend,
+                    )
+            if (
+                i <= int(spec_bdy_width)
+                or j <= int(spec_bdy_width)
+                or i >= ide - int(spec_bdy_width)
+                or j >= jde - int(spec_bdy_width)
+            ):
+                weights = (0.0, 1.0)
+            if weights is not None:
+                fine_w, parent_w = weights
+                out[..., jj, ii] = fine_w * out[..., jj, ii] + parent_w * parent[..., jj, ii]
+    return out
+
+
+def _metrics_with_terrain(
+    metrics: DycoreMetrics,
+    *,
+    terrain_height: jax.Array,
+    grid: GridSpec,
+    provenance_suffix: str,
+) -> DycoreMetrics:
+    dzdx, dzdy, dzdx_u, dzdy_v = terrain_slope_metrics(
+        terrain_height,
+        float(grid.projection.dx_m),
+        float(grid.projection.dy_m),
+    )
+    return dataclass_replace(
+        metrics,
+        dzdx=dzdx,
+        dzdy=dzdy,
+        dzdx_u=dzdx_u,
+        dzdy_v=dzdy_v,
+        provenance=f"{metrics.provenance}; {provenance_suffix}",
+    )
+
+
+def _wrf_start_domain_base_from_hgt(
+    run: Gen2Run,
+    domain: str,
+    *,
+    hgt: jax.Array,
+    metrics: DycoreMetrics,
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
+    """WRF real-run ``start_domain_em`` base recompute from terrain.
+
+    Returns ``(PB, MUB, PHB, T_INIT, ALB)`` for the multi-domain, non-ideal path.
+    The formula mirrors ``dyn_em/start_em.F`` and is initialization-only.
+    """
+
+    p_top = _scalar0(_load(run, domain, "P_TOP", 0))
+    p00 = _scalar0(_load(run, domain, "P00", 0))
+    t00 = _scalar0(_load(run, domain, "T00", 0))
+    lapse = _scalar0(_load(run, domain, "TLP", 0))
+    tiso = _scalar0(_load(run, domain, "TISO", 0))
+    lapse_strat = _scalar0(_load(run, domain, "TLP_STRAT", 0))
+    p_strat = _scalar0(_load(run, domain, "P_STRAT", 0))
+
+    hgt64 = jnp.asarray(hgt, dtype=jnp.float64)
+    p_surf = p00 * jnp.exp(
+        -t00 / lapse
+        + jnp.sqrt((t00 / lapse) ** 2 - 2.0 * _WRF_BASE_GRAVITY_M_S2 * hgt64 / lapse / _EOS_R_D)
+    )
+    mub = p_surf - p_top
+    pb = metrics.c3h[:, None, None] * mub[None, :, :] + metrics.c4h[:, None, None] + p_top
+
+    temp = jnp.maximum(tiso, t00 + lapse * jnp.log(pb / p00))
+    safe_p_strat = jnp.maximum(p_strat, jnp.asarray(1.0, dtype=jnp.float64))
+    strat_temp = tiso + lapse_strat * jnp.log(pb / safe_p_strat)
+    temp = jnp.where((p_strat > 0.0) & (pb < p_strat), strat_temp, temp)
+    t_init = temp * (p00 / pb) ** (_EOS_R_D / _EOS_CP_D) - P0_THETA_OFFSET_K
+    alb = (_EOS_R_D / _EOS_P0_PA) * (t_init + P0_THETA_OFFSET_K) * (pb / _EOS_P0_PA) ** _EOS_CVPM
+
+    phb_levels = [hgt64 * _WRF_BASE_GRAVITY_M_S2]
+    for full_k in range(1, int(pb.shape[0]) + 1):
+        half_k = full_k - 1
+        pfu = metrics.c3f[full_k] * mub + metrics.c4f[full_k] + p_top
+        pfd = metrics.c3f[full_k - 1] * mub + metrics.c4f[full_k - 1] + p_top
+        phm = metrics.c3h[half_k] * mub + metrics.c4h[half_k] + p_top
+        phb_levels.append(phb_levels[-1] + alb[half_k, :, :] * phm * jnp.log(pfd / pfu))
+    phb = jnp.stack(phb_levels, axis=0)
+    return pb, mub, phb, t_init, alb
+
+
+def _apply_live_nest_base_init(
+    run: Gen2Run,
+    *,
+    domain: str,
+    grid: GridSpec,
+    metrics: DycoreMetrics,
+    parent_case: ReplayCase,
+) -> tuple[GridSpec, DycoreMetrics, jax.Array, jax.Array, jax.Array, dict[str, Any]]:
+    """Apply WRF live-nest terrain/base initialization before timestep ownership."""
+
+    child_meta = run.grid(domain)
+    expected_parent = f"d{int(child_meta.parent_id):02d}"
+    parent_domain = str(parent_case.metadata.get("domain", ""))
+    if parent_domain and parent_domain != expected_parent:
+        raise ValueError(
+            f"{domain}: live-nest parent case must be {expected_parent}, got {parent_domain}"
+        )
+    ratio = int(child_meta.parent_grid_ratio)
+    if ratio <= 1:
+        raise ValueError(f"{domain}: live-nest base init requires parent_grid_ratio > 1, got {ratio}")
+
+    spec_bdy_width = _namelist_int_any(run, "spec_bdy_width", 5, domain=domain)
+    blend_width = _namelist_int_any(run, "blend_width", 5, domain=domain)
+    parent_hgt = np.asarray(jax.device_get(parent_case.grid.terrain_height), dtype=np.float64)
+    child_hgt = np.asarray(jax.device_get(grid.terrain_height), dtype=np.float64)
+    parent_hgt_on_child = sint_to_child_reference(
+        parent_hgt,
+        ratio=ratio,
+        i_parent_start=int(child_meta.i_parent_start),
+        j_parent_start=int(child_meta.j_parent_start),
+        child_ny=int(grid.ny),
+        child_nx=int(grid.nx),
+    )
+    if not np.isfinite(parent_hgt_on_child).all():
+        raise ValueError(
+            f"{domain}: live-nest SINT terrain interpolation produced non-finite values; "
+            "the parent stencil halo or nest geometry is insufficient"
+        )
+    blended_hgt_np = _wrf_blend_terrain_host(
+        parent_hgt_on_child,
+        child_hgt,
+        spec_bdy_width=spec_bdy_width,
+        blend_width=blend_width,
+    )
+    blended_hgt = jnp.asarray(blended_hgt_np, dtype=grid.terrain_height.dtype)
+    metrics = _metrics_with_terrain(
+        metrics,
+        terrain_height=blended_hgt,
+        grid=grid,
+        provenance_suffix=f"live_nest_base_init:{expected_parent}->{domain}:sint_tr4_blend_terrain",
+    )
+    pb, mub, phb, _t_init, _alb = _wrf_start_domain_base_from_hgt(
+        run,
+        domain,
+        hgt=blended_hgt,
+        metrics=metrics,
+    )
+
+    terrain = dataclass_replace(
+        grid.terrain,
+        source_path=f"{grid.terrain.source_path};live_nest_parent={expected_parent}",
+        max_elevation_m=float(np.nanmax(blended_hgt_np)),
+    )
+    grid = dataclass_replace(grid, terrain=terrain, terrain_height=blended_hgt, metrics=metrics)
+    meta = {
+        "enabled": True,
+        "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+        "parent_domain": expected_parent,
+        "child_domain": domain,
+        "parent_grid_ratio": ratio,
+        "i_parent_start": int(child_meta.i_parent_start),
+        "j_parent_start": int(child_meta.j_parent_start),
+        "spec_bdy_width": int(spec_bdy_width),
+        "blend_width": int(blend_width),
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "production_inputs": ["parent native initialized terrain", f"wrfinput_{domain}", "namelist.input"],
+        "cpu_wrfout_dependency": False,
+        "timestep_loop_transfer": False,
+        "note": (
+            "The host SINT reference runs before OperationalCarry creation. The forecast "
+            "loop remains device-resident; no CPU-WRF history file is read."
+        ),
+    }
+    return grid, metrics, pb, phb, mub, meta
+
+
 # WRF MYNN cold-start TKE constants (phys/module_bl_mynnedmf.F).
 _MYNN_B1 = 24.0          # module_bl_mynnedmf.F:282  b1 = 24.0
 _MYNN_PMZ = 1.0          # phi_m-zeta at z1, =1 on cold start (mym_initialize)
@@ -1089,6 +1314,7 @@ def build_replay_case(
     boundary_domain: str | None = None,
     standalone: bool | None = None,
     load_lateral_boundaries: bool = True,
+    live_nest_parent: ReplayCase | None = None,
 ) -> ReplayCase:
     """Load a Gen2 d02 initial state with WRF perturbation/base splits preserved.
 
@@ -1107,6 +1333,12 @@ def build_replay_case(
     correctly-shaped (and unread) boundary leaves. ``wrfbdy_d01`` still forces the
     root. ``standalone`` is auto-forced True under this flag so the IC reads come
     from ``wrfinput`` and the wrfinput analysis-time label is used for run-start.
+
+    ``live_nest_parent`` enables the WRF live-nest source initialization for a
+    child: parent terrain is interpolated with the WRF ``sint`` host reference,
+    blended with child terrain, and PB/MUB/PHB are recomputed before the
+    ``State`` is handed to the device-resident timestep loop.  CPU-WRF history
+    output is not read; the parent case must already be loaded from native inputs.
     """
 
     _debug(f"build_replay_case start run_dir={run_dir} domain={domain} boundary_domain={boundary_domain}")
@@ -1188,6 +1420,16 @@ def build_replay_case(
     mu_perturbation = _load(run, domain, "MU", 0)
     mub = _load(run, domain, "MUB", 0)
     theta = _load(run, domain, "T", 0) + P0_THETA_OFFSET_K
+    live_nest_base_meta: dict[str, Any] = {"enabled": False}
+    if live_nest_parent is not None:
+        grid, metrics, pb, phb, mub, live_nest_base_meta = _apply_live_nest_base_init(
+            run,
+            domain=domain,
+            grid=grid,
+            metrics=metrics,
+            parent_case=live_nest_parent,
+        )
+        _debug(f"live-nest base init complete parent={live_nest_base_meta.get('parent_domain')} child={domain}")
     # WRF-faithful base potential temperature ``t0 + t_init``, recovered by
     # inverting the loaded discrete base state (PB/PHB/MUB) so the dycore's
     # recomputed base inverse density ``alb`` matches the discrete ``alb`` the
@@ -1281,6 +1523,7 @@ def build_replay_case(
             "dy_m": float(grid.projection.dy_m),
         },
         "boundary": boundary_meta,
+        "live_nest_base_init": live_nest_base_meta,
         "prescribed_land": {
             "source_file": land.source.get("source_file"),
             "roughness_note": land.source.get("roughness_note"),
@@ -1293,6 +1536,7 @@ def build_replay_case(
             "pressure_split": "p_total=PB+P, p_perturbation=P",
             "geopotential_split": "ph_total=PHB+PH, ph_perturbation=PH",
             "mu_split": "mu_total=MUB+MU, mu_perturbation=MU",
+            "live_nest_init": live_nest_base_meta,
         },
         "qke_coldstart": {
             "seeded": bool(did_seed_qke),

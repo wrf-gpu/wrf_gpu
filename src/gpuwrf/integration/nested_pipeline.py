@@ -258,6 +258,7 @@ def _load_domains(
     hierarchy = DomainHierarchy.from_edges(names, tuple(edges), max_dom=max(5, len(names)))
 
     bundles: dict[str, DomainBundle] = {}
+    loaded_cases: dict[str, Any] = {names[0]: root_case}
     meta: dict[str, Any] = {"domains": {}, "edges": [edge.__dict__ for edge in edges]}
 
     for name in names:
@@ -267,10 +268,20 @@ def _load_domains(
         else:
             # Standalone live-nested CHILD: IC from wrfinput_<child>, NO lateral
             # forcing read from disk (no wrfbdy_<child> / wrfout_<child>); the live
-            # parent supplies the boundary package each parent step.
-            case = build_replay_case(run_dir, domain=name, load_lateral_boundaries=False)
+            # parent supplies the boundary package each parent step.  The parent
+            # case is passed explicitly so build_replay_case can reproduce WRF's
+            # live-nest terrain/base initialization before timestep ownership.
             parent = hierarchy.parent(name)
+            if parent is None or parent not in loaded_cases:
+                raise ValueError(f"{name}: parent case must be loaded before live-nest child init")
+            case = build_replay_case(
+                run_dir,
+                domain=name,
+                load_lateral_boundaries=False,
+                live_nest_parent=loaded_cases[parent],
+            )
             parent_dt = dt_by_domain[parent]
+        loaded_cases[name] = case
 
         radiation_static = None
         try:
@@ -334,6 +345,7 @@ def _load_domains(
             ),
             "wrfbdy_path": case.metadata.get("boundary", {}).get("wrfbdy_path"),
             "qke_coldstart": case.metadata.get("qke_coldstart", {}),
+            "live_nest_base_init": case.metadata.get("live_nest_base_init", {}),
             "grid": case.metadata.get("grid", {}),
             "namelist": {
                 "dt_s": float(namelist.dt_s),
