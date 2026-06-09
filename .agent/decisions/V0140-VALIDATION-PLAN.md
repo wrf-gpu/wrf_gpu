@@ -313,6 +313,15 @@ Current status:
   surfaces. B4, Switzerland, TOST, FP32 source work, and memory source work
   remain paused until this sprint returns an exact boundary, narrow fix, or
   exact blocker.
+- 2026-06-09 19:08 WEST manager update: first-RK part1 P-state split closed as
+  `STEP1_FIRST_RK_PART1_P_STATE_LOCALIZED_PRE_PART1_RAW_CHILD_STATE`. WRF
+  `before_first_rk_step_part1_call -> after_first_rk_step_part1` is exact for
+  `P_STATE/MU_STATE/W_STATE/PH_STATE`; JAX is already off at
+  `raw_child_state` and preserves the same `P/MU/W` residuals through
+  live-child, boundary package, carry, halo, and `_physics_step_forcing`.
+  Validation remains paused. The next validation-enabling work is a narrow
+  live-nest perturbation-state initialization proof/fix for
+  `P_STATE/MU_STATE/W_STATE`.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
