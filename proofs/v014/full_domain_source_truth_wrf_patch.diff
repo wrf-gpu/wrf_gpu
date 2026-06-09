@@ -1,0 +1,2 @@
+# No new WRF patch was applied in this manager fail-closed closeout.
+# Existing patch artifacts remain source_save_boundary_hook_wrf_patch.diff and prior post-RK refresh diffs.

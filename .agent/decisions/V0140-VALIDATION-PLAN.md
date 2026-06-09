@@ -266,6 +266,13 @@ Current status:
   discriminator must be a consolidated early-step/drift-onset sprint, starting
   from shared `wrfinput` where instrumentation is cheap, with at least one strict
   same-input comparison executed or all remaining blockers named in one pass.
+- 2026-06-09 full-domain wrapper closeout:
+  `proofs/v014/same_input_single_rk_parity_wrapped.json` verdict is
+  `FULL_DOMAIN_WRAPPER_BLOCKED_TRUTH_SURFACE_PATCH_ONLY_AND_CARRY_LEAVES`.
+  Existing step-6000 source/save and post-RK surfaces are patch-only and lack the
+  same-boundary full wrapper carry/boundary leaves. B4 remains blocked and the
+  next validation-enabling work is now the staged early-step same-input
+  discriminator, not more step-6000 wrapper instrumentation.
 - 2026-06-09 source sprint update:
   `proofs/v014/live_nest_base_source_fix.json` classifies the landed candidate
   as `LIVE_NEST_BASE_SOURCE_PARTIAL_NO_GRID_SYMPTOM_PROOF`. Native live-nest

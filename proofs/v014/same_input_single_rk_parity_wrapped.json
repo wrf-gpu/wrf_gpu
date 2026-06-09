@@ -1,0 +1,58 @@
+{
+  "blockers": [
+    "existing source/save surface is patch-only, not full-domain/full-vertical enough for the wrapper contract",
+    "existing post-RK/pre-halo truth is patch-only and not a full-domain/full-vertical State truth surface",
+    "accepted source/save proof reports only one conservative 8-cell-halo-valid mass cell",
+    "no same-boundary promoted carry/boundary surface was emitted for the full wrapper contract"
+  ],
+  "commands": {
+    "validation": [
+      "python -m py_compile proofs/v014/same_input_single_rk_parity_wrapped.py",
+      "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/same_input_single_rk_parity_wrapped.py",
+      "python -m json.tool proofs/v014/same_input_single_rk_parity_wrapped.json >/tmp/same_input_single_rk_parity_wrapped.validated.json"
+    ]
+  },
+  "comparison": {
+    "per_field_metrics": {},
+    "ranked_residuals": []
+  },
+  "cpu_only": true,
+  "decision": {
+    "jax_step_executed": false,
+    "reason": "existing WRF source/save and post-RK truth surfaces are patch-only and missing full wrapper carry/boundary leaves",
+    "strict_same_input_comparison_run": false,
+    "truth_surface_sufficient": false,
+    "weak_comparison_avoided": true
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "generated_utc": "2026-06-09T11:33:17.990514+00:00",
+  "gpu_used": false,
+  "inputs": {
+    "full_domain_source_truth_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/full_domain_source_truth.json",
+      "sha256": "41558a56685d03f7543db1af21dbb65b1c867605d9376302d82341d577ee47a4",
+      "size_bytes": 4686
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-full-domain-source-wrapper/sprint-contract.md",
+      "sha256": "efa7a84545041e63f6edf295ab20e5b6c0acbd686a3054e7cdd1cf9017c044a9",
+      "size_bytes": 6978
+    }
+  },
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_wrapped.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_wrapped.md"
+  },
+  "schema": "wrfgpu2.v014.same_input_single_rk_parity_wrapped.v1",
+  "verdict": "FULL_DOMAIN_WRAPPER_BLOCKED_TRUTH_SURFACE_PATCH_ONLY_AND_CARRY_LEAVES"
+}

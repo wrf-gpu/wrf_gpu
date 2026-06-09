@@ -1,0 +1,134 @@
+{
+  "blockers": [
+    "existing source/save surface is patch-only, not full-domain/full-vertical enough for the wrapper contract",
+    "existing post-RK/pre-halo truth is patch-only and not a full-domain/full-vertical State truth surface",
+    "accepted source/save proof reports only one conservative 8-cell-halo-valid mass cell",
+    "no same-boundary promoted carry/boundary surface was emitted for the full wrapper contract"
+  ],
+  "commands": {
+    "validation": [
+      "python -m py_compile proofs/v014/full_domain_source_truth.py",
+      "python -m json.tool proofs/v014/full_domain_source_truth.json >/tmp/full_domain_source_truth.validated.json"
+    ]
+  },
+  "cpu_only": true,
+  "domain_dims": {
+    "DIM0010": 5,
+    "DateStrLen": 19,
+    "Time": 1,
+    "bottom_top": 44,
+    "bottom_top_stag": 45,
+    "crop_types_stag": 5,
+    "dust_erosion_dimension": 3,
+    "land_cat_stag": 21,
+    "num_ext_model_couple_dom_stag": 1,
+    "snow_layers_stag": 3,
+    "snso_layers_stag": 7,
+    "soil_cat_stag": 16,
+    "soil_composition_layers_stag": 8,
+    "soil_layers_stag": 4,
+    "south_north": 66,
+    "south_north_stag": 67,
+    "west_east": 159,
+    "west_east_stag": 160
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "expected_full_domain_counts": {
+    "MASS2D_SOURCE": 10494,
+    "MASS_SOURCE": 461736,
+    "U_SOURCE": 464640,
+    "V_SOURCE": 468732,
+    "WPH_SOURCE": 472230
+  },
+  "generated_utc": "2026-06-09T11:33:17.952151+00:00",
+  "gpu_used": false,
+  "inputs": {
+    "post_rk_pre_halo_files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
+        "size_bytes": 11774
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
+        "size_bytes": 159441
+      }
+    ],
+    "source_files": [
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "sha256": "89cd5a4bf070f1fde86e927f6fb3470492fd0412156858c9685f7ccff1e3ab6b",
+        "size_bytes": 890178
+      },
+      {
+        "exists": true,
+        "is_file": true,
+        "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "sha256": "f8b811a5abed3630fe54dd7f4db90b6e964df1d736ddc475a2f59ae015243de8",
+        "size_bytes": 12449131
+      }
+    ],
+    "source_save_boundary_hook_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.json",
+      "sha256": "0e69931e482d7f1c2987cda795c884ff51372c83d5d46cb3232f4bcdb4d755f2",
+      "size_bytes": 6005415
+    },
+    "wrfinput_d02": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
+      "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
+      "size_bytes": 11005720
+    }
+  },
+  "observed_source_counts": {
+    "MASS2D_SOURCE": 289,
+    "MASS_SOURCE": 12716,
+    "MOIST_OLD_QV": 12716,
+    "U_SOURCE": 13464,
+    "V_SOURCE": 13464,
+    "WPH_SOURCE": 13005
+  },
+  "post_rk_truth_full_domain": false,
+  "production_src_edits": false,
+  "proof_objects": {
+    "json": "/home/enric/src/wrf_gpu2/proofs/v014/full_domain_source_truth.json",
+    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/full_domain_source_truth.md",
+    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/full_domain_source_truth_wrf_patch.diff"
+  },
+  "schema": "wrfgpu2.v014.full_domain_source_truth.v1",
+  "source_full_domain": false,
+  "source_patch_width_assessment": {
+    "candidate_valid_mass_bounds_after_halo": [
+      9,
+      10,
+      13,
+      14
+    ],
+    "candidate_valid_mass_cell_count": 1,
+    "conservative_halo_radius_cells": 8,
+    "mass_patch_zero_based_bounds": [
+      1,
+      18,
+      5,
+      22
+    ],
+    "status": "PATCH_HAS_ONE_HALO_VALID_MASS_CELL"
+  },
+  "truth_surface_sufficient": false,
+  "verdict": "FULL_DOMAIN_TRUTH_SURFACE_BLOCKED_PATCH_ONLY_EXISTING_SURFACES"
+}
