@@ -1,6 +1,6 @@
 # V0.14 Release Checklist
 
-Date: 2026-06-09 23:15 WEST
+Date: 2026-06-09 23:58 WEST
 Owner: manager
 
 ## Release Rule
@@ -14,17 +14,18 @@ scalable GPU rewrite.
 
 | Lane | State | Gate before release |
 |---|---|---|
-| Grid-cell parity | Active. Latest committed manager HEAD: `5f8916f9`. Current boundary: Step-1 tendency construction, specifically WRF `first_rk_step_part2` `T_TENDF` and RK1 `T_TEND/PH_TEND/RW_TEND` versus JAX advection/augment paths. | The first remaining material divergence is fixed, or explicitly bounded with proof showing it does not invalidate the v0.14 field-equivalence claim. |
-| Memory/FP32 Mythos lane | Active in `.codex/worktrees/mythos-memory-v014` on `worker/mythos/v014-memory-fp32`. Mythos claims MYNN BouLac tiling, transport-velocity reuse reclassification, FP32 R0 inert contract, and exact-branch GPU preflight; manager has not yet reviewed/merged. | Manager reviews source diffs and proof objects, reruns focused CPU/GPU gates, and merges only proof-backed commits. |
+| Grid-cell parity | Active. Latest committed manager HEAD: `374e8c8f`. Current boundary: Step-1 tendency construction, specifically WRF `first_rk_step_part2` `T_TENDF` and RK1 `T_TEND/PH_TEND/RW_TEND` versus JAX advection/augment paths. Active GPT sprint is splitting WRF truth after `calculate_phy_tend`, `update_phy_ten`, and `conv_t_tendf_to_moist`. | The first remaining material divergence is fixed, or explicitly bounded with proof showing it does not invalidate the v0.14 field-equivalence claim. |
+| Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Exact-branch memory preflight is green at 8116 MiB compute peak and 378 s warm-cache. Mixed FP32 R1/R2 remains blocked by the open fp64 dynamics frontier. | Rerun exact-branch memory preflight only on the final candidate branch before long validation. Escalate FP32 implementation to Fable/Mythos only if the fp64 grid-parity frontier closes and GPT cannot directly solve mixed precision. |
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. | Atlas produces manifest, summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. |
 | Switzerland/Gotthard | CPU truth exists. No post-fix GPU run has been accepted. | Post-stabilization GPU-vs-CPU proof with field-level comparison and finite/stability evidence. |
 | Powered TOST | Three cases are durable; marathon paused. | Resume only after grid-field divergence is fixed/bounded and memory changes are merged. Interpret together with Grid-Delta Atlas, never alone. |
 
 ## Merge Discipline
 
-- Do not merge Mythos memory/FP32 changes just because a closeout exists.
-- Require proof objects, JSON validation, `git diff --check`, and focused
-  regression gates before accepting any source change.
+- Memory/FP32 Mythos changes are already merged after proof review and focused
+  regression gates. Future source changes still require proof objects, JSON
+  validation, `git diff --check`, and focused regression gates before
+  acceptance.
 - Keep memory/FP32 semantic changes separate from bit-identical layout fixes in
   commits where possible.
 - Do not start long GPU validation from a branch that has unreviewed source
@@ -35,21 +36,19 @@ scalable GPU rewrite.
 1. Close the active Step-1 tendency-boundary sprint.
 2. If the tendency sprint finds/fixes a source bug, rerun the strict Step-1 and
    short grid-field falsifier before launching longer campaigns.
-3. Review and merge or reject the Mythos memory/FP32 branch.
-4. Run exact-branch memory preflight on the final candidate branch.
-5. Run Switzerland/Gotthard post-fix GPU-vs-CPU validation.
-6. Run Grid-Delta Atlas on the selected paired cases and freeze tolerance
+3. Run exact-branch memory preflight on the final candidate branch.
+4. Run Switzerland/Gotthard post-fix GPU-vs-CPU validation.
+5. Run Grid-Delta Atlas on the selected paired cases and freeze tolerance
    manifest before claiming equivalence.
-7. Resume powered TOST and publish station results together with the atlas.
-8. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
+6. Resume powered TOST and publish station results together with the atlas.
+7. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
    proof links.
-9. Tag and push v0.14 only after all required gates pass or are honestly
+8. Tag and push v0.14 only after all required gates pass or are honestly
    demoted with a recorded manager decision and independent review.
 
 ## Current Do-Not-Run List
 
 - No TOST marathon while Step-1 field divergence is still unresolved.
-- No Switzerland GPU campaign before the parity/memory candidate branch is
-  stable.
+- No Switzerland GPU campaign before the parity candidate branch is stable.
 - No broad FP32/mixed-precision claim from default-inert scaffolding.
 - No station-only equivalence claim without all-cell field evidence.
