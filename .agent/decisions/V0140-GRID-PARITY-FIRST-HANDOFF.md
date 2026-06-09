@@ -1131,3 +1131,29 @@ Next active debug step:
    rounding/source-order tail.
 4. Keep TOST, Switzerland, FP32 source landing, and memory source work paused
    until this grid-parity branch is fixed or explicitly bounded.
+
+## Current Manager Update 2026-06-09 17:16 WEST
+
+The `adjust_tempqv` intermediate sprint is closed. Verdict:
+`STEP1_ADJUST_TEMPQV_INTERMEDIATE_PRESSURE_INPUT_MISMATCH`.
+
+Key facts:
+
+- The disposable WRF hook emitted exact internals for d02 Fortran
+  `{i:18,j:10,k:2}` after a manager unsandboxed MPI rerun. The earlier Codex
+  PMIx blocker is no longer the sprint result.
+- Proof objects are
+  `proofs/v014/step1_adjust_tempqv_intermediate.{py,json,md}` and
+  `proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`.
+- `p`, `mub_save`, `c3h`, `c4h`, and `p_top` match WRF.
+- Current `mub` differs by `17.67503987130476 Pa`; `pb_new_equiv` and `p_new`
+  differ by `17.49400702366256 Pa`.
+- The known `t_2_post` residual remains `0.00541785382188209 K`.
+
+Manager decision:
+
+Do not chase a thermodynamic formula patch next. The next active debug step is
+a CPU-only current-`MUB/PB` base-input split around WRF live-nest terrain/base
+blending and the JAX live-nest base-init reconstruction. TOST, Switzerland,
+FP32 source landing, and memory source work remain paused until this branch is
+fixed or explicitly bounded.
