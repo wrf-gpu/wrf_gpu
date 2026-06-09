@@ -34,4 +34,19 @@ against the accepted truth.
 
 ## Reviewer Status:
 
-Pending. Opening sprint only.
+Accepted as sprint-local memory after close.
+
+Closed evidence:
+
+- `proofs/v014/step1_live_nest_theta_semantics.json` records verdict
+  `STEP1_LIVE_NEST_THETA_ADJUST_TEMPQV_PARTIAL_NEXT_TSTATE_MILLIKELVIN_RESIDUAL`.
+- For `USE_THETA_M=1`, WRF solve-time `grid%t_2` uses moist-theta semantics.
+- Dry-to-moist theta conversion plus `adjust_tempqv` reduces the `T_STATE`
+  max_abs residual from `5.490173101425171` to `0.00541785382188209`, but this
+  remains above the prior `1e-3 K` material gate.
+- No production source patch is allowed yet because accepted same-boundary WRF
+  pre-call `QVAPOR` truth is missing.
+
+Next memory: the required follow-up is a minimal WRF pre-call `QVAPOR`
+savepoint at `before_first_rk_step_part1_call`, followed by rerunning the theta
+proof with same-boundary `T_STATE` and `QVAPOR`.

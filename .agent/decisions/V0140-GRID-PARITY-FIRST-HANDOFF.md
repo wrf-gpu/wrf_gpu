@@ -294,6 +294,19 @@ requirements are recorded in
 `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. This does not unblock TOST
 now; it defines the validation output once the current grid-parity bug is fixed.
 
+Update 2026-06-09 16:18 WEST: step-1 live-nest theta semantics closed as
+`STEP1_LIVE_NEST_THETA_ADJUST_TEMPQV_PARTIAL_NEXT_TSTATE_MILLIKELVIN_RESIDUAL`.
+The dominant missing semantics are WRF `USE_THETA_M=1` dry-to-moist theta
+conversion plus `adjust_tempqv`: this reduces `T_STATE` max_abs from
+`5.490173101425171` to `0.00541785382188209`, but it does not meet the prior
+`1e-3 K` material gate. No production patch is allowed yet. The companion
+QVAPOR schema sprint closed as
+`STEP1_QVAPOR_PRECALL_TRUTH_MISSING_SAVEPOINT_SPEC_READY`: accepted pre-call
+truth lacks same-boundary `QVAPOR`; existing QVAPOR truth is post-RK/pre-halo.
+Next required sprint is a CPU-only WRF savepoint extension at
+`before_first_rk_step_part1_call` to emit `moist(i,k,j,P_QV)` as `QVAPOR`, then
+rerun the theta proof.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:

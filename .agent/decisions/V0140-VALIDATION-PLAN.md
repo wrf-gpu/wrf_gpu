@@ -264,6 +264,20 @@ Current status:
   wrfout fields, times, cells, and cases, with release plots committed and
   README-linked. The existing limited cell-level stats in the old powered-TOST
   runner are not enough for v0.14.
+- 2026-06-09 16:18 WEST manager update: live-nest theta semantics is a partial,
+  not a source-fix close. `proofs/v014/step1_live_nest_theta_semantics.json`
+  verdict is
+  `STEP1_LIVE_NEST_THETA_ADJUST_TEMPQV_PARTIAL_NEXT_TSTATE_MILLIKELVIN_RESIDUAL`.
+  WRF `USE_THETA_M=1` dry-to-moist theta conversion plus `adjust_tempqv`
+  reduces `T_STATE` max_abs from `5.490173101425171` to
+  `0.00541785382188209`, but remains above the prior `1e-3 K` material gate.
+  The QVAPOR schema proof
+  `proofs/v014/step1_qvapor_precall_truth_schema.json` closed as
+  `STEP1_QVAPOR_PRECALL_TRUTH_MISSING_SAVEPOINT_SPEC_READY`: same-boundary
+  pre-call `QVAPOR` truth is missing and existing QVAPOR artifacts are
+  post-RK/pre-halo. B4 remains blocked; next validation-enabling sprint is the
+  minimal CPU-WRF `before_first_rk_step_part1_call` QVAPOR savepoint, then a
+  rerun of the theta proof.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to
