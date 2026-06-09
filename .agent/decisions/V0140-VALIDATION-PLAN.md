@@ -306,6 +306,13 @@ Current status:
   WRF `first_rk_step_part1` split around `phy_prep`/`calc_p_rho_phi` state
   writes for `P/MU/W`, or a post-acoustic/pre-refresh pressure split before any
   source edit.
+- 2026-06-09 18:57 WEST manager update: the active validation-enabling sprint is
+  `.agent/sprints/2026-06-09-v014-step1-first-rk-part1-p-state-split`. It is a
+  CPU-first internal boundary split around WRF `first_rk_step_part1`
+  `phy_prep` / `calc_p_rho_phi` and the matching JAX `_physics_step_forcing`
+  surfaces. B4, Switzerland, TOST, FP32 source work, and memory source work
+  remain paused until this sprint returns an exact boundary, narrow fix, or
+  exact blocker.
 - 2026-06-09 Step-1 debug update:
   `proofs/v014/step1_rk1_source_boundary.json` localizes the first material
   Step-1 mismatch to WRF `after_first_rk_step_part1`, field `T_STATE`, not to

@@ -355,6 +355,15 @@ debug sprint should emit one internal WRF `first_rk_step_part1` surface around
 `phy_prep`/`calc_p_rho_phi` state writes for `P/MU/W`, or split
 post-acoustic/pre-refresh pressure before source edits.
 
+Update 2026-06-09 18:57 WEST: opened the next sprint:
+`.agent/sprints/2026-06-09-v014-step1-first-rk-part1-p-state-split`. This is a
+debug-boundary sprint, not a validation campaign and not a source-fix sprint by
+default. It must emit the smallest internal WRF `first_rk_step_part1` split
+around `phy_prep` / `calc_p_rho_phi` for `P/MU/W`, compare it to current JAX
+`_physics_step_forcing` state/carry surfaces, and return an exact boundary,
+narrow performance-compatible fix, or exact missing-truth blocker. TOST,
+Switzerland, FP32 source work, and memory source work remain paused.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
