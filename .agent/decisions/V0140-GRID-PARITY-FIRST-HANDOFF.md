@@ -286,6 +286,14 @@ The worker must transcribe `adjust_tempqv` proof-locally, compare the candidate
 initialization-only source patch if the candidate closes the residual. No GPU,
 TOST, Switzerland, FP32, memory source work, Hermes, or validation campaign.
 
+Update 2026-06-09 16:08 WEST: final v0.14 validation requirements expanded per
+principal direction. TOST remains required, but it must be paired with a
+Grid-Delta Atlas over all paired CPU/GPU wrfout cases, lead times, cells, and
+common numeric fields. Required release artifacts and README plot/dashboard
+requirements are recorded in
+`.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. This does not unblock TOST
+now; it defines the validation output once the current grid-parity bug is fixed.
+
 ## Manager Directive
 
 Release labels are secondary. The current priority order is:
