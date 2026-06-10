@@ -90,6 +90,7 @@ def test_inv8_canary_static_fields_match_wrfinput() -> None:
             _read_wrfinput_2d("LANDMASK"),
             vegfra=_optional_wrfinput_2d("VEGFRA"),
             cm=_optional_wrfinput_2d("CM"),
+            lu_index=lu_index,
         )
     else:
         roughness_reference = jnp.clip(jnp.asarray(znt, dtype=jnp.float64), 1.0e-7, 10.0)

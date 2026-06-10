@@ -72,9 +72,13 @@ def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0)
     roughness_note = (
         "ZNT loaded directly from wrfinput_d02."
         if "ZNT" in loaded
-        else "ZNT absent; roughness_m derived from CM when usable, otherwise VEGFRA/land-water surrogate."
+        else "ZNT absent; roughness_m cold-started from WRF LANDUSE.TBL SFZ0 by LU_INDEX."
     )
-    mavail_note = "MAVAIL loaded directly from wrfinput_d02." if "MAVAIL" in loaded else "MAVAIL absent; derived from top SMOIS and land/water mask."
+    mavail_note = (
+        "MAVAIL loaded directly from wrfinput_d02."
+        if "MAVAIL" in loaded
+        else "MAVAIL absent; cold-started from WRF LANDUSE.TBL SLMO by LU_INDEX."
+    )
     source = {
         "run_id": run.run_id,
         "domain": domain,
@@ -137,8 +141,8 @@ def load_hourly_land_state(run: Gen2Run, domain: str = "d02", time: int = 0) -> 
         "time_index": time_index,
         "source_file": str(history[time_index]),
         "missing_optional_variables": missing,
-        "roughness_note": "ZNT absent from hourly wrfout; roughness_m derived from CM/VEGFRA/land-water surrogate.",
-        "mavail_note": "MAVAIL absent from hourly wrfout; derived from top SMOIS and land/water mask.",
+        "roughness_note": "ZNT absent from hourly wrfout; roughness_m cold-started from WRF LANDUSE.TBL SFZ0 by LU_INDEX.",
+        "mavail_note": "MAVAIL absent from hourly wrfout; cold-started from WRF LANDUSE.TBL SLMO by LU_INDEX.",
     }
     state = prescribe_noah_mp_state(
         t_skin=loaded["TSK"],

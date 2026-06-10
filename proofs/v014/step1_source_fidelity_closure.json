@@ -3,7 +3,7 @@
     "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_source_fidelity_closure.py"
   },
-  "created_utc": "2026-06-10T01:56:21.643485+00:00",
+  "created_utc": "2026-06-10T02:36:49.663941+00:00",
   "current_jax_source_leaf_mode": {
     "derived_candidate_summaries": {
       "current_jax_dry_t_tendf": {
@@ -11,10 +11,10 @@
         "finite_count": 461736,
         "max": 1147.8129204199774,
         "max_abs": 1147.8129204199774,
-        "mean": 0.014545027654615685,
+        "mean": -0.00044798084818322033,
         "min": -1100.0428071053243,
         "nonzero_count": 451242,
-        "rms": 13.888755635010602,
+        "rms": 13.673336262414171,
         "shape": [
           44,
           66,
@@ -94,13 +94,13 @@
     },
     "primary_metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.061017576606901075,
+        "bias": 0.07687194225377524,
         "count": 442112,
         "max_abs": 1497.6112467075195,
         "nonfinite_diff_count": 0,
-        "p95": 2.3165969814534986,
-        "p99": 37.885854494494495,
-        "rmse": 13.296448784742802,
+        "p95": 2.316572103131588,
+        "p99": 37.60009995324713,
+        "rmse": 13.252694871222973,
         "shape": [
           44,
           66,
@@ -116,13 +116,13 @@
         "worst_reference": -959.9717611049804
       },
       "after_update_vs_jax_dry_t_tendf": {
-        "bias": -0.30347749432567384,
+        "bias": -0.2876231286787998,
         "count": 442112,
         "max_abs": 1565.3077799106445,
         "nonfinite_diff_count": 0,
-        "p95": 2.3160845785044577,
-        "p99": 16.97344746293294,
-        "rmse": 13.214364044498527,
+        "p95": 2.3160055352239226,
+        "p99": 16.94824287626314,
+        "rmse": 13.16847791375874,
         "shape": [
           44,
           66,
@@ -203,13 +203,13 @@
     },
     "metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.8548771848669667,
+        "bias": 0.8707280847747536,
         "count": 442112,
         "max_abs": 1494.2972530323946,
         "nonfinite_diff_count": 0,
-        "p95": 1.8265923699442226,
-        "p99": 51.00625050619564,
-        "rmse": 14.10050864086363,
+        "p95": 1.8235878924655973,
+        "p99": 50.67134073731482,
+        "rmse": 14.037490112761569,
         "shape": [
           44,
           66,
@@ -230,10 +230,10 @@
           "finite_count": 461736,
           "max": 1147.2643369306845,
           "max_abs": 1147.2643369306845,
-          "mean": -0.780433078107137,
+          "mean": -0.7954228161330008,
           "min": -1103.3603309475398,
           "nonzero_count": 461736,
-          "rms": 14.360134483191729,
+          "rms": 14.13163258795582,
           "shape": [
             44,
             66,
@@ -308,7 +308,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "1435457b12edab890d546d6b8809a9f31bb549cd\n"
+      "stdout_tail": "620604234d6287e29ca31628c5a81ff05e3fdef3\n"
     },
     "status_short": {
       "command": [
@@ -318,7 +318,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": " M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/mynn_driver_source_output_fix.py\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v014/step1_tendency_contract_split.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/integration/d02_replay.py\n M src/gpuwrf/physics/surface_layer.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_m6_surface_layer_kernel.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-sfclay-boundary.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_sfclay_boundary_fix.json\n?? proofs/v014/step1_sfclay_boundary_fix.md\n?? proofs/v014/step1_sfclay_boundary_fix.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-sfclay-boundary.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/mynn_driver_source_output_fix.py\n M proofs/v014/step1_sfclay_boundary_fix.json\n M proofs/v014/step1_sfclay_boundary_fix.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/io/land_state.py\n M src/gpuwrf/physics/noah_mp.py\n M tests/savepoint/test_static_fields.py\n M tests/test_m6_noah_mp_prescribed.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-tsk-znt-sourcing.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_tsk_znt_sourcing_fix.json\n?? proofs/v014/step1_tsk_znt_sourcing_fix.md\n?? proofs/v014/step1_tsk_znt_sourcing_fix.py\n?? proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
     }
   },
   "mynn_leaf_probe": {
@@ -404,10 +404,10 @@
         "finite_count": 442112,
         "max": 0.4188334244520868,
         "max_abs": 0.555597268524649,
-        "mean": 0.00024246368837559893,
+        "mean": 0.00024246016541663317,
         "min": -0.555597268524649,
         "nonzero_count": 432064,
-        "rms": 0.005498346675554668,
+        "rms": 0.005498372110458936,
         "shape": [
           44,
           66,
@@ -419,10 +419,10 @@
         "finite_count": 442112,
         "max": 1066.1176960791645,
         "max_abs": 1141.117233018646,
-        "mean": -0.09738282333806962,
+        "mean": -0.11300414233815996,
         "min": -1141.117233018646,
         "nonzero_count": 432060,
-        "rms": 13.812361226305871,
+        "rms": 13.586309523393666,
         "shape": [
           44,
           66,
@@ -445,13 +445,13 @@
         ]
       },
       "wrf_qv_tend_vs_jax_mass_coupled_rqvblten": {
-        "bias": 0.0005314388323821101,
+        "bias": 0.0005314423553410759,
         "count": 442112,
         "max_abs": 0.43689178351195507,
         "nonfinite_diff_count": 0,
-        "p95": 2.0672092160135624e-05,
+        "p95": 2.0628567455654006e-05,
         "p99": 0.033845601692510566,
-        "rmse": 0.007168878816691362,
+        "rmse": 0.007168849285103142,
         "shape": [
           44,
           66,
@@ -482,13 +482,13 @@
         ]
       },
       "wrf_rthblten_vs_jax_mass_coupled_rthblten": {
-        "bias": 0.4311411186552619,
+        "bias": 0.44676243765535223,
         "count": 442112,
         "max_abs": 1560.4976663021048,
         "nonfinite_diff_count": 0,
-        "p95": 0.49611047832643723,
-        "p99": 21.39331850644139,
-        "rmse": 12.515915430015639,
+        "p95": 0.49610874480373157,
+        "p99": 21.307198015659218,
+        "rmse": 12.427507605012572,
         "shape": [
           44,
           66,
@@ -506,15 +506,15 @@
     },
     "status": "MYNN_LEAF_PROBE_EXECUTED"
   },
-  "next_boundary": "DONE 2026-06-10: MYNN driver kernel/init and sfclay_mynn first-call semantics are no longer the active blocker. Next route: emit a tiny WRF surface-driver hook around module_surface_driver/module_sf_mynn for incoming TSK/ZNT/UST/QSFC/MOL and outgoing UST/HFX/QFX/ZNT on the current d02 Step-1 case; compare those exact arrays against JAX `_surface_column_view` inputs and diagnostics; fix TSK/ZNT sourcing if confirmed.",
+  "next_boundary": "DONE 2026-06-10: MYNN driver kernel/init, sfclay_mynn first-call semantics, and TSK/ZNT/MAVAIL input sourcing are no longer active blockers. Next route: localize the non-surface thermodynamic column inputs at the exact sfclay_mynn hook (`th_phy(kts)`, `t_phy(kts)`, `p_phy(kts)`, and `dz8w`) against JAX `_surface_column_view`; then fix the Step-1 temperature/pressure sourcing if local.",
   "paths": {
     "handoff": {
       "exists": true,
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "74f2a6108e98baf19eed31f770a00a6408f0e2a36780bbe667c67fa9c7c5b445",
-      "size_bytes": 105729
+      "sha256": "1f2df5e36286a88de974a4094bdf969fbb0e3cb2b708593fed750f7f7049b5c3",
+      "size_bytes": 107848
     },
     "prior_dry_source_leaf_fix": {
       "exists": true,
@@ -621,13 +621,13 @@
           }
         },
         "rqv_or_qv_tend": {
-          "bias": 0.0005314388323821101,
+          "bias": 0.0005314423553410759,
           "count": 442112,
           "max_abs": 0.43689178351195507,
           "nonfinite_diff_count": 0,
-          "p95": 2.0672092160135624e-05,
+          "p95": 2.0628567455654006e-05,
           "p99": 0.033845601692510566,
-          "rmse": 0.007168878816691362,
+          "rmse": 0.007168849285103142,
           "shape": [
             44,
             66,
@@ -643,13 +643,13 @@
           "worst_reference": 0.05613971825806442
         },
         "rthblten": {
-          "bias": 0.4311411186552619,
+          "bias": 0.44676243765535223,
           "count": 442112,
           "max_abs": 1560.4976663021048,
           "nonfinite_diff_count": 0,
-          "p95": 0.49611047832643723,
-          "p99": 21.39331850644139,
-          "rmse": 12.515915430015639,
+          "p95": 0.49610874480373157,
+          "p99": 21.307198015659218,
+          "rmse": 12.427507605012572,
           "shape": [
             44,
             66,
@@ -665,13 +665,13 @@
           "worst_reference": -962.4080954166453
         },
         "strict_after_conv_vs_jax": {
-          "bias": 0.061017576606901075,
+          "bias": 0.07687194225377524,
           "count": 442112,
           "max_abs": 1497.6112467075195,
           "nonfinite_diff_count": 0,
-          "p95": 2.3165969814534986,
-          "p99": 37.885854494494495,
-          "rmse": 13.296448784742802,
+          "p95": 2.316572103131588,
+          "p99": 37.60009995324713,
+          "rmse": 13.252694871222973,
           "shape": [
             44,
             66,
@@ -687,20 +687,20 @@
           "worst_reference": -959.9717611049804
         }
       },
-      "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface boundary feeding MYNN is still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` now ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed and narrows the surviving blocker to WRF-anchored TSK/ZNT surface input sourcing.",
+      "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface boundary feeding MYNN is still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` now proves TSK/ZNT/MAVAIL source parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is the non-surface thermodynamic column input entering sfclay_mynn.",
       "rank": 1,
       "status": "BLOCKING"
     },
     {
       "evidence": {
         "forced_radiation_after_conv_vs_jax": {
-          "bias": 0.8548771848669667,
+          "bias": 0.8707280847747536,
           "count": 442112,
           "max_abs": 1494.2972530323946,
           "nonfinite_diff_count": 0,
-          "p95": 1.8265923699442226,
-          "p99": 51.00625050619564,
-          "rmse": 14.10050864086363,
+          "p95": 1.8235878924655973,
+          "p99": 50.67134073731482,
+          "rmse": 14.037490112761569,
           "shape": [
             44,
             66,
@@ -716,13 +716,13 @@
           "worst_reference": -963.2857547801053
         },
         "primary_after_conv_vs_jax": {
-          "bias": 0.061017576606901075,
+          "bias": 0.07687194225377524,
           "count": 442112,
           "max_abs": 1497.6112467075195,
           "nonfinite_diff_count": 0,
-          "p95": 2.3165969814534986,
-          "p99": 37.885854494494495,
-          "rmse": 13.296448784742802,
+          "p95": 2.316572103131588,
+          "p99": 37.60009995324713,
+          "rmse": 13.252694871222973,
           "shape": [
             44,
             66,
@@ -764,10 +764,10 @@
           "finite_count": 442112,
           "max": 0.4188334244520868,
           "max_abs": 0.555597268524649,
-          "mean": 0.00024246368837559893,
+          "mean": 0.00024246016541663317,
           "min": -0.555597268524649,
           "nonzero_count": 432064,
-          "rms": 0.005498346675554668,
+          "rms": 0.005498372110458936,
           "shape": [
             44,
             66,
@@ -889,13 +889,13 @@
         }
       },
       "rqv_or_qv_tend": {
-        "bias": 0.0005314388323821101,
+        "bias": 0.0005314423553410759,
         "count": 442112,
         "max_abs": 0.43689178351195507,
         "nonfinite_diff_count": 0,
-        "p95": 2.0672092160135624e-05,
+        "p95": 2.0628567455654006e-05,
         "p99": 0.033845601692510566,
-        "rmse": 0.007168878816691362,
+        "rmse": 0.007168849285103142,
         "shape": [
           44,
           66,
@@ -911,13 +911,13 @@
         "worst_reference": 0.05613971825806442
       },
       "rthblten": {
-        "bias": 0.4311411186552619,
+        "bias": 0.44676243765535223,
         "count": 442112,
         "max_abs": 1560.4976663021048,
         "nonfinite_diff_count": 0,
-        "p95": 0.49611047832643723,
-        "p99": 21.39331850644139,
-        "rmse": 12.515915430015639,
+        "p95": 0.49610874480373157,
+        "p99": 21.307198015659218,
+        "rmse": 12.427507605012572,
         "shape": [
           44,
           66,
@@ -933,13 +933,13 @@
         "worst_reference": -962.4080954166453
       },
       "strict_after_conv_vs_jax": {
-        "bias": 0.061017576606901075,
+        "bias": 0.07687194225377524,
         "count": 442112,
         "max_abs": 1497.6112467075195,
         "nonfinite_diff_count": 0,
-        "p95": 2.3165969814534986,
-        "p99": 37.885854494494495,
-        "rmse": 13.296448784742802,
+        "p95": 2.316572103131588,
+        "p99": 37.60009995324713,
+        "rmse": 13.252694871222973,
         "shape": [
           44,
           66,
@@ -955,7 +955,7 @@
         "worst_reference": -959.9717611049804
       }
     },
-    "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface boundary feeding MYNN is still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` now ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed and narrows the surviving blocker to WRF-anchored TSK/ZNT surface input sourcing.",
+    "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface boundary feeding MYNN is still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` now proves TSK/ZNT/MAVAIL source parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is the non-surface thermodynamic column input entering sfclay_mynn.",
     "rank": 1,
     "status": "BLOCKING"
   },
@@ -977,13 +977,13 @@
     },
     "step": 1,
     "strict_metric": {
-      "bias": 0.061017576606901075,
+      "bias": 0.07687194225377524,
       "count": 442112,
       "max_abs": 1497.6112467075195,
       "nonfinite_diff_count": 0,
-      "p95": 2.3165969814534986,
-      "p99": 37.885854494494495,
-      "rmse": 13.296448784742802,
+      "p95": 2.316572103131588,
+      "p99": 37.60009995324713,
+      "rmse": 13.252694871222973,
       "shape": [
         44,
         66,
@@ -999,7 +999,7 @@
       "worst_reference": -959.9717611049804
     }
   },
-  "verdict": "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_SFCLAY_TSK_ZNT_INPUTS",
+  "verdict": "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_SFCLAY_THERMODYNAMIC_COLUMN_INPUTS",
   "wrf_oracle_rankings": {
     "component_summaries": {
       "wrf_after_update_to_after_conv_delta": {

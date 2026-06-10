@@ -2061,3 +2061,64 @@ Next active work:
 - Compare exact arrays against JAX `_surface_column_view` inputs and diagnostics.
 - Fix TSK/ZNT sourcing if confirmed; rerun strict Step-1.
 - Keep TOST, Switzerland, broad FP32, and long GPU validation paused.
+
+## Current Manager Update 2026-06-10 03:39 WEST
+
+The Step-1 TSK/ZNT surface-input sourcing sprint is closed and manager-gated as
+a local correctness fix plus a narrower remaining frontier.
+
+Artifacts:
+
+- `proofs/v014/step1_tsk_znt_sourcing_fix.py`
+- `proofs/v014/step1_tsk_znt_sourcing_fix.json`
+- `proofs/v014/step1_tsk_znt_sourcing_fix.md`
+- `proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff`
+- `.agent/reviews/2026-06-10-v014-step1-tsk-znt-sourcing.md`
+- `.agent/sprints/2026-06-10-v014-step1-tsk-znt-sourcing/manager-closeout.md`
+
+Verdict:
+
+`TSK_ZNT_SOURCE_FIXED_NEXT_BLOCKER_THERMODYNAMIC_COLUMN_INPUTS`.
+
+What changed:
+
+- JAX now cold-starts missing `ZNT` from WRF `LANDUSE.TBL` `SFZ0/100` by
+  `LU_INDEX` for the MODIFIED_IGBP_MODIS_NOAH table.
+- JAX now cold-starts missing `MAVAIL` from WRF `LANDUSE.TBL` `SLMO` by
+  `LU_INDEX`.
+- Legacy CM/VEGFRA/top-soil fallbacks remain for callers without `LU_INDEX`.
+
+Key proof numbers:
+
+- `TSK` at the exact `sfclay_mynn` input hook: max_abs `0.0 K`.
+- `ZNT` at the exact hook: max_abs `1.1920928910669204e-08 m`, RMSE
+  `8.108127886677328e-10`.
+- `MAVAIL` at the exact hook: max_abs `1.1920928966180355e-08`.
+- Old roughness surrogate witness: max_abs `0.7737602195739746 m`; table-backed
+  source: max_abs `1.1920928910669204e-08 m`.
+- Strict after-conv `T_TENDF` remains red: max_abs `1497.6112467075195`, RMSE
+  `13.252694871222973`.
+- Next WRF-anchored blocker is the non-surface thermodynamic column entering
+  `sfclay_mynn`: `th_phy(kts)` max_abs `5.490148027499686 K`, derived
+  `t_phy(kts)` max_abs `5.521345498302992 K`, `p_phy(kts)` max_abs
+  `292.8203125 Pa`; `u/v/qv(kts)` are near roundoff.
+
+Manager validation passed:
+
+- `python -m py_compile proofs/v014/step1_tsk_znt_sourcing_fix.py proofs/v014/step1_sfclay_boundary_fix.py proofs/v014/step1_source_fidelity_closure.py proofs/v014/mynn_driver_source_output_fix.py src/gpuwrf/physics/noah_mp.py src/gpuwrf/io/land_state.py tests/test_m6_noah_mp_prescribed.py tests/savepoint/test_static_fields.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_m6_noah_mp_prescribed.py tests/savepoint/test_static_fields.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_tsk_znt_sourcing_fix.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_source_fidelity_closure.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/mynn_driver_source_output_fix.py`
+- `python -m json.tool` on the three proof JSONs.
+- `git diff --check`
+- `python scripts/close_sprint.py .agent/sprints/2026-06-10-v014-step1-tsk-znt-sourcing`
+
+Next active work:
+
+- Open a GPT-5.5 xhigh thermodynamic-column sprint, not Fable/Mythos yet.
+- Endpoint: localize exact WRF `sfclay_mynn` hook inputs `th_phy(kts)`,
+  `t_phy(kts)`, `p_phy(kts)`, and `dz8w` against JAX `_surface_column_view`;
+  fix the Step-1 temperature/pressure sourcing if local; rerun strict Step-1.
+- Keep TOST, Switzerland, broad FP32, and long GPU validation paused until this
+  surface-driver input frontier is fixed or explicitly bounded.
