@@ -415,9 +415,17 @@ def load_history_boundary_leaves(
     n = min(history_count, int(ntimes if ntimes is not None else history_count))
     max_side = int(max(grid.nx + 1, grid.ny + 1))
     bdy_width, wrfbdy_path, width_source = _wrfbdy_width_for_run(run, fallback=5)
+    use_theta_m = _wrf_use_theta_m(run, domain)
 
     def add_theta(_run: Gen2Run, _domain: str, data: np.ndarray, _time_index: int) -> np.ndarray:
-        return data + P0_THETA_OFFSET_K
+        # wrfout ``T`` is the DRY perturbation theta; operational State.theta
+        # is MOIST theta_m (use_theta_m=1), so recouple with the same file's
+        # QVAPOR (exact to wrfout fp32: THM == T_dry*(1+rvovrd*qv) at ~7e-5 K).
+        theta_full = data + P0_THETA_OFFSET_K
+        if use_theta_m == 1:
+            qv = np.asarray(_load(_run, _domain, "QVAPOR", _time_index), dtype=np.float64)
+            theta_full = theta_full * (1.0 + _RVOVRD * np.maximum(qv, 0.0))
+        return theta_full
 
     leaves_np = {
         "u_bdy": _pack_history_3d(run, domain, "U", ntimes=n, z_len=grid.nz, max_side=max_side, bdy_width=bdy_width, dtype=np.float32),
@@ -666,9 +674,17 @@ def load_nested_parent_boundary_leaves(
         )
     max_side = int(max(grid.nx + 1, grid.ny + 1))
     bdy_width, wrfbdy_path, width_source = _wrfbdy_width_for_run(run, fallback=5)
+    use_theta_m = _wrf_use_theta_m(run, child_domain)
 
     def add_theta(_run: Gen2Run, _domain: str, data: np.ndarray, _time_index: int) -> np.ndarray:
-        return data + P0_THETA_OFFSET_K
+        # Parent wrfout ``T`` is DRY perturbation theta; the child boundary
+        # forces operational State.theta = MOIST theta_m (use_theta_m=1), so
+        # recouple with the parent's QVAPOR BEFORE horizontal interpolation.
+        theta_full = data + P0_THETA_OFFSET_K
+        if use_theta_m == 1:
+            qv = np.asarray(_load(_run, _domain, "QVAPOR", _time_index), dtype=np.float64)
+            theta_full = theta_full * (1.0 + _RVOVRD * np.maximum(qv, 0.0))
+        return theta_full
 
     leaves_np = {
         "u_bdy": _pack_nested_parent_history_3d(
@@ -1712,6 +1728,13 @@ def load_wrfbdy_boundary_leaves(
     # with the _BT* tendency, but reading the per-interval base value is exact at
     # each interval boundary and the operational adapter interpolates between them).
     u_t, v_t, th_t, qv_t, ph_t, w_t, mu_t = ([] for _ in range(7))
+    # The wrfbdy ``T`` strips force WRF's runtime prognostic theta: MOIST
+    # theta_m under use_theta_m=1 (init/real_init/types.py use_theta_m note),
+    # dry theta under use_theta_m=0. Operational State.theta is theta_m, so
+    # keep the moist strips as-is and recouple dry strips at ingest. (The
+    # previous decode divided to DRY theta, forcing a ~5 K-deficient boundary
+    # ring against the moist interior -- part of the v0.14 h1 root cause.)
+    use_theta_m = _wrf_use_theta_m(run, domain)
     for k in range(ntimes):
         dv = decode_wrfbdy(bdy_path, variables=("U", "V", "W", "T", "QVAPOR", "PH", "MU"), time_index=k)
         vars_k = dv["variables"]
@@ -1728,9 +1751,12 @@ def load_wrfbdy_boundary_leaves(
             v_s = _decoupled_strip(vars_k["V"], side, "mass_v")
             qv_s = np.maximum(_decoupled_strip(vars_k["QVAPOR"], side, "mass_h"), 0.0)
             thm_s = _decoupled_strip(vars_k["T"], side, "mass_h")
-            # THM perturbation -> full dry theta (operational State.theta = T+300):
-            #   theta_full = (thm + t0) / (1 + (Rv/Rd) qv)
-            th_s = (thm_s + _T0_K) / (1.0 + _RVOVRD * qv_s)
+            if use_theta_m == 1:
+                # already the moist theta_m perturbation -> full theta_m
+                th_s = thm_s + _T0_K
+            else:
+                # dry perturbation theta -> full moist theta_m at ingest
+                th_s = (thm_s + _T0_K) * (1.0 + _RVOVRD * qv_s)
             ph_s = _decoupled_strip(vars_k["PH"], side, "mass_f")
             w_s = np.asarray(vars_k["W"]["sides"][side]["boundary"], dtype=np.float64)  # W uncoupled (0)
             mu_s = np.asarray(vars_k["MU"]["sides"][side]["boundary"], dtype=np.float64)  # uncoupled
@@ -1777,6 +1803,8 @@ def load_wrfbdy_boundary_leaves(
         "schema": "wrfbdy-decoupled-leaf-v1",
         "coupling": "decoupled by IC hybrid dry-mass term (c1h*muT+c2h etc.)",
         "variables": ["U", "V", "W", "T", "QVAPOR", "PH", "MU"],
+        "use_theta_m": int(use_theta_m),
+        "theta_bdy_convention": "moist theta_m (matches operational State.theta)",
     }
     return leaves, meta
 
@@ -1992,6 +2020,19 @@ def build_replay_case(
             f"(w_set={perturb_init_meta.get('w_needs_to_be_set')}, "
             f"libm={perturb_init_meta.get('libm_provider')})"
         )
+    else:
+        # WRF's runtime prognostic theta under use_theta_m=1 is MOIST theta_m;
+        # wrfinput/wrfout variable ``T`` stays the DRY perturbation theta
+        # (real.exe converts AFTER writing dry T: module_initialize_real.F:
+        # 4918-4928). Recouple at ingest so State.theta carries ONE convention
+        # (theta_m) in every lane -- the dycore EOS (qvf=1), the physics
+        # adapters' dry-view decoupling, and the live parent->child boundary
+        # package all assume it. The live-nest branch above already converts
+        # via _wrf_live_nest_adjust_tempqv. (v0.14 h1 root cause: d01 ran DRY
+        # theta against the moist-convention physics/EOS.)
+        if _wrf_use_theta_m(run, domain) == 1:
+            theta = theta * (1.0 + _RVOVRD * qv_initial)
+            _debug("standalone/replay IC theta dry->moist theta_m applied (use_theta_m=1)")
     # WRF-faithful base potential temperature ``t0 + t_init``, recovered by
     # inverting the loaded discrete base state (PB/PHB/MUB) so the dycore's
     # recomputed base inverse density ``alb`` matches the discrete ``alb`` the

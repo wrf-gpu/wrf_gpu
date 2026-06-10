@@ -785,7 +785,9 @@ def main() -> int:
     ap.add_argument("--hours", type=int, default=1)
     ap.add_argument("--feedback", action="store_true")
     ap.add_argument("--tile-cols", type=int, default=16384)
-    ap.add_argument("--timeout-s", type=float, default=600.0)
+    # The nested 1h memory smoke can spend >15 minutes in cold JIT/forecast on
+    # this workstation; 600s caused false-red timeouts despite low VRAM.
+    ap.add_argument("--timeout-s", type=float, default=2400.0)
     ap.add_argument("--sample-interval-s", type=float, default=0.5)
     ap.add_argument("--output-root", type=Path, default=None)
     ap.add_argument("--out-json", type=Path, default=OUT_JSON)

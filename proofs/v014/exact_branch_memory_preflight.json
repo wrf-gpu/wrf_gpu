@@ -172,30 +172,70 @@
     "Nested platform allocator disables useful JAX memory_stats, so peak is nvidia-smi sampled.",
     "A later branch or changed feedback setting invalidates this exact-branch preflight."
   ],
-  "generated_utc": "2026-06-09T22:05:01.998414+00:00",
+  "generated_utc": "2026-06-10T14:13:34.163962+00:00",
   "git": {
-    "branch": "worker/mythos/v014-memory-fp32",
+    "branch": "worker/gpt/v013-close-manager",
     "dirty": true,
-    "head": "a32efce328520e544d28605d81e5d921db06de1e",
+    "head": "4eb2aee86192e27eaf658cd77cee4291a035f74a",
     "status_short": [
-      "## worker/mythos/v014-memory-fp32",
-      " M .agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md",
-      " M .agent/decisions/V0140-MEMORY-FIX-ROADMAP.md",
-      " M proofs/v013/moisture_advection_wiring.json",
+      "## worker/gpt/v013-close-manager...origin/worker/gpt/v013-close-manager",
+      " M artifacts/m5/tier1_rrtmg_sw_parity.json",
+      " M docs/GPU_RUNBOOK.md",
       " M proofs/v014/exact_branch_memory_preflight.json",
       " M proofs/v014/exact_branch_memory_preflight.md",
-      " M proofs/v014/exact_branch_memory_preflight.py",
-      "A  proofs/v014/fp32_acoustic_static_audit.py",
-      "M  src/gpuwrf/contracts/precision.py",
-      " M src/gpuwrf/physics/mynn_pbl.py",
-      " M src/gpuwrf/runtime/operational_mode.py",
-      " M tests/test_operational_namelist_cache_key.py",
-      "?? proofs/v014/exact_branch_memory_preflight_baseline_a32efce3.json",
-      "?? proofs/v014/exact_branch_memory_preflight_baseline_a32efce3.md",
-      "?? proofs/v014/fp32_acoustic_static_audit.json",
-      "?? proofs/v014/mythos_memory_fixes_260609.py",
-      "?? proofs/v014/mythos_memory_gpu_suite_260609.json",
-      "?? proofs/v014/mythos_memory_gpu_suite_260609.py"
+      " M proofs/v060/sfclayrev1_savepoint_parity_report.json",
+      " M src/gpuwrf/dynamics/acoustic_wrf.py",
+      " M src/gpuwrf/integration/d02_replay.py",
+      " M src/gpuwrf/io/wrfout_writer.py",
+      " M tests/test_m6x_c2_acoustic.py",
+      " M tests/test_m7_netcdf_writer.py",
+      "?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md",
+      "?? .agent/reviews/2026-05-29-agy-phaseB.stderr",
+      "?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md",
+      "?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md",
+      "?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md",
+      "?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md",
+      "?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md",
+      "?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md",
+      "?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md",
+      "?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md",
+      "?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md",
+      "?? .agent/reviews/2026-06-03-opus-v060-morrison.md",
+      "?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md",
+      "?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md",
+      "?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md",
+      "?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md",
+      "?? .agent/reviews/2026-06-04-opus-backfill-case15.md",
+      "?? .agent/reviews/2026-06-04-opus-v050-close-critic.md",
+      "?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md",
+      "?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md",
+      "?? .agent/reviews/2026-06-10-v014-eos-theta-semantics-fable.md",
+      "?? .agent/reviews/2026-06-10-v014-short-field-h1-residual-fable.md",
+      "?? .agent/sprints/2026-06-10-v014-short-field-h1-residual/",
+      "?? .claude/worktrees/",
+      "?? .codex/",
+      "?? cache/",
+      "?? proofs/v014/canary_file_inventory_gpt.json",
+      "?? proofs/v014/canary_file_inventory_gpt.md",
+      "?? proofs/v014/eos_theta_semantics.json",
+      "?? proofs/v014/eos_theta_semantics.md",
+      "?? proofs/v014/eos_theta_semantics.py",
+      "?? proofs/v014/post_eos_h1_residual_adjudication.json",
+      "?? proofs/v014/post_eos_h1_residual_adjudication.md",
+      "?? proofs/v014/post_eos_h1_residual_adjudication.py",
+      "?? proofs/v014/short_field_falsifier_h1_grid_compare.json",
+      "?? proofs/v014/short_field_falsifier_h1_grid_compare.md",
+      "?? proofs/v014/short_field_h1_residual_classification.json",
+      "?? proofs/v014/short_field_h1_residual_classification.md",
+      "?? proofs/v014/short_field_h1_residual_classification.py",
+      "?? proofs/v040/expand_dates_gate_report.json",
+      "?? proofs/v090/backfill_case15_0530.json",
+      "?? proofs/v090/backfill_case15_finalize.json",
+      "?? proofs/v090/thompson_aero_oracle/",
+      "?? tests/savepoint/fixtures/wrf_b6_100step/golden/",
+      "?? tests/savepoint/fixtures/wrf_b6_100step/patch16/"
     ]
   },
   "gpu_precheck": {
@@ -210,7 +250,7 @@
         {
           "pid": 150478,
           "process_name": "/usr/bin/krunner",
-          "used_memory_mib": 80
+          "used_memory_mib": 79
         },
         {
           "pid": 4892,
@@ -218,27 +258,27 @@
           "used_memory_mib": 500
         },
         {
-          "pid": 2614836,
+          "pid": 706008,
           "process_name": "/usr/bin/plasmashell",
-          "used_memory_mib": 990
+          "used_memory_mib": 916
         }
       ],
       "compute_apps_query": {
         "returncode": 0,
         "stderr": "",
-        "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990"
+        "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916"
       },
       "gpu_query": {
         "returncode": 0,
         "stderr": "",
-        "stdout": "NVIDIA GeForce RTX 5090, 0, 10, 2593, 32607"
+        "stdout": "NVIDIA GeForce RTX 5090, 0, 3, 2177, 32607"
       },
       "index": 0,
       "memory_total_mib": 32607,
-      "memory_used_mib": 2593,
+      "memory_used_mib": 2177,
       "name": "NVIDIA GeForce RTX 5090",
       "ok": true,
-      "utilization_gpu_pct": 10
+      "utilization_gpu_pct": 3
     }
   },
   "gpu_run": {
@@ -257,17 +297,17 @@
       "--input-dir",
       "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
       "--output-dir",
-      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out",
+      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out",
       "--scratch-dir",
-      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/scratch",
+      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/scratch",
       "--proof-dir",
-      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/proofs",
+      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/proofs",
       "--max-dom",
       "3",
       "--hours",
       "1"
     ],
-    "duration_s": 933.402,
+    "duration_s": 451.993,
     "environment": {
       "GPUWRF_GWD_NESTED": "unset-default-on",
       "GPUWRF_RRTMG_LW_COLUMN_TILE_COLS": "16384",
@@ -275,7 +315,7 @@
       "GPUWRF_RRTMG_SW_COLUMN_TILE_COLS": "16384",
       "GPUWRF_RRTMG_SW_COLUMN_TILING": "true",
       "JAX_ENABLE_X64": "true",
-      "PYTHONPATH": "/home/enric/src/wrf_gpu2/.codex/worktrees/mythos-memory-v014/src",
+      "PYTHONPATH": "/home/enric/src/wrf_gpu2/src",
       "XLA_PYTHON_CLIENT_ALLOCATOR_initial": null,
       "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
     },
@@ -289,7 +329,7 @@
       ],
       "init_mode": "standalone_native_init_nested",
       "ok": true,
-      "path": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/proofs/nested_pipeline_run.json",
+      "path": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/proofs/nested_pipeline_run.json",
       "raw_keys": [
         "all_domains_finite",
         "all_outputs_present",
@@ -318,12 +358,12 @@
         "wall_clock_total_s",
         "wrfout_files"
       ],
-      "sha256": "c115c48ecf100c63dc277f18b4e09a6c0c573b80b05b320f12e7fd3704ffd17e",
+      "sha256": "87133af24b81e99ac4421bffe8c1bbb12d48343b9196fd5fb8f3467d57081f86",
       "verdict": "PIPELINE_GREEN",
       "wrfout_files": [
-        "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d01_2026-05-31_19:00:00",
-        "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00",
-        "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00"
+        "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d01_2026-05-31_19:00:00",
+        "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00",
+        "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00"
       ]
     },
     "nvidia_smi_baseline": {
@@ -331,7 +371,7 @@
         {
           "pid": 150478,
           "process_name": "/usr/bin/krunner",
-          "used_memory_mib": 80
+          "used_memory_mib": 79
         },
         {
           "pid": 4892,
@@ -339,37 +379,37 @@
           "used_memory_mib": 500
         },
         {
-          "pid": 2614836,
+          "pid": 706008,
           "process_name": "/usr/bin/plasmashell",
-          "used_memory_mib": 990
+          "used_memory_mib": 916
         }
       ],
       "compute_apps_query": {
         "returncode": 0,
         "stderr": "",
-        "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990"
+        "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916"
       },
       "gpu_query": {
         "returncode": 0,
         "stderr": "",
-        "stdout": "NVIDIA GeForce RTX 5090, 0, 10, 2593, 32607"
+        "stdout": "NVIDIA GeForce RTX 5090, 0, 3, 2177, 32607"
       },
       "index": 0,
       "memory_total_mib": 32607,
-      "memory_used_mib": 2593,
+      "memory_used_mib": 2177,
       "name": "NVIDIA GeForce RTX 5090",
       "ok": true,
-      "utilization_gpu_pct": 10
+      "utilization_gpu_pct": 3
     },
     "nvidia_smi_peak": {
-      "baseline_total_vram_mib": 2593,
+      "baseline_total_vram_mib": 2177,
       "first_samples": [
         {
           "compute_apps": [
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -377,35 +417,35 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             }
           ],
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 10, 2593, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 3, 2177, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 2593,
+          "memory_used_mib": 2177,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:05:02.129411+00:00",
-          "utilization_gpu_pct": 10
+          "timestamp_utc": "2026-06-10T14:13:34.287081+00:00",
+          "utilization_gpu_pct": 3
         },
         {
           "compute_apps": [
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -413,12 +453,12 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             },
             {
-              "pid": 2971131,
+              "pid": 757452,
               "process_name": "/home/enric/miniconda3/bin/python",
               "used_memory_mib": 12
             }
@@ -426,27 +466,27 @@
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 12"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 12"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 11, 2609, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 4, 2185, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 2609,
+          "memory_used_mib": 2185,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:05:02.681918+00:00",
-          "utilization_gpu_pct": 11
+          "timestamp_utc": "2026-06-10T14:13:34.833918+00:00",
+          "utilization_gpu_pct": 4
         },
         {
           "compute_apps": [
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -454,12 +494,12 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             },
             {
-              "pid": 2971131,
+              "pid": 757452,
               "process_name": "/home/enric/miniconda3/bin/python",
               "used_memory_mib": 538
             }
@@ -467,19 +507,19 @@
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 538"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 538"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 3136, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 2720, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 3136,
+          "memory_used_mib": 2720,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:05:03.212272+00:00",
+          "timestamp_utc": "2026-06-10T14:13:35.361639+00:00",
           "utilization_gpu_pct": 1
         },
         {
@@ -487,7 +527,7 @@
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -495,12 +535,12 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             },
             {
-              "pid": 2971131,
+              "pid": 757452,
               "process_name": "/home/enric/miniconda3/bin/python",
               "used_memory_mib": 538
             }
@@ -508,19 +548,19 @@
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 538"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 538"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 3173, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 2720, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 3173,
+          "memory_used_mib": 2720,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:05:03.741216+00:00",
+          "timestamp_utc": "2026-06-10T14:13:35.910567+00:00",
           "utilization_gpu_pct": 1
         },
         {
@@ -528,7 +568,7 @@
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -536,12 +576,12 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             },
             {
-              "pid": 2971131,
+              "pid": 757452,
               "process_name": "/home/enric/miniconda3/bin/python",
               "used_memory_mib": 538
             }
@@ -549,19 +589,19 @@
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 538"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 538"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 3173, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 2720, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 3173,
+          "memory_used_mib": 2720,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:05:04.269098+00:00",
+          "timestamp_utc": "2026-06-10T14:13:36.438364+00:00",
           "utilization_gpu_pct": 1
         }
       ],
@@ -571,7 +611,7 @@
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -579,40 +619,40 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             },
             {
-              "pid": 2971131,
+              "pid": 757452,
               "process_name": "/home/enric/miniconda3/bin/python",
-              "used_memory_mib": 1430
+              "used_memory_mib": 1608
             }
           ],
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 1430"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 1608"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 3, 4110, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 3792, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 4110,
+          "memory_used_mib": 3792,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:20:33.582730+00:00",
-          "utilization_gpu_pct": 3
+          "timestamp_utc": "2026-06-10T14:21:04.606875+00:00",
+          "utilization_gpu_pct": 1
         },
         {
           "compute_apps": [
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -620,40 +660,40 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             },
             {
-              "pid": 2971131,
+              "pid": 757452,
               "process_name": "/home/enric/miniconda3/bin/python",
-              "used_memory_mib": 1302
+              "used_memory_mib": 1470
             }
           ],
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 1302"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 1470"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 4, 3990, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 3656, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 3990,
+          "memory_used_mib": 3656,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:20:34.112843+00:00",
-          "utilization_gpu_pct": 4
+          "timestamp_utc": "2026-06-10T14:21:05.136856+00:00",
+          "utilization_gpu_pct": 1
         },
         {
           "compute_apps": [
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -661,40 +701,40 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             },
             {
-              "pid": 2971131,
+              "pid": 757452,
               "process_name": "/home/enric/miniconda3/bin/python",
-              "used_memory_mib": 572
+              "used_memory_mib": 674
             }
           ],
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 572"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 674"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 6, 3273, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 2858, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 3273,
+          "memory_used_mib": 2858,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:20:34.643554+00:00",
-          "utilization_gpu_pct": 6
+          "timestamp_utc": "2026-06-10T14:21:05.665715+00:00",
+          "utilization_gpu_pct": 1
         },
         {
           "compute_apps": [
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -702,40 +742,35 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
-            },
-            {
-              "pid": 2971131,
-              "process_name": "[No data]",
-              "used_memory_mib": 572
+              "used_memory_mib": 916
             }
           ],
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, [No data], 572"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 4, 3274, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 2179, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 3274,
+          "memory_used_mib": 2179,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:20:35.175038+00:00",
-          "utilization_gpu_pct": 4
+          "timestamp_utc": "2026-06-10T14:21:06.216339+00:00",
+          "utilization_gpu_pct": 1
         },
         {
           "compute_apps": [
             {
               "pid": 150478,
               "process_name": "/usr/bin/krunner",
-              "used_memory_mib": 80
+              "used_memory_mib": 79
             },
             {
               "pid": 4892,
@@ -743,39 +778,39 @@
               "used_memory_mib": 500
             },
             {
-              "pid": 2614836,
+              "pid": 706008,
               "process_name": "/usr/bin/plasmashell",
-              "used_memory_mib": 990
+              "used_memory_mib": 916
             }
           ],
           "compute_apps_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990"
+            "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916"
           },
           "gpu_query": {
             "returncode": 0,
             "stderr": "",
-            "stdout": "NVIDIA GeForce RTX 5090, 0, 4, 2677, 32607"
+            "stdout": "NVIDIA GeForce RTX 5090, 0, 1, 2179, 32607"
           },
           "index": 0,
           "memory_total_mib": 32607,
-          "memory_used_mib": 2677,
+          "memory_used_mib": 2179,
           "name": "NVIDIA GeForce RTX 5090",
           "ok": true,
-          "timestamp_utc": "2026-06-09T22:20:35.494303+00:00",
-          "utilization_gpu_pct": 4
+          "timestamp_utc": "2026-06-10T14:21:06.243549+00:00",
+          "utilization_gpu_pct": 1
         }
       ],
-      "ok_sample_count": 1736,
-      "peak_compute_apps_mib": 8116,
-      "peak_increment_over_baseline_mib": 6672,
+      "ok_sample_count": 850,
+      "peak_compute_apps_mib": 8159,
+      "peak_increment_over_baseline_mib": 6681,
       "peak_sample": {
         "compute_apps": [
           {
             "pid": 150478,
             "process_name": "/usr/bin/krunner",
-            "used_memory_mib": 80
+            "used_memory_mib": 79
           },
           {
             "pid": 4892,
@@ -783,52 +818,52 @@
             "used_memory_mib": 500
           },
           {
-            "pid": 2614836,
+            "pid": 706008,
             "process_name": "/usr/bin/plasmashell",
-            "used_memory_mib": 990
+            "used_memory_mib": 916
           },
           {
-            "pid": 2971131,
+            "pid": 757452,
             "process_name": "/home/enric/miniconda3/bin/python",
-            "used_memory_mib": 6522
+            "used_memory_mib": 6640
           }
         ],
         "compute_apps_query": {
           "returncode": 0,
           "stderr": "",
-          "stdout": "150478, /usr/bin/krunner, 80\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n2614836, /usr/bin/plasmashell, 990\n2971131, /home/enric/miniconda3/bin/python, 6522"
+          "stdout": "150478, /usr/bin/krunner, 79\n4892, /home/enric/.hermes/hermes-agent/venv/bin/python, 500\n706008, /usr/bin/plasmashell, 916\n757452, /home/enric/miniconda3/bin/python, 6640"
         },
         "gpu_query": {
           "returncode": 0,
           "stderr": "",
-          "stdout": "NVIDIA GeForce RTX 5090, 0, 98, 9265, 32607"
+          "stdout": "NVIDIA GeForce RTX 5090, 0, 53, 8858, 32607"
         },
         "index": 0,
         "memory_total_mib": 32607,
-        "memory_used_mib": 9265,
+        "memory_used_mib": 8858,
         "name": "NVIDIA GeForce RTX 5090",
         "ok": true,
-        "timestamp_utc": "2026-06-09T22:16:04.427324+00:00",
-        "utilization_gpu_pct": 98
+        "timestamp_utc": "2026-06-10T14:18:45.898666+00:00",
+        "utilization_gpu_pct": 53
       },
-      "peak_total_vram_mib": 9265,
+      "peak_total_vram_mib": 8858,
       "peak_utilization_gpu_pct": 99,
-      "sample_count": 1736
+      "sample_count": 850
     },
     "ok": true,
     "oom_markers": [],
     "outer_wrapper_required": "scripts/run_gpu_lowprio.sh --cores 0-23 --",
     "output_count": 3,
-    "output_dir": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out",
+    "output_dir": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out",
     "output_files": [
-      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d01_2026-05-31_19:00:00",
-      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00",
-      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00"
+      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d01_2026-05-31_19:00:00",
+      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00",
+      "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00"
     ],
-    "proof_dir": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/proofs",
+    "proof_dir": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/proofs",
     "returncode": 0,
-    "run_root": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z",
-    "scratch_dir": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/scratch",
+    "run_root": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z",
+    "scratch_dir": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/scratch",
     "settings": {
       "feedback": false,
       "gwd_nested": "unset-default-on",
@@ -836,7 +871,7 @@
       "max_dom": 3,
       "tile_cols": 16384
     },
-    "stderr_log": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/gpu_command.stderr.log",
+    "stderr_log": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/gpu_command.stderr.log",
     "stderr_tail": [
       "gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=platform (no-fragment cudaMalloc allocator; nested-OOM fix)",
       "gpuwrf: warning: physics.cudt (domain 1): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.",
@@ -844,12 +879,12 @@
       "gpuwrf: warning: physics.cudt (domain 3): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.",
       "gpuwrf: warning: physics.cudt (domain 4): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.",
       "gpuwrf: warning: physics.cudt (domain 5): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.",
-      "gpuwrf: init mode = standalone_native_init_nested -- STANDALONE LIVE-NESTED (d01..d03; parent feeds each child LBC live; no CPU-WRF wrfout); hours=1; scratch=/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/scratch"
+      "gpuwrf: init mode = standalone_native_init_nested -- STANDALONE LIVE-NESTED (d01..d03; parent feeds each child LBC live; no CPU-WRF wrfout); hours=1; scratch=/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/scratch"
     ],
-    "stdout_log": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/gpu_command.stdout.log",
+    "stdout_log": "/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/gpu_command.stdout.log",
     "stdout_tail": [
       "      \"wrfout_files\": [",
-      "        \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00\"",
+      "        \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00\"",
       "      ]",
       "    },",
       "    \"d03\": {",
@@ -859,7 +894,7 @@
       "      \"own_steps\": 1800,",
       "      \"wrfout_count\": 1,",
       "      \"wrfout_files\": [",
-      "        \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00\"",
+      "        \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00\"",
       "      ]",
       "    }",
       "  },",
@@ -868,19 +903,19 @@
       "  \"run_start_utc\": \"2026-05-31T18:00:00+00:00\",",
       "  \"schema\": \"M7DailyPipelineRun\",",
       "  \"schema_version\": 1,",
-      "  \"scratch_dir\": \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/scratch\",",
+      "  \"scratch_dir\": \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/scratch\",",
       "  \"verdict\": \"PIPELINE_GREEN\",",
-      "  \"wall_clock_forecast_only_s\": 912.2331766709976,",
-      "  \"wall_clock_total_s\": 923.4124318719987,",
+      "  \"wall_clock_forecast_only_s\": 427.2034771789913,",
+      "  \"wall_clock_total_s\": 443.42940300898044,",
       "  \"wrfout_files\": [",
-      "    \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d01_2026-05-31_19:00:00\",",
-      "    \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00\",",
-      "    \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T220502Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00\"",
+      "    \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d01_2026-05-31_19:00:00\",",
+      "    \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d02_2026-05-31_19:00:00\",",
+      "    \"/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out/wrfout_d03_2026-05-31_19:00:00\"",
       "  ]",
       "}"
     ],
     "timed_out": false,
-    "timeout_s": 1500.0
+    "timeout_s": 2400.0
   },
   "inputs": {
     "nested": {
