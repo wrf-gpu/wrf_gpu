@@ -42,6 +42,11 @@ do not silently relax the strict gate and do not start TOST/Switzerland-GPU.
 Next sprint should close/bound RRTMG clear-sky `RTHRATEN`, then record a
 reviewed tolerance-policy decision.
 
+Update 2026-06-10 12:20 WEST: GPT-5.5 xhigh RRTMG sprint opened:
+`.agent/sprints/2026-06-10-v014-gpt-rrtmg-rthraten-closure/`. Endpoint is a
+production/proof fix that materially reduces RRTMG `RTHRATEN` and strict field
+RMSE, or a WRF-anchored bound narrower than "clear-sky derived RRTMG boundary".
+
 Update 2026-06-10 09:40 WEST: Fable/Mythos NoahMP land-tile energy closure is
 accepted, committed, and pushed as `94fe5d5f`; the next strict-closure sprint is
 opened and pushed as `b4b6850f`, then dispatched to Fable after `/compact`.
