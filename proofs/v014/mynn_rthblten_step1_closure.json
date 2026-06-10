@@ -1,50 +1,50 @@
 {
-  "created_utc": "2026-06-10T11:04:33.914898+00:00",
+  "created_utc": "2026-06-10T12:03:12.155336+00:00",
   "environment": {
     "jax_backend": "cpu",
     "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
     "python": "3.13.11"
   },
-  "fastest_next_command": "Manager decision: re-specify the strict MYNN+RRTMG Step-1 gate to an operationally-meaningful mass-coupled tolerance (raw ~3e-4 K/s floor => ~rmse 0.5 / max ~40 mass-coupled is the achievable best). The field-dominant lane is RRTMG RTHRATEN (proofs/v014/rrtmg_step1_forcing_parity.*); a clear-sky RTHRATEN sprint would cut strict rmse ~2.54->~0.54. Re-run: JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/mynn_rthblten_step1_closure.py",
+  "fastest_next_command": "Manager decision: re-specify the strict MYNN+RRTMG Step-1 gate to an operationally-meaningful mass-coupled tolerance. Post dry-theta RRTMG fix: operational rmse 0.4997, WRF-QKE rmse 0.4582, WRF-QKE+WRF-RTHRATEN rmse 0.277; remaining RRTMG variance share 63.5%, absolute rmse reduction 0.1812. Re-run: JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/mynn_rthblten_step1_closure.py",
   "git": {
     "branch": "worker/gpt/v013-close-manager",
-    "head": "1e4d50d9aaa0ca78e23a7ebbc2640dd81864ca47"
+    "head": "90ebf4580e9bf6f90943b52fc36e9446e7e32d4f"
   },
   "lane_decomposition": {
     "operational_cold_qke": {
-      "bias": -0.27087610916387866,
+      "bias": 0.2307786214295893,
       "count": 442112,
-      "max_abs": 53.5230183355518,
-      "p99": 16.631650419560028,
+      "max_abs": 55.92970981221765,
+      "p99": 0.9529013024125962,
       "ref_max_abs": 2457.5830078125,
-      "rmse": 2.5444971494115354
+      "rmse": 0.49966462686585295
     },
     "operational_wrf_pinned_qke": {
-      "bias": -0.2710908612885775,
+      "bias": 0.23056420967920904,
       "count": 442112,
-      "max_abs": 27.96709857098972,
-      "p99": 16.631062471374452,
+      "max_abs": 29.198000960819172,
+      "p99": 0.9524202010862267,
       "ref_max_abs": 2457.5830078125,
-      "rmse": 2.5377961137335703
+      "rmse": 0.4581920517800472
     },
     "operational_wrf_qke_and_wrf_rthraten": {
-      "bias": 0.015901485167737123,
+      "bias": 0.0012133421422943678,
       "count": 442112,
-      "max_abs": 40.280173742581894,
-      "p99": 0.8430227515735698,
+      "max_abs": 29.423148383135867,
+      "p99": 0.8101713058929071,
       "ref_max_abs": 2457.5830078125,
-      "rmse": 0.5433421347190945
+      "rmse": 0.2770012508782723
     },
     "rthraten_rrtmg_lane_only": {
-      "bias": -0.28699234645631455,
+      "bias": 0.2293508675369146,
       "count": 442112,
-      "max_abs": 19.781959542640337,
-      "p99": 16.260410612784394,
+      "max_abs": 2.839421098965907,
+      "p99": 0.8016732036476859,
       "ref_max_abs": 40.367828395257405,
-      "rmse": 2.5271616411017943
+      "rmse": 0.3647888561515068
     }
   },
-  "performance_safety": "No production change. The strict 1e-3/1e-5 mass-coupled gate is unreachable for the MYNN+RRTMG theta tendency without bitwise scheme reproduction. The candidate local fixes (cold-start QKE outlier; RRTMG clear-sky RTHRATEN) each (a) leave the strict gate red and (b) risk regressing validated MYNN/RRTMG physics; neither is a proven Step-1 production bug. GPU-native vectorized structure preserved (no clamps, no scalarization, no CPU-WRF runtime dependency, no in-loop transfer).",
+  "performance_safety": "No production change. The strict 1e-3/1e-5 mass-coupled gate is unreachable for the MYNN+RRTMG theta tendency without bitwise scheme reproduction. Remaining local fixes (cold-start QKE outlier; residual RRTMG split differences) leave the strict gate red unless they pursue bitwise scheme reproduction. GPU-native vectorized structure preserved (no clamps, no scalarization, no CPU-WRF runtime dependency, no in-loop transfer).",
   "qke_faithfulness": {
     "all_levels_diff": {
       "bias": -9.041850919267377e-06,
@@ -72,22 +72,22 @@
     {
       "evidence": {
         "rmse_collapse_when_wrf_rthraten_substituted": {
-          "p99_with_jax_rthraten": 16.631062471374452,
-          "p99_with_wrf_rthraten": 0.8430227515735698,
-          "rmse_with_jax_rthraten": 2.5377961137335703,
-          "rmse_with_wrf_rthraten": 0.5433421347190945,
-          "rrtmg_share_of_rmse_variance": 0.9541611922324987
+          "p99_with_jax_rthraten": 0.9524202010862267,
+          "p99_with_wrf_rthraten": 0.8101713058929071,
+          "rmse_with_jax_rthraten": 0.4581920517800472,
+          "rmse_with_wrf_rthraten": 0.2770012508782723,
+          "rrtmg_share_of_rmse_variance": 0.6345160095526744
         },
         "rthraten_only_lane": {
-          "bias": -0.28699234645631455,
+          "bias": 0.2293508675369146,
           "count": 442112,
-          "max_abs": 19.781959542640337,
-          "p99": 16.260410612784394,
+          "max_abs": 2.839421098965907,
+          "p99": 0.8016732036476859,
           "ref_max_abs": 40.367828395257405,
-          "rmse": 2.5271616411017943
+          "rmse": 0.3647888561515068
         }
       },
-      "interpretation": "Removing the RRTMG RTHRATEN error collapses the strict rmse 2.5378->0.5433 and p99 16.63->0.84. The strict FIELD residual is radiation-dominated; the contract's 'MYNN-EDMF RTHBLTEN dominant' framing holds only for the single worst CELL.",
+      "interpretation": "Removing the remaining RRTMG RTHRATEN error reduces the strict rmse 0.4582->0.2770 and p99 0.95->0.81; that is 63.5% of the WRF-QKE rmse variance in the post-dry-theta-fix proof. RRTMG remains field-significant, while MYNN owns the worst-cell max/floor.",
       "lane": "RRTMG step-1 radiation RTHRATEN (held seed) -- FIELD DOMINANT",
       "owner": "src/gpuwrf/physics/rrtmg_lw.py, rrtmg_sw.py (held RTHRATEN seed via carry.rthraten / _refresh_rthraten); localization proofs/v014/rrtmg_step1_forcing_parity.*",
       "rank": 1
@@ -96,15 +96,15 @@
       "evidence": {
         "raw_rthblten_floor_K_per_s": "~3e-4 (wrf-exact inputs+qke; matches prior accepted boundary 2.6e-6 rmse)",
         "strict_with_wrf_qke_and_wrf_rthraten": {
-          "bias": 0.015901485167737123,
+          "bias": 0.0012133421422943678,
           "count": 442112,
-          "max_abs": 40.280173742581894,
-          "p99": 0.8430227515735698,
+          "max_abs": 29.423148383135867,
+          "p99": 0.8101713058929071,
           "ref_max_abs": 2457.5830078125,
-          "rmse": 0.5433421347190945
+          "rmse": 0.2770012508782723
         }
       },
-      "interpretation": "With WRF-exact QKE AND WRF RTHRATEN, the MYNN kernel alone leaves rmse 0.5433 / max 40.3. raw ~3e-4 K/s mass-coupled by mu~1e5. This is an irreducible fp/algorithmic reimplementation floor (level-2.5 closure is iteratively/implicitly solved); reaching the 1e-3 mass-coupled gate needs raw ~1e-8 (bitwise MYNN), which contradicts the operational-RMSE validation philosophy.",
+      "interpretation": "With WRF-exact QKE AND WRF RTHRATEN, the MYNN kernel alone leaves rmse 0.2770 / max 29.4. raw ~3e-4 K/s mass-coupled by mu~1e5. This is an irreducible fp/algorithmic reimplementation floor (level-2.5 closure is iteratively/implicitly solved); reaching the 1e-3 mass-coupled gate needs raw ~1e-8 (bitwise MYNN), which contradicts the operational-RMSE validation philosophy.",
       "lane": "MYNN level-2.5 turbulence kernel RTHBLTEN faithfulness floor (worst-cell MAX)",
       "owner": "src/gpuwrf/physics/mynn_pbl.py (mym_turbulence/_mym_length_option1 level-2.5 solve)",
       "rank": 2
@@ -135,8 +135,8 @@
           ]
         },
         "rmse_unchanged_with_wrf_qke": {
-          "rmse_cold": 2.5444971494115354,
-          "rmse_wrf_qke": 2.5377961137335703
+          "rmse_cold": 0.49966462686585295,
+          "rmse_wrf_qke": 0.4581920517800472
         },
         "worst_cell_53_to_28_with_wrf_qke": {
           "fortran_i_j_k": [
@@ -144,14 +144,14 @@
             7,
             2
           ],
-          "op_cold_qke_jdt": -1225.2244181878862,
-          "op_wrf_qke_jdt": -1265.6080083090749,
-          "residual_cold_qke": 53.5230183355518,
-          "residual_wrf_qke": 13.139428214363079,
+          "op_cold_qke_jdt": -1222.8177267112203,
+          "op_wrf_qke_jdt": -1263.201316832409,
+          "residual_cold_qke": 55.92970981221765,
+          "residual_wrf_qke": 15.546119691028935,
           "wrf_after_conv": -1278.747436523438
         }
       },
-      "interpretation": "Injecting WRF-pinned INIT_QKE drops the worst-cell max 53.5->28.0 but leaves rmse/p99 ~unchanged (2.544->2.538). The cold-start QKE is a RARE single-cell spike (bulk exact to 0.07%); fixing it does not move the field and risks regressing validated MYNN cold-start.",
+      "interpretation": "Injecting WRF-pinned INIT_QKE drops the worst-cell max 55.9->29.2 but leaves rmse/p99 ~unchanged (0.500->0.458). The cold-start QKE is a RARE single-cell spike (bulk exact to 0.07%); fixing it does not move the field and risks regressing validated MYNN cold-start.",
       "lane": "MYNN cold-start QKE level-2 equilibrium outlier (single worst-cell SPIKE)",
       "owner": "src/gpuwrf/physics/mynn_pbl.py::mynn_coldstart_init_columns",
       "rank": 3
@@ -160,28 +160,28 @@
   "reconciliation": {
     "note": "The reassembled dry T_TENDF (theta_m_factor*mass_h*(RTHRATEN+RTHBLTEN) + Rv/Rd QV term) matches the runtime capture, confirming the strict leaf is exactly the mass/theta_m-coupled MYNN+held-RTHRATEN source. build_step1_state (legacy run_kernel_matrix) omits grid= on noahmp_surface_step -> grid-less LAND surface -> standalone-adapter RTHBLTEN overshoots ~2x at land (mass-coupled +260); the OPERATIONAL leaf does not carry that overshoot (proof artifact, not a prod bug).",
     "operational_strict_reassembled_check": {
-      "bias": -0.27087610916387866,
+      "bias": 0.2307786214295893,
       "count": 442112,
-      "max_abs": 53.5230183355518,
-      "p99": 16.631650419560028,
+      "max_abs": 55.92970981221765,
+      "p99": 0.9529013024125962,
       "ref_max_abs": 2457.5830078125,
-      "rmse": 2.5444971494115354
+      "rmse": 0.49966462686585295
     },
     "operational_strict_runtime": {
-      "bias": -0.27087610916387866,
+      "bias": 0.2307786214295893,
       "count": 442112,
-      "max_abs": 53.52301833555157,
-      "p99": 16.631650419560028,
+      "max_abs": 55.92970981221765,
+      "p99": 0.9529013024125962,
       "ref_max_abs": 2457.5830078125,
-      "rmse": 2.5444971494115354
+      "rmse": 0.499664626865853
     },
     "reassembled_vs_runtime_consistency": {
-      "bias": -1.317493809700196e-18,
+      "bias": 7.815662008374576e-19,
       "count": 442112,
       "max_abs": 4.547473508864641e-13,
-      "p99": 8.881784197001252e-16,
-      "ref_max_abs": 2462.578314845144,
-      "rmse": 2.2577371441620554e-15
+      "p99": 4.440892098500626e-16,
+      "ref_max_abs": 2461.36868001454,
+      "rmse": 1.88814633843945e-15
     }
   },
   "schema": "wrfgpu2.v014.mynn_rthblten_step1_closure.v1",
@@ -198,10 +198,10 @@
       7,
       2
     ],
-    "op_cold_qke_jdt": -1225.2244181878862,
-    "op_wrf_qke_jdt": -1265.6080083090749,
-    "residual_cold_qke": 53.5230183355518,
-    "residual_wrf_qke": 13.139428214363079,
+    "op_cold_qke_jdt": -1222.8177267112203,
+    "op_wrf_qke_jdt": -1263.201316832409,
+    "residual_cold_qke": 55.92970981221765,
+    "residual_wrf_qke": 15.546119691028935,
     "wrf_after_conv": -1278.747436523438
   }
 }

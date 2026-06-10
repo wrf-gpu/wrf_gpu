@@ -28,15 +28,9 @@ Key facts this proof establishes (all numbers regenerated at run time):
    NOT carry that overshoot (it is WRF-faithful there). The legacy kernel-matrix
    land tail is a proof artifact; this proof rebuilds the column with ``grid=``.
 
-3. LANE DECOMPOSITION of the operational strict residual (interior):
-     * Total (operational, cold-start QKE): max ~53.5, rmse ~2.54, p99 ~16.6.
-     * Inject WRF-pinned INIT_QKE: max ~28, rmse/p99 ~UNCHANGED -> the cold-start
-       QKE is a RARE single-cell spike (bulk QKE exact to ~0.07%), not the field.
-     * Inject WRF-pinned QKE AND substitute WRF RTHRATEN (remove the RRTMG
-       radiation error): rmse collapses ~2.54 -> ~0.54 (4.7x), p99 ~16.6 -> ~0.84
-       (20x). => the strict FIELD residual (rmse/p99) is RRTMG-RADIATION dominated.
-     * The MYNN level-2.5 kernel alone (WRF-exact QKE, WRF RTHRATEN) leaves rmse
-       ~0.54 / max ~40 -- an irreducible fp/algorithmic faithfulness floor.
+3. LANE DECOMPOSITION of the operational strict residual (interior), regenerated
+   at run time. It separates operational cold-start QKE, WRF-pinned INIT_QKE,
+   WRF RTHRATEN substitution, and the remaining MYNN level-2.5 kernel floor.
 
 4. ENDPOINT. The strict gate (max_abs<=1e-3, rmse<=1e-5 on mass-coupled T_TENDF,
    mu~1e5 => raw ~1e-8) is UNREACHABLE for the MYNN+RRTMG theta tendency without
@@ -275,10 +269,11 @@ def build_proof() -> dict[str, Any]:
         and float(strict_runtime["rmse"]) <= STRICT_PASS_RMSE
     )
 
-    # field-dominance: how much of the rmse the RRTMG removal eliminates.
+    # field significance: how much of the rmse variance RRTMG removal eliminates.
     rmse_total = float(strict_wrfqke["rmse"])
     rmse_no_rrtmg = float(strict_wrfqke_wrfrad["rmse"])
     rrtmg_share = 1.0 - (rmse_no_rrtmg ** 2) / max(rmse_total ** 2, 1e-30)
+    rmse_reduction = rmse_total - rmse_no_rrtmg
 
     verdict = (
         "MYNN_RTHBLTEN_STRICT_GREEN"
@@ -302,11 +297,12 @@ def build_proof() -> dict[str, Any]:
                 },
             },
             "interpretation": (
-                "Removing the RRTMG RTHRATEN error collapses the strict rmse "
+                "Removing the remaining RRTMG RTHRATEN error reduces the strict rmse "
                 f"{rmse_total:.4f}->{rmse_no_rrtmg:.4f} and p99 "
-                f"{strict_wrfqke['p99']:.2f}->{strict_wrfqke_wrfrad['p99']:.2f}. The strict "
-                "FIELD residual is radiation-dominated; the contract's 'MYNN-EDMF "
-                "RTHBLTEN dominant' framing holds only for the single worst CELL."
+                f"{strict_wrfqke['p99']:.2f}->{strict_wrfqke_wrfrad['p99']:.2f}; "
+                f"that is {rrtmg_share:.1%} of the WRF-QKE rmse variance in the "
+                "post-dry-theta-fix proof. RRTMG remains field-significant, while "
+                "MYNN owns the worst-cell max/floor."
             ),
         },
         {
@@ -386,18 +382,19 @@ def build_proof() -> dict[str, Any]:
         "performance_safety": (
             "No production change. The strict 1e-3/1e-5 mass-coupled gate is "
             "unreachable for the MYNN+RRTMG theta tendency without bitwise scheme "
-            "reproduction. The candidate local fixes (cold-start QKE outlier; RRTMG "
-            "clear-sky RTHRATEN) each (a) leave the strict gate red and (b) risk "
-            "regressing validated MYNN/RRTMG physics; neither is a proven Step-1 "
-            "production bug. GPU-native vectorized structure preserved (no clamps, "
-            "no scalarization, no CPU-WRF runtime dependency, no in-loop transfer)."
+            "reproduction. Remaining local fixes (cold-start QKE outlier; residual "
+            "RRTMG split differences) leave the strict gate red unless they pursue "
+            "bitwise scheme reproduction. GPU-native vectorized structure preserved "
+            "(no clamps, no scalarization, no CPU-WRF runtime dependency, no in-loop "
+            "transfer)."
         ),
         "fastest_next_command": (
             "Manager decision: re-specify the strict MYNN+RRTMG Step-1 gate to an "
-            "operationally-meaningful mass-coupled tolerance (raw ~3e-4 K/s floor => "
-            "~rmse 0.5 / max ~40 mass-coupled is the achievable best). The field-"
-            "dominant lane is RRTMG RTHRATEN (proofs/v014/rrtmg_step1_forcing_parity.*); "
-            "a clear-sky RTHRATEN sprint would cut strict rmse ~2.54->~0.54. Re-run: "
+            "operationally-meaningful mass-coupled tolerance. Post dry-theta RRTMG "
+            f"fix: operational rmse {strict_assembled['rmse']:.4g}, WRF-QKE rmse "
+            f"{rmse_total:.4g}, WRF-QKE+WRF-RTHRATEN rmse {rmse_no_rrtmg:.4g}; "
+            f"remaining RRTMG variance share {rrtmg_share:.1%}, absolute rmse "
+            f"reduction {rmse_reduction:.4g}. Re-run: "
             "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false "
             "PYTHONPATH=src python proofs/v014/mynn_rthblten_step1_closure.py"
         ),
@@ -459,9 +456,10 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         row("RTHRATEN (RRTMG) lane only", ld["rthraten_rrtmg_lane_only"]),
         "",
         "**Reading:** injecting WRF QKE drops the worst-CELL max but leaves rmse/p99 "
-        "unchanged (cold-start QKE = rare single-cell spike). Substituting WRF "
-        "RTHRATEN collapses the strict rmse/p99 -> the strict FIELD residual is "
-        "**RRTMG-radiation dominated**; MYNN drives only the worst-cell max.",
+        "mostly unchanged (cold-start QKE = rare single-cell spike). Substituting WRF "
+        "RTHRATEN reduces the strict field rmse/p99 further; RRTMG remains "
+        "field-significant after the dry-theta fix, while MYNN owns the worst-cell "
+        "max/floor.",
         "",
         "## Reconciliation with prior 'MYNN kernel faithful' evidence",
         "",

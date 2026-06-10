@@ -18,6 +18,7 @@ from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
 from gpuwrf.coupling.physics_couplers import (
     _from_columns,
     _mynn_column_from_state,
+    _rrtmg_column_inputs,
     _surface_column_view,
     mynn_adapter_with_source_leaves,
     surface_adapter,
@@ -180,6 +181,25 @@ def test_grid_backed_mynn_column_view_uses_wrf_phy_prep_inputs() -> None:
 
     np.testing.assert_allclose(np.asarray(_from_columns(fallback.theta)), np.asarray(state.theta))
     np.testing.assert_allclose(np.asarray(_from_columns(fallback.p)), np.asarray(state.p))
+
+
+def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature() -> None:
+    grid = _grid(ny=2, nx=2, nz=4)
+    state = _state(grid)
+
+    sw_column, lw_column, *_ = _rrtmg_column_inputs(state, grid)
+    sw_fallback, lw_fallback, *_ = _rrtmg_column_inputs(state, None)
+
+    rv_over_rd = 461.6 / 287.0
+    exner = (np.asarray(state.p, dtype=np.float64) / 100000.0) ** (287.0 / 1004.0)
+    dry_theta = np.asarray(state.theta / (1.0 + rv_over_rd * state.qv), dtype=np.float64)
+    expected_t = dry_theta * exner
+    moist_t = np.asarray(state.theta, dtype=np.float64) * exner
+
+    np.testing.assert_allclose(np.asarray(_from_columns(sw_column.T)), expected_t, rtol=0.0, atol=1.0e-12)
+    np.testing.assert_allclose(np.asarray(_from_columns(lw_column.T)), expected_t, rtol=0.0, atol=1.0e-12)
+    np.testing.assert_allclose(np.asarray(_from_columns(sw_fallback.T)), moist_t, rtol=0.0, atol=1.0e-12)
+    np.testing.assert_allclose(np.asarray(_from_columns(lw_fallback.T)), moist_t, rtol=0.0, atol=1.0e-12)
 
 
 def test_source_leaf_mode_mass_couples_held_rthraten_and_mynn_rthblten() -> None:

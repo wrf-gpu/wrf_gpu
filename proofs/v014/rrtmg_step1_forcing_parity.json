@@ -17,8 +17,8 @@
       "verdict": "NOT_PRIMARY"
     },
     "likely_boundary": {
-      "evidence": "GLW remains a clear-sky +17.44 W/m2 bias with matched gross state and RTHRATEN remains max_abs about 19.43 after mass/conversion checks. The next exact boundary is a WRF RRTMG forcing hook around the derived LW/SW optical/gas/top-buffer profiles and flux/heating arrays.",
-      "verdict": "RRTMG_CLEAR_SKY_DERIVED_OPTICS_OR_KERNEL_BOUNDARY"
+      "evidence": "The WRF split radiation oracle localizes the former dominant residual to RRTMG_LWRAD T3D=t receiving moist-theta temperature in JAX. The production dry-theta input fix materially reduces GLW/RTHRATEN; the remaining LW/SW split residual is bounded in rrtmg_rthraten_closure.",
+      "verdict": "DOMINANT_RRTMG_T3D_DRY_THETA_INPUT_FIXED_REMAINING_SPLIT_BOUND_IN_RRTMG_CLOSURE"
     },
     "mass_coupling": {
       "evidence": "JAX mass_h matches WRF mass_h and using WRF mass_h leaves the residual unchanged.",
@@ -97,11 +97,11 @@
     },
     "temperature_k": {
       "count": 461736,
-      "max": 299.61663618517764,
-      "max_abs": 299.61663618517764,
-      "mean": 246.74614666979596,
-      "min": 205.66026748082047,
-      "rms": 249.24074288128233,
+      "max": 294.55728541893694,
+      "max_abs": 294.55728541893694,
+      "mean": 245.73467427640563,
+      "min": 205.659105803527,
+      "rms": 248.06455152357495,
       "shape": [
         66,
         159,
@@ -249,24 +249,31 @@
   "commands": {
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/rrtmg_step1_forcing_parity.py"
   },
-  "created_utc": "2026-06-10T07:24:43.224121+00:00",
+  "created_utc": "2026-06-10T11:51:08.191223+00:00",
   "environment": {
     "jax_backend": "cpu",
     "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
     "python": "3.13.11"
   },
-  "exact_residual_boundary": "Clear-sky RRTMG derived optical/gas/top-buffer profile or kernel boundary. Current WRF hooks prove GLW and RTHRATEN outputs differ, and exonerate gross clock, surface handoff, thermodynamic state, cloud occupancy, layer ordering, theta conversion, and mass coupling; they do not dump the exact WRF RRTMG derived columns needed to name the first divergent LW/SW quantity.",
+  "exact_residual_boundary": "Dominant pre-fix boundary was WRF radiation_driver -> RRTMG_LWRAD input T3D=t: JAX built T from stored theta_m while WRF phy_prep passes dry theta temperature. The production owner is gpuwrf.coupling.physics_couplers._rrtmg_column_inputs. Remaining split LW/SW residual is bounded by proofs/v014/rrtmg_rthraten_closure.*.",
   "git": {
     "branch": "worker/gpt/v013-close-manager",
-    "head": "203be499800c1d78e3a508cdea0937bf1c81e8d5"
+    "head": "90ebf4580e9bf6f90943b52fc36e9446e7e32d4f"
   },
   "inputs": {
     "noahmp_closure_json": {
       "exists": true,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/proofs/v014/noahmp_step1_closure.json",
-      "sha256_16": "049aae0a1a7b46be",
-      "size": 17996
+      "sha256_16": "c39eb659c9835d72",
+      "size": 20211
+    },
+    "rrtmg_rthraten_closure_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/rrtmg_rthraten_closure.json",
+      "sha256_16": "9a3b360d4ec15b4f",
+      "size": 14707
     },
     "surface_hook": {
       "exists": true,
@@ -309,90 +316,91 @@
     "source_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
   },
   "recommended_fix": {
-    "next_action": "Add a temporary WRF RRTMG forcing hook, then compare per-column arrays against JAX before editing production: for LW dump play/plev/tlay/tlev, h2ovmr/o3vmr/trace gases, emis, cldfrac/cloud paths/effective radii, tauaer, dflx/uflx/hr and clear-sky counterparts around module_ra_rrtmg_lw.F:RRTMG_LWRAD; for SW dump the matching column optics, topographic correction, fluxes, and heating before the RTHRATENLW+RTHRATENSW sum.",
-    "production_fix_obvious": false
+    "next_action": "Rerun the split WRF-oracle closure proof: JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/rrtmg_rthraten_closure.py",
+    "production_fix_applied": true,
+    "production_fix_obvious": true
   },
   "rthraten_conversion_and_mass": {
     "lw_only_mass_coupled_vs_wrf_total": {
-      "bias": -1.3873455929302663,
+      "bias": -0.8791187375761041,
       "candidate_minus_reference": true,
       "count": 442112,
-      "max_abs": 20.419734408052783,
-      "p95": 2.989506570533835,
-      "p99": 17.06669793043005,
-      "rmse": 2.853063395522659,
+      "max_abs": 4.073479652349413,
+      "p95": 1.7346941572860155,
+      "p99": 2.0539849422409717,
+      "rmse": 0.9942223815486266,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": -16.430906702669482,
+      "worst_candidate": 33.92812252050215,
       "worst_mismatch_fortran": {
-        "i": 11,
-        "j": 29,
+        "i": 138,
+        "j": 25,
         "k": 1
       },
       "worst_mismatch_index": [
         0,
-        28,
-        10
+        24,
+        137
       ],
-      "worst_reference": 3.988827705383301
+      "worst_reference": 38.00160217285156
     },
     "mass_coupled_theta_tendency_vs_wrf": {
-      "bias": -0.27883526570760864,
+      "bias": 0.22941737095565604,
       "candidate_minus_reference": true,
       "count": 442112,
-      "max_abs": 19.425283200182427,
-      "p95": 1.821412525568144,
-      "p99": 16.009826789289097,
-      "rmse": 2.4884141898276413,
+      "max_abs": 2.798351397503893,
+      "p95": 0.6817075033648748,
+      "p99": 0.800873119757497,
+      "rmse": 0.3645729657536835,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": -15.436455494799128,
+      "worst_candidate": 35.20325077534767,
       "worst_mismatch_fortran": {
-        "i": 11,
-        "j": 29,
+        "i": 138,
+        "j": 25,
         "k": 1
       },
       "worst_mismatch_index": [
         0,
-        28,
-        10
+        24,
+        137
       ],
-      "worst_reference": 3.988827705383301
+      "worst_reference": 38.00160217285156
     },
     "mass_coupled_using_wrf_mass_vs_wrf": {
-      "bias": -0.2788352637313529,
+      "bias": 0.22941736408601043,
       "candidate_minus_reference": true,
       "count": 442112,
-      "max_abs": 19.42528244567689,
-      "p95": 1.8214125414728946,
-      "p99": 16.00982622498183,
-      "rmse": 2.4884141350384956,
+      "max_abs": 2.7983511916417285,
+      "p95": 0.6817075033648748,
+      "p99": 0.800873119757497,
+      "rmse": 0.3645729692933367,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": -15.436454740293588,
+      "worst_candidate": 35.203250981209834,
       "worst_mismatch_fortran": {
-        "i": 11,
-        "j": 29,
+        "i": 138,
+        "j": 25,
         "k": 1
       },
       "worst_mismatch_index": [
         0,
-        28,
-        10
+        24,
+        137
       ],
-      "worst_reference": 3.988827705383301
+      "worst_reference": 38.00160217285156
     },
     "mass_h_jax_vs_wrf": {
       "bias": -0.00024532449972419236,
@@ -422,74 +430,74 @@
       "worst_reference": 92310.953125
     },
     "no_exner_temperature_rate_mass_coupled_vs_wrf": {
-      "bias": -0.32925418383588956,
+      "bias": 0.18309995850564412,
       "candidate_minus_reference": true,
       "count": 442112,
-      "max_abs": 19.496191827004914,
-      "p95": 1.8203391959489055,
-      "p99": 16.063993765109135,
-      "rmse": 2.485120085385211,
+      "max_abs": 3.0863258306336405,
+      "p95": 0.5328756618548964,
+      "p99": 0.6417282372821043,
+      "rmse": 0.29025408921313783,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": -15.507364121621613,
+      "worst_candidate": 34.91527634221792,
       "worst_mismatch_fortran": {
-        "i": 11,
-        "j": 29,
+        "i": 138,
+        "j": 25,
         "k": 1
       },
       "worst_mismatch_index": [
         0,
-        28,
-        10
+        24,
+        137
       ],
-      "worst_reference": 3.988827705383301
+      "worst_reference": 38.00160217285156
     },
     "raw_theta_tendency_vs_wrf_raw": {
-      "bias": -2.854522219091891e-06,
+      "bias": 2.418713678208904e-06,
       "candidate_minus_reference": true,
       "count": 442112,
-      "max_abs": 0.0002009441062058404,
-      "p95": 1.8837281990589163e-05,
-      "p99": 0.00016567830919327116,
-      "rmse": 2.5816621987433344e-05,
+      "max_abs": 3.0330762212203797e-05,
+      "p95": 7.175651847757751e-06,
+      "p99": 8.423206992997826e-06,
+      "rmse": 3.8378928732601035e-06,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": -0.00015968182750750816,
+      "worst_candidate": 0.00038156091265342053,
       "worst_mismatch_fortran": {
-        "i": 11,
-        "j": 29,
+        "i": 138,
+        "j": 25,
         "k": 1
       },
       "worst_mismatch_index": [
         0,
-        28,
-        10
+        24,
+        137
       ],
-      "worst_reference": 4.126227869833224e-05
+      "worst_reference": 0.0004118916748656243
     },
     "sw_only_mass_coupled_vs_wrf_total": {
-      "bias": 1.7313427171481177,
+      "bias": 1.7313684984572206,
       "candidate_minus_reference": true,
       "count": 442112,
-      "max_abs": 38.58552417759782,
-      "p95": 3.470921960544493,
-      "p99": 4.338093665231769,
-      "rmse": 2.2048002965764413,
+      "max_abs": 38.58297353753939,
+      "p95": 3.4705765174713115,
+      "p99": 4.336945692582734,
+      "rmse": 2.2045717303923444,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": 1.2149747848045203,
+      "worst_candidate": 1.217525424862945,
       "worst_mismatch_fortran": {
         "i": 156,
         "j": 61,
@@ -503,35 +511,40 @@
       "worst_reference": 39.80049896240234
     },
     "vertical_flipped_theta_tendency_mass_coupled_vs_wrf": {
-      "bias": -0.2585334458130835,
+      "bias": 0.24228972883684777,
       "candidate_minus_reference": true,
       "count": 442112,
-      "max_abs": 37.926177717778316,
-      "p95": 4.0898439237648585,
-      "p99": 14.621484309681795,
-      "rmse": 2.9505838724279227,
+      "max_abs": 37.97668063305632,
+      "p95": 2.753438605426812,
+      "p99": 3.694442137652341,
+      "rmse": 2.032944189199938,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": 1.857204697993159,
+      "worst_candidate": 39.08464884423033,
       "worst_mismatch_fortran": {
-        "i": 158,
-        "j": 56,
-        "k": 1
+        "i": 156,
+        "j": 61,
+        "k": 44
       },
       "worst_mismatch_index": [
-        0,
-        55,
-        157
+        43,
+        60,
+        155
       ],
-      "worst_reference": 39.78338241577148
+      "worst_reference": 1.107968211174011
     }
   },
   "schema": "wrfgpu2.v014.rrtmg_step1_forcing_parity.v1",
   "source_checks": {
+    "jax_rrtmg_dry_theta_input_fix": {
+      "file": "/home/enric/src/wrf_gpu2/src/gpuwrf/coupling/physics_couplers.py",
+      "meaning": "Metric-backed RRTMG input now mirrors WRF phy_prep by converting stored theta_m to dry theta before T3D temperature conversion.",
+      "owner": "_rrtmg_column_inputs"
+    },
     "radiation_driver_rrtmg_lw_call": {
       "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
       "line": 2087,
@@ -577,12 +590,12 @@
     "use_noahmp": true
   },
   "summary_numbers": {
-    "glw_bias_w_m2": 17.44070059852181,
-    "glw_max_abs_w_m2": 22.521139408469537,
-    "glw_rmse_w_m2": 17.520282676800505,
-    "rthraten_mass_coupled_bias": -0.27883526570760864,
-    "rthraten_mass_coupled_max_abs": 19.425283200182427,
-    "rthraten_mass_coupled_rmse": 2.4884141898276413
+    "glw_bias_w_m2": 0.3182764792020434,
+    "glw_max_abs_w_m2": 1.2638192801302353,
+    "glw_rmse_w_m2": 0.35152062180598787,
+    "rthraten_mass_coupled_bias": 0.22941737095565604,
+    "rthraten_mass_coupled_max_abs": 2.798351397503893,
+    "rthraten_mass_coupled_rmse": 0.3645729657536835
   },
   "surface_forcing": {
     "accepted_lead0_swnorm_vs_wrf_swdown_from_noahmp_closure": {
@@ -606,7 +619,7 @@
           159
         ],
         "status": "OK",
-        "worst_candidate": 362.2446560722182,
+        "worst_candidate": 343.05712886009843,
         "worst_mismatch_fortran": {
           "i": 1,
           "j": 1
@@ -615,31 +628,31 @@
           0,
           0
         ],
-        "worst_reference": 362.2446560722182
+        "worst_reference": 343.05712886009843
       },
       "sw_surface_down_base_minus_clear": {
-        "bias": 1.3344695834299332e-05,
+        "bias": 1.3252166504922728e-05,
         "candidate_minus_reference": true,
         "count": 10494,
-        "max_abs": 7.036299024321124e-05,
-        "p95": 3.658358050131483e-05,
-        "p99": 4.6764999527226775e-05,
-        "rmse": 1.9559479085812417e-05,
+        "max_abs": 6.947694924974712e-05,
+        "p95": 3.69322920647619e-05,
+        "p99": 4.659056784078074e-05,
+        "rmse": 1.9589567574256828e-05,
         "shape": [
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 264.7416938815697,
+        "worst_candidate": 292.4484722455659,
         "worst_mismatch_fortran": {
-          "i": 75,
-          "j": 20
+          "i": 3,
+          "j": 47
         },
         "worst_mismatch_index": [
-          19,
-          74
+          46,
+          2
         ],
-        "worst_reference": 264.74162351857944
+        "worst_reference": 292.44840276861663
       }
     },
     "coszen": {
@@ -656,93 +669,93 @@
     },
     "patched_seed_glw_vs_wrf_glw": {
       "all": {
-        "bias": 17.44070059852181,
+        "bias": 0.3182764792020434,
         "candidate_minus_reference": true,
         "count": 10494,
-        "max_abs": 22.521139408469537,
-        "p95": 20.188073610615255,
-        "p99": 20.93358246470608,
-        "rmse": 17.520282676800505,
+        "max_abs": 1.2638192801302353,
+        "p95": 0.6510086978054407,
+        "p99": 0.9412423700299205,
+        "rmse": 0.35152062180598787,
         "shape": [
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 367.49730517846956,
+        "worst_candidate": 334.6346994101302,
         "worst_mismatch_fortran": {
-          "i": 28,
-          "j": 54
+          "i": 90,
+          "j": 13
         },
         "worst_mismatch_index": [
-          53,
-          27
+          12,
+          89
         ],
-        "worst_reference": 344.97616577
+        "worst_reference": 333.37088013
       },
       "land": {
-        "bias": 14.723522079920473,
+        "bias": 0.2957149927001698,
         "candidate_minus_reference": true,
         "count": 768,
-        "max_abs": 19.485911987632733,
-        "p95": 17.906227441163814,
-        "p99": 18.813079950076023,
-        "rmse": 15.062993942888838,
+        "max_abs": 0.9097093642603227,
+        "p95": 0.4942960504568673,
+        "p99": 0.7044539387422278,
+        "rmse": 0.3222678762176165,
         "shape": [
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 352.34696545763273,
+        "worst_candidate": 332.5620225942603,
         "worst_mismatch_fortran": {
-          "i": 60,
-          "j": 24
+          "i": 104,
+          "j": 19
         },
         "worst_mismatch_index": [
-          23,
-          59
+          18,
+          103
         ],
-        "worst_reference": 332.86105347
+        "worst_reference": 331.65231323
       },
       "water": {
-        "bias": 17.655258803568678,
+        "bias": 0.32005801545882306,
         "candidate_minus_reference": true,
         "count": 9726,
-        "max_abs": 22.521139408469537,
-        "p95": 20.232074467294197,
-        "p99": 20.955026189091484,
-        "rmse": 17.699792254052554,
+        "max_abs": 1.2638192801302353,
+        "p95": 0.6669866183566029,
+        "p99": 0.9464038740609482,
+        "rmse": 0.35372748419644834,
         "shape": [
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 367.49730517846956,
+        "worst_candidate": 334.6346994101302,
         "worst_mismatch_fortran": {
-          "i": 28,
-          "j": 54
+          "i": 90,
+          "j": 13
         },
         "worst_mismatch_index": [
-          53,
-          27
+          12,
+          89
         ],
-        "worst_reference": 344.97616577
+        "worst_reference": 333.37088013
       }
     },
     "patched_seed_swnorm_vs_wrf_swdown": {
       "all": {
-        "bias": -2.205362539389792,
+        "bias": -2.175861629100493,
         "candidate_minus_reference": true,
         "count": 10494,
-        "max_abs": 6.825421764382014,
-        "p95": 3.07742134970778,
-        "p99": 4.7843278359705295,
-        "rmse": 2.758969795939516,
+        "max_abs": 6.848253090953165,
+        "p95": 3.0641732241356716,
+        "p99": 4.8224893750570645,
+        "rmse": 2.736296679206838,
         "shape": [
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 137.45181031438202,
+        "worst_candidate": 137.47464164095317,
         "worst_mismatch_fortran": {
           "i": 26,
           "j": 43
@@ -754,19 +767,19 @@
         "worst_reference": 130.62638855
       },
       "land": {
-        "bias": 3.582430865420056,
+        "bias": 3.6167342355753376,
         "candidate_minus_reference": true,
         "count": 768,
-        "max_abs": 6.825421764382014,
-        "p95": 5.376892797397761,
-        "p99": 6.515180556189329,
-        "rmse": 3.738168727089916,
+        "max_abs": 6.848253090953165,
+        "p95": 5.4037569143051325,
+        "p99": 6.546403124194078,
+        "rmse": 3.771954517744277,
         "shape": [
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 137.45181031438202,
+        "worst_candidate": 137.47464164095317,
         "worst_mismatch_fortran": {
           "i": 26,
           "j": 43
@@ -778,19 +791,19 @@
         "worst_reference": 130.62638855
       },
       "water": {
-        "bias": -2.66238755840007,
+        "bias": -2.63326586764368,
         "candidate_minus_reference": true,
         "count": 9726,
-        "max_abs": 3.770899117299848,
-        "p95": 2.9251252664899425,
-        "p99": 3.0481889200847974,
-        "rmse": 2.666373679255783,
+        "max_abs": 3.7322795955035986,
+        "p95": 2.8979182118045657,
+        "p99": 3.0261538318257806,
+        "rmse": 2.6372484634603985,
         "shape": [
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 362.7339531727001,
+        "worst_candidate": 362.7725726944964,
         "worst_mismatch_fortran": {
           "i": 22,
           "j": 42
@@ -804,11 +817,11 @@
     },
     "topographic_correction_factor": {
       "count": 10494,
-      "max": 1.527724878852077,
-      "max_abs": 1.527724878852077,
-      "mean": 0.9997340913868231,
-      "min": 0.3131640553721686,
-      "rms": 1.001233702866293,
+      "max": 1.5277367909692021,
+      "max_abs": 1.5277367909692021,
+      "mean": 0.9997340854077219,
+      "min": 0.3131478734199017,
+      "rms": 1.001233754920625,
       "shape": [
         66,
         159
@@ -967,5 +980,5 @@
       }
     }
   },
-  "verdict": "RRTMG_STEP1_RESIDUAL_LOCALIZED_TO_CLEAR_SKY_DERIVED_RRTMG_BOUNDARY"
+  "verdict": "RRTMG_STEP1_FORCING_PARITY_MATERIALLY_REDUCED_BY_DRY_THETA_INPUT_FIX"
 }

@@ -245,6 +245,45 @@ def estimate_strict_contribution(metric: Mapping[str, Any] | None) -> float:
     return float(value) if value is not None else 0.0
 
 
+def current_mynn_lane_summary() -> str:
+    """Return a compact, current MYNN/RRTMG lane summary if the proof exists."""
+
+    path = PROOF_DIR / "mynn_rthblten_step1_closure.json"
+    if not path.is_file():
+        return (
+            "proofs/v014/mynn_rthblten_step1_closure.{py,json,md} should be rerun "
+            "after this proof to refresh the operational MYNN/RRTMG lane split."
+        )
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        lane = payload["lane_decomposition"]
+        cold = lane["operational_cold_qke"]
+        wrfq = lane["operational_wrf_pinned_qke"]
+        wrfrad = lane["operational_wrf_qke_and_wrf_rthraten"]
+        rrtmg = lane["rthraten_rrtmg_lane_only"]
+        share = (
+            payload["ranked_hypotheses"][0]
+            .get("evidence", {})
+            .get("rmse_collapse_when_wrf_rthraten_substituted", {})
+            .get("rrtmg_share_of_rmse_variance")
+        )
+    except Exception as exc:  # pragma: no cover - defensive proof rendering
+        return f"Failed to read current MYNN/RRTMG lane summary from {path}: {exc!r}."
+    share_text = "unknown" if share is None else f"{float(share):.1%}"
+    return (
+        "proofs/v014/mynn_rthblten_step1_closure.{py,json,md} -- current "
+        "post-dry-theta-fix operational-path decomposition. FINDINGS: "
+        f"operational strict max/rmse {cold['max_abs']:.4g}/{cold['rmse']:.4g}; "
+        f"WRF-pinned QKE {wrfq['max_abs']:.4g}/{wrfq['rmse']:.4g}; "
+        f"WRF-pinned QKE + WRF RTHRATEN {wrfrad['max_abs']:.4g}/{wrfrad['rmse']:.4g}; "
+        f"RRTMG lane only {rrtmg['max_abs']:.4g}/{rrtmg['rmse']:.4g}; "
+        f"remaining RRTMG share of WRF-QKE rmse variance {share_text}. "
+        "The 1e-3/1e-5 mass-coupled strict gate remains unreachable without "
+        "bitwise MYNN+RRTMG reproduction; use operational field/rollout gates "
+        "for release decisions."
+    )
+
+
 def radiation_swap_metrics(inputs: Mapping[str, Any], hooks: Mapping[str, Any]) -> dict[str, Any]:
     """Causal split: rerun the Noah-MP overlay with WRF's EXACT hook SWDOWN/GLW.
 
@@ -279,6 +318,7 @@ def radiation_swap_metrics(inputs: Mapping[str, Any], hooks: Mapping[str, Any]) 
             state0, inputs["noahmp_land"], nl.noahmp_static, float(nl.dt_s),
             radiation=om._NoahMPRadiation(*rad_tuple), clock=clock,
             energy_params=ep, rad_params=rp, first_timestep=True,
+            grid=nl.grid,
         )
         flt = np.asarray(_surface_fluxes_from_state(st).theta_flux, dtype=np.float64)
         return diffstat(flt, wrf_flux["flt"], land)
@@ -422,19 +462,23 @@ def build_proof() -> dict[str, Any]:
                     )
                 ),
                 "strict_contribution_max_abs": float(strict.get("max_abs") or 0.0),
-                "evidence": "land/water strict decomposition (RTHBLTEN-dominated, RTHRATEN<=~19.4) + surface_layer_theta_decoupling + post_overlay_mynn_boundary",
+                "evidence": (
+                    "land/water strict decomposition (worst-cell RTHBLTEN-dominated, "
+                    f"RTHRATEN<=~{rthraten_resid:.3g}) + "
+                    "surface_layer_theta_decoupling + post_overlay_mynn_boundary"
+                ),
             },
             {
                 "hypothesis": (
                     "RRTMG step-1 radiation forcing parity (SECONDARY): GLW bias {:.2f} "
                     "W/m2, SWDOWN rmse {:.2f} W/m2, mass-coupled RTHRATEN residual {:.3g}. "
                     "The Noah-MP LAND theta_flux still collapses under the WRF-exact "
-                    "radiation swap (rmse {:.3g}); RRTMG remains localized to a clear-sky "
-                    "derived optical/gas/top-buffer profile (proofs/v014/"
-                    "rrtmg_step1_forcing_parity.*) but is no longer the dominant strict "
-                    "lane (RTHRATEN max ~19.4 << strict max {:.1f}).".format(
+                    "radiation swap (rmse {:.3g}); RRTMG is now materially reduced by "
+                    "the dry-theta input fix and remains a bounded split residual "
+                    "(proofs/v014/rrtmg_step1_forcing_parity.*), not the worst-cell max "
+                    "owner (RTHRATEN max {:.3g} << strict max {:.1f}).".format(
                         glw_bias, sw_rmse, rthraten_resid, flt_land.get("rmse") or 0.0,
-                        float(strict.get("max_abs") or 0.0),
+                        rthraten_resid, float(strict.get("max_abs") or 0.0),
                     )
                 ),
                 "strict_contribution_max_abs": rthraten_resid,
@@ -490,26 +534,17 @@ def build_proof() -> dict[str, Any]:
             },
         },
         "ranked_hypotheses": ranked,
-        "mynn_rthblten_lane_decomposition": (
-            "proofs/v014/mynn_rthblten_step1_closure.{py,json,md} -- AUTHORITATIVE "
-            "operational-path decomposition (supersedes the max-only ranking below). "
-            "FINDINGS: (a) the strict FIELD residual is RRTMG-RADIATION dominated -- "
-            "substituting WRF RTHRATEN collapses strict rmse 2.54->0.54 (95.4% of rmse "
-            "variance) and p99 16.6->0.84; (b) MYNN drives only the worst-CELL max via a "
-            "level-2.5 kernel spike (max ~40 even with WRF-exact QKE) plus a RARE "
-            "cold-start-QKE single-cell outlier (53.5->13.1 at the worst cell with "
-            "WRF-pinned QKE; bulk QKE exact to 0.07%); (c) the legacy run_kernel_matrix "
-            "land tail is a PROOF ARTIFACT (build_step1_state omits grid= on "
-            "noahmp_surface_step; the operational leaf is faithful there). The 1e-3/1e-5 "
-            "mass-coupled gate is UNREACHABLE without bitwise MYNN+RRTMG reproduction."
-        ),
+        "mynn_rthblten_lane_decomposition": current_mynn_lane_summary(),
         "fastest_next_command": (
             "Surface-layer water-path CLOSED (proofs/v014/surface_layer_theta_decoupling.*). "
-            "Strict RED at max 53.5 / rmse 2.54 is FORMALLY BOUNDED + GATE-UNREACHABLE "
-            "(see proofs/v014/mynn_rthblten_step1_closure.*). Field-dominant lane is "
-            "RRTMG RTHRATEN (95.4% of rmse; a clear-sky RTHRATEN sprint cuts rmse "
-            "2.54->0.54, proofs/v014/rrtmg_step1_forcing_parity.*); the residual MYNN "
-            "level-2.5 kernel floor (rmse ~0.54 / max ~40) is irreducible fp faithfulness. "
+            f"Post-RRTMG-fix strict RED at max {strict.get('max_abs')} / "
+            f"rmse {strict.get('rmse')} is FORMALLY BOUNDED + GATE-UNREACHABLE "
+            "(see proofs/v014/mynn_rthblten_step1_closure.*). RRTMG forcing is "
+            f"materially reduced to RTHRATEN max {rthraten_resid:.4g} / "
+            f"rmse {((rthraten.get('nested_interior') or {}).get('rmse') or 0.0):.4g}; "
+            "the remaining strict max is MYNN level-2.5/QKE floor, and remaining field "
+            "rmse must be assessed with operational field/rollout gates rather than the "
+            "bitwise MYNN+RRTMG strict tolerance. "
             "Manager decision: re-specify the strict MYNN+RRTMG gate to an operational "
             "mass-coupled tolerance. Re-run: "
             "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false "
@@ -625,8 +660,8 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         f"`{json.dumps(payload['rad_swap_causal_split'].get('land_flt_with_jax_seed_radiation'))}`.",
         f"- land theta_flux residual with WRF's EXACT hook SWDOWN/GLW: "
         f"`{json.dumps(payload['rad_swap_causal_split'].get('land_flt_with_wrf_truth_radiation'))}` "
-        "-> AFTER the moist-theta->dry-T decoupling fix this COLLAPSES (the remaining "
-        "land residual IS the RRTMG radiation forcing). See "
+        "-> the WRF-exact radiation swap reduces the land residual strongly, so the "
+        "remaining land-forcing error is radiation-sensitive. See "
         "`proofs/v014/noahmp_land_tile_energy_closure.*`.",
         "- The prior 'NoahMP land-tile energy' narrowing is REFUTED: the energy solve "
         "is exact to ~1e-3 W/m2 with WRF-exact inputs; the residual was a +4 K-warm air "
