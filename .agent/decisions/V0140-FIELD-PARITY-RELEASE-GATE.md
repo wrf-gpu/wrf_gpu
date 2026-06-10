@@ -29,18 +29,29 @@ with plots is stronger than 15 short station comparisons.
 
 ## Switzerland CPU Baseline Status
 
-The existing 24h CPU baselines cannot be honestly resumed:
+The existing 24h CPU baselines could not be honestly resumed:
 
 - `restart = .false.` in the Switzerland `namelist.input`.
 - No `wrfrst_d0*` files are present in the 24h CPU run roots.
 - Existing `wrfbdy_d01` files contain only 0h through 21h boundary times, so
   they do not support a 72h continuation.
 
-Therefore the 72h Switzerland truth must be rebuilt from the same GFS/WPS/WRF
-case definition rather than "continued" from the 24h output. The first release
-gate should use the 129x129/128-mass-point grid because it matches the accepted
-v0.14 24h CPU rerun and lowers first-pass GPU OOM risk. A 151x151 larger
-benchmark remains useful after the 128-mass 72h gate is green.
+Therefore the 72h Switzerland truth was rebuilt from the same GFS/WPS/WRF case
+definition rather than "continued" from the 24h output. The selected CPU truth
+is now complete:
+
+- run root:
+  `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z`
+- CPU truth:
+  `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+- result: `rc=0`, 73 `wrfout_d01_*` frames, final frame finite PASS
+- timing: 2906.3 s total wall, 2887.6 s WRF mainloop, 24 dmpar MPI ranks
+- resource proof:
+  `proofs/v014/switzerland_cpu72_reference_resource_summary.md`
+
+The first release gate uses the 129x129/128-mass-point grid because it matches
+the accepted v0.14 24h CPU rerun and lowers first-pass GPU OOM risk. A 151x151
+larger benchmark remains useful after the 128-mass 72h gate is green.
 
 ## Canary Domain Decision
 

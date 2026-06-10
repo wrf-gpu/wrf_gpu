@@ -218,6 +218,12 @@ have two regional field-parity gates:
 - **Switzerland/Gotthard 72h d01**: non-Canary winter/Alps generalization.
 - **Canary L2 d02 72h**: operational Canary 3 km target with retained CPU truth.
 
+The Switzerland CPU truth is complete at
+`/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+with `rc=0`, 73 hourly frames, final-frame finite PASS, and resource CSVs.
+Proof:
+`proofs/v014/switzerland_cpu72_reference_resource_summary.md`.
+
 The mandatory Canary case is
 `20260501_18z_l2_72h_20260519T173026Z`, with CPU truth at
 `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
