@@ -11,6 +11,13 @@ Everything in the paper should orbit that sentence. Performance numbers, methodo
 
 ## Three pillars, ranked
 
+**Update 2026-06-10 for v0.14:** the validation headline should move away from
+station-only TOST. The stronger paper gate is all-field CPU-WRF vs GPU-JAX
+stability: Switzerland/Gotthard 72h plus Canary L2 d02 72h, scored by the
+Grid-Delta Atlas over every common numeric `wrfout` field and plotted over lead
+time. Powered TOST remains a useful station sanity appendix, not the main
+equivalence claim.
+
 ### Pillar 1 (HEADLINE) — A new artifact exists
 
 A JAX-native, whole-state-device-resident, WRF-compatible regional NWP code now exists. It is open source. Anyone with a single GPU can clone it, install it, and run a regional forecast. Before this, the practical options for GPU NWP were: a) commercial Fortran-OpenACC ports with a ~5-7x ceiling (AceCAST, OpenACC WRF), b) heroic clean-slate rewrites in C++/Kokkos requiring a national lab and a supercomputer (SCREAM, HOMMEXX), c) DSL-based ports requiring a stencil-DSL toolchain (Pace + GT4Py + DaCe, ICON-exclaim + GT4Py), or d) ML emulators that bypass the physics (GraphCast, Pangu-Weather, AIFS, FourCastNet, GenCast, Aurora, NeuralGCM hybrid). What did not exist: a clean-slate, physics-faithful, single-language Python/JAX port preserving the WRF Fortran dynamical-core structure at the savepoint level, runnable on commodity hardware, and openly modifiable. This paper introduces that.

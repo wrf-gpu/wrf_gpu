@@ -48,15 +48,16 @@ TOST remains valuable as a station sanity check, but not as the primary
 equivalence arbiter. The release/paper claim must be grounded first in all-cell,
 all-field stability and bounded drift.
 
-## TOST Start Signal
+## Optional TOST Signal
 
-Do not start the powered n=15 TOST marathon before:
+Powered n=15 TOST is no longer a v0.14 release gate. It can run as optional
+secondary station sanity evidence only after:
 
 - the RRTMG fix commit is on the branch;
 - the short all-field rollout falsifier has no radical field divergence;
 - exact-branch memory preflight is rerun on the final candidate; and
-- the planned long field-parity/stability campaign has either started or has a
-  recorded scheduling reason for running after TOST.
+- the mandatory Switzerland/Gotthard and Canary L2 d02 72h field-parity gates
+  have either started or have a recorded scheduling reason for running first.
 
-If those conditions hold, TOST can run as secondary evidence with CSV resource
-logging via `scripts/run_powered_tost_n15.sh`.
+If those conditions hold, TOST can run with CSV resource logging via
+`scripts/run_powered_tost_n15.sh`, but it must be reported as secondary evidence.

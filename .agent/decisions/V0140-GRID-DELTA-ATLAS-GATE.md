@@ -5,21 +5,24 @@ Owner: manager
 
 ## Decision
 
-The v0.14 final validation gate is not station TOST alone. Before v0.14 can be
+The v0.14 final validation gate is not station TOST. Before v0.14 can be
 tagged, the validation campaign must produce a **Grid-Delta Atlas** comparing
 GPU wrfout against CPU-WRF wrfout for every paired case, lead time, grid cell,
-and common numeric field.
+and common numeric field in the mandatory 72h field-parity/stability campaign.
 
-This is a second required pillar beside ADR-029 powered TOST:
+The required v0.14 pillars are:
 
-1. **Pillar A: station TOST** for gate-keeper-facing T2/U10/V10 RMSE
-   equivalence at AEMET stations.
-2. **Pillar B: grid-cell delta envelope** for model-stability/equivalence
-   evidence over all fields and all cells.
+1. **Switzerland/Gotthard 72h field-parity/stability** against CPU-WRF.
+2. **Canary L2 d02 72h field-parity/stability** against CPU-WRF.
+3. **Grid-cell delta envelope and plots** for model-stability/equivalence
+   evidence over all common numeric fields and all cells.
+
+Powered TOST is secondary station sanity evidence only. It can be reported with
+the atlas, but it is not a v0.14 tag gate.
 
 ## Scope
 
-For each included TOST/validation case:
+For each included validation case:
 
 - Pair every GPU `wrfout` frame with the matching CPU-WRF `wrfout` frame by
   domain, valid time, and lead hour.
@@ -63,8 +66,8 @@ Required v0.14 artifacts:
 - `proofs/v014/grid_delta_atlas/GRID_DELTA_ATLAS.md`
 - selected plot PNG/SVG files under `docs/assets/v014/grid_delta_atlas/`
 - README section embedding the dashboard plot and linking the full atlas report
-- TOST report linking to the same atlas so station scores and full-grid deltas
-  cannot diverge silently
+- optional TOST report linking to the same atlas if station scoring is run, so
+  station scores and full-grid deltas cannot diverge silently
 
 ## Gate Semantics
 
@@ -82,7 +85,8 @@ Hard-fail before tag:
 - an unexplained systematic field-family drift in `T/U/V/W/QVAPOR/P/PH/MU`,
   surface winds, `T2`, `PSFC`, or precipitation;
 - a grid-delta breach in a predeclared hard field envelope;
-- a station TOST result that is interpreted without the grid-delta atlas.
+- a station TOST result that is interpreted as stronger than the grid-delta
+  atlas.
 
 Report-only until thresholds are frozen:
 
@@ -93,8 +97,8 @@ Report-only until thresholds are frozen:
 ## Implementation Notes
 
 Existing `proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py` already
-has a limited cell-level statistics pillar. v0.14 must extend this into the
-full atlas:
+has a limited cell-level statistics pillar. v0.14 must use the standalone atlas
+tooling as the release surface:
 
 - all common numeric fields, not only the old `FIELDS` subset;
 - all leads and all paired cases;
@@ -102,5 +106,5 @@ full atlas:
 - explicit tolerance manifest and pass/fail dashboard;
 - concise top-level output to preserve manager/agent context.
 
-This atlas is run only after the current grid-parity debug ladder has closed
-the Step-1/live-nest divergence enough that long GPU validation is meaningful.
+This atlas is run after the short field falsifier and final memory preflight
+show that long GPU validation is meaningful.
