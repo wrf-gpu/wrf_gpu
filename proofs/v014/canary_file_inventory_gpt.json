@@ -1,0 +1,523 @@
+{
+  "verdict": "The strongest v0.14 Canary field-validation truth already on disk is the L2 d02 72h CPU-WRF backfill corpus under /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output: 15 complete cases, each with 73 hourly d01 and d02 wrfout frames and WRF rc=0 provenance in paired .cpu_wrf_backfill manifests. The nightly/case-bank corpus is real but is a teacher-shadow/point-artifact bank, not full wrfout or restart coverage. I found no complete Canary/Tenerife WRF restart/checkpoint corpus under the requested roots: canonical wrfrst_d0* files are absent from the retained run roots, representative namelists have restart=.false., and the v014 savepoint material is single-step debug instrumentation outside the requested roots, not restartable 72h field truth.",
+  "roots_searched": [
+    "/home/enric/src/wrf_gpu2",
+    "/home/enric/src/canairy_meteo",
+    "/mnt/data/canairy_meteo"
+  ],
+  "path_notes": [
+    "/home/enric/src/canairy_meteo/Gen2/runs is a symlink to /mnt/data/canairy_meteo/runs.",
+    "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank and /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank resolve to the same device/inode for sampled files."
+  ],
+  "candidate_run_sets": [
+    {
+      "root": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output",
+      "kind": "backfill",
+      "domains": [
+        "d01",
+        "d02"
+      ],
+      "case_count": 15,
+      "case_roots": [
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260430_18z_l2_72h_20260520T191306Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260502_18z_l2_72h_20260520T103946Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260507_18z_l2_72h_20260513T124307Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260508_18z_l2_72h_20260512T161222Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260511_18z_l2_72h_20260512T045528Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260512_18z_l2_72h_20260513T014823Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260513_18z_l2_72h_20260514T054102Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260530_18z_l2_72h_20260531T161057Z"
+      ],
+      "wrfout_counts": {
+        "d01": 1095,
+        "d02": 1095,
+        "d03": 0
+      },
+      "per_case_wrfout_counts": {
+        "d01": 73,
+        "d02": 73
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "d01": {
+          "start": "2026-04-29_18:00:00",
+          "end": "2026-06-02_18:00:00"
+        },
+        "d02": {
+          "start": "2026-04-29_18:00:00",
+          "end": "2026-06-02_18:00:00"
+        }
+      },
+      "has_wrfinput": false,
+      "has_wrfbdy": false,
+      "paired_input_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+      "manifest_files": [
+        "/mnt/data/canairy_meteo/runs/wrf_l2/*/.cpu_wrf_backfill/*_manifest.json"
+      ],
+      "readme_files": [],
+      "recommended_use": "Primary CPU-WRF truth corpus for Canary L2 d02 72h field parity; use one selected case for v0.14 gate and retain all 15 for secondary ensemble/station checks."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+      "kind": "backfill",
+      "domains": [
+        "d01",
+        "d02"
+      ],
+      "wrfout_counts": {
+        "d01": 73,
+        "d02": 73,
+        "d03": 0
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "d01": {
+          "start": "2026-05-01_18:00:00",
+          "end": "2026-05-04_18:00:00"
+        },
+        "d02": {
+          "start": "2026-05-01_18:00:00",
+          "end": "2026-05-04_18:00:00"
+        }
+      },
+      "grid": {
+        "d02_mass_shape": [
+          44,
+          66,
+          159
+        ],
+        "dx_m": 3000,
+        "dy_m": 3000,
+        "use_theta_m": 1
+      },
+      "has_wrfinput": false,
+      "has_wrfbdy": false,
+      "paired_input_root": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+      "manifest_files": [
+        "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/.cpu_wrf_backfill/20260603T000612Z_manifest.json"
+      ],
+      "readme_files": [],
+      "recommended_use": "Best single mandatory v0.14 Canary gate CPU truth because it is complete, provenance-clean, and already used by the h1 field falsifier."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+      "kind": "input",
+      "domains": [
+        "d01",
+        "d02"
+      ],
+      "wrfout_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {},
+      "has_wrfinput": true,
+      "has_wrfbdy": true,
+      "input_files": [
+        "wrfinput_d01",
+        "wrfinput_d02",
+        "wrfbdy_d01",
+        "namelist.input"
+      ],
+      "wrfbdy_time_count": 12,
+      "namelist_facts": {
+        "run_hours": 72,
+        "max_dom": 2,
+        "restart": false,
+        "restart_interval": 100000,
+        "history_interval_minutes": 60
+      },
+      "manifest_files": [
+        "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/.cpu_wrf_backfill/20260603T000612Z_manifest.json"
+      ],
+      "readme_files": [
+        "README.namelist",
+        "README.physics_files",
+        "README.rasm_diag",
+        "README.tslist"
+      ],
+      "recommended_use": "Use as retained input/run directory for GPU/JAX replay against the selected d02 72h CPU truth."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+      "kind": "unknown",
+      "domains": [
+        "d01",
+        "d02"
+      ],
+      "wrfout_counts": {
+        "d01": 73,
+        "d02": 73,
+        "d03": 0
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "d01": {
+          "start": "2026-05-09_18:00:00",
+          "end": "2026-05-12_18:00:00"
+        },
+        "d02": {
+          "start": "2026-05-09_18:00:00",
+          "end": "2026-05-12_18:00:00"
+        }
+      },
+      "has_wrfinput": true,
+      "has_wrfbdy": true,
+      "manifest_files": [
+        "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260509_18z/manifest.yaml"
+      ],
+      "readme_files": [
+        "README.namelist",
+        "README.physics_files",
+        "README.rasm_diag",
+        "README.tslist"
+      ],
+      "recommended_use": "Alternate complete retained L2 d02 72h CPU run with inputs and outputs in one directory; not the fastest v0.14 gate because the release decision already selected 20260501."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank",
+      "kind": "nightly",
+      "domains": [
+        "d02",
+        "d03",
+        "d04",
+        "d05"
+      ],
+      "case_manifest_count": 54,
+      "completed_teacher_shadow_only_count": 29,
+      "status_counts": {
+        "completed_teacher_shadow_only": 29,
+        "failed": 16,
+        "running": 8,
+        "preflight_ready_full_wrf_not_started": 1
+      },
+      "point_artifact_counts": {
+        "parquet": 156,
+        "csv": 156,
+        "point_shadow_manifest_yaml": 156
+      },
+      "wrfout_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "case_ids": {
+          "start": "20260326_06z",
+          "end": "20260605_18z"
+        },
+        "completed_dense_window": {
+          "start": "20260429_18z",
+          "end": "20260530_18z"
+        }
+      },
+      "has_wrfinput": false,
+      "has_wrfbdy": false,
+      "manifest_files": [
+        "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/*/manifest.yaml",
+        "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/*/*point_shadows.manifest.yaml"
+      ],
+      "readme_files": [
+        "/home/enric/src/canairy_meteo/Gen2/manifests/phase15d_wrf_evidence_bank_inventory_v1.yaml",
+        "/home/enric/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md"
+      ],
+      "recommended_use": "Use for station/point-shadow and case-selection evidence, not as full-field v0.14 parity truth; it lacks retained full wrfout and restart files."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/runs/wrf_l3",
+      "kind": "unknown",
+      "domains": [
+        "d01",
+        "d02",
+        "d03",
+        "d04",
+        "d05"
+      ],
+      "complete_24h_case_roots": [
+        "/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z",
+        "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
+      ],
+      "wrfout_counts": {
+        "d01": 50,
+        "d02": 50,
+        "d03": 50
+      },
+      "per_complete_case_wrfout_counts": {
+        "d01": 25,
+        "d02": 25,
+        "d03": 25,
+        "d04": 25,
+        "d05": 25
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "d03_complete_cases": {
+          "start": "2026-05-09_18:00:00",
+          "end": "2026-05-22_18:00:00"
+        }
+      },
+      "has_wrfinput": true,
+      "has_wrfbdy": true,
+      "namelist_facts": {
+        "run_hours": 24,
+        "max_dom": 5,
+        "restart": false,
+        "restart_interval": 100000,
+        "history_interval_minutes": 60
+      },
+      "representative_d03_grid": {
+        "mass_shape": [
+          44,
+          72,
+          72
+        ],
+        "dx_m": 1000,
+        "dy_m": 1000,
+        "use_theta_m": 1
+      },
+      "representative_wrfbdy_time_count": 4,
+      "manifest_files": [
+        "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260509_18z/manifest.yaml",
+        "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260521_18z/manifest.yaml"
+      ],
+      "readme_files": [
+        "README.namelist",
+        "README.physics_files",
+        "README.rasm_diag",
+        "README.tslist"
+      ],
+      "recommended_use": "Secondary d03/Tenerife 24h truth only; not a clean v0.14 72h field gate and not resumable from retained files."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/runs/surface_geo_v2_1",
+      "kind": "unknown",
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "wrfout_counts": {
+        "d01": 75,
+        "d02": 75,
+        "d03": 75
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "d03": {
+          "start": "2026-05-13_18:00:00",
+          "end": "2026-05-14_18:00:00"
+        }
+      },
+      "has_wrfinput": true,
+      "has_wrfbdy": true,
+      "manifest_files": [
+        "/mnt/data/canairy_meteo/artifacts/surface_geo_v2_1/skill_compare_20260513_l3*/manifest.yaml",
+        "/mnt/data/canairy_meteo/artifacts/surface_geo_v2_1/skill_compare_20260513_l3*/summary.md"
+      ],
+      "readme_files": [
+        "README.namelist",
+        "README.physics_files",
+        "README.rasm_diag",
+        "README.tslist"
+      ],
+      "recommended_use": "Research/regression d03 24h evidence only; duplicate/broken variants exist and it is not the v0.14 field gate."
+    },
+    {
+      "root": "/home/enric/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout",
+      "kind": "gpu",
+      "domains": [
+        "d02"
+      ],
+      "wrfout_counts": {
+        "d01": 0,
+        "d02": 154,
+        "d03": 0
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "d02": {
+          "start": "2026-05-11_09:00:00",
+          "end": "2026-06-01_18:00:00"
+        }
+      },
+      "has_wrfinput": false,
+      "has_wrfbdy": false,
+      "manifest_files": [],
+      "readme_files": [],
+      "recommended_use": "Historical GPU/JAX TOST proof outputs, useful for provenance only; not CPU truth and not a v0.14 field-parity target."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out",
+      "kind": "gpu",
+      "domains": [
+        "d01",
+        "d02",
+        "d03"
+      ],
+      "wrfout_counts": {
+        "d01": 24,
+        "d02": 24,
+        "d03": 24
+      },
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "time_range": {
+        "d03": {
+          "start": "2026-05-31_19:00:00",
+          "end": "2026-06-01_18:00:00"
+        }
+      },
+      "has_wrfinput": false,
+      "has_wrfbdy": false,
+      "manifest_files": [],
+      "readme_files": [],
+      "recommended_use": "Prior GPU nested 24h gate output; not CPU truth and not restartable."
+    }
+  ],
+  "best_v014_gate": {
+    "selected_domain": "d02",
+    "selected_case": "20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_truth_root": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "input_root": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+    "why": [
+      "73 hourly d02 CPU-WRF frames cover 2026-05-01_18:00:00 through 2026-05-04_18:00:00.",
+      "Hidden .cpu_wrf_backfill manifest reports WRF return code 0 and final_output_counts d01=73,d02=73.",
+      "Grid is the operational 3 km L2 d02 target: 159 x 66 x 44 mass grid, DX=DY=3000 m, USE_THETA_M=1.",
+      "It is already the current h1 field-falsifier case, so short and 72h gates share input/provenance."
+    ],
+    "d03_recommendation": "Keep d03 as secondary/v0.15. Existing retained d03 truths are 24h-oriented and have no wrfrst; representative wrfbdy_d01 has only four boundary times for the 24h L3 run."
+  },
+  "checkpointed_sets": [
+    {
+      "root": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output",
+      "kind": "backfill",
+      "case_count": 15,
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "suitable_for_resume_or_restart_validation": false,
+      "evidence": "No wrfrst_d0* files were found in the retained L2 backfill output corpus; paired selected namelist has restart=.false. and restart_interval=100000."
+    },
+    {
+      "root": "/mnt/data/canairy_meteo/runs/wrf_l3",
+      "kind": "unknown",
+      "complete_24h_d03_cases": 2,
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "suitable_for_resume_or_restart_validation": false,
+      "evidence": "Representative L3 namelists have restart=.false.; the canonical wrfrst search found no d02/d03 restart files under retained run roots."
+    },
+    {
+      "root": "/home/enric/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs",
+      "kind": "gpu",
+      "case_count": 3,
+      "wrfrst_counts": {
+        "d01": 0,
+        "d02": 0,
+        "d03": 0
+      },
+      "suitable_for_resume_or_restart_validation": false,
+      "evidence": "Contains durable GPU/JAX pipeline proof JSON for three n15 cases, including restart_in_pipeline.json in the 20260429 case; this is runner resume/proof state, not WRF wrfrst truth."
+    },
+    {
+      "root": "/mnt/data/wrf_gpu2/v014_same_state_wrf and sibling v014_*_savepoint roots",
+      "kind": "checkpointed",
+      "outside_requested_roots": true,
+      "suitable_for_resume_or_restart_validation": false,
+      "evidence": "Referenced by v014 proof markdown/JSON as disposable CPU-WRF single-step instrumentation and filtered savepoint truth. It is not a full 24h/72h Canary field corpus and not under the requested roots."
+    }
+  ],
+  "nightly_sets": [
+    {
+      "root": "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank",
+      "also_reachable_as": "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank",
+      "kind": "nightly",
+      "case_manifest_count": 54,
+      "completed_teacher_shadow_only_count": 29,
+      "status_counts": {
+        "completed_teacher_shadow_only": 29,
+        "failed": 16,
+        "running": 8,
+        "preflight_ready_full_wrf_not_started": 1
+      },
+      "contains": [
+        "manifest.yaml per case",
+        "l2_d02 point-shadow csv/parquet/manifest",
+        "l3_d03 and l3_d03_tnf point-shadow csv/parquet/manifest",
+        "l3_d04_gc and l3_d05_lp point-shadow csv/parquet/manifest"
+      ],
+      "missing": [
+        "full wrfout_d02 histories in the case-bank root",
+        "full wrfout_d03 histories in the case-bank root",
+        "wrfrst_d02/wrfrst_d03 restart files",
+        "wrfinput/wrfbdy launch files in the case-bank root"
+      ],
+      "recommended_use": "Use as case-selection and station/point-shadow evidence; pair to /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output or retained wrf_l3 roots for full-field truth."
+    }
+  ],
+  "open_uncertainties": [
+    {
+      "uncertainty": "If Enric meant a checkpointed 15-case corpus outside the three requested roots, it was not searched as a primary root.",
+      "fastest_command": "find /mnt/data -path '*/artifacts/envs/*' -prune -o -type f \\( -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' -o -iname '*checkpoint*' -o -iname '*savepoint*' \\) -printf '%p\\n' | sed -n '1,240p'"
+    },
+    {
+      "uncertainty": "Whether any deleted/thinned nightly full wrfout can be reconstructed without rerunning WRF.",
+      "fastest_command": "rg -n \"safe_output_dir|delete|thin_gridded|teacher_shadow_only|wrfout\" /home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /home/enric/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md"
+    },
+    {
+      "uncertainty": "Whether a d03 72h truth campaign already exists under a validation root outside the requested canairy roots.",
+      "fastest_command": "find /mnt/data/wrf_gpu_validation /mnt/data -maxdepth 5 -type f -name 'wrfout_d03_*' -printf '%h\\n' | sort | uniq -c | sort -nr | sed -n '1,120p'"
+    }
+  ],
+  "commands_recorded_in_markdown": true
+}

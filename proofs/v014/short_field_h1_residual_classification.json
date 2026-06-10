@@ -1,0 +1,440 @@
+{
+ "base_state_localization": {
+  "MUB": {
+   "cpu_vs_wrfinput_d02": {
+    "bias": -2.2379685713264723,
+    "mae": 11.983993085334477,
+    "max_abs": 2635.640625,
+    "p99_abs": 412.8984375,
+    "rmse": 98.13000038547803
+   },
+   "gpu_vs_wrfinput_d02": {
+    "bias": -2.356691919191919,
+    "mae": 12.6775032161235,
+    "max_abs": 2733.7890625,
+    "p99_abs": 420.55296874999897,
+    "rmse": 102.87893868853386
+   },
+   "n_cells_gt_1pa": 154,
+   "n_cells_total": 10494,
+   "n_in_spec_bdy_5": null,
+   "worst_cells": [
+    {
+     "abs_delta": 89.7734375,
+     "hgt_m": 0.09353236854076385,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 34
+    },
+    {
+     "abs_delta": 77.28125,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 33
+    },
+    {
+     "abs_delta": 58.4296875,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 32
+    },
+    {
+     "abs_delta": 42.6328125,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 31
+    },
+    {
+     "abs_delta": 41.515625,
+     "hgt_m": 0.0,
+     "i": 156,
+     "in_spec_bdy_5": true,
+     "j": 33
+    },
+    {
+     "abs_delta": 33.515625,
+     "hgt_m": 0.0,
+     "i": 18,
+     "in_spec_bdy_5": true,
+     "j": 0
+    },
+    {
+     "abs_delta": 32.7890625,
+     "hgt_m": 0.0,
+     "i": 156,
+     "in_spec_bdy_5": true,
+     "j": 32
+    },
+    {
+     "abs_delta": 31.296875,
+     "hgt_m": 0.0,
+     "i": 19,
+     "in_spec_bdy_5": true,
+     "j": 3
+    },
+    {
+     "abs_delta": 29.703125,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 30
+    },
+    {
+     "abs_delta": 26.3125,
+     "hgt_m": 0.0,
+     "i": 19,
+     "in_spec_bdy_5": true,
+     "j": 0
+    }
+   ]
+  },
+  "PB": {
+   "n_cells_gt_1pa": 154,
+   "n_cells_total": 10494,
+   "n_in_spec_bdy_5": null,
+   "worst_cells": [
+    {
+     "abs_delta": 89.4921875,
+     "hgt_m": 0.09353236854076385,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 34
+    },
+    {
+     "abs_delta": 77.046875,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 33
+    },
+    {
+     "abs_delta": 58.25,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 32
+    },
+    {
+     "abs_delta": 42.5,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 31
+    },
+    {
+     "abs_delta": 41.375,
+     "hgt_m": 0.0,
+     "i": 156,
+     "in_spec_bdy_5": true,
+     "j": 33
+    },
+    {
+     "abs_delta": 33.4140625,
+     "hgt_m": 0.0,
+     "i": 18,
+     "in_spec_bdy_5": true,
+     "j": 0
+    },
+    {
+     "abs_delta": 32.6796875,
+     "hgt_m": 0.0,
+     "i": 156,
+     "in_spec_bdy_5": true,
+     "j": 32
+    },
+    {
+     "abs_delta": 31.2109375,
+     "hgt_m": 0.0,
+     "i": 19,
+     "in_spec_bdy_5": true,
+     "j": 3
+    },
+    {
+     "abs_delta": 29.6171875,
+     "hgt_m": 0.0,
+     "i": 155,
+     "in_spec_bdy_5": true,
+     "j": 30
+    },
+    {
+     "abs_delta": 26.234375,
+     "hgt_m": 0.0,
+     "i": 19,
+     "in_spec_bdy_5": true,
+     "j": 0
+    }
+   ]
+  }
+ },
+ "classification": {
+  "dominant_class": "DYCORE_EOS_MOISTURE_FACTOR (p608 vs rvovrd) \u2014 fixed in src/gpuwrf/dynamics/acoustic_wrf.py this sprint; GPU rerun required to re-baseline the h1 falsifier.",
+  "init_mode_mismatch_dominant_for_mass_fields": false,
+  "provenance_same_inputs": true,
+  "secondary_classes": [
+   "init-mode mismatch: GPU standalone_native_init_nested live-nests d02 from d01; CPU truth used real.exe wrfinput_d02 (input_from_file=.true.) \u2014 irreducible in current gate pairing",
+   "radiation timing: COSZEN bias -0.0551 (~15-20 min zenith offset, WRF seeds xtime+radt/2) -> SWDOWN/SWNORM ~-37% relative at h1",
+   "MUB/PB: 154/10494 cells differ >1 Pa, all in spec_bdy band, max ~90 Pa (boundary-row base class)"
+  ]
+ },
+ "eos_attribution": {
+  "cpu_truth": {
+   "p608_0.608": {
+    "bias": -296.55634626173105,
+    "mae": 296.55634626173105,
+    "max_abs": 1675.6386828320828,
+    "p99_abs": 1492.505436806805,
+    "rmse": 549.8370831745632
+   },
+   "rvovrd_1.608": {
+    "bias": -17.684234778626276,
+    "mae": 17.707441104522534,
+    "max_abs": 48.8484105632524,
+    "p99_abs": 48.67948584439618,
+    "rmse": 22.358519465781058
+   }
+  },
+  "gpu_prefix_run": {
+   "p608_0.608": {
+    "bias": 4.55642742218371,
+    "mae": 4.739144725274622,
+    "max_abs": 245.99731718174007,
+    "p99_abs": 7.779221731653533,
+    "rmse": 5.784854273374591
+   },
+   "rvovrd_1.608": {
+    "bias": 286.9206237205838,
+    "mae": 286.9271817795979,
+    "max_abs": 1743.9639606454148,
+    "p99_abs": 1531.961711731633,
+    "rmse": 556.0630103243252
+   }
+  },
+  "verdict": "CPU-WRF truth satisfies the EOS with qvf=1+rvovrd*qv and grossly fails with 1+p608*qv; the pre-fix GPU output is the exact mirror. Root cause: src/gpuwrf/dynamics/acoustic_wrf.py used 0.608 (p608) in _pressure_from_theta_alt and _inverse_density_from_theta_pressure where WRF uses rvovrd=Rv/Rd~1.6084. Fixed in this sprint."
+ },
+ "h1_field_deltas": {
+  "HFX": {
+   "bias": -5.867219647252808,
+   "mae": 15.954716043748476,
+   "max_abs": 377.6929416656494,
+   "p99_abs": 250.96537433624226,
+   "pearson_r": 0.3477615696172634,
+   "rmse": 38.18556728426778
+  },
+  "LH": {
+   "bias": 11.99721942633351,
+   "mae": 42.533150457934966,
+   "max_abs": 323.31042420864105,
+   "p99_abs": 144.99522911071773,
+   "pearson_r": 0.18808038312729652,
+   "rmse": 53.89648907967152
+  },
+  "MU": {
+   "bias": -85.14209800968857,
+   "mae": 107.3359938938322,
+   "max_abs": 213.0989990234375,
+   "p99_abs": 204.01148559570314,
+   "pearson_r": -0.07885634203705225,
+   "rmse": 121.96091606265195
+  },
+  "MUB": {
+   "bias": -0.11872334786544692,
+   "mae": 0.8141519856584715,
+   "max_abs": 250.6640625,
+   "p99_abs": 18.194140624999875,
+   "pearson_r": 0.999991584191742,
+   "rmse": 9.275926032584588
+  },
+  "P": {
+   "bias": -85.66249537252378,
+   "mae": 86.06692060213645,
+   "max_abs": 408.3895263671875,
+   "p99_abs": 361.9127563476562,
+   "pearson_r": 0.9975079758342947,
+   "rmse": 129.75362527990887
+  },
+  "PB": {
+   "bias": -0.03573930774295268,
+   "mae": 0.24512285987691018,
+   "max_abs": 249.875,
+   "p99_abs": 0.10546875,
+   "pearson_r": 0.9999999908110152,
+   "rmse": 4.520886912887757
+  },
+  "PBLH": {
+   "bias": 23.977973255312328,
+   "mae": 58.457455962413555,
+   "max_abs": 497.103515625,
+   "p99_abs": 262.6710742187493,
+   "pearson_r": 0.7130995152076135,
+   "rmse": 78.94976224665304
+  },
+  "PSFC": {
+   "bias": -313.7803603547265,
+   "mae": 313.780603052935,
+   "max_abs": 425.6796875,
+   "p99_abs": 414.67281249999996,
+   "pearson_r": 0.9994617805111864,
+   "rmse": 323.1152356107269
+  },
+  "QVAPOR": {
+   "bias": 3.4162628543072226e-06,
+   "mae": 9.720798641801896e-05,
+   "max_abs": 0.004589231684803963,
+   "p99_abs": 0.0008210293017327799,
+   "pearson_r": 0.9983712652580203,
+   "rmse": 0.00020084471956414147
+  },
+  "T": {
+   "bias": 0.6705024644288671,
+   "mae": 0.8067773891374752,
+   "max_abs": 6.129150390625,
+   "p99_abs": 4.905323791503907,
+   "pearson_r": 0.9997675176735998,
+   "rmse": 1.4572746269454984
+  },
+  "U": {
+   "bias": -0.07178752707715283,
+   "mae": 0.48592574763127033,
+   "max_abs": 10.363816857337952,
+   "p99_abs": 4.471779767274845,
+   "pearson_r": 0.994666977382025,
+   "rmse": 0.9241890603209426
+  },
+  "V": {
+   "bias": -1.6608489097292538,
+   "mae": 1.8270955646094396,
+   "max_abs": 10.838262677192688,
+   "p99_abs": 7.436951363086701,
+   "pearson_r": 0.8842379205265778,
+   "rmse": 2.115780775383566
+  }
+ },
+ "mu_init_mode_attribution": {
+  "cpu_mu_1h_tendency": {
+   "bias": 46.939088507700085,
+   "mae": 48.33771919845194,
+   "max_abs": 236.042236328125,
+   "p99_abs": 124.85302978515621,
+   "rmse": 53.81141339414744
+  },
+  "livenest_proxy_minus_realinit": {
+   "bias": -20.55736735475774,
+   "mae": 254.11628958280374,
+   "max_abs": 11923.016493055562,
+   "p99_abs": 4413.238680555558,
+   "rmse": 903.751101194472
+  },
+  "note": "Bilinear proxy for WRF SINT; correlation/scale attribution only.",
+  "observed_h1_gpu_minus_cpu": {
+   "bias": -85.14209800968857,
+   "mae": 107.3359938938322,
+   "max_abs": 213.0989990234375,
+   "p99_abs": 204.01148559570314,
+   "rmse": 121.96091606265195
+  },
+  "pattern_corr_cputend_vs_h1gap": -0.2889517181861712,
+  "pattern_corr_initgap_vs_h1gap": 0.05873528004661319
+ },
+ "provenance": {
+  "backfill_manifest": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/.cpu_wrf_backfill/20260603T000612Z_manifest.json",
+  "backfill_mode": "wrf-only",
+  "backfill_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+  "cpu_namelist_input_from_file_d02": true,
+  "gpu_init_mode": "standalone_native_init_nested",
+  "gpu_input_symlink_resolves_to": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+  "init_mode_mismatch": "CPU-WRF d02 initialized from real.exe wrfinput_d02 (input_from_file=.true.); GPU d02 initialized by native live-nest interpolation from d01 and never reads wrfinput_d02.",
+  "same_input_files": true
+ },
+ "psfc_decomposition": {
+  "cpu_psfc_minus_cpu_dry": {
+   "bias": 198.73449840803747,
+   "mae": 198.73449840803747,
+   "max_abs": 270.3790283203125,
+   "p99_abs": 267.2076477050781,
+   "rmse": 201.33741269882282
+  },
+  "delta_dry_surface_pressure": {
+   "bias": -85.26082135755402,
+   "mae": 107.63576943056002,
+   "max_abs": 213.0989990234375,
+   "p99_abs": 204.01148559570314,
+   "rmse": 122.13483693233502
+  },
+  "delta_psfc": {
+   "bias": -313.7803603547265,
+   "mae": 313.780603052935,
+   "max_abs": 425.6796875,
+   "p99_abs": 414.67281249999996,
+   "rmse": 323.1152356107269
+  },
+  "gpu_psfc_minus_gpu_dry": {
+   "bias": -29.78504058913501,
+   "mae": 29.814781332915683,
+   "max_abs": 79.4345703125,
+   "p99_abs": 52.40690673828118,
+   "rmse": 31.048686154158627
+  },
+  "residual_diag_offset": {
+   "bias": -228.5195389971725,
+   "mae": 228.5195389971725,
+   "max_abs": 313.3701171875,
+   "p99_abs": 297.7555590820312,
+   "rmse": 230.92628305394743
+  }
+ },
+ "radiation_timing": {
+  "COSZEN": {
+   "bias": -0.05514321072168729,
+   "mae": 0.05514321072168729,
+   "max_abs": 0.055673420429229736,
+   "p99_abs": 0.05564477555453777,
+   "rmse": 0.05514394056103002
+  },
+  "GLW": {
+   "bias": -6.25048323279225,
+   "mae": 6.315896262708154,
+   "max_abs": 37.83135986328125,
+   "p99_abs": 15.360816040039056,
+   "rmse": 8.485928085296434
+  },
+  "SWDOWN": {
+   "bias": -55.5923106497257,
+   "mae": 55.5923106497257,
+   "max_abs": 64.01993560791016,
+   "p99_abs": 59.15174575805664,
+   "rmse": 55.61451470855059
+  },
+  "SWNORM": {
+   "bias": -55.56065166557723,
+   "mae": 56.25441156306993,
+   "max_abs": 203.47093963623047,
+   "p99_abs": 110.86451705932618,
+   "rmse": 57.36323757523385
+  },
+  "mean_cpu_coszen": 0.18337325304633031,
+  "mean_gpu_coszen": 0.12823004232464302,
+  "rel_coszen_offset": -0.3007156703914449,
+  "rel_swdown_offset": -0.37440719384351107
+ },
+ "schema": "V014ShortFieldH1ResidualClassification",
+ "schema_version": 1,
+ "t_split": {
+  "boundary_band_5": {
+   "bias": 0.28593589895623434,
+   "mae": 0.3478783608692645,
+   "max_abs": 3.6328125,
+   "p99_abs": 2.2709207153320228,
+   "rmse": 0.5869222081676809
+  },
+  "interior": {
+   "bias": 0.7695938014094711,
+   "mae": 0.9250219853475247,
+   "max_abs": 6.129150390625,
+   "p99_abs": 4.947732543945314,
+   "rmse": 1.6068879313913893
+  }
+ }
+}

@@ -10,6 +10,7 @@ from gpuwrf.dynamics.acoustic_wrf import (
     acoustic_substep,
     diagnose_pressure_al_alt,
     initialize_acoustic_carry,
+    _inverse_density_from_theta_pressure,
     moisture_coupling_factors,
     mu_continuity_tendency,
     run_acoustic_scan_carry,
@@ -20,10 +21,14 @@ from gpuwrf.dynamics.metrics import flat_metrics_for_grid
 
 def _rest_state_and_base(grid: GridSpec) -> tuple[State, BaseState]:
     arrays = {field: jnp.zeros(shape, dtype=jnp.float64) for field, shape in _state_field_shapes(grid).items()}
+    metrics = flat_metrics_for_grid(grid)
     theta = jnp.ones_like(arrays["theta"]) * 300.0
     pb = jnp.ones_like(arrays["p"]) * 90000.0
-    phb = jnp.zeros_like(arrays["ph"])
     mub = jnp.ones_like(arrays["mu"]) * 90000.0
+    alb = _inverse_density_from_theta_pressure(theta, pb)
+    base_mass = metrics.c1h[:, None, None] * mub[None, :, :] + metrics.c2h[:, None, None]
+    dphb = -metrics.dnw[:, None, None] * base_mass * alb
+    phb = jnp.zeros_like(arrays["ph"]).at[1:].set(jnp.cumsum(dphb, axis=0))
     arrays["theta"] = theta
     arrays["p"] = pb
     arrays["p_total"] = pb

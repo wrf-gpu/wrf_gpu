@@ -1,0 +1,137 @@
+{
+  "verdict": "FIXED_UNIFIED_MOIST_THETA_M_CONVENTION_GPU_RERUN_REQUIRED",
+  "round1_rvovrd_patch": "NOT ratified as-is: 1+rvovrd*qv is the correct DRY-theta (use_theta_m=0) EOS form and fixes d01, but operational d02 State.theta is MOIST theta_m, where WRF uses qvf=1; applying rvovrd there double-couples moisture. Helper signature kept (qv=None -> qvf=1 moist; qv -> dry form); production callers now pass qv=None.",
+  "theta_convention_evidence": {
+    "wrfinput_d02_T_is_dry": {
+      "max_abs_vs_cpu_h0_T_dry": 0.0,
+      "max_abs_vs_cpu_h0_THM": 5.490173101425171
+    },
+    "cpu_thm_identity_max_abs_K": 6.808488069509622e-05,
+    "gpu_d01_h1_vs_cpu": {
+      "k0": {
+        "bias_vs_dry_K": 0.6415628134628583,
+        "bias_vs_thm_K": -4.02123979721826,
+        "moist_increment_K": 4.662802610681118
+      },
+      "k5": {
+        "bias_vs_dry_K": 0.039150704532801964,
+        "bias_vs_thm_K": -3.7648602927581267,
+        "moist_increment_K": 3.8040109972909284
+      },
+      "k10": {
+        "bias_vs_dry_K": -0.09831372110357436,
+        "bias_vs_thm_K": -1.8914692929741264,
+        "moist_increment_K": 1.7931555718705519
+      },
+      "k20": {
+        "bias_vs_dry_K": 0.026134359569351423,
+        "bias_vs_thm_K": -0.1864655687440956,
+        "moist_increment_K": 0.212599928313447
+      },
+      "k0_boundary_band5": {
+        "bias_vs_dry_K": -0.5060432111713248,
+        "bias_vs_thm_K": -4.897142752242917
+      },
+      "k0_interior10": {
+        "bias_vs_dry_K": 1.0209095897614264,
+        "bias_vs_thm_K": -3.7880981038924806
+      }
+    },
+    "gpu_d02_h1_vs_cpu": {
+      "k0": {
+        "bias_vs_dry_K": 3.278027702609266,
+        "bias_vs_thm_K": -1.5410239498015783,
+        "moist_increment_K": 4.819051652410844
+      },
+      "k5": {
+        "bias_vs_dry_K": 2.7314014176720773,
+        "bias_vs_thm_K": -1.1812759647385043,
+        "moist_increment_K": 3.912677382410582
+      },
+      "k10": {
+        "bias_vs_dry_K": 0.8714640322743948,
+        "bias_vs_thm_K": -0.8971812027918854,
+        "moist_increment_K": 1.7686452350662802
+      },
+      "k20": {
+        "bias_vs_dry_K": 0.08285409917553334,
+        "bias_vs_thm_K": -0.12334542613450246,
+        "moist_increment_K": 0.2061995253100358
+      },
+      "k0_boundary_band5": {
+        "bias_vs_dry_K": 1.0950093681867732,
+        "bias_vs_thm_K": -3.774209625776424
+      },
+      "k0_interior10": {
+        "bias_vs_dry_K": 4.4079668882081835,
+        "bias_vs_thm_K": -0.3783348473456033
+      }
+    },
+    "falsifier_d02_init_metadata": {
+      "use_theta_m": 1,
+      "theta_m_conversion_applied": true
+    }
+  },
+  "eos_self_consistency": {
+    "cpu_d02_h1_theta_is_dry_T": {
+      "qvf_1": {
+        "rmse_all_pa": 880.6424674853874,
+        "rmse_interior_pa": 878.395953920351
+      },
+      "qvf_0.608": {
+        "rmse_all_pa": 549.8370831745632,
+        "rmse_interior_pa": 548.4353814854677
+      },
+      "qvf_1.608": {
+        "rmse_all_pa": 22.358519465781058,
+        "rmse_interior_pa": 22.32021810605951
+      }
+    },
+    "gpu_d01_h1": {
+      "qvf_1": {
+        "rmse_all_pa": 370.61256585399707,
+        "rmse_interior_pa": 330.06082909892524
+      },
+      "qvf_0.608": {
+        "rmse_all_pa": 105.37357060149225,
+        "rmse_interior_pa": 5.119106980598818
+      },
+      "qvf_1.608": {
+        "rmse_all_pa": 525.7186643234074,
+        "rmse_interior_pa": 547.518896435152
+      }
+    },
+    "gpu_d02_h1": {
+      "qvf_1": {
+        "rmse_all_pa": 336.00561729605334,
+        "rmse_interior_pa": 334.7469338179853
+      },
+      "qvf_0.608": {
+        "rmse_all_pa": 5.784854273374591,
+        "rmse_interior_pa": 5.072771367360547
+      },
+      "qvf_1.608": {
+        "rmse_all_pa": 556.0630103243252,
+        "rmse_interior_pa": 554.2753077599755
+      }
+    },
+    "reading": "Every file is self-consistent with ONE factor applied to its own written T: CPU needs dry*1.608 (== theta_m*1, the WRF use_theta_m=1 EOS); pre-fix GPU needs written_T*(1+0.608qv) on BOTH domains -- but GPU d01 written T is DRY theta while GPU d02 interior written T is MOIST theta_m, so the single 0.608 kernel encoded TWO different wrong EOS forms (d01 vapor-light by ~1.0qv; d02 over-coupled by ~0.61qv on top of theta_m)."
+  },
+  "helper_identity_post_fix": {
+    "alpha_moist_vs_ref_rel_max": 2.220446049250313e-16,
+    "alpha_dry_vs_ref_rel_max": 2.220446049250313e-16,
+    "pressure_moist_vs_p_rel_max": 6.661338147750939e-16,
+    "pressure_dry_vs_p_rel_max": 6.661338147750939e-16
+  },
+  "ingest_end_to_end_post_fix": {
+    "state_theta_vs_wrfinput_moist_max_abs_K": 4.4509766723876965e-05,
+    "state_theta_vs_wrfinput_THM_max_abs_K": 6.103515625e-05,
+    "state_theta_vs_wrfinput_dry_max_abs_K": 5.470733642578125,
+    "theta_bdy_t0_west_minus_state_west_max_abs_K": 3.0517578125e-05
+  },
+  "writer_round_trip_post_fix": {
+    "T_vs_dry_theta_max_abs_K": 3.0517578125e-05,
+    "THM_vs_moist_theta_max_abs_K": 0.0,
+    "thm_emitted": true
+  }
+}

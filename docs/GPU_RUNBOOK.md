@@ -147,6 +147,50 @@ scripts/run_gpu_lowprio.sh --cores 0-23 \
     --proof-dir "$RUN_ROOT/proofs"
 ```
 
+Detached h1 Canary falsifier (recommended for manager/agent shells that may
+exit before the run finishes):
+
+```bash
+RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
+mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources}
+cat > "$RUN_ROOT/runinfo.txt" <<EOF
+run_root=$RUN_ROOT
+run_id=20260501_18z_l2_72h_20260519T173026Z
+started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+branch=$(git branch --show-current)
+head=$(git rev-parse HEAD)
+launch=nohup setsid
+status=launched
+EOF
+nohup setsid bash -lc '
+  set +e
+  cd /home/enric/src/wrf_gpu2
+  RUN_ROOT="'"$RUN_ROOT"'"
+  scripts/run_gpu_lowprio.sh --cores 0-23 \
+    --resource-log-dir "$RUN_ROOT/resources" \
+    --resource-label v014_canary_h1_field_falsifier \
+    --resource-interval 5 \
+    -- \
+    python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
+      --run-root /mnt/data/canairy_meteo/runs/wrf_l2 \
+      --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+      --run-id 20260501_18z_l2_72h_20260519T173026Z \
+      --hours 1 \
+      --output-root "$RUN_ROOT/gpu_output" \
+      --proof-dir "$RUN_ROOT/proofs"
+  rc=$?
+  echo "$rc" > "$RUN_ROOT/h1_gpu.rc"
+  printf "finished_utc=%s\nrc=%s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$rc" >> "$RUN_ROOT/runinfo.txt"
+  exit "$rc"
+' > "$RUN_ROOT/h1_gpu.log" 2>&1 < /dev/null &
+echo $! > "$RUN_ROOT/h1_gpu.pid"
+echo "$RUN_ROOT"
+```
+
+Do not rely on `(...) >log 2>&1 &` from a short-lived agent/tool shell: the
+child process can receive SIGHUP before it writes an rc file or resource rows.
+Use `nohup setsid` for detached validation jobs.
+
 Compare the h1 output:
 
 ```bash
@@ -161,10 +205,101 @@ JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
     --out-md "$RUN_ROOT/short_field_h1_grid_compare.md"
 ```
 
-If the h1 falsifier is green, run the full Canary 72 h gate with the same
-command shape and `--hours 72`. Keep the immutable run root under
-`/mnt/data/wrf_gpu_validation/`, then run the Grid-Delta Atlas over leads 0-72
-for every common numeric `wrfout_d02` field.
+If the h1 falsifier is classified as launch-safe, run the full Canary 72 h gate
+with an immutable detached run root under `/mnt/data/wrf_gpu_validation/`.
+This is the exact v0.14 Canary d02 release-gate command shape:
+
+```bash
+RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_$(date -u +%Y%m%dT%H%M%SZ)
+RUN_ID=20260501_18z_l2_72h_20260519T173026Z
+CPU_DIR=/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/$RUN_ID
+GPU_DIR="$RUN_ROOT/gpu_output/l2_d02_$RUN_ID"
+mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources,grid_delta_atlas,grid_delta_atlas_assets}
+cat > "$RUN_ROOT/runinfo.txt" <<EOF
+run_root=$RUN_ROOT
+started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+branch=$(git branch --show-current)
+head=$(git rev-parse HEAD)
+kind=v014_canary_d02_72h_field_parity_gate
+run_id=$RUN_ID
+cpu_truth=$CPU_DIR
+input_root=/mnt/data/canairy_meteo/runs/wrf_l2
+launch=nohup setsid
+status=launched
+EOF
+nohup setsid bash -lc '
+  set +e
+  cd /home/enric/src/wrf_gpu2
+  RUN_ROOT="'"$RUN_ROOT"'"
+  RUN_ID="'"$RUN_ID"'"
+  CPU_DIR=/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/$RUN_ID
+  GPU_DIR="$RUN_ROOT/gpu_output/l2_d02_$RUN_ID"
+  scripts/run_gpu_lowprio.sh --cores 0-23 \
+    --resource-log-dir "$RUN_ROOT/resources" \
+    --resource-label v014_canary_d02_72h \
+    --resource-interval 5 \
+    -- \
+    python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
+      --run-root /mnt/data/canairy_meteo/runs/wrf_l2 \
+      --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+      --run-id "$RUN_ID" \
+      --hours 72 \
+      --output-root "$RUN_ROOT/gpu_output" \
+      --proof-dir "$RUN_ROOT/proofs" \
+    > "$RUN_ROOT/canary_d02_72h_gpu.log" 2>&1
+  gpu_rc=$?
+  echo "$gpu_rc" > "$RUN_ROOT/canary_d02_72h_gpu.rc"
+  printf "gpu_finished_utc=%s\ngpu_rc=%s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$gpu_rc" >> "$RUN_ROOT/runinfo.txt"
+  if [ "$gpu_rc" -ne 0 ]; then exit "$gpu_rc"; fi
+
+  JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
+    python scripts/compare_wrfout_grid.py \
+      --cpu-dir "$CPU_DIR" \
+      --gpu-dir "$GPU_DIR" \
+      --domain d02 \
+      --init 2026-05-01T18:00:00+00:00 \
+      --min-lead 1 --max-lead 72 \
+      --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json \
+      --out-json "$RUN_ROOT/canary_d02_72h_grid_compare.json" \
+      --out-md "$RUN_ROOT/canary_d02_72h_grid_compare.md" \
+    > "$RUN_ROOT/canary_d02_72h_compare.log" 2>&1
+  cmp_rc=$?
+  echo "$cmp_rc" > "$RUN_ROOT/canary_d02_72h_compare.rc"
+  printf "compare_finished_utc=%s\ncompare_rc=%s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$cmp_rc" >> "$RUN_ROOT/runinfo.txt"
+
+  JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
+    python scripts/build_grid_delta_atlas.py \
+      --cpu-dir "$CPU_DIR" \
+      --gpu-dir "$GPU_DIR" \
+      --case-id canary_d02_20260501_18z \
+      --domain d02 \
+      --init 2026-05-01T18:00:00+00:00 \
+      --min-lead 1 --max-lead 72 \
+      --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json \
+      --proof-dir "$RUN_ROOT/grid_delta_atlas" \
+      --asset-dir "$RUN_ROOT/grid_delta_atlas_assets" \
+    > "$RUN_ROOT/canary_d02_72h_atlas.log" 2>&1
+  atlas_rc=$?
+  echo "$atlas_rc" > "$RUN_ROOT/canary_d02_72h_atlas.rc"
+  printf "atlas_finished_utc=%s\natlas_rc=%s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$atlas_rc" >> "$RUN_ROOT/runinfo.txt"
+  if [ "$cmp_rc" -ne 0 ]; then exit "$cmp_rc"; fi
+  exit "$atlas_rc"
+' > "$RUN_ROOT/canary_d02_72h_chain.log" 2>&1 < /dev/null &
+echo $! > "$RUN_ROOT/canary_d02_72h_chain.pid"
+echo "$RUN_ROOT"
+```
+
+Monitor the detached Canary gate:
+
+```bash
+RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_<timestamp>
+cat "$RUN_ROOT"/canary_d02_72h_*.rc 2>/dev/null || true
+cat "$RUN_ROOT/runinfo.txt"
+find "$RUN_ROOT/gpu_output" -type f -name 'wrfout_d0*' | wc -l
+tail -f "$RUN_ROOT/resources/v014_canary_d02_72h_gpu_usage.csv"
+tail -80 "$RUN_ROOT/canary_d02_72h_gpu.log"
+nvidia-smi
+```
 
 The Switzerland/Gotthard 72 h CPU truth is built as a CPU-WRF run, not a GPU
 job. After the Switzerland case builder has populated `wrfinput_d01`,
@@ -195,6 +330,88 @@ writes:
 - `<label>_gpu_usage.csv`
 - `<label>_process_usage.csv`
 - `<label>_system_memory.csv`
+
+Matched Switzerland/Gotthard 72 h GPU gate after the CPU truth above is
+available and the GPU lock is free:
+
+```bash
+RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_$(date -u +%Y%m%dT%H%M%SZ)
+CPU_DIR=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
+GPU_OUT="$RUN_ROOT/gpu_output"
+SCRATCH="$RUN_ROOT/scratch"
+mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources,grid_delta_atlas,grid_delta_atlas_assets,scratch}
+cat > "$RUN_ROOT/runinfo.txt" <<EOF
+run_root=$RUN_ROOT
+started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+branch=$(git branch --show-current)
+head=$(git rev-parse HEAD)
+kind=v014_switzerland_d01_72h_field_parity_gate
+cpu_truth=$CPU_DIR
+domain=d01
+launch=nohup setsid
+status=launched
+EOF
+nohup setsid bash -lc '
+  set +e
+  cd /home/enric/src/wrf_gpu2
+  RUN_ROOT="'"$RUN_ROOT"'"
+  CPU_DIR="'"$CPU_DIR"'"
+  GPU_OUT="$RUN_ROOT/gpu_output"
+  SCRATCH="$RUN_ROOT/scratch"
+  scripts/run_gpu_lowprio.sh --cores 0-23 \
+    --resource-log-dir "$RUN_ROOT/resources" \
+    --resource-label v014_switzerland_d01_72h \
+    --resource-interval 5 \
+    -- \
+    python -m gpuwrf.cli run \
+      --input-dir "$CPU_DIR" \
+      --output-dir "$GPU_OUT" \
+      --scratch-dir "$SCRATCH" \
+      --domain d01 \
+      --hours 72 \
+      --proof-dir "$RUN_ROOT/proofs" \
+    > "$RUN_ROOT/switzerland_d01_72h_gpu.log" 2>&1
+  gpu_rc=$?
+  echo "$gpu_rc" > "$RUN_ROOT/switzerland_d01_72h_gpu.rc"
+  printf "gpu_finished_utc=%s\ngpu_rc=%s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$gpu_rc" >> "$RUN_ROOT/runinfo.txt"
+  if [ "$gpu_rc" -ne 0 ]; then exit "$gpu_rc"; fi
+
+  JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
+    python scripts/compare_wrfout_grid.py \
+      --cpu-dir "$CPU_DIR" \
+      --gpu-dir "$GPU_OUT" \
+      --domain d01 \
+      --init 2023-01-15T00:00:00+00:00 \
+      --min-lead 1 --max-lead 72 \
+      --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json \
+      --out-json "$RUN_ROOT/switzerland_d01_72h_grid_compare.json" \
+      --out-md "$RUN_ROOT/switzerland_d01_72h_grid_compare.md" \
+    > "$RUN_ROOT/switzerland_d01_72h_compare.log" 2>&1
+  cmp_rc=$?
+  echo "$cmp_rc" > "$RUN_ROOT/switzerland_d01_72h_compare.rc"
+  printf "compare_finished_utc=%s\ncompare_rc=%s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$cmp_rc" >> "$RUN_ROOT/runinfo.txt"
+
+  JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
+    python scripts/build_grid_delta_atlas.py \
+      --cpu-dir "$CPU_DIR" \
+      --gpu-dir "$GPU_OUT" \
+      --case-id switzerland_d01_20230115_00z \
+      --domain d01 \
+      --init 2023-01-15T00:00:00+00:00 \
+      --min-lead 1 --max-lead 72 \
+      --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json \
+      --proof-dir "$RUN_ROOT/grid_delta_atlas" \
+      --asset-dir "$RUN_ROOT/grid_delta_atlas_assets" \
+    > "$RUN_ROOT/switzerland_d01_72h_atlas.log" 2>&1
+  atlas_rc=$?
+  echo "$atlas_rc" > "$RUN_ROOT/switzerland_d01_72h_atlas.rc"
+  printf "atlas_finished_utc=%s\natlas_rc=%s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$atlas_rc" >> "$RUN_ROOT/runinfo.txt"
+  if [ "$cmp_rc" -ne 0 ]; then exit "$cmp_rc"; fi
+  exit "$atlas_rc"
+' > "$RUN_ROOT/switzerland_d01_72h_chain.log" 2>&1 < /dev/null &
+echo $! > "$RUN_ROOT/switzerland_d01_72h_chain.pid"
+echo "$RUN_ROOT"
+```
 
 ## L2 d02 TOST/Debug Cases
 

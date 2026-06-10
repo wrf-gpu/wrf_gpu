@@ -162,7 +162,9 @@ def test_total_state_split_writes_base_and_perturbation_pairs(tmp_path: Path):
 
 
 def test_variable_specs_cover_minimum_set():
-    assert len(MINIMUM_WRFOUT_VARIABLES) == 41
+    # 42 = the historical 41 + THM (v0.14: State.theta is moist theta_m, the
+    # writer decouples dry T and emits THM like WRF use_theta_m=1 wrfout).
+    assert len(MINIMUM_WRFOUT_VARIABLES) == 42
     # Every minimum-set field (except the special-cased Times string var) must
     # have a spec. P0-5a ADDS operational fields, so the spec dict is a SUPERSET
     # of the minimum set rather than exactly equal.

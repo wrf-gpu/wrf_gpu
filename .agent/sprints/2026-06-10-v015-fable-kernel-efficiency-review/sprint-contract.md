@@ -1,117 +1,94 @@
 # Sprint Contract: V0.15 Fable Kernel Efficiency Review
 
-Date: 2026-06-10 WEST
-Owner: Fable/Mythos in tmux `0:1`
-Manager: `worker/gpt/v013-close-manager`
-Status: PREPARED ONLY. Do not dispatch until TOST and Switzerland compute are
-running or complete, and the current v0.14 Fable Step-1 closure is finished.
+Date: 2026-06-10
+Owner: manager
+Assignee: Fable/Mythos xhigh, tmux `0:1`
+Status: PREPARED; dispatch only after the Canary h24 intermediate field compare
+shows no unexpected divergence, or after v0.14 validation otherwise no longer
+needs Fable for correctness debugging.
 
 ## Objective
 
-Perform a thorough read-only kernel efficiency review of wrf_gpu2 and produce a
-ranked v0.15 action list for memory and compute gains.
+Perform a complete read-only memory and compute efficiency review of the
+wrf_gpu2 kernel stack and kernel-adjacent components, producing a ranked v0.15
+action list. Do not modify source code.
 
-This is an analysis sprint, not an implementation sprint. Do not change source
-code. The endpoint is a complete, prioritized recommendation set for v0.15:
-what major gains remain, why they exist, expected gain, complexity, risk, and
-which proof gates would be required.
-
-## Project Goal Anchor
-
-The project goal is a möglichst vollständiger, möglichst schneller und
-effizienter, möglichst WRF v4 treuer GPU rewrite. Optimizations are valuable
-only when they preserve WRF-facing correctness, GPU scalability, and validation
-honesty.
+The project goal is a WRF-faithful-enough, GPU-optimized, near compute- and
+memory-optimal, scalable GPU rewrite. The review must find real efficiency
+opportunities without weakening WRF fidelity, validation, or GPU-native design.
 
 ## Scope
 
-Review every major kernel/module family:
+Review at least:
 
-- dynamics: RK3, acoustic small steps, pressure/geopotential/mass update,
-  flux-form advection, limiters, boundary/halo paths
-- radiation: RRTMG SW/LW tiling, optics, g-point loops, diagnostics
-- PBL/surface/LSM: MYNN, BouLac, YSU/MYJ/MRF, surface-layer adapters,
-  Noah/Noah-MP state handoff
-- microphysics/cumulus: operational schemes and fail-closed/ref-only schemes
-- coupling/runtime: `operational_mode.py`, scan adapters, post-physics merges,
-  checkpoint/restart, wrfout writer
-- validation/performance infrastructure: compile cache, AOT, transfer audits,
-  Grid-Delta Atlas, TOST runners
-- multi-GPU/sharding substrate
+- dycore and acoustic small-step kernels;
+- RK3 integration, state/carry layout, scan boundaries, donation/liveness;
+- pressure/thermodynamic diagnostics and base/perturbation handling;
+- radiation and RRTMG tiling/chunking;
+- PBL/surface-layer/NoahMP/coupling memory flow;
+- microphysics and moisture advection/limiters;
+- boundary/live-nesting, interpolation, feedback, halo/state copies;
+- wrfout writer and validation-runner IO where it affects memory/compute;
+- precision contracts, especially the deferred FP32 acoustic lane;
+- multi-GPU/sharding and AOT/precompile opportunities.
 
-Use existing artifacts first:
+## Inputs
 
+Read only the files needed, starting with:
+
+- `PROJECT_CONSTITUTION.md`
+- `AGENTS.md`
+- `.agent/decisions/V0150-ROADMAP-DRAFT.md`
 - `.agent/decisions/V0140-MEMORY-FIX-ROADMAP.md`
 - `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`
-- `.agent/decisions/ADR-031-mixed-perturb-fp32-acoustic-DRAFT.md`
-- `.agent/decisions/V0150-ROADMAP-DRAFT.md`
-- `proofs/v014/empirical_memory_map.*`
-- `proofs/v014/mythos_memory_fixes_260609.*`
-- `proofs/v014/exact_branch_memory_preflight.json`
-- `proofs/v013/rrtmg_column_tile_vram_suite.json`
-- `proofs/v013/optics_taumol_chunk.json`
-- `proofs/v013/gpoint_chunk_rrtmg.json`
-- profiler or run artifacts under `proofs/` only as needed
+- `.agent/decisions/V0140-RELEASE-CHECKLIST.md`
+- `proofs/v014/exact_branch_memory_preflight.md`
+- `proofs/v014/mythos_memory_fixes_260609.md` if present
+- `src/gpuwrf/**` as needed
+- relevant `proofs/v013` and `proofs/v014` memory/performance artifacts
 
-## Required Scoring
+## Required Output
 
-For each candidate, record:
+Write exactly one primary report:
 
-- module/family
-- issue/inefficiency
-- compute gain estimate: `none`, `low`, `medium`, `high`, or measured value
-- memory gain estimate: `none`, `low`, `medium`, `high`, or measured GiB/MiB
-- complexity: `low`, `medium`, `high`, `very_high`
-- complexity drivers: files/contracts changed, proof gates, numerical risk,
-  GPU/XLA risk, validation risk, chance that gain does not materialize
-- correctness risk: how it could break WRF fidelity
-- proof gates required before merge
-- v0.15 recommendation: `do_first`, `do_if_measured`, `defer`, `reject`
+`/.agent/reviews/2026-06-10-v015-fable-kernel-efficiency-review.md`
 
-Complexity is not just LOC. It includes:
+The report must be concise enough for a manager context window and include:
 
-- how many contracts and modules change
-- whether restart, boundary, wrfout, or validation schemas change
-- how much WRF oracle/savepoint evidence is needed
-- whether the gain is already measured or only hypothesized
-- whether the fix touches active high-risk numerics such as acoustic `P/PH/MU`
-- whether XLA may already optimize the issue away
+1. Verdict paragraph: is there likely major remaining efficiency headroom?
+2. Ranked table of candidates. Columns:
+   - rank;
+   - component/files;
+   - issue/opportunity;
+   - gain class: `XL`, `L`, `M`, `S`, or `XS`;
+   - complexity class: `XL`, `L`, `M`, `S`, or `XS`;
+   - risk: numerical, performance, implementation, validation;
+   - required proof gates;
+   - recommended v0.15 priority.
+3. Separate top-5 memory opportunities.
+4. Separate top-5 compute opportunities.
+5. FP32 acoustic feasibility/update: whether it remains the highest-value v0.15
+   lane, and what exact first implementation sprint should do.
+6. Items explicitly rejected as low value or too risky for v0.15.
+7. Context-sparing manager handoff, max 12 bullets.
 
-## Rules
+## Constraints
 
-- No source edits.
-- No `git add`, no commit.
-- No GPU jobs unless manager explicitly grants them after long validation
-  compute is no longer at risk.
-- Do not interrupt TOST, Switzerland, or Grid-Delta Atlas runs.
-- Keep output context-sparing: dense tables, no long source excerpts.
-- If a candidate is speculative, label it as speculative.
-- Do not recommend weakening tolerances, clamping, CPU-WRF runtime dependency, or
-  host/device transfers inside timestep loops.
+- No source edits, no formatting edits, no generated cleanup.
+- No GPU use unless the manager explicitly says the GPU is free.
+- CPU-only probes are allowed if quick and readonly; use `JAX_PLATFORMS=cpu`
+  and `CUDA_VISIBLE_DEVICES=`.
+- Do not spend tokens on routine status. Produce the report and print:
+  `FABLE V015_KERNEL_EFFICIENCY_REVIEW DONE - see .agent/reviews/2026-06-10-v015-fable-kernel-efficiency-review.md`
+- If the task is too broad, still produce the best ranked action list; do not
+  ask for a micro-prompt.
 
-## Deliverables
+## Acceptance Gate
 
-Write:
+Manager acceptance requires:
 
-- `.agent/reviews/2026-06-10-v015-fable-kernel-efficiency-review.md`
-- optional machine-readable table:
-  `proofs/v015/kernel_efficiency_review.json`
-
-The Markdown must include:
-
-1. Verdict paragraph, max 120 words.
-2. Ranked top action table, max 20 rows.
-3. Rejected/low-value table, max 12 rows.
-4. Suggested first 5 v0.15 sprints with proof gates.
-5. Open measurements required before any source work.
-6. Context-sparing handoff bullets for the manager.
-
-Completion marker to manager pane `0:2` with delayed repeated Enter:
-
-```bash
-tmux send-keys -t 0:2 'FABLE V015_KERNEL_EFFICIENCY_REVIEW DONE - see .agent/reviews/2026-06-10-v015-fable-kernel-efficiency-review.md' Enter
-sleep 1
-tmux send-keys -t 0:2 Enter
-sleep 1
-tmux send-keys -t 0:2 Enter
-```
+- report exists at the required path;
+- recommendations are ranked by both gain and complexity;
+- every high-gain recommendation includes concrete files/components and proof
+  gates;
+- no source files changed.

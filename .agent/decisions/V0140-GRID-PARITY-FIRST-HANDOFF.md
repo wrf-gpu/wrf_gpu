@@ -15,16 +15,20 @@ CPU72 is existing retained L2 d02 truth, selected/pushed in `99db9c43`:
 inventory `proofs/v014/canary_cpu_truth_inventory.md`. Runbook field-gate
 commands are pushed in `1f641953`.
 
-Active blocker before any long GPU gate: h1 Canary EOS/theta semantics. Round-1
-Fable patch in `src/gpuwrf/dynamics/acoustic_wrf.py` is still **unaccepted**:
-it changes EOS qvf from `1+0.608*qv` to `1+rvovrd*qv`, but manager evidence
-shows WRF uses `qvf=1` when the caller state is `theta_m` (`use_theta_m=1`).
-Fable high is actively running in tmux `0:3` on the second-pass
-EOS/theta-semantics sprint and must return one of `FIXED`, `RATIFY_ROUND1`, or
-`BLOCKED` in
-`.agent/reviews/2026-06-10-v014-eos-theta-semantics-fable.md`. Do not start
-the 72h Switzerland/Canary GPU gates until this report is reviewed, the h1
-Canary falsifier is rerun and green, and exact-branch memory preflight is green.
+Update 2026-06-10 15:31 WEST: the h1 EOS/theta blocker is no longer a launch
+blocker. Accepted proof/review artifacts:
+`proofs/v014/eos_theta_semantics.*`,
+`.agent/reviews/2026-06-10-v014-eos-theta-semantics-fable.md`, and
+`proofs/v014/post_eos_h1_residual_adjudication.*`. The post-EOS h1 verdict is
+`PROCEED_72H_GATES`: bounded residuals remain (`PSFC` narrowly over the
+candidate h1 hard limit; `PB/MUB` static spikes are in the 5-cell nest frame),
+but no renewed radical drift or schema failure was found. Exact-branch memory
+preflight is green (`proofs/v014/exact_branch_memory_preflight.md`, peak total
+VRAM `8858 MiB`, no OOM markers). The first mandatory long gate is running:
+Canary L2 d02 72h at
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z` with
+resource CSV logging. Do not launch Switzerland GPU until this run releases the
+GPU lock; the prepared Switzerland command is in `docs/GPU_RUNBOOK.md`.
 
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New

@@ -16,6 +16,11 @@ from gpuwrf.physics.surface_constants import CP_D, KARMAN, P0_PA, R_D_OVER_CP, X
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
 P0_THETA_OFFSET_K = 300.0
+# WRF rvovrd = R_v/R_d (share/module_model_constants.F:41). Operational
+# State.theta is MOIST theta_m (use_theta_m=1); WRF wrfout variable ``T`` is
+# the DRY perturbation theta, so the writer decouples
+# theta_dry = theta_m / (1 + rvovrd*qv) and emits theta_m itself as ``THM``.
+RVOVRD = 461.6 / 287.0
 CP_AIR_J_KG_K = CP_D
 LV_J_KG = XLV
 DATE_STR_LEN = 19
@@ -64,6 +69,7 @@ MINIMUM_WRFOUT_VARIABLES: tuple[str, ...] = (
     "V",
     "W",
     "T",
+    "THM",
     "QVAPOR",
     "P",
     "PB",
@@ -516,6 +522,14 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         XYZ,
         "XYZ",
         "perturbation potential temperature theta-t0",
+        "K",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "THM": _spec(
+        "THM",
+        XYZ,
+        "XYZ",
+        "either 1) pert moist pot temp=(1+Rv/Rd Qv)*(theta+T0)-T0; or 2) pert dry pot temp=theta; based on use_theta_m setting",
         "K",
         coordinates="XLONG XLAT XTIME",
     ),
@@ -1232,6 +1246,10 @@ def _build_output_fields(
     w = _field_array(state, ("W", "w"), shape_w)
     theta = _field_array(state, ("theta", "THETA"), shape_xyz, default=300.0)
     qv = _field_array(state, ("QVAPOR", "qv", "qvapor"), shape_xyz)
+    # State.theta is moist theta_m (use_theta_m=1); WRF-compatible ``T`` and the
+    # temperature-derived diagnostics below need the DRY theta view (identical
+    # when qv = 0, e.g. synthetic/test states).
+    theta_dry = theta / (1.0 + RVOVRD * np.maximum(qv, 0.0))
     qc = _field_array(state, ("QCLOUD", "qc", "qcloud"), shape_xyz)
     qi = _field_array(state, ("QICE", "qi", "qice"), shape_xyz)
     qr = _field_array(state, ("QRAIN", "qr", "qrain"), shape_xyz)
@@ -1291,7 +1309,7 @@ def _build_output_fields(
         surface_fluxes = _surface_flux_fallbacks(
             state=state,
             grid=grid,
-            theta=theta,
+            theta=theta_dry,
             qv=qv,
             p_total=p_pert + p_base,
             ph_total=ph_pert + ph_base,
@@ -1318,7 +1336,8 @@ def _build_output_fields(
         "U": u,
         "V": v,
         "W": w,
-        "T": theta - P0_THETA_OFFSET_K,
+        "T": theta_dry - P0_THETA_OFFSET_K,
+        "THM": theta - P0_THETA_OFFSET_K,
         "QVAPOR": qv,
         "P": p_pert,
         "PB": p_base,
@@ -1343,7 +1362,7 @@ def _build_output_fields(
         # as a 2-m/skin temperature. Level-1 air T is a sane proxy when the real
         # surface diagnostic is absent. (The proper fix routes the operational
         # surface-layer T2/U10/V10 diagnostics into the writer state; see task.)
-        "T2": _field_array(state, ("T2", "t2"), shape_xy, default=theta[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
+        "T2": _field_array(state, ("T2", "t2"), shape_xy, default=theta_dry[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
         "Q2": _field_array(state, ("Q2", "q2"), shape_xy, default=qv[0]),
         "PSFC": _field_array(state, ("PSFC", "psfc"), shape_xy, default=_psfc_default),
         "RAINC": _field_array(state, ("RAINC", "rainc", "rainc_acc"), shape_xy),
@@ -1355,7 +1374,7 @@ def _build_output_fields(
         "UST": _field_array(state, ("UST", "ustar"), shape_xy),
         "HFX": hfx,
         "LH": lh,
-        "TSK": _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=theta[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
+        "TSK": _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=theta_dry[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP),
     }
 
     # --- P0-5a (a) extra hydrometeors + number concentrations + MYNN TKE. ---

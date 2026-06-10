@@ -250,6 +250,27 @@ Station TOST must be interpreted together with this grid-delta atlas.
 
 Current status:
 
+- 2026-06-10 15:35 WEST manager update: validation is **resumed** under the
+  new field-parity gate. The h1 EOS/theta blocker is fixed/bounded and
+  adjudicated launch-safe (`proofs/v014/post_eos_h1_residual_adjudication.*`,
+  verdict `PROCEED_72H_GATES`). Exact-branch memory preflight is green
+  (`proofs/v014/exact_branch_memory_preflight.md`, peak total VRAM `8858 MiB`,
+  no OOM markers).
+- Canary L2 d02 72h GPU-vs-CPU field-parity/stability is the first active
+  release-gate run:
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z`.
+  Resource CSV logging is active. Wait for `canary_d02_72h_gpu.rc`,
+  `canary_d02_72h_compare.rc`, and `canary_d02_72h_atlas.rc`.
+- Switzerland/Gotthard d01 CPU72 truth is complete and finite at
+  `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`.
+  The matched GPU command is recorded in `docs/GPU_RUNBOOK.md` and should be
+  launched only after Canary releases the GPU lock.
+- TOST remains paused as secondary station sanity evidence. It is not a v0.14
+  release gate and must not displace the two 72h all-cell field gates.
+
+Historical debug notes below explain why validation was paused earlier; they
+are not current stop conditions unless a new gate failure reproduces them.
+
 - TOST is paused after 3 durable cases.
 - `proofs/v014/v10_grid_diagnostics.json` shows V10 grid RMSE above 1.5 m/s in
   3/3 cases. This is too large to continue treating station TOST as the next

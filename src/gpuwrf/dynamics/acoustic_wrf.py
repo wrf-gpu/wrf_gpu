@@ -22,6 +22,18 @@ config.update("jax_enable_x64", True)
 
 
 R_D = 287.0
+R_V = 461.6
+# WRF share/module_model_constants.F:41 rvovrd = r_v/r_d (~1.6084). The EOS
+# carries ONE qv factor (module_big_step_utilities_em.F use_theta_m branch):
+#   use_theta_m=1 (WRF default; production State.theta = MOIST theta_m):
+#       qvf = 1, because theta_m = theta_dry*(1+rvovrd*qv) already carries the
+#       moisture factor (pass qv=None below; matches the bit-exact start_em
+#       transcription d02_replay._wrf_live_nest_start_domain_perturb_init).
+#   use_theta_m=0 (DRY theta callers only): qvf = 1 + rvovrd*qv
+#       (module_big_step_utilities_em.F:1064,1118,1140).
+# NEVER 1 + p608*qv: p608 = rvovrd-1 belongs to the virtual-temperature/
+# moist-density convention, not WRF's dry-alpha_d EOS (v0.14 h1 root cause).
+RVOVRD = R_V / R_D
 CP_D = 1004.0
 P0_PA = 100000.0
 CPOVCV = CP_D / (CP_D - R_D)
@@ -133,21 +145,28 @@ def _safe_alt(alt: jax.Array) -> jax.Array:
 
 
 def _inverse_density_from_theta_pressure(theta: jax.Array, pressure: jax.Array, qv: jax.Array | None = None) -> jax.Array:
-    """Dry WRF inverse-density equation of state.
+    """WRF inverse-density equation of state (dry alpha_d).
 
     WRF source anchors: ``module_big_step_utilities_em.F:1085-1087`` and
-    ``module_small_step_em.F:527-528`` use the same dry equation-of-state
-    relation between potential temperature, pressure, and inverse density.
+    ``module_small_step_em.F:527-528``. ``theta`` convention: production
+    ``State.theta`` is MOIST ``theta_m`` (``use_theta_m=1``) -> pass ``qv=None``
+    (``qvf=1``). Pass ``qv`` ONLY with genuinely DRY theta (``use_theta_m=0``
+    form, ``qvf=1+rvovrd*qv``); the two forms are the same WRF EOS.
     """
 
-    qvf = 1.0 if qv is None else 1.0 + 0.608 * qv
+    qvf = 1.0 if qv is None else 1.0 + RVOVRD * qv
     return (R_D / P0_PA) * theta * qvf * ((_safe_pressure(pressure) / P0_PA) ** CVPM)
 
 
 def _pressure_from_theta_alt(theta: jax.Array, alt: jax.Array, qv: jax.Array | None = None) -> jax.Array:
-    """Inverts WRF's dry equation of state for diagnostic pressure."""
+    """Inverts WRF's equation of state for diagnostic pressure.
 
-    qvf = 1.0 if qv is None else 1.0 + 0.608 * qv
+    Same ``theta``/``qv`` convention as
+    :func:`_inverse_density_from_theta_pressure`: moist ``theta_m`` callers
+    (production ``State.theta``) pass ``qv=None``; dry-theta callers pass ``qv``.
+    """
+
+    qvf = 1.0 if qv is None else 1.0 + RVOVRD * qv
     argument = (R_D * theta * qvf) / (P0_PA * _safe_alt(alt))
     return P0_PA * (jnp.maximum(argument, 1.0e-12) ** CPOVCV)
 
@@ -277,7 +296,8 @@ def diagnose_pressure_al_alt(
     """
 
     if base_state is None:
-        alt = _inverse_density_from_theta_pressure(state.theta, state.p_total, state.qv)
+        # State.theta is moist theta_m (use_theta_m=1) -> WRF EOS qvf=1.
+        alt = _inverse_density_from_theta_pressure(state.theta, state.p_total)
         al = jnp.zeros_like(alt)
         return state.p_perturbation, al, alt
 
@@ -320,8 +340,12 @@ def diagnose_pressure_al_alt(
     alt = al + alb
     # WRF diagnostic perturbation pressure (module_big_step_utilities_em.F:1083-1087)
     # uses the FULL theta (t0+theta') in the nonlinear EOS, not the base theta:
-    #   p = p0*( Rd*(t0+theta')/(p0*(al+alb)) )^cpovcv - pb
-    total_pressure = _pressure_from_theta_alt(state.theta, alt, state.qv)
+    #   p = p0*( Rd*(t0+theta')*qvf/(p0*(al+alb)) )^cpovcv - pb
+    # State.theta is moist theta_m (use_theta_m=1) -> qvf=1, matching WRF's
+    # use_theta_m branch and the bit-exact start_em init transcription
+    # (d02_replay.py qvf=1); rk_addtend_dry/_acoustic_core_state already use
+    # the same qvf=1 form.
+    total_pressure = _pressure_from_theta_alt(state.theta, alt)
     pressure_perturbation = total_pressure - base_state.pb
     return pressure_perturbation, al, alt
 

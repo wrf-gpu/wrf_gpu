@@ -1,44 +1,39 @@
-You are Fable/Mythos, high-end reviewer for wrf_gpu2 v0.15 planning.
+You are Fable/Mythos xhigh, independent kernel efficiency reviewer for
+wrf_gpu2. This is a read-only v0.15 planning sprint, not a coding sprint.
 
-Repository: `/home/enric/src/wrf_gpu2`
-Sprint contract:
-`.agent/sprints/2026-06-10-v015-fable-kernel-efficiency-review/sprint-contract.md`
+First read:
+- `PROJECT_CONSTITUTION.md`
+- `AGENTS.md`
+- `.agent/sprints/2026-06-10-v015-fable-kernel-efficiency-review/sprint-contract.md`
+- `.agent/decisions/V0150-ROADMAP-DRAFT.md`
+- `.agent/decisions/V0140-MEMORY-FIX-ROADMAP.md`
+- `.agent/decisions/V0140-FP32-ACOUSTIC-ROADMAP.md`
+- `.agent/decisions/V0140-RELEASE-CHECKLIST.md`
+- `proofs/v014/exact_branch_memory_preflight.md`
 
-This sprint should be dispatched only after TOST and Switzerland compute are
-running or complete and after your current v0.14 Step-1 closure sprint is done.
+Task:
+Perform a complete memory and compute efficiency review of the kernel stack and
+kernel-adjacent components for the v0.15 roadmap. Review dycore/acoustic,
+RK3/state/carry/liveness, pressure/EOS/base handling, RRTMG, PBL/surface/NoahMP,
+microphysics/moisture, boundary/live nesting/feedback, writer/IO where relevant,
+precision contracts including FP32 acoustic, multi-GPU/sharding, and AOT/cache.
 
-Read in order:
-1. `PROJECT_CONSTITUTION.md`
-2. `AGENTS.md`
-3. `.agent/skills/managing-sprints/SKILL.md`
-4. `.agent/decisions/V0150-ROADMAP-DRAFT.md`
-5. the sprint contract above
-6. the memory/FP32/proof files named in the contract
+Do not edit source code. Do not use the GPU. CPU-only static/probe commands are
+allowed if quick and run with `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES=`.
 
-Objective:
-Perform a thorough read-only review of all major compute and memory kernels and
-produce a ranked v0.15 action list. Do not edit source. The end product is a
-manager-usable action list with expected gain, complexity, risk, and proof gates
-for each recommendation.
-
-Scoring:
-For every relevant candidate, classify compute gain, memory gain, complexity,
-correctness risk, proof gates, and v0.15 recommendation. Complexity combines
-what must change, what must be tested, numerical/WRF-fidelity risk, XLA/GPU risk,
-and risk that the gain is speculative or already optimized away.
-
-Output:
+Write the report to:
 `.agent/reviews/2026-06-10-v015-fable-kernel-efficiency-review.md`
-and optionally `proofs/v015/kernel_efficiency_review.json`.
 
-No source edits, no GPU jobs, no commits.
+Required output structure:
+1. Verdict paragraph, max 140 words.
+2. Ranked candidate table with columns: rank, component/files, issue,
+   gain class (`XL/L/M/S/XS`), complexity class (`XL/L/M/S/XS`), risk, proof
+   gates, recommended v0.15 priority.
+3. Top-5 memory opportunities.
+4. Top-5 compute opportunities.
+5. FP32 acoustic feasibility/update and exact first implementation sprint.
+6. Low-value/rejected items.
+7. Context-sparing manager handoff, max 12 bullets.
 
-When finished, send:
-
-```bash
-tmux send-keys -t 0:2 'FABLE V015_KERNEL_EFFICIENCY_REVIEW DONE - see .agent/reviews/2026-06-10-v015-fable-kernel-efficiency-review.md' Enter
-sleep 1
-tmux send-keys -t 0:2 Enter
-sleep 1
-tmux send-keys -t 0:2 Enter
-```
+Print exactly this completion marker when done:
+`FABLE V015_KERNEL_EFFICIENCY_REVIEW DONE - see .agent/reviews/2026-06-10-v015-fable-kernel-efficiency-review.md`
