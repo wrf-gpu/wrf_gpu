@@ -15,16 +15,14 @@ grid-cell parity root-cause work.
 
 Use the `128x128` mass-grid case first:
 
-- input/truth root: `/mnt/data/wrf_gpu_switzerland_128/run_cpu`
+- input/truth root: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu`
 - clean native-init seed already available: `/mnt/data/wrf_gpu_switzerland_128/run_gpu_input`
 - CPU truth: 25 hourly files, `2023-01-15_00:00:00` through
   `2023-01-16_00:00:00`
-- CPU timing: total `1056.9501616954803 s`, mainloop
-  `1038.7748700000022 s`, `28` MPI ranks
 - CPU24 tracked rerun: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z`
   completed on 2026-06-10 with 25 hourly files, `rc=0`, `SUCCESS COMPLETE WRF`,
-  last-frame finite PASS, total wall `1084.6 s`, mainloop `1078.4 s`, peak
-  sampled total WRF-rank RSS `12563.766 MiB`; see
+  last-frame finite PASS, total wall `1084.6 s`, mainloop `1078.4 s`, `24` MPI
+  ranks, and peak sampled total WRF-rank RSS `12563.766 MiB`; see
   `proofs/v014/switzerland_cpu24_reference_resource_summary.md`
 - grid: `128x128` mass points, `44` mass levels, `45` full levels,
   `dx=dy=3000 m`, `time_step=18 s`
@@ -52,6 +50,11 @@ Expected contents:
   `scripts/equivalence_switzerland.sh`
 - `$OUT/equivalence_switzerland.stdout.log` - wrapper/script/comparator log
 - `$OUT/switzerland_equivalence.json` - comparator proof JSON
+- `$OUT/resources/gpu/switzerland_gpu_gpu_usage.csv` - GPU memory/utilization/
+  power samples
+- `$OUT/resources/gpu/switzerland_gpu_process_usage.csv` - GPU-run process RSS/
+  CPU samples
+- `$OUT/resources/gpu/switzerland_gpu_system_memory.csv` - host memory samples
 
 ## Run Command
 
@@ -68,15 +71,15 @@ scripts/run_gpu_lowprio.sh --cores 0-23 \
   --resource-interval 5 \
   -- env \
   CASE_ROOT="$OUT" \
-  CASE_INPUTS=/mnt/data/wrf_gpu_switzerland_128/run_cpu \
-  CPU_REF=/mnt/data/wrf_gpu_switzerland_128/run_cpu \
+  CASE_INPUTS=/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu \
+  CPU_REF=/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu \
   GPU_INPUT="$OUT/input" \
   GPU_OUT="$OUT/gpu" \
   SCRATCH="$OUT/scratch" \
   PROOF="$OUT/switzerland_equivalence.json" \
   CPU_WALL_BASIS=total \
-  CPU_RANKS=28 \
-  CPU_BUILD_LABEL="dmpar MPI gfortran, 28 ranks (HONEST denominator, NOT 1-core)" \
+  CPU_RANKS=24 \
+  CPU_BUILD_LABEL="dmpar MPI gfortran, 24 ranks (HONEST denominator, NOT 1-core)" \
   GPUWRF_RRTMG_SW_COLUMN_TILING=true \
   GPUWRF_RRTMG_LW_COLUMN_TILING=true \
   GPUWRF_RRTMG_SW_COLUMN_TILE_COLS=16384 \
@@ -96,8 +99,13 @@ Why this command:
   wall time.
 - `CASE_INPUTS` points to CPU assets, but `GPU_INPUT` contains no CPU `wrfout`,
   so CLI init mode should be `standalone_native_init`.
-- The proof is written under durable `/mnt/data/wrf_gpu_validation`, not `/tmp`
-  and not the previous failed `/mnt/data/wrf_gpu_switzerland_128/run_gpu`.
+- `CASE_INPUTS` and `CPU_REF` point at the tracked CPU24 rerun so the comparison
+  uses the same CPU wrfout files, CPU timing files, rank denominator, and CPU
+  memory baseline recorded in
+  `proofs/v014/switzerland_cpu24_reference_resource_summary.md`.
+- The proof and resource CSVs are written under durable
+  `/mnt/data/wrf_gpu_validation`, not `/tmp` and not the previous failed
+  `/mnt/data/wrf_gpu_switzerland_128/run_gpu`.
 
 ## Post-Run Coverage Guard
 
