@@ -3396,41 +3396,42 @@ class M9Diagnostics(NamedTuple):
     coszen: jax.Array
 
 
-def _psfc_from_state(state: State) -> jax.Array:
-    """Surface pressure (Pa) = total pressure extrapolated to the ground (ny,nx).
+def _psfc_from_state(state: State, metrics: DycoreMetrics) -> jax.Array:
+    """Surface pressure (Pa) = WRF runtime PSFC = moist hydrostatic p_hyd_w(kts).
 
-    WRF-faithful surface pressure. WRF reports ``PSFC(i,j) = p8w(i,kts,j)``
-    (module_surface_driver.F:1988), where ``p8w`` (the full/w-level pressure at
-    the bottom face = the terrain surface) is built in ``phy_prep`` by a linear
-    extrapolation IN HEIGHT from the first two MASS levels
-    (module_big_step_utilities_em.F:4917-4922; identical formula in
-    dyn_em/start_em.F:2526-2531 and share/dfi.F)::
+    WRF's history PSFC is NOT a height extrapolation of the nonhydrostatic
+    total pressure. The surface driver sets ``PSFC(i,j) = p8w(i,kts,j)``
+    (module_surface_driver.F:1988) and is called with ``P8W = grid%p_hyd_w``
+    (module_first_rk_step_part1.F:1400); ``p_hyd_w`` is built in ``phy_prep``
+    (module_big_step_utilities_em.F:4946-4958) by integrating the MOIST
+    hydrostatic column in the hybrid dry-mass coordinate from the model top::
 
-        z0 = z_at_w(1)              # bottom face (terrain surface)
-        z1 = z(1)                   # 1st mass level (layer center)
-        z2 = z(2)                   # 2nd mass level
-        w1 = (z0 - z2)/(z1 - z2);  w2 = 1 - w1
-        p8w(1) = w1*p(1) + w2*p(2)
+        p_hyd_w(kte) = p_top
+        qtot(k)      = sum over ALL moist species of q(k)
+        p_hyd_w(k)   = p_hyd_w(k+1) - (1+qtot(k))*(c1h(k)*MUT + c2h(k))*dnw(k)
 
-    The previous diagnostic returned ``state.p[0]`` (the level-1 MASS-CENTER
-    pressure), which omits the half-layer hydrostatic increment between the
-    layer center (~25 m AGL here) and the ground -> a systematic NEGATIVE,
-    terrain-correlated PSFC offset of ~ rho*g*dz_half (~300 Pa at sea level,
-    rho~1.19 kg/m^3). This restores the WRF extrapolation.
+    so ``PSFC = p_top + sum_k (1+qtot_k)*(c1h_k*MUT + c2h_k)*(-dnw_k)`` with
+    ``MUT = mu + mub`` the FULL dry column mass (``State.mu_total``).
 
-    Heights enter only through the ratio ``(z0-z2)/(z1-z2)``, so the factor of
-    ``g`` cancels and we use the total geopotential ``ph_total`` (faces)
-    directly; the mass-level geopotential is the half-sum of adjacent faces, as
-    in WRF's ``z(k) = 0.5*(z_at_w(k)+z_at_w(k+1))``.
+    The previous height extrapolation of ``p_total`` (phy_prep's OTHER ``p8w``
+    field, module_big_step_utilities_em.F:4917-4922 — never the one bound to
+    PSFC at runtime) matches WRF only to ~14 Pa on a moist-consistent pressure
+    state, and under-reports PSFC by the full vapor column load (~200-230 Pa,
+    the v0.14 fixed-Canary PSFC floor) on the current dry-balanced GPU pressure
+    state. The dry-mass + moisture integral is the exact WRF diagnostic path:
+    CPU-truth residual RMSE <= 0.18 Pa across h1/h4/h10/h24
+    (proofs/v014/psfc_moist_pressure_state_closure.*).
+
+    Constant memory per column; runs inside the jitted M9 snapshot with
+    device-resident ``metrics`` leaves (no timestep-loop host transfer).
     """
-    p = state.p_total
-    phi = state.ph_total  # total geopotential on faces (nz+1, ny, nx)
-    phi0 = phi[0]                       # bottom face == terrain surface
-    phi1 = 0.5 * (phi[0] + phi[1])      # mass level 1 (layer center)
-    phi2 = 0.5 * (phi[1] + phi[2])      # mass level 2
-    w1 = (phi0 - phi2) / (phi1 - phi2)
-    w2 = 1.0 - w1
-    return w1 * p[0, :, :] + w2 * p[1, :, :]
+    qtot = state.qv + state.qc + state.qr + state.qi + state.qs + state.qg
+    dp_dry = (
+        metrics.c1h[:, None, None] * state.mu_total[None, :, :]
+        + metrics.c2h[:, None, None]
+    ) * (-metrics.dnw[:, None, None])
+    p_top = jnp.reshape(jnp.asarray(metrics.p_top), ())
+    return p_top + ((1.0 + qtot) * dp_dry).sum(axis=0)
 
 
 def compute_m9_diagnostics(
@@ -3531,7 +3532,7 @@ def compute_m9_diagnostics(
         t2=t2,
         u10=surf.u10,
         v10=surf.v10,
-        psfc=_psfc_from_state(state),
+        psfc=_psfc_from_state(state, namelist.metrics),
         # B1: RRTMG all-sky up/down flux slices, straight from the radiation
         # diagnostics (no held-radiation override -- these are the instantaneous
         # output-cadence fluxes, consistent with the SWDOWN/GLW recompute path).

@@ -1276,21 +1276,57 @@ def _build_output_fields(
         shape=shape_xy,
     )
     # WRF-faithful surface-pressure fallback (used only when the operational M9
-    # PSFC diagnostic is absent from ``state``). WRF reports PSFC = p8w(kts) =
-    # the total pressure extrapolated IN HEIGHT to the terrain surface from the
-    # first two MASS levels (module_big_step_utilities_em.F:4917-4922,
-    # module_surface_driver.F:1988). Using the bare level-1 pressure
-    # ``p_pert[0]+p_base[0]`` omits the half-layer hydrostatic increment and
-    # under-reports PSFC by ~rho*g*dz_half (~300 Pa at sea level). Heights enter
-    # only via the ratio (z0-z2)/(z1-z2) so the factor g cancels and we use the
-    # total geopotential (faces) directly.
-    _p_total = p_pert + p_base
-    _phi = ph_pert + ph_base
-    _phi0 = _phi[0]
-    _phi1 = 0.5 * (_phi[0] + _phi[1])
-    _phi2 = 0.5 * (_phi[1] + _phi[2])
-    _w1 = (_phi0 - _phi2) / (_phi1 - _phi2)
-    _psfc_default = _w1 * _p_total[0] + (1.0 - _w1) * _p_total[1]
+    # PSFC diagnostic is absent from ``state``). WRF's runtime PSFC is the MOIST
+    # hydrostatic surface pressure, NOT an extrapolation of the nonhydrostatic
+    # total pressure: PSFC = p8w(kts) (module_surface_driver.F:1988) where the
+    # surface driver's p8w argument is grid%p_hyd_w
+    # (module_first_rk_step_part1.F:1400), built in phy_prep
+    # (module_big_step_utilities_em.F:4946-4958) as
+    #   p_hyd_w(kte) = p_top
+    #   p_hyd_w(k)   = p_hyd_w(k+1) - (1+qtot)*(c1h(k)*MUT+c2h(k))*dnw(k)
+    # with qtot summed over ALL moist species and MUT = mu+mub the full dry
+    # column mass. When the hybrid-eta metrics are resident on ``grid.metrics``
+    # we evaluate that integral exactly (CPU-truth residual <= 0.18 Pa RMSE,
+    # proofs/v014/psfc_moist_pressure_state_closure.*). Without metrics
+    # (synthetic/test states) fall back to the height extrapolation of total
+    # pressure, which tracks WRF only to ~14 Pa on a moist-consistent state and
+    # misses the vapor column load (~200-230 Pa) on a dry-balanced one.
+    _psfc_default = None
+    _psfc_metrics = _lookup(grid, "metrics")
+    if _psfc_metrics is not None:
+        _c1h = _lookup(_psfc_metrics, "c1h")
+        _c2h = _lookup(_psfc_metrics, "c2h")
+        _dnw = _lookup(_psfc_metrics, "dnw")
+        _p_top = _lookup(_psfc_metrics, "p_top")
+        if all(v is not None for v in (_c1h, _c2h, _dnw, _p_top)):
+            _c1h = np.asarray(_c1h, dtype=np.float64)
+            _c2h = np.asarray(_c2h, dtype=np.float64)
+            _dnw = np.asarray(_dnw, dtype=np.float64)
+            _nz = qv.shape[0]
+            if _c1h.shape == (_nz,) and _c2h.shape == (_nz,) and _dnw.shape == (_nz,):
+                _qs = _optional_field_array(state, ("QSNOW", "qs", "qsnow"), shape_xyz)
+                _qg = _optional_field_array(state, ("QGRAUP", "qg", "qgraup"), shape_xyz)
+                _qtot = qv + qc + qr + qi
+                if _qs is not None:
+                    _qtot = _qtot + _qs
+                if _qg is not None:
+                    _qtot = _qtot + _qg
+                _mut = mu_pert + mu_base
+                _dp_dry = (
+                    _c1h[:, None, None] * _mut[None, :, :] + _c2h[:, None, None]
+                ) * (-_dnw[:, None, None])
+                _psfc_default = (
+                    float(np.asarray(_p_top).reshape(-1)[0])
+                    + ((1.0 + _qtot) * _dp_dry).sum(axis=0)
+                )
+    if _psfc_default is None:
+        _p_total = p_pert + p_base
+        _phi = ph_pert + ph_base
+        _phi0 = _phi[0]
+        _phi1 = 0.5 * (_phi[0] + _phi[1])
+        _phi2 = 0.5 * (_phi[1] + _phi[2])
+        _w1 = (_phi0 - _phi2) / (_phi1 - _phi2)
+        _psfc_default = _w1 * _p_total[0] + (1.0 - _w1) * _p_total[1]
 
     xlat, xlong = _latlon_fields(state, grid, namelist, shape_xy, diagnostics=diagnostics)
     xlat_u, xlong_u = _latlon_fields(

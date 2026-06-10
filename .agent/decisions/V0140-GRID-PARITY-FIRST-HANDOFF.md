@@ -116,6 +116,22 @@ Fable high sprint is opened:
 `.agent/sprints/2026-06-10-v014-fable-psfc-moist-pressure-closure/`. Do not
 launch Switzerland GPU until this lane is fixed or formally bounded.
 
+Update 2026-06-10 17:05 WEST: Fable high closed the `PSFC` diagnostic lane and
+bounded the deeper 3D pressure-state lane. Accepted artifact:
+`.agent/reviews/2026-06-10-v014-fable-psfc-moist-pressure-closure.md`; proof:
+`proofs/v014/psfc_moist_pressure_state_closure.{py,json,md}`. WRF runtime
+`PSFC` is `grid%p_hyd_w(kts)`, not a `P+PB` height extrapolation. The production
+fix computes the moist hydrostatic dry-mass-coordinate integral from
+`mu_total`, all six moisture fields, and resident dycore metrics. CPU truth
+formula residual is sub-Pa at h1/h4/h10/h24. Expected post-fix Canary `PSFC`
+h24 improves from bias/RMSE `-294.9/296.1 Pa` to `-58.1/64.2 Pa`. The active
+pre-fix Canary LBCFIX 72h run was intentionally stopped after h24
+(`gpu_rc=143`) and remains characterization only. New blocker before
+Switzerland GPU / release promotion: 3D `P/PH/W` is still dry-balanced because
+the operational acoustic w-equation uses dry `cqw` / `pg_buoy_w_dry`; open a
+moist-cqw dynamics sprint with acoustic savepoint/oracle + GPU gate after the
+short GPU h1/h4 validation of the PSFC diagnostic fix.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed

@@ -77,12 +77,12 @@ def main() -> int:
     ]
     print("=== PROGNOSTIC surface-pressure knockout (d03, in-flight) ===")
     print(f"{'hour':>4} {'gpu_psfc':>11} {'corpus_psfc':>12} {'psfc_bias':>10}")
-    psfc0 = float(np.mean(np.asarray(_psfc_from_state(state))))
+    psfc0 = float(np.mean(np.asarray(_psfc_from_state(state, nl.metrics))))
     print(f"{0:>4} {psfc0:>11.1f} {corpus_psfc(tags[0]):>12.1f} {psfc0 - corpus_psfc(tags[0]):>+10.1f}")
 
     for hour in range(1, HOURS + 1):
         state = run_forecast_operational(state, nl, 1.0)
-        psfc = float(np.mean(np.asarray(_psfc_from_state(state))))
+        psfc = float(np.mean(np.asarray(_psfc_from_state(state, nl.metrics))))
         cps = corpus_psfc(tags[hour])
         print(f"{hour:>4} {psfc:>11.1f} {cps:>12.1f} {psfc - cps:>+10.1f}")
         # perturbation geopotential column profile bias
