@@ -30,6 +30,31 @@ Canary L2 d02 72h at
 resource CSV logging. Do not launch Switzerland GPU until this run releases the
 GPU lock; the prepared Switzerland command is in `docs/GPU_RUNBOOK.md`.
 
+Update 2026-06-10 15:50 WEST: Canary d02 long-gate is **not green so far**.
+Intermediate CPU-only grid compares from the active run report `FAIL` at h08
+and h10:
+
+- h08:
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z/canary_d02_h08_intermediate_grid_compare.md`
+  (`PSFC` RMSE slope/h `73.614`, `MU` `51.193`, `P` `35.111`,
+  `PH` `28.147`; paired files `8`).
+- h10:
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z/canary_d02_h10_intermediate_grid_compare.md`
+  (`PSFC` RMSE slope/h `51.177`, `MU` `34.067`, `P` `24.669`,
+  `PH` `19.759`; paired files `10`).
+
+This is current Canary-only evidence, not Switzerland evidence. Switzerland
+still has only CPU72 truth; the matched v0.14 GPU72 field compare has not run
+because Canary owns the GPU. A Fable high CPU-only debug sprint is active in
+tmux `0:3`:
+`.agent/sprints/2026-06-10-v014-fable-canary-h08-drift-analysis/`; expected
+report:
+`.agent/reviews/2026-06-10-v014-fable-canary-h08-drift-analysis.md`.
+Manager decision point: let the run continue at least to h24 unless Fable
+returns a strong stop/fix recommendation earlier. The h24 watcher will produce
+`canary_d02_h24_intermediate_grid_compare.*`; a final 72h notifier is armed to
+hand Fable the complete divergence trajectory if the run reaches the end.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed
