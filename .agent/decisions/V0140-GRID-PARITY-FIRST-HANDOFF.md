@@ -2004,6 +2004,60 @@ Manager validation passed:
 
 Next active work:
 
-- Start GPT-5.5 xhigh surface-layer boundary sprint, not Fable/Mythos yet.
+- GPT-5.5 closed the first-call part of the surface-layer boundary sprint:
+  `proofs/v014/step1_sfclay_boundary_fix.md` verdict
+  `STEP1_SFCLAY_FIRST_CALL_FIXED_NEXT_BLOCKER_TSK_ZNT_SURFACE_INPUTS`.
+- Start a GPT-5.5 xhigh TSK/ZNT surface-input sprint, not Fable/Mythos yet.
 - Keep TOST, Switzerland, broad FP32, and broad memory paused until this boundary
   is fixed or explicitly bounded.
+
+## Current Manager Update 2026-06-10 02:57 WEST
+
+The Step-1 surface-layer first-call sprint is closed and manager-gated as a
+local correctness fix plus a narrower remaining frontier.
+
+Artifacts:
+
+- `proofs/v014/step1_sfclay_boundary_fix.py`
+- `proofs/v014/step1_sfclay_boundary_fix.json`
+- `proofs/v014/step1_sfclay_boundary_fix.md`
+- `.agent/reviews/2026-06-10-v014-step1-sfclay-boundary.md`
+- `.agent/sprints/2026-06-10-v014-step1-sfclay-boundary/manager-closeout.md`
+
+Verdict:
+
+`STEP1_SFCLAY_FIRST_CALL_FIXED_NEXT_BLOCKER_TSK_ZNT_SURFACE_INPUTS`.
+
+What changed:
+
+- Ported WRF MYNN surface first-call semantics in `surface_layer(...,
+  first_timestep=True)`: UST first guess, `MOL=0`, land `QSFC=qv/(1+qv)`, and
+  Li_etal_2010 z/L seed.
+- Threaded `first_timestep` through d02 replay and operational Step-1 physics.
+- Updated Step-1 proof helpers to measure the fixed first-call boundary.
+
+Key proof numbers:
+
+- UST RMSE improved `0.08667703917523994 -> 0.02954126268295198`.
+- qv-flux RMSE improved `1.9833425562981398e-05 -> 1.442591864492997e-05`.
+- strict after-conv `T_TENDF` max_abs `1497.6112467075195`, RMSE
+  `13.296448784742802`.
+- surviving TSK max_abs `8.344940187890643 K`; ZNT max_abs
+  `0.9737602076530456 m`.
+
+Manager validation passed:
+
+- focused surface test: `2 passed, 1 skipped`.
+- `step1_sfclay_boundary_fix.py`.
+- `step1_source_fidelity_closure.py` with verdict
+  `STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_SFCLAY_TSK_ZNT_INPUTS`.
+- `mynn_driver_source_output_fix.py`.
+- JSON validation and `git diff --check`.
+
+Next active work:
+
+- Emit a tiny WRF Step-1 hook around `module_surface_driver/module_sf_mynn` for
+  incoming `TSK/ZNT/UST/QSFC/MOL` and outgoing `UST/HFX/QFX/ZNT`.
+- Compare exact arrays against JAX `_surface_column_view` inputs and diagnostics.
+- Fix TSK/ZNT sourcing if confirmed; rerun strict Step-1.
+- Keep TOST, Switzerland, broad FP32, and long GPU validation paused.

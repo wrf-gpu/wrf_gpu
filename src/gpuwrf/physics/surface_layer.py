@@ -404,13 +404,13 @@ def _as_surface(value, shape):
 # ==================================================================================
 
 
-def surface_layer(state) -> SurfaceFluxes:
+def surface_layer(state, *, first_timestep=False) -> SurfaceFluxes:
     """Return the MYNN ``SurfaceFluxes`` contract (kinematic flux handles)."""
 
-    return surface_layer_with_diagnostics(state).fluxes
+    return surface_layer_with_diagnostics(state, first_timestep=first_timestep).fluxes
 
 
-def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
+def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLayerDiagnostics:
     """Run one vectorized ``sf_sfclayrev_run`` solve over surface columns.
 
     ``state`` is a column-oriented view (trailing-z) carrying ``u, v, theta, qv,
@@ -434,14 +434,21 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     qv0 = jnp.maximum(_surface(jnp.asarray(state.qv, dtype=jnp.float64)), 0.0)
     p1d_pa = jnp.maximum(_surface(jnp.asarray(state.p, dtype=jnp.float64)), 1.0)  # lowest-level air pressure (p3d(kts))
     shape = u0.shape
+    first_step = jnp.asarray(first_timestep, dtype=bool)
 
     dz = jnp.maximum(_as_surface(_field(state, "dz", 100.0), shape), 1.0)  # dz8w1d
     t_skin = _as_surface(_field(state, "t_skin", None), shape) if _field(state, "t_skin", None) is not None else None
     xland = _as_surface(_field(state, "xland", 1.0), shape)
     lakemask = _as_surface(_field(state, "lakemask", 0.0), shape)
     mavail = jnp.clip(_as_surface(_field(state, "mavail", _field(state, "soil_moisture", 1.0)), shape), 0.0, 1.0)
-    ust_in = jnp.maximum(_as_surface(_field(state, "ustar", 0.1), shape), 0.0)
-    mol_in = _as_surface(_field(state, "mol", 0.0), shape)
+    ust_warm = jnp.maximum(_as_surface(_field(state, "ustar", 0.1), shape), 0.0)
+    # WRF MYNN cold start (module_sf_mynn.F:330-336): before SFCLAY1D_mynn,
+    # itimestep==1 overwrites the carried UST/MOL/QSFC with deterministic first
+    # guesses. Keep warm-step behavior as the default for existing callers.
+    first_ust = jnp.maximum(0.04 * jnp.sqrt(u0 * u0 + v0 * v0), 0.001)
+    ust_in = jnp.where(first_step, first_ust, ust_warm)
+    mol_warm = _as_surface(_field(state, "mol", 0.0), shape)
+    mol_in = jnp.where(first_step, 0.0, mol_warm)
     pblh = jnp.maximum(_as_surface(_field(state, "pblh", 1000.0), shape), 1.0)
     dx_m = jnp.maximum(_as_surface(_field(state, "dx_m", 3000.0), shape), 1.0)
     znt = jnp.maximum(_roughness_from_state(state, shape, xland), 1.0e-7)
@@ -487,6 +494,8 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
         SVP1_KPA * jnp.exp(SVP2 * (tgdsa - SVPT0_K) / (tgdsa - SVP3_K)),
     )
     qsfc_in = _as_surface(_field(state, "qsfc", -1.0), shape)
+    qsfc_first = qv0 / (1.0 + qv0)
+    qsfc_in = jnp.where(first_step, qsfc_first, qsfc_in)
     recompute_q = is_water | (qsfc_in <= 0.0)
     # QSFC (specific humidity): recompute over water/<=0 land, else carried value.
     qsfc = jnp.where(recompute_q, EP2 * e1_g / (psfc_cb - ep_3 * e1_g), qsfc_in)
@@ -582,14 +591,17 @@ def surface_layer_with_diagnostics(state) -> SurfaceLayerDiagnostics:
     gz10ozt = jnp.log((10.0 + znt) / z_t)
 
     # --- z/L via MYNN zolrib brute-force solve (module_sf_mynn.F:804/889) ---
-    # zolrib's heat residual uses the THERMAL roughness z_t. The WARM-step first guess
-    # (itimestep>1) is the MOL-based estimate ZA*k*g*MOL/(TH1D*max(ust^2,eps)) clamped
-    # per sign (module_sf_mynn.F:796-798 stable / 881-883 unstable). BR is already
-    # clamped to [-4,4] above; the extra ZOLRI_BR_CAP guard is now inert but harmless.
+    # zolrib's heat residual uses the THERMAL roughness z_t. On WRF's first step
+    # (itimestep<=1), the seed is Li_etal_2010; warm steps use the MOL-based
+    # estimate ZA*k*g*MOL/(TH1D*max(ust^2,eps)) clamped per sign
+    # (module_sf_mynn.F:793-804 stable / 878-889 unstable). BR is already clamped
+    # to [-4,4] above; the extra ZOLRI_BR_CAP guard is now inert but harmless.
     br_capped = jnp.clip(br, -ZOLRI_BR_CAP, ZOLRI_BR_CAP)
     zol_guess_s = jnp.clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-4)), 0.0, 20.0)
     zol_guess_u = jnp.clip(za * KARMAN * G * mol_in / (thx * jnp.maximum(ust_in ** 2, 1.0e-3)), -20.0, 0.0)
-    zol1_seed = jnp.where(br > 0.0, zol_guess_s, jnp.where(br < 0.0, zol_guess_u, 0.0))
+    zol_warm_seed = jnp.where(br > 0.0, zol_guess_s, jnp.where(br < 0.0, zol_guess_u, 0.0))
+    zol_first_seed = _li_etal_2010(br_capped, za / znt, znt / z_t)
+    zol1_seed = jnp.where(first_step, zol_first_seed, zol_warm_seed)
     zol = _zolrib(br_capped, za, znt, z_t, gz1oz0, gz1ozt, zol1_seed=zol1_seed)
     # per-sign clamp (module_sf_mynn.F:805-806 stable -> [0,20]; 890-891 unstable ->
     # [-20,0]); neutral (br==0) -> zol=0 (module_sf_mynn.F:863).

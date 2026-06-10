@@ -2902,6 +2902,7 @@ def _physics_step_forcing(
     lead_seconds,
     *,
     run_radiation: bool,
+    first_timestep=False,
 ) -> _PhysicsStepForcing:
     """Run non-timesplit physics at step entry and expose RK-fixed tendencies."""
 
@@ -2961,7 +2962,11 @@ def _physics_step_forcing(
         elif sf_opt in SFCLAY_SCAN_ADAPTERS:
             next_state = SFCLAY_SCAN_ADAPTERS[sf_opt](next_state, float(namelist.dt_s), namelist.grid)
         else:
-            next_state = surface_adapter(next_state, float(namelist.dt_s))
+            next_state = surface_adapter(
+                next_state,
+                float(namelist.dt_s),
+                first_timestep=first_timestep,
+            )
         if _explicit_noahclassic(namelist):
             next_noahclassic_rad = _refresh_noahmp_rad(
                 next_state, namelist, lead_seconds, run_radiation, carry.noahclassic_rad
@@ -3217,7 +3222,11 @@ def _physics_boundary_step_with_limiter_diagnostics(
     # also reused below by rrtmg + the end-of-step lateral boundary nudge.
     lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
     physics_forcing = _physics_step_forcing(
-        carry, namelist, lead_seconds, run_radiation=run_radiation
+        carry,
+        namelist,
+        lead_seconds,
+        run_radiation=run_radiation,
+        first_timestep=jnp.equal(step_index, 1),
     )
     carry = physics_forcing.carry
     carry = _rk_scan_step(

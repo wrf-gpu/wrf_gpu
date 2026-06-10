@@ -2269,7 +2269,11 @@ def _candidate_timestep_adr023(
     # fluxes -- a recomposition order bug).
     lead_seconds = global_step.astype(jnp.float64) * float(replay_config.dt_s)
     next_state = thompson_adapter(next_state, float(replay_config.dt_s))
-    next_state = surface_adapter(next_state, float(replay_config.dt_s))
+    next_state = surface_adapter(
+        next_state,
+        float(replay_config.dt_s),
+        first_timestep=jnp.equal(global_step, 1),
+    )
     next_state = mynn_adapter(next_state, float(replay_config.dt_s), grid)
     if bool(run_radiation):
         next_state = rrtmg_adapter(

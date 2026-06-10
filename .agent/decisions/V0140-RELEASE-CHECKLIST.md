@@ -1,6 +1,6 @@
 # V0.14 Release Checklist
 
-Date: 2026-06-10 02:24 WEST
+Date: 2026-06-10 02:57 WEST
 Owner: manager
 
 ## Release Rule
@@ -14,9 +14,9 @@ scalable GPU rewrite.
 
 | Lane | State | Gate before release |
 |---|---|---|
-| Grid-cell parity | Active. MYNN source-output deficit is root-caused and fixed by WRF-equivalent first-call QKE initialization. Strict Step-1 after-conv residual improved to max_abs `1497.6112512148795`, RMSE `13.468453371786723`, but remains red. The current blocker is Step-1 surface-layer flux/input boundary: `TSK/ZNT/UST/HFX/QFX`, `sfclayrev` first-call `flag_iter`/UST first guess, and related skin-temperature/roughness sourcing. | GPT-5.5 xhigh surface-layer boundary sprint: hook WRF `module_sf_mynn`/`sfclayrev` in/out, compare exact boundary to JAX surface adapter, fix if local, and rerun strict Step-1 proofs against deterministic rmol-pinned truth. |
+| Grid-cell parity | Active. MYNN source-output deficit and MYNN surface first-call semantics are fixed. Strict Step-1 after-conv residual remains red at max_abs `1497.6112467075195`, RMSE `13.296448784742802`. Current blocker is narrower: WRF-anchored `TSK/ZNT` surface input sourcing before `sfclay_mynn` (`TSK` max_abs `8.344940187890643 K`, `ZNT` max_abs `0.9737602076530456 m`). | GPT-5.5 xhigh TSK/ZNT sprint: hook WRF `module_surface_driver/module_sf_mynn` incoming `TSK/ZNT/UST/QSFC/MOL` and outgoing `UST/HFX/QFX/ZNT`, compare exact boundary to JAX `_surface_column_view` inputs/diagnostics, fix if local, and rerun strict Step-1. |
 | Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Exact-branch memory preflight is green at 8116 MiB compute peak and 378 s warm-cache. Mixed FP32 R1/R2 remains blocked by the open fp64 dynamics frontier. | Rerun exact-branch memory preflight only on the final candidate branch before long validation. Escalate FP32 implementation to Fable/Mythos only if the fp64 grid-parity frontier closes and GPT cannot directly solve mixed precision. |
-| Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. | Atlas produces manifest, summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. |
+| Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is implemented on `worker/gpt/v014-grid-delta-atlas` (`cdaf9844`), pending merge after main parity work is stable. | Atlas produces manifest, summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. |
 | Switzerland/Gotthard | CPU truth exists. No post-fix GPU run has been accepted. | Post-stabilization GPU-vs-CPU proof with field-level comparison and finite/stability evidence. |
 | Powered TOST | Three cases are durable; marathon paused. | Resume only after grid-field divergence is fixed/bounded and memory changes are merged. Interpret together with Grid-Delta Atlas, never alone. |
 
@@ -33,7 +33,7 @@ scalable GPU rewrite.
 
 ## Final v0.14 Gate Sequence
 
-1. Close the active Step-1 surface-layer boundary blocker with WRF hook evidence
+1. Close the active Step-1 TSK/ZNT surface input blocker with WRF hook evidence
    and a JAX fix if local.
 2. Rerun the strict Step-1 and short grid-field falsifier before launching
    longer campaigns.

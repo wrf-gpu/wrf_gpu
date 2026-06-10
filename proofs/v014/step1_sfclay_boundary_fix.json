@@ -1,0 +1,541 @@
+{
+  "commands": {
+    "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_m6_surface_layer_kernel.py",
+    "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_sfclay_boundary_fix.py"
+  },
+  "created_utc": "2026-06-10T01:54:56.907724+00:00",
+  "environment": {
+    "cpu_only": true,
+    "jax_backend": "cpu",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "gates": {
+    "first_call_qsfc_exact": true,
+    "mynn_any_rmse_reduced": true,
+    "strict_step1_closed": false,
+    "surface_any_rmse_reduced": true
+  },
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n"
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "1435457b12edab890d546d6b8809a9f31bb549cd\n"
+    },
+    "status_short": {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/mynn_driver_source_output_fix.py\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v014/step1_tendency_contract_split.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/integration/d02_replay.py\n M src/gpuwrf/physics/surface_layer.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_m6_surface_layer_kernel.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-sfclay-boundary.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_sfclay_boundary_fix.json\n?? proofs/v014/step1_sfclay_boundary_fix.md\n?? proofs/v014/step1_sfclay_boundary_fix.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
+    }
+  },
+  "mynn_improvements": {
+    "rqvblten_rmse": {
+      "new": 8.666578419389617e-08,
+      "old": 9.572300922451467e-08,
+      "ratio_new_over_old": 0.905380899493296,
+      "reduced": true
+    },
+    "rthblten_rmse": {
+      "new": 0.00018372241771801064,
+      "old": 0.00018383323104506096,
+      "ratio_new_over_old": 0.9993972073143665,
+      "reduced": true
+    }
+  },
+  "mynn_response": {
+    "first_timestep": {
+      "jax_output_summary": {
+        "qv_tendency_max_abs": 5.746079427595338e-06,
+        "surface_qv_flux_max_abs": 5.31187279681733e-05,
+        "surface_theta_flux_max_abs": 0.16667487465102235,
+        "surface_ustar_max": 0.3309957623868768,
+        "theta_tendency_max_abs": 0.011903139343104385
+      },
+      "rqvblten_vs_wrf_raw": {
+        "bias": -5.2893963866745695e-09,
+        "corr": 0.6786882740924784,
+        "max_abs": 4.789201701170209e-06,
+        "ref_max_abs": 5.3572780416e-06,
+        "rmse": 8.666578419389617e-08,
+        "strong_cells": 8625,
+        "strong_ratio_median": 0.24646955594177125,
+        "strong_ratio_p10": 0.08907195904442977,
+        "strong_ratio_p90": 0.4484822218926573
+      },
+      "rthblten_vs_wrf_raw": {
+        "bias": -4.29025698652391e-06,
+        "corr": 0.831396009870904,
+        "max_abs": 0.023255740598449363,
+        "ref_max_abs": 0.033187866211,
+        "rmse": 0.00018372241771801064,
+        "strong_cells": 664,
+        "strong_ratio_median": 0.2365473895227375,
+        "strong_ratio_p10": -0.002559292810025852,
+        "strong_ratio_p90": 0.7354791775055164
+      },
+      "shape": {
+        "nx": 159,
+        "ny": 66
+      }
+    },
+    "warm": {
+      "jax_output_summary": {
+        "qv_tendency_max_abs": 6.120572111597185e-06,
+        "surface_qv_flux_max_abs": 2.3980809882410285e-05,
+        "surface_theta_flux_max_abs": 0.1351514159741271,
+        "surface_ustar_max": 0.2215057746857824,
+        "theta_tendency_max_abs": 0.011663958647507874
+      },
+      "rqvblten_vs_wrf_raw": {
+        "bias": -7.185916806857827e-09,
+        "corr": 0.5490428190073715,
+        "max_abs": 4.779078761205926e-06,
+        "ref_max_abs": 5.3572780416e-06,
+        "rmse": 9.572300922451467e-08,
+        "strong_cells": 8625,
+        "strong_ratio_median": 0.08362313252577602,
+        "strong_ratio_p10": 0.03956627744949353,
+        "strong_ratio_p90": 0.1753100228413529
+      },
+      "rthblten_vs_wrf_raw": {
+        "bias": -3.4019241985853564e-06,
+        "corr": 0.8488220544735405,
+        "max_abs": 0.023255740940684638,
+        "ref_max_abs": 0.033187866211,
+        "rmse": 0.00018383323104506096,
+        "strong_cells": 664,
+        "strong_ratio_median": 0.23541202855374654,
+        "strong_ratio_p10": -0.013047161683547219,
+        "strong_ratio_p90": 0.7425866500458198
+      },
+      "shape": {
+        "nx": 159,
+        "ny": 66
+      }
+    }
+  },
+  "next_boundary": "Narrow next blocker: WRF-anchored TSK/ZNT surface input sourcing before sfclay_mynn. Fastest next command is a tiny surface-driver hook around module_surface_driver/module_sf_mynn for incoming TSK/ZNT/UST/QSFC/MOL and outgoing UST/HFX/QFX/ZNT on the current d02 Step-1 case, then compare those exact arrays against JAX _surface_column_view inputs and diagnostics.",
+  "production_change": {
+    "files": [
+      "src/gpuwrf/physics/surface_layer.py",
+      "src/gpuwrf/coupling/physics_couplers.py",
+      "src/gpuwrf/integration/d02_replay.py",
+      "src/gpuwrf/runtime/operational_mode.py",
+      "proofs/v014/step1_tendency_contract_split.py",
+      "proofs/v014/mynn_driver_source_output_fix.py",
+      "proofs/v014/step1_source_fidelity_closure.py",
+      "tests/test_m6_surface_layer_kernel.py"
+    ],
+    "summary": "Threaded first_timestep through MYNN surface_layer/surface_adapter. On first Step-1 calls, UST=max(0.04*sqrt(u^2+v^2),0.001), MOL=0, QSFC=qv/(1+qv), and zolrib starts from Li_etal_2010."
+  },
+  "ranked_findings": [
+    {
+      "evidence": {
+        "mynn_improvements": {
+          "rqvblten_rmse": {
+            "new": 8.666578419389617e-08,
+            "old": 9.572300922451467e-08,
+            "ratio_new_over_old": 0.905380899493296,
+            "reduced": true
+          },
+          "rthblten_rmse": {
+            "new": 0.00018372241771801064,
+            "old": 0.00018383323104506096,
+            "ratio_new_over_old": 0.9993972073143665,
+            "reduced": true
+          }
+        },
+        "qsfc_exact_gate": true,
+        "strict_metric": {
+          "bias": 0.061017576606901075,
+          "count": 442112,
+          "max_abs": 1497.6112467075195,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3165969814534986,
+          "p99": 37.885854494494495,
+          "rmse": 13.296448784742802,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -959.9717611049804
+        },
+        "surface_improvements": {
+          "qv_flux_rmse": {
+            "new": 1.442591864492997e-05,
+            "old": 1.9833425562981398e-05,
+            "ratio_new_over_old": 0.7273538602356011,
+            "reduced": true
+          },
+          "theta_flux_rmse": {
+            "new": 0.02315528543965535,
+            "old": 0.0213378637896416,
+            "ratio_new_over_old": 1.085173551951157,
+            "reduced": false
+          },
+          "ustar_rmse": {
+            "new": 0.02954126268295198,
+            "old": 0.08667703917523994,
+            "ratio_new_over_old": 0.34081993298394414,
+            "reduced": true
+          }
+        }
+      },
+      "hypothesis": "WRF first-call MYNN surface semantics were missing from the JAX Step-1 surface boundary.",
+      "rank": 1,
+      "status": "BLOCKING"
+    },
+    {
+      "evidence": {
+        "surface_znt_after_mynn_vs_wrf_znt": {
+          "first_timestep": {
+            "bias": -0.01676578168262908,
+            "max_abs": 0.9737602076530456,
+            "ref_max_abs": 1.0,
+            "rmse": 0.10376647928375139
+          },
+          "warm": {
+            "bias": -0.01676848707923353,
+            "max_abs": 0.9737602076530456,
+            "ref_max_abs": 1.0,
+            "rmse": 0.10376647972218284
+          }
+        },
+        "tskin_vs_wrf_ts": {
+          "bias": -0.07544341683712853,
+          "max_abs": 8.344940187890643,
+          "ref_max_abs": 305.0635376,
+          "rmse": 1.1131824623693845
+        },
+        "znt_input_vs_wrf_znt": {
+          "bias": -0.014158440233910828,
+          "max_abs": 0.9737602076530456,
+          "ref_max_abs": 1.0,
+          "rmse": 0.10380183155466993
+        }
+      },
+      "hypothesis": "Skin-temperature and roughness sourcing remain the narrower WRF-anchored blocker.",
+      "rank": 2,
+      "status": "SURVIVES"
+    },
+    {
+      "evidence": "Accepted by proofs/v014/mynn_driver_source_output_fix.md; this proof changes only the surface boundary and reuses the same WRF MYNN-driver hook.",
+      "hypothesis": "MYNN kernel algebra or MYNN cold-start QKE initialization is the active Step-1 blocker.",
+      "rank": 3,
+      "status": "RULED_OUT"
+    }
+  ],
+  "schema": "wrfgpu2.v014.step1_sfclay_boundary_fix.v1",
+  "single_remaining_blocker": {
+    "evidence": {
+      "surface_znt_after_mynn_vs_wrf_znt": {
+        "first_timestep": {
+          "bias": -0.01676578168262908,
+          "max_abs": 0.9737602076530456,
+          "ref_max_abs": 1.0,
+          "rmse": 0.10376647928375139
+        },
+        "warm": {
+          "bias": -0.01676848707923353,
+          "max_abs": 0.9737602076530456,
+          "ref_max_abs": 1.0,
+          "rmse": 0.10376647972218284
+        }
+      },
+      "tskin_vs_wrf_ts": {
+        "bias": -0.07544341683712853,
+        "max_abs": 8.344940187890643,
+        "ref_max_abs": 305.0635376,
+        "rmse": 1.1131824623693845
+      },
+      "znt_input_vs_wrf_znt": {
+        "bias": -0.014158440233910828,
+        "max_abs": 0.9737602076530456,
+        "ref_max_abs": 1.0,
+        "rmse": 0.10380183155466993
+      }
+    },
+    "hypothesis": "Skin-temperature and roughness sourcing remain the narrower WRF-anchored blocker.",
+    "rank": 2,
+    "status": "SURVIVES"
+  },
+  "status": "PROOF_EXECUTED",
+  "strict_step1": {
+    "capture": {
+      "label": "step1_sfclay_boundary_fix",
+      "namelist": {
+        "acoustic_substeps": 10,
+        "bl_pbl_physics": 5,
+        "cu_physics": 0,
+        "diff_6th_opt": 2,
+        "diff_opt": 0,
+        "dt_s": 6.0,
+        "force_fp64": true,
+        "km_opt": 0,
+        "moist_adv_opt": 0,
+        "mp_physics": 8,
+        "rad_rk_tendf": 1,
+        "radiation_cadence_steps": 300,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "scalar_adv_opt": 0,
+        "sf_sfclay_physics": 5,
+        "use_flux_advection": true
+      },
+      "run_radiation": false,
+      "status": "JAX_TENDENCY_BOUNDARIES_READY"
+    },
+    "metric": {
+      "bias": 0.061017576606901075,
+      "count": 442112,
+      "max_abs": 1497.6112467075195,
+      "nonfinite_diff_count": 0,
+      "p95": 2.3165969814534986,
+      "p99": 37.885854494494495,
+      "rmse": 13.296448784742802,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -2457.5830078125,
+      "worst_mismatch_fortran": {
+        "i": 66,
+        "j": 37,
+        "k": 3
+      },
+      "worst_reference": -959.9717611049804
+    },
+    "status": "STRICT_METRIC_READY"
+  },
+  "surface_boundary_metrics": {
+    "diag_hfx_vs_wrf": {
+      "first_timestep": {
+        "bias": -12.783921246693279,
+        "max_abs": 370.77712180101787,
+        "ref_max_abs": 370.61135864,
+        "rmse": 26.861146479903255
+      },
+      "warm": {
+        "bias": -10.40195953392335,
+        "max_abs": 370.9597756061633,
+        "ref_max_abs": 370.61135864,
+        "rmse": 24.64145820254167
+      }
+    },
+    "diag_qfx_vs_wrf": {
+      "first_timestep": {
+        "bias": -1.5969030103557263e-05,
+        "max_abs": 2.7273259066912374e-05,
+        "ref_max_abs": 7.4902804045e-05,
+        "rmse": 1.7491657062168152e-05
+      },
+      "warm": {
+        "bias": -2.0983527991398038e-05,
+        "max_abs": 5.164961916608965e-05,
+        "ref_max_abs": 7.4902804045e-05,
+        "rmse": 2.3908381084605318e-05
+      }
+    },
+    "first_qsfc_all_vs_qv_over_1_plus_qv": {
+      "bias": 0.0049900313609039714,
+      "max_abs": 0.011736815970716026,
+      "ref_max_abs": 0.011571370537322101,
+      "rmse": 0.0052323033760931
+    },
+    "first_qsfc_land_vs_qv_over_1_plus_qv": {
+      "bias": 0.0,
+      "max_abs": 0.0,
+      "ref_max_abs": 0.010545331079001628,
+      "rmse": 0.0
+    },
+    "first_timestep": {
+      "fltv_vs_wrf_fltv": {
+        "bias": -0.013076840816322554,
+        "max_abs": 0.3121990197822306,
+        "ref_max_abs": 0.3119694983335894,
+        "rmse": 0.024377417520699798
+      },
+      "qv_flux_vs_wrf_flqv": {
+        "bias": -1.3182737368691703e-05,
+        "max_abs": 2.2709921762484634e-05,
+        "ref_max_abs": 6.270674727475933e-05,
+        "rmse": 1.442591864492997e-05
+      },
+      "theta_flux_vs_wrf_flt": {
+        "bias": -0.010733783227345433,
+        "max_abs": 0.3121972813467408,
+        "ref_max_abs": 0.3119690397296882,
+        "rmse": 0.02315528543965535
+      },
+      "ustar_vs_wrf_ust": {
+        "bias": -0.025370190466854015,
+        "max_abs": 0.15787489948403996,
+        "ref_max_abs": 0.33699807525,
+        "rmse": 0.02954126268295198
+      }
+    },
+    "surface_znt_after_mynn_vs_wrf_znt": {
+      "first_timestep": {
+        "bias": -0.01676578168262908,
+        "max_abs": 0.9737602076530456,
+        "ref_max_abs": 1.0,
+        "rmse": 0.10376647928375139
+      },
+      "warm": {
+        "bias": -0.01676848707923353,
+        "max_abs": 0.9737602076530456,
+        "ref_max_abs": 1.0,
+        "rmse": 0.10376647972218284
+      }
+    },
+    "tskin_vs_wrf_ts": {
+      "bias": -0.07544341683712853,
+      "max_abs": 8.344940187890643,
+      "ref_max_abs": 305.0635376,
+      "rmse": 1.1131824623693845
+    },
+    "warm": {
+      "fltv_vs_wrf_fltv": {
+        "bias": -0.01184746324373502,
+        "max_abs": 0.3132416839899808,
+        "ref_max_abs": 0.3119694983335894,
+        "rmse": 0.022600144195125432
+      },
+      "qv_flux_vs_wrf_flqv": {
+        "bias": -1.7401237237770974e-05,
+        "max_abs": 4.280529338738525e-05,
+        "ref_max_abs": 6.270674727475933e-05,
+        "rmse": 1.9833425562981398e-05
+      },
+      "theta_flux_vs_wrf_flt": {
+        "bias": -0.008758666654895114,
+        "max_abs": 0.3139260895497476,
+        "ref_max_abs": 0.3119690397296882,
+        "rmse": 0.0213378637896416
+      },
+      "ustar_vs_wrf_ust": {
+        "bias": -0.07667813571673186,
+        "max_abs": 0.17642719400502455,
+        "ref_max_abs": 0.33699807525,
+        "rmse": 0.08667703917523994
+      }
+    },
+    "warm_qsfc_vs_first_qsfc": {
+      "bias": 0.0006846896118734173,
+      "max_abs": 0.019174004603061366,
+      "ref_max_abs": 0.02136401079823129,
+      "rmse": 0.0029366068364180555
+    },
+    "wrf_first_ust_guess_vs_jax_first_formula": {
+      "bias": 3.109555163758064e-11,
+      "max_abs": 2.8828894854671105e-08,
+      "ref_max_abs": 0.262032215991372,
+      "rmse": 5.258412938162256e-09
+    },
+    "znt_input_vs_wrf_znt": {
+      "bias": -0.014158440233910828,
+      "max_abs": 0.9737602076530456,
+      "ref_max_abs": 1.0,
+      "rmse": 0.10380183155466993
+    }
+  },
+  "surface_improvements": {
+    "qv_flux_rmse": {
+      "new": 1.442591864492997e-05,
+      "old": 1.9833425562981398e-05,
+      "ratio_new_over_old": 0.7273538602356011,
+      "reduced": true
+    },
+    "theta_flux_rmse": {
+      "new": 0.02315528543965535,
+      "old": 0.0213378637896416,
+      "ratio_new_over_old": 1.085173551951157,
+      "reduced": false
+    },
+    "ustar_rmse": {
+      "new": 0.02954126268295198,
+      "old": 0.08667703917523994,
+      "ratio_new_over_old": 0.34081993298394414,
+      "reduced": true
+    }
+  },
+  "target": {
+    "domain": 2,
+    "dt_s": 6.0,
+    "dx_m": 3000.0,
+    "step": 1,
+    "strict_pass": {
+      "max_abs": 0.001,
+      "rmse": 1e-05
+    }
+  },
+  "verdict": "STEP1_SFCLAY_FIRST_CALL_FIXED_NEXT_BLOCKER_TSK_ZNT_SURFACE_INPUTS",
+  "wrf_truth": {
+    "hook_files": {
+      "init": {
+        "exists": true,
+        "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn/mynn_init_d02_step1.txt",
+        "sha256": "1ca17840750acca6ff53ae2c0d840ae729a8d81e4c206546dd03104cdd8ab474",
+        "size_bytes": 136631880
+      },
+      "post": {
+        "exists": true,
+        "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn/mynn_post_d02_step1_its_1_ite_159_jts_1_jte_66.txt",
+        "sha256": "b415700a9b025765aa630a50974947a5ff6e4dc060d39d7c0bf26ea9a3be568d",
+        "size_bytes": 117837212
+      },
+      "pre": {
+        "exists": true,
+        "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn/mynn_pre_d02_step1_its_1_ite_159_jts_1_jte_66.txt",
+        "sha256": "d502dbc1269bbd894cb5703a162abc6f76959bb2e89eaf65cdf91ca187aefc55",
+        "size_bytes": 155731066
+      }
+    },
+    "module_sf_mynn_source": {
+      "exists": true,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_sf_mynn.F",
+      "sha256": "86395534a6c9bfc79dcad50094bce290eff05756777a95794b2673795f9761c3",
+      "size_bytes": 90941
+    },
+    "module_surface_driver_source": {
+      "exists": true,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F",
+      "sha256": "79c21663f65c7e2183e7fe07076c464eb12ae0c1b942f030d81a54228e2f6e1e",
+      "size_bytes": 405427
+    },
+    "mynn_driver_hook_root": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn",
+    "new_wrf_hook_used": false
+  }
+}

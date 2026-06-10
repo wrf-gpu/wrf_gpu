@@ -64,6 +64,22 @@ def test_surface_layer_returns_fp64_finite_fluxes_and_diagnostics():
     assert bool(jnp.all(diag.fluxes.rhosfc > 0.0))
 
 
+def test_surface_layer_first_timestep_uses_wrf_mynn_cold_start_boundary():
+    rows = [
+        [6.0, 2.0, 292.0, 0.008, 95500.0, 80.0, 296.0, 1.0, 0.08, 0.7, 0.0, 0.0],
+    ]
+    state = _state_from_rows(rows)
+
+    warm = surface_layer_with_diagnostics(state)
+    first = surface_layer_with_diagnostics(state, first_timestep=True)
+
+    qv0 = rows[0][3]
+    assert np.allclose(np.asarray(first.qsfc), qv0 / (1.0 + qv0), rtol=0.0, atol=1.0e-14)
+    assert abs(float(np.asarray(first.fluxes.qv_flux)[0, 0])) < 1.0e-14
+    assert abs(float(np.asarray(warm.fluxes.qv_flux)[0, 0])) > 1.0e-8
+    assert float(np.asarray(first.fluxes.ustar)[0, 0]) > float(np.asarray(warm.fluxes.ustar)[0, 0])
+
+
 def test_surface_layer_matches_wrf_sfclay_harness_when_available(tmp_path):
     """RETIRED (B2 rebuild): this asserted parity with WRF MM5 ``module_sf_sfclay.F``.
 
