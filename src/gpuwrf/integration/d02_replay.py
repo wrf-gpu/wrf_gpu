@@ -1714,8 +1714,8 @@ def load_wrfbdy_boundary_leaves(
         mu_total=mu_total, metrics=metrics, msfuy=metrics.msfuy, msfvx=metrics.msfvx, width=width
     )
 
-    def _decoupled_strip(decoded_var: dict[str, Any], side: str, mass_name: str) -> np.ndarray:
-        coupled = np.asarray(decoded_var["sides"][side]["boundary"], dtype=np.float64)  # (bw, z, tan)
+    def _decoupled_strip(coupled: np.ndarray, side: str, mass_name: str) -> np.ndarray:
+        coupled = np.asarray(coupled, dtype=np.float64)  # (bw, z, tan)
         mstrip = mass_strips[mass_name][side]  # (bw, z, tan)
         z_use = min(coupled.shape[1], mstrip.shape[1])
         safe = np.where(np.abs(mstrip[:, :z_use]) > 1.0e-12, mstrip[:, :z_use], 1.0e-12)
@@ -1735,9 +1735,24 @@ def load_wrfbdy_boundary_leaves(
     # previous decode divided to DRY theta, forcing a ~5 K-deficient boundary
     # ring against the moist interior -- part of the v0.14 h1 root cause.)
     use_theta_m = _wrf_use_theta_m(run, domain)
-    for k in range(ntimes):
+    # Each wrfbdy record k holds the specified value at t = k*interval plus the
+    # _BT* tendency that advances it across [k*interval, (k+1)*interval). The
+    # leaf therefore needs ONE synthesized terminal level (last base + last
+    # tendency * interval) so the leaf time axis spans the full forecast;
+    # without it ``interpolate_boundary_leaf`` clamps frozen at the last record
+    # start (e.g. 66 h of a 72 h run).
+    records = [(k, 0.0) for k in range(ntimes)] + [(ntimes - 1, interval_s)]
+    for k, tend_adv_s in records:
         dv = decode_wrfbdy(bdy_path, variables=("U", "V", "W", "T", "QVAPOR", "PH", "MU"), time_index=k)
         vars_k = dv["variables"]
+
+        def _coupled_strip(var: str, side: str) -> np.ndarray:
+            rec = vars_k[var]["sides"][side]
+            base = np.asarray(rec["boundary"], dtype=np.float64)
+            if tend_adv_s:
+                base = base + np.asarray(rec["tendency"], dtype=np.float64) * float(tend_adv_s)
+            return base
+
         per_u = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
         per_v = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
         per_th = np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
@@ -1747,19 +1762,19 @@ def load_wrfbdy_boundary_leaves(
         per_mu = np.zeros((4, width, 1, max_side), dtype=np.float64)
         for side in SIDES:
             si = SIDE_INDEX[side]
-            u_s = _decoupled_strip(vars_k["U"], side, "mass_u")
-            v_s = _decoupled_strip(vars_k["V"], side, "mass_v")
-            qv_s = np.maximum(_decoupled_strip(vars_k["QVAPOR"], side, "mass_h"), 0.0)
-            thm_s = _decoupled_strip(vars_k["T"], side, "mass_h")
+            u_s = _decoupled_strip(_coupled_strip("U", side), side, "mass_u")
+            v_s = _decoupled_strip(_coupled_strip("V", side), side, "mass_v")
+            qv_s = np.maximum(_decoupled_strip(_coupled_strip("QVAPOR", side), side, "mass_h"), 0.0)
+            thm_s = _decoupled_strip(_coupled_strip("T", side), side, "mass_h")
             if use_theta_m == 1:
                 # already the moist theta_m perturbation -> full theta_m
                 th_s = thm_s + _T0_K
             else:
                 # dry perturbation theta -> full moist theta_m at ingest
                 th_s = (thm_s + _T0_K) * (1.0 + _RVOVRD * qv_s)
-            ph_s = _decoupled_strip(vars_k["PH"], side, "mass_f")
-            w_s = np.asarray(vars_k["W"]["sides"][side]["boundary"], dtype=np.float64)  # W uncoupled (0)
-            mu_s = np.asarray(vars_k["MU"]["sides"][side]["boundary"], dtype=np.float64)  # uncoupled
+            ph_s = _decoupled_strip(_coupled_strip("PH", side), side, "mass_f")
+            w_s = _coupled_strip("W", side)  # W uncoupled (0)
+            mu_s = _coupled_strip("MU", side)  # uncoupled
             for dst, src in ((per_u, u_s), (per_v, v_s), (per_th, th_s), (per_qv, qv_s)):
                 dst[si, : src.shape[0], : src.shape[1], : src.shape[2]] = src[:, :, :]
             per_ph[si, : ph_s.shape[0], : ph_s.shape[1], : ph_s.shape[2]] = ph_s
@@ -1783,19 +1798,22 @@ def load_wrfbdy_boundary_leaves(
     # specified perturbation-pressure boundary, so hold it at the IC perturbation
     # strip (a steady ring, consistent with the static base state). Broadcasting
     # across the same ``ntimes`` keeps interpolate_boundary_leaf shape-stable.
+    ntimes_leaf = len(records)
     if pb is not None:
-        leaves_np["pb_bdy"] = _broadcast_base_leaf_3d(pb, width=width, max_side=max_side, ntimes=ntimes)
+        leaves_np["pb_bdy"] = _broadcast_base_leaf_3d(pb, width=width, max_side=max_side, ntimes=ntimes_leaf)
     if phb is not None:
-        leaves_np["phb_bdy"] = _broadcast_base_leaf_3d(phb, width=width, max_side=max_side, ntimes=ntimes)
+        leaves_np["phb_bdy"] = _broadcast_base_leaf_3d(phb, width=width, max_side=max_side, ntimes=ntimes_leaf)
     if mub is not None:
-        leaves_np["mub_bdy"] = _broadcast_base_leaf_2d(mub, width=width, max_side=max_side, ntimes=ntimes)
+        leaves_np["mub_bdy"] = _broadcast_base_leaf_2d(mub, width=width, max_side=max_side, ntimes=ntimes_leaf)
     if p_perturbation is not None:
-        leaves_np["p_bdy"] = _broadcast_base_leaf_3d(p_perturbation, width=width, max_side=max_side, ntimes=ntimes)
+        leaves_np["p_bdy"] = _broadcast_base_leaf_3d(p_perturbation, width=width, max_side=max_side, ntimes=ntimes_leaf)
     leaves = {name: jax.device_put(jnp.asarray(value)) for name, value in leaves_np.items()}
     meta = {
         "source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
         "wrfbdy_path": str(bdy_path),
-        "times": int(ntimes),
+        "times": int(ntimes_leaf),
+        "wrfbdy_records": int(ntimes),
+        "terminal_level_synthesized": True,
         "bdy_width": int(width),
         "interval_seconds": float(interval_s),
         "side_order": list(SIDES),
