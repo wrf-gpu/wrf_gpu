@@ -2122,3 +2122,72 @@ Next active work:
   fix the Step-1 temperature/pressure sourcing if local; rerun strict Step-1.
 - Keep TOST, Switzerland, broad FP32, and long GPU validation paused until this
   surface-driver input frontier is fixed or explicitly bounded.
+
+## Current Manager Update 2026-06-10 04:26 WEST
+
+The Step-1 thermodynamic column input sprint is closed and manager-gated as a
+local correctness fix plus a narrower remaining frontier.
+
+Artifacts:
+
+- `proofs/v014/step1_thermo_column_inputs.py`
+- `proofs/v014/step1_thermo_column_inputs.json`
+- `proofs/v014/step1_thermo_column_inputs.md`
+- `.agent/reviews/2026-06-10-v014-step1-thermo-column-inputs.md`
+- `.agent/sprints/2026-06-10-v014-step1-thermo-column-inputs/manager-closeout.md`
+
+Verdict:
+
+`THERMO_COLUMN_INPUTS_FIXED_NEXT_BLOCKER_SURFACE_LAYER_OUTPUTS`.
+
+What changed:
+
+- `_surface_column_view(state, grid)` now mirrors WRF `phy_prep` surface inputs
+  when grid metrics are available:
+  - converts live-nest `theta_m` to dry WRF `th_phy`;
+  - reconstructs WRF hydrostatic `p_hyd` and `psfc` with WRF float32-style
+    integration;
+  - keeps WRF's split `t_phy` semantics via explicit `t_air`;
+  - computes surface-layer `dz8w` using WRF physics `g=9.81`.
+- `surface_adapter` remains backwards-compatible with `grid=None`, but
+  operational/grid-bearing call sites now pass the grid.
+
+Key proof numbers:
+
+- Legacy theta_m vs WRF `th_phy(kts)`: max_abs `5.490148027499686 K`.
+- Fixed dry `th_phy(kts)`: max_abs `6.71089752017906e-05 K`, RMSE
+  `1.3430183262692343e-05`.
+- Fixed `t_phy(kts)`: max_abs `0.013577942721781255 K`, RMSE
+  `0.0010959870065792568`.
+- Fixed hydrostatic `p_phy(kts)`: max_abs `0.015625 Pa`, RMSE
+  `0.0013253267749381015`.
+- Fixed `dz8w(kts)`: max_abs `0.00018988715282830526 m`, RMSE
+  `7.774106387517223e-06`.
+- Fixed `psfc`: max_abs `0.015625 Pa`.
+- Strict after-conv `T_TENDF` improved but remains red: max_abs
+  `847.1445725702908`, RMSE `9.56593990212596`.
+- Next WRF-anchored blocker is later `module_sf_mynn` output algebra after the
+  fixed input tuple: `UST` max_abs `0.01231782267117762`, `HFX` max_abs
+  `27.09163832864155`, `QFX` max_abs `2.744275103194571e-07`, `BR` max_abs
+  `2.0`.
+
+Manager validation passed:
+
+- `python -m py_compile` on changed production, test, and proof files.
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_thermo_column_inputs.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_tsk_znt_sourcing_fix.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_source_fidelity_closure.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/mynn_driver_source_output_fix.py`
+- `python -m json.tool` on the four proof JSONs.
+- `git diff --check`
+- `python scripts/close_sprint.py .agent/sprints/2026-06-10-v014-step1-thermo-column-inputs`
+
+Next active work:
+
+- Open a GPT-5.5 xhigh surface-layer-output sprint, not Fable/Mythos yet.
+- Endpoint: add a narrow WRF internal hook inside `module_sf_mynn.F` /
+  `SFCLAY1D_mynn` for `thx/thgb/br/zol/psim/psih/ust/hfx/qfx`, compare against
+  `surface_layer_with_diagnostics` on the fixed input tuple, fix local algebra
+  if proven, rerun strict Step-1.
+- Keep TOST, Switzerland, broad FP32, and long GPU validation paused.

@@ -2965,6 +2965,7 @@ def _physics_step_forcing(
             next_state = surface_adapter(
                 next_state,
                 float(namelist.dt_s),
+                namelist.grid,
                 first_timestep=first_timestep,
             )
         if _explicit_noahclassic(namelist):

@@ -63,6 +63,10 @@ P0_PA = 100000.0
 RCP = 287.0 / 1004.0
 TSK_PASS = 1.0e-12
 ZNT_PASS = 1.0e-6
+THERMO_THETA_PASS = 1.0e-3
+THERMO_T_PASS = 2.0e-2
+THERMO_P_PASS = 5.0e-2
+THERMO_DZ_PASS = 1.0e-3
 
 
 def sanitize(value: Any) -> Any:
@@ -205,7 +209,9 @@ def generate_wrf_patch() -> dict[str, Any]:
         proc = subprocess.run(command, cwd=str(ROOT), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         chunks.append(proc.stdout)
         commands.append(command)
-    OUT_WRF_PATCH.write_text("\n".join(chunk for chunk in chunks if chunk), encoding="utf-8")
+    patch_text = "\n".join(chunk for chunk in chunks if chunk)
+    patch_text = "\n".join(line.rstrip().replace("\t", "        ") for line in patch_text.splitlines()) + "\n"
+    OUT_WRF_PATCH.write_text(patch_text, encoding="utf-8")
     return {
         "path": str(OUT_WRF_PATCH),
         "commands": commands,
@@ -278,7 +284,7 @@ def build_proof() -> dict[str, Any]:
     old_mavail = np.asarray(mavail_from_prescribed_fields(xland, landmask, smois), dtype=np.float64)
 
     inputs, patched, state = build_live_surface_state()
-    col = _surface_column_view(state)
+    col = _surface_column_view(state, inputs["namelist"].grid)
     diag = surface_layer_with_diagnostics(col, first_timestep=True)
     strict = sfclay_prev.strict_step1_metric(inputs, patched["carry"])
     strict_metric = strict.get("metric") if isinstance(strict, Mapping) else None
@@ -287,7 +293,11 @@ def build_proof() -> dict[str, Any]:
     is_water = wrf_in["xland"] > 1.5
     p0 = np.asarray(col.p[..., 0], dtype=np.float64)
     theta0 = np.asarray(col.theta[..., 0], dtype=np.float64)
-    t_from_theta = theta0 * (p0 / P0_PA) ** RCP
+    t_from_theta = (
+        np.asarray(col.t_air[..., 0], dtype=np.float64)
+        if getattr(col, "t_air", None) is not None
+        else theta0 * (p0 / P0_PA) ** RCP
+    )
 
     source_metrics = {
         "state_tsk_vs_sfclay_in_tsk": diffstat(state.t_skin, wrf_in["tsk"]),
@@ -331,6 +341,12 @@ def build_proof() -> dict[str, Any]:
         source_metrics["state_tsk_vs_sfclay_in_tsk"]["max_abs"] <= TSK_PASS
         and source_metrics["state_znt_vs_sfclay_in_znt"]["max_abs"] <= ZNT_PASS
     )
+    thermo_fixed = (
+        column_metrics["theta0_vs_sfclay_in_th_phy"]["max_abs"] <= THERMO_THETA_PASS
+        and column_metrics["temperature_from_theta_vs_sfclay_in_t_phy"]["max_abs"] <= THERMO_T_PASS
+        and column_metrics["p0_vs_sfclay_in_p_phy"]["max_abs"] <= THERMO_P_PASS
+        and column_metrics["dz0_vs_sfclay_in_dz8w"]["max_abs"] <= THERMO_DZ_PASS
+    )
     strict_closed = bool(
         strict_metric
         and strict_metric.get("max_abs") is not None
@@ -339,6 +355,8 @@ def build_proof() -> dict[str, Any]:
     )
     if strict_closed:
         status = "STRICT_STEP1_CLOSED"
+    elif source_fixed and thermo_fixed:
+        status = "TSK_ZNT_THERMO_INPUTS_FIXED_NEXT_BLOCKER_SURFACE_LAYER_OUTPUTS"
     elif source_fixed:
         status = "TSK_ZNT_SOURCE_FIXED_NEXT_BLOCKER_THERMODYNAMIC_COLUMN_INPUTS"
     else:
@@ -375,7 +393,7 @@ def build_proof() -> dict[str, Any]:
             },
             {
                 "rank": 2,
-                "status": "BLOCKING" if not strict_closed else "SECONDARY",
+                "status": "FIXED" if thermo_fixed else ("BLOCKING" if not strict_closed else "SECONDARY"),
                 "hypothesis": "Remaining sfclay mismatch is in non-TSK/ZNT thermodynamic column inputs before SFCLAY_mynn.",
                 "evidence": {
                     "theta": column_metrics["theta0_vs_sfclay_in_th_phy"],
@@ -397,6 +415,7 @@ def build_proof() -> dict[str, Any]:
         ],
         "acceptance": {
             "tsk_znt_source_fixed": source_fixed,
+            "thermodynamic_column_inputs_fixed": thermo_fixed,
             "strict_step1_closed": strict_closed,
             "next_fastest_command": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_tsk_znt_sourcing_fix.py",
         },
@@ -409,6 +428,12 @@ def write_markdown(payload: Mapping[str, Any]) -> None:
     column = payload.get("column_metrics", {})
     output = payload.get("surface_output_metrics", {})
     strict = payload.get("strict_step1_metric") or {}
+    thermo_fixed = bool(payload.get("acceptance", {}).get("thermodynamic_column_inputs_fixed"))
+    blocker_intro = (
+        "TSK/ZNT and the non-surface thermodynamic column entering `SFCLAY_mynn` are fixed/bounded; the next WRF-anchored blocker is now the surface-layer output algebra:"
+        if thermo_fixed
+        else "TSK/ZNT source is no longer the Step-1 blocker. The next WRF-anchored blocker is the non-surface thermodynamic column entering `SFCLAY_mynn`:"
+    )
     lines = [
         "# V0.14 Step-1 TSK/ZNT Sourcing Fix",
         "",
@@ -424,7 +449,7 @@ def write_markdown(payload: Mapping[str, Any]) -> None:
         "",
         "## Remaining Blocker",
         "",
-        "TSK/ZNT source is no longer the Step-1 blocker. The next WRF-anchored blocker is the non-surface thermodynamic column entering `SFCLAY_mynn`:",
+        blocker_intro,
         "",
         f"- `th_phy(kts)` max_abs `{column['theta0_vs_sfclay_in_th_phy']['max_abs']}` K, RMSE `{column['theta0_vs_sfclay_in_th_phy']['rmse']}`.",
         f"- derived `t_phy(kts)` max_abs `{column['temperature_from_theta_vs_sfclay_in_t_phy']['max_abs']}` K, RMSE `{column['temperature_from_theta_vs_sfclay_in_t_phy']['rmse']}`.",
@@ -453,6 +478,12 @@ def write_review(payload: Mapping[str, Any]) -> None:
     strict = payload.get("strict_step1_metric") or {}
     source = payload.get("source_metrics", {})
     column = payload.get("column_metrics", {})
+    thermo_fixed = bool(payload.get("acceptance", {}).get("thermodynamic_column_inputs_fixed"))
+    blocker_line = (
+        "Next blocker: surface-layer outputs after fixed TSK/ZNT/thermodynamic inputs."
+        if thermo_fixed
+        else "Next blocker: non-TSK/ZNT thermodynamic column inputs at `SFCLAY_mynn`."
+    )
     lines = [
         "# Review: V0.14 Step-1 TSK/ZNT Sourcing",
         "",
@@ -462,7 +493,7 @@ def write_review(payload: Mapping[str, Any]) -> None:
         f"Pre-sfclay `ZNT` is fixed: max_abs `{source['state_znt_vs_sfclay_in_znt']['max_abs']}`.",
         f"Strict Step-1 remains red: max_abs `{strict.get('max_abs')}`, RMSE `{strict.get('rmse')}`.",
         "",
-        "Next blocker: non-TSK/ZNT thermodynamic column inputs at `SFCLAY_mynn`.",
+        blocker_line,
         f"`th_phy(kts)` max_abs `{column['theta0_vs_sfclay_in_th_phy']['max_abs']}`; `t_phy(kts)` max_abs `{column['temperature_from_theta_vs_sfclay_in_t_phy']['max_abs']}`; `p_phy(kts)` max_abs `{column['p0_vs_sfclay_in_p_phy']['max_abs']}`.",
         "",
         f"Proof: `{OUT_MD}`",

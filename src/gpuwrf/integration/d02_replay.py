@@ -2272,6 +2272,7 @@ def _candidate_timestep_adr023(
     next_state = surface_adapter(
         next_state,
         float(replay_config.dt_s),
+        grid,
         first_timestep=jnp.equal(global_step, 1),
     )
     next_state = mynn_adapter(next_state, float(replay_config.dt_s), grid)

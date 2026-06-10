@@ -52,6 +52,8 @@ from gpuwrf.physics.thompson_column import (
 P0_PA = 100000.0
 R_D_OVER_CP = 287.0 / 1004.0
 GRAVITY_M_S2 = 9.80665
+WRF_PHYSICS_G_M_S2 = 9.81
+WRF_RV_OVER_RD = 461.6 / 287.0
 DEG_TO_RAD = 3.141592653589793 / 180.0
 MINUTES_PER_DAY = 1440.0
 
@@ -222,6 +224,8 @@ class _SurfaceColumnState(NamedTuple):
     mavail: object
     roughness_m: object
     ustar: object
+    t_air: object = None
+    psfc: object = None
     # RETIRED (v0.9.0): the WRF-faithful MYNN-SL 2-m T2 diagnostic is
     # ``THGB + DTG*PSIT2/PSIT``; over LAND real WRF overwrites it with the Noah-MP LSM
     # value ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``. That overwrite is now done FAITHFULLY
@@ -1075,6 +1079,42 @@ def _column_dz_from_state(state: State, grid: GridSpec | None):
     return _to_columns(dz)
 
 
+def _surface_dz_from_state(state: State):
+    """WRF `phy_prep` surface-layer `dz8w` using physics `g=9.81`."""
+
+    interface_height_m = state.ph.astype(jnp.float64) / WRF_PHYSICS_G_M_S2
+    dz = jnp.maximum(interface_height_m[1:, :, :] - interface_height_m[:-1, :, :], 1.0)
+    return _to_columns(dz)
+
+
+def _wrf_hydrostatic_pressure_from_state(state: State, metrics):
+    """Reconstruct WRF `phy_prep` `p_hyd`/`psfc` for surface physics."""
+
+    dtype = jnp.float32
+    mut = jnp.asarray(state.mu_total, dtype=dtype)
+    c1h = jnp.asarray(metrics.c1h, dtype=dtype)
+    c2h = jnp.asarray(metrics.c2h, dtype=dtype)
+    dnw = jnp.asarray(metrics.dnw, dtype=dtype)
+    p_top = jnp.reshape(jnp.asarray(metrics.p_top, dtype=dtype), ())
+    qtot = sum(
+        jnp.asarray(getattr(state, field), dtype=dtype)
+        for field in ("qv", "qc", "qr", "qi", "qs", "qg")
+    )
+
+    nz = int(state.theta.shape[0])
+    next_face = jnp.broadcast_to(p_top, mut.shape).astype(dtype)
+    faces_top_to_bottom = [next_face]
+    for k in range(nz - 1, -1, -1):
+        mass = c1h[k] * mut + c2h[k]
+        next_face = (next_face - (1.0 + qtot[k]) * mass * dnw[k]).astype(dtype)
+        faces_top_to_bottom.append(next_face)
+
+    faces = jnp.stack(tuple(reversed(faces_top_to_bottom)), axis=0)
+    p_hyd = (0.5 * (faces[:-1, :, :] + faces[1:, :, :])).astype(jnp.float64)
+    psfc = faces[0, :, :].astype(jnp.float64)
+    return p_hyd, psfc
+
+
 def _cloud_fraction_columns(state: State):
     """Builds a bounded diagnostic cloud fraction from hydrometeor occupancy."""
 
@@ -1510,16 +1550,37 @@ def mynn_adapter_with_diagnostics(
     return _state_from_mynn_output(state, out), pblh
 
 
-def _surface_column_view(state: State) -> _SurfaceColumnState:
+def _surface_column_view(state: State, grid: GridSpec | None = None) -> _SurfaceColumnState:
     """Build the column-oriented view consumed by the WRF revised surface layer."""
+
+    metrics = getattr(grid, "metrics", None) if grid is not None else None
+    if metrics is not None:
+        # WRF `phy_prep` converts in-memory theta_m back to dry `th_phy` for
+        # physics when `use_theta_m=1`, while `surface_driver` passes hydrostatic
+        # `P_PHY=grid%p_hyd` but retains `t_phy` computed from nonhydrostatic
+        # `p+pb`. The v0.14 live-nest path stores theta_m in State.theta.
+        dry_theta = jnp.asarray(state.theta, dtype=jnp.float64) / (
+            1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, dtype=jnp.float64)
+        )
+        p_hyd, psfc = _wrf_hydrostatic_pressure_from_state(state, metrics)
+        t_air = _temperature_from_theta(dry_theta, jnp.asarray(state.p, dtype=jnp.float64))
+        theta = _to_columns(dry_theta)
+        p = _to_columns(p_hyd)
+        dz = _surface_dz_from_state(state)
+    else:
+        theta = _to_columns(state.theta)
+        p = _to_columns(state.p)
+        dz = _column_dz_from_state(state, None)
+        t_air = None
+        psfc = None
 
     return _SurfaceColumnState(
         u=_to_columns(_u_mass(state)),
         v=_to_columns(_v_mass(state)),
-        theta=_to_columns(state.theta),
+        theta=theta,
         qv=_to_columns(state.qv),
-        p=_to_columns(state.p),
-        dz=_column_dz_from_state(state, None),
+        p=p,
+        dz=dz,
         t_skin=state.t_skin,
         soil_moisture=state.soil_moisture,
         xland=state.xland,
@@ -1527,10 +1588,12 @@ def _surface_column_view(state: State) -> _SurfaceColumnState:
         mavail=state.mavail,
         roughness_m=state.roughness_m,
         ustar=state.ustar,
+        t_air=_to_columns(t_air) if t_air is not None else None,
+        psfc=psfc,
     )
 
 
-def surface_adapter(state: State, dt: float, *, first_timestep=False) -> State:
+def surface_adapter(state: State, dt: float, grid: GridSpec | None = None, *, first_timestep=False) -> State:
     """Run the WRF revised surface layer and store its surface-flux handles.
 
     THIN adapter: the algebra lives in ``physics.surface_layer`` (a faithful port
@@ -1540,7 +1603,7 @@ def surface_adapter(state: State, dt: float, *, first_timestep=False) -> State:
     """
 
     del dt
-    flux = surface_layer(_surface_column_view(state), first_timestep=first_timestep)
+    flux = surface_layer(_surface_column_view(state, grid), first_timestep=first_timestep)
     # Surface flux handles are fp64-locked in PRECISION_MATRIX, so the live
     # dtype is fp64 in both modes; written via _output_dtype for one consistent
     # adapter-write contract (fp32-defeat fix; see _output_dtype).
@@ -1564,7 +1627,7 @@ def surface_layer_diagnostics(state: State, grid: GridSpec | None = None) -> Sur
     handles have already been written by ``surface_adapter`` (so MYNN sees the
     real fluxes when diagnosing PBLH)."""
 
-    diag = surface_layer_with_diagnostics(_surface_column_view(state))
+    diag = surface_layer_with_diagnostics(_surface_column_view(state, grid))
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
     _out, pblh = step_mynn_pbl_column_with_pblh(column, 1.0, debug=False, surface=surface)

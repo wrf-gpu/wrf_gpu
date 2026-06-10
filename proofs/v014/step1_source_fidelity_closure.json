@@ -3,18 +3,18 @@
     "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_source_fidelity_closure.py"
   },
-  "created_utc": "2026-06-10T02:36:49.663941+00:00",
+  "created_utc": "2026-06-10T03:24:53.643643+00:00",
   "current_jax_source_leaf_mode": {
     "derived_candidate_summaries": {
       "current_jax_dry_t_tendf": {
         "count": 461736,
         "finite_count": 461736,
-        "max": 1147.8129204199774,
-        "max_abs": 1147.8129204199774,
-        "mean": -0.00044798084818322033,
-        "min": -1100.0428071053243,
+        "max": 2419.1304224118617,
+        "max_abs": 2419.1304224118617,
+        "mean": 0.7116070830557651,
+        "min": -2063.941121280656,
         "nonzero_count": 451242,
-        "rms": 13.673336262414171,
+        "rms": 21.705072238859696,
         "shape": [
           44,
           66,
@@ -94,48 +94,48 @@
     },
     "primary_metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.07687194225377524,
+        "bias": -0.6327854994820095,
         "count": 442112,
-        "max_abs": 1497.6112467075195,
+        "max_abs": 847.1445725702908,
         "nonfinite_diff_count": 0,
-        "p95": 2.316572103131588,
-        "p99": 37.60009995324713,
-        "rmse": 13.252694871222973,
+        "p95": 2.2330734101994287,
+        "p99": 4.146218593105294,
+        "rmse": 9.56593990212596,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -2457.5830078125,
+        "worst_candidate": -328.9771118164062,
         "worst_mismatch_fortran": {
-          "i": 66,
+          "i": 64,
           "j": 37,
-          "k": 3
+          "k": 2
         },
-        "worst_reference": -959.9717611049804
+        "worst_reference": -1176.121684386697
       },
       "after_update_vs_jax_dry_t_tendf": {
-        "bias": -0.2876231286787998,
+        "bias": -0.9972805704145844,
         "count": 442112,
-        "max_abs": 1565.3077799106445,
+        "max_abs": 996.8293918132108,
         "nonfinite_diff_count": 0,
-        "p95": 2.3160055352239226,
-        "p99": 16.94824287626314,
-        "rmse": 13.16847791375874,
+        "p95": 2.3052600711037456,
+        "p99": 23.234523893437377,
+        "rmse": 12.211677632324236,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -2525.279541015625,
+        "worst_candidate": -202.2004852294922,
         "worst_mismatch_fortran": {
           "i": 66,
           "j": 37,
-          "k": 3
+          "k": 2
         },
-        "worst_reference": -959.9717611049804
+        "worst_reference": -1199.029877042703
       },
       "wrf_active_rth_vs_jax_source_leaf": {
         "bias": -0.28907409541776086,
@@ -203,37 +203,37 @@
     },
     "metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.8707280847747536,
+        "bias": 0.16118855679360142,
         "count": 442112,
-        "max_abs": 1494.2972530323946,
+        "max_abs": 851.1710005443492,
         "nonfinite_diff_count": 0,
-        "p95": 1.8235878924655973,
-        "p99": 50.67134073731482,
-        "rmse": 14.037490112761569,
+        "p95": 1.9205401753709879,
+        "p99": 15.689761614781336,
+        "rmse": 10.08066970654187,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -2457.5830078125,
+        "worst_candidate": -328.9771118164062,
         "worst_mismatch_fortran": {
-          "i": 66,
+          "i": 64,
           "j": 37,
-          "k": 3
+          "k": 2
         },
-        "worst_reference": -963.2857547801053
+        "worst_reference": -1180.1481123607555
       },
       "derived_candidate_summaries": {
         "current_jax_dry_t_tendf": {
           "count": 461736,
           "finite_count": 461736,
-          "max": 1147.2643369306845,
-          "max_abs": 1147.2643369306845,
-          "mean": -0.7954228161330008,
-          "min": -1103.3603309475398,
+          "max": 2418.939722166539,
+          "max_abs": 2418.939722166539,
+          "mean": -0.08348571992935606,
+          "min": -2067.100325251568,
           "nonzero_count": 461736,
-          "rms": 14.13163258795582,
+          "rms": 21.732119514713144,
           "shape": [
             44,
             66,
@@ -308,7 +308,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "620604234d6287e29ca31628c5a81ff05e3fdef3\n"
+      "stdout_tail": "7205a0b1ad1a99aa7c3d1a90a2fb5afb0b73c5a6\n"
     },
     "status_short": {
       "command": [
@@ -318,7 +318,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": " M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-sfclay-boundary.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/mynn_driver_source_output_fix.py\n M proofs/v014/step1_sfclay_boundary_fix.json\n M proofs/v014/step1_sfclay_boundary_fix.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/io/land_state.py\n M src/gpuwrf/physics/noah_mp.py\n M tests/savepoint/test_static_fields.py\n M tests/test_m6_noah_mp_prescribed.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-tsk-znt-sourcing.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_tsk_znt_sourcing_fix.json\n?? proofs/v014/step1_tsk_znt_sourcing_fix.md\n?? proofs/v014/step1_tsk_znt_sourcing_fix.py\n?? proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M .agent/reviews/2026-06-10-v014-step1-tsk-znt-sourcing.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/mynn_driver_source_output_fix.py\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v014/step1_tsk_znt_sourcing_fix.json\n M proofs/v014/step1_tsk_znt_sourcing_fix.md\n M proofs/v014/step1_tsk_znt_sourcing_fix.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/driver.py\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/diagnostics/comprehensive_harness.py\n M src/gpuwrf/integration/d02_replay.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-thermo-column-inputs.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_thermo_column_inputs.json\n?? proofs/v014/step1_thermo_column_inputs.md\n?? proofs/v014/step1_thermo_column_inputs.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
     }
   },
   "mynn_leaf_probe": {
@@ -402,12 +402,12 @@
       "jax_mass_coupled_rqvblten_summary": {
         "count": 442112,
         "finite_count": 442112,
-        "max": 0.4188334244520868,
-        "max_abs": 0.555597268524649,
-        "mean": 0.00024246016541663317,
-        "min": -0.555597268524649,
+        "max": 0.5992770093285925,
+        "max_abs": 0.8961410964058757,
+        "mean": 0.0007768896720952191,
+        "min": -0.8961410964058757,
         "nonzero_count": 432064,
-        "rms": 0.005498372110458936,
+        "rms": 0.012319248968709067,
         "shape": [
           44,
           66,
@@ -417,12 +417,12 @@
       "jax_mass_coupled_rthblten_summary": {
         "count": 442112,
         "finite_count": 442112,
-        "max": 1066.1176960791645,
-        "max_abs": 1141.117233018646,
-        "mean": -0.11300414233815996,
-        "min": -1141.117233018646,
-        "nonzero_count": 432060,
-        "rms": 13.586309523393666,
+        "max": 2299.1812825746474,
+        "max_abs": 2299.1812825746474,
+        "mean": 0.33964094265687517,
+        "min": -2243.212461911375,
+        "nonzero_count": 432061,
+        "rms": 20.79043106832352,
         "shape": [
           44,
           66,
@@ -445,26 +445,26 @@
         ]
       },
       "wrf_qv_tend_vs_jax_mass_coupled_rqvblten": {
-        "bias": 0.0005314423553410759,
+        "bias": -2.9871513375100933e-06,
         "count": 442112,
-        "max_abs": 0.43689178351195507,
+        "max_abs": 0.5915943229721904,
         "nonfinite_diff_count": 0,
-        "p95": 2.0628567455654006e-05,
-        "p99": 0.033845601692510566,
-        "rmse": 0.007168849285103142,
+        "p95": 0.00014182661200074412,
+        "p99": 0.0015550497577649577,
+        "rmse": 0.005883540148199534,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 0.4930315017700195,
+        "worst_candidate": -0.3045467734336853,
         "worst_mismatch_fortran": {
-          "i": 72,
-          "j": 33,
-          "k": 3
+          "i": 63,
+          "j": 37,
+          "k": 2
         },
-        "worst_reference": 0.05613971825806442
+        "worst_reference": -0.8961410964058757
       },
       "wrf_rthblten_summary": {
         "count": 442112,
@@ -482,39 +482,39 @@
         ]
       },
       "wrf_rthblten_vs_jax_mass_coupled_rthblten": {
-        "bias": 0.44676243765535223,
+        "bias": -0.00588264733968273,
         "count": 442112,
-        "max_abs": 1560.4976663021048,
+        "max_abs": 574.3657420435218,
         "nonfinite_diff_count": 0,
-        "p95": 0.49610874480373157,
-        "p99": 21.307198015659218,
-        "rmse": 12.427507605012572,
+        "p95": 0.49678524705248894,
+        "p99": 1.8866220368752398,
+        "rmse": 8.011968666014438,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -2522.90576171875,
+        "worst_candidate": -200.4556427001953,
         "worst_mismatch_fortran": {
           "i": 66,
           "j": 37,
-          "k": 3
+          "k": 2
         },
-        "worst_reference": -962.4080954166453
+        "worst_reference": -774.8213847437171
       }
     },
     "status": "MYNN_LEAF_PROBE_EXECUTED"
   },
-  "next_boundary": "DONE 2026-06-10: MYNN driver kernel/init, sfclay_mynn first-call semantics, and TSK/ZNT/MAVAIL input sourcing are no longer active blockers. Next route: localize the non-surface thermodynamic column inputs at the exact sfclay_mynn hook (`th_phy(kts)`, `t_phy(kts)`, `p_phy(kts)`, and `dz8w`) against JAX `_surface_column_view`; then fix the Step-1 temperature/pressure sourcing if local.",
+  "next_boundary": "DONE 2026-06-10: MYNN driver kernel/init, sfclay_mynn first-call semantics, TSK/ZNT/MAVAIL input sourcing, and sfclay thermodynamic column inputs are no longer active blockers. Next route: add a narrow WRF internal hook inside module_sf_mynn.F/SFCLAY1D_mynn for `thx/thgb/br/zol/psim/psih/ust/hfx/qfx`, then compare against surface_layer_with_diagnostics on the fixed input tuple.",
   "paths": {
     "handoff": {
       "exists": true,
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "1f2df5e36286a88de974a4094bdf969fbb0e3cb2b708593fed750f7f7049b5c3",
-      "size_bytes": 107848
+      "sha256": "57e3eb31bdb85c37edd0be70e5a681091634de894ddd11ff1d7f79551f73bb82",
+      "size_bytes": 111122
     },
     "prior_dry_source_leaf_fix": {
       "exists": true,
@@ -621,121 +621,121 @@
           }
         },
         "rqv_or_qv_tend": {
-          "bias": 0.0005314423553410759,
+          "bias": -2.9871513375100933e-06,
           "count": 442112,
-          "max_abs": 0.43689178351195507,
+          "max_abs": 0.5915943229721904,
           "nonfinite_diff_count": 0,
-          "p95": 2.0628567455654006e-05,
-          "p99": 0.033845601692510566,
-          "rmse": 0.007168849285103142,
+          "p95": 0.00014182661200074412,
+          "p99": 0.0015550497577649577,
+          "rmse": 0.005883540148199534,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": 0.4930315017700195,
+          "worst_candidate": -0.3045467734336853,
           "worst_mismatch_fortran": {
-            "i": 72,
-            "j": 33,
-            "k": 3
+            "i": 63,
+            "j": 37,
+            "k": 2
           },
-          "worst_reference": 0.05613971825806442
+          "worst_reference": -0.8961410964058757
         },
         "rthblten": {
-          "bias": 0.44676243765535223,
+          "bias": -0.00588264733968273,
           "count": 442112,
-          "max_abs": 1560.4976663021048,
+          "max_abs": 574.3657420435218,
           "nonfinite_diff_count": 0,
-          "p95": 0.49610874480373157,
-          "p99": 21.307198015659218,
-          "rmse": 12.427507605012572,
+          "p95": 0.49678524705248894,
+          "p99": 1.8866220368752398,
+          "rmse": 8.011968666014438,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -2522.90576171875,
+          "worst_candidate": -200.4556427001953,
           "worst_mismatch_fortran": {
             "i": 66,
             "j": 37,
-            "k": 3
+            "k": 2
           },
-          "worst_reference": -962.4080954166453
+          "worst_reference": -774.8213847437171
         },
         "strict_after_conv_vs_jax": {
-          "bias": 0.07687194225377524,
+          "bias": -0.6327854994820095,
           "count": 442112,
-          "max_abs": 1497.6112467075195,
+          "max_abs": 847.1445725702908,
           "nonfinite_diff_count": 0,
-          "p95": 2.316572103131588,
-          "p99": 37.60009995324713,
-          "rmse": 13.252694871222973,
+          "p95": 2.2330734101994287,
+          "p99": 4.146218593105294,
+          "rmse": 9.56593990212596,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -2457.5830078125,
+          "worst_candidate": -328.9771118164062,
           "worst_mismatch_fortran": {
-            "i": 66,
+            "i": 64,
             "j": 37,
-            "k": 3
+            "k": 2
           },
-          "worst_reference": -959.9717611049804
+          "worst_reference": -1176.121684386697
         }
       },
-      "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface boundary feeding MYNN is still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` now proves TSK/ZNT/MAVAIL source parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is the non-surface thermodynamic column input entering sfclay_mynn.",
+      "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface-layer outputs feeding MYNN are still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` plus `proofs/v014/step1_thermo_column_inputs` now prove TSK/ZNT/MAVAIL and thermodynamic-column input parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is strictly later surface-layer output algebra.",
       "rank": 1,
       "status": "BLOCKING"
     },
     {
       "evidence": {
         "forced_radiation_after_conv_vs_jax": {
-          "bias": 0.8707280847747536,
+          "bias": 0.16118855679360142,
           "count": 442112,
-          "max_abs": 1494.2972530323946,
+          "max_abs": 851.1710005443492,
           "nonfinite_diff_count": 0,
-          "p95": 1.8235878924655973,
-          "p99": 50.67134073731482,
-          "rmse": 14.037490112761569,
+          "p95": 1.9205401753709879,
+          "p99": 15.689761614781336,
+          "rmse": 10.08066970654187,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -2457.5830078125,
+          "worst_candidate": -328.9771118164062,
           "worst_mismatch_fortran": {
-            "i": 66,
+            "i": 64,
             "j": 37,
-            "k": 3
+            "k": 2
           },
-          "worst_reference": -963.2857547801053
+          "worst_reference": -1180.1481123607555
         },
         "primary_after_conv_vs_jax": {
-          "bias": 0.07687194225377524,
+          "bias": -0.6327854994820095,
           "count": 442112,
-          "max_abs": 1497.6112467075195,
+          "max_abs": 847.1445725702908,
           "nonfinite_diff_count": 0,
-          "p95": 2.316572103131588,
-          "p99": 37.60009995324713,
-          "rmse": 13.252694871222973,
+          "p95": 2.2330734101994287,
+          "p99": 4.146218593105294,
+          "rmse": 9.56593990212596,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -2457.5830078125,
+          "worst_candidate": -328.9771118164062,
           "worst_mismatch_fortran": {
-            "i": 66,
+            "i": 64,
             "j": 37,
-            "k": 3
+            "k": 2
           },
-          "worst_reference": -959.9717611049804
+          "worst_reference": -1176.121684386697
         },
         "wrf_rthraten_summary": {
           "count": 442112,
@@ -762,12 +762,12 @@
         "jax_mass_coupled_rqvblten_summary": {
           "count": 442112,
           "finite_count": 442112,
-          "max": 0.4188334244520868,
-          "max_abs": 0.555597268524649,
-          "mean": 0.00024246016541663317,
-          "min": -0.555597268524649,
+          "max": 0.5992770093285925,
+          "max_abs": 0.8961410964058757,
+          "mean": 0.0007768896720952191,
+          "min": -0.8961410964058757,
           "nonzero_count": 432064,
-          "rms": 0.005498372110458936,
+          "rms": 0.012319248968709067,
           "shape": [
             44,
             66,
@@ -889,73 +889,73 @@
         }
       },
       "rqv_or_qv_tend": {
-        "bias": 0.0005314423553410759,
+        "bias": -2.9871513375100933e-06,
         "count": 442112,
-        "max_abs": 0.43689178351195507,
+        "max_abs": 0.5915943229721904,
         "nonfinite_diff_count": 0,
-        "p95": 2.0628567455654006e-05,
-        "p99": 0.033845601692510566,
-        "rmse": 0.007168849285103142,
+        "p95": 0.00014182661200074412,
+        "p99": 0.0015550497577649577,
+        "rmse": 0.005883540148199534,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": 0.4930315017700195,
+        "worst_candidate": -0.3045467734336853,
         "worst_mismatch_fortran": {
-          "i": 72,
-          "j": 33,
-          "k": 3
+          "i": 63,
+          "j": 37,
+          "k": 2
         },
-        "worst_reference": 0.05613971825806442
+        "worst_reference": -0.8961410964058757
       },
       "rthblten": {
-        "bias": 0.44676243765535223,
+        "bias": -0.00588264733968273,
         "count": 442112,
-        "max_abs": 1560.4976663021048,
+        "max_abs": 574.3657420435218,
         "nonfinite_diff_count": 0,
-        "p95": 0.49610874480373157,
-        "p99": 21.307198015659218,
-        "rmse": 12.427507605012572,
+        "p95": 0.49678524705248894,
+        "p99": 1.8866220368752398,
+        "rmse": 8.011968666014438,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -2522.90576171875,
+        "worst_candidate": -200.4556427001953,
         "worst_mismatch_fortran": {
           "i": 66,
           "j": 37,
-          "k": 3
+          "k": 2
         },
-        "worst_reference": -962.4080954166453
+        "worst_reference": -774.8213847437171
       },
       "strict_after_conv_vs_jax": {
-        "bias": 0.07687194225377524,
+        "bias": -0.6327854994820095,
         "count": 442112,
-        "max_abs": 1497.6112467075195,
+        "max_abs": 847.1445725702908,
         "nonfinite_diff_count": 0,
-        "p95": 2.316572103131588,
-        "p99": 37.60009995324713,
-        "rmse": 13.252694871222973,
+        "p95": 2.2330734101994287,
+        "p99": 4.146218593105294,
+        "rmse": 9.56593990212596,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -2457.5830078125,
+        "worst_candidate": -328.9771118164062,
         "worst_mismatch_fortran": {
-          "i": 66,
+          "i": 64,
           "j": 37,
-          "k": 3
+          "k": 2
         },
-        "worst_reference": -959.9717611049804
+        "worst_reference": -1176.121684386697
       }
     },
-    "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface boundary feeding MYNN is still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` now proves TSK/ZNT/MAVAIL source parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is the non-surface thermodynamic column input entering sfclay_mynn.",
+    "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface-layer outputs feeding MYNN are still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` plus `proofs/v014/step1_thermo_column_inputs` now prove TSK/ZNT/MAVAIL and thermodynamic-column input parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is strictly later surface-layer output algebra.",
     "rank": 1,
     "status": "BLOCKING"
   },
@@ -977,29 +977,29 @@
     },
     "step": 1,
     "strict_metric": {
-      "bias": 0.07687194225377524,
+      "bias": -0.6327854994820095,
       "count": 442112,
-      "max_abs": 1497.6112467075195,
+      "max_abs": 847.1445725702908,
       "nonfinite_diff_count": 0,
-      "p95": 2.316572103131588,
-      "p99": 37.60009995324713,
-      "rmse": 13.252694871222973,
+      "p95": 2.2330734101994287,
+      "p99": 4.146218593105294,
+      "rmse": 9.56593990212596,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": -2457.5830078125,
+      "worst_candidate": -328.9771118164062,
       "worst_mismatch_fortran": {
-        "i": 66,
+        "i": 64,
         "j": 37,
-        "k": 3
+        "k": 2
       },
-      "worst_reference": -959.9717611049804
+      "worst_reference": -1176.121684386697
     }
   },
-  "verdict": "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_SFCLAY_THERMODYNAMIC_COLUMN_INPUTS",
+  "verdict": "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_SFCLAY_OUTPUT_ALGEBRA",
   "wrf_oracle_rankings": {
     "component_summaries": {
       "wrf_after_update_to_after_conv_delta": {

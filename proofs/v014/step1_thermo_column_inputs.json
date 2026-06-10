@@ -1,0 +1,437 @@
+{
+  "acceptance": {
+    "next_fastest_command": "Add a narrow WRF internal hook inside module_sf_mynn.F/SFCLAY1D_mynn for thx/thgb/br/zol/psim/psih/ust/hfx/qfx, then compare against surface_layer_with_diagnostics on the fixed input tuple.",
+    "pass_thresholds": {
+      "dz_m": 0.001,
+      "p_pa": 0.05,
+      "psfc_pa": 0.05,
+      "t_k": 0.02,
+      "theta_k": 0.001
+    },
+    "strict_step1_closed": false,
+    "thermodynamic_column_inputs_fixed": true
+  },
+  "artifact": "step1_thermo_column_inputs",
+  "constants": {
+    "p0_pa": 100000.0,
+    "rcp": 0.2858565737051793,
+    "wrf_physics_g_m_s2": 9.81,
+    "wrf_rv_over_rd": 1.6083623693379792
+  },
+  "created_utc": "2026-06-10T03:22:06.540225+00:00",
+  "fixed_input_metrics": {
+    "dry_theta_rvrd_vs_wrf_th_phy": {
+      "bias": -1.4620152437655665e-08,
+      "count": 10494,
+      "max_abs": 6.71089752017906e-05,
+      "ref_max_abs": 307.3968505859375,
+      "rmse": 1.3430183262692343e-05
+    },
+    "hydrostatic_p_vs_wrf_p_phy": {
+      "bias": -1.3400514579759863e-05,
+      "count": 10494,
+      "max_abs": 0.015625,
+      "ref_max_abs": 101727.03125,
+      "rmse": 0.0013253267749381015
+    },
+    "psfc_vs_wrf_psfc": {
+      "bias": -1.712287974080427e-05,
+      "count": 10494,
+      "max_abs": 0.015625,
+      "ref_max_abs": 102029.328125,
+      "rmse": 0.001102535656069029
+    },
+    "qv0_vs_wrf_qv": {
+      "bias": 2.6014649627681093e-11,
+      "count": 10494,
+      "max_abs": 4.9845645343910006e-08,
+      "ref_max_abs": 0.011706835590302944,
+      "rmse": 1.1351633710397017e-08
+    },
+    "t_air_nonhyd_p_vs_wrf_t_phy": {
+      "bias": 0.0004564809756740085,
+      "count": 10494,
+      "max_abs": 0.013577942721781255,
+      "ref_max_abs": 294.5564880371094,
+      "rmse": 0.0010959870065792568
+    },
+    "u0_vs_wrf_u_phy": {
+      "bias": -5.420623089793706e-10,
+      "count": 10494,
+      "max_abs": 7.152557373046875e-07,
+      "ref_max_abs": 6.306147575378418,
+      "rmse": 6.011266689369848e-08
+    },
+    "v0_vs_wrf_v_phy": {
+      "bias": -5.168245676837468e-10,
+      "count": 10494,
+      "max_abs": 7.152557373046875e-07,
+      "ref_max_abs": 6.071907997131348,
+      "rmse": 1.2872511375286432e-07
+    },
+    "wrf_g_dz_vs_wrf_dz8w": {
+      "bias": 2.157063947559501e-06,
+      "count": 10494,
+      "max_abs": 0.00018988715282830526,
+      "ref_max_abs": 51.492713928222656,
+      "rmse": 7.774106387517223e-06
+    }
+  },
+  "formula_and_orientation_witnesses": {
+    "dry_theta_wrong_p608_vs_wrf_th_phy": {
+      "bias": 2.8337176733838136,
+      "count": 10494,
+      "max_abs": 3.389362880306635,
+      "ref_max_abs": 307.3968505859375,
+      "rmse": 2.8410098189502997
+    },
+    "temperature_from_hydrostatic_p_vs_wrf_t_phy": {
+      "bias": -0.011975435969875386,
+      "count": 10494,
+      "max_abs": 0.24003559706483202,
+      "ref_max_abs": 294.5564880371094,
+      "rmse": 0.037623509159696415
+    },
+    "vertical_top_theta_vs_wrf_kts": {
+      "bias": 201.71499880977373,
+      "count": 10494,
+      "max_abs": 204.27090454101562,
+      "ref_max_abs": 307.3968505859375,
+      "rmse": 201.72018891112901
+    },
+    "x_reversed_theta_vs_wrf_kts": {
+      "bias": -1.4620152437655665e-08,
+      "count": 10494,
+      "max_abs": 16.85260009765625,
+      "ref_max_abs": 307.3968505859375,
+      "rmse": 1.636503401428554
+    },
+    "y_reversed_theta_vs_wrf_kts": {
+      "bias": -1.4620152421405403e-08,
+      "count": 10494,
+      "max_abs": 15.629547119140625,
+      "ref_max_abs": 307.3968505859375,
+      "rmse": 1.6240307915374732
+    }
+  },
+  "host": "enric-battlestation",
+  "legacy_mismatch_metrics": {
+    "legacy_standard_g_dz_vs_wrf_dz8w": {
+      "bias": 0.017457734172978197,
+      "count": 10494,
+      "max_abs": 0.017593331391992706,
+      "ref_max_abs": 51.492713928222656,
+      "rmse": 0.01745803956152576
+    },
+    "legacy_state_p_vs_wrf_surface_p_phy": {
+      "bias": 15.088548366923957,
+      "count": 10494,
+      "max_abs": 292.8203125,
+      "ref_max_abs": 101727.03125,
+      "rmse": 45.931279429597595
+    },
+    "legacy_theta_m_vs_wrf_th_phy": {
+      "bias": 4.584931284473557,
+      "count": 10494,
+      "max_abs": 5.490148027499686,
+      "ref_max_abs": 307.3968505859375,
+      "rmse": 4.596847297193302
+    }
+  },
+  "oracle": {
+    "meta": {
+      "grid_id": 2,
+      "itimestep": 1,
+      "ni": 159,
+      "nj": 66,
+      "nk": 44,
+      "scheme": "sfclay_mynn",
+      "tag": "in"
+    },
+    "sidecar": "/tmp/wrf_gpu2_step1_tsk_znt_sourcing_fix/wrf_truth_surface/surface_mynn/sfclay_mynn_in.sidecar.txt",
+    "status": "REUSED_EXISTING"
+  },
+  "paths": {
+    "surface_oracle": "/tmp/wrf_gpu2_step1_tsk_znt_sourcing_fix/wrf_truth_surface/surface_mynn",
+    "wrf_hook_changed_this_sprint": false,
+    "wrf_patch_source": "/home/enric/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff"
+  },
+  "ranked_findings": [
+    {
+      "evidence": {
+        "dry_theta_rvrd_vs_wrf_th_phy": {
+          "bias": -1.4620152437655665e-08,
+          "count": 10494,
+          "max_abs": 6.71089752017906e-05,
+          "ref_max_abs": 307.3968505859375,
+          "rmse": 1.3430183262692343e-05
+        },
+        "hydrostatic_p_vs_wrf_p_phy": {
+          "bias": -1.3400514579759863e-05,
+          "count": 10494,
+          "max_abs": 0.015625,
+          "ref_max_abs": 101727.03125,
+          "rmse": 0.0013253267749381015
+        },
+        "psfc_vs_wrf_psfc": {
+          "bias": -1.712287974080427e-05,
+          "count": 10494,
+          "max_abs": 0.015625,
+          "ref_max_abs": 102029.328125,
+          "rmse": 0.001102535656069029
+        },
+        "qv0_vs_wrf_qv": {
+          "bias": 2.6014649627681093e-11,
+          "count": 10494,
+          "max_abs": 4.9845645343910006e-08,
+          "ref_max_abs": 0.011706835590302944,
+          "rmse": 1.1351633710397017e-08
+        },
+        "t_air_nonhyd_p_vs_wrf_t_phy": {
+          "bias": 0.0004564809756740085,
+          "count": 10494,
+          "max_abs": 0.013577942721781255,
+          "ref_max_abs": 294.5564880371094,
+          "rmse": 0.0010959870065792568
+        },
+        "u0_vs_wrf_u_phy": {
+          "bias": -5.420623089793706e-10,
+          "count": 10494,
+          "max_abs": 7.152557373046875e-07,
+          "ref_max_abs": 6.306147575378418,
+          "rmse": 6.011266689369848e-08
+        },
+        "v0_vs_wrf_v_phy": {
+          "bias": -5.168245676837468e-10,
+          "count": 10494,
+          "max_abs": 7.152557373046875e-07,
+          "ref_max_abs": 6.071907997131348,
+          "rmse": 1.2872511375286432e-07
+        },
+        "wrf_g_dz_vs_wrf_dz8w": {
+          "bias": 2.157063947559501e-06,
+          "count": 10494,
+          "max_abs": 0.00018988715282830526,
+          "ref_max_abs": 51.492713928222656,
+          "rmse": 7.774106387517223e-06
+        }
+      },
+      "hypothesis": "The `th_phy/t_phy/p_phy/dz8w` mismatch is local to `_surface_column_view` formulas, not WRF hook orientation.",
+      "rank": 1,
+      "status": "FIXED"
+    },
+    {
+      "evidence": {
+        "same_orientation_u_v_qv": {
+          "qv": {
+            "bias": 2.6014649627681093e-11,
+            "count": 10494,
+            "max_abs": 4.9845645343910006e-08,
+            "ref_max_abs": 0.011706835590302944,
+            "rmse": 1.1351633710397017e-08
+          },
+          "u": {
+            "bias": -5.420623089793706e-10,
+            "count": 10494,
+            "max_abs": 7.152557373046875e-07,
+            "ref_max_abs": 6.306147575378418,
+            "rmse": 6.011266689369848e-08
+          },
+          "v": {
+            "bias": -5.168245676837468e-10,
+            "count": 10494,
+            "max_abs": 7.152557373046875e-07,
+            "ref_max_abs": 6.071907997131348,
+            "rmse": 1.2872511375286432e-07
+          }
+        },
+        "wrong_orientation_witnesses": {
+          "dry_theta_wrong_p608_vs_wrf_th_phy": {
+            "bias": 2.8337176733838136,
+            "count": 10494,
+            "max_abs": 3.389362880306635,
+            "ref_max_abs": 307.3968505859375,
+            "rmse": 2.8410098189502997
+          },
+          "temperature_from_hydrostatic_p_vs_wrf_t_phy": {
+            "bias": -0.011975435969875386,
+            "count": 10494,
+            "max_abs": 0.24003559706483202,
+            "ref_max_abs": 294.5564880371094,
+            "rmse": 0.037623509159696415
+          },
+          "vertical_top_theta_vs_wrf_kts": {
+            "bias": 201.71499880977373,
+            "count": 10494,
+            "max_abs": 204.27090454101562,
+            "ref_max_abs": 307.3968505859375,
+            "rmse": 201.72018891112901
+          },
+          "x_reversed_theta_vs_wrf_kts": {
+            "bias": -1.4620152437655665e-08,
+            "count": 10494,
+            "max_abs": 16.85260009765625,
+            "ref_max_abs": 307.3968505859375,
+            "rmse": 1.636503401428554
+          },
+          "y_reversed_theta_vs_wrf_kts": {
+            "bias": -1.4620152421405403e-08,
+            "count": 10494,
+            "max_abs": 15.629547119140625,
+            "ref_max_abs": 307.3968505859375,
+            "rmse": 1.6240307915374732
+          }
+        }
+      },
+      "hypothesis": "The mismatch is an orientation/indexing issue.",
+      "rank": 2,
+      "status": "REJECTED"
+    },
+    {
+      "evidence": {
+        "fixed_diag_br_vs_wrf_out_br": {
+          "bias": -0.32608308527570584,
+          "count": 10494,
+          "max_abs": 2.0,
+          "ref_max_abs": 2.0,
+          "rmse": 0.7681227693986273
+        },
+        "fixed_diag_hfx_vs_wrf_out_hfx": {
+          "bias": 0.17320582115274777,
+          "count": 10494,
+          "max_abs": 27.09163832864155,
+          "ref_max_abs": 382.4698486328125,
+          "rmse": 1.3972156996573475
+        },
+        "fixed_diag_qfx_vs_wrf_out_qfx": {
+          "bias": 7.368422170360447e-08,
+          "count": 10494,
+          "max_abs": 2.744275103194571e-07,
+          "ref_max_abs": 7.490280404454097e-05,
+          "rmse": 8.62190066790179e-08
+        },
+        "fixed_diag_qsfc_vs_wrf_out_qsfc": {
+          "bias": 5.532973769866484e-06,
+          "count": 10494,
+          "max_abs": 8.357738220991784e-06,
+          "ref_max_abs": 0.021291911602020264,
+          "rmse": 5.7533286398352506e-06
+        },
+        "fixed_diag_ust_vs_wrf_out_ust": {
+          "bias": 7.11172738790089e-05,
+          "count": 10494,
+          "max_abs": 0.01231782267117762,
+          "ref_max_abs": 0.3369980752468109,
+          "rmse": 0.0007831552182476275
+        },
+        "fixed_diag_znt_vs_wrf_out_znt": {
+          "bias": 7.813052202621432e-11,
+          "count": 10494,
+          "max_abs": 1.1920928910669204e-08,
+          "ref_max_abs": 0.800000011920929,
+          "rmse": 8.151525946804902e-10
+        }
+      },
+      "hypothesis": "With the exact/bounded surface input tuple, the remaining Step-1 blocker is strictly later surface-layer output algebra.",
+      "rank": 3,
+      "status": "BLOCKING"
+    }
+  ],
+  "source_metrics": {
+    "mavail_vs_wrf": {
+      "bias": -3.6727514258377196e-10,
+      "count": 10494,
+      "max_abs": 1.1920928966180355e-08,
+      "ref_max_abs": 1.0,
+      "rmse": 1.832933877503477e-09
+    },
+    "tsk_vs_wrf": {
+      "bias": 0.0,
+      "count": 10494,
+      "max_abs": 0.0,
+      "ref_max_abs": 304.15545654296875,
+      "rmse": 0.0
+    },
+    "znt_vs_wrf": {
+      "bias": 7.74431676662237e-12,
+      "count": 10494,
+      "max_abs": 1.1920928910669204e-08,
+      "ref_max_abs": 0.800000011920929,
+      "rmse": 8.108127886677328e-10
+    }
+  },
+  "status": "THERMO_COLUMN_INPUTS_FIXED_NEXT_BLOCKER_SURFACE_LAYER_OUTPUTS",
+  "strict_step1_metric": {
+    "bias": -0.6327854994820095,
+    "count": 442112,
+    "max_abs": 847.1445725702908,
+    "nonfinite_diff_count": 0,
+    "p95": 2.2330734101994287,
+    "p99": 4.146218593105294,
+    "rmse": 9.56593990212596,
+    "shape": [
+      44,
+      66,
+      159
+    ],
+    "status": "OK",
+    "worst_candidate": -328.9771118164062,
+    "worst_mismatch_fortran": {
+      "i": 64,
+      "j": 37,
+      "k": 2
+    },
+    "worst_reference": -1176.121684386697
+  },
+  "surface_output_metrics_after_fixed_inputs": {
+    "fixed_diag_br_vs_wrf_out_br": {
+      "bias": -0.32608308527570584,
+      "count": 10494,
+      "max_abs": 2.0,
+      "ref_max_abs": 2.0,
+      "rmse": 0.7681227693986273
+    },
+    "fixed_diag_hfx_vs_wrf_out_hfx": {
+      "bias": 0.17320582115274777,
+      "count": 10494,
+      "max_abs": 27.09163832864155,
+      "ref_max_abs": 382.4698486328125,
+      "rmse": 1.3972156996573475
+    },
+    "fixed_diag_qfx_vs_wrf_out_qfx": {
+      "bias": 7.368422170360447e-08,
+      "count": 10494,
+      "max_abs": 2.744275103194571e-07,
+      "ref_max_abs": 7.490280404454097e-05,
+      "rmse": 8.62190066790179e-08
+    },
+    "fixed_diag_qsfc_vs_wrf_out_qsfc": {
+      "bias": 5.532973769866484e-06,
+      "count": 10494,
+      "max_abs": 8.357738220991784e-06,
+      "ref_max_abs": 0.021291911602020264,
+      "rmse": 5.7533286398352506e-06
+    },
+    "fixed_diag_ust_vs_wrf_out_ust": {
+      "bias": 7.11172738790089e-05,
+      "count": 10494,
+      "max_abs": 0.01231782267117762,
+      "ref_max_abs": 0.3369980752468109,
+      "rmse": 0.0007831552182476275
+    },
+    "fixed_diag_znt_vs_wrf_out_znt": {
+      "bias": 7.813052202621432e-11,
+      "count": 10494,
+      "max_abs": 1.1920928910669204e-08,
+      "ref_max_abs": 0.800000011920929,
+      "rmse": 8.151525946804902e-10
+    }
+  },
+  "wrf_source_anchors": {
+    "dz": "phy_prep computes z_at_w=(phb+ph)/g with WRF physics g=9.81",
+    "hydrostatic_pressure": "phy_prep integrates p_hyd_w downward with MUT, dnw, and qtot, then averages to mass levels",
+    "surface_pressure": "dyn_em/module_first_rk_step_part1.F passes P_PHY=grid%p_hyd into surface_driver",
+    "temperature": "phy_prep computes t_phy=th_phy*pi_phy from nonhydrostatic p+pb before surface_driver",
+    "theta": "dyn_em/module_big_step_utilities_em.F phy_prep: th_phy=(t+t0)/(1+R_v/R_d*qv) when use_theta_m=1"
+  }
+}
