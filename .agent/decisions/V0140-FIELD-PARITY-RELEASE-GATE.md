@@ -3,6 +3,12 @@
 Date: 2026-06-10 19:35 WEST
 Owner: manager
 
+Update 2026-06-10 20:10 WEST: the missing nested Noah-MP source wiring is fixed
+and pushed (`c2310c5b`), with CPU activation/carry proof
+`NOAHMP_NESTED_ACTIVATION_CPU_PROVEN`. The long GPU start condition is now the
+post-fix exact-branch memory preflight plus Canary h1-h4 land gate, currently
+armed behind the active pre-fix Canary 72h baseline GPU lock.
+
 ## Decision
 
 The v0.14 release and paper gate is no longer powered TOST. The required gate is:
@@ -107,9 +113,9 @@ Start the long GPU gates only after:
 - the short 1h Canary field falsifier has not exposed renewed radical field
   drift or schema failure;
 - the standalone nested pipeline activates the selected land-surface model
-  honestly. Current blocker: `sf_surface_physics=4` was not threaded into
-  `nested_pipeline`, freezing land `TSK`; the Noah-MP nested fix and short
-  h1-h4 land gate must be green/bounded before any release-green 72h GPU gate;
+  honestly. The `sf_surface_physics=4`/Noah-MP source wiring is fixed in
+  `c2310c5b`, but the post-fix h1-h4 land gate must still be green/bounded
+  before any release-green 72h GPU gate;
 - exact-branch memory preflight is green on the final candidate branch;
 - the matching CPU truth exists and is finite for the selected 72h case;
 - the GPU run is launched through `scripts/run_gpu_lowprio.sh` with resource
