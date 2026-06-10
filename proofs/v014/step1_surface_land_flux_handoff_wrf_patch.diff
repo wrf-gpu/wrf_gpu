@@ -1,0 +1,129 @@
+--- phys/module_surface_driver.F.orig_v014_surfacehandoff        2026-06-10 06:06:13.409698876 +0100
++++ phys/module_surface_driver.F        2026-06-10 06:07:16.358940669 +0100
+@@ -3227,6 +3227,41 @@
+          if(HYDRO_dt .ge. 0) HYDRO_dt = dtbl
+ #endif
+          CALL wrf_debug(100,'in NOAHMP DRV')
++!== wrfgpu2 v014 surface/land flux handoff hook: immediately before Noah-MP ===
++         block
++           character(len=64)  :: wg2_env
++           character(len=512) :: wg2_root
++           character(len=768) :: wg2_path
++           integer :: wg2_unit, wg2_i, wg2_j
++           call get_environment_variable('WRFGPU2_V014_SURFACE_HANDOFF_HOOK', wg2_env)
++           if (trim(wg2_env) == '1' .and. itimestep == 1 .and. ide == 160 .and. jde == 67) then
++             call get_environment_variable('WRFGPU2_V014_SURFACE_HANDOFF_ROOT', wg2_root)
++             if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_surface_handoff'
++             write(wg2_path,'(A,A)') trim(wg2_root), '/surface_land_flux_d02_step1.txt'
++             open(newunit=wg2_unit, file=trim(wg2_path), status='unknown', position='append', action='write')
++             write(wg2_unit,'(A,1X,A,8(1X,I0),1X,ES18.10E3)') 'HDR', 'PRE_NOAHMP', itimestep, &
++                sf_sfclay_physics, sf_surface_physics, bl_pbl_physics, ra_lw_physics, ra_sw_physics, &
++                i_start(ij), i_end(ij), dtbl
++             write(wg2_unit,'(A,1X,A,1X,A)') 'FIELDS', 'PRE_NOAHMP', &
++                'xland xice ivgtyp isltyp hfx qfx lh ust tsk grdflx qsfc chs chs2 cqs2 flhc flqc znt z0 swdown glw rainbl rho1 dz8w1 t_phy1 qv1 p8w1 smois1 sh2o1 tslb1 snow snowh snowc albedo psfc mavail vegfra'
++             do wg2_j = j_start(ij), j_end(ij)
++               do wg2_i = i_start(ij), i_end(ij)
++                 write(wg2_unit,'(A,1X,A,2I6,40(1X,ES18.10E3))') 'SFC', 'PRE_NOAHMP', wg2_i, wg2_j, &
++                    xland(wg2_i,wg2_j), xice(wg2_i,wg2_j), real(ivgtyp(wg2_i,wg2_j)), real(isltyp(wg2_i,wg2_j)), &
++                    hfx(wg2_i,wg2_j), qfx(wg2_i,wg2_j), lh(wg2_i,wg2_j), ust(wg2_i,wg2_j), &
++                    tsk(wg2_i,wg2_j), grdflx(wg2_i,wg2_j), qsfc(wg2_i,wg2_j), chs(wg2_i,wg2_j), &
++                    chs2(wg2_i,wg2_j), cqs2(wg2_i,wg2_j), flhc(wg2_i,wg2_j), flqc(wg2_i,wg2_j), &
++                    znt(wg2_i,wg2_j), z0(wg2_i,wg2_j), swdown(wg2_i,wg2_j), glw(wg2_i,wg2_j), &
++                    rainbl(wg2_i,wg2_j), rho(wg2_i,kts,wg2_j), dz8w(wg2_i,kts,wg2_j), &
++                    t_phy(wg2_i,kts,wg2_j), qv_curr(wg2_i,kts,wg2_j), p8w(wg2_i,kts,wg2_j), &
++                    smois(wg2_i,1,wg2_j), sh2o(wg2_i,1,wg2_j), tslb(wg2_i,1,wg2_j), &
++                    snow(wg2_i,wg2_j), snowh(wg2_i,wg2_j), snowc(wg2_i,wg2_j), &
++                    albedo(wg2_i,wg2_j), psfc(wg2_i,wg2_j), mavail(wg2_i,wg2_j), vegfra(wg2_i,wg2_j)
++               enddo
++             enddo
++             close(wg2_unit)
++           endif
++         end block
+          CALL noahmplsm(ITIMESTEP,       YR, JULIAN_IN,   COSZEN, XLAT,XLONG, &
+                    DZ8W,     DTBL,      DZS,     NUM_SOIL_LAYERS,         DX, &
+                  IVGTYP,   ISLTYP,   VEGFRA,   SHDMAX,       TMN,             &
+@@ -3283,6 +3318,42 @@
+                 MP_RAINC =  RAINCV, MP_RAINNC =    RAINNCV, MP_SHCV = RAINSHV,&
+                 MP_SNOW  = SNOWNCV, MP_GRAUP  = GRAUPELNCV, MP_HAIL = HAILNCV )
+
++!== wrfgpu2 v014 surface/land flux handoff hook: immediately after Noah-MP ===
++         block
++           character(len=64)  :: wg2_env
++           character(len=512) :: wg2_root
++           character(len=768) :: wg2_path
++           integer :: wg2_unit, wg2_i, wg2_j
++           call get_environment_variable('WRFGPU2_V014_SURFACE_HANDOFF_HOOK', wg2_env)
++           if (trim(wg2_env) == '1' .and. itimestep == 1 .and. ide == 160 .and. jde == 67) then
++             call get_environment_variable('WRFGPU2_V014_SURFACE_HANDOFF_ROOT', wg2_root)
++             if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_surface_handoff'
++             write(wg2_path,'(A,A)') trim(wg2_root), '/surface_land_flux_d02_step1.txt'
++             open(newunit=wg2_unit, file=trim(wg2_path), status='unknown', position='append', action='write')
++             write(wg2_unit,'(A,1X,A,8(1X,I0),1X,ES18.10E3)') 'HDR', 'POST_NOAHMP', itimestep, &
++                sf_sfclay_physics, sf_surface_physics, bl_pbl_physics, ra_lw_physics, ra_sw_physics, &
++                i_start(ij), i_end(ij), dtbl
++             write(wg2_unit,'(A,1X,A,1X,A)') 'FIELDS', 'POST_NOAHMP', &
++                'xland xice ivgtyp isltyp hfx qfx lh ust tsk grdflx qsfc chs chs2 cqs2 flhc flqc znt z0 swdown glw rainbl rho1 dz8w1 t_phy1 qv1 p8w1 smois1 sh2o1 tslb1 snow snowh snowc albedo psfc mavail vegfra'
++             do wg2_j = j_start(ij), j_end(ij)
++               do wg2_i = i_start(ij), i_end(ij)
++                 write(wg2_unit,'(A,1X,A,2I6,40(1X,ES18.10E3))') 'SFC', 'POST_NOAHMP', wg2_i, wg2_j, &
++                    xland(wg2_i,wg2_j), xice(wg2_i,wg2_j), real(ivgtyp(wg2_i,wg2_j)), real(isltyp(wg2_i,wg2_j)), &
++                    hfx(wg2_i,wg2_j), qfx(wg2_i,wg2_j), lh(wg2_i,wg2_j), ust(wg2_i,wg2_j), &
++                    tsk(wg2_i,wg2_j), grdflx(wg2_i,wg2_j), qsfc(wg2_i,wg2_j), chs(wg2_i,wg2_j), &
++                    chs2(wg2_i,wg2_j), cqs2(wg2_i,wg2_j), flhc(wg2_i,wg2_j), flqc(wg2_i,wg2_j), &
++                    znt(wg2_i,wg2_j), z0(wg2_i,wg2_j), swdown(wg2_i,wg2_j), glw(wg2_i,wg2_j), &
++                    rainbl(wg2_i,wg2_j), rho(wg2_i,kts,wg2_j), dz8w(wg2_i,kts,wg2_j), &
++                    t_phy(wg2_i,kts,wg2_j), qv_curr(wg2_i,kts,wg2_j), p8w(wg2_i,kts,wg2_j), &
++                    smois(wg2_i,1,wg2_j), sh2o(wg2_i,1,wg2_j), tslb(wg2_i,1,wg2_j), &
++                    snow(wg2_i,wg2_j), snowh(wg2_i,wg2_j), snowc(wg2_i,wg2_j), &
++                    albedo(wg2_i,wg2_j), psfc(wg2_i,wg2_j), mavail(wg2_i,wg2_j), vegfra(wg2_i,wg2_j)
++               enddo
++             enddo
++             close(wg2_unit)
++           endif
++         end block
++
+          IF(SF_URBAN_PHYSICS > 0 ) THEN  !urban
+
+            call noahmp_urban (sf_urban_physics,     NUM_SOIL_LAYERS,     IVGTYP,ITIMESTEP,  & ! IN : Model configuration
+@@ -3424,6 +3495,41 @@
+                ENDDO
+             ENDIF
+          ENDIF
++!== wrfgpu2 v014 surface/land flux handoff hook: after sea-ice/fractional finalization ===
++         block
++           character(len=64)  :: wg2_env
++           character(len=512) :: wg2_root
++           character(len=768) :: wg2_path
++           integer :: wg2_unit, wg2_i, wg2_j
++           call get_environment_variable('WRFGPU2_V014_SURFACE_HANDOFF_HOOK', wg2_env)
++           if (trim(wg2_env) == '1' .and. itimestep == 1 .and. ide == 160 .and. jde == 67) then
++             call get_environment_variable('WRFGPU2_V014_SURFACE_HANDOFF_ROOT', wg2_root)
++             if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_surface_handoff'
++             write(wg2_path,'(A,A)') trim(wg2_root), '/surface_land_flux_d02_step1.txt'
++             open(newunit=wg2_unit, file=trim(wg2_path), status='unknown', position='append', action='write')
++             write(wg2_unit,'(A,1X,A,8(1X,I0),1X,ES18.10E3)') 'HDR', 'POST_SURFACE_FINAL', itimestep, &
++                sf_sfclay_physics, sf_surface_physics, bl_pbl_physics, ra_lw_physics, ra_sw_physics, &
++                i_start(ij), i_end(ij), dtbl
++             write(wg2_unit,'(A,1X,A,1X,A)') 'FIELDS', 'POST_SURFACE_FINAL', &
++                'xland xice ivgtyp isltyp hfx qfx lh ust tsk grdflx qsfc chs chs2 cqs2 flhc flqc znt z0 swdown glw rainbl rho1 dz8w1 t_phy1 qv1 p8w1 smois1 sh2o1 tslb1 snow snowh snowc albedo psfc mavail vegfra'
++             do wg2_j = j_start(ij), j_end(ij)
++               do wg2_i = i_start(ij), i_end(ij)
++                 write(wg2_unit,'(A,1X,A,2I6,40(1X,ES18.10E3))') 'SFC', 'POST_SURFACE_FINAL', wg2_i, wg2_j, &
++                    xland(wg2_i,wg2_j), xice(wg2_i,wg2_j), real(ivgtyp(wg2_i,wg2_j)), real(isltyp(wg2_i,wg2_j)), &
++                    hfx(wg2_i,wg2_j), qfx(wg2_i,wg2_j), lh(wg2_i,wg2_j), ust(wg2_i,wg2_j), &
++                    tsk(wg2_i,wg2_j), grdflx(wg2_i,wg2_j), qsfc(wg2_i,wg2_j), chs(wg2_i,wg2_j), &
++                    chs2(wg2_i,wg2_j), cqs2(wg2_i,wg2_j), flhc(wg2_i,wg2_j), flqc(wg2_i,wg2_j), &
++                    znt(wg2_i,wg2_j), z0(wg2_i,wg2_j), swdown(wg2_i,wg2_j), glw(wg2_i,wg2_j), &
++                    rainbl(wg2_i,wg2_j), rho(wg2_i,kts,wg2_j), dz8w(wg2_i,kts,wg2_j), &
++                    t_phy(wg2_i,kts,wg2_j), qv_curr(wg2_i,kts,wg2_j), p8w(wg2_i,kts,wg2_j), &
++                    smois(wg2_i,1,wg2_j), sh2o(wg2_i,1,wg2_j), tslb(wg2_i,1,wg2_j), &
++                    snow(wg2_i,wg2_j), snowh(wg2_i,wg2_j), snowc(wg2_i,wg2_j), &
++                    albedo(wg2_i,wg2_j), psfc(wg2_i,wg2_j), mavail(wg2_i,wg2_j), vegfra(wg2_i,wg2_j)
++               enddo
++             enddo
++             close(wg2_unit)
++           endif
++         end block
+            DO j=j_start(ij),j_end(ij)
+            DO i=i_start(ij),i_end(ij)
+               CHKLOWQ(I,J)= 1.0

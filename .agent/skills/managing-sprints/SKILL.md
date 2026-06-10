@@ -62,6 +62,14 @@ Match model+effort to task type (principal effort-tiers): **core/correctness-cri
   to `tmux 0:1`, wait about two minutes for the TUI to finish compaction and
   return to a prompt, then send the full assignment and press Enter. Use delayed
   repeated Enter presses when needed because the TUI can leave text staged.
+  When a GPT worker narrows a hard task but does not solve it, the default Fable
+  escalation is the **entire remaining task** with all current evidence and the
+  release endpoint, not the next tiny diagnostic. The requested Fable endpoint is
+  "roadmap checkbox done": fix the blocker and prove it with the release gate, or
+  produce an exact WRF-anchored proof that the remaining blocker is impossible or
+  strictly outside the assigned scope. Do not spend Fable tokens on manager
+  status, incremental hypothesis asks, or partial micro-runs unless the principal
+  explicitly redirects.
 - Manager stays manager: re-dispatch dead agents; don't hand-debug.
 
 ## Long-roadmap drift prevention
