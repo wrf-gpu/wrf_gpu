@@ -3,6 +3,25 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
+commit as a production fix plus formal bound, not a strict Step-1 green. New
+proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed
+`proofs/v014/rrtmg_step1_forcing_parity.*`,
+`proofs/v014/mynn_rthblten_step1_closure.*`, and
+`proofs/v014/noahmp_step1_closure.*`; review:
+`.agent/reviews/2026-06-10-v014-gpt-rrtmg-rthraten-closure.md`. Exact pre-fix
+boundary: `RRTMG_LWRAD:T3D=t`. Production owner:
+`src/gpuwrf/coupling/physics_couplers.py::_rrtmg_column_inputs`, now using dry
+theta for metric-backed RRTMG temperature input while preserving the no-grid
+fallback. GLW RMSE improves `17.5203 -> 0.3515 W/m2`; mass-coupled RTHRATEN
+RMSE improves `2.4884 -> 0.3646`, max_abs `19.4253 -> 2.7984`. Strict Step-1
+remains red/bounded at max_abs `55.9297`, RMSE `0.4997`, p99 `0.9529`.
+Manager decision: old strict MYNN+RRTMG mass-coupled tolerance is not a valid
+release-green requirement without bitwise scheme reproduction; record a reviewed
+tolerance policy, then run a short all-field rollout falsifier. Final validation
+priority is now long CPU-vs-GPU field-parity/stability plus Grid-Delta Atlas;
+TOST remains secondary station sanity evidence.
+
 Update 2026-06-10 11:00 WEST: Fable/Mythos strict Step-1 closure sprint is
 accepted as a major production fix plus a strict narrowing, not a full closure.
 Verdict:

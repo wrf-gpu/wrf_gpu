@@ -976,7 +976,14 @@ def _rrtmg_column_inputs(
 ) -> tuple[RRTMGSWColumnState, RRTMGLWColumnState, object, object, SolarGeometry, RRTMGSWTopographyState | None]:
     """Build SW/LW RRTMG column states and expose shared surface fields."""
 
-    T = _temperature_from_theta(state.theta, state.p)
+    if getattr(grid, "metrics", None) is not None:
+        # WRF's phy_prep decouples theta_m back to dry th_phy before radiation.
+        theta = jnp.asarray(state.theta, dtype=jnp.float64) / (
+            1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, dtype=jnp.float64)
+        )
+    else:
+        theta = jnp.asarray(state.theta)
+    T = _temperature_from_theta(theta, jnp.asarray(state.p))
     p_columns = _to_columns(state.p)
     qv_columns = _to_columns(state.qv)
     qc_columns = _to_columns(state.qc)

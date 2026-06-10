@@ -57,6 +57,7 @@ OUT_JSON = PROOF_DIR / "rrtmg_step1_forcing_parity.json"
 OUT_MD = PROOF_DIR / "rrtmg_step1_forcing_parity.md"
 
 NOAHMP_CLOSURE_JSON = PROOF_DIR / "noahmp_step1_closure.json"
+RRTMG_RTHRATEN_CLOSURE_JSON = PROOF_DIR / "rrtmg_rthraten_closure.json"
 PINNED_SURFACE = Path("/tmp/wrfgpu2_v014_surface_handoff_pinned_onerun/surface_land_flux_d02_step1.txt")
 WRF_RADIATION_DRIVER = Path(
     "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F"
@@ -384,6 +385,14 @@ def build_proof() -> dict[str, Any]:
             "line": 2087,
             "meaning": "RRTMG LW driver owns GLW and RTHRATENLW before SW is added.",
         },
+        "jax_rrtmg_dry_theta_input_fix": {
+            "file": str(ROOT / "src/gpuwrf/coupling/physics_couplers.py"),
+            "owner": "_rrtmg_column_inputs",
+            "meaning": (
+                "Metric-backed RRTMG input now mirrors WRF phy_prep by converting "
+                "stored theta_m to dry theta before T3D temperature conversion."
+            ),
+        },
     }
 
     classification = {
@@ -423,12 +432,12 @@ def build_proof() -> dict[str, Any]:
             "evidence": "JAX mass_h matches WRF mass_h and using WRF mass_h leaves the residual unchanged.",
         },
         "likely_boundary": {
-            "verdict": "RRTMG_CLEAR_SKY_DERIVED_OPTICS_OR_KERNEL_BOUNDARY",
+            "verdict": "DOMINANT_RRTMG_T3D_DRY_THETA_INPUT_FIXED_REMAINING_SPLIT_BOUND_IN_RRTMG_CLOSURE",
             "evidence": (
-                "GLW remains a clear-sky +17.44 W/m2 bias with matched gross state and "
-                "RTHRATEN remains max_abs about 19.43 after mass/conversion checks. "
-                "The next exact boundary is a WRF RRTMG forcing hook around the derived "
-                "LW/SW optical/gas/top-buffer profiles and flux/heating arrays."
+                "The WRF split radiation oracle localizes the former dominant residual "
+                "to RRTMG_LWRAD T3D=t receiving moist-theta temperature in JAX. The "
+                "production dry-theta input fix materially reduces GLW/RTHRATEN; the "
+                "remaining LW/SW split residual is bounded in rrtmg_rthraten_closure."
             ),
         },
     }
@@ -439,7 +448,7 @@ def build_proof() -> dict[str, Any]:
     return {
         "status": "PROOF_EXECUTED",
         "schema": "wrfgpu2.v014.rrtmg_step1_forcing_parity.v1",
-        "verdict": "RRTMG_STEP1_RESIDUAL_LOCALIZED_TO_CLEAR_SKY_DERIVED_RRTMG_BOUNDARY",
+        "verdict": "RRTMG_STEP1_FORCING_PARITY_MATERIALLY_REDUCED_BY_DRY_THETA_INPUT_FIX",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "environment": {
             "python": sys.version.split()[0],
@@ -457,6 +466,7 @@ def build_proof() -> dict[str, Any]:
         "inputs": {
             "noahmp_closure_json": path_info(NOAHMP_CLOSURE_JSON),
             "surface_hook": path_info(surface_path),
+            "rrtmg_rthraten_closure_json": path_info(RRTMG_RTHRATEN_CLOSURE_JSON),
             "wrf_part2_truth_root": str(split.WRF_TRUTH),
             "wrf_radiation_driver": path_info(WRF_RADIATION_DRIVER),
             "wrf_rrtmg_lw": path_info(WRF_RRTMG_LW),
@@ -507,22 +517,19 @@ def build_proof() -> dict[str, Any]:
         "prior_clear_sky_oracle_context": compact_prior_clear_sky(),
         "classification": classification,
         "exact_residual_boundary": (
-            "Clear-sky RRTMG derived optical/gas/top-buffer profile or kernel boundary. "
-            "Current WRF hooks prove GLW and RTHRATEN outputs differ, and exonerate "
-            "gross clock, surface handoff, thermodynamic state, cloud occupancy, layer "
-            "ordering, theta conversion, and mass coupling; they do not dump the exact "
-            "WRF RRTMG derived columns needed to name the first divergent LW/SW quantity."
+            "Dominant pre-fix boundary was WRF radiation_driver -> RRTMG_LWRAD input "
+            "T3D=t: JAX built T from stored theta_m while WRF phy_prep passes dry "
+            "theta temperature. The production owner is "
+            "gpuwrf.coupling.physics_couplers._rrtmg_column_inputs. Remaining split "
+            "LW/SW residual is bounded by proofs/v014/rrtmg_rthraten_closure.*."
         ),
         "recommended_fix": {
-            "production_fix_obvious": False,
+            "production_fix_obvious": True,
+            "production_fix_applied": True,
             "next_action": (
-                "Add a temporary WRF RRTMG forcing hook, then compare per-column arrays "
-                "against JAX before editing production: for LW dump play/plev/tlay/tlev, "
-                "h2ovmr/o3vmr/trace gases, emis, cldfrac/cloud paths/effective radii, "
-                "tauaer, dflx/uflx/hr and clear-sky counterparts around "
-                "module_ra_rrtmg_lw.F:RRTMG_LWRAD; for SW dump the matching column "
-                "optics, topographic correction, fluxes, and heating before the "
-                "RTHRATENLW+RTHRATENSW sum."
+                "Rerun the split WRF-oracle closure proof: JAX_PLATFORMS=cpu "
+                "CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false "
+                "PYTHONPATH=src python proofs/v014/rrtmg_rthraten_closure.py"
             ),
         },
         "lane_blocking": {
@@ -588,8 +595,8 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         "## Boundary",
         "",
         f"- Exact residual boundary: {payload['exact_residual_boundary']}",
-        f"- Production fix obvious: `{payload['recommended_fix']['production_fix_obvious']}`.",
-        "- Next action: temporary WRF RRTMG forcing hook for derived LW/SW optical/gas/top-buffer profiles, fluxes, and heating arrays.",
+        f"- Production fix applied: `{payload['recommended_fix'].get('production_fix_applied')}`.",
+        f"- Next action: {payload['recommended_fix']['next_action']}.",
         "",
         "## Key numbers",
         "",

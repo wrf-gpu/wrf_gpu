@@ -12,6 +12,16 @@ campaign. The next campaign must first explain and reduce the CPU-WRF vs GPU-WRF
 cell-level divergence across all written fields. Station TOST cannot hide a broad
 spatial field mismatch.
 
+2026-06-10 13:15 WEST manager update: after the RRTMG dry-temperature fix, the
+methodological priority is sharper: **long all-cell field-parity/stability is
+the primary v0.14 evidence; powered TOST is secondary station sanity evidence**.
+The strongest paper/release claim is a 72h/120h Canary or Switzerland
+CPU-vs-GPU campaign showing bounded all-field deltas and no drift over time,
+with Grid-Delta Atlas plots for every common numeric field. TOST n=15 remains
+useful, but it is observationally noisy and lower-powered than direct wrfout
+field comparison; it must not override the all-cell evidence in either
+direction.
+
 This is the deeper validation campaign after the v0.13 3h gate. The model is a
 fast, GPU-native, GPU-scalable WRF-compatible implementation. The campaign must
 not overclaim bit-truth or perfect efficiency.

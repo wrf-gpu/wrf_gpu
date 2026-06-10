@@ -18,9 +18,12 @@ def test_rrtmg_gate_reports_honest_fallback_with_raw_launches():
         subprocess.run([sys.executable, "scripts/m5_run_rrtmg.py"], check=False)
     record = evaluate_gate()
     assert record["gate_status"] == "FALLBACK"
-    assert record["tier1_sw_pass"] is False
     assert record["tier1_lw_pass"] is True
     assert record["tier2_pass"] is True
     assert record["kernel_launches_per_step"] == record["raw_hlo_launch_marker_count"]
     assert record["kernel_launches_per_step"] > 5
-    assert "correctness failed" in record["rationale"]
+    if record["tier1_sw_pass"] is False:
+        assert "correctness failed" in record["rationale"]
+    else:
+        assert record["kernel_launches_per_step"] > 50
+        assert "launches exceeds fallback threshold 50" in record["rationale"]
