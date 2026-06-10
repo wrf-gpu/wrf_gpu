@@ -83,6 +83,27 @@ Next gate: relaunch Canary 72h from the fixed commit and expect `MU` drift to
 collapse while a separate quasi-static GPU PSFC vapor-light floor of about
 `-210 Pa` may remain as the next dycore lane if confirmed.
 
+Update 2026-06-10 16:28 WEST: the fixed Canary d02 72h run is active from
+commit `53770411` at
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z`.
+The stable detached process required `setsid -f`; the earlier inline/nohup
+launches died before writing rc. Resource CSV logging and h1/h24/final watchers
+are active. h1 compare:
+`canary_d02_h01_grid_compare.md/json`, tool `rc=0`, verdict `FAIL` because
+`PSFC/PB/MUB` and some flux/radiation fields remain outside the manifest, but
+the LBC fix materially improved the dynamical/wind fields:
+
+- `MU` h1 bias `+85.1 -> +52.9 Pa`, RMSE `98.3 -> 58.1 Pa`.
+- `U` RMSE `0.343 -> 0.326 m/s`; `V` `1.689 -> 0.323 m/s`.
+- `T` RMSE `0.255 -> 0.219 K`; `T2` `0.386 -> 0.382 K`.
+- `U10` RMSE `0.610 -> 0.565 m/s`; `V10` `1.227 -> 0.475 m/s`.
+- remaining `PSFC`: RMSE `156.97 Pa`, bias `-154.94 Pa`, max `300.49 Pa`.
+
+Manager decision: continue the fixed 72h run to h24/final because the
+wrong-time LBC drift is plausibly removed, while opening a CPU-only GPT sprint
+for the remaining quasi-static PSFC/vapor-light pressure-state lane. Do not
+launch Switzerland GPU until Canary h24/final and the PSFC analysis are judged.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed
