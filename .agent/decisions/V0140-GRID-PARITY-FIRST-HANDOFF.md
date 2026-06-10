@@ -3,6 +3,22 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-10 06:31 WEST: the Step-1 surface/land flux handoff sprint is
+accepted as a strict narrowing, not a closure. Verdict:
+`STEP1_SURFACE_LAND_FLUX_HANDOFF_NARROWED_TO_JAX_NOAHMP_DISABLED_CONFIGURATION`
+(`proofs/v014/step1_surface_land_flux_handoff.*`). WRF hook evidence proves
+`SFCLAY1D_mynn` output equals `PRE_NOAHMP`, NoahMP is the exact HFX/QFX change
+point (`PRE_NOAHMP -> POST_NOAHMP` HFX max_abs `277.80298614000003`, QFX
+max_abs `1.4684322196e-05`), and `POST_NOAHMP` equals MYNN driver input for
+HFX/QFX/UST (max_abs `0.0`). The remaining blocker is now in the JAX Step-1
+live-nest/source-capture path: `use_noahmp=False`, `sf_surface_physics=None`,
+and no NoahMP land/static state. Per principal directive, this is escalated to
+Fable/Mythos as one whole endpoint-defined task, not another GPT micro-run:
+`.agent/sprints/2026-06-10-v014-fable-noahmp-step1-closure/`. Send `/compact`
+to tmux `0:1` before the assignment; endpoint is strict Step-1 green or an
+exact narrower WRF-anchored blocker. TOST, Switzerland, broad FP32, and long GPU
+validation remain paused.
+
 Update 2026-06-10 05:54 WEST: the Step-1 MYNN source-coupling sprint is
 accepted as a strict narrowing, not a closure. Verdict:
 `STEP1_MYNN_SOURCE_COUPLING_NARROWED_TO_SURFACE_LAND_FLUX_HANDOFF`
