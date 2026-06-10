@@ -88,19 +88,38 @@ scalable GPU rewrite.
 11. Run Switzerland/Gotthard 72h GPU-vs-CPU field-parity/stability with resource
    CSVs after Canary releases the GPU lock.
 12. Run Grid-Delta Atlas on the selected paired cases using the accepted
-   pre-result tolerance manifest before claiming equivalence.
-13. Optionally resume powered TOST as secondary station evidence and publish it
+   pre-result tolerance manifest before claiming equivalence. The release
+   artifact must include stable-through-time plots for all common numeric
+   `wrfout` fields and volumes, not only scalar summaries.
+13. Record latest CPU-vs-GPU wall-clock benchmarks for both mandatory regions:
+   Canary L2 d02 CPU truth vs GPU 72h, and Switzerland/Gotthard d01 CPU truth
+   vs GPU 72h. Include wall-clock, forecast-hours/hour, peak GPU memory, peak
+   process RSS, and CPU peak RSS where available.
+14. Optionally resume powered TOST as secondary station evidence and publish it
    together with the atlas if it completes cleanly. It is not a tag gate.
-14. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
+15. Start the prepared Fable/Mythos xhigh kernel memory/compute efficiency
+   review only after Canary and Switzerland are both green/bounded enough that
+   no scarce Fable tokens are needed for v0.14 correctness debugging. Its
+   output feeds the complete v0.15 roadmap, not v0.14 source changes.
+16. Write/update `.agent/decisions/V0150-ROADMAP-DRAFT.md` with the complete
+   list of deferred, easy, and high-value kernel improvements, preserving the
+   full candidate list for principal review.
+17. Send a paper/documentation worker to update the paper to the latest facts:
+   remove stale relativizations, describe the new 72h field-parity/stability
+   validation method, include the wall-clock/memory benchmarks, and reference
+   the Grid-Delta Atlas plots.
+18. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
    proof links.
-15. Tag and push v0.14 only after all required gates pass or are honestly
+19. Tag and push v0.14 only after all required gates pass or are honestly
    demoted with a recorded manager decision and independent review.
 
 ## Current Do-Not-Run List
 
 - No TOST marathon as a substitute for the mandatory 72h field gates.
-- No long Canary or Switzerland GPU campaign before the post-fix Canary h1-h4
-  Noah-MP land gate is green/bounded.
+- No Switzerland GPU campaign before Canary 72h releases the GPU lock and its
+  first-pass result is green/bounded.
+- No Fable/Mythos xhigh efficiency review while v0.14 still needs Fable for a
+  correctness blocker.
 - No silent strict-gate tolerance change; any respec needs an explicit manager
   decision and independent review recorded in the roadmap.
 - No broad FP32/mixed-precision claim from default-inert scaffolding.
