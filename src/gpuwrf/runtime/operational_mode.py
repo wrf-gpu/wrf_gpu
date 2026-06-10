@@ -115,7 +115,13 @@ from gpuwrf.dynamics.acoustic_wrf import (
     moisture_coupling_factors,
 )
 from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
-from gpuwrf.dynamics.core.advance_w import GRAVITY_M_S2, dry_cqw, pg_buoy_w_dry
+from gpuwrf.dynamics.core.advance_w import (
+    GRAVITY_M_S2,
+    dry_cqw,
+    moist_cqw_calc_face,
+    pg_buoy_w_dry,
+    pg_buoy_w_moist,
+)
 from gpuwrf.dynamics.core.calc_p_rho import CalcPRhoStep0, calc_p_rho_wrf
 from gpuwrf.dynamics.core.rhs_ph import rhs_ph_wrf
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_core
@@ -150,6 +156,29 @@ def _acoustic_unroll() -> int:
     """
 
     return max(1, int(os.environ.get("GPUWRF_ACOUSTIC_UNROLL", "1")))
+
+
+def _moist_cqw_enabled() -> bool:
+    """Whether the operational acoustic w-equation uses WRF moist ``cqw``/``pg_buoy_w``.
+
+    Default ON for v0.14.  The once-per-RK-stage large-step vertical
+    PGF/buoyancy ``rw_tend`` and the implicit-W ``cqw`` field carry the WRF moist
+    water-mass loading (``calc_cq`` + moist ``pg_buoy_w``,
+    module_big_step_utilities_em.F:856-870,2474-2497), so the GPU pressure rides
+    the MOIST hydrostatic column (CPU/WRF) instead of the dry one.  Set
+    ``GPUWRF_MOIST_CQW=0`` only for bisection/back-compat checks.  Bit-identical
+    to the dry path wherever total moisture is zero (idealized/dry gates).  See
+    proofs/v014/moist_cqw_pressure_dynamics_closure.{py,json,md} and
+    proofs/v014/moist_cqw_gpu_h4_validation.{py,json,md}.
+    """
+
+    return os.environ.get("GPUWRF_MOIST_CQW", "1").strip().lower() not in {
+        "",
+        "0",
+        "false",
+        "off",
+        "no",
+    }
 
 
 # The acoustic substep MUTATES only these AcousticCoreState leaves
@@ -1271,15 +1300,45 @@ def _acoustic_core_state_from_prep(
     grid_p_full, _stage_al_full, _stage_alt_full = diagnose_pressure_al_alt(
         state, stage_base, namelist.metrics
     )
-    rw_tend_stage = pg_buoy_w_dry(
-        grid_p_full,
-        mu_prime_stage,
-        c1f=namelist.metrics.c1f,
-        rdnw=namelist.metrics.rdnw,
-        rdn=namelist.metrics.rdn,
-        msfty=namelist.metrics.msfty,
-        gravity=GRAVITY_M_S2,
-    )
+    # MOIST-CQW (default ON, GPUWRF_MOIST_CQW=0 disables for bisection): WRF builds the large-step
+    # vertical PGF/buoyancy with the full moist water-mass loading
+    # (calc_cq cqw=0.5*qtot then pg_buoy_w cq1/cq2, module_big_step_utilities_em.F:
+    # 856-870,2474-2497).  The dry specialization omits -cq2*(c1f*mub+c2f), so the
+    # acoustic solver relaxes the column to DRY hydrostatic balance; WRF/CPU rides
+    # the MOIST column (proofs/v014/moist_cqw_pressure_dynamics_closure: GPU
+    # P+PB(k0) off-dry ~8 Pa / off-moist ~200 Pa; CPU off-moist ~13 Pa).  cqw is
+    # computed once per RK stage from the stage-entry total moisture and held
+    # constant through the acoustic loop (matches WRF calc_cq cadence); no
+    # host/device transfer, no large transients.  Bit-identical to dry when
+    # qtot=0.
+    moist_cqw_solver_stage = None
+    if _moist_cqw_enabled():
+        qtot_stage = (
+            state.qv + state.qc + state.qr + state.qi + state.qs + state.qg
+        ).astype(grid_p_full.dtype)
+        cqw_calc_stage = moist_cqw_calc_face(qtot_stage)
+        rw_tend_stage, moist_cqw_solver_stage = pg_buoy_w_moist(
+            grid_p_full,
+            mu_prime_stage,
+            prep.mub,
+            cqw_calc_stage,
+            c1f=namelist.metrics.c1f,
+            c2f=namelist.metrics.c2f,
+            rdnw=namelist.metrics.rdnw,
+            rdn=namelist.metrics.rdn,
+            msfty=namelist.metrics.msfty,
+            gravity=GRAVITY_M_S2,
+        )
+    else:
+        rw_tend_stage = pg_buoy_w_dry(
+            grid_p_full,
+            mu_prime_stage,
+            c1f=namelist.metrics.c1f,
+            rdnw=namelist.metrics.rdnw,
+            rdn=namelist.metrics.rdn,
+            msfty=namelist.metrics.msfty,
+            gravity=GRAVITY_M_S2,
+        )
     # F7J item 2: WRF ``rk_tendency`` builds ``rw_tend`` as ``advect_w(w)`` (the
     # large-step vertical+horizontal advection of coupled w) THEN ``pg_buoy_w``
     # ADDS the vertical PGF/buoyancy (module_em.F:1011-1067 then :1361-1368).
@@ -1480,11 +1539,18 @@ def _acoustic_core_state_from_prep(
         # is invariant across substeps (advance_mu_t fills it each substep).
         theta_coupled_work=prep.theta_work,
         c2a=prep.c2a,
-        cqw=dry_cqw(
-            int(prep.theta_work.shape[0]),
-            int(prep.theta_work.shape[1]),
-            int(prep.theta_work.shape[2]),
-            dtype=prep.theta_work.dtype,
+        # MOIST-CQW: the post-pg_buoy_w cqw=cq1 (consumed by calc_coef_w + the
+        # advance_w implicit pressure term) when the moist path is enabled; the
+        # dry cqw (interior=1) otherwise.  Bit-identical when qtot=0.
+        cqw=(
+            moist_cqw_solver_stage
+            if moist_cqw_solver_stage is not None
+            else dry_cqw(
+                int(prep.theta_work.shape[0]),
+                int(prep.theta_work.shape[1]),
+                int(prep.theta_work.shape[2]),
+                dtype=prep.theta_work.dtype,
+            )
         ),
         c1f=namelist.metrics.c1f,
         c2f=namelist.metrics.c2f,
