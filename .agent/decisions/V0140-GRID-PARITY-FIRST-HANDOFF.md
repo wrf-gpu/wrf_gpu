@@ -29,6 +29,19 @@ against the current operational `RTHBLTEN` residual. RRTMG remains secondary
 and should be attacked only after MYNN is closed/bounded or proof reverses the
 ranking.
 
+Update 2026-06-10 12:12 WEST: Fable/Mythos MYNN/RTHBLTEN sprint is accepted as
+a formal bound, not a green gate. New proof:
+`proofs/v014/mynn_rthblten_step1_closure.*`, review:
+`.agent/reviews/2026-06-10-v014-fable-mynn-rthblten-closure.md`. Verdict:
+`STEP1_STRICT_RED_FORMALLY_BOUNDED_RRTMG_FIELD_DOMINANT_MYNN_KERNEL_FLOOR_GATE_UNREACHABLE`.
+Key evidence: operational dry `T_TENDF` reassembly matches runtime to
+`4.55e-13`; WRF `RTHRATEN` substitution collapses strict RMSE
+`2.5378 -> 0.5433` and p99 `16.63 -> 0.84`; MYNN is now a bounded worst-cell
+max floor, while RRTMG `RTHRATEN` is the field-dominant lane. Manager decision:
+do not silently relax the strict gate and do not start TOST/Switzerland-GPU.
+Next sprint should close/bound RRTMG clear-sky `RTHRATEN`, then record a
+reviewed tolerance-policy decision.
+
 Update 2026-06-10 09:40 WEST: Fable/Mythos NoahMP land-tile energy closure is
 accepted, committed, and pushed as `94fe5d5f`; the next strict-closure sprint is
 opened and pushed as `b4b6850f`, then dispatched to Fable after `/compact`.
