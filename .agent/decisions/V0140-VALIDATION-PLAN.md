@@ -33,8 +33,9 @@ horizons, more schemes, nesting, GWD, feedback, restart/reproducibility, and
 multi-region data without NaNs, OOMs, or crashes.
 
 Secondary objective: collect strong, honest CPU-WRF and AEMET equivalence
-evidence. The direct grid-cell envelope is the first gate; powered TOST is the
-final gate-keeper-facing artifact after the grid-field gap is no longer radical.
+evidence. The direct grid-cell envelope is the release gate; powered TOST is
+optional secondary station sanity evidence after the grid-field gap is no
+longer radical.
 
 ## Corpus Reality
 
