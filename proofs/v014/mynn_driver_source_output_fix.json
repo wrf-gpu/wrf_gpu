@@ -50,54 +50,54 @@
     },
     "C_qke_wrf_inputs_jax": {
       "rqv": {
-        "bias": -5.371171925897115e-09,
-        "corr": 0.7115782829010182,
+        "bias": -5.371205310487306e-09,
+        "corr": 0.7116008500529319,
         "max_abs": 4.628118778496115e-06,
         "ref_max_abs": 5.3572780416e-06,
-        "rmse": 8.350828502805743e-08,
+        "rmse": 8.35060781108287e-08,
         "strong_cells": 8625,
         "strong_ratio_median": 0.26272129126905686,
         "strong_ratio_p10": 0.1382871044530511,
         "strong_ratio_p90": 0.45067537490487564
       },
       "rth": {
-        "bias": -4.449524783059451e-06,
-        "corr": 0.8130576712506202,
+        "bias": -4.604829056454247e-06,
+        "corr": 0.8163007182601216,
         "max_abs": 0.02253703272337851,
         "ref_max_abs": 0.033187866211,
-        "rmse": 0.00017012309019279862,
+        "rmse": 0.00016950811940989402,
         "strong_cells": 664,
         "strong_ratio_median": 0.2695472423889126,
-        "strong_ratio_p10": -0.002292643029558787,
-        "strong_ratio_p90": 1.0682204160269797
+        "strong_ratio_p10": -0.0027116723966082805,
+        "strong_ratio_p90": 1.0604865166659223
       }
     },
     "D_qke_prod_inputs_jax_production": {
       "rqv": {
-        "bias": -5.2893963866745695e-09,
-        "corr": 0.6786882740924784,
+        "bias": -5.289432856208913e-09,
+        "corr": 0.678694901350247,
         "max_abs": 4.789201701170209e-06,
         "ref_max_abs": 5.3572780416e-06,
-        "rmse": 8.666578419389617e-08,
+        "rmse": 8.666523419314689e-08,
         "strong_cells": 8625,
         "strong_ratio_median": 0.24646955594177125,
         "strong_ratio_p10": 0.08907195904442977,
-        "strong_ratio_p90": 0.4484822218926573
+        "strong_ratio_p90": 0.4485892799382033
       },
       "rth": {
-        "bias": -4.29025698652391e-06,
-        "corr": 0.831396009870904,
+        "bias": -4.4457706757250995e-06,
+        "corr": 0.840168367130889,
         "max_abs": 0.023255740598449363,
         "ref_max_abs": 0.033187866211,
-        "rmse": 0.00018372241771801064,
+        "rmse": 0.00018303739577205165,
         "strong_cells": 664,
-        "strong_ratio_median": 0.2365473895227375,
-        "strong_ratio_p10": -0.002559292810025852,
+        "strong_ratio_median": 0.23728504188520322,
+        "strong_ratio_p10": -0.0029703026325852452,
         "strong_ratio_p90": 0.7354791775055164
       }
     }
   },
-  "created_utc": "2026-06-10T01:57:37.468924+00:00",
+  "created_utc": "2026-06-10T02:38:03.805025+00:00",
   "environment": {
     "jax_backend": "cpu",
     "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
@@ -129,7 +129,7 @@
         "HEAD"
       ],
       "returncode": 0,
-      "stdout_tail": "1435457b12edab890d546d6b8809a9f31bb549cd\n"
+      "stdout_tail": "620604234d6287e29ca31628c5a81ff05e3fdef3\n"
     }
   },
   "init_qke": {
@@ -200,16 +200,16 @@
       "rmse": 1.442591864492997e-05
     },
     "sfclay_theta_flux_vs_wrf_flt": {
-      "bias": -0.010733783227345433,
-      "max_abs": 0.3121972813467408,
+      "bias": -0.011079349424173223,
+      "max_abs": 0.3122773691673999,
       "ref_max_abs": 0.3119690397296882,
-      "rmse": 0.02315528543965535
+      "rmse": 0.02263717709148701
     },
     "sfclay_ustar_vs_wrf_ust": {
-      "bias": -0.025370190466854015,
-      "max_abs": 0.15787489948403996,
+      "bias": -0.02550615610046173,
+      "max_abs": 0.14784556445137387,
       "ref_max_abs": 0.33699807525,
-      "rmse": 0.02954126268295198
+      "rmse": 0.028969744732642747
     },
     "theta_full_vs_wrf_th": {
       "bias": 1.0438721485353146,
@@ -231,10 +231,10 @@
     },
     "wspd_level0_vs_wrf_wspd_note": "level-0 wind speed matches to <=0.064 (see json)",
     "znt_vs_wrf_znt": {
-      "bias": -0.014158440233910828,
-      "max_abs": 0.9737602076530456,
+      "bias": -0.00748901103997901,
+      "max_abs": 0.35,
       "ref_max_abs": 1.0,
-      "rmse": 0.10380183155466993
+      "rmse": 0.049337000962126454
     }
   },
   "kernel_response_gate": {
@@ -287,8 +287,8 @@
   },
   "schema": "wrfgpu2.v014.mynn_driver_source_output_fix.v1",
   "single_remaining_blocker": {
-    "hypothesis": "Step-1 surface-layer flux boundary remains upstream of MYNN. The follow-up proof `proofs/v014/step1_sfclay_boundary_fix.md` ports and validates WRF's first-call MYNN surface semantics (UST first guess, MOL=0, land QSFC=qv/(1+qv), Li_etal_2010 z/L seed): UST rmse improves 0.0867->0.0295 and qv-flux rmse improves 1.98e-5->1.44e-5. Strict Step-1 remains red (max_abs 1497.611, rmse 13.296), with the narrower surviving WRF-anchored blocker now TSK/ZNT surface input sourcing (TSK max_abs 8.34 K; ZNT max_abs 0.974 m).",
-    "next_route": "Next sprint: emit a tiny WRF step-1 surface-driver hook around module_surface_driver/module_sf_mynn for incoming TSK/ZNT/UST/QSFC/MOL and outgoing UST/HFX/QFX/ZNT on the current d02 Step-1 case, compare those exact arrays against JAX `_surface_column_view` inputs and diagnostics, then fix the TSK/ZNT sourcing if the hook confirms it.",
+    "hypothesis": "Step-1 surface-layer flux boundary remains upstream of MYNN. The follow-up proofs `proofs/v014/step1_sfclay_boundary_fix.md` and `proofs/v014/step1_tsk_znt_sourcing_fix.md` port WRF first-call MYNN surface semantics and prove exact TSK/ZNT/MAVAIL input sourcing at the sfclay_mynn hook (TSK max_abs 0.0 K; ZNT max_abs 1.19e-8 m). Strict Step-1 remains red (max_abs 1497.611, rmse 13.253), with the narrower surviving WRF-anchored blocker now the non-surface thermodynamic column inputs entering sfclay_mynn: th_phy/t_phy/p_phy.",
+    "next_route": "Next sprint: localize the non-surface thermodynamic column inputs at the exact sfclay_mynn hook (`th_phy(kts)`, `t_phy(kts)`, `p_phy(kts)`, and `dz8w`) against JAX `_surface_column_view`; then fix the Step-1 temperature/pressure sourcing if local.",
     "secondary_bound": "WRF's own cold-start init consumes an uninitialized rmol (proven per-column), so bitwise step-1 MYNN truth is build/stack/decomposition dependent; strict closure targets against the existing part2 truth are bounded by that UB envelope. A deterministic rmol-pinned WRF truth was emitted to quantify it.",
     "status": "BLOCKING"
   },
@@ -302,13 +302,13 @@
   },
   "status": "PROOF_EXECUTED",
   "strict_step1_after_conv_vs_jax_dry_t_tendf": {
-    "bias": 0.061017576606901075,
+    "bias": 0.07687194225377524,
     "count": 442112,
     "max_abs": 1497.6112467075195,
     "nonfinite_diff_count": 0,
-    "p95": 2.3165969814534986,
-    "p99": 37.885854494494495,
-    "rmse": 13.296448784742802,
+    "p95": 2.316572103131588,
+    "p99": 37.60009995324713,
+    "rmse": 13.252694871222973,
     "shape": [
       44,
       66,

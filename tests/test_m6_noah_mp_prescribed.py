@@ -6,7 +6,7 @@ import pytest
 
 from gpuwrf.io.gen2_accessor import DEFAULT_M6_GEN2_RUN_DIR, Gen2Run
 from gpuwrf.io.land_state import build_land_state_manifest, load_prescribed_land_state
-from gpuwrf.physics.noah_mp import prescribe_noah_mp_state, roughness_from_prescribed_fields
+from gpuwrf.physics.noah_mp import mavail_from_prescribed_fields, prescribe_noah_mp_state, roughness_from_prescribed_fields
 
 
 RUN_PATH = DEFAULT_M6_GEN2_RUN_DIR
@@ -21,6 +21,19 @@ def test_roughness_surrogate_uses_water_and_land_masks_when_cm_is_zero():
     assert float(z0[0, 0]) > float(z0[0, 1])
     assert 0.02 <= float(z0[0, 0]) <= 0.20
     assert 1.0e-4 <= float(z0[0, 1]) <= 5.0e-3
+
+
+def test_landuse_table_initializes_roughness_and_mavail_when_lu_index_is_available():
+    xland = jnp.asarray([[1.0, 2.0]])
+    landmask = jnp.asarray([[1.0, 0.0]])
+    lu_index = jnp.asarray([[13.0, 17.0]])
+    z0 = roughness_from_prescribed_fields(xland, landmask, lu_index=lu_index)
+    mavail = mavail_from_prescribed_fields(xland, landmask, jnp.ones((1, 1, 2)), lu_index=lu_index)
+
+    assert float(z0[0, 0]) == 0.8
+    assert float(z0[0, 1]) == 1.0e-4
+    assert float(mavail[0, 0]) == 0.1
+    assert float(mavail[0, 1]) == 1.0
 
 
 def test_prescribed_noah_mp_state_is_bounded_and_non_prognostic():

@@ -1,0 +1,340 @@
+{
+  "acceptance": {
+    "next_fastest_command": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_tsk_znt_sourcing_fix.py",
+    "strict_step1_closed": false,
+    "tsk_znt_source_fixed": true
+  },
+  "artifact": "step1_tsk_znt_sourcing_fix",
+  "column_metrics": {
+    "dz0_vs_sfclay_in_dz8w": {
+      "bias": 0.017457734172978197,
+      "count": 10494,
+      "max_abs": 0.017593331391992706,
+      "ref_max_abs": 51.492713928222656,
+      "rmse": 0.01745803956152576
+    },
+    "p0_vs_sfclay_in_p_phy": {
+      "bias": 15.088548366923957,
+      "count": 10494,
+      "max_abs": 292.8203125,
+      "ref_max_abs": 101727.03125,
+      "rmse": 45.931279429597595
+    },
+    "qv0_vs_sfclay_in_qv": {
+      "bias": 2.6014649627681093e-11,
+      "count": 10494,
+      "max_abs": 4.9845645343910006e-08,
+      "ref_max_abs": 0.011706835590302944,
+      "rmse": 1.1351633710397017e-08
+    },
+    "temperature_from_theta_vs_sfclay_in_t_phy": {
+      "bias": 4.6012878004310345,
+      "count": 10494,
+      "max_abs": 5.521345498302992,
+      "ref_max_abs": 294.5564880371094,
+      "rmse": 4.614221839008816
+    },
+    "theta0_vs_sfclay_in_th_phy": {
+      "bias": 4.584931284473557,
+      "count": 10494,
+      "max_abs": 5.490148027499686,
+      "ref_max_abs": 307.3968505859375,
+      "rmse": 4.596847297193302
+    },
+    "u0_vs_sfclay_in_u_phy": {
+      "bias": -5.420623089793706e-10,
+      "count": 10494,
+      "max_abs": 7.152557373046875e-07,
+      "ref_max_abs": 6.306147575378418,
+      "rmse": 6.011266689369848e-08
+    },
+    "v0_vs_sfclay_in_v_phy": {
+      "bias": -5.168245676837468e-10,
+      "count": 10494,
+      "max_abs": 7.152557373046875e-07,
+      "ref_max_abs": 6.071907997131348,
+      "rmse": 1.2872511375286432e-07
+    }
+  },
+  "created_utc": "2026-06-10T02:39:22.759401+00:00",
+  "host": "enric-battlestation",
+  "later_handoff_metrics": {
+    "mynn_driver_in_tsk_vs_sfclay_in_tsk": {
+      "bias": 0.07544341686227696,
+      "count": 10494,
+      "max_abs": 8.344940185546875,
+      "ref_max_abs": 304.15545654296875,
+      "rmse": 1.1131824623285715
+    }
+  },
+  "oracle": {
+    "meta": {
+      "grid_id": 2,
+      "itimestep": 1,
+      "ni": 159,
+      "nj": 66,
+      "nk": 44,
+      "scheme": "sfclay_mynn",
+      "tag": "in"
+    },
+    "sidecar": "/tmp/wrf_gpu2_step1_tsk_znt_sourcing_fix/wrf_truth_surface/surface_mynn/sfclay_mynn_in.sidecar.txt",
+    "status": "REUSED_EXISTING"
+  },
+  "paths": {
+    "landuse_tbl": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run/LANDUSE.TBL",
+    "surface_oracle": "/tmp/wrf_gpu2_step1_tsk_znt_sourcing_fix/wrf_truth_surface/surface_mynn",
+    "wrf_run": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run",
+    "wrfinput_d02": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run/wrfinput_d02"
+  },
+  "ranked_findings": [
+    {
+      "evidence": {
+        "tsk": {
+          "bias": 0.0,
+          "count": 10494,
+          "max_abs": 0.0,
+          "ref_max_abs": 304.15545654296875,
+          "rmse": 0.0
+        },
+        "wrf_source": "module_physics_init.F landuse_init sets Z0=SFZ0/100 and ZNT=Z0 for MODIFIED_IGBP_MODIS_NOAH; direct wrfinput ZNT/Z0 are absent.",
+        "znt": {
+          "bias": 7.74431676662237e-12,
+          "count": 10494,
+          "max_abs": 1.1920928910669204e-08,
+          "ref_max_abs": 0.800000011920929,
+          "rmse": 8.108127886677328e-10
+        }
+      },
+      "hypothesis": "Step-1 pre-sfclay TSK/ZNT surface-source mismatch is the blocker.",
+      "rank": 1,
+      "status": "FIXED"
+    },
+    {
+      "evidence": {
+        "pressure": {
+          "bias": 15.088548366923957,
+          "count": 10494,
+          "max_abs": 292.8203125,
+          "ref_max_abs": 101727.03125,
+          "rmse": 45.931279429597595
+        },
+        "temperature": {
+          "bias": 4.6012878004310345,
+          "count": 10494,
+          "max_abs": 5.521345498302992,
+          "ref_max_abs": 294.5564880371094,
+          "rmse": 4.614221839008816
+        },
+        "theta": {
+          "bias": 4.584931284473557,
+          "count": 10494,
+          "max_abs": 5.490148027499686,
+          "ref_max_abs": 307.3968505859375,
+          "rmse": 4.596847297193302
+        },
+        "u_v_qv_are_bounded": {
+          "qv": {
+            "bias": 2.6014649627681093e-11,
+            "count": 10494,
+            "max_abs": 4.9845645343910006e-08,
+            "ref_max_abs": 0.011706835590302944,
+            "rmse": 1.1351633710397017e-08
+          },
+          "u": {
+            "bias": -5.420623089793706e-10,
+            "count": 10494,
+            "max_abs": 7.152557373046875e-07,
+            "ref_max_abs": 6.306147575378418,
+            "rmse": 6.011266689369848e-08
+          },
+          "v": {
+            "bias": -5.168245676837468e-10,
+            "count": 10494,
+            "max_abs": 7.152557373046875e-07,
+            "ref_max_abs": 6.071907997131348,
+            "rmse": 1.2872511375286432e-07
+          }
+        }
+      },
+      "hypothesis": "Remaining sfclay mismatch is in non-TSK/ZNT thermodynamic column inputs before SFCLAY_mynn.",
+      "rank": 2,
+      "status": "BLOCKING"
+    },
+    {
+      "evidence": {
+        "mynn_driver_in_tsk_vs_sfclay_in_tsk": {
+          "bias": 0.07544341686227696,
+          "count": 10494,
+          "max_abs": 8.344940185546875,
+          "ref_max_abs": 304.15545654296875,
+          "rmse": 1.1131824623285715
+        }
+      },
+      "hypothesis": "The prior TSK residual was observed at the MYNN-driver/PBL handoff, not at SFCLAY_mynn input.",
+      "rank": 3,
+      "status": "LATER_THAN_SFCLAY_INPUT"
+    }
+  ],
+  "source_metrics": {
+    "landuse_table_mavail_vs_sfclay_in_mavail": {
+      "bias": -3.6727514258377196e-10,
+      "count": 10494,
+      "max_abs": 1.1920928966180355e-08,
+      "ref_max_abs": 1.0,
+      "rmse": 1.832933877503477e-09
+    },
+    "landuse_table_znt_vs_sfclay_in_znt": {
+      "bias": 7.74431676662237e-12,
+      "count": 10494,
+      "max_abs": 1.1920928910669204e-08,
+      "ref_max_abs": 0.800000011920929,
+      "rmse": 8.108127886677328e-10
+    },
+    "old_surrogate_mavail_vs_sfclay_in_mavail": {
+      "bias": -0.003852566383773369,
+      "count": 10494,
+      "max_abs": 0.24250489845871925,
+      "ref_max_abs": 1.0,
+      "rmse": 0.02622224764230503
+    },
+    "old_surrogate_znt_vs_sfclay_in_znt": {
+      "bias": -0.006669429186187499,
+      "count": 10494,
+      "max_abs": 0.7737602195739746,
+      "ref_max_abs": 0.800000011920929,
+      "rmse": 0.0601094895278328
+    },
+    "state_mavail_vs_sfclay_in_mavail": {
+      "bias": -3.6727514258377196e-10,
+      "count": 10494,
+      "max_abs": 1.1920928966180355e-08,
+      "ref_max_abs": 1.0,
+      "rmse": 1.832933877503477e-09
+    },
+    "state_tsk_vs_sfclay_in_tsk": {
+      "bias": 0.0,
+      "count": 10494,
+      "max_abs": 0.0,
+      "ref_max_abs": 304.15545654296875,
+      "rmse": 0.0
+    },
+    "state_ust_vs_sfclay_in_ust": {
+      "bias": -9.999999747378752e-05,
+      "count": 10494,
+      "max_abs": 9.999999747378752e-05,
+      "ref_max_abs": 9.999999747378752e-05,
+      "rmse": 9.999999747378752e-05
+    },
+    "state_znt_vs_sfclay_in_znt": {
+      "bias": 7.74431676662237e-12,
+      "count": 10494,
+      "max_abs": 1.1920928910669204e-08,
+      "ref_max_abs": 0.800000011920929,
+      "rmse": 8.108127886677328e-10
+    },
+    "state_znt_vs_sfclay_in_znt_land": {
+      "bias": 7.382671547708361e-11,
+      "count": 768,
+      "max_abs": 1.1920928910669204e-08,
+      "ref_max_abs": 0.800000011920929,
+      "rmse": 2.9971505344832828e-09
+    },
+    "state_znt_vs_sfclay_in_znt_water": {
+      "bias": 2.526212488436659e-12,
+      "count": 9726,
+      "max_abs": 2.526212488436659e-12,
+      "ref_max_abs": 9.999999747378752e-05,
+      "rmse": 2.5262124884366587e-12
+    }
+  },
+  "status": "TSK_ZNT_SOURCE_FIXED_NEXT_BLOCKER_THERMODYNAMIC_COLUMN_INPUTS",
+  "strict_step1_metric": {
+    "bias": 0.07687194225377524,
+    "count": 442112,
+    "max_abs": 1497.6112467075195,
+    "nonfinite_diff_count": 0,
+    "p95": 2.316572103131588,
+    "p99": 37.60009995324713,
+    "rmse": 13.252694871222973,
+    "shape": [
+      44,
+      66,
+      159
+    ],
+    "status": "OK",
+    "worst_candidate": -2457.5830078125,
+    "worst_mismatch_fortran": {
+      "i": 66,
+      "j": 37,
+      "k": 3
+    },
+    "worst_reference": -959.9717611049804
+  },
+  "surface_output_metrics": {
+    "diag_br_vs_sfclay_out_br": {
+      "bias": 1.5271097563956677,
+      "count": 10494,
+      "max_abs": 6.0,
+      "ref_max_abs": 2.0,
+      "rmse": 2.3601122412625113
+    },
+    "diag_hfx_vs_sfclay_out_hfx": {
+      "bias": -13.644397616951785,
+      "count": 10494,
+      "max_abs": 160.6217929042739,
+      "ref_max_abs": 382.4698486328125,
+      "rmse": 21.187735409878695
+    },
+    "diag_qfx_vs_sfclay_out_qfx": {
+      "bias": -1.5820055876514022e-05,
+      "count": 10494,
+      "max_abs": 2.7273259067191847e-05,
+      "ref_max_abs": 7.490280404454097e-05,
+      "rmse": 1.745930070321283e-05
+    },
+    "diag_qsfc_vs_sfclay_out_qsfc": {
+      "bias": 4.534337477086274e-05,
+      "count": 10494,
+      "max_abs": 7.209919621102567e-05,
+      "ref_max_abs": 0.021291911602020264,
+      "rmse": 4.753049564986857e-05
+    },
+    "diag_ust_vs_sfclay_out_ust": {
+      "bias": -0.025506156100444318,
+      "count": 10494,
+      "max_abs": 0.14784556445623043,
+      "ref_max_abs": 0.3369980752468109,
+      "rmse": 0.028969744732629553
+    },
+    "diag_znt_vs_sfclay_out_znt": {
+      "bias": 5.125163650445078e-07,
+      "count": 10494,
+      "max_abs": 1.0323670735561753e-06,
+      "ref_max_abs": 0.800000011920929,
+      "rmse": 5.94011849198292e-07
+    }
+  },
+  "wrf_patch": {
+    "commands": [
+      [
+        "git",
+        "diff",
+        "--no-index",
+        "--",
+        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F",
+        "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F"
+      ],
+      [
+        "git",
+        "diff",
+        "--no-index",
+        "--",
+        "/dev/null",
+        "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_wrfgpu2_oracle.F"
+      ]
+    ],
+    "exists": true,
+    "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff",
+    "size_bytes": 28078
+  }
+}
