@@ -28,6 +28,7 @@ uniformly).
 
 from __future__ import annotations
 
+import calendar
 from collections import Counter
 from dataclasses import dataclass, replace as dataclass_replace
 from datetime import datetime, timedelta, timezone
@@ -40,6 +41,7 @@ import numpy as np
 
 from gpuwrf.contracts.grid import DomainHierarchy, DomainNest
 from gpuwrf.integration.d02_replay import build_replay_case
+from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
 from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.gwdo_static import load_gwdo_statics
 from gpuwrf.io.wrfout_writer import write_wrfout_netcdf
@@ -50,7 +52,11 @@ from gpuwrf.runtime.domain_tree import (
     run_operational_domain_tree,
     with_live_child_boundary_config,
 )
-from gpuwrf.runtime.operational_mode import OperationalNamelist
+from gpuwrf.runtime.operational_mode import (
+    OperationalNamelist,
+    _initial_carry_for_run,
+    noahmp_initial_rad,
+)
 
 
 __all__ = [
@@ -253,6 +259,43 @@ def _domain_cu_physics(run, domain: str) -> int:
     return _domain_physics_int(run, "cu_physics", domain, 0)
 
 
+# Land-surface options this standalone nested pipeline can wire: 4 = Noah-MP
+# (the prognostic land path CPU truth runs) and 0 = no LSM selected (legacy
+# prescribed bulk surface). Anything else fails closed -- silently falling back
+# to the bulk path freezes land TSK for the whole run on every domain
+# (proofs/v014/canary_h24_residual_adjudication.md, the v0.14 release blocker).
+_SUPPORTED_NESTED_LAND_OPTIONS = (0, 4)
+
+
+def _domain_sf_surface_physics(run, domain: str) -> int:
+    """Per-domain ``sf_surface_physics``; fail closed on unsupported land options."""
+
+    option = _domain_physics_int(run, "sf_surface_physics", domain, 0)
+    if option not in _SUPPORTED_NESTED_LAND_OPTIONS:
+        raise ValueError(
+            f"{domain}: sf_surface_physics={option} is not wired in the standalone "
+            "nested pipeline (supported: 0 = prescribed bulk surface, 4 = Noah-MP). "
+            "Refusing the silent bulk-surface fallback: it leaves land TSK frozen "
+            "for the whole run (proofs/v014/canary_h24_residual_adjudication.md)."
+        )
+    return option
+
+
+def _wrf_julian_yearlen(run_start: datetime) -> tuple[float, float]:
+    """WRF Noah-MP clock ``(julian, yearlen)`` at the run start.
+
+    WRF ``grid%julian`` is the 0-based FRACTIONAL day-of-year: ESMF
+    ``dayOfYear_r8 - 1.0`` (frame/module_domain.F:2165), NOT ``tm_yday``
+    (proofs/v014/noahmp_step1_closure.md). ``yearlen`` honours leap years.
+    """
+
+    julian = float(run_start.timetuple().tm_yday - 1) + (
+        run_start.hour * 3600.0 + run_start.minute * 60.0 + run_start.second
+    ) / 86400.0
+    yearlen = 366.0 if calendar.isleap(run_start.year) else 365.0
+    return julian, yearlen
+
+
 def _nest_edge(run, child: str, parent: str, *, feedback: bool = False) -> DomainNest:
     grid = run.grid(child)
     return DomainNest(
@@ -268,8 +311,23 @@ def _nest_edge(run, child: str, parent: str, *, feedback: bool = False) -> Domai
 def _load_domains(
     config: NestedPipelineConfig,
     names: tuple[str, ...],
-) -> tuple[DomainHierarchy, dict[str, DomainBundle], dict[str, Any], datetime, dict[str, float]]:
-    """Load every domain standalone: d01 LBC from wrfbdy, children IC-only (live LBC)."""
+) -> tuple[
+    DomainHierarchy,
+    dict[str, DomainBundle],
+    dict[str, Any],
+    datetime,
+    dict[str, float],
+    dict[str, Any],
+]:
+    """Load every domain standalone: d01 LBC from wrfbdy, children IC-only (live LBC).
+
+    Also returns the per-domain INITIAL ``OperationalCarry`` dict.  The carries are
+    built here (with the same ``_initial_carry_for_run`` the domain-tree cold start
+    uses, so the non-Noah-MP path is bit-identical) because the Noah-MP land carry
+    must be seeded BEFORE the first ``_advance_chunk`` scan: the carry pytree
+    structure is frozen across scan iterations, so a ``None -> NoahMPLandState``
+    promotion inside the run is impossible by construction.
+    """
 
     run_dir = Path(config.input_dir)
     # Build the root case first so we share its Gen2Run for namelist/grid metadata.
@@ -286,6 +344,7 @@ def _load_domains(
     hierarchy = DomainHierarchy.from_edges(names, tuple(edges), max_dom=max(5, len(names)))
 
     bundles: dict[str, DomainBundle] = {}
+    initial_carries: dict[str, Any] = {}
     loaded_cases: dict[str, Any] = {names[0]: root_case}
     meta: dict[str, Any] = {"domains": {}, "edges": [edge.__dict__ for edge in edges]}
 
@@ -343,6 +402,26 @@ def _load_domains(
             if gwdo_statics is None:
                 gwd_opt = 0
 
+        # Land surface per nested domain (v0.14 release-blocker fix): read this
+        # domain's &physics sf_surface_physics and, when 4, wire the SAME
+        # prognostic Noah-MP coupler the single-domain/TOST drivers run
+        # (proofs/noahmp/s6b_activate_validate.py, proofs/m20/tost_noahmp_runner.py).
+        # Before this, the nested namelist never set use_noahmp, so the land tile
+        # stayed on the prescribed bulk path and land TSK was FROZEN for the whole
+        # run on every domain (proofs/v014/canary_h24_residual_adjudication.md).
+        # Unsupported land options fail closed in _domain_sf_surface_physics.
+        sf_surface_physics = _domain_sf_surface_physics(run, name)
+        noahmp_land = None
+        noahmp_init_meta = None
+        if sf_surface_physics == 4:
+            noahmp_land, noahmp_static, noahmp_init_meta = build_noahmp_land_state(
+                run_dir, name
+            )
+            noahmp_energy_params, noahmp_rad_params, noahmp_nroot = build_noahmp_params(
+                noahmp_static
+            )
+            noahmp_julian, noahmp_yearlen = _wrf_julian_yearlen(run_start)
+
         # Seed the transitional legacy aliases (p/ph/mu) from the authoritative totals,
         # matching the single-domain operational path.
         state = case.state.replace(
@@ -360,8 +439,32 @@ def _load_domains(
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
         )
+        if noahmp_land is not None:
+            namelist = dataclass_replace(
+                namelist,
+                use_noahmp=True,
+                sf_surface_physics=4,
+                noahmp_static=noahmp_static,
+                noahmp_energy_params=noahmp_energy_params,
+                noahmp_rad_params=noahmp_rad_params,
+                noahmp_nroot=noahmp_nroot,
+                noahmp_julian=noahmp_julian,
+                noahmp_yearlen=noahmp_yearlen,
+            )
         if name == names[0]:
             namelist = _root_boundary_cadence_override(namelist, case.metadata)
+        # Initial carry: identical to the domain-tree cold start for the bulk path
+        # (same _initial_carry_for_run on the same state/namelist); under Noah-MP the
+        # prognostic land carry plus the REAL t=0 held surface radiation are seeded
+        # NOW so the scan carry pytree is structurally stable from step 1 (mirrors
+        # the proven s6b/TOST carry seeding; nocturnal LWDN cold-start mitigation).
+        carry = _initial_carry_for_run(state, namelist)
+        if noahmp_land is not None:
+            carry = carry.replace(
+                noahmp_land=noahmp_land,
+                noahmp_rad=noahmp_initial_rad(carry.state, namelist, land_state=noahmp_land),
+            )
+        initial_carries[name] = carry
         bundles[name] = DomainBundle(
             name=name, state=state, namelist=namelist, grid=case.grid, metrics=case.metrics
         )
@@ -386,12 +489,89 @@ def _load_domains(
                 "gwd_opt": int(namelist.gwd_opt),
                 "gwdo_statics_loaded": namelist.gwdo_statics is not None,
             },
+            "land_surface": {
+                "sf_surface_physics": int(sf_surface_physics),
+                "use_noahmp": bool(namelist.use_noahmp),
+                "noahmp_static_loaded": namelist.noahmp_static is not None,
+                "noahmp_energy_params_loaded": namelist.noahmp_energy_params is not None,
+                "noahmp_rad_params_loaded": namelist.noahmp_rad_params is not None,
+                "noahmp_land_seeded": noahmp_land is not None,
+                "noahmp_n_land_cells": (
+                    int(noahmp_init_meta["n_land_cells"]) if noahmp_init_meta else None
+                ),
+                "noahmp_julian": float(namelist.noahmp_julian),
+                "noahmp_yearlen": float(namelist.noahmp_yearlen),
+                "provenance": (
+                    noahmp_init_meta.get("wrfinput_file") if noahmp_init_meta else None
+                ),
+            },
         }
-    return hierarchy, bundles, meta, run_start, dt_by_domain
+    return hierarchy, bundles, meta, run_start, dt_by_domain, initial_carries
+
+
+def _noahmp_surface_diagnostics_for_output(
+    state: Any,
+    namelist: OperationalNamelist,
+    run_start: datetime,
+    *,
+    lead_seconds: float,
+    noahmp_land: Any,
+    noahmp_rad: Any,
+) -> dict[str, np.ndarray] | None:
+    """Writer surface map with the ACTIVE Noah-MP carry threaded into the overlay.
+
+    Mirrors ``daily_pipeline._surface_diagnostics_for_output`` but passes the
+    EVOLVED ``noahmp_land``/``noahmp_rad`` to ``compute_m9_diagnostics`` so the
+    land HFX/LH/TSK and the LSM 2-m T2 come from the prognostic Noah-MP overlay
+    and SWDOWN/GLW report the held WRF-cadence radiation (the L1 COSZEN-phase
+    fix).  Deliberately NOT best-effort: a wiring error in the active Noah-MP
+    output path must fail at the first hourly output, not silently degrade to
+    the writer's raw lowest-level fallbacks (which would resurrect the frozen
+    land-surface record this sprint removes).
+    """
+
+    import jax  # noqa: PLC0415 -- lazy: keeps module import light (mirrors writer).
+
+    from gpuwrf.integration.daily_pipeline import _M9_OUTPUT_FIELDS  # noqa: PLC0415
+    from gpuwrf.runtime.operational_mode import (  # noqa: PLC0415
+        compute_m9_diagnostics,
+        surface_layer_diagnostics,
+    )
+
+    clock_namelist = namelist
+    if getattr(namelist, "time_utc", None) is None:
+        clock_namelist = dataclass_replace(namelist, time_utc=run_start)
+    m9 = compute_m9_diagnostics(
+        state,
+        clock_namelist,
+        lead_seconds,
+        noahmp_land=noahmp_land,
+        noahmp_rad=noahmp_rad,
+    )
+    # Q2 stays the bulk surface-layer diagnostic (matches the single-domain path).
+    try:
+        q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
+    except Exception:  # noqa: BLE001 -- Q2 is auxiliary; the writer keeps its default.
+        q2 = None
+    out: dict[str, np.ndarray] = {}
+    for wrf_name, attr in _M9_OUTPUT_FIELDS:
+        value = q2 if wrf_name == "Q2" else (getattr(m9, attr, None) if attr else None)
+        if value is None:
+            continue
+        out[wrf_name] = np.asarray(jax.device_get(value))
+    return out or None
 
 
 class _PerDomainWrfoutWriter:
-    """Output callback: write one wrfout per domain at the hourly cadence."""
+    """Output callback: write one wrfout per domain at the hourly cadence.
+
+    Declares ``wants_carry`` so the domain-tree runner hands it the full
+    ``OperationalCarry``: under Noah-MP the writer diagnostics must read the
+    EVOLVED land carry (``carry.noahmp_land``) and the held surface radiation
+    (``carry.noahmp_rad``), not just the post-step ``State``.
+    """
+
+    wants_carry = True
 
     def __init__(
         self,
@@ -431,15 +611,27 @@ class _PerDomainWrfoutWriter:
             if diagnostics:
                 self.writer_diagnostics[domain] = diagnostics
 
-    def __call__(self, name: str, own_step: int, state: Any) -> dict[str, Any]:
+    def __call__(self, name: str, own_step: int, carry: Any) -> dict[str, Any]:
+        state = getattr(carry, "state", carry)
         cadence = int(self.output_cadence_steps[name])
         lead_h = int(round(int(own_step) / cadence))
         valid_time = self.run_start + timedelta(hours=lead_h)
         namelist = self.bundles[name].namelist
         grid = self.bundles[name].grid
-        surface_diagnostics = self._surface_diagnostics_for_output(
-            state, namelist, self.run_start, lead_seconds=float(lead_h) * 3600.0
-        )
+        noahmp_land = getattr(carry, "noahmp_land", None)
+        if bool(getattr(namelist, "use_noahmp", False)) and noahmp_land is not None:
+            surface_diagnostics = _noahmp_surface_diagnostics_for_output(
+                state,
+                namelist,
+                self.run_start,
+                lead_seconds=float(lead_h) * 3600.0,
+                noahmp_land=noahmp_land,
+                noahmp_rad=getattr(carry, "noahmp_rad", None),
+            )
+        else:
+            surface_diagnostics = self._surface_diagnostics_for_output(
+                state, namelist, self.run_start, lead_seconds=float(lead_h) * 3600.0
+            )
         diagnostics = self._merge_output_diagnostics(
             self.writer_diagnostics.get(name), surface_diagnostics
         )
@@ -506,7 +698,9 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         raise ValueError("hours must be positive")
 
     overall_start = time.perf_counter()
-    hierarchy, bundles, meta, run_start, dt_by_domain = _load_domains(config, names)
+    hierarchy, bundles, meta, run_start, dt_by_domain, initial_carries = _load_domains(
+        config, names
+    )
 
     root = names[0]
     root_dt = dt_by_domain[root]
@@ -549,7 +743,10 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # live parent->child boundary coupling.
     forecast_start = time.perf_counter()
     root_seg_steps = int(output_cadence[root])  # one wrfout hour of root steps
-    carries: dict[str, Any] | None = None
+    # Pre-seeded initial carries from _load_domains: bit-identical to the former
+    # domain-tree cold start for the bulk path, and REQUIRED under Noah-MP so the
+    # land carry is structurally present from the very first scan segment.
+    carries: dict[str, Any] | None = initial_carries
     own_steps: dict[str, int] = {name: 0 for name in names}
     events: list[Any] = []
     final_states: dict[str, Any] = {}
