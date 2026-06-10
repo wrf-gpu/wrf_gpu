@@ -55,6 +55,34 @@ returns a strong stop/fix recommendation earlier. The h24 watcher will produce
 `canary_d02_h24_intermediate_grid_compare.*`; a final 72h notifier is armed to
 hand Fable the complete divergence trajectory if the run reaches the end.
 
+Update 2026-06-10 16:15 WEST: Fable high root-caused the Canary h08/h10/h18/h24
+field drift and the manager accepted the fix after rerunning gates. Verdict:
+`LBC_CADENCE_ROOT_CAUSE_PROVEN_FIX_GATE_PASS`. Root cause: standalone root d01
+decoded 6-hourly `wrfbdy_d01` leaves (`interval_seconds=21600`) but
+`interpolate_boundary_leaf` walked them at the hourly replay cadence
+(`update_cadence_s=3600`), consuming forcing 6x too fast and then freezing at
+the last wrfbdy record. This is a real native-init lateral-boundary bug, not a
+comparator/writer/tolerance issue. The pre-fix Canary run was intentionally
+stopped at h26 with `gpu_rc=143`; its h24 compare remained `FAIL`, and it is
+not release evidence. Accepted artifacts:
+
+- `.agent/reviews/2026-06-10-v014-fable-canary-h08-drift-analysis.md`
+- `proofs/v014/lbc_cadence_root_cause.{py,json,md}`
+- pre-fix run root:
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z`
+
+Production fix: `src/gpuwrf/integration/nested_pipeline.py` applies a root-only
+boundary cadence override from `boundary_meta["interval_seconds"]`; children
+keep live-nest parent cadence. `src/gpuwrf/integration/d02_replay.py`
+synthesizes the terminal wrfbdy leaf level from the last `_BT*` tendency so
+66-72h interpolates instead of clamping. Manager rerun gates: proof script
+`rc=0`, JSON valid, `py_compile` green, `git diff --check` green, and focused
+pytest `23 passed, 1 skipped`. Do not launch Switzerland GPU before this fix is
+merged; Switzerland's 10800 s boundary interval would hit the same bug 3x-fast.
+Next gate: relaunch Canary 72h from the fixed commit and expect `MU` drift to
+collapse while a separate quasi-static GPU PSFC vapor-light floor of about
+`-210 Pa` may remain as the next dycore lane if confirmed.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed

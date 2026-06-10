@@ -192,6 +192,34 @@ def _make_namelist(
     return namelist
 
 
+def _root_boundary_cadence_override(
+    namelist: OperationalNamelist, case_metadata: dict[str, Any]
+) -> OperationalNamelist:
+    """Match the root-domain LBC interpolation cadence to its wrfbdy interval.
+
+    The standalone root's ``*_bdy`` leaves carry ONE time level per wrfbdy
+    forcing interval (``interval_seconds``, e.g. 21600 s for 6-hourly AIFS/GFS),
+    NOT one per hour. ``interpolate_boundary_leaf`` walks the leaf time axis at
+    ``boundary_config.update_cadence_s``; leaving the hourly replay default
+    (3600 s) makes the run consume the wrfbdy levels 6x too fast and then clamp
+    frozen on the last level (proofs/v014/lbc_cadence_root_cause: the v0.14
+    Canary 72h PSFC/MU/P/PH drift). WRF advances each interval linearly with the
+    ``_BT*`` tendency over bdyfrq == interval_seconds; linear interpolation
+    between consecutive level values at that same cadence is the identical
+    forcing.
+    """
+
+    interval_s = (case_metadata.get("boundary") or {}).get("interval_seconds")
+    if not interval_s:
+        return namelist
+    return dataclass_replace(
+        namelist,
+        boundary_config=dataclass_replace(
+            namelist.boundary_config, update_cadence_s=float(interval_s)
+        ),
+    )
+
+
 def _domain_int(run, group: str, key: str, domain: str, default: int = 0) -> int:
     """Per-domain integer namelist value from ``group`` (max-dom list or scalar)."""
 
@@ -332,6 +360,8 @@ def _load_domains(
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
         )
+        if name == names[0]:
+            namelist = _root_boundary_cadence_override(namelist, case.metadata)
         bundles[name] = DomainBundle(
             name=name, state=state, namelist=namelist, grid=case.grid, metrics=case.metrics
         )
