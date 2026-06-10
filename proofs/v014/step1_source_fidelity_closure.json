@@ -1,0 +1,1156 @@
+{
+  "commands": {
+    "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
+    "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_source_fidelity_closure.py"
+  },
+  "created_utc": "2026-06-10T00:09:20.520396+00:00",
+  "current_jax_source_leaf_mode": {
+    "derived_candidate_summaries": {
+      "current_jax_dry_t_tendf": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 271.15051023443414,
+        "max_abs": 271.15051023443414,
+        "mean": 0.0775516808494346,
+        "min": -41.83217038037702,
+        "nonzero_count": 451242,
+        "rms": 4.033291061494072,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "jax_physics_state_delta_mass_tendf": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 9.28495502705573e-10,
+        "max_abs": 9.28495502705573e-10,
+        "mean": 1.2323350477606548e-13,
+        "min": -9.280364624923246e-10,
+        "nonzero_count": 18774,
+        "rms": 1.8364597404484637e-10,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_conv_expected_moist_formula": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 2242.130973620906,
+        "max_abs": 2457.5830977761507,
+        "mean": 0.07221553522623346,
+        "min": -2457.5830977761507,
+        "nonzero_count": 442110,
+        "rms": 21.208695089236528,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_update_expected_pre_plus_active_rth": {
+        "count": 461736,
+        "finite_count": 461736,
+        "max": 2139.64990234375,
+        "max_abs": 2525.279541015625,
+        "mean": -0.294591046657098,
+        "min": -2525.279541015625,
+        "nonzero_count": 461733,
+        "rms": 20.844678742176747,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      }
+    },
+    "primary_capture": {
+      "label": "step1_source_fidelity_closure_current",
+      "namelist": {
+        "acoustic_substeps": 10,
+        "bl_pbl_physics": 5,
+        "cu_physics": 0,
+        "diff_6th_opt": 2,
+        "diff_opt": 0,
+        "dt_s": 6.0,
+        "force_fp64": true,
+        "km_opt": 0,
+        "moist_adv_opt": 0,
+        "mp_physics": 8,
+        "rad_rk_tendf": 1,
+        "radiation_cadence_steps": 300,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "scalar_adv_opt": 0,
+        "sf_sfclay_physics": 5,
+        "use_flux_advection": true
+      },
+      "run_radiation": false,
+      "status": "JAX_TENDENCY_BOUNDARIES_READY"
+    },
+    "primary_metrics": {
+      "after_conv_vs_jax_dry_t_tendf": {
+        "bias": -0.0033160463086924397,
+        "count": 442112,
+        "max_abs": 2457.578397008898,
+        "nonfinite_diff_count": 0,
+        "p95": 2.3216834532331547,
+        "p99": 36.450926916847145,
+        "rmse": 21.364579991779515,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2457.5830078125,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -0.004610803602028136
+      },
+      "after_update_vs_jax_dry_t_tendf": {
+        "bias": -0.3678111172412673,
+        "count": 442112,
+        "max_abs": 2525.274930212023,
+        "nonfinite_diff_count": 0,
+        "p95": 2.309627724947749,
+        "p99": 14.100935377640905,
+        "rmse": 20.928738654486033,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2525.279541015625,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -0.004610803602028136
+      },
+      "wrf_active_rth_vs_jax_source_leaf": {
+        "bias": -0.28907409541776086,
+        "count": 442112,
+        "max_abs": 2525.279541015625,
+        "nonfinite_diff_count": 0,
+        "p95": 2.3096532344818104,
+        "p99": 13.521042842864995,
+        "rmse": 21.24910416291021,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2525.279541015625,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": 0.0
+      }
+    }
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "gpu_device_count": 0,
+    "jax_default_backend": "cpu",
+    "jax_devices": [
+      "cpu:0"
+    ],
+    "jax_import_error": null,
+    "jax_version": "0.10.0",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "forced_radiation_falsifier": {
+    "capture": {
+      "label": "step1_source_fidelity_closure_forced_radiation",
+      "namelist": {
+        "acoustic_substeps": 10,
+        "bl_pbl_physics": 5,
+        "cu_physics": 0,
+        "diff_6th_opt": 2,
+        "diff_opt": 0,
+        "dt_s": 6.0,
+        "force_fp64": true,
+        "km_opt": 0,
+        "moist_adv_opt": 0,
+        "mp_physics": 8,
+        "rad_rk_tendf": 1,
+        "radiation_cadence_steps": 1,
+        "rk_order": 3,
+        "run_boundary": true,
+        "run_physics": true,
+        "scalar_adv_opt": 0,
+        "sf_sfclay_physics": 5,
+        "use_flux_advection": true
+      },
+      "run_radiation": true,
+      "status": "JAX_TENDENCY_BOUNDARIES_READY"
+    },
+    "metrics": {
+      "after_conv_vs_jax_dry_t_tendf": {
+        "bias": 0.7905750965042597,
+        "count": 442112,
+        "max_abs": 2454.113955669592,
+        "nonfinite_diff_count": 0,
+        "p95": 1.8084310127747232,
+        "p99": 49.66243740980215,
+        "rmse": 21.789083442799004,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2457.5830078125,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -3.4690521429081214
+      },
+      "derived_candidate_summaries": {
+        "current_jax_dry_t_tendf": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 294.9429185099615,
+          "max_abs": 294.9429185099615,
+          "mean": -0.717457804606134,
+          "min": -41.71186336815376,
+          "nonzero_count": 461736,
+          "rms": 5.099839449226463,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "jax_physics_state_delta_mass_tendf": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 9.28495502705573e-10,
+          "max_abs": 9.28495502705573e-10,
+          "mean": 1.2323350477606548e-13,
+          "min": -9.280364624923246e-10,
+          "nonzero_count": 18774,
+          "rms": 1.8364597404484637e-10,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "wrf_conv_expected_moist_formula": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2242.130973620906,
+          "max_abs": 2457.5830977761507,
+          "mean": 0.07221553522623346,
+          "min": -2457.5830977761507,
+          "nonzero_count": 442110,
+          "rms": 21.208695089236528,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "wrf_update_expected_pre_plus_active_rth": {
+          "count": 461736,
+          "finite_count": 461736,
+          "max": 2139.64990234375,
+          "max_abs": 2525.279541015625,
+          "mean": -0.294591046657098,
+          "min": -2525.279541015625,
+          "nonzero_count": 461733,
+          "rms": 20.844678742176747,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      }
+    }
+  },
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n"
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "8d4117c47a54dc270b08703cecb1ca8bc1ff2ce5\n"
+    },
+    "status_short": {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_dry_source_leaf_fix.py\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_source_fidelity_closure.json\n?? proofs/v014/step1_source_fidelity_closure.md\n?? proofs/v014/step1_source_fidelity_closure.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
+    }
+  },
+  "mynn_leaf_probe": {
+    "available_input_state_metrics": {
+      "P_after_calculate_vs_jax_pbl_entry": {
+        "bias": -4.542515881156811e-06,
+        "count": 442112,
+        "max_abs": 0.0390625,
+        "nonfinite_diff_count": 0,
+        "p95": 0.015625,
+        "p99": 0.0234375,
+        "rmse": 0.005006926989162881,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 1806.4921875,
+        "worst_mismatch_fortran": {
+          "i": 137,
+          "j": 2,
+          "k": 1
+        },
+        "worst_reference": 1806.453125
+      },
+      "QV_OLD_after_calculate_vs_jax_pbl_entry": {
+        "bias": -5.778861223270438e-12,
+        "count": 442112,
+        "max_abs": 5.969281098756885e-08,
+        "nonfinite_diff_count": 0,
+        "p95": 1.4901161193847656e-08,
+        "p99": 1.9557774070394496e-08,
+        "rmse": 4.715057598891387e-09,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 0.01073381211608648,
+        "worst_mismatch_fortran": {
+          "i": 11,
+          "j": 6,
+          "k": 2
+        },
+        "worst_reference": 0.010733871808897467
+      },
+      "T_STATE_after_calculate_vs_jax_pbl_entry": {
+        "bias": 1.1847795898073467e-06,
+        "count": 442112,
+        "max_abs": 5.788684885033035e-05,
+        "nonfinite_diff_count": 0,
+        "p95": 2.9171491621582378e-05,
+        "p99": 3.695624680329247e-05,
+        "rmse": 1.5519828801619384e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 180.8074798583984,
+        "worst_mismatch_fortran": {
+          "i": 49,
+          "j": 62,
+          "k": 43
+        },
+        "worst_reference": 180.80742197154956
+      }
+    },
+    "namelist": {
+      "bl_pbl_physics": 5,
+      "dt_s": 6.0,
+      "mp_physics": 8,
+      "sf_sfclay_physics": 5
+    },
+    "narrow_missing_wrf_surface": "Exact WRF MYNN driver input columns plus raw post-driver dth1/dqv1 before module_em mass scaling are not emitted by accepted artifacts.",
+    "note": "WRF part2 truth exposes already mass-coupled RTHBLTEN and aggregate QV_TEND, not the raw MYNN driver RQVBLTEN. JAX values below are mass-coupled from the local MYNN source leaves for like-unit comparison.",
+    "source_output_metrics": {
+      "jax_mass_coupled_rqvblten_summary": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 0.045505018412171354,
+        "max_abs": 0.045505018412171354,
+        "mean": 8.908944881098809e-05,
+        "min": -0.011133371544265573,
+        "nonzero_count": 432064,
+        "rms": 0.0009190804153610992,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "jax_mass_coupled_rthblten_summary": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 260.83156991819124,
+        "max_abs": 260.83156991819124,
+        "mean": 0.03646094610875577,
+        "min": -40.270729381590726,
+        "nonzero_count": 432055,
+        "rms": 3.910018713933314,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_qv_tend_summary": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 0.4930315017700195,
+        "max_abs": 0.4930315017700195,
+        "mean": 0.000773902520757709,
+        "min": -0.4547699093818665,
+        "nonzero_count": 197585,
+        "rms": 0.009783873469346492,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_qv_tend_vs_jax_mass_coupled_rqvblten": {
+        "bias": 0.0006848130719467211,
+        "count": 442112,
+        "max_abs": 0.4930252087748469,
+        "nonfinite_diff_count": 0,
+        "p95": 1.698942076535858e-05,
+        "p99": 0.044052467069599976,
+        "rmse": 0.009468296715232674,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 0.4930315017700195,
+        "worst_mismatch_fortran": {
+          "i": 72,
+          "j": 33,
+          "k": 3
+        },
+        "worst_reference": 6.292995172595859e-06
+      },
+      "wrf_rthblten_summary": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 2138.7490234375,
+        "max_abs": 2522.90576171875,
+        "mean": 0.3337582953171923,
+        "min": -2522.90576171875,
+        "nonzero_count": 59337,
+        "rms": 20.984261166424478,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_rthblten_vs_jax_mass_coupled_rthblten": {
+        "bias": 0.29729734920843653,
+        "count": 442112,
+        "max_abs": 2522.897969027013,
+        "nonfinite_diff_count": 0,
+        "p95": 0.49622884715411353,
+        "p99": 13.708012238469585,
+        "rmse": 20.846966150942183,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2522.90576171875,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -0.007792691736854582
+      }
+    },
+    "status": "MYNN_LEAF_PROBE_EXECUTED"
+  },
+  "next_boundary": "Emit one WRF MYNN driver hook at Step 1 around module_bl_mynnedmf_driver: input columns/fluxes/turbulence state immediately before mynnedmf, raw dth1/dqv1 immediately after mynnedmf_post_run, and the module_em mass-scaled RTHBLTEN/RQVBLTEN. Then compare that exact boundary to JAX _mynn_column_from_state/step_mynn_pbl_column outputs.",
+  "paths": {
+    "handoff": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "sha256": "63868a265477e0055d6efa63ed9d8ae666d6931c73fb53a783574cf632221c97",
+      "size_bytes": 100140
+    },
+    "prior_dry_source_leaf_fix": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_dry_source_leaf_fix.md",
+      "sha256": "2e4fe62849b9248248c7e0b727b51ef45478813ba16211131a22048b65cf1e8f",
+      "size_bytes": 1616
+    },
+    "prior_part2_split": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split.md",
+      "sha256": "7728c3d57f6080b726b110f0459cf2ef1440b096fd9cd6326d9e0a760a299eb4",
+      "size_bytes": 2012
+    },
+    "sprint_contract": {
+      "exists": true,
+      "is_dir": false,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-10-v014-step1-source-fidelity-closure/sprint-contract.md",
+      "sha256": "734f99e42defa2877a54849a351e33138aaff97dbdea6954d9873ca613d914d1",
+      "size_bytes": 5118
+    },
+    "wrf_truth": {
+      "exists": true,
+      "is_dir": true,
+      "is_file": false,
+      "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth",
+      "sha256": null,
+      "size_bytes": null
+    }
+  },
+  "ranked_findings": [
+    {
+      "evidence": {
+        "available_input_state_metrics": {
+          "P_after_calculate_vs_jax_pbl_entry": {
+            "bias": -4.542515881156811e-06,
+            "count": 442112,
+            "max_abs": 0.0390625,
+            "nonfinite_diff_count": 0,
+            "p95": 0.015625,
+            "p99": 0.0234375,
+            "rmse": 0.005006926989162881,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_candidate": 1806.4921875,
+            "worst_mismatch_fortran": {
+              "i": 137,
+              "j": 2,
+              "k": 1
+            },
+            "worst_reference": 1806.453125
+          },
+          "QV_OLD_after_calculate_vs_jax_pbl_entry": {
+            "bias": -5.778861223270438e-12,
+            "count": 442112,
+            "max_abs": 5.969281098756885e-08,
+            "nonfinite_diff_count": 0,
+            "p95": 1.4901161193847656e-08,
+            "p99": 1.9557774070394496e-08,
+            "rmse": 4.715057598891387e-09,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_candidate": 0.01073381211608648,
+            "worst_mismatch_fortran": {
+              "i": 11,
+              "j": 6,
+              "k": 2
+            },
+            "worst_reference": 0.010733871808897467
+          },
+          "T_STATE_after_calculate_vs_jax_pbl_entry": {
+            "bias": 1.1847795898073467e-06,
+            "count": 442112,
+            "max_abs": 5.788684885033035e-05,
+            "nonfinite_diff_count": 0,
+            "p95": 2.9171491621582378e-05,
+            "p99": 3.695624680329247e-05,
+            "rmse": 1.5519828801619384e-05,
+            "shape": [
+              44,
+              66,
+              159
+            ],
+            "status": "OK",
+            "worst_candidate": 180.8074798583984,
+            "worst_mismatch_fortran": {
+              "i": 49,
+              "j": 62,
+              "k": 43
+            },
+            "worst_reference": 180.80742197154956
+          }
+        },
+        "rqv_or_qv_tend": {
+          "bias": 0.0006848130719467211,
+          "count": 442112,
+          "max_abs": 0.4930252087748469,
+          "nonfinite_diff_count": 0,
+          "p95": 1.698942076535858e-05,
+          "p99": 0.044052467069599976,
+          "rmse": 0.009468296715232674,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 0.4930315017700195,
+          "worst_mismatch_fortran": {
+            "i": 72,
+            "j": 33,
+            "k": 3
+          },
+          "worst_reference": 6.292995172595859e-06
+        },
+        "rthblten": {
+          "bias": 0.29729734920843653,
+          "count": 442112,
+          "max_abs": 2522.897969027013,
+          "nonfinite_diff_count": 0,
+          "p95": 0.49622884715411353,
+          "p99": 13.708012238469585,
+          "rmse": 20.846966150942183,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2522.90576171875,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.007792691736854582
+        },
+        "strict_after_conv_vs_jax": {
+          "bias": -0.0033160463086924397,
+          "count": 442112,
+          "max_abs": 2457.578397008898,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3216834532331547,
+          "p99": 36.450926916847145,
+          "rmse": 21.364579991779515,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.004610803602028136
+        }
+      },
+      "hypothesis": "JAX MYNN driver/kernel source outputs are too weak before dry-source coupling: both mass-coupled RTHBLTEN and qv source are about an order of magnitude below WRF at Step 1.",
+      "rank": 1,
+      "status": "BLOCKING"
+    },
+    {
+      "evidence": {
+        "forced_radiation_after_conv_vs_jax": {
+          "bias": 0.7905750965042597,
+          "count": 442112,
+          "max_abs": 2454.113955669592,
+          "nonfinite_diff_count": 0,
+          "p95": 1.8084310127747232,
+          "p99": 49.66243740980215,
+          "rmse": 21.789083442799004,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -3.4690521429081214
+        },
+        "primary_after_conv_vs_jax": {
+          "bias": -0.0033160463086924397,
+          "count": 442112,
+          "max_abs": 2457.578397008898,
+          "nonfinite_diff_count": 0,
+          "p95": 2.3216834532331547,
+          "p99": 36.450926916847145,
+          "rmse": 21.364579991779515,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -2457.5830078125,
+          "worst_mismatch_fortran": {
+            "i": 66,
+            "j": 37,
+            "k": 3
+          },
+          "worst_reference": -0.004610803602028136
+        },
+        "wrf_rthraten_summary": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 39.80049896240234,
+          "max_abs": 39.80049896240234,
+          "mean": -0.6228323899254602,
+          "min": -12.76959800720215,
+          "nonzero_count": 442109,
+          "rms": 1.510482737622993,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      "hypothesis": "Held RTHRATEN refresh is secondary at Step 1.",
+      "rank": 2,
+      "status": "RANKED_SECONDARY"
+    },
+    {
+      "evidence": {
+        "jax_mass_coupled_rqvblten_summary": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 0.045505018412171354,
+          "max_abs": 0.045505018412171354,
+          "mean": 8.908944881098809e-05,
+          "min": -0.011133371544265573,
+          "nonzero_count": 432064,
+          "rms": 0.0009190804153610992,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        },
+        "wrf_full_without_qv_tend_term_vs_after_conv": {
+          "bias": 0.3621638301225424,
+          "count": 442112,
+          "max_abs": 231.55175407007107,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0072389048960757145,
+          "p99": 22.013075792251765,
+          "rmse": 4.5886560822365885,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": -267.0423583984375,
+          "worst_mismatch_fortran": {
+            "i": 72,
+            "j": 33,
+            "k": 3
+          },
+          "worst_reference": -498.59411246850857
+        },
+        "wrf_qv_tend_summary": {
+          "count": 442112,
+          "finite_count": 442112,
+          "max": 0.4930315017700195,
+          "max_abs": 0.4930315017700195,
+          "mean": 0.000773902520757709,
+          "min": -0.4547699093818665,
+          "nonzero_count": 197585,
+          "rms": 0.009783873469346492,
+          "shape": [
+            44,
+            66,
+            159
+          ]
+        }
+      },
+      "hypothesis": "WRF conv_t_tendf_to_moist/QV_TEND handling is now represented in the JAX source branch, but it cannot close the source gap while MYNN RTHBLTEN/RQVBLTEN are too weak.",
+      "rank": 3,
+      "status": "IMPLEMENTED_STILL_SECONDARY"
+    }
+  ],
+  "schema": "wrfgpu2.v014.step1_source_fidelity_closure.v1",
+  "single_remaining_blocker": {
+    "evidence": {
+      "available_input_state_metrics": {
+        "P_after_calculate_vs_jax_pbl_entry": {
+          "bias": -4.542515881156811e-06,
+          "count": 442112,
+          "max_abs": 0.0390625,
+          "nonfinite_diff_count": 0,
+          "p95": 0.015625,
+          "p99": 0.0234375,
+          "rmse": 0.005006926989162881,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 1806.4921875,
+          "worst_mismatch_fortran": {
+            "i": 137,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": 1806.453125
+        },
+        "QV_OLD_after_calculate_vs_jax_pbl_entry": {
+          "bias": -5.778861223270438e-12,
+          "count": 442112,
+          "max_abs": 5.969281098756885e-08,
+          "nonfinite_diff_count": 0,
+          "p95": 1.4901161193847656e-08,
+          "p99": 1.9557774070394496e-08,
+          "rmse": 4.715057598891387e-09,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 0.01073381211608648,
+          "worst_mismatch_fortran": {
+            "i": 11,
+            "j": 6,
+            "k": 2
+          },
+          "worst_reference": 0.010733871808897467
+        },
+        "T_STATE_after_calculate_vs_jax_pbl_entry": {
+          "bias": 1.1847795898073467e-06,
+          "count": 442112,
+          "max_abs": 5.788684885033035e-05,
+          "nonfinite_diff_count": 0,
+          "p95": 2.9171491621582378e-05,
+          "p99": 3.695624680329247e-05,
+          "rmse": 1.5519828801619384e-05,
+          "shape": [
+            44,
+            66,
+            159
+          ],
+          "status": "OK",
+          "worst_candidate": 180.8074798583984,
+          "worst_mismatch_fortran": {
+            "i": 49,
+            "j": 62,
+            "k": 43
+          },
+          "worst_reference": 180.80742197154956
+        }
+      },
+      "rqv_or_qv_tend": {
+        "bias": 0.0006848130719467211,
+        "count": 442112,
+        "max_abs": 0.4930252087748469,
+        "nonfinite_diff_count": 0,
+        "p95": 1.698942076535858e-05,
+        "p99": 0.044052467069599976,
+        "rmse": 0.009468296715232674,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 0.4930315017700195,
+        "worst_mismatch_fortran": {
+          "i": 72,
+          "j": 33,
+          "k": 3
+        },
+        "worst_reference": 6.292995172595859e-06
+      },
+      "rthblten": {
+        "bias": 0.29729734920843653,
+        "count": 442112,
+        "max_abs": 2522.897969027013,
+        "nonfinite_diff_count": 0,
+        "p95": 0.49622884715411353,
+        "p99": 13.708012238469585,
+        "rmse": 20.846966150942183,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2522.90576171875,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -0.007792691736854582
+      },
+      "strict_after_conv_vs_jax": {
+        "bias": -0.0033160463086924397,
+        "count": 442112,
+        "max_abs": 2457.578397008898,
+        "nonfinite_diff_count": 0,
+        "p95": 2.3216834532331547,
+        "p99": 36.450926916847145,
+        "rmse": 21.364579991779515,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": -2457.5830078125,
+        "worst_mismatch_fortran": {
+          "i": 66,
+          "j": 37,
+          "k": 3
+        },
+        "worst_reference": -0.004610803602028136
+      }
+    },
+    "hypothesis": "JAX MYNN driver/kernel source outputs are too weak before dry-source coupling: both mass-coupled RTHBLTEN and qv source are about an order of magnitude below WRF at Step 1.",
+    "rank": 1,
+    "status": "BLOCKING"
+  },
+  "source_changes_validated": {
+    "production_files": [
+      "src/gpuwrf/coupling/physics_couplers.py",
+      "src/gpuwrf/runtime/operational_mode.py"
+    ],
+    "summary": "MYNN source leaf now carries rqvblten; rad_rk_tendf=1 now applies WRF conv_t_tendf_to_moist to DryPhysicsTendencies.t_tendf. rad_rk_tendf=0 path remains on the existing branch.",
+    "test_file": "tests/test_v014_dry_source_leaf_wiring.py"
+  },
+  "status": "PROOF_EXECUTED",
+  "target": {
+    "cpu_only": true,
+    "domain": 2,
+    "pass_target": {
+      "max_abs": 0.001,
+      "rmse": 1e-05
+    },
+    "step": 1,
+    "strict_metric": {
+      "bias": -0.0033160463086924397,
+      "count": 442112,
+      "max_abs": 2457.578397008898,
+      "nonfinite_diff_count": 0,
+      "p95": 2.3216834532331547,
+      "p99": 36.450926916847145,
+      "rmse": 21.364579991779515,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -2457.5830078125,
+      "worst_mismatch_fortran": {
+        "i": 66,
+        "j": 37,
+        "k": 3
+      },
+      "worst_reference": -0.004610803602028136
+    }
+  },
+  "verdict": "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_MYNN_DRIVER_SOURCE_OUTPUT",
+  "wrf_oracle_rankings": {
+    "component_summaries": {
+      "wrf_after_update_to_after_conv_delta": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 224.50967407226562,
+        "max_abs": 224.50967407226562,
+        "mean": 0.364495070932575,
+        "min": -212.26330566406247,
+        "nonzero_count": 442033,
+        "rms": 4.572429855170764,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_qv_tend": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 0.4930315017700195,
+        "max_abs": 0.4930315017700195,
+        "mean": 0.000773902520757709,
+        "min": -0.4547699093818665,
+        "nonzero_count": 197585,
+        "rms": 0.009783873469346492,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_rthblten": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 2138.7490234375,
+        "max_abs": 2522.90576171875,
+        "mean": 0.3337582953171923,
+        "min": -2522.90576171875,
+        "nonzero_count": 59337,
+        "rms": 20.984261166424478,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      },
+      "wrf_rthraten": {
+        "count": 442112,
+        "finite_count": 442112,
+        "max": 39.80049896240234,
+        "max_abs": 39.80049896240234,
+        "mean": -0.6228323899254602,
+        "min": -12.76959800720215,
+        "nonzero_count": 442109,
+        "rms": 1.510482737622993,
+        "shape": [
+          44,
+          66,
+          159
+        ]
+      }
+    },
+    "status": "WRF_ORACLE_RANKINGS_EXECUTED",
+    "wrf_bl_only_plus_qv_vs_after_conv": {
+      "bias": -0.6255839969393523,
+      "count": 442112,
+      "max_abs": 40.36781372423428,
+      "nonfinite_diff_count": 0,
+      "p95": 2.1212165117263786,
+      "p99": 3.4154216814489984,
+      "rmse": 1.5246203971137002,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": 196.8866119384766,
+      "worst_mismatch_fortran": {
+        "i": 156,
+        "j": 61,
+        "k": 1
+      },
+      "worst_reference": 156.5187982142423
+    },
+    "wrf_full_active_sources_vs_after_conv": {
+      "bias": 1.3466279640646712e-08,
+      "count": 442112,
+      "max_abs": 0.00016236981809925055,
+      "nonfinite_diff_count": 0,
+      "p95": 9.974626740127944e-08,
+      "p99": 1.3856209870866126e-06,
+      "rmse": 8.089162788029723e-07,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": 2128.967529296875,
+      "worst_mismatch_fortran": {
+        "i": 64,
+        "j": 37,
+        "k": 4
+      },
+      "worst_reference": 2128.967366927057
+    },
+    "wrf_full_without_qv_tend_term_vs_after_conv": {
+      "bias": 0.3621638301225424,
+      "count": 442112,
+      "max_abs": 231.55175407007107,
+      "nonfinite_diff_count": 0,
+      "p95": 0.0072389048960757145,
+      "p99": 22.013075792251765,
+      "rmse": 4.5886560822365885,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -267.0423583984375,
+      "worst_mismatch_fortran": {
+        "i": 72,
+        "j": 33,
+        "k": 3
+      },
+      "worst_reference": -498.59411246850857
+    },
+    "wrf_ra_only_plus_qv_vs_after_conv": {
+      "bias": 0.3388411684408573,
+      "count": 442112,
+      "max_abs": 2560.435729436619,
+      "nonfinite_diff_count": 0,
+      "p95": 0.500737340164108,
+      "p99": 11.000716623733657,
+      "rmse": 21.304023976583505,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -2457.5830078125,
+      "worst_mismatch_fortran": {
+        "i": 66,
+        "j": 37,
+        "k": 3
+      },
+      "worst_reference": 102.85272162411921
+    }
+  }
+}

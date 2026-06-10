@@ -3,7 +3,7 @@
     "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_dry_source_leaf_fix.py"
   },
-  "created_utc": "2026-06-09T23:40:08.237377+00:00",
+  "created_utc": "2026-06-10T00:10:25.548058+00:00",
   "environment": {
     "CUDA_VISIBLE_DEVICES": "",
     "JAX_ENABLE_X64": "1",
@@ -46,13 +46,13 @@
     },
     "metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.8225220464400177,
+        "bias": 0.7905750965042597,
         "count": 442112,
-        "max_abs": 2454.161554535577,
+        "max_abs": 2454.113955669592,
         "nonfinite_diff_count": 0,
-        "p95": 1.755236019198935,
-        "p99": 51.234471816050295,
-        "rmse": 21.878698621747557,
+        "p95": 1.8084310127747232,
+        "p99": 49.66243740980215,
+        "rmse": 21.789083442799004,
         "shape": [
           44,
           66,
@@ -65,16 +65,16 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -3.421453276922923
+        "worst_reference": -3.4690521429081214
       },
       "after_update_vs_jax_dry_t_tendf": {
-        "bias": 0.45802697550744265,
+        "bias": 0.42608002557168473,
         "count": 442112,
-        "max_abs": 2521.858087738702,
+        "max_abs": 2521.810488872717,
         "nonfinite_diff_count": 0,
-        "p95": 1.7687479313419212,
-        "p99": 29.227965821038623,
-        "rmse": 21.228798175722982,
+        "p95": 1.82160951563648,
+        "p99": 27.383584617545417,
+        "rmse": 21.169547830566316,
         "shape": [
           44,
           66,
@@ -87,18 +87,18 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -3.421453276922923
+        "worst_reference": -3.4690521429081214
       },
       "derived_candidate_summaries": {
         "current_jax_dry_t_tendf": {
           "count": 461736,
           "finite_count": 461736,
-          "max": 284.2895997039706,
-          "max_abs": 284.2895997039706,
-          "mean": -0.7495414593265478,
-          "min": -40.15226439095437,
+          "max": 294.9429185099615,
+          "max_abs": 294.9429185099615,
+          "mean": -0.717457804606134,
+          "min": -41.71186336815376,
           "nonzero_count": 461736,
-          "rms": 5.050544490081052,
+          "rms": 5.099839449226463,
           "shape": [
             44,
             66,
@@ -173,7 +173,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "b1f81bf71612b385d63c7e2bbf262c34a16e78d9\n"
+      "stdout_tail": "8d4117c47a54dc270b08703cecb1ca8bc1ff2ce5\n"
     },
     "status_short": {
       "command": [
@@ -183,7 +183,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": " M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_dry_source_leaf_fix.json\n?? proofs/v014/step1_dry_source_leaf_fix.md\n?? proofs/v014/step1_dry_source_leaf_fix.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_dry_source_leaf_wiring.py\n"
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_dry_source_leaf_fix.py\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_source_fidelity_closure.json\n?? proofs/v014/step1_source_fidelity_closure.md\n?? proofs/v014/step1_source_fidelity_closure.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
     }
   },
   "jax_source_leaf_mode": {
@@ -191,12 +191,12 @@
       "current_jax_dry_t_tendf": {
         "count": 461736,
         "finite_count": 461736,
-        "max": 260.83156991819124,
-        "max_abs": 260.83156991819124,
-        "mean": 0.03512275688912021,
-        "min": -40.270729381590726,
-        "nonzero_count": 451233,
-        "rms": 3.8939509987656393,
+        "max": 271.15051023443414,
+        "max_abs": 271.15051023443414,
+        "mean": 0.0775516808494346,
+        "min": -41.83217038037702,
+        "nonzero_count": 451242,
+        "rms": 4.033291061494072,
         "shape": [
           44,
           66,
@@ -276,13 +276,13 @@
     },
     "primary_metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.03896002940609997,
+        "bias": -0.0033160463086924397,
         "count": 442112,
-        "max_abs": 2457.575215120763,
+        "max_abs": 2457.578397008898,
         "nonfinite_diff_count": 0,
-        "p95": 2.3217108567354865,
-        "p99": 38.262799413800344,
-        "rmse": 21.445918959761645,
+        "p95": 2.3216834532331547,
+        "p99": 36.450926916847145,
+        "rmse": 21.364579991779515,
         "shape": [
           44,
           66,
@@ -295,16 +295,16 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -0.007792691736854582
+        "worst_reference": -0.004610803602028136
       },
       "after_update_vs_jax_dry_t_tendf": {
-        "bias": -0.3255350415264749,
+        "bias": -0.3678111172412673,
         "count": 442112,
-        "max_abs": 2525.271748323888,
+        "max_abs": 2525.274930212023,
         "nonfinite_diff_count": 0,
-        "p95": 2.3101660307841905,
-        "p99": 15.840376084797951,
-        "rmse": 20.975418240284927,
+        "p95": 2.309627724947749,
+        "p99": 14.100935377640905,
+        "rmse": 20.928738654486033,
         "shape": [
           44,
           66,
@@ -317,7 +317,7 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -0.007792691736854582
+        "worst_reference": -0.004610803602028136
       },
       "wrf_active_rth_vs_jax_source_leaf": {
         "bias": -0.28907409541776086,
@@ -343,15 +343,15 @@
       }
     }
   },
-  "next_boundary": "Next source boundary: split MYNN PBL adapter/kernel inputs and outputs against WRF `RTHBLTEN`/`RQVBLTEN`, seed or refresh held `RTHRATEN` at the same Step-1 boundary, then implement WRF `conv_t_tendf_to_moist` before feeding `DryPhysicsTendencies.t_tendf`.",
+  "next_boundary": "Next source boundary: split MYNN PBL adapter/kernel inputs and outputs against WRF `RTHBLTEN`/`RQVBLTEN`; held `RTHRATEN` and `conv_t_tendf_to_moist` are ranked secondary by the current proof.",
   "paths": {
     "handoff": {
       "exists": true,
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "82a6e6a9055f052c4033142147c887ceb4ce2d838217518020e169a6273e0078",
-      "size_bytes": 97266
+      "sha256": "63868a265477e0055d6efa63ed9d8ae666d6931c73fb53a783574cf632221c97",
+      "size_bytes": 100140
     },
     "prior_proof": {
       "exists": true,
@@ -384,12 +384,12 @@
         "jax_source_leaf_summary": {
           "count": 461736,
           "finite_count": 461736,
-          "max": 260.83156991819124,
-          "max_abs": 260.83156991819124,
-          "mean": 0.03512275688912021,
-          "min": -40.270729381590726,
-          "nonzero_count": 451233,
-          "rms": 3.8939509987656393,
+          "max": 271.15051023443414,
+          "max_abs": 271.15051023443414,
+          "mean": 0.0775516808494346,
+          "min": -41.83217038037702,
+          "nonzero_count": 451242,
+          "rms": 4.033291061494072,
           "shape": [
             44,
             66,
@@ -397,13 +397,13 @@
           ]
         },
         "primary_after_update_vs_jax_source_leaf": {
-          "bias": -0.3255350415264749,
+          "bias": -0.3678111172412673,
           "count": 442112,
-          "max_abs": 2525.271748323888,
+          "max_abs": 2525.274930212023,
           "nonfinite_diff_count": 0,
-          "p95": 2.3101660307841905,
-          "p99": 15.840376084797951,
-          "rmse": 20.975418240284927,
+          "p95": 2.309627724947749,
+          "p99": 14.100935377640905,
+          "rmse": 20.928738654486033,
           "shape": [
             44,
             66,
@@ -416,7 +416,7 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.007792691736854582
+          "worst_reference": -0.004610803602028136
         },
         "wrf_active_sum_summary": {
           "count": 461736,
@@ -441,13 +441,13 @@
     {
       "evidence": {
         "forced_radiation_after_conv": {
-          "bias": 0.8225220464400177,
+          "bias": 0.7905750965042597,
           "count": 442112,
-          "max_abs": 2454.161554535577,
+          "max_abs": 2454.113955669592,
           "nonfinite_diff_count": 0,
-          "p95": 1.755236019198935,
-          "p99": 51.234471816050295,
-          "rmse": 21.878698621747557,
+          "p95": 1.8084310127747232,
+          "p99": 49.66243740980215,
+          "rmse": 21.789083442799004,
           "shape": [
             44,
             66,
@@ -460,16 +460,16 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -3.421453276922923
+          "worst_reference": -3.4690521429081214
         },
         "primary_after_conv": {
-          "bias": 0.03896002940609997,
+          "bias": -0.0033160463086924397,
           "count": 442112,
-          "max_abs": 2457.575215120763,
+          "max_abs": 2457.578397008898,
           "nonfinite_diff_count": 0,
-          "p95": 2.3217108567354865,
-          "p99": 38.262799413800344,
-          "rmse": 21.445918959761645,
+          "p95": 2.3216834532331547,
+          "p99": 36.450926916847145,
+          "rmse": 21.364579991779515,
           "shape": [
             44,
             66,
@@ -482,7 +482,7 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.007792691736854582
+          "worst_reference": -0.004610803602028136
         }
       },
       "hypothesis": "The held JAX `rthraten` leaf is zero at Step-1 while WRF has active `RTHRATEN`; forcing radiation only improves the residual marginally.",
@@ -512,15 +512,15 @@
         },
         "worst_reference": -267.0423583984375
       },
-      "hypothesis": "WRF `conv_t_tendf_to_moist` and its `QV_TEND` term are not represented in the JAX dry source bundle.",
+      "hypothesis": "WRF `conv_t_tendf_to_moist` and its `QV_TEND` term are represented in the JAX dry source bundle, but cannot close while MYNN `RTHBLTEN/RQVBLTEN` are too weak.",
       "rank": 3,
-      "status": "SECONDARY_BLOCKING"
+      "status": "IMPLEMENTED_STILL_SECONDARY"
     }
   ],
   "schema": "wrfgpu2.v014.step1_dry_source_leaf_fix.v1",
   "source_patch": {
     "double_count_guard": "MYNN theta delta is removed from the later non-dry physics state update in source-leaf mode.",
-    "mode": "rad_rk_tendf=1 routes held RTHRATEN plus MYNN RTHBLTEN into DryPhysicsTendencies.t_tendf",
+    "mode": "rad_rk_tendf=1 routes held RTHRATEN plus MYNN RTHBLTEN/RQVBLTEN through WRF conv_t_tendf_to_moist into DryPhysicsTendencies.t_tendf",
     "production_files": [
       "src/gpuwrf/coupling/physics_couplers.py",
       "src/gpuwrf/runtime/operational_mode.py"
