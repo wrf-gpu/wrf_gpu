@@ -3,6 +3,23 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-10 09:40 WEST: Fable/Mythos NoahMP land-tile energy closure is
+accepted, committed, and pushed as `94fe5d5f`; the next strict-closure sprint is
+opened and pushed as `b4b6850f`, then dispatched to Fable after `/compact`.
+NoahMP is no longer the leading Step-1 blocker:
+`proofs/v014/noahmp_land_tile_energy_closure.*` proves the JAX NoahMP energy
+solve is WRF-exact under WRF NMPIN (FSH RMSE `7.7e-4 W/m2`) and fixes the
+production `sfctmp` bug by decoupling WRF moist theta `theta_m` to dry theta
+before Exner conversion. `proofs/v014/noahmp_step1_closure.*` still reports
+strict red, now at max_abs `1489.5135568470864`, RMSE
+`12.146876720723487`; the worst cell is water `(i=66, j=37, k=3)`, where
+NoahMP does not run. Current remaining lanes are (1) the same moist-theta to
+dry-temperature boundary in `surface_layer.py` / sfclay-MYNN water path, and
+(2) RRTMG Step-1 GLW/SWDOWN/RTHRATEN forcing parity. Active sprint:
+`.agent/sprints/2026-06-10-v014-fable-strict-step1-closure/`. TOST,
+Switzerland-GPU, and FP32 R1/R2 remain paused until this strict Step-1 frontier
+is green or formally bounded.
+
 Update 2026-06-10 07:23 WEST: the Fable/Mythos NoahMP Step-1 closure sprint is
 accepted as a strict narrowing plus a small production fix, not a strict
 closure. Verdict:
