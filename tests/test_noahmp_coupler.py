@@ -23,7 +23,7 @@ jax.config.update("jax_enable_x64", True)
 
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
-from gpuwrf.physics.noahmp_coupler import noahmp_surface_adapter
+from gpuwrf.physics.noahmp_coupler import RVOVRD, assemble_noahmp_forcing, noahmp_surface_adapter
 from gpuwrf.physics.surface_constants import P0_PA, R_D_OVER_CP
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
@@ -217,3 +217,53 @@ def test_first_timestep_threads_into_blend_sfclay():
     assert not np.allclose(np.asarray(blended_first.ustar),
                            np.asarray(blended_false.ustar), atol=1e-12), \
         "first-call branch must change the cold-start sfclay solution"
+
+
+def test_forcing_decouples_moist_theta_to_dry_air_temperature():
+    """v0.14 Noah-MP energy closure: ``state.theta`` is the WRF MOIST potential
+    temperature theta_m = theta_dry*(1 + R_v/R_d * q_v) (use_theta_m=1). WRF feeds
+    noahmplsm the DRY sensible temperature T3D = theta_dry*(p/p0)^kappa, so
+    ``assemble_noahmp_forcing`` must decouple theta_m -> theta_dry before the Exner
+    conversion. Skipping it left sfctmp ~+4 K too warm (the (1+R_v/R_d*q_v) factor)
+    and biased the whole land-tile surface energy balance."""
+
+    n = 4
+    shape = (1, n)
+    p = np.array([95000.0, 90000.0, 100000.0, 88000.0])
+    qv = np.array([0.012, 0.008, 0.002, 0.015])     # mixing ratio [kg/kg]
+    t_dry = np.array([293.0, 288.0, 300.0, 285.0])  # the WRF T3D we must recover
+    theta_dry = t_dry * (P0_PA / p) ** R_D_OVER_CP
+    theta_m = theta_dry * (1.0 + RVOVRD * qv)       # the stored prognostic (moist)
+
+    def col(a):
+        return jnp.asarray(a.reshape(shape + (1,)))
+
+    class _S:
+        pass
+    state = _S()
+    state.theta = col(theta_m)
+    state.qv = col(qv)
+    state.p = col(p)
+    state.u = col(np.full(n, 3.0))
+    state.v = col(np.full(n, 1.0))
+    state.dz = col(np.full(n, 60.0))
+
+    class _Rad:
+        soldn = jnp.asarray(np.full(shape, 500.0))
+        lwdn = jnp.asarray(np.full(shape, 340.0))
+        cosz = jnp.asarray(np.full(shape, 0.5))
+
+    class _Clock:
+        julian = 120.0
+        yearlen = 365.0
+
+    forcing = assemble_noahmp_forcing(state, None, _Rad(), _Clock(), 90.0)
+    sfctmp = np.asarray(forcing.sfctmp).reshape(-1)
+
+    # decoupled sfctmp must recover the dry sensible temperature, not the moist one.
+    np.testing.assert_allclose(sfctmp, t_dry, rtol=0, atol=1e-9)
+    naive_t = (theta_m * (p / P0_PA) ** R_D_OVER_CP)  # the OLD (buggy) value
+    assert np.all(np.abs(sfctmp - naive_t) > 0.5), \
+        "the decoupling must move sfctmp away from the naive moist-theta temperature"
+    # the bias the bug introduced is exactly the (1 + R_v/R_d*q_v) warm factor.
+    np.testing.assert_allclose(naive_t / sfctmp, 1.0 + RVOVRD * qv, rtol=1e-9, atol=0)

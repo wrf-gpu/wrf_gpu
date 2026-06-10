@@ -1,0 +1,365 @@
+{
+  "commands": {
+    "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_land_tile_energy_closure.py",
+    "wrf_one_run": "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run && env WRFGPU2_V014_NOAHMP_ENERGY_HOOK=1 WRFGPU2_V014_NOAHMP_ENERGY_ROOT=/tmp/wrfgpu2_v014_noahmp_energy_pinned_onerun WRFGPU2_V014_SURFACE_HANDOFF_HOOK=1 WRFGPU2_V014_SURFACE_HANDOFF_ROOT=/tmp/wrfgpu2_v014_surface_handoff_energyhook_xcheck taskset -c 0-3 ./wrf.exe"
+  },
+  "created_utc": "2026-06-10T08:26:29.791268+00:00",
+  "decoupling_fix": {
+    "constant_RVOVRD": 1.6083623693379792,
+    "fixed_sfctmp_vs_wrf_t_ml": {
+      "bias": -0.002016820912874584,
+      "count": 768,
+      "max_abs": 0.01357793904992377,
+      "ref_max_abs": 294.45608521,
+      "rmse": 0.0033152073451598748
+    },
+    "moist_factor_identity_max_abs_err": 2.220446049250313e-16,
+    "naive_sfctmp_vs_wrf_t_ml": {
+      "bias": 4.060948005384932,
+      "count": 768,
+      "max_abs": 4.989912584017247,
+      "ref_max_abs": 294.45608521,
+      "rmse": 4.12225805795677
+    },
+    "note": "state.theta is moist theta_m; naive Exner left sfctmp warm by exactly (1+R_v/R_d*q_v). The fix recovers WRF's dry T3D."
+  },
+  "energy_algorithm_vs_wrf": {
+    "energy": {
+      "chb": {
+        "bias": -2.8786925875670652e-09,
+        "count": 768,
+        "max_abs": 2.4144293499506198e-06,
+        "ref_max_abs": 0.35888123512,
+        "rmse": 1.59893474514573e-07
+      },
+      "chv": {
+        "bias": -9.384047190901466e-08,
+        "count": 768,
+        "max_abs": 1.7386112493328332e-05,
+        "ref_max_abs": 0.35888123512,
+        "rmse": 1.3309511751992383e-06
+      },
+      "emissi": {
+        "bias": -2.424490203681758e-08,
+        "count": 768,
+        "max_abs": 1.0650084414365324e-07,
+        "ref_max_abs": 0.98980849981,
+        "rmse": 3.540612607523214e-08
+      },
+      "fctr": {
+        "bias": 2.3088938863338593e-07,
+        "count": 768,
+        "max_abs": 0.00048062660611591923,
+        "ref_max_abs": 32.830986023,
+        "rmse": 3.814797035229625e-05
+      },
+      "fgev": {
+        "bias": -1.4661148701527702e-06,
+        "count": 768,
+        "max_abs": 0.0004285126822637063,
+        "ref_max_abs": 13.059105873,
+        "rmse": 4.6182426870357454e-05
+      },
+      "fira": {
+        "bias": -4.072603049709578e-05,
+        "count": 768,
+        "max_abs": 0.0005081399081348081,
+        "ref_max_abs": 158.29837036,
+        "rmse": 9.820309959856837e-05
+      },
+      "fsh_hfx": {
+        "bias": -7.871259174547917e-05,
+        "count": 768,
+        "max_abs": 0.004352692140855652,
+        "ref_max_abs": 370.61135864,
+        "rmse": 0.0007711640412822121
+      },
+      "ssoil_grdflx": {
+        "bias": -6.257409976953008e-05,
+        "count": 768,
+        "max_abs": 0.0014285211937590248,
+        "ref_max_abs": 273.67233276,
+        "rmse": 0.00021926861325835808
+      },
+      "trad_tsk": {
+        "bias": -7.046281868354025e-06,
+        "count": 768,
+        "max_abs": 9.640974212743458e-05,
+        "ref_max_abs": 305.0635376,
+        "rmse": 1.9806433154212107e-05
+      }
+    },
+    "note": "JAX phenology -> two-stream radiation -> energy fed WRF's EXACT per-column NMPIN; outputs vs WRF NMPOUT on land cells.",
+    "phenology": {
+      "fveg_vs_fvegmp": {
+        "bias": 4.4709963773974525e-10,
+        "count": 768,
+        "max_abs": 2.8609218771791234e-08,
+        "ref_max_abs": 0.66098666191,
+        "rmse": 6.1943165283521e-09
+      },
+      "lai_vs_plai": {
+        "bias": 4.341578240292752e-09,
+        "count": 768,
+        "max_abs": 1.234986299891716e-07,
+        "ref_max_abs": 3.0228767395,
+        "rmse": 4.2864480673335593e-08
+      },
+      "sai_vs_psai": {
+        "bias": -6.4566666596599376e-09,
+        "count": 768,
+        "max_abs": 1.19199999870645e-08,
+        "ref_max_abs": 0.40000000596,
+        "rmse": 8.32935320714776e-09
+      }
+    },
+    "radiation_twostream": {
+      "albedo_salb": {
+        "bias": -3.300480402390962e-08,
+        "count": 768,
+        "max_abs": 4.876363633721237e-07,
+        "ref_max_abs": 0.23951780796,
+        "rmse": 9.55730729223862e-08
+      },
+      "fsa": {
+        "bias": 9.358763113513172e-06,
+        "count": 768,
+        "max_abs": 0.0001570084052104903,
+        "ref_max_abs": 369.1725769,
+        "rmse": 2.9152696486777714e-05
+      },
+      "fsr": {
+        "bias": -8.646048281150953e-06,
+        "count": 768,
+        "max_abs": 0.00013916240550315706,
+        "ref_max_abs": 106.66748047,
+        "rmse": 2.6560835656594093e-05
+      },
+      "sag": {
+        "bias": -0.00012688318073753035,
+        "count": 768,
+        "max_abs": 0.002444134104734985,
+        "ref_max_abs": 360.34466553,
+        "rmse": 0.00040999795024912087
+      },
+      "sav": {
+        "bias": 0.0001360923187217177,
+        "count": 768,
+        "max_abs": 0.002551253620964644,
+        "ref_max_abs": 173.90841675,
+        "rmse": 0.00043553867356587405
+      }
+    }
+  },
+  "environment": {
+    "jax_backend": "cpu",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fastest_next_command": "Emit an RRTMG step-1 longwave/shortwave forcing hook on the pinned tree (GLW/SWDOWN at the surface, both clear-sky) and column-diff vs the JAX rrtmg seed to close the +14.7 W/m2 GLW / +3.6 W/m2 SWDOWN bias; in parallel apply the same theta_m->theta_dry decoupling in surface_layer.py and RE-VALIDATE the MYNN d02 path. Then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py.",
+  "fix": {
+    "change": "decouple theta_m -> theta_dry (divide by 1 + R_v/R_d*q_v) before the Exner conversion of the lowest-level air temperature",
+    "default_inert": false,
+    "file": "src/gpuwrf/physics/noahmp_coupler.py",
+    "function": "assemble_noahmp_forcing",
+    "production": true,
+    "test": "tests/test_noahmp_coupler.py::test_forcing_decouples_moist_theta_to_dry_air_temperature"
+  },
+  "flux_closure": {
+    "note": "With the decoupling fix the land-tile HFX residual is driven by the RRTMG radiation forcing (GLW/SWDOWN); swapping WRF's EXACT SWDOWN/GLW in COLLAPSES it to ~0.1 W/m2 -> the energy solve + the temperature input are closed, the remaining lane is RRTMG.",
+    "post_fix_jax_radiation": {
+      "grdflx_vs_ssoil": {
+        "bias": 4.927048305389803,
+        "count": 768,
+        "max_abs": 10.989927106818811,
+        "ref_max_abs": 273.67233276,
+        "rmse": 5.357162604561306
+      },
+      "hfx_vs_fsh": {
+        "bias": 6.5071596980481035,
+        "count": 768,
+        "max_abs": 21.47836176406662,
+        "ref_max_abs": 370.61135864,
+        "rmse": 7.596194039500723
+      },
+      "tsk_vs_trad": {
+        "bias": 0.4951283587282756,
+        "count": 768,
+        "max_abs": 0.8923633519828513,
+        "ref_max_abs": 305.0635376,
+        "rmse": 0.524762465588064
+      }
+    },
+    "post_fix_plus_wrf_exact_radiation": {
+      "grdflx_vs_ssoil": {
+        "bias": 0.00859023531782963,
+        "count": 768,
+        "max_abs": 0.11237057828492425,
+        "ref_max_abs": 273.67233276,
+        "rmse": 0.024449866730976245
+      },
+      "hfx_vs_fsh": {
+        "bias": 0.05956669988592684,
+        "count": 768,
+        "max_abs": 0.4191707355015808,
+        "ref_max_abs": 370.61135864,
+        "rmse": 0.09694345956039467
+      },
+      "tsk_vs_trad": {
+        "bias": 0.0006758168856855947,
+        "count": 768,
+        "max_abs": 0.005722715534318468,
+        "ref_max_abs": 305.0635376,
+        "rmse": 0.0014351099402981045
+      }
+    }
+  },
+  "git": {
+    "branch": "worker/gpt/v013-close-manager",
+    "head": "22e2eaa154a25b9d2945ae41db9b55a5c7ff973c"
+  },
+  "jax_forcing_vs_wrf_nmpin": {
+    "cosz": {
+      "bias": 0.00043620178305723293,
+      "count": 768,
+      "max_abs": 0.00046388548290271503,
+      "ref_max_abs": 0.32169628143,
+      "rmse": 0.00043632683345930375
+    },
+    "lwdn_glw_RRTMG": {
+      "bias": 14.723522079920473,
+      "count": 768,
+      "max_abs": 19.485911987632733,
+      "ref_max_abs": 338.15213013,
+      "rmse": 15.062993942888838
+    },
+    "psfc": {
+      "bias": -273.82653799869786,
+      "count": 768,
+      "max_abs": 316.671875,
+      "ref_max_abs": 101842.63281,
+      "rmse": 275.3175299290341
+    },
+    "qair": {
+      "bias": 7.718301437830364e-05,
+      "count": 768,
+      "max_abs": 0.00011236779377267643,
+      "ref_max_abs": 0.010545352474,
+      "rmse": 8.000808261842683e-05
+    },
+    "sfcprs": {
+      "bias": 8.266967731770913,
+      "count": 768,
+      "max_abs": 191.85937000000558,
+      "ref_max_abs": 101540.55469,
+      "rmse": 28.563433416942104
+    },
+    "sfctmp_air_temperature": {
+      "bias": -0.002016820912874584,
+      "count": 768,
+      "max_abs": 0.01357793904992377,
+      "ref_max_abs": 294.45608521,
+      "rmse": 0.0033152073451598748
+    },
+    "soldn_swdown_RRTMG": {
+      "bias": 3.582430865420056,
+      "count": 768,
+      "max_abs": 6.825421764382014,
+      "ref_max_abs": 459.25668335,
+      "rmse": 3.738168727089916
+    },
+    "uu": {
+      "bias": -2.5693797209905356e-09,
+      "count": 768,
+      "max_abs": 4.7682465798004614e-07,
+      "ref_max_abs": 6.3061475754,
+      "rmse": 6.934206176547967e-08
+    },
+    "vv": {
+      "bias": -2.4712023347303884e-09,
+      "count": 768,
+      "max_abs": 5.960877560440281e-07,
+      "ref_max_abs": 5.6916189194,
+      "rmse": 9.882978127015341e-08
+    },
+    "zlvl": {
+      "bias": 0.008612692425574211,
+      "count": 768,
+      "max_abs": 0.008793679759719453,
+      "ref_max_abs": 25.742614746,
+      "rmse": 0.008613820191068995
+    }
+  },
+  "nland": 768,
+  "noahmp_options": {
+    "dt": 6.0,
+    "idveg": 4,
+    "iopt_alb": 2,
+    "iopt_btr": 1,
+    "iopt_crop": 0,
+    "iopt_crs": 1,
+    "iopt_frz": 1,
+    "iopt_gla": 1,
+    "iopt_inf": 1,
+    "iopt_irr": 0,
+    "iopt_rad": 3,
+    "iopt_rsf": 1,
+    "iopt_run": 3,
+    "iopt_sfc": 1,
+    "iopt_snf": 1,
+    "iopt_soil": 1,
+    "iopt_stc": 1,
+    "iopt_tbot": 2,
+    "ite": 159,
+    "itimestep": 1,
+    "its": 1,
+    "iz0tlnd": 0,
+    "jte": 66,
+    "jts": 1,
+    "julian": 120.75,
+    "kts": 1,
+    "nsoil": 4,
+    "sf_urban_physics": 0,
+    "yearlen": 365,
+    "yr": 2026
+  },
+  "ranked_hypotheses": [
+    {
+      "claim": "RRTMG step-1 surface radiation forcing into Noah-MP: GLW bias +14.72 W/m2, SWDOWN bias +3.58 W/m2. With WRF's exact SWDOWN/GLW the land-tile HFX residual collapses 7.60 -> 0.097 W/m2 rmse.",
+      "evidence": "forcing_vs_wrf + flux_closure radiation swap",
+      "in_scope": false,
+      "next": "RRTMG longwave/shortwave forcing-parity hook on the pinned tree (GLW uniform clear-sky bias); RRTMG production is frozen this sprint.",
+      "rank": 1
+    },
+    {
+      "claim": "Surface-layer (sfclay/MYNN) air temperature uses the SAME moist-theta -> naive-Exner conversion (surface_layer._potential_to_temperature) -> ~+4 K warm t1d over ALL cells; affects the water tiles incl. the strict worst cell (i=66, j=37, water). Out of this sprint's file ownership.",
+      "evidence": "code read surface_layer.py:471-472 + the same +4 K signature",
+      "in_scope": false,
+      "next": "Apply the identical theta_m -> theta_dry decoupling in surface_layer.py and RE-VALIDATE the MYNN d02 path (it may have been tuned with the moist value; needs its own sprint).",
+      "rank": 2
+    }
+  ],
+  "schema": "wrfgpu2.v014.noahmp_land_tile_energy_closure.v1",
+  "status": "PROOF_EXECUTED",
+  "summary": {
+    "energy_solve_fsh_rmse_with_wrf_inputs": 0.0007711640412822121,
+    "glw_bias_W_m2": 14.723522079920473,
+    "hfx_rmse_post_fix_jax_radiation": 7.596194039500723,
+    "hfx_rmse_post_fix_wrf_radiation": 0.09694345956039467,
+    "sfctmp_bias_before_fix_K": 4.060948005384932,
+    "sfctmp_rmse_after_fix_K": 0.0033152073451598748,
+    "swdown_bias_W_m2": 3.582430865420056
+  },
+  "truth_provenance": {
+    "energy_hook": {
+      "nland_in": 768,
+      "nland_out": 768,
+      "path": "/tmp/wrfgpu2_v014_noahmp_energy_pinned_onerun/noahmp_energy_d02_step1.txt",
+      "sha256_16": "d0326eaa4d60a70e",
+      "size_bytes": 1926207
+    },
+    "hook_non_perturbing_surface_byte_identical": true,
+    "note": "Per-column noahmplsm energy hook emitted from ONE run of the rmol-pinned WRF binary. The surface/land-flux handoff hook re-emitted in the SAME run is byte-identical to the prior pinned-onerun handoff -> the energy instrumentation does not perturb the WRF physics."
+  },
+  "verdict": "NOAHMP_LAND_TILE_ENERGY_CLOSED_NARROWED_TO_RRTMG_RADIATION_FORCING"
+}
