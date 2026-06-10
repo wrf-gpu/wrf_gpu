@@ -104,6 +104,18 @@ wrong-time LBC drift is plausibly removed, while opening a CPU-only GPT sprint
 for the remaining quasi-static PSFC/vapor-light pressure-state lane. Do not
 launch Switzerland GPU until Canary h24/final and the PSFC analysis are judged.
 
+Update 2026-06-10 16:38 WEST: GPT PSFC/vapor-light analysis is accepted as a
+blocking diagnosis. Artifact:
+`.agent/reviews/2026-06-10-v014-gpt-psfc-vapor-light-analysis.md`. The fixed
+Canary run remains useful characterization, but it is **not** a green field gate
+while `PSFC` is vapor-light. h1 budget: CPU `PSFC-(P_TOP+MU+MUB)` mean
+`198.734 Pa`, independent CPU vapor-column estimate `198.800 Pa`; GPU has
+physical vapor column `197.545 Pa`, but GPU `PSFC-(P_TOP+MU+MUB)` is
+`-8.949 Pa`. Writer/comparator are exonerated for the large residual. A focused
+Fable high sprint is opened:
+`.agent/sprints/2026-06-10-v014-fable-psfc-moist-pressure-closure/`. Do not
+launch Switzerland GPU until this lane is fixed or formally bounded.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed
