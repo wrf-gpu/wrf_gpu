@@ -182,25 +182,53 @@ def write_wrf_patch_archive() -> dict[str, Any]:
     ):
         if path.is_file():
             parts.append(f"# ---- {path.name} ----\n" + path.read_text(encoding="utf-8"))
-    OUT_PATCH.write_text("\n\n".join(parts) + "\n", encoding="utf-8")
+    OUT_PATCH.write_text("\n\n".join(part.rstrip("\n") for part in parts) + "\n", encoding="utf-8")
     return path_info(OUT_PATCH)
 
 
-def build_step1_state():
+def build_step1_state(inputs=None, patched=None):
+    from gpuwrf.coupling.noahmp_surface_hook import noahmp_surface_step  # noqa: PLC0415
     from gpuwrf.coupling.physics_couplers import surface_adapter  # noqa: PLC0415
     from gpuwrf.coupling.physics_dispatch import DEFAULT_MP_PHYSICS  # noqa: PLC0415
     from gpuwrf.coupling.scan_adapters import MP_SCAN_ADAPTERS, SFCLAY_SCAN_ADAPTERS  # noqa: PLC0415
     from gpuwrf.runtime import operational_mode as om  # noqa: PLC0415
 
-    inputs = live.build_live_nest_step1_inputs()
-    patched = pstate.apply_mythos_perturb_init(inputs)
+    if inputs is None:
+        inputs = live.build_live_nest_step1_inputs()
+    if patched is None:
+        patched = pstate.apply_mythos_perturb_init(inputs)
     namelist = dataclasses.replace(inputs["namelist"], rad_rk_tendf=1)
-    state = patched["carry"].state
+    carry = patched["carry"]
+    state = carry.state
     if int(namelist.mp_physics) == DEFAULT_MP_PHYSICS:
         state = om.thompson_adapter(state, mynn_prior.DT_S)
     elif int(namelist.mp_physics) in MP_SCAN_ADAPTERS:
         state = MP_SCAN_ADAPTERS[int(namelist.mp_physics)](state, mynn_prior.DT_S, namelist.grid)
-    if int(namelist.sf_sfclay_physics) in SFCLAY_SCAN_ADAPTERS:
+    # Mirror the production surface slot (_physics_step_forcing): the sfclay
+    # adapter runs first, then -- when Noah-MP is active -- the land HFX/QFX
+    # overlay from noahmp_surface_step replaces the land flux handles MYNN
+    # consumes (WRF: SFCLAY1D_mynn -> noahmplsm overlay -> MYNN driver input).
+    if bool(namelist.use_noahmp):
+        if int(namelist.sf_sfclay_physics) in SFCLAY_SCAN_ADAPTERS:
+            state = SFCLAY_SCAN_ADAPTERS[int(namelist.sf_sfclay_physics)](
+                state, mynn_prior.DT_S, namelist.grid
+            )
+        clock = om._NoahMPClock(
+            julian=float(namelist.noahmp_julian), yearlen=float(namelist.noahmp_yearlen)
+        )
+        ep, rp = om._noahmp_params(namelist)
+        state, _land = noahmp_surface_step(
+            state,
+            carry.noahmp_land,
+            namelist.noahmp_static,
+            float(mynn_prior.DT_S),
+            radiation=om._NoahMPRadiation(*carry.noahmp_rad),
+            clock=clock,
+            energy_params=ep,
+            rad_params=rp,
+            first_timestep=True,
+        )
+    elif int(namelist.sf_sfclay_physics) in SFCLAY_SCAN_ADAPTERS:
         state = SFCLAY_SCAN_ADAPTERS[int(namelist.sf_sfclay_physics)](
             state, mynn_prior.DT_S, namelist.grid
         )
@@ -421,9 +449,19 @@ def build_proof() -> dict[str, Any]:
     if jax.default_backend() != "cpu":
         return {"status": "BLOCKED_NON_CPU_BACKEND", "backend": jax.default_backend()}
 
-    hooks = mynn_prior.parse_hook_set(mynn_prior.HOOK_ROOT)
+    # Prefer the rmol-PINNED one-run truth set: the unpinned default consumes
+    # WRF's uninitialized-rmol UB and is not bit-reproducible across builds
+    # (proofs/v014/mynn_driver_source_output_fix.md). The pinned set is emitted
+    # by the same single WRF run as the strict part2 surfaces.
+    pinned_root = (
+        mynn_prior.SCRATCH / "wrf_truth_mynn_pinned_onerun"
+        if hasattr(mynn_prior, "SCRATCH")
+        else mynn_prior.HOOK_ROOT
+    )
+    hook_root = pinned_root if pinned_root.is_dir() else mynn_prior.HOOK_ROOT
+    hooks = mynn_prior.parse_hook_set(hook_root)
     if hooks is None:
-        return {"status": "BLOCKED_MYNN_HOOK_MISSING", "hook_root": str(mynn_prior.HOOK_ROOT)}
+        return {"status": "BLOCKED_MYNN_HOOK_MISSING", "hook_root": str(hook_root)}
     patch_info = write_wrf_patch_archive()
     inputs, patched, namelist, state = build_step1_state()
     matrix = run_kernel_matrix(state, namelist, hooks)
@@ -446,7 +484,7 @@ def build_proof() -> dict[str, Any]:
     verdict = (
         "STRICT_STEP1_CLOSED"
         if strict_closed
-        else "STEP1_MYNN_SOURCE_COUPLING_NARROWED_TO_SURFACE_LAND_FLUX_HANDOFF"
+        else "STEP1_STRICT_NOT_CLOSED_AFTER_NOAHMP_ENABLEMENT_SEE_NOAHMP_STEP1_CLOSURE"
     )
 
     return {
@@ -467,7 +505,7 @@ def build_proof() -> dict[str, Any]:
             "strict_pass": {"max_abs": STRICT_PASS_MAX_ABS, "rmse": STRICT_PASS_RMSE},
         },
         "paths": {
-            "mynn_hook_root": str(mynn_prior.HOOK_ROOT),
+            "mynn_hook_root": str(hook_root),
             "wrf_patch_archive": patch_info,
             "review": str(OUT_REVIEW),
         },
@@ -543,10 +581,8 @@ def build_proof() -> dict[str, Any]:
             },
         ],
         "fastest_next_command": (
-            "Add a WRF hook immediately before/after module_surface_driver's sf_surface_physics=4 "
-            "land-surface flux update (HFX/QFX/LH/TSK/GRDFLX/diagnostic CH where available), "
-            "then compare it to the JAX Step-1 path and wire the Noah-MP/land flux overlay into "
-            "the MYNN bottom-boundary handles before rerunning this proof."
+            "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false "
+            "PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py"
         ),
         "commands": {
             "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_mynn_source_coupling.py",
@@ -580,9 +616,9 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         f"- Current JAX source leaves remain divergent: raw `RTHBLTEN` max_abs `{current['max_abs']}`, RMSE `{current['rmse']}`, strong median `{current['strong_ratio_median']}`.",
         f"- Even with WRF QKE injected, current inputs retain a source tail: max_abs `{current_wrf_qke['max_abs']}`, RMSE `{current_wrf_qke['rmse']}`.",
         "",
-        "## Narrower Blocker",
+        "## WRF Surface/Land Flux Handoff (anchor facts)",
         "",
-        "The leading broad MYNN source-coupling hypothesis is narrowed upstream of `module_bl_mynnedmf`: WRF changes heat/moisture fluxes between `SFCLAY1D_mynn` output and the MYNN driver input.",
+        "WRF changes heat/moisture fluxes between `SFCLAY1D_mynn` output and the MYNN driver input via the Noah-MP land overlay; the JAX Step-1 path now mirrors this (`use_noahmp=True`, `sf_surface_physics=4`).",
         "",
         f"- WRF MYNN-driver `UST` vs WRF `SFCLAY1D_mynn` `UST`: max_abs `{handoff['wrf_driver_ust_vs_wrf_sfclay1d_ust']['max_abs']}`.",
         f"- WRF MYNN-driver `HFX` vs WRF `SFCLAY1D_mynn` `HFX`: max_abs `{handoff['wrf_driver_hfx_vs_wrf_sfclay1d_hfx']['max_abs']}`, RMSE `{handoff['wrf_driver_hfx_vs_wrf_sfclay1d_hfx']['rmse']}`.",
@@ -593,6 +629,7 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         "- MYNN grid-backed columns now use WRF `phy_prep` dry theta, hydrostatic pressure, rho, and physics-g dz.",
         "- MYNN dry-theta output is converted back to live theta_m state; raw source leaves stay dry theta.",
         "- First-step MYNN QKE initialization is ordered after surface fluxes in the operational MYNN slot.",
+        "- Step-1 builder now activates Noah-MP (`sf_surface_physics=4`) with WRF-derived land/static state, WRF clock, topo_shading/slope_rad, and WRF-faithful held radiation seeds (see `proofs/v014/noahmp_step1_closure.py`).",
         "",
         "## Fastest Next Command",
         "",

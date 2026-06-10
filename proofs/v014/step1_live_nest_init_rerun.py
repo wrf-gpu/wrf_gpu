@@ -476,6 +476,66 @@ def apply_live_nest_base_init(run: Any, parent: Mapping[str, Any], raw_child: Ma
     }
 
 
+def wrf_step1_julian_yearlen(time_label: str) -> tuple[float, float]:
+    """WRF clock (julian, yearlen) at the run start for the Noah-MP clock.
+
+    WRF ``grid%julian`` is the 0-based fractional day-of-year: ESMF
+    ``dayOfYear_r8 - 1.0`` (frame/module_domain.F:2165). At the step-1 physics
+    call the domain clock still holds the run start time.
+    """
+
+    import calendar  # noqa: PLC0415
+
+    start = datetime.strptime(time_label, "%Y-%m-%d_%H:%M:%S")
+    julian = float(start.timetuple().tm_yday - 1) + (
+        start.hour * 3600.0 + start.minute * 60.0 + start.second
+    ) / 86400.0
+    yearlen = 366.0 if calendar.isleap(start.year) else 365.0
+    return julian, yearlen
+
+
+def noahmp_step1_carry_seeds(state: Any, namelist: Any, noahmp_land: Any) -> tuple[Any, Any]:
+    """WRF-faithful step-1 carry seeds ``(noahmp_rad, rthraten)`` from ``state``.
+
+    WRF's step-1 radiation call (itimestep=1, xtime=0) samples the solar
+    geometry at the FORWARD interval midpoint ``xtime + radt/2``
+    (module_radiation_driver calc_coszen) and the resulting SWDOWN/GLW and
+    RTHRATEN are HELD over the first radt interval. The production
+    ``_refresh_noahmp_rad`` applies ``lead - radt/2`` internally, so seeding it
+    with ``lead = radt`` lands on exactly that absolute solar time while
+    keeping the production helper as the single implementation. The RTHRATEN
+    seed mirrors the production ``_refresh_rthraten`` body at the same solar
+    time, evaluated eagerly from the step-1 entry state (WRF computes it from
+    the start-of-step state).
+    """
+
+    import jax.numpy as jnp  # noqa: PLC0415
+    from gpuwrf.coupling.physics_couplers import rrtmg_theta_tendency  # noqa: PLC0415
+    from gpuwrf.runtime.operational_mode import _refresh_noahmp_rad  # noqa: PLC0415
+
+    radt_seconds = float(namelist.dt_s) * int(namelist.radiation_cadence_steps)
+    noahmp_rad = _refresh_noahmp_rad(
+        state,
+        namelist,
+        jnp.asarray(radt_seconds, dtype=jnp.float64),
+        True,
+        None,
+        land_state=noahmp_land,
+    )
+    rthraten = rrtmg_theta_tendency(
+        state,
+        namelist.grid,
+        time_utc=namelist.time_utc,
+        lead_seconds=0.5 * radt_seconds,
+        radiation_static=namelist.radiation_static,
+        topo_shading=int(namelist.topo_shading),
+        slope_rad=int(namelist.slope_rad),
+        shadow_length_m=float(namelist.topo_shadow_length_m),
+        land_state=noahmp_land,
+    )
+    return noahmp_rad, rthraten
+
+
 def build_live_nest_step1_inputs() -> dict[str, Any]:
     import jax  # noqa: PLC0415
     import jax.numpy as jnp  # noqa: PLC0415
@@ -542,10 +602,78 @@ def build_live_nest_step1_inputs() -> dict[str, Any]:
     )
     cu_physics = int(builder._domain_list_value(run.namelist, "physics", "cu_physics", "d02", 0))
     namelist = dataclass_replace(namelist, cu_physics=cu_physics)
-    carry = initial_operational_carry(child_state_with_parent_bdy)
+    # WRF-faithful step-1 surface/land + radiation configuration. The WRF fixture
+    # runs sf_surface_physics=4 (Noah-MP) with topo_shading=1/slope_rad=1; this
+    # builder previously left the namelist on the bulk surface path
+    # (use_noahmp=False, topo_shading=slope_rad=0), so the JAX step-1 capture
+    # never saw the Noah-MP land HFX/QFX overlay WRF feeds into MYNN, nor the
+    # WRF step-1 held radiation.
+    sf_surface_physics = int(
+        builder._domain_list_value(run.namelist, "physics", "sf_surface_physics", "d02", 0)
+    )
+    topo_shading = int(
+        builder._domain_list_value(run.namelist, "physics", "topo_shading", "d02", 0)
+    )
+    slope_rad = int(builder._domain_list_value(run.namelist, "physics", "slope_rad", "d02", 0))
+    radiation_static = None
+    if topo_shading or slope_rad:
+        from gpuwrf.io.radiation_static import load_radiation_static  # noqa: PLC0415
+
+        radiation_static, _rad_static_meta = load_radiation_static(
+            run, "d02", grid=live_child["grid"], metrics=live_child["metrics"]
+        )
+    namelist = dataclass_replace(
+        namelist,
+        topo_shading=topo_shading,
+        slope_rad=slope_rad,
+        radiation_static=radiation_static,
+    )
+    noahmp_land = None
+    noahmp_rad = None
+    noahmp_init_meta = None
+    rthraten_seed = None
+    if sf_surface_physics == 4:
+        from gpuwrf.io.noahmp_land_init import (  # noqa: PLC0415
+            build_noahmp_land_state,
+            build_noahmp_params,
+        )
+
+        noahmp_land, noahmp_static, noahmp_init_meta = build_noahmp_land_state(
+            builder.RUN_CASE3, "d02"
+        )
+        energy_params, rad_params, nroot = build_noahmp_params(noahmp_static)
+        julian0, yearlen = wrf_step1_julian_yearlen(str(namelist.time_utc))
+        namelist = dataclass_replace(
+            namelist,
+            use_noahmp=True,
+            sf_surface_physics=4,
+            noahmp_static=noahmp_static,
+            noahmp_energy_params=energy_params,
+            noahmp_rad_params=rad_params,
+            noahmp_nroot=nroot,
+            noahmp_julian=julian0,
+            noahmp_yearlen=yearlen,
+        )
+        noahmp_rad, rthraten_seed = noahmp_step1_carry_seeds(
+            child_state_with_parent_bdy, namelist, noahmp_land
+        )
+    carry = initial_operational_carry(
+        child_state_with_parent_bdy, noahmp_land=noahmp_land, noahmp_rad=noahmp_rad
+    )
+    if rthraten_seed is not None:
+        carry = carry.replace(rthraten=rthraten_seed)
     jax.block_until_ready(jax.tree_util.tree_leaves(carry)[0])
     initial_deltas = compare_initial_fields(raw_child, live_child, jax)
+    noahmp_inputs: dict[str, Any] = {}
+    if noahmp_land is not None:
+        noahmp_inputs = {
+            "noahmp_land": noahmp_land,
+            "noahmp_rad": noahmp_rad,
+            "rthraten_seed": rthraten_seed,
+            "noahmp_init_meta": noahmp_init_meta,
+        }
     return {
+        **noahmp_inputs,
         "run": run,
         "parent": parent,
         "raw_child": raw_child,

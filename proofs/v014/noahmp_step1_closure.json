@@ -1,0 +1,516 @@
+{
+  "commands": {
+    "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py"
+  },
+  "created_utc": "2026-06-10T06:47:46.565399+00:00",
+  "environment": {
+    "jax_backend": "cpu",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fastest_next_command": "Emit a per-column WRF noahmplsm ENERGY in/out hook on the pinned tree (FVEG/LAI/SAI, CM/CH in+out, two-stream SAV/SAG/FSR/FSA albedo chain, SH/EV/GH/TRAD/T2MV/T2MB, plus EFLXB terms) at step 1, column-diff it against the JAX physics.noahmp energy solve on the worst land cells (start at the strict worst cell i=66 j=37), fix the diverging chain, then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py (secondary lane: RRTMG GLW +17 W/m2 uniform clear-sky bias + RTHRATEN parity via an RRTMG forcing hook)",
+  "git": {
+    "branch": "worker/gpt/v013-close-manager",
+    "head": "c58057e523b9e6a78f5942adde30470628ffe27b"
+  },
+  "kernel_matrix": {
+    "current_inputs_wrf_qke_rthblten": {
+      "bias": -4.527801379247899e-06,
+      "corr": 0.8549916975250086,
+      "count": 461736,
+      "max_abs": 0.016064435310936355,
+      "nonfinite_count": 0,
+      "ref_max_abs": 0.026036581025,
+      "rmse": 0.00011906803622303894,
+      "strong_cells": 863,
+      "strong_ratio_median": 0.41208775619128535,
+      "strong_ratio_p10": 0.10728547149884965,
+      "strong_ratio_p90": 0.9998226025061588,
+      "worst_candidate": -0.009972145714063648,
+      "worst_reference": -0.026036581025
+    },
+    "wrf_inputs_wrf_qke_rthblten": {
+      "bias": 8.055844529165623e-08,
+      "corr": 0.9999269219802973,
+      "count": 461736,
+      "max_abs": 0.00026978377168347277,
+      "nonfinite_count": 0,
+      "ref_max_abs": 0.026036581025,
+      "rmse": 2.5913062928007185e-06,
+      "strong_cells": 863,
+      "strong_ratio_median": 0.9976066926053615,
+      "strong_ratio_p10": 0.9906665415802358,
+      "strong_ratio_p90": 1.0032734141199182,
+      "worst_candidate": 0.004130257404483473,
+      "worst_reference": 0.0038604736328
+    }
+  },
+  "land_input_parity": {
+    "albedo_carry_vs_pre_albedo": {
+      "bias": 0.45259114719130217,
+      "count": 768,
+      "max_abs": 0.52000000477,
+      "ref_max_abs": 0.25,
+      "rmse": 0.45474165778717096
+    },
+    "note": "tslb/smois/sh2o/tsk/vegfra/snow match WRF to hook print precision; the znt/albedo CARRY rows are diagnostic-level (the energy solve derives two-stream albedo and z0wrf internally) but flag the albedo chain for the per-column energy hook.",
+    "sh2o1": {
+      "bias": 5.417500306143195e-14,
+      "count": 768,
+      "max_abs": 4.954231469511683e-12,
+      "ref_max_abs": 0.17051698267,
+      "rmse": 1.5117398811944278e-12
+    },
+    "smois1": {
+      "bias": 5.417500306143195e-14,
+      "count": 768,
+      "max_abs": 4.954231469511683e-12,
+      "ref_max_abs": 0.17051698267,
+      "rmse": 1.5117398811944278e-12
+    },
+    "snow": {
+      "bias": 0.0,
+      "count": 768,
+      "max_abs": 0.0,
+      "ref_max_abs": 0.0,
+      "rmse": 0.0
+    },
+    "status": "READY",
+    "tsk_carry": {
+      "bias": 1.543170036200081e-10,
+      "count": 768,
+      "max_abs": 5.000003966415534e-09,
+      "ref_max_abs": 304.15545654,
+      "rmse": 2.923221361454003e-09
+    },
+    "tslb1": {
+      "bias": -2.746839792659254e-12,
+      "count": 768,
+      "max_abs": 5.000003966415534e-09,
+      "ref_max_abs": 307.17541504,
+      "rmse": 2.828303696324081e-09
+    },
+    "vegfra": {
+      "bias": -4.810453097418728e-12,
+      "count": 768,
+      "max_abs": 4.970708289420145e-10,
+      "ref_max_abs": 63.909881592,
+      "rmse": 2.3351605993049265e-10
+    },
+    "znt_carry_vs_pre_znt": {
+      "bias": -0.13114583326016602,
+      "count": 768,
+      "max_abs": 0.75000001192,
+      "ref_max_abs": 0.80000001192,
+      "rmse": 0.23967045592790065
+    }
+  },
+  "mynn_source_leaves": {
+    "mass_coupled_max_abs": {
+      "jax_rthblten": 1242.36969050612,
+      "wrf_driver_rthblten": 2522.905703464659
+    },
+    "raw_rqvblten_vs_wrf": {
+      "bias": -5.519008871561918e-09,
+      "corr": 0.7779623583783244,
+      "count": 461736,
+      "max_abs": 3.706168411134228e-06,
+      "nonfinite_count": 0,
+      "ref_max_abs": 5.1020956562e-06,
+      "rmse": 7.151264761504128e-08,
+      "strong_cells": 8362,
+      "strong_ratio_median": 0.2534578071021307,
+      "strong_ratio_p10": 0.1525139018659962,
+      "strong_ratio_p90": 0.445911757341195,
+      "worst_candidate": -3.415145669657717e-07,
+      "worst_reference": -4.0476829781e-06
+    },
+    "raw_rthblten_vs_wrf": {
+      "bias": -4.528472208489633e-06,
+      "corr": 0.8561204423861145,
+      "count": 461736,
+      "max_abs": 0.016072531466352954,
+      "nonfinite_count": 0,
+      "ref_max_abs": 0.026036581025,
+      "rmse": 0.00011917325735225103,
+      "strong_cells": 863,
+      "strong_ratio_median": 0.41187007310784046,
+      "strong_ratio_p10": 0.10675759184538575,
+      "strong_ratio_p90": 0.9965784750284634,
+      "worst_candidate": -0.009964049558647048,
+      "worst_reference": -0.026036581025
+    }
+  },
+  "noahmp_init_meta": {
+    "domain": "d02",
+    "init_note": "corpus wrfinput is the PRE-NOAHMP_INIT state; canopy/snow prognostic XY fields are 0 over land, so they are built via a faithful module_sf_noahmpdrv.F NOAHMP_INIT replica (TV/TG/TAH=TSK, EAH=2000, CANLIQ=CANWAT, SNOW_INIT for ZSNSO/ISNOW/TSNO). This is the SAME land carry WRF integrates from.",
+    "n_land_cells": 768,
+    "run_dir": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3",
+    "source": "warm-start from corpus wrfinput",
+    "table_dir": "/home/enric/src/wrf_pristine/WRF/run",
+    "wrfinput_file": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02"
+  },
+  "post_overlay_mynn_boundary": {
+    "fltv": {
+      "all": {
+        "bias": -0.013297784077784985,
+        "count": 10494,
+        "max_abs": 0.25154919874636517,
+        "ref_max_abs": 0.3119694983335894,
+        "rmse": 0.020507450617942163
+      },
+      "land": {
+        "bias": -0.041838694028673386,
+        "count": 768,
+        "max_abs": 0.25154919874636517,
+        "ref_max_abs": 0.3119694983335894,
+        "rmse": 0.06174455503827164
+      },
+      "water": {
+        "bias": -0.011044091003316315,
+        "count": 9726,
+        "max_abs": 0.03235508459779328,
+        "ref_max_abs": 0.03851812980463102,
+        "rmse": 0.012358157438792648
+      }
+    },
+    "qv_flux_flqv": {
+      "all": {
+        "bias": -1.3069868992678886e-05,
+        "count": 10494,
+        "max_abs": 2.2627856641408083e-05,
+        "ref_max_abs": 6.270674727475933e-05,
+        "rmse": 1.4378374270656485e-05
+      },
+      "land": {
+        "bias": -5.631023756822546e-07,
+        "count": 768,
+        "max_abs": 7.702453312724795e-06,
+        "ref_max_abs": 1.3251135948602597e-05,
+        "rmse": 1.3935357296147104e-06
+      },
+      "water": {
+        "bias": -1.4057448343064803e-05,
+        "count": 9726,
+        "max_abs": 2.2627856641408083e-05,
+        "ref_max_abs": 6.270674727475933e-05,
+        "rmse": 1.4930139093172045e-05
+      }
+    },
+    "rhosfc_rho1": {
+      "all": {
+        "bias": -0.01859769097259396,
+        "count": 10494,
+        "max_abs": 0.022232895332359393,
+        "ref_max_abs": 1.2120962143,
+        "rmse": 0.018657927441933085
+      },
+      "land": {
+        "bias": -0.015839842849316388,
+        "count": 768,
+        "max_abs": 0.01991317783299129,
+        "ref_max_abs": 1.2024091482,
+        "rmse": 0.01615072626245616
+      },
+      "water": {
+        "bias": -0.01881546059614703,
+        "count": 9726,
+        "max_abs": 0.022232895332359393,
+        "ref_max_abs": 1.2120962143,
+        "rmse": 0.018841698210776123
+      }
+    },
+    "theta_flux_flt": {
+      "all": {
+        "bias": -0.010973364932034142,
+        "count": 10494,
+        "max_abs": 0.251691908645883,
+        "ref_max_abs": 0.3119690397296882,
+        "rmse": 0.0191699574680417
+      },
+      "land": {
+        "bias": -0.0418993964983867,
+        "count": 768,
+        "max_abs": 0.251691908645883,
+        "ref_max_abs": 0.3119690397296882,
+        "rmse": 0.06165639117757469
+      },
+      "water": {
+        "bias": -0.008531334061896495,
+        "count": 9726,
+        "max_abs": 0.030460052288376865,
+        "ref_max_abs": 0.027746501121704424,
+        "rmse": 0.009814500367315135
+      }
+    },
+    "tsk_vs_post_noahmp": {
+      "bias": 0.16171443153461035,
+      "count": 10494,
+      "max_abs": 4.147776477931757,
+      "ref_max_abs": 305.0635376,
+      "rmse": 0.6530300752836332
+    },
+    "ust": {
+      "all": {
+        "bias": -0.025450672362592606,
+        "count": 10494,
+        "max_abs": 0.14761978872403697,
+        "ref_max_abs": 0.33699807525,
+        "rmse": 0.02890112307698696
+      },
+      "land": {
+        "bias": -0.04001454665125641,
+        "count": 768,
+        "max_abs": 0.14761978872403697,
+        "ref_max_abs": 0.33699807525,
+        "rmse": 0.05128430026415298
+      },
+      "water": {
+        "bias": -0.02430065637928048,
+        "count": 9726,
+        "max_abs": 0.03847921137424709,
+        "ref_max_abs": 0.23324559629,
+        "rmse": 0.026335350435967967
+      }
+    },
+    "znt_vs_post_noahmp": {
+      "bias": 5.123864694981164e-07,
+      "count": 10494,
+      "max_abs": 1.0323670731868148e-06,
+      "ref_max_abs": 1.0,
+      "rmse": 5.940133097122325e-07
+    }
+  },
+  "rad_seed_vs_wrf_hook": {
+    "convention": "lead = radt/2 (WRF forward interval midpoint, xtime + radt/2)",
+    "lead0_contrast_soldn_vs_wrf_swdown": {
+      "bias": 56.37912893450022,
+      "count": 10494,
+      "max_abs": 70.75897457953636,
+      "ref_max_abs": 459.25668335,
+      "rmse": 56.43169584231224
+    },
+    "lwdn_vs_wrf_glw": {
+      "all": {
+        "bias": 17.441338534376907,
+        "count": 10494,
+        "max_abs": 22.521057028747748,
+        "ref_max_abs": 345.51480103,
+        "rmse": 17.52098025463856
+      },
+      "land": {
+        "bias": 14.717725060801081,
+        "count": 768,
+        "max_abs": 19.485894872637573,
+        "ref_max_abs": 338.15213013,
+        "rmse": 15.057201665552864
+      },
+      "water": {
+        "bias": 17.656404866651865,
+        "count": 9726,
+        "max_abs": 22.521057028747748,
+        "ref_max_abs": 345.51480103,
+        "rmse": 17.70092642715564
+      }
+    },
+    "soldn_vs_wrf_swdown": {
+      "all": {
+        "bias": -2.205513932453791,
+        "count": 10494,
+        "max_abs": 6.825290667340511,
+        "ref_max_abs": 459.25668335,
+        "rmse": 2.759245466496041
+      },
+      "land": {
+        "bias": 3.5833462973329873,
+        "count": 768,
+        "max_abs": 6.825290667340511,
+        "ref_max_abs": 459.25668335,
+        "rmse": 3.7388098548175384
+      },
+      "water": {
+        "bias": -2.662623191807713,
+        "count": 9726,
+        "max_abs": 3.770981998209777,
+        "ref_max_abs": 375.72979736,
+        "rmse": 2.6666104701275253
+      }
+    },
+    "status": "READY"
+  },
+  "rad_swap_causal_split": {
+    "interpretation": "If the truth-radiation run does not collapse the land theta_flux residual, the deficit is NOT the radiation forcing.",
+    "land_flt_with_jax_seed_radiation": {
+      "bias": -0.04189539728540544,
+      "count": 768,
+      "max_abs": 0.2516927769985068,
+      "ref_max_abs": 0.3119690397296882,
+      "rmse": 0.061655405831022324
+    },
+    "land_flt_with_wrf_truth_radiation": {
+      "bias": -0.04662137066786276,
+      "count": 768,
+      "max_abs": 0.25215159752150773,
+      "ref_max_abs": 0.3119690397296882,
+      "rmse": 0.0643496272333122
+    },
+    "status": "READY"
+  },
+  "ranked_hypotheses": [
+    {
+      "evidence": "rad_swap_causal_split + land_input_parity + post_overlay_mynn_boundary + kernel_matrix",
+      "hypothesis": "JAX Noah-MP land-tile step-1 surface energy balance (land theta_flux max_abs 0.252 K m/s; land inputs match WRF to hook precision; WRF-truth-radiation swap does NOT collapse the residual; sfclay first-call fixed; MYNN kernel exonerated)",
+      "strict_contribution_max_abs": 1557.4042254872847
+    },
+    {
+      "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2",
+      "hypothesis": "RRTMG step-1 surface/atmosphere radiation forcing parity (GLW bias 17.44 W/m2, SWDOWN rmse 2.76 W/m2, mass-coupled RTHRATEN residual 19.4)",
+      "strict_contribution_max_abs": 19.425283200182427
+    }
+  ],
+  "rthraten_vs_wrf_part2": {
+    "full": {
+      "bias": -0.2793616965244019,
+      "count": 461736,
+      "max_abs": 19.425283200182427,
+      "ref_max_abs": 41.89738082885742,
+      "rmse": 2.4891912102886358
+    },
+    "jax_seed": "carry.rthraten * mass_h",
+    "nested_interior": {
+      "bias": -0.2788352657076086,
+      "count": 442112,
+      "max_abs": 19.425283200182427,
+      "ref_max_abs": 39.80049896240234,
+      "rmse": 2.4884141898276413
+    },
+    "status": "READY",
+    "wrf_field": "after_calculate_phy_tend RTHRATEN (mass-coupled)",
+    "wrf_mass_coupled_max_abs": 41.89738082885742
+  },
+  "schema": "wrfgpu2.v014.noahmp_step1_closure.v1",
+  "status": "PROOF_EXECUTED",
+  "step1_config": {
+    "bl_pbl_physics": 5,
+    "inputs_have_noahmp_land": true,
+    "noahmp_julian": 120.75,
+    "noahmp_nroot": 4,
+    "noahmp_yearlen": 365.0,
+    "radiation_static_loaded": true,
+    "rthraten_seed_present": true,
+    "sf_sfclay_physics": 5,
+    "sf_surface_physics": 4,
+    "slope_rad": 1,
+    "topo_shading": 1,
+    "use_noahmp": true
+  },
+  "strict_pass": {
+    "max_abs": 0.001,
+    "rmse": 1e-05
+  },
+  "strict_step1": {
+    "closed": false,
+    "metric": {
+      "bias": 0.9708198719221921,
+      "count": 442112,
+      "max_abs": 1489.5135568470864,
+      "nonfinite_diff_count": 0,
+      "p95": 2.0228175527071652,
+      "p99": 49.620901057302916,
+      "rmse": 13.2001844004901,
+      "worst_candidate": -2457.5830078125,
+      "worst_mismatch_fortran": {
+        "i": 66,
+        "j": 37,
+        "k": 3
+      },
+      "worst_reference": -968.0694509654136
+    },
+    "wrf_self_consistency": {
+      "after_conv_moist_formula": {
+        "bias": 1.3466279640646712e-08,
+        "count": 442112,
+        "max_abs": 0.00016236981809925055,
+        "nonfinite_diff_count": 0,
+        "p95": 9.974626740127944e-08,
+        "p99": 1.3856209870866126e-06,
+        "rmse": 8.089162788029723e-07,
+        "worst_candidate": 2128.967529296875,
+        "worst_mismatch_fortran": {
+          "i": 64,
+          "j": 37,
+          "k": 4
+        },
+        "worst_reference": 2128.967366927057
+      },
+      "after_update_pre_plus_active_rth": {
+        "bias": 0.0,
+        "count": 442112,
+        "max_abs": 0.0,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "rmse": 0.0,
+        "worst_candidate": 13.25869846343994,
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 2,
+          "k": 1
+        },
+        "worst_reference": 13.25869846343994
+      }
+    }
+  },
+  "truth_provenance": {
+    "determinism_byte_identical": {
+      "mynn_vs_rmolpin_build": true,
+      "mynn_vs_surfacehandoff_run": true,
+      "surface_vs_surfacehandoff_run": true
+    },
+    "note": "All surfaces from ONE run of the rmol-pinned WRF binary (module_bl_mynnedmf.F mym_initialize rmol=0 pin kills the uninitialized-rmol UB; outputs byte-stable across re-runs AND across two builds of the pinned tree). The prior strict truth (wrf_truth_00z_prepin_unpinned_build) came from an UNPINNED build and is retained for reference only.",
+    "pinned_onerun_files": {
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn_pinned_onerun/mynn_init_d02_step1.txt": {
+        "sha256_16": "7b7bcc838826a3a1",
+        "size": 136631880
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn_pinned_onerun/mynn_post_d02_step1_its_1_ite_159_jts_1_jte_66.txt": {
+        "sha256_16": "3186535664fcd500",
+        "size": 117837212
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn_pinned_onerun/mynn_pre_d02_step1_its_1_ite_159_jts_1_jte_66.txt": {
+        "sha256_16": "d502dbc1269bbd89",
+        "size": 155731066
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun/after_calculate_phy_tend_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt": {
+        "sha256_16": "9cf3b27432d85a55",
+        "size": 336564399
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun/after_conv_t_tendf_to_moist_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt": {
+        "sha256_16": "6259a1beb327fd9e",
+        "size": 336564402
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun/after_first_rk_step_part1_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt": {
+        "sha256_16": "6b84210861b607af",
+        "size": 237084943
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun/after_first_rk_step_part2_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt": {
+        "sha256_16": "10d8552a76133b47",
+        "size": 237084943
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun/after_update_phy_ten_d2_step_1_rk_1_is_1_ie_160_js_1_je_67.txt": {
+        "sha256_16": "808f9d8e17b47315",
+        "size": 336564395
+      },
+      "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun/source_save_after_rk_tendency_d2_step_1_is_1_ie_160_js_1_je_67.txt": {
+        "sha256_16": "ab7f7c4709c29a14",
+        "size": 13224053
+      },
+      "/tmp/wrfgpu2_v014_surface_handoff_pinned_onerun/surface_land_flux_d02_step1.txt": {
+        "sha256_16": "7aa6463a1cd95267",
+        "size": 22478958
+      }
+    },
+    "strict_truth_link": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun"
+  },
+  "verdict": "NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_NOAHMP_LAND_TILE_ENERGY"
+}

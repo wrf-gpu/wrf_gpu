@@ -159,7 +159,6 @@
  !! performed at every time step are ready for execution.
      IF (bl_mynn_tkeadvect) THEN
 
-
 # ---- step1_sfclay_output_algebra_wrf_patch.diff ----
 diff --git a/phys/module_sf_mynn.F b/phys/module_sf_mynn.F
 --- a/phys/module_sf_mynn.F
@@ -198,7 +197,6 @@ diff --git a/phys/module_sf_mynn.F b/phys/module_sf_mynn.F
 +   ENDIF
 
  END SUBROUTINE SFCLAY1D_mynn
-
 
 # ---- step1_tsk_znt_sourcing_fix_wrf_patch.diff ----
 diff --git a/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F

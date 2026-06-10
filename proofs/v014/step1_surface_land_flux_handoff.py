@@ -349,11 +349,21 @@ def build_proof() -> dict[str, Any]:
         and current_step1_config["sf_surface_physics"] is None
         and current_step1_config["inputs_have_noahmp_land"] is False
     )
-    verdict = (
-        "STEP1_SURFACE_LAND_FLUX_HANDOFF_NARROWED_TO_JAX_NOAHMP_DISABLED_CONFIGURATION"
-        if step1_skips_noahmp
-        else "STEP1_SURFACE_LAND_FLUX_HANDOFF_REQUIRES_NOAHMP_CONFIGURATION_RECHECK"
+    step1_has_noahmp = (
+        current_step1_config["use_noahmp"] is True
+        and current_step1_config["sf_surface_physics"] is not None
+        and int(current_step1_config["sf_surface_physics"]) == 4
+        and current_step1_config["noahmp_static_configured"]
+        and current_step1_config["noahmp_energy_params_configured"]
+        and current_step1_config["noahmp_rad_params_configured"]
+        and current_step1_config["inputs_have_noahmp_land"]
     )
+    if step1_has_noahmp:
+        verdict = "STEP1_SURFACE_LAND_FLUX_HANDOFF_CLOSED_JAX_NOAHMP_ENABLED"
+    elif step1_skips_noahmp:
+        verdict = "STEP1_SURFACE_LAND_FLUX_HANDOFF_NARROWED_TO_JAX_NOAHMP_DISABLED_CONFIGURATION"
+    else:
+        verdict = "STEP1_SURFACE_LAND_FLUX_HANDOFF_REQUIRES_NOAHMP_CONFIGURATION_RECHECK"
 
     return {
         "status": "PROOF_EXECUTED",
@@ -441,9 +451,15 @@ def write_markdown(payload: Mapping[str, Any]) -> None:
         "",
         "## Blocker",
         "",
-        "The blocker is now narrower than the surface/land flux handoff: the WRF handoff itself is closed to the MYNN-driver input, but the JAX Step-1 path is built with NoahMP disabled/missing land state.",
+        (
+            "CLOSED: the JAX Step-1 builder now carries WRF-derived NoahMP land/static state "
+            "with sf_surface_physics=4 + use_noahmp=True; the remaining gate is the strict "
+            "Step-1 metric in step1_mynn_source_coupling / noahmp_step1_closure."
+            if str(verdict).endswith("CLOSED_JAX_NOAHMP_ENABLED")
+            else "The blocker is now narrower than the surface/land flux handoff: the WRF handoff itself is closed to the MYNN-driver input, but the JAX Step-1 path is built with NoahMP disabled/missing land state."
+        ),
         "",
-        "Fastest next command after wiring NoahMP land/static into the Step-1 builder:",
+        "Fastest next command:",
         "",
         "```bash",
         payload.get("narrowed_blocker", {}).get("fastest_next_command", ""),
@@ -471,7 +487,11 @@ def write_review(payload: Mapping[str, Any]) -> None:
         f"- POST_NOAHMP -> MYNN HFX max_abs `{summary.get('post_to_mynn_hfx', {}).get('max_abs')}`.",
         "",
         "Unresolved risk:",
-        "- Strict Step-1 `T_TENDF` remains red until the JAX Step-1 builder/source capture carries WRF-derived NoahMP land/static state and enables `sf_surface_physics=4`.",
+        (
+            "- JAX Step-1 builder now carries WRF-derived NoahMP land/static state with `sf_surface_physics=4`; the strict Step-1 gate is scored by `proofs/v014/noahmp_step1_closure.py`."
+            if str(verdict).endswith("CLOSED_JAX_NOAHMP_ENABLED")
+            else "- Strict Step-1 `T_TENDF` remains red until the JAX Step-1 builder/source capture carries WRF-derived NoahMP land/static state and enables `sf_surface_physics=4`."
+        ),
         "",
     ]
     OUT_REVIEW.parent.mkdir(parents=True, exist_ok=True)

@@ -3,6 +3,25 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-10 07:23 WEST: the Fable/Mythos NoahMP Step-1 closure sprint is
+accepted as a strict narrowing plus a small production fix, not a strict
+closure. Verdict:
+`NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_NOAHMP_LAND_TILE_ENERGY`
+(`proofs/v014/noahmp_step1_closure.*`). The contracted blocker is gone:
+current Step-1 inputs report `use_noahmp=True`, `sf_surface_physics=4`, and
+`inputs_have_noahmp_land=True`. Production bug fixed: `first_timestep` now
+threads into the sfclay run inside the NoahMP blend path, so the MYNN surface
+first-call semantics engage when NoahMP is active. Manager rerun gates passed:
+three CPU proofs, JSON validation, `git diff --check`, and 16 focused tests
+passed with 1 pre-existing skip. Strict Step-1 remains red against pinned
+one-run WRF truth at max_abs `1489.5135568470864`, RMSE
+`13.2001844004901`. The leading blocker is now the NoahMP land-tile
+energy/HFX chain at strict worst cells; secondary RRTMG GLW/RTHRATEN parity is
+real but not the leading cause. Next primary sprint: Fable/Mythos after
+`/compact`, whole endpoint = WRF `noahmplsm` energy hook at worst cells,
+compare/fix `physics.noahmp`, rerun `noahmp_step1_closure.py`. TOST,
+Switzerland, FP32 R1/R2, and long GPU validation remain paused.
+
 Update 2026-06-10 06:31 WEST: the Step-1 surface/land flux handoff sprint is
 accepted as a strict narrowing, not a closure. Verdict:
 `STEP1_SURFACE_LAND_FLUX_HANDOFF_NARROWED_TO_JAX_NOAHMP_DISABLED_CONFIGURATION`
