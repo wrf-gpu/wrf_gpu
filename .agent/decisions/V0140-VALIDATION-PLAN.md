@@ -218,6 +218,15 @@ have two regional field-parity gates:
 - **Switzerland/Gotthard 72h d01**: non-Canary winter/Alps generalization.
 - **Canary L2 d02 72h**: operational Canary 3 km target with retained CPU truth.
 
+The mandatory Canary case is
+`20260501_18z_l2_72h_20260519T173026Z`, with CPU truth at
+`/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+and retained inputs at
+`/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z`.
+This is documented in `proofs/v014/canary_cpu_truth_inventory.md`. Existing d03
+truth is scientifically useful but currently 24h-oriented, so d03 is secondary
+until the two mandatory 72h gates are green.
+
 The atlas requirement is recorded in
 `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`; the release-gate decision is
 recorded in `.agent/decisions/V0140-FIELD-PARITY-RELEASE-GATE.md`. The atlas
