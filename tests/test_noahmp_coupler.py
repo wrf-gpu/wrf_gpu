@@ -182,3 +182,38 @@ def test_adapter_runs_end_to_end():
         assert np.all(np.isfinite(np.asarray(leaf)))
     for leaf in jax.tree_util.tree_leaves(blended):
         assert np.all(np.isfinite(np.asarray(leaf)))
+
+
+@pytest.mark.skipif(not HAVE_TABLES, reason="pristine WRF MPTABLE not available")
+def test_first_timestep_threads_into_blend_sfclay():
+    """v0.14 NoahMP Step-1 closure: ``first_timestep`` must reach the sfclay run
+    INSIDE the blend (it previously always ran the warm-call branch, so the WRF
+    MYNN surface first-call semantics never engaged on the Noah-MP path)."""
+    state, land, static, rad, clock = _build()
+    is_land = np.asarray((state.xland - 1.5) < 0.0).reshape(-1)
+    water = ~is_land
+
+    # default (no kwarg) == explicit False, bit-for-bit (no-regression invariant).
+    _, _, blended_default = noahmp_surface_adapter(
+        state, land, static, radiation=rad, clock=clock, dt=90.0)
+    _, _, blended_false = noahmp_surface_adapter(
+        state, land, static, radiation=rad, clock=clock, dt=90.0, first_timestep=False)
+    np.testing.assert_array_equal(np.asarray(blended_default.ustar),
+                                  np.asarray(blended_false.ustar))
+    np.testing.assert_array_equal(np.asarray(blended_default.theta_flux),
+                                  np.asarray(blended_false.theta_flux))
+
+    # first_timestep=True engages the first-call branch: water columns must equal
+    # a direct first-call sfclay run, and differ from the warm-call blend.
+    _, _, blended_first = noahmp_surface_adapter(
+        state, land, static, radiation=rad, clock=clock, dt=90.0, first_timestep=True)
+    sf_first = surface_layer_with_diagnostics(state, first_timestep=True).fluxes
+    np.testing.assert_allclose(
+        np.asarray(blended_first.ustar).reshape(-1)[water],
+        np.asarray(sf_first.ustar).reshape(-1)[water], rtol=0, atol=1e-12)
+    np.testing.assert_allclose(
+        np.asarray(blended_first.theta_flux).reshape(-1)[water],
+        np.asarray(sf_first.theta_flux).reshape(-1)[water], rtol=0, atol=1e-12)
+    assert not np.allclose(np.asarray(blended_first.ustar),
+                           np.asarray(blended_false.ustar), atol=1e-12), \
+        "first-call branch must change the cold-start sfclay solution"

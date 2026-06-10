@@ -144,6 +144,7 @@ def noahmp_surface_adapter(
     forcing: NoahMPForcing | None = None,
     energy_params: Any = None,
     rad_params: Any = None,
+    first_timestep: Any = False,
 ) -> tuple[Any, NoahMPLandState, SurfaceFluxes]:
     """Run the land-masked Noah-MP / sfclay blend for one physics step.
 
@@ -157,8 +158,12 @@ def noahmp_surface_adapter(
     operational scan never re-runs the (concrete-``nroot``) ``build_energy_params``
     inside jit; when None the driver builds them itself (the eager S6a gate path).
     """
-    # ---- 1. sfclay over ALL columns (UNCHANGED) ----
-    diag = surface_layer_with_diagnostics(state)
+    # ---- 1. sfclay over ALL columns (UNCHANGED formulae). ``first_timestep``
+    #         engages the WRF MYNN surface FIRST-CALL semantics (UST first guess,
+    #         MOL=0, land QSFC, Li_etal_2010 z/L seed) on the Noah-MP path too;
+    #         without it the blend ran the warm-call branch at step 1 while the
+    #         standalone surface slot ran the fixed first-call branch. ----
+    diag = surface_layer_with_diagnostics(state, first_timestep=first_timestep)
     sf = diag.fluxes                          # SurfaceFluxes (kinematic)
     rhosfc = jnp.asarray(sf.rhosfc, dtype=jnp.float64)
 

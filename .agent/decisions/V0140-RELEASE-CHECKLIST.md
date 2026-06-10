@@ -1,6 +1,6 @@
 # V0.14 Release Checklist
 
-Date: 2026-06-10 06:31 WEST
+Date: 2026-06-10 07:23 WEST
 Owner: manager
 
 ## Release Rule
@@ -14,7 +14,7 @@ scalable GPU rewrite.
 
 | Lane | State | Gate before release |
 |---|---|---|
-| Grid-cell parity | Active. MYNN source-output deficit, MYNN surface first-call semantics, WRF `LANDUSE.TBL`-backed `TSK/ZNT/MAVAIL`, WRF `phy_prep` thermodynamic inputs, local `SFCLAY1D_mynn` output algebra, MYNN dry-theta/phy_prep source coupling, and WRF surface/land flux handoff localization are fixed/proven or bounded. Strict Step-1 remains red at max_abs `438.5379097262689`, RMSE `5.4654420375782955`. Latest blocker: WRF handoff is closed after NoahMP, but JAX Step-1 is built with NoahMP disabled/missing land/static state (`use_noahmp=False`, `sf_surface_physics=None`, `inputs_have_noahmp_land=False`). | Fable/Mythos whole-task sprint is staged at `.agent/sprints/2026-06-10-v014-fable-noahmp-step1-closure/`: wire/fix WRF-derived NoahMP land/static/radiation state and `sf_surface_physics=4` semantics in the Step-1 live-nest/source-capture path, then rerun `step1_mynn_source_coupling.py` and strict Step-1. |
+| Grid-cell parity | Active. MYNN source-output deficit, MYNN surface first-call semantics, WRF `LANDUSE.TBL`-backed `TSK/ZNT/MAVAIL`, WRF `phy_prep` thermodynamic inputs, local `SFCLAY1D_mynn` output algebra, MYNN dry-theta/phy_prep source coupling, WRF surface/land flux handoff localization, and the JAX Step-1 NoahMP-disabled configuration gap are fixed/proven or bounded. `proofs/v014/noahmp_step1_closure.*` now proves `use_noahmp=True`, `sf_surface_physics=4`, and WRF-derived NoahMP land/static/radiation state in Step-1. Strict Step-1 remains red against pinned one-run WRF truth at max_abs `1489.5135568470864`, RMSE `13.2001844004901`. Latest blocker: NoahMP land-tile energy/HFX chain at strict worst cells; secondary RRTMG GLW/RTHRATEN parity is open. | Close NoahMP land-tile energy parity with WRF `noahmplsm` per-column hooks and rerun `proofs/v014/noahmp_step1_closure.py`; then close or bound secondary RRTMG GLW/RTHRATEN parity. |
 | Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Exact-branch memory preflight is green at 8116 MiB compute peak and 378 s warm-cache. Mixed FP32 R1/R2 remains blocked by the open fp64 dynamics frontier. | Rerun exact-branch memory preflight only on the final candidate branch before long validation. Escalate FP32 implementation to Fable/Mythos only if the fp64 grid-parity frontier closes and GPT cannot directly solve mixed precision. |
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. Pre-result tolerance candidate is accepted in `proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json`: ten hard documented fields, static exact/tight checks, and `P/PH/MU/RAINC` critical report-only. | Final scoring uses the accepted manifest, produces summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. |
 | Switzerland/Gotthard | CPU truth exists. No post-fix GPU run has been accepted. | Post-stabilization GPU-vs-CPU proof with field-level comparison and finite/stability evidence. |
@@ -33,9 +33,10 @@ scalable GPU rewrite.
 
 ## Final v0.14 Gate Sequence
 
-1. Close the active Step-1 NoahMP-disabled/missing land-state blocker with a
+1. Close the active NoahMP land-tile energy/HFX Step-1 blocker with a
    production/proof fix if local, or an exact WRF-anchored narrower blocker.
-2. Rerun the strict Step-1 and short grid-field falsifier before launching
+2. Close or bound secondary RRTMG GLW/RTHRATEN parity, then rerun the strict
+   Step-1 and short grid-field falsifier before launching
    longer campaigns.
 3. Run exact-branch memory preflight on the final candidate branch.
 4. Run Switzerland/Gotthard post-fix GPU-vs-CPU validation.

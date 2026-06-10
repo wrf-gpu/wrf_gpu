@@ -2953,7 +2953,7 @@ def _physics_step_forcing(
         next_state, next_land = noahmp_surface_step(
             next_state, carry.noahmp_land, namelist.noahmp_static,
             float(namelist.dt_s), radiation=radiation, clock=clock,
-            energy_params=ep, rad_params=rp,
+            energy_params=ep, rad_params=rp, first_timestep=first_timestep,
         )
         next_carry = next_carry.replace(noahmp_land=next_land, noahmp_rad=next_carry_rad)
     else:

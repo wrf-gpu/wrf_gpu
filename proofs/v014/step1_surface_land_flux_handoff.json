@@ -22,17 +22,17 @@
     "wrf_patch": {
       "exists": true,
       "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_surface_land_flux_handoff_wrf_patch.diff",
-      "size_bytes": 9007
+      "size_bytes": 9051
     }
   },
-  "created_utc": "2026-06-10T05:23:07.203424+00:00",
+  "created_utc": "2026-06-10T06:51:48.506321+00:00",
   "current_jax_step1_config": {
-    "inputs_have_noahmp_land": false,
-    "noahmp_energy_params_configured": false,
-    "noahmp_rad_params_configured": false,
-    "noahmp_static_configured": false,
-    "sf_surface_physics": null,
-    "use_noahmp": false
+    "inputs_have_noahmp_land": true,
+    "noahmp_energy_params_configured": true,
+    "noahmp_rad_params_configured": true,
+    "noahmp_static_configured": true,
+    "sf_surface_physics": 4,
+    "use_noahmp": true
   },
   "environment": {
     "cuda_visible_devices": "",
@@ -840,20 +840,20 @@
     }
   },
   "prior_strict_after_conv_t_tendf": {
-    "bias": -0.63476057110163,
+    "bias": 0.9708198719221921,
     "count": 442112,
-    "max_abs": 438.5379097262689,
+    "max_abs": 1489.5135568470864,
     "nonfinite_diff_count": 0,
-    "p95": 2.2262773844310586,
-    "p99": 3.574792756599226,
-    "rmse": 5.4654420375782955,
-    "worst_candidate": 581.6277465820312,
+    "p95": 2.0228175527071652,
+    "p99": 49.620901057302916,
+    "rmse": 13.2001844004901,
+    "worst_candidate": -2457.5830078125,
     "worst_mismatch_fortran": {
-      "i": 74,
-      "j": 39,
-      "k": 1
+      "i": 66,
+      "j": 37,
+      "k": 3
     },
-    "worst_reference": 143.08983685576237
+    "worst_reference": -968.0694509654136
   },
   "schema": "wrfgpu2.v014.step1_surface_land_flux_handoff.v1",
   "sfclay_to_pre_noahmp": {
@@ -943,7 +943,7 @@
       "rmse": 2.620075464162255e-16
     }
   },
-  "verdict": "STEP1_SURFACE_LAND_FLUX_HANDOFF_NARROWED_TO_JAX_NOAHMP_DISABLED_CONFIGURATION",
+  "verdict": "STEP1_SURFACE_LAND_FLUX_HANDOFF_CLOSED_JAX_NOAHMP_ENABLED",
   "wrf_namelist_subset": {
     "bl_pbl_physics": "5, 5",
     "mp_physics": "8, 8",

@@ -347,7 +347,20 @@ def apply_mythos_perturb_init(inputs: Mapping[str, Any]) -> dict[str, Any]:
         w=w_new,
     )
     boundary_state = build_boundary_state(inputs, patched)
-    carry = initial_operational_carry(boundary_state)
+    # Noah-MP land carry + WRF step-1 held radiation seeds (noahmp_rad/rthraten)
+    # must ride THIS carry too: the strict capture runs from patched["carry"].
+    # Re-derive the radiation seeds from the PATCHED step-1 entry state (WRF
+    # computes the step-1 radiation from its actual start-of-step state).
+    noahmp_land = inputs.get("noahmp_land")
+    if noahmp_land is not None:
+        noahmp_rad, rthraten_seed = live.noahmp_step1_carry_seeds(
+            boundary_state, inputs["namelist"], noahmp_land
+        )
+        carry = initial_operational_carry(
+            boundary_state, noahmp_land=noahmp_land, noahmp_rad=noahmp_rad
+        ).replace(rthraten=rthraten_seed)
+    else:
+        carry = initial_operational_carry(boundary_state)
     jax.block_until_ready(carry.state.theta)
     return {
         "state": patched,

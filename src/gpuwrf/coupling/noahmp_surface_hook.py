@@ -118,6 +118,7 @@ def noahmp_surface_step(
     clock: Any = None,
     energy_params: Any = None,
     rad_params: Any = None,
+    first_timestep: Any = False,
 ) -> tuple[Any, NoahMPLandState]:
     """Run the Noah-MP/sfclay blend and write the blended flux handles into State.
 
@@ -133,6 +134,7 @@ def noahmp_surface_step(
     view_wb, land_out, blended = noahmp_surface_adapter(
         view, land_state, static, radiation=radiation, clock=clock, dt=float(dt),
         energy_params=energy_params, rad_params=rad_params,
+        first_timestep=first_timestep,
     )
     # ``view_wb`` carries the blended 2-D t_skin/roughness_m/qsfc; the blended
     # kinematic flux handles come from ``blended``. Map both back onto the State.
