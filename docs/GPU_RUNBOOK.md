@@ -113,6 +113,89 @@ scripts/run_powered_tost_n15.sh --dry-run --resume
 `--dry-run` prepares the merged root and prints the case plan without launching
 GPU forecasts.
 
+## v0.14 Field-Parity Gates
+
+The v0.14 release gate is field parity/stability, not station-only TOST. Do not
+start long GPU gates until the short h1 field falsifier is green on the final
+candidate branch and exact-branch memory preflight is green.
+
+The mandatory Canary gate uses this existing CPU-WRF truth:
+
+- run id: `20260501_18z_l2_72h_20260519T173026Z`
+- CPU truth:
+  `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- retained inputs:
+  `/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z`
+- domain: `d02`
+
+Short h1 Canary falsifier with resource CSVs:
+
+```bash
+RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
+mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources}
+scripts/run_gpu_lowprio.sh --cores 0-23 \
+  --resource-log-dir "$RUN_ROOT/resources" \
+  --resource-label v014_canary_h1_field_falsifier \
+  --resource-interval 5 \
+  -- \
+  python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
+    --run-root /mnt/data/canairy_meteo/runs/wrf_l2 \
+    --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+    --run-id 20260501_18z_l2_72h_20260519T173026Z \
+    --hours 1 \
+    --output-root "$RUN_ROOT/gpu_output" \
+    --proof-dir "$RUN_ROOT/proofs"
+```
+
+Compare the h1 output:
+
+```bash
+JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
+  python scripts/compare_wrfout_grid.py \
+    --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z \
+    --gpu-dir "$RUN_ROOT/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z" \
+    --domain d02 \
+    --init 2026-05-01T18:00:00+00:00 \
+    --min-lead 1 --max-lead 1 \
+    --out-json "$RUN_ROOT/short_field_h1_grid_compare.json" \
+    --out-md "$RUN_ROOT/short_field_h1_grid_compare.md"
+```
+
+If the h1 falsifier is green, run the full Canary 72 h gate with the same
+command shape and `--hours 72`. Keep the immutable run root under
+`/mnt/data/wrf_gpu_validation/`, then run the Grid-Delta Atlas over leads 0-72
+for every common numeric `wrfout_d02` field.
+
+The Switzerland/Gotthard 72 h CPU truth is built as a CPU-WRF run, not a GPU
+job. After the Switzerland case builder has populated `wrfinput_d01`,
+`wrfbdy_d01`, and `namelist.input` under a `run_cpu` directory, track CPU memory
+with the monitor directly around the launched WRF process:
+
+```bash
+OUT=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_$(date -u +%Y%m%dT%H%M%SZ)
+CPU_DIR=$OUT/run_cpu
+mkdir -p "$OUT/resources"
+# Launch the CPU-WRF wrapper in the background, then monitor its PID tree.
+RUNROOT="$OUT" CPU_DIR="$CPU_DIR" NRANKS=24 \
+  bash scripts/run_switzerland_cpu_reference_mpi.sh > "$OUT/switzerland_72h_cpu.log" 2>&1 &
+PID=$!
+scripts/monitor_resource_usage.sh \
+  --out-dir "$OUT/resources" \
+  --label switzerland_72h_cpu \
+  --interval 5 \
+  --no-gpu \
+  --pid "$PID" \
+  --match-regex 'wrf.exe|mpirun'
+wait "$PID"; echo $? > "$OUT/switzerland_72h_cpu.rc"
+```
+
+For GPU runs, prefer `scripts/run_gpu_lowprio.sh --resource-log-dir ...`; it
+writes:
+
+- `<label>_gpu_usage.csv`
+- `<label>_process_usage.csv`
+- `<label>_system_memory.csv`
+
 ## L2 d02 TOST/Debug Cases
 
 The L2 corpus cases used by powered TOST are **max_dom=2 live-nested cases**:
