@@ -1,6 +1,6 @@
 # V0.14 Release Checklist
 
-Date: 2026-06-10 09:30 WEST
+Date: 2026-06-10 11:00 WEST
 Owner: manager
 
 ## Release Rule
@@ -14,7 +14,7 @@ scalable GPU rewrite.
 
 | Lane | State | Gate before release |
 |---|---|---|
-| Grid-cell parity | Active. MYNN source-output deficit, MYNN surface first-call semantics, WRF `LANDUSE.TBL`-backed `TSK/ZNT/MAVAIL`, WRF `phy_prep` thermodynamic inputs, local `SFCLAY1D_mynn` output algebra, MYNN dry-theta/phy_prep source coupling, WRF surface/land flux handoff localization, and the JAX Step-1 NoahMP-disabled configuration gap are fixed/proven or bounded. Fable/Mythos closed NoahMP land-tile energy/HFX as the primary blocker: `proofs/v014/noahmp_land_tile_energy_closure.*` proves the energy solve is WRF-exact under WRF inputs and the production `sfctmp` path now decouples moist theta to dry theta before Exner conversion. Strict Step-1 remains red against pinned one-run WRF truth at max_abs `1489.5135568470864`, RMSE `12.146876720723487`; the worst cell is water, outside NoahMP. New audit `proofs/v014/moist_theta_physics_consumer_audit.*` expands the θ_m boundary to multiple physics adapters; state/LBC/dycore keep moist theta, physics adapters require dry views and moist writeback. Secondary RRTMG GLW/RTHRATEN residual is localized, not closed: `proofs/v014/rrtmg_step1_forcing_parity.*` names the remaining boundary as clear-sky derived RRTMG optical/gas/top-buffer profile or downstream kernel boundary; no production fix is proven. | Close the same moist-theta-to-dry-temperature boundary in `surface_layer.py` / sfclay-MYNN water path with MYNN re-validation; then close RRTMG with a temporary WRF RRTMG forcing hook for derived LW/SW profiles, fluxes, and heating arrays, or record a formal demotion before release. |
+| Grid-cell parity | Active. MYNN source-output deficit, MYNN surface first-call semantics, WRF `LANDUSE.TBL`-backed `TSK/ZNT/MAVAIL`, WRF `phy_prep` thermodynamic inputs, local `SFCLAY1D_mynn` output algebra, MYNN dry-theta/phy_prep source coupling, WRF surface/land flux handoff localization, the JAX Step-1 NoahMP-disabled configuration gap, NoahMP land-tile energy/HFX, and the NoahMP/sfclay water-path moist-theta boundary are fixed/proven or bounded. Fable/Mythos closed the water-path production bug in `src/gpuwrf/coupling/noahmp_surface_hook.py`: `proofs/v014/surface_layer_theta_decoupling.*` proves water HFX RMSE `11.87 -> 1.37 -> 0.0118 W/m2` and `ust` near exact when the hook supplies WRF `phy_prep` dry `t_air`, true `psfc`, hydrostatic `p`, and density. Strict Step-1 improves to max_abs `53.52301833555157`, RMSE `2.5444971494115354`, but remains red. The dominant remaining blocker is MYNN-EDMF `RTHBLTEN`; RRTMG GLW/RTHRATEN residual is secondary and still localized by `proofs/v014/rrtmg_step1_forcing_parity.*`. | Close or formally bound the MYNN-EDMF `RTHBLTEN` kernel residual with WRF-anchored proof and d02 MYNN re-validation; then close/bound secondary RRTMG derived forcing before release. |
 | Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Exact-branch memory preflight is green at 8116 MiB compute peak and 378 s warm-cache. Mixed FP32 R1/R2 remains blocked by the open fp64 dynamics frontier. | Rerun exact-branch memory preflight only on the final candidate branch before long validation. Escalate FP32 implementation to Fable/Mythos only if the fp64 grid-parity frontier closes and GPT cannot directly solve mixed precision. |
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. Pre-result tolerance candidate is accepted in `proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json`: ten hard documented fields, static exact/tight checks, and `P/PH/MU/RAINC` critical report-only. | Final scoring uses the accepted manifest, produces summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. |
 | Switzerland/Gotthard | CPU truth exists. A tracked 24-rank CPU rerun is complete at `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z`: 25 `wrfout`, `rc=0`, `SUCCESS COMPLETE WRF`, last-frame finite PASS, total wall `1084.6 s`, mainloop `1078.4 s`, peak sampled total WRF-rank RSS `12563.766 MiB`. No post-fix GPU run has been accepted. | Post-stabilization GPU-vs-CPU proof with field-level comparison, finite/stability evidence, and GPU resource CSVs matching the CPU resource baseline. |
@@ -33,8 +33,8 @@ scalable GPU rewrite.
 
 ## Final v0.14 Gate Sequence
 
-1. Close the surface-layer/sfclay-MYNN water-path moist-theta-to-dry-temperature
-   boundary with proof and MYNN re-validation.
+1. Close or formally bound the dominant MYNN-EDMF `RTHBLTEN` kernel residual
+   with WRF-anchored proof and d02 MYNN re-validation.
 2. Close or bound secondary RRTMG GLW/RTHRATEN parity, then rerun the strict
    Step-1 and short grid-field falsifier before launching longer campaigns.
 3. Run exact-branch memory preflight on the final candidate branch.

@@ -37,10 +37,16 @@ from gpuwrf.physics.noahmp_coupler import assemble_noahmp_forcing, noahmp_surfac
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.types import NoahMPForcing
 from gpuwrf.coupling.physics_couplers import (
+    WRF_RV_OVER_RD,
     _column_dz_from_state,
+    _mynn_column_uses_wrf_phy_prep,
+    _surface_dz_from_state,
+    _temperature_from_theta,
     _to_columns,
     _u_mass,
     _v_mass,
+    _wrf_hydrostatic_pressure_from_state,
+    _wrf_phy_prep_rho_from_state,
 )
 
 
@@ -69,6 +75,15 @@ class _NoahMPColumnView(NamedTuple):
     mavail: Any
     roughness_m: Any
     ustar: Any
+    # WRF ``phy_prep`` surface-layer inputs (supplied when a grid with metrics is
+    # threaded; ``None`` keeps the legacy fallback). t_air = lowest-level DRY air
+    # temperature t_phy = theta_dry*(p/p0)^kappa; psfc = true surface pressure
+    # (distinct from lowest-level air pressure); rho = phy_prep density (1+qv)/alt.
+    # Mirrors coupling.physics_couplers._surface_column_view so the water/sfclay bulk
+    # flux matches WRF instead of using the air-pressure / ideal-gas fallback.
+    t_air: Any = None
+    psfc: Any = None
+    rho: Any = None
 
     def replace(self, **updates) -> "_NoahMPColumnView":
         d = self._asdict()
@@ -76,16 +91,54 @@ class _NoahMPColumnView(NamedTuple):
         return _NoahMPColumnView(**d)
 
 
-def _build_column_view(state: Any) -> _NoahMPColumnView:
-    """Build the trailing-z Noah-MP column view from the operational State."""
+def _build_column_view(state: Any, grid: Any = None) -> _NoahMPColumnView:
+    """Build the trailing-z Noah-MP column view from the operational State.
+
+    WRF feeds the revised surface layer and noahmplsm the DRY sensible temperature
+    t_phy = theta_dry*(p/p0)^kappa (module_sf_noahmpdrv.F:755), plus the ``phy_prep``
+    hydrostatic pressure, true surface pressure, and density. The operational
+    State.theta is the WRF MOIST potential temperature theta_m = theta_dry*(1 +
+    R_v/R_d*qv) (use_theta_m=1, the dycore prognostic). Decouple theta_m -> theta_dry
+    and -- when a grid with metrics is available -- supply the same phy_prep
+    psfc/rho/hydrostatic-p the grid-backed ``physics_couplers._surface_column_view``
+    uses, so the WATER/sfclay bulk flux (retained where Noah-MP does not run) matches
+    WRF instead of using the +~4 K moist-theta air temperature and the air-pressure /
+    ideal-gas fallback.
+    """
+    qv = _to_columns(state.qv)
+    theta_dry = jnp.asarray(state.theta, jnp.float64) / (
+        1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, jnp.float64)
+    )
+    # t_air uses the nonhydrostatic state pressure (WRF t_phy is from p+pb), matching
+    # the grid-backed view; the column ``p`` handed to the surface layer is hydrostatic.
+    t_air = _to_columns(_temperature_from_theta(theta_dry, jnp.asarray(state.p, jnp.float64)))
+    if _mynn_column_uses_wrf_phy_prep(grid):
+        p_hyd, psfc = _wrf_hydrostatic_pressure_from_state(state, grid.metrics)
+        rho = _wrf_phy_prep_rho_from_state(state, grid.metrics)
+        theta = _to_columns(theta_dry)
+        p = _to_columns(p_hyd)
+        dz = _surface_dz_from_state(state)
+        psfc_col = psfc
+        rho_col = _to_columns(rho)
+    else:
+        # legacy fallback (no grid metrics): keep nonhydrostatic p and let the surface
+        # layer derive rho; still hand it the dry t_air. psfc defaults to the
+        # lowest-level air pressure -- the SAME value the prior no-psfc path used (the
+        # surface layer's psfc fallback and assemble_noahmp_forcing's ``sfcprs``
+        # default) -- so the grid-less proof/test callers are unchanged.
+        theta = _to_columns(theta_dry)
+        p = _to_columns(state.p)
+        dz = _column_dz_from_state(state, None)
+        psfc_col = jnp.asarray(p, jnp.float64)[..., 0]
+        rho_col = None
     return _NoahMPColumnView(
         u=_to_columns(_u_mass(state)),
         v=_to_columns(_v_mass(state)),
-        theta=_to_columns(state.theta),
-        qv=_to_columns(state.qv),
+        theta=theta,
+        qv=qv,
         qc=_to_columns(state.qc),
-        p=_to_columns(state.p),
-        dz=_column_dz_from_state(state, None),
+        p=p,
+        dz=dz,
         t_skin=state.t_skin,
         soil_moisture=state.soil_moisture,
         xland=state.xland,
@@ -93,6 +146,9 @@ def _build_column_view(state: Any) -> _NoahMPColumnView:
         mavail=state.mavail,
         roughness_m=state.roughness_m,
         ustar=state.ustar,
+        t_air=t_air,
+        psfc=psfc_col,
+        rho=rho_col,
     )
 
 
@@ -119,6 +175,7 @@ def noahmp_surface_step(
     energy_params: Any = None,
     rad_params: Any = None,
     first_timestep: Any = False,
+    grid: Any = None,
 ) -> tuple[Any, NoahMPLandState]:
     """Run the Noah-MP/sfclay blend and write the blended flux handles into State.
 
@@ -130,7 +187,7 @@ def noahmp_surface_step(
     bundles; passing them avoids re-running the frozen ``build_energy_params``
     (which concretizes ``nroot``) inside the jitted scan.
     """
-    view = _build_column_view(state)
+    view = _build_column_view(state, grid)
     view_wb, land_out, blended = noahmp_surface_adapter(
         view, land_state, static, radiation=radiation, clock=clock, dt=float(dt),
         energy_params=energy_params, rad_params=rad_params,
@@ -172,6 +229,7 @@ def overlay_noahmp_land_diagnostics(
     clock: Any = None,
     energy_params: Any = None,
     rad_params: Any = None,
+    grid: Any = None,
 ):
     """Overlay prognostic Noah-MP land HFX/LH/TSK (+ the LSM 2-m T2) onto the bulk.
 
@@ -188,7 +246,7 @@ def overlay_noahmp_land_diagnostics(
     and returns a 4-tuple ``(hfx, lh, tsk, t2)``; with ``bulk_t2=None`` it returns
     the legacy ``(hfx, lh, tsk)`` (callers that have not yet wired the T2 overwrite).
     """
-    view = _build_column_view(state)
+    view = _build_column_view(state, grid)
     forcing: NoahMPForcing = assemble_noahmp_forcing(view, static, radiation, clock, float(dt))
     _land_out, nm = noah_mp_step(
         land_state, forcing, static, float(dt),

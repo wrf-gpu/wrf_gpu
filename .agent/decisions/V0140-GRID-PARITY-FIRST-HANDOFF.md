@@ -3,6 +3,24 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-10 11:00 WEST: Fable/Mythos strict Step-1 closure sprint is
+accepted as a major production fix plus a strict narrowing, not a full closure.
+Verdict:
+`NOAHMP_STEP1_STRICT_RED_SURFACE_WATERPATH_CLOSED_NARROWED_TO_MYNN_EDMF_RTHBLTEN`
+(`proofs/v014/noahmp_step1_closure.*`). Production fix:
+`src/gpuwrf/coupling/noahmp_surface_hook.py` now builds the NoahMP/sfclay column
+view with WRF `phy_prep` dry `t_air`, true `psfc`, hydrostatic `p`, and density
+when grid metrics are available; `src/gpuwrf/runtime/operational_mode.py`
+passes `grid=namelist.grid`. WRF-anchored proof
+`proofs/v014/surface_layer_theta_decoupling.*` closes the water-path bug:
+water HFX RMSE `11.87 -> 1.37 -> 0.0118 W/m2`, water `ust` near exact, and
+theta_flux RMSE `0.00981 -> 8.23e-06 K m/s`. Strict Step-1 improves from
+max_abs `1489.5135568470864`, RMSE `12.146876720723487` to max_abs
+`53.52301833555157`, RMSE `2.5444971494115354`; still red. The next dominant
+blocker is MYNN-EDMF `RTHBLTEN` (land+water); RRTMG `RTHRATEN`/GLW/SWDOWN is
+secondary. TOST, Switzerland-GPU, and FP32 R1/R2 remain paused until MYNN
+`RTHBLTEN` is fixed or formally bounded.
+
 Update 2026-06-10 09:40 WEST: Fable/Mythos NoahMP land-tile energy closure is
 accepted, committed, and pushed as `94fe5d5f`; the next strict-closure sprint is
 opened and pushed as `b4b6850f`, then dispatched to Fable after `/compact`.

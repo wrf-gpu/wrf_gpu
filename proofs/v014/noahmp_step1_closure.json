@@ -2,32 +2,32 @@
   "commands": {
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py"
   },
-  "created_utc": "2026-06-10T08:29:55.941049+00:00",
+  "created_utc": "2026-06-10T09:59:05.091906+00:00",
   "environment": {
     "jax_backend": "cpu",
     "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
     "python": "3.13.11"
   },
-  "fastest_next_command": "Noah-MP land-tile energy is CLOSED (energy solve exact; the +4 K moist-theta->dry-T air-temperature bug is FIXED in noahmp_coupler.assemble_noahmp_forcing; see proofs/v014/noahmp_land_tile_energy_closure.*). Remaining strict lanes: (1) RRTMG step-1 GLW +14.7 W/m2 / SWDOWN +3.6 W/m2 forcing parity via an RRTMG longwave/shortwave hook; (2) the SAME moist-theta->dry-T decoupling missing in surface_layer.py (sfclay/MYNN over WATER -- the strict worst cell i=66 j=37 is a water column), which needs its own sprint + MYNN re-validation. Then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py.",
+  "fastest_next_command": "Surface-layer water-path is CLOSED: the Noah-MP/sfclay column view now supplies the WRF phy_prep dry t_air + true psfc + density (noahmp_surface_hook._build_column_view, mirroring physics_couplers._surface_column_view; see proofs/v014/surface_layer_theta_decoupling.*). Strict 1489.5->53.5 max_abs / 12.15->2.54 rmse. Remaining strict lanes: (1) DOMINANT = MYNN-EDMF RTHBLTEN kernel residual (~4-7% where RTHBLTEN is large, land+water, NOT radiation; module_bl_mynnedmf mixing-length/EDMF/cold-start qke) -- needs a MYNN-kernel sprint; (2) SECONDARY = RRTMG step-1 GLW/RTHRATEN forcing (max ~19.4, proofs/v014/rrtmg_step1_forcing_parity.*). Then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py.",
   "git": {
     "branch": "worker/gpt/v013-close-manager",
-    "head": "22e2eaa154a25b9d2945ae41db9b55a5c7ff973c"
+    "head": "b774b1cd28572dc6bc3bef45cad306b4c651a2ce"
   },
   "kernel_matrix": {
     "current_inputs_wrf_qke_rthblten": {
-      "bias": -2.9541811362982977e-06,
-      "corr": 0.8786834177969501,
+      "bias": 6.751462324766841e-07,
+      "corr": 0.9988559522504645,
       "count": 461736,
-      "max_abs": 0.016064435310936355,
+      "max_abs": 0.0026790675679452237,
       "nonfinite_count": 0,
       "ref_max_abs": 0.026036581025,
-      "rmse": 0.00010750501880100293,
+      "rmse": 1.0505491864559634e-05,
       "strong_cells": 863,
-      "strong_ratio_median": 1.008499638926648,
-      "strong_ratio_p10": 0.3050741910414801,
-      "strong_ratio_p90": 1.111384398381044,
-      "worst_candidate": -0.009972145714063648,
-      "worst_reference": -0.026036581025
+      "strong_ratio_median": 1.0051093420964763,
+      "strong_ratio_p10": 0.9973261809742676,
+      "strong_ratio_p90": 1.112540207255844,
+      "worst_candidate": 0.005491770940845224,
+      "worst_reference": 0.0028127033729
     },
     "wrf_inputs_wrf_qke_rthblten": {
       "bias": 8.055844529165623e-08,
@@ -107,38 +107,38 @@
   },
   "mynn_source_leaves": {
     "mass_coupled_max_abs": {
-      "jax_rthblten": 1242.36969050612,
+      "jax_rthblten": 2526.5789066374464,
       "wrf_driver_rthblten": 2522.905703464659
     },
     "raw_rqvblten_vs_wrf": {
-      "bias": -5.5051002113264005e-09,
-      "corr": 0.7784865520437222,
+      "bias": -5.3397416178515656e-11,
+      "corr": 0.999344984520711,
       "count": 461736,
-      "max_abs": 3.6240662730221174e-06,
+      "max_abs": 9.880759745252364e-07,
       "nonfinite_count": 0,
       "ref_max_abs": 5.1020956562e-06,
-      "rmse": 7.109606553996136e-08,
+      "rmse": 3.6536085290889003e-09,
       "strong_cells": 8362,
-      "strong_ratio_median": 0.25360673783578774,
-      "strong_ratio_p10": 0.15262539091768515,
-      "strong_ratio_p90": 0.44643469919135764,
-      "worst_candidate": 4.197363459778822e-07,
-      "worst_reference": 4.043802619e-06
+      "strong_ratio_median": 0.994727349636279,
+      "strong_ratio_p10": 0.9912063722957386,
+      "strong_ratio_p90": 1.0112975483565667,
+      "worst_candidate": -1.4913005867252364e-06,
+      "worst_reference": -5.032246122e-07
     },
     "raw_rthblten_vs_wrf": {
-      "bias": -2.953720468343305e-06,
-      "corr": 0.8793063625891515,
+      "bias": 6.767697464789599e-07,
+      "corr": 0.9987784604909195,
       "count": 461736,
-      "max_abs": 0.016072531466352954,
+      "max_abs": 0.0026920951794989,
       "nonfinite_count": 0,
       "ref_max_abs": 0.026036581025,
-      "rmse": 0.00010759710126444855,
+      "rmse": 1.074050795420995e-05,
       "strong_cells": 863,
-      "strong_ratio_median": 1.007447724308231,
-      "strong_ratio_p10": 0.30478420014179974,
-      "strong_ratio_p90": 1.1113764620182596,
-      "worst_candidate": -0.009964049558647048,
-      "worst_reference": -0.026036581025
+      "strong_ratio_median": 1.0049841082567772,
+      "strong_ratio_p10": 0.99745353963682,
+      "strong_ratio_p90": 1.1125779531824505,
+      "worst_candidate": 0.0055047985523989,
+      "worst_reference": 0.0028127033729
     }
   },
   "noahmp_init_meta": {
@@ -154,94 +154,94 @@
   "post_overlay_mynn_boundary": {
     "fltv": {
       "all": {
-        "bias": -0.009715556995455142,
+        "bias": 0.0014629620162744,
         "count": 10494,
-        "max_abs": 0.03235508459779328,
+        "max_abs": 0.019082713120805006,
         "ref_max_abs": 0.3119694983335894,
-        "rmse": 0.012094275509254864
+        "rmse": 0.002198117899821925
       },
       "land": {
-        "bias": 0.0071090807134742235,
+        "bias": 0.005980120481641988,
         "count": 768,
-        "max_abs": 0.023796929528575705,
+        "max_abs": 0.019082713120805006,
         "ref_max_abs": 0.3119694983335894,
-        "rmse": 0.008034670989243584
+        "rmse": 0.006846899413829947
       },
       "water": {
-        "bias": -0.011044091003316315,
+        "bias": 0.0011062709098172434,
         "count": 9726,
-        "max_abs": 0.03235508459779328,
+        "max_abs": 0.0022418090500069612,
         "ref_max_abs": 0.03851812980463102,
-        "rmse": 0.012358157438792648
+        "rmse": 0.0012294048611402074
       }
     },
     "qv_flux_flqv": {
       "all": {
-        "bias": -1.3026326823811694e-05,
+        "bias": 3.944190663056826e-07,
         "count": 10494,
-        "max_abs": 2.2627856641408083e-05,
+        "max_abs": 4.483864125064831e-06,
         "ref_max_abs": 6.270674727475933e-05,
-        "rmse": 1.4373446644673423e-05
+        "rmse": 4.78701454081082e-07
       },
       "land": {
-        "bias": 3.186054110461656e-08,
+        "bias": 7.895764244571535e-09,
         "count": 768,
-        "max_abs": 3.6217935044505944e-07,
+        "max_abs": 2.992989139764168e-07,
         "ref_max_abs": 1.3251135948602597e-05,
-        "rmse": 7.772888420411778e-08
+        "rmse": 5.175894881216444e-08
       },
       "water": {
-        "bias": -1.4057448343064803e-05,
+        "bias": 4.2494033876948417e-07,
         "count": 9726,
-        "max_abs": 2.2627856641408083e-05,
+        "max_abs": 4.483864125064831e-06,
         "ref_max_abs": 6.270674727475933e-05,
-        "rmse": 1.4930139093172045e-05
+        "rmse": 4.970296272854404e-07
       }
     },
     "rhosfc_rho1": {
       "all": {
-        "bias": -0.01859769097259396,
+        "bias": 2.246507832808047e-06,
         "count": 10494,
-        "max_abs": 0.022232895332359393,
+        "max_abs": 4.364951217206148e-05,
         "ref_max_abs": 1.2120962143,
-        "rmse": 0.018657927441933085
+        "rmse": 4.090396466620492e-06
       },
       "land": {
-        "bias": -0.015839842849316388,
+        "bias": 1.1041787206861881e-05,
         "count": 768,
-        "max_abs": 0.01991317783299129,
+        "max_abs": 4.364951217206148e-05,
         "ref_max_abs": 1.2024091482,
-        "rmse": 0.01615072626245616
+        "rmse": 1.4039469220503175e-05
       },
       "water": {
-        "bias": -0.01881546059614703,
+        "bias": 1.5520008865533333e-06,
         "count": 9726,
-        "max_abs": 0.022232895332359393,
+        "max_abs": 6.936060774842545e-06,
         "ref_max_abs": 1.2120962143,
-        "rmse": 0.018841698210776123
+        "rmse": 1.5774205403027824e-06
       }
     },
     "theta_flux_flt": {
       "all": {
-        "bias": -0.007418261185145412,
+        "bias": 0.0013508787771977654,
         "count": 10494,
-        "max_abs": 0.030460052288376865,
+        "max_abs": 0.017792882212240096,
         "ref_max_abs": 0.3119690397296882,
-        "rmse": 0.009668283763584813
+        "rmse": 0.0020492946022700794
       },
       "land": {
-        "bias": 0.006677763293085105,
+        "bias": 0.005563593586436484,
         "count": 768,
-        "max_abs": 0.021912592983171608,
+        "max_abs": 0.017792882212240096,
         "ref_max_abs": 0.3119690397296882,
-        "rmse": 0.007576246658685914
+        "rmse": 0.006417150776870693
       },
       "water": {
-        "bias": -0.008531334061896495,
+        "bias": 0.0010182276386520798,
         "count": 9726,
-        "max_abs": 0.030460052288376865,
+        "max_abs": 0.0020896952835704474,
         "ref_max_abs": 0.027746501121704424,
-        "rmse": 0.009814500367315135
+        "rmse": 0.001131157506273055
       }
     },
     "tsk_vs_post_noahmp": {
@@ -253,33 +253,33 @@
     },
     "ust": {
       "all": {
-        "bias": -0.025450672362592606,
+        "bias": 0.00034286123517694256,
         "count": 10494,
-        "max_abs": 0.14761978872403697,
+        "max_abs": 0.03592823298480182,
         "ref_max_abs": 0.33699807525,
-        "rmse": 0.02890112307698696
+        "rmse": 0.0009231713853736482
       },
       "land": {
-        "bias": -0.04001454665125641,
+        "bias": 0.0013208048494444812,
         "count": 768,
-        "max_abs": 0.14761978872403697,
+        "max_abs": 0.03592823298480182,
         "ref_max_abs": 0.33699807525,
-        "rmse": 0.05128430026415298
+        "rmse": 0.003149913577575748
       },
       "water": {
-        "bias": -0.02430065637928048,
+        "bias": 0.00026563928414286177,
         "count": 9726,
-        "max_abs": 0.03847921137424709,
+        "max_abs": 0.009142780922884439,
         "ref_max_abs": 0.23324559629,
-        "rmse": 0.026335350435967967
+        "rmse": 0.00036887452960152707
       }
     },
     "znt_vs_post_noahmp": {
-      "bias": 5.123864694981164e-07,
+      "bias": -5.1765024365124394e-11,
       "count": 10494,
-      "max_abs": 1.0323670731868148e-06,
+      "max_abs": 1.19199999870645e-08,
       "ref_max_abs": 1.0,
-      "rmse": 5.940133097122325e-07
+      "rmse": 1.5490630830458462e-09
     }
   },
   "rad_seed_vs_wrf_hook": {
@@ -342,30 +342,30 @@
   "rad_swap_causal_split": {
     "interpretation": "If the truth-radiation run does not collapse the land theta_flux residual, the deficit is NOT the radiation forcing.",
     "land_flt_with_jax_seed_radiation": {
-      "bias": 0.0066820020278386015,
+      "bias": 0.00556777310000654,
       "count": 768,
-      "max_abs": 0.021911906769162326,
+      "max_abs": 0.017793968832694823,
       "ref_max_abs": 0.3119690397296882,
-      "rmse": 0.0075815914959646334
+      "rmse": 0.006422627622543693
     },
     "land_flt_with_wrf_truth_radiation": {
-      "bias": 0.0011252835672172798,
+      "bias": 9.126523704482347e-05,
       "count": 768,
-      "max_abs": 0.004916764366520665,
+      "max_abs": 0.00044824676661980867,
       "ref_max_abs": 0.3119690397296882,
-      "rmse": 0.001321488194019588
+      "rmse": 0.00012291627662459686
     },
     "status": "READY"
   },
   "ranked_hypotheses": [
     {
-      "evidence": "strict worst-cell is water (not in the noahmplsm land hook) + surface_layer._potential_to_temperature",
-      "hypothesis": "Surface-layer (sfclay/MYNN) moist-theta -> dry-T decoupling over WATER: the strict worst cell (i=66, j=37, k=3; WRF -2457.6 vs JAX -968.1) is a WATER column where Noah-MP does not run; sfclay derives the air temperature from state.theta with the SAME naive Exner the Noah-MP coupler was just fixed for (~+4 K warm), and feeds it to MYNN/RTHBLTEN. surface_layer.py is outside this sprint's ownership.",
-      "strict_contribution_max_abs": 1489.5135568470864
+      "evidence": "land/water strict decomposition (RTHBLTEN-dominated, RTHRATEN<=~19.4) + surface_layer_theta_decoupling + post_overlay_mynn_boundary",
+      "hypothesis": "MYNN-EDMF RTHBLTEN PBL theta-tendency kernel residual (DOMINANT). With the surface-layer water-path fix landed (sfclay/Noah-MP now receive the WRF phy_prep dry t_air + true psfc + density; water HFX rmse 11.87->0.012 W/m2, ust ~exact -- see proofs/v014/surface_layer_theta_decoupling.*), the strict residual collapsed 1489.5->53.5 max_abs / 12.15->2.54 rmse. The remaining worst cells are RTHBLTEN-dominated on BOTH land and water (worst WRF -1278.7 vs JAX -1225.2; ~4-7% of the local RTHBLTEN where it is large), with RTHRATEN <=~19.4. This is inside module_bl_mynnedmf (mixing length / EDMF mass-flux / cold-start qke), NOT the surface coupling (now WRF-faithful) and NOT radiation. MYNN kernel is outside this sprint's file ownership.",
+      "strict_contribution_max_abs": 53.52301833555157
     },
     {
-      "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2 + noahmp_land_tile_energy_closure",
-      "hypothesis": "RRTMG step-1 surface/atmosphere radiation forcing parity (GLW bias 17.44 W/m2, SWDOWN rmse 2.76 W/m2, mass-coupled RTHRATEN residual 19.4). The Noah-MP land lane now collapses under the WRF-exact radiation swap (land theta_flux rmse 0.00758 -> see proofs/v014/noahmp_land_tile_energy_closure.*); the remaining land residual IS this radiation forcing.",
+      "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2 + rrtmg_step1_forcing_parity",
+      "hypothesis": "RRTMG step-1 radiation forcing parity (SECONDARY): GLW bias 17.44 W/m2, SWDOWN rmse 2.76 W/m2, mass-coupled RTHRATEN residual 19.4. The Noah-MP LAND theta_flux still collapses under the WRF-exact radiation swap (rmse 0.00642); RRTMG remains localized to a clear-sky derived optical/gas/top-buffer profile (proofs/v014/rrtmg_step1_forcing_parity.*) but is no longer the dominant strict lane (RTHRATEN max ~19.4 << strict max 53.5).",
       "strict_contribution_max_abs": 19.425283200182427
     }
   ],
@@ -412,20 +412,20 @@
   "strict_step1": {
     "closed": false,
     "metric": {
-      "bias": 0.820413252158191,
+      "bias": 0.27087610916387866,
       "count": 442112,
-      "max_abs": 1489.5135568470864,
+      "max_abs": 53.52301833555157,
       "nonfinite_diff_count": 0,
-      "p95": 2.008178758096616,
-      "p99": 47.99414046925386,
-      "rmse": 12.146876720723487,
-      "worst_candidate": -2457.5830078125,
+      "p95": 1.9038464359199867,
+      "p99": 16.631650419560028,
+      "rmse": 2.5444971494115354,
+      "worst_candidate": -1278.747436523438,
       "worst_mismatch_fortran": {
-        "i": 66,
-        "j": 37,
-        "k": 3
+        "i": 20,
+        "j": 7,
+        "k": 2
       },
-      "worst_reference": -968.0694509654136
+      "worst_reference": -1225.2244181878864
     },
     "wrf_self_consistency": {
       "after_conv_moist_formula": {
@@ -462,6 +462,7 @@
       }
     }
   },
+  "surface_layer_theta_decoupling": "proofs/v014/surface_layer_theta_decoupling.{py,json,md} -- water-path moist-theta sfclay bug + dry t_air/psfc/rho phy_prep fix (HFX 11.87->0.012, ust exact).",
   "truth_provenance": {
     "determinism_byte_identical": {
       "mynn_vs_rmolpin_build": true,
@@ -513,5 +514,5 @@
     },
     "strict_truth_link": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun"
   },
-  "verdict": "NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_RADIATION_FORCING_INTO_NOAHMP"
+  "verdict": "NOAHMP_STEP1_STRICT_RED_SURFACE_WATERPATH_CLOSED_NARROWED_TO_MYNN_EDMF_RTHBLTEN"
 }
