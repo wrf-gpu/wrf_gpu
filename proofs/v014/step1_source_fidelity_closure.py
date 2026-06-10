@@ -247,7 +247,7 @@ def build_mynn_leaf_probe(
             state, dt_s, namelist.grid
         )
     else:
-        state = surface_adapter(state, dt_s)
+        state = surface_adapter(state, dt_s, first_timestep=True)
 
     pbl_entry = state
     if int(namelist.bl_pbl_physics) != DEFAULT_BL_PBL_PHYSICS:
@@ -412,20 +412,20 @@ def classify(
     )
     source_metrics = mynn_probe.get("source_output_metrics", {})
     return (
-        "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_MYNN_DRIVER_SOURCE_OUTPUT",
+        "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_SFCLAY_TSK_ZNT_INPUTS",
         [
             {
                 "rank": 1,
                 "status": "BLOCKING",
                 "hypothesis": (
-                    "JAX MYNN source outputs remain below WRF at Step 1. Root-caused "
-                    "2026-06-10 (proofs/v014/mynn_driver_source_output_fix): the "
-                    "order-10 deficit was the missing WRF mym_initialize level-2 "
-                    "equilibrium cold-start qke (now implemented); the remaining "
-                    "residual is the step-1 surface-layer flux boundary "
-                    "(ust/HFX/QFX + TSK/ZNT inputs + sfclayrev first-call "
-                    "semantics), bounded additionally by WRF's own uninitialized-"
-                    "rmol init UB at this boundary."
+                    "JAX MYNN source outputs remain below WRF at Step 1 because the "
+                    "surface boundary feeding MYNN is still not WRF-compatible. "
+                    "`proofs/v014/mynn_driver_source_output_fix` already proved the "
+                    "MYNN kernel and fixed the missing WRF cold-start qke init; "
+                    "`proofs/v014/step1_sfclay_boundary_fix` now ports WRF's "
+                    "sfclay_mynn first-call UST/QSFC/MOL/zol seed and narrows the "
+                    "surviving blocker to WRF-anchored TSK/ZNT surface input "
+                    "sourcing."
                 ),
                 "evidence": {
                     "strict_after_conv_vs_jax": primary_conv,
@@ -470,12 +470,13 @@ def classify(
             },
         ],
         (
-            "DONE 2026-06-10: the WRF MYNN driver hook was emitted and compared "
-            "(proofs/v014/mynn_driver_source_output_fix). Next route: emit a WRF "
-            "step-1 surface-driver hook around sfclayrev (TSK/ZNT/UST/HFX/QFX "
-            "in/out), port the sfclayrev first-call semantics and skin-temperature/"
-            "roughness sourcing into the JAX surface adapter, then rerun the strict "
-            "Step-1 proofs against the deterministic rmol-pinned WRF truth."
+            "DONE 2026-06-10: MYNN driver kernel/init and sfclay_mynn first-call "
+            "semantics are no longer the active blocker. Next route: emit a tiny "
+            "WRF surface-driver hook around module_surface_driver/module_sf_mynn "
+            "for incoming TSK/ZNT/UST/QSFC/MOL and outgoing UST/HFX/QFX/ZNT on the "
+            "current d02 Step-1 case; compare those exact arrays against JAX "
+            "`_surface_column_view` inputs and diagnostics; fix TSK/ZNT sourcing "
+            "if confirmed."
         ),
     )
 

@@ -26,8 +26,8 @@ Verdict: `MYNN_SOURCE_ROOT_CAUSED_INIT_QKE_FIXED_KERNEL_PROVEN_NEXT_SFCLAY_STEP1
 
 - A qke=WRF, inputs=WRF: `0.9982` / `1.0000`
 - B qke=prod, inputs=WRF: `0.7177` / `0.9927`
-- C qke=WRF, inputs=JAX: `0.2681` / `0.8181`
-- D qke=prod, inputs=JAX (production): `0.2354` / `0.8488`
+- C qke=WRF, inputs=JAX: `0.2695` / `0.8131`
+- D qke=prod, inputs=JAX (production): `0.2365` / `0.8314`
 
 The dominant remaining residual is the step-1 surface-layer flux boundary
 (C/D), not the MYNN kernel or its turbulence init (A/B).
@@ -35,16 +35,16 @@ The dominant remaining residual is the step-1 surface-layer flux boundary
 ## Strict Step-1 metric (vs existing part2 truth)
 
 - prior: max_abs `2457.578397008898`, rmse `21.364579991779515`
-- now: max_abs `1497.6112512148795`, rmse `13.468453371786723`
+- now: max_abs `1497.6112467075195`, rmse `13.296448784742802`
 - Note: the existing truth embeds WRF's uninitialized-rmol init, so strict
   closure against it is bounded by the proven UB envelope.
 
 ## Single remaining blocker
 
-Step-1 surface-layer flux boundary: the JAX step-1 sfclay outputs feeding MYNN differ from WRF's (ustar bias -0.077/max 0.176; HFX rmse 24.6 W/m^2; QFX bias -2.1e-5), driven by (a) land skin-temperature input differences up to 8.3 K, (b) roughness-length differences up to 0.97 m, and (c) sfclayrev FIRST-CALL semantics (JAX starts from ustar=0 while WRF iterates from a first guess: identical-input ocean columns still show 4x ustar deficits). With WRF fluxes substituted, the production init already reaches strong-cell ratio 0.72/corr 0.993 (case B), and with WRF init qke too it reaches 1.00 (case A).
+Step-1 surface-layer flux boundary remains upstream of MYNN. The follow-up proof `proofs/v014/step1_sfclay_boundary_fix.md` ports and validates WRF's first-call MYNN surface semantics (UST first guess, MOL=0, land QSFC=qv/(1+qv), Li_etal_2010 z/L seed): UST rmse improves 0.0867->0.0295 and qv-flux rmse improves 1.98e-5->1.44e-5. Strict Step-1 remains red (max_abs 1497.611, rmse 13.296), with the narrower surviving WRF-anchored blocker now TSK/ZNT surface input sourcing (TSK max_abs 8.34 K; ZNT max_abs 0.974 m).
 
 ## Fastest next route
 
-One sprint: emit a WRF step-1 surface-driver hook (same disposable pattern) around module_sf_mynn/sfclayrev for TSK/ZNT/UST/HFX/QFX in/out, port the sfclayrev first-call (flag_iter/UST first-guess) semantics + skin-temperature/roughness sourcing into the JAX surface adapter, and gate on case-D converging to case-B levels; then rerun the strict Step-1 proofs against the rmol-pinned WRF truth.
+Next sprint: emit a tiny WRF step-1 surface-driver hook around module_surface_driver/module_sf_mynn for incoming TSK/ZNT/UST/QSFC/MOL and outgoing UST/HFX/QFX/ZNT on the current d02 Step-1 case, compare those exact arrays against JAX `_surface_column_view` inputs and diagnostics, then fix the TSK/ZNT sourcing if the hook confirms it.
 
 Proof objects: `proofs/v014/mynn_driver_source_output_fix.json`.

@@ -1530,7 +1530,7 @@ def _surface_column_view(state: State) -> _SurfaceColumnState:
     )
 
 
-def surface_adapter(state: State, dt: float) -> State:
+def surface_adapter(state: State, dt: float, *, first_timestep=False) -> State:
     """Run the WRF revised surface layer and store its surface-flux handles.
 
     THIN adapter: the algebra lives in ``physics.surface_layer`` (a faithful port
@@ -1540,7 +1540,7 @@ def surface_adapter(state: State, dt: float) -> State:
     """
 
     del dt
-    flux = surface_layer(_surface_column_view(state))
+    flux = surface_layer(_surface_column_view(state), first_timestep=first_timestep)
     # Surface flux handles are fp64-locked in PRECISION_MATRIX, so the live
     # dtype is fp64 in both modes; written via _output_dtype for one consistent
     # adapter-write contract (fp32-defeat fix; see _output_dtype).

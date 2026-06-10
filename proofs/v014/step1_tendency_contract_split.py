@@ -540,6 +540,7 @@ def build_tendency_capture(inputs: Mapping[str, Any], carry: Any, *, label: str)
         namelist,
         lead_seconds,
         run_radiation=run_radiation,
+        first_timestep=True,
     )
     spec = om.halo_spec(namelist.grid)
     physics_carry_state = om.apply_halo(physics.carry.state, spec)
