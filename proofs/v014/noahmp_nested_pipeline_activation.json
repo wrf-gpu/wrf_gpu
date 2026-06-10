@@ -1,0 +1,99 @@
+{
+  "proof": "v0.14 nested-pipeline Noah-MP activation (CPU-provable subset)",
+  "verdict": "NOAHMP_NESTED_ACTIVATION_CPU_PROVEN",
+  "problems": [],
+  "run_id": "20260501_18z_l2_72h_20260519T173026Z",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+  "run_start_utc": "2026-05-01T18:00:00+00:00",
+  "noahmp_clock": {
+    "julian": 120.75,
+    "yearlen": 365.0,
+    "convention": "WRF grid%julian = 0-based fractional day-of-year"
+  },
+  "supported_nested_land_options": [
+    0,
+    4
+  ],
+  "per_domain": {
+    "d01": {
+      "sf_surface_physics": 4,
+      "use_noahmp": true,
+      "noahmp_land_nonnull": true,
+      "noahmp_static_nonnull": true,
+      "noahmp_energy_params_nonnull": true,
+      "noahmp_rad_params_nonnull": true,
+      "noahmp_nroot": 4,
+      "n_land_cells": 523,
+      "grid_shape_yx": [
+        59,
+        93
+      ],
+      "initial_land_mean_tsk_K": 300.94585994917395,
+      "provenance_wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
+      "prognostic_state_real_from_corpus": [
+        "CANWAT",
+        "ISLTYP",
+        "IVGTYP",
+        "LAI",
+        "LU_INDEX",
+        "SH2O",
+        "SHDMAX",
+        "SMOIS",
+        "SNOW",
+        "SNOWH",
+        "TMN",
+        "TSK",
+        "TSLB",
+        "VEGFRA",
+        "XSAI"
+      ]
+    },
+    "d02": {
+      "sf_surface_physics": 4,
+      "use_noahmp": true,
+      "noahmp_land_nonnull": true,
+      "noahmp_static_nonnull": true,
+      "noahmp_energy_params_nonnull": true,
+      "noahmp_rad_params_nonnull": true,
+      "noahmp_nroot": 4,
+      "n_land_cells": 768,
+      "grid_shape_yx": [
+        66,
+        159
+      ],
+      "initial_land_mean_tsk_K": 294.87908987204236,
+      "provenance_wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "prognostic_state_real_from_corpus": [
+        "CANWAT",
+        "ISLTYP",
+        "IVGTYP",
+        "LAI",
+        "LU_INDEX",
+        "SH2O",
+        "SHDMAX",
+        "SMOIS",
+        "SNOW",
+        "SNOWH",
+        "TMN",
+        "TSK",
+        "TSLB",
+        "VEGFRA",
+        "XSAI"
+      ]
+    }
+  },
+  "structural": {
+    "operational_namelist_has_all_replaced_fields": true,
+    "operational_carry_has_noahmp_slots": true,
+    "initial_operational_carry_accepts_noahmp_seeds": true,
+    "writer_wants_carry": true,
+    "domain_tree_output_honours_wants_carry": true
+  },
+  "fail_closed_probe_sf2": {
+    "raised": true,
+    "message": "d01: sf_surface_physics=2 is not wired in the standalone nested pipeline (supported: 0 = prescribed bulk surface, 4 = Noah-MP). Refusing the silent bulk-surface fallback: it leaves land TSK frozen for the whole run (proofs/v014/canary_h24_residual_adjudication.md)."
+  },
+  "gpu_used": false,
+  "jax_backend": "cpu",
+  "gpu_only_remainder": "State/initial-carry device build + noahmp_initial_rad RRTMG t=0 seed require a visible GPU (contracts/state.py State.zeros); covered by the manager GPU gates (memory preflight, Canary h1-h4, 72h rerun)."
+}

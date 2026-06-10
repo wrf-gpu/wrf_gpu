@@ -267,7 +267,16 @@ def run_domain_tree_callbacks(
         cadence = int(output_cadence_steps.get(name, 0))
         if output is None or cadence <= 0 or own_steps[name] % cadence != 0:
             return
-        value = output(name, own_steps[name], _state_from_carry(out[name]))
+        # Output callbacks that must read carry-resident physics state (e.g. the
+        # evolved Noah-MP land carry for writer-side land diagnostics) opt in via
+        # a truthy ``wants_carry`` attribute and receive the FULL carry; default
+        # callbacks keep the historical state-only payload.
+        payload = (
+            out[name]
+            if getattr(output, "wants_carry", False)
+            else _state_from_carry(out[name])
+        )
+        value = output(name, own_steps[name], payload)
         outputs.append(value)
         events.append(("output", name, own_steps[name]))
 
