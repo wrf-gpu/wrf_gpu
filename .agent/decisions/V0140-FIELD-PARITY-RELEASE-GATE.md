@@ -1,9 +1,9 @@
 # V0.14 Field-Parity Release Gate
 
-Date: 2026-06-10 22:14 WEST
+Date: 2026-06-10 22:49 WEST
 Owner: manager
 
-Update 2026-06-10 22:14 WEST: the missing nested Noah-MP source wiring is fixed
+Update 2026-06-10 22:49 WEST: the missing nested Noah-MP source wiring is fixed
 and pushed (`c2310c5b`), with CPU activation/carry proof
 `NOAHMP_NESTED_ACTIVATION_CPU_PROVEN`. The follow-up d01 LU16/sand nonfinite
 blocker is also closed: `22a2cc0c` fixes Noah-MP WATER 1-based soil/veg
@@ -11,8 +11,13 @@ category indexing; `aff7d124`/`5a708074` record closure proof and GPU
 confirmation. GPU preflight
 `/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
 is `rc=0`, `PASS_SHORT_GPU_PREFLIGHT` / `PIPELINE_GREEN`,
-all_domains_finite=true. Long GPU gates now wait on the post-fix h1-h4 land
-gate, because soil-water evolution changed for all soil categories.
+all_domains_finite=true. The post-fix h1-h4 land gate is now accepted:
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z`,
+`NOAHMP_NESTED_GPU_H4_ACCEPT`, peak GPU memory `20975 MiB`. The full Canary L2
+d02 72h GPU field-parity/stability run is in flight at
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`
+with resource CSV logging, an h24 intermediate compare, and a full h72 compare
+scripted.
 
 ## Decision
 
@@ -120,8 +125,9 @@ Start the long GPU gates only after:
 - the standalone nested pipeline activates the selected land-surface model
   honestly. The `sf_surface_physics=4`/Noah-MP source wiring is fixed in
   `c2310c5b`, and the d01 LU16/sand nonfinite blocker is fixed in `22a2cc0c`.
-  The h1-h4 land gate must now be green/bounded before any release-green 72h
-  GPU gate;
+  The h1-h4 land gate is now green/bounded:
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z`,
+  `NOAHMP_NESTED_GPU_H4_ACCEPT`;
 - exact-branch memory preflight is green on the final candidate branch
   (`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`,
   `rc=0`, peak total VRAM `9783 MiB`);
@@ -131,3 +137,14 @@ Start the long GPU gates only after:
 
 TOST may run only after the field gates are already in motion or complete, and
 only as secondary evidence.
+
+## Current Launch State
+
+- Canary L2 d02 72h GPU: in flight at
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`.
+- H24 intermediate compare: armed; output targets
+  `canary_d02_h24_intermediate_grid_compare.{json,md}` in the run root.
+- H72 final compare: scripted to run after `gpu_72h.rc=0`; output targets
+  `canary_d02_h72_grid_compare.{json,md}` in the run root.
+- Switzerland/Gotthard 72h GPU: next GPU launch after Canary 72h releases the
+  lock and its first-pass result is green/bounded.
