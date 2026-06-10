@@ -250,7 +250,7 @@ Station TOST must be interpreted together with this grid-delta atlas.
 
 Current status:
 
-- 2026-06-10 22:14 WEST manager update: the nested-pipeline Noah-MP source
+- 2026-06-10 22:49 WEST manager update: the nested-pipeline Noah-MP source
   wiring blocker is fixed and pushed (`c2310c5b`), with CPU activation/carry
   proof `proofs/v014/noahmp_nested_pipeline_activation.*` green and 32
   focused/regression tests passing after merge. Commit `c6800bfa` adds the
@@ -265,9 +265,14 @@ Current status:
   row off. GPU confirmation
   `/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
   is green (`rc=0`, `PASS_SHORT_GPU_PREFLIGHT`, `PIPELINE_GREEN`,
-  all_domains_finite=true, peak total VRAM `9783 MiB`). Switzerland GPU and
-  long Canary GPU gates remain blocked until the post-fix h1-h4 land gate is
-  green/bounded.
+  all_domains_finite=true, peak total VRAM `9783 MiB`). The post-fix h1-h4
+  land gate is now accepted:
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z`,
+  `NOAHMP_NESTED_GPU_H4_ACCEPT`, peak GPU memory `20975 MiB`; h2-h4 land
+  TSK/HFX biases pass the predeclared thresholds. The full Canary L2 d02 72h
+  GPU run is in flight at
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`
+  with resource CSV logging and h24/h72 compares scripted.
 
 - 2026-06-10 15:35 WEST manager update: validation is **resumed** under the
   new field-parity gate. The h1 EOS/theta blocker is fixed/bounded and
@@ -275,10 +280,9 @@ Current status:
   verdict `PROCEED_72H_GATES`). Exact-branch memory preflight is green
   (`proofs/v014/exact_branch_memory_preflight.md`, peak total VRAM `8858 MiB`,
   no OOM markers).
-- Canary L2 d02 72h GPU-vs-CPU field-parity/stability remains the first active
-  regional release gate, but it must be rerun only after the post-fix h1-h4
-  Noah-MP land gate is green/bounded. The completed old long run is retained
-  only as a pre-fix baseline/trend artifact.
+- Canary L2 d02 72h GPU-vs-CPU field-parity/stability is now the first active
+  regional release gate in flight. The completed old long run is retained only
+  as a pre-fix baseline/trend artifact.
 - Switzerland/Gotthard d01 CPU72 truth is complete and finite at
   `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`.
   The matched GPU command is recorded in `docs/GPU_RUNBOOK.md` and should be
