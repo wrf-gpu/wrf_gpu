@@ -58,6 +58,22 @@ Evidence:
   heavier 9/3/1 km campaign and should be a secondary or v0.15 gate after the
   two required 72h gates are green.
 
+The selected mandatory Canary case is:
+
+- run id: `20260501_18z_l2_72h_20260519T173026Z`
+- CPU truth:
+  `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- retained input/run dir:
+  `/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z`
+- domain: `d02`, 72h, 73 hourly frames, `159 x 66 x 44` mass grid,
+  `DX=DY=3000 m`, `USE_THETA_M=1`
+- inventory proof: `proofs/v014/canary_cpu_truth_inventory.md`
+
+This case is preferred because it is already the current h1 field-falsifier case,
+so the short-run blocker and the final 72h gate test the same input/provenance
+chain. Do not start a fresh Canary CPU-WRF baseline unless this retained truth is
+shown to be unusable.
+
 The Canary d03/1 km path remains important, but it is not the fastest rigorous
 wall-clock route to the v0.14 all-field 72h stability claim.
 

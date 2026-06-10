@@ -70,6 +70,22 @@ Match model+effort to task type (principal effort-tiers): **core/correctness-cri
   strictly outside the assigned scope. Do not spend Fable tokens on manager
   status, incremental hypothesis asks, or partial micro-runs unless the principal
   explicitly redirects.
+- **Fable medium/high debug lane (principal directive 2026-06-10):** Fable is
+  also allowed, and encouraged, for *medium-hard* debug tasks when the failure is
+  already bounded enough that one or two focused proof/debug runs should settle
+  it, but it has become awkward, cross-module, or token-expensive for routine
+  GPT work. Use a fresh tmux window for these jobs, normally
+  `claude --model fable --effort medium|high --permission-mode auto`, and give a
+  sprint contract with a whole, manager-actionable endpoint: prove the bug class,
+  fix it if local and safe, or return the exact blocker/proceed signal. This
+  lane is appropriate for targeted validation residuals, provenance/root-cause
+  checks, or compact analysis workers. It is not for routine polling, simple
+  report formatting, or long-running GPU gates. Keep **Fable/Mythos xhigh/max**
+  reserved for truly hard kernel-level failures, many burned debug attempts,
+  high-risk architecture/code reviews, or tasks the medium/high lane cannot
+  close. When reusing the scarce `0:1` Mythos session, compact first; when using
+  a fresh medium/high tmux window, a new session is preferred and no legacy
+  context should be assumed.
 - Manager stays manager: re-dispatch dead agents; don't hand-debug.
 
 ## Long-roadmap drift prevention
