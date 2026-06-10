@@ -3,6 +3,29 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-10 14:25 WEST: current v0.14 gate state is **field-parity-first
+with both CPU truths available**. Switzerland/Gotthard CPU72 is complete and
+pushed in `e57dcc75`: `rc=0`, 73 `wrfout_d01_*`, final-frame finite PASS,
+truth at
+`/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`,
+proof `proofs/v014/switzerland_cpu72_reference_resource_summary.md`. Canary
+CPU72 is existing retained L2 d02 truth, selected/pushed in `99db9c43`:
+`20260501_18z_l2_72h_20260519T173026Z`, truth at
+`/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`,
+inventory `proofs/v014/canary_cpu_truth_inventory.md`. Runbook field-gate
+commands are pushed in `1f641953`.
+
+Active blocker before any long GPU gate: h1 Canary EOS/theta semantics. Round-1
+Fable patch in `src/gpuwrf/dynamics/acoustic_wrf.py` is still **unaccepted**:
+it changes EOS qvf from `1+0.608*qv` to `1+rvovrd*qv`, but manager evidence
+shows WRF uses `qvf=1` when the caller state is `theta_m` (`use_theta_m=1`).
+Fable high is actively running in tmux `0:3` on the second-pass
+EOS/theta-semantics sprint and must return one of `FIXED`, `RATIFY_ROUND1`, or
+`BLOCKED` in
+`.agent/reviews/2026-06-10-v014-eos-theta-semantics-fable.md`. Do not start
+the 72h Switzerland/Canary GPU gates until this report is reviewed, the h1
+Canary falsifier is rerun and green, and exact-branch memory preflight is green.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed
