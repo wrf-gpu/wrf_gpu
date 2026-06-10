@@ -1,0 +1,254 @@
+{
+  "audit": "moist_theta_physics_consumer_audit",
+  "date": "2026-06-10",
+  "repo": "/home/enric/src/wrf_gpu2",
+  "sprint_contract": ".agent/sprints/2026-06-10-v014-gpt-moist-theta-physics-consumer-audit/sprint-contract.md",
+  "mode": "read_only_compatibility_audit",
+  "verdict": "MULTIPLE_RUNTIME_PHYSICS_CONSUMERS_REQUIRE_DRY_DECOUPLING",
+  "source_tree_note": "During the audit the worktree contained an uncommitted active patch in src/gpuwrf/physics/noahmp_coupler.py that decouples the NoahMP sfctmp fallback. This audit did not edit source and treats that patch as observed external work.",
+  "theta_convention": {
+    "runtime_state_theta": "WRF coupled moist potential temperature theta_m, per sprint prompt and direct NoahMP probe",
+    "dry_inverse": "theta_dry = theta_m / (1 + (461.6 / 287.0) * qv_mixing)",
+    "moist_forward": "theta_m = theta_dry * (1 + (461.6 / 287.0) * qv_mixing)",
+    "qv_units": "WRF water-vapor mixing ratio kg/kg, QVAPOR",
+    "physics_expectation": "WRF physics that forms T, TH, THX, THV, density, or dry-theta tendencies expects dry theta-derived values unless the specific dycore/prognostic interface says otherwise"
+  },
+  "summary": [
+    {
+      "area": "Prognostic state, lateral boundary, feedback, and mass-scalar dynamics",
+      "classification": "MUST_USE_MOIST_THETA",
+      "status": "Do not dry-decouple these storage or transport paths.",
+      "evidence": [
+        "src/gpuwrf/init/real_init/types.py:109 documents WRF use_theta_m and THM storage.",
+        "src/gpuwrf/init/real_init/lateral_bc.py:236 stores THM when use_theta_m is enabled.",
+        "src/gpuwrf/coupling/boundary_apply.py:148 applies theta_bdy into state.theta.",
+        "src/gpuwrf/dynamics/advection.py:262 advects theta as a prognostic mass scalar."
+      ],
+      "required_action": "Keep state.theta moist at model boundaries and in dycore transport; decouple only at physics adapter input/output boundaries."
+    },
+    {
+      "area": "MYNN grid-backed path and generic grid-backed surface column view",
+      "classification": "ALREADY_DECOUPLED",
+      "status": "Production grid-backed path already converts moist theta to dry theta before physics and recouples MYNN output dry theta to moist theta.",
+      "evidence": [
+        "src/gpuwrf/coupling/physics_couplers.py:1313 decouples MYNN column theta using qv.",
+        "src/gpuwrf/coupling/physics_couplers.py:1404 recouples MYNN dry theta output to moist theta.",
+        "src/gpuwrf/coupling/physics_couplers.py:1648 builds dry_theta and t_air for grid-backed surface physics.",
+        "src/gpuwrf/runtime/operational_mode.py:3188 converts dry theta and qv sources to moist theta source in source-leaf mode."
+      ],
+      "required_action": "Preserve this pattern and move remaining physics adapters toward the same explicit dry-view and moist-writeback API."
+    },
+    {
+      "area": "NoahMP forcing and surface hook",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "The observed active patch decouples only the NoahMP sfctmp fallback. The upstream column view and surface diagnostics still expose raw moist theta to sfclay diagnostics and flux seed terms.",
+      "evidence": [
+        "src/gpuwrf/coupling/noahmp_surface_hook.py:79 builds a column view with raw state.theta.",
+        "src/gpuwrf/physics/noahmp_coupler.py:161 calls surface_layer_with_diagnostics on that raw view.",
+        "src/gpuwrf/physics/noahmp_coupler.py:238 builds thx/fltv from raw state.theta.",
+        "src/gpuwrf/coupling/noahmp_surface_hook.py:161 overlays diagnostics through the same raw-view hook."
+      ],
+      "required_action": "Build a dry surface view for NoahMP, including sfctmp, t_air, th2/thx, virtual-temperature and CH/CM seed diagnostics; retain the active sfctmp dry fallback but do not stop there."
+    },
+    {
+      "area": "Noah Classic surface forcing",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "Uses raw moist theta to form T, TH2, and FLTV inputs.",
+      "evidence": [
+        "src/gpuwrf/coupling/noahclassic_surface_hook.py:161 forms t_air from _temperature_from_theta(state.theta, state.p).",
+        "src/gpuwrf/coupling/noahclassic_surface_hook.py:181 assembles forcing with raw state.theta at the bottom level.",
+        "src/gpuwrf/coupling/noahclassic_surface_hook.py:251 uses raw theta in fltv."
+      ],
+      "required_action": "Use dry theta for bottom-air temperature and surface-layer theta quantities before Noah Classic forcing and flux diagnostics."
+    },
+    {
+      "area": "Thompson microphysics adapter",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "Inputs temperature from raw moist theta and writes dry theta output directly back into moist state.theta.",
+      "evidence": [
+        "src/gpuwrf/coupling/physics_couplers.py:1155 forms Thompson temperature with _temperature_from_theta(state.theta, state.p).",
+        "src/gpuwrf/physics/thompson_column.py:180 documents temperature input and derived density.",
+        "src/gpuwrf/coupling/physics_couplers.py:1187 converts output temperature to dry theta and stores it as state.theta."
+      ],
+      "required_action": "Feed Thompson with dry-theta temperature and recouple returned dry theta with updated qv before updating state.theta."
+    },
+    {
+      "area": "Scan microphysics adapters",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "Kessler, Lin, WSM3, WSM5, WSM6, WDM5, WDM6, and Morrison adapters pass raw state.theta into kernels that expect dry potential temperature or derive temperature from theta*pi.",
+      "evidence": [
+        "src/gpuwrf/coupling/scan_adapters.py:157 passes mp(state.theta) to Kessler.",
+        "src/gpuwrf/coupling/scan_adapters.py:176 passes mp(state.theta) to Lin.",
+        "src/gpuwrf/coupling/scan_adapters.py:203 passes mp(state.theta) to WSM6.",
+        "src/gpuwrf/coupling/scan_adapters.py:222 passes mp(state.theta) to WSM3.",
+        "src/gpuwrf/coupling/scan_adapters.py:240 passes mp(state.theta) to WSM5.",
+        "src/gpuwrf/coupling/scan_adapters.py:258 passes mp(state.theta) to Morrison.",
+        "src/gpuwrf/coupling/scan_adapters.py:277 passes mp(state.theta) to WDM5.",
+        "src/gpuwrf/coupling/scan_adapters.py:312 passes mp(state.theta) to WDM6.",
+        "src/gpuwrf/physics/microphysics_kessler.py:135 and src/gpuwrf/physics/microphysics_wsm6.py:1091 convert theta and pii to temperature."
+      ],
+      "required_action": "Decouple theta before each microphysics call and recouple any returned dry theta or dry theta tendency with the adapter's updated qv."
+    },
+    {
+      "area": "Radiation adapters and radiation tendency application",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "Column input builders form temperature and density from raw moist theta. Source-leaf mode has a dry-to-moist tendency conversion, but the default held-radiation path can still add dry RTHRATEN directly into moist state.theta.",
+      "evidence": [
+        "src/gpuwrf/coupling/physics_couplers.py:965 builds RRTMG column temperature from raw state.theta.",
+        "src/gpuwrf/coupling/physics_couplers.py:1067 computes density with raw-theta temperature.",
+        "src/gpuwrf/coupling/physics_couplers.py:1826 through 2382 wires RRTMG, Dudhia, GSFC, and classic RRTM theta tendency paths through those inputs.",
+        "src/gpuwrf/runtime/operational_mode.py:3171 converts dry radiation/PBL source terms to moist only when source-leaf mode is active.",
+        "src/gpuwrf/runtime/operational_mode.py:3207 adds held_rthraten directly in the default path."
+      ],
+      "required_action": "Use dry-theta temperature and density for radiation inputs and ensure every radiation theta tendency update is converted to the moist prognostic convention, including the default held tendency path."
+    },
+    {
+      "area": "Surface-layer scan adapters",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "Revised MM5, Pleim-Xiu, old MM5, GFS, and flux-handle helpers form bottom temperature or theta from raw moist theta.",
+      "evidence": [
+        "src/gpuwrf/coupling/scan_adapters.py:352 computes surface-layer bottom T from state.theta.",
+        "src/gpuwrf/coupling/scan_adapters.py:383 wires Revised MM5 inputs.",
+        "src/gpuwrf/coupling/scan_adapters.py:403 wires Pleim-Xiu theta_bottom from state.theta.",
+        "src/gpuwrf/coupling/scan_adapters.py:429 recomputes T0 and thx for flux handles from raw theta.",
+        "src/gpuwrf/coupling/scan_adapters.py:456 wires old MM5.",
+        "src/gpuwrf/coupling/scan_adapters.py:481 wires GFS."
+      ],
+      "required_action": "Use the same dry bottom-air view as the grid-backed generic surface adapter; avoid the raw no-grid fallback for operational scan adapters."
+    },
+    {
+      "area": "PBL scan adapters and MYJ/Janjic",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "YSU, ACM2, BouLac, MRF, MYJ surface, and MYJ PBL use raw moist theta for T/theta inputs and add dry theta tendencies directly to moist state.theta.",
+      "evidence": [
+        "src/gpuwrf/coupling/scan_adapters.py:971 builds PBL surface forcing through a raw fallback surface view.",
+        "src/gpuwrf/coupling/scan_adapters.py:1063 wires YSU with raw-theta temperature.",
+        "src/gpuwrf/coupling/scan_adapters.py:1077 wires ACM2 with raw theta and T.",
+        "src/gpuwrf/coupling/scan_adapters.py:1091 wires BouLac with raw theta.",
+        "src/gpuwrf/coupling/scan_adapters.py:1126 wires MRF with raw-theta temperature.",
+        "src/gpuwrf/physics/myj_adapters.py:63 builds MYJ geometry from raw-theta T/theta.",
+        "src/gpuwrf/physics/myj_adapters.py:176 adds MYJ RTHBLTEN directly to state.theta."
+      ],
+      "required_action": "Decouple all PBL input T/theta fields and recouple any returned dry theta tendency or final dry theta state with qv."
+    },
+    {
+      "area": "Cumulus scan adapters",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "KF, Tiedtke, Grell-Freitas, and BMJ compute temperature, density, virtual theta, or dry RTHCUTEN from raw moist theta. Grell-Freitas additionally multiplies raw state.theta by a virtual factor, which double counts moisture if theta is already theta_m.",
+      "evidence": [
+        "src/gpuwrf/coupling/scan_adapters.py:507 wires KF with raw-theta T and density.",
+        "src/gpuwrf/coupling/scan_adapters.py:588 wires Tiedtke with raw-theta T.",
+        "src/gpuwrf/coupling/scan_adapters.py:751 wires Grell-Freitas with raw-theta T.",
+        "src/gpuwrf/coupling/scan_adapters.py:819 forms thv = state.theta * (1 + 0.608*qv).",
+        "src/gpuwrf/coupling/scan_adapters.py:877 wires BMJ with raw-theta T."
+      ],
+      "required_action": "Use dry theta for T, density, and virtual-theta construction and convert dry cumulus theta tendencies to moist prognostic tendencies when qv changes."
+    },
+    {
+      "area": "GWDO",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "GWDO is momentum-only at writeback, but it forms the thermodynamic temperature profile from raw moist theta.",
+      "evidence": [
+        "src/gpuwrf/coupling/physics_couplers.py:2475 forms GWDO temperature from state.theta.",
+        "src/gpuwrf/coupling/physics_couplers.py:2488 leaves theta and qv unchanged.",
+        "src/gpuwrf/physics/gwd_gwdo.py:132 expects temperature input."
+      ],
+      "required_action": "Feed GWDO with dry-theta temperature; no theta recoupling is needed because GWDO does not update theta."
+    },
+    {
+      "area": "Legacy wrfout/output diagnostics",
+      "classification": "MUST_DECOUPLE_TO_DRY",
+      "status": "Output T and surface diagnostics expose raw moist theta as dry WRF T perturbation or surface-layer theta.",
+      "evidence": [
+        "src/gpuwrf/coupling/driver.py:1155 writes T = state.theta - 300.",
+        "src/gpuwrf/coupling/driver.py:1201 builds surface output diagnostics from raw state.theta and raw surface_layer_with_diagnostics."
+      ],
+      "required_action": "When writing WRF-style diagnostic variables, convert theta_m back to dry theta first and use dry surface diagnostics for T2/Q2/U10/V10."
+    },
+    {
+      "area": "Real-init hydrostatic helpers and analytic/no-grid physics fallbacks",
+      "classification": "PROOF_ONLY_OR_ORACLE_INPUT",
+      "status": "Real-init hydrostatic code already separates dry theta and qv factors. Several physics_couplers no-grid fallbacks intentionally expose raw arrays for analytic callers and should not be treated as operational proof without caller-specific tests.",
+      "evidence": [
+        "src/gpuwrf/init/real_init/hydrostatic.py:64 uses dry theta plus explicit qvf.",
+        "src/gpuwrf/init/real_init/hydrostatic.py:226 converts a dry theta perturbation to temperature.",
+        "src/gpuwrf/coupling/physics_couplers.py:1313 and :1648 have explicit grid-backed dry paths but raw fallback behavior when grid metrics are absent."
+      ],
+      "required_action": "Leave real-init dry/moist split intact; require tests for no-grid analytic fallbacks before using them as runtime physics evidence."
+    },
+    {
+      "area": "Dycore EOS and pressure diagnostics",
+      "classification": "UNCLEAR_NEEDS_TEST",
+      "status": "This audit does not recommend dry-decoupling dycore storage or transport, but the EOS helper path should be explicitly tested for whether it expects dry theta plus qv or theta_m.",
+      "evidence": [
+        "src/gpuwrf/dynamics/acoustic_wrf.py:135 includes an optional qv factor in inverse-density diagnostics.",
+        "src/gpuwrf/dynamics/acoustic_wrf.py:279 passes state.theta and state.qv into that helper.",
+        "src/gpuwrf/dynamics/core/rk_addtend_dry.py:127 computes diagnostics from state.theta without qv."
+      ],
+      "required_action": "Do not alter dycore convention in this physics-consumer fix. Add a separate dycore savepoint/oracle gate for theta_m EOS qv-factor consistency."
+    }
+  ],
+  "minimal_helper_api": {
+    "location": "Prefer one shared coupling-level helper near existing _temperature_from_theta/_theta_from_temperature and the WRF constants in src/gpuwrf/coupling/physics_couplers.py, or a small shared constants/helper module imported by adapters.",
+    "functions": [
+      "rv_over_rd() -> 461.6 / 287.0 from one WRF-compatible constant source",
+      "theta_dry_from_moist(theta_m, qv_mixing) -> theta_m / (1 + rv_over_rd*qv_mixing)",
+      "theta_moist_from_dry(theta_dry, qv_mixing) -> theta_dry * (1 + rv_over_rd*qv_mixing)",
+      "temperature_from_dry_theta(theta_dry, pressure_pa) -> existing Exner conversion",
+      "moist_theta_tendency_from_dry(theta_dry_old, qv_old, dry_theta_tendency, qv_tendency) -> (1 + rv_over_rd*qv_old)*dry_theta_tendency + rv_over_rd*theta_dry_old*qv_tendency for source terms, or use finite recoupling with updated qv"
+    ],
+    "implementation_constraints": [
+      "Keep conversions elementwise JAX operations so they fuse and remain GPU resident.",
+      "Do not use specific-humidity constants such as 0.622 in the theta_m conversion; qv here is WRF mixing ratio.",
+      "Do not dry-convert boundary, feedback, or dycore prognostic storage.",
+      "Make dry-vs-moist intent explicit at adapter boundaries instead of overloading state.theta."
+    ]
+  },
+  "required_regression_gates": [
+    "python -m json.tool proofs/v014/moist_theta_physics_consumer_audit.json >/tmp/moist_theta_physics_consumer_audit.validated.json",
+    "git diff --check",
+    "After the NoahMP fix, rerun the strict Step-1 NoahMP closure with use_noahmp=True and compare SFCTMP/T_ML, HFX, LH, T2, Q2, CH, CM, FLTV against WRF savepoints.",
+    "Add a CPU helper unit/probe that constructs theta_dry, qv, p, derives theta_m, and verifies dry helper T matches the dry oracle while raw _temperature_from_theta(theta_m, p) reproduces the expected warm bias.",
+    "Add adapter-level probes for NoahMP and Noah Classic bottom-air temperature, th2/thx, virtual temperature, and flux-handle fields.",
+    "Add radiation column-input parity for RRTMG SW/LW, Dudhia, GSFC, and classic RRTM, plus a tendency-application gate that proves dry RTHRATEN is converted before updating moist state.theta in all runtime modes.",
+    "Add microphysics, cumulus, PBL, MYJ, and GWDO smoke/parity cases that initialize theta_m and assert each adapter feeds dry theta-derived T/theta to the kernel and leaves state.theta moist after qv changes.",
+    "Keep all new gates CPU-runnable with JAX_PLATFORMS=cpu and CUDA_VISIBLE_DEVICES= for this sprint; performance claims require later GPU profiler artifacts."
+  ],
+  "gate_results": {
+    "json_tool": "PASS: python -m json.tool proofs/v014/moist_theta_physics_consumer_audit.json >/tmp/moist_theta_physics_consumer_audit.validated.json",
+    "diff_check": "PASS: git diff --check",
+    "completion_marker": "ATTEMPTED: tmux send-keys to 0:2 failed with Operation not permitted; proof files are authoritative per contract"
+  },
+  "commands_run": [
+    "sed -n '1,220p' PROJECT_CONSTITUTION.md",
+    "sed -n '1,260p' AGENTS.md",
+    "sed -n '1,260p' .agent/decisions/V0140-RELEASE-CHECKLIST.md",
+    "sed -n '1,260p' .agent/sprints/2026-06-10-v014-gpt-moist-theta-physics-consumer-audit/sprint-contract.md",
+    "rg --files .agent/skills",
+    "sed -n '1,220p' .agent/skills/validating-physics/SKILL.md",
+    "sed -n '1,220p' .agent/skills/reporting-to-human/SKILL.md",
+    "git status --short",
+    "rg -n \"state\\.theta|_temperature_from_theta|theta_m|THM|RTH|theta\" src/gpuwrf/init/real_init src/gpuwrf/physics src/gpuwrf/coupling src/gpuwrf/runtime src/gpuwrf/dynamics",
+    "nl -ba src/gpuwrf/init/real_init/types.py",
+    "nl -ba src/gpuwrf/init/real_init/lateral_bc.py",
+    "nl -ba src/gpuwrf/init/real_init/hydrostatic.py",
+    "nl -ba src/gpuwrf/contracts/state.py",
+    "nl -ba src/gpuwrf/coupling/physics_couplers.py",
+    "nl -ba src/gpuwrf/coupling/noahmp_surface_hook.py",
+    "nl -ba src/gpuwrf/physics/noahmp_coupler.py",
+    "git diff -- src/gpuwrf/physics/noahmp_coupler.py",
+    "nl -ba src/gpuwrf/coupling/noahclassic_surface_hook.py",
+    "nl -ba src/gpuwrf/coupling/scan_adapters.py",
+    "nl -ba src/gpuwrf/physics/myj_adapters.py",
+    "nl -ba src/gpuwrf/coupling/driver.py",
+    "nl -ba src/gpuwrf/runtime/operational_mode.py",
+    "nl -ba src/gpuwrf/dynamics/acoustic_wrf.py",
+    "nl -ba src/gpuwrf/dynamics/advection.py",
+    "nl -ba src/gpuwrf/coupling/boundary_apply.py",
+    "nl -ba src/gpuwrf/coupling/boundary_feedback.py",
+    "nl -ba selected physics kernels under src/gpuwrf/physics for expected T/theta semantics",
+    "python -m json.tool proofs/v014/moist_theta_physics_consumer_audit.json >/tmp/moist_theta_physics_consumer_audit.validated.json",
+    "git diff --check",
+    "tmux send-keys -t 0:2 'GPT MOIST_THETA_CONSUMER_AUDIT DONE - see proofs/v014/moist_theta_physics_consumer_audit.md' Enter"
+  ]
+}
