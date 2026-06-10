@@ -28,100 +28,100 @@
       "name": "daytime_veg5",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 1.9955725074627395e-06,
-      "sh2o_max_abs_err": 1.9955725074627395e-06,
+      "smc_max_abs_err": 2.0764574144710446e-06,
+      "sh2o_max_abs_err": 2.0764574144710446e-06,
       "smcwtd_abs_err": 3.2303619501572456e-10,
-      "conservation_resid_mm": 4.518683604376461e-16
+      "conservation_resid_mm": 3.446922651820228e-15
     },
     {
       "name": "daytime_veg9",
       "parity_constrained": false,
       "conservation_pass": true,
-      "smc_max_abs_err": 2.0948697918979353e-05,
-      "sh2o_max_abs_err": 2.0948697918979353e-05,
+      "smc_max_abs_err": 2.1930536137387824e-05,
+      "sh2o_max_abs_err": 2.1930536137387824e-05,
       "smcwtd_abs_err": 4.062500058577001e-10,
-      "conservation_resid_mm": 1.0582680565196512e-14
+      "conservation_resid_mm": 8.307157045583935e-16
     },
     {
       "name": "daytime_veg10",
       "parity_constrained": false,
       "conservation_pass": true,
-      "smc_max_abs_err": 2.0661620956860527e-05,
-      "sh2o_max_abs_err": 2.0661620956860527e-05,
+      "smc_max_abs_err": 2.164200908634506e-05,
+      "sh2o_max_abs_err": 2.164200908634506e-05,
       "smcwtd_abs_err": 4.062500058577001e-10,
-      "conservation_resid_mm": 1.498670978983263e-14
+      "conservation_resid_mm": 1.8418643346618246e-14
     },
     {
       "name": "daytime_veg13",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 8.20368624074308e-07,
-      "sh2o_max_abs_err": 8.20368624074308e-07,
+      "smc_max_abs_err": 1.3766585790775387e-07,
+      "sh2o_max_abs_err": 1.3766585790775387e-07,
       "smcwtd_abs_err": 1.1993406268118179e-11,
-      "conservation_resid_mm": 2.3114464463094717e-14
+      "conservation_resid_mm": 2.4199402866030063e-14
     },
     {
       "name": "daytime_veg16",
       "parity_constrained": false,
       "conservation_pass": true,
-      "smc_max_abs_err": 1.355299082717032e-05,
-      "sh2o_max_abs_err": 1.355299082717032e-05,
+      "smc_max_abs_err": 1.3875035374741329e-05,
+      "sh2o_max_abs_err": 1.3875035374741329e-05,
       "smcwtd_abs_err": 2.3781585034576835e-10,
-      "conservation_resid_mm": 6.297913579533798e-15
+      "conservation_resid_mm": 1.0059661437189504e-14
     },
     {
       "name": "nighttime_veg5",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 1.1973466376574704e-06,
-      "sh2o_max_abs_err": 1.1973466376574704e-06,
+      "smc_max_abs_err": 1.1159527136261893e-06,
+      "sh2o_max_abs_err": 1.1159527136261893e-06,
       "smcwtd_abs_err": 3.2303619501572456e-10,
-      "conservation_resid_mm": 2.8107873559050922e-15
+      "conservation_resid_mm": 9.94443107504503e-15
     },
     {
       "name": "nighttime_veg9",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 5.534536903495368e-07,
-      "sh2o_max_abs_err": 5.534536903495368e-07,
+      "smc_max_abs_err": 4.6055448597870363e-07,
+      "sh2o_max_abs_err": 4.6055448597870363e-07,
       "smcwtd_abs_err": 4.062500058577001e-10,
-      "conservation_resid_mm": 2.2159811691787462e-14
+      "conservation_resid_mm": 2.2122467703208915e-14
     },
     {
       "name": "nighttime_veg10",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 3.1915109155455923e-07,
-      "sh2o_max_abs_err": 3.1915109155455923e-07,
+      "smc_max_abs_err": 1.006218697724437e-06,
+      "sh2o_max_abs_err": 1.006218697724437e-06,
       "smcwtd_abs_err": 4.062500058577001e-10,
-      "conservation_resid_mm": 7.438141899282491e-15
+      "conservation_resid_mm": 6.013025906186076e-15
     },
     {
       "name": "nighttime_veg13",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 8.259641317842625e-07,
-      "sh2o_max_abs_err": 8.259641317842625e-07,
+      "smc_max_abs_err": 1.4326133404574115e-07,
+      "sh2o_max_abs_err": 1.4326133404574115e-07,
       "smcwtd_abs_err": 1.1993406268118179e-11,
-      "conservation_resid_mm": 1.893729464335362e-14
+      "conservation_resid_mm": 2.3491678396820913e-14
     },
     {
       "name": "nighttime_veg16",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 9.762807154367614e-08,
-      "sh2o_max_abs_err": 9.762807154367614e-08,
+      "smc_max_abs_err": 3.6799163752321284e-07,
+      "sh2o_max_abs_err": 3.6799163752321284e-07,
       "smcwtd_abs_err": 2.3781585034576835e-10,
-      "conservation_resid_mm": 9.505278373211565e-15
+      "conservation_resid_mm": 1.3047966570048364e-15
     },
     {
       "name": "teide_snow",
       "parity_constrained": true,
       "conservation_pass": true,
-      "smc_max_abs_err": 3.0832423694726607e-07,
-      "sh2o_max_abs_err": 3.0832423694726607e-07,
+      "smc_max_abs_err": 4.322257261824003e-08,
+      "sh2o_max_abs_err": 4.322257261824003e-08,
       "smcwtd_abs_err": 4.820556731566228e-10,
-      "conservation_resid_mm": 1.753689591869103e-14
+      "conservation_resid_mm": 1.85388802065989e-14
     }
   ],
   "verdict": "S4_WATER_CONSERVATION_PASS"
