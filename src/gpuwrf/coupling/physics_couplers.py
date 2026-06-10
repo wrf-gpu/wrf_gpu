@@ -1304,20 +1304,46 @@ def _surface_fluxes_from_state(state: State) -> SurfaceFluxes:
     )
 
 
-def _mynn_column_from_state(state: State, grid: GridSpec | None) -> MynnPBLColumnState:
-    """Build the MYNN column-kernel input view from State (mass-point winds)."""
+def _mynn_column_uses_wrf_phy_prep(grid: GridSpec | None) -> bool:
+    """Whether MYNN can use the same WRF ``phy_prep`` fields as the live driver."""
 
-    rho_columns = _to_columns(_rho_from_state(state))
-    dz_columns = _column_dz_from_state(state, grid)
+    return getattr(grid, "metrics", None) is not None
+
+
+def _mynn_column_from_state(state: State, grid: GridSpec | None) -> MynnPBLColumnState:
+    """Build the MYNN column-kernel input view from State (mass-point winds).
+
+    The live WRF path stores theta_m in the model state when ``use_theta_m=1``,
+    but ``module_bl_mynnedmf_driver`` receives dry ``th_phy`` plus hydrostatic
+    ``p_phy``/``rho``/``dz8w`` from ``phy_prep``. Mirror that grid-backed
+    contract here; analytic callers without metrics keep the historical direct
+    state view.
+    """
+
+    if _mynn_column_uses_wrf_phy_prep(grid):
+        metrics = grid.metrics
+        theta = jnp.asarray(state.theta, dtype=jnp.float64) / (
+            1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, dtype=jnp.float64)
+        )
+        p, _psfc = _wrf_hydrostatic_pressure_from_state(state, metrics)
+        rho = _wrf_phy_prep_rho_from_state(state, metrics)
+        dz_columns = _surface_dz_from_state(state)
+    else:
+        theta = jnp.asarray(state.theta, dtype=jnp.float64)
+        p = jnp.asarray(state.p, dtype=jnp.float64)
+        rho = _rho_from_state(state)
+        dz_columns = _column_dz_from_state(state, grid)
+
+    rho_columns = _to_columns(rho)
     zeros = jnp.zeros_like(rho_columns)
     return MynnPBLColumnState(
         _to_columns(_u_mass(state)),
         _to_columns(_v_mass(state)),
         _to_columns(_w_mass(state)),
-        _to_columns(state.theta),
+        _to_columns(theta),
         _to_columns(state.qv),
         0.5 * _to_columns(state.qke),  # tke = qke/2
-        _to_columns(state.p),
+        _to_columns(p),
         rho_columns,
         dz_columns,
         zeros,  # km (kernel output)
@@ -1375,7 +1401,9 @@ def _add_a2c_v_increment(v_face: jax.Array, dv_mass: jax.Array) -> jax.Array:
     return v_face + dv_face
 
 
-def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
+def _state_from_mynn_output(
+    state: State, out: MynnPBLColumnState, *, theta_output_is_dry: bool = False
+) -> State:
     """Reassemble State from MYNN column output, WRF-faithful incremental coupling.
 
     WRF couples PBL momentum by ADDING the A-grid PBL increment (RUBLTEN/RVBLTEN),
@@ -1409,11 +1437,15 @@ def _state_from_mynn_output(state: State, out: MynnPBLColumnState) -> State:
     dv_mass = _from_columns(out.v) - _v_mass(state)
     u_new = _add_a2c_u_increment(state.u, du_mass).astype(_output_dtype(state, "u"))
     v_new = _add_a2c_v_increment(state.v, dv_mass).astype(_output_dtype(state, "v"))
+    qv_new = _from_columns(out.qv).astype(_output_dtype(state, "qv"))
+    theta_new = _from_columns(out.theta)
+    if theta_output_is_dry:
+        theta_new = theta_new * (1.0 + WRF_RV_OVER_RD * jnp.asarray(qv_new, jnp.float64))
     return state.replace(
         u=u_new,
         v=v_new,
-        theta=_from_columns(out.theta).astype(_output_dtype(state, "theta")),
-        qv=_from_columns(out.qv).astype(_output_dtype(state, "qv")),
+        theta=theta_new.astype(_output_dtype(state, "theta")),
+        qv=qv_new,
         qke=(2.0 * _from_columns(out.tke)).astype(_output_dtype(state, "qke")),
     )
 
@@ -1468,7 +1500,9 @@ def _unflatten_batch_to_columns(tree, ny: int, nx: int):
 _MYNN_EDMF = True
 
 
-def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State:
+def mynn_adapter(
+    state: State, dt: float, grid: GridSpec | None = None, *, first_timestep=False
+) -> State:
     """Advance the MYNN PBL using the surface fluxes ``surface_adapter`` wrote.
 
     THIN adapter: builds the column view, hands the FROZEN surface→MYNN flux
@@ -1482,6 +1516,7 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     :func:`_flatten_columns_to_batch`).
     """
 
+    state = _mynn_state_with_first_call_qke(state, grid, first_timestep)
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
     ny, nx = column.theta.shape[0], column.theta.shape[1]
@@ -1491,7 +1526,9 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
         column_b, dt, debug=False, surface=surface_b, edmf=_MYNN_EDMF, dx=_mynn_dx(grid)
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
-    return _state_from_mynn_output(state, out)
+    return _state_from_mynn_output(
+        state, out, theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid)
+    )
 
 
 def mynn_coldstart_qke_from_state(
@@ -1525,8 +1562,27 @@ def mynn_coldstart_qke_from_state(
     return _from_columns(_unflatten_batch_to_columns(qke_b, ny, nx))
 
 
+def _mynn_state_with_first_call_qke(
+    state: State, grid: GridSpec | None, first_timestep
+) -> State:
+    """Apply WRF's first MYNN ``mym_initialize`` ordering after surface fluxes."""
+
+    if isinstance(first_timestep, bool):
+        if not first_timestep:
+            return state
+        qke_seed = mynn_coldstart_qke_from_state(state, grid)
+    else:
+        flag = jnp.asarray(first_timestep, dtype=bool)
+
+        def seed(_unused):
+            return mynn_coldstart_qke_from_state(state, grid)
+
+        qke_seed = jax.lax.cond(flag, seed, lambda _unused: jnp.asarray(state.qke), None)
+    return state.replace(qke=qke_seed.astype(_output_dtype(state, "qke")))
+
+
 def mynn_adapter_with_source_leaves(
-    state: State, dt: float, grid: GridSpec | None = None
+    state: State, dt: float, grid: GridSpec | None = None, *, first_timestep=False
 ) -> MynnPBLSourceLeaves:
     """Advance MYNN and expose raw WRF MYNN source tendencies.
 
@@ -1538,6 +1594,7 @@ def mynn_adapter_with_source_leaves(
     multi-scheme state delta as a dry source.
     """
 
+    state = _mynn_state_with_first_call_qke(state, grid, first_timestep)
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
     ny, nx = column.theta.shape[0], column.theta.shape[1]
@@ -1548,15 +1605,18 @@ def mynn_adapter_with_source_leaves(
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
     theta_after = _from_columns(out.theta)
+    theta_before = _from_columns(column.theta)
     qv_after = _from_columns(out.qv)
-    rthblten = ((theta_after - jnp.asarray(state.theta, jnp.float64)) / float(dt)).astype(
+    rthblten = ((theta_after - theta_before) / float(dt)).astype(
         _output_dtype(state, "theta")
     )
     rqvblten = ((qv_after - jnp.asarray(state.qv, jnp.float64)) / float(dt)).astype(
         _output_dtype(state, "qv")
     )
     return MynnPBLSourceLeaves(
-        state=_state_from_mynn_output(state, out),
+        state=_state_from_mynn_output(
+            state, out, theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid)
+        ),
         rthblten=rthblten,
         rqvblten=rqvblten,
     )
@@ -1577,7 +1637,12 @@ def mynn_adapter_with_diagnostics(
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
     pblh = pblh_b.reshape((ny, nx) + pblh_b.shape[1:])
-    return _state_from_mynn_output(state, out), pblh
+    return (
+        _state_from_mynn_output(
+            state, out, theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid)
+        ),
+        pblh,
+    )
 
 
 def _surface_column_view(state: State, grid: GridSpec | None = None) -> _SurfaceColumnState:

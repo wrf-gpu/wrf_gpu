@@ -3,18 +3,18 @@
     "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_source_fidelity_closure.py"
   },
-  "created_utc": "2026-06-10T04:03:16.312093+00:00",
+  "created_utc": "2026-06-10T04:52:25.277941+00:00",
   "current_jax_source_leaf_mode": {
     "derived_candidate_summaries": {
       "current_jax_dry_t_tendf": {
         "count": 461736,
         "finite_count": 461736,
-        "max": 2419.1304212276036,
-        "max_abs": 2419.1304212276036,
-        "mean": 0.7041828100759446,
-        "min": -2063.9411359814935,
+        "max": 2238.283460326086,
+        "max_abs": 2458.949112266819,
+        "mean": 0.712957503420287,
+        "min": -2458.949112266819,
         "nonzero_count": 451242,
-        "rms": 21.672047428815674,
+        "rms": 21.43453183179988,
         "shape": [
           44,
           66,
@@ -94,48 +94,48 @@
     },
     "primary_metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": -0.6251135530205852,
+        "bias": -0.63476057110163,
         "count": 442112,
-        "max_abs": 847.1446969755725,
+        "max_abs": 438.5379097262689,
         "nonfinite_diff_count": 0,
-        "p95": 2.2344308493721634,
-        "p99": 4.170671336250012,
-        "rmse": 9.627208432391289,
+        "p95": 2.2262773844310586,
+        "p99": 3.574792756599226,
+        "rmse": 5.4654420375782955,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -328.9771118164062,
+        "worst_candidate": 581.6277465820312,
         "worst_mismatch_fortran": {
-          "i": 64,
-          "j": 37,
-          "k": 2
+          "i": 74,
+          "j": 39,
+          "k": 1
         },
-        "worst_reference": -1176.1218087919788
+        "worst_reference": 143.08983685576237
       },
       "after_update_vs_jax_dry_t_tendf": {
-        "bias": -0.9896086239531603,
+        "bias": -0.999255642034205,
         "count": 442112,
-        "max_abs": 996.829469779741,
+        "max_abs": 436.45811499197646,
         "nonfinite_diff_count": 0,
-        "p95": 2.305071016560512,
-        "p99": 23.243828411798287,
-        "rmse": 12.255264958186714,
+        "p95": 2.2836835129289845,
+        "p99": 22.357002917790105,
+        "rmse": 7.016810076941844,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -202.2004852294922,
+        "worst_candidate": 338.49462890625,
         "worst_mismatch_fortran": {
-          "i": 66,
-          "j": 37,
-          "k": 2
+          "i": 72,
+          "j": 34,
+          "k": 1
         },
-        "worst_reference": -1199.0299550092332
+        "worst_reference": -97.96348608572646
       },
       "wrf_active_rth_vs_jax_source_leaf": {
         "bias": -0.28907409541776086,
@@ -203,37 +203,37 @@
     },
     "metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.16885885948192061,
+        "bias": 0.1592994126813846,
         "count": 442112,
-        "max_abs": 851.1711251874308,
+        "max_abs": 442.557323214411,
         "nonfinite_diff_count": 0,
-        "p95": 1.9187152294596626,
-        "p99": 15.750778721036328,
-        "rmse": 10.141810952506368,
+        "p95": 1.749653744215481,
+        "p99": 16.658658095605883,
+        "rmse": 6.227829921959709,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -328.9771118164062,
+        "worst_candidate": 581.6277465820312,
         "worst_mismatch_fortran": {
-          "i": 64,
-          "j": 37,
-          "k": 2
+          "i": 74,
+          "j": 39,
+          "k": 1
         },
-        "worst_reference": -1180.148237003837
+        "worst_reference": 139.0704233676203
       },
       "derived_candidate_summaries": {
         "current_jax_dry_t_tendf": {
           "count": 461736,
           "finite_count": 461736,
-          "max": 2418.9397209760295,
-          "max_abs": 2418.9397209760295,
-          "mean": -0.09090840850536368,
-          "min": -2067.1003398527214,
+          "max": 2238.095859189117,
+          "max_abs": 2462.0337766721,
+          "mean": -0.08222207149297163,
+          "min": -2462.0337766721,
           "nonzero_count": 461736,
-          "rms": 21.70051067746715,
+          "rms": 21.43448633745649,
           "shape": [
             44,
             66,
@@ -308,7 +308,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "9b901b88e95043c1d030b5d8a364656ac00cb3c6\n"
+      "stdout_tail": "f935d82b5d6454224bed55dfd530e21f339222eb\n"
     },
     "status_short": {
       "command": [
@@ -318,7 +318,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": " M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M .agent/reviews/2026-06-10-v014-step1-thermo-column-inputs.md\n M .agent/reviews/2026-06-10-v014-step1-tsk-znt-sourcing.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_thermo_column_inputs.json\n M proofs/v014/step1_thermo_column_inputs.md\n M proofs/v014/step1_tsk_znt_sourcing_fix.json\n M proofs/v014/step1_tsk_znt_sourcing_fix.md\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/physics/surface_layer.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_sfclay_output_algebra.json\n?? proofs/v014/step1_sfclay_output_algebra.md\n?? proofs/v014/step1_sfclay_output_algebra.py\n?? proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_mynn_surface_layer_regressions.py\n"
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/step1_sfclay_output_algebra.json\n M proofs/v014/step1_sfclay_output_algebra.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_mynn_source_coupling.json\n?? proofs/v014/step1_mynn_source_coupling.md\n?? proofs/v014/step1_mynn_source_coupling.py\n?? proofs/v014/step1_mynn_source_coupling_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
     }
   },
   "mynn_leaf_probe": {
@@ -402,12 +402,12 @@
       "jax_mass_coupled_rqvblten_summary": {
         "count": 442112,
         "finite_count": 442112,
-        "max": 0.5992769940478929,
-        "max_abs": 0.8961413269865087,
-        "mean": 0.0007751996346236497,
-        "min": -0.8961413269865087,
+        "max": 0.5352425747931215,
+        "max_abs": 0.5352425747931215,
+        "mean": 0.0007809633786698148,
+        "min": -0.5075193229832549,
         "nonzero_count": 432064,
-        "rms": 0.012312915848763883,
+        "rms": 0.009494068921147758,
         "shape": [
           44,
           66,
@@ -417,12 +417,12 @@
       "jax_mass_coupled_rthblten_summary": {
         "count": 442112,
         "finite_count": 442112,
-        "max": 2299.181282241139,
-        "max_abs": 2299.181282241139,
-        "mean": 0.332859029292105,
-        "min": -2243.212465911082,
-        "nonzero_count": 432061,
-        "rms": 20.7573235633479,
+        "max": 2069.7021478686747,
+        "max_abs": 2449.6284041974827,
+        "mean": 0.35718323427847243,
+        "min": -2449.6284041974827,
+        "nonzero_count": 432064,
+        "rms": 20.414742574661698,
         "shape": [
           44,
           66,
@@ -445,26 +445,26 @@
         ]
       },
       "wrf_qv_tend_vs_jax_mass_coupled_rqvblten": {
-        "bias": -1.2971138659406265e-06,
+        "bias": -7.060857912105629e-06,
         "count": 442112,
-        "max_abs": 0.5915945535528234,
+        "max_abs": 0.4501392720045829,
         "nonfinite_diff_count": 0,
-        "p95": 0.0001422474836782721,
-        "p99": 0.001535279001269194,
-        "rmse": 0.005883718169397555,
+        "p95": 2.1727507725455856e-05,
+        "p99": 0.0015478420670170185,
+        "rmse": 0.004036177684271274,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -0.3045467734336853,
+        "worst_candidate": -0.4547699093818665,
         "worst_mismatch_fortran": {
-          "i": 63,
-          "j": 37,
-          "k": 2
+          "i": 72,
+          "j": 33,
+          "k": 1
         },
-        "worst_reference": -0.8961413269865087
+        "worst_reference": -0.004630637377283596
       },
       "wrf_rthblten_summary": {
         "count": 442112,
@@ -482,26 +482,26 @@
         ]
       },
       "wrf_rthblten_vs_jax_mass_coupled_rthblten": {
-        "bias": 0.0008992660250872925,
+        "bias": -0.023424938961280024,
         "count": 442112,
-        "max_abs": 574.36576393428,
+        "max_abs": 421.3756264354562,
         "nonfinite_diff_count": 0,
-        "p95": 0.49676939805569004,
-        "p99": 1.8701646676890764,
-        "rmse": 8.070928819379612,
+        "p95": 0.496040100520665,
+        "p99": 0.9870051641220909,
+        "rmse": 5.930886215913059,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -200.4556427001953,
+        "worst_candidate": 563.8761596679688,
         "worst_mismatch_fortran": {
-          "i": 66,
-          "j": 37,
-          "k": 2
+          "i": 74,
+          "j": 39,
+          "k": 1
         },
-        "worst_reference": -774.8214066344754
+        "worst_reference": 142.50053323251257
       }
     },
     "status": "MYNN_LEAF_PROBE_EXECUTED"
@@ -513,8 +513,8 @@
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "3668ac4b1dfa3f91decf905cc168b2538364d84e4553b665c9def8af1325f3d8",
-      "size_bytes": 114464
+      "sha256": "dcc616f06dabd332d4bda87e9b659e9191f655be4dba921889801cb6be1e8a31",
+      "size_bytes": 117140
     },
     "prior_dry_source_leaf_fix": {
       "exists": true,
@@ -621,70 +621,70 @@
           }
         },
         "rqv_or_qv_tend": {
-          "bias": -1.2971138659406265e-06,
+          "bias": -7.060857912105629e-06,
           "count": 442112,
-          "max_abs": 0.5915945535528234,
+          "max_abs": 0.4501392720045829,
           "nonfinite_diff_count": 0,
-          "p95": 0.0001422474836782721,
-          "p99": 0.001535279001269194,
-          "rmse": 0.005883718169397555,
+          "p95": 2.1727507725455856e-05,
+          "p99": 0.0015478420670170185,
+          "rmse": 0.004036177684271274,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -0.3045467734336853,
+          "worst_candidate": -0.4547699093818665,
           "worst_mismatch_fortran": {
-            "i": 63,
-            "j": 37,
-            "k": 2
+            "i": 72,
+            "j": 33,
+            "k": 1
           },
-          "worst_reference": -0.8961413269865087
+          "worst_reference": -0.004630637377283596
         },
         "rthblten": {
-          "bias": 0.0008992660250872925,
+          "bias": -0.023424938961280024,
           "count": 442112,
-          "max_abs": 574.36576393428,
+          "max_abs": 421.3756264354562,
           "nonfinite_diff_count": 0,
-          "p95": 0.49676939805569004,
-          "p99": 1.8701646676890764,
-          "rmse": 8.070928819379612,
+          "p95": 0.496040100520665,
+          "p99": 0.9870051641220909,
+          "rmse": 5.930886215913059,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -200.4556427001953,
+          "worst_candidate": 563.8761596679688,
           "worst_mismatch_fortran": {
-            "i": 66,
-            "j": 37,
-            "k": 2
+            "i": 74,
+            "j": 39,
+            "k": 1
           },
-          "worst_reference": -774.8214066344754
+          "worst_reference": 142.50053323251257
         },
         "strict_after_conv_vs_jax": {
-          "bias": -0.6251135530205852,
+          "bias": -0.63476057110163,
           "count": 442112,
-          "max_abs": 847.1446969755725,
+          "max_abs": 438.5379097262689,
           "nonfinite_diff_count": 0,
-          "p95": 2.2344308493721634,
-          "p99": 4.170671336250012,
-          "rmse": 9.627208432391289,
+          "p95": 2.2262773844310586,
+          "p99": 3.574792756599226,
+          "rmse": 5.4654420375782955,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -328.9771118164062,
+          "worst_candidate": 581.6277465820312,
           "worst_mismatch_fortran": {
-            "i": 64,
-            "j": 37,
-            "k": 2
+            "i": 74,
+            "j": 39,
+            "k": 1
           },
-          "worst_reference": -1176.1218087919788
+          "worst_reference": 143.08983685576237
         }
       },
       "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface-layer outputs feeding MYNN are still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` plus `proofs/v014/step1_thermo_column_inputs` now prove TSK/ZNT/MAVAIL and thermodynamic-column input parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is strictly later surface-layer output algebra.",
@@ -694,48 +694,48 @@
     {
       "evidence": {
         "forced_radiation_after_conv_vs_jax": {
-          "bias": 0.16885885948192061,
+          "bias": 0.1592994126813846,
           "count": 442112,
-          "max_abs": 851.1711251874308,
+          "max_abs": 442.557323214411,
           "nonfinite_diff_count": 0,
-          "p95": 1.9187152294596626,
-          "p99": 15.750778721036328,
-          "rmse": 10.141810952506368,
+          "p95": 1.749653744215481,
+          "p99": 16.658658095605883,
+          "rmse": 6.227829921959709,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -328.9771118164062,
+          "worst_candidate": 581.6277465820312,
           "worst_mismatch_fortran": {
-            "i": 64,
-            "j": 37,
-            "k": 2
+            "i": 74,
+            "j": 39,
+            "k": 1
           },
-          "worst_reference": -1180.148237003837
+          "worst_reference": 139.0704233676203
         },
         "primary_after_conv_vs_jax": {
-          "bias": -0.6251135530205852,
+          "bias": -0.63476057110163,
           "count": 442112,
-          "max_abs": 847.1446969755725,
+          "max_abs": 438.5379097262689,
           "nonfinite_diff_count": 0,
-          "p95": 2.2344308493721634,
-          "p99": 4.170671336250012,
-          "rmse": 9.627208432391289,
+          "p95": 2.2262773844310586,
+          "p99": 3.574792756599226,
+          "rmse": 5.4654420375782955,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -328.9771118164062,
+          "worst_candidate": 581.6277465820312,
           "worst_mismatch_fortran": {
-            "i": 64,
-            "j": 37,
-            "k": 2
+            "i": 74,
+            "j": 39,
+            "k": 1
           },
-          "worst_reference": -1176.1218087919788
+          "worst_reference": 143.08983685576237
         },
         "wrf_rthraten_summary": {
           "count": 442112,
@@ -762,12 +762,12 @@
         "jax_mass_coupled_rqvblten_summary": {
           "count": 442112,
           "finite_count": 442112,
-          "max": 0.5992769940478929,
-          "max_abs": 0.8961413269865087,
-          "mean": 0.0007751996346236497,
-          "min": -0.8961413269865087,
+          "max": 0.5352425747931215,
+          "max_abs": 0.5352425747931215,
+          "mean": 0.0007809633786698148,
+          "min": -0.5075193229832549,
           "nonzero_count": 432064,
-          "rms": 0.012312915848763883,
+          "rms": 0.009494068921147758,
           "shape": [
             44,
             66,
@@ -889,70 +889,70 @@
         }
       },
       "rqv_or_qv_tend": {
-        "bias": -1.2971138659406265e-06,
+        "bias": -7.060857912105629e-06,
         "count": 442112,
-        "max_abs": 0.5915945535528234,
+        "max_abs": 0.4501392720045829,
         "nonfinite_diff_count": 0,
-        "p95": 0.0001422474836782721,
-        "p99": 0.001535279001269194,
-        "rmse": 0.005883718169397555,
+        "p95": 2.1727507725455856e-05,
+        "p99": 0.0015478420670170185,
+        "rmse": 0.004036177684271274,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -0.3045467734336853,
+        "worst_candidate": -0.4547699093818665,
         "worst_mismatch_fortran": {
-          "i": 63,
-          "j": 37,
-          "k": 2
+          "i": 72,
+          "j": 33,
+          "k": 1
         },
-        "worst_reference": -0.8961413269865087
+        "worst_reference": -0.004630637377283596
       },
       "rthblten": {
-        "bias": 0.0008992660250872925,
+        "bias": -0.023424938961280024,
         "count": 442112,
-        "max_abs": 574.36576393428,
+        "max_abs": 421.3756264354562,
         "nonfinite_diff_count": 0,
-        "p95": 0.49676939805569004,
-        "p99": 1.8701646676890764,
-        "rmse": 8.070928819379612,
+        "p95": 0.496040100520665,
+        "p99": 0.9870051641220909,
+        "rmse": 5.930886215913059,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -200.4556427001953,
+        "worst_candidate": 563.8761596679688,
         "worst_mismatch_fortran": {
-          "i": 66,
-          "j": 37,
-          "k": 2
+          "i": 74,
+          "j": 39,
+          "k": 1
         },
-        "worst_reference": -774.8214066344754
+        "worst_reference": 142.50053323251257
       },
       "strict_after_conv_vs_jax": {
-        "bias": -0.6251135530205852,
+        "bias": -0.63476057110163,
         "count": 442112,
-        "max_abs": 847.1446969755725,
+        "max_abs": 438.5379097262689,
         "nonfinite_diff_count": 0,
-        "p95": 2.2344308493721634,
-        "p99": 4.170671336250012,
-        "rmse": 9.627208432391289,
+        "p95": 2.2262773844310586,
+        "p99": 3.574792756599226,
+        "rmse": 5.4654420375782955,
         "shape": [
           44,
           66,
           159
         ],
         "status": "OK",
-        "worst_candidate": -328.9771118164062,
+        "worst_candidate": 581.6277465820312,
         "worst_mismatch_fortran": {
-          "i": 64,
-          "j": 37,
-          "k": 2
+          "i": 74,
+          "j": 39,
+          "k": 1
         },
-        "worst_reference": -1176.1218087919788
+        "worst_reference": 143.08983685576237
       }
     },
     "hypothesis": "JAX MYNN source outputs remain below WRF at Step 1 because the surface-layer outputs feeding MYNN are still not WRF-compatible. `proofs/v014/mynn_driver_source_output_fix` already proved the MYNN kernel and fixed the missing WRF cold-start qke init; `proofs/v014/step1_sfclay_boundary_fix` ports WRF's sfclay_mynn first-call UST/QSFC/MOL/zol seed; and `proofs/v014/step1_tsk_znt_sourcing_fix` plus `proofs/v014/step1_thermo_column_inputs` now prove TSK/ZNT/MAVAIL and thermodynamic-column input parity at the exact sfclay_mynn hook. The surviving WRF-anchored blocker is strictly later surface-layer output algebra.",
@@ -977,26 +977,26 @@
     },
     "step": 1,
     "strict_metric": {
-      "bias": -0.6251135530205852,
+      "bias": -0.63476057110163,
       "count": 442112,
-      "max_abs": 847.1446969755725,
+      "max_abs": 438.5379097262689,
       "nonfinite_diff_count": 0,
-      "p95": 2.2344308493721634,
-      "p99": 4.170671336250012,
-      "rmse": 9.627208432391289,
+      "p95": 2.2262773844310586,
+      "p99": 3.574792756599226,
+      "rmse": 5.4654420375782955,
       "shape": [
         44,
         66,
         159
       ],
       "status": "OK",
-      "worst_candidate": -328.9771118164062,
+      "worst_candidate": 581.6277465820312,
       "worst_mismatch_fortran": {
-        "i": 64,
-        "j": 37,
-        "k": 2
+        "i": 74,
+        "j": 39,
+        "k": 1
       },
-      "worst_reference": -1176.1218087919788
+      "worst_reference": 143.08983685576237
     }
   },
   "verdict": "STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_SFCLAY_OUTPUT_ALGEBRA",

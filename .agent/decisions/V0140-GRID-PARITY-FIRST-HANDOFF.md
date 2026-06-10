@@ -3,6 +3,25 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-10 05:54 WEST: the Step-1 MYNN source-coupling sprint is
+accepted as a strict narrowing, not a closure. Verdict:
+`STEP1_MYNN_SOURCE_COUPLING_NARROWED_TO_SURFACE_LAND_FLUX_HANDOFF`
+(`proofs/v014/step1_mynn_source_coupling.*`). Production fixes landed in the
+sprint: MYNN grid-backed columns use WRF `phy_prep` dry theta / hydrostatic
+pressure / rho / dz, raw MYNN source leaves remain dry theta while live
+`State.theta` returns to theta_m, and first-step MYNN QKE initialization is
+ordered after surface fluxes. Strict after-conv `T_TENDF` is still red at
+max_abs `438.5379097262689`, RMSE `5.4654420375782955`. MYNN itself is not the
+primary blocker: WRF inputs plus WRF initialized QKE give raw `RTHBLTEN`
+max_abs `0.00026206000797283305`, RMSE `2.5971191677632803e-06`, corr
+`0.9999580118448544`. The next blocker is the surface/land flux handoff into
+MYNN: WRF `SFCLAY1D_mynn` -> MYNN-driver UST max_abs
+`4.998779168374767e-12`, but HFX max_abs `277.80298614281253` and QFX max_abs
+`1.4684322196e-05`. Next sprint: hook WRF immediately before/after
+`module_surface_driver` `sf_surface_physics=4` flux updates and compare/fix the
+JAX handoff. TOST, Switzerland, broad FP32, and long GPU validation remain
+paused.
+
 Update 2026-06-08 23:20 WEST: the principal authorized unlimited time, CPU/GPU
 use, and parallel agents within resource sanity. After two failed GPT
 search/debug attempts on the same root-cause problem, try one targeted Opus

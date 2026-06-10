@@ -20,7 +20,7 @@
     "focused_tests": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_mynn_surface_layer_regressions.py",
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_sfclay_output_algebra.py"
   },
-  "created_utc": "2026-06-10T03:59:26.388835+00:00",
+  "created_utc": "2026-06-10T04:50:49.595214+00:00",
   "formula_witnesses": {
     "jax_flhc_times_wrf_dtg_vs_wrf_hfx": {
       "bias": -0.006371218553050489,
@@ -99,7 +99,7 @@
       ],
       "returncode": 0,
       "stderr": "",
-      "stdout": "9b901b88e95043c1d030b5d8a364656ac00cb3c6"
+      "stdout": "f935d82b5d6454224bed55dfd530e21f339222eb"
     },
     "status_short": {
       "command": [
@@ -109,7 +109,7 @@
       ],
       "returncode": 0,
       "stderr": "",
-      "stdout": "M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M .agent/reviews/2026-06-10-v014-step1-thermo-column-inputs.md\n M .agent/reviews/2026-06-10-v014-step1-tsk-znt-sourcing.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_thermo_column_inputs.json\n M proofs/v014/step1_thermo_column_inputs.md\n M proofs/v014/step1_tsk_znt_sourcing_fix.json\n M proofs/v014/step1_tsk_znt_sourcing_fix.md\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/physics/surface_layer.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_sfclay_output_algebra.json\n?? proofs/v014/step1_sfclay_output_algebra.md\n?? proofs/v014/step1_sfclay_output_algebra.py\n?? proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_mynn_surface_layer_regressions.py"
+      "stdout": "M .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n M .agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/mynn_driver_source_output_fix.json\n M proofs/v014/mynn_driver_source_output_fix.md\n M proofs/v014/step1_sfclay_output_algebra.json\n M proofs/v014/step1_sfclay_output_algebra.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_mynn_source_coupling.json\n?? proofs/v014/step1_mynn_source_coupling.md\n?? proofs/v014/step1_mynn_source_coupling.py\n?? proofs/v014/step1_mynn_source_coupling_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/"
     }
   },
   "host": "enric-battlestation",
@@ -387,26 +387,26 @@
     {
       "evidence": {
         "strict_step1": {
-          "bias": -0.6251135530205852,
+          "bias": -0.63476057110163,
           "count": 442112,
-          "max_abs": 847.1446969755725,
+          "max_abs": 438.5379097262689,
           "nonfinite_diff_count": 0,
-          "p95": 2.2344308493721634,
-          "p99": 4.170671336250012,
-          "rmse": 9.627208432391289,
+          "p95": 2.2262773844310586,
+          "p99": 3.574792756599226,
+          "rmse": 5.4654420375782955,
           "shape": [
             44,
             66,
             159
           ],
           "status": "OK",
-          "worst_candidate": -328.9771118164062,
+          "worst_candidate": 581.6277465820312,
           "worst_mismatch_fortran": {
-            "i": 64,
-            "j": 37,
-            "k": 2
+            "i": 74,
+            "j": 39,
+            "k": 1
           },
-          "worst_reference": -1176.1218087919788
+          "worst_reference": 143.08983685576237
         },
         "surface_bounded": true
       },
@@ -417,26 +417,26 @@
   ],
   "status": "SFCLAY_OUTPUT_ALGEBRA_BOUNDED_NEXT_BLOCKER_MYNN_SOURCE_COUPLING",
   "strict_step1_metric": {
-    "bias": -0.6251135530205852,
+    "bias": -0.63476057110163,
     "count": 442112,
-    "max_abs": 847.1446969755725,
+    "max_abs": 438.5379097262689,
     "nonfinite_diff_count": 0,
-    "p95": 2.2344308493721634,
-    "p99": 4.170671336250012,
-    "rmse": 9.627208432391289,
+    "p95": 2.2262773844310586,
+    "p99": 3.574792756599226,
+    "rmse": 5.4654420375782955,
     "shape": [
       44,
       66,
       159
     ],
     "status": "OK",
-    "worst_candidate": -328.9771118164062,
+    "worst_candidate": 581.6277465820312,
     "worst_mismatch_fortran": {
-      "i": 64,
-      "j": 37,
-      "k": 2
+      "i": 74,
+      "j": 39,
+      "k": 1
     },
-    "worst_reference": -1176.1218087919788
+    "worst_reference": 143.08983685576237
   },
   "surface_output_metrics": {
     "br_vs_wrf": {
@@ -666,6 +666,6 @@
   "wrf_patch": {
     "exists": true,
     "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff",
-    "size_bytes": 1860
+    "size_bytes": 1859
   }
 }

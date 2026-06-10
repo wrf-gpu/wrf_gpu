@@ -1,6 +1,6 @@
 # V0.14 Release Checklist
 
-Date: 2026-06-10 05:05 WEST
+Date: 2026-06-10 05:54 WEST
 Owner: manager
 
 ## Release Rule
@@ -14,7 +14,7 @@ scalable GPU rewrite.
 
 | Lane | State | Gate before release |
 |---|---|---|
-| Grid-cell parity | Active. MYNN source-output deficit, MYNN surface first-call semantics, WRF `LANDUSE.TBL`-backed `TSK/ZNT/MAVAIL`, WRF `phy_prep` thermodynamic inputs, and local `SFCLAY1D_mynn` output algebra are fixed/proven or bounded. Latest surface residuals are below sprint thresholds: `UST` max_abs `0.0007252174862408534`, `HFX` `0.2643125302157898`, `QFX` `6.468560998136325e-08`, `BR` `0.01166976922050278`. Strict Step-1 remains red at max_abs `847.1446969755725`, RMSE `9.627208432391289`. Current blocker is narrower: later MYNN/PBL source coupling after fixed surface outputs. | GPT-5.5 xhigh MYNN source-coupling sprint is running from `.agent/sprints/2026-06-10-v014-step1-mynn-source-coupling/` in tmux `0:3`: add/rerun a WRF `module_pbl_driver` / `module_bl_mynnedmf` raw-source hook after fixed surface outputs, emit exact MYNNEDMF input fluxes plus raw post-driver `dth1/dqv1` before `module_em` mass scaling, compare against `mynn_adapter_with_source_leaves`, and fix local semantics if proven. |
+| Grid-cell parity | Active. MYNN source-output deficit, MYNN surface first-call semantics, WRF `LANDUSE.TBL`-backed `TSK/ZNT/MAVAIL`, WRF `phy_prep` thermodynamic inputs, local `SFCLAY1D_mynn` output algebra, and MYNN dry-theta/phy_prep source coupling are fixed/proven or bounded. Strict Step-1 remains red at max_abs `438.5379097262689`, RMSE `5.4654420375782955`. Current blocker is narrower and upstream of MYNN: WRF preserves UST between `SFCLAY1D_mynn` output and MYNN-driver input (max_abs `4.998779168374767e-12`) but changes HFX (max_abs `277.80298614281253`) and QFX (max_abs `1.4684322196e-05`). | Open the surface/land flux handoff sprint: hook WRF immediately before/after `module_surface_driver` `sf_surface_physics=4` flux updates (`HFX/QFX/LH/TSK/GRDFLX` and available CH diagnostics), compare with the JAX Step-1 path, wire/fix the land flux overlay into MYNN bottom-boundary handles if local, then rerun `step1_mynn_source_coupling.py` and strict Step-1. |
 | Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Exact-branch memory preflight is green at 8116 MiB compute peak and 378 s warm-cache. Mixed FP32 R1/R2 remains blocked by the open fp64 dynamics frontier. | Rerun exact-branch memory preflight only on the final candidate branch before long validation. Escalate FP32 implementation to Fable/Mythos only if the fp64 grid-parity frontier closes and GPT cannot directly solve mixed precision. |
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. | Atlas produces manifest, summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. |
 | Switzerland/Gotthard | CPU truth exists. No post-fix GPU run has been accepted. | Post-stabilization GPU-vs-CPU proof with field-level comparison and finite/stability evidence. |
@@ -33,8 +33,8 @@ scalable GPU rewrite.
 
 ## Final v0.14 Gate Sequence
 
-1. Close the active Step-1 MYNN/PBL source-coupling blocker after fixed
-   surface outputs with WRF raw-source hook evidence and a JAX fix if local.
+1. Close the active Step-1 surface/land heat-moisture flux handoff blocker
+   before MYNN with WRF raw hook evidence and a JAX fix if local.
 2. Rerun the strict Step-1 and short grid-field falsifier before launching
    longer campaigns.
 3. Run exact-branch memory preflight on the final candidate branch.

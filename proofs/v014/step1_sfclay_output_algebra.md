@@ -19,8 +19,8 @@ Verdict: `SFCLAY_OUTPUT_ALGEBRA_BOUNDED_NEXT_BLOCKER_MYNN_SOURCE_COUPLING`.
 
 ## Strict Step-1
 
-- after-conv `T_TENDF` remains red: max_abs `847.1446969755725`, RMSE `9.627208432391289`.
-- Worst cell remains `{'i': 64, 'j': 37, 'k': 2}`; surface-layer output algebra no longer explains this order-847 residual.
+- after-conv `T_TENDF` remains red: max_abs `438.5379097262689`, RMSE `5.4654420375782955`.
+- Worst cell remains `{'i': 74, 'j': 39, 'k': 1}`; surface-layer output algebra no longer explains this order-847 residual.
 
 ## Narrower Blocker
 
