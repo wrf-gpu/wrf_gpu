@@ -18,7 +18,7 @@ scalable GPU rewrite.
 | Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Exact-branch memory preflight is green on the current candidate branch: `proofs/v014/exact_branch_memory_preflight.md`, verdict `PASS_SHORT_GPU_PREFLIGHT`, peak total VRAM `8858 MiB`, compute app `8159 MiB`, no OOM markers. Mixed FP32 R1/R2 remains blocked until the fp64 validation frontier is fully closed. | Done for v0.14 except final release-note framing: no broad FP32 claim from default-inert scaffolding. FP32 acoustic becomes a v0.15 high-priority implementation lane unless field-gate failure forces a v0.14 revisit. |
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. Pre-result tolerance candidate is accepted in `proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json`: ten hard documented fields, static exact/tight checks, and `P/PH/MU/RAINC` critical report-only. | Final scoring uses the accepted manifest, produces summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. A 72h/120h field-parity/stability run is stronger evidence than station-only TOST and is now the primary validation artifact. |
 | Switzerland/Gotthard | CPU72 truth is complete at `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`: 73 `wrfout_d01_*`, `rc=0`, `SUCCESS COMPLETE WRF`, last-frame finite PASS. Timing: total wall `2906.3 s`, mainloop `2887.6 s`, 24 dmpar MPI ranks. Resource CSVs are under `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources`; peak 24-rank `wrf.exe` RSS sum `12636.176 MiB`. Proof: `proofs/v014/switzerland_cpu72_reference_resource_summary.md`. | Next serial GPU job after Canary frees the GPU: run matched GPU-JAX 72h and Grid-Delta Atlas with resource CSVs using the command recorded in `docs/GPU_RUNBOOK.md`. The first 72h gate uses the 129x129/128-mass-point grid; 151x151 remains a later larger benchmark. |
-| Canary field parity | L2 d02 has retained CPU-WRF 72h truth: 15 complete backfill cases in `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output`, each with 73 d02 frames. The selected gate case is `20260501_18z_l2_72h_20260519T173026Z`, because it is already the h1 field-falsifier case and has WRF `rc=0` backfill provenance. The first detached Canary d02 72h GPU run at `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z` was intentionally stopped at h26 (`gpu_rc=143`) after h08/h10/h18/h24 `FAIL`. Fable high proved and fixed the LBC cadence root cause; commit `53770411` is pushed. The fixed LBC characterization run at `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z` was stopped after h24 (`gpu_rc=143`) because it used the old `PSFC` diagnostic. Fable high then fixed `PSFC`: WRF runtime `PSFC` is moist hydrostatic `grid%p_hyd_w(kts)`, not `P+PB` extrapolation; expected h24 `PSFC` improves `-294.9/296.1 Pa -> -58.1/64.2 Pa` bias/RMSE. | Run short GPU h1/h4 validation for the `PSFC` diagnostic fix. Then close/bound the deeper 3D pressure-state lane: operational acoustic w-equation still uses dry `cqw` / `pg_buoy_w_dry`. Do not launch Switzerland GPU or claim field parity until moist-cqw dynamics is fixed or formally bounded. |
+| Canary field parity | L2 d02 has retained CPU-WRF 72h truth: 15 complete backfill cases in `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output`, each with 73 d02 frames. The selected gate case is `20260501_18z_l2_72h_20260519T173026Z`, because it is already the h1 field-falsifier case and has WRF `rc=0` backfill provenance. The first detached Canary d02 72h GPU run at `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z` was intentionally stopped at h26 (`gpu_rc=143`) after h08/h10/h18/h24 `FAIL`. Fable high proved and fixed the LBC cadence root cause; commit `53770411` is pushed. The fixed LBC characterization run at `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z` was stopped after h24 (`gpu_rc=143`) because it used the old `PSFC` diagnostic. Fable high then fixed `PSFC`: WRF runtime `PSFC` is moist hydrostatic `grid%p_hyd_w(kts)`, not `P+PB` extrapolation. Short GPU h1-h4 validation is green for this diagnostic lane: run root `/mnt/data/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z`, GPU rc `0`, peak VRAM `15507 MiB`, `PSFC` h1/h4 RMSE `57.823/35.487 Pa`. | Close/bound the deeper 3D pressure-state lane: operational acoustic w-equation still uses dry `cqw` / `pg_buoy_w_dry`. Do not launch Switzerland GPU or claim field parity until moist-cqw dynamics is fixed or formally bounded. |
 | Powered TOST | Three cases are durable; marathon paused. | Secondary station sanity only. TOST is no longer a v0.14 release gate and must not delay or override Switzerland/Canary all-field evidence. |
 
 ## Merge Discipline
@@ -46,22 +46,19 @@ scalable GPU rewrite.
    candidate is green: `proofs/v014/exact_branch_memory_preflight.md`.
 5. Commit/push the accepted root-domain LBC cadence fix
    (`proofs/v014/lbc_cadence_root_cause.*`). Done in `53770411`.
-6. Validate the accepted `PSFC` diagnostic fix with a short Canary GPU h1/h4
-   run and compare against CPU truth. The pre-fix LBCFIX run is characterization
-   only and stopped at h24.
-7. Close/bound the 3D moist-cqw pressure-state dynamics lane (`dry_cqw` /
+6. Close/bound the 3D moist-cqw pressure-state dynamics lane (`dry_cqw` /
    `pg_buoy_w_dry` currently active in the acoustic w-equation).
-8. Rerun Canary L2 d02 72h GPU-vs-CPU field-parity/stability from the fully
+7. Rerun Canary L2 d02 72h GPU-vs-CPU field-parity/stability from the fully
    fixed candidate branch with resource CSVs.
-9. Run Switzerland/Gotthard 72h GPU-vs-CPU field-parity/stability with resource
+8. Run Switzerland/Gotthard 72h GPU-vs-CPU field-parity/stability with resource
    CSVs after Canary releases the GPU lock.
-10. Run Grid-Delta Atlas on the selected paired cases using the accepted
+9. Run Grid-Delta Atlas on the selected paired cases using the accepted
    pre-result tolerance manifest before claiming equivalence.
-11. Optionally resume powered TOST as secondary station evidence and publish it
+10. Optionally resume powered TOST as secondary station evidence and publish it
    together with the atlas if it completes cleanly. It is not a tag gate.
-12. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
+11. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
    proof links.
-13. Tag and push v0.14 only after all required gates pass or are honestly
+12. Tag and push v0.14 only after all required gates pass or are honestly
    demoted with a recorded manager decision and independent review.
 
 ## Current Do-Not-Run List

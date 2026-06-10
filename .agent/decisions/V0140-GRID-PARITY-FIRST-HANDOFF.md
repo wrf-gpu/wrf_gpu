@@ -132,6 +132,16 @@ the operational acoustic w-equation uses dry `cqw` / `pg_buoy_w_dry`; open a
 moist-cqw dynamics sprint with acoustic savepoint/oracle + GPU gate after the
 short GPU h1/h4 validation of the PSFC diagnostic fix.
 
+Update 2026-06-10 17:16 WEST: short GPU h1-h4 validation of the `PSFC`
+diagnostic fix is green for the diagnostic lane. Proof:
+`proofs/v014/psfc_moist_pressure_gpu_h4_validation.{md,json}`; run root:
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z`.
+GPU rc `0`, comparator rc `0`, peak VRAM `15507 MiB`. `PSFC` h1/h4 RMSE
+improved from old-formula `156.974/186.741 Pa` to `57.823/35.487 Pa`; overall
+h1-h4 `PSFC` RMSE/bias is `45.775/+33.504 Pa`. The h1-h4 comparator still
+reports `FAIL` because the 3D pressure-state and surface/physics lanes remain;
+`PSFC` is no longer the dominant blocker. Next blocker is moist-cqw dynamics.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed
