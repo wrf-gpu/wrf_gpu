@@ -1,6 +1,6 @@
 # Project Plan
 
-Status (2026-06-10 02:57 WEST): **v0.14 is the active closure target. Grid-cell
+Status (2026-06-10 03:00 WEST): **v0.14 is the active closure target. Grid-cell
 parity gates the release; proof-backed v0.14 memory fixes are merged; TOST
 remains a final validation gate, not the next blind GPU marathon.**
 
@@ -12,7 +12,7 @@ Current release-manager state:
 | Memory/FP32 | Memory lane accepted and merged: MYNN BouLac leading-column tiling (`26815feb`) cuts the measured whole-batch MYNN temp from 14.7 GiB to 3.2 GiB on the 641x321x50 target; shared RK-stage transport velocities landed as exact hygiene; exact-branch memory preflight is green at 8116 MiB compute peak, 378 s warm-cache. FP32 R0 default-inert acoustic precision-mode contract landed (`bc847db2`), but R1/R2 mixed precision remains blocked by the open fp64 dynamics frontier. | Do not spend Fable/Mythos on memory now. After grid parity closes, rerun exact-branch memory preflight on the final candidate and then decide whether FP32 R1 belongs in v0.14 or a post-release lane. |
 | GPU validation hygiene | Runbook and wrappers exist (`docs/GPU_RUNBOOK.md`, `scripts/run_gpu_lowprio.sh`, `scripts/run_powered_tost_n15.sh`). | Keep GPU jobs serialized through the lock wrapper; long validation starts only after grid and memory branches stabilize. |
 | Switzerland/Gotthard | CPU truth/cases exist, but no post-v0.14-fix GPU-vs-CPU proof yet. | Run as v0.14 validation gate after parity/memory stabilization. |
-| Grid-Delta Atlas + TOST | Required final evidence pair: all-cell/all-field atlas plus ADR-029 station TOST. Atlas tooling is implemented and pushed on side branch `worker/gpt/v014-grid-delta-atlas` (`cdaf9844`), pending manager merge after main parity fix. | Merge tooling after current main-worktree sprint is committed; run atlas only after field divergence is no longer radical; publish compact plots under `docs/assets/v014/grid_delta_atlas/`. |
+| Grid-Delta Atlas + TOST | Required final evidence pair: all-cell/all-field atlas plus ADR-029 station TOST. Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. | Run atlas only after field divergence is no longer radical; publish compact plots under `docs/assets/v014/grid_delta_atlas/`. |
 
 Durable release checklist: `.agent/decisions/V0140-RELEASE-CHECKLIST.md`.
 
