@@ -21,13 +21,13 @@ TSK/ZNT and the non-surface thermodynamic column entering `SFCLAY_mynn` are fixe
 
 Surface output remains red with exact TSK/ZNT/MAVAIL:
 
-- `UST` max_abs `0.01231782267117762`, RMSE `0.0007831552182476275`.
-- `HFX` max_abs `27.09163832864155`, RMSE `1.3972156996573475`.
-- `QFX` max_abs `2.744275103194571e-07`, RMSE `8.62190066790179e-08`.
+- `UST` max_abs `0.0007252174862408534`, RMSE `1.53999402707944e-05`.
+- `HFX` max_abs `0.2643125302157898`, RMSE `0.022548398654638105`.
+- `QFX` max_abs `6.468560998136325e-08`, RMSE `3.002727253934746e-08`.
 
 ## Strict Step-1
 
-- after-conv `T_TENDF` max_abs `847.1445725702908`, RMSE `9.56593990212596`.
+- after-conv `T_TENDF` max_abs `847.1446969755725`, RMSE `9.627208432391289`.
 
 ## Files
 

@@ -226,6 +226,7 @@ class _SurfaceColumnState(NamedTuple):
     ustar: object
     t_air: object = None
     psfc: object = None
+    rho: object = None
     # RETIRED (v0.9.0): the WRF-faithful MYNN-SL 2-m T2 diagnostic is
     # ``THGB + DTG*PSIT2/PSIT``; over LAND real WRF overwrites it with the Noah-MP LSM
     # value ``T2 = FVEG*T2MV + (1-FVEG)*T2MB``. That overwrite is now done FAITHFULLY
@@ -1115,6 +1116,35 @@ def _wrf_hydrostatic_pressure_from_state(state: State, metrics):
     return p_hyd, psfc
 
 
+def _wrf_phy_prep_rho_from_state(state: State, metrics):
+    """Reconstruct WRF ``phy_prep`` density passed to surface/PBL physics.
+
+    WRF passes ``rho = (1+QVAPOR)/ALT`` where ``ALT`` is the full inverse
+    density diagnosed by the dycore. The live State does not carry ``ALT``, but
+    for the hypsometric-opt=2 nested path it is recoverable from total
+    geopotential and hybrid pressure faces with the same float32 arithmetic used
+    by WRF's live arrays.
+    """
+
+    dtype = jnp.float32
+    mut = jnp.asarray(state.mu_total, dtype=dtype)
+    ph_total = jnp.asarray(state.ph_total, dtype=dtype)
+    qv = jnp.asarray(state.qv, dtype=dtype)
+    c3h = jnp.asarray(metrics.c3h, dtype=dtype)
+    c4h = jnp.asarray(metrics.c4h, dtype=dtype)
+    c3f = jnp.asarray(metrics.c3f, dtype=dtype)
+    c4f = jnp.asarray(metrics.c4f, dtype=dtype)
+    p_top = jnp.reshape(jnp.asarray(metrics.p_top, dtype=dtype), ())
+
+    p_up = c3f[1:, None, None] * mut[None, :, :] + c4f[1:, None, None] + p_top
+    p_down = c3f[:-1, None, None] * mut[None, :, :] + c4f[:-1, None, None] + p_top
+    p_mid = c3h[:, None, None] * mut[None, :, :] + c4h[:, None, None] + p_top
+    dph = ph_total[1:, :, :] - ph_total[:-1, :, :]
+    alt = dph / p_mid / jnp.log(p_down / p_up)
+    rho = (1.0 + qv) / alt
+    return rho.astype(jnp.float64)
+
+
 def _cloud_fraction_columns(state: State):
     """Builds a bounded diagnostic cloud fraction from hydrometeor occupancy."""
 
@@ -1563,6 +1593,7 @@ def _surface_column_view(state: State, grid: GridSpec | None = None) -> _Surface
             1.0 + WRF_RV_OVER_RD * jnp.asarray(state.qv, dtype=jnp.float64)
         )
         p_hyd, psfc = _wrf_hydrostatic_pressure_from_state(state, metrics)
+        rho = _wrf_phy_prep_rho_from_state(state, metrics)
         t_air = _temperature_from_theta(dry_theta, jnp.asarray(state.p, dtype=jnp.float64))
         theta = _to_columns(dry_theta)
         p = _to_columns(p_hyd)
@@ -1573,6 +1604,7 @@ def _surface_column_view(state: State, grid: GridSpec | None = None) -> _Surface
         dz = _column_dz_from_state(state, None)
         t_air = None
         psfc = None
+        rho = None
 
     return _SurfaceColumnState(
         u=_to_columns(_u_mass(state)),
@@ -1590,6 +1622,7 @@ def _surface_column_view(state: State, grid: GridSpec | None = None) -> _Surface
         ustar=state.ustar,
         t_air=_to_columns(t_air) if t_air is not None else None,
         psfc=psfc,
+        rho=_to_columns(rho) if rho is not None else None,
     )
 
 

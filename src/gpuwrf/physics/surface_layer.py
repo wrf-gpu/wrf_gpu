@@ -432,6 +432,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     v0 = _surface(jnp.asarray(state.v, dtype=jnp.float64))
     theta0 = _surface(jnp.asarray(state.theta, dtype=jnp.float64))
     qv0 = jnp.maximum(_surface(jnp.asarray(state.qv, dtype=jnp.float64)), 0.0)
+    qvsh0 = qv0 / (1.0 + qv0)  # module_sf_mynn.F: QVSH specific humidity for virtual terms
     p1d_pa = jnp.maximum(_surface(jnp.asarray(state.p, dtype=jnp.float64)), 1.0)  # lowest-level air pressure (p3d(kts))
     shape = u0.shape
     first_step = jnp.asarray(first_timestep, dtype=bool)
@@ -477,7 +478,7 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     thcon = (P0_PA * 0.001 / pl_cb) ** R_D_OVER_CP
     thx = t1d * thcon                                # potential temp wrt p1000 (scr3->thx)
     qx = qv0
-    tvcon = 1.0 + EP1 * qx
+    tvcon = 1.0 + EP1 * qvsh0                         # module_sf_mynn.F:514 QVSH, not QV1D
     thvx = thx * tvcon                               # virtual potential temperature
     scr4 = t1d * tvcon                               # virtual temperature
 
@@ -508,7 +509,11 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
 
     # --- heights and density (sf_sfclayrev.F90:298-313) ---
     zqklp1 = jnp.zeros(shape, dtype=jnp.float64)
-    rhox = psfc_cb * 1000.0 / (R_D * scr4)
+    rho_field = _field(state, "rho", None)
+    # WRF MYNN receives RHO1D from ``phy_prep`` (`rho=(1+qv)/alt`) rather than
+    # recomputing density from surface pressure. Analytic callers without a WRF
+    # column keep the historical ideal-gas fallback.
+    rhox = _as_surface(rho_field, shape) if rho_field is not None else psfc_cb * 1000.0 / (R_D * scr4)
     zqkl = dz + zqklp1
     za = 0.5 * (zqkl + zqklp1)                       # lowest mass-level height
     govrth = G / thx
@@ -537,9 +542,10 @@ def surface_layer_with_diagnostics(state, *, first_timestep=False) -> SurfaceLay
     wspd = jnp.sqrt(wspd_raw * wspd_raw + vconv * vconv + vsgd * vsgd)
     wspd = jnp.maximum(wspd, MIN_WIND_M_S)
     br = govrth * za * dthvdz / (wspd * wspd)
-    # itimestep>1 bulk-Ri clamp (module_sf_mynn.F:597-600). The "if previously
-    # unstable -> BR<=0" block (lines 603-605) is COMMENTED OUT in WRF; do not apply.
-    br = jnp.clip(br, -4.0, 4.0)
+    # Bulk-Ri clamp (module_sf_mynn.F:593-600): first timestep uses Li et al.'s
+    # narrower [-2, 2] limit; warm steps use [-4, 4]. The "if previously unstable
+    # -> BR<=0" block (lines 603-605) is COMMENTED OUT in WRF; do not apply.
+    br = jnp.where(first_step, jnp.clip(br, -2.0, 2.0), jnp.clip(br, -4.0, 4.0))
 
     # ==============================================================================
     # MYNN thermal/moisture roughness z_t/z_q, computed BEFORE the z/L solve

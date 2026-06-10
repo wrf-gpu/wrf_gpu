@@ -57,7 +57,7 @@
       "rmse": 1.2872511375286432e-07
     }
   },
-  "created_utc": "2026-06-10T03:23:20.167379+00:00",
+  "created_utc": "2026-06-10T04:01:45.823562+00:00",
   "host": "enric-battlestation",
   "later_handoff_metrics": {
     "mynn_driver_in_tsk_vs_sfclay_in_tsk": {
@@ -250,13 +250,13 @@
   },
   "status": "TSK_ZNT_THERMO_INPUTS_FIXED_NEXT_BLOCKER_SURFACE_LAYER_OUTPUTS",
   "strict_step1_metric": {
-    "bias": -0.6327854994820095,
+    "bias": -0.6251135530205852,
     "count": 442112,
-    "max_abs": 847.1445725702908,
+    "max_abs": 847.1446969755725,
     "nonfinite_diff_count": 0,
-    "p95": 2.2330734101994287,
-    "p99": 4.146218593105294,
-    "rmse": 9.56593990212596,
+    "p95": 2.2344308493721634,
+    "p99": 4.170671336250012,
+    "rmse": 9.627208432391289,
     "shape": [
       44,
       66,
@@ -269,29 +269,29 @@
       "j": 37,
       "k": 2
     },
-    "worst_reference": -1176.121684386697
+    "worst_reference": -1176.1218087919788
   },
   "surface_output_metrics": {
     "diag_br_vs_sfclay_out_br": {
-      "bias": -0.32608308527570584,
+      "bias": -1.1009763750316266e-06,
       "count": 10494,
-      "max_abs": 2.0,
+      "max_abs": 0.01166976922050278,
       "ref_max_abs": 2.0,
-      "rmse": 0.7681227693986273
+      "rmse": 0.0003583716190119449
     },
     "diag_hfx_vs_sfclay_out_hfx": {
-      "bias": 0.17320582115274777,
+      "bias": -0.007049892258294832,
       "count": 10494,
-      "max_abs": 27.09163832864155,
+      "max_abs": 0.2643125302157898,
       "ref_max_abs": 382.4698486328125,
-      "rmse": 1.3972156996573475
+      "rmse": 0.022548398654638105
     },
     "diag_qfx_vs_sfclay_out_qfx": {
-      "bias": 7.368422170360447e-08,
+      "bias": 2.6227399574842495e-08,
       "count": 10494,
-      "max_abs": 2.744275103194571e-07,
+      "max_abs": 6.468560998136325e-08,
       "ref_max_abs": 7.490280404454097e-05,
-      "rmse": 8.62190066790179e-08
+      "rmse": 3.002727253934746e-08
     },
     "diag_qsfc_vs_sfclay_out_qsfc": {
       "bias": 5.532973769866484e-06,
@@ -301,11 +301,11 @@
       "rmse": 5.7533286398352506e-06
     },
     "diag_ust_vs_sfclay_out_ust": {
-      "bias": 7.11172738790089e-05,
+      "bias": 9.847398553898597e-07,
       "count": 10494,
-      "max_abs": 0.01231782267117762,
+      "max_abs": 0.0007252174862408534,
       "ref_max_abs": 0.3369980752468109,
-      "rmse": 0.0007831552182476275
+      "rmse": 1.53999402707944e-05
     },
     "diag_znt_vs_sfclay_out_znt": {
       "bias": 7.813052202621432e-11,

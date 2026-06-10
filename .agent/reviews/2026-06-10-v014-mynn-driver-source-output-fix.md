@@ -9,7 +9,7 @@ frozen PBLH/Psig_bl/rmol; MYNN test battery `18 passed` plus 4 new focused
 tests.
 
 Kernel proven at the WRF driver boundary: ratio median `0.9982`, corr `1.0000`.
-Strict Step-1 after-conv residual: `2457.578397008898` -> `847.1445725702908` (rmse `21.364579991779515` -> `9.56593990212596`).
+Strict Step-1 after-conv residual: `2457.578397008898` -> `847.1446969755725` (rmse `21.364579991779515` -> `9.627208432391289`).
 
 WRF cold-start init consumes an uninitialized `rmol` (proven for every
 column from the hook itself); step-1 bitwise truth is therefore

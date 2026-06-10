@@ -2191,3 +2191,70 @@ Next active work:
   `surface_layer_with_diagnostics` on the fixed input tuple, fix local algebra
   if proven, rerun strict Step-1.
 - Keep TOST, Switzerland, broad FP32, and long GPU validation paused.
+
+## Current Manager Update 2026-06-10 05:05 WEST
+
+The Step-1 `SFCLAY1D_mynn` output-algebra sprint is closed and manager-gated as
+a local correctness fix plus a narrower remaining frontier.
+
+Artifacts:
+
+- `proofs/v014/step1_sfclay_output_algebra.py`
+- `proofs/v014/step1_sfclay_output_algebra.json`
+- `proofs/v014/step1_sfclay_output_algebra.md`
+- `proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff`
+- `.agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md`
+- `.agent/sprints/2026-06-10-v014-step1-sfclay-output-algebra/manager-closeout.md`
+- `tests/test_v014_mynn_surface_layer_regressions.py`
+
+Verdict:
+
+`SFCLAY_OUTPUT_ALGEBRA_BOUNDED_NEXT_BLOCKER_MYNN_SOURCE_COUPLING`.
+
+What changed:
+
+- Ported WRF first-timestep MYNN `BR` clamp: `[-2,2]` for `itimestep==1`,
+  warm-step `[-4,4]` unchanged.
+- Ported WRF `QVSH=QV1D/(1+QV1D)` in virtual-theta terms.
+- Threaded WRF `phy_prep` density `rho=(1+QVAPOR)/ALT` into the grid-backed
+  surface column view, with no-grid analytic fallback preserved.
+
+Key proof numbers:
+
+- `UST` max_abs `0.0007252174862408534`, RMSE `1.53999402707944e-05`.
+- `HFX` max_abs `0.2643125302157898`, RMSE `0.022548398654638105`.
+- `QFX` max_abs `6.468560998136325e-08`, RMSE
+  `3.002727253934746e-08`.
+- `BR` max_abs `0.01166976922050278`, RMSE `0.0003583716190119449`.
+- `rho` max_abs `0.00018143653869628906`, RMSE
+  `7.786468426065368e-06`.
+- Strict after-conv `T_TENDF` remains red: max_abs `847.1446969755725`,
+  RMSE `9.627208432391289`, worst cell `i=64,j=37,k=2`.
+
+Manager validation passed:
+
+- `python -m py_compile` on changed production, test, and proof files.
+- Focused regression: `tests/test_v014_mynn_surface_layer_regressions.py`
+  `3 passed`.
+- Existing surface/source regressions:
+  `tests/test_m6_surface_layer_kernel.py tests/test_v014_dry_source_leaf_wiring.py`
+  `4 passed, 1 skipped`.
+- CPU-only reruns:
+  `step1_sfclay_output_algebra.py`,
+  `step1_thermo_column_inputs.py`,
+  `step1_tsk_znt_sourcing_fix.py`,
+  `step1_source_fidelity_closure.py`,
+  `mynn_driver_source_output_fix.py`.
+- JSON validation for all five proof artifacts.
+- `git diff --check`.
+
+Next active work:
+
+- Open a GPT-5.5 xhigh MYNN source-coupling sprint, not Fable/Mythos yet.
+- Endpoint: add or rerun a WRF `module_pbl_driver` /
+  `module_bl_mynnedmf` raw-source hook after fixed surface outputs, emit exact
+  MYNNEDMF input fluxes plus raw post-driver `dth1/dqv1` before `module_em`
+  mass scaling, compare against `mynn_adapter_with_source_leaves`, and fix
+  local source-coupling semantics if proven.
+- Keep TOST, Switzerland, broad FP32, and long GPU validation paused until this
+  source-coupling frontier is fixed or explicitly bounded.
