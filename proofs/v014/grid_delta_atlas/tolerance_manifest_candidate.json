@@ -1,0 +1,806 @@
+{
+  "schema": "grid-delta-atlas-tolerance-manifest-candidate-v1",
+  "schema_version": 1,
+  "status": "candidate_pre_result_freeze",
+  "date_utc": "2026-06-10",
+  "purpose": "Predeclare v0.14 Grid-Delta Atlas scoring limits before final TOST/Switzerland/Grid-Delta results are generated.",
+  "parser_contract": {
+    "compatible_tools": [
+      "scripts/build_grid_delta_atlas.py",
+      "scripts/compare_wrfout_grid.py"
+    ],
+    "recognized_metric_keys": [
+      "rmse",
+      "mae",
+      "bias_abs",
+      "p95_abs",
+      "p99_abs",
+      "max_abs",
+      "finite_pair_fraction_min"
+    ],
+    "note": "Both tools read the top-level fields map. Extra metadata keys are intentional reviewer context and are ignored by the current parsers."
+  },
+  "score_policy": {
+    "hard_release_gate": "All fields with gate=hard_release_gate or gate=static_exactness must be finite and within the declared metric limits when present and compatible in paired CPU/GPU wrfout.",
+    "report_only": "Fields with no recognized metric key are inventoried and plotted but do not affect the tool pass/fail verdict until a later frozen threshold is approved.",
+    "nonfinite_policy": "Any nonfinite GPU field in paired output remains a hard inventory failure under the atlas gate.",
+    "mandatory_presence_fields_for_final_runs": [
+      "T",
+      "U",
+      "V",
+      "W",
+      "QVAPOR",
+      "P",
+      "PH",
+      "MU",
+      "U10",
+      "V10",
+      "T2",
+      "PSFC",
+      "RAINC",
+      "RAINNC"
+    ],
+    "mandatory_presence_note": "The atlas builder has its own default mandatory core list. This manifest records the intended final-run list but current parsers do not add manifest-only mandatory fields automatically."
+  },
+  "region_envelopes": {
+    "canary_tost": {
+      "atlas_hard_fields": [
+        "T2",
+        "U10",
+        "V10",
+        "PSFC",
+        "RAINNC",
+        "T",
+        "U",
+        "V",
+        "W",
+        "QVAPOR"
+      ],
+      "atlas_threshold_source": "scripts/equivalence_demo.py and docs/equivalence-demo.md predeclared operational RMSE tolerances.",
+      "station_tost_margins_not_grid_tolerances": {
+        "T2_rmse_delta_K": 0.2148692978020805,
+        "U10_rmse_delta_m_s-1": 0.23064713972582307,
+        "V10_rmse_delta_m_s-1": 0.2752320537920854
+      }
+    },
+    "switzerland_gotthard_128": {
+      "atlas_hard_fields": [
+        "T2",
+        "U10",
+        "V10",
+        "PSFC",
+        "RAINNC",
+        "T",
+        "U",
+        "V",
+        "W",
+        "QVAPOR"
+      ],
+      "atlas_threshold_source": "proofs/v014/switzerland_validation_plan.md hard frozen-tolerance fields.",
+      "note": "No Switzerland-specific override is proposed; the documented Switzerland plan uses the same ten hard RMSE limits."
+    }
+  },
+  "static_exactness_groups": {
+    "exact_copy_fields": [
+      "XLAT",
+      "XLONG",
+      "XLAT_U",
+      "XLONG_U",
+      "XLAT_V",
+      "XLONG_V",
+      "LANDMASK",
+      "LU_INDEX",
+      "MAPFAC_M",
+      "MAPFAC_U",
+      "MAPFAC_V",
+      "MAPFAC_MX",
+      "MAPFAC_MY",
+      "MAPFAC_UX",
+      "MAPFAC_UY",
+      "MAPFAC_VX",
+      "MAPFAC_VY",
+      "F",
+      "E",
+      "SINALPHA",
+      "COSALPHA",
+      "P_TOP",
+      "ZNU",
+      "ZNW",
+      "ZS",
+      "DZS",
+      "DN",
+      "DNW",
+      "RDN",
+      "RDNW",
+      "FNM",
+      "FNP",
+      "CFN",
+      "CFN1",
+      "CF1",
+      "CF2",
+      "CF3",
+      "C1H",
+      "C2H",
+      "C3H",
+      "C4H",
+      "C1F",
+      "C2F",
+      "C3F",
+      "C4F",
+      "RDX",
+      "RDY",
+      "CLAT"
+    ],
+    "formula_tight_fields": [
+      "HGT",
+      "PB",
+      "PHB",
+      "MUB"
+    ],
+    "formula_tight_source": "proofs/v014/live_nest_base_source_fix.md target-patch residuals: HGT 2.4167598553503922e-05 m, PB 0.04890023032203317 Pa, MUB 0.044447155625675805 Pa, PHB 0.09328280997578986 m2 s-2, all under 0.2 max_abs."
+  },
+  "critical_report_only_fields": [
+    "P",
+    "PH",
+    "MU",
+    "RAINC"
+  ],
+  "report_only_field_families": [
+    {
+      "family": "pressure_mass_geopotential_diagnostics_without_frozen_rmse",
+      "examples": [
+        "P",
+        "PH",
+        "MU",
+        "MU0"
+      ],
+      "reason": "The atlas gate requires reviewer attention for systematic drift, but no frozen physical RMSE envelope exists in the reviewed references."
+    },
+    {
+      "family": "cumulus_or_total_precipitation_diagnostics",
+      "examples": [
+        "RAINC",
+        "RAINSH",
+        "SNOWNC"
+      ],
+      "reason": "RAINNC has a predeclared 1.0 mm RMSE limit; cumulus and snow accumulators do not yet have independent v0.14 thresholds."
+    },
+    {
+      "family": "radiation_surface_pbl_land_diagnostics",
+      "examples": [
+        "TSK",
+        "Q2",
+        "UST",
+        "HFX",
+        "LH",
+        "QFX",
+        "SWDOWN",
+        "GLW",
+        "PBLH",
+        "COSZEN"
+      ],
+      "reason": "These fields are useful attribution evidence but thresholds would be speculative without a dedicated oracle or review."
+    },
+    {
+      "family": "hydrometeor_and_cloud_diagnostics",
+      "examples": [
+        "QCLOUD",
+        "QRAIN",
+        "QICE",
+        "QSNOW",
+        "QGRAUP",
+        "CLDFRA"
+      ],
+      "reason": "No predeclared v0.14 all-cell tolerance exists. Inventory and plots are required before any future threshold freeze."
+    }
+  ],
+  "fields": {
+    "T2": {
+      "gate": "hard_release_gate",
+      "kind": "surface",
+      "units": "K",
+      "rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational equivalence limit for 2 m temperature; sub-station-error scale in scripts/equivalence_demo.py.",
+      "risk": "Can pass pooled RMSE while hiding terrain or land/ocean localized error, so atlas split plots and station TOST must still be reviewed."
+    },
+    "U10": {
+      "gate": "hard_release_gate",
+      "kind": "surface",
+      "units": "m s-1",
+      "rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational equivalence limit for 10 m zonal wind.",
+      "risk": "KI-9 showed U10 wind divergence can grow with lead time; a pooled pass still needs lead-slope review."
+    },
+    "V10": {
+      "gate": "hard_release_gate",
+      "kind": "surface",
+      "units": "m s-1",
+      "rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational equivalence limit for 10 m meridional wind.",
+      "risk": "KI-9 showed V/V10 are the dominant drift channel; require drift and worst-map review even if pooled RMSE passes."
+    },
+    "PSFC": {
+      "gate": "hard_release_gate",
+      "kind": "surface",
+      "units": "Pa",
+      "rmse": 120.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational surface-pressure limit, about 0.1 percent of 100 kPa.",
+      "risk": "Residual PSFC error can be dynamical rather than a writer offset; fail should not be waived as diagnostic without proof."
+    },
+    "RAINNC": {
+      "gate": "hard_release_gate",
+      "kind": "surface_accumulator",
+      "units": "mm",
+      "rmse": 1.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational limit for accumulated grid-scale precipitation.",
+      "risk": "Sparse precipitation can pass pooled RMSE while localized maxima differ; inspect p99/max and spatial maps."
+    },
+    "T": {
+      "gate": "hard_release_gate",
+      "kind": "column",
+      "units": "K",
+      "rmse": 1.5,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational limit for 3D perturbation potential temperature, theta minus 300 K.",
+      "risk": "Temperature drift may be coupled to dynamics or physics; pooled pass is not a bitwise or operator-parity claim."
+    },
+    "U": {
+      "gate": "hard_release_gate",
+      "kind": "column_staggered",
+      "units": "m s-1",
+      "rmse": 1.8,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational limit for 3D zonal wind.",
+      "risk": "Stagger-aware shape equality is mandatory; do not crop or unstagger silently."
+    },
+    "V": {
+      "gate": "hard_release_gate",
+      "kind": "column_staggered",
+      "units": "m s-1",
+      "rmse": 1.8,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational limit for 3D meridional wind.",
+      "risk": "KI-9 showed V drift much faster than U in old failed runs; a breach should remain a hard failure."
+    },
+    "W": {
+      "gate": "hard_release_gate",
+      "kind": "column_staggered",
+      "units": "m s-1",
+      "rmse": 0.3,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational limit for small-magnitude, noisy 3D vertical velocity.",
+      "risk": "Small RMSE can coexist with localized acoustic artifacts; inspect p99/max and vertical worst index."
+    },
+    "QVAPOR": {
+      "gate": "hard_release_gate",
+      "kind": "column_moisture",
+      "units": "kg kg-1",
+      "rmse": 0.001,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Predeclared operational limit for 3D water-vapor mixing ratio.",
+      "risk": "Moisture can compensate in station metrics; require grid atlas inventory and hydrometeor report-only review."
+    },
+    "XLAT": {
+      "gate": "static_exactness",
+      "kind": "static_geometry",
+      "units": "degrees_north",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static coordinate fields should be copied from the same grid definition, not tuned against forecast output.",
+      "risk": "A hard exact failure may expose a writer convention mismatch rather than dynamics, but it is still a release-blocking atlas inventory issue."
+    },
+    "XLONG": {
+      "gate": "static_exactness",
+      "kind": "static_geometry",
+      "units": "degrees_east",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static coordinate fields should be copied from the same grid definition.",
+      "risk": "A hard exact failure may expose a writer convention mismatch rather than dynamics."
+    },
+    "XLAT_U": {
+      "gate": "static_exactness",
+      "kind": "static_geometry",
+      "units": "degrees_north",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "U-staggered latitude is grid metadata and should be exact.",
+      "risk": "Requires correct staggered coordinate writer payload."
+    },
+    "XLONG_U": {
+      "gate": "static_exactness",
+      "kind": "static_geometry",
+      "units": "degrees_east",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "U-staggered longitude is grid metadata and should be exact.",
+      "risk": "Requires correct staggered coordinate writer payload."
+    },
+    "XLAT_V": {
+      "gate": "static_exactness",
+      "kind": "static_geometry",
+      "units": "degrees_north",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "V-staggered latitude is grid metadata and should be exact.",
+      "risk": "Requires correct staggered coordinate writer payload."
+    },
+    "XLONG_V": {
+      "gate": "static_exactness",
+      "kind": "static_geometry",
+      "units": "degrees_east",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "V-staggered longitude is grid metadata and should be exact.",
+      "risk": "Requires correct staggered coordinate writer payload."
+    },
+    "LANDMASK": {
+      "gate": "static_exactness",
+      "kind": "static_land_surface",
+      "units": "category",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static categorical land mask must not drift.",
+      "risk": "Categorical mismatch invalidates terrain and land/ocean split interpretation."
+    },
+    "LU_INDEX": {
+      "gate": "static_exactness",
+      "kind": "static_land_surface",
+      "units": "category",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static land-use category must not drift.",
+      "risk": "Categorical mismatch invalidates surface-physics comparisons."
+    },
+    "MAPFAC_M": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Map factors are static grid metrics; prior static-metric proof treated mismatches as writer bugs, not forecast tolerance.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_U": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "U-staggered map factor is static grid metadata.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_V": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "V-staggered map factor is static grid metadata.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_MX": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static map-factor derivative/copy field.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_MY": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static map-factor derivative/copy field.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_UX": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static U-staggered map-factor derivative/copy field.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_UY": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static U-staggered map-factor derivative/copy field.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_VX": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static V-staggered map-factor derivative/copy field.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "MAPFAC_VY": {
+      "gate": "static_exactness",
+      "kind": "static_map_factor",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static V-staggered map-factor derivative/copy field.",
+      "risk": "Exactness may fail stale artifacts that predate metric-writer fixes."
+    },
+    "F": {
+      "gate": "static_exactness",
+      "kind": "static_coriolis",
+      "units": "s-1",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static Coriolis/grid field.",
+      "risk": "Failure indicates grid/writer mismatch."
+    },
+    "E": {
+      "gate": "static_exactness",
+      "kind": "static_coriolis",
+      "units": "s-1",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static map/projection field.",
+      "risk": "Failure indicates grid/writer mismatch."
+    },
+    "SINALPHA": {
+      "gate": "static_exactness",
+      "kind": "static_rotation",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static grid rotation field.",
+      "risk": "Failure can rotate wind components incorrectly."
+    },
+    "COSALPHA": {
+      "gate": "static_exactness",
+      "kind": "static_rotation",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static grid rotation field.",
+      "risk": "Failure can rotate wind components incorrectly."
+    },
+    "P_TOP": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "Pa",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static model-top pressure.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "ZNU": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "eta",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static mass-level eta coordinate.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "ZNW": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "eta",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static full-level eta coordinate.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "DN": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "eta",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static vertical layer thickness.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "DNW": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "eta",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static full-level layer thickness.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "RDN": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "eta-1",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static inverse mass-level thickness.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "RDNW": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "eta-1",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static inverse full-level thickness.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "FNM": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF vertical interpolation coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "FNP": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF vertical interpolation coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "CFN": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF vertical coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "CFN1": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF vertical coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "ZS": {
+      "gate": "static_exactness",
+      "kind": "static_soil_vertical",
+      "units": "m",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static soil-layer depth metadata.",
+      "risk": "Failure indicates static land-state or writer mismatch."
+    },
+    "DZS": {
+      "gate": "static_exactness",
+      "kind": "static_soil_vertical",
+      "units": "m",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static soil-layer thickness metadata.",
+      "risk": "Failure indicates static land-state or writer mismatch."
+    },
+    "CF1": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF vertical coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "CF2": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF vertical coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "CF3": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF vertical coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C1H": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF mass-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C2H": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "Pa",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF mass-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C3H": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF mass-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C4H": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "Pa",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF mass-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C1F": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF full-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C2F": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "Pa",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF full-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C3F": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "dimensionless",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF full-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "C4F": {
+      "gate": "static_exactness",
+      "kind": "static_vertical",
+      "units": "Pa",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static WRF full-level hybrid-coordinate coefficient.",
+      "risk": "Failure indicates vertical-coordinate mismatch."
+    },
+    "RDX": {
+      "gate": "static_exactness",
+      "kind": "static_grid_spacing",
+      "units": "m-1",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static inverse grid spacing.",
+      "risk": "Failure indicates grid-spacing mismatch."
+    },
+    "RDY": {
+      "gate": "static_exactness",
+      "kind": "static_grid_spacing",
+      "units": "m-1",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static inverse grid spacing.",
+      "risk": "Failure indicates grid-spacing mismatch."
+    },
+    "CLAT": {
+      "gate": "static_exactness",
+      "kind": "static_geometry",
+      "units": "radian_or_projection_native",
+      "max_abs": 0.0,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Static latitude/projection helper field.",
+      "risk": "Failure indicates grid or projection metadata mismatch."
+    },
+    "HGT": {
+      "gate": "static_exactness",
+      "kind": "static_formula_tight",
+      "units": "m",
+      "max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Live-nest base source proof closed target-patch HGT to 2.4167598553503922e-05 m under a documented 0.2 max_abs validation limit.",
+      "risk": "CPU-WRF wrfout terrain convention can differ from raw wrfinput; breach is a release blocker unless a reviewed WRF convention exception is recorded."
+    },
+    "PB": {
+      "gate": "static_exactness",
+      "kind": "static_formula_tight",
+      "units": "Pa",
+      "max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Live-nest base source proof closed target-patch PB to 0.04890023032203317 Pa under a documented 0.2 max_abs validation limit.",
+      "risk": "This is a tight base-state formula limit, not an operational RMSE tolerance; breach should trigger base-state review."
+    },
+    "PHB": {
+      "gate": "static_exactness",
+      "kind": "static_formula_tight",
+      "units": "m2 s-2",
+      "max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Live-nest base source proof closed target-patch PHB to 0.09328280997578986 m2 s-2 under a documented 0.2 max_abs validation limit.",
+      "risk": "This is a tight base-state formula limit; breach should not be waived as forecast chaos."
+    },
+    "MUB": {
+      "gate": "static_exactness",
+      "kind": "static_formula_tight",
+      "units": "Pa",
+      "max_abs": 0.2,
+      "finite_pair_fraction_min": 1.0,
+      "rationale": "Live-nest base source proof closed target-patch MUB to 0.044447155625675805 Pa under a documented 0.2 max_abs validation limit.",
+      "risk": "This is a tight base-state formula limit; breach should trigger native-init/live-nest review."
+    },
+    "P": {
+      "gate": "critical_report_only",
+      "kind": "column_pressure",
+      "units": "Pa",
+      "report_only_reason": "Mandatory core inventory field, but no frozen v0.14 all-cell RMSE/max_abs envelope was found in the reviewed references."
+    },
+    "PH": {
+      "gate": "critical_report_only",
+      "kind": "column_geopotential",
+      "units": "m2 s-2",
+      "report_only_reason": "Mandatory core inventory field, but no frozen v0.14 all-cell RMSE/max_abs envelope was found in the reviewed references."
+    },
+    "MU": {
+      "gate": "critical_report_only",
+      "kind": "mass",
+      "units": "Pa",
+      "report_only_reason": "Mandatory core inventory field, but no frozen v0.14 all-cell RMSE/max_abs envelope was found in the reviewed references."
+    },
+    "RAINC": {
+      "gate": "critical_report_only",
+      "kind": "surface_accumulator",
+      "units": "mm",
+      "report_only_reason": "Mandatory precipitation inventory field. RAINNC has a documented 1.0 mm limit; RAINC/cumulus precipitation does not yet have an independently frozen limit."
+    }
+  },
+  "evidence_references": [
+    ".agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md",
+    ".agent/decisions/V0140-VALIDATION-PLAN.md",
+    "proofs/v014/grid_comparison_method.md",
+    "proofs/v014/switzerland_validation_plan.md",
+    "scripts/equivalence_demo.py",
+    "docs/equivalence-demo.md",
+    "docs/KNOWN_ISSUES.md#KI-9",
+    "proofs/v0120/equivalence_demo_20260509_d02_FINAL.json",
+    "proofs/v014/live_nest_base_source_fix.md",
+    "proofs/v014/static_metric_base_parity.md"
+  ],
+  "old_failed_run_check": {
+    "proof": "proofs/v0120/equivalence_demo_20260509_d02_FINAL.json",
+    "expected_verdict_under_this_manifest": "FAIL_TOLERANCE",
+    "failed_hard_fields": [
+      "U10",
+      "V10",
+      "PSFC",
+      "T",
+      "U",
+      "V"
+    ],
+    "note": "The candidate intentionally preserves the old NOT_EQUIVALENT result; it does not widen tolerances to pass historical red runs."
+  }
+}
