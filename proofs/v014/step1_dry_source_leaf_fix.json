@@ -3,7 +3,7 @@
     "focused_test": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/step1_dry_source_leaf_fix.py"
   },
-  "created_utc": "2026-06-10T00:10:25.548058+00:00",
+  "created_utc": "2026-06-10T01:19:47.557353+00:00",
   "environment": {
     "CUDA_VISIBLE_DEVICES": "",
     "JAX_ENABLE_X64": "1",
@@ -46,13 +46,13 @@
     },
     "metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": 0.7905750965042597,
+        "bias": 0.8541684269266485,
         "count": 442112,
-        "max_abs": 2454.113955669592,
+        "max_abs": 1494.2972624261442,
         "nonfinite_diff_count": 0,
-        "p95": 1.8084310127747232,
-        "p99": 49.66243740980215,
-        "rmse": 21.789083442799004,
+        "p95": 1.8194669350259491,
+        "p99": 48.98885990633313,
+        "rmse": 14.199663899036086,
         "shape": [
           44,
           66,
@@ -65,16 +65,16 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -3.4690521429081214
+        "worst_reference": -963.2857453863558
       },
       "after_update_vs_jax_dry_t_tendf": {
-        "bias": 0.42608002557168473,
+        "bias": 0.4896733559940736,
         "count": 442112,
-        "max_abs": 2521.810488872717,
+        "max_abs": 1561.9937956292692,
         "nonfinite_diff_count": 0,
-        "p95": 1.82160951563648,
-        "p99": 27.383584617545417,
-        "rmse": 21.169547830566316,
+        "p95": 1.8425205968927232,
+        "p99": 27.69970040813689,
+        "rmse": 13.9340670305537,
         "shape": [
           44,
           66,
@@ -87,18 +87,18 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -3.4690521429081214
+        "worst_reference": -963.2857453863558
       },
       "derived_candidate_summaries": {
         "current_jax_dry_t_tendf": {
           "count": 461736,
           "finite_count": 461736,
-          "max": 294.9429185099615,
-          "max_abs": 294.9429185099615,
-          "mean": -0.717457804606134,
-          "min": -41.71186336815376,
+          "max": 1149.654009397857,
+          "max_abs": 1149.654009397857,
+          "mean": -0.778753774259111,
+          "min": -1063.531895751988,
           "nonzero_count": 461736,
-          "rms": 5.099839449226463,
+          "rms": 13.826638165132385,
           "shape": [
             44,
             66,
@@ -173,7 +173,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "8d4117c47a54dc270b08703cecb1ca8bc1ff2ce5\n"
+      "stdout_tail": "0ea550dd82b80b1cc0ec287c5b314270eb78b4c8\n"
     },
     "status_short": {
       "command": [
@@ -183,7 +183,7 @@
       ],
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_dry_source_leaf_fix.py\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_source_fidelity_closure.json\n?? proofs/v014/step1_source_fidelity_closure.md\n?? proofs/v014/step1_source_fidelity_closure.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/same_input_contract_builder.py\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v014/step1_part2_source_leaves_split.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/integration/d02_replay.py\n M src/gpuwrf/physics/mynn_pbl.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/mynn_driver_source_output_fix.json\n?? proofs/v014/mynn_driver_source_output_fix.md\n?? proofs/v014/mynn_driver_source_output_fix.py\n?? proofs/v014/mynn_driver_source_output_fix_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_mynn_coldstart_init.py\n"
     }
   },
   "jax_source_leaf_mode": {
@@ -191,12 +191,12 @@
       "current_jax_dry_t_tendf": {
         "count": 461736,
         "finite_count": 461736,
-        "max": 271.15051023443414,
-        "max_abs": 271.15051023443414,
-        "mean": 0.0775516808494346,
-        "min": -41.83217038037702,
+        "max": 1150.2022428527164,
+        "max_abs": 1150.2022428527164,
+        "mean": 0.016240084547339863,
+        "min": -1060.2083650793074,
         "nonzero_count": 451242,
-        "rms": 4.033291061494072,
+        "rms": 13.403846647304338,
         "shape": [
           44,
           66,
@@ -276,13 +276,13 @@
     },
     "primary_metrics": {
       "after_conv_vs_jax_dry_t_tendf": {
-        "bias": -0.0033160463086924397,
+        "bias": 0.06029349023536588,
         "count": 442112,
-        "max_abs": 2457.578397008898,
+        "max_abs": 1497.6112512148795,
         "nonfinite_diff_count": 0,
-        "p95": 2.3216834532331547,
-        "p99": 36.450926916847145,
-        "rmse": 21.364579991779515,
+        "p95": 2.3167664998135913,
+        "p99": 35.8065617369603,
+        "rmse": 13.468453371786723,
         "shape": [
           44,
           66,
@@ -295,16 +295,16 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -0.004610803602028136
+        "worst_reference": -959.9717565976205
       },
       "after_update_vs_jax_dry_t_tendf": {
-        "bias": -0.3678111172412673,
+        "bias": -0.3042015806972092,
         "count": 442112,
-        "max_abs": 2525.274930212023,
+        "max_abs": 1565.3077844180045,
         "nonfinite_diff_count": 0,
-        "p95": 2.309627724947749,
-        "p99": 14.100935377640905,
-        "rmse": 20.928738654486033,
+        "p95": 2.31545460005222,
+        "p99": 14.982922625068259,
+        "rmse": 13.494803673948335,
         "shape": [
           44,
           66,
@@ -317,7 +317,7 @@
           "j": 37,
           "k": 3
         },
-        "worst_reference": -0.004610803602028136
+        "worst_reference": -959.9717565976205
       },
       "wrf_active_rth_vs_jax_source_leaf": {
         "bias": -0.28907409541776086,
@@ -350,16 +350,16 @@
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "63868a265477e0055d6efa63ed9d8ae666d6931c73fb53a783574cf632221c97",
-      "size_bytes": 100140
+      "sha256": "8d2468ecb14e6f531ff83d89602ace0a01a5aaaa2f4612a1b72cc6cc3accb438",
+      "size_bytes": 103238
     },
     "prior_proof": {
       "exists": true,
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split.md",
-      "sha256": "7728c3d57f6080b726b110f0459cf2ef1440b096fd9cd6326d9e0a760a299eb4",
-      "size_bytes": 2012
+      "sha256": "43f2c7d181b041d99dc058dc7e9d867ba5880c75874032ed6cda9345de768ed1",
+      "size_bytes": 2013
     },
     "sprint_contract": {
       "exists": true,
@@ -384,12 +384,12 @@
         "jax_source_leaf_summary": {
           "count": 461736,
           "finite_count": 461736,
-          "max": 271.15051023443414,
-          "max_abs": 271.15051023443414,
-          "mean": 0.0775516808494346,
-          "min": -41.83217038037702,
+          "max": 1150.2022428527164,
+          "max_abs": 1150.2022428527164,
+          "mean": 0.016240084547339863,
+          "min": -1060.2083650793074,
           "nonzero_count": 451242,
-          "rms": 4.033291061494072,
+          "rms": 13.403846647304338,
           "shape": [
             44,
             66,
@@ -397,13 +397,13 @@
           ]
         },
         "primary_after_update_vs_jax_source_leaf": {
-          "bias": -0.3678111172412673,
+          "bias": -0.3042015806972092,
           "count": 442112,
-          "max_abs": 2525.274930212023,
+          "max_abs": 1565.3077844180045,
           "nonfinite_diff_count": 0,
-          "p95": 2.309627724947749,
-          "p99": 14.100935377640905,
-          "rmse": 20.928738654486033,
+          "p95": 2.31545460005222,
+          "p99": 14.982922625068259,
+          "rmse": 13.494803673948335,
           "shape": [
             44,
             66,
@@ -416,7 +416,7 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.004610803602028136
+          "worst_reference": -959.9717565976205
         },
         "wrf_active_sum_summary": {
           "count": 461736,
@@ -441,13 +441,13 @@
     {
       "evidence": {
         "forced_radiation_after_conv": {
-          "bias": 0.7905750965042597,
+          "bias": 0.8541684269266485,
           "count": 442112,
-          "max_abs": 2454.113955669592,
+          "max_abs": 1494.2972624261442,
           "nonfinite_diff_count": 0,
-          "p95": 1.8084310127747232,
-          "p99": 49.66243740980215,
-          "rmse": 21.789083442799004,
+          "p95": 1.8194669350259491,
+          "p99": 48.98885990633313,
+          "rmse": 14.199663899036086,
           "shape": [
             44,
             66,
@@ -460,16 +460,16 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -3.4690521429081214
+          "worst_reference": -963.2857453863558
         },
         "primary_after_conv": {
-          "bias": -0.0033160463086924397,
+          "bias": 0.06029349023536588,
           "count": 442112,
-          "max_abs": 2457.578397008898,
+          "max_abs": 1497.6112512148795,
           "nonfinite_diff_count": 0,
-          "p95": 2.3216834532331547,
-          "p99": 36.450926916847145,
-          "rmse": 21.364579991779515,
+          "p95": 2.3167664998135913,
+          "p99": 35.8065617369603,
+          "rmse": 13.468453371786723,
           "shape": [
             44,
             66,
@@ -482,7 +482,7 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.004610803602028136
+          "worst_reference": -959.9717565976205
         }
       },
       "hypothesis": "The held JAX `rthraten` leaf is zero at Step-1 while WRF has active `RTHRATEN`; forcing radiation only improves the residual marginally.",

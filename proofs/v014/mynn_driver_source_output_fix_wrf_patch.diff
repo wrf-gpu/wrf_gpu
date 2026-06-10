@@ -1,0 +1,159 @@
+--- /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf_driver.F.orig_v014_mynnhook	2026-05-29 11:15:33.504632969 +0100
++++ /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf_driver.F	2026-06-10 01:33:55.714381111 +0100
+@@ -336,6 +336,53 @@
+  dqnbca1          =0.0
+  dozone1          =0.0
+
++
++ !=== wrfgpu2 v014 mynn hook A: driver inputs before column loop (disposable) ===
++ block
++   character(len=64)  :: wg2_env
++   character(len=512) :: wg2_root
++   character(len=768) :: wg2_path
++   integer :: wg2_unit, wg2_i, wg2_j, wg2_k
++   call get_environment_variable('WRFGPU2_V014_MYNN_HOOK', wg2_env)
++   if (trim(wg2_env) == '1' .and. initflag > 0 .and. ide == 160 .and. jde == 67) then
++     call get_environment_variable('WRFGPU2_V014_MYNN_HOOK_ROOT', wg2_root)
++     if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_mynn_hook'
++     write(wg2_path,'(A,A,I0,A,I0,A,I0,A,I0,A)') trim(wg2_root), &
++        '/mynn_pre_d02_step1_its_', its, '_ite_', ite, '_jts_', jts, '_jte_', jte, '.txt'
++     open(newunit=wg2_unit, file=trim(wg2_path), status='replace', action='write')
++     write(wg2_unit,'(A,ES18.10E3,1X,ES18.10E3,3I6,2L2)') 'HDR delt dxc initflag kts kte restart cycling ', &
++        delt, dxc, initflag, kts, kte, restart, cycling
++     do wg2_j = jts, jte
++       do wg2_i = its, ite
++         write(wg2_unit,'(A,2I6,14(1X,ES18.10E3))') 'SFC', wg2_i, wg2_j, &
++            xland(wg2_i,wg2_j), ust(wg2_i,wg2_j), hfx(wg2_i,wg2_j), qfx(wg2_i,wg2_j), &
++            wspd(wg2_i,wg2_j), ts(wg2_i,wg2_j), qsfc(wg2_i,wg2_j), ps(wg2_i,wg2_j), &
++            ch(wg2_i,wg2_j), znt(wg2_i,wg2_j), uoce(wg2_i,wg2_j), voce(wg2_i,wg2_j), &
++            pblh(wg2_i,wg2_j), rthraten(wg2_i,kts,wg2_j)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_U', wg2_i, wg2_j, (u(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_V', wg2_i, wg2_j, (v(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_W', wg2_i, wg2_j, (w(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_TH', wg2_i, wg2_j, (th(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_T3D', wg2_i, wg2_j, (t3d(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QV', wg2_i, wg2_j, (qv(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QC', wg2_i, wg2_j, (qc(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QI', wg2_i, wg2_j, (qi(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_P', wg2_i, wg2_j, (p(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EXNER', wg2_i, wg2_j, (exner(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RHO', wg2_i, wg2_j, (rho(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_DZ', wg2_i, wg2_j, (dz(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QKE_IN', wg2_i, wg2_j, (qke(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_TSQ_IN', wg2_i, wg2_j, (tsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QSQ_IN', wg2_i, wg2_j, (qsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_COV_IN', wg2_i, wg2_j, (cov(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RTHRATEN', wg2_i, wg2_j, (rthraten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++       enddo
++     enddo
++     close(wg2_unit)
++   endif
++ end block
++ !=== end wrfgpu2 v014 mynn hook A ===
++
+  !---------------------------------------
+  !Begin looping in the i- and j-direction
+  !---------------------------------------
+@@ -709,6 +756,48 @@
+    enddo  !end j-loop
+    enddo  !end i-loop
+
++ !=== wrfgpu2 v014 mynn hook B: driver outputs after column loop (disposable) ===
++ block
++   character(len=64)  :: wg2_env
++   character(len=512) :: wg2_root
++   character(len=768) :: wg2_path
++   integer :: wg2_unit, wg2_i, wg2_j, wg2_k
++   call get_environment_variable('WRFGPU2_V014_MYNN_HOOK', wg2_env)
++   if (trim(wg2_env) == '1' .and. initflag > 0 .and. ide == 160 .and. jde == 67) then
++     call get_environment_variable('WRFGPU2_V014_MYNN_HOOK_ROOT', wg2_root)
++     if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_mynn_hook'
++     write(wg2_path,'(A,A,I0,A,I0,A,I0,A,I0,A)') trim(wg2_root), &
++        '/mynn_post_d02_step1_its_', its, '_ite_', ite, '_jts_', jts, '_jte_', jte, '.txt'
++     open(newunit=wg2_unit, file=trim(wg2_path), status='replace', action='write')
++     write(wg2_unit,'(A,ES18.10E3,1X,ES18.10E3,3I6)') 'HDR delt dxc initflag kts kte ', &
++        delt, dxc, initflag, kts, kte
++     do wg2_j = jts, jte
++       do wg2_i = its, ite
++         write(wg2_unit,'(A,2I6,2(1X,ES18.10E3),I6)') 'SFC', wg2_i, wg2_j, &
++            pblh(wg2_i,wg2_j), ust(wg2_i,wg2_j), kpbl(wg2_i,wg2_j)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RUBLTEN', wg2_i, wg2_j, (rublten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RVBLTEN', wg2_i, wg2_j, (rvblten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RTHBLTEN', wg2_i, wg2_j, (rthblten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         if (present(rqvblten)) then
++           write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RQVBLTEN', wg2_i, wg2_j, (rqvblten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         endif
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EXCH_H', wg2_i, wg2_j, (exch_h(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EXCH_M', wg2_i, wg2_j, (exch_m(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QKE_OUT', wg2_i, wg2_j, (qke(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EL', wg2_i, wg2_j, (el_pbl(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_TSQ_OUT', wg2_i, wg2_j, (tsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QSQ_OUT', wg2_i, wg2_j, (qsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_COV_OUT', wg2_i, wg2_j, (cov(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_SH3D', wg2_i, wg2_j, (sh3d(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_SM3D', wg2_i, wg2_j, (sm3d(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++       enddo
++     enddo
++     close(wg2_unit)
++   endif
++ end block
++ !=== end wrfgpu2 v014 mynn hook B ===
++
++
+    if (debug) then
+       print*,"In mynnedmf_driver, at end"
+    endif
+--- /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf.F.orig_v014_mynnhook	2026-05-29 11:15:33.507915551 +0100
++++ /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf.F	2026-06-10 01:57:35.104521396 +0100
+@@ -710,6 +710,10 @@
+ !! \f$q^{'2}\f$, and \f$\theta^{'}q^{'}\f$. These variables are calculated after
+ !! obtaining prerequisite variables by calling the following subroutines from
+ !! within mym_initialize(): mym_level2() and mym_length().
++       !=== wrfgpu2 v014 rmol pin: mym_initialize consumed an uninitialized
++       !    local rmol (assigned only at line ~879, after this block); pin the
++       !    neutral value so the cold-start init is deterministic. ===
++       rmol = 0.0_kind_phys
+        CALL mym_initialize (                &
+             &kts,kte,xland,                 &
+             &dz1, dx, zw1,                  &
+@@ -746,6 +750,40 @@
+
+     ENDIF ! end initflag
+
++    !=== wrfgpu2 v014 mynn hook C: post-mym_initialize column state (disposable) ===
++    block
++      character(len=64)  :: wg2_env
++      character(len=512) :: wg2_root
++      character(len=768) :: wg2_path
++      integer :: wg2_unit, wg2_k
++      call get_environment_variable('WRFGPU2_V014_MYNN_HOOK', wg2_env)
++      if (trim(wg2_env) == '1' .and. initflag > 0 .and. (.not. restart) .and. dx < 5000.0_kind_phys) then
++        call get_environment_variable('WRFGPU2_V014_MYNN_HOOK_ROOT', wg2_root)
++        if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_mynn_hook'
++        write(wg2_path,'(A,A)') trim(wg2_root), '/mynn_init_d02_step1.txt'
++        open(newunit=wg2_unit, file=trim(wg2_path), status='unknown', position='append', action='write')
++        write(wg2_unit,'(A,2I6,7(1X,ES18.10E3))') 'INITSFC', i, j, &
++           pblh, psig_bl, rmol, ust, xland, dx, delt
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_QKE', i, j, (qke1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_EL', i, j, (el1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_TSQ', i, j, (tsq1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_QSQ', i, j, (qsq1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_COV', i, j, (cov1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_THL', i, j, (thl1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_THV', i, j, (thv1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_THLV', i, j, (thlv1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_SQV', i, j, (sqv1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_SQW', i, j, (sqw1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_DZ', i, j, (dz1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_ZW', i, j, (zw1(wg2_k), wg2_k=kts,kte+1)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_U', i, j, (u1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_V', i, j, (v1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_TH', i, j, (th1(wg2_k), wg2_k=kts,kte)
++        close(wg2_unit)
++      endif
++    end block
++    !=== end wrfgpu2 v014 mynn hook C ===
++
+ !> - After initializing all required variables, the regular procedures
+ !! performed at every time step are ready for execution.
+     IF (bl_mynn_tkeadvect) THEN

@@ -18,6 +18,7 @@ from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State
 from gpuwrf.physics.mynn_pbl import (
     MynnPBLColumnState,
+    mynn_coldstart_init_columns,
     step_mynn_pbl_column,
     step_mynn_pbl_column_with_pblh,
 )
@@ -1423,6 +1424,37 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
     return _state_from_mynn_output(state, out)
 
 
+def mynn_coldstart_qke_from_state(
+    state: State, grid: GridSpec | None = None, rmol_init=None
+) -> jax.Array:
+    """WRF MYNN first-call cold-start qke initialization from ``State``.
+
+    Builds the same column view the operational MYNN adapter consumes and runs
+    the faithful ``module_bl_mynnedmf.F`` ``initflag>0``/``INITIALIZE_QKE``
+    transcription (:func:`gpuwrf.physics.mynn_pbl.mynn_coldstart_init_columns`):
+    driver taper pre-seed -> frozen ``GET_PBLH``/``SCALE_AWARE`` -> 5-pass
+    level-2 equilibrium ``mym_initialize`` iteration. This is an INIT-TIME
+    construction (no timestep-loop work): in statically unstable initial layers
+    the level-2 equilibrium gives O(0.1-10 m^2/s^2) qke, which the prior
+    taper-only seed missed by 3-5 orders of magnitude — the root cause of the
+    Step-1 MYNN source outputs being ~10x weaker than WRF (v0.14
+    ``proofs/v014/mynn_driver_source_output_fix``).
+
+    Returns the ``(nz, ny, nx)`` qke field WRF's first MYNN call initializes.
+    """
+
+    column = _mynn_column_from_state(state, grid)
+    ny, nx = column.theta.shape[0], column.theta.shape[1]
+    column_b = _flatten_columns_to_batch(column, ny, nx)
+    ust_b = jnp.asarray(state.ustar, dtype=jnp.float64).reshape(ny * nx)
+    xland_b = jnp.asarray(state.xland, dtype=jnp.float64).reshape(ny * nx)
+    rmol_b = None if rmol_init is None else jnp.asarray(rmol_init, dtype=jnp.float64).reshape(ny * nx)
+    qke_b, _pblh = mynn_coldstart_init_columns(
+        column_b, ust_b, _mynn_dx(grid), xland_b, rmol_init=rmol_b
+    )
+    return _from_columns(_unflatten_batch_to_columns(qke_b, ny, nx))
+
+
 def mynn_adapter_with_source_leaves(
     state: State, dt: float, grid: GridSpec | None = None
 ) -> MynnPBLSourceLeaves:
@@ -2342,6 +2374,7 @@ __all__ = [
     "gwdo_adapter",
     "mynn_adapter",
     "mynn_adapter_with_source_leaves",
+    "mynn_coldstart_qke_from_state",
     "mynn_adapter_with_diagnostics",
     "rrtmg_radiation_diagnostics",
     "rrtmg_adapter",

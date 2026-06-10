@@ -558,6 +558,29 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xl
     from ``fltv``/``ust``. ``dx`` feeds the scale-aware ``Psig_bl`` taper.
     """
 
+    pblh = _get_pblh(state, qke)
+    rmol = -KARMAN * GTR * fltv / jnp.maximum(ustar ** 3, 1.0e-6)
+    psig_bl = _scale_aware_psig_bl(dx, pblh)
+    return _mym_length_option1_with(
+        state, qke, dtv, fltv, ustar, dx, xland, pblh=pblh, psig_bl=psig_bl, rmol=rmol
+    )
+
+
+def _mym_length_option1_with(
+    state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xland, *, pblh, psig_bl, rmol
+):
+    """``mym_length`` CASE(1) body with caller-supplied ``zi``/``Psig_bl``/``rmol``.
+
+    WRF passes ``zi`` (PBLH) and ``Psig_bl`` INTO ``mym_length`` rather than
+    recomputing them per call; on the regular step they come from the same
+    current-qke ``GET_PBLH``/``SCALE_AWARE`` so :func:`_mym_length_option1`
+    computing them inline is equivalent. ``mym_initialize`` however calls
+    ``mym_length`` inside its 5-pass fixed-point iteration with ``zi``/``Psig_bl``
+    FROZEN from the pre-iteration taper-seed qke and with the local
+    ``flt=fltv=flq=0`` surface terms, so the cold-start path needs this split
+    entry to stay faithful.
+    """
+
     dz = state.dz
     zw = _wrf_zw(dz)
     dzk = _interface_dz(dz)
@@ -577,8 +600,6 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xl
     # thetaw: theta at full-sigma levels (theta(k)*abk + theta(k-1)*afk).
     thetaw_i = state.theta[..., 1:] * abk_i + state.theta[..., :-1] * afk_i
     thetaw = jnp.concatenate((state.theta[..., :1], thetaw_i), axis=-1)
-
-    pblh = _get_pblh(state, qke)
 
     # hurricane-shear tapers (wt_u1/wt_u2); =1.0/=1.0 below the 20 m/s onset.
     # WRF lines 1758-1759: wt_u2 always scales alp3 (buoyancy enhancement) on
@@ -630,7 +651,6 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xl
     elf = jnp.where(stable, elf_stable, 1.0e10)
 
     # surface-layer length els (rmol-dependent, WRF lines 1842-1846).
-    rmol = -KARMAN * GTR * fltv / jnp.maximum(ustar ** 3, 1.0e-6)
     zwrmol = zw * rmol[..., None]
     els_stable = KARMAN * zw / (1.0 + NL_CNS * jnp.minimum(zwrmol, ZMAX))
     els_unstable = KARMAN * zw * jnp.maximum(1.0 - NL_ALP4 * zwrmol, 0.0) ** 0.2
@@ -647,12 +667,86 @@ def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xl
     el = el * (1.0 - wt) + NL_ALP5 * elblavg * wt
 
     # scale-aware Psig_bl taper (WRF lines 2008-2011; ~1 on coarse grids).
-    psig_bl = _scale_aware_psig_bl(dx, pblh)
     el_les = 0.25 * dzk
     el = el * psig_bl[..., None] + (1.0 - psig_bl[..., None]) * jnp.minimum(el_les, el)
 
     el = jnp.where(idx == 0, 0.0, el)
     return qkw, el, pblh
+
+
+def mynn_coldstart_init_columns(
+    state: MynnPBLColumnState, ustar, dx, xland, rmol_init=None
+) -> tuple[jax.Array, jax.Array]:
+    """WRF MYNN first-call turbulence-state initialization (cold start).
+
+    Faithful transcription of the ``initflag>0 .and. .not.restart`` /
+    ``INITIALIZE_QKE=.TRUE.`` path of ``module_bl_mynnedmf.F`` (driver block
+    lines 618-747 plus ``mym_initialize`` lines 1281-1430):
+
+    1. driver pre-seed ``qke(k)=5*ust*MAX((ust*700-zw(k))/(MAX(ust,0.01)*700),
+       0.01)`` (kts..kte) — used ONLY for the initial ``GET_PBLH``;
+    2. ``zi=GET_PBLH(thv, qke_seed)`` and ``Psig_bl=SCALE_AWARE(dx, zi)``, both
+       FROZEN through the iteration;
+    3. ``mym_level2`` stability functions from the initial profiles (frozen);
+    4. pre-iteration ``qke(kts)=1.5*ust^2*(b1*pmz)^(2/3)`` (``pmz=1``), tapered
+       above with the same ``MAX(...,0.01)`` form;
+    5. ``lmax=5`` fixed-point passes: ``mym_length`` (with the local
+       ``flt=fltv=flq=0`` and the WRF-effective ``rmol=0``; see note) ->
+       ``pdk=el*qkw*(sm*gm+sh*gh)`` -> level-2 equilibrium
+       ``qke(k)=MIN(MAX(b1l*(pdk(k+1)+pdk(k)),qkemin),125)^(2/3)`` for
+       kts+1..kte-1 and ``qke(kts)=MAX(ust,0.02)^2*(b1*elv)^(2/3)``;
+    6. final ``qke(kts)=0.5*(qke(kts)+qke(kts+1))``; ``qke(kte)=qke(kte-1)``.
+
+    In statically unstable initial layers (``sh*gh>0`` large) the level-2
+    equilibrium produces O(0.1-10 m^2/s^2) qke — orders of magnitude above the
+    old taper-only seed — which is what lets WRF's step-1 MYNN mix out unstable
+    nest-interpolated profiles. ``rmol`` note: WRF's ``mynnedmf`` computes its
+    local ``rmol`` only AFTER the init block (line 879), so ``mym_initialize``
+    receives the never-assigned local; with gfortran's zeroed first-touch stack
+    this is 0.0 (neutral ``els``), verified against the v014 WRF driver hook.
+
+    ``state`` is the MYNN column view ``(..., nz)``; ``ustar``/``xland`` are
+    ``(...)`` per-column scalars; ``dx`` is the scalar grid spacing (m).
+    ``rmol_init`` overrides the per-column ``rmol`` seen by the iteration's
+    ``mym_length`` calls (proof/oracle use only — reproducing an emitted WRF
+    stack value); production leaves it ``None`` (0.0).
+    Returns ``(qke, pblh)``.
+    """
+
+    ust = jnp.asarray(ustar, dtype=state.theta.dtype)
+    zw = _wrf_zw(state.dz)
+    taper = jnp.maximum(
+        (ust[..., None] * 700.0 - zw) / (jnp.maximum(ust[..., None], 0.01) * 700.0), 0.01
+    )
+    qke = 5.0 * ust[..., None] * taper
+    pblh = _get_pblh(state, qke)
+    psig_bl = _scale_aware_psig_bl(dx, pblh)
+    _dtl, _dqw, dtv, gm, gh, sm, sh = _mym_level2(state)
+
+    # mym_initialize preliminary qke (overwrites the driver pre-seed; NO ust
+    # floor on the surface value here — WRF uses raw ust^2 at this point).
+    qke0 = 1.5 * ust * ust * (B1 * 1.0) ** (2.0 / 3.0)
+    qke = jnp.concatenate((qke0[..., None], qke0[..., None] * taper[..., 1:]), axis=-1)
+
+    fltv0 = jnp.zeros_like(ust)
+    rmol0 = jnp.zeros_like(ust) if rmol_init is None else jnp.asarray(rmol_init, dtype=ust.dtype)
+    vkz = KARMAN * 0.5 * state.dz[..., 0]
+    for _ in range(5):  # WRF lmax = 5
+        qkw, el, _pblh_unused = _mym_length_option1_with(
+            state, qke, dtv, fltv0, ust, dx, xland,
+            pblh=pblh, psig_bl=psig_bl, rmol=rmol0,
+        )
+        pdk = el * qkw * (sm * gm + sh * gh)
+        elv = 0.5 * (el[..., 1] + el[..., 0]) / vkz
+        qke_sfc = jnp.maximum(ust, 0.02) ** 2 * (B1 * 1.0 * elv) ** (2.0 / 3.0)
+        b1l = B1 * 0.25 * (el[..., 2:] + el[..., 1:-1])
+        tmpq = jnp.clip(b1l * (pdk[..., 2:] + pdk[..., 1:-1]), QKEMIN, 125.0)
+        qke = jnp.concatenate(
+            (qke_sfc[..., None], tmpq ** (2.0 / 3.0), qke[..., -1:]), axis=-1
+        )
+    qke_kts = 0.5 * (qke[..., 0] + qke[..., 1])
+    qke = jnp.concatenate((qke_kts[..., None], qke[..., 1:-1], qke[..., -2:-1]), axis=-1)
+    return qke, pblh
 
 
 def _mym_length_option2(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx):

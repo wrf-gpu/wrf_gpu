@@ -1,6 +1,6 @@
 # V0.14 Release Checklist
 
-Date: 2026-06-10 01:12 WEST
+Date: 2026-06-10 02:24 WEST
 Owner: manager
 
 ## Release Rule
@@ -14,7 +14,7 @@ scalable GPU rewrite.
 
 | Lane | State | Gate before release |
 |---|---|---|
-| Grid-cell parity | Active. Source-fidelity sprint removed secondary radiation/moist-conversion blockers. Remaining blocker is MYNN driver/kernel source output: strict after-conv residual max_abs `2457.578397008898`, RMSE `21.364579991779515`; JAX mass-coupled `RTHBLTEN` max_abs `260.83156991819124` vs WRF `2522.90576171875`; JAX qv source `0.045505018412171354` vs WRF `0.4930315017700195`. | Fable/Mythos hard sprint: emit exact WRF MYNN driver hook and compare/fix JAX MYNN source outputs. |
+| Grid-cell parity | Active. MYNN source-output deficit is root-caused and fixed by WRF-equivalent first-call QKE initialization. Strict Step-1 after-conv residual improved to max_abs `1497.6112512148795`, RMSE `13.468453371786723`, but remains red. The current blocker is Step-1 surface-layer flux/input boundary: `TSK/ZNT/UST/HFX/QFX`, `sfclayrev` first-call `flag_iter`/UST first guess, and related skin-temperature/roughness sourcing. | GPT-5.5 xhigh surface-layer boundary sprint: hook WRF `module_sf_mynn`/`sfclayrev` in/out, compare exact boundary to JAX surface adapter, fix if local, and rerun strict Step-1 proofs against deterministic rmol-pinned truth. |
 | Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Exact-branch memory preflight is green at 8116 MiB compute peak and 378 s warm-cache. Mixed FP32 R1/R2 remains blocked by the open fp64 dynamics frontier. | Rerun exact-branch memory preflight only on the final candidate branch before long validation. Escalate FP32 implementation to Fable/Mythos only if the fp64 grid-parity frontier closes and GPT cannot directly solve mixed precision. |
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. | Atlas produces manifest, summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. |
 | Switzerland/Gotthard | CPU truth exists. No post-fix GPU run has been accepted. | Post-stabilization GPU-vs-CPU proof with field-level comparison and finite/stability evidence. |
@@ -33,10 +33,10 @@ scalable GPU rewrite.
 
 ## Final v0.14 Gate Sequence
 
-1. Close the active MYNN driver/kernel source-output blocker with WRF hook
-   evidence and a JAX fix if local.
-2. If that MYNN fix lands, rerun the strict Step-1 and
-   short grid-field falsifier before launching longer campaigns.
+1. Close the active Step-1 surface-layer boundary blocker with WRF hook evidence
+   and a JAX fix if local.
+2. Rerun the strict Step-1 and short grid-field falsifier before launching
+   longer campaigns.
 3. Run exact-branch memory preflight on the final candidate branch.
 4. Run Switzerland/Gotthard post-fix GPU-vs-CPU validation.
 5. Run Grid-Delta Atlas on the selected paired cases and freeze tolerance

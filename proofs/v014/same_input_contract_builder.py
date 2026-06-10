@@ -439,7 +439,7 @@ def _state_from_wrfinput(run: Any, domain: str) -> dict[str, Any]:
             rainc_acc=_zero(surface_2d, dtype=fp64),
         )
 
-    qke_seeded, did_seed_qke = _wrf_mynn_coldstart_qke(state.qke, ph_total=state.ph_total, ustar=state.ustar)
+    qke_seeded, did_seed_qke = _wrf_mynn_coldstart_qke(state.qke, state=state, grid=grid)
     if did_seed_qke:
         state = state.replace(qke=qke_seeded.astype(state.qke.dtype))
     theta_base = _wrf_base_theta_from_loaded_state(pb=pb, phb=phb, mub=mub, metrics=metrics)

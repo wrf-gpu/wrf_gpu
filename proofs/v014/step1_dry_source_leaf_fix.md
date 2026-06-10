@@ -4,10 +4,10 @@ Verdict: `DRY_SOURCE_LEAF_PLUMBING_ACTIVE_BUT_STEP1_T_TENDF_NOT_CLOSED`.
 
 ## Evidence
 
-- Patched source-leaf mode is active (`rad_rk_tendf=1`) and emits nonzero JAX dry `T_TENDF`; max_abs `271.15051023443414`.
-- Primary Step-1 residual after WRF `conv_t_tendf_to_moist` vs patched JAX dry `T_TENDF`: max_abs `2457.578397008898`, rmse `21.364579991779515`.
-- WRF active leaves remain much larger: top leaf `RTHBLTEN` max_abs `2522.90576171875`; JAX source-leaf summary max_abs `271.15051023443414`.
-- Forcing radiation on only moves after-conv residual to max_abs `2454.113955669592`, so radiation cadence is secondary to `RTHBLTEN` fidelity.
+- Patched source-leaf mode is active (`rad_rk_tendf=1`) and emits nonzero JAX dry `T_TENDF`; max_abs `1150.2022428527164`.
+- Primary Step-1 residual after WRF `conv_t_tendf_to_moist` vs patched JAX dry `T_TENDF`: max_abs `1497.6112512148795`, rmse `13.468453371786723`.
+- WRF active leaves remain much larger: top leaf `RTHBLTEN` max_abs `2522.90576171875`; JAX source-leaf summary max_abs `1150.2022428527164`.
+- Forcing radiation on only moves after-conv residual to max_abs `1494.2972624261442`, so radiation cadence is secondary to `RTHBLTEN` fidelity.
 - WRF moist-theta conversion is now represented in source-leaf mode, but it is secondary: WRF `after_update` vs `after_conv` max_abs `224.50967407226562`, rmse `4.572429855170764`.
 
 ## Ranked Blockers

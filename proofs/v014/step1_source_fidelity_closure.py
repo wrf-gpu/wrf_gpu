@@ -418,9 +418,14 @@ def classify(
                 "rank": 1,
                 "status": "BLOCKING",
                 "hypothesis": (
-                    "JAX MYNN driver/kernel source outputs are too weak before dry-source "
-                    "coupling: both mass-coupled RTHBLTEN and qv source are about an "
-                    "order of magnitude below WRF at Step 1."
+                    "JAX MYNN source outputs remain below WRF at Step 1. Root-caused "
+                    "2026-06-10 (proofs/v014/mynn_driver_source_output_fix): the "
+                    "order-10 deficit was the missing WRF mym_initialize level-2 "
+                    "equilibrium cold-start qke (now implemented); the remaining "
+                    "residual is the step-1 surface-layer flux boundary "
+                    "(ust/HFX/QFX + TSK/ZNT inputs + sfclayrev first-call "
+                    "semantics), bounded additionally by WRF's own uninitialized-"
+                    "rmol init UB at this boundary."
                 ),
                 "evidence": {
                     "strict_after_conv_vs_jax": primary_conv,
@@ -465,11 +470,12 @@ def classify(
             },
         ],
         (
-            "Emit one WRF MYNN driver hook at Step 1 around module_bl_mynnedmf_driver: "
-            "input columns/fluxes/turbulence state immediately before mynnedmf, raw "
-            "dth1/dqv1 immediately after mynnedmf_post_run, and the module_em "
-            "mass-scaled RTHBLTEN/RQVBLTEN. Then compare that exact boundary to "
-            "JAX _mynn_column_from_state/step_mynn_pbl_column outputs."
+            "DONE 2026-06-10: the WRF MYNN driver hook was emitted and compared "
+            "(proofs/v014/mynn_driver_source_output_fix). Next route: emit a WRF "
+            "step-1 surface-driver hook around sfclayrev (TSK/ZNT/UST/HFX/QFX "
+            "in/out), port the sfclayrev first-call semantics and skin-temperature/"
+            "roughness sourcing into the JAX surface adapter, then rerun the strict "
+            "Step-1 proofs against the deterministic rmol-pinned WRF truth."
         ),
     )
 
