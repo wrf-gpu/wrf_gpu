@@ -61,7 +61,10 @@ One line, WRF-faithful, in `src/gpuwrf/physics/noahmp/water_hydro.py`:
 - GPU bounded confirmation (same exact-branch 1h preflight, lock acquired via
   `scripts/run_gpu_lowprio.sh`):
   `/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
-  → **RESULT: see addendum at end of this report.**
+  → **GREEN: rc=0, PASS_SHORT_GPU_PREFLIGHT / PIPELINE_GREEN,
+  all_domains_finite=true (d01+d02), 0 nonfinite cells in the 9 previously-bad
+  output fields, T2 over all 475 LU16 land cells finite (285.4–301.0 K),
+  peak total VRAM 9783 MiB (no memory regression vs the failing run's ~10042).**
 
 ## Unresolved risks
 
@@ -76,6 +79,7 @@ One line, WRF-faithful, in `src/gpuwrf/physics/noahmp/water_hydro.py`:
 
 ## Next decision needed
 
-Manager: merge `worker/fable/v014-noahmp-d01-lu16` (commit `80a693e2` + the
-GPU-proof addendum commit), then re-run the H4 Noah-MP land gate (soil-water
-evolution now correctly parameterized for ALL categories, not only sand).
+Manager: merge `worker/fable/v014-noahmp-d01-lu16` (fix `80a693e2` + proof
+commits; GPU preflight already GREEN on this branch), then re-run the H4
+Noah-MP land gate (soil-water evolution now correctly parameterized for ALL
+categories, not only sand).

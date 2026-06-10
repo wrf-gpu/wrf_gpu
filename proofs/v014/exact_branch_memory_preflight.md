@@ -1,8 +1,8 @@
 # v0.14 Exact-Branch Memory Preflight
 
 - Verdict: `PASS_SHORT_GPU_PREFLIGHT`
-- Branch: `worker/gpt/v013-close-manager`
-- HEAD: `4eb2aee86192e27eaf658cd77cee4291a035f74a`
+- Branch: `worker/fable/v014-noahmp-d01-lu16`
+- HEAD: `80a693e2ed7af0728ebcdcd2aea9bef92624676b`
 - Dirty worktree: `True`
 
 ## Static Controls
@@ -12,17 +12,17 @@
 
 ## GPU Run
 
-- Command: `/home/enric/miniconda3/bin/python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --output-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out --scratch-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/scratch --proof-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/proofs --max-dom 3 --hours 1`
-- Output path: `/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260610T141334Z/nested_1h_out`
-- Duration: `451.993` s
+- Command: `/home/enric/miniconda3/bin/python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z --output-dir /mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/nested_1h_out --scratch-dir /mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/scratch --proof-dir /mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/proofs --max-dom 2 --hours 1`
+- Output path: `/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/nested_1h_out`
+- Duration: `988.362` s
 - Return code: `0`
 - Nested payload verdict: `PIPELINE_GREEN`
 - All finite: `True`
 - All outputs present: `True`
-- Output count: `3`
-- Peak total VRAM: `8858` MiB
-- Peak compute-app VRAM: `8159` MiB
-- Peak increment over baseline: `6681` MiB
+- Output count: `2`
+- Peak total VRAM: `9784` MiB
+- Peak compute-app VRAM: `9010` MiB
+- Peak increment over baseline: `7765` MiB
 - Allocator re-exec line seen: `True`
 - OOM markers: `0`
 

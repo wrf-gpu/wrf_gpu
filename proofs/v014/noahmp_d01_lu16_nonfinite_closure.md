@@ -68,10 +68,17 @@ id IS the row index into the 1-based table, identical to
 ## GPU confirmation
 
 Bounded re-run of the SAME exact-branch 1h L2 nested preflight via
-`scripts/run_gpu_lowprio.sh` from this worktree:
+`scripts/run_gpu_lowprio.sh` from this worktree (commit `80a693e2`):
 `/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
-→ result recorded in the worker report (run launched post-fix; see
-`preflight.rc` / `proofs/nested_pipeline_run.json` in that directory).
+
+**GREEN.** `rc=0`, preflight verdict `PASS_SHORT_GPU_PREFLIGHT`, pipeline
+verdict `PIPELINE_GREEN`, `all_domains_finite=true`
+(d01 `final_state_finite=true`, d02 `final_state_finite=true`). The 9
+previously-nonfinite output fields (T2/UST/HFX/LH/TSK/TH2/LWUPB/LWUPT/OLR)
+have **0** nonfinite cells in the new wrfout_d01; T2 over the 475 LU16 land
+cells spans 285.4–301.0 K, all finite. Peak total VRAM 9783 MiB (vs ~10042
+in the failing run) — no memory regression. Preflight JSON/MD:
+`proofs/v014/exact_branch_memory_preflight.{json,md}` (this worktree).
 
 ## Residual risk / scope notes
 
