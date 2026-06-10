@@ -61,7 +61,18 @@ def _surface_field(value, template: jnp.ndarray) -> jnp.ndarray:
 
 
 def _category_index(category: jnp.ndarray, size: int) -> jnp.ndarray:
-    return jnp.clip(category.astype(jnp.int32) - 1, 0, max(size - 1, 0))
+    """Row index into a 1-BASED parameter table (axis-0 length ncat+1, dummy row 0).
+
+    The frozen ``NoahMPParameters`` soil/veg tables keep WRF's 1-based category
+    layout (``tables._parse_soilparm`` fills rows 1..ncat; row 0 is an all-zero
+    placeholder), so the category id IS the row index — identical to
+    ``noahmp_driver._gather_vec`` and the phenology gathers. The previous
+    ``category - 1`` shifted every category one row down: ISLTYP=1 (sand) read
+    the all-zero row 0 (SMCMAX=0 -> smc/smcmax=inf -> NaN soil moisture, the
+    v0.14 d01 LU16 preflight blocker) and every other soil type silently ran
+    WATER with the previous category's hydraulic parameters.
+    """
+    return jnp.clip(category.astype(jnp.int32), 0, max(size - 1, 0))
 
 
 def _gather_by_category(
@@ -69,7 +80,7 @@ def _gather_by_category(
     category: jnp.ndarray,
     template: jnp.ndarray,
 ) -> jnp.ndarray:
-    """Gather 1-D category table values using WRF's 1-based category ids."""
+    """Gather 1-based category table values using WRF's 1-based category ids."""
 
     idx = _category_index(category, arr.shape[0])
     return jnp.asarray(jnp.take(arr, idx, axis=0), dtype=template.dtype)
