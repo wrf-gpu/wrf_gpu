@@ -25,9 +25,9 @@ Verdict: `MYNN_SOURCE_ROOT_CAUSED_INIT_QKE_FIXED_KERNEL_PROVEN_NEXT_SFCLAY_STEP1
 ## Attribution (strong-cell ratio median / corr, theta source)
 
 - A qke=WRF, inputs=WRF: `0.9982` / `1.0000`
-- B qke=prod, inputs=WRF: `0.7177` / `0.9927`
-- C qke=WRF, inputs=JAX: `0.9127` / `0.9463`
-- D qke=prod, inputs=JAX (production): `0.6112` / `0.9173`
+- B qke=prod, inputs=WRF: `0.6700` / `0.9895`
+- C qke=WRF, inputs=JAX: `0.9985` / `0.9762`
+- D qke=prod, inputs=JAX (production): `0.6391` / `0.9488`
 
 The dominant remaining residual is the step-1 surface-layer flux boundary
 (C/D), not the MYNN kernel or its turbulence init (A/B).
@@ -35,7 +35,7 @@ The dominant remaining residual is the step-1 surface-layer flux boundary
 ## Strict Step-1 metric (vs existing part2 truth)
 
 - prior: max_abs `2457.578397008898`, rmse `21.364579991779515`
-- now: max_abs `847.1446969755725`, rmse `9.627208432391289`
+- now: max_abs `438.5379097262689`, rmse `5.4654420375782955`
 - Note: the existing truth embeds WRF's uninitialized-rmol init, so strict
   closure against it is bounded by the proven UB envelope.
 

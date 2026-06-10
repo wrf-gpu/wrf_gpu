@@ -2997,7 +2997,10 @@ def _physics_step_forcing(
     elif bl_opt == DEFAULT_BL_PBL_PHYSICS:
         if source_leaf_mode:
             mynn = mynn_adapter_with_source_leaves(
-                next_state, float(namelist.dt_s), namelist.grid
+                next_state,
+                float(namelist.dt_s),
+                namelist.grid,
+                first_timestep=first_timestep,
             )
             next_state = mynn.state
             rthblten = mynn.rthblten
@@ -3007,7 +3010,12 @@ def _physics_step_forcing(
                 - jnp.asarray(pbl_entry_state.theta, jnp.float64)
             )
         else:
-            next_state = mynn_adapter(next_state, float(namelist.dt_s), namelist.grid)
+            next_state = mynn_adapter(
+                next_state,
+                float(namelist.dt_s),
+                namelist.grid,
+                first_timestep=first_timestep,
+            )
     # bl_opt == 0 -> no PBL mixing.
     qvpblten = (
         (

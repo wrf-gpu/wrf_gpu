@@ -1,0 +1,679 @@
+# ---- mynn_driver_source_output_fix_wrf_patch.diff ----
+--- /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf_driver.F.orig_v014_mynnhook	2026-05-29 11:15:33.504632969 +0100
++++ /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf_driver.F	2026-06-10 01:33:55.714381111 +0100
+@@ -336,6 +336,53 @@
+  dqnbca1          =0.0
+  dozone1          =0.0
+
++
++ !=== wrfgpu2 v014 mynn hook A: driver inputs before column loop (disposable) ===
++ block
++   character(len=64)  :: wg2_env
++   character(len=512) :: wg2_root
++   character(len=768) :: wg2_path
++   integer :: wg2_unit, wg2_i, wg2_j, wg2_k
++   call get_environment_variable('WRFGPU2_V014_MYNN_HOOK', wg2_env)
++   if (trim(wg2_env) == '1' .and. initflag > 0 .and. ide == 160 .and. jde == 67) then
++     call get_environment_variable('WRFGPU2_V014_MYNN_HOOK_ROOT', wg2_root)
++     if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_mynn_hook'
++     write(wg2_path,'(A,A,I0,A,I0,A,I0,A,I0,A)') trim(wg2_root), &
++        '/mynn_pre_d02_step1_its_', its, '_ite_', ite, '_jts_', jts, '_jte_', jte, '.txt'
++     open(newunit=wg2_unit, file=trim(wg2_path), status='replace', action='write')
++     write(wg2_unit,'(A,ES18.10E3,1X,ES18.10E3,3I6,2L2)') 'HDR delt dxc initflag kts kte restart cycling ', &
++        delt, dxc, initflag, kts, kte, restart, cycling
++     do wg2_j = jts, jte
++       do wg2_i = its, ite
++         write(wg2_unit,'(A,2I6,14(1X,ES18.10E3))') 'SFC', wg2_i, wg2_j, &
++            xland(wg2_i,wg2_j), ust(wg2_i,wg2_j), hfx(wg2_i,wg2_j), qfx(wg2_i,wg2_j), &
++            wspd(wg2_i,wg2_j), ts(wg2_i,wg2_j), qsfc(wg2_i,wg2_j), ps(wg2_i,wg2_j), &
++            ch(wg2_i,wg2_j), znt(wg2_i,wg2_j), uoce(wg2_i,wg2_j), voce(wg2_i,wg2_j), &
++            pblh(wg2_i,wg2_j), rthraten(wg2_i,kts,wg2_j)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_U', wg2_i, wg2_j, (u(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_V', wg2_i, wg2_j, (v(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_W', wg2_i, wg2_j, (w(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_TH', wg2_i, wg2_j, (th(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_T3D', wg2_i, wg2_j, (t3d(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QV', wg2_i, wg2_j, (qv(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QC', wg2_i, wg2_j, (qc(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QI', wg2_i, wg2_j, (qi(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_P', wg2_i, wg2_j, (p(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EXNER', wg2_i, wg2_j, (exner(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RHO', wg2_i, wg2_j, (rho(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_DZ', wg2_i, wg2_j, (dz(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QKE_IN', wg2_i, wg2_j, (qke(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_TSQ_IN', wg2_i, wg2_j, (tsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QSQ_IN', wg2_i, wg2_j, (qsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_COV_IN', wg2_i, wg2_j, (cov(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RTHRATEN', wg2_i, wg2_j, (rthraten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++       enddo
++     enddo
++     close(wg2_unit)
++   endif
++ end block
++ !=== end wrfgpu2 v014 mynn hook A ===
++
+  !---------------------------------------
+  !Begin looping in the i- and j-direction
+  !---------------------------------------
+@@ -709,6 +756,48 @@
+    enddo  !end j-loop
+    enddo  !end i-loop
+
++ !=== wrfgpu2 v014 mynn hook B: driver outputs after column loop (disposable) ===
++ block
++   character(len=64)  :: wg2_env
++   character(len=512) :: wg2_root
++   character(len=768) :: wg2_path
++   integer :: wg2_unit, wg2_i, wg2_j, wg2_k
++   call get_environment_variable('WRFGPU2_V014_MYNN_HOOK', wg2_env)
++   if (trim(wg2_env) == '1' .and. initflag > 0 .and. ide == 160 .and. jde == 67) then
++     call get_environment_variable('WRFGPU2_V014_MYNN_HOOK_ROOT', wg2_root)
++     if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_mynn_hook'
++     write(wg2_path,'(A,A,I0,A,I0,A,I0,A,I0,A)') trim(wg2_root), &
++        '/mynn_post_d02_step1_its_', its, '_ite_', ite, '_jts_', jts, '_jte_', jte, '.txt'
++     open(newunit=wg2_unit, file=trim(wg2_path), status='replace', action='write')
++     write(wg2_unit,'(A,ES18.10E3,1X,ES18.10E3,3I6)') 'HDR delt dxc initflag kts kte ', &
++        delt, dxc, initflag, kts, kte
++     do wg2_j = jts, jte
++       do wg2_i = its, ite
++         write(wg2_unit,'(A,2I6,2(1X,ES18.10E3),I6)') 'SFC', wg2_i, wg2_j, &
++            pblh(wg2_i,wg2_j), ust(wg2_i,wg2_j), kpbl(wg2_i,wg2_j)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RUBLTEN', wg2_i, wg2_j, (rublten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RVBLTEN', wg2_i, wg2_j, (rvblten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RTHBLTEN', wg2_i, wg2_j, (rthblten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         if (present(rqvblten)) then
++           write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_RQVBLTEN', wg2_i, wg2_j, (rqvblten(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         endif
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EXCH_H', wg2_i, wg2_j, (exch_h(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EXCH_M', wg2_i, wg2_j, (exch_m(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QKE_OUT', wg2_i, wg2_j, (qke(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_EL', wg2_i, wg2_j, (el_pbl(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_TSQ_OUT', wg2_i, wg2_j, (tsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_QSQ_OUT', wg2_i, wg2_j, (qsq(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_COV_OUT', wg2_i, wg2_j, (cov(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_SH3D', wg2_i, wg2_j, (sh3d(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++         write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'COL_SM3D', wg2_i, wg2_j, (sm3d(wg2_i,wg2_k,wg2_j), wg2_k=kts,kte)
++       enddo
++     enddo
++     close(wg2_unit)
++   endif
++ end block
++ !=== end wrfgpu2 v014 mynn hook B ===
++
++
+    if (debug) then
+       print*,"In mynnedmf_driver, at end"
+    endif
+--- /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf.F.orig_v014_mynnhook	2026-05-29 11:15:33.507915551 +0100
++++ /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_bl_mynnedmf.F	2026-06-10 01:57:35.104521396 +0100
+@@ -710,6 +710,10 @@
+ !! \f$q^{'2}\f$, and \f$\theta^{'}q^{'}\f$. These variables are calculated after
+ !! obtaining prerequisite variables by calling the following subroutines from
+ !! within mym_initialize(): mym_level2() and mym_length().
++       !=== wrfgpu2 v014 rmol pin: mym_initialize consumed an uninitialized
++       !    local rmol (assigned only at line ~879, after this block); pin the
++       !    neutral value so the cold-start init is deterministic. ===
++       rmol = 0.0_kind_phys
+        CALL mym_initialize (                &
+             &kts,kte,xland,                 &
+             &dz1, dx, zw1,                  &
+@@ -746,6 +750,40 @@
+
+     ENDIF ! end initflag
+
++    !=== wrfgpu2 v014 mynn hook C: post-mym_initialize column state (disposable) ===
++    block
++      character(len=64)  :: wg2_env
++      character(len=512) :: wg2_root
++      character(len=768) :: wg2_path
++      integer :: wg2_unit, wg2_k
++      call get_environment_variable('WRFGPU2_V014_MYNN_HOOK', wg2_env)
++      if (trim(wg2_env) == '1' .and. initflag > 0 .and. (.not. restart) .and. dx < 5000.0_kind_phys) then
++        call get_environment_variable('WRFGPU2_V014_MYNN_HOOK_ROOT', wg2_root)
++        if (len_trim(wg2_root) == 0) wg2_root = '/tmp/wrfgpu2_v014_mynn_hook'
++        write(wg2_path,'(A,A)') trim(wg2_root), '/mynn_init_d02_step1.txt'
++        open(newunit=wg2_unit, file=trim(wg2_path), status='unknown', position='append', action='write')
++        write(wg2_unit,'(A,2I6,7(1X,ES18.10E3))') 'INITSFC', i, j, &
++           pblh, psig_bl, rmol, ust, xland, dx, delt
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_QKE', i, j, (qke1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_EL', i, j, (el1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_TSQ', i, j, (tsq1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_QSQ', i, j, (qsq1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_COV', i, j, (cov1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_THL', i, j, (thl1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_THV', i, j, (thv1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_THLV', i, j, (thlv1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_SQV', i, j, (sqv1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_SQW', i, j, (sqw1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_DZ', i, j, (dz1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_ZW', i, j, (zw1(wg2_k), wg2_k=kts,kte+1)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_U', i, j, (u1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_V', i, j, (v1(wg2_k), wg2_k=kts,kte)
++        write(wg2_unit,'(A,2I6,100(1X,ES18.10E3))') 'INIT_TH', i, j, (th1(wg2_k), wg2_k=kts,kte)
++        close(wg2_unit)
++      endif
++    end block
++    !=== end wrfgpu2 v014 mynn hook C ===
++
+ !> - After initializing all required variables, the regular procedures
+ !! performed at every time step are ready for execution.
+     IF (bl_mynn_tkeadvect) THEN
+
+
+# ---- step1_sfclay_output_algebra_wrf_patch.diff ----
+diff --git a/phys/module_sf_mynn.F b/phys/module_sf_mynn.F
+--- a/phys/module_sf_mynn.F
++++ b/phys/module_sf_mynn.F
+@@
+   USE module_model_constants, only: &
+        &p1000mb, ep_2
++  USE module_wrfgpu2_oracle, ONLY: oracle_enabled
+@@
+       INTEGER ::  N,I,K,L,yesno
++      INTEGER :: wrfgpu2_unit, wrfgpu2_ios
++      CHARACTER(LEN=16) :: wrfgpu2_ev
++      CHARACTER(LEN=512) :: wrfgpu2_root, wrfgpu2_path
++      LOGICAL :: wrfgpu2_hook
+@@
+  ENDDO !end i-loop
++
++   wrfgpu2_hook = .FALSE.
++   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_SFCLAY1D_HOOK', wrfgpu2_ev)
++   IF (TRIM(wrfgpu2_ev) == '1') wrfgpu2_hook = .TRUE.
++   IF (wrfgpu2_hook .AND. itimestep == 1 .AND. (ite-its+1) == 159 .AND. (jte-jts+1) == 66) THEN
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_SFCLAY1D_ROOT', wrfgpu2_root)
++      IF (LEN_TRIM(wrfgpu2_root) == 0) wrfgpu2_root = '/tmp/wrf_gpu2_step1_sfclay_output_algebra'
++      CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_root), wait=.TRUE.)
++      WRITE(wrfgpu2_path,'(A,A,I0,A)') TRIM(wrfgpu2_root), '/sfclay1d_mynn_j', J, '.txt'
++      OPEN(NEWUNIT=wrfgpu2_unit, FILE=TRIM(wrfgpu2_path), STATUS='REPLACE', ACTION='WRITE', IOSTAT=wrfgpu2_ios)
++      IF (wrfgpu2_ios == 0) THEN
++         WRITE(wrfgpu2_unit,'(A)') '# i thx thgb thv1d thvgb br zol psim psih psit_from_chs ust hfx qfx qsfc qsfcmr qgh za znt zt zq wspd flhc flqc chs chs2 cqs2 mol rmol'
++         DO I=its,ite
++            WRITE(wrfgpu2_unit,'(I8,1X,27(ES24.16E3,1X))') I, TH1D(I), THGB(I), THV1D(I), THVGB(I), &
++                 BR(I), ZOL(I), PSIM(I), PSIH(I), UST(I)*KARMAN/MAX(CHS(I),1.E-30), UST(I), HFX(I), QFX(I), QSFC(I), QSFCMR(I), QGH(I), &
++                 ZA(I), ZNT(I), z_t(I), z_q(I), WSPD(I), FLHC(I), FLQC(I), CHS(I), CHS2(I), CQS2(I), MOL(I), RMOL(I)
++         ENDDO
++         CLOSE(wrfgpu2_unit)
++      ENDIF
++   ENDIF
+
+ END SUBROUTINE SFCLAY1D_mynn
+
+
+# ---- step1_tsk_znt_sourcing_fix_wrf_patch.diff ----
+diff --git a/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
+index 24e0d252..ec3b16a2 100644
+--- a/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F
++++ b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
+@@ -382,6 +382,7 @@ CONTAINS
+    USE module_sf_noah_seaice_drv
+ #if ( EM_CORE==1)
+    USE module_sf_mynn
++   USE module_wrfgpu2_oracle      ! WRFGPU2 physics-oracle dumper
+    USE module_sf_fogdes    ! Katata - fog deposition module
+    USE module_sf_ocean_driver
+    USE module_sf_idealscmsfclay
+@@ -1250,10 +1251,7 @@ CONTAINS
+ !
+    INTEGER :: i,J,K,NK,jj,ij
+    INTEGER :: gfdl_ntsflg
+-   INTEGER :: wrf_diag_surface_i, wrf_diag_surface_j, wrf_diag_iostat
+    LOGICAL :: radiation, myj, myjpbl, frpcpn, isisfc
+-   LOGICAL :: wrf_diag_surface_point
+-   CHARACTER(LEN=32) :: wrf_diag_env_value
+    LOGICAL, INTENT(in), OPTIONAL :: rdlai2d
+    LOGICAL, INTENT(in), OPTIONAL :: usemonalb
+    REAL    :: total_depth,mid_point_depth
+@@ -1491,25 +1489,6 @@ CONTAINS
+
+   if (sf_sfclay_physics .eq. 0) return
+
+-  wrf_diag_surface_point = .FALSE.
+-  wrf_diag_surface_i = 146
+-  wrf_diag_surface_j = 91
+-  wrf_diag_env_value = ''
+-  CALL GET_ENVIRONMENT_VARIABLE('WRF_DIAG_SURFACE_POINT', wrf_diag_env_value)
+-  IF (LEN_TRIM(wrf_diag_env_value) .GT. 0 .AND. TRIM(wrf_diag_env_value) .NE. '0') THEN
+-     wrf_diag_surface_point = .TRUE.
+-  ENDIF
+-  wrf_diag_env_value = ''
+-  CALL GET_ENVIRONMENT_VARIABLE('WRF_DIAG_SURFACE_I', wrf_diag_env_value)
+-  IF (LEN_TRIM(wrf_diag_env_value) .GT. 0) THEN
+-     READ(wrf_diag_env_value,*,IOSTAT=wrf_diag_iostat) wrf_diag_surface_i
+-  ENDIF
+-  wrf_diag_env_value = ''
+-  CALL GET_ENVIRONMENT_VARIABLE('WRF_DIAG_SURFACE_J', wrf_diag_env_value)
+-  IF (LEN_TRIM(wrf_diag_env_value) .GT. 0) THEN
+-     READ(wrf_diag_env_value,*,IOSTAT=wrf_diag_iostat) wrf_diag_surface_j
+-  ENDIF
+-
+   if ( fractional_seaice == 0 ) then
+      xice_threshold = 0.5
+   else if ( fractional_seaice == 1 ) then
+@@ -2386,32 +2365,49 @@ CONTAINS
+
+           CALL wrf_debug(100,'in MYNNSFC')
+
+-          IF (wrf_diag_surface_point .AND. &
+-              wrf_diag_surface_i .GE. i_start(ij) .AND. wrf_diag_surface_i .LE. i_end(ij) .AND. &
+-              wrf_diag_surface_j .GE. j_start(ij) .AND. wrf_diag_surface_j .LE. j_end(ij)) THEN
+-             WRITE(0,*) 'SURF_MYNN_BEFORE', itimestep, wrf_diag_surface_i, wrf_diag_surface_j, &
+-                  u_phytmp(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  v_phytmp(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  t_phy(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  th_phy(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  qv_curr(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  p_phy(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  rho(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  dz8w(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                  psfc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  pblh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  rmol(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  mol(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  ust(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  znt(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  hfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  qfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  lh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  tsk(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  wspd(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  qsfc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  qgh(wrf_diag_surface_i,wrf_diag_surface_j)
+-          ENDIF
++!WRFGPU2_ORACLE_SFC_IN_BEGIN
++         IF ( oracle_enabled() ) THEN
++           IF ( PRESENT(id) ) THEN
++             IF ( oracle_want(id, itimestep) ) THEN
++               CALL oracle_open_scheme('surface_mynn','sfclay_mynn','in', &
++                    id, itimestep, i_end(ij)-i_start(ij)+1, kte-kts+1, j_end(ij)-j_start(ij)+1)
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','u_phy','m s-1','mass','u wind (unstaggered)', &
++                    u_phytmp, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','v_phy','m s-1','mass','v wind (unstaggered)', &
++                    v_phytmp, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','t_phy','K','mass','temperature', &
++                    t_phy, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','th_phy','K','mass','potential temperature', &
++                    th_phy, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','qv','kg kg-1','mass','water vapor mixing ratio', &
++                    qv_curr, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','p_phy','Pa','mass','pressure', &
++                    p_phy, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','dz8w','m','mass','layer thickness dz', &
++                    dz8w, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump3d('surface_mynn','sfclay_mynn','in','rho','kg m-3','mass','air density', &
++                    rho, ims,ime,kms,kme,jms,jme, i_start(ij),i_end(ij),kts,kte,j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','psfc','Pa','sfc','surface pressure', &
++                    psfc, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','tsk','K','sfc','skin temperature', &
++                    tsk, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','xland','-','sfc','land mask (1 land 2 water)', &
++                    xland, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','mavail','-','sfc','moisture availability', &
++                    mavail, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','znt','m','sfc','roughness length (in)', &
++                    znt, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','snowh','m','sfc','snow depth', &
++                    snowh, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','qsfc','kg kg-1','sfc','surface qv (in)', &
++                    qsfc, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','in','ust','m s-1','sfc','u* friction velocity (in)', &
++                    ust, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_close_scheme()
++             END IF
++           END IF
++         END IF
++!WRFGPU2_ORACLE_SFC_IN_END
+
+          IF (FRACTIONAL_SEAICE == 1) THEN
+           CALL MYNN_SEAICE_WRAPPER(u_phytmp,v_phytmp,t_phy,qv_curr,&
+@@ -2448,33 +2444,63 @@ CONTAINS
+                i_start(ij),i_end(ij),j_start(ij),j_end(ij),kts,kte,&
+                ustm,ck,cka,cd,cda,isftcflx,iz0tlnd                 )
+          ENDIF
+-          IF (wrf_diag_surface_point .AND. &
+-              wrf_diag_surface_i .GE. i_start(ij) .AND. wrf_diag_surface_i .LE. i_end(ij) .AND. &
+-              wrf_diag_surface_j .GE. j_start(ij) .AND. wrf_diag_surface_j .LE. j_end(ij)) THEN
+-             WRITE(0,*) 'SURF_MYNN_AFTER', itimestep, wrf_diag_surface_i, wrf_diag_surface_j, &
+-                  u10(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  v10(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  th2(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  t2(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  q2(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  hfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  qfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  lh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  rmol(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  mol(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  ust(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  znt(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  ch(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  flhc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  flqc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  gz1oz0(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  wspd(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  br(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  psfc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  pblh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  qsfc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                  qgh(wrf_diag_surface_i,wrf_diag_surface_j)
+-          ENDIF
++!WRFGPU2_ORACLE_SFC_OUT_BEGIN
++         IF ( oracle_enabled() ) THEN
++           IF ( PRESENT(id) ) THEN
++             IF ( oracle_want(id, itimestep) ) THEN
++               CALL oracle_open_scheme('surface_mynn','sfclay_mynn','out', &
++                    id, itimestep, i_end(ij)-i_start(ij)+1, kte-kts+1, j_end(ij)-j_start(ij)+1)
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','hfx','W m-2','sfc','upward heat flux', &
++                    hfx, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','qfx','kg m-2 s-1','sfc','upward moisture flux', &
++                    qfx, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','lh','W m-2','sfc','latent heat flux', &
++                    lh, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','ust','m s-1','sfc','u* friction velocity', &
++                    ust, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','mol','K','sfc','T* surface temp scale', &
++                    mol, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','zol','-','sfc','z/L stability param', &
++                    zol, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','rmol','m-1','sfc','1/L inverse Obukhov', &
++                    rmol, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','psim','-','sfc','similarity stab fn momentum', &
++                    psim, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','psih','-','sfc','similarity stab fn heat', &
++                    psih, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','wspd','m s-1','sfc','wind speed', &
++                    wspd, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','br','-','sfc','bulk Richardson number', &
++                    br, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','znt','m','sfc','roughness length (out)', &
++                    znt, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','chs','m s-1','sfc','heat exchange coeff', &
++                    chs, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','chs2','m s-1','sfc','2m heat exch coeff', &
++                    chs2, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','cqs2','m s-1','sfc','2m moisture exch coeff', &
++                    cqs2, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','flhc','W m-2 K-1','sfc','exch coeff heat', &
++                    flhc, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','flqc','kg m-2 s-1','sfc','exch coeff moisture', &
++                    flqc, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','u10','m s-1','sfc','10m u wind', &
++                    u10, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','v10','m s-1','sfc','10m v wind', &
++                    v10, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','t2','K','sfc','2m temperature', &
++                    t2, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','th2','K','sfc','2m potential temperature', &
++                    th2, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','q2','kg kg-1','sfc','2m water vapor', &
++                    q2, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_dump2d('surface_mynn','sfclay_mynn','out','qsfc','kg kg-1','sfc','surface qv (out)', &
++                    qsfc, ims,ime,jms,jme, i_start(ij),i_end(ij),j_start(ij),j_end(ij))
++               CALL oracle_close_scheme()
++             END IF
++           END IF
++         END IF
++!WRFGPU2_ORACLE_SFC_OUT_END
+        ELSE
+           CALL wrf_error_fatal('Lacking arguments for SFCLAY_mynn in surface driver')
+        ENDIF
+@@ -3201,35 +3227,9 @@ CONTAINS
+          if(HYDRO_dt .ge. 0) HYDRO_dt = dtbl
+ #endif
+          CALL wrf_debug(100,'in NOAHMP DRV')
+-         IF (wrf_diag_surface_point .AND. &
+-             wrf_diag_surface_i .GE. i_start(ij) .AND. wrf_diag_surface_i .LE. i_end(ij) .AND. &
+-             wrf_diag_surface_j .GE. j_start(ij) .AND. wrf_diag_surface_j .LE. j_end(ij)) THEN
+-            WRITE(0,*) 'NOAHMP_BEFORE', itimestep, wrf_diag_surface_i, wrf_diag_surface_j, &
+-                 qsfc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 qgh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 qv_curr(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                 t_phy(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                 p8w(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                 dz8w(wrf_diag_surface_i,kts,wrf_diag_surface_j), &
+-                 psfc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 xland(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 xice(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 ivgtyp(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 isltyp(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 vegfra(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 tsk(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 hfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 qfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 lh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 chs(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 chs2(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 cqs2(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 znt(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 rmol(wrf_diag_surface_i,wrf_diag_surface_j)
+-         ENDIF
+          CALL noahmplsm(ITIMESTEP,       YR, JULIAN_IN,   COSZEN, XLAT,XLONG, &
+-                           DZ8W,     DTBL,      DZS,     NUM_SOIL_LAYERS,         DX, &
+-                         IVGTYP,   ISLTYP,   VEGFRA,   SHDMAX,       TMN,             &
++                   DZ8W,     DTBL,      DZS,     NUM_SOIL_LAYERS,         DX, &
++                 IVGTYP,   ISLTYP,   VEGFRA,   SHDMAX,       TMN,             &
+                   XLAND,     XICE,     XICE_THRESHOLD,   CROPCAT,             &
+                PLANTING,  HARVEST,SEASON_GDD,                               &
+                   IDVEG, IOPT_CRS, IOPT_BTR, IOPT_RUN,  IOPT_SFC,   IOPT_FRZ, &
+@@ -3276,37 +3276,12 @@ CONTAINS
+ #ifdef WRF_HYDRO
+                  sfcheadrt,INFXSRT,soldrain,qtiledrain,ZWATBLE2D,             &    !O
+ #endif
+-                        ids,ide, jds,jde, kds,kde,                      &
+-                        ims,ime, jms,jme, kms,kme,                      &
+-                        i_start(ij),i_end(ij), j_start(ij),j_end(ij), kts,kte,        &
++                ids,ide, jds,jde, kds,kde,                      &
++                ims,ime, jms,jme, kms,kme,                      &
++                i_start(ij),i_end(ij), j_start(ij),j_end(ij), kts,kte,        &
+ ! variables below are optional
+-                        MP_RAINC =  RAINCV, MP_RAINNC =    RAINNCV, MP_SHCV = RAINSHV,&
+-                        MP_SNOW  = SNOWNCV, MP_GRAUP  = GRAUPELNCV, MP_HAIL = HAILNCV )
+-
+-         IF (wrf_diag_surface_point .AND. &
+-             wrf_diag_surface_i .GE. i_start(ij) .AND. wrf_diag_surface_i .LE. i_end(ij) .AND. &
+-             wrf_diag_surface_j .GE. j_start(ij) .AND. wrf_diag_surface_j .LE. j_end(ij)) THEN
+-            WRITE(0,*) 'NOAHMP_AFTER', itimestep, wrf_diag_surface_i, wrf_diag_surface_j, &
+-                 qsfc(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 qgh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 tsk(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 hfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 qfx(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 lh(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 q2mvxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 q2mbxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 t2mvxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 t2mbxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 fvegxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 eahxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 tahxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 cmxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 chxy(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 znt(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 z0(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 emiss(wrf_diag_surface_i,wrf_diag_surface_j), &
+-                 albedo(wrf_diag_surface_i,wrf_diag_surface_j)
+-         ENDIF
++                MP_RAINC =  RAINCV, MP_RAINNC =    RAINNCV, MP_SHCV = RAINSHV,&
++                MP_SNOW  = SNOWNCV, MP_GRAUP  = GRAUPELNCV, MP_HAIL = HAILNCV )
+
+          IF(SF_URBAN_PHYSICS > 0 ) THEN  !urban
+
+
+diff --git a/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_wrfgpu2_oracle.F b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_wrfgpu2_oracle.F
+new file mode 100644
+index 00000000..2343df91
+--- /dev/null
++++ b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_wrfgpu2_oracle.F
+@@ -0,0 +1,172 @@
++!WRFGPU2_ORACLE  ----- per-scheme physics ground-truth savepoint dumper (WRF v4.7.1) -----
++!  Writes full-domain 3D/2D field snapshots to raw little-endian stream binary
++!  (ACCESS='STREAM'), one file per field, plus a per-scheme text sidecar listing
++!  field name / rank / shape / units so the Python post-processor can assemble an
++!  NPZ + manifest.json.  Used by the physics drivers (microphysics, surface, pbl,
++!  radiation) to capture INPUT state (tag 'in') and OUTPUT state (tag 'out')
++!  around each scheme call, for ONE chosen domain (grid id) and ONE timestep.
++!
++!  Design notes:
++!   * STREAM access => contiguous raw bytes, no Fortran record markers; numpy reads
++!     via np.fromfile(dtype='<f8') and reshapes with the recorded shape.
++!   * We dump the (i,k,j) physics layout exactly as the driver sees it, restricted
++!     to the tile interior [its:ite, kts:kte, jts:jte] for 3D and [its:ite,jts:jte]
++!     for 2D.  Serial run => one tile == full domain interior.
++!   * Arrays are written with an explicit k-collapse for 2D so the post-processor
++!     always reshapes as (nj, nk, ni) C-order after we write j-outer, k-mid, i-inner.
++!   * Activation is gated by an environment variable WRFGPU2_ORACLE=1 and a target
++!     domain id WRFGPU2_ORACLE_GRID (default 2) and target itimestep
++!     WRFGPU2_ORACLE_STEP (default: first time the scheme is seen on that grid).
++!
++MODULE module_wrfgpu2_oracle
++
++  IMPLICIT NONE
++  PRIVATE
++  PUBLIC :: oracle_enabled, oracle_want, oracle_dump3d, oracle_dump2d, &
++            oracle_open_scheme, oracle_close_scheme
++
++  CHARACTER(LEN=512), SAVE :: out_root = '/mnt/data/wrf_gpu2/physics_oracle'
++  LOGICAL, SAVE :: g_enabled = .FALSE.
++  LOGICAL, SAVE :: g_inited  = .FALSE.
++  INTEGER, SAVE :: g_grid    = 2
++  INTEGER, SAVE :: g_step    = -1        ! -1 => first seen
++  INTEGER, SAVE :: g_sidecar = -1        ! open sidecar unit, -1 if none
++
++CONTAINS
++
++  SUBROUTINE oracle_init()
++    CHARACTER(LEN=64) :: ev
++    INTEGER :: ios, ival
++    IF (g_inited) RETURN
++    g_inited = .TRUE.
++    CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_ORACLE', ev)
++    IF (TRIM(ev) == '1') g_enabled = .TRUE.
++    CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_ORACLE_GRID', ev)
++    IF (LEN_TRIM(ev) > 0) THEN
++      READ(ev,*,IOSTAT=ios) ival
++      IF (ios == 0) g_grid = ival
++    END IF
++    CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_ORACLE_STEP', ev)
++    IF (LEN_TRIM(ev) > 0) THEN
++      READ(ev,*,IOSTAT=ios) ival
++      IF (ios == 0) g_step = ival
++    END IF
++    CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_ORACLE_ROOT', ev)
++    IF (LEN_TRIM(ev) > 0) out_root = TRIM(ev)
++  END SUBROUTINE oracle_init
++
++  LOGICAL FUNCTION oracle_enabled()
++    CALL oracle_init()
++    oracle_enabled = g_enabled
++  END FUNCTION oracle_enabled
++
++  ! Decide whether to dump for this (grid_id, itimestep). If g_step<0 we latch the
++  ! first itimestep we are asked about for the target grid and only dump that one.
++  LOGICAL FUNCTION oracle_want(grid_id, itimestep)
++    INTEGER, INTENT(IN) :: grid_id, itimestep
++    CALL oracle_init()
++    oracle_want = .FALSE.
++    IF (.NOT. g_enabled) RETURN
++    IF (grid_id /= g_grid) RETURN
++    IF (g_step < 0) THEN
++      g_step = itimestep      ! latch first seen step on the target grid
++    END IF
++    IF (itimestep == g_step) oracle_want = .TRUE.
++  END FUNCTION oracle_want
++
++  ! Open a per-scheme sidecar text file (subdir under out_root). tag e.g. 'in'/'out'.
++  SUBROUTINE oracle_open_scheme(subdir, scheme, tag, grid_id, itimestep, &
++                                ni, nk, nj)
++    CHARACTER(LEN=*), INTENT(IN) :: subdir, scheme, tag
++    INTEGER, INTENT(IN) :: grid_id, itimestep, ni, nk, nj
++    CHARACTER(LEN=1024) :: path
++    CALL execute_command_line('mkdir -p '//TRIM(out_root)//'/'//TRIM(subdir), &
++                              wait=.TRUE.)
++    WRITE(path,'(A)') TRIM(out_root)//'/'//TRIM(subdir)//'/'//TRIM(scheme)//'_'// &
++                      TRIM(tag)//'.sidecar.txt'
++    OPEN(NEWUNIT=g_sidecar, FILE=TRIM(path), STATUS='REPLACE', ACTION='WRITE', &
++         FORM='FORMATTED')
++    WRITE(g_sidecar,'(A)')     '# WRFGPU2 physics oracle sidecar'
++    WRITE(g_sidecar,'(A,A)')   'scheme '//TRIM(scheme), ''
++    WRITE(g_sidecar,'(A,A)')   'tag '//TRIM(tag), ''
++    WRITE(g_sidecar,'(A,I0)')  'grid_id ', grid_id
++    WRITE(g_sidecar,'(A,I0)')  'itimestep ', itimestep
++    WRITE(g_sidecar,'(A,3(1X,I0))') 'dims_ni_nk_nj', ni, nk, nj
++    WRITE(g_sidecar,'(A)')     '# FIELD name rank ni nk nj units stagger desc'
++  END SUBROUTINE oracle_open_scheme
++
++  SUBROUTINE oracle_close_scheme()
++    IF (g_sidecar > 0) THEN
++      CLOSE(g_sidecar)
++      g_sidecar = -1
++    END IF
++  END SUBROUTINE oracle_close_scheme
++
++  ! Dump a 3D (i,k,j) physics array over the tile interior to a stream binary file,
++  ! and append a FIELD line to the sidecar. Writes j-outer, k-mid, i-inner so the
++  ! reader reshapes contiguous bytes as numpy shape (nj, nk, ni).
++  SUBROUTINE oracle_dump3d(subdir, scheme, tag, name, units, stagger, desc, &
++                           arr, ims,ime,kms,kme,jms,jme, its,ite,kts,kte,jts,jte)
++    CHARACTER(LEN=*), INTENT(IN) :: subdir, scheme, tag, name, units, stagger, desc
++    INTEGER, INTENT(IN) :: ims,ime,kms,kme,jms,jme, its,ite,kts,kte,jts,jte
++    REAL,    INTENT(IN) :: arr(ims:ime,kms:kme,jms:jme)
++    CHARACTER(LEN=1024) :: path
++    INTEGER :: u, i, k, j, ni, nk, nj
++    REAL(KIND=8), ALLOCATABLE :: buf(:)
++    INTEGER :: p
++    ni = ite-its+1; nk = kte-kts+1; nj = jte-jts+1
++    ALLOCATE(buf(ni*nk*nj))
++    p = 0
++    DO j = jts, jte
++      DO k = kts, kte
++        DO i = its, ite
++          p = p + 1
++          buf(p) = REAL(arr(i,k,j), KIND=8)
++        END DO
++      END DO
++    END DO
++    WRITE(path,'(A)') TRIM(out_root)//'/'//TRIM(subdir)//'/'//TRIM(scheme)//'_'// &
++                      TRIM(tag)//'__'//TRIM(name)//'.f64'
++    OPEN(NEWUNIT=u, FILE=TRIM(path), STATUS='REPLACE', ACTION='WRITE', &
++         FORM='UNFORMATTED', ACCESS='STREAM')
++    WRITE(u) buf
++    CLOSE(u)
++    DEALLOCATE(buf)
++    IF (g_sidecar > 0) THEN
++      WRITE(g_sidecar,'(A,1X,A,1X,I0,3(1X,I0),1X,A,1X,A,1X,A)') &
++        'FIELD', TRIM(name), 3, ni, nk, nj, TRIM(units), TRIM(stagger), TRIM(desc)
++    END IF
++  END SUBROUTINE oracle_dump3d
++
++  ! Dump a 2D (i,j) physics array over the tile interior. nk recorded as 1.
++  SUBROUTINE oracle_dump2d(subdir, scheme, tag, name, units, stagger, desc, &
++                           arr, ims,ime,jms,jme, its,ite,jts,jte)
++    CHARACTER(LEN=*), INTENT(IN) :: subdir, scheme, tag, name, units, stagger, desc
++    INTEGER, INTENT(IN) :: ims,ime,jms,jme, its,ite,jts,jte
++    REAL,    INTENT(IN) :: arr(ims:ime,jms:jme)
++    CHARACTER(LEN=1024) :: path
++    INTEGER :: u, i, j, ni, nj, p
++    REAL(KIND=8), ALLOCATABLE :: buf(:)
++    ni = ite-its+1; nj = jte-jts+1
++    ALLOCATE(buf(ni*nj))
++    p = 0
++    DO j = jts, jte
++      DO i = its, ite
++        p = p + 1
++        buf(p) = REAL(arr(i,j), KIND=8)
++      END DO
++    END DO
++    WRITE(path,'(A)') TRIM(out_root)//'/'//TRIM(subdir)//'/'//TRIM(scheme)//'_'// &
++                      TRIM(tag)//'__'//TRIM(name)//'.f64'
++    OPEN(NEWUNIT=u, FILE=TRIM(path), STATUS='REPLACE', ACTION='WRITE', &
++         FORM='UNFORMATTED', ACCESS='STREAM')
++    WRITE(u) buf
++    CLOSE(u)
++    DEALLOCATE(buf)
++    IF (g_sidecar > 0) THEN
++      WRITE(g_sidecar,'(A,1X,A,1X,I0,3(1X,I0),1X,A,1X,A,1X,A)') &
++        'FIELD', TRIM(name), 2, ni, 1, nj, TRIM(units), TRIM(stagger), TRIM(desc)
++    END IF
++  END SUBROUTINE oracle_dump2d
++
++END MODULE module_wrfgpu2_oracle

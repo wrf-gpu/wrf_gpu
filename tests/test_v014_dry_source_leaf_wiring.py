@@ -16,6 +16,8 @@ from gpuwrf.contracts.grid import (
 )
 from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
 from gpuwrf.coupling.physics_couplers import (
+    _from_columns,
+    _mynn_column_from_state,
     _surface_column_view,
     mynn_adapter_with_source_leaves,
     surface_adapter,
@@ -137,6 +139,49 @@ def test_grid_backed_surface_column_view_uses_wrf_phy_prep_inputs() -> None:
     assert fallback.psfc is None
 
 
+def test_grid_backed_mynn_column_view_uses_wrf_phy_prep_inputs() -> None:
+    grid = _grid(ny=2, nx=2, nz=4)
+    state = _state(grid)
+
+    column = _mynn_column_from_state(state, grid)
+    fallback = _mynn_column_from_state(state, None)
+
+    rv_over_rd = 461.6 / 287.0
+    dry_theta = np.asarray(state.theta / (1.0 + rv_over_rd * state.qv), dtype=np.float64)
+    dz = np.asarray((state.ph[1:] - state.ph[:-1]) / 9.81, dtype=np.float64)
+
+    qtot = sum(np.asarray(getattr(state, field), dtype=np.float32) for field in ("qv", "qc", "qr", "qi", "qs", "qg"))
+    mut = np.asarray(state.mu_total, dtype=np.float32)
+    c1h = np.asarray(grid.metrics.c1h, dtype=np.float32)
+    c2h = np.asarray(grid.metrics.c2h, dtype=np.float32)
+    dnw = np.asarray(grid.metrics.dnw, dtype=np.float32)
+    p_top = np.float32(np.asarray(grid.metrics.p_top, dtype=np.float32).reshape(-1)[0])
+    faces = np.empty((grid.nz + 1, grid.ny, grid.nx), dtype=np.float32)
+    faces[grid.nz] = p_top
+    for k in range(grid.nz - 1, -1, -1):
+        faces[k] = faces[k + 1] - (np.float32(1.0) + qtot[k]) * (c1h[k] * mut + c2h[k]) * dnw[k]
+    p_hyd = (np.float32(0.5) * (faces[:-1] + faces[1:])).astype(np.float64)
+
+    c3h = np.asarray(grid.metrics.c3h, dtype=np.float32)
+    c4h = np.asarray(grid.metrics.c4h, dtype=np.float32)
+    c3f = np.asarray(grid.metrics.c3f, dtype=np.float32)
+    c4f = np.asarray(grid.metrics.c4f, dtype=np.float32)
+    p_up = c3f[1:, None, None] * mut[None, :, :] + c4f[1:, None, None] + p_top
+    p_down = c3f[:-1, None, None] * mut[None, :, :] + c4f[:-1, None, None] + p_top
+    p_mid = c3h[:, None, None] * mut[None, :, :] + c4h[:, None, None] + p_top
+    dph = np.asarray(state.ph_total[1:] - state.ph_total[:-1], dtype=np.float32)
+    alt = dph / p_mid / np.log(p_down / p_up)
+    rho = ((np.float32(1.0) + np.asarray(state.qv, dtype=np.float32)) / alt).astype(np.float64)
+
+    np.testing.assert_allclose(np.asarray(_from_columns(column.theta)), dry_theta, rtol=0.0, atol=1.0e-12)
+    np.testing.assert_allclose(np.asarray(_from_columns(column.p)), p_hyd, rtol=0.0, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(_from_columns(column.rho)), rho, rtol=0.0, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(_from_columns(column.dz)), dz, rtol=0.0, atol=1.0e-12)
+
+    np.testing.assert_allclose(np.asarray(_from_columns(fallback.theta)), np.asarray(state.theta))
+    np.testing.assert_allclose(np.asarray(_from_columns(fallback.p)), np.asarray(state.p))
+
+
 def test_source_leaf_mode_mass_couples_held_rthraten_and_mynn_rthblten() -> None:
     grid = _grid()
     state = _state(grid)
@@ -160,8 +205,12 @@ def test_source_leaf_mode_mass_couples_held_rthraten_and_mynn_rthblten() -> None
     held_rthraten = jnp.full_like(state.theta, 2.5e-4)
     carry = initial_operational_carry(state).replace(rthraten=held_rthraten)
 
-    surface_state = surface_adapter(state, float(namelist.dt_s), grid)
-    mynn = mynn_adapter_with_source_leaves(surface_state, float(namelist.dt_s), grid)
+    surface_state = surface_adapter(
+        state, float(namelist.dt_s), grid, first_timestep=True
+    )
+    mynn = mynn_adapter_with_source_leaves(
+        surface_state, float(namelist.dt_s), grid, first_timestep=True
+    )
     mass_h = (
         namelist.metrics.c1h[:, None, None] * mynn.state.mu_total[None, :, :]
         + namelist.metrics.c2h[:, None, None]
@@ -174,9 +223,28 @@ def test_source_leaf_mode_mass_couples_held_rthraten_and_mynn_rthblten() -> None
         + (461.6 / 287.0) * state.theta / theta_m_factor * qv_source
     )
 
-    forcing = _physics_step_forcing(carry, namelist, 0.0, run_radiation=False)
+    forcing = _physics_step_forcing(
+        carry, namelist, 0.0, run_radiation=False, first_timestep=True
+    )
 
     np.testing.assert_allclose(np.asarray(forcing.dry_tendencies.t_tendf), np.asarray(expected))
     assert float(jnp.max(jnp.abs(mynn.rthblten))) > 0.0
     assert float(jnp.max(jnp.abs(mynn.rqvblten))) > 0.0
     np.testing.assert_allclose(np.asarray(forcing.state.theta), np.asarray(surface_state.theta))
+
+
+def test_mynn_source_leaves_are_dry_theta_but_state_returns_theta_m() -> None:
+    grid = _grid(ny=2, nx=2, nz=6)
+    state = surface_adapter(_state(grid), 10.0, grid)
+    before_column = _mynn_column_from_state(state, grid)
+
+    mynn = mynn_adapter_with_source_leaves(state, 10.0, grid, first_timestep=True)
+
+    dry_after = np.asarray(_from_columns(before_column.theta)) + 10.0 * np.asarray(mynn.rthblten)
+    expected_theta_m = dry_after * (1.0 + (461.6 / 287.0) * np.asarray(mynn.state.qv))
+
+    np.testing.assert_allclose(np.asarray(mynn.state.theta), expected_theta_m, rtol=1.0e-12, atol=1.0e-12)
+    assert not np.allclose(
+        np.asarray(mynn.rthblten),
+        (np.asarray(mynn.state.theta) - np.asarray(state.theta)) / 10.0,
+    )

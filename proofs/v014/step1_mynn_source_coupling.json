@@ -1,0 +1,676 @@
+{
+  "commands": {
+    "focused_tests": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py",
+    "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_mynn_source_coupling.py"
+  },
+  "created_utc": "2026-06-10T04:49:29.235664+00:00",
+  "environment": {
+    "jax_backend": "cpu",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "fastest_next_command": "Add a WRF hook immediately before/after module_surface_driver's sf_surface_physics=4 land-surface flux update (HFX/QFX/LH/TSK/GRDFLX/diagnostic CH where available), then compare it to the JAX Step-1 path and wire the Noah-MP/land flux overlay into the MYNN bottom-boundary handles before rerunning this proof.",
+  "git": {
+    "branch": {
+      "command": [
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "worker/gpt/v013-close-manager\n"
+    },
+    "head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "f935d82b5d6454224bed55dfd530e21f339222eb\n"
+    },
+    "status_short": {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_mynn_source_coupling.json\n?? proofs/v014/step1_mynn_source_coupling.md\n?? proofs/v014/step1_mynn_source_coupling.py\n?? proofs/v014/step1_mynn_source_coupling_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n"
+    }
+  },
+  "kernel_matrix": {
+    "current_inputs_neutral_qke": {
+      "rqvblten": {
+        "bias": -1.1931861770734713e-11,
+        "corr": 0.9742824134800708,
+        "count": 461736,
+        "max_abs": 4.623689856453098e-06,
+        "nonfinite_count": 0,
+        "ref_max_abs": 5.3572780416e-06,
+        "rmse": 2.8345340061747652e-08,
+        "strong_cells": 8625,
+        "strong_ratio_median": 0.9737108013308636,
+        "strong_ratio_p10": 0.636543446133949,
+        "strong_ratio_p90": 0.9876796965171879,
+        "worst_candidate": -3.416564501469016e-07,
+        "worst_reference": -4.9653463066e-06
+      },
+      "rthblten": {
+        "bias": 4.6269608448456676e-07,
+        "corr": 0.9565699630439017,
+        "count": 461736,
+        "max_abs": 0.007112169856768911,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.033187866211,
+        "rmse": 9.786127476127153e-05,
+        "strong_cells": 664,
+        "strong_ratio_median": 0.6971366587911589,
+        "strong_ratio_p10": 0.3406974997227778,
+        "strong_ratio_p90": 0.8300694573911799,
+        "worst_candidate": -0.026075696354231088,
+        "worst_reference": -0.033187866211
+      }
+    },
+    "current_inputs_wrf_qke": {
+      "rqvblten": {
+        "bias": -2.738177844321201e-10,
+        "corr": 0.9964133548061564,
+        "count": 461736,
+        "max_abs": 4.474181672391791e-06,
+        "nonfinite_count": 0,
+        "ref_max_abs": 5.3572780416e-06,
+        "rmse": 9.711269813505841e-09,
+        "strong_cells": 8625,
+        "strong_ratio_median": 0.9745076977235456,
+        "strong_ratio_p10": 0.9725670728695948,
+        "strong_ratio_p90": 1.002681108546095,
+        "worst_candidate": -4.91164634208209e-07,
+        "worst_reference": -4.9653463066e-06
+      },
+      "rthblten": {
+        "bias": 1.9108714633713645e-07,
+        "corr": 0.9761528788749765,
+        "count": 461736,
+        "max_abs": 0.006557968236318549,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.033187866211,
+        "rmse": 6.227350537104264e-05,
+        "strong_cells": 664,
+        "strong_ratio_median": 0.99850084828161,
+        "strong_ratio_p10": 0.35490384114125423,
+        "strong_ratio_p90": 1.013611391472079,
+        "worst_candidate": -0.0009290107750814514,
+        "worst_reference": -0.0074869790114
+      }
+    },
+    "current_inputs_wrf_stale_rmol_qke": {
+      "rqvblten": {
+        "bias": -2.7232915949511616e-10,
+        "corr": 0.9964247439374154,
+        "count": 461736,
+        "max_abs": 4.47402218511077e-06,
+        "nonfinite_count": 0,
+        "ref_max_abs": 5.3572780416e-06,
+        "rmse": 9.706833430578063e-09,
+        "strong_cells": 8625,
+        "strong_ratio_median": 0.9744896103457015,
+        "strong_ratio_p10": 0.9725471067511945,
+        "strong_ratio_p90": 1.001856140394893,
+        "worst_candidate": -4.913241214892297e-07,
+        "worst_reference": -4.9653463066e-06
+      },
+      "rthblten": {
+        "bias": 1.9426766400388516e-07,
+        "corr": 0.9759068027845178,
+        "count": 461736,
+        "max_abs": 0.006557569895052206,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.033187866211,
+        "rmse": 6.242622524993145e-05,
+        "strong_cells": 664,
+        "strong_ratio_median": 0.9986632814777887,
+        "strong_ratio_p10": 0.35490384043934525,
+        "strong_ratio_p90": 1.007997626052375,
+        "worst_candidate": -0.0009294091163477939,
+        "worst_reference": -0.0074869790114
+      }
+    },
+    "wrf_inputs_wrf_qke": {
+      "rqvblten": {
+        "bias": -2.2247618422093928e-10,
+        "corr": 0.9998196528315856,
+        "count": 461736,
+        "max_abs": 3.1231071728226947e-07,
+        "nonfinite_count": 0,
+        "ref_max_abs": 5.3572780416e-06,
+        "rmse": 2.2983195444252976e-09,
+        "strong_cells": 8625,
+        "strong_ratio_median": 0.9735011792809023,
+        "strong_ratio_p10": 0.9714902386836202,
+        "strong_ratio_p90": 1.0027741169047297,
+        "worst_candidate": -1.2052794180177305e-06,
+        "worst_reference": -1.5175901353e-06
+      },
+      "rthblten": {
+        "bias": 6.82604014333846e-08,
+        "corr": 0.9999580118448544,
+        "count": 461736,
+        "max_abs": 0.00026206000797283305,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.033187866211,
+        "rmse": 2.5971191677632803e-06,
+        "strong_cells": 664,
+        "strong_ratio_median": 0.9982067143758686,
+        "strong_ratio_p10": 0.9916989182880537,
+        "strong_ratio_p90": 1.0037529556847133,
+        "worst_candidate": 0.006248591738672833,
+        "worst_reference": 0.0059865317307
+      }
+    }
+  },
+  "paths": {
+    "mynn_hook_root": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn",
+    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md",
+    "wrf_patch_archive": {
+      "exists": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_mynn_source_coupling_wrf_patch.diff",
+      "size_bytes": 40903
+    }
+  },
+  "production_changes": [
+    {
+      "file": "src/gpuwrf/coupling/physics_couplers.py",
+      "summary": "MYNN now consumes WRF phy_prep dry theta/hydrostatic pressure/rho/dz when grid metrics are available; source leaves are dry theta while live State.theta is converted back to theta_m; first-call QKE initialization can run after surface fluxes."
+    },
+    {
+      "file": "src/gpuwrf/runtime/operational_mode.py",
+      "summary": "Pass first_timestep into the default MYNN adapter path."
+    }
+  ],
+  "ranked_hypotheses": [
+    {
+      "evidence": {
+        "current_inputs_wrf_qke_rthblten": {
+          "bias": 1.9108714633713645e-07,
+          "corr": 0.9761528788749765,
+          "count": 461736,
+          "max_abs": 0.006557968236318549,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.033187866211,
+          "rmse": 6.227350537104264e-05,
+          "strong_cells": 664,
+          "strong_ratio_median": 0.99850084828161,
+          "strong_ratio_p10": 0.35490384114125423,
+          "strong_ratio_p90": 1.013611391472079,
+          "worst_candidate": -0.0009290107750814514,
+          "worst_reference": -0.0074869790114
+        },
+        "wrf_sfclay_to_mynn_hfx": {
+          "bias": -0.4521434505491753,
+          "count": 10494,
+          "max_abs": 277.80298614281253,
+          "nonfinite_count": 0,
+          "ref_max_abs": 382.4698486328125,
+          "rmse": 23.78077473308822,
+          "worst_candidate": 104.66686249,
+          "worst_reference": 382.4698486328125
+        },
+        "wrf_sfclay_to_mynn_qfx": {
+          "bias": 1.4897422704323907e-07,
+          "count": 10494,
+          "max_abs": 1.4684322196e-05,
+          "nonfinite_count": 0,
+          "ref_max_abs": 7.490280404454097e-05,
+          "rmse": 1.0634310887382864e-06,
+          "worst_candidate": 1.4684322196e-05,
+          "worst_reference": 0.0
+        }
+      },
+      "hypothesis": "The remaining Step-1 raw MYNN theta-source tail is caused by the surface/land heat-moisture flux handoff into MYNN, not by MYNN source sign/unit/mass scaling.",
+      "rank": 1,
+      "status": "PROVEN_BLOCKER"
+    },
+    {
+      "evidence": {
+        "wrf_after_update_self_consistency": {
+          "bias": 0.0,
+          "count": 442112,
+          "max_abs": 0.0,
+          "nonfinite_diff_count": 0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "rmse": 0.0,
+          "worst_candidate": 13.25869846343994,
+          "worst_mismatch_fortran": {
+            "i": 2,
+            "j": 2,
+            "k": 1
+          },
+          "worst_reference": 13.25869846343994
+        },
+        "wrf_inputs_wrf_qke_rthblten": {
+          "bias": 6.82604014333846e-08,
+          "corr": 0.9999580118448544,
+          "count": 461736,
+          "max_abs": 0.00026206000797283305,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.033187866211,
+          "rmse": 2.5971191677632803e-06,
+          "strong_cells": 664,
+          "strong_ratio_median": 0.9982067143758686,
+          "strong_ratio_p10": 0.9916989182880537,
+          "strong_ratio_p90": 1.0037529556847133,
+          "worst_candidate": 0.006248591738672833,
+          "worst_reference": 0.0059865317307
+        }
+      },
+      "hypothesis": "MYNN kernel/source sign or raw RTHBLTEN units are wrong.",
+      "rank": 2,
+      "status": "FALSIFIED_AS_PRIMARY"
+    },
+    {
+      "evidence": {
+        "neutral_qke": {
+          "bias": 4.6269608448456676e-07,
+          "corr": 0.9565699630439017,
+          "count": 461736,
+          "max_abs": 0.007112169856768911,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.033187866211,
+          "rmse": 9.786127476127153e-05,
+          "strong_cells": 664,
+          "strong_ratio_median": 0.6971366587911589,
+          "strong_ratio_p10": 0.3406974997227778,
+          "strong_ratio_p90": 0.8300694573911799,
+          "worst_candidate": -0.026075696354231088,
+          "worst_reference": -0.033187866211
+        },
+        "wrf_qke": {
+          "bias": 1.9108714633713645e-07,
+          "corr": 0.9761528788749765,
+          "count": 461736,
+          "max_abs": 0.006557968236318549,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.033187866211,
+          "rmse": 6.227350537104264e-05,
+          "strong_cells": 664,
+          "strong_ratio_median": 0.99850084828161,
+          "strong_ratio_p10": 0.35490384114125423,
+          "strong_ratio_p90": 1.013611391472079,
+          "worst_candidate": -0.0009290107750814514,
+          "worst_reference": -0.0074869790114
+        },
+        "wrf_stale_rmol_qke": {
+          "bias": 1.9426766400388516e-07,
+          "corr": 0.9759068027845178,
+          "count": 461736,
+          "max_abs": 0.006557569895052206,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.033187866211,
+          "rmse": 6.242622524993145e-05,
+          "strong_cells": 664,
+          "strong_ratio_median": 0.9986632814777887,
+          "strong_ratio_p10": 0.35490384043934525,
+          "strong_ratio_p90": 1.007997626052375,
+          "worst_candidate": -0.0009294091163477939,
+          "worst_reference": -0.0074869790114
+        }
+      },
+      "hypothesis": "First-call MYNN QKE initialization / WRF uninitialized rmol affects the median source ratio.",
+      "rank": 3,
+      "status": "SECONDARY"
+    },
+    {
+      "evidence": {
+        "dz_vs_wrf_col_dz": {
+          "bias": 2.015080698430643e-05,
+          "count": 461736,
+          "max_abs": 0.001967061671166448,
+          "nonfinite_count": 0,
+          "ref_max_abs": 690.97509766,
+          "rmse": 0.0004286603143530417,
+          "worst_candidate": 528.2285295616712,
+          "worst_reference": 528.2265625
+        },
+        "p_vs_wrf_col_p": {
+          "bias": -4.707548104590376e-06,
+          "count": 461736,
+          "max_abs": 0.01562999999441672,
+          "nonfinite_count": 0,
+          "ref_max_abs": 101727.03125,
+          "rmse": 0.0005845255160385577,
+          "worst_candidate": 101532.03125,
+          "worst_reference": 101532.01562
+        },
+        "qv_flux_vs_wrf_flqv": {
+          "bias": -1.1414132745321024e-07,
+          "count": 10494,
+          "max_abs": 1.3251135948602594e-05,
+          "nonfinite_count": 0,
+          "ref_max_abs": 6.270674727475933e-05,
+          "rmse": 9.59695827650195e-07,
+          "worst_candidate": 3.740319687096773e-21,
+          "worst_reference": 1.3251135948602597e-05
+        },
+        "qv_vs_wrf_col_qv": {
+          "bias": 6.294596997343352e-12,
+          "count": 461736,
+          "max_abs": 5.969289746700357e-08,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.01170683559,
+          "rmse": 4.714011624832014e-09,
+          "worst_candidate": 0.010733871808897467,
+          "worst_reference": 0.010733812116
+        },
+        "rho_vs_wrf_col_rho": {
+          "bias": 1.3786618688041506e-07,
+          "count": 461736,
+          "max_abs": 0.00021851059506827752,
+          "nonfinite_count": 0,
+          "ref_max_abs": 1.2120962143,
+          "rmse": 5.595283012504201e-06,
+          "worst_candidate": 1.0214600563049316,
+          "worst_reference": 1.0216785669
+        },
+        "theta_dry_vs_wrf_col_th": {
+          "bias": -6.017955907287697e-07,
+          "count": 461736,
+          "max_abs": 7.623228805186955e-05,
+          "nonfinite_count": 0,
+          "ref_max_abs": 494.99581909,
+          "rmse": 8.420687836998148e-06,
+          "worst_candidate": 306.89775091771196,
+          "worst_reference": 306.89782715
+        },
+        "theta_flux_vs_wrf_flt": {
+          "bias": 0.00027886163924877326,
+          "count": 10494,
+          "max_abs": 0.23331362453454646,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.3119690397296882,
+          "rmse": 0.02015681729238461,
+          "worst_candidate": 0.07865541519514176,
+          "worst_reference": 0.3119690397296882
+        },
+        "ust_vs_wrf_driver": {
+          "bias": 9.847398379698852e-07,
+          "count": 10494,
+          "max_abs": 0.0007252174866999861,
+          "nonfinite_count": 0,
+          "ref_max_abs": 0.33699807525,
+          "rmse": 1.5399940258824914e-05,
+          "worst_candidate": 0.09000478717169999,
+          "worst_reference": 0.089279569685
+        }
+      },
+      "hypothesis": "Lowest-layer index/stagger mismatch or wrong dry theta/p/rho/dz column is still order-847.",
+      "rank": 4,
+      "status": "FALSIFIED_AS_PRIMARY"
+    }
+  ],
+  "schema": "wrfgpu2.v014.step1_mynn_source_coupling.v1",
+  "status": "PROOF_EXECUTED",
+  "strict_step1": {
+    "closed": false,
+    "metric": {
+      "bias": -0.63476057110163,
+      "count": 442112,
+      "max_abs": 438.5379097262689,
+      "nonfinite_diff_count": 0,
+      "p95": 2.2262773844310586,
+      "p99": 3.574792756599226,
+      "rmse": 5.4654420375782955,
+      "worst_candidate": 581.6277465820312,
+      "worst_mismatch_fortran": {
+        "i": 74,
+        "j": 39,
+        "k": 1
+      },
+      "worst_reference": 143.08983685576237
+    },
+    "wrf_self_consistency": {
+      "after_conv_moist_formula": {
+        "bias": 1.3466279640646712e-08,
+        "count": 442112,
+        "max_abs": 0.00016236981809925055,
+        "nonfinite_diff_count": 0,
+        "p95": 9.974626740127944e-08,
+        "p99": 1.3856209870866126e-06,
+        "rmse": 8.089162788029723e-07,
+        "worst_candidate": 2128.967529296875,
+        "worst_mismatch_fortran": {
+          "i": 64,
+          "j": 37,
+          "k": 4
+        },
+        "worst_reference": 2128.967366927057
+      },
+      "after_update_pre_plus_active_rth": {
+        "bias": 0.0,
+        "count": 442112,
+        "max_abs": 0.0,
+        "nonfinite_diff_count": 0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "rmse": 0.0,
+        "worst_candidate": 13.25869846343994,
+        "worst_mismatch_fortran": {
+          "i": 2,
+          "j": 2,
+          "k": 1
+        },
+        "worst_reference": 13.25869846343994
+      }
+    }
+  },
+  "target": {
+    "cpu_only": true,
+    "domain": 2,
+    "dt_s": 6.0,
+    "step": 1,
+    "strict_pass": {
+      "max_abs": 0.001,
+      "rmse": 1e-05
+    }
+  },
+  "verdict": "STEP1_MYNN_SOURCE_COUPLING_NARROWED_TO_SURFACE_LAND_FLUX_HANDOFF",
+  "wrf_mynn_driver_boundary": {
+    "input_metrics": {
+      "dz_vs_wrf_col_dz": {
+        "bias": 2.015080698430643e-05,
+        "count": 461736,
+        "max_abs": 0.001967061671166448,
+        "nonfinite_count": 0,
+        "ref_max_abs": 690.97509766,
+        "rmse": 0.0004286603143530417,
+        "worst_candidate": 528.2285295616712,
+        "worst_reference": 528.2265625
+      },
+      "p_vs_wrf_col_p": {
+        "bias": -4.707548104590376e-06,
+        "count": 461736,
+        "max_abs": 0.01562999999441672,
+        "nonfinite_count": 0,
+        "ref_max_abs": 101727.03125,
+        "rmse": 0.0005845255160385577,
+        "worst_candidate": 101532.03125,
+        "worst_reference": 101532.01562
+      },
+      "qv_flux_vs_wrf_flqv": {
+        "bias": -1.1414132745321024e-07,
+        "count": 10494,
+        "max_abs": 1.3251135948602594e-05,
+        "nonfinite_count": 0,
+        "ref_max_abs": 6.270674727475933e-05,
+        "rmse": 9.59695827650195e-07,
+        "worst_candidate": 3.740319687096773e-21,
+        "worst_reference": 1.3251135948602597e-05
+      },
+      "qv_vs_wrf_col_qv": {
+        "bias": 6.294596997343352e-12,
+        "count": 461736,
+        "max_abs": 5.969289746700357e-08,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.01170683559,
+        "rmse": 4.714011624832014e-09,
+        "worst_candidate": 0.010733871808897467,
+        "worst_reference": 0.010733812116
+      },
+      "rho_vs_wrf_col_rho": {
+        "bias": 1.3786618688041506e-07,
+        "count": 461736,
+        "max_abs": 0.00021851059506827752,
+        "nonfinite_count": 0,
+        "ref_max_abs": 1.2120962143,
+        "rmse": 5.595283012504201e-06,
+        "worst_candidate": 1.0214600563049316,
+        "worst_reference": 1.0216785669
+      },
+      "theta_dry_vs_wrf_col_th": {
+        "bias": -6.017955907287697e-07,
+        "count": 461736,
+        "max_abs": 7.623228805186955e-05,
+        "nonfinite_count": 0,
+        "ref_max_abs": 494.99581909,
+        "rmse": 8.420687836998148e-06,
+        "worst_candidate": 306.89775091771196,
+        "worst_reference": 306.89782715
+      },
+      "theta_flux_vs_wrf_flt": {
+        "bias": 0.00027886163924877326,
+        "count": 10494,
+        "max_abs": 0.23331362453454646,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.3119690397296882,
+        "rmse": 0.02015681729238461,
+        "worst_candidate": 0.07865541519514176,
+        "worst_reference": 0.3119690397296882
+      },
+      "ust_vs_wrf_driver": {
+        "bias": 9.847398379698852e-07,
+        "count": 10494,
+        "max_abs": 0.0007252174866999861,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.33699807525,
+        "rmse": 1.5399940258824914e-05,
+        "worst_candidate": 0.09000478717169999,
+        "worst_reference": 0.089279569685
+      }
+    },
+    "post_driver_source_metrics": {
+      "mass_coupled_max_abs": {
+        "jax_rthblten": 2526.6959202798103,
+        "wrf_driver_rthblten": 3215.854526719832
+      },
+      "mass_coupled_rthblten_vs_wrf_driver_raw_times_mass_h": {
+        "bias": 0.04986398749516058,
+        "count": 461736,
+        "max_abs": 689.1586064400217,
+        "nonfinite_count": 0,
+        "ref_max_abs": 3215.854526719832,
+        "rmse": 9.311412280800825,
+        "worst_candidate": -2526.6959202798103,
+        "worst_reference": -3215.854526719832
+      },
+      "raw_rqvblten_vs_wrf": {
+        "bias": -1.1931861770734713e-11,
+        "corr": 0.9742824134800708,
+        "count": 461736,
+        "max_abs": 4.623689856453098e-06,
+        "nonfinite_count": 0,
+        "ref_max_abs": 5.3572780416e-06,
+        "rmse": 2.8345340061747652e-08,
+        "strong_cells": 8625,
+        "strong_ratio_median": 0.9737108013308636,
+        "strong_ratio_p10": 0.636543446133949,
+        "strong_ratio_p90": 0.9876796965171879,
+        "worst_candidate": -3.416564501469016e-07,
+        "worst_reference": -4.9653463066e-06
+      },
+      "raw_rthblten_vs_wrf": {
+        "bias": 4.6269608448456676e-07,
+        "corr": 0.9565699630439017,
+        "count": 461736,
+        "max_abs": 0.007112169856768911,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.033187866211,
+        "rmse": 9.786127476127153e-05,
+        "strong_cells": 664,
+        "strong_ratio_median": 0.6971366587911589,
+        "strong_ratio_p10": 0.3406974997227778,
+        "strong_ratio_p90": 0.8300694573911799,
+        "worst_candidate": -0.026075696354231088,
+        "worst_reference": -0.033187866211
+      }
+    },
+    "sfclay_to_mynn_handoff": {
+      "field_order_driver_sfc": [
+        "XLAND",
+        "UST",
+        "HFX",
+        "QFX",
+        "WSPD",
+        "TS",
+        "QSFC",
+        "PS",
+        "CH",
+        "ZNT",
+        "UOCE",
+        "VOCE",
+        "PBLH",
+        "RTHRATEN(kts)"
+      ],
+      "interpretation": "WRF SFCLAY1D_mynn UST passes unchanged into MYNN, but HFX/QFX do not; the raw MYNN source tail is therefore upstream of module_bl_mynnedmf and specifically in the surface/land heat-moisture flux handoff.",
+      "wrf_driver_hfx_vs_wrf_sfclay1d_hfx": {
+        "bias": -0.4521434505491753,
+        "count": 10494,
+        "max_abs": 277.80298614281253,
+        "nonfinite_count": 0,
+        "ref_max_abs": 382.4698486328125,
+        "rmse": 23.78077473308822,
+        "worst_candidate": 104.66686249,
+        "worst_reference": 382.4698486328125
+      },
+      "wrf_driver_qfx_vs_wrf_sfclay1d_qfx": {
+        "bias": 1.4897422704323907e-07,
+        "count": 10494,
+        "max_abs": 1.4684322196e-05,
+        "nonfinite_count": 0,
+        "ref_max_abs": 7.490280404454097e-05,
+        "rmse": 1.0634310887382864e-06,
+        "worst_candidate": 1.4684322196e-05,
+        "worst_reference": 0.0
+      },
+      "wrf_driver_ust_vs_wrf_sfclay1d_ust": {
+        "bias": 1.741997445589291e-14,
+        "count": 10494,
+        "max_abs": 4.998779168374767e-12,
+        "nonfinite_count": 0,
+        "ref_max_abs": 0.3369980752468109,
+        "rmse": 1.97651293029156e-12,
+        "worst_candidate": 0.11118382215,
+        "worst_reference": 0.11118382215499878
+      }
+    },
+    "wrf_part2_rthblten_mass_coupled_summary": {
+      "count": 442112,
+      "finite_count": 442112,
+      "max": 2138.7490234375,
+      "max_abs": 2522.90576171875,
+      "mean": 0.3337582953171923,
+      "min": -2522.90576171875,
+      "nonzero_count": 59337,
+      "rms": 20.984261166424478,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    }
+  }
+}
