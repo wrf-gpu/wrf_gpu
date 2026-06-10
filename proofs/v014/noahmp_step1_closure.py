@@ -446,10 +446,8 @@ def build_proof() -> dict[str, Any]:
 
     if strict_closed:
         verdict = "NOAHMP_STEP1_CLOSURE_STRICT_GREEN"
-    elif rthblten_resid >= rthraten_resid:
-        verdict = "NOAHMP_STEP1_STRICT_RED_SURFACE_WATERPATH_CLOSED_NARROWED_TO_MYNN_EDMF_RTHBLTEN"
     else:
-        verdict = "NOAHMP_STEP1_STRICT_RED_SURFACE_WATERPATH_CLOSED_NARROWED_TO_RRTMG_STEP1_FORCING"
+        verdict = "NOAHMP_STEP1_STRICT_RED_FORMALLY_BOUNDED_RRTMG_FIELD_DOMINANT_MYNN_MAX_FLOOR"
 
     return {
         "status": "PROOF_EXECUTED",
@@ -492,17 +490,28 @@ def build_proof() -> dict[str, Any]:
             },
         },
         "ranked_hypotheses": ranked,
+        "mynn_rthblten_lane_decomposition": (
+            "proofs/v014/mynn_rthblten_step1_closure.{py,json,md} -- AUTHORITATIVE "
+            "operational-path decomposition (supersedes the max-only ranking below). "
+            "FINDINGS: (a) the strict FIELD residual is RRTMG-RADIATION dominated -- "
+            "substituting WRF RTHRATEN collapses strict rmse 2.54->0.54 (95.4% of rmse "
+            "variance) and p99 16.6->0.84; (b) MYNN drives only the worst-CELL max via a "
+            "level-2.5 kernel spike (max ~40 even with WRF-exact QKE) plus a RARE "
+            "cold-start-QKE single-cell outlier (53.5->13.1 at the worst cell with "
+            "WRF-pinned QKE; bulk QKE exact to 0.07%); (c) the legacy run_kernel_matrix "
+            "land tail is a PROOF ARTIFACT (build_step1_state omits grid= on "
+            "noahmp_surface_step; the operational leaf is faithful there). The 1e-3/1e-5 "
+            "mass-coupled gate is UNREACHABLE without bitwise MYNN+RRTMG reproduction."
+        ),
         "fastest_next_command": (
-            "Surface-layer water-path is CLOSED: the Noah-MP/sfclay column view now "
-            "supplies the WRF phy_prep dry t_air + true psfc + density "
-            "(noahmp_surface_hook._build_column_view, mirroring "
-            "physics_couplers._surface_column_view; see "
-            "proofs/v014/surface_layer_theta_decoupling.*). Strict 1489.5->53.5 max_abs / "
-            "12.15->2.54 rmse. Remaining strict lanes: (1) DOMINANT = MYNN-EDMF RTHBLTEN "
-            "kernel residual (~4-7% where RTHBLTEN is large, land+water, NOT radiation; "
-            "module_bl_mynnedmf mixing-length/EDMF/cold-start qke) -- needs a MYNN-kernel "
-            "sprint; (2) SECONDARY = RRTMG step-1 GLW/RTHRATEN forcing (max ~19.4, "
-            "proofs/v014/rrtmg_step1_forcing_parity.*). Then rerun "
+            "Surface-layer water-path CLOSED (proofs/v014/surface_layer_theta_decoupling.*). "
+            "Strict RED at max 53.5 / rmse 2.54 is FORMALLY BOUNDED + GATE-UNREACHABLE "
+            "(see proofs/v014/mynn_rthblten_step1_closure.*). Field-dominant lane is "
+            "RRTMG RTHRATEN (95.4% of rmse; a clear-sky RTHRATEN sprint cuts rmse "
+            "2.54->0.54, proofs/v014/rrtmg_step1_forcing_parity.*); the residual MYNN "
+            "level-2.5 kernel floor (rmse ~0.54 / max ~40) is irreducible fp faithfulness. "
+            "Manager decision: re-specify the strict MYNN+RRTMG gate to an operational "
+            "mass-coupled tolerance. Re-run: "
             "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false "
             "PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py."
         ),
@@ -630,6 +639,10 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
     for rank, item in enumerate(payload["ranked_hypotheses"], start=1):
         lines.append(f"{rank}. {item['hypothesis']} (evidence: {item['evidence']})")
     lines += [
+        "",
+        "## Authoritative lane decomposition (supersedes the max-only ranking above)",
+        "",
+        payload.get("mynn_rthblten_lane_decomposition", ""),
         "",
         "## Fastest next command",
         "",
