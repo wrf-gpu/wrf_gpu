@@ -3,7 +3,7 @@
 Date: 2026-06-10
 Owner: manager
 Assignee: Fable high in tmux
-Status: OPEN
+Status: CLOSED_ACCEPTED_BY_MANAGER
 
 ## Objective
 
