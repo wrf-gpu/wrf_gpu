@@ -1943,11 +1943,67 @@ Manager validation passed:
 
 Next active work:
 
-- Escalate this single hard blocker to Fable/Mythos after `/compact`.
-- Endpoint: emit one WRF MYNN driver hook at Step 1 around
-  `module_bl_mynnedmf_driver`: input columns/fluxes/turbulence state before
-  MYNN, raw `dth1/dqv1` after `mynnedmf_post_run`, and module-em mass-scaled
-  `RTHBLTEN/RQVBLTEN`; compare that exact boundary to JAX
-  `_mynn_column_from_state` / `step_mynn_pbl_column`, then fix the MYNN source
-  mismatch if local.
+- Fable/Mythos completed the MYNN hard sprint. The MYNN driver/kernel source
+  deficit was root-caused to missing WRF first-call `mym_initialize` level-2
+  equilibrium QKE initialization and fixed in production via
+  `mynn_coldstart_init_columns` / `mynn_coldstart_qke_from_state`.
+- Open a GPT-5.5 xhigh surface-layer boundary sprint next. Endpoint: emit and
+  compare exact WRF Step-1 `module_sf_mynn`/`sfclayrev` in/out hooks for
+  `TSK/ZNT/UST/HFX/QFX`, first-call `flag_iter`/UST first-guess behavior, and
+  roughness/skin-temperature sourcing; port the local JAX surface adapter fix if
+  proven; rerun strict Step-1 proofs against deterministic rmol-pinned truth.
 - TOST, Switzerland, broad FP32, and broad memory remain paused.
+
+## Current Manager Update 2026-06-10 02:24 WEST
+
+The Fable/Mythos MYNN source-output sprint is closed and manager-gated as a
+real correctness fix plus a narrower remaining frontier.
+
+Artifacts:
+
+- `proofs/v014/mynn_driver_source_output_fix.py`
+- `proofs/v014/mynn_driver_source_output_fix.json`
+- `proofs/v014/mynn_driver_source_output_fix.md`
+- `proofs/v014/mynn_driver_source_output_fix_wrf_patch.diff`
+- `.agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md`
+- `.agent/sprints/2026-06-10-v014-mynn-driver-source-output-fable/manager-closeout.md`
+- `tests/test_v014_mynn_coldstart_init.py`
+
+Verdict:
+
+`MYNN_SOURCE_ROOT_CAUSED_INIT_QKE_FIXED_KERNEL_PROVEN_NEXT_SFCLAY_STEP1_FLUX_BOUNDARY`.
+
+What changed:
+
+- Added WRF-equivalent MYNN cold-start QKE initialization:
+  `mynn_coldstart_init_columns` in `src/gpuwrf/physics/mynn_pbl.py`.
+- Exposed production coupling through `mynn_coldstart_qke_from_state` in
+  `src/gpuwrf/coupling/physics_couplers.py`.
+- Wired d02 replay cold-start seeding to the WRF-equivalent initializer.
+- Refreshed Step-1 source proof artifacts and same-input contract builder.
+
+Key proof numbers:
+
+- With WRF driver inputs and WRF-init QKE, JAX MYNN reproduces WRF raw `RTHBLTEN`
+  with strong-cell ratio median `0.9982`, corr `1.0000`, RMSE `2.6e-06`.
+- JAX `RQVBLTEN` strong-cell ratio median is `0.9735`, corr `0.9998`.
+- Strict Step-1 after-conv residual improved from max_abs `2457.578397008898`,
+  RMSE `21.364579991779515` to max_abs `1497.6112512148795`, RMSE
+  `13.468453371786723`.
+- The remaining blocker is the surface-layer flux/input boundary: `ustar` bias
+  `-0.077` with max `0.176`, `HFX` RMSE `24.6 W/m^2`, land `TSK` differences up
+  to `8.3 K`, and `ZNT` roughness differences up to `0.97 m`.
+
+Manager validation passed:
+
+- `python scripts/close_sprint.py .agent/sprints/2026-06-10-v014-mynn-driver-source-output-fable`
+- 17 targeted MYNN/source tests passed.
+- `python proofs/v014/mynn_driver_source_output_fix.py`
+- strict Step-1 source proof reruns and JSON validation.
+- `git diff --check`
+
+Next active work:
+
+- Start GPT-5.5 xhigh surface-layer boundary sprint, not Fable/Mythos yet.
+- Keep TOST, Switzerland, broad FP32, and broad memory paused until this boundary
+  is fixed or explicitly bounded.

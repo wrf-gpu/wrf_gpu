@@ -6,7 +6,7 @@
     "prior_reported_after_part2_t_tendf_max_abs": 2457.5830078125,
     "prior_reported_after_part2_t_tendf_rmse": 21.20870100357482
   },
-  "created_utc": "2026-06-10T00:11:08.049120+00:00",
+  "created_utc": "2026-06-10T01:20:40.576028+00:00",
   "environment": {
     "CUDA_VISIBLE_DEVICES": "",
     "JAX_ENABLE_X64": "1",
@@ -33,7 +33,7 @@
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
-      "wall_s": 0.001511902009951882
+      "wall_s": 0.0011935689981328323
     },
     "head": {
       "command": [
@@ -44,8 +44,8 @@
       "cwd": "/home/enric/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "8d4117c47a54dc270b08703cecb1ca8bc1ff2ce5\n",
-      "wall_s": 0.0014903309929650277
+      "stdout_tail": "0ea550dd82b80b1cc0ec287c5b314270eb78b4c8\n",
+      "wall_s": 0.0015935629926389083
     },
     "status_short": {
       "command": [
@@ -56,8 +56,8 @@
       "cwd": "/home/enric/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_dry_source_leaf_fix.py\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_source_fidelity_closure.json\n?? proofs/v014/step1_source_fidelity_closure.md\n?? proofs/v014/step1_source_fidelity_closure.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n",
-      "wall_s": 0.009582708007656038
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/same_input_contract_builder.py\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v014/step1_part2_source_leaves_split.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/integration/d02_replay.py\n M src/gpuwrf/physics/mynn_pbl.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/mynn_driver_source_output_fix.json\n?? proofs/v014/mynn_driver_source_output_fix.md\n?? proofs/v014/mynn_driver_source_output_fix.py\n?? proofs/v014/mynn_driver_source_output_fix_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_mynn_coldstart_init.py\n",
+      "wall_s": 0.010096470010466874
     }
   },
   "jax_capture": {
@@ -106,8 +106,8 @@
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "63868a265477e0055d6efa63ed9d8ae666d6931c73fb53a783574cf632221c97",
-      "size_bytes": 100140
+      "sha256": "8d2468ecb14e6f531ff83d89602ace0a01a5aaaa2f4612a1b72cc6cc3accb438",
+      "size_bytes": 103238
     },
     "scratch": {
       "exists": true,
@@ -130,7 +130,7 @@
       "is_dir": false,
       "is_file": true,
       "path": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run/rsl.error.0000",
-      "sha256": "54f9c79f4f1746dae7436b6bf6bdf34e3b7a828e056e6ecc609ca9735261b037",
+      "sha256": "665870ce0bcee50b05a398d5d1cc3e46d1bd8b4fab045d0a1b6e4b8151062805",
       "size_bytes": 9559
     },
     "wrf_run_log": {
@@ -170,12 +170,12 @@
       "jax_physics_state_delta_mass_tendf": {
         "count": 461736,
         "finite_count": 461736,
-        "max": 260.8315541142262,
-        "max_abs": 260.8315541142262,
-        "mean": 0.03512275561594965,
-        "min": -40.27073005184022,
-        "nonzero_count": 452730,
-        "rms": 3.8939508662797193,
+        "max": 1067.5118500849107,
+        "max_abs": 1118.1877212891911,
+        "mean": -0.012418804656950532,
+        "min": -1118.1877212891911,
+        "nonzero_count": 452734,
+        "rms": 12.89451033080663,
         "shape": [
           44,
           66,
@@ -245,7 +245,7 @@
       },
       {
         "evidence": {
-          "after_conv_vs_jax_physics_state_delta_mass_tendf_nested_max_abs": 2457.575215120311
+          "after_conv_vs_jax_physics_state_delta_mass_tendf_nested_max_abs": 1495.1748897121188
         },
         "hypothesis": "the aggregate JAX physics state delta can be used as a narrow T_TENDF source fix",
         "rank": 4,
@@ -393,13 +393,13 @@
       },
       "after_conv_t_tendf_vs_jax_physics_state_delta_mass_tendf": {
         "full": {
-          "bias": 0.037092792504240114,
+          "bias": 0.08463435277714038,
           "count": 461736,
-          "max_abs": 2457.575215120311,
+          "max_abs": 1495.1748897121188,
           "nonfinite_diff_count": 0,
-          "p95": 2.304900177057178,
-          "p99": 37.6191813005616,
-          "rmse": 20.99773012213904,
+          "p95": 2.299473622933992,
+          "p99": 36.745612673375604,
+          "rmse": 12.890959747253477,
           "shape": [
             44,
             66,
@@ -412,16 +412,16 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.007792692189042476
+          "worst_reference": -962.4081181003813
         },
         "nested_interior": {
-          "bias": 0.038960030791698665,
+          "bias": 0.08826687592296664,
           "count": 442112,
-          "max_abs": 2457.575215120311,
+          "max_abs": 1495.1748897121188,
           "nonfinite_diff_count": 0,
-          "p95": 2.321710856728805,
-          "p99": 38.2627994489121,
-          "rmse": 21.445918955246317,
+          "p95": 2.3148700680679615,
+          "p99": 37.34317028672144,
+          "rmse": 13.147199610601637,
           "shape": [
             44,
             66,
@@ -434,7 +434,7 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.007792692189042476
+          "worst_reference": -962.4081181003813
         }
       },
       "after_conv_t_tendf_vs_moist_formula": {
@@ -681,13 +681,13 @@
       },
       "wrf_active_rth_vs_jax_physics_state_delta_mass_tendf": {
         "full": {
-          "bias": -0.32971380227304753,
+          "bias": -0.28217224200014746,
           "count": 461736,
-          "max_abs": 2525.271748323436,
+          "max_abs": 1562.8714229152438,
           "nonfinite_diff_count": 0,
-          "p95": 2.3079010160540188,
-          "p99": 15.827967635557853,
-          "rmse": 20.56715968270077,
+          "p95": 2.308326253092887,
+          "p99": 16.073146753736953,
+          "rmse": 12.426451559876357,
           "shape": [
             44,
             66,
@@ -700,16 +700,16 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.007792692189042476
+          "worst_reference": -962.4081181003813
         },
         "nested_interior": {
-          "bias": -0.3255350401408763,
+          "bias": -0.2762281950096084,
           "count": 442112,
-          "max_abs": 2525.271748323436,
+          "max_abs": 1562.8714229152438,
           "nonfinite_diff_count": 0,
-          "p95": 2.3101660307532654,
-          "p99": 15.840376025367163,
-          "rmse": 20.975418237046735,
+          "p95": 2.310789086028783,
+          "p99": 16.114729482998545,
+          "rmse": 12.659571590461594,
           "shape": [
             44,
             66,
@@ -722,7 +722,7 @@
             "j": 37,
             "k": 3
           },
-          "worst_reference": -0.007792692189042476
+          "worst_reference": -962.4081181003813
         }
       }
     }

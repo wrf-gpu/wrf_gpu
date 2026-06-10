@@ -1524,45 +1524,35 @@ def _wrf_live_nest_start_domain_perturb_init(
 
 
 # WRF MYNN cold-start TKE constants (phys/module_bl_mynnedmf.F).
-_MYNN_B1 = 24.0          # module_bl_mynnedmf.F:282  b1 = 24.0
-_MYNN_PMZ = 1.0          # phi_m-zeta at z1, =1 on cold start (mym_initialize)
-_MYNN_QKEMIN = 1.0e-5    # module_bl_mynnedmf.F:309  qkemin = 1.e-5
 _MYNN_QKE_INIT_THRESHOLD = 0.0002  # module_bl_mynnedmf.F:623 MAXVAL(qke)<0.0002 => INITIALIZE_QKE
-_GRAVITY_M_S2 = 9.80665
 
 
 def _wrf_mynn_coldstart_qke(
     qke: jax.Array,
     *,
-    ph_total: jax.Array,
-    ustar: jax.Array,
+    state,
+    grid,
 ) -> tuple[jax.Array, bool]:
-    """Seed the WRF MYNN ``mym_initialize`` cold-start TKE profile.
+    """Seed the WRF MYNN ``mym_initialize`` cold-start TKE state.
 
-    The Gen2 parent ``wrfout`` carries no real QKE at the replay analysis time
-    (its t=0 history slice is the pre-physics IC: ``QKE`` is identically zero and
-    ``UST`` is the 1e-4 namelist initial floor).  Real WRF NEVER advances MYNN
-    from ``qke=0``: when ``MAXVAL(qke) < 0.0002`` (cold start, no carried TKE) the
-    MYNN driver sets ``INITIALIZE_QKE=.TRUE.`` (module_bl_mynnedmf.F:618-632) and
-    ``mym_initialize`` builds a physical background TKE profile from the surface
-    friction velocity, tapered toward the PBL top (module_bl_mynnedmf.F:691 in the
-    driver / :1331 in ``mym_initialize``)::
+    The parent analysis carries no real QKE at the replay/live-nest start time
+    (``QKE`` is identically zero / the nest interpolates a zero parent field).
+    Real WRF NEVER advances MYNN from ``qke=0``: on the first call
+    (``initflag>0``, not restart) the scheme sets ``INITIALIZE_QKE=.TRUE.``
+    (module_bl_mynnedmf.F:618-632) and ``mym_initialize`` builds the turbulence
+    state internally — a driver taper pre-seed, a frozen ``GET_PBLH``/
+    ``SCALE_AWARE`` pass, and a 5-pass level-2 closure equilibrium iteration
+    (module_bl_mynnedmf.F:1281-1430). In statically unstable initial layers the
+    equilibrium qke is O(0.1-10 m^2/s^2); the earlier taper-only seed missed
+    that by 3-5 orders of magnitude, which made the JAX step-1 MYNN sources
+    ~10x weaker than WRF (proofs/v014/mynn_driver_source_output_fix).
 
-        qke(kts) = 1.5 * MAX(ust,0.02)**2 * (b1*pmz)**(2/3)
-        qke(k)   = qke(kts) * MAX((ust*700 - zw(k)) / (MAX(ust,0.01)*700), 0.01)
+    This mirrors WRF's own cold-start INITIALIZATION (init-time construction,
+    not a runtime clamp/mask), via
+    :func:`gpuwrf.coupling.physics_couplers.mynn_coldstart_qke_from_state`.
 
-    Replaying with ``qke`` identically zero skips this init, so the JAX MYNN
-    length-scale / level-2.5 closure runs away from the degenerate ``qke=0`` column
-    (qke first field non-finite ~step 10; surface fluxes then dynamics follow).
-
-    This mirrors WRF exactly — a faithful cold-start INITIALIZATION, not a
-    runtime clamp/mask.  The ``MAX(ust,0.02)`` / ``MAX(ust,0.01)`` floors are
-    WRF's own; with the replay's near-zero ``ustar`` they yield a small physical
-    background TKE (~5e-3 m^2/s^2 at the surface) that breaks the degenerate
-    ``qke=0`` singularity on step 1, exactly as WRF's first MYNN call does.
-
-    Returns ``(qke_seeded, did_seed)``.  When the parent already carries TKE above
-    the threshold the array is returned unchanged (matching WRF's
+    Returns ``(qke_seeded, did_seed)``.  When the parent already carries TKE
+    above the WRF threshold the array is returned unchanged (matching WRF's
     ``INITIALIZE_QKE=.FALSE.`` branch).
     """
 
@@ -1570,18 +1560,10 @@ def _wrf_mynn_coldstart_qke(
     if float(jnp.max(qke_arr)) >= _MYNN_QKE_INIT_THRESHOLD:
         return qke_arr, False
 
-    dtype = qke_arr.dtype
-    # Height above local surface at the w-levels, zw(kts)=0 (terrain following).
-    zstag = jnp.asarray(ph_total, dtype=jnp.float64) / _GRAVITY_M_S2  # (nz+1, ny, nx)
-    zw = zstag - zstag[:1]                                            # (nz+1, ny, nx)
-    nz = qke_arr.shape[0]
-    zw_mass = zw[:nz]                                                 # qke taper uses zw(k)
+    from gpuwrf.coupling.physics_couplers import mynn_coldstart_qke_from_state
 
-    ust = jnp.asarray(ustar, dtype=jnp.float64)[None]                 # (1, ny, nx)
-    qke_kts = 1.5 * jnp.maximum(ust, 0.02) ** 2 * (_MYNN_B1 * _MYNN_PMZ) ** (2.0 / 3.0)
-    taper = jnp.maximum((ust * 700.0 - zw_mass) / (jnp.maximum(ust, 0.01) * 700.0), 0.01)
-    qke_seed = jnp.maximum(qke_kts * taper, _MYNN_QKEMIN)
-    return qke_seed.astype(dtype), True
+    qke_seed = mynn_coldstart_qke_from_state(state, grid)
+    return qke_seed.astype(qke_arr.dtype), True
 
 
 # --------------------------------------------------------------------------- #
@@ -2065,12 +2047,13 @@ def build_replay_case(
     )
     _debug("state.replace with initial fields complete")
     # WRF MYNN cold-start TKE init (module_bl_mynnedmf.F mym_initialize): the
-    # parent wrfout carries no real QKE at the analysis time, so seed the WRF
-    # background TKE profile rather than feeding the MYNN closure a degenerate
-    # qke=0 column (which runs away; see proofs/v090/d02replay_qke_*).  No-op when
-    # the parent already carries TKE (INITIALIZE_QKE=.FALSE.).
+    # parent wrfout carries no real QKE at the analysis time, so build the WRF
+    # first-call turbulence state (taper pre-seed + level-2 equilibrium
+    # iteration) rather than feeding the MYNN closure a degenerate qke=0 column
+    # (which runs away; see proofs/v090/d02replay_qke_*).  No-op when the
+    # parent already carries TKE (INITIALIZE_QKE=.FALSE.).
     qke_seeded, did_seed_qke = _wrf_mynn_coldstart_qke(
-        state.qke, ph_total=state.ph_total, ustar=state.ustar
+        state.qke, state=state, grid=grid
     )
     if did_seed_qke:
         state = state.replace(qke=qke_seeded.astype(state.qke.dtype))

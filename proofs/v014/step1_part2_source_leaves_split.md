@@ -8,7 +8,7 @@ Verdict: `STEP1_PART2_SOURCE_LEAVES_LOCALIZED_UPDATE_PHY_TEN_RAW_RTH_TO_T_TENDF_
 - WRF `conv_t_tendf_to_moist`: moist-theta formula closes on nested interior, max_abs `0.00016236981809925055`, rmse `8.089162788029723e-07`.
 - `after_conv_t_tendf_to_moist` equals `after_first_rk_step_part2` on nested interior, max_abs `0.0`.
 - Current patched-init JAX dry `T_TENDF` stays divergent: nested-interior max_abs `2457.5830078125`, rmse `21.674279301376934`.
-- Aggregate JAX physics state-delta candidate is also rejected: nested-interior max_abs `2457.575215120311`, rmse `21.445918955246317`.
+- Aggregate JAX physics state-delta candidate is also rejected: nested-interior max_abs `1495.1748897121188`, rmse `13.147199610601637`.
 - Source-save sparse `T_TENDF` is also divergent vs current JAX dry: max_abs `1326.432250976562`, rmse `97.71886125389001`.
 - Source-save is a later adjacent leaf, not the first boundary: vs `after_first_rk_step_part2` max_abs `1199.2587877810001`.
 - Dominant active raw leaf is `RTHBLTEN` with nested-interior max_abs `2522.90576171875`.
