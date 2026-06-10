@@ -40,8 +40,13 @@ from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.types import NoahMPForcing
-from gpuwrf.physics.surface_constants import CP_D, EP1, P0_PA, R_D_OVER_CP
+from gpuwrf.physics.surface_constants import CP_D, EP1, P0_PA, R_D, R_D_OVER_CP
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
+
+# R_v / R_d for the WRF moist-potential-temperature decoupling. MUST match the
+# constant the dycore couples with (operational_mode._RVRD = 461.6/287.0) so the
+# theta_m -> theta_dry inverse is exact; see assemble_noahmp_forcing.
+RVOVRD = 461.6 / R_D
 
 
 def _get(obj, name, default=None):
@@ -95,8 +100,18 @@ def assemble_noahmp_forcing(
     if t_air is not None:
         sfctmp = _surface(t_air)
     else:
-        theta0 = _surface(_get(state, "theta"))
-        sfctmp = theta0 * (jnp.maximum(sfcprs, 1.0) / P0_PA) ** R_D_OVER_CP
+        # ``state.theta`` is the WRF MOIST potential temperature
+        # theta_m = theta_dry * (1 + R_v/R_d * q_v) (use_theta_m=1; the dycore
+        # prognostic -- see operational_mode conv_t_tendf_to_moist, which divides
+        # ``before.theta`` by the SAME (1 + _RVRD*qv) to recover dry theta). WRF
+        # hands noahmplsm the DRY sensible temperature T3D = t_phy =
+        # theta_dry*(p/p0)^kappa (module_sf_noahmpdrv.F:755), so decouple
+        # theta_m -> theta_dry BEFORE the Exner conversion. Skipping it left the
+        # lowest-level air temperature ~+4 K too warm (= the (1+R_v/R_d*q_v)
+        # factor), biasing the whole Noah-MP land-tile surface energy balance.
+        theta_m0 = _surface(_get(state, "theta"))
+        theta_dry0 = theta_m0 / (1.0 + RVOVRD * qair)
+        sfctmp = theta_dry0 * (jnp.maximum(sfcprs, 1.0) / P0_PA) ** R_D_OVER_CP
     qc = _surface(_get(state, "qc", None)) if _get(state, "qc", None) is not None else jnp.zeros_like(qair)
     shape = sfctmp.shape
 

@@ -2,30 +2,30 @@
   "commands": {
     "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py"
   },
-  "created_utc": "2026-06-10T06:47:46.565399+00:00",
+  "created_utc": "2026-06-10T08:29:55.941049+00:00",
   "environment": {
     "jax_backend": "cpu",
     "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
     "python": "3.13.11"
   },
-  "fastest_next_command": "Emit a per-column WRF noahmplsm ENERGY in/out hook on the pinned tree (FVEG/LAI/SAI, CM/CH in+out, two-stream SAV/SAG/FSR/FSA albedo chain, SH/EV/GH/TRAD/T2MV/T2MB, plus EFLXB terms) at step 1, column-diff it against the JAX physics.noahmp energy solve on the worst land cells (start at the strict worst cell i=66 j=37), fix the diverging chain, then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py (secondary lane: RRTMG GLW +17 W/m2 uniform clear-sky bias + RTHRATEN parity via an RRTMG forcing hook)",
+  "fastest_next_command": "Noah-MP land-tile energy is CLOSED (energy solve exact; the +4 K moist-theta->dry-T air-temperature bug is FIXED in noahmp_coupler.assemble_noahmp_forcing; see proofs/v014/noahmp_land_tile_energy_closure.*). Remaining strict lanes: (1) RRTMG step-1 GLW +14.7 W/m2 / SWDOWN +3.6 W/m2 forcing parity via an RRTMG longwave/shortwave hook; (2) the SAME moist-theta->dry-T decoupling missing in surface_layer.py (sfclay/MYNN over WATER -- the strict worst cell i=66 j=37 is a water column), which needs its own sprint + MYNN re-validation. Then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py.",
   "git": {
     "branch": "worker/gpt/v013-close-manager",
-    "head": "c58057e523b9e6a78f5942adde30470628ffe27b"
+    "head": "22e2eaa154a25b9d2945ae41db9b55a5c7ff973c"
   },
   "kernel_matrix": {
     "current_inputs_wrf_qke_rthblten": {
-      "bias": -4.527801379247899e-06,
-      "corr": 0.8549916975250086,
+      "bias": -2.9541811362982977e-06,
+      "corr": 0.8786834177969501,
       "count": 461736,
       "max_abs": 0.016064435310936355,
       "nonfinite_count": 0,
       "ref_max_abs": 0.026036581025,
-      "rmse": 0.00011906803622303894,
+      "rmse": 0.00010750501880100293,
       "strong_cells": 863,
-      "strong_ratio_median": 0.41208775619128535,
-      "strong_ratio_p10": 0.10728547149884965,
-      "strong_ratio_p90": 0.9998226025061588,
+      "strong_ratio_median": 1.008499638926648,
+      "strong_ratio_p10": 0.3050741910414801,
+      "strong_ratio_p90": 1.111384398381044,
       "worst_candidate": -0.009972145714063648,
       "worst_reference": -0.026036581025
     },
@@ -111,32 +111,32 @@
       "wrf_driver_rthblten": 2522.905703464659
     },
     "raw_rqvblten_vs_wrf": {
-      "bias": -5.519008871561918e-09,
-      "corr": 0.7779623583783244,
+      "bias": -5.5051002113264005e-09,
+      "corr": 0.7784865520437222,
       "count": 461736,
-      "max_abs": 3.706168411134228e-06,
+      "max_abs": 3.6240662730221174e-06,
       "nonfinite_count": 0,
       "ref_max_abs": 5.1020956562e-06,
-      "rmse": 7.151264761504128e-08,
+      "rmse": 7.109606553996136e-08,
       "strong_cells": 8362,
-      "strong_ratio_median": 0.2534578071021307,
-      "strong_ratio_p10": 0.1525139018659962,
-      "strong_ratio_p90": 0.445911757341195,
-      "worst_candidate": -3.415145669657717e-07,
-      "worst_reference": -4.0476829781e-06
+      "strong_ratio_median": 0.25360673783578774,
+      "strong_ratio_p10": 0.15262539091768515,
+      "strong_ratio_p90": 0.44643469919135764,
+      "worst_candidate": 4.197363459778822e-07,
+      "worst_reference": 4.043802619e-06
     },
     "raw_rthblten_vs_wrf": {
-      "bias": -4.528472208489633e-06,
-      "corr": 0.8561204423861145,
+      "bias": -2.953720468343305e-06,
+      "corr": 0.8793063625891515,
       "count": 461736,
       "max_abs": 0.016072531466352954,
       "nonfinite_count": 0,
       "ref_max_abs": 0.026036581025,
-      "rmse": 0.00011917325735225103,
+      "rmse": 0.00010759710126444855,
       "strong_cells": 863,
-      "strong_ratio_median": 0.41187007310784046,
-      "strong_ratio_p10": 0.10675759184538575,
-      "strong_ratio_p90": 0.9965784750284634,
+      "strong_ratio_median": 1.007447724308231,
+      "strong_ratio_p10": 0.30478420014179974,
+      "strong_ratio_p90": 1.1113764620182596,
       "worst_candidate": -0.009964049558647048,
       "worst_reference": -0.026036581025
     }
@@ -150,21 +150,22 @@
     "table_dir": "/home/enric/src/wrf_pristine/WRF/run",
     "wrfinput_file": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02"
   },
+  "noahmp_land_tile_energy_closure": "proofs/v014/noahmp_land_tile_energy_closure.{py,json,md} -- energy solve exonerated; moist-theta decoupling fix; RRTMG radiation lane isolated.",
   "post_overlay_mynn_boundary": {
     "fltv": {
       "all": {
-        "bias": -0.013297784077784985,
+        "bias": -0.009715556995455142,
         "count": 10494,
-        "max_abs": 0.25154919874636517,
+        "max_abs": 0.03235508459779328,
         "ref_max_abs": 0.3119694983335894,
-        "rmse": 0.020507450617942163
+        "rmse": 0.012094275509254864
       },
       "land": {
-        "bias": -0.041838694028673386,
+        "bias": 0.0071090807134742235,
         "count": 768,
-        "max_abs": 0.25154919874636517,
+        "max_abs": 0.023796929528575705,
         "ref_max_abs": 0.3119694983335894,
-        "rmse": 0.06174455503827164
+        "rmse": 0.008034670989243584
       },
       "water": {
         "bias": -0.011044091003316315,
@@ -176,18 +177,18 @@
     },
     "qv_flux_flqv": {
       "all": {
-        "bias": -1.3069868992678886e-05,
+        "bias": -1.3026326823811694e-05,
         "count": 10494,
         "max_abs": 2.2627856641408083e-05,
         "ref_max_abs": 6.270674727475933e-05,
-        "rmse": 1.4378374270656485e-05
+        "rmse": 1.4373446644673423e-05
       },
       "land": {
-        "bias": -5.631023756822546e-07,
+        "bias": 3.186054110461656e-08,
         "count": 768,
-        "max_abs": 7.702453312724795e-06,
+        "max_abs": 3.6217935044505944e-07,
         "ref_max_abs": 1.3251135948602597e-05,
-        "rmse": 1.3935357296147104e-06
+        "rmse": 7.772888420411778e-08
       },
       "water": {
         "bias": -1.4057448343064803e-05,
@@ -222,18 +223,18 @@
     },
     "theta_flux_flt": {
       "all": {
-        "bias": -0.010973364932034142,
+        "bias": -0.007418261185145412,
         "count": 10494,
-        "max_abs": 0.251691908645883,
+        "max_abs": 0.030460052288376865,
         "ref_max_abs": 0.3119690397296882,
-        "rmse": 0.0191699574680417
+        "rmse": 0.009668283763584813
       },
       "land": {
-        "bias": -0.0418993964983867,
+        "bias": 0.006677763293085105,
         "count": 768,
-        "max_abs": 0.251691908645883,
+        "max_abs": 0.021912592983171608,
         "ref_max_abs": 0.3119690397296882,
-        "rmse": 0.06165639117757469
+        "rmse": 0.007576246658685914
       },
       "water": {
         "bias": -0.008531334061896495,
@@ -244,11 +245,11 @@
       }
     },
     "tsk_vs_post_noahmp": {
-      "bias": 0.16171443153461035,
+      "bias": 0.03623580901619722,
       "count": 10494,
-      "max_abs": 4.147776477931757,
+      "max_abs": 0.8923633519828513,
       "ref_max_abs": 305.0635376,
-      "rmse": 0.6530300752836332
+      "rmse": 0.14196224020043588
     },
     "ust": {
       "all": {
@@ -341,30 +342,30 @@
   "rad_swap_causal_split": {
     "interpretation": "If the truth-radiation run does not collapse the land theta_flux residual, the deficit is NOT the radiation forcing.",
     "land_flt_with_jax_seed_radiation": {
-      "bias": -0.04189539728540544,
+      "bias": 0.0066820020278386015,
       "count": 768,
-      "max_abs": 0.2516927769985068,
+      "max_abs": 0.021911906769162326,
       "ref_max_abs": 0.3119690397296882,
-      "rmse": 0.061655405831022324
+      "rmse": 0.0075815914959646334
     },
     "land_flt_with_wrf_truth_radiation": {
-      "bias": -0.04662137066786276,
+      "bias": 0.0011252835672172798,
       "count": 768,
-      "max_abs": 0.25215159752150773,
+      "max_abs": 0.004916764366520665,
       "ref_max_abs": 0.3119690397296882,
-      "rmse": 0.0643496272333122
+      "rmse": 0.001321488194019588
     },
     "status": "READY"
   },
   "ranked_hypotheses": [
     {
-      "evidence": "rad_swap_causal_split + land_input_parity + post_overlay_mynn_boundary + kernel_matrix",
-      "hypothesis": "JAX Noah-MP land-tile step-1 surface energy balance (land theta_flux max_abs 0.252 K m/s; land inputs match WRF to hook precision; WRF-truth-radiation swap does NOT collapse the residual; sfclay first-call fixed; MYNN kernel exonerated)",
-      "strict_contribution_max_abs": 1557.4042254872847
+      "evidence": "strict worst-cell is water (not in the noahmplsm land hook) + surface_layer._potential_to_temperature",
+      "hypothesis": "Surface-layer (sfclay/MYNN) moist-theta -> dry-T decoupling over WATER: the strict worst cell (i=66, j=37, k=3; WRF -2457.6 vs JAX -968.1) is a WATER column where Noah-MP does not run; sfclay derives the air temperature from state.theta with the SAME naive Exner the Noah-MP coupler was just fixed for (~+4 K warm), and feeds it to MYNN/RTHBLTEN. surface_layer.py is outside this sprint's ownership.",
+      "strict_contribution_max_abs": 1489.5135568470864
     },
     {
-      "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2",
-      "hypothesis": "RRTMG step-1 surface/atmosphere radiation forcing parity (GLW bias 17.44 W/m2, SWDOWN rmse 2.76 W/m2, mass-coupled RTHRATEN residual 19.4)",
+      "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2 + noahmp_land_tile_energy_closure",
+      "hypothesis": "RRTMG step-1 surface/atmosphere radiation forcing parity (GLW bias 17.44 W/m2, SWDOWN rmse 2.76 W/m2, mass-coupled RTHRATEN residual 19.4). The Noah-MP land lane now collapses under the WRF-exact radiation swap (land theta_flux rmse 0.00758 -> see proofs/v014/noahmp_land_tile_energy_closure.*); the remaining land residual IS this radiation forcing.",
       "strict_contribution_max_abs": 19.425283200182427
     }
   ],
@@ -411,13 +412,13 @@
   "strict_step1": {
     "closed": false,
     "metric": {
-      "bias": 0.9708198719221921,
+      "bias": 0.820413252158191,
       "count": 442112,
       "max_abs": 1489.5135568470864,
       "nonfinite_diff_count": 0,
-      "p95": 2.0228175527071652,
-      "p99": 49.620901057302916,
-      "rmse": 13.2001844004901,
+      "p95": 2.008178758096616,
+      "p99": 47.99414046925386,
+      "rmse": 12.146876720723487,
       "worst_candidate": -2457.5830078125,
       "worst_mismatch_fortran": {
         "i": 66,
@@ -512,5 +513,5 @@
     },
     "strict_truth_link": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_pinned_onerun"
   },
-  "verdict": "NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_NOAHMP_LAND_TILE_ENERGY"
+  "verdict": "NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_RADIATION_FORCING_INTO_NOAHMP"
 }

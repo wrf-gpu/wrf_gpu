@@ -402,24 +402,32 @@ def build_proof() -> dict[str, Any]:
         [
             {
                 "hypothesis": (
-                    "JAX Noah-MP land-tile step-1 surface energy balance "
-                    "(land theta_flux max_abs {:.3g} K m/s; land inputs match WRF "
-                    "to hook precision; WRF-truth-radiation swap does NOT collapse "
-                    "the residual; sfclay first-call fixed; MYNN kernel exonerated)".format(
-                        flt_land.get("max_abs") or 0.0
+                    "RRTMG step-1 surface/atmosphere radiation forcing parity "
+                    "(GLW bias {:.2f} W/m2, SWDOWN rmse {:.2f} W/m2, mass-coupled "
+                    "RTHRATEN residual {:.3g}). The Noah-MP land lane now collapses "
+                    "under the WRF-exact radiation swap (land theta_flux rmse "
+                    "{:.3g} -> see proofs/v014/noahmp_land_tile_energy_closure.*); the "
+                    "remaining land residual IS this radiation forcing.".format(
+                        glw_bias, sw_rmse, rthraten_resid, flt_land.get("rmse") or 0.0
                     )
                 ),
-                "strict_contribution_max_abs": rthblten_resid,
-                "evidence": "rad_swap_causal_split + land_input_parity + post_overlay_mynn_boundary + kernel_matrix",
+                "strict_contribution_max_abs": rthraten_resid,
+                "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2 + noahmp_land_tile_energy_closure",
             },
             {
                 "hypothesis": (
-                    "RRTMG step-1 surface/atmosphere radiation forcing parity "
-                    "(GLW bias {:.2f} W/m2, SWDOWN rmse {:.2f} W/m2, mass-coupled "
-                    "RTHRATEN residual {:.3g})".format(glw_bias, sw_rmse, rthraten_resid)
+                    "Surface-layer (sfclay/MYNN) moist-theta -> dry-T decoupling over "
+                    "WATER: the strict worst cell (i=66, j=37, k=3; WRF {:.1f} vs JAX "
+                    "{:.1f}) is a WATER column where Noah-MP does not run; sfclay derives "
+                    "the air temperature from state.theta with the SAME naive Exner the "
+                    "Noah-MP coupler was just fixed for (~+4 K warm), and feeds it to "
+                    "MYNN/RTHBLTEN. surface_layer.py is outside this sprint's ownership.".format(
+                        float(strict.get("worst_candidate") or 0.0),
+                        float(strict.get("worst_reference") or 0.0),
+                    )
                 ),
-                "strict_contribution_max_abs": rthraten_resid,
-                "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2",
+                "strict_contribution_max_abs": float(strict.get("max_abs") or 0.0),
+                "evidence": "strict worst-cell is water (not in the noahmplsm land hook) + surface_layer._potential_to_temperature",
             },
         ],
         key=lambda item: -float(item["strict_contribution_max_abs"] or 0.0),
@@ -476,15 +484,21 @@ def build_proof() -> dict[str, Any]:
         },
         "ranked_hypotheses": ranked,
         "fastest_next_command": (
-            "Emit a per-column WRF noahmplsm ENERGY in/out hook on the pinned tree "
-            "(FVEG/LAI/SAI, CM/CH in+out, two-stream SAV/SAG/FSR/FSA albedo chain, "
-            "SH/EV/GH/TRAD/T2MV/T2MB, plus EFLXB terms) at step 1, column-diff it "
-            "against the JAX physics.noahmp energy solve on the worst land cells "
-            "(start at the strict worst cell i=66 j=37), fix the diverging chain, "
-            "then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= "
+            "Noah-MP land-tile energy is CLOSED (energy solve exact; the +4 K moist-"
+            "theta->dry-T air-temperature bug is FIXED in "
+            "noahmp_coupler.assemble_noahmp_forcing; see "
+            "proofs/v014/noahmp_land_tile_energy_closure.*). Remaining strict lanes: "
+            "(1) RRTMG step-1 GLW +14.7 W/m2 / SWDOWN +3.6 W/m2 forcing parity via an "
+            "RRTMG longwave/shortwave hook; (2) the SAME moist-theta->dry-T decoupling "
+            "missing in surface_layer.py (sfclay/MYNN over WATER -- the strict worst "
+            "cell i=66 j=37 is a water column), which needs its own sprint + MYNN "
+            "re-validation. Then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= "
             "JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python "
-            "proofs/v014/noahmp_step1_closure.py (secondary lane: RRTMG GLW +17 W/m2 "
-            "uniform clear-sky bias + RTHRATEN parity via an RRTMG forcing hook)"
+            "proofs/v014/noahmp_step1_closure.py."
+        ),
+        "noahmp_land_tile_energy_closure": (
+            "proofs/v014/noahmp_land_tile_energy_closure.{py,json,md} -- energy solve "
+            "exonerated; moist-theta decoupling fix; RRTMG radiation lane isolated."
         ),
         "commands": {
             "proof": (
@@ -573,10 +587,13 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         f"`{json.dumps(payload['rad_swap_causal_split'].get('land_flt_with_jax_seed_radiation'))}`.",
         f"- land theta_flux residual with WRF's EXACT hook SWDOWN/GLW: "
         f"`{json.dumps(payload['rad_swap_causal_split'].get('land_flt_with_wrf_truth_radiation'))}` "
-        "-> the deficit does NOT collapse: it is not the radiation forcing.",
-        "- land inputs (tslb1/smois1/sh2o1/tsk/vegfra/snow) match WRF PRE_NOAHMP to "
-        "hook print precision (max_abs <= 5e-9); the diagnostic-level albedo/znt "
-        "carry rows flag the two-stream albedo chain for the energy hook.",
+        "-> AFTER the moist-theta->dry-T decoupling fix this COLLAPSES (the remaining "
+        "land residual IS the RRTMG radiation forcing). See "
+        "`proofs/v014/noahmp_land_tile_energy_closure.*`.",
+        "- The prior 'NoahMP land-tile energy' narrowing is REFUTED: the energy solve "
+        "is exact to ~1e-3 W/m2 with WRF-exact inputs; the residual was a +4 K-warm air "
+        "temperature (state.theta is moist theta_m, converted with a naive Exner) -- "
+        "FIXED in noahmp_coupler.assemble_noahmp_forcing this sprint.",
         "",
         "## Ranked hypotheses",
         "",
