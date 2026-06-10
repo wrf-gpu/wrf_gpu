@@ -21,6 +21,14 @@ blocker is MYNN-EDMF `RTHBLTEN` (land+water); RRTMG `RTHRATEN`/GLW/SWDOWN is
 secondary. TOST, Switzerland-GPU, and FP32 R1/R2 remain paused until MYNN
 `RTHBLTEN` is fixed or formally bounded.
 
+Update 2026-06-10 11:10 WEST: next endpoint-sized sprint is opened for Fable:
+`.agent/sprints/2026-06-10-v014-fable-mynn-rthblten-closure/`. Objective is
+strict Step-1 green or a formal WRF-anchored bound narrower than MYNN-EDMF
+`RTHBLTEN`, while reconciling the earlier same-input MYNN-kernel green proof
+against the current operational `RTHBLTEN` residual. RRTMG remains secondary
+and should be attacked only after MYNN is closed/bounded or proof reverses the
+ranking.
+
 Update 2026-06-10 09:40 WEST: Fable/Mythos NoahMP land-tile energy closure is
 accepted, committed, and pushed as `94fe5d5f`; the next strict-closure sprint is
 opened and pushed as `b4b6850f`, then dispatched to Fable after `/compact`.
