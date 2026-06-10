@@ -34,9 +34,9 @@ scalable GPU rewrite.
 ## Final v0.14 Gate Sequence
 
 1. Commit the RRTMG dry-temperature input fix and refreshed proof bound.
-2. Record an explicit reviewed tolerance-policy decision for the bounded,
-   non-bitwise MYNN/RRTMG mass-coupled Step-1 gate, then rerun the strict
-   Step-1 and short grid-field falsifier before launching longer campaigns.
+2. Apply `.agent/decisions/V0140-STEP1-TOLERANCE-POLICY.md`: keep the old
+   strict Step-1 tolerance as a diagnostic alarm, not the release-green gate.
+   Then run the short grid-field falsifier before launching longer campaigns.
 3. Run exact-branch memory preflight on the final candidate branch.
 4. Run a 72h/120h Canary or Switzerland GPU-vs-CPU field-parity/stability
    campaign with resource CSVs.
