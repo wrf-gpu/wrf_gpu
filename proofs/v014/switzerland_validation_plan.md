@@ -57,7 +57,11 @@ set -euo pipefail
 OUT=/mnt/data/wrf_gpu_validation/v014_switzerland_gotthard_$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "$OUT"
 
-scripts/run_gpu_lowprio.sh --cores 0-23 -- env \
+scripts/run_gpu_lowprio.sh --cores 0-23 \
+  --resource-log-dir "$OUT/resources/gpu" \
+  --resource-label switzerland_gpu \
+  --resource-interval 5 \
+  -- env \
   CASE_ROOT="$OUT" \
   CASE_INPUTS=/mnt/data/wrf_gpu_switzerland_128/run_cpu \
   CPU_REF=/mnt/data/wrf_gpu_switzerland_128/run_cpu \
@@ -81,6 +85,8 @@ Why this command:
 
 - `scripts/run_gpu_lowprio.sh` takes the repo-versioned GPU lock and sets the
   standard fp64/no-prealloc environment.
+- `--resource-log-dir "$OUT/resources/gpu"` records GPU memory/utilization,
+  power, process RSS, and host memory CSVs for the Switzerland GPU run.
 - `scripts/equivalence_switzerland.sh` builds a clean input dir and measures GPU
   wall time.
 - `CASE_INPUTS` points to CPU assets, but `GPU_INPUT` contains no CPU `wrfout`,

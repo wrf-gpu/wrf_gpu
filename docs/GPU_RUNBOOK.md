@@ -18,6 +18,22 @@ scripts/run_gpu_lowprio.sh --cores 0-23 -- \
     --scratch-dir /fast/nvme/gpuwrf_scratch
 ```
 
+With resource logging:
+
+```bash
+scripts/run_gpu_lowprio.sh --cores 0-23 \
+  --resource-log-dir /mnt/data/wrf_gpu_validation/my_run/resources \
+  --resource-label my_run \
+  --resource-interval 5 \
+  -- \
+  python -m gpuwrf.cli run \
+    --input-dir my_case \
+    --output-dir runs/my_forecast \
+    --domain d02 \
+    --hours 24 \
+    --scratch-dir /fast/nvme/gpuwrf_scratch
+```
+
 The wrapper:
 
 - holds `/tmp/wrf_gpu_validation_gpu.lock` with `flock` so only one GPU
@@ -25,6 +41,8 @@ The wrapper:
 - sets `PYTHONPATH=src`, `JAX_ENABLE_X64=true`, and
   `XLA_PYTHON_CLIENT_PREALLOCATE=false`;
 - runs at low CPU/IO priority and pins CPU helper work to the selected cores;
+- optionally writes `*_gpu_usage.csv`, `*_process_usage.csv`, and
+  `*_system_memory.csv` via `scripts/monitor_resource_usage.sh`;
 - exits `75` if another GPU run already owns the lock.
 
 The first JAX/XLA invocation can spend several minutes compiling with little or
@@ -51,6 +69,9 @@ Default detached artifacts:
 - `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.log`
 - `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.rc`
 - `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.runinfo`
+- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_gpu_usage.csv`
+- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_process_usage.csv`
+- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_system_memory.csv`
 
 Monitor:
 
@@ -58,6 +79,7 @@ Monitor:
 tail -f /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.log
 cat /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.runinfo
 cat /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.rc
+tail -f /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_gpu_usage.csv
 nvidia-smi
 ps -eo pid,ppid,stat,etime,pcpu,pmem,args | rg 'run_powered_tost|run_one_case'
 ```

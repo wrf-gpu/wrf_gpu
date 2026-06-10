@@ -110,6 +110,9 @@ if [[ "$NEEDS_GPU" -eq 1 ]]; then
   cmd=(
     "$ROOT/scripts/run_gpu_lowprio.sh"
     --cores "$CORES"
+    --resource-log-dir "${GPUWRF_RESOURCE_LOG_DIR:-$OUT_DIR/${LOG_NAME}_resources}"
+    --resource-label "${GPUWRF_RESOURCE_LABEL:-$LOG_NAME}"
+    --resource-interval "${GPUWRF_RESOURCE_INTERVAL:-5}"
     --
     "${runner_cmd[@]}"
   )
