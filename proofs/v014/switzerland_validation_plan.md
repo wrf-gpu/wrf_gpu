@@ -21,6 +21,11 @@ Use the `128x128` mass-grid case first:
   `2023-01-16_00:00:00`
 - CPU timing: total `1056.9501616954803 s`, mainloop
   `1038.7748700000022 s`, `28` MPI ranks
+- CPU24 tracked rerun: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z`
+  completed on 2026-06-10 with 25 hourly files, `rc=0`, `SUCCESS COMPLETE WRF`,
+  last-frame finite PASS, total wall `1084.6 s`, mainloop `1078.4 s`, peak
+  sampled total WRF-rank RSS `12563.766 MiB`; see
+  `proofs/v014/switzerland_cpu24_reference_resource_summary.md`
 - grid: `128x128` mass points, `44` mass levels, `45` full levels,
   `dx=dy=3000 m`, `time_step=18 s`
 - physics from namelist: Thompson MP (`mp_physics=8`), RRTMG LW/SW
