@@ -250,17 +250,21 @@ Station TOST must be interpreted together with this grid-delta atlas.
 
 Current status:
 
-- 2026-06-10 20:10 WEST manager update: the nested-pipeline Noah-MP source
+- 2026-06-10 21:40 WEST manager update: the nested-pipeline Noah-MP source
   wiring blocker is fixed and pushed (`c2310c5b`), with CPU activation/carry
   proof `proofs/v014/noahmp_nested_pipeline_activation.*` green and 32
   focused/regression tests passing after merge. Commit `c6800bfa` adds the
-  repeatable h1-h4 land-gate scorer. The current
+  repeatable h1-h4 land-gate scorer. The old
   `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_moistcqw_20260610T171818Z`
-  run remains a pre-fix frozen-land baseline, not release-green evidence. A
-  lock-based watcher is armed from clean worktree
-  `.claude/worktrees/v014-gpu-gates` to run the post-fix exact-branch memory
-  preflight and Canary h1-h4 land gate as soon as the current GPU lock releases.
-  Switzerland GPU remains blocked until that land gate is green/bounded.
+  run completed as a pre-fix frozen-land baseline, not release-green evidence.
+  The post-fix exact-branch preflight at
+  `/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_20260610T192315Z`
+  fits memory but is functionally red (`rc=1`): d02 is finite, while d01 has 51
+  nonfinite LU16 land cells in `T2/UST/HFX/LH/TSK/TH2/LWUPB/LWUPT/OLR`. Fable
+  high is active in tmux `0:3` on branch `worker/fable/v014-noahmp-d01-lu16`.
+  Switzerland GPU and long Canary GPU gates remain blocked until the LU16 issue
+  is fixed/bounded and post-fix h1-h4 land gate plus final memory preflight are
+  green/bounded.
 
 - 2026-06-10 15:35 WEST manager update: validation is **resumed** under the
   new field-parity gate. The h1 EOS/theta blocker is fixed/bounded and
@@ -269,9 +273,9 @@ Current status:
   (`proofs/v014/exact_branch_memory_preflight.md`, peak total VRAM `8858 MiB`,
   no OOM markers).
 - Canary L2 d02 72h GPU-vs-CPU field-parity/stability remains the first active
-  regional release gate, but it must be rerun from the post-Noah-MP-fix
-  candidate branch. The current long run is retained only as a pre-fix
-  baseline/trend artifact.
+  regional release gate, but it must be rerun only after the post-NoahMP LU16
+  preflight blocker is fixed/bounded. The completed old long run is retained
+  only as a pre-fix baseline/trend artifact.
 - Switzerland/Gotthard d01 CPU72 truth is complete and finite at
   `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`.
   The matched GPU command is recorded in `docs/GPU_RUNBOOK.md` and should be

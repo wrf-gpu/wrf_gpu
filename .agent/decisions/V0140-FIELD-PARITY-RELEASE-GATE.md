@@ -1,13 +1,18 @@
 # V0.14 Field-Parity Release Gate
 
-Date: 2026-06-10 19:35 WEST
+Date: 2026-06-10 21:40 WEST
 Owner: manager
 
-Update 2026-06-10 20:10 WEST: the missing nested Noah-MP source wiring is fixed
+Update 2026-06-10 21:40 WEST: the missing nested Noah-MP source wiring is fixed
 and pushed (`c2310c5b`), with CPU activation/carry proof
-`NOAHMP_NESTED_ACTIVATION_CPU_PROVEN`. The long GPU start condition is now the
-post-fix exact-branch memory preflight plus Canary h1-h4 land gate, currently
-armed behind the active pre-fix Canary 72h baseline GPU lock.
+`NOAHMP_NESTED_ACTIVATION_CPU_PROVEN`. The old pre-fix Canary 72h GPU run
+completed as a frozen-land baseline, not release-green evidence. The post-fix
+exact-branch preflight fits memory but is functionally red:
+`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_20260610T192315Z`,
+`rc=1`, d02 finite, d01 has 51 nonfinite LU16 land cells in
+`T2/UST/HFX/LH/TSK/TH2/LWUPB/LWUPT/OLR`. Fable high is active on
+`worker/fable/v014-noahmp-d01-lu16`; long GPU gates wait for that blocker to be
+fixed/bounded and the h1-h4 land gate to pass.
 
 ## Decision
 
@@ -114,8 +119,9 @@ Start the long GPU gates only after:
   drift or schema failure;
 - the standalone nested pipeline activates the selected land-surface model
   honestly. The `sf_surface_physics=4`/Noah-MP source wiring is fixed in
-  `c2310c5b`, but the post-fix h1-h4 land gate must still be green/bounded
-  before any release-green 72h GPU gate;
+  `c2310c5b`, but the d01 LU16 nonfinite blocker from the post-fix preflight
+  must be fixed/bounded and the h1-h4 land gate must be green/bounded before
+  any release-green 72h GPU gate;
 - exact-branch memory preflight is green on the final candidate branch;
 - the matching CPU truth exists and is finite for the selected 72h case;
 - the GPU run is launched through `scripts/run_gpu_lowprio.sh` with resource
