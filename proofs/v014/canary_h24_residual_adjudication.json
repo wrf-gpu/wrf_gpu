@@ -1,0 +1,81 @@
+{
+  "verdict": "FABLE_FIX_REQUIRED_AFTER_RUN_FROZEN_LAND_TSK_NESTED_PIPELINE_NO_LSM",
+  "generated_utc": "2026-06-10T18:40:00Z",
+  "sprint": ".agent/sprints/2026-06-10-v014-fable-canary-h24-residual",
+  "run_root": "/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_moistcqw_20260610T171818Z",
+  "cpu_truth": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+  "branch_head": "worker/gpt/v013-close-manager@7c819067",
+  "gpu_touched": false,
+  "run_stopped": false,
+  "run_progress_at_analysis": "h29 frames present, run alive",
+  "headline_finding": {
+    "name": "frozen_land_skin_temperature",
+    "evidence": {
+      "d02_gpu_land_tsk_mean_K": 294.88,
+      "d02_gpu_land_tsk_constant_over_leads": "h1..h29 identical to 0.01 K",
+      "d02_cpu_land_tsk_mean_range_K": [283.02, 309.83],
+      "d01_gpu_land_tsk_mean_K": 300.95,
+      "d01_gpu_land_tsk_constant": true,
+      "d02_land_hfx_bias_night_Wm2": 183.14,
+      "d02_land_hfx_bias_noon_Wm2": -307.85,
+      "d02_land_t2_bias_night_K": 4.77,
+      "d02_land_t2_bias_noon_K": -2.18,
+      "land_fraction_d02": 0.073,
+      "land_fraction_d01": 0.095
+    },
+    "code_owner": "src/gpuwrf/integration/nested_pipeline.py::_make_namelist",
+    "mechanism": "OperationalNamelist.from_grid built without use_noahmp/sf_surface_physics/noahmp_static; use_noahmp defaults False -> land tile stays on prescribed bulk surface path; state.t_skin never prognostically advanced over land. CPU truth runs Noah-MP (sf_surface_physics=4). The validated NoahMP coupler (noahmp_surface_hook.noahmp_surface_step) exists and is wired in daily_pipeline but was never threaded into the standalone nested pipeline used by canary/TOST/v0.12-final-gate runs since the v0.13 KI-5 rerouting.",
+    "classification": "missing physics wiring / configuration gap in operational nested pipeline; NOT a kernel or dycore bug; NOT a regression from the moist-cqw/PSFC/LBC fixes"
+  },
+  "formal_fail_composition_h24": {
+    "MUB_PB_static": {
+      "max_abs_Pa": 250.67,
+      "interior_max_abs_Pa": 0.0078,
+      "location": "100% in 5-cell nest frame; interior at fp32 wrfout quantum",
+      "class": "known static/base-state edge lane, time-invariant"
+    },
+    "QVAPOR": {
+      "fail_leads": "12-24",
+      "rmse_at_h24": 0.00129,
+      "limit": 0.001,
+      "rmse_at_h29": 0.001347,
+      "bias_h24": -1.37e-4,
+      "bias_h29": -1.11e-4,
+      "trend": "growth decelerating, bias shrinking after h24 (diurnal component); watch h48/h72"
+    },
+    "T2": {
+      "fail_leads": "10-12 only",
+      "rmse_range": [1.537, 1.59],
+      "limit": 1.5,
+      "class": "night stable-PBL; direct frozen-TSK signature; recovers daytime"
+    },
+    "note": "No dynamics field (PSFC/P/MU/PH/U/V/W/T/RAINNC) fails its manifest at any lead 1-24. PSFC worst lead h18 RMSE 105.3 < 120 limit."
+  },
+  "dynamics_health": {
+    "U_rmse_saturation": "~0.78-0.87 m/s flat from h9",
+    "W_rmse_saturation": "~0.044 flat",
+    "T_rmse": "peaks 0.71 K h20 then declines",
+    "PSFC_per_lead_rmse": "52(h1)->11(h6)->105(h18)->35(h24)->40(h29): diurnal, recovering, no monotonic drift",
+    "lbc_cadence_regression": "none; old failure was slope 51-73 Pa/h monotonic, current slope +2.0 is diurnal aliasing of the comparator linear fit",
+    "spot_checks_h26_h29": "PSFC 40-43 Pa, P 22-30 Pa, no renewed drift past h24"
+  },
+  "diurnal_mass_excursion": {
+    "d01_noon_psfc_bias_Pa": {"land": -65.5, "ocean": -98.2},
+    "origin": "parent d01, domain-wide incl. ocean; contributors: frozen land TSK both domains + bounded RRTMG clear-sky heating lane + ocean surface moisture lane (Q2 +1.6e-3 sustained, LH -26 W/m2)",
+    "within_manifest": true,
+    "action": "re-adjudicate after land-surface fix; do not open a dycore sprint on this signal"
+  },
+  "qnrain": {
+    "p99_abs_all_leads": 0.0,
+    "max_abs": 3122.4,
+    "class": "sparse number-concentration cells, chaotic microphysics placement; report-only"
+  },
+  "decision": "FABLE_FIX_REQUIRED_AFTER_RUN",
+  "manager_actions": [
+    "Let the Canary 72h run finish (stability + dynamics-lane evidence remain valid; manifests pass for dynamics fields).",
+    "Do NOT promote this run as the release field-parity green gate (land surface physics absent).",
+    "Do NOT launch Switzerland GPU before the land-surface fix: the Gotthard d01 domain is land-dominated alpine; frozen TSK there would invalidate the whole run.",
+    "Open the nested-pipeline land-surface activation sprint immediately after the GPU frees.",
+    "Honest-record note: v0.12.0 final 24h nested gate and v0.13 TOST cases ran this same pipeline and therefore also had frozen land TSK; add to KNOWN_ISSUES when convenient."
+  ]
+}
