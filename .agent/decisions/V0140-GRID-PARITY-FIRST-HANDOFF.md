@@ -1889,3 +1889,65 @@ Next active work:
   `DryPhysicsTendencies.t_tendf`, and rerun the strict Step-1 proof.
 - TOST, Switzerland, broad FP32, and broad memory remain paused until this
   source-fidelity frontier is fixed or explicitly bounded.
+
+## Current Manager Update 2026-06-10 01:12 WEST
+
+The Step-1 source-fidelity closure sprint is closed and manager-gated as a
+successful narrowing sprint, not a parity fix.
+
+Artifacts:
+
+- `proofs/v014/step1_source_fidelity_closure.py`
+- `proofs/v014/step1_source_fidelity_closure.json`
+- `proofs/v014/step1_source_fidelity_closure.md`
+- `.agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md`
+- `.agent/sprints/2026-06-10-v014-step1-source-fidelity-closure/manager-closeout.md`
+
+Verdict:
+
+`STEP1_SOURCE_FIDELITY_NOT_CLOSED_NARROW_BLOCKER_MYNN_DRIVER_SOURCE_OUTPUT`.
+
+What changed:
+
+- MYNN source leaf now carries `rqvblten`.
+- `rad_rk_tendf=1` source-leaf mode now applies WRF
+  `conv_t_tendf_to_moist` before `DryPhysicsTendencies.t_tendf`.
+- `rad_rk_tendf=0` remains on the existing branch.
+
+Key proof numbers:
+
+- Strict WRF after-conv vs current JAX dry `T_TENDF`: max_abs
+  `2457.578397008898`, RMSE `21.364579991779515`.
+- JAX mass-coupled MYNN `RTHBLTEN`: max_abs `260.83156991819124` vs WRF
+  `2522.90576171875`.
+- JAX mass-coupled qv source: max_abs `0.045505018412171354` vs WRF
+  `QV_TEND` `0.4930315017700195`.
+- Same-boundary scalar inputs are not the order-10 error: `T` max_abs
+  `5.788684885033035e-05`, `QV` max_abs `5.969281098756885e-08`, `P` max_abs
+  `0.0390625`.
+- Forcing radiation only moves max_abs to `2454.113955669592`; held
+  `RTHRATEN` is secondary.
+- WRF oracle active sources still close the accepted formula: max_abs
+  `0.00016236981809925055`, RMSE `8.089162788029723e-07`.
+
+Manager validation passed:
+
+- `python -m py_compile proofs/v014/step1_source_fidelity_closure.py proofs/v014/step1_dry_source_leaf_fix.py proofs/v014/step1_part2_source_leaves_split.py tests/test_v014_dry_source_leaf_wiring.py src/gpuwrf/coupling/physics_couplers.py src/gpuwrf/runtime/operational_mode.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src pytest -q tests/test_v014_dry_source_leaf_wiring.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_source_fidelity_closure.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_dry_source_leaf_fix.py`
+- `JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_part2_source_leaves_split.py`
+- `python -m json.tool` on all three proof JSONs.
+- `git diff --check`
+- `python scripts/close_sprint.py .agent/sprints/2026-06-10-v014-step1-source-fidelity-closure`
+
+Next active work:
+
+- Escalate this single hard blocker to Fable/Mythos after `/compact`.
+- Endpoint: emit one WRF MYNN driver hook at Step 1 around
+  `module_bl_mynnedmf_driver`: input columns/fluxes/turbulence state before
+  MYNN, raw `dth1/dqv1` after `mynnedmf_post_run`, and module-em mass-scaled
+  `RTHBLTEN/RQVBLTEN`; compare that exact boundary to JAX
+  `_mynn_column_from_state` / `step_mynn_pbl_column`, then fix the MYNN source
+  mismatch if local.
+- TOST, Switzerland, broad FP32, and broad memory remain paused.

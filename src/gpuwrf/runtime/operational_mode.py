@@ -135,6 +135,7 @@ config.update("jax_enable_x64", True)
 
 _THETA_LIMITER_MIN_K = 0.0
 _THETA_LIMITER_MAX_K = 500.0
+_RVRD = 461.6 / 287.0
 
 
 def _acoustic_unroll() -> int:
@@ -2912,6 +2913,7 @@ def _physics_step_forcing(
     next_carry = carry
     source_leaf_mode = int(namelist.rad_rk_tendf) != 0
     rthblten = None
+    rqvblten = None
     pbl_theta_dry_delta = None
 
     mp_opt = int(namelist.mp_physics)
@@ -2993,6 +2995,7 @@ def _physics_step_forcing(
             )
             next_state = mynn.state
             rthblten = mynn.rthblten
+            rqvblten = mynn.rqvblten
             pbl_theta_dry_delta = (
                 jnp.asarray(next_state.theta, jnp.float64)
                 - jnp.asarray(pbl_entry_state.theta, jnp.float64)
@@ -3162,7 +3165,22 @@ def _physics_step_forcing(
         # by msfty).  The MYNN theta state delta is removed from the later
         # non-dry update state below so the source is not double-applied.
         rth_source = held_rthraten if rthblten is None else held_rthraten + rthblten
-        t_tendf_source = (mass_h * rth_source).astype(next_state.theta.dtype)
+        t_tendf_source = mass_h * rth_source
+        qv_tendf_source = (
+            jnp.zeros_like(t_tendf_source)
+            if rqvblten is None
+            else mass_h * rqvblten
+        )
+        # WRF use_theta_m=1 converts dry theta forcing to moist theta in
+        # conv_t_tendf_to_moist immediately after update_phy_ten.
+        theta_m_factor = 1.0 + _RVRD * jnp.asarray(before.qv, jnp.float64)
+        t_tendf_source = (
+            theta_m_factor * t_tendf_source
+            + _RVRD
+            * jnp.asarray(before.theta, jnp.float64)
+            / theta_m_factor
+            * qv_tendf_source
+        ).astype(next_state.theta.dtype)
         dry = DryPhysicsTendencies(t_tendf=t_tendf_source)
         if pbl_theta_dry_delta is not None:
             next_state = next_state.replace(

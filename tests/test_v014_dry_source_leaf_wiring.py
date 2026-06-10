@@ -130,10 +130,17 @@ def test_source_leaf_mode_mass_couples_held_rthraten_and_mynn_rthblten() -> None
         namelist.metrics.c1h[:, None, None] * mynn.state.mu_total[None, :, :]
         + namelist.metrics.c2h[:, None, None]
     )
-    expected = mass_h * (held_rthraten + mynn.rthblten)
+    theta_m_factor = 1.0 + (461.6 / 287.0) * state.qv
+    dry_theta_source = mass_h * (held_rthraten + mynn.rthblten)
+    qv_source = mass_h * mynn.rqvblten
+    expected = (
+        theta_m_factor * dry_theta_source
+        + (461.6 / 287.0) * state.theta / theta_m_factor * qv_source
+    )
 
     forcing = _physics_step_forcing(carry, namelist, 0.0, run_radiation=False)
 
     np.testing.assert_allclose(np.asarray(forcing.dry_tendencies.t_tendf), np.asarray(expected))
     assert float(jnp.max(jnp.abs(mynn.rthblten))) > 0.0
+    assert float(jnp.max(jnp.abs(mynn.rqvblten))) > 0.0
     np.testing.assert_allclose(np.asarray(forcing.state.theta), np.asarray(surface_state.theta))

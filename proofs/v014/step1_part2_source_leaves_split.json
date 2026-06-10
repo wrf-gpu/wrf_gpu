@@ -6,7 +6,7 @@
     "prior_reported_after_part2_t_tendf_max_abs": 2457.5830078125,
     "prior_reported_after_part2_t_tendf_rmse": 21.20870100357482
   },
-  "created_utc": "2026-06-09T23:40:51.475563+00:00",
+  "created_utc": "2026-06-10T00:11:08.049120+00:00",
   "environment": {
     "CUDA_VISIBLE_DEVICES": "",
     "JAX_ENABLE_X64": "1",
@@ -33,7 +33,7 @@
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
-      "wall_s": 0.0009856179967755452
+      "wall_s": 0.001511902009951882
     },
     "head": {
       "command": [
@@ -44,8 +44,8 @@
       "cwd": "/home/enric/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": "b1f81bf71612b385d63c7e2bbf262c34a16e78d9\n",
-      "wall_s": 0.0011907400039490312
+      "stdout_tail": "8d4117c47a54dc270b08703cecb1ca8bc1ff2ce5\n",
+      "wall_s": 0.0014903309929650277
     },
     "status_short": {
       "command": [
@@ -56,8 +56,8 @@
       "cwd": "/home/enric/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
-      "stdout_tail": " M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_dry_source_leaf_fix.json\n?? proofs/v014/step1_dry_source_leaf_fix.md\n?? proofs/v014/step1_dry_source_leaf_fix.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_dry_source_leaf_wiring.py\n",
-      "wall_s": 0.01027183399128262
+      "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_dry_source_leaf_fix.py\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/runtime/operational_mode.py\n M tests/test_v014_dry_source_leaf_wiring.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/step1_source_fidelity_closure.json\n?? proofs/v014/step1_source_fidelity_closure.md\n?? proofs/v014/step1_source_fidelity_closure.py\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n",
+      "wall_s": 0.009582708007656038
     }
   },
   "jax_capture": {
@@ -106,8 +106,8 @@
       "is_dir": false,
       "is_file": true,
       "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
-      "sha256": "82a6e6a9055f052c4033142147c887ceb4ce2d838217518020e169a6273e0078",
-      "size_bytes": 97266
+      "sha256": "63868a265477e0055d6efa63ed9d8ae666d6931c73fb53a783574cf632221c97",
+      "size_bytes": 100140
     },
     "scratch": {
       "exists": true,

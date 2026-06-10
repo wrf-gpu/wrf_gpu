@@ -241,8 +241,8 @@ def classify(primary_formulas: Mapping[str, Any], forced_formulas: Mapping[str, 
         },
         {
             "rank": 3,
-            "status": "SECONDARY_BLOCKING",
-            "hypothesis": "WRF `conv_t_tendf_to_moist` and its `QV_TEND` term are not represented in the JAX dry source bundle.",
+            "status": "IMPLEMENTED_STILL_SECONDARY",
+            "hypothesis": "WRF `conv_t_tendf_to_moist` and its `QV_TEND` term are represented in the JAX dry source bundle, but cannot close while MYNN `RTHBLTEN/RQVBLTEN` are too weak.",
             "evidence": conv_gap,
         },
     ]
@@ -251,9 +251,8 @@ def classify(primary_formulas: Mapping[str, Any], forced_formulas: Mapping[str, 
         ranked,
         (
             "Next source boundary: split MYNN PBL adapter/kernel inputs and outputs against WRF "
-            "`RTHBLTEN`/`RQVBLTEN`, seed or refresh held `RTHRATEN` at the same Step-1 "
-            "boundary, then implement WRF `conv_t_tendf_to_moist` before feeding "
-            "`DryPhysicsTendencies.t_tendf`."
+            "`RTHBLTEN`/`RQVBLTEN`; held `RTHRATEN` and `conv_t_tendf_to_moist` "
+            "are ranked secondary by the current proof."
         ),
     )
 
@@ -344,7 +343,7 @@ def build_proof() -> dict[str, Any]:
                 "src/gpuwrf/runtime/operational_mode.py",
             ],
             "test_file": "tests/test_v014_dry_source_leaf_wiring.py",
-            "mode": "rad_rk_tendf=1 routes held RTHRATEN plus MYNN RTHBLTEN into DryPhysicsTendencies.t_tendf",
+            "mode": "rad_rk_tendf=1 routes held RTHRATEN plus MYNN RTHBLTEN/RQVBLTEN through WRF conv_t_tendf_to_moist into DryPhysicsTendencies.t_tendf",
             "double_count_guard": "MYNN theta delta is removed from the later non-dry physics state update in source-leaf mode.",
         },
         "wrf_truth": {
@@ -423,7 +422,7 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         f"- Primary Step-1 residual after WRF `conv_t_tendf_to_moist` vs patched JAX dry `T_TENDF`: max_abs `{primary['after_conv_vs_jax_dry_t_tendf']['max_abs']}`, rmse `{primary['after_conv_vs_jax_dry_t_tendf']['rmse']}`.",
         f"- WRF active leaves remain much larger: top leaf `{active[0]['field']}` max_abs `{active[0]['nested_interior']['max_abs']}`; JAX source-leaf summary max_abs `{payload['jax_source_leaf_mode']['derived_candidate_summaries']['current_jax_dry_t_tendf']['max_abs']}`.",
         f"- Forcing radiation on only moves after-conv residual to max_abs `{forced['after_conv_vs_jax_dry_t_tendf']['max_abs']}`, so radiation cadence is secondary to `RTHBLTEN` fidelity.",
-        f"- WRF moist-theta conversion is also a required later step: `after_update` vs `after_conv` max_abs `{conv_gap['max_abs']}`, rmse `{conv_gap['rmse']}`.",
+        f"- WRF moist-theta conversion is now represented in source-leaf mode, but it is secondary: WRF `after_update` vs `after_conv` max_abs `{conv_gap['max_abs']}`, rmse `{conv_gap['rmse']}`.",
         "",
         "## Ranked Blockers",
         "",
@@ -452,7 +451,7 @@ def render_review(payload: Mapping[str, Any]) -> str:
             "",
             f"Verdict: `{payload['verdict']}`.",
             "",
-            "The production plumbing is narrow and covered by `tests/test_v014_dry_source_leaf_wiring.py`: MYNN exposes a scheme-local `RTHBLTEN`, and source mode mass-couples `RTHRATEN + RTHBLTEN` into `DryPhysicsTendencies.t_tendf` without double-applying MYNN theta.",
+            "The production plumbing is narrow and covered by `tests/test_v014_dry_source_leaf_wiring.py`: MYNN exposes scheme-local `RTHBLTEN/RQVBLTEN`, and source mode mass-couples `RTHRATEN + RTHBLTEN` then applies WRF `conv_t_tendf_to_moist` into `DryPhysicsTendencies.t_tendf` without double-applying MYNN theta.",
             "",
             f"The Step-1 proof does not close: after-conv `T_TENDF` residual remains max_abs `{primary['after_conv_vs_jax_dry_t_tendf']['max_abs']}`, rmse `{primary['after_conv_vs_jax_dry_t_tendf']['rmse']}`.",
             "",

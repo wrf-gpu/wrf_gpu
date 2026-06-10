@@ -274,6 +274,7 @@ class MynnPBLSourceLeaves(NamedTuple):
 
     state: State
     rthblten: jax.Array
+    rqvblten: jax.Array
 
 
 class RRTMGRadiationDiagnostics(NamedTuple):
@@ -1425,13 +1426,14 @@ def mynn_adapter(state: State, dt: float, grid: GridSpec | None = None) -> State
 def mynn_adapter_with_source_leaves(
     state: State, dt: float, grid: GridSpec | None = None
 ) -> MynnPBLSourceLeaves:
-    """Advance MYNN and expose the raw WRF ``RTHBLTEN`` theta tendency.
+    """Advance MYNN and expose raw WRF MYNN source tendencies.
 
-    WRF's MYNN path writes ``RTHBLTEN = (theta_after - theta_before) / dt``
-    inside ``module_bl_myjpbl``.  The operational adapter already computes the
-    same post-solve theta; this helper returns that scheme-local source rate so
-    the runtime can mass-couple it into ``DryPhysicsTendencies.t_tendf`` without
-    treating an aggregate multi-scheme state delta as a dry source.
+    WRF's MYNN path writes ``RTHBLTEN``/``RQVBLTEN`` from the scheme-local
+    post-solve deltas divided by ``dt`` before ``module_em`` mass-couples them.
+    The operational adapter already computes the same post-solve theta/qv; this
+    helper returns those raw source rates so the runtime can build the WRF
+    ``DryPhysicsTendencies.t_tendf`` source without treating an aggregate
+    multi-scheme state delta as a dry source.
     """
 
     column = _mynn_column_from_state(state, grid)
@@ -1444,12 +1446,17 @@ def mynn_adapter_with_source_leaves(
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
     theta_after = _from_columns(out.theta)
+    qv_after = _from_columns(out.qv)
     rthblten = ((theta_after - jnp.asarray(state.theta, jnp.float64)) / float(dt)).astype(
         _output_dtype(state, "theta")
+    )
+    rqvblten = ((qv_after - jnp.asarray(state.qv, jnp.float64)) / float(dt)).astype(
+        _output_dtype(state, "qv")
     )
     return MynnPBLSourceLeaves(
         state=_state_from_mynn_output(state, out),
         rthblten=rthblten,
+        rqvblten=rqvblten,
     )
 
 
