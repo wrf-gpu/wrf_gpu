@@ -1,18 +1,18 @@
 # V0.14 Field-Parity Release Gate
 
-Date: 2026-06-10 21:40 WEST
+Date: 2026-06-10 22:14 WEST
 Owner: manager
 
-Update 2026-06-10 21:40 WEST: the missing nested Noah-MP source wiring is fixed
+Update 2026-06-10 22:14 WEST: the missing nested Noah-MP source wiring is fixed
 and pushed (`c2310c5b`), with CPU activation/carry proof
-`NOAHMP_NESTED_ACTIVATION_CPU_PROVEN`. The old pre-fix Canary 72h GPU run
-completed as a frozen-land baseline, not release-green evidence. The post-fix
-exact-branch preflight fits memory but is functionally red:
-`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_20260610T192315Z`,
-`rc=1`, d02 finite, d01 has 51 nonfinite LU16 land cells in
-`T2/UST/HFX/LH/TSK/TH2/LWUPB/LWUPT/OLR`. Fable high is active on
-`worker/fable/v014-noahmp-d01-lu16`; long GPU gates wait for that blocker to be
-fixed/bounded and the h1-h4 land gate to pass.
+`NOAHMP_NESTED_ACTIVATION_CPU_PROVEN`. The follow-up d01 LU16/sand nonfinite
+blocker is also closed: `22a2cc0c` fixes Noah-MP WATER 1-based soil/veg
+category indexing; `aff7d124`/`5a708074` record closure proof and GPU
+confirmation. GPU preflight
+`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
+is `rc=0`, `PASS_SHORT_GPU_PREFLIGHT` / `PIPELINE_GREEN`,
+all_domains_finite=true. Long GPU gates now wait on the post-fix h1-h4 land
+gate, because soil-water evolution changed for all soil categories.
 
 ## Decision
 
@@ -119,10 +119,12 @@ Start the long GPU gates only after:
   drift or schema failure;
 - the standalone nested pipeline activates the selected land-surface model
   honestly. The `sf_surface_physics=4`/Noah-MP source wiring is fixed in
-  `c2310c5b`, but the d01 LU16 nonfinite blocker from the post-fix preflight
-  must be fixed/bounded and the h1-h4 land gate must be green/bounded before
-  any release-green 72h GPU gate;
-- exact-branch memory preflight is green on the final candidate branch;
+  `c2310c5b`, and the d01 LU16/sand nonfinite blocker is fixed in `22a2cc0c`.
+  The h1-h4 land gate must now be green/bounded before any release-green 72h
+  GPU gate;
+- exact-branch memory preflight is green on the final candidate branch
+  (`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`,
+  `rc=0`, peak total VRAM `9783 MiB`);
 - the matching CPU truth exists and is finite for the selected 72h case;
 - the GPU run is launched through `scripts/run_gpu_lowprio.sh` with resource
   CSV logging.
