@@ -1,0 +1,50 @@
+{
+  "verdict": "PSFC_DIAGNOSTIC_GPU_H4_CONFIRMED",
+  "date": "2026-06-10",
+  "run_root": "/mnt/data/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z",
+  "branch": "worker/gpt/v013-close-manager",
+  "head": "a08553dc",
+  "case_id": "20260501_18z_l2_72h_20260519T173026Z",
+  "domain": "d02",
+  "leads": "h1-h4",
+  "gpu_rc": 0,
+  "compare_rc": 0,
+  "resource_summary": {
+    "gpu_samples": 93,
+    "peak_memory_mib": 15507,
+    "average_utilization_pct": 77.7,
+    "max_power_w": 283.0
+  },
+  "fields": {
+    "PSFC": {
+      "overall_rmse_pa": 45.77548049079087,
+      "overall_bias_pa": 33.50393379550219,
+      "worst_lead_rmse_pa": 57.82311089604862,
+      "h1_rmse_pa": 57.823,
+      "h1_bias_pa": 51.553,
+      "h4_rmse_pa": 35.487,
+      "h4_bias_pa": 18.27
+    },
+    "MU": {
+      "overall_rmse_pa": 45.6662648390777,
+      "overall_bias_pa": 37.77400598077063,
+      "worst_lead_rmse_pa": 58.07916112426884
+    },
+    "P": {
+      "overall_rmse_pa": 55.124835461627775,
+      "overall_bias_pa": -27.40821488744495,
+      "worst_lead_rmse_pa": 60.3831508156645
+    },
+    "PH": {
+      "overall_rmse": 44.72908366731027,
+      "overall_bias": 6.53304252470221,
+      "worst_lead_rmse": 52.81723175670717
+    },
+    "QVAPOR": {
+      "overall_rmse": 0.0003787290116454084,
+      "overall_bias": -0.000012060467998942271,
+      "worst_lead_rmse": 0.000512883147908496
+    }
+  },
+  "remaining_blocker": "3D pressure-state dynamics: dry cqw / pg_buoy_w_dry still active in acoustic w-equation"
+}
