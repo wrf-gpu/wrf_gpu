@@ -22,14 +22,14 @@ Verdict: `THERMO_COLUMN_INPUTS_FIXED_NEXT_BLOCKER_SURFACE_LAYER_OUTPUTS`.
 
 The thermodynamic input boundary is fixed/bounded. Strict Step-1 is still red, so the remaining WRF-anchored blocker is later: MYNN surface-layer output algebra after the fixed input tuple.
 
-- `UST` max_abs `0.01231782267117762`, RMSE `0.0007831552182476275`.
-- `HFX` max_abs `27.09163832864155`, RMSE `1.3972156996573475`.
-- `QFX` max_abs `2.744275103194571e-07`, RMSE `8.62190066790179e-08`.
-- `BR` max_abs `2.0`, RMSE `0.7681227693986273`.
+- `UST` max_abs `0.0007252174862408534`, RMSE `1.53999402707944e-05`.
+- `HFX` max_abs `0.2643125302157898`, RMSE `0.022548398654638105`.
+- `QFX` max_abs `6.468560998136325e-08`, RMSE `3.002727253934746e-08`.
+- `BR` max_abs `0.01166976922050278`, RMSE `0.0003583716190119449`.
 
 ## Strict Step-1
 
-- after-conv `T_TENDF` max_abs `847.1445725702908`, RMSE `9.56593990212596`.
+- after-conv `T_TENDF` max_abs `847.1446969755725`, RMSE `9.627208432391289`.
 
 ## Fastest Next Command
 

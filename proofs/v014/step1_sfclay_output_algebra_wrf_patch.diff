@@ -1,0 +1,37 @@
+diff --git a/phys/module_sf_mynn.F b/phys/module_sf_mynn.F
+--- a/phys/module_sf_mynn.F
++++ b/phys/module_sf_mynn.F
+@@
+   USE module_model_constants, only: &
+        &p1000mb, ep_2
++  USE module_wrfgpu2_oracle, ONLY: oracle_enabled
+@@
+       INTEGER ::  N,I,K,L,yesno
++      INTEGER :: wrfgpu2_unit, wrfgpu2_ios
++      CHARACTER(LEN=16) :: wrfgpu2_ev
++      CHARACTER(LEN=512) :: wrfgpu2_root, wrfgpu2_path
++      LOGICAL :: wrfgpu2_hook
+@@
+  ENDDO !end i-loop
++
++   wrfgpu2_hook = .FALSE.
++   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_SFCLAY1D_HOOK', wrfgpu2_ev)
++   IF (TRIM(wrfgpu2_ev) == '1') wrfgpu2_hook = .TRUE.
++   IF (wrfgpu2_hook .AND. itimestep == 1 .AND. (ite-its+1) == 159 .AND. (jte-jts+1) == 66) THEN
++      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_SFCLAY1D_ROOT', wrfgpu2_root)
++      IF (LEN_TRIM(wrfgpu2_root) == 0) wrfgpu2_root = '/tmp/wrf_gpu2_step1_sfclay_output_algebra'
++      CALL execute_command_line('mkdir -p '//TRIM(wrfgpu2_root), wait=.TRUE.)
++      WRITE(wrfgpu2_path,'(A,A,I0,A)') TRIM(wrfgpu2_root), '/sfclay1d_mynn_j', J, '.txt'
++      OPEN(NEWUNIT=wrfgpu2_unit, FILE=TRIM(wrfgpu2_path), STATUS='REPLACE', ACTION='WRITE', IOSTAT=wrfgpu2_ios)
++      IF (wrfgpu2_ios == 0) THEN
++         WRITE(wrfgpu2_unit,'(A)') '# i thx thgb thv1d thvgb br zol psim psih psit_from_chs ust hfx qfx qsfc qsfcmr qgh za znt zt zq wspd flhc flqc chs chs2 cqs2 mol rmol'
++         DO I=its,ite
++            WRITE(wrfgpu2_unit,'(I8,1X,27(ES24.16E3,1X))') I, TH1D(I), THGB(I), THV1D(I), THVGB(I), &
++                 BR(I), ZOL(I), PSIM(I), PSIH(I), UST(I)*KARMAN/MAX(CHS(I),1.E-30), UST(I), HFX(I), QFX(I), QSFC(I), QSFCMR(I), QGH(I), &
++                 ZA(I), ZNT(I), z_t(I), z_q(I), WSPD(I), FLHC(I), FLQC(I), CHS(I), CHS2(I), CQS2(I), MOL(I), RMOL(I)
++         ENDDO
++         CLOSE(wrfgpu2_unit)
++      ENDIF
++   ENDIF
+
+ END SUBROUTINE SFCLAY1D_mynn
