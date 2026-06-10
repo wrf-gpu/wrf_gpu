@@ -1,0 +1,971 @@
+{
+  "classification": {
+    "clock_or_solar_geometry": {
+      "evidence": "Midpoint SWDOWN/SWNORM is close to WRF, while accepted lead-0 SWDOWN RMSE is much worse; LW GLW is independent of solar geometry.",
+      "verdict": "NOT_PRIMARY"
+    },
+    "column_thermodynamics_cloud_inputs": {
+      "evidence": "Step-1 theta, pressure, qv, and mu match the WRF part2 state tightly; cloud fraction and hydrometeor cloud sum are zero. The exact WRF derived RRTMG profiles and optical depths are not dumped.",
+      "verdict": "GROSS_STATE_EXONERATED_DERIVED_OPTICS_UNHOOKED"
+    },
+    "flux_to_theta_conversion": {
+      "evidence": "Skipping Exner conversion does not improve the residual.",
+      "verdict": "NOT_PRIMARY"
+    },
+    "layer_ordering": {
+      "evidence": "Vertical flip worsens the RTHRATEN comparison.",
+      "verdict": "NOT_PRIMARY"
+    },
+    "likely_boundary": {
+      "evidence": "GLW remains a clear-sky +17.44 W/m2 bias with matched gross state and RTHRATEN remains max_abs about 19.43 after mass/conversion checks. The next exact boundary is a WRF RRTMG forcing hook around the derived LW/SW optical/gas/top-buffer profiles and flux/heating arrays.",
+      "verdict": "RRTMG_CLEAR_SKY_DERIVED_OPTICS_OR_KERNEL_BOUNDARY"
+    },
+    "mass_coupling": {
+      "evidence": "JAX mass_h matches WRF mass_h and using WRF mass_h leaves the residual unchanged.",
+      "verdict": "NOT_PRIMARY"
+    },
+    "surface_emissivity_albedo_land_state": {
+      "evidence": "WRF GLW is dflx(1,1) and NoahMP receives LWDN=GLW; SWDOWN is already within a few W/m2. No WRF emissivity hook exists in this fixture, but surface emissivity is not the downward GLW handoff.",
+      "verdict": "NOT_PRIMARY_FOR_GLW_RTHRATEN"
+    }
+  },
+  "column_inputs": {
+    "cloud_fraction": {
+      "count": 461736,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "rms": 0.0,
+      "shape": [
+        66,
+        159,
+        44
+      ]
+    },
+    "dz_m": {
+      "count": 461736,
+      "max": 691.2114483539235,
+      "max_abs": 691.2114483539235,
+      "mean": 469.8343967753561,
+      "min": 46.85038341329573,
+      "rms": 502.2879236940432,
+      "shape": [
+        66,
+        159,
+        44
+      ]
+    },
+    "hydrometeor_cloud_sum_qc_qi_qs_qg": {
+      "count": 461736,
+      "max": 0.0,
+      "max_abs": 0.0,
+      "mean": 0.0,
+      "min": 0.0,
+      "rms": 0.0,
+      "shape": [
+        44,
+        66,
+        159
+      ]
+    },
+    "pressure_hpa": {
+      "count": 461736,
+      "max": 1019.62734375,
+      "max_abs": 1019.62734375,
+      "mean": 446.1328022731613,
+      "min": 52.2523876953125,
+      "rms": 561.0722540290053,
+      "shape": [
+        66,
+        159,
+        44
+      ]
+    },
+    "qv_kgkg": {
+      "count": 461736,
+      "max": 0.011706834658980328,
+      "max_abs": 0.011706834658980328,
+      "mean": 0.0021903549151558463,
+      "min": 2.6876396077568643e-06,
+      "rms": 0.004061241373383362,
+      "shape": [
+        66,
+        159,
+        44
+      ]
+    },
+    "temperature_k": {
+      "count": 461736,
+      "max": 299.61663618517764,
+      "max_abs": 299.61663618517764,
+      "mean": 246.74614666979596,
+      "min": 205.66026748082047,
+      "rms": 249.24074288128233,
+      "shape": [
+        66,
+        159,
+        44
+      ]
+    },
+    "thermodynamic_state_vs_wrf_part2": {
+      "mu_total_entry_vs_wrf_part2_MUT": {
+        "bias": 2.707949109897492e-05,
+        "candidate_minus_reference": true,
+        "count": 442112,
+        "max_abs": 0.00390625,
+        "p95": 0.001220703125,
+        "p99": 0.0032958984375,
+        "rmse": 0.0005988290792623686,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 96688.15234375,
+        "worst_mismatch_fortran": {
+          "i": 86,
+          "j": 5,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          4,
+          85
+        ],
+        "worst_reference": 96688.15625
+      },
+      "p_pert_entry_vs_wrf_part2_P": {
+        "bias": 4.542515881156811e-06,
+        "candidate_minus_reference": true,
+        "count": 442112,
+        "max_abs": 0.0390625,
+        "p95": 0.015625,
+        "p99": 0.0234375,
+        "rmse": 0.005006926989162881,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 1806.453125,
+        "worst_mismatch_fortran": {
+          "i": 137,
+          "j": 2,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          1,
+          136
+        ],
+        "worst_reference": 1806.4921875
+      },
+      "p_total_entry_vs_wrf_part2_P_plus_PB": {
+        "bias": 4.542515881156811e-06,
+        "candidate_minus_reference": true,
+        "count": 442112,
+        "max_abs": 0.0390625,
+        "p95": 0.015625,
+        "p99": 0.0234375,
+        "rmse": 0.005006926989162881,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 101512.65625,
+        "worst_mismatch_fortran": {
+          "i": 137,
+          "j": 2,
+          "k": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          1,
+          136
+        ],
+        "worst_reference": 101512.6953125
+      },
+      "qv_entry_vs_wrf_part2_QV_OLD": {
+        "bias": 5.778861223270438e-12,
+        "candidate_minus_reference": true,
+        "count": 442112,
+        "max_abs": 5.969281098756885e-08,
+        "p95": 1.4901161193847656e-08,
+        "p99": 1.9557774070394496e-08,
+        "rmse": 4.715057598891387e-09,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 0.010733871808897467,
+        "worst_mismatch_fortran": {
+          "i": 11,
+          "j": 6,
+          "k": 2
+        },
+        "worst_mismatch_index": [
+          1,
+          5,
+          10
+        ],
+        "worst_reference": 0.01073381211608648
+      },
+      "theta_pert_entry_vs_wrf_part2_T_STATE": {
+        "bias": -1.1847795898104325e-06,
+        "candidate_minus_reference": true,
+        "count": 442112,
+        "max_abs": 5.788684885033035e-05,
+        "p95": 2.9171491621582378e-05,
+        "p99": 3.695624680329247e-05,
+        "rmse": 1.5519828801666947e-05,
+        "shape": [
+          44,
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 180.80742197154956,
+        "worst_mismatch_fortran": {
+          "i": 49,
+          "j": 62,
+          "k": 43
+        },
+        "worst_mismatch_index": [
+          42,
+          61,
+          48
+        ],
+        "worst_reference": 180.8074798583984
+      }
+    }
+  },
+  "commands": {
+    "proof": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/rrtmg_step1_forcing_parity.py"
+  },
+  "created_utc": "2026-06-10T07:24:43.224121+00:00",
+  "environment": {
+    "jax_backend": "cpu",
+    "platform": "Linux-7.0.0-22-generic-x86_64-with-glibc2.43",
+    "python": "3.13.11"
+  },
+  "exact_residual_boundary": "Clear-sky RRTMG derived optical/gas/top-buffer profile or kernel boundary. Current WRF hooks prove GLW and RTHRATEN outputs differ, and exonerate gross clock, surface handoff, thermodynamic state, cloud occupancy, layer ordering, theta conversion, and mass coupling; they do not dump the exact WRF RRTMG derived columns needed to name the first divergent LW/SW quantity.",
+  "git": {
+    "branch": "worker/gpt/v013-close-manager",
+    "head": "203be499800c1d78e3a508cdea0937bf1c81e8d5"
+  },
+  "inputs": {
+    "noahmp_closure_json": {
+      "exists": true,
+      "is_file": true,
+      "path": "/home/enric/src/wrf_gpu2/proofs/v014/noahmp_step1_closure.json",
+      "sha256_16": "049aae0a1a7b46be",
+      "size": 17996
+    },
+    "surface_hook": {
+      "exists": true,
+      "is_file": true,
+      "path": "/tmp/wrfgpu2_v014_surface_handoff_pinned_onerun/surface_land_flux_d02_step1.txt",
+      "sha256_16": "7aa6463a1cd95267",
+      "size": 22478958
+    },
+    "wrf_part2_truth_root": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth",
+    "wrf_radiation_driver": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
+      "sha256_16": "4f0177189eb616c9",
+      "size": 259472
+    },
+    "wrf_rrtmg_lw": {
+      "exists": true,
+      "is_file": true,
+      "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "sha256_16": "c7a5238612aa8a42",
+      "size": 652002
+    }
+  },
+  "lane_blocking": {
+    "block_final_v014_strict_release_if_unresolved": true,
+    "block_next_noahmp_strict_attempt": false,
+    "reason": "The residual is secondary to the current NoahMP HFX blocker, but the strict Step-1 release gate still requires RTHRATEN/GLW to close or be formally demoted by manager decision."
+  },
+  "prior_clear_sky_oracle_context": {
+    "interpretation": "Prior full RRTMG clear-sky LW oracle was close on a different real WRF snapshot, so this proof does not claim a generic LW kernel failure.",
+    "lwdnbc_clear_jax_vs_wrf": {
+      "bias_Wm2": 1.017752651717741,
+      "bias_pct": 0.3123176278939153,
+      "max_abs_Wm2": 7.514202130428032,
+      "rmse_Wm2": 1.4514370602096323
+    },
+    "oracle_kind": "pristine-CPU-WRF RRTMG clear-sky wrfout (...C) vs JAX clear-sky on IDENTICAL profiles; all-sky JAX-vs-WRF = calibration floor (NOT self-compare)",
+    "source": "/home/enric/src/wrf_gpu2/proofs/v013/clearsky_radiation.json",
+    "source_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
+  },
+  "recommended_fix": {
+    "next_action": "Add a temporary WRF RRTMG forcing hook, then compare per-column arrays against JAX before editing production: for LW dump play/plev/tlay/tlev, h2ovmr/o3vmr/trace gases, emis, cldfrac/cloud paths/effective radii, tauaer, dflx/uflx/hr and clear-sky counterparts around module_ra_rrtmg_lw.F:RRTMG_LWRAD; for SW dump the matching column optics, topographic correction, fluxes, and heating before the RTHRATENLW+RTHRATENSW sum.",
+    "production_fix_obvious": false
+  },
+  "rthraten_conversion_and_mass": {
+    "lw_only_mass_coupled_vs_wrf_total": {
+      "bias": -1.3873455929302663,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 20.419734408052783,
+      "p95": 2.989506570533835,
+      "p99": 17.06669793043005,
+      "rmse": 2.853063395522659,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -16.430906702669482,
+      "worst_mismatch_fortran": {
+        "i": 11,
+        "j": 29,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        28,
+        10
+      ],
+      "worst_reference": 3.988827705383301
+    },
+    "mass_coupled_theta_tendency_vs_wrf": {
+      "bias": -0.27883526570760864,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 19.425283200182427,
+      "p95": 1.821412525568144,
+      "p99": 16.009826789289097,
+      "rmse": 2.4884141898276413,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -15.436455494799128,
+      "worst_mismatch_fortran": {
+        "i": 11,
+        "j": 29,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        28,
+        10
+      ],
+      "worst_reference": 3.988827705383301
+    },
+    "mass_coupled_using_wrf_mass_vs_wrf": {
+      "bias": -0.2788352637313529,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 19.42528244567689,
+      "p95": 1.8214125414728946,
+      "p99": 16.00982622498183,
+      "rmse": 2.4884141350384956,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -15.436454740293588,
+      "worst_mismatch_fortran": {
+        "i": 11,
+        "j": 29,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        28,
+        10
+      ],
+      "worst_reference": 3.988827705383301
+    },
+    "mass_h_jax_vs_wrf": {
+      "bias": -0.00024532449972419236,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 0.01818978786468506,
+      "p95": 0.0079195809550583,
+      "p99": 0.010990781895816329,
+      "rmse": 0.003331948496610282,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": 92310.93493521214,
+      "worst_mismatch_fortran": {
+        "i": 19,
+        "j": 9,
+        "k": 13
+      },
+      "worst_mismatch_index": [
+        12,
+        8,
+        18
+      ],
+      "worst_reference": 92310.953125
+    },
+    "no_exner_temperature_rate_mass_coupled_vs_wrf": {
+      "bias": -0.32925418383588956,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 19.496191827004914,
+      "p95": 1.8203391959489055,
+      "p99": 16.063993765109135,
+      "rmse": 2.485120085385211,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -15.507364121621613,
+      "worst_mismatch_fortran": {
+        "i": 11,
+        "j": 29,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        28,
+        10
+      ],
+      "worst_reference": 3.988827705383301
+    },
+    "raw_theta_tendency_vs_wrf_raw": {
+      "bias": -2.854522219091891e-06,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 0.0002009441062058404,
+      "p95": 1.8837281990589163e-05,
+      "p99": 0.00016567830919327116,
+      "rmse": 2.5816621987433344e-05,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": -0.00015968182750750816,
+      "worst_mismatch_fortran": {
+        "i": 11,
+        "j": 29,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        28,
+        10
+      ],
+      "worst_reference": 4.126227869833224e-05
+    },
+    "sw_only_mass_coupled_vs_wrf_total": {
+      "bias": 1.7313427171481177,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 38.58552417759782,
+      "p95": 3.470921960544493,
+      "p99": 4.338093665231769,
+      "rmse": 2.2048002965764413,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": 1.2149747848045203,
+      "worst_mismatch_fortran": {
+        "i": 156,
+        "j": 61,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        60,
+        155
+      ],
+      "worst_reference": 39.80049896240234
+    },
+    "vertical_flipped_theta_tendency_mass_coupled_vs_wrf": {
+      "bias": -0.2585334458130835,
+      "candidate_minus_reference": true,
+      "count": 442112,
+      "max_abs": 37.926177717778316,
+      "p95": 4.0898439237648585,
+      "p99": 14.621484309681795,
+      "rmse": 2.9505838724279227,
+      "shape": [
+        44,
+        66,
+        159
+      ],
+      "status": "OK",
+      "worst_candidate": 1.857204697993159,
+      "worst_mismatch_fortran": {
+        "i": 158,
+        "j": 56,
+        "k": 1
+      },
+      "worst_mismatch_index": [
+        0,
+        55,
+        157
+      ],
+      "worst_reference": 39.78338241577148
+    }
+  },
+  "schema": "wrfgpu2.v014.rrtmg_step1_forcing_parity.v1",
+  "source_checks": {
+    "radiation_driver_rrtmg_lw_call": {
+      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
+      "line": 2087,
+      "meaning": "RRTMG LW driver owns GLW and RTHRATENLW before SW is added."
+    },
+    "wrf_lw_glw_assignment": {
+      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "line": 12782,
+      "meaning": "WRF GLW is downward longwave surface flux, not emissivity-scaled by NoahMP.",
+      "statement": "glw(i,j) = dflx(1,1)"
+    },
+    "wrf_lw_theta_conversion": {
+      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "line": 12816,
+      "meaning": "WRF converts LW temperature heating to theta tendency before mass coupling.",
+      "statement": "rthratenlw(i,k,j) = (hr(ncol,k)/86400.)/pi3d(i,k,j)"
+    },
+    "wrf_lw_unhooked_derived_boundary": {
+      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "lines": "12254-12780",
+      "meaning": "WRF builds top-of-model buffer, ozone/trace-gas profiles, cloud optical properties, aerosol optical depth, then calls rrtmg_lw; this exact derived column is not present in the current Step-1 hooks."
+    },
+    "wrf_noahmp_lwdn_handoff": {
+      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_sf_noahmpdrv.F",
+      "line": 760,
+      "meaning": "NoahMP receives GLW directly as LWDN.",
+      "statement": "LWDN = GLW(I,J)"
+    }
+  },
+  "status": "PROOF_EXECUTED",
+  "step1_config": {
+    "dt_s": 6.0,
+    "midpoint_lead_seconds": 900.0,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "radiation_cadence_steps": 300,
+    "radiation_static_loaded": true,
+    "radt_seconds": 1800.0,
+    "sf_surface_physics": 4,
+    "slope_rad": 1,
+    "time_utc": "2026-05-01_18:00:00",
+    "topo_shading": 1,
+    "use_noahmp": true
+  },
+  "summary_numbers": {
+    "glw_bias_w_m2": 17.44070059852181,
+    "glw_max_abs_w_m2": 22.521139408469537,
+    "glw_rmse_w_m2": 17.520282676800505,
+    "rthraten_mass_coupled_bias": -0.27883526570760864,
+    "rthraten_mass_coupled_max_abs": 19.425283200182427,
+    "rthraten_mass_coupled_rmse": 2.4884141898276413
+  },
+  "surface_forcing": {
+    "accepted_lead0_swnorm_vs_wrf_swdown_from_noahmp_closure": {
+      "bias": 56.37912893450022,
+      "count": 10494,
+      "max_abs": 70.75897457953636,
+      "ref_max_abs": 459.25668335,
+      "rmse": 56.43169584231224
+    },
+    "allsky_minus_clear_sky": {
+      "lw_surface_down_minus_clear": {
+        "bias": 0.0,
+        "candidate_minus_reference": true,
+        "count": 10494,
+        "max_abs": 0.0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "rmse": 0.0,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 362.2446560722182,
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          0
+        ],
+        "worst_reference": 362.2446560722182
+      },
+      "sw_surface_down_base_minus_clear": {
+        "bias": 1.3344695834299332e-05,
+        "candidate_minus_reference": true,
+        "count": 10494,
+        "max_abs": 7.036299024321124e-05,
+        "p95": 3.658358050131483e-05,
+        "p99": 4.6764999527226775e-05,
+        "rmse": 1.9559479085812417e-05,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 264.7416938815697,
+        "worst_mismatch_fortran": {
+          "i": 75,
+          "j": 20
+        },
+        "worst_mismatch_index": [
+          19,
+          74
+        ],
+        "worst_reference": 264.74162351857944
+      }
+    },
+    "coszen": {
+      "count": 10494,
+      "max": 0.3310473881095539,
+      "max_abs": 0.3310473881095539,
+      "mean": 0.2939404387529993,
+      "min": 0.25650386299181716,
+      "rms": 0.2946549744973913,
+      "shape": [
+        66,
+        159
+      ]
+    },
+    "patched_seed_glw_vs_wrf_glw": {
+      "all": {
+        "bias": 17.44070059852181,
+        "candidate_minus_reference": true,
+        "count": 10494,
+        "max_abs": 22.521139408469537,
+        "p95": 20.188073610615255,
+        "p99": 20.93358246470608,
+        "rmse": 17.520282676800505,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 367.49730517846956,
+        "worst_mismatch_fortran": {
+          "i": 28,
+          "j": 54
+        },
+        "worst_mismatch_index": [
+          53,
+          27
+        ],
+        "worst_reference": 344.97616577
+      },
+      "land": {
+        "bias": 14.723522079920473,
+        "candidate_minus_reference": true,
+        "count": 768,
+        "max_abs": 19.485911987632733,
+        "p95": 17.906227441163814,
+        "p99": 18.813079950076023,
+        "rmse": 15.062993942888838,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 352.34696545763273,
+        "worst_mismatch_fortran": {
+          "i": 60,
+          "j": 24
+        },
+        "worst_mismatch_index": [
+          23,
+          59
+        ],
+        "worst_reference": 332.86105347
+      },
+      "water": {
+        "bias": 17.655258803568678,
+        "candidate_minus_reference": true,
+        "count": 9726,
+        "max_abs": 22.521139408469537,
+        "p95": 20.232074467294197,
+        "p99": 20.955026189091484,
+        "rmse": 17.699792254052554,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 367.49730517846956,
+        "worst_mismatch_fortran": {
+          "i": 28,
+          "j": 54
+        },
+        "worst_mismatch_index": [
+          53,
+          27
+        ],
+        "worst_reference": 344.97616577
+      }
+    },
+    "patched_seed_swnorm_vs_wrf_swdown": {
+      "all": {
+        "bias": -2.205362539389792,
+        "candidate_minus_reference": true,
+        "count": 10494,
+        "max_abs": 6.825421764382014,
+        "p95": 3.07742134970778,
+        "p99": 4.7843278359705295,
+        "rmse": 2.758969795939516,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 137.45181031438202,
+        "worst_mismatch_fortran": {
+          "i": 26,
+          "j": 43
+        },
+        "worst_mismatch_index": [
+          42,
+          25
+        ],
+        "worst_reference": 130.62638855
+      },
+      "land": {
+        "bias": 3.582430865420056,
+        "candidate_minus_reference": true,
+        "count": 768,
+        "max_abs": 6.825421764382014,
+        "p95": 5.376892797397761,
+        "p99": 6.515180556189329,
+        "rmse": 3.738168727089916,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 137.45181031438202,
+        "worst_mismatch_fortran": {
+          "i": 26,
+          "j": 43
+        },
+        "worst_mismatch_index": [
+          42,
+          25
+        ],
+        "worst_reference": 130.62638855
+      },
+      "water": {
+        "bias": -2.66238755840007,
+        "candidate_minus_reference": true,
+        "count": 9726,
+        "max_abs": 3.770899117299848,
+        "p95": 2.9251252664899425,
+        "p99": 3.0481889200847974,
+        "rmse": 2.666373679255783,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 362.7339531727001,
+        "worst_mismatch_fortran": {
+          "i": 22,
+          "j": 42
+        },
+        "worst_mismatch_index": [
+          41,
+          21
+        ],
+        "worst_reference": 366.50485229
+      }
+    },
+    "topographic_correction_factor": {
+      "count": 10494,
+      "max": 1.527724878852077,
+      "max_abs": 1.527724878852077,
+      "mean": 0.9997340913868231,
+      "min": 0.3131640553721686,
+      "rms": 1.001233702866293,
+      "shape": [
+        66,
+        159
+      ]
+    }
+  },
+  "surface_properties": {
+    "jax_surface_albedo": {
+      "all": {
+        "count": 10494,
+        "max": 0.65,
+        "max_abs": 0.65,
+        "mean": 0.12171526586620929,
+        "min": 0.08,
+        "rms": 0.1919691227315809,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "land": {
+        "count": 768,
+        "max": 0.65,
+        "max_abs": 0.65,
+        "mean": 0.6500000000000001,
+        "min": 0.65,
+        "rms": 0.65,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "water": {
+        "count": 9726,
+        "max": 0.08,
+        "max_abs": 0.08,
+        "mean": 0.08,
+        "min": 0.08,
+        "rms": 0.08,
+        "shape": [
+          66,
+          159
+        ]
+      }
+    },
+    "jax_surface_albedo_vs_wrf_pre_noahmp_albedo": {
+      "all": {
+        "bias": 0.03312273855851038,
+        "candidate_minus_reference": true,
+        "count": 10494,
+        "max_abs": 0.52000000477,
+        "p95": 0.4,
+        "p99": 0.52000000477,
+        "rmse": 0.12301974452304489,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 0.65,
+        "worst_mismatch_fortran": {
+          "i": 16,
+          "j": 11
+        },
+        "worst_mismatch_index": [
+          10,
+          15
+        ],
+        "worst_reference": 0.12999999523
+      },
+      "land": {
+        "bias": 0.45259114719130217,
+        "candidate_minus_reference": true,
+        "count": 768,
+        "max_abs": 0.52000000477,
+        "p95": 0.52000000477,
+        "p99": 0.52000000477,
+        "rmse": 0.45474165778717096,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 0.65,
+        "worst_mismatch_fortran": {
+          "i": 16,
+          "j": 11
+        },
+        "worst_mismatch_index": [
+          10,
+          15
+        ],
+        "worst_reference": 0.12999999523
+      },
+      "water": {
+        "bias": 1.787999998059675e-09,
+        "candidate_minus_reference": true,
+        "count": 9726,
+        "max_abs": 1.787999998059675e-09,
+        "p95": 1.787999998059675e-09,
+        "p99": 1.787999998059675e-09,
+        "rmse": 1.787999998059675e-09,
+        "shape": [
+          66,
+          159
+        ],
+        "status": "OK",
+        "worst_candidate": 0.08,
+        "worst_mismatch_fortran": {
+          "i": 1,
+          "j": 1
+        },
+        "worst_mismatch_index": [
+          0,
+          0
+        ],
+        "worst_reference": 0.079999998212
+      }
+    },
+    "jax_surface_emissivity": {
+      "all": {
+        "count": 10494,
+        "max": 0.98,
+        "max_abs": 0.98,
+        "mean": 0.9792681532304176,
+        "min": 0.97,
+        "rms": 0.9792716164575147,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "land": {
+        "count": 768,
+        "max": 0.97,
+        "max_abs": 0.97,
+        "mean": 0.9700000000000001,
+        "min": 0.97,
+        "rms": 0.9699999999999999,
+        "shape": [
+          66,
+          159
+        ]
+      },
+      "water": {
+        "count": 9726,
+        "max": 0.98,
+        "max_abs": 0.98,
+        "mean": 0.9800000000000003,
+        "min": 0.98,
+        "rms": 0.98,
+        "shape": [
+          66,
+          159
+        ]
+      }
+    }
+  },
+  "verdict": "RRTMG_STEP1_RESIDUAL_LOCALIZED_TO_CLEAR_SKY_DERIVED_RRTMG_BOUNDARY"
+}
