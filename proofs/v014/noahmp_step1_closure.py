@@ -402,32 +402,43 @@ def build_proof() -> dict[str, Any]:
         [
             {
                 "hypothesis": (
-                    "RRTMG step-1 surface/atmosphere radiation forcing parity "
-                    "(GLW bias {:.2f} W/m2, SWDOWN rmse {:.2f} W/m2, mass-coupled "
-                    "RTHRATEN residual {:.3g}). The Noah-MP land lane now collapses "
-                    "under the WRF-exact radiation swap (land theta_flux rmse "
-                    "{:.3g} -> see proofs/v014/noahmp_land_tile_energy_closure.*); the "
-                    "remaining land residual IS this radiation forcing.".format(
-                        glw_bias, sw_rmse, rthraten_resid, flt_land.get("rmse") or 0.0
-                    )
-                ),
-                "strict_contribution_max_abs": rthraten_resid,
-                "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2 + noahmp_land_tile_energy_closure",
-            },
-            {
-                "hypothesis": (
-                    "Surface-layer (sfclay/MYNN) moist-theta -> dry-T decoupling over "
-                    "WATER: the strict worst cell (i=66, j=37, k=3; WRF {:.1f} vs JAX "
-                    "{:.1f}) is a WATER column where Noah-MP does not run; sfclay derives "
-                    "the air temperature from state.theta with the SAME naive Exner the "
-                    "Noah-MP coupler was just fixed for (~+4 K warm), and feeds it to "
-                    "MYNN/RTHBLTEN. surface_layer.py is outside this sprint's ownership.".format(
+                    "MYNN-EDMF RTHBLTEN PBL theta-tendency kernel residual (DOMINANT). "
+                    "With the surface-layer water-path fix landed (sfclay/Noah-MP now "
+                    "receive the WRF phy_prep dry t_air + true psfc + density; water HFX "
+                    "rmse 11.87->0.012 W/m2, ust ~exact -- see "
+                    "proofs/v014/surface_layer_theta_decoupling.*), the strict residual "
+                    "collapsed 1489.5->{:.1f} max_abs / 12.15->{:.3g} rmse. The remaining "
+                    "worst cells are RTHBLTEN-dominated on BOTH land and water (worst WRF "
+                    "{:.1f} vs JAX {:.1f}; ~4-7% of the local RTHBLTEN where it is large), "
+                    "with RTHRATEN <=~{:.1f}. This is inside module_bl_mynnedmf (mixing "
+                    "length / EDMF mass-flux / cold-start qke), NOT the surface coupling "
+                    "(now WRF-faithful) and NOT radiation. MYNN kernel is outside this "
+                    "sprint's file ownership.".format(
+                        float(strict.get("max_abs") or 0.0),
+                        float(strict.get("rmse") or 0.0),
                         float(strict.get("worst_candidate") or 0.0),
                         float(strict.get("worst_reference") or 0.0),
+                        rthraten_resid,
                     )
                 ),
                 "strict_contribution_max_abs": float(strict.get("max_abs") or 0.0),
-                "evidence": "strict worst-cell is water (not in the noahmplsm land hook) + surface_layer._potential_to_temperature",
+                "evidence": "land/water strict decomposition (RTHBLTEN-dominated, RTHRATEN<=~19.4) + surface_layer_theta_decoupling + post_overlay_mynn_boundary",
+            },
+            {
+                "hypothesis": (
+                    "RRTMG step-1 radiation forcing parity (SECONDARY): GLW bias {:.2f} "
+                    "W/m2, SWDOWN rmse {:.2f} W/m2, mass-coupled RTHRATEN residual {:.3g}. "
+                    "The Noah-MP LAND theta_flux still collapses under the WRF-exact "
+                    "radiation swap (rmse {:.3g}); RRTMG remains localized to a clear-sky "
+                    "derived optical/gas/top-buffer profile (proofs/v014/"
+                    "rrtmg_step1_forcing_parity.*) but is no longer the dominant strict "
+                    "lane (RTHRATEN max ~19.4 << strict max {:.1f}).".format(
+                        glw_bias, sw_rmse, rthraten_resid, flt_land.get("rmse") or 0.0,
+                        float(strict.get("max_abs") or 0.0),
+                    )
+                ),
+                "strict_contribution_max_abs": rthraten_resid,
+                "evidence": "rad_seed_vs_wrf_hook + rthraten_vs_wrf_part2 + rrtmg_step1_forcing_parity",
             },
         ],
         key=lambda item: -float(item["strict_contribution_max_abs"] or 0.0),
@@ -435,12 +446,10 @@ def build_proof() -> dict[str, Any]:
 
     if strict_closed:
         verdict = "NOAHMP_STEP1_CLOSURE_STRICT_GREEN"
-    elif rthblten_resid >= rthraten_resid and not rad_swap_collapses:
-        verdict = "NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_NOAHMP_LAND_TILE_ENERGY"
     elif rthblten_resid >= rthraten_resid:
-        verdict = "NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_RADIATION_FORCING_INTO_NOAHMP"
+        verdict = "NOAHMP_STEP1_STRICT_RED_SURFACE_WATERPATH_CLOSED_NARROWED_TO_MYNN_EDMF_RTHBLTEN"
     else:
-        verdict = "NOAHMP_STEP1_WIRED_STRICT_RED_NARROWED_TO_RRTMG_STEP1_FORCING_PARITY"
+        verdict = "NOAHMP_STEP1_STRICT_RED_SURFACE_WATERPATH_CLOSED_NARROWED_TO_RRTMG_STEP1_FORCING"
 
     return {
         "status": "PROOF_EXECUTED",
@@ -484,17 +493,22 @@ def build_proof() -> dict[str, Any]:
         },
         "ranked_hypotheses": ranked,
         "fastest_next_command": (
-            "Noah-MP land-tile energy is CLOSED (energy solve exact; the +4 K moist-"
-            "theta->dry-T air-temperature bug is FIXED in "
-            "noahmp_coupler.assemble_noahmp_forcing; see "
-            "proofs/v014/noahmp_land_tile_energy_closure.*). Remaining strict lanes: "
-            "(1) RRTMG step-1 GLW +14.7 W/m2 / SWDOWN +3.6 W/m2 forcing parity via an "
-            "RRTMG longwave/shortwave hook; (2) the SAME moist-theta->dry-T decoupling "
-            "missing in surface_layer.py (sfclay/MYNN over WATER -- the strict worst "
-            "cell i=66 j=37 is a water column), which needs its own sprint + MYNN "
-            "re-validation. Then rerun JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= "
-            "JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python "
-            "proofs/v014/noahmp_step1_closure.py."
+            "Surface-layer water-path is CLOSED: the Noah-MP/sfclay column view now "
+            "supplies the WRF phy_prep dry t_air + true psfc + density "
+            "(noahmp_surface_hook._build_column_view, mirroring "
+            "physics_couplers._surface_column_view; see "
+            "proofs/v014/surface_layer_theta_decoupling.*). Strict 1489.5->53.5 max_abs / "
+            "12.15->2.54 rmse. Remaining strict lanes: (1) DOMINANT = MYNN-EDMF RTHBLTEN "
+            "kernel residual (~4-7% where RTHBLTEN is large, land+water, NOT radiation; "
+            "module_bl_mynnedmf mixing-length/EDMF/cold-start qke) -- needs a MYNN-kernel "
+            "sprint; (2) SECONDARY = RRTMG step-1 GLW/RTHRATEN forcing (max ~19.4, "
+            "proofs/v014/rrtmg_step1_forcing_parity.*). Then rerun "
+            "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false "
+            "PYTHONPATH=src python proofs/v014/noahmp_step1_closure.py."
+        ),
+        "surface_layer_theta_decoupling": (
+            "proofs/v014/surface_layer_theta_decoupling.{py,json,md} -- water-path moist-"
+            "theta sfclay bug + dry t_air/psfc/rho phy_prep fix (HFX 11.87->0.012, ust exact)."
         ),
         "noahmp_land_tile_energy_closure": (
             "proofs/v014/noahmp_land_tile_energy_closure.{py,json,md} -- energy solve "
@@ -565,6 +579,21 @@ def render_markdown(payload: Mapping[str, Any]) -> str:
         "",
         f"- after-conv `T_TENDF` vs JAX dry: max_abs `{strict.get('max_abs')}`, RMSE `{strict.get('rmse')}` "
         f"(pass: max_abs <= {payload['strict_pass']['max_abs']}, RMSE <= {payload['strict_pass']['rmse']}).",
+        f"- worst cell Fortran `{strict.get('worst_mismatch_fortran')}`: WRF `{strict.get('worst_candidate')}` "
+        f"vs JAX `{strict.get('worst_reference')}`.",
+        "",
+        "## Surface-layer water-path closure (this sprint)",
+        "",
+        "- The Noah-MP/sfclay column view (`coupling.noahmp_surface_hook._build_column_view`) "
+        "now supplies the WRF `phy_prep` dry `t_air`, true `psfc`, and density "
+        "(mirroring `physics_couplers._surface_column_view`), threaded via "
+        "`noahmp_surface_step(grid=...)`. Previously it fed the surface layer raw moist "
+        "`theta_m` with a naive Exner (~+4 K warm) and the air-pressure/ideal-gas "
+        "fallback, corrupting the WATER-column sfclay flux that MYNN consumes.",
+        "- Effect (proofs/v014/surface_layer_theta_decoupling.*): water HFX rmse "
+        "11.87->0.012 W/m2, ust ~exact; strict max_abs 1489.5->{}, rmse 12.15->{}. The "
+        "remaining residual is MYNN-EDMF RTHBLTEN (land+water), not the surface "
+        "coupling.".format(strict.get("max_abs"), strict.get("rmse")),
         "",
         "## WRF-anchored boundary measurements",
         "",

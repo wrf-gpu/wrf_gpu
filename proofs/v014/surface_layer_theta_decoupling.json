@@ -1,0 +1,162 @@
+{
+  "config": {
+    "WRF_RV_OVER_RD": 1.6083623693379792,
+    "bl_pbl_physics": 5,
+    "mp_physics": 8,
+    "sf_sfclay_physics": 5,
+    "use_noahmp": true
+  },
+  "created_utc": "2026-06-10T09:55:46Z",
+  "environment": {
+    "backend": "cpu",
+    "python": "3.13.11",
+    "x64": true
+  },
+  "fix": {
+    "change": "_build_column_view supplies dry t_air = theta_dry*(p/p0)^kappa with theta_dry = state.theta/(1 + Rv/Rd*qv); surface layer + noahmp forcing consume it instead of re-deriving from moist theta_m.",
+    "file": "src/gpuwrf/coupling/noahmp_surface_hook.py",
+    "mirrors": [
+      "coupling.physics_couplers._surface_column_view (grid-backed path)",
+      "physics.noahmp_coupler.assemble_noahmp_forcing (land forcing)"
+    ]
+  },
+  "git": {
+    "branch": "worker/gpt/v013-close-manager",
+    "head": "b774b1cd28572dc6bc3bef45cad306b4c651a2ce"
+  },
+  "metrics": {
+    "hfx_vs_wrf_pre_noahmp": {
+      "land_buggy_moist": {
+        "bias": -55.82242497037932,
+        "count": 768,
+        "max_abs": 161.11528385166517,
+        "ref_max_abs": 382.46984863,
+        "rmse": 65.93799778716168
+      },
+      "land_fixed_full_phy_prep": {
+        "bias": 0.013165168766775747,
+        "count": 768,
+        "max_abs": 1.8436566689986194,
+        "ref_max_abs": 382.46984863,
+        "rmse": 0.15981735137452419
+      },
+      "land_fixed_tair_only": {
+        "bias": 4.832077075244567,
+        "count": 768,
+        "max_abs": 11.54453338329796,
+        "ref_max_abs": 382.46984863,
+        "rmse": 5.237449232969534
+      },
+      "note": "buggy=moist theta_m + air-pressure/ideal-gas fallback; tair_only=dry t_air only (grid-less); full_phy_prep=production grid path (dry t_air + true psfc + phy_prep rho + hydrostatic p).",
+      "water_buggy_moist": {
+        "bias": -10.323335817670003,
+        "count": 9726,
+        "max_abs": 36.68002302713165,
+        "ref_max_abs": 33.732460022,
+        "rmse": 11.869274410392945
+      },
+      "water_fixed_full_phy_prep": {
+        "bias": -0.007488734447065794,
+        "count": 9726,
+        "max_abs": 0.20705355688308913,
+        "ref_max_abs": 33.732460022,
+        "rmse": 0.011760911267731817
+      },
+      "water_fixed_tair_only": {
+        "bias": 1.2372940414356768,
+        "count": 9726,
+        "max_abs": 2.5142044469116662,
+        "ref_max_abs": 33.732460022,
+        "rmse": 1.3746585734389127
+      }
+    },
+    "t1d_air_temperature_bias_vs_dry_K": {
+      "land": {
+        "bias": 4.062949285727465,
+        "count": 768,
+        "max_abs": 4.990203697869617,
+        "ref_max_abs": 294.4565334044886,
+        "rmse": 4.123816493960158
+      },
+      "note": "buggy(moist theta_m Exner) - fixed(dry t_air); = the +Rv/Rd*qv warm bias.",
+      "water": {
+        "bias": 4.643305843927778,
+        "count": 9726,
+        "max_abs": 5.520558019111945,
+        "ref_max_abs": 294.55728541893694,
+        "rmse": 4.650203678652608
+      }
+    },
+    "theta_flux_vs_wrf_kinematic_flt": {
+      "water_buggy_moist": {
+        "bias": -0.00853157021940008,
+        "count": 9726,
+        "max_abs": 0.030459985065068772,
+        "ref_max_abs": 0.027746501121704424,
+        "rmse": 0.009814857942815237
+      },
+      "water_fixed_full_phy_prep": {
+        "bias": -4.220648478352438e-06,
+        "count": 9726,
+        "max_abs": 0.0001627988986931221,
+        "ref_max_abs": 0.027746501121704424,
+        "rmse": 8.231550268241452e-06
+      }
+    },
+    "ust_vs_wrf_pre_noahmp": {
+      "water_buggy_moist": {
+        "bias": -0.024301658446681668,
+        "count": 9726,
+        "max_abs": 0.03847921137424709,
+        "ref_max_abs": 0.23324559629,
+        "rmse": 0.026336142831231854
+      },
+      "water_fixed_full_phy_prep": {
+        "bias": -5.279890286258737e-07,
+        "count": 9726,
+        "max_abs": 0.00014907177362161184,
+        "ref_max_abs": 0.23324559629,
+        "rmse": 2.904240706654509e-06
+      },
+      "water_fixed_tair_only": {
+        "bias": 0.00026545036133348416,
+        "count": 9726,
+        "max_abs": 0.009142780922884439,
+        "ref_max_abs": 0.23324559629,
+        "rmse": 0.0003683780521280083
+      }
+    }
+  },
+  "schema": "wrfgpu2.v014.surface_layer_theta_decoupling.v1",
+  "status": "READY",
+  "truth": {
+    "note": "WRF PRE_NOAHMP == WRF SFCLAY1D output (sfclay truth on every column).",
+    "pinned_surface": "/tmp/wrfgpu2_v014_surface_handoff_pinned_onerun/surface_land_flux_d02_step1.txt",
+    "pinned_surface_sha16": "7aa6463a1cd95267"
+  },
+  "verdict": "WATER_PATH_MOIST_THETA_BUG_CONFIRMED_DRY_TAIR_DECOUPLING_CLOSES_SFCLAY_FLUX",
+  "worst_cell": {
+    "fortran": {
+      "i": 66,
+      "j": 37,
+      "k": 3
+    },
+    "hfx_buggy": -0.5190157386365953,
+    "hfx_fixed_full": 1.0932045884737,
+    "hfx_fixed_tair_only": 1.3356650742601874,
+    "hfx_wrf": 1.0946348906,
+    "is_water": true,
+    "surface_shape": [
+      66,
+      159
+    ],
+    "t1d_bias_K": 4.63563615483838,
+    "t1d_buggy_K": 297.77413296020154,
+    "t1d_fixed_K": 293.13849680536316,
+    "tsk_wrf_K": 294.51077271,
+    "ust_buggy": 0.010693643716870779,
+    "ust_fixed_full": 0.016466889808833846,
+    "ust_wrf": 0.016466887668,
+    "xland": 2.0
+  }
+}
