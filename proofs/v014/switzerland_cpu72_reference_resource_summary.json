@@ -1,0 +1,68 @@
+{
+  "schema": "V014SwitzerlandCPU72ReferenceResourceSummary",
+  "schema_version": 1,
+  "status": "PASS",
+  "generated_date": "2026-06-10",
+  "run_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z",
+  "run_cpu_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+  "rc_file": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/switzerland_72h_cpu.rc",
+  "rc": 0,
+  "wrf_success_complete": true,
+  "case": {
+    "region": "Switzerland/Gotthard",
+    "start": "2023-01-15_00:00:00",
+    "end": "2023-01-18_00:00:00",
+    "forecast_hours": 72,
+    "boundary_interval_hours": 3,
+    "forcing": "GFS 0p50",
+    "domain": "d01",
+    "grid": {
+      "e_we": 129,
+      "e_sn": 129,
+      "e_vert": 45,
+      "mass_grid": "128x128x44",
+      "dx_m": 3000,
+      "dy_m": 3000,
+      "time_step_s": 18
+    }
+  },
+  "outputs": {
+    "wrfout_count": 73,
+    "first_wrfout": "wrfout_d01_2023-01-15_00:00:00",
+    "last_wrfout": "wrfout_d01_2023-01-18_00:00:00",
+    "last_frame_finite": true,
+    "last_frame_checked_fields": [
+      "T2",
+      "U10",
+      "V10",
+      "PSFC",
+      "T",
+      "U",
+      "V",
+      "QVAPOR"
+    ]
+  },
+  "timing": {
+    "cpu_build": "dmpar MPI gfortran, 24 ranks",
+    "ranks": 24,
+    "total_wall_s": 2906.3,
+    "mainloop_sum_s": 2887.6,
+    "mainloop_steps": 14400,
+    "total_wall_per_fcst_hour_s": 40.36,
+    "mainloop_per_fcst_hour_s": 40.11
+  },
+  "resources": {
+    "monitor_interval_s": 10,
+    "monitor_no_gpu": true,
+    "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources/switzerland_72h_cpu_process_usage.csv",
+    "system_memory_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources/switzerland_72h_cpu_system_memory.csv",
+    "process_csv_rows": 8258,
+    "system_memory_csv_rows": 292,
+    "peak_wrf_rank_rss_sum_mib": 12636.176,
+    "peak_single_wrf_rank_rss_mib": 580.184,
+    "peak_system_used_mib": 40828.09,
+    "note": "Peak WRF-rank RSS sums only the 24 wrf.exe rank processes, not wrapper/prterun lines."
+  },
+  "validation_log": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/switzerland_72h_cpu.log",
+  "next_gate": "Run matched GPU-JAX 72h Switzerland field-parity/stability only after the h1 Canary blocker is closed and final-branch memory preflight is green."
+}
