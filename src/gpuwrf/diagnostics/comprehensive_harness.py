@@ -484,7 +484,7 @@ def instrumented_physics_boundary_step(
             )
 
         pre = next_state
-        next_state = surface_adapter(next_state, float(namelist.dt_s))
+        next_state = surface_adapter(next_state, float(namelist.dt_s), namelist.grid)
         if diagnostic_on:
             accumulator = _record_operator(accumulator, _OP_INDEX["surface_layer"], pre, next_state, step_1b)
 

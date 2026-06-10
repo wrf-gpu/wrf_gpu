@@ -2,23 +2,24 @@
   "acceptance": {
     "next_fastest_command": "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/step1_tsk_znt_sourcing_fix.py",
     "strict_step1_closed": false,
+    "thermodynamic_column_inputs_fixed": true,
     "tsk_znt_source_fixed": true
   },
   "artifact": "step1_tsk_znt_sourcing_fix",
   "column_metrics": {
     "dz0_vs_sfclay_in_dz8w": {
-      "bias": 0.017457734172978197,
+      "bias": 2.157063947559501e-06,
       "count": 10494,
-      "max_abs": 0.017593331391992706,
+      "max_abs": 0.00018988715282830526,
       "ref_max_abs": 51.492713928222656,
-      "rmse": 0.01745803956152576
+      "rmse": 7.774106387517223e-06
     },
     "p0_vs_sfclay_in_p_phy": {
-      "bias": 15.088548366923957,
+      "bias": -1.3400514579759863e-05,
       "count": 10494,
-      "max_abs": 292.8203125,
+      "max_abs": 0.015625,
       "ref_max_abs": 101727.03125,
-      "rmse": 45.931279429597595
+      "rmse": 0.0013253267749381015
     },
     "qv0_vs_sfclay_in_qv": {
       "bias": 2.6014649627681093e-11,
@@ -28,18 +29,18 @@
       "rmse": 1.1351633710397017e-08
     },
     "temperature_from_theta_vs_sfclay_in_t_phy": {
-      "bias": 4.6012878004310345,
+      "bias": 0.0004564809756740085,
       "count": 10494,
-      "max_abs": 5.521345498302992,
+      "max_abs": 0.013577942721781255,
       "ref_max_abs": 294.5564880371094,
-      "rmse": 4.614221839008816
+      "rmse": 0.0010959870065792568
     },
     "theta0_vs_sfclay_in_th_phy": {
-      "bias": 4.584931284473557,
+      "bias": -1.4620152437655665e-08,
       "count": 10494,
-      "max_abs": 5.490148027499686,
+      "max_abs": 6.71089752017906e-05,
       "ref_max_abs": 307.3968505859375,
-      "rmse": 4.596847297193302
+      "rmse": 1.3430183262692343e-05
     },
     "u0_vs_sfclay_in_u_phy": {
       "bias": -5.420623089793706e-10,
@@ -56,7 +57,7 @@
       "rmse": 1.2872511375286432e-07
     }
   },
-  "created_utc": "2026-06-10T02:39:22.759401+00:00",
+  "created_utc": "2026-06-10T03:23:20.167379+00:00",
   "host": "enric-battlestation",
   "later_handoff_metrics": {
     "mynn_driver_in_tsk_vs_sfclay_in_tsk": {
@@ -112,25 +113,25 @@
     {
       "evidence": {
         "pressure": {
-          "bias": 15.088548366923957,
+          "bias": -1.3400514579759863e-05,
           "count": 10494,
-          "max_abs": 292.8203125,
+          "max_abs": 0.015625,
           "ref_max_abs": 101727.03125,
-          "rmse": 45.931279429597595
+          "rmse": 0.0013253267749381015
         },
         "temperature": {
-          "bias": 4.6012878004310345,
+          "bias": 0.0004564809756740085,
           "count": 10494,
-          "max_abs": 5.521345498302992,
+          "max_abs": 0.013577942721781255,
           "ref_max_abs": 294.5564880371094,
-          "rmse": 4.614221839008816
+          "rmse": 0.0010959870065792568
         },
         "theta": {
-          "bias": 4.584931284473557,
+          "bias": -1.4620152437655665e-08,
           "count": 10494,
-          "max_abs": 5.490148027499686,
+          "max_abs": 6.71089752017906e-05,
           "ref_max_abs": 307.3968505859375,
-          "rmse": 4.596847297193302
+          "rmse": 1.3430183262692343e-05
         },
         "u_v_qv_are_bounded": {
           "qv": {
@@ -158,7 +159,7 @@
       },
       "hypothesis": "Remaining sfclay mismatch is in non-TSK/ZNT thermodynamic column inputs before SFCLAY_mynn.",
       "rank": 2,
-      "status": "BLOCKING"
+      "status": "FIXED"
     },
     {
       "evidence": {
@@ -247,71 +248,71 @@
       "rmse": 2.5262124884366587e-12
     }
   },
-  "status": "TSK_ZNT_SOURCE_FIXED_NEXT_BLOCKER_THERMODYNAMIC_COLUMN_INPUTS",
+  "status": "TSK_ZNT_THERMO_INPUTS_FIXED_NEXT_BLOCKER_SURFACE_LAYER_OUTPUTS",
   "strict_step1_metric": {
-    "bias": 0.07687194225377524,
+    "bias": -0.6327854994820095,
     "count": 442112,
-    "max_abs": 1497.6112467075195,
+    "max_abs": 847.1445725702908,
     "nonfinite_diff_count": 0,
-    "p95": 2.316572103131588,
-    "p99": 37.60009995324713,
-    "rmse": 13.252694871222973,
+    "p95": 2.2330734101994287,
+    "p99": 4.146218593105294,
+    "rmse": 9.56593990212596,
     "shape": [
       44,
       66,
       159
     ],
     "status": "OK",
-    "worst_candidate": -2457.5830078125,
+    "worst_candidate": -328.9771118164062,
     "worst_mismatch_fortran": {
-      "i": 66,
+      "i": 64,
       "j": 37,
-      "k": 3
+      "k": 2
     },
-    "worst_reference": -959.9717611049804
+    "worst_reference": -1176.121684386697
   },
   "surface_output_metrics": {
     "diag_br_vs_sfclay_out_br": {
-      "bias": 1.5271097563956677,
+      "bias": -0.32608308527570584,
       "count": 10494,
-      "max_abs": 6.0,
+      "max_abs": 2.0,
       "ref_max_abs": 2.0,
-      "rmse": 2.3601122412625113
+      "rmse": 0.7681227693986273
     },
     "diag_hfx_vs_sfclay_out_hfx": {
-      "bias": -13.644397616951785,
+      "bias": 0.17320582115274777,
       "count": 10494,
-      "max_abs": 160.6217929042739,
+      "max_abs": 27.09163832864155,
       "ref_max_abs": 382.4698486328125,
-      "rmse": 21.187735409878695
+      "rmse": 1.3972156996573475
     },
     "diag_qfx_vs_sfclay_out_qfx": {
-      "bias": -1.5820055876514022e-05,
+      "bias": 7.368422170360447e-08,
       "count": 10494,
-      "max_abs": 2.7273259067191847e-05,
+      "max_abs": 2.744275103194571e-07,
       "ref_max_abs": 7.490280404454097e-05,
-      "rmse": 1.745930070321283e-05
+      "rmse": 8.62190066790179e-08
     },
     "diag_qsfc_vs_sfclay_out_qsfc": {
-      "bias": 4.534337477086274e-05,
+      "bias": 5.532973769866484e-06,
       "count": 10494,
-      "max_abs": 7.209919621102567e-05,
+      "max_abs": 8.357738220991784e-06,
       "ref_max_abs": 0.021291911602020264,
-      "rmse": 4.753049564986857e-05
+      "rmse": 5.7533286398352506e-06
     },
     "diag_ust_vs_sfclay_out_ust": {
-      "bias": -0.025506156100444318,
+      "bias": 7.11172738790089e-05,
       "count": 10494,
-      "max_abs": 0.14784556445623043,
+      "max_abs": 0.01231782267117762,
       "ref_max_abs": 0.3369980752468109,
-      "rmse": 0.028969744732629553
+      "rmse": 0.0007831552182476275
     },
     "diag_znt_vs_sfclay_out_znt": {
-      "bias": 5.125163650445078e-07,
+      "bias": 7.813052202621432e-11,
       "count": 10494,
-      "max_abs": 1.0323670735561753e-06,
+      "max_abs": 1.1920928910669204e-08,
       "ref_max_abs": 0.800000011920929,
-      "rmse": 5.94011849198292e-07
+      "rmse": 8.151525946804902e-10
     }
   },
   "wrf_patch": {
@@ -335,6 +336,6 @@
     ],
     "exists": true,
     "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff",
-    "size_bytes": 28078
+    "size_bytes": 28195
   }
 }

@@ -334,7 +334,7 @@ def build_proof() -> dict[str, Any]:
     if int(namelist.sf_sfclay_physics) in SFCLAY_SCAN_ADAPTERS:
         state = SFCLAY_SCAN_ADAPTERS[int(namelist.sf_sfclay_physics)](state, DT_S, namelist.grid)
     else:
-        state = surface_adapter(state, DT_S, first_timestep=True)
+        state = surface_adapter(state, DT_S, namelist.grid, first_timestep=True)
     pbl_entry = state
     jax_flux = _surface_fluxes_from_state(pbl_entry)
 

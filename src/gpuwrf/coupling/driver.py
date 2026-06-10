@@ -899,7 +899,7 @@ def _candidate_before_boundary(
     if not bool(bisection_config.disable_mynn):
         next_state = mynn_adapter(next_state, dt_s, grid)
     if not bool(bisection_config.disable_surface):
-        next_state = surface_adapter(next_state, dt_s)
+        next_state = surface_adapter(next_state, dt_s, grid)
     if run_radiation and not bool(bisection_config.disable_rrtmg):
         next_state = rrtmg_adapter(next_state, dt_s, grid)
     return next_state
