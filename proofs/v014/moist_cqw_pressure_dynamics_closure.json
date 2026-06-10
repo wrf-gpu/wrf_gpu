@@ -1,0 +1,234 @@
+{
+  "verdict": "MOIST_CQW_FIX_PROVEN_CPU_INERT_OFFPATH_STABLE_COEF",
+  "objective": "Bound/close the dry-vs-moist 3D pressure-state blocker: thread WRF moist cqw / pg_buoy_w into the operational acoustic w-equation.",
+  "wrf_anchors": {
+    "calc_cq": "module_big_step_utilities_em.F:856-870 (cqw=0.5*qtot, w-faces)",
+    "pg_buoy_w": "module_big_step_utilities_em.F:2474-2497 (cq1=1/(1+cqw), cq2=cqw*cq1; loading -cq2*(c1f*mub+c2f))",
+    "calc_coef_w": "module_small_step_em.F:624-649 (cqw enters implicit W tridiagonal)",
+    "advance_w_termA": "module_small_step_em.F:1477-1489 (cqw scales implicit pressure term)",
+    "moist_pressure_is_theta_m": "acoustic_wrf.diagnose_pressure_al_alt qvf=1 -> EOS already moist; residual is water-MASS loading only"
+  },
+  "data": {
+    "gpu_dir": "/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
+  },
+  "leads": {
+    "h1": {
+      "hydrostatic_column": {
+        "_note": "half-level k0 pressure; P+PB(k0) - hydrostatic(k0). GPU rides DRY, CPU rides MOIST.",
+        "gpu_Ptot_k0_minus_dry_col": {
+          "mean": -8.18473130056089,
+          "rmse": 10.395118845882358,
+          "p99_abs": 19.949652765054342,
+          "max_abs": 52.11832284157572
+        },
+        "gpu_Ptot_k0_minus_moist_col": {
+          "mean": -202.65640750895872,
+          "rmse": 205.7271667105375,
+          "p99_abs": 280.25157289963244,
+          "max_abs": 286.32119287512614
+        },
+        "cpu_Ptot_k0_minus_dry_col": {
+          "mean": 182.19590206756706,
+          "rmse": 184.91816885606562,
+          "p99_abs": 248.24534802158408,
+          "max_abs": 252.0218690319889
+        },
+        "cpu_Ptot_k0_minus_moist_col": {
+          "mean": -13.539559378351315,
+          "rmse": 13.658001758295912,
+          "p99_abs": 18.309550919479804,
+          "max_abs": 30.23005975097476
+        },
+        "gpu_moist_minus_dry_col_loading_Pa": {
+          "mean": 194.4716762083978,
+          "rmse": 197.39310353771785,
+          "p99_abs": 271.38477652793165,
+          "max_abs": 276.77704467772855
+        },
+        "cpu_moist_minus_dry_col_loading_Pa": {
+          "mean": 195.7354614459184,
+          "rmse": 198.3502431619601,
+          "p99_abs": 263.7292821159596,
+          "max_abs": 267.06474586733384
+        },
+        "gpu_surface_column_water_loading_Pa": {
+          "mean": 197.5454113359719,
+          "rmse": 200.45078295119234,
+          "p99_abs": 274.89458685956254,
+          "max_abs": 280.3337573944591
+        }
+      },
+      "rw_tend_residual_low_faces_1_5": {
+        "gpu_dry": {
+          "mean": -3.8775388973707265,
+          "rmse": 35.626209816474116,
+          "p99_abs": 134.014250192463,
+          "max_abs": 1348.8901587052183
+        },
+        "gpu_moist": {
+          "mean": -8933.677780114434,
+          "rmse": 8987.738992469203,
+          "p99_abs": 10766.585664648579,
+          "max_abs": 11280.788941249897
+        },
+        "gpu_loading_moist_minus_dry": {
+          "mean": -8929.800241217064,
+          "rmse": 8984.103018805738,
+          "p99_abs": 10764.878728130192,
+          "max_abs": 11249.19756189229
+        },
+        "cpu_dry": {
+          "mean": 8992.196206132647,
+          "rmse": 9131.446196780487,
+          "p99_abs": 13644.378252305993,
+          "max_abs": 51751.03962936457
+        },
+        "cpu_moist": {
+          "mean": -3.1179734348992074,
+          "rmse": 1233.847120595196,
+          "p99_abs": 4305.741254701825,
+          "max_abs": 43049.06735605508
+        },
+        "cpu_loading_moist_minus_dry": {
+          "mean": -8995.314179567546,
+          "rmse": 9049.446951270436,
+          "p99_abs": 10864.34593715408,
+          "max_abs": 11381.461049365793
+        }
+      },
+      "cqw_solver_interior_min_max": {
+        "gpu_min": 0.9881673788182825,
+        "gpu_max": 0.9999972117002911
+      }
+    },
+    "h4": {
+      "hydrostatic_column": {
+        "_note": "half-level k0 pressure; P+PB(k0) - hydrostatic(k0). GPU rides DRY, CPU rides MOIST.",
+        "gpu_Ptot_k0_minus_dry_col": {
+          "mean": -2.886549297572215,
+          "rmse": 8.187010830759695,
+          "p99_abs": 18.047883576954046,
+          "max_abs": 57.07149210275384
+        },
+        "gpu_Ptot_k0_minus_moist_col": {
+          "mean": -199.45024013776728,
+          "rmse": 202.27946734985375,
+          "p99_abs": 273.3749747152056,
+          "max_abs": 278.5309585190116
+        },
+        "cpu_Ptot_k0_minus_dry_col": {
+          "mean": 191.63624039078053,
+          "rmse": 193.9968459601012,
+          "p99_abs": 247.73771547416558,
+          "max_abs": 256.9872003244236
+        },
+        "cpu_Ptot_k0_minus_moist_col": {
+          "mean": -13.18834110381652,
+          "rmse": 13.26396651950874,
+          "p99_abs": 17.361654290449952,
+          "max_abs": 28.35976554339868
+        },
+        "gpu_moist_minus_dry_col_loading_Pa": {
+          "mean": 196.56369084019505,
+          "rmse": 199.48968717728062,
+          "p99_abs": 274.06166400683577,
+          "max_abs": 279.4682250237238
+        },
+        "cpu_moist_minus_dry_col_loading_Pa": {
+          "mean": 204.82458149459708,
+          "rmse": 207.05589309684711,
+          "p99_abs": 261.10005169433964,
+          "max_abs": 270.6893016436952
+        },
+        "gpu_surface_column_water_loading_Pa": {
+          "mean": 199.92837671777156,
+          "rmse": 202.83306282274677,
+          "p99_abs": 277.8399454147418,
+          "max_abs": 283.1829379245173
+        }
+      },
+      "rw_tend_residual_low_faces_1_5": {
+        "gpu_dry": {
+          "mean": -3.0046390152486695,
+          "rmse": 57.72351935782886,
+          "p99_abs": 204.9119166995135,
+          "max_abs": 1141.616270035298
+        },
+        "gpu_moist": {
+          "mean": -9353.870265341817,
+          "rmse": 9436.818517705824,
+          "p99_abs": 11601.237061065172,
+          "max_abs": 12578.696772183093
+        },
+        "gpu_loading_moist_minus_dry": {
+          "mean": -9350.865626326568,
+          "rmse": 9433.91268201227,
+          "p99_abs": 11611.838615751556,
+          "max_abs": 12568.280221727393
+        },
+        "cpu_dry": {
+          "mean": 9355.937355577958,
+          "rmse": 9507.307092729558,
+          "p99_abs": 13263.537067812795,
+          "max_abs": 94720.8438886355
+        },
+        "cpu_moist": {
+          "mean": 9.38277563389277,
+          "rmse": 1159.042114148013,
+          "p99_abs": 3957.808746832608,
+          "max_abs": 100534.34954846746
+        },
+        "cpu_loading_moist_minus_dry": {
+          "mean": -9346.554579944068,
+          "rmse": 9424.778400692465,
+          "p99_abs": 11138.29289808414,
+          "max_abs": 11455.128336965561
+        }
+      },
+      "cqw_solver_interior_min_max": {
+        "gpu_min": 0.9866605328795496,
+        "gpu_max": 0.9999972116954026
+      }
+    }
+  },
+  "solver_conditioning": {
+    "dry": {
+      "label": "dry_cqw=1",
+      "all_finite": true,
+      "max_abs_gamma": 0.0005480712941491409,
+      "min_alpha": 0.9988551998601433,
+      "max_abs_alpha": 1.0
+    },
+    "moist": {
+      "label": "moist_cqw=cq1",
+      "all_finite": true,
+      "max_abs_gamma": 0.0005480695970848582,
+      "min_alpha": 0.9988551998580327,
+      "max_abs_alpha": 1.0
+    }
+  },
+  "inertness": {
+    "rw_moist_qtot0_vs_dry_max_abs": 0.0,
+    "cqw_moist_qtot0_vs_drycqw_max_abs": 0.0,
+    "cqw_solver_interior_with_qtot_min": 0.9900990099009901,
+    "cqw_solver_interior_with_qtot_max": 0.9900990099009901,
+    "loading_term_mean_sign": -4871.95962593201,
+    "note": "qtot=0 -> bit-identical to dry (max_abs == 0); qtot>0 -> cqw_solver<1 and a net downward (negative) loading on the lower interior."
+  },
+  "summary": {
+    "gpu_Ptot_k0_off_dry_column_Pa": 8.18473130056089,
+    "gpu_Ptot_k0_off_moist_column_Pa": 202.65640750895872,
+    "cpu_Ptot_k0_off_moist_column_Pa": 13.539559378351315,
+    "moist_minus_dry_column_loading_Pa": 194.4716762083978,
+    "rw_tend_mean_low_faces": {
+      "gpu_dry_balanced_mean": -3.8775388973707265,
+      "gpu_moist_imbalance_mean": -8933.677780114434,
+      "cpu_dry_imbalance_mean": 8992.196206132647,
+      "cpu_moist_balanced_mean": -3.1179734348992074
+    },
+    "moist_path_bit_identical_when_dry": true,
+    "implicit_solver_well_conditioned": true,
+    "interpretation": "GPU P+PB(k0) sits on its DRY hydrostatic column (off-dry ~8 Pa, off-moist ~200 Pa) and its DRY W-balance residual mean ~0 while its MOIST residual carries the full downward water loading; CPU is the mirror image (moist-balanced). Threading WRF moist cqw/pg_buoy_w moves the GPU acoustic equilibrium from the dry onto the moist column. The change is bit-identical to dry when qtot=0 and keeps the implicit W solve well-conditioned."
+  }
+}

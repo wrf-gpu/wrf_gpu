@@ -142,6 +142,36 @@ h1-h4 `PSFC` RMSE/bias is `45.775/+33.504 Pa`. The h1-h4 comparator still
 reports `FAIL` because the 3D pressure-state and surface/physics lanes remain;
 `PSFC` is no longer the dominant blocker. Next blocker is moist-cqw dynamics.
 
+Update 2026-06-10 18:15 WEST: the moist-cqw dynamics blocker is **closed and
+default-ON**. Accepted sprint:
+`.agent/sprints/2026-06-10-v014-fable-moist-cqw-pressure-dynamics/`; review:
+`.agent/reviews/2026-06-10-v014-fable-moist-cqw-pressure-dynamics.md`; proofs:
+`proofs/v014/moist_cqw_pressure_dynamics_closure.*` and
+`proofs/v014/moist_cqw_gpu_h4_validation.*`. Production fix:
+`src/gpuwrf/dynamics/core/advance_w.py` implements WRF `calc_cq` w-face
+`cqw` and moist `pg_buoy_w`; `src/gpuwrf/runtime/operational_mode.py` threads
+the moist `rw_tend` and implicit-W `cqw=cq1` through the operational acoustic
+prep path. `GPUWRF_MOIST_CQW` now defaults ON; `GPUWRF_MOIST_CQW=0` is a
+bisection/back-compat escape hatch only.
+
+Manager GPU h1-h4 gate:
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_moistcqw_h4_20260610T165255Z`,
+GPU rc `0`, harness `L2_D02_GREEN`, peak VRAM `16921 MiB`. New GPU `P+PB(k0)`
+vs moist hydrostatic half-level residual mean/RMSE is `-9.492/11.758 Pa`, CPU
+truth is `-13.349/13.444 Pa`; old PSFC-fix GPU baseline was dry-balanced
+(`-201.492/204.437 Pa` vs moist, `-5.990/9.268 Pa` vs dry). h1-h4 field RMSE:
+`P 55.125 -> 22.642 Pa`, `W 0.0281 -> 0.0250`, `T 0.310 -> 0.256 K`,
+`U 0.505 -> 0.384`, `V 0.442 -> 0.272`, `U10 0.695 -> 0.482`,
+`V10 0.861 -> 0.519`; `QVAPOR` unchanged at the `1e-6` RMSE-delta scale.
+
+The all-field comparator still reports `FAIL`, led by static `MUB/PB` edge/base
+differences plus surface/radiation fields. This is not a rejection of the
+moist-cqw sprint, but those residuals must be watched in the 72h gates. Next
+release gate: rerun Canary d02 72h GPU-vs-CPU field-parity/stability from the
+fully fixed default-ON branch with resource CSV logging, h24 intermediate
+compare, final Grid-Delta Atlas, then Switzerland 72h GPU if Canary shows no
+renewed unacceptable drift.
+
 Update 2026-06-10 13:15 WEST: GPT RRTMG/RTHRATEN sprint is accepted pending
 commit as a production fix plus formal bound, not a strict Step-1 green. New
 proofs: `proofs/v014/rrtmg_rthraten_closure.*`, refreshed

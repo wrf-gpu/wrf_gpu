@@ -128,6 +128,104 @@ def pg_buoy_w_dry(
     return rw
 
 
+def moist_cqw_calc_face(qtot_mass: jax.Array) -> jax.Array:
+    """Return the raw WRF ``calc_cq`` ``cqw`` moist-loading field on w-faces.
+
+    Source: WRF ``calc_cq`` (``module_big_step_utilities_em.F:856-870``) — the
+    vertical analogue of the ``cqu``/``cqv`` horizontal moist loading
+    (``acoustic_wrf.moisture_coupling_factors``), but on w-faces:
+
+    ``cqw(i,k,j) = 0.5*qtot`` with ``qtot = sum_species( q(k) + q(k-1) )`` for
+    interior faces ``k = kts+1..ktf`` (WRF 1-based; Python faces ``1..nz-1``),
+    i.e. ``cqw_face(k) = 0.5*(QTOT(k) + QTOT(k-1))`` where ``QTOT`` is total
+    moisture ``qv+qc+qr+qi+qs+qg`` on mass levels.
+
+    ``qtot_mass`` is the mass-level total moisture ``(nz, ny, nx)``.  The returned
+    ``(nz+1, ny, nx)`` face field is ``0`` at the bottom (``k=0``) and top
+    (``k=nz``) faces, which WRF leaves out of the interior loop and which the
+    downstream ``calc_coef_w``/``advance_w`` interior solve never consumes.
+    """
+
+    nz = int(qtot_mass.shape[0])
+    cqw_calc = jnp.zeros((nz + 1,) + tuple(qtot_mass.shape[1:]), dtype=qtot_mass.dtype)
+    if nz >= 2:
+        cqw_calc = cqw_calc.at[1:nz, :, :].set(
+            0.5 * (qtot_mass[1:nz, :, :] + qtot_mass[: nz - 1, :, :])
+        )
+    return cqw_calc
+
+
+def pg_buoy_w_moist(
+    p: jax.Array,
+    mu_work: jax.Array,
+    mub: jax.Array,
+    cqw_calc: jax.Array,
+    *,
+    c1f: jax.Array,
+    c2f: jax.Array,
+    rdnw: jax.Array,
+    rdn: jax.Array,
+    msfty: jax.Array,
+    gravity: float = GRAVITY_M_S2,
+) -> tuple[jax.Array, jax.Array]:
+    """Return the *moist* large-step vertical PGF + buoyancy ``rw_tend`` and the
+    post-``pg_buoy_w`` ``cqw`` field consumed by ``calc_coef_w``/``advance_w``.
+
+    Source: WRF ``pg_buoy_w`` (``module_big_step_utilities_em.F:2474-2497``) full
+    moist form with ``cq1 = 1/(1+cqw)`` and ``cq2 = cqw*cq1`` (``cqw`` here is the
+    raw ``calc_cq`` field from :func:`moist_cqw_calc_face`):
+
+    * interior face k (Python ``1..nz-1``):
+      ``rw_tend(k) = (1/msfty)*g*( cq1*rdn(k)*(p(k)-p(k-1))
+                                   - c1f(k)*mu' - cq2*(c1f(k)*mub + c2f(k)) )``
+      and the solver ``cqw(k) <- cq1``.
+    * top face k=kde (Python ``nz``), using ``cqw(kde-1)``:
+      ``rw_tend(kde) = (1/msfty)*g*( cq1*2*rdnw(kde-1)*(-p(kde-1))
+                                     - c1f(kde)*mu' - cq2*(c1f(kde)*mub + c2f(kde)) )``
+
+    The extra ``-cq2*(c1f*mub + c2f)`` term is the **water-mass loading** the dry
+    specialization (:func:`pg_buoy_w_dry`, ``cqw=0`` -> ``cq1=1, cq2=0``) omits;
+    without it the acoustic solver relaxes the column to *dry* hydrostatic
+    balance rather than WRF's *moist* balance.  With ``cqw_calc == 0`` this
+    function is bit-identical to ``pg_buoy_w_dry`` + ``dry_cqw``.
+
+    ``p`` is the perturbation pressure on mass levels ``(nz, ny, nx)``;
+    ``mu_work`` is the perturbation dry mass ``mu'`` ``(ny, nx)``; ``mub`` is the
+    base-state dry mass ``(ny, nx)``; ``cqw_calc`` is the ``(nz+1, ny, nx)`` raw
+    moist-loading face field.
+    """
+
+    nz = int(p.shape[0])
+    msft_inv = (1.0 / msfty)[None, :, :]
+    g = float(gravity)
+    rw = jnp.zeros((nz + 1,) + tuple(p.shape[1:]), dtype=p.dtype)
+    cqw_solver = jnp.zeros((nz + 1,) + tuple(p.shape[1:]), dtype=p.dtype)
+
+    if nz >= 2:
+        cqw_int = cqw_calc[1:nz, :, :]
+        cq1_int = 1.0 / (1.0 + cqw_int)
+        cq2_int = cqw_int * cq1_int
+        interior = msft_inv * g * (
+            cq1_int * rdn[1:nz, None, None] * (p[1:nz, :, :] - p[: nz - 1, :, :])
+            - c1f[1:nz, None, None] * mu_work[None, :, :]
+            - cq2_int * (c1f[1:nz, None, None] * mub[None, :, :] + c2f[1:nz, None, None])
+        )
+        rw = rw.at[1:nz, :, :].set(interior)
+        cqw_solver = cqw_solver.at[1:nz, :, :].set(cq1_int)
+
+    # top face k=nz (WRF k=kde) uses the raw cqw at the topmost interior face nz-1.
+    cqw_top = cqw_calc[nz - 1, :, :]
+    cq1_top = 1.0 / (1.0 + cqw_top)
+    cq2_top = cqw_top * cq1_top
+    top = msft_inv[0] * g * (
+        cq1_top * 2.0 * rdnw[nz - 1] * (-p[nz - 1, :, :])
+        - c1f[nz] * mu_work
+        - cq2_top * (c1f[nz] * mub + c2f[nz])
+    )
+    rw = rw.at[nz, :, :].set(top)
+    return rw, cqw_solver
+
+
 def advance_w_wrf(
     *,
     w: jax.Array,
@@ -434,4 +532,11 @@ def advance_w_wrf(
     return w_solved, ph_next, t_2ave_next
 
 
-__all__ = ["advance_w_wrf", "pg_buoy_w_dry", "dry_cqw", "GRAVITY_M_S2"]
+__all__ = [
+    "advance_w_wrf",
+    "pg_buoy_w_dry",
+    "pg_buoy_w_moist",
+    "moist_cqw_calc_face",
+    "dry_cqw",
+    "GRAVITY_M_S2",
+]
