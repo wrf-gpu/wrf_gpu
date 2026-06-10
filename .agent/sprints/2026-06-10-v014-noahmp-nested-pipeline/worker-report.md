@@ -139,6 +139,6 @@ Canary 72h run finishes and the branch is merged.
 
 ## Commit
 
-`worker/fable/v014-noahmp-nested` — hash recorded below after commit:
-see `git log -1` on the branch (single commit containing all source/test/proof
-changes).
+`worker/fable/v014-noahmp-nested` @ **`1326b6c9`**
+("v014 activate noahmp in standalone nested pipeline", base `7c819067`) —
+contains all source/test/proof changes plus this report.
