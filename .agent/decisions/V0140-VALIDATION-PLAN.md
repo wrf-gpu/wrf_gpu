@@ -12,15 +12,17 @@ campaign. The next campaign must first explain and reduce the CPU-WRF vs GPU-WRF
 cell-level divergence across all written fields. Station TOST cannot hide a broad
 spatial field mismatch.
 
-2026-06-10 13:15 WEST manager update: after the RRTMG dry-temperature fix, the
-methodological priority is sharper: **long all-cell field-parity/stability is
-the primary v0.14 evidence; powered TOST is secondary station sanity evidence**.
-The strongest paper/release claim is a 72h/120h Canary or Switzerland
-CPU-vs-GPU campaign showing bounded all-field deltas and no drift over time,
-with Grid-Delta Atlas plots for every common numeric field. TOST n=15 remains
-useful, but it is observationally noisy and lower-powered than direct wrfout
-field comparison; it must not override the all-cell evidence in either
-direction.
+2026-06-10 13:45 WEST manager update: the principal approved the validation
+change. **Powered TOST is no longer a v0.14 release gate.** The required v0.14
+release and paper gates are:
+
+1. Switzerland/Gotthard 72h CPU-WRF vs GPU-JAX field-parity/stability.
+2. Canary L2 d02 72h CPU-WRF vs GPU-JAX field-parity/stability.
+3. Grid-Delta Atlas summary and plots over every common numeric `wrfout` field.
+
+TOST remains useful as secondary station sanity evidence, but it is
+observationally noisy and lower-powered than direct wrfout field comparison. It
+must not delay, replace, or override the all-cell field evidence.
 
 This is the deeper validation campaign after the v0.13 3h gate. The model is a
 fast, GPU-native, GPU-scalable WRF-compatible implementation. The campaign must
@@ -49,9 +51,13 @@ Current pairable truth found on disk:
 - AEMET:
   `/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations`.
 - Switzerland:
-  `/mnt/data/wrf_gpu_switzerland_big/run_cpu` and
-  `/mnt/data/wrf_gpu_switzerland_128/run_cpu` contain 24h CPU truth. This gives
-  a non-Canary winter/Alps region. It does not give Canary seasonal coverage.
+  `/mnt/data/wrf_gpu_switzerland_big/run_cpu`,
+  `/mnt/data/wrf_gpu_switzerland_128/run_cpu`, and
+  `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu`
+  contain 24h CPU truth. They are not resumable to 72h because no `wrfrst_d0*`
+  files are present and the existing `wrfbdy_d01` files cover only 0-21h
+  boundary times. The mandatory 72h Switzerland truth must be rebuilt from the
+  same GFS/WPS/WRF case definition.
 - Pristine WRF:
   `/home/enric/src/wrf_pristine/WRF` exists with CPU-WRF binaries for oracle or
   backfill work.
@@ -196,27 +202,26 @@ What it proves:
 - The heaviest known coupling combination is stable through the largest horizon
   that is expected to fit reliably on the current 32GB workstation.
 
-### B4 - Grid-Cell Envelope First, Then Powered TOST n=15
+### B4 - Mandatory 72h Field-Parity/Stability Gates
 
-Type: PRIMARY CPU-WRF field-parity gate, SECONDARY gate-keeper equivalence
+Type: PRIMARY CPU-WRF field-parity/stability release gate
 
-Resource: GPU serial campaign plus CPU scoring
+Resource: CPU truth/build lane, then GPU serial campaign plus CPU scoring
 
-Estimate: 6h00m
+Estimate: 6h00m+ depending on CPU truth availability
 
-Release-gate update 2026-06-09 16:08 WEST:
+Release-gate update 2026-06-10 13:45 WEST:
 
-TOST is still required before v0.14 close, but it is not sufficient as a
-station-only artifact. The final validation output must have two pillars:
+TOST is no longer required before v0.14 close. The final validation output must
+have two regional field-parity gates:
 
-- **Pillar A — ADR-029 powered station TOST** for AEMET T2/U10/V10 RMSE
-  equivalence.
-- **Pillar B — Grid-Delta Atlas** comparing GPU wrfout against CPU-WRF wrfout
-  for every paired case, lead time, grid cell, and common numeric field.
+- **Switzerland/Gotthard 72h d01**: non-Canary winter/Alps generalization.
+- **Canary L2 d02 72h**: operational Canary 3 km target with retained CPU truth.
 
-The atlas requirement is now recorded in
-`.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. It must generate compact
-release plots and a README-embeddable dashboard before tag:
+The atlas requirement is recorded in
+`.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`; the release-gate decision is
+recorded in `.agent/decisions/V0140-FIELD-PARITY-RELEASE-GATE.md`. The atlas
+must generate compact release plots and a README-embeddable dashboard before tag:
 
 - field x lead heatmaps for RMSE, bias, p99, and max_abs;
 - lead-time drift/stability plots for mandatory core fields;
