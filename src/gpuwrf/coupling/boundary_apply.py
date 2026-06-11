@@ -62,7 +62,7 @@ SIDE_INDEX = {name: index for index, name in enumerate(SIDES)}
 # (acoustic_wrf.R_D/CP_D/P0_PA/CVPM) so the boundary-ring geopotential rebuild is
 # the EXACT inverse of ``diagnose_pressure_al_alt`` / WRF ``calc_p_rho_phi``.
 _R_D = 287.0
-_CP_D = 1004.0
+_CP_D = 7.0 * _R_D / 2.0  # WRF cp = 1004.5 exactly (mirrors acoustic_wrf.CP_D)
 _P0_PA = 100000.0
 _CVPM = -(_CP_D - _R_D) / _CP_D
 _THETA_BASE_OFFSET = 300.0  # WRF perturbation-theta reference t0 (operational_mode._theta_base_offset)

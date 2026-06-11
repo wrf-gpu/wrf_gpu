@@ -168,6 +168,61 @@ def _y_face_factor_or_one(factor: jax.Array | None, *, ny: int, reference: jax.A
     return arr[:ny, :] if arr.shape[-2] == ny + 1 else arr
 
 
+def stage_omega_specified(
+    u: jax.Array,
+    v: jax.Array,
+    mu_total: jax.Array,
+    *,
+    c1h: jax.Array,
+    c2h: jax.Array,
+    dnw: jax.Array,
+    rdx: float,
+    rdy: float,
+    msfuy: jax.Array,
+    msfvx: jax.Array,
+    msftx: jax.Array,
+) -> jax.Array:
+    """WRF ``calc_ww_cp`` stage omega for SPECIFIED-boundary real domains.
+
+    Source: ``module_big_step_utilities_em.F:640-782``.  Unlike
+    :func:`couple_velocities_periodic` (whose ``rom`` wraps the x/y edges
+    periodically -- exact in the interior but up to ~5x the physical omega on
+    the outermost row/column of a real specified domain, v0.14 continuation
+    proof D1: band rmse 6.99 / max 116 vs the oracle 2.48 / 24), this uses the
+    domain's actual staggered ``u``/``v`` faces (``(nz, ny, nx+1)`` /
+    ``(nz, ny+1, nx)``) with NO wrap, and edge-pads ``mu`` for the boundary
+    face masses (the WRF halo carries the spec-zone value there).  Matches the
+    fp64 numpy oracle to machine precision on every interior ring and to the
+    halo-pad convention on ring 0.
+
+    ``msfuy``/``msfvx`` are the STAGGERED map factors ``(ny, nx+1)`` /
+    ``(ny+1, nx)``; ``msftx`` is the mass-point factor ``(ny, nx)``.
+    """
+
+    nz = int(u.shape[0])
+    ny, nx = int(mu_total.shape[-2]), int(mu_total.shape[-1])
+    mu_pad_x = jnp.pad(mu_total, ((0, 0), (1, 0)), mode="edge")
+    muu = 0.5 * (mu_pad_x[:, 1:] + mu_pad_x[:, :-1])  # faces 0..nx-1
+    muu = jnp.concatenate([muu, mu_total[:, -1:]], axis=1)  # face nx (edge pad)
+    mu_pad_y = jnp.pad(mu_total, ((1, 0), (0, 0)), mode="edge")
+    muv = 0.5 * (mu_pad_y[1:, :] + mu_pad_y[:-1, :])
+    muv = jnp.concatenate([muv, mu_total[-1:, :]], axis=0)
+
+    c1 = c1h[:, None, None]
+    c2 = c2h[:, None, None]
+    ru = (c1 * muu[None, :, :] + c2) * u / msfuy[None, :, :]  # (nz, ny, nx+1)
+    rv = (c1 * muv[None, :, :] + c2) * v / msfvx[None, :, :]  # (nz, ny+1, nx)
+    divv = msftx[None, :, :] * dnw[:, None, None] * (
+        float(rdx) * (ru[:, :, 1:] - ru[:, :, :-1]) + float(rdy) * (rv[:, 1:, :] - rv[:, :-1, :])
+    )  # (nz, ny, nx)
+    dmdt = jnp.sum(divv, axis=0, keepdims=True)
+    increments = -(dnw[:, None, None] * c1h[:, None, None] * dmdt) - divv
+    cum = jnp.cumsum(increments, axis=0)
+    rom = jnp.zeros((nz + 1, ny, nx), dtype=cum.dtype)
+    rom = rom.at[1:nz, :, :].set(cum[: nz - 1, :, :])
+    return rom
+
+
 def couple_velocities_periodic(
     u: jax.Array,
     v: jax.Array,
