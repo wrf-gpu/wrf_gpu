@@ -1,0 +1,1323 @@
+{
+  "schema": "v014_switzerland_bdy_normal_wind_oracle",
+  "generated_utc": "2026-06-11T22:37:44.162586+00:00",
+  "cpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+  "gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
+  "depth": 8,
+  "note": "Sign convention: flux_excess is the GPU-minus-CPU single-face mass flux in budget units; net_influx = -(fe-fw + fn-fs). At the W/S faces, positive normal wind = INFLOW; at E/N, positive = OUTFLOW. A coherent OUTWARD normal-wind bias on all four faces == venting.",
+  "h36": {
+    "available": false
+  },
+  "h37": {
+    "available": true,
+    "ncell": 12544,
+    "rows": [
+      {
+        "face": "W",
+        "b_dist": 0,
+        "cpu_normal_mean": 20.345937728881836,
+        "gpu_normal_mean": 20.345937728881836,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 20380.688265306122,
+        "gpu_flux_pa_cell_h": 20386.42806122449,
+        "flux_excess_pa_cell_h": 5.739795918367347
+      },
+      {
+        "face": "W",
+        "b_dist": 1,
+        "cpu_normal_mean": 21.231483459472656,
+        "gpu_normal_mean": 21.210514068603516,
+        "gpu_minus_cpu_normal_mean": -0.020969390869140625,
+        "cpu_flux_pa_cell_h": 21250.395918367347,
+        "gpu_flux_pa_cell_h": 21299.11836734694,
+        "flux_excess_pa_cell_h": 48.72244897959184
+      },
+      {
+        "face": "W",
+        "b_dist": 2,
+        "cpu_normal_mean": 21.23250389099121,
+        "gpu_normal_mean": 21.231721878051758,
+        "gpu_minus_cpu_normal_mean": -0.000782012939453125,
+        "cpu_flux_pa_cell_h": 21166.683673469386,
+        "gpu_flux_pa_cell_h": 21185.214795918368,
+        "flux_excess_pa_cell_h": 18.53112244897959
+      },
+      {
+        "face": "W",
+        "b_dist": 3,
+        "cpu_normal_mean": 21.245899200439453,
+        "gpu_normal_mean": 21.230777740478516,
+        "gpu_minus_cpu_normal_mean": -0.0151214599609375,
+        "cpu_flux_pa_cell_h": 21081.904591836734,
+        "gpu_flux_pa_cell_h": 21089.03112244898,
+        "flux_excess_pa_cell_h": 7.126530612244898
+      },
+      {
+        "face": "W",
+        "b_dist": 4,
+        "cpu_normal_mean": 21.293306350708008,
+        "gpu_normal_mean": 21.298259735107422,
+        "gpu_minus_cpu_normal_mean": 0.0049533843994140625,
+        "cpu_flux_pa_cell_h": 20995.997448979593,
+        "gpu_flux_pa_cell_h": 21000.74081632653,
+        "flux_excess_pa_cell_h": 4.743367346938776
+      },
+      {
+        "face": "W",
+        "b_dist": 5,
+        "cpu_normal_mean": 21.285079956054688,
+        "gpu_normal_mean": 21.356374740600586,
+        "gpu_minus_cpu_normal_mean": 0.07129478454589844,
+        "cpu_flux_pa_cell_h": 20908.934693877552,
+        "gpu_flux_pa_cell_h": 20913.127040816325,
+        "flux_excess_pa_cell_h": 4.19234693877551
+      },
+      {
+        "face": "W",
+        "b_dist": 6,
+        "cpu_normal_mean": 21.188142776489258,
+        "gpu_normal_mean": 21.31136703491211,
+        "gpu_minus_cpu_normal_mean": 0.12322425842285156,
+        "cpu_flux_pa_cell_h": 20820.336734693876,
+        "gpu_flux_pa_cell_h": 20824.163265306124,
+        "flux_excess_pa_cell_h": 3.826530612244898
+      },
+      {
+        "face": "W",
+        "b_dist": 7,
+        "cpu_normal_mean": 21.055805206298828,
+        "gpu_normal_mean": 21.202234268188477,
+        "gpu_minus_cpu_normal_mean": 0.14642906188964844,
+        "cpu_flux_pa_cell_h": 20730.385714285716,
+        "gpu_flux_pa_cell_h": 20733.8693877551,
+        "flux_excess_pa_cell_h": 3.483673469387755
+      },
+      {
+        "face": "W",
+        "b_dist": 8,
+        "cpu_normal_mean": 20.974058151245117,
+        "gpu_normal_mean": 21.13544464111328,
+        "gpu_minus_cpu_normal_mean": 0.16138648986816406,
+        "cpu_flux_pa_cell_h": 20639.651020408164,
+        "gpu_flux_pa_cell_h": 20642.920408163263,
+        "flux_excess_pa_cell_h": 3.2693877551020405
+      },
+      {
+        "face": "W",
+        "b_dist": 9,
+        "cpu_normal_mean": 20.957317352294922,
+        "gpu_normal_mean": 21.12336540222168,
+        "gpu_minus_cpu_normal_mean": 0.1660480499267578,
+        "cpu_flux_pa_cell_h": 20548.435714285715,
+        "gpu_flux_pa_cell_h": 20551.564285714285,
+        "flux_excess_pa_cell_h": 3.128571428571429
+      },
+      {
+        "face": "W",
+        "b_dist": 10,
+        "cpu_normal_mean": 20.92680549621582,
+        "gpu_normal_mean": 21.101146697998047,
+        "gpu_minus_cpu_normal_mean": 0.17434120178222656,
+        "cpu_flux_pa_cell_h": 20456.807142857142,
+        "gpu_flux_pa_cell_h": 20459.669387755104,
+        "flux_excess_pa_cell_h": 2.8622448979591835
+      },
+      {
+        "face": "W",
+        "b_dist": 11,
+        "cpu_normal_mean": 20.889102935791016,
+        "gpu_normal_mean": 21.070457458496094,
+        "gpu_minus_cpu_normal_mean": 0.18135452270507812,
+        "cpu_flux_pa_cell_h": 20364.388775510204,
+        "gpu_flux_pa_cell_h": 20366.85612244898,
+        "flux_excess_pa_cell_h": 2.4673469387755103
+      },
+      {
+        "face": "W",
+        "b_dist": 12,
+        "cpu_normal_mean": 20.89054298400879,
+        "gpu_normal_mean": 21.078413009643555,
+        "gpu_minus_cpu_normal_mean": 0.18787002563476562,
+        "cpu_flux_pa_cell_h": 20271.05204081633,
+        "gpu_flux_pa_cell_h": 20272.998979591837,
+        "flux_excess_pa_cell_h": 1.9469387755102041
+      },
+      {
+        "face": "W",
+        "b_dist": 13,
+        "cpu_normal_mean": 20.91172218322754,
+        "gpu_normal_mean": 21.101444244384766,
+        "gpu_minus_cpu_normal_mean": 0.18972206115722656,
+        "cpu_flux_pa_cell_h": 20176.99591836735,
+        "gpu_flux_pa_cell_h": 20178.40867346939,
+        "flux_excess_pa_cell_h": 1.4127551020408162
+      },
+      {
+        "face": "W",
+        "b_dist": 14,
+        "cpu_normal_mean": 20.902130126953125,
+        "gpu_normal_mean": 21.094728469848633,
+        "gpu_minus_cpu_normal_mean": 0.1925983428955078,
+        "cpu_flux_pa_cell_h": 20082.28469387755,
+        "gpu_flux_pa_cell_h": 20083.36836734694,
+        "flux_excess_pa_cell_h": 1.0836734693877552
+      },
+      {
+        "face": "W",
+        "b_dist": 15,
+        "cpu_normal_mean": 20.855113983154297,
+        "gpu_normal_mean": 21.053836822509766,
+        "gpu_minus_cpu_normal_mean": 0.19872283935546875,
+        "cpu_flux_pa_cell_h": 19987.031632653063,
+        "gpu_flux_pa_cell_h": 19987.95612244898,
+        "flux_excess_pa_cell_h": 0.9244897959183673
+      },
+      {
+        "face": "E",
+        "b_dist": 0,
+        "cpu_normal_mean": 13.736416816711426,
+        "gpu_normal_mean": 13.736416816711426,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 11458.712755102042,
+        "gpu_flux_pa_cell_h": 11461.619387755101,
+        "flux_excess_pa_cell_h": 2.9066326530612248
+      },
+      {
+        "face": "E",
+        "b_dist": 1,
+        "cpu_normal_mean": 13.95798397064209,
+        "gpu_normal_mean": 13.94218921661377,
+        "gpu_minus_cpu_normal_mean": -0.015794754028320312,
+        "cpu_flux_pa_cell_h": 11833.688265306122,
+        "gpu_flux_pa_cell_h": 11766.960459183674,
+        "flux_excess_pa_cell_h": -66.72780612244898
+      },
+      {
+        "face": "E",
+        "b_dist": 2,
+        "cpu_normal_mean": 14.016836166381836,
+        "gpu_normal_mean": 14.008624076843262,
+        "gpu_minus_cpu_normal_mean": -0.008212089538574219,
+        "cpu_flux_pa_cell_h": 11846.34719387755,
+        "gpu_flux_pa_cell_h": 11818.371428571427,
+        "flux_excess_pa_cell_h": -27.975765306122447
+      },
+      {
+        "face": "E",
+        "b_dist": 3,
+        "cpu_normal_mean": 14.077576637268066,
+        "gpu_normal_mean": 14.072943687438965,
+        "gpu_minus_cpu_normal_mean": -0.0046329498291015625,
+        "cpu_flux_pa_cell_h": 11860.635459183672,
+        "gpu_flux_pa_cell_h": 11840.589030612246,
+        "flux_excess_pa_cell_h": -20.04642857142857
+      },
+      {
+        "face": "E",
+        "b_dist": 4,
+        "cpu_normal_mean": 14.129589080810547,
+        "gpu_normal_mean": 14.017219543457031,
+        "gpu_minus_cpu_normal_mean": -0.11236953735351562,
+        "cpu_flux_pa_cell_h": 11880.18443877551,
+        "gpu_flux_pa_cell_h": 11860.140306122448,
+        "flux_excess_pa_cell_h": -20.044132653061226
+      },
+      {
+        "face": "E",
+        "b_dist": 5,
+        "cpu_normal_mean": 14.233436584472656,
+        "gpu_normal_mean": 14.108781814575195,
+        "gpu_minus_cpu_normal_mean": -0.12465476989746094,
+        "cpu_flux_pa_cell_h": 11907.560204081632,
+        "gpu_flux_pa_cell_h": 11886.705612244898,
+        "flux_excess_pa_cell_h": -20.854591836734695
+      },
+      {
+        "face": "E",
+        "b_dist": 6,
+        "cpu_normal_mean": 14.32719612121582,
+        "gpu_normal_mean": 14.222922325134277,
+        "gpu_minus_cpu_normal_mean": -0.10427379608154297,
+        "cpu_flux_pa_cell_h": 11935.316326530612,
+        "gpu_flux_pa_cell_h": 11913.700255102041,
+        "flux_excess_pa_cell_h": -21.616071428571427
+      },
+      {
+        "face": "E",
+        "b_dist": 7,
+        "cpu_normal_mean": 14.385767936706543,
+        "gpu_normal_mean": 14.302509307861328,
+        "gpu_minus_cpu_normal_mean": -0.08325862884521484,
+        "cpu_flux_pa_cell_h": 11964.13698979592,
+        "gpu_flux_pa_cell_h": 11941.520663265304,
+        "flux_excess_pa_cell_h": -22.616326530612245
+      },
+      {
+        "face": "E",
+        "b_dist": 8,
+        "cpu_normal_mean": 14.434751510620117,
+        "gpu_normal_mean": 14.363173484802246,
+        "gpu_minus_cpu_normal_mean": -0.0715780258178711,
+        "cpu_flux_pa_cell_h": 11994.538010204082,
+        "gpu_flux_pa_cell_h": 11970.421683673469,
+        "flux_excess_pa_cell_h": -24.116326530612245
+      },
+      {
+        "face": "E",
+        "b_dist": 9,
+        "cpu_normal_mean": 14.487903594970703,
+        "gpu_normal_mean": 14.426676750183105,
+        "gpu_minus_cpu_normal_mean": -0.061226844787597656,
+        "cpu_flux_pa_cell_h": 12026.43443877551,
+        "gpu_flux_pa_cell_h": 12000.820408163265,
+        "flux_excess_pa_cell_h": -25.6140306122449
+      },
+      {
+        "face": "E",
+        "b_dist": 10,
+        "cpu_normal_mean": 14.525701522827148,
+        "gpu_normal_mean": 14.484842300415039,
+        "gpu_minus_cpu_normal_mean": -0.040859222412109375,
+        "cpu_flux_pa_cell_h": 12059.964030612246,
+        "gpu_flux_pa_cell_h": 12032.923469387755,
+        "flux_excess_pa_cell_h": -27.040561224489796
+      },
+      {
+        "face": "E",
+        "b_dist": 11,
+        "cpu_normal_mean": 14.569798469543457,
+        "gpu_normal_mean": 14.544143676757812,
+        "gpu_minus_cpu_normal_mean": -0.02565479278564453,
+        "cpu_flux_pa_cell_h": 12094.2375,
+        "gpu_flux_pa_cell_h": 12066.087244897959,
+        "flux_excess_pa_cell_h": -28.150255102040816
+      },
+      {
+        "face": "E",
+        "b_dist": 12,
+        "cpu_normal_mean": 14.640538215637207,
+        "gpu_normal_mean": 14.619410514831543,
+        "gpu_minus_cpu_normal_mean": -0.021127700805664062,
+        "cpu_flux_pa_cell_h": 12128.456632653062,
+        "gpu_flux_pa_cell_h": 12099.511224489797,
+        "flux_excess_pa_cell_h": -28.945408163265306
+      },
+      {
+        "face": "E",
+        "b_dist": 13,
+        "cpu_normal_mean": 14.705612182617188,
+        "gpu_normal_mean": 14.688362121582031,
+        "gpu_minus_cpu_normal_mean": -0.01725006103515625,
+        "cpu_flux_pa_cell_h": 12162.878571428573,
+        "gpu_flux_pa_cell_h": 12133.288775510204,
+        "flux_excess_pa_cell_h": -29.589795918367347
+      },
+      {
+        "face": "E",
+        "b_dist": 14,
+        "cpu_normal_mean": 14.739078521728516,
+        "gpu_normal_mean": 14.73105525970459,
+        "gpu_minus_cpu_normal_mean": -0.008023262023925781,
+        "cpu_flux_pa_cell_h": 12197.920408163265,
+        "gpu_flux_pa_cell_h": 12167.916581632653,
+        "flux_excess_pa_cell_h": -30.003826530612244
+      },
+      {
+        "face": "E",
+        "b_dist": 15,
+        "cpu_normal_mean": 14.771110534667969,
+        "gpu_normal_mean": 14.767627716064453,
+        "gpu_minus_cpu_normal_mean": -0.003482818603515625,
+        "cpu_flux_pa_cell_h": 12233.788010204082,
+        "gpu_flux_pa_cell_h": 12203.518622448979,
+        "flux_excess_pa_cell_h": -30.26938775510204
+      },
+      {
+        "face": "S",
+        "b_dist": 0,
+        "cpu_normal_mean": 2.621060371398926,
+        "gpu_normal_mean": 2.621060371398926,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 3746.2817602040814,
+        "gpu_flux_pa_cell_h": 3746.096173469388,
+        "flux_excess_pa_cell_h": -0.18558673469387754
+      },
+      {
+        "face": "S",
+        "b_dist": 1,
+        "cpu_normal_mean": 2.5946755409240723,
+        "gpu_normal_mean": 2.5640132427215576,
+        "gpu_minus_cpu_normal_mean": -0.03066229820251465,
+        "cpu_flux_pa_cell_h": 3800.067091836735,
+        "gpu_flux_pa_cell_h": 3759.981887755102,
+        "flux_excess_pa_cell_h": -40.085204081632654
+      },
+      {
+        "face": "S",
+        "b_dist": 2,
+        "cpu_normal_mean": 2.598072052001953,
+        "gpu_normal_mean": 2.5476560592651367,
+        "gpu_minus_cpu_normal_mean": -0.050415992736816406,
+        "cpu_flux_pa_cell_h": 3820.549362244898,
+        "gpu_flux_pa_cell_h": 3783.339795918367,
+        "flux_excess_pa_cell_h": -37.20956632653061
+      },
+      {
+        "face": "S",
+        "b_dist": 3,
+        "cpu_normal_mean": 2.6262612342834473,
+        "gpu_normal_mean": 2.566115617752075,
+        "gpu_minus_cpu_normal_mean": -0.06014561653137207,
+        "cpu_flux_pa_cell_h": 3843.076913265306,
+        "gpu_flux_pa_cell_h": 3800.2641581632656,
+        "flux_excess_pa_cell_h": -42.81275510204081
+      },
+      {
+        "face": "S",
+        "b_dist": 4,
+        "cpu_normal_mean": 2.6942837238311768,
+        "gpu_normal_mean": 2.715095043182373,
+        "gpu_minus_cpu_normal_mean": 0.02081131935119629,
+        "cpu_flux_pa_cell_h": 3868.225255102041,
+        "gpu_flux_pa_cell_h": 3826.3438775510203,
+        "flux_excess_pa_cell_h": -41.88137755102041
+      },
+      {
+        "face": "S",
+        "b_dist": 5,
+        "cpu_normal_mean": 2.720184803009033,
+        "gpu_normal_mean": 2.737267017364502,
+        "gpu_minus_cpu_normal_mean": 0.01708221435546875,
+        "cpu_flux_pa_cell_h": 3898.346173469388,
+        "gpu_flux_pa_cell_h": 3856.351913265306,
+        "flux_excess_pa_cell_h": -41.994260204081634
+      },
+      {
+        "face": "S",
+        "b_dist": 6,
+        "cpu_normal_mean": 2.74139404296875,
+        "gpu_normal_mean": 2.748415946960449,
+        "gpu_minus_cpu_normal_mean": 0.007021903991699219,
+        "cpu_flux_pa_cell_h": 3932.3077806122446,
+        "gpu_flux_pa_cell_h": 3890.483035714286,
+        "flux_excess_pa_cell_h": -41.824744897959185
+      },
+      {
+        "face": "S",
+        "b_dist": 7,
+        "cpu_normal_mean": 2.7703053951263428,
+        "gpu_normal_mean": 2.7736246585845947,
+        "gpu_minus_cpu_normal_mean": 0.003319263458251953,
+        "cpu_flux_pa_cell_h": 3968.347576530612,
+        "gpu_flux_pa_cell_h": 3926.9177295918366,
+        "flux_excess_pa_cell_h": -41.42984693877551
+      },
+      {
+        "face": "S",
+        "b_dist": 8,
+        "cpu_normal_mean": 2.802832841873169,
+        "gpu_normal_mean": 2.796687602996826,
+        "gpu_minus_cpu_normal_mean": -0.0061452388763427734,
+        "cpu_flux_pa_cell_h": 4005.205102040816,
+        "gpu_flux_pa_cell_h": 3964.3224489795916,
+        "flux_excess_pa_cell_h": -40.88265306122449
+      },
+      {
+        "face": "S",
+        "b_dist": 9,
+        "cpu_normal_mean": 2.837721347808838,
+        "gpu_normal_mean": 2.8176193237304688,
+        "gpu_minus_cpu_normal_mean": -0.02010202407836914,
+        "cpu_flux_pa_cell_h": 4042.0071428571428,
+        "gpu_flux_pa_cell_h": 4001.7367346938777,
+        "flux_excess_pa_cell_h": -40.27040816326531
+      },
+      {
+        "face": "S",
+        "b_dist": 10,
+        "cpu_normal_mean": 2.8678247928619385,
+        "gpu_normal_mean": 2.8362247943878174,
+        "gpu_minus_cpu_normal_mean": -0.031599998474121094,
+        "cpu_flux_pa_cell_h": 4079.087755102041,
+        "gpu_flux_pa_cell_h": 4039.3985969387754,
+        "flux_excess_pa_cell_h": -39.689158163265304
+      },
+      {
+        "face": "S",
+        "b_dist": 11,
+        "cpu_normal_mean": 2.8943593502044678,
+        "gpu_normal_mean": 2.860191822052002,
+        "gpu_minus_cpu_normal_mean": -0.03416752815246582,
+        "cpu_flux_pa_cell_h": 4117.655739795919,
+        "gpu_flux_pa_cell_h": 4078.731887755102,
+        "flux_excess_pa_cell_h": -38.92385204081633
+      },
+      {
+        "face": "S",
+        "b_dist": 12,
+        "cpu_normal_mean": 2.9249534606933594,
+        "gpu_normal_mean": 2.889341115951538,
+        "gpu_minus_cpu_normal_mean": -0.03561234474182129,
+        "cpu_flux_pa_cell_h": 4158.358163265306,
+        "gpu_flux_pa_cell_h": 4120.715051020408,
+        "flux_excess_pa_cell_h": -37.643112244897964
+      },
+      {
+        "face": "S",
+        "b_dist": 13,
+        "cpu_normal_mean": 2.9639031887054443,
+        "gpu_normal_mean": 2.9194366931915283,
+        "gpu_minus_cpu_normal_mean": -0.044466495513916016,
+        "cpu_flux_pa_cell_h": 4199.898979591837,
+        "gpu_flux_pa_cell_h": 4164.2357142857145,
+        "flux_excess_pa_cell_h": -35.66326530612245
+      },
+      {
+        "face": "S",
+        "b_dist": 14,
+        "cpu_normal_mean": 3.012845993041992,
+        "gpu_normal_mean": 2.9548256397247314,
+        "gpu_minus_cpu_normal_mean": -0.05802035331726074,
+        "cpu_flux_pa_cell_h": 4240.320153061224,
+        "gpu_flux_pa_cell_h": 4207.2608418367345,
+        "flux_excess_pa_cell_h": -33.0593112244898
+      },
+      {
+        "face": "S",
+        "b_dist": 15,
+        "cpu_normal_mean": 3.067227363586426,
+        "gpu_normal_mean": 2.9980673789978027,
+        "gpu_minus_cpu_normal_mean": -0.06915998458862305,
+        "cpu_flux_pa_cell_h": 4279.676785714286,
+        "gpu_flux_pa_cell_h": 4249.219132653061,
+        "flux_excess_pa_cell_h": -30.457653061224487
+      },
+      {
+        "face": "N",
+        "b_dist": 0,
+        "cpu_normal_mean": 10.962641716003418,
+        "gpu_normal_mean": 10.962641716003418,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 13422.935204081632,
+        "gpu_flux_pa_cell_h": 13417.754081632653,
+        "flux_excess_pa_cell_h": -5.1811224489795915
+      },
+      {
+        "face": "N",
+        "b_dist": 1,
+        "cpu_normal_mean": 10.768576622009277,
+        "gpu_normal_mean": 10.86170482635498,
+        "gpu_minus_cpu_normal_mean": 0.09312820434570312,
+        "cpu_flux_pa_cell_h": 13423.637755102041,
+        "gpu_flux_pa_cell_h": 13502.895918367347,
+        "flux_excess_pa_cell_h": 79.25816326530612
+      },
+      {
+        "face": "N",
+        "b_dist": 2,
+        "cpu_normal_mean": 10.689292907714844,
+        "gpu_normal_mean": 10.766335487365723,
+        "gpu_minus_cpu_normal_mean": 0.0770425796508789,
+        "cpu_flux_pa_cell_h": 13319.467346938776,
+        "gpu_flux_pa_cell_h": 13379.637244897958,
+        "flux_excess_pa_cell_h": 60.16989795918367
+      },
+      {
+        "face": "N",
+        "b_dist": 3,
+        "cpu_normal_mean": 10.620925903320312,
+        "gpu_normal_mean": 10.697454452514648,
+        "gpu_minus_cpu_normal_mean": 0.07652854919433594,
+        "cpu_flux_pa_cell_h": 13217.45357142857,
+        "gpu_flux_pa_cell_h": 13270.29948979592,
+        "flux_excess_pa_cell_h": 52.84591836734693
+      },
+      {
+        "face": "N",
+        "b_dist": 4,
+        "cpu_normal_mean": 10.556496620178223,
+        "gpu_normal_mean": 10.638535499572754,
+        "gpu_minus_cpu_normal_mean": 0.08203887939453125,
+        "cpu_flux_pa_cell_h": 13118.637244897958,
+        "gpu_flux_pa_cell_h": 13165.262755102041,
+        "flux_excess_pa_cell_h": 46.625510204081635
+      },
+      {
+        "face": "N",
+        "b_dist": 5,
+        "cpu_normal_mean": 10.494431495666504,
+        "gpu_normal_mean": 10.640030860900879,
+        "gpu_minus_cpu_normal_mean": 0.145599365234375,
+        "cpu_flux_pa_cell_h": 13021.181632653062,
+        "gpu_flux_pa_cell_h": 13065.512755102041,
+        "flux_excess_pa_cell_h": 44.33112244897959
+      },
+      {
+        "face": "N",
+        "b_dist": 6,
+        "cpu_normal_mean": 10.43721866607666,
+        "gpu_normal_mean": 10.580875396728516,
+        "gpu_minus_cpu_normal_mean": 0.14365673065185547,
+        "cpu_flux_pa_cell_h": 12922.144897959182,
+        "gpu_flux_pa_cell_h": 12964.815306122448,
+        "flux_excess_pa_cell_h": 42.67040816326531
+      },
+      {
+        "face": "N",
+        "b_dist": 7,
+        "cpu_normal_mean": 10.3875150680542,
+        "gpu_normal_mean": 10.534102439880371,
+        "gpu_minus_cpu_normal_mean": 0.14658737182617188,
+        "cpu_flux_pa_cell_h": 12822.182908163266,
+        "gpu_flux_pa_cell_h": 12863.129081632653,
+        "flux_excess_pa_cell_h": 40.94617346938775
+      },
+      {
+        "face": "N",
+        "b_dist": 8,
+        "cpu_normal_mean": 10.324798583984375,
+        "gpu_normal_mean": 10.474770545959473,
+        "gpu_minus_cpu_normal_mean": 0.14997196197509766,
+        "cpu_flux_pa_cell_h": 12720.750765306122,
+        "gpu_flux_pa_cell_h": 12760.343112244898,
+        "flux_excess_pa_cell_h": 39.59234693877551
+      },
+      {
+        "face": "N",
+        "b_dist": 9,
+        "cpu_normal_mean": 10.251763343811035,
+        "gpu_normal_mean": 10.4010591506958,
+        "gpu_minus_cpu_normal_mean": 0.14929580688476562,
+        "cpu_flux_pa_cell_h": 12618.632142857143,
+        "gpu_flux_pa_cell_h": 12657.00612244898,
+        "flux_excess_pa_cell_h": 38.373979591836736
+      },
+      {
+        "face": "N",
+        "b_dist": 10,
+        "cpu_normal_mean": 10.17260456085205,
+        "gpu_normal_mean": 10.317675590515137,
+        "gpu_minus_cpu_normal_mean": 0.14507102966308594,
+        "cpu_flux_pa_cell_h": 12516.311479591835,
+        "gpu_flux_pa_cell_h": 12553.579591836735,
+        "flux_excess_pa_cell_h": 37.268112244897964
+      },
+      {
+        "face": "N",
+        "b_dist": 11,
+        "cpu_normal_mean": 10.089677810668945,
+        "gpu_normal_mean": 10.22732162475586,
+        "gpu_minus_cpu_normal_mean": 0.13764381408691406,
+        "cpu_flux_pa_cell_h": 12414.11556122449,
+        "gpu_flux_pa_cell_h": 12450.3375,
+        "flux_excess_pa_cell_h": 36.2219387755102
+      },
+      {
+        "face": "N",
+        "b_dist": 12,
+        "cpu_normal_mean": 10.002942085266113,
+        "gpu_normal_mean": 10.133064270019531,
+        "gpu_minus_cpu_normal_mean": 0.13012218475341797,
+        "cpu_flux_pa_cell_h": 12312.166836734696,
+        "gpu_flux_pa_cell_h": 12347.414540816326,
+        "flux_excess_pa_cell_h": 35.247704081632655
+      },
+      {
+        "face": "N",
+        "b_dist": 13,
+        "cpu_normal_mean": 9.91599178314209,
+        "gpu_normal_mean": 10.03842830657959,
+        "gpu_minus_cpu_normal_mean": 0.1224365234375,
+        "cpu_flux_pa_cell_h": 12210.650510204081,
+        "gpu_flux_pa_cell_h": 12245.077040816326,
+        "flux_excess_pa_cell_h": 34.4265306122449
+      },
+      {
+        "face": "N",
+        "b_dist": 14,
+        "cpu_normal_mean": 9.830971717834473,
+        "gpu_normal_mean": 9.945235252380371,
+        "gpu_minus_cpu_normal_mean": 0.11426353454589844,
+        "cpu_flux_pa_cell_h": 12109.65612244898,
+        "gpu_flux_pa_cell_h": 12143.363265306123,
+        "flux_excess_pa_cell_h": 33.707142857142856
+      },
+      {
+        "face": "N",
+        "b_dist": 15,
+        "cpu_normal_mean": 9.746524810791016,
+        "gpu_normal_mean": 9.853022575378418,
+        "gpu_minus_cpu_normal_mean": 0.10649776458740234,
+        "cpu_flux_pa_cell_h": 12008.954081632653,
+        "gpu_flux_pa_cell_h": 12041.990816326532,
+        "flux_excess_pa_cell_h": 33.03673469387755
+      }
+    ],
+    "control_surface_summary": {
+      "mean_outward_normal_wind_bias_mps": -0.01921182870864868,
+      "net_outflux_excess_pa_cell_h": 53.089285714285715,
+      "per_face_outward_bias": {
+        "W_inward_is_neg": -0.16138648986816406,
+        "E": -0.0715780258178711,
+        "S_inward_is_neg": 0.0061452388763427734,
+        "N": 0.14997196197509766
+      }
+    }
+  },
+  "h38": {
+    "available": true,
+    "ncell": 12544,
+    "rows": [
+      {
+        "face": "W",
+        "b_dist": 0,
+        "cpu_normal_mean": 20.525348663330078,
+        "gpu_normal_mean": 20.525348663330078,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 20415.600000000002,
+        "gpu_flux_pa_cell_h": 20421.50969387755,
+        "flux_excess_pa_cell_h": 5.90969387755102
+      },
+      {
+        "face": "W",
+        "b_dist": 1,
+        "cpu_normal_mean": 21.45364761352539,
+        "gpu_normal_mean": 21.42191505432129,
+        "gpu_minus_cpu_normal_mean": -0.03173255920410156,
+        "cpu_flux_pa_cell_h": 21297.168367346938,
+        "gpu_flux_pa_cell_h": 21343.54591836735,
+        "flux_excess_pa_cell_h": 46.37755102040816
+      },
+      {
+        "face": "W",
+        "b_dist": 2,
+        "cpu_normal_mean": 21.461408615112305,
+        "gpu_normal_mean": 21.447525024414062,
+        "gpu_minus_cpu_normal_mean": -0.013883590698242188,
+        "cpu_flux_pa_cell_h": 21223.751020408163,
+        "gpu_flux_pa_cell_h": 21238.14642857143,
+        "flux_excess_pa_cell_h": 14.395408163265307
+      },
+      {
+        "face": "W",
+        "b_dist": 3,
+        "cpu_normal_mean": 21.476926803588867,
+        "gpu_normal_mean": 21.437009811401367,
+        "gpu_minus_cpu_normal_mean": -0.0399169921875,
+        "cpu_flux_pa_cell_h": 21149.246938775508,
+        "gpu_flux_pa_cell_h": 21149.525510204083,
+        "flux_excess_pa_cell_h": 0.2785714285714286
+      },
+      {
+        "face": "W",
+        "b_dist": 4,
+        "cpu_normal_mean": 21.513748168945312,
+        "gpu_normal_mean": 21.492645263671875,
+        "gpu_minus_cpu_normal_mean": -0.0211029052734375,
+        "cpu_flux_pa_cell_h": 21073.47244897959,
+        "gpu_flux_pa_cell_h": 21071.26836734694,
+        "flux_excess_pa_cell_h": -2.204081632653061
+      },
+      {
+        "face": "W",
+        "b_dist": 5,
+        "cpu_normal_mean": 21.500041961669922,
+        "gpu_normal_mean": 21.56899070739746,
+        "gpu_minus_cpu_normal_mean": 0.06894874572753906,
+        "cpu_flux_pa_cell_h": 20996.470408163266,
+        "gpu_flux_pa_cell_h": 20993.767346938774,
+        "flux_excess_pa_cell_h": -2.7030612244897956
+      },
+      {
+        "face": "W",
+        "b_dist": 6,
+        "cpu_normal_mean": 21.415969848632812,
+        "gpu_normal_mean": 21.550682067871094,
+        "gpu_minus_cpu_normal_mean": 0.13471221923828125,
+        "cpu_flux_pa_cell_h": 20917.770918367347,
+        "gpu_flux_pa_cell_h": 20914.769387755103,
+        "flux_excess_pa_cell_h": -3.0015306122448977
+      },
+      {
+        "face": "W",
+        "b_dist": 7,
+        "cpu_normal_mean": 21.30609893798828,
+        "gpu_normal_mean": 21.466264724731445,
+        "gpu_minus_cpu_normal_mean": 0.16016578674316406,
+        "cpu_flux_pa_cell_h": 20837.536224489795,
+        "gpu_flux_pa_cell_h": 20834.10612244898,
+        "flux_excess_pa_cell_h": -3.430102040816326
+      },
+      {
+        "face": "W",
+        "b_dist": 8,
+        "cpu_normal_mean": 21.246196746826172,
+        "gpu_normal_mean": 21.419404983520508,
+        "gpu_minus_cpu_normal_mean": 0.17320823669433594,
+        "cpu_flux_pa_cell_h": 20756.167346938775,
+        "gpu_flux_pa_cell_h": 20752.441836734695,
+        "flux_excess_pa_cell_h": -3.725510204081633
+      },
+      {
+        "face": "W",
+        "b_dist": 9,
+        "cpu_normal_mean": 21.24404525756836,
+        "gpu_normal_mean": 21.416292190551758,
+        "gpu_minus_cpu_normal_mean": 0.17224693298339844,
+        "cpu_flux_pa_cell_h": 20673.967346938774,
+        "gpu_flux_pa_cell_h": 20670.02755102041,
+        "flux_excess_pa_cell_h": -3.939795918367347
+      },
+      {
+        "face": "W",
+        "b_dist": 10,
+        "cpu_normal_mean": 21.223072052001953,
+        "gpu_normal_mean": 21.39171028137207,
+        "gpu_minus_cpu_normal_mean": 0.1686382293701172,
+        "cpu_flux_pa_cell_h": 20590.95612244898,
+        "gpu_flux_pa_cell_h": 20586.774489795916,
+        "flux_excess_pa_cell_h": -4.181632653061224
+      },
+      {
+        "face": "W",
+        "b_dist": 11,
+        "cpu_normal_mean": 21.18802261352539,
+        "gpu_normal_mean": 21.357952117919922,
+        "gpu_minus_cpu_normal_mean": 0.16992950439453125,
+        "cpu_flux_pa_cell_h": 20506.919387755104,
+        "gpu_flux_pa_cell_h": 20502.391836734692,
+        "flux_excess_pa_cell_h": -4.527551020408163
+      },
+      {
+        "face": "W",
+        "b_dist": 12,
+        "cpu_normal_mean": 21.191280364990234,
+        "gpu_normal_mean": 21.370349884033203,
+        "gpu_minus_cpu_normal_mean": 0.17906951904296875,
+        "cpu_flux_pa_cell_h": 20421.873979591837,
+        "gpu_flux_pa_cell_h": 20416.84132653061,
+        "flux_excess_pa_cell_h": -5.032653061224489
+      },
+      {
+        "face": "W",
+        "b_dist": 13,
+        "cpu_normal_mean": 21.218400955200195,
+        "gpu_normal_mean": 21.404586791992188,
+        "gpu_minus_cpu_normal_mean": 0.1861858367919922,
+        "cpu_flux_pa_cell_h": 20336.23163265306,
+        "gpu_flux_pa_cell_h": 20330.55,
+        "flux_excess_pa_cell_h": -5.681632653061224
+      },
+      {
+        "face": "W",
+        "b_dist": 14,
+        "cpu_normal_mean": 21.220081329345703,
+        "gpu_normal_mean": 21.409221649169922,
+        "gpu_minus_cpu_normal_mean": 0.18914031982421875,
+        "cpu_flux_pa_cell_h": 20250.148469387757,
+        "gpu_flux_pa_cell_h": 20243.85612244898,
+        "flux_excess_pa_cell_h": -6.29234693877551
+      },
+      {
+        "face": "W",
+        "b_dist": 15,
+        "cpu_normal_mean": 21.182283401489258,
+        "gpu_normal_mean": 21.378385543823242,
+        "gpu_minus_cpu_normal_mean": 0.19610214233398438,
+        "cpu_flux_pa_cell_h": 20163.404081632652,
+        "gpu_flux_pa_cell_h": 20156.69081632653,
+        "flux_excess_pa_cell_h": -6.713265306122449
+      },
+      {
+        "face": "E",
+        "b_dist": 0,
+        "cpu_normal_mean": 13.786725997924805,
+        "gpu_normal_mean": 13.786725997924805,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 11466.982653061224,
+        "gpu_flux_pa_cell_h": 11469.551785714286,
+        "flux_excess_pa_cell_h": 2.5691326530612244
+      },
+      {
+        "face": "E",
+        "b_dist": 1,
+        "cpu_normal_mean": 14.188785552978516,
+        "gpu_normal_mean": 14.171427726745605,
+        "gpu_minus_cpu_normal_mean": -0.017357826232910156,
+        "cpu_flux_pa_cell_h": 11940.052040816328,
+        "gpu_flux_pa_cell_h": 11887.731887755102,
+        "flux_excess_pa_cell_h": -52.32015306122449
+      },
+      {
+        "face": "E",
+        "b_dist": 2,
+        "cpu_normal_mean": 14.26489543914795,
+        "gpu_normal_mean": 14.265732765197754,
+        "gpu_minus_cpu_normal_mean": 0.0008373260498046875,
+        "cpu_flux_pa_cell_h": 11953.861224489796,
+        "gpu_flux_pa_cell_h": 11933.929591836735,
+        "flux_excess_pa_cell_h": -19.931632653061225
+      },
+      {
+        "face": "E",
+        "b_dist": 3,
+        "cpu_normal_mean": 14.369823455810547,
+        "gpu_normal_mean": 14.364676475524902,
+        "gpu_minus_cpu_normal_mean": -0.005146980285644531,
+        "cpu_flux_pa_cell_h": 11971.888775510204,
+        "gpu_flux_pa_cell_h": 11959.070663265307,
+        "flux_excess_pa_cell_h": -12.818112244897959
+      },
+      {
+        "face": "E",
+        "b_dist": 4,
+        "cpu_normal_mean": 14.467808723449707,
+        "gpu_normal_mean": 14.159835815429688,
+        "gpu_minus_cpu_normal_mean": -0.30797290802001953,
+        "cpu_flux_pa_cell_h": 11999.04413265306,
+        "gpu_flux_pa_cell_h": 11983.794642857143,
+        "flux_excess_pa_cell_h": -15.249489795918368
+      },
+      {
+        "face": "E",
+        "b_dist": 5,
+        "cpu_normal_mean": 14.545825958251953,
+        "gpu_normal_mean": 14.25298023223877,
+        "gpu_minus_cpu_normal_mean": -0.2928457260131836,
+        "cpu_flux_pa_cell_h": 12035.710714285713,
+        "gpu_flux_pa_cell_h": 12017.358673469387,
+        "flux_excess_pa_cell_h": -18.352040816326532
+      },
+      {
+        "face": "E",
+        "b_dist": 6,
+        "cpu_normal_mean": 14.618335723876953,
+        "gpu_normal_mean": 14.391989707946777,
+        "gpu_minus_cpu_normal_mean": -0.22634601593017578,
+        "cpu_flux_pa_cell_h": 12070.500765306122,
+        "gpu_flux_pa_cell_h": 12049.351530612244,
+        "flux_excess_pa_cell_h": -21.149234693877553
+      },
+      {
+        "face": "E",
+        "b_dist": 7,
+        "cpu_normal_mean": 14.664241790771484,
+        "gpu_normal_mean": 14.483479499816895,
+        "gpu_minus_cpu_normal_mean": -0.18076229095458984,
+        "cpu_flux_pa_cell_h": 12105.867091836735,
+        "gpu_flux_pa_cell_h": 12081.90306122449,
+        "flux_excess_pa_cell_h": -23.964030612244898
+      },
+      {
+        "face": "E",
+        "b_dist": 8,
+        "cpu_normal_mean": 14.706193923950195,
+        "gpu_normal_mean": 14.550530433654785,
+        "gpu_minus_cpu_normal_mean": -0.15566349029541016,
+        "cpu_flux_pa_cell_h": 12141.502040816325,
+        "gpu_flux_pa_cell_h": 12114.525,
+        "flux_excess_pa_cell_h": -26.977040816326532
+      },
+      {
+        "face": "E",
+        "b_dist": 9,
+        "cpu_normal_mean": 14.753904342651367,
+        "gpu_normal_mean": 14.610391616821289,
+        "gpu_minus_cpu_normal_mean": -0.14351272583007812,
+        "cpu_flux_pa_cell_h": 12177.352040816326,
+        "gpu_flux_pa_cell_h": 12147.459183673469,
+        "flux_excess_pa_cell_h": -29.892857142857142
+      },
+      {
+        "face": "E",
+        "b_dist": 10,
+        "cpu_normal_mean": 14.789531707763672,
+        "gpu_normal_mean": 14.66745662689209,
+        "gpu_minus_cpu_normal_mean": -0.12207508087158203,
+        "cpu_flux_pa_cell_h": 12213.523469387756,
+        "gpu_flux_pa_cell_h": 12180.754591836734,
+        "flux_excess_pa_cell_h": -32.76887755102041
+      },
+      {
+        "face": "E",
+        "b_dist": 11,
+        "cpu_normal_mean": 14.833112716674805,
+        "gpu_normal_mean": 14.731749534606934,
+        "gpu_minus_cpu_normal_mean": -0.1013631820678711,
+        "cpu_flux_pa_cell_h": 12249.945918367346,
+        "gpu_flux_pa_cell_h": 12214.498469387756,
+        "flux_excess_pa_cell_h": -35.44744897959183
+      },
+      {
+        "face": "E",
+        "b_dist": 12,
+        "cpu_normal_mean": 14.900458335876465,
+        "gpu_normal_mean": 14.806532859802246,
+        "gpu_minus_cpu_normal_mean": -0.09392547607421875,
+        "cpu_flux_pa_cell_h": 12286.803826530611,
+        "gpu_flux_pa_cell_h": 12248.862244897959,
+        "flux_excess_pa_cell_h": -37.94158163265306
+      },
+      {
+        "face": "E",
+        "b_dist": 13,
+        "cpu_normal_mean": 14.957115173339844,
+        "gpu_normal_mean": 14.86911678314209,
+        "gpu_minus_cpu_normal_mean": -0.0879983901977539,
+        "cpu_flux_pa_cell_h": 12324.273214285713,
+        "gpu_flux_pa_cell_h": 12284.126785714287,
+        "flux_excess_pa_cell_h": -40.14642857142857
+      },
+      {
+        "face": "E",
+        "b_dist": 14,
+        "cpu_normal_mean": 14.984317779541016,
+        "gpu_normal_mean": 14.906671524047852,
+        "gpu_minus_cpu_normal_mean": -0.07764625549316406,
+        "cpu_flux_pa_cell_h": 12362.558418367347,
+        "gpu_flux_pa_cell_h": 12320.462755102042,
+        "flux_excess_pa_cell_h": -42.09566326530612
+      },
+      {
+        "face": "E",
+        "b_dist": 15,
+        "cpu_normal_mean": 15.012044906616211,
+        "gpu_normal_mean": 14.944395065307617,
+        "gpu_minus_cpu_normal_mean": -0.06764984130859375,
+        "cpu_flux_pa_cell_h": 12401.708418367347,
+        "gpu_flux_pa_cell_h": 12358.035459183675,
+        "flux_excess_pa_cell_h": -43.67295918367347
+      },
+      {
+        "face": "S",
+        "b_dist": 0,
+        "cpu_normal_mean": 1.626025676727295,
+        "gpu_normal_mean": 1.626025676727295,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 2523.4553571428573,
+        "gpu_flux_pa_cell_h": 2523.2779974489795,
+        "flux_excess_pa_cell_h": -0.17735969387755104
+      },
+      {
+        "face": "S",
+        "b_dist": 1,
+        "cpu_normal_mean": 1.6320807933807373,
+        "gpu_normal_mean": 1.6008812189102173,
+        "gpu_minus_cpu_normal_mean": -0.03119957447052002,
+        "cpu_flux_pa_cell_h": 2574.565369897959,
+        "gpu_flux_pa_cell_h": 2540.660204081633,
+        "flux_excess_pa_cell_h": -33.90516581632653
+      },
+      {
+        "face": "S",
+        "b_dist": 2,
+        "cpu_normal_mean": 1.6417745351791382,
+        "gpu_normal_mean": 1.5896422863006592,
+        "gpu_minus_cpu_normal_mean": -0.052132248878479004,
+        "cpu_flux_pa_cell_h": 2591.9049107142855,
+        "gpu_flux_pa_cell_h": 2558.5882653061226,
+        "flux_excess_pa_cell_h": -33.31664540816327
+      },
+      {
+        "face": "S",
+        "b_dist": 3,
+        "cpu_normal_mean": 1.6822195053100586,
+        "gpu_normal_mean": 1.6281028985977173,
+        "gpu_minus_cpu_normal_mean": -0.05411660671234131,
+        "cpu_flux_pa_cell_h": 2611.8459183673467,
+        "gpu_flux_pa_cell_h": 2575.1973214285713,
+        "flux_excess_pa_cell_h": -36.64859693877551
+      },
+      {
+        "face": "S",
+        "b_dist": 4,
+        "cpu_normal_mean": 1.7653629779815674,
+        "gpu_normal_mean": 1.928685188293457,
+        "gpu_minus_cpu_normal_mean": 0.16332221031188965,
+        "cpu_flux_pa_cell_h": 2635.244961734694,
+        "gpu_flux_pa_cell_h": 2604.0904974489795,
+        "flux_excess_pa_cell_h": -31.154464285714283
+      },
+      {
+        "face": "S",
+        "b_dist": 5,
+        "cpu_normal_mean": 1.7894409894943237,
+        "gpu_normal_mean": 1.9642084836959839,
+        "gpu_minus_cpu_normal_mean": 0.17476749420166016,
+        "cpu_flux_pa_cell_h": 2664.382270408163,
+        "gpu_flux_pa_cell_h": 2631.4205357142855,
+        "flux_excess_pa_cell_h": -32.96173469387755
+      },
+      {
+        "face": "S",
+        "b_dist": 6,
+        "cpu_normal_mean": 1.8048622608184814,
+        "gpu_normal_mean": 1.9319119453430176,
+        "gpu_minus_cpu_normal_mean": 0.12704968452453613,
+        "cpu_flux_pa_cell_h": 2697.2295918367345,
+        "gpu_flux_pa_cell_h": 2663.8607142857145,
+        "flux_excess_pa_cell_h": -33.36887755102041
+      },
+      {
+        "face": "S",
+        "b_dist": 7,
+        "cpu_normal_mean": 1.8304762840270996,
+        "gpu_normal_mean": 1.9350612163543701,
+        "gpu_minus_cpu_normal_mean": 0.10458493232727051,
+        "cpu_flux_pa_cell_h": 2732.4141581632657,
+        "gpu_flux_pa_cell_h": 2699.2473214285715,
+        "flux_excess_pa_cell_h": -33.166836734693874
+      },
+      {
+        "face": "S",
+        "b_dist": 8,
+        "cpu_normal_mean": 1.8609966039657593,
+        "gpu_normal_mean": 1.949450969696045,
+        "gpu_minus_cpu_normal_mean": 0.08845436573028564,
+        "cpu_flux_pa_cell_h": 2768.6810586734696,
+        "gpu_flux_pa_cell_h": 2735.9973214285715,
+        "flux_excess_pa_cell_h": -32.683737244897955
+      },
+      {
+        "face": "S",
+        "b_dist": 9,
+        "cpu_normal_mean": 1.889347791671753,
+        "gpu_normal_mean": 1.968766212463379,
+        "gpu_minus_cpu_normal_mean": 0.07941842079162598,
+        "cpu_flux_pa_cell_h": 2804.903954081633,
+        "gpu_flux_pa_cell_h": 2773.177806122449,
+        "flux_excess_pa_cell_h": -31.726147959183674
+      },
+      {
+        "face": "S",
+        "b_dist": 10,
+        "cpu_normal_mean": 1.9171860218048096,
+        "gpu_normal_mean": 1.9911319017410278,
+        "gpu_minus_cpu_normal_mean": 0.07394587993621826,
+        "cpu_flux_pa_cell_h": 2841.623724489796,
+        "gpu_flux_pa_cell_h": 2810.988329081633,
+        "flux_excess_pa_cell_h": -30.635395408163266
+      },
+      {
+        "face": "S",
+        "b_dist": 11,
+        "cpu_normal_mean": 1.9501324892044067,
+        "gpu_normal_mean": 2.0194149017333984,
+        "gpu_minus_cpu_normal_mean": 0.0692824125289917,
+        "cpu_flux_pa_cell_h": 2880.3153061224493,
+        "gpu_flux_pa_cell_h": 2850.840306122449,
+        "flux_excess_pa_cell_h": -29.475
+      },
+      {
+        "face": "S",
+        "b_dist": 12,
+        "cpu_normal_mean": 1.9860420227050781,
+        "gpu_normal_mean": 2.0506234169006348,
+        "gpu_minus_cpu_normal_mean": 0.06458139419555664,
+        "cpu_flux_pa_cell_h": 2921.5989795918367,
+        "gpu_flux_pa_cell_h": 2893.815880102041,
+        "flux_excess_pa_cell_h": -27.78309948979592
+      },
+      {
+        "face": "S",
+        "b_dist": 13,
+        "cpu_normal_mean": 2.026625633239746,
+        "gpu_normal_mean": 2.0775880813598633,
+        "gpu_minus_cpu_normal_mean": 0.05096244812011719,
+        "cpu_flux_pa_cell_h": 2964.141581632653,
+        "gpu_flux_pa_cell_h": 2938.814540816327,
+        "flux_excess_pa_cell_h": -25.327040816326534
+      },
+      {
+        "face": "S",
+        "b_dist": 14,
+        "cpu_normal_mean": 2.075572967529297,
+        "gpu_normal_mean": 2.1040408611297607,
+        "gpu_minus_cpu_normal_mean": 0.028467893600463867,
+        "cpu_flux_pa_cell_h": 3005.8966836734694,
+        "gpu_flux_pa_cell_h": 2983.8241071428574,
+        "flux_excess_pa_cell_h": -22.072576530612245
+      },
+      {
+        "face": "S",
+        "b_dist": 15,
+        "cpu_normal_mean": 2.127520799636841,
+        "gpu_normal_mean": 2.135186195373535,
+        "gpu_minus_cpu_normal_mean": 0.007665395736694336,
+        "cpu_flux_pa_cell_h": 3046.792920918367,
+        "gpu_flux_pa_cell_h": 3028.330102040816,
+        "flux_excess_pa_cell_h": -18.462818877551022
+      },
+      {
+        "face": "N",
+        "b_dist": 0,
+        "cpu_normal_mean": 9.960776329040527,
+        "gpu_normal_mean": 9.960776329040527,
+        "gpu_minus_cpu_normal_mean": 0.0,
+        "cpu_flux_pa_cell_h": 12140.318112244899,
+        "gpu_flux_pa_cell_h": 12135.997959183675,
+        "flux_excess_pa_cell_h": -4.32015306122449
+      },
+      {
+        "face": "N",
+        "b_dist": 1,
+        "cpu_normal_mean": 9.77251148223877,
+        "gpu_normal_mean": 9.859554290771484,
+        "gpu_minus_cpu_normal_mean": 0.08704280853271484,
+        "cpu_flux_pa_cell_h": 12093.7875,
+        "gpu_flux_pa_cell_h": 12171.69642857143,
+        "flux_excess_pa_cell_h": 77.90892857142858
+      },
+      {
+        "face": "N",
+        "b_dist": 2,
+        "cpu_normal_mean": 9.712615966796875,
+        "gpu_normal_mean": 9.794867515563965,
+        "gpu_minus_cpu_normal_mean": 0.08225154876708984,
+        "cpu_flux_pa_cell_h": 12000.143112244898,
+        "gpu_flux_pa_cell_h": 12061.005612244899,
+        "flux_excess_pa_cell_h": 60.8625
+      },
+      {
+        "face": "N",
+        "b_dist": 3,
+        "cpu_normal_mean": 9.686792373657227,
+        "gpu_normal_mean": 9.753015518188477,
+        "gpu_minus_cpu_normal_mean": 0.06622314453125,
+        "cpu_flux_pa_cell_h": 11906.712244897959,
+        "gpu_flux_pa_cell_h": 11957.605102040818,
+        "flux_excess_pa_cell_h": 50.892857142857146
+      },
+      {
+        "face": "N",
+        "b_dist": 4,
+        "cpu_normal_mean": 9.665186882019043,
+        "gpu_normal_mean": 9.526266098022461,
+        "gpu_minus_cpu_normal_mean": -0.13892078399658203,
+        "cpu_flux_pa_cell_h": 11813.941071428573,
+        "gpu_flux_pa_cell_h": 11854.573469387755,
+        "flux_excess_pa_cell_h": 40.63239795918367
+      },
+      {
+        "face": "N",
+        "b_dist": 5,
+        "cpu_normal_mean": 9.595696449279785,
+        "gpu_normal_mean": 9.565165519714355,
+        "gpu_minus_cpu_normal_mean": -0.030530929565429688,
+        "cpu_flux_pa_cell_h": 11722.357653061224,
+        "gpu_flux_pa_cell_h": 11760.624489795919,
+        "flux_excess_pa_cell_h": 38.266836734693875
+      },
+      {
+        "face": "N",
+        "b_dist": 6,
+        "cpu_normal_mean": 9.519999504089355,
+        "gpu_normal_mean": 9.539721488952637,
+        "gpu_minus_cpu_normal_mean": 0.01972198486328125,
+        "cpu_flux_pa_cell_h": 11630.747448979591,
+        "gpu_flux_pa_cell_h": 11666.845408163266,
+        "flux_excess_pa_cell_h": 36.09795918367347
+      },
+      {
+        "face": "N",
+        "b_dist": 7,
+        "cpu_normal_mean": 9.462442398071289,
+        "gpu_normal_mean": 9.508392333984375,
+        "gpu_minus_cpu_normal_mean": 0.04594993591308594,
+        "cpu_flux_pa_cell_h": 11539.067602040815,
+        "gpu_flux_pa_cell_h": 11573.710714285713,
+        "flux_excess_pa_cell_h": 34.643112244897964
+      },
+      {
+        "face": "N",
+        "b_dist": 8,
+        "cpu_normal_mean": 9.396443367004395,
+        "gpu_normal_mean": 9.468512535095215,
+        "gpu_minus_cpu_normal_mean": 0.07206916809082031,
+        "cpu_flux_pa_cell_h": 11447.285204081632,
+        "gpu_flux_pa_cell_h": 11480.94413265306,
+        "flux_excess_pa_cell_h": 33.65892857142857
+      },
+      {
+        "face": "N",
+        "b_dist": 9,
+        "cpu_normal_mean": 9.328035354614258,
+        "gpu_normal_mean": 9.415994644165039,
+        "gpu_minus_cpu_normal_mean": 0.08795928955078125,
+        "cpu_flux_pa_cell_h": 11355.863265306123,
+        "gpu_flux_pa_cell_h": 11388.65969387755,
+        "flux_excess_pa_cell_h": 32.79642857142857
+      },
+      {
+        "face": "N",
+        "b_dist": 10,
+        "cpu_normal_mean": 9.256425857543945,
+        "gpu_normal_mean": 9.35541820526123,
+        "gpu_minus_cpu_normal_mean": 0.09899234771728516,
+        "cpu_flux_pa_cell_h": 11265.254081632653,
+        "gpu_flux_pa_cell_h": 11297.23392857143,
+        "flux_excess_pa_cell_h": 31.979846938775513
+      },
+      {
+        "face": "N",
+        "b_dist": 11,
+        "cpu_normal_mean": 9.180831909179688,
+        "gpu_normal_mean": 9.286575317382812,
+        "gpu_minus_cpu_normal_mean": 0.105743408203125,
+        "cpu_flux_pa_cell_h": 11176.042346938775,
+        "gpu_flux_pa_cell_h": 11207.038010204082,
+        "flux_excess_pa_cell_h": 30.99566326530612
+      },
+      {
+        "face": "N",
+        "b_dist": 12,
+        "cpu_normal_mean": 9.102166175842285,
+        "gpu_normal_mean": 9.212347984313965,
+        "gpu_minus_cpu_normal_mean": 0.11018180847167969,
+        "cpu_flux_pa_cell_h": 11088.267091836735,
+        "gpu_flux_pa_cell_h": 11118.21887755102,
+        "flux_excess_pa_cell_h": 29.951785714285716
+      },
+      {
+        "face": "N",
+        "b_dist": 13,
+        "cpu_normal_mean": 9.024465560913086,
+        "gpu_normal_mean": 9.137502670288086,
+        "gpu_minus_cpu_normal_mean": 0.113037109375,
+        "cpu_flux_pa_cell_h": 11001.488265306123,
+        "gpu_flux_pa_cell_h": 11030.669387755102,
+        "flux_excess_pa_cell_h": 29.181122448979593
+      },
+      {
+        "face": "N",
+        "b_dist": 14,
+        "cpu_normal_mean": 8.948722839355469,
+        "gpu_normal_mean": 9.063556671142578,
+        "gpu_minus_cpu_normal_mean": 0.11483383178710938,
+        "cpu_flux_pa_cell_h": 10914.57551020408,
+        "gpu_flux_pa_cell_h": 10943.610459183674,
+        "flux_excess_pa_cell_h": 29.03494897959184
+      },
+      {
+        "face": "N",
+        "b_dist": 15,
+        "cpu_normal_mean": 8.87238883972168,
+        "gpu_normal_mean": 8.987386703491211,
+        "gpu_minus_cpu_normal_mean": 0.11499786376953125,
+        "cpu_flux_pa_cell_h": 10826.52780612245,
+        "gpu_flux_pa_cell_h": 10855.862755102042,
+        "flux_excess_pa_cell_h": 29.334948979591836
+      }
+    ],
+    "control_surface_summary": {
+      "mean_outward_normal_wind_bias_mps": -0.08631423115730286,
+      "net_outflux_excess_pa_cell_h": 43.091135204081624,
+      "per_face_outward_bias": {
+        "W_inward_is_neg": -0.17320823669433594,
+        "E": -0.15566349029541016,
+        "S_inward_is_neg": -0.08845436573028564,
+        "N": 0.07206916809082031
+      }
+    }
+  }
+}
