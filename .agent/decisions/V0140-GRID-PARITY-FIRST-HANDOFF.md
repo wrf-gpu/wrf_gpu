@@ -3,6 +3,17 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-11 16:47 WEST: active worker launched for the next proof loop:
+Fable high in tmux `0:5`, worktree
+`.claude/worktrees/fable-wrf-native-advance-w-dump`, branch
+`worker/fable/v014-wrf-native-advance-w-dump`, sprint contract
+`.agent/sprints/2026-06-11-v014-wrf-native-advance-w-dump/`. Expected report:
+`.agent/reviews/2026-06-11-v014-fable-wrf-native-advance-w-dump.md`. Expected
+DONE marker: `FABLE WRF_NATIVE_ADVANCE_W_DUMP DONE - see .agent/reviews/2026-06-11-v014-fable-wrf-native-advance-w-dump.md`.
+Poll roughly every 15 minutes unless the report/DONE marker appears or a
+resource safety issue requires earlier action. Do not micromanage or re-read
+the transcript without a completion/death signal.
+
 Update 2026-06-11 16:42 WEST: GPT advance-w term split completed and is
 accepted as `NARROWED_NO_FIX`:
 `.agent/reviews/2026-06-11-v014-gpt-advance-w-term-split.md`,
