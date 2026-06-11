@@ -50,6 +50,7 @@ performance risk, and possibility that the gain will not materialize.
 |---:|---|---|---|---|
 | P0 | Fable kernel efficiency review | Avoid drifting into low-gain optimizations; produce one ranked compute+memory action list. | Prepared only; dispatch after Canary+Switzerland are green/bounded and Fable is not needed for v0.14 correctness. | Static/proof-backed review of dycore, radiation, physics, coupling, writer, validation runners; gain/complexity table. |
 | P1 | FP32 acoustic R1-R8 | Highest possible memory/perf gain after correctness; probes say feasible in principle, but fp64 dynamics frontier must be closed first. | R0 default-inert contract landed; ADR-031 draft; R1/R2 blocked by fp64 P/PH/MU/Step-1 divergence. | Opt-in `mixed_perturb_fp32` acoustic mode with fp64-default bit identity, explicit base-state plumbing, perturbation-authoritative loop, CPU/GPU gates, transfer audit. |
+| P1 | Strong-flow top-boundary / dry-dynamics residual, if not fully closed in v0.14 | Switzerland h36-h72 exposed a dry-dynamics mass-venting bias in strong cross-Alpine flow; if the v0.14 Fable sprint exactly bounds but does not fully fix it, it becomes the first v0.15 correctness sprint. | Active v0.14 blocker sprint: `.agent/sprints/2026-06-11-v014-switzerland-strongflow-dynamics-attribution/`. Prime suspect is top-boundary/free-top versus rigid `top_lid=True`, but final attribution is pending. | WRF-faithful strong-flow dry-dynamics fix with h36 storm-state short gate and renewed 72h Switzerland field gate. |
 | P1 | v0.14 validation hardening carry-over | Final validation output should be reusable, not a one-off. | Grid-Delta Atlas tool exists; tolerance manifest still review/freeze step; Canary and Switzerland 72h gates are the active release evidence; TOST is secondary. | Freeze tolerance manifest, final README dashboard, reusable validation manifest runner, deterministic exclusion log. |
 | P2 | Moisture limiter / active moisture-advection memory and semantics | Measured +1.90 GiB when active; also tied to WRF-cadence fidelity. | Deferred until active moisture path is validation target. | Per-species limiter workspace reduction with positivity/conservation and WRF cadence proof. |
 | P2 | Acoustic scan carry split / evolving-only carry | Static memory gain around 1.56 GiB; may combine with FP32 acoustic. | Deferred; prior split attempts reverted; same fault surface as fp64 dynamics. | Co-design with FP32 or separate dycore-memory sprint after fp64 proof frontier closes. |
@@ -61,6 +62,8 @@ performance risk, and possibility that the gain will not materialize.
 | P3 | Real multi-GPU sharding | Needed for true scalable GPU rewrite; fake mesh only today. | Fake-mesh bit identity done; real hardware throughput projected. | Real multi-GPU proof on available hardware: halo correctness, partition invariance, throughput/per-watt artifacts. |
 | P3 | AOT/precompile for production grids | Reduces wall-clock and operator friction, not numerical risk. | Runtime code has AOT scaffold; no release-grade artifact. | Precompile/cold-start benchmark for Canary and Switzerland grids, cache integrity docs. |
 | P3 | Release-benchmark dashboard polish | v0.14 will produce the first credible multi-region 72h field evidence; v0.15 should make it repeatable and comparable. | v0.14 must commit the latest wall-clock, memory, and stability plots. | Turn v0.14 scripts into a one-command benchmark/plot suite with stable schema and CI-friendly summaries. |
+| P3 | Daily replay namelist physics threading | A Fable Switzerland proof found that editing `namelist.input` to `mp_physics=0` did not affect the daily path; `_build_real_case` currently builds default physics unless options are explicitly threaded. This did not cause the Switzerland residual because defaults matched the CPU case, but it violates fail-closed replay expectations for non-default cases. | Side finding in `.agent/reviews/2026-06-11-v014-switzerland-post-lbc-residual-fable.md`; no production fix yet. | Thread or fail-closed-check physics family options in daily replay, with tests proving non-default case dispatch cannot silently run defaults. |
+| P3 | Thompson number-source audit (`pnr_sml`) | Fable flagged possible extra `*rho` in `thompson_column.py:839` relative to WRF per-kg bookkeeping, plus early drizzle/number-spread differences. It was downstream of Switzerland dry dynamics, not the current release blocker. | Side finding only; not load-bearing for v0.14. | WRF-column oracle for melt/shed number sources and precipitation-number limits; fix if confirmed. |
 | P4 | Full wrfout coverage | Gatekeeper completeness; v0.13 writer still focused subset. | KI-3: 104-variable focused writer vs CPU-WRF 375 variables. | Expand writer inventory or formal fail-closed field policy with exact mapping and tests. |
 | P4 | Physics long-tail | Completeness toward WRF v4; large schemes remain fail-closed/ref-only. | Many schemes carried: CAM/NUWRF/GFDL radiation, RUC LSM, Grell-3D/KSAS/New-Tiedtke kernels, Shin-Hong/QNSE/UW/GBM/TEMF, huge microphysics. | Select by operational value and proof tractability after v0.15 efficiency review, not by breadth alone. |
 
@@ -70,8 +73,12 @@ performance risk, and possibility that the gain will not materialize.
 - Acoustic carry split, pad/mask helper cleanup, and state alias reduction.
 - Moisture limiter workspace rewrite and active moisture-advection cadence
   hardening if v0.14 does not close it.
+- Switzerland strong-flow dry-dynamics/top-boundary fix if v0.14 only exactly
+  bounds it instead of fully closing it.
 - Post-physics merge and PBL/surface bottom-only prep optimizations.
 - Broad non-radiation column tiling beyond MYNN.
+- Daily replay namelist physics threading/fail-closed checks.
+- Thompson `pnr_sml` / number-source audit.
 - Real multi-GPU throughput measurement.
 - Full wrfout 375-variable coverage plan.
 - Larger physics-scheme long-tail.
