@@ -88,6 +88,14 @@ bounded-release decision with independent review. Do not start the Fable xhigh
 kernel efficiency review until this correctness blocker is closed or formally
 bounded enough for v0.14.
 
+Update 2026-06-11 (Fable token discipline): the active Fable xhigh
+stage-3/wrapper-cadence sprint remains an end-to-end fix/proof assignment. If it
+does not close the blocker, do not immediately launch another Fable/Mythos
+xhigh sprint. Continue first with GPT-5.5 xhigh verification/residual-fix
+sprints, then Fable medium/high if GPT stalls. Reserve another Fable/Mythos
+xhigh run for roughly ten inconclusive cheaper follow-up sprints or an
+explicitly documented exceptional kernel-level impasse.
+
 Update 2026-06-10 22:49 WEST: the nested-pipeline Noah-MP source fix and h1-h4
 land-gate scorer are merged/pushed (`c2310c5b`, `c6800bfa`). The d01 LU16
 Noah-MP nonfinite blocker is now closed by Fable high end-to-end:

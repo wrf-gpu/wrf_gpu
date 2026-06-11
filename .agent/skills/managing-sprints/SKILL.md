@@ -86,6 +86,18 @@ Match model+effort to task type (principal effort-tiers): **core/correctness-cri
   close. When reusing the scarce `0:1` Mythos session, compact first; when using
   a fresh medium/high tmux window, a new session is preferred and no legacy
   context should be assumed.
+- **Fable xhigh scarcity ladder (principal directive 2026-06-11):** after a
+  Fable/Mythos xhigh sprint consumes a large context budget, do **not** launch a
+  second xhigh run reflexively. If the bug remains open after that sprint,
+  continue first with GPT-5.5 xhigh workers: have them verify/reject the Fable
+  diff, narrow the residual, and attempt non-destructive or local fixes. If GPT
+  stalls, try Fable **medium/high** as the next scarce-model tier with one
+  whole endpoint-defined assignment. Reserve another Fable/Mythos **xhigh** run
+  for roughly ten inconclusive GPT-5.5 xhigh / Fable-high follow-up sprints, or
+  for a clearly documented exceptional case where the manager can justify that
+  cheaper tiers are very unlikely to close the kernel-level blocker. This
+  preserves Fable xhigh for genuinely hard fresh-context resets, not ordinary
+  continuation.
 - Manager stays manager: re-dispatch dead agents; don't hand-debug.
 
 ## Long-roadmap drift prevention
