@@ -3,6 +3,30 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-11 16:08 WEST: latest pushed manager state is `d6dd0431`
+plus polling-discipline commit `9a8e9fe8`. The previous GPT residual sprint is
+accepted and pushed as `8a630f46`: it narrows the first Switzerland/Gotthard
+h36 error to the single RK1 acoustic substep `WRF call 21601 -> 21602` and
+adds a GPU discriminator proving the known decoupled-vs-WRF-coupled
+lower-boundary surface-`w` feed is **not** the first `p/ph` creator
+(`p/ph` interior RMSE unchanged at `1.126197518453275` /
+`0.43526395846317767`, improvement fraction `0.0`). Boundary cadence,
+specified stage omega, real-case `rhs_ph`, final wrapper pressure refresh, and
+surface-`w` are demoted/excluded. Remaining exact target: post-`advance_mu_t`
+inputs consumed by `advance_w` and/or internal `advance_w_wrf()` terms
+(`rhs_seed`, vertical phi advection, `rw_tend`, implicit pressure/Thomas solve,
+`ph_next`).
+
+Active worker: GPT-5.5 xhigh in tmux `0:5`, worktree
+`.claude/worktrees/gpt-advance-w-term-split`, branch
+`worker/gpt/v014-advance-w-term-split`, sprint contract
+`.agent/sprints/2026-06-11-v014-gpt-advance-w-term-split/`. Expected report:
+`.agent/reviews/2026-06-11-v014-gpt-advance-w-term-split.md`. Manager should
+not micromanage; poll roughly every 15 minutes unless a DONE marker appears or
+resource safety requires earlier action. Do not start Switzerland 72h, TOST,
+FP32 implementation, or performance audit until this h36 short-gate blocker is
+fixed or formally bounded.
+
 Update 2026-06-11 05:05 WEST: Canary L2 d02 72h is completed and accepted as
 bounded/proceed, not active. Run root:
 `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`;
