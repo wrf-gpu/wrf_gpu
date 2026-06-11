@@ -276,11 +276,20 @@ class SurfaceMynnDiagnostics(NamedTuple):
 
 
 class MynnPBLSourceLeaves(NamedTuple):
-    """MYNN adapter output plus raw WRF PBL source leaves."""
+    """MYNN adapter output plus raw WRF PBL source leaves.
+
+    ``rublten``/``rvblten`` are the raw A-grid (mass-point) momentum source
+    rates ``(u_out - u_in)/dt`` exactly as WRF's MYNN driver writes RUBLTEN /
+    RVBLTEN before ``phy_tend`` mass-couples them (module_em.F:2381) and
+    ``update_phy_ten`` face-averages them into ``ru_tendf``/``rv_tendf``
+    (phys/module_physics_addtendc.F add_a2c_u/add_a2c_v).
+    """
 
     state: State
     rthblten: jax.Array
     rqvblten: jax.Array
+    rublten: jax.Array
+    rvblten: jax.Array
 
 
 class RRTMGRadiationDiagnostics(NamedTuple):
@@ -1569,22 +1578,37 @@ def mynn_coldstart_qke_from_state(
     return _from_columns(_unflatten_batch_to_columns(qke_b, ny, nx))
 
 
+# WRF module_bl_mynnedmf.F:623: INITIALIZE_QKE = MAXVAL(qke) < 0.0002 -- the
+# scheme cold-starts the TKE state ONLY when the incoming field carries no real
+# turbulence.  Mirrored here so a mid-run re-init that loads a spun-up QKE
+# (e.g. the Switzerland h36 wrfout re-init, max qke ~25 m^2/s^2) keeps it,
+# exactly like WRF's INITIALIZE_QKE=.FALSE. branch.  v0.14 venting-residual
+# sprint: the unconditional seed overrode the loaded h36 QKE and inflated the
+# PBL sources 2-5x vs the WRF-native implied truth
+# (proofs/v014/switzerland_uv_lane_contributors).
+_MYNN_QKE_INIT_THRESHOLD = 0.0002
+
+
 def _mynn_state_with_first_call_qke(
     state: State, grid: GridSpec | None, first_timestep
 ) -> State:
     """Apply WRF's first MYNN ``mym_initialize`` ordering after surface fluxes."""
 
+    qke_live = jnp.asarray(state.qke)
+    needs_init = jnp.max(qke_live) < _MYNN_QKE_INIT_THRESHOLD
     if isinstance(first_timestep, bool):
         if not first_timestep:
             return state
-        qke_seed = mynn_coldstart_qke_from_state(state, grid)
+        qke_seed = jnp.where(
+            needs_init, mynn_coldstart_qke_from_state(state, grid), qke_live
+        )
     else:
-        flag = jnp.asarray(first_timestep, dtype=bool)
+        flag = jnp.asarray(first_timestep, dtype=bool) & needs_init
 
         def seed(_unused):
             return mynn_coldstart_qke_from_state(state, grid)
 
-        qke_seed = jax.lax.cond(flag, seed, lambda _unused: jnp.asarray(state.qke), None)
+        qke_seed = jax.lax.cond(flag, seed, lambda _unused: qke_live, None)
     return state.replace(qke=qke_seed.astype(_output_dtype(state, "qke")))
 
 
@@ -1620,12 +1644,23 @@ def mynn_adapter_with_source_leaves(
     rqvblten = ((qv_after - jnp.asarray(state.qv, jnp.float64)) / float(dt)).astype(
         _output_dtype(state, "qv")
     )
+    # Raw WRF A-grid momentum sources: the SAME mass-point increments
+    # _state_from_mynn_output A2C-couples into the C-grid winds, divided by dt
+    # (WRF MYNN driver RUBLTEN/RVBLTEN semantics).
+    rublten = ((_from_columns(out.u) - _u_mass(state)) / float(dt)).astype(
+        _output_dtype(state, "u")
+    )
+    rvblten = ((_from_columns(out.v) - _v_mass(state)) / float(dt)).astype(
+        _output_dtype(state, "v")
+    )
     return MynnPBLSourceLeaves(
         state=_state_from_mynn_output(
             state, out, theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid)
         ),
         rthblten=rthblten,
         rqvblten=rqvblten,
+        rublten=rublten,
+        rvblten=rvblten,
     )
 
 
