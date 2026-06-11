@@ -22,6 +22,13 @@ GPT is report-only for this sprint. Do not edit source files, docs, or
 contracts. Fable owns any simple identity-preserving speedup implementation in
 the parallel sprint.
 
+The audit must also defend or falsify the original project speed premise. For
+parallel stencil/column/radiation workloads above a certain size, a GPU should
+normally outperform a CPU by large factors. If the measured result stays near
+`1x`, work backwards and explain whether the cause is unfair measurement,
+small-grid overhead, JAX/runtime/kernel inefficiency, IO/transfer overhead, or a
+real algorithmic limit. Do not accept "GPU is not faster here" without evidence.
+
 ## Trigger Data
 
 - Canary 72h run root:
@@ -76,6 +83,25 @@ Read first:
    - CPU-WRF denominator with explicit timing rather than wrfout mtimes;
    - Switzerland d01 comparison once HPG is fixed.
 5. Rank fixes by likely speedup gain and implementation risk.
+6. Backwards speed-premise analysis:
+   - why the rough pre-architecture `~10x` expectation is or is not still
+     plausible;
+   - what would have to be true for `~10x` to be impossible;
+   - which artifact or profiler measurement would falsify the dominant claim.
+7. Architectural near-optimum analysis:
+   - whether a different graph/stencil/matrix representation, custom
+     Triton/CUDA/Pallas kernels, persistent kernels, data-layout rewrite,
+     larger fusion boundary, column batching, or physics batching could produce
+     near-optimum GPU efficiency;
+   - rank options by gain, complexity, validation risk, and WRF-faithfulness
+     risk.
+8. Compute-vs-memory analysis:
+   - identify optional caching/precompute/residency choices that spend more
+     VRAM for higher throughput;
+   - estimate extra memory and speed impact;
+   - reject them only if they recreate large memory-failure risk or break target
+     GPU classes. Compute speed has strategic priority over extra memory
+     savings when the footprint remains stable and fits target hardware.
 
 ## Constraints
 
@@ -110,6 +136,16 @@ Report format:
   32 GB grids that still fit in VRAM, and asymptotic large-grid H200/GB300
   regime where initialization/compile is amortized. Include confidence and key
   assumptions.
+- `WHY_NOT_10X_YET` section:
+  classify the dominant explanation as `MEASUREMENT_UNFAIRNESS`,
+  `SMALL_GRID_OVERHEAD`, `CURRENT_KERNEL_INEFFICIENT`,
+  `IO_TRANSFER_ORCHESTRATION`, `REAL_ALGORITHMIC_LIMIT`, or a ranked mixture.
+- `NEAR_OPTIMUM_KERNEL_PATHS` section:
+  graph/matrix/stencil/custom-kernel/data-layout/persistent-kernel options with
+  gain/complexity/validation-risk estimates.
+- `COMPUTE_OVER_MEMORY_OPTIONS` section:
+  optional caching/precompute/residency modes that could trade extra VRAM for
+  speed, with memory and expected speed impact.
 
 Print when done:
 
