@@ -97,6 +97,11 @@ class AcousticCoreConfig:
     periodic_x: bool = True
     specified: bool = False
     nested: bool = False
+    # v0.14 SPECIFIED WRF cadence: apply WRF ``zero_grad_bdy`` to the w work
+    # array's spec zone after advance_w every substep (solve_em.F:1601-1607,
+    # specified domains copy the nearest interior w into the ring; nested uses
+    # spec_bdyupdate instead).  Default OFF -> existing paths unchanged.
+    spec_w_zero_grad: bool = False
 
 
 @jax.tree_util.register_pytree_node_class
@@ -220,6 +225,28 @@ class AcousticCoreState:
     # per-substep recompute (single-substep / analytic-oracle usage only, where
     # there is no multi-substep rectification to expose).
     php_stage: jax.Array | None = None
+    # v0.14 SPECIFIED-domain WRF cadence (stage3/wrapper sprint): in-loop
+    # spec-zone (ring-0) pins applied AFTER advance_mu_t every acoustic substep
+    # (WRF spec_bdyupdate for t_2/mu_2/muts, solve_em.F:1462-1490; WRF's
+    # advance_mu_t excludes the ring, then the spec update walks it along the
+    # wrfbdy trajectory).  Targets are the STAGE-END interpolated leaf values in
+    # each array's own work convention:
+    #   mu_spec_target     physical mu' carry pin (= leaf mu')
+    #   muts_spec_target   mub + leaf mu'
+    #   muave_spec_target  pinned mu work delta (muts_pin - mut)
+    #   theta_spec_target  coupled work theta pin (mass_pin*theta'_t - mass_cur*t_save)
+    # All None unless the specified WRF-cadence flag is on -> every other path
+    # is byte-for-byte unchanged.
+    mu_spec_target: jax.Array | None = None
+    muts_spec_target: jax.Array | None = None
+    muave_spec_target: jax.Array | None = None
+    theta_spec_target: jax.Array | None = None
+    # Ring-0 TANGENTIAL momentum work pins (WRF spec_bdyupdate covers the u S/N
+    # rows and v W/E columns too; the WIND-FIX normal targets only own the
+    # normal faces).  Applied in advance_uv_wrf after apply_normal_bdy_work so
+    # the y-side rows own the corners (WRF b_limit convention).
+    u_spec_tan_target: jax.Array | None = None
+    v_spec_tan_target: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -579,6 +606,21 @@ def advance_uv_wrf(
             dts, float(dt_full) if dt_full is not None else dts,
             config=DEFAULT_BOUNDARY_CONFIG,
         )
+    # v0.14 SPECIFIED WRF cadence: ring-0 TANGENTIAL momentum pins (WRF
+    # spec_bdyupdate(u,'u') y-side rows / spec_bdyupdate(v,'v') x-side columns,
+    # solve_em.F:1346-1364 inside the small-step loop).  Applied AFTER the
+    # normal-face treatment so the u S/N rows own the corners (WRF y-side
+    # b_limit=0 full range; the v x-side columns trim the corner rows, WRF j in
+    # [jds+1, jde-1]).  None unless the specified-cadence flag staged targets.
+    if state.u_spec_tan_target is not None and state.v_spec_tan_target is not None:
+        spec_zone = int(DEFAULT_BOUNDARY_CONFIG.spec_zone)
+        ny_u = int(u.shape[1])
+        ny_v = int(v.shape[1])
+        for b in range(spec_zone):
+            u = u.at[:, b, :].set(state.u_spec_tan_target[:, b, :])
+            u = u.at[:, ny_u - 1 - b, :].set(state.u_spec_tan_target[:, ny_u - 1 - b, :])
+            v = v.at[:, 1:-1, b].set(state.v_spec_tan_target[:, 1:-1, b])
+            v = v.at[:, 1:-1, v.shape[2] - 1 - b].set(state.v_spec_tan_target[:, 1:-1, v.shape[2] - 1 - b])
     return state.replace(u=u, v=v)
 
 
@@ -686,6 +728,28 @@ def acoustic_substep_core(
     muts_new = advanced["muts"]
     mu_new = advanced["mu"]
     mudf_new = advanced["mudf"]
+
+    # v0.14 SPECIFIED WRF cadence: spec-zone (ring-0) mass/theta pins (WRF
+    # spec_bdyupdate for t_2/mu_2/muts after advance_mu_t, solve_em.F:1462-1490;
+    # WRF's advance_mu_t excludes the ring -- _advance_mu_t_specified_or_nested
+    # already mirrors that -- and the spec update then walks the ring along the
+    # wrfbdy trajectory).  ``muave`` is pinned to the steady pinned work delta
+    # (the epssm-weighted average of a constant).  None targets (every path
+    # except the specified-cadence flag) leave all four arrays untouched.
+    if state.mu_spec_target is not None:
+        def _pin_ring(field, target):
+            out = field
+            for b in range(int(DEFAULT_BOUNDARY_CONFIG.spec_zone)):
+                out = out.at[..., b, :].set(target[..., b, :])
+                out = out.at[..., field.shape[-2] - 1 - b, :].set(target[..., field.shape[-2] - 1 - b, :])
+                out = out.at[..., :, b].set(target[..., :, b])
+                out = out.at[..., :, field.shape[-1] - 1 - b].set(target[..., :, field.shape[-1] - 1 - b])
+            return out
+
+        mu_new = _pin_ring(mu_new, state.mu_spec_target)
+        muts_new = _pin_ring(muts_new, state.muts_spec_target)
+        muave_new = _pin_ring(muave_new, state.muave_spec_target)
+        theta_coupled = _pin_ring(theta_coupled, state.theta_spec_target)
 
     # Refresh advance_uv divergence damping bookkeeping field after advance_mu_t
     # (mudf was used by THIS substep's advance_uv from the previous mudf state).
@@ -841,6 +905,18 @@ def acoustic_substep_core(
             dts=float(cfg.dt),
             config=DEFAULT_BOUNDARY_CONFIG,
         )
+
+    # --- 3c. SPECIFIED w spec-zone zero-gradient (WRF zero_grad_bdy) ---
+    # WRF solve_em.F:1601-1607: for SPECIFIED domains the spec-zone w_2 copies
+    # the nearest interior value every substep after advance_w (nested domains
+    # use spec_bdyupdate instead).  The y-side rows own the corners (WRF y-side
+    # b_limit=0 full range; x-side trims j to [jds+1, jde-2]).  Applied to the
+    # coupled w work array, exactly WRF's w_2.  Default OFF.
+    if bool(cfg.spec_w_zero_grad):
+        w_solved = w_solved.at[:, 0, :].set(w_solved[:, 1, :])
+        w_solved = w_solved.at[:, -1, :].set(w_solved[:, -2, :])
+        w_solved = w_solved.at[:, 1:-1, 0].set(w_solved[:, 1:-1, 1])
+        w_solved = w_solved.at[:, 1:-1, -1].set(w_solved[:, 1:-1, -2])
 
     # --- 4. sumflux accumulators (Sprint B consumer); WRF solve_em.F:4048-4093 ---
     state_for_pressure = state_for_w.replace(w=w_solved, ph=ph_next, t_2ave=t_2ave_next)
