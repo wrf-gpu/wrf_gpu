@@ -1,0 +1,77 @@
+{
+  "schema": "v014_switzerland_bdy_auditor_findings",
+  "generated_utc": "2026-06-12T00:20:00+00:00",
+  "objective": "Audit lateral-boundary forcing fidelity as the root of the Switzerland/Gotthard d01 h36 strong-flow dry-mass venting (depth-8 h37 excess outflux -26.5 Pa/cell/h vs CPU -74.5; CPU own residual +5).",
+  "binding_metric_reproduced": {
+    "cpu_h36_h37_depth8": {"dM": -69.34, "net_influx": -74.52, "residual": 5.18},
+    "gpu_phys_tendf_h36_h37_depth8": {"dM": -119.01, "net_influx": -101.06, "residual": -17.95},
+    "excess_outflux_pa_cell_h": -26.545,
+    "my_src_reproduces_bit_identical": true
+  },
+  "key_findings": {
+    "1_venting_is_real_instantaneous_outflux_not_a_continuity_bug": {
+      "evidence": "Using ONLY the end-state (h37) flux, BOTH CPU and GPU close: CPU resid(endflux)=+1.1, GPU resid(endflux)=+4.5. The -18 'non-closure' in the trapezoidal budget is an artifact of averaging the shared CPU h36 flux (+78.6) with the GPU h37 flux (+123.5). GPU instantaneous h37 outflux 123.5 vs CPU 70.4 == +53 Pa/cell/h excess.",
+      "verdict": "GPU is internally mass-consistent; the venting is genuine excess lateral OUTFLUX, not an interior mass-sink discretization error."
+    },
+    "2_excess_is_v_wind_meridional_NS_faces_dominant": {
+      "per_face_h37_excess_pa_cell_h_depth8": {"fw": 3.27, "fe": -24.12, "fs": -40.88, "fn": 39.59},
+      "reading": "Net excess -26.5 is dominated by the S/N (v-flux) faces: too much northward outflow at N (+40), too little inflow at S (-41). The strong N-S Foehn jet is systematically too fast in the GPU.",
+      "domain_mean_bias_h37": {"U": 0.0642, "V": 0.0350, "interior8_U": 0.0752, "interior8_V": 0.0472, "MU": -39.4, "T": 0.216},
+      "depth_invariance": "h37 per-cell excess is ~-26 at depth 4/8/12/16/20/24 -> the v-bias pervades the whole interior, not a thin perimeter ring."
+    },
+    "3_spec_zone_is_perfectly_pinned": {
+      "evidence": "GPU-CPU normal-wind bias at b_dist=0 (outermost spec row/col) is EXACTLY 0.000 on all four faces. The bias appears at the relaxation zone (b_dist=1,2,3) and grows monotonically inward.",
+      "verdict": "spec_bdyupdate / spec-zone hard-set is correct; the defect is in the RELAXATION lane and the interior jet it fails to hold."
+    },
+    "4_relaxation_strength_governs_the_venting_but_is_not_a_clean_fix": {
+      "sweep_h37_excess": {"strength_20_default": -26.54, "strength_60": -21.47},
+      "sweep_per_face_h37_excess": {
+        "s20": {"fw": 3.27, "fe": -24.12, "fs": -40.88, "fn": 39.59},
+        "s60": {"fw": -17.23, "fe": 10.91, "fs": -18.69, "fn": -3.88}
+      },
+      "reading": "Tripling NORMAL_BDY_RELAX_STRENGTH (20->60) cuts h37 excess 19% and collapses the N-face venting (+40->-4), but OVERSHOOTS other faces (W +3->-17) and does NOT persist (h38 -21.5->-22.1). Strength is a calibration knob pulling toward a BIASED target, not a root fix.",
+      "stability": "strength 60 run finite/stable 2h (W rmse 0.099)."
+    },
+    "5_ROOT_the_normal_momentum_target_LEAF_is_mass-biased_static_IC_mass_uncoupling": {
+      "code": "src/gpuwrf/integration/d02_replay.py:load_wrfbdy_boundary_leaves -> _wrfbdy_total_mass_strips (line 1713) computes the uncoupling mass term ONCE from the IC (h36) dry mass mu_total and freezes it for the whole forecast. The wrfbdy COUPLED momentum V_BYS is uncoupled as v = V_BYS/(c1*mass_IC+c2)*msfvx (line 1645-1646, 1717-1724).",
+      "wrf_truth": "WRF couples/uncouples with the CURRENT (time-evolving) column mass (dyn_em/module_big_step_utilities_em.F::couple; module_bc_em.F spec/relax operate on the coupled momentum at the live mass).",
+      "measured_leaf_target_error_h37": "v_leaf low by ~0.156 m/s at N, ~0.053 at S (the domain lost ~1.8 kPa of mass by h37, so mass_TRUE/mass_IC=0.989 and the static-IC uncouple inflates the implied velocity denominator).",
+      "why_it_is_the_residual_root": "At saturated relax strength (60) the per-face flux is pulled to the leaf target but CANNOT reach CPU truth (residual -21.5, fw -17/fe +11/fs -19/fn -4) because the leaf TARGET itself is mass-biased. The relaxation faithfully tracks a wrong target.",
+      "sign_caveat": "The static-mass leaf bias is NEGATIVE on all faces (mass dropped). Its direct per-face venting sign is MIXED (W+S vent, E+N anti-vent), so it is NOT the FULL -26.5 at default strength (where the dominant term is the relax being too WEAK to hold the over-driven jet). It IS the limiting residual once the relax is strong enough to impose the target."
+    }
+  },
+  "hypothesis_ledger": {
+    "H1_spec_zone_forcing_uv_mass_coupling": "PARTIAL-ROOT: spec ring-0 is exact (b=0 bias 0.000). The COUPLED normal-momentum target (normal_bdy_work_target_u/v) re-couples with stage mass but is built from a leaf uncoupled with STATIC IC mass -> mass-biased target = the residual venting root (finding 5).",
+    "H2_relaxation_strength_F(n)": "CONFIRMED-MECHANISM, NOT-ROOT: the WRF lbc_fcx_gcx weights are reproduced exactly (boundary_apply._wrf_relax_weights == module_bc_em.F:1318-1319). The deviation is the NORMAL_BDY_RELAX_STRENGTH=20 amplifier (WRF=1), a non-faithful proxy for WRF's coupled-tendency-folded-into-ru_tend cadence. Strength governs venting (sweep) but pulls toward the biased target.",
+    "H3_dynamics_tendency_leak_into_spec_zone": "NOT-DEMONSTRATED as driver: WRF trims u/v PGF + rk_addtend_dry to exclude spec_zone (module_small_step_em.F:735-741, module_em.F:1671-1675); the GPU edge-masks Coriolis (rk_addtend_dry.py:432-457). The bias is domain-pervasive (interior +0.075 U/+0.047 V), inconsistent with a thin spec-zone diffusion leak alone. Not the primary signal.",
+    "H4_mapfactor_metric_in_normal_mass_flux": "CONSISTENT, not the isolated root: the same msfuy/msfvx and (c1*muf+c2) coupling appear in both the budget kernel and the leaf uncouple; the error is the MASS (IC vs live), not the map factor."
+  },
+  "wrf_source_refs": {
+    "lbc_fcx_gcx_weights": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_bc_em.F:1318-1319 (fcx=0.1/dt*linear, gcx=1/dt/50*linear)",
+    "advance_uv_spec_zone_exclusion": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F:735-741 (i_start=max(its,ids+spec_zone), i_endu=min(ite,ide-spec_zone))",
+    "rk_addtend_dry_spec_trim": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F:1671-1675",
+    "wrfbdy_coupling": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F::couple ; share/module_bc.F stuff_bdy"
+  },
+  "gpu_code_refs": {
+    "static_IC_mass_uncouple_ROOT": "src/gpuwrf/integration/d02_replay.py:1713,1645-1646,1717-1724 (mass_strips from IC mu_total, frozen)",
+    "normal_momentum_target": "src/gpuwrf/coupling/boundary_apply.py:688-735 (normal_bdy_work_target_u/v)",
+    "strength_amplifier": "src/gpuwrf/coupling/boundary_apply.py:751 (NORMAL_BDY_RELAX_STRENGTH; now env-overridable GPUWRF_NORMAL_BDY_RELAX_STRENGTH)",
+    "relax_weights_faithful": "src/gpuwrf/coupling/boundary_apply.py:625-646 (_wrf_relax_weights == WRF)"
+  },
+  "recommended_fix": {
+    "primary": "Make the wrfbdy normal-momentum forcing use the LIVE column mass, not the frozen IC mass. Most WRF-faithful: keep the wrfbdy boundary momentum COUPLED (V_BYS as-is) and drive normal_bdy_work_target_u/v so small_step_finish reconstructs to v = (msf*V_BYS_uncoupled_at_LIVE_mass ...); concretely feed the coupled leaf and uncouple inside the per-stage target builder with prep.muv (the live stage mass already available there) instead of pre-uncoupling with static IC mass in load_wrfbdy_boundary_leaves.",
+    "secondary": "Once the target is live-mass-correct, the NORMAL_BDY_RELAX_STRENGTH amplifier should be re-derivable toward the WRF nominal (1) since the leaf will be reachable; verify it no longer needs 20x.",
+    "do_not": "Do NOT just raise the strength constant (overshoots per-face, non-persistent, not WRF-faithful)."
+  },
+  "artifacts": {
+    "forecasts": [
+      "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_bdyaud_s20 (strength 20, bit-identical to prod -26.54)",
+      "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_bdyaud_s60 (strength 60, -21.47, stable)"
+    ],
+    "proofs": [
+      "proofs/v014/switzerland_bdy_normal_wind_oracle.{py,json}",
+      "proofs/v014/switzerland_bdy_strength_sweep.{py,json}",
+      "proofs/v014/switzerland_bdy_auditor_findings.json"
+    ]
+  }
+}

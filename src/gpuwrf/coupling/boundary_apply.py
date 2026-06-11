@@ -48,6 +48,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import os
 
 import jax
 import jax.numpy as jnp
@@ -748,7 +749,11 @@ def normal_bdy_work_target_v(
 # finite, v|max| 27->18.  This is a single decoupled-replay calibration constant
 # (a per-substep convex-blend weight ~0.86/step at the spec-adjacent relax cell),
 # NOT a per-cell masking clamp.
-NORMAL_BDY_RELAX_STRENGTH = 20.0
+#
+# v0.14 bdy-auditor (2026-06-11): env-overridable for the venting-driver strength
+# sweep (GPUWRF_NORMAL_BDY_RELAX_STRENGTH); default unchanged so production stays
+# byte-identical when the env is unset.
+NORMAL_BDY_RELAX_STRENGTH = float(os.environ.get("GPUWRF_NORMAL_BDY_RELAX_STRENGTH", "20.0"))
 
 
 def _normal_relax_weights_u(z_len, y_len, x_len, sub_ratio, config: BoundaryConfig, dtype):
