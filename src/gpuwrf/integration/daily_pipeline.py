@@ -520,6 +520,31 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         ),
         gwd_opt=gwd_opt,
         gwdo_statics=gwdo_statics,
+        # v0.14 venting-residual fix (proofs/v014/switzerland_uv_lane_decomposition
+        # + _contributors): the WRF-native advance_uv oracle proved the staged
+        # ru/rv_tend and t_tend were missing the ENTIRE physics *_tendf fold
+        # (PBL drag 57%/72% rel of ru/rv_tend, RTHRATEN+RTHBLTEN 54% of t_tend)
+        # because rad_rk_tendf defaulted 0 (legacy lumped/post-dycore cadence)
+        # and _dry_physics_tendencies_from_state_delta is a deliberate empty
+        # bridge.  WRF integrates the physics sources inside the RK/acoustic
+        # loop (rk_addtend_dry); route them the same way by default on the real
+        # case.  GPUWRF_PHYS_RK_TENDF=0 restores the legacy cadence for
+        # bisection.
+        rad_rk_tendf=0 if os.environ.get("GPUWRF_PHYS_RK_TENDF", "1") == "0" else 1,
+        # Same sprint: honour the case's own WRF &dynamics horizontal-diffusion
+        # config (Switzerland/Gen2 run diff_opt=1, km_opt=4 2-D Smagorinsky; the
+        # JAX side ran 0/0, dropping the Smag u/v/theta/w tendencies WRF folds
+        # into the same large-step lane).  GPUWRF_SMAG2D=0 forces it off.
+        diff_opt=(
+            0
+            if os.environ.get("GPUWRF_SMAG2D", "1") == "0"
+            else int(_domain_namelist_value(replay.run, "dynamics", "diff_opt", config.domain, 0))
+        ),
+        km_opt=(
+            0
+            if os.environ.get("GPUWRF_SMAG2D", "1") == "0"
+            else int(_domain_namelist_value(replay.run, "dynamics", "km_opt", config.domain, 0))
+        ),
     )
     run_start = _coerce_run_start(str(replay.metadata["run_start_label"]))
     writer_diagnostics, writer_static_latlon_meta = _load_static_latlon_writer_diagnostics(
