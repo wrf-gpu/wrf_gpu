@@ -13,6 +13,14 @@ Remaining Canary misses are bounded/static or saturating (`MUB/PB` nest-frame
 seam, `QVAPOR` slightly over hard limit) and are not a current v0.14 launch
 blocker.
 
+Canary wall-clock benchmark is now recorded in the proof summary: GPU
+`wall_clock_l2_d02.json` reports `8226.936 s` total and `8152.310 s`
+forecast-only for 72h. The retained CPU-WRF 28-rank backfill lacks an explicit
+`cpu_timing.json`; using first-to-last `wrfout_d02` timestamps gives an honest
+approximate CPU denominator of `8713.126 s`. Current Canary gate speedup is only
+`1.059x` GPU-total or `1.069x` GPU-forecast-only, so v0.14 must frame this run
+as field-stability evidence, not a major speed headline.
+
 Switzerland/Gotthard is the active blocker. The first 72h GPU run exposed an
 hourly driver LBC-clock bug; the fix is merged and proven (`9cbdfe31`,
 `eaff102c`, `tests/test_daily_boundary_clock.py`,
@@ -126,7 +134,9 @@ scalable GPU rewrite.
 14. Record latest CPU-vs-GPU wall-clock benchmarks for both mandatory regions:
    Canary L2 d02 CPU truth vs GPU 72h, and Switzerland/Gotthard d01 CPU truth
    vs GPU 72h. Include wall-clock, forecast-hours/hour, peak GPU memory, peak
-   process RSS, and CPU peak RSS where available.
+   process RSS, and CPU peak RSS where available. Canary is recorded in
+   `proofs/v014/canary_d02_72h_field_gate_summary.md`; Switzerland remains
+   blocked pending the h36 strong-flow HPG fix and the final GPU72 rerun.
 15. Optionally resume powered TOST as secondary station evidence and publish it
    together with the atlas if it completes cleanly. It is not a tag gate.
 16. Start the prepared Fable/Mythos xhigh kernel memory/compute efficiency
