@@ -1,0 +1,287 @@
+{
+  "anchor": "h36 state == WRF call 21601; compare first RK1 stage boundary against WRF call 21602",
+  "backend": "gpu",
+  "config": {
+    "acoustic_substeps": 4,
+    "dt_s": 18.0,
+    "epssm": 0.5,
+    "specified_adv_degrade": true,
+    "specified_bdy_cadence": true,
+    "stage": 1,
+    "stage_dt": 6.0,
+    "top_lid": true
+  },
+  "generated_utc": "2026-06-11T14:58:49.018009+00:00",
+  "notes": [
+    "This tests only the surface-w feed inside advance_w; all ph_tend, rw_tend, coefficients, theta/mu, pressure refresh, boundary cadence, and advection-degradation settings are unchanged.",
+    "If the wrf_coupled variant does not materially reduce both ph and p interior RMSE at call 21602, the known surface-w deviation is not the first h36 phi/p root."
+  ],
+  "schema": "v014_switzerland_advance_w_phi_discriminator",
+  "variant_deltas": {
+    "wrf_coupled_minus_current_p_work_after_calc_p_rho_step": {
+      "band": {
+        "count": 168960,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "full": {
+        "count": 720896,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "interior": {
+        "count": 551936,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "wrf_coupled_minus_current_ph_work_after_advance_w": {
+      "band": {
+        "count": 172800,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "full": {
+        "count": 737280,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "interior": {
+        "count": 564480,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "wrf_coupled_minus_current_surface_w_work": {
+      "band": {
+        "count": 3840,
+        "max_abs": 1194.540194691001,
+        "mean": 11.102362254031481,
+        "rmse": 75.51316336899056
+      },
+      "full": {
+        "count": 16384,
+        "max_abs": 1370.8936155104288,
+        "mean": 8.29815093604894,
+        "rmse": 91.34956627190665
+      },
+      "interior": {
+        "count": 12544,
+        "max_abs": 1370.8936155104288,
+        "mean": 7.439718899931832,
+        "rmse": 95.67483204832791
+      },
+      "ring_mean": {
+        "0": 18.417428178557014,
+        "1": 18.143008318569184,
+        "10": 13.503232032281687,
+        "11": 17.33105129619018,
+        "2": 11.116787108184822,
+        "3": 9.919581855675231,
+        "4": 12.077157160235412,
+        "5": 6.692085868051068,
+        "6": 6.317675911277354,
+        "7": 4.752704850460304,
+        "8": -0.32617602723425154,
+        "9": 4.111233967811671
+      }
+    },
+    "wrf_coupled_minus_current_u_surface_input": {
+      "band": {
+        "count": 169664,
+        "max_abs": 20870.680385147854,
+        "mean": 143.28565671993914,
+        "rmse": 1208.186098597198
+      },
+      "full": {
+        "count": 726528,
+        "max_abs": 20870.680385147854,
+        "mean": 48.35058321476335,
+        "rmse": 647.8644421424196
+      },
+      "interior": {
+        "count": 556864,
+        "max_abs": 7890.8914757724515,
+        "mean": 19.425990655032166,
+        "rmse": 320.73054401348674
+      }
+    },
+    "wrf_coupled_minus_current_v_surface_input": {
+      "band": {
+        "count": 169664,
+        "max_abs": 19770.210531271427,
+        "mean": -226.43591487007802,
+        "rmse": 1339.4080581380874
+      },
+      "full": {
+        "count": 726528,
+        "max_abs": 19770.210531271427,
+        "mean": -74.51535147279002,
+        "rmse": 719.7227205954906
+      },
+      "interior": {
+        "count": 556864,
+        "max_abs": 6155.504366898504,
+        "mean": -28.22855529232681,
+        "rmse": 359.4831571044241
+      }
+    }
+  },
+  "variants": {
+    "current_decoupled": {
+      "name": "current_decoupled",
+      "stage1_increment_rmse": {
+        "al": {
+          "band": 0.0020941041316539966,
+          "full": 0.0010169651027442325,
+          "interior": 9.157037882376867e-05,
+          "max_abs_interior": 0.0011214946509578994,
+          "mean_interior": 2.441488330304444e-05
+        },
+        "alt": {
+          "band": 0.002094180682379718,
+          "full": 0.0010169787954878214,
+          "interior": 9.123246305212675e-05,
+          "max_abs_interior": 0.0011154818685916723,
+          "mean_interior": 2.489575263636715e-05
+        },
+        "mu": {
+          "band": 0.8778283420031694,
+          "full": 0.425369959300874,
+          "interior": 0.020896037745516488,
+          "max_abs_interior": 0.20623947390538433,
+          "mean_interior": -0.00014108937776747163
+        },
+        "p": {
+          "band": 2.0839124485979257,
+          "full": 1.4102752838501205,
+          "interior": 1.126197518453275,
+          "max_abs_interior": 9.014728298789123,
+          "mean_interior": 0.5333083731329882
+        },
+        "ph": {
+          "band": 3.6260968808379768,
+          "full": 1.7963154989869992,
+          "interior": 0.43526395846317767,
+          "max_abs_interior": 1.0396689208669159,
+          "mean_interior": -0.35948259916846614
+        }
+      },
+      "stage1_state_rmse": {
+        "al": {
+          "band": 0.0020940997920744333,
+          "full": 0.0010169569292696216,
+          "interior": 9.148215570788385e-05
+        },
+        "alt": {
+          "band": 0.002094184829879141,
+          "full": 0.0010169728543967492,
+          "interior": 9.111674678315017e-05
+        },
+        "mu": {
+          "band": 0.8778283420031694,
+          "full": 0.425369959300874,
+          "interior": 0.020896037745516488
+        },
+        "p": {
+          "band": 2.0839124485979257,
+          "full": 1.4102752838501205,
+          "interior": 1.126197518453275
+        },
+        "ph": {
+          "band": 3.6260968808379768,
+          "full": 1.7963154989869992,
+          "interior": 0.43526395846317767
+        }
+      }
+    },
+    "wrf_coupled": {
+      "name": "wrf_coupled",
+      "stage1_increment_rmse": {
+        "al": {
+          "band": 0.0020941041316539966,
+          "full": 0.0010169651027442325,
+          "interior": 9.157037882376867e-05,
+          "max_abs_interior": 0.0011214946509578994,
+          "mean_interior": 2.441488330304444e-05
+        },
+        "alt": {
+          "band": 0.002094180682379718,
+          "full": 0.0010169787954878214,
+          "interior": 9.123246305212675e-05,
+          "max_abs_interior": 0.0011154818685916723,
+          "mean_interior": 2.489575263636715e-05
+        },
+        "mu": {
+          "band": 0.8778283420031694,
+          "full": 0.425369959300874,
+          "interior": 0.020896037745516488,
+          "max_abs_interior": 0.20623947390538433,
+          "mean_interior": -0.00014108937776747163
+        },
+        "p": {
+          "band": 2.0839124485979257,
+          "full": 1.4102752838501205,
+          "interior": 1.126197518453275,
+          "max_abs_interior": 9.014728298789123,
+          "mean_interior": 0.5333083731329882
+        },
+        "ph": {
+          "band": 3.6260968808379768,
+          "full": 1.7963154989869992,
+          "interior": 0.43526395846317767,
+          "max_abs_interior": 1.0396689208669159,
+          "mean_interior": -0.35948259916846614
+        }
+      },
+      "stage1_state_rmse": {
+        "al": {
+          "band": 0.0020940997920744333,
+          "full": 0.0010169569292696216,
+          "interior": 9.148215570788385e-05
+        },
+        "alt": {
+          "band": 0.002094184829879141,
+          "full": 0.0010169728543967492,
+          "interior": 9.111674678315017e-05
+        },
+        "mu": {
+          "band": 0.8778283420031694,
+          "full": 0.425369959300874,
+          "interior": 0.020896037745516488
+        },
+        "p": {
+          "band": 2.0839124485979257,
+          "full": 1.4102752838501205,
+          "interior": 1.126197518453275
+        },
+        "ph": {
+          "band": 3.6260968808379768,
+          "full": 1.7963154989869992,
+          "interior": 0.43526395846317767
+        }
+      }
+    }
+  },
+  "verdict": {
+    "current_reproduces_prior_stage1": {
+      "expected_prior_advdeg_p": 1.1261975184532773,
+      "expected_prior_advdeg_ph": 0.4352639584631776,
+      "p_interior_rmse": 1.126197518453275,
+      "ph_interior_rmse": 0.43526395846317767
+    },
+    "surface_w_deviation_explains_first_ph_p_error": false,
+    "wrf_coupled_surface_delta": {
+      "p_improvement_fraction": 0.0,
+      "p_interior_rmse": 1.126197518453275,
+      "ph_improvement_fraction": 0.0,
+      "ph_interior_rmse": 0.43526395846317767
+    }
+  }
+}
