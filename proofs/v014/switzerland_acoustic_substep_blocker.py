@@ -241,6 +241,9 @@ def _advance_stage_replica(
         if bool(namelist.use_flux_advection)
         else None
     )
+    # v0.14 stage3/wrapper cadence: mirror production's step-constant
+    # relax_bdy_dry bundle (None unless namelist.specified_bdy_cadence).
+    bdy_relax = om._specified_bdy_relax(rk1_reference, namelist, lead_seconds)
     tendencies = om._augment_large_step_tendencies(
         haloed,
         tendencies,
@@ -249,6 +252,7 @@ def _advance_stage_replica(
         physics_tendencies=physics_tendencies,
         step_origin=rk1_reference,
         transport_velocities=stage_velocities,
+        bdy_relax=bdy_relax,
     )
     moisture_advected = (
         bool(namelist.use_flux_advection) and int(namelist.moist_adv_opt) != 0
@@ -319,6 +323,7 @@ def _advance_stage_replica(
         pressure=pressure,
         tendencies=tendencies,
         lead_seconds=lead_seconds,
+        bdy_relax=bdy_relax,
     )
     if moisture_advected:
         stage_carry = stage_carry.replace(
@@ -396,7 +401,8 @@ def _physics_boundary_step_replica(
         )
     if bool(namelist.run_boundary):
         bounded = om.apply_lateral_boundaries(
-            next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics
+            next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics,
+            dry_spec_only=om._specified_bdy_cadence_active(namelist),
         )
         if bool(namelist.disable_guards):
             next_state = bounded

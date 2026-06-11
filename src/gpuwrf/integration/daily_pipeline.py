@@ -496,6 +496,13 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         # advection; the legacy hardwired order-2/periodic operator broke the
         # ~65:1 horizontal/vertical cancellation over steep terrain.
         h_sca_adv_order=int(_domain_namelist_value(replay.run, "dynamics", "h_sca_adv_order", config.domain, 5)),
+        # v0.14 stage3/wrapper-cadence sprint: WRF SPECIFIED-domain per-stage
+        # relax + per-substep spec boundary cadence (operational_mode docstring).
+        # Opt-in via env until the hourly venting gate proves it for default-on.
+        specified_bdy_cadence=os.environ.get("GPUWRF_SPECIFIED_BDY_CADENCE", "0") == "1",
+        # candidate A: WRF specified-boundary advection-order degradation for
+        # the flux-form operators (opt-in for the same gate).
+        specified_adv_degrade=os.environ.get("GPUWRF_SPECIFIED_ADV_DEGRADE", "0") == "1",
         radiation_static=radiation_static,
         topo_shading=topo_shading,
         slope_rad=slope_rad,
