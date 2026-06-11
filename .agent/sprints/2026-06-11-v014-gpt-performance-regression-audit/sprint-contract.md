@@ -3,8 +3,9 @@
 Date: 2026-06-11
 Owner: manager
 Assignee: GPT-5.5 xhigh in tmux
-Status: PREPARED; dispatch after the active HPG correctness worker is done or
-the manager explicitly declares the GPU/debug lane free.
+Status: PREPARED; dispatch in parallel with the Fable performance sprint only
+after the Switzerland/Gotthard 72h field gate is green or explicitly
+accepted/bounded by the manager.
 
 ## Objective
 
@@ -16,6 +17,10 @@ This sprint is intentionally independent from the Fable performance audit. Do
 not assume its conclusions. Produce a compact, artifact-backed answer the
 manager can use to decide whether v0.14 can claim speed, needs safe fixes first,
 or must defer speed claims.
+
+GPT is report-only for this sprint. Do not edit source files, docs, or
+contracts. Fable owns any simple identity-preserving speedup implementation in
+the parallel sprint.
 
 ## Trigger Data
 
@@ -74,7 +79,8 @@ Read first:
 
 ## Constraints
 
-- Read-only analysis by default. Do not edit model source.
+- Read-only analysis only. Do not edit source files, docs, contracts, tests, or
+  proof scripts.
 - Do not use `ask-hermes`, Telegram, or any human notification bridge.
 - Do not touch `/home/enric/src/canairy_waves`.
 - Do not run a GPU job unless the manager has freed the GPU or the command uses
@@ -99,6 +105,11 @@ Report format:
 - Fair benchmark matrix with exact commands/artifacts.
 - Top 5 immediate actions before v0.14 speed claims.
 - Top 5 v0.15 performance roadmap candidates.
+- Projection table for README/release notes:
+  small cases (current Canary/Switzerland sizes on RTX 5090), optimal RTX 5090
+  32 GB grids that still fit in VRAM, and asymptotic large-grid H200/GB300
+  regime where initialization/compile is amortized. Include confidence and key
+  assumptions.
 
 Print when done:
 
