@@ -201,7 +201,9 @@ def apply_lateral_boundaries(
         _spec3 = lambda field, leaf: _apply_3d_spec_only(field, leaf, lead_seconds, config)
         u = _spec3(state.u, state.u_bdy)
         v = _spec3(state.v, state.v_bdy)
-        w = _spec3(state.w, state.w_bdy)
+        # WRF specified domains do not leaf-pin w at end-of-step; zero_grad_bdy
+        # inside the acoustic loop owns the specified w ring.
+        w = state.w
         theta = _spec3(state.theta, state.theta_bdy)
         qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
         mu_perturbation = _spec3(state.mu_perturbation[None, :, :], state.mu_bdy)[0]
