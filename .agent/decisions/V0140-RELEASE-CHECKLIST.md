@@ -45,6 +45,21 @@ Switzerland GPU gates with all safe caches enabled to get the true current
 maximum speed. That measured value is the v0.14 speed number; do not delay
 v0.14 for complex optimization beyond this simple-speed pass.
 
+Update 2026-06-11 (performance premise): when the Fable+GPT performance pair
+starts, both agents must also work backwards from the original speed premise.
+For sufficiently parallel regional-NWP kernels, a GPU should normally beat a CPU
+by large factors; if this implementation cannot reach the rough
+pre-architecture `~10x` expectation, the reports must explain why with evidence.
+Acceptable explanations are unfair measurement/small-grid overhead, current
+kernel/runtime inefficiency, IO/transfer/orchestration overhead, or a real
+algorithmic limit. They must also assess whether a kernel-architecture change
+-- graph/stencil/matrix representation, custom Triton/CUDA/Pallas kernels,
+persistent kernels, data-layout rewrite, larger fusion boundaries, or physics
+batching -- could move the system toward computational near-optimum efficiency.
+Compute speed has strategic priority over extra memory savings: optional
+caching/precompute/residency modes are desirable if they give major speedups and
+remain below stable memory targets for RTX 5090, H200, or GB300-class hardware.
+
 Switzerland/Gotthard is the active blocker. The first 72h GPU run exposed an
 hourly driver LBC-clock bug; the fix is merged and proven (`9cbdfe31`,
 `eaff102c`, `tests/test_daily_boundary_clock.py`,
@@ -102,7 +117,7 @@ scalable GPU rewrite.
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. Pre-result tolerance candidate is accepted in `proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json`: ten hard documented fields, static exact/tight checks, and `P/PH/MU/RAINC` critical report-only. | Final scoring uses the accepted manifest, produces summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. A 72h/120h field-parity/stability run is stronger evidence than station-only TOST and is now the primary validation artifact. |
 | Switzerland/Gotthard | CPU72 truth is complete at `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`: 73 `wrfout_d01_*`, `rc=0`, `SUCCESS COMPLETE WRF`, last-frame finite PASS. Timing: total wall `2906.3 s`, mainloop `2887.6 s`, 24 dmpar MPI ranks. Resource CSVs are under `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources`; peak 24-rank `wrf.exe` RSS sum `12636.176 MiB`. LBC-clock bug fixed and proven. Post-LBC residual is now localized to dry-dynamics strong-flow mass venting; Fable high sprint is active to fix or exactly attribute. | Do not rerun 72h yet. First close the h36 storm-state strong-flow short gate, then rerun Switzerland 72h GPU with resource CSVs and atlas. |
 | Canary field parity | L2 d02 has retained CPU-WRF 72h truth: 15 complete backfill cases in `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output`, each with 73 d02 frames. The selected gate case is `20260501_18z_l2_72h_20260519T173026Z`. Prior blockers closed: LBC cadence (`53770411`), PSFC diagnostic, moist-cqw pressure dynamics (`7c819067`, default ON), nested Noah-MP activation (`c2310c5b`), and the d01 LU16/sand nonfinite blocker (`22a2cc0c` + `aff7d124` + `5a708074`). The post-fix 72h GPU run completed at `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`; proof summary `proofs/v014/canary_d02_72h_field_gate_summary.md`; atlas `rc=0`. | Accepted as bounded/proceed. Keep plots/benchmarks for release docs; do not spend correctness tokens here unless a later review overturns the bounded decision. |
-| Performance regression | Prepared, conditional on Switzerland passing. Canary 72h shows only `1.059x` to `1.069x` against an approximate 28-rank CPU denominator, far below the project speed premise and below the old v0.12 speed story. | After Switzerland/Gotthard 72h is green/bounded, run the prepared independent Fable and GPT performance audits in parallel. Fable may implement simple identity-preserving speedups; GPT reports only. Reconcile findings, rerun Canary+Switzerland with all safe caches enabled, and use that measured current-max speed for v0.14 while moving complex optimization to v0.15. |
+| Performance regression | Prepared, conditional on Switzerland passing. Canary 72h shows only `1.059x` to `1.069x` against an approximate 28-rank CPU denominator, far below the project speed premise and below the old v0.12 speed story. | After Switzerland/Gotthard 72h is green/bounded, run the prepared independent Fable and GPT performance audits in parallel. Fable may implement simple identity-preserving speedups; GPT reports only. Reconcile findings, rerun Canary+Switzerland with all safe caches enabled, and use that measured current-max speed for v0.14 while moving complex optimization to v0.15. Both reports must explain `WHY_NOT_10X_YET`, `NEAR_OPTIMUM_KERNEL_PATHS`, and `COMPUTE_OVER_MEMORY_OPTIONS`. |
 | Powered TOST | Three cases are durable; marathon paused. | Secondary station sanity only. TOST is no longer a v0.14 release gate and must not delay or override Switzerland/Canary all-field evidence. |
 
 ## Merge Discipline
@@ -168,7 +183,11 @@ scalable GPU rewrite.
     Manager reviews/merges any Fable simple-speed patch, then reruns Canary and
     Switzerland GPU gates with all safe caches enabled. Use that measured
     current-max speed for v0.14. Do not delay v0.14 for complex optimization
-    beyond this simple-speed pass; move complex/high-yield work to v0.15.
+    beyond this simple-speed pass; move complex/high-yield work to v0.15. Both
+    reports must include `WHY_NOT_10X_YET`, `NEAR_OPTIMUM_KERNEL_PATHS`, and
+    `COMPUTE_OVER_MEMORY_OPTIONS` so README and v0.15 can honestly state the
+    measured speed, plausible speed ceiling, and engineering route toward
+    near-optimum GPU efficiency.
 16. Optionally resume powered TOST as secondary station evidence and publish it
    together with the atlas if it completes cleanly. It is not a tag gate.
 17. Start the prepared Fable/Mythos xhigh kernel memory/compute efficiency

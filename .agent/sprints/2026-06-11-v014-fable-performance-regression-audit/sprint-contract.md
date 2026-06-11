@@ -43,7 +43,13 @@ This is not acceptable as a speed headline. The sprint endpoint is:
 3. a manager-actionable root-cause report that separates safe v0.14 fixes from
    v0.15/high-complexity work;
 4. exact rerun commands for maximal-current-speed Canary and Switzerland with
-   all safe caches enabled.
+   all safe caches enabled;
+5. a reverse speed-premise analysis: if the current kernel cannot reach the
+   rough pre-architecture `~10x` GPU-vs-CPU expectation, explain why with
+   evidence. Parallel stencil/column/radiation work should normally strongly
+   favor GPUs once grids are large enough, so weak speedup must be attributed to
+   unfair measurement, small-grid overhead, current kernel/runtime inefficiency,
+   IO/transfer/orchestration overhead, or a real algorithmic limit.
 
 ## Required Context
 
@@ -79,6 +85,24 @@ Read first:
    that could plausibly explain the loss of speedup without changing physics?
 5. What is the shortest rigorous route to a `>2x` fair wall-clock speedup, or
    to an honest proof that this grid/physics configuration cannot show it yet?
+6. Why is the old `~10x` expectation not currently observed? Work backwards
+   from GPU fundamentals: parallelism, arithmetic intensity, memory bandwidth,
+   launch/compile/orchestration overhead, IO, tiling, occupancy, fusion,
+   transfer/synchronization, and the CPU denominator. Say whether `~10x` remains
+   plausible for larger in-VRAM grids on RTX 5090 and for H200/GB300-class
+   hardware.
+7. Is there a kernel-architecture change that could move the model toward
+   computational near-optimum efficiency: graph/stencil/matrix representation,
+   fused vertical-column kernels, custom Triton/CUDA/Pallas kernels, persistent
+   kernels, larger fusion boundaries, different data layout, or physics
+   batching? Complex changes are report-only unless they are trivially
+   identity-preserving.
+8. Where does compute speed trade off against memory savings? If caching,
+   precomputation, larger resident lookup tables, keeping intermediates, less
+   rematerialization, or larger tiles could produce major speedups without
+   reintroducing v0.12-style memory failures, propose them as optional modes or
+   v0.15 lanes. Project strategy: compute speed wins over extra memory savings
+   when the footprint remains stable and fits the target GPU class.
 
 ## Constraints
 
@@ -119,6 +143,18 @@ Report format:
   small cases (current Canary/Switzerland sizes on RTX 5090), optimal RTX 5090
   32 GB grids that still fit in VRAM, and asymptotic large-grid H200/GB300
   regime where initialization/compile is amortized.
+- `WHY_NOT_10X_YET` section:
+  classify the dominant explanation as `MEASUREMENT_UNFAIRNESS`,
+  `SMALL_GRID_OVERHEAD`, `CURRENT_KERNEL_INEFFICIENT`,
+  `IO_TRANSFER_ORCHESTRATION`, `REAL_ALGORITHMIC_LIMIT`, or a ranked mixture,
+  with one falsifiable benchmark/profiler command for the top explanation.
+- `NEAR_OPTIMUM_KERNEL_PATHS` section:
+  graph/matrix/stencil/custom-kernel/data-layout/persistent-kernel options,
+  ranked by expected gain, complexity, validation risk, and WRF-faithfulness
+  risk.
+- `COMPUTE_OVER_MEMORY_OPTIONS` section:
+  optional caching/precompute/residency modes that spend extra VRAM for speed,
+  with expected gain, extra memory, and safety bounds.
 - Any no-go signal for v0.14 release speed claims.
 - Context-sparing manager handoff, max 10 bullets.
 
