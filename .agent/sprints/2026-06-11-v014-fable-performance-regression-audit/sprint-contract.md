@@ -3,13 +3,29 @@
 Date: 2026-06-11
 Owner: manager
 Assignee: Fable medium/high in a fresh tmux window
-Status: PREPARED; dispatch after the active HPG correctness worker is done or
-the manager explicitly declares the GPU/debug lane free.
+Status: PREPARED; dispatch only after the Switzerland/Gotthard 72h field gate
+is green or explicitly accepted/bounded by the manager. Do not spend Fable
+performance tokens while a Switzerland correctness blocker is still open.
 
 ## Objective
 
-Explain the v0.12-to-v0.14 wall-clock speed regression and identify the
-highest-leverage path back to a defensible GPU speedup before v0.14 release.
+Produce a **high-performance identical** v0.14 candidate and explain the
+v0.12-to-v0.14 wall-clock speed regression.
+
+Fable may directly implement only SIMPLE speedups that are provably
+bit-/field-identical by construction, for example:
+
+- remove unnecessary debug/log/status work from hot paths;
+- enable or repair forgotten safe caching / compile-cache / autotune-cache use;
+- remove redundant initialization, repeated metadata parsing, or extra wrapper
+  steps with no semantic effect;
+- replace computations with mathematically identical cheaper forms;
+- avoid unnecessary host materialization/synchronization where outputs and
+  ordering are unchanged.
+
+Complex/high-yield ideas that need architecture changes, numerical-risk review,
+or broad revalidation must go into the report and v0.15 roadmap, not into this
+v0.14 patch.
 
 The immediate trigger is the accepted Canary L2 d02 72h field gate:
 
@@ -19,10 +35,15 @@ The immediate trigger is the accepted Canary L2 d02 72h field gate:
   `8713.126 s`
 - observed speedup: only `1.059x` total / `1.069x` forecast-only
 
-This is not acceptable as a speed headline. The sprint endpoint is a
-manager-actionable root-cause report: either name the dominant regression
-mechanisms and the shortest safe recovery plan, or prove that the current
-benchmark is not a fair speed comparison and define the correct benchmark.
+This is not acceptable as a speed headline. The sprint endpoint is:
+
+1. a source patch containing only safe simple speedups, if any exist;
+2. proof that the patch is numerically identical on the accepted Canary and
+   Switzerland gates or a narrower manager-approved preflight before full rerun;
+3. a manager-actionable root-cause report that separates safe v0.14 fixes from
+   v0.15/high-complexity work;
+4. exact rerun commands for maximal-current-speed Canary and Switzerland with
+   all safe caches enabled.
 
 ## Required Context
 
@@ -61,16 +82,19 @@ Read first:
 
 ## Constraints
 
-- Read-only analysis by default. Do not edit model source.
+- Source edits are allowed only for simple speedups with obvious semantic
+  identity. Keep the write set narrow and commit on the worker branch.
 - Do not use `ask-hermes`, Telegram, or any human notification bridge.
 - Do not touch `/home/enric/src/canairy_waves`.
 - Do not run a GPU job unless the manager has freed the GPU or the command uses
   `scripts/run_gpu_lowprio.sh` and exits cleanly with rc 75 when locked.
 - Prefer small CPU-only parsing/profiling scripts and existing timing artifacts
-  first.
+  first. For any GPU benchmark, use the project GPU lock.
 - If a short GPU microbenchmark is essential, write the command and expected
   duration in the report and wait for manager approval unless the GPU is
   demonstrably idle and no validation/debug run is active.
+- No physics/numerics change, no tolerance change, no clamps/masking, no
+  host/device transfer inside timestep loops.
 
 ## Required Output
 
@@ -81,11 +105,20 @@ Write:
 Report format:
 
 - Verdict paragraph, max 150 words.
+- Source patch summary, or `NO_SAFE_SIMPLE_PATCH`.
+- Identity proof commands/results for any patch.
 - Ranked table of root-cause candidates with columns:
   `rank`, `mechanism`, `evidence`, `estimated wall impact`, `confidence`,
   `fix path`, `risk`.
 - Fair-benchmark decision: exact CPU/GPU commands or artifacts needed.
 - Recovery plan to `>2x`, with no more than 5 ordered actions.
+- Required maximal-current-speed rerun matrix:
+  Canary 72h and Switzerland 72h, GPU with all safe caches enabled, compared to
+  the retained CPU-WRF truth timing.
+- Projection table for README/release notes:
+  small cases (current Canary/Switzerland sizes on RTX 5090), optimal RTX 5090
+  32 GB grids that still fit in VRAM, and asymptotic large-grid H200/GB300
+  regime where initialization/compile is amortized.
 - Any no-go signal for v0.14 release speed claims.
 - Context-sparing manager handoff, max 10 bullets.
 
@@ -101,4 +134,5 @@ Manager acceptance requires:
 - it uses the current Canary artifacts rather than memory alone;
 - it separates measurement unfairness from real GPU inefficiency;
 - it identifies at least one concrete next benchmark/profiling command;
-- it does not modify source files.
+- any source edits are simple, identity-preserving, reviewed by the manager, and
+  have focused tests/proofs before merge.
