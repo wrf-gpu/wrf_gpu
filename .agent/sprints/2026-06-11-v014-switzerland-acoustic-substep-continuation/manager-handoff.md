@@ -10,13 +10,48 @@ Switzerland 72h GPU rerun yet.
 The Switzerland/Gotthard d01 h36->h37 strong-flow dry-mass/PSFC blocker is
 still open.
 
+Update after Fable continuation merge:
+
+- Merged branch: `worker/fable/v014-hpg-native-face-fix`
+- Merge commit on manager branch: `82f6b703`
+- Landed subfix commits:
+  - `3d0b439c` — real-case `hypsometric_opt=2` LOG-form HPG diagnostics.
+  - `79b0c22e` — real-case `rhs_ph`, edge-faithful specified-domain stage
+    omega, and WRF dycore constants.
+- Proofs:
+  - `.agent/reviews/2026-06-11-v014-fable-hpg-native-face-fix.md`
+  - `.agent/reviews/2026-06-11-v014-fable-acoustic-continuation.md`
+  - `proofs/v014/switzerland_hpg_native_face_fix.json`
+  - `proofs/v014/switzerland_acoustic_continuation.json`
+
+`79b0c22e` found and fixed the GPT-ranked real-case geopotential tendency lane:
+`rhs_ph` was still the idealized 2nd-order/unit-map/periodic operator while WRF
+uses map-factored order<=6 specified-boundary horizontal geopotential
+advection. It also replaced periodic-wrap stage omega with
+`stage_omega_specified` for specified/nested domains. Term-level WRF oracle
+parity is machine-precision. Stage-boundary p/ph and band errors improve
+substantially.
+
+However the h36->h37 gate remains red:
+
+| Run | h36->h37 residual Pa/cell/h | h36->h37 excess outflux Pa/cell/h |
+|---|---:|---:|
+| CPU truth | `+5.178443877551032` | n/a |
+| hypso `3d0b439c` | `-27.697448979591826` | `-28.3281887755102` |
+| rhs_ph/stage-omega `79b0c22e` | `-21.882908163265313` | `-27.203954081632645` |
+
+Conclusion: accept and keep the subfixes, but do not run 72h yet. The next
+root lane is now narrowed to stage-3/end-of-step wrapper cadence
+(physics/moist/LBC/p-refresh interleaving vs WRF) plus residual lateral-band
+amplifier.
+
 Fable branch/worktree:
 
 - Worktree: `/home/enric/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix`
 - Branch: `worker/fable/v014-hpg-native-face-fix`
 - Last committed worker fix: `3d0b439c`
 
-What is proven:
+Earlier proof chain:
 
 - `3d0b439c` found and fixed a real WRF-faithfulness bug: real-case pressure
   diagnostics need WRF `hypsometric_opt=2` LOG-form `al/alt/p` and LOG-form
