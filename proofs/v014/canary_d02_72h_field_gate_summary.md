@@ -57,6 +57,16 @@ adjudication class and no new runaway or nonfinite class appeared.
 ## Resources
 
 - GPU forecast resource wall: `8244 s` from first to last resource sample
+- GPU wall-clock proof: `8226.936 s` total, `8152.310 s` forecast-only
+  (`proofs/wall_clock_l2_d02.json` in the run root)
+- CPU-WRF reference wall-clock: approximately `8713.126 s` from first to last
+  retained `wrfout_d02` timestamp in the 28-rank CPU backfill
+  (`2026-06-03 01:06:29 WEST` to `03:31:42 WEST`). No explicit
+  `cpu_timing.json` exists for this historical Canary backfill, so this is an
+  honest approximate wall-clock denominator, not a rank-0 timed-main proof.
+- CPU-vs-GPU wall-clock: GPU total is `1.059x` faster than the retained CPU
+  backfill timestamp span; GPU forecast-only is `1.069x` faster. This release
+  gate therefore proves field stability more strongly than speedup.
 - total GPU memory peak: `21108 MiB / 32607 MiB`
 - monitored GPU process RSS peak: `20950.1 MiB`
 - GPU memory returned to idle after run (`2603 MiB` total at final sample)
