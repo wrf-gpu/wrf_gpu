@@ -316,7 +316,9 @@ def test_dry_spec_only_pins_ring0_keeps_p_and_moisture():
 
     # ring 0 spec set for the dry fields (full theta strip = 10).
     assert np.allclose(np.asarray(out.theta[:, 1:-1, 0]), 10.0)
-    assert np.allclose(np.asarray(out.w[:, 1:-1, 0]), 7.0)
+    # WRF owns specified-domain w through in-loop zero_grad_bdy, not the
+    # end-of-step dry wrapper.
+    assert np.allclose(np.asarray(out.w), 0.0)
     assert np.allclose(np.asarray(out.mu_perturbation[1:-1, 0]), 6.0)
     assert np.allclose(np.asarray(out.ph_perturbation[:, 1:-1, 0]), 5.0)
     # NO relax-zone write for dry fields: ring 1 stays at the interior value.
