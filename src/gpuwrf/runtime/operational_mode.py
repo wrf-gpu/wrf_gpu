@@ -2416,7 +2416,11 @@ def _augment_large_step_tendencies(
         DryPhysicsTendencies() if physics_tendencies is None else physics_tendencies,
         rk_step=int(rk_step),
         metrics=metrics,
-        mut=_base_mu(haloed),
+        # WRF couples h_diabatic with the FULL dry column mass grid%mut
+        # (module_em.F:1079 ``(c1(k)*mut(i,j)+c2(k))``), not the base state.
+        # ``mut`` is consumed ONLY by the h_diabatic term, which was identically
+        # zero before the v0.14 venting-residual fix routed the Thompson heating.
+        mut=haloed.mu_total,
     )
     # v0.14 SPECIFIED WRF boundary cadence: relax_bdy_dry tendencies.  WRF folds
     # the coupled u/v/t relax into the step-constant *_tendf lane at rk_step==1
@@ -3343,7 +3347,11 @@ def _physics_step_forcing(
     source_leaf_mode = int(namelist.rad_rk_tendf) != 0
     rthblten = None
     rqvblten = None
+    rublten = None
+    rvblten = None
     pbl_theta_dry_delta = None
+    pbl_u_face_delta = None
+    pbl_v_face_delta = None
 
     mp_opt = int(namelist.mp_physics)
     sf_opt = int(namelist.sf_sfclay_physics)
@@ -3355,6 +3363,19 @@ def _physics_step_forcing(
     elif mp_opt in MP_SCAN_ADAPTERS:
         next_state = MP_SCAN_ADAPTERS[mp_opt](next_state, float(namelist.dt_s), namelist.grid)
     # mp_opt == 0 -> passive (no microphysics).
+    # NOTE (v0.14 venting-residual sprint, NAMED NEXT THETA TERM, NOT ROUTED):
+    # WRF folds h_diabatic -- the previous-step microphysics theta_m heating
+    # rate captured by moist_physics_finish_em -- into t_tend at EVERY RK stage
+    # (rk_addtend_dry, module_em.F:1079).  The WRF-native h36 theta-tendency
+    # oracle measures the missing term at rms 20-26 (cloud levels k4-k13) of
+    # the 25.6-rms total t_tend.  Capturing it as the step-entry Thompson
+    # state delta / dt was tested and REJECTED by the same oracle (10x too
+    # large and anti-correlated at the re-init step-1: the adapter's first
+    # call re-equilibrates the fp32 wrfout state, which is NOT WRF's settled
+    # heating rate; proofs/v014/switzerland_uv_lane_contributors
+    # fold_diagnosis).  A faithful route needs the settled per-step heating
+    # (e.g. the previous step's mp delta carried across steps), left for the
+    # follow-up sprint.
 
     # --- surface-layer / land slot ---
     # sf=2 Janjic Eta is the v0.13 traceable MYJ-pair surface layer (defined in
@@ -3434,9 +3455,27 @@ def _physics_step_forcing(
             next_state = mynn.state
             rthblten = mynn.rthblten
             rqvblten = mynn.rqvblten
+            # v0.14 venting-residual fix: raw A-grid PBL momentum sources for the
+            # WRF ru/rv_tendf fold (the WRF-native advance_uv oracle proved the
+            # staged ru/rv_tend were missing the entire PBL drag: 57%/72% rel,
+            # proofs/v014/switzerland_uv_lane_decomposition).
+            rublten = mynn.rublten
+            rvblten = mynn.rvblten
             pbl_theta_dry_delta = (
                 jnp.asarray(next_state.theta, jnp.float64)
                 - jnp.asarray(pbl_entry_state.theta, jnp.float64)
+            )
+            # Face-space MYNN momentum increments actually applied to the state
+            # (A2C-coupled inside _state_from_mynn_output); removed again below so
+            # the dycore integrates the SAME drag via ru/rv_tendf instead of a
+            # step-entry Euler add (WRF cadence, no double-application).
+            pbl_u_face_delta = (
+                jnp.asarray(next_state.u, jnp.float64)
+                - jnp.asarray(pbl_entry_state.u, jnp.float64)
+            )
+            pbl_v_face_delta = (
+                jnp.asarray(next_state.v, jnp.float64)
+                - jnp.asarray(pbl_entry_state.v, jnp.float64)
             )
         else:
             next_state = mynn_adapter(
@@ -3624,12 +3663,63 @@ def _physics_step_forcing(
             / theta_m_factor
             * qv_tendf_source
         ).astype(next_state.theta.dtype)
-        dry = DryPhysicsTendencies(t_tendf=t_tendf_source)
+        # v0.14 venting-residual fix: WRF PBL momentum fold.  phy_tend couples the
+        # A-grid RUBLTEN/RVBLTEN with the dry column mass (module_em.F:2381,
+        # ``(c1(k)*mut+c2(k))*R?BLTEN``); update_phy_ten averages mass->face
+        # (add_a2c_u/add_a2c_v, phys/module_physics_addtendc.F) with the
+        # specified-domain edge exclusions; rk_addtend_dry later divides by
+        # msfuy/msfvx.  Without this fold the acoustic loop integrated with ZERO
+        # PBL drag (the WRF-native oracle measured the missing term at 57%/72%
+        # of ru/rv_tend, the u''/v'' -> ww/mu'' venting creator).
+        ru_tendf_source = None
+        rv_tendf_source = None
+        if rublten is not None and rvblten is not None:
+            rub_coupled = mass_h * jnp.asarray(rublten, jnp.float64)
+            rvb_coupled = mass_h * jnp.asarray(rvblten, jnp.float64)
+            nz_p, ny_p, nx_p = rub_coupled.shape
+            ru_tendf_source = jnp.zeros((nz_p, ny_p, nx_p + 1), dtype=rub_coupled.dtype)
+            # WRF add_a2c_u (specified): u faces i in [ids+1, ide-1], mass rows
+            # j in [jds+1, jde-2] -- 0-based faces 1..nx-1, rows 1..ny-2.
+            ru_tendf_source = ru_tendf_source.at[:, 1 : ny_p - 1, 1:nx_p].set(
+                0.5
+                * (
+                    rub_coupled[:, 1 : ny_p - 1, : nx_p - 1]
+                    + rub_coupled[:, 1 : ny_p - 1, 1:nx_p]
+                )
+            )
+            rv_tendf_source = jnp.zeros((nz_p, ny_p + 1, nx_p), dtype=rvb_coupled.dtype)
+            # WRF add_a2c_v (specified): v faces j in [jds+1, jde-1], mass cols
+            # i in [ids+1, ide-2] -- 0-based faces 1..ny-1, cols 1..nx-2.
+            rv_tendf_source = rv_tendf_source.at[:, 1:ny_p, 1 : nx_p - 1].set(
+                0.5
+                * (
+                    rvb_coupled[:, : ny_p - 1, 1 : nx_p - 1]
+                    + rvb_coupled[:, 1:ny_p, 1 : nx_p - 1]
+                )
+            )
+        dry = DryPhysicsTendencies(
+            t_tendf=t_tendf_source,
+            ru_tendf=ru_tendf_source,
+            rv_tendf=rv_tendf_source,
+        )
         if pbl_theta_dry_delta is not None:
             next_state = next_state.replace(
                 theta=(
                     jnp.asarray(next_state.theta, jnp.float64) - pbl_theta_dry_delta
                 ).astype(next_state.theta.dtype)
+            )
+        if pbl_u_face_delta is not None and pbl_v_face_delta is not None:
+            # Remove the step-entry Euler momentum add; the dycore now delivers
+            # the identical drag through ru/rv_tendf at the WRF RK/acoustic
+            # cadence.  Subtracting the captured delta (rather than restoring the
+            # PBL-entry winds) keeps any later u/v modifiers (e.g. GWDO) intact.
+            next_state = next_state.replace(
+                u=(
+                    jnp.asarray(next_state.u, jnp.float64) - pbl_u_face_delta
+                ).astype(next_state.u.dtype),
+                v=(
+                    jnp.asarray(next_state.v, jnp.float64) - pbl_v_face_delta
+                ).astype(next_state.v.dtype),
             )
         # theta is left WITHOUT the radiation add here; the dycore delivers it via
         # the RK/acoustic cadence above.
