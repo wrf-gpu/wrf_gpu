@@ -4,6 +4,23 @@ Date: 2026-06-08
 Owner: GPT-5.5 xhigh validation architect
 Branch: `worker/gpt/v013-valplan`
 
+2026-06-11 05:05 WEST manager update: field-gate state is now:
+
+- Canary L2 d02 72h: completed and accepted as
+  `PROCEED_BOUNDED_WITH_FOLLOWUP`; run root
+  `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`,
+  proof `proofs/v014/canary_d02_72h_field_gate_summary.md`, atlas `rc=0`.
+- Switzerland/Gotthard: CPU72 truth complete; LBC-clock bug fixed/proven; the
+  post-LBC 72h GPU rerun still fails due to dry-dynamics strong-flow
+  mass-venting in the h36-h72 Alpine storm regime. Current blocker proof:
+  `proofs/v014/switzerland_post_lbc_residual.*`.
+- Active work: Fable high sprint
+  `.agent/sprints/2026-06-11-v014-switzerland-strongflow-dynamics-attribution/`
+  to fix or exactly attribute the responsible dry-dynamics term. Do not launch
+  a new 72h Switzerland gate until that h36 storm-state short gate is closed.
+- Powered TOST remains secondary and must not displace these all-cell field
+  gates.
+
 ## Positioning
 
 2026-06-08 23:11 WEST manager update: this plan is now **grid-parity-first**.

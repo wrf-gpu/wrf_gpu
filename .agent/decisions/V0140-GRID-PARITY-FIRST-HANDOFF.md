@@ -3,6 +3,20 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-11 05:05 WEST: Canary L2 d02 72h is completed and accepted as
+bounded/proceed, not active. Run root:
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`;
+proof `proofs/v014/canary_d02_72h_field_gate_summary.md`; atlas `rc=0`.
+The current v0.14 correctness blocker is Switzerland/Gotthard post-LBC dry
+dynamics in strong Alpine flow. LBC-clock drift is fixed/proven (`9cbdfe31`,
+`eaff102c`); the remaining residual is documented in
+`.agent/reviews/2026-06-11-v014-switzerland-post-lbc-residual-fable.md` and
+`proofs/v014/switzerland_post_lbc_residual.*`. Active next sprint:
+`.agent/sprints/2026-06-11-v014-switzerland-strongflow-dynamics-attribution/`,
+Fable high in tmux `0:4`, endpoint fix or exact dry-dynamics term attribution.
+Do not start another Switzerland 72h GPU gate until the h36 storm-state short
+gate collapses or exactly bounds the strong-flow mass-venting class.
+
 Update 2026-06-10 14:25 WEST: current v0.14 gate state is **field-parity-first
 with both CPU truths available**. Switzerland/Gotthard CPU72 is complete and
 pushed in `e57dcc75`: `rc=0`, 73 `wrfout_d01_*`, final-frame finite PASS,
