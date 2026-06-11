@@ -314,6 +314,16 @@ class OperationalNamelist:
     acoustic_substeps: int = 10
     rk_order: int = 3
     epssm: float = 0.1
+    # WRF calc_p_rho_phi specific-volume relation (Registry.EM_COMMON:2285;
+    # WRF registry default is 2 = LOG-pressure-thickness).  The dataclass default
+    # stays 1 (the legacy linear form) so idealized harnesses -- whose generators
+    # carry placeholder c3f/c4f hybrid coefficients (ic_generators/idealized.py)
+    # that make the LOG form singular -- remain byte-unchanged; the REAL replay /
+    # daily / nested pipelines pass 2 (their metrics carry the true wrfinput
+    # C3F/C4F/C3H/C4H/P_TOP).  v0.14 Switzerland h36 root cause: the linear form
+    # biases al/alt/p one-signed (~4.2e-4 rel mean) with terrain-modulated
+    # structure -> spurious large-step horizontal PGF -> d01 dry mass venting.
+    hypsometric_opt: int = 1
     top_lid: bool = False
     run_physics: bool = True
     run_boundary: bool = True
@@ -541,6 +551,7 @@ class OperationalNamelist:
         gwdo_statics: object = None,
         rad_rk_tendf: int = 0,
         acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,
+        hypsometric_opt: int = 1,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -593,6 +604,7 @@ class OperationalNamelist:
             gwdo_statics=gwdo_statics,
             rad_rk_tendf=rad_rk_tendf,
             acoustic_precision_mode=acoustic_precision_mode,
+            hypsometric_opt=hypsometric_opt,
         )
 
     def tree_flatten(self):
@@ -658,6 +670,7 @@ class OperationalNamelist:
             int(self.ra_lw_physics),
             int(self.rad_rk_tendf),
             self.acoustic_precision_mode,
+            int(self.hypsometric_opt),
         )
         return children, aux
 
@@ -718,6 +731,7 @@ class OperationalNamelist:
             ra_lw_physics,
             rad_rk_tendf,
             acoustic_precision_mode,
+            hypsometric_opt,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -783,6 +797,7 @@ class OperationalNamelist:
             ra_lw_physics=ra_lw_physics,
             rad_rk_tendf=rad_rk_tendf,
             acoustic_precision_mode=acoustic_precision_mode,
+            hypsometric_opt=hypsometric_opt,
         )
 
 
@@ -1298,7 +1313,7 @@ def _acoustic_core_state_from_prep(
         theta_base=jnp.full_like(state.theta, prep.theta_offset),
     )
     grid_p_full, _stage_al_full, _stage_alt_full = diagnose_pressure_al_alt(
-        state, stage_base, namelist.metrics
+        state, stage_base, namelist.metrics, hypsometric_opt=int(namelist.hypsometric_opt)
     )
     # MOIST-CQW (default ON, GPUWRF_MOIST_CQW=0 disables for bisection): WRF builds the large-step
     # vertical PGF/buoyancy with the full moist water-mass loading
@@ -1614,7 +1629,9 @@ def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, n
         t0=jnp.asarray(prep.theta_offset),
         theta_base=jnp.full_like(next_state.theta, prep.theta_offset),
     )
-    p_pert, _al, _alt = diagnose_pressure_al_alt(next_state, base, namelist.metrics)
+    p_pert, _al, _alt = diagnose_pressure_al_alt(
+        next_state, base, namelist.metrics, hypsometric_opt=int(namelist.hypsometric_opt)
+    )
     p_base = next_state.p_total - next_state.p_perturbation
     p_total = p_base + p_pert
     return next_state.replace(
@@ -2087,6 +2104,7 @@ def _augment_large_step_tendencies(
         dy_m=dy,
         non_hydrostatic=True,
         top_lid=bool(namelist.top_lid),
+        hypsometric_opt=int(namelist.hypsometric_opt),
     )
     u_t = u_t + ru_pgf
     v_t = v_t + rv_pgf

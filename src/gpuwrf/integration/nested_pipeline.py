@@ -179,6 +179,8 @@ def _make_namelist(
         dampcoef=0.2,
         epssm=0.5,
         top_lid=True,
+        # WRF Registry default hypsometric_opt=2 (LOG form); see daily_pipeline.
+        hypsometric_opt=2,
         radiation_static=radiation_static,
         time_utc=run_start,
         gwd_opt=int(gwd_opt),
