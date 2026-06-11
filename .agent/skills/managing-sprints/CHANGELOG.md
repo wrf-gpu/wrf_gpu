@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.7 (2026-06-11, principal-directed)
+
+- Added the MODEL POLICY OVERRIDE block at the top of Agent dispatch mechanics:
+  Opus 4.8 is the default model for all manager/worker/review/critic/verify/
+  debug roles; GPT-5.5/codex is frozen OFF today (token budget) with Opus 4.8
+  xhigh filling every former GPT role; Fable 5 is the heavy debugger with the
+  ladder Opus 4.8 xhigh first → Fable 5 high → Fable 5 xhigh only for
+  kernel-level persistent bugs that evaded several Opus+Fable-high rounds; Fable
+  5 medium for bounded already-narrowed bugs; Fable 5 max for principal-
+  designated large optimization/analysis sprints. The override outranks the
+  older GPT-centric assignments until the principal lifts the GPT-5.5 freeze.
+
 ## 0.2.6 (2026-06-11, principal-directed)
 
 - Added the Fable xhigh scarcity ladder: after one costly Fable/Mythos xhigh
