@@ -761,6 +761,113 @@ def _surface_diagnostics_for_output(
     return out or None
 
 
+# Every State lateral-boundary leaf with a leading time axis. Kept in sync with
+# gpuwrf.contracts.state.State (the *_bdy block); a missing/None leaf is skipped.
+_BOUNDARY_LEAF_FIELDS: tuple[str, ...] = (
+    "u_bdy",
+    "v_bdy",
+    "theta_bdy",
+    "qv_bdy",
+    "ph_bdy",
+    "mu_bdy",
+    "w_bdy",
+    "p_bdy",
+    "pb_bdy",
+    "phb_bdy",
+    "mub_bdy",
+)
+
+
+def _boundary_window_cadence_s(namelist: Any) -> float:
+    config = getattr(namelist, "boundary_config", None)
+    return float(getattr(config, "update_cadence_s", 3600.0) or 3600.0)
+
+
+def _capture_boundary_leaves(state: Any, namelist: Any) -> dict[str, np.ndarray]:
+    """Pull the full-time-axis lateral-boundary leaves to host, once per run.
+
+    Returns ``{}`` (windowing disabled, loop unchanged) for cases without an
+    active lateral boundary or without a pytree ``State`` -- idealized runs and
+    the synthetic dict/SimpleNamespace test cases.
+    """
+
+    if not bool(getattr(namelist, "run_boundary", False)) or not hasattr(state, "replace"):
+        return {}
+    import jax  # local import: keeps module import light for non-GPU callers.
+
+    leaves: dict[str, np.ndarray] = {}
+    for name in _BOUNDARY_LEAF_FIELDS:
+        leaf = getattr(state, name, None)
+        if leaf is None:
+            continue
+        array = np.asarray(jax.device_get(leaf))
+        if array.ndim < 2 or array.shape[0] < 1:
+            continue
+        leaves[name] = array
+    return leaves
+
+
+def _boundary_leaf_value_at(leaf: np.ndarray, t_s: float, record_cadence_s: float) -> np.ndarray:
+    """Evaluate one boundary leaf at global forecast time ``t_s``.
+
+    Host mirror of :func:`gpuwrf.coupling.boundary_apply.interpolate_boundary_leaf`
+    (piecewise-linear along the leading time axis, clamped at both ends). Exact
+    record levels are returned by reference so integer-hour windows stay
+    bit-identical to the stored leaf levels.
+    """
+
+    max_index = int(leaf.shape[0]) - 1
+    lead_index = float(t_s) / float(record_cadence_s)
+    lower = min(max(int(math.floor(lead_index)), 0), max_index)
+    upper = min(lower + 1, max_index)
+    alpha = min(max(lead_index - float(lower), 0.0), 1.0)
+    if alpha == 0.0 or lower == upper:
+        return leaf[lower]
+    return (leaf[lower] * (1.0 - alpha) + leaf[upper] * alpha).astype(leaf.dtype)
+
+
+def _rewindow_boundary_leaves(
+    state: Any,
+    full_leaves: Mapping[str, np.ndarray],
+    *,
+    segment_start_s: float,
+    record_cadence_s: float,
+    window_s: float,
+) -> Any:
+    """Re-anchor the State's lateral-boundary leaves to the current segment.
+
+    ``run_forecast_operational`` (and the segmented variant) restart their step
+    clock at 1 on EVERY call, so the in-scan ``interpolate_boundary_leaf`` walk
+    always begins at lead 0. Driving the hourly loop with the full-time-axis
+    leaves therefore re-forces the lateral boundary toward leaf level 1 each
+    hour -- the boundary stays pinned at the hour-1 value for the whole run
+    (the v0.14 Switzerland d01 72h FAIL: GPU spec-zone ring == CPU truth h01
+    bit-exact at every lead through h72).
+
+    The fix: before each segment, swap in a 2-level leaf holding the exact
+    piecewise-linear boundary values at global ``segment_start_s`` and
+    ``segment_start_s + window_s``. The in-call walk (cadence ``window_s``)
+    then reproduces the true global-time forcing exactly: record times are
+    multiples of 3600 s and segment lengths divide 3600 s, so no record kink
+    can fall inside the consumed sub-window. Hour 1 keeps the previously
+    validated forcing bit-identical (window == leaf levels 0 and 1).
+    """
+
+    if not full_leaves:
+        return state
+    updates = {
+        name: np.stack(
+            (
+                _boundary_leaf_value_at(leaf, segment_start_s, record_cadence_s),
+                _boundary_leaf_value_at(leaf, segment_start_s + window_s, record_cadence_s),
+            ),
+            axis=0,
+        )
+        for name, leaf in full_leaves.items()
+    }
+    return state.replace(**updates)
+
+
 def _refresh_hourly_land_state(
     state: Any, run_dir: Path, domain: str, hour: int, *, use_noahmp: bool = False
 ) -> tuple[Any, dict[str, Any]]:
@@ -833,6 +940,18 @@ def _run_forecast_sequence(
     output_dir.mkdir(parents=True, exist_ok=True)
     case, run_dir = case_builder(config)
     state = case.state
+    # Lateral-boundary clock fix (v0.14 Switzerland d01): hold the full-time-axis
+    # *_bdy leaves on host and feed every forecast segment a 2-level window
+    # anchored at the segment's GLOBAL start time (see _rewindow_boundary_leaves).
+    # ``record_cadence_s`` is the true spacing of the stored leaf levels: hourly
+    # wrfout history for replay; ``interval_seconds`` for native-init wrfbdy
+    # leaves (whose 6x/3x-fast consumption on this path is fixed by the same
+    # windowing). ``window_s`` is the in-call walk cadence.
+    boundary_leaves = _capture_boundary_leaves(state, case.namelist)
+    boundary_window_s = _boundary_window_cadence_s(case.namelist)
+    boundary_record_cadence_s = float(
+        (case.metadata.get("boundary") or {}).get("interval_seconds") or boundary_window_s
+    )
     files: list[Path] = []
     auxhist_files: list[Path] = []
     per_hour_wall_s: list[float] = []
@@ -912,6 +1031,15 @@ def _run_forecast_sequence(
         # segment boundary produces a genuine sub-hour model state at which the
         # auxhist frame (a variable subset) can be written.
         for seg in range(1, substeps + 1):
+            if boundary_leaves:
+                segment_start_s = ((hour - 1) * 60.0 + (seg - 1) * segment_minutes) * 60.0
+                state = _rewindow_boundary_leaves(
+                    state,
+                    boundary_leaves,
+                    segment_start_s=segment_start_s,
+                    record_cadence_s=boundary_record_cadence_s,
+                    window_s=boundary_window_s,
+                )
             state = forecast_fn(state, case.namelist, segment_minutes / 60.0)
             if seg == substeps:
                 break  # the hour boundary is handled by the main path below
