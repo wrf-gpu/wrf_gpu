@@ -1,0 +1,119 @@
+{
+  "inputs": [
+    "proofs/v014/switzerland_acoustic_substep_blocker.json:stage_compare.sub4_dt18_advdeg",
+    "proofs/v014/switzerland_acoustic_continuation.json",
+    "proofs/v014/switzerland_stage3_wrapper_cadence.json",
+    "proofs/v014/switzerland_advance_w_phi_discriminator.json"
+  ],
+  "method_limit": {
+    "gpu_probe_command": "python proofs/v014/switzerland_advance_w_phi_discriminator.py",
+    "gpu_probe_result": "not run to completion in this worker because nvidia-smi cannot communicate with the NVIDIA driver and State.zeros requires a visible JAX GPU backend",
+    "manager_outside_sandbox_prefix_result": "GPU was visible, but the proof failed before comparison with AttributeError: OperationalNamelist has no attribute emdiv in _run_one_substep",
+    "harness_api_fix": "switzerland_advance_w_phi_discriminator.py now uses production-default divergence coefficients via getattr(namelist, 'emdiv', 0.01) and getattr(namelist, 'smdiv', 0.1), matching the acoustic_substep_core defaults used by _acoustic_scan",
+    "fixed_gpu_probe_artifact": "proofs/v014/switzerland_advance_w_phi_discriminator.json",
+    "new_wrf_dump_needed": "post-advance_mu_t inputs and intra-advance_w work arrays for WRF call 21602; the surface-w discriminator has already rejected the known lower-boundary wind-feed deviation"
+  },
+  "advance_w_surface_w_discriminator": {
+    "artifact": "proofs/v014/switzerland_advance_w_phi_discriminator.json",
+    "backend": "gpu",
+    "current_decoupled_interior_rmse": {
+      "p": 1.126197518453275,
+      "ph": 0.43526395846317767
+    },
+    "wrf_coupled_surface_feed_interior_rmse": {
+      "p": 1.126197518453275,
+      "ph": 0.43526395846317767
+    },
+    "improvement_fraction": {
+      "p": 0.0,
+      "ph": 0.0
+    },
+    "interpretation": "the known decoupled-vs-WRF-coupled surface-w feed deviation changes the diagnosed surface w work but leaves ph after advance_w and p after calc_p_rho unchanged, so it is not the first h36 phi/p root"
+  },
+  "remaining_first_operator_set": [
+    "advance_mu_t outputs consumed by advance_w: ww_new, muave_new, muts_new, theta_coupled",
+    "advance_w_wrf ph RHS/predictor/implicit w solve/ph finish",
+    "calc_p_rho_step only for p/al after ph is already wrong, not the first ph creator"
+  ],
+  "ruled_out_or_demoted": {
+    "boundary_lane_excess_outflux_advdeg": -32.86951530612245,
+    "boundary_lane_hourly_advdeg": {
+      "dM_pa_per_cell_h": -128.44897959183675,
+      "net_influx_pa_per_cell_h": -107.38469387755103,
+      "residual_pa_per_cell_h": -21.064285714285717
+    },
+    "cpu_truth_budget": {
+      "dM_pa_per_cell_h": -69.33673469387755,
+      "net_influx_pa_per_cell_h": -74.51517857142858,
+      "residual_pa_per_cell_h": 5.178443877551032
+    },
+    "rhs_ph_real_case_port_validation_interior": {
+      "count": 564480,
+      "max_abs": 6.984919309616089e-10,
+      "mean": 4.262517524633782e-14,
+      "rmse": 2.3951502769070958e-11
+    },
+    "surface_w_feed_discriminator": {
+      "p_improvement_fraction": 0.0,
+      "ph_improvement_fraction": 0.0,
+      "surface_w_explains_first_ph_p_error": false
+    },
+    "stage_omega_specified_interior": {
+      "count": 564480,
+      "max_abs": 9.769962616701378e-15,
+      "mean": 1.2911392924752468e-17,
+      "rmse": 5.79142152447787e-16
+    },
+    "w_damping_active_cells": 0
+  },
+  "schema": "v014_gpt_switzerland_residual_existing_evidence_summary",
+  "stage1_first_wrong_boundary": {
+    "base_identity_vs_21601": {
+      "al": {
+        "count": 720896,
+        "max_abs": 5.345002354029127e-05,
+        "mean": -2.549132011515684e-07,
+        "rmse": 5.40511703663714e-06
+      },
+      "alt": {
+        "count": 720896,
+        "max_abs": 3.1024941709034692e-06,
+        "mean": -8.860046600301014e-08,
+        "rmse": 2.7859725914673663e-07
+      },
+      "mu": {
+        "count": 16384,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "p": {
+        "count": 720896,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "ph": {
+        "count": 737280,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      }
+    },
+    "interpretation": "state is identical at WRF call 21601; after the single RK1 acoustic substep, p/ph are wrong while mu remains small; interior ph can only be created inside advance_w or its immediate pre-inputs at this stage.",
+    "step1_stage1_vs_21602_interior_rmse": {
+      "al": 9.157037882376838e-05,
+      "alt": 9.123246305212642e-05,
+      "mu": 0.020896037745516495,
+      "p": 1.1261975184532773,
+      "ph": 0.4352639584631776
+    },
+    "step1_stage1_vs_21602_wrf_increment_full_rmse": {
+      "al": 0.0010285293849256621,
+      "alt": 0.0010285293849256621,
+      "mu": 0.4719360436558548,
+      "p": 0.8097546961307533,
+      "ph": 1.7647076515968216
+    }
+  }
+}
