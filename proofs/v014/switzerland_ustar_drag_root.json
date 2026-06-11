@@ -1,0 +1,23 @@
+{
+ "schema": "v014_switzerland_ustar_drag_root",
+ "generated_utc": "2026-06-11T23:19:09.522779+00:00",
+ "wrf_ust_h36_interior_mean": 0.6238172650337219,
+ "jax_ust_into_mynn_mean": 0.38046184754846535,
+ "jax_ust_fraction_of_wrf": 0.6098931031155391,
+ "implied_drag_fraction_of_wrf": 0.3719695972279016,
+ "wrf_anchor_momentum_k0": "module_bl_mynnedmf.F:4010-4017 (b(kts)=1+dtz*(kmdz(k+1)+rhosfc*ust**2/wspd)*rhoinv)",
+ "wrf_anchor_scalar_k0": "module_bl_mynnedmf.F:4131-4132 (b(kts)=1+dtz*(khdz(k+1)+khdz(kts))*rhoinv)",
+ "ustar_scale_test": {
+  "x1.00": {
+   "k0_rublten_mean": 0.002969116763311798,
+   "corr_rublten_u": 0.6537684820933088,
+   "verdict": "ACCELERATES low-level wind (wrong)"
+  },
+  "x1.64": {
+   "k0_rublten_mean": -0.0010323513608733828,
+   "corr_rublten_u": -0.7066014067605321,
+   "verdict": "decelerates (correct drag)"
+  }
+ },
+ "verdict": "ROOT = sfclayrev ustar magnitude deficit (61% of WRF) starving the MYNN k0 surface momentum drag (~37% of WRF); restoring WRF ustar flips the k0 momentum source from accelerating to the correct decelerating sign."
+}
