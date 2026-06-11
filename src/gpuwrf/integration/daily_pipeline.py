@@ -486,7 +486,16 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         zdamp=5000.0,
         dampcoef=0.2,
         epssm=0.5,
-        top_lid=True,
+        # v0.14 WRF-native advance_w oracle (proofs/v014/wrf_native_advance_w_dump):
+        # the WRF truth runs an OPEN top (config top_lid F); the rigid lid zeroes
+        # the top-face rhs/w of the implicit (w,phi) solve and the Thomas back-
+        # substitution carries that error down the whole column (~half the h36
+        # stage ph error once rw_tend is fixed).  The 2026-05-30 open-top
+        # instability that motivated top_lid=True predates the F7J/F7H/v0.14
+        # acoustic fixes; the h36 stage gate + short forecast now run stably open
+        # (see the sprint review).  GPUWRF_TOP_LID=1 restores the rigid lid for
+        # bisection.
+        top_lid=os.environ.get("GPUWRF_TOP_LID", "0") == "1",
         # WRF Registry default hypsometric_opt=2 (LOG form) -- every real case runs
         # with it; the replay metrics carry the true wrfinput C3F/C4F/C3H/C4H/P_TOP.
         # v0.14 Switzerland h36 mass-venting root cause was the linear (1) form.

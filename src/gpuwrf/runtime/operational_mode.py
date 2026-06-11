@@ -149,6 +149,9 @@ config.update("jax_enable_x64", True)
 _THETA_LIMITER_MIN_K = 0.0
 _THETA_LIMITER_MAX_K = 500.0
 _RVRD = 461.6 / 287.0
+# WRF reciprocal earth radius (share/module_model_constants.F:43), consumed by
+# the rk_tendency curvature term on the vertical momentum.
+_W_RERADIUS = 1.0 / 6370.0e3
 
 
 def _acoustic_unroll() -> int:
@@ -1347,20 +1350,24 @@ def _acoustic_core_state_from_prep(
     # F7F-fixed diagnose_pressure_al_alt (the JAX calc_p_rho_phi), exactly as WRF
     # rk_tendency does.  ``pressure.p`` (work-delta) still correctly seeds the
     # substep ``p``/``pm1`` smdiv memory below.
+    #
+    # v0.14 WRF-native advance_w oracle (proofs/v014/wrf_native_advance_w_dump):
+    # WRF rk_tendency consumes the CARRIED ``grid%p`` — the calc_p_rho_phi
+    # diagnostic refreshed at the END of the previous RK stage/step — never a
+    # stage-entry recompute.  The JAX carry maintains exactly that leaf
+    # (``_refresh_grid_p_from_finished``), so use it directly.  Recomputing here
+    # was (a) WRF-unfaithful at RK1, where the recompute sees the re-init/post-
+    # physics prognostic fields instead of the carried diagnostic (Switzerland
+    # h36 native dump: recompute-vs-carried p differs 0.30 Pa interior / 1.1 Pa
+    # at the lowest mass levels, which pg_buoy_w amplifies to the DOMINANT
+    # rw_tend error, interior rmse 511 of 1337; with the carried p the JAX
+    # pg_buoy_w matches the WRF-native term to 4.6e-4), and (b) a wasted full
+    # diagnostics pass per RK stage.
     nz_stage = int(prep.theta_work.shape[0])
     ny_stage = int(prep.theta_work.shape[1])
     nx_stage = int(prep.theta_work.shape[2])
     mu_prime_stage = prep.mut - prep.mub  # stage perturbation dry mass mu' (WRF grid%mu_2)
-    stage_base = BaseState(
-        pb=prep.pb,
-        phb=ph_base,
-        mub=prep.mub,
-        t0=jnp.asarray(prep.theta_offset),
-        theta_base=jnp.full_like(state.theta, prep.theta_offset),
-    )
-    grid_p_full, _stage_al_full, _stage_alt_full = diagnose_pressure_al_alt(
-        state, stage_base, namelist.metrics, hypsometric_opt=int(namelist.hypsometric_opt)
-    )
+    grid_p_full = state.p_perturbation.astype(jnp.float64)
     # MOIST-CQW (default ON, GPUWRF_MOIST_CQW=0 disables for bisection): WRF builds the large-step
     # vertical PGF/buoyancy with the full moist water-mass loading
     # (calc_cq cqw=0.5*qtot then pg_buoy_w cq1/cq2, module_big_step_utilities_em.F:
@@ -1409,6 +1416,46 @@ def _acoustic_core_state_from_prep(
     # below it does not stabilise the mode (F7I wadv_fix_probe), but it is
     # WRF-correct and required together with the geopotential RHS.
     rw_tend_stage = rw_tend_stage + tendencies.w
+
+    # v0.14 WRF-native advance_w oracle: WRF rk_tendency ALSO adds the
+    # cosine-Coriolis and curvature vertical-momentum terms to ``rw_tend``
+    # (coriolis, module_big_step_utilities_em.F:3836-3843; curvature,
+    # :4283-4291; both on interior w faces k=2..kde-1 with the coupled stage
+    # momenta and the fnm/fnp face weights — module_em.F passes fnm/fnp as the
+    # fzm/fzp dummies).  These were missing here: the Switzerland h36 native
+    # rk_tendency dump measures them at interior rmse 172 (coriolis) + 7.2
+    # (curvature) of the 1318-rms total rw_tend, the second-largest rw_tend gap
+    # after the carried-p fix above.  GPUWRF_W_CORIOLIS=0 disables for bisection.
+    if os.environ.get("GPUWRF_W_CORIOLIS", "1") != "0":
+        mts = namelist.metrics
+        c1h_col = mts.c1h[:, None, None]
+        c2h_col = mts.c2h[:, None, None]
+        u_stage = state.u.astype(jnp.float64)
+        v_stage = state.v.astype(jnp.float64)
+        ru_stage = (c1h_col * prep.muu[None, :, :] + c2h_col) * u_stage / mts.msfuy[None, :, :]
+        rv_stage = (c1h_col * prep.muv[None, :, :] + c2h_col) * v_stage / mts.msfvx[None, :, :]
+        # x/y de-stagger to mass points, then fnm/fnp vertical face average.
+        ru_m = 0.5 * (ru_stage[:, :, :-1] + ru_stage[:, :, 1:])
+        u_m = 0.5 * (u_stage[:, :, :-1] + u_stage[:, :, 1:])
+        rv_m = 0.5 * (rv_stage[:, :-1, :] + rv_stage[:, 1:, :])
+        v_m = 0.5 * (v_stage[:, :-1, :] + v_stage[:, 1:, :])
+        nzs = int(ru_m.shape[0])
+        fnm_f = mts.fnm[1:nzs, None, None]
+        fnp_f = mts.fnp[1:nzs, None, None]
+
+        def _face(field):
+            return fnm_f * field[1:nzs, :, :] + fnp_f * field[: nzs - 1, :, :]
+
+        ru_f = _face(ru_m)
+        u_f = _face(u_m)
+        rv_f = _face(rv_m)
+        v_f = _face(v_m)
+        mxy = (mts.msftx / mts.msfty)[None, :, :]
+        cor_f = mts.e[None, :, :] * (
+            mts.cosa[None, :, :] * ru_f - mxy * mts.sina[None, :, :] * rv_f
+        )
+        curv_f = _W_RERADIUS * (ru_f * u_f + mxy * rv_f * v_f)
+        rw_tend_stage = rw_tend_stage.at[1:nzs, :, :].add(cor_f + curv_f)
 
     # F7J item 1 (PRIME): the large-step geopotential-equation RHS ``rhs_ph`` was
     # stubbed (``carry.ph_tend`` stayed 0; ``accumulate_ph_tend`` never wired in),
