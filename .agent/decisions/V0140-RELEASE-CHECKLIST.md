@@ -21,6 +21,17 @@ approximate CPU denominator of `8713.126 s`. Current Canary gate speedup is only
 `1.059x` GPU-total or `1.069x` GPU-forecast-only, so v0.14 must frame this run
 as field-stability evidence, not a major speed headline.
 
+Update 2026-06-11: principal review escalated the weak Canary speedup from
+"documentation caveat" to a v0.14 release decision gate. Before tagging, the
+manager must understand whether the weak number is measurement unfairness,
+small-grid/strong-CPU regime, compile/cache/IO/orchestration overhead, or a real
+GPU-kernel efficiency regression introduced by v0.13/v0.14 correctness and
+memory work. Two independent audit contracts are prepared:
+`.agent/sprints/2026-06-11-v014-fable-performance-regression-audit/` and
+`.agent/sprints/2026-06-11-v014-gpt-performance-regression-audit/`. Do not make
+public speedup claims until their findings are reconciled and either a fair
+`>2x` benchmark is produced or the release notes explicitly demote speed claims.
+
 Switzerland/Gotthard is the active blocker. The first 72h GPU run exposed an
 hourly driver LBC-clock bug; the fix is merged and proven (`9cbdfe31`,
 `eaff102c`, `tests/test_daily_boundary_clock.py`,
@@ -78,6 +89,7 @@ scalable GPU rewrite.
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. Pre-result tolerance candidate is accepted in `proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json`: ten hard documented fields, static exact/tight checks, and `P/PH/MU/RAINC` critical report-only. | Final scoring uses the accepted manifest, produces summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. A 72h/120h field-parity/stability run is stronger evidence than station-only TOST and is now the primary validation artifact. |
 | Switzerland/Gotthard | CPU72 truth is complete at `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`: 73 `wrfout_d01_*`, `rc=0`, `SUCCESS COMPLETE WRF`, last-frame finite PASS. Timing: total wall `2906.3 s`, mainloop `2887.6 s`, 24 dmpar MPI ranks. Resource CSVs are under `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources`; peak 24-rank `wrf.exe` RSS sum `12636.176 MiB`. LBC-clock bug fixed and proven. Post-LBC residual is now localized to dry-dynamics strong-flow mass venting; Fable high sprint is active to fix or exactly attribute. | Do not rerun 72h yet. First close the h36 storm-state strong-flow short gate, then rerun Switzerland 72h GPU with resource CSVs and atlas. |
 | Canary field parity | L2 d02 has retained CPU-WRF 72h truth: 15 complete backfill cases in `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output`, each with 73 d02 frames. The selected gate case is `20260501_18z_l2_72h_20260519T173026Z`. Prior blockers closed: LBC cadence (`53770411`), PSFC diagnostic, moist-cqw pressure dynamics (`7c819067`, default ON), nested Noah-MP activation (`c2310c5b`), and the d01 LU16/sand nonfinite blocker (`22a2cc0c` + `aff7d124` + `5a708074`). The post-fix 72h GPU run completed at `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`; proof summary `proofs/v014/canary_d02_72h_field_gate_summary.md`; atlas `rc=0`. | Accepted as bounded/proceed. Keep plots/benchmarks for release docs; do not spend correctness tokens here unless a later review overturns the bounded decision. |
+| Performance regression | New active release-decision gate. Canary 72h shows only `1.059x` to `1.069x` against an approximate 28-rank CPU denominator, far below the project speed premise and below the old v0.12 speed story. | After HPG correctness closes, run the prepared independent Fable and GPT performance audits. Reconcile their findings, run the fair benchmark/profiling matrix they prescribe, and either recover a defensible `>2x` result or explicitly demote v0.14 speed claims with a recorded decision. |
 | Powered TOST | Three cases are durable; marathon paused. | Secondary station sanity only. TOST is no longer a v0.14 release gate and must not delay or override Switzerland/Canary all-field evidence. |
 
 ## Merge Discipline
@@ -137,22 +149,28 @@ scalable GPU rewrite.
    process RSS, and CPU peak RSS where available. Canary is recorded in
    `proofs/v014/canary_d02_72h_field_gate_summary.md`; Switzerland remains
    blocked pending the h36 strong-flow HPG fix and the final GPU72 rerun.
-15. Optionally resume powered TOST as secondary station evidence and publish it
+15. Close the v0.14 performance-regression decision gate. Run/reconcile the
+    prepared Fable and GPT audits, then run the fair profiling/benchmark
+    commands they prescribe. Do not tag with major speed claims unless the
+    evidence supports them; if the evidence remains below `>2x`, record an
+    explicit release decision explaining whether speed work moves before or
+    after v0.14.
+16. Optionally resume powered TOST as secondary station evidence and publish it
    together with the atlas if it completes cleanly. It is not a tag gate.
-16. Start the prepared Fable/Mythos xhigh kernel memory/compute efficiency
+17. Start the prepared Fable/Mythos xhigh kernel memory/compute efficiency
    review only after Canary and Switzerland are both green/bounded enough that
    no scarce Fable tokens are needed for v0.14 correctness debugging. Its
    output feeds the complete v0.15 roadmap, not v0.14 source changes.
-17. Write/update `.agent/decisions/V0150-ROADMAP-DRAFT.md` with the complete
+18. Write/update `.agent/decisions/V0150-ROADMAP-DRAFT.md` with the complete
    list of deferred, easy, and high-value kernel improvements, preserving the
    full candidate list for principal review.
-18. Send a paper/documentation worker to update the paper to the latest facts:
+19. Send a paper/documentation worker to update the paper to the latest facts:
    remove stale relativizations, describe the new 72h field-parity/stability
    validation method, include the wall-clock/memory benchmarks, and reference
    the Grid-Delta Atlas plots.
-19. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
+20. Update README, `docs/KNOWN_ISSUES.md`, `PROJECT_PLAN.md`, release notes, and
    proof links.
-20. Tag and push v0.14 only after all required gates pass or are honestly
+21. Tag and push v0.14 only after all required gates pass or are honestly
    demoted with a recorded manager decision and independent review.
 
 ## Current Do-Not-Run List
