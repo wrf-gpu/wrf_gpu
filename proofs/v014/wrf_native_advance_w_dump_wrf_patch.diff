@@ -1,0 +1,559 @@
+--- a/dyn_em/module_small_step_em.F
++++ b/dyn_em/module_small_step_em.F
+@@ -11,8 +11,47 @@
+    USE module_configure
+    USE module_model_constants
+ 
++!WRFGPU2_AWD_MOD_BEGIN  v0.14 fable intra-advance_w savepoint (env-gated, additive-only)
++   LOGICAL, SAVE :: awd_inited  = .FALSE.
++   LOGICAL, SAVE :: awd_enabled = .FALSE.
++   LOGICAL, SAVE :: awd_active  = .FALSE.
++   INTEGER, SAVE :: awd_step = -1, awd_rk = 1, awd_iter = 1
++   INTEGER, SAVE :: awd_cur_step = 0, awd_cur_rk = 0, awd_cur_iter = 0
++   CHARACTER(LEN=512), SAVE :: awd_root = '/tmp/wrfgpu2_awd'
++!WRFGPU2_AWD_MOD_END
++
+ CONTAINS
+ 
++!WRFGPU2_AWD_CTX_BEGIN  called once per acoustic iteration from solve_em
++SUBROUTINE wrfgpu2_awd_set_context( itimestep, rk_step, iteration )
++   IMPLICIT NONE
++   INTEGER, INTENT(IN) :: itimestep, rk_step, iteration
++   CHARACTER(LEN=512) :: ev
++   INTEGER :: ios
++   IF (.NOT. awd_inited) THEN
++     awd_inited = .TRUE.
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD', ev)
++     IF (TRIM(ev) == '1') awd_enabled = .TRUE.
++     IF (awd_enabled) THEN
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD_STEP', ev)
++       IF (LEN_TRIM(ev) > 0) READ(ev,*,IOSTAT=ios) awd_step
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD_RK', ev)
++       IF (LEN_TRIM(ev) > 0) READ(ev,*,IOSTAT=ios) awd_rk
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD_ITER', ev)
++       IF (LEN_TRIM(ev) > 0) READ(ev,*,IOSTAT=ios) awd_iter
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD_ROOT', ev)
++       IF (LEN_TRIM(ev) > 0) awd_root = TRIM(ev)
++       CALL execute_command_line('mkdir -p '//TRIM(awd_root), wait=.TRUE.)
++     END IF
++   END IF
++   awd_cur_step = itimestep
++   awd_cur_rk = rk_step
++   awd_cur_iter = iteration
++   awd_active = awd_enabled .AND. (itimestep == awd_step) .AND. &
++                (rk_step == awd_rk) .AND. (iteration == awd_iter)
++END SUBROUTINE wrfgpu2_awd_set_context
++!WRFGPU2_AWD_CTX_END
++
+ SUBROUTINE small_step_prep( u_1, u_2, v_1, v_2, w_1, w_2, &
+                             t_1, t_2, ph_1, ph_2,         &
+                             mub, mu_1, mu_2,              &
+@@ -486,6 +525,12 @@
+   INTEGER :: i, j, k
+   INTEGER :: i_start, i_end, j_start, j_end, k_start, k_end
+   REAL    :: ptmp
++!WRFGPU2_AWD_CPR_DECL_BEGIN
++  CHARACTER(LEN=1024) :: awd_path
++  INTEGER :: awd_bin, awd_txt, awd_k
++  LOGICAL :: awd_cpr_active
++  REAL, DIMENSION(:,:,:), ALLOCATABLE :: awd_pm1_in, awd_ph_in
++!WRFGPU2_AWD_CPR_DECL_END
+ 
+ !<DESCRIPTION>
+ !
+@@ -512,6 +557,16 @@
+    k_start = kts
+    k_end = min(kte,kde-1)
+ 
++!WRFGPU2_AWD_CPR_ENTRY_BEGIN  capture INOUT inputs of the in-loop call (step>=1)
++   awd_cpr_active = awd_active .AND. (step >= 1)
++   IF (awd_cpr_active) THEN
++     ALLOCATE( awd_pm1_in(i_start:i_end, kms:kme, j_start:j_end) )
++     ALLOCATE( awd_ph_in(i_start:i_end, kms:kme, j_start:j_end) )
++     awd_pm1_in = pm1(i_start:i_end, kms:kme, j_start:j_end)
++     awd_ph_in = ph(i_start:i_end, kms:kme, j_start:j_end)
++   END IF
++!WRFGPU2_AWD_CPR_ENTRY_END
++
+    IF (non_hydrostatic) THEN
+      DO j=j_start, j_end
+      DO k=k_start, k_end
+@@ -565,6 +620,60 @@
+        ENDDO
+        ENDDO
+      END IF
++!WRFGPU2_AWD_CPR_DUMP_BEGIN  in-loop calc_p_rho savepoint (post-advance_w)
++   IF (awd_cpr_active) THEN
++     WRITE(awd_path,'(A,I7.7,A,I1,A,I2.2,A,I2.2,A,I3.3,A,I3.3)') TRIM(awd_root)//'/awd_cpr_s', &
++          awd_cur_step, '_rk', awd_cur_rk, '_it', awd_cur_iter, '_step', step, '_i', its, '_j', jts
++     OPEN(NEWUNIT=awd_txt, FILE=TRIM(awd_path)//'.txt', STATUS='REPLACE', &
++          ACTION='WRITE', FORM='FORMATTED')
++     WRITE(awd_txt,'(A)') 'wrfgpu2 calc_p_rho savepoint v1'
++     WRITE(awd_txt,'(A,4(1X,I0))') 'context_step_rk_iter_substep', awd_cur_step, awd_cur_rk, awd_cur_iter, step
++     WRITE(awd_txt,'(A,6(1X,I0))') 'domain_ids_ide_jds_jde_kds_kde', ids,ide,jds,jde,kds,kde
++     WRITE(awd_txt,'(A,6(1X,I0))') 'memory_ims_ime_jms_jme_kms_kme', ims,ime,jms,jme,kms,kme
++     WRITE(awd_txt,'(A,6(1X,I0))') 'tile_its_ite_jts_jte_kts_kte', its,ite,jts,jte,kts,kte
++     WRITE(awd_txt,'(A,5(1X,I0))') 'loop_i0_i1_j0_j1_kend', i_start,i_end,j_start,j_end,k_end
++     WRITE(awd_txt,'(A,2(1X,E17.9))') 'scalars_t0_smdiv', t0, smdiv
++     WRITE(awd_txt,'(A,1X,L1)') 'flags_nonhydro', non_hydrostatic
++     WRITE(awd_txt,'(A)') '# VEC name k0 k1 / ARR2 name i0 i1 j0 j1 / ARR3 name i0 i1 k0 k1 j0 j1'
++     WRITE(awd_txt,'(A,2(1X,I0))') 'VEC c1h', kds, kde
++     WRITE(awd_txt,'(A,2(1X,I0))') 'VEC c2h', kds, kde
++     WRITE(awd_txt,'(A,2(1X,I0))') 'VEC rdnw', kds, kde
++     WRITE(awd_txt,'(A,2(1X,I0))') 'VEC dnw', kds, kde
++     WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 mu', i_start,i_end,j_start,j_end
++     WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 mut', i_start,i_end,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 alt', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 t_2', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 t_1', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 c2a', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 ph_in', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 pm1_in', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 al', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 p', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 pm1_out', i_start,i_end,kds,kde,j_start,j_end
++     WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 ph_out', i_start,i_end,kds,kde,j_start,j_end
++     CLOSE(awd_txt)
++     OPEN(NEWUNIT=awd_bin, FILE=TRIM(awd_path)//'.bin', STATUS='REPLACE', &
++          ACTION='WRITE', ACCESS='STREAM', FORM='UNFORMATTED')
++     WRITE(awd_bin) (c1h(awd_k),  awd_k=kds,kde)
++     WRITE(awd_bin) (c2h(awd_k),  awd_k=kds,kde)
++     WRITE(awd_bin) (rdnw(awd_k), awd_k=kds,kde)
++     WRITE(awd_bin) (dnw(awd_k),  awd_k=kds,kde)
++     WRITE(awd_bin) ((mu(i,j),  i=i_start,i_end), j=j_start,j_end)
++     WRITE(awd_bin) ((mut(i,j), i=i_start,i_end), j=j_start,j_end)
++     WRITE(awd_bin) (((alt(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((t_2(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((t_1(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((c2a(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((awd_ph_in(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((awd_pm1_in(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((al(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((p(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((pm1(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     WRITE(awd_bin) (((ph(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++     CLOSE(awd_bin)
++     DEALLOCATE( awd_pm1_in, awd_ph_in )
++   END IF
++!WRFGPU2_AWD_CPR_DUMP_END
+ END SUBROUTINE calc_p_rho
+ !----------------------------------------------------------------------
+ SUBROUTINE calc_coef_w( a,alpha,gamma,              &
+@@ -1257,6 +1366,14 @@
+       real :: htop,hbot,hdepth,hk
+       real    :: pi,dampmag
+       REAL :: muthk, muthkm1
++!WRFGPU2_AWD_DECL_BEGIN
++      CHARACTER(LEN=1024) :: awd_path
++      INTEGER :: awd_bin, awd_txt, awd_k
++      INTEGER :: awd_i0, awd_i1, awd_j0, awd_j1
++      REAL, DIMENSION(:,:,:), ALLOCATABLE :: awd_w_in, awd_ph_in, awd_t2ave_in
++      REAL, DIMENSION(:,:,:), ALLOCATABLE :: awd_rhs_a, awd_wdwn, awd_rhs_b, awd_rhs_c
++      REAL, DIMENSION(:,:,:), ALLOCATABLE :: awd_w_exp, awd_w_fwd, awd_w_back
++!WRFGPU2_AWD_DECL_END
+ !<DESCRIPTION>
+ !
+ !  advance_w advances the implicit w and geopotential equations.
+@@ -1280,6 +1397,28 @@
+          j_start = max(jts,jds+1)
+          j_end   = min(jte,jde-2)
+       ENDIF
++!WRFGPU2_AWD_ENTRY_BEGIN  entry copies of INOUT arrays + internal capture buffers
++      IF (awd_active) THEN
++        awd_i0 = MAX(ims, its-1) ; awd_i1 = MIN(ime, ite+1)
++        awd_j0 = MAX(jms, jts-1) ; awd_j1 = MIN(jme, jte+1)
++        ALLOCATE( awd_w_in(awd_i0:awd_i1, kms:kme, awd_j0:awd_j1) )
++        ALLOCATE( awd_ph_in(awd_i0:awd_i1, kms:kme, awd_j0:awd_j1) )
++        ALLOCATE( awd_t2ave_in(awd_i0:awd_i1, kms:kme, awd_j0:awd_j1) )
++        awd_w_in = w(awd_i0:awd_i1, kms:kme, awd_j0:awd_j1)
++        awd_ph_in = ph(awd_i0:awd_i1, kms:kme, awd_j0:awd_j1)
++        awd_t2ave_in = t_2ave(awd_i0:awd_i1, kms:kme, awd_j0:awd_j1)
++        ALLOCATE( awd_rhs_a(i_start:i_end, kts:kte, j_start:j_end) )
++        ALLOCATE( awd_wdwn(i_start:i_end, kts:kte, j_start:j_end) )
++        ALLOCATE( awd_rhs_b(i_start:i_end, kts:kte, j_start:j_end) )
++        ALLOCATE( awd_rhs_c(i_start:i_end, kts:kte, j_start:j_end) )
++        ALLOCATE( awd_w_exp(i_start:i_end, kts:kte, j_start:j_end) )
++        ALLOCATE( awd_w_fwd(i_start:i_end, kts:kte, j_start:j_end) )
++        ALLOCATE( awd_w_back(i_start:i_end, kts:kte, j_start:j_end) )
++        awd_rhs_a = -9.99e33 ; awd_wdwn = -9.99e33
++        awd_rhs_b = -9.99e33 ; awd_rhs_c = -9.99e33
++        awd_w_exp = -9.99e33 ; awd_w_fwd = -9.99e33 ; awd_w_back = -9.99e33
++      END IF
++!WRFGPU2_AWD_ENTRY_END
+    pi = 4.*atan(1.)
+    dampmag = dts*config_flags%dampcoef
+    hdepth=config_flags%zdamp
+@@ -1318,6 +1457,8 @@
+       rhs(i,k+1) = dts*(ph_tend(i,k+1,j) + .5*g*(1.-epssm)*w(i,k+1,j))
+     ENDDO
+     ENDDO
++!WRFGPU2_AWD_CAP rhs_a: dts*(ph_tend + .5*g*(1-epssm)*w), rhs(:,1)=0
++    IF (awd_active) awd_rhs_a(i_start:i_end,kts:kte,j) = rhs(i_start:i_end,kts:kte)
+ !   building up RHS of phi equation
+ !   ph_tend contains terms 1 and 2; now adding 3 and 4 in stages:
+ !   here rhs = delta t [ph_tend + ~g*w/2 - ~ww * partial d phi/dz]
+@@ -1354,6 +1495,11 @@
+       ENDDO
+       ENDDO
+     ENDIF
++!WRFGPU2_AWD_CAP wdwn (valid k=2..k_end+1) + rhs_b after vertical phi advection
++    IF (awd_active) THEN
++      awd_wdwn(i_start:i_end,kts+1:kte,j) = wdwn(i_start:i_end,kts+1:kte)
++      awd_rhs_b(i_start:i_end,kts:kte,j) = rhs(i_start:i_end,kts:kte)
++    END IF
+ !  NOTE:  phi'' is not coupled with the map-scale factor  (1/m),
+ !         but it's tendency is, so must multiply by msft here
+ !   Comments on map scale factors:
+@@ -1369,6 +1515,8 @@
+       if(top_lid .and. k.eq.k_end+1)rhs(i,k)=0.
+     ENDDO
+     ENDDO
++!WRFGPU2_AWD_CAP rhs_c: explicit ph predictor rhs = ph + msfty*rhs/(c1f*mut+c2f)
++    IF (awd_active) awd_rhs_c(i_start:i_end,kts:kte,j) = rhs(i_start:i_end,kts:kte)
+ !  lower boundary condition on w
+ !   Comments on map scale factors:
+ !   Chain rule: if Z=Z(X,Y) [true at the surface] then
+@@ -1429,18 +1577,25 @@
+               + (c1f(k)*muave(i,j))) )
+        if(top_lid)w(i,k,j) = 0.
+     ENDDO
++!WRFGPU2_AWD_CAP w_exp: explicit forward RHS for the implicit w solve
++!  (surface BC at k=1, interior + top explicit update applied; pre-sweep)
++    IF (awd_active) awd_w_exp(i_start:i_end,kts:kte,j) = w(i_start:i_end,kts:kte,j)
+ 
+     DO k=2,k_end+1
+     DO i=i_start, i_end
+        w(i,k,j)=(w(i,k,j)-a(i,k,j)*w(i,k-1,j))*alpha(i,k,j)
+     ENDDO
+     ENDDO
++!WRFGPU2_AWD_CAP w_fwd: after Thomas forward elimination
++    IF (awd_active) awd_w_fwd(i_start:i_end,kts:kte,j) = w(i_start:i_end,kts:kte,j)
+ 
+     DO k=k_end,2,-1
+     DO i=i_start, i_end
+        w (i,k,j)=w (i,k,j)-gamma(i,k,j)*w(i,k+1,j)
+     ENDDO
+     ENDDO
++!WRFGPU2_AWD_CAP w_back: solved w after back substitution, before damp_opt=3
++    IF (awd_active) awd_w_back(i_start:i_end,kts:kte,j) = w(i_start:i_end,kts:kte,j)
+ 
+     IF (config_flags%damp_opt .eq. 3) THEN
+       DO k=k_end+1,2,-1
+@@ -1466,6 +1621,130 @@
+ 
+   ENDDO j_loop_w
+ 
++!WRFGPU2_AWD_DUMP_BEGIN  write per-tile sidecar + big-endian fp32 stream
++  IF (awd_active) THEN
++    WRITE(awd_path,'(A,I7.7,A,I1,A,I2.2,A,I3.3,A,I3.3)') TRIM(awd_root)//'/awd_aw_s', &
++         awd_cur_step, '_rk', awd_cur_rk, '_it', awd_cur_iter, '_i', its, '_j', jts
++    OPEN(NEWUNIT=awd_txt, FILE=TRIM(awd_path)//'.txt', STATUS='REPLACE', &
++         ACTION='WRITE', FORM='FORMATTED')
++    WRITE(awd_txt,'(A)') 'wrfgpu2 advance_w intra savepoint v1'
++    WRITE(awd_txt,'(A,3(1X,I0))') 'context_step_rk_iter', awd_cur_step, awd_cur_rk, awd_cur_iter
++    WRITE(awd_txt,'(A,6(1X,I0))') 'domain_ids_ide_jds_jde_kds_kde', ids,ide,jds,jde,kds,kde
++    WRITE(awd_txt,'(A,6(1X,I0))') 'memory_ims_ime_jms_jme_kms_kme', ims,ime,jms,jme,kms,kme
++    WRITE(awd_txt,'(A,6(1X,I0))') 'tile_its_ite_jts_jte_kts_kte', its,ite,jts,jte,kts,kte
++    WRITE(awd_txt,'(A,4(1X,I0))') 'window_i0_i1_j0_j1', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,5(1X,I0))') 'loop_i0_i1_j0_j1_kend', i_start,i_end,j_start,j_end,k_end
++    WRITE(awd_txt,'(A,9(1X,E17.9))') 'scalars_rdx_rdy_dts_t0_epssm_cf1_cf2_cf3_g', &
++         rdx,rdy,dts,t0,epssm,cf1,cf2,cf3,g
++    WRITE(awd_txt,'(A,4(1X,E17.9))') 'damp_dampcoef_zdamp_dampmag_hdepth', &
++         config_flags%dampcoef, config_flags%zdamp, dampmag, hdepth
++    WRITE(awd_txt,'(A,1X,L1,5(1X,I0))') 'flags_toplid_dampopt_phiadvz_wdamping_spec_nest', &
++         top_lid, config_flags%damp_opt, config_flags%phi_adv_z, config_flags%w_damping, &
++         MERGE(1,0,config_flags%specified), MERGE(1,0,config_flags%nested)
++    WRITE(awd_txt,'(A)') '# VEC name k0 k1 / ARR2 name i0 i1 j0 j1 / ARR3 name i0 i1 k0 k1 j0 j1'
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC c1h', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC c2h', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC c1f', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC c2f', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC fnm', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC fnp', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC rdnw', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC rdn', kds, kde
++    WRITE(awd_txt,'(A,2(1X,I0))') 'VEC dnw', kds, kde
++    WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 mu1', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 mut', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 muave', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 muts', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 ht', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 msftx', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,4(1X,I0))') 'ARR2 msfty', awd_i0,awd_i1,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 w_in', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 ph_in', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 t2ave_in', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 rw_tend', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 ww', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 w_save', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 u', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 v', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 t_2', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 t_1', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 ph_1', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 phb', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 ph_tend', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 c2a', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 cqw', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 alt', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 alb', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 a', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 alpha', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 gamma', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 w_out', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 ph_out', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 t2ave_out', awd_i0,awd_i1,kds,kde,awd_j0,awd_j1
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 rhs_a', i_start,i_end,kds,kde,j_start,j_end
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 wdwn', i_start,i_end,kds,kde,j_start,j_end
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 rhs_b', i_start,i_end,kds,kde,j_start,j_end
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 rhs_c', i_start,i_end,kds,kde,j_start,j_end
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 w_exp', i_start,i_end,kds,kde,j_start,j_end
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 w_fwd', i_start,i_end,kds,kde,j_start,j_end
++    WRITE(awd_txt,'(A,6(1X,I0))') 'ARR3 w_back', i_start,i_end,kds,kde,j_start,j_end
++    CLOSE(awd_txt)
++
++    OPEN(NEWUNIT=awd_bin, FILE=TRIM(awd_path)//'.bin', STATUS='REPLACE', &
++         ACTION='WRITE', ACCESS='STREAM', FORM='UNFORMATTED')
++    WRITE(awd_bin) (c1h(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) (c2h(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) (c1f(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) (c2f(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) (fnm(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) (fnp(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) (rdnw(awd_k), awd_k=kds,kde)
++    WRITE(awd_bin) (rdn(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) (dnw(awd_k),  awd_k=kds,kde)
++    WRITE(awd_bin) ((mu1(i,j),   i=awd_i0,awd_i1), j=awd_j0,awd_j1)
++    WRITE(awd_bin) ((mut(i,j),   i=awd_i0,awd_i1), j=awd_j0,awd_j1)
++    WRITE(awd_bin) ((muave(i,j), i=awd_i0,awd_i1), j=awd_j0,awd_j1)
++    WRITE(awd_bin) ((muts(i,j),  i=awd_i0,awd_i1), j=awd_j0,awd_j1)
++    WRITE(awd_bin) ((ht(i,j),    i=awd_i0,awd_i1), j=awd_j0,awd_j1)
++    WRITE(awd_bin) ((msftx(i,j), i=awd_i0,awd_i1), j=awd_j0,awd_j1)
++    WRITE(awd_bin) ((msfty(i,j), i=awd_i0,awd_i1), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((awd_w_in(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((awd_ph_in(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((awd_t2ave_in(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((rw_tend(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((ww(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((w_save(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((u(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((v(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((t_2(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((t_1(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((ph_1(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((phb(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((ph_tend(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((c2a(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((cqw(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((alt(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((alb(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((a(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((alpha(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((gamma(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((w(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((ph(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((t_2ave(i,awd_k,j), i=awd_i0,awd_i1), awd_k=kds,kde), j=awd_j0,awd_j1)
++    WRITE(awd_bin) (((awd_rhs_a(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++    WRITE(awd_bin) (((awd_wdwn(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++    WRITE(awd_bin) (((awd_rhs_b(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++    WRITE(awd_bin) (((awd_rhs_c(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++    WRITE(awd_bin) (((awd_w_exp(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++    WRITE(awd_bin) (((awd_w_fwd(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++    WRITE(awd_bin) (((awd_w_back(i,awd_k,j), i=i_start,i_end), awd_k=kds,kde), j=j_start,j_end)
++    CLOSE(awd_bin)
++    DEALLOCATE( awd_w_in, awd_ph_in, awd_t2ave_in )
++    DEALLOCATE( awd_rhs_a, awd_wdwn, awd_rhs_b, awd_rhs_c )
++    DEALLOCATE( awd_w_exp, awd_w_fwd, awd_w_back )
++  END IF
++!WRFGPU2_AWD_DUMP_END
++
+ END SUBROUTINE advance_w
+ 
+ !---------------------------------------------------------------------
+--- a/dyn_em/solve_em.F
++++ b/dyn_em/solve_em.F
+@@ -1274,6 +1274,9 @@
+ BENCH_END(set_phys_bc2_tim)
+      small_steps : DO iteration = 1 , number_of_small_timesteps
+ 
++!WRFGPU2_AWD_CTX  v0.14 fable intra-advance_w savepoint context (env-gated)
++       CALL wrfgpu2_awd_set_context( grid%itimestep, rk_step, iteration )
++
+        ! Boundary condition time (or communication time).  
+ #ifdef DM_PARALLEL
+ #      include "PERIOD_BDY_EM_B.inc"
+--- a/dyn_em/module_em.F
++++ b/dyn_em/module_em.F
+@@ -341,12 +341,25 @@
+    REAL    :: dt_step
+ 
+ ! IEVA declarations
+-   REAL , DIMENSION( ims:ime, kms:kme, jms:jme ) :: wwE, wwI  
+-   REAL , DIMENSION( ims:ime , jms:jme )         :: mut_old, mut_new                                                              
+-   REAL , DIMENSION( ims:ime , jms:jme )         :: muu_old, muu_new                                                              
+-   REAL , DIMENSION( ims:ime , jms:jme )         :: muv_old, muv_new                                                              
++   REAL , DIMENSION( ims:ime, kms:kme, jms:jme ) :: wwE, wwI
++   REAL , DIMENSION( ims:ime , jms:jme )         :: mut_old, mut_new
++   REAL , DIMENSION( ims:ime , jms:jme )         :: muu_old, muu_new
++   REAL , DIMENSION( ims:ime , jms:jme )         :: muv_old, muv_new
+    LOGICAL                                       :: ieva
+-   
++!WRFGPU2_AWD2_DECL_BEGIN  rw_tend/ph_tend stage snapshots (env-gated)
++   LOGICAL, SAVE :: awd2_inited  = .FALSE.
++   LOGICAL, SAVE :: awd2_enabled = .FALSE.
++   INTEGER, SAVE :: awd2_ncall   = 0
++   INTEGER, SAVE :: awd2_target  = -1
++   CHARACTER(LEN=512), SAVE :: awd2_root = '/tmp/wrfgpu2_awd'
++   LOGICAL :: awd2_active
++   CHARACTER(LEN=512)  :: awd2_ev
++   CHARACTER(LEN=1024) :: awd2_path
++   INTEGER :: awd2_bin, awd2_txt, awd2_ios, awd2_k, awd2_i, awd2_j
++   REAL, DIMENSION(:,:,:), ALLOCATABLE :: awd2_rw_adv, awd2_rw_pgb, awd2_rw_wdmp
++   REAL, DIMENSION(:,:,:), ALLOCATABLE :: awd2_rw_cor, awd2_rw_curv, awd2_ph_rhs
++!WRFGPU2_AWD2_DECL_END
++
+ !<DESCRIPTION>
+ !
+ !  rk_tendency computes the large-timestep tendency terms in the
+@@ -367,6 +380,34 @@
+ !
+ !</DESCRIPTION>
+ 
++!WRFGPU2_AWD2_GATE_BEGIN  per-call counter (rk_order*num_tiles calls per step;
++!  same numbering as the HPG dumps: ncall=(step-1)*3+rk for 1 tile/rank)
++   IF (.NOT. awd2_inited) THEN
++     awd2_inited = .TRUE.
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD2', awd2_ev)
++     IF (TRIM(awd2_ev) == '1') awd2_enabled = .TRUE.
++     IF (awd2_enabled) THEN
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD2_CALL', awd2_ev)
++       IF (LEN_TRIM(awd2_ev) > 0) READ(awd2_ev,*,IOSTAT=awd2_ios) awd2_target
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_AWD2_ROOT', awd2_ev)
++       IF (LEN_TRIM(awd2_ev) > 0) awd2_root = TRIM(awd2_ev)
++       CALL execute_command_line('mkdir -p '//TRIM(awd2_root), wait=.TRUE.)
++     END IF
++   END IF
++   awd2_ncall = awd2_ncall + 1
++   awd2_active = awd2_enabled .AND. (awd2_ncall == awd2_target)
++   IF (awd2_active) THEN
++     ALLOCATE( awd2_rw_adv(its:ite, kms:kme, jts:jte) )
++     ALLOCATE( awd2_rw_pgb(its:ite, kms:kme, jts:jte) )
++     ALLOCATE( awd2_rw_wdmp(its:ite, kms:kme, jts:jte) )
++     ALLOCATE( awd2_rw_cor(its:ite, kms:kme, jts:jte) )
++     ALLOCATE( awd2_rw_curv(its:ite, kms:kme, jts:jte) )
++     ALLOCATE( awd2_ph_rhs(its:ite, kms:kme, jts:jte) )
++     awd2_rw_adv = -9.99e33 ; awd2_rw_pgb = -9.99e33 ; awd2_rw_wdmp = -9.99e33
++     awd2_rw_cor = -9.99e33 ; awd2_rw_curv = -9.99e33 ; awd2_ph_rhs = -9.99e33
++   END IF
++!WRFGPU2_AWD2_GATE_END
++
+    CALL zero_tend ( ru_tend,                      &
+                     ids, ide, jds, jde, kds, kde, &
+                     ims, ime, jms, jme, kms, kme, &
+@@ -598,6 +639,8 @@
+      ENDIF
+ 
+    ENDIF  ! non-hydrostatic
++!WRFGPU2_AWD2_CAP rw after advect_w (pure w advection)
++   IF (awd2_active) awd2_rw_adv(its:ite,kms:kme,jts:jte) = rw_tend(its:ite,kms:kme,jts:jte)
+ 
+ !  theta flux divergence
+ 
+@@ -678,9 +721,11 @@
+                 ids, ide, jds, jde, kds, kde,      &
+                 ims, ime, jms, jme, kms, kme,      &
+                 its, ite, jts, jte, kts, kte      )
++!WRFGPU2_AWD2_CAP ph_tend after rhs_ph (pure large-step geopotential rhs)
++   IF (awd2_active) awd2_ph_rhs(its:ite,kms:kme,jts:jte) = ph_tend(its:ite,kms:kme,jts:jte)
+ 
+     IF( ieva ) THEN
+-      
++
+         CALL advect_ph_implicit ( ph, ph_old, ph_tend, phb,       &
+                                   ru, rv, wwE, wwI, w,            & 
+                                   c1f, c2f,                       &
+@@ -734,6 +779,8 @@
+                         ims, ime, jms, jme, kms, kme,   &
+                         its, ite, jts, jte, kts, kte   )
+    ENDIF
++!WRFGPU2_AWD2_CAP rw after pg_buoy_w
++   IF (awd2_active) awd2_rw_pgb(its:ite,kms:kme,jts:jte) = rw_tend(its:ite,kms:kme,jts:jte)
+ 
+    CALL w_damp   ( rw_tend, max_vert_cfl,             &
+                     max_horiz_cfl,                    &
+@@ -743,6 +790,8 @@
+                     ids, ide, jds, jde, kds, kde,     &
+                     ims, ime, jms, jme, kms, kme,     &
+                     its, ite, jts, jte, kts, kte     )
++!WRFGPU2_AWD2_CAP rw after w_damp
++   IF (awd2_active) awd2_rw_wdmp(its:ite,kms:kme,jts:jte) = rw_tend(its:ite,kms:kme,jts:jte)
+ 
+    IF(config_flags%pert_coriolis) THEN
+ 
+@@ -769,6 +818,8 @@
+                         its, ite, jts, jte, kts, kte )
+ 
+    END IF
++!WRFGPU2_AWD2_CAP rw after coriolis
++   IF (awd2_active) awd2_rw_cor(its:ite,kms:kme,jts:jte) = rw_tend(its:ite,kms:kme,jts:jte)
+ 
+    CALL curvature ( ru, rv, rw, u, v, w,            &
+                      ru_tend,  rv_tend,  rw_tend,    &
+@@ -779,6 +830,8 @@
+                      ids, ide, jds, jde, kds, kde,   &
+                      ims, ime, jms, jme, kms, kme,   &
+                      its, ite, jts, jte, kts, kte   )
++!WRFGPU2_AWD2_CAP rw after curvature
++   IF (awd2_active) awd2_rw_curv(its:ite,kms:kme,jts:jte) = rw_tend(its:ite,kms:kme,jts:jte)
+ 
+ ! Damping option added for Held-Suarez test (also uses lw option HELDSUAREZ)
+ 
+@@ -952,6 +1005,48 @@
+ 
+   END IF forward_step
+ 
++!WRFGPU2_AWD2_DUMP_BEGIN  stage snapshots + end-of-rk_tendency tend/tendf
++  IF (awd2_active) THEN
++    WRITE(awd2_path,'(A,I6.6,A,I3.3,A,I3.3)') TRIM(awd2_root)//'/awd2_call', &
++         awd2_ncall, '_i', its, '_j', jts
++    OPEN(NEWUNIT=awd2_txt, FILE=TRIM(awd2_path)//'.txt', STATUS='REPLACE', &
++         ACTION='WRITE', FORM='FORMATTED')
++    WRITE(awd2_txt,'(A)') 'wrfgpu2 rk_tendency rw/ph stage snapshots v1'
++    WRITE(awd2_txt,'(A,2(1X,I0))') 'context_ncall_rkstep', awd2_ncall, rk_step
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'domain_ids_ide_jds_jde_kds_kde', ids,ide,jds,jde,kds,kde
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'memory_ims_ime_jms_jme_kms_kme', ims,ime,jms,jme,kms,kme
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'tile_its_ite_jts_jte_kts_kte', its,ite,jts,jte,kts,kte
++    WRITE(awd2_txt,'(A,2(1X,E17.9))') 'scalars_dt_g', dt, g
++    WRITE(awd2_txt,'(A)') '# VEC name k0 k1 / ARR2 name i0 i1 j0 j1 / ARR3 name i0 i1 k0 k1 j0 j1'
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 rw_adv', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 rw_pgb', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 rw_wdmp', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 rw_cor', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 rw_curv', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 ph_rhs', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 rw_end', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 ph_end', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 rw_tendf', its,ite,kds,kde,jts,jte
++    WRITE(awd2_txt,'(A,6(1X,I0))') 'ARR3 ph_tendf', its,ite,kds,kde,jts,jte
++    CLOSE(awd2_txt)
++    OPEN(NEWUNIT=awd2_bin, FILE=TRIM(awd2_path)//'.bin', STATUS='REPLACE', &
++         ACTION='WRITE', ACCESS='STREAM', FORM='UNFORMATTED')
++    WRITE(awd2_bin) (((awd2_rw_adv(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((awd2_rw_pgb(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((awd2_rw_wdmp(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((awd2_rw_cor(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((awd2_rw_curv(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((awd2_ph_rhs(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((rw_tend(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((ph_tend(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((rw_tendf(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    WRITE(awd2_bin) (((ph_tendf(awd2_i,awd2_k,awd2_j), awd2_i=its,ite), awd2_k=kds,kde), awd2_j=jts,jte)
++    CLOSE(awd2_bin)
++    DEALLOCATE( awd2_rw_adv, awd2_rw_pgb, awd2_rw_wdmp )
++    DEALLOCATE( awd2_rw_cor, awd2_rw_curv, awd2_ph_rhs )
++  END IF
++!WRFGPU2_AWD2_DUMP_END
++
+ END SUBROUTINE rk_tendency
+ 
+ !-------------------------------------------------------------------------------
