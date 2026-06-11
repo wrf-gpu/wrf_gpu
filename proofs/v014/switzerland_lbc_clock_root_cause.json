@@ -143,5 +143,69 @@
       "psfc_bias_pa": 2380.010796070099
     }
   ],
+  "g3_fixed_rerun": {
+    "run_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_h6_lbcfix_20260611T013851Z/gpu_output",
+    "rows": [
+      {
+        "hour": 1,
+        "ring_max_abs_vs_cpu_pa": 0.0,
+        "mu_rmse_pa": 27.94984726544121,
+        "mu_bias_pa": -12.499660423956811,
+        "psfc_rmse_pa": 28.982747198932373,
+        "psfc_bias_pa": -14.717467308044434,
+        "t_rmse_k": 0.2865105455431964
+      },
+      {
+        "hour": 2,
+        "ring_max_abs_vs_cpu_pa": 0.0,
+        "mu_rmse_pa": 30.2536034598891,
+        "mu_bias_pa": 18.06043882481754,
+        "psfc_rmse_pa": 31.275417450376573,
+        "psfc_bias_pa": 16.21498155593872,
+        "t_rmse_k": 0.428560664647753
+      },
+      {
+        "hour": 3,
+        "ring_max_abs_vs_cpu_pa": 0.0,
+        "mu_rmse_pa": 32.271961667484085,
+        "mu_bias_pa": 19.11560200116037,
+        "psfc_rmse_pa": 32.84534679332293,
+        "psfc_bias_pa": 17.631373405456543,
+        "t_rmse_k": 0.5332192040201496
+      },
+      {
+        "hour": 4,
+        "ring_max_abs_vs_cpu_pa": 0.0,
+        "mu_rmse_pa": 33.99183379648628,
+        "mu_bias_pa": 21.855637549415405,
+        "psfc_rmse_pa": 35.43925218753818,
+        "psfc_bias_pa": 21.71335792541504,
+        "t_rmse_k": 0.5905213552812454
+      },
+      {
+        "hour": 5,
+        "ring_max_abs_vs_cpu_pa": 0.0,
+        "mu_rmse_pa": 35.41950287850712,
+        "mu_bias_pa": 23.448982019332107,
+        "psfc_rmse_pa": 36.83365497793783,
+        "psfc_bias_pa": 25.758188724517822,
+        "t_rmse_k": 0.621961331380277
+      },
+      {
+        "hour": 6,
+        "ring_max_abs_vs_cpu_pa": 0.0,
+        "mu_rmse_pa": 34.502280100607265,
+        "mu_bias_pa": 21.129503646399826,
+        "psfc_rmse_pa": 37.536545436677436,
+        "psfc_bias_pa": 27.099750518798828,
+        "t_rmse_k": 0.6407411245283973
+      }
+    ],
+    "broken_h6_ring_max_abs_pa": 352.4583740234375,
+    "broken_h6_psfc_rmse_pa": 245.41915114540063,
+    "ring_gate_max_abs_le_1pa": true,
+    "psfc_h6_collapse_gate": true,
+    "pass": true
+  },
   "verdict": "LBC_CLOCK_ROOT_CAUSE_PROVEN_FIX_GATE_PASS"
 }
