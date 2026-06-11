@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.6 (2026-06-11, principal-directed)
+
+- Added the Fable xhigh scarcity ladder: after one costly Fable/Mythos xhigh
+  run, continue unresolved bug hunts with GPT-5.5 xhigh first, then Fable
+  medium/high, and reserve another Fable/Mythos xhigh run for roughly ten
+  inconclusive cheaper follow-up sprints or a documented exceptional case.
+
 ## 0.2.5 (2026-06-09, principal-directed)
 
 - Renamed the active high-end lane to Fable/Mythos and marked it as a scarce
