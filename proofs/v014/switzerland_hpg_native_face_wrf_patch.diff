@@ -1,0 +1,280 @@
+diff --git a/dyn_em/module_big_step_utilities_em.F b/dyn_em/module_big_step_utilities_em.F
+index 5076959..80076de 100644
+--- a/dyn_em/module_big_step_utilities_em.F
++++ b/dyn_em/module_big_step_utilities_em.F
+@@ -2238,6 +2238,27 @@ SUBROUTINE horizontal_pressure_gradient( ru_tend,rv_tend,                &
+ 
+    LOGICAL :: specified
+ 
++!WRFGPU2_HPG_DECL_BEGIN  v0.14 fable native-face savepoint (env-gated, additive-only)
++   LOGICAL, SAVE :: hpg_inited  = .FALSE.
++   LOGICAL, SAVE :: hpg_enabled = .FALSE.
++   INTEGER, SAVE :: hpg_ncall   = 0
++   INTEGER, SAVE :: hpg_lo      = -1
++   INTEGER, SAVE :: hpg_hi      = -2
++   INTEGER, SAVE :: hpg_first   = 0
++   CHARACTER(LEN=512), SAVE :: hpg_root = '/tmp/wrfgpu2_hpg'
++   LOGICAL :: hpg_active
++   CHARACTER(LEN=512)  :: hpg_ev
++   CHARACTER(LEN=1024) :: hpg_path
++   INTEGER :: hpg_ios, hpg_bin, hpg_txt
++   INTEGER :: hpg_i0, hpg_i1, hpg_j0, hpg_j1
++   INTEGER :: hpg_iy0, hpg_iy1, hpg_jy0, hpg_jy1
++   INTEGER :: hpg_ix0, hpg_ix1, hpg_jx0, hpg_jx1
++   REAL :: hpg_dpy123, hpg_dpx123
++   REAL, DIMENSION(:,:),   ALLOCATABLE :: hpg_dpn
++   REAL, DIMENSION(:,:,:), ALLOCATABLE :: hpg_t1y, hpg_t2y, hpg_t3y, hpg_t4y, hpg_dpy
++   REAL, DIMENSION(:,:,:), ALLOCATABLE :: hpg_t1x, hpg_t2x, hpg_t3x, hpg_t4x, hpg_dpx
++!WRFGPU2_HPG_DECL_END
++
+ !<DESCRIPTION>
+ !
+ !  horizontal_pressure_gradient calculates the
+@@ -2250,6 +2271,28 @@ SUBROUTINE horizontal_pressure_gradient( ru_tend,rv_tend,                &
+    specified = .false.
+    if(config_flags%specified .or. config_flags%nested) specified = .true.
+ 
++!WRFGPU2_HPG_GATE_BEGIN  per-call counter + env gate (rk_order*num_tiles calls per step)
++   IF (.NOT. hpg_inited) THEN
++     hpg_inited = .TRUE.
++     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_HPG', hpg_ev)
++     IF (TRIM(hpg_ev) == '1') hpg_enabled = .TRUE.
++     IF (hpg_enabled) THEN
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_HPG_CALL_LO', hpg_ev)
++       IF (LEN_TRIM(hpg_ev) > 0) READ(hpg_ev,*,IOSTAT=hpg_ios) hpg_lo
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_HPG_CALL_HI', hpg_ev)
++       IF (LEN_TRIM(hpg_ev) > 0) READ(hpg_ev,*,IOSTAT=hpg_ios) hpg_hi
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_HPG_FIRST', hpg_ev)
++       IF (LEN_TRIM(hpg_ev) > 0) READ(hpg_ev,*,IOSTAT=hpg_ios) hpg_first
++       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_HPG_ROOT', hpg_ev)
++       IF (LEN_TRIM(hpg_ev) > 0) hpg_root = TRIM(hpg_ev)
++       CALL execute_command_line('mkdir -p '//TRIM(hpg_root), wait=.TRUE.)
++     END IF
++   END IF
++   hpg_ncall = hpg_ncall + 1
++   hpg_active = hpg_enabled .AND. &
++        ( (hpg_ncall >= hpg_lo .AND. hpg_ncall <= hpg_hi) .OR. hpg_ncall <= hpg_first )
++!WRFGPU2_HPG_GATE_END
++
+ !  Notes on map scale factors:
+ !  Calculates the pressure gradient terms in ADT eqns 44 and 45
+ !  With upper rho -> 'mu', these are:
+@@ -2412,6 +2455,218 @@ SUBROUTINE horizontal_pressure_gradient( ru_tend,rv_tend,                &
+ 
+    ENDDO
+ 
++!WRFGPU2_HPG_DUMP_BEGIN  native-face savepoint: recomputes the identical
++!  subterm expressions over the identical loop bounds AFTER the live loops
++!  (read-only on all model arrays; live results untouched).
++   IF (hpg_active) THEN
++     hpg_i0 = MAX(ims, its-1); hpg_i1 = MIN(ime, ite+1)
++     hpg_j0 = MAX(jms, jts-1); hpg_j1 = MIN(jme, jte+1)
++     ktf = MIN(kte, kde-1)
++     ! y-direction live loop bounds (mirror)
++     hpg_iy0 = its; hpg_iy1 = MIN(ite, ide-1)
++     hpg_jy0 = jts; hpg_jy1 = jte
++     IF ( (config_flags%open_ys .or. specified .or. &
++           config_flags%nested .or. config_flags%polar ) .and. jts == jds ) hpg_jy0 = jts+1
++     IF ( (config_flags%open_ye .or. specified .or. &
++           config_flags%nested .or. config_flags%polar ) .and. jte == jde ) hpg_jy1 = hpg_jy1-1
++     ! x-direction live loop bounds (mirror)
++     hpg_ix0 = its; hpg_ix1 = ite
++     hpg_jx0 = jts; hpg_jx1 = MIN(jte, jde-1)
++     IF ( (config_flags%open_xs .or. specified .or. &
++             config_flags%nested ) .and. its == ids ) hpg_ix0 = its+1
++     IF ( (config_flags%open_xe .or. specified .or. &
++             config_flags%nested ) .and. ite == ide ) hpg_ix1 = hpg_ix1-1
++     IF ( config_flags%periodic_x ) hpg_ix0 = its
++     IF ( config_flags%periodic_x ) hpg_ix1 = ite
++
++     ALLOCATE( hpg_dpn(ims:ime, kms:kme) )
++     ALLOCATE( hpg_t1y(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_t2y(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_t3y(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_t4y(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_dpy(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_t1x(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_t2x(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_t3x(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_t4x(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     ALLOCATE( hpg_dpx(hpg_i0:hpg_i1, kms:kme, hpg_j0:hpg_j1) )
++     hpg_t1y = -9.99e33; hpg_t2y = -9.99e33; hpg_t3y = -9.99e33
++     hpg_t4y = -9.99e33; hpg_dpy = -9.99e33
++     hpg_t1x = -9.99e33; hpg_t2x = -9.99e33; hpg_t3x = -9.99e33
++     hpg_t4x = -9.99e33; hpg_dpx = -9.99e33
++
++     ! ---- recompute y (v-face) terms exactly as the live loop ----
++     DO j = hpg_jy0, hpg_jy1
++       IF ( non_hydrostatic ) THEN
++         k = 1
++         DO i = hpg_iy0, hpg_iy1
++           hpg_dpn(i,k) = .5*( cf1*(p(i,k  ,j-1)+p(i,k  ,j))   &
++                              +cf2*(p(i,k+1,j-1)+p(i,k+1,j))   &
++                              +cf3*(p(i,k+2,j-1)+p(i,k+2,j))  )
++           hpg_dpn(i,kde) = 0.
++         ENDDO
++         IF (top_lid) THEN
++           DO i = hpg_iy0, hpg_iy1
++             hpg_dpn(i,kde) = .5*( cfn *(p(i,kde-1,j-1)+p(i,kde-1,j))   &
++                                  +cfn1*(p(i,kde-2,j-1)+p(i,kde-2,j)) )
++           ENDDO
++         ENDIF
++         DO k = 2, ktf
++           DO i = hpg_iy0, hpg_iy1
++             hpg_dpn(i,k) = .5*( fnm(k)*(p(i,k  ,j-1)+p(i,k  ,j))  &
++                                +fnp(k)*(p(i,k-1,j-1)+p(i,k-1,j)) )
++           END DO
++         END DO
++       END IF
++       DO k = 1, ktf
++         DO i = hpg_iy0, hpg_iy1
++           hpg_t1y(i,k,j) = ph (i,k+1,j)-ph (i,k+1,j-1) + ph(i,k,j)-ph(i,k,j-1)
++           hpg_t2y(i,k,j) = (alt(i,k  ,j)+alt(i,k  ,j-1))*(p (i,k,j)-p (i,k,j-1))
++           hpg_t3y(i,k,j) = (al (i,k  ,j)+al (i,k  ,j-1))*(pb(i,k,j)-pb(i,k,j-1))
++           hpg_dpy123 = (msfvy(i,j)/msfvx(i,j))*.5*rdy*(c1h(k)*muv(i,j)+c2h(k))*( &
++                hpg_t1y(i,k,j) + hpg_t2y(i,k,j) + hpg_t3y(i,k,j) )
++           IF ( non_hydrostatic ) THEN
++             hpg_t4y(i,k,j) = (msfvy(i,j)/msfvx(i,j))*rdy*(php(i,k,j)-php(i,k,j-1))* &
++                (rdnw(k)*(hpg_dpn(i,k+1)-hpg_dpn(i,k))-.5*((c1(k)*mu(i,j-1))+(c1(k)*mu(i,j))))
++           ELSE
++             hpg_t4y(i,k,j) = 0.
++           END IF
++           hpg_dpy(i,k,j) = hpg_dpy123 + hpg_t4y(i,k,j)
++         END DO
++       END DO
++     END DO
++
++     ! ---- recompute x (u-face) terms exactly as the live loop ----
++     DO j = hpg_jx0, hpg_jx1
++       IF ( non_hydrostatic ) THEN
++         k = 1
++         DO i = hpg_ix0, hpg_ix1
++           hpg_dpn(i,k) = .5*( cf1*(p(i-1,k  ,j)+p(i,k  ,j))   &
++                              +cf2*(p(i-1,k+1,j)+p(i,k+1,j))   &
++                              +cf3*(p(i-1,k+2,j)+p(i,k+2,j))  )
++           hpg_dpn(i,kde) = 0.
++         ENDDO
++         IF (top_lid) THEN
++           DO i = hpg_ix0, hpg_ix1
++             hpg_dpn(i,kde) = .5*( cfn *(p(i-1,kde-1,j)+p(i,kde-1,j))   &
++                                  +cfn1*(p(i-1,kde-2,j)+p(i,kde-2,j)) )
++           ENDDO
++         ENDIF
++         DO k = 2, ktf
++           DO i = hpg_ix0, hpg_ix1
++             hpg_dpn(i,k) = .5*( fnm(k)*(p(i-1,k  ,j)+p(i,k  ,j))  &
++                                +fnp(k)*(p(i-1,k-1,j)+p(i,k-1,j)) )
++           END DO
++         END DO
++       END IF
++       DO k = 1, ktf
++         DO i = hpg_ix0, hpg_ix1
++           hpg_t1x(i,k,j) = ph (i,k+1,j)-ph (i-1,k+1,j) + ph(i,k,j)-ph(i-1,k,j)
++           hpg_t2x(i,k,j) = (alt(i,k  ,j)+alt(i-1,k  ,j))*(p (i,k,j)-p (i-1,k,j))
++           hpg_t3x(i,k,j) = (al (i,k  ,j)+al (i-1,k  ,j))*(pb(i,k,j)-pb(i-1,k,j))
++           hpg_dpx123 = (msfux(i,j)/msfuy(i,j))*.5*rdx*(c1h(k)*muu(i,j)+c2h(k))*( &
++                hpg_t1x(i,k,j) + hpg_t2x(i,k,j) + hpg_t3x(i,k,j) )
++           IF ( non_hydrostatic ) THEN
++             hpg_t4x(i,k,j) = (msfux(i,j)/msfuy(i,j))*rdx*(php(i,k,j)-php(i-1,k,j))* &
++                (rdnw(k)*(hpg_dpn(i,k+1)-hpg_dpn(i,k))-.5*((c1(k)*mu(i-1,j))+(c1(k)*mu(i,j))))
++           ELSE
++             hpg_t4x(i,k,j) = 0.
++           END IF
++           hpg_dpx(i,k,j) = hpg_dpx123 + hpg_t4x(i,k,j)
++         END DO
++       END DO
++     END DO
++
++     ! ---- write sidecar + big-endian fp32 stream (build uses -fconvert=big-endian) ----
++     WRITE(hpg_path,'(A,I6.6,A,I3.3,A,I3.3)') TRIM(hpg_root)//'/hpg_call', &
++          hpg_ncall, '_i', its, '_j', jts
++     OPEN(NEWUNIT=hpg_txt, FILE=TRIM(hpg_path)//'.txt', STATUS='REPLACE', &
++          ACTION='WRITE', FORM='FORMATTED')
++     WRITE(hpg_txt,'(A)') 'wrfgpu2 hpg native-face savepoint v1'
++     WRITE(hpg_txt,'(A,I0)') 'ncall ', hpg_ncall
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'domain_ids_ide_jds_jde_kds_kde', ids,ide,jds,jde,kds,kde
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'memory_ims_ime_jms_jme_kms_kme', ims,ime,jms,jme,kms,kme
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'tile_its_ite_jts_jte_kts_kte', its,ite,jts,jte,kts,kte
++     WRITE(hpg_txt,'(A,5(1X,I0))') 'window_i0_i1_j0_j1_ktf', hpg_i0,hpg_i1,hpg_j0,hpg_j1,ktf
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'yloop_i0_i1_j0_j1', hpg_iy0,hpg_iy1,hpg_jy0,hpg_jy1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'xloop_i0_i1_j0_j1', hpg_ix0,hpg_ix1,hpg_jx0,hpg_jx1
++     WRITE(hpg_txt,'(A,7(1X,E17.9))') 'scalars_rdx_rdy_cf1_cf2_cf3_cfn_cfn1', &
++          rdx,rdy,cf1,cf2,cf3,cfn,cfn1
++     WRITE(hpg_txt,'(A,3(1X,L1))') 'flags_nonhydro_toplid_specified', &
++          non_hydrostatic, top_lid, specified
++     WRITE(hpg_txt,'(A)') '# VEC name k0 k1 / ARR2 name i0 i1 j0 j1 / ARR3 name i0 i1 k0 k1 j0 j1'
++     WRITE(hpg_txt,'(A,2(1X,I0))') 'VEC c1h', kds, kde
++     WRITE(hpg_txt,'(A,2(1X,I0))') 'VEC c2h', kds, kde
++     WRITE(hpg_txt,'(A,2(1X,I0))') 'VEC fnm', kds, kde
++     WRITE(hpg_txt,'(A,2(1X,I0))') 'VEC fnp', kds, kde
++     WRITE(hpg_txt,'(A,2(1X,I0))') 'VEC rdnw', kds, kde
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 ph',  hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 php', hpg_i0,hpg_i1,kds,kde-1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 alt', hpg_i0,hpg_i1,kds,kde-1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 al',  hpg_i0,hpg_i1,kds,kde-1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 p',   hpg_i0,hpg_i1,kds,kde-1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 pb',  hpg_i0,hpg_i1,kds,kde-1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 cqu', hpg_i0,hpg_i1,kds,kde-1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 cqv', hpg_i0,hpg_i1,kds,kde-1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'ARR2 muu', hpg_i0,hpg_i1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'ARR2 muv', hpg_i0,hpg_i1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'ARR2 mu',  hpg_i0,hpg_i1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'ARR2 msfux', hpg_i0,hpg_i1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'ARR2 msfuy', hpg_i0,hpg_i1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'ARR2 msfvx', hpg_i0,hpg_i1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,4(1X,I0))') 'ARR2 msfvy', hpg_i0,hpg_i1,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t1y', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t2y', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t3y', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t4y', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 dpy', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t1x', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t2x', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t3x', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 t4x', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     WRITE(hpg_txt,'(A,6(1X,I0))') 'ARR3 dpx', hpg_i0,hpg_i1,kds,kde,hpg_j0,hpg_j1
++     CLOSE(hpg_txt)
++
++     OPEN(NEWUNIT=hpg_bin, FILE=TRIM(hpg_path)//'.bin', STATUS='REPLACE', &
++          ACTION='WRITE', ACCESS='STREAM', FORM='UNFORMATTED')
++     WRITE(hpg_bin) (c1h(k),  k=kds,kde)
++     WRITE(hpg_bin) (c2h(k),  k=kds,kde)
++     WRITE(hpg_bin) (fnm(k),  k=kds,kde)
++     WRITE(hpg_bin) (fnp(k),  k=kds,kde)
++     WRITE(hpg_bin) (rdnw(k), k=kds,kde)
++     WRITE(hpg_bin) (((ph (i,k,j), i=hpg_i0,hpg_i1), k=kds,kde),   j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((php(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde-1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((alt(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde-1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((al (i,k,j), i=hpg_i0,hpg_i1), k=kds,kde-1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((p  (i,k,j), i=hpg_i0,hpg_i1), k=kds,kde-1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((pb (i,k,j), i=hpg_i0,hpg_i1), k=kds,kde-1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((cqu(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde-1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((cqv(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde-1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) ((muu(i,j),   i=hpg_i0,hpg_i1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) ((muv(i,j),   i=hpg_i0,hpg_i1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) ((mu(i,j),    i=hpg_i0,hpg_i1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) ((msfux(i,j), i=hpg_i0,hpg_i1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) ((msfuy(i,j), i=hpg_i0,hpg_i1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) ((msfvx(i,j), i=hpg_i0,hpg_i1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) ((msfvy(i,j), i=hpg_i0,hpg_i1), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t1y(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t2y(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t3y(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t4y(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_dpy(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t1x(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t2x(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t3x(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_t4x(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     WRITE(hpg_bin) (((hpg_dpx(i,k,j), i=hpg_i0,hpg_i1), k=kds,kde), j=hpg_j0,hpg_j1)
++     CLOSE(hpg_bin)
++
++     DEALLOCATE( hpg_dpn )
++     DEALLOCATE( hpg_t1y, hpg_t2y, hpg_t3y, hpg_t4y, hpg_dpy )
++     DEALLOCATE( hpg_t1x, hpg_t2x, hpg_t3x, hpg_t4x, hpg_dpx )
++   END IF
++!WRFGPU2_HPG_DUMP_END
++
+ END SUBROUTINE horizontal_pressure_gradient
+ 
+ !-------------------------------------------------------------------------------

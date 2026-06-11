@@ -161,15 +161,15 @@ P0_THETA_OFFSET_K = 300.0
 # base potential-temperature profile (must match
 # ``dynamics/acoustic_wrf._inverse_density_from_theta_pressure``).
 _EOS_R_D = 287.0
-_EOS_CP_D = 1004.0
+_EOS_CP_D = 7.0 * _EOS_R_D / 2.0  # WRF cp = 1004.5 exactly (mirrors acoustic_wrf.CP_D)
 _EOS_P0_PA = 100000.0
 _EOS_CVPM = -(_EOS_CP_D - _EOS_R_D) / _EOS_CP_D
 _WRF_BASE_GRAVITY_M_S2 = 9.81
 
 # WRF ``share/module_model_constants.F`` REAL(4) parameters as compile-time fp32
 # folds, used by the live-nest ``start_domain_em`` init transcription.  These are
-# deliberately separate from the fp64 ``_EOS_*`` constants above (cp here is the
-# WRF 1004.5, not the dycore's 1004.0).
+# deliberately separate from the fp64 ``_EOS_*`` constants above (fp32 folds vs
+# fp64; both carry the WRF cp = 7*r_d/2 = 1004.5 since the v0.14 constants fix).
 _WRF32_R_D = np.float32(287.0)
 _WRF32_CP = np.float32(7.0) * _WRF32_R_D / np.float32(2.0)      # 1004.5
 _WRF32_CV = _WRF32_CP - _WRF32_R_D                              # 717.5

@@ -1,0 +1,321 @@
+{
+  "D1_rom_vs_oracle_ww": {
+    "err": {
+      "band": {
+        "count": 172800,
+        "max_abs": 116.08887017091726,
+        "mean": 0.5662064356053306,
+        "rmse": 6.986432341400858
+      },
+      "full": {
+        "count": 737280,
+        "max_abs": 116.08887017091726,
+        "mean": 0.13270463334499935,
+        "rmse": 3.382292013456302
+      },
+      "interior": {
+        "count": 564480,
+        "max_abs": 9.769962616701378e-15,
+        "mean": 1.2911392924752468e-17,
+        "rmse": 5.79142152447787e-16
+      }
+    },
+    "oracle_scale": {
+      "band": {
+        "count": 172800,
+        "max_abs": 24.43452915226673,
+        "mean": -0.38474158789227136,
+        "rmse": 2.477162767644836
+      },
+      "full": {
+        "count": 737280,
+        "max_abs": 24.44967943640316,
+        "mean": -0.1325760876586996,
+        "rmse": 2.014044927162792
+      },
+      "interior": {
+        "count": 564480,
+        "max_abs": 24.44967943640316,
+        "mean": -0.05538256717903476,
+        "rmse": 1.8492309230488442
+      }
+    }
+  },
+  "D2_expected_stage1_dph_from_err": {
+    "band": {
+      "count": 165120,
+      "max_abs": 898.7721222017075,
+      "mean": 6.57062039521821,
+      "rmse": 71.05149992159005
+    },
+    "full": {
+      "count": 704512,
+      "max_abs": 898.7721222017075,
+      "mean": 1.549860089401731,
+      "rmse": 34.42176661567318
+    },
+    "interior": {
+      "count": 539392,
+      "max_abs": 28.110987602009967,
+      "mean": 0.012892648845665645,
+      "rmse": 1.4720419511555742
+    }
+  },
+  "D2_rhs_ph_lane_err_prod": {
+    "err": {
+      "band": {
+        "count": 165120,
+        "max_abs": 13251580.93120197,
+        "mean": 101983.21217040981,
+        "rmse": 1093893.561283215
+      },
+      "full": {
+        "count": 704512,
+        "max_abs": 13251580.93120197,
+        "mean": 24028.813418533457,
+        "rmse": 529784.710323535
+      },
+      "interior": {
+        "count": 539392,
+        "max_abs": 295322.16316634393,
+        "mean": 165.22196387742974,
+        "rmse": 16873.396203615972
+      }
+    }
+  },
+  "D2_rhs_ph_operator_err_same_ww": {
+    "err": {
+      "band": {
+        "count": 165120,
+        "max_abs": 7622920.800210021,
+        "mean": 931.2565695890345,
+        "rmse": 311530.04228292324
+      },
+      "full": {
+        "count": 704512,
+        "max_abs": 7622920.800210021,
+        "mean": 344.7613245910826,
+        "rmse": 151539.772633332
+      },
+      "interior": {
+        "count": 539392,
+        "max_abs": 295322.16316634393,
+        "mean": 165.22196387742406,
+        "rmse": 16873.396203615972
+      }
+    },
+    "oracle_scale": {
+      "band": {
+        "count": 165120,
+        "max_abs": 4827883.215309668,
+        "mean": -40023.72322050036,
+        "rmse": 393218.9947877346
+      },
+      "full": {
+        "count": 704512,
+        "max_abs": 4827883.215309668,
+        "mean": -10737.220550134585,
+        "rmse": 190376.87728906752
+      },
+      "interior": {
+        "count": 539392,
+        "max_abs": 7595.183157877107,
+        "mean": -1771.964630634856,
+        "rmse": 2290.522074881726
+      }
+    }
+  },
+  "D2_top_face_err_excluded_from_above": {
+    "band": {
+      "count": 3840,
+      "max_abs": 76532.41073702645,
+      "mean": 3075.773073200341,
+      "rmse": 13687.72481714598
+    },
+    "full": {
+      "count": 16384,
+      "max_abs": 76532.41073702645,
+      "mean": 2240.9319058658443,
+      "rmse": 6876.95109095435
+    },
+    "interior": {
+      "count": 12544,
+      "max_abs": 4584.577079389432,
+      "mean": 1985.3682832124268,
+      "rmse": 2101.554544264875
+    }
+  },
+  "D3_rw_tend": {
+    "vert_cfl_gt1_cells": 0,
+    "wdamp_minus_pgbuoy": {
+      "band": {
+        "count": 172800,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "full": {
+        "count": 737280,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      },
+      "interior": {
+        "count": 564480,
+        "max_abs": 0.0,
+        "mean": 0.0,
+        "rmse": 0.0
+      }
+    }
+  },
+  "advective_order": 5,
+  "anchor": "WRF call 21601 == h36 wrfout (bit-identical state, prior native-face proof)",
+  "generated_utc": "2026-06-11T11:53:45.774045+00:00",
+  "hourly_gate": {
+    "collapse_vs_hypso": 0.039686077454039626,
+    "collapse_vs_old": 0.049304626905589566,
+    "cpu_budget": {
+      "dM_pa_per_cell_h": -69.33673469387755,
+      "net_influx_pa_per_cell_h": -74.51517857142858,
+      "residual_pa_per_cell_h": 5.178443877551032
+    },
+    "excess_outflux_pa_per_cell_h": {
+      "hypso_3d0b439c": -28.3281887755102,
+      "old_ec4d6769": -28.614795918367335,
+      "rejected_candidate_for_record": -28.81913265306123,
+      "rhsph_fix": -27.203954081632645,
+      "rhsph_wrapped_omega_for_record": -28.73227040816326
+    },
+    "h36_h38": {
+      "cpu": {
+        "dM_pa_per_cell_h": -135.6122448979592,
+        "net_influx_pa_per_cell_h": -71.26836734693877,
+        "residual_pa_per_cell_h": -64.34387755102041
+      },
+      "excess": -20.685459183673473,
+      "rhsph_fix": {
+        "dM_pa_per_cell_h": -241.53061224489795,
+        "net_influx_pa_per_cell_h": -91.95382653061225,
+        "residual_pa_per_cell_h": -149.5767857142857
+      }
+    },
+    "hypso_3d0b439c": {
+      "dM_pa_per_cell_h": -130.5408163265306,
+      "net_influx_pa_per_cell_h": -102.84336734693878,
+      "residual_pa_per_cell_h": -27.697448979591826
+    },
+    "metrics_h37": {
+      "available": true,
+      "mu": {
+        "bias": -43.67438507080078,
+        "finite": true,
+        "rmse": 55.24361038208008
+      },
+      "ph": {
+        "bias": 39.00823211669922,
+        "finite": true,
+        "rmse": 51.16469955444336
+      },
+      "psfc": {
+        "bias": -45.8251838684082,
+        "finite": true,
+        "rmse": 57.26518630981445
+      },
+      "t": {
+        "bias": 0.2162468433380127,
+        "finite": true,
+        "rmse": 0.6025874614715576
+      },
+      "u": {
+        "bias": 0.05647530034184456,
+        "finite": true,
+        "rmse": 0.8753131628036499
+      },
+      "v": {
+        "bias": 0.04546171799302101,
+        "finite": true,
+        "rmse": 0.6021219491958618
+      },
+      "valid_h": 37,
+      "w": {
+        "bias": 0.0021821167320013046,
+        "finite": true,
+        "rmse": 0.10717181116342545
+      }
+    },
+    "old_ec4d6769": {
+      "dM_pa_per_cell_h": -135.81632653061226,
+      "net_influx_pa_per_cell_h": -103.12997448979591,
+      "residual_pa_per_cell_h": -32.686352040816345
+    },
+    "rejected_candidate_for_record": {
+      "dM_pa_per_cell_h": -139.27551020408163,
+      "net_influx_pa_per_cell_h": -103.33431122448981,
+      "residual_pa_per_cell_h": -35.94119897959182
+    },
+    "residual_pa_per_cell_h": {
+      "hypso_3d0b439c": -27.697448979591826,
+      "old_ec4d6769": -32.686352040816345,
+      "rejected_candidate_for_record": -35.94119897959182,
+      "rhsph_fix": -21.882908163265313,
+      "rhsph_wrapped_omega_for_record": -35.48724489795919
+    },
+    "rhsph_fix": {
+      "dM_pa_per_cell_h": -123.60204081632654,
+      "net_influx_pa_per_cell_h": -101.71913265306122,
+      "residual_pa_per_cell_h": -21.882908163265313
+    },
+    "rhsph_wrapped_omega_for_record": {
+      "dM_pa_per_cell_h": -138.73469387755102,
+      "net_influx_pa_per_cell_h": -103.24744897959184,
+      "residual_pa_per_cell_h": -35.48724489795919
+    }
+  },
+  "measured_stage1_ph_incr_err_rmse_interior": 0.8758,
+  "port_validation_new_rhs_ph_real_case": {
+    "lid_interior_identical_to_open": 0.0,
+    "lid_top_face_all_zero": true,
+    "open_top_vs_oracle_all_faces": {
+      "band": {
+        "count": 172800,
+        "max_abs": 4.656612873077393e-10,
+        "mean": 6.448615818287772e-14,
+        "rmse": 2.0656650716395187e-11
+      },
+      "full": {
+        "count": 737280,
+        "max_abs": 6.984919309616089e-10,
+        "mean": 4.7748843122089357e-14,
+        "rmse": 2.3221255094414284e-11
+      },
+      "interior": {
+        "count": 564480,
+        "max_abs": 6.984919309616089e-10,
+        "mean": 4.262517524633782e-14,
+        "rmse": 2.3951502769070958e-11
+      }
+    },
+    "oracle_scale_all_faces": {
+      "band": {
+        "count": 172800,
+        "max_abs": 4827883.215309668,
+        "mean": -38313.2415901048,
+        "rmse": 384386.900050554
+      },
+      "full": {
+        "count": 737280,
+        "max_abs": 4827883.215309668,
+        "mean": -10309.809234703398,
+        "rmse": 186101.02244204082
+      },
+      "interior": {
+        "count": 564480,
+        "max_abs": 7595.183157877107,
+        "mean": -1737.329942233583,
+        "rmse": 2260.853627626822
+      }
+    }
+  },
+  "schema": "v014_switzerland_acoustic_continuation_terms",
+  "wrf_x_trims_note": "WRF order<=6 rhs_ph x-advection under specified BCs: interior 6th-order i in [ids+3, ide-4]; 2nd-order rows at ids+1 and ide-2; the 4th-order rows ids+2/ide-3 are gated on open_x* ONLY, so specified domains have NO x-advection on those two columns (module_big_step_utilities_em.F:1973-2021 open-only blocks vs 2022-2071 specified 2nd-order blocks)."
+}

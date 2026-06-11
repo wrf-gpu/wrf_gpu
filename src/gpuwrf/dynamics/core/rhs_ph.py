@@ -35,14 +35,31 @@ live on faces; ``u`` is x-staggered ``(nz, ny, nx+1)``, ``v`` y-staggered
 ``(nz, ny+1, nx)``.  WRF Fortran face index ``k`` runs ``1..kde`` (``kde=nz+1``);
 the Python ``k_face`` runs ``0..nz``.
 
-Idealized/periodic scope: unit map factors, ``phi_adv_z == 1`` (original
-vertical-advection option), ``non_hydrostatic == True``, and 2nd-order
-horizontal advection (``advective_order <= 2``;
-``module_big_step_utilities_em.F:1546-1612``).  Horizontal differences use
-periodic wrap to match the idealized doubly-periodic gate.  Map factors and
-the higher-order horizontal branches are deferred (they are unit / unused on
-this gate); the vertical (term 3) and buoyancy (term 4) terms — which close
-the w/phi restoring loop — are full-fidelity.
+Two horizontal-advection paths:
+
+* ``advective_order <= 2`` and ``not specified`` (the idealized/periodic gate
+  path, byte-for-byte unchanged): unit map factors, 2nd-order differences with
+  periodic wrap (``module_big_step_utilities_em.F:1546-1612``).
+* ``advective_order in (5, 6)`` with ``specified=True`` (v0.14 real-case fix,
+  the WRF ``advective_order <= 6`` branch ``:1768-2072``): map-factored
+  (``msfvy``/``msfux`` on the velocity pair, ``1/msfty`` overall) 6th-order
+  symmetric interior stencil with the WRF specified-boundary degradation
+  (2nd-order one row in; 4th-order two rows in for y; the x two-rows-in
+  4th-order blocks are gated ``open_x*`` ONLY in WRF, so specified domains
+  have NO x-advection on columns ``ids+2``/``ide-3`` — reproduced exactly),
+  plus the top-face row built from ``cfn/cfn1``-extrapolated winds (open-top
+  only; under ``top_lid`` the top face stays zero, matching the production
+  rigid-lid configuration where ``advance_w`` forces ``rhs(kde)=0``).
+
+v0.14 root-cause context (proofs/v014/switzerland_acoustic_continuation.json):
+in terrain-following coordinates the horizontal advection of phi along eta
+surfaces and the vertical omega/gw terms are individually ~65x larger than
+their sum (h36 Alps: each ~1.5e5, net ~2.3e3 coupled units).  The old
+2nd-order/unit-map horizontal operator differed from the WRF real-case one by
+~11% of the term — which, after the cancellation, made the NET ph_tend wrong
+by ~7.4x its own magnitude and seeded the Switzerland p/ph-first stage
+divergence.  The vertical terms and the stage omega are exact (term-level
+oracle parity at the bit-identical h36 state).
 """
 
 from __future__ import annotations
@@ -63,6 +80,94 @@ def _roll_y(field: jax.Array, shift: int) -> jax.Array:
     """Periodic roll along the y (middle) axis."""
 
     return jnp.roll(field, shift, axis=-2)
+
+
+def _horizontal_advection_specified_order6(
+    *,
+    u: jax.Array,
+    v: jax.Array,
+    ph_total: jax.Array,
+    muu: jax.Array,
+    muv: jax.Array,
+    c1f: jax.Array,
+    c2f: jax.Array,
+    rdx: float,
+    rdy: float,
+    msfux: jax.Array,
+    msfvy: jax.Array,
+    msfty: jax.Array,
+) -> jax.Array:
+    """WRF ``rhs_ph`` order<=6 horizontal phi advection, specified BCs.
+
+    Source: ``module_big_step_utilities_em.F:1768-2072``.  Returns the
+    horizontal-advection CONTRIBUTION (to be subtracted from ``ph_tend``) on
+    interior faces 1..nz-1, shape ``(nz-1, ny, nx)``.  The top-face row is
+    handled separately by the caller (open-top only).
+
+    Row/column structure under specified lateral BCs (0-based mass indices):
+
+    * y: 6th-order rows ``3..ny-4``; 4th-order rows ``2`` and ``ny-3``;
+      2nd-order rows ``1`` and ``ny-2``; rows ``0``/``ny-1`` untouched.
+    * x: 6th-order columns ``3..nx-4``; 2nd-order columns ``1`` and ``nx-2``;
+      columns ``0``/``nx-1`` untouched; columns ``2``/``nx-3`` get NO
+      x-advection (the WRF 4th-order x blocks are gated ``open_x*`` only).
+    """
+
+    nzp1 = int(ph_total.shape[0])
+    nz = nzp1 - 1
+    ny = int(ph_total.shape[1])
+    nx = int(ph_total.shape[2])
+    a = ph_total[1:nz]  # faces 1..nz-1, (nz-1, ny, nx)
+
+    c1f_int = c1f[1:nz, None, None]
+    c2f_int = c2f[1:nz, None, None]
+
+    # --- y (v) advection -------------------------------------------------
+    v_pair = v[1:nz, :, :] + v[0 : nz - 1, :, :]  # (nz-1, ny+1, nx)
+    flow_y = (c1f_int * muv[None, :, :] + c2f_int) * v_pair * msfvy[None, :, :]
+    flow_n = flow_y[:, 1:, :]  # north face of mass row j -> (nz-1, ny, nx)
+    flow_s = flow_y[:, :-1, :]
+
+    pad_y = jnp.pad(a, ((0, 0), (3, 3), (0, 0)))  # zero-pad; padded rows never selected
+    d1_y = pad_y[:, 4:-2, :] - pad_y[:, 2:-4, :]  # a[j+1]-a[j-1]
+    d2_y = pad_y[:, 5:-1, :] - pad_y[:, 1:-5, :]  # a[j+2]-a[j-2]
+    d3_y = pad_y[:, 6:, :] - pad_y[:, :-6, :]  # a[j+3]-a[j-3]
+    sten6_y = (45.0 * d1_y - 9.0 * d2_y + d3_y) / 60.0
+    sten4_y = (8.0 * d1_y - d2_y) / 12.0
+    dn_y = pad_y[:, 4:-2, :] - pad_y[:, 3:-3, :]  # a[j+1]-a[j]
+    ds_y = pad_y[:, 3:-3, :] - pad_y[:, 2:-4, :]  # a[j]-a[j-1]
+
+    jj = jnp.arange(ny)[None, :, None]
+    six_y = (jj >= 3) & (jj <= ny - 4)
+    four_y = (jj == 2) | (jj == ny - 3)
+    two_y = (jj == 1) | (jj == ny - 2)
+    adv_y = jnp.where(six_y, (flow_n + flow_s) * sten6_y, 0.0)
+    adv_y = adv_y + jnp.where(four_y, (flow_n + flow_s) * sten4_y, 0.0)
+    adv_y = adv_y + jnp.where(two_y, flow_n * dn_y + flow_s * ds_y, 0.0)
+
+    # --- x (u) advection -------------------------------------------------
+    u_pair = u[1:nz, :, :] + u[0 : nz - 1, :, :]  # (nz-1, ny, nx+1)
+    flow_x = (c1f_int * muu[None, :, :] + c2f_int) * u_pair * msfux[None, :, :]
+    flow_e = flow_x[:, :, 1:]  # east face of mass column i
+    flow_w = flow_x[:, :, :-1]
+
+    pad_x = jnp.pad(a, ((0, 0), (0, 0), (3, 3)))
+    d1_x = pad_x[:, :, 4:-2] - pad_x[:, :, 2:-4]
+    d2_x = pad_x[:, :, 5:-1] - pad_x[:, :, 1:-5]
+    d3_x = pad_x[:, :, 6:] - pad_x[:, :, :-6]
+    sten6_x = (45.0 * d1_x - 9.0 * d2_x + d3_x) / 60.0
+    de_x = pad_x[:, :, 4:-2] - pad_x[:, :, 3:-3]
+    dw_x = pad_x[:, :, 3:-3] - pad_x[:, :, 2:-4]
+
+    ii = jnp.arange(nx)[None, None, :]
+    six_x = (ii >= 3) & (ii <= nx - 4)
+    two_x = (ii == 1) | (ii == nx - 2)
+    # WRF quirk: columns 2 and nx-3 get NO x-advection under specified BCs.
+    adv_x = jnp.where(six_x, (flow_e + flow_w) * sten6_x, 0.0)
+    adv_x = adv_x + jnp.where(two_x, flow_e * de_x + flow_w * dw_x, 0.0)
+
+    msfty_b = msfty[None, :, :]
+    return 0.25 * float(rdy) / msfty_b * adv_y + 0.25 * float(rdx) / msfty_b * adv_x
 
 
 def rhs_ph_wrf(
@@ -87,6 +192,13 @@ def rhs_ph_wrf(
     non_hydrostatic: bool = True,
     gravity: float = GRAVITY_M_S2,
     include_vertical_gw: bool = True,
+    advective_order: int = 2,
+    specified: bool = False,
+    msfux: jax.Array | None = None,
+    msfvy: jax.Array | None = None,
+    cfn: float = 0.0,
+    cfn1: float = 0.0,
+    top_lid: bool = True,
 ) -> jax.Array:
     """Return the coupled large-step geopotential tendency ``ph_tend``.
 
@@ -138,9 +250,82 @@ def rhs_ph_wrf(
         # then the k=2..kte loop (kte=kde-1) does NOT touch face kde.  Net: gw on
         # faces 1..nz-1 (WRF k=2..kte), and face kde stays 0.
         ph_tend = ph_tend.at[1:nz, :, :].add(gw[1:nz, :, :])
-        ph_tend = ph_tend.at[nz, :, :].set(0.0)
+        # WRF zeroes ph_tend(kde) (:1527) and the k=2..kte gw loop (kte=kde)
+        # then ADDS gw at the top face -- so the open-top face carries gw(kde).
+        # Under the production rigid lid advance_w forces rhs(kde)=0, so the
+        # legacy zero is kept (and the idealized gates stay byte-identical).
+        if bool(top_lid):
+            ph_tend = ph_tend.at[nz, :, :].set(0.0)
+        else:
+            ph_tend = ph_tend.at[nz, :, :].set(gw[nz, :, :])
 
-    # ----- RHS terms 1 & 2: horizontal advection of phi (2nd order) -----
+    # ----- RHS terms 1 & 2: horizontal advection of phi -----
+    if int(advective_order) >= 4 and bool(specified):
+        # v0.14 real-case branch: WRF order<=6 with map factors and the
+        # specified-boundary degradation (see _horizontal_advection_specified_
+        # order6).  ``msfux``/``msfvy`` are required here.
+        if msfux is None or msfvy is None:
+            raise ValueError("rhs_ph_wrf advective_order>=4 requires msfux/msfvy map factors")
+        adv = _horizontal_advection_specified_order6(
+            u=u,
+            v=v,
+            ph_total=ph_total,
+            muu=muu,
+            muv=muv,
+            c1f=c1f,
+            c2f=c2f,
+            rdx=float(rdx),
+            rdy=float(rdy),
+            msfux=msfux,
+            msfvy=msfvy,
+            msfty=msfty,
+        )
+        ph_tend = ph_tend.at[1:nz, :, :].add(-adv)
+        if not bool(top_lid) and nz >= 3:
+            # Open-top WRF adds (a) the gw term at face kde (handled in the gw
+            # block via the same top_lid gate) and (b) the top-face advection
+            # row with cfn/cfn1-extrapolated winds and 0.5 weight
+            # (module_big_step_utilities_em.F top "k = kte" rows).  Under the
+            # production rigid lid this face is forced to zero by advance_w,
+            # so it is skipped to keep the lid behaviour unchanged.
+            a_top = ph_total[nz]
+            v_top = cfn * v[nz - 1] + cfn1 * v[nz - 2]  # (ny+1, nx)
+            flow_y = (c1f[nz] * muv + c2f[nz]) * v_top * msfvy
+            u_top = cfn * u[nz - 1] + cfn1 * u[nz - 2]  # (ny, nx+1)
+            flow_x = (c1f[nz] * muu + c2f[nz]) * u_top * msfux
+            pad_y = jnp.pad(a_top, ((3, 3), (0, 0)))
+            d1y = pad_y[4:-2, :] - pad_y[2:-4, :]
+            d2y = pad_y[5:-1, :] - pad_y[1:-5, :]
+            d3y = pad_y[6:, :] - pad_y[:-6, :]
+            sten6y = (45.0 * d1y - 9.0 * d2y + d3y) / 60.0
+            sten4y = (8.0 * d1y - d2y) / 12.0
+            dny = pad_y[4:-2, :] - pad_y[3:-3, :]
+            dsy = pad_y[3:-3, :] - pad_y[2:-4, :]
+            ny_i = int(a_top.shape[0])
+            nx_i = int(a_top.shape[1])
+            jj = jnp.arange(ny_i)[:, None]
+            adv_y = jnp.where((jj >= 3) & (jj <= ny_i - 4), (flow_y[1:, :] + flow_y[:-1, :]) * sten6y, 0.0)
+            adv_y = adv_y + jnp.where((jj == 2) | (jj == ny_i - 3), (flow_y[1:, :] + flow_y[:-1, :]) * sten4y, 0.0)
+            adv_y = adv_y + jnp.where(
+                (jj == 1) | (jj == ny_i - 2), flow_y[1:, :] * dny + flow_y[:-1, :] * dsy, 0.0
+            )
+            pad_x = jnp.pad(a_top, ((0, 0), (3, 3)))
+            d1x = pad_x[:, 4:-2] - pad_x[:, 2:-4]
+            d2x = pad_x[:, 5:-1] - pad_x[:, 1:-5]
+            d3x = pad_x[:, 6:] - pad_x[:, :-6]
+            sten6x = (45.0 * d1x - 9.0 * d2x + d3x) / 60.0
+            dex = pad_x[:, 4:-2] - pad_x[:, 3:-3]
+            dwx = pad_x[:, 3:-3] - pad_x[:, 2:-4]
+            ii = jnp.arange(nx_i)[None, :]
+            adv_x = jnp.where((ii >= 3) & (ii <= nx_i - 4), (flow_x[:, 1:] + flow_x[:, :-1]) * sten6x, 0.0)
+            adv_x = adv_x + jnp.where(
+                (ii == 1) | (ii == nx_i - 2), flow_x[:, 1:] * dex + flow_x[:, :-1] * dwx, 0.0
+            )
+            ph_tend = ph_tend.at[nz, :, :].add(
+                -(0.5 * float(rdy) / msfty) * adv_y - (0.5 * float(rdx) / msfty) * adv_x
+            )
+        return ph_tend
+
     # WRF :1558-1612 (advective_order <= 2), unit map factors, periodic.
     #   y (v) advection, interior k=2..kte-1 (faces 1..nz-1):
     #     ph_tend(i,k,j) -= 0.25*rdy/my * (
