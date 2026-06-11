@@ -34,12 +34,26 @@ R_V = 461.6
 # NEVER 1 + p608*qv: p608 = rvovrd-1 belongs to the virtual-temperature/
 # moist-density convention, not WRF's dry-alpha_d EOS (v0.14 h1 root cause).
 RVOVRD = R_V / R_D
-CP_D = 1004.0
+# WRF share/module_model_constants.F:20 ``cp = 7.*r_d/2.`` = 1004.5 EXACTLY.
+# v0.14 acoustic-substep root-cause (proofs/v014/switzerland_acoustic_substep_
+# blocker.json): the previous ``CP_D = 1004.0`` shifted CVPM by +1.42e-4 and
+# CPOVCV by +2.79e-4, putting EVERY dycore EOS evaluation (alt, the diagnostic
+# p inversion, c2a = cpovcv*(pb+p)/alt, the implicit-w coefficients) off WRF by
+# a one-signed ~1e-4*ln(p/p0) relative error: the recomputed ``alt`` deviated
+# from the WRF-carried ``grid%alt`` by mean -9.7e-4 / max 5.0e-3 m3/kg at a
+# bit-identical state (collapses to 2.8e-7 with the WRF value).
+CP_D = 7.0 * R_D / 2.0
 P0_PA = 100000.0
 CPOVCV = CP_D / (CP_D - R_D)
 CVPM = -(CP_D - R_D) / CP_D
 GAMMA_DRY_AIR = CP_D / (CP_D - R_D)
-GRAVITY_M_S2 = 9.80665
+# WRF share/module_model_constants.F:17 ``g = 9.81`` EXACTLY (not the SI
+# standard 9.80665).  The previous 9.80665 here made calc_coef_w build the
+# implicit-w solve coefficients with a different gravity than the advance_w
+# RHS terms (core/advance_w.py GRAVITY_M_S2 = 9.81), breaking the exact
+# implicit cancellation WRF has -- a one-signed 3.4e-4 inconsistency INSIDE
+# the same tridiagonal solve, every acoustic substep.
+GRAVITY_M_S2 = 9.81
 MIN_PRESSURE_PA = 1.0
 MIN_ALT = 1.0e-8
 CONVECTIVE_BUOYANCY_GAIN = 0.0

@@ -491,6 +491,11 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         # with it; the replay metrics carry the true wrfinput C3F/C4F/C3H/C4H/P_TOP.
         # v0.14 Switzerland h36 mass-venting root cause was the linear (1) form.
         hypsometric_opt=2,
+        # v0.14 acoustic continuation: the case's WRF &dynamics h_sca_adv_order
+        # (Registry default 5) drives rhs_ph's real-case horizontal phi
+        # advection; the legacy hardwired order-2/periodic operator broke the
+        # ~65:1 horizontal/vertical cancellation over steep terrain.
+        h_sca_adv_order=int(_domain_namelist_value(replay.run, "dynamics", "h_sca_adv_order", config.domain, 5)),
         radiation_static=radiation_static,
         topo_shading=topo_shading,
         slope_rad=slope_rad,
