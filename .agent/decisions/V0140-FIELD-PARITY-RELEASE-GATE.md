@@ -3,21 +3,23 @@
 Date: 2026-06-10 22:49 WEST
 Owner: manager
 
-Update 2026-06-10 22:49 WEST: the missing nested Noah-MP source wiring is fixed
-and pushed (`c2310c5b`), with CPU activation/carry proof
-`NOAHMP_NESTED_ACTIVATION_CPU_PROVEN`. The follow-up d01 LU16/sand nonfinite
-blocker is also closed: `22a2cc0c` fixes Noah-MP WATER 1-based soil/veg
-category indexing; `aff7d124`/`5a708074` record closure proof and GPU
-confirmation. GPU preflight
-`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
-is `rc=0`, `PASS_SHORT_GPU_PREFLIGHT` / `PIPELINE_GREEN`,
-all_domains_finite=true. The post-fix h1-h4 land gate is now accepted:
-`/mnt/data/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z`,
-`NOAHMP_NESTED_GPU_H4_ACCEPT`, peak GPU memory `20975 MiB`. The full Canary L2
-d02 72h GPU field-parity/stability run is in flight at
-`/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`
-with resource CSV logging, an h24 intermediate compare, and a full h72 compare
-scripted.
+Update 2026-06-11 13:45 WEST: the Canary L2 d02 72h GPU field gate is complete
+and accepted as bounded/proceed. Run root:
+`/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`;
+proof summary: `proofs/v014/canary_d02_72h_field_gate_summary.md`; GPU
+`rc=0`, compare `rc=0`, atlas `rc=0`, 72 paired hourly frames, peak total GPU
+memory `21108 MiB`, GPU forecast-only wall `8152.310 s`. Remaining Canary
+misses are bounded/static or saturating and are not the active v0.14 launch
+blocker.
+
+Switzerland/Gotthard remains the active field-gate blocker. CPU72 truth is
+complete. The first GPU72 exposed an LBC-clock bug, then a h36-h72 strong-flow
+dry-mass/PSFC residual. The LBC-clock, HPG `hypsometric_opt=2`, and real-case
+`rhs_ph` / edge-faithful stage-omega subfixes are merged and proof-backed, but
+the h36->h37 residual is still open (`-27.697 -> -21.883 Pa/cell/h`; excess
+outflux only `-28.328 -> -27.204 Pa/cell/h`). Current sprint:
+`.agent/sprints/2026-06-11-v014-fable-stage3-wrapper-cadence/`, dispatched to
+Fable xhigh in `tmux 0:7` after commit `049c416c`.
 
 ## Decision
 
@@ -140,11 +142,12 @@ only as secondary evidence.
 
 ## Current Launch State
 
-- Canary L2 d02 72h GPU: in flight at
+- Canary L2 d02 72h GPU: complete and accepted bounded/proceed at
   `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`.
-- H24 intermediate compare: armed; output targets
-  `canary_d02_h24_intermediate_grid_compare.{json,md}` in the run root.
-- H72 final compare: scripted to run after `gpu_72h.rc=0`; output targets
-  `canary_d02_h72_grid_compare.{json,md}` in the run root.
-- Switzerland/Gotthard 72h GPU: next GPU launch after Canary 72h releases the
-  lock and its first-pass result is green/bounded.
+  The h24 intermediate compare, h72 compare, atlas, and resource CSVs are
+  retained under the run root and summarized in
+  `proofs/v014/canary_d02_72h_field_gate_summary.md`.
+- Switzerland/Gotthard 72h GPU: do not launch yet. Close or formally bound the
+  h36 strong-flow short gate first; current narrowed Fable sprint is
+  stage-3/end-of-step wrapper cadence plus residual lateral-band amplifier.
+- TOST: optional secondary station sanity only, not a tag gate.
