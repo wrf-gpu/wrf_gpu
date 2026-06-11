@@ -34,12 +34,26 @@ R_V = 461.6
 # NEVER 1 + p608*qv: p608 = rvovrd-1 belongs to the virtual-temperature/
 # moist-density convention, not WRF's dry-alpha_d EOS (v0.14 h1 root cause).
 RVOVRD = R_V / R_D
-CP_D = 1004.0
+# WRF share/module_model_constants.F:20 ``cp = 7.*r_d/2.`` = 1004.5 EXACTLY.
+# v0.14 acoustic-substep root-cause (proofs/v014/switzerland_acoustic_substep_
+# blocker.json): the previous ``CP_D = 1004.0`` shifted CVPM by +1.42e-4 and
+# CPOVCV by +2.79e-4, putting EVERY dycore EOS evaluation (alt, the diagnostic
+# p inversion, c2a = cpovcv*(pb+p)/alt, the implicit-w coefficients) off WRF by
+# a one-signed ~1e-4*ln(p/p0) relative error: the recomputed ``alt`` deviated
+# from the WRF-carried ``grid%alt`` by mean -9.7e-4 / max 5.0e-3 m3/kg at a
+# bit-identical state (collapses to 2.8e-7 with the WRF value).
+CP_D = 7.0 * R_D / 2.0
 P0_PA = 100000.0
 CPOVCV = CP_D / (CP_D - R_D)
 CVPM = -(CP_D - R_D) / CP_D
 GAMMA_DRY_AIR = CP_D / (CP_D - R_D)
-GRAVITY_M_S2 = 9.80665
+# WRF share/module_model_constants.F:17 ``g = 9.81`` EXACTLY (not the SI
+# standard 9.80665).  The previous 9.80665 here made calc_coef_w build the
+# implicit-w solve coefficients with a different gravity than the advance_w
+# RHS terms (core/advance_w.py GRAVITY_M_S2 = 9.81), breaking the exact
+# implicit cancellation WRF has -- a one-signed 3.4e-4 inconsistency INSIDE
+# the same tridiagonal solve, every acoustic substep.
+GRAVITY_M_S2 = 9.81
 MIN_PRESSURE_PA = 1.0
 MIN_ALT = 1.0e-8
 CONVECTIVE_BUOYANCY_GAIN = 0.0
@@ -279,20 +293,37 @@ def moisture_coupling_factors(state: State) -> tuple[jax.Array, jax.Array]:
     return cqu, cqv
 
 
-@partial(jax.jit, static_argnames=())
+@partial(jax.jit, static_argnames=("hypsometric_opt",))
 def diagnose_pressure_al_alt(
     state: State,
     base_state: BaseState | None,
     metrics: DycoreMetrics,
+    *,
+    hypsometric_opt: int = 1,
 ) -> tuple[jax.Array, jax.Array, jax.Array]:
     """Computes substep-local pressure, ``al``, and ``alt``.
 
     With an explicit ``BaseState``, this follows WRF's non-hydrostatic
     ``calc_p_rho_phi`` pattern: ``al`` from geopotential/mass
-    (``module_big_step_utilities_em.F:1025-1030``), diagnostic pressure
+    (``module_big_step_utilities_em.F:1025-1062``), diagnostic pressure
     from the equation of state (``:1082-1087``), and ``alt = al + alb``
     (``:910-943``). Without a base state, the c2 architecture smoke tests
     use the already-consistent legacy pressure while still carrying ``alt``.
+
+    ``hypsometric_opt`` selects the WRF ``calc_p_rho_phi`` specific-volume
+    relation (Registry.EM_COMMON:2285, **WRF default 2**):
+
+    * ``1`` -- linear ``dp = mut*d(eta)`` form (``:1027-1030``).  This was the
+      ONLY form implemented before v0.14 and is kept as the function default so
+      idealized callers (whose generators carry placeholder ``c3f/c4f``) are
+      byte-unchanged.
+    * ``2`` -- LOG-pressure-thickness form ``al = dZ/(p*dLOG(p)) - alb``
+      (``:1043-1062``), the WRF v4 registry DEFAULT every real case runs with.
+      v0.14 root cause (proofs/v014/switzerland_hpg_native_face_fix.json): the
+      h36 Switzerland CPU live ``alt`` matches this form to fp32 roundoff
+      (~1.4e-6 rel) while the linear form is off one-signed by ~4.2e-4 mean /
+      6.2e-4 max rel, horizontally modulated by terrain ``muts`` -- a spurious
+      large-step PGF over the Alps (the d01 h36 mass-venting blocker).
     """
 
     if base_state is None:
@@ -334,10 +365,41 @@ def diagnose_pressure_al_alt(
     # p_perturbation -- the warm/cold thermal never developed a perturbation
     # pressure.  Restore it (F7F).
     ph_pert = state.ph_perturbation.astype(alb.dtype)
-    mu_term = alb * metrics.c1h[:, None, None] * state.mu_perturbation[None, :, :]
-    geo_term = metrics.rdnw[:, None, None] * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])
-    al = -(mu_term + geo_term) / safe_mass
-    alt = al + alb
+    if int(hypsometric_opt) == 2:
+        # WRF calc_p_rho_phi hypsometric_opt=2 (module_big_step_utilities_em.F:
+        # 1043-1062, the v4 Registry DEFAULT): the pressure depth dp = mut*d(eta)
+        # is replaced by p*dLOG(p) on the DRY reference column
+        #   pfu = c3f(k+1)*muts + c4f(k+1) + ptop   (upper face)
+        #   pfd = c3f(k  )*muts + c4f(k  ) + ptop   (lower face)
+        #   phm = c3h(k  )*muts + c4h(k  ) + ptop   (half level)
+        #   al  = (ph(k+1)-ph(k)+phb(k+1)-phb(k)) / phm / LOG(pfd/pfu) - alb
+        # CRITICAL (native-face proof, proofs/v014/switzerland_hpg_native_face_fix
+        # .json::wrf_faces): the subtracted ``alb`` must ALSO be the LOG-form base
+        # (real.exe integrates PHB from alb with the SAME relation under opt 2);
+        # subtracting the linear reconstruction leaves the one-signed hypso bias
+        # inside ``al`` and corrupts the dominant HPG ``pb*al`` face term.  With
+        # the log-base alb the live WRF ``al`` is reproduced to ~1.7e-6 rel.
+        p_top = jnp.reshape(metrics.p_top, ()).astype(alb.dtype)
+        muts_col = muts[None, :, :]
+        mub_col = base_state.mub[None, :, :]
+
+        def _log_alpha(dph: jax.Array, mass_col: jax.Array) -> jax.Array:
+            pfu = metrics.c3f[1:, None, None] * mass_col + metrics.c4f[1:, None, None] + p_top
+            pfd = metrics.c3f[:-1, None, None] * mass_col + metrics.c4f[:-1, None, None] + p_top
+            phm = metrics.c3h[:, None, None] * mass_col + metrics.c4h[:, None, None] + p_top
+            return dph / phm / jnp.log(pfd / pfu)
+
+        dph_tot = (base_state.phb[1:, :, :] + ph_pert[1:, :, :]) - (
+            base_state.phb[:-1, :, :] + ph_pert[:-1, :, :]
+        )
+        alb_used = _log_alpha(base_state.phb[1:, :, :] - base_state.phb[:-1, :, :], mub_col)
+        al = _log_alpha(dph_tot, muts_col) - alb_used
+    else:
+        mu_term = alb * metrics.c1h[:, None, None] * state.mu_perturbation[None, :, :]
+        geo_term = metrics.rdnw[:, None, None] * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])
+        al = -(mu_term + geo_term) / safe_mass
+        alb_used = alb
+    alt = al + alb_used
     # WRF diagnostic perturbation pressure (module_big_step_utilities_em.F:1083-1087)
     # uses the FULL theta (t0+theta') in the nonlinear EOS, not the base theta:
     #   p = p0*( Rd*(t0+theta')*qvf/(p0*(al+alb)) )^cpovcv - pb

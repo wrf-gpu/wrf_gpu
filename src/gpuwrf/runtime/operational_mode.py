@@ -105,6 +105,7 @@ from gpuwrf.dynamics.flux_advection import (
     advect_v_flux,
     advect_w_flux,
     couple_velocities_periodic,
+    stage_omega_specified,
 )
 from gpuwrf.dynamics.acoustic_wrf import (
     CPOVCV,
@@ -314,6 +315,22 @@ class OperationalNamelist:
     acoustic_substeps: int = 10
     rk_order: int = 3
     epssm: float = 0.1
+    # WRF calc_p_rho_phi specific-volume relation (Registry.EM_COMMON:2285;
+    # WRF registry default is 2 = LOG-pressure-thickness).  The dataclass default
+    # stays 1 (the legacy linear form) so idealized harnesses -- whose generators
+    # carry placeholder c3f/c4f hybrid coefficients (ic_generators/idealized.py)
+    # that make the LOG form singular -- remain byte-unchanged; the REAL replay /
+    # daily / nested pipelines pass 2 (their metrics carry the true wrfinput
+    # C3F/C4F/C3H/C4H/P_TOP).  v0.14 Switzerland h36 root cause: the linear form
+    # biases al/alt/p one-signed (~4.2e-4 rel mean) with terrain-modulated
+    # structure -> spurious large-step horizontal PGF -> d01 dry mass venting.
+    hypsometric_opt: int = 1
+    # v0.14 acoustic continuation: WRF &dynamics h_sca_adv_order (Registry
+    # default 5).  rhs_ph's horizontal phi advection uses this order; the
+    # real-case specified-boundary order<=6 branch is selected when >=4 AND the
+    # lateral BCs are specified/nested.  Default 2 keeps every idealized /
+    # periodic caller on the legacy byte-identical path.
+    h_sca_adv_order: int = 2
     top_lid: bool = False
     run_physics: bool = True
     run_boundary: bool = True
@@ -541,6 +558,8 @@ class OperationalNamelist:
         gwdo_statics: object = None,
         rad_rk_tendf: int = 0,
         acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,
+        hypsometric_opt: int = 1,
+        h_sca_adv_order: int = 2,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -593,6 +612,8 @@ class OperationalNamelist:
             gwdo_statics=gwdo_statics,
             rad_rk_tendf=rad_rk_tendf,
             acoustic_precision_mode=acoustic_precision_mode,
+            hypsometric_opt=hypsometric_opt,
+            h_sca_adv_order=h_sca_adv_order,
         )
 
     def tree_flatten(self):
@@ -658,6 +679,8 @@ class OperationalNamelist:
             int(self.ra_lw_physics),
             int(self.rad_rk_tendf),
             self.acoustic_precision_mode,
+            int(self.hypsometric_opt),
+            int(self.h_sca_adv_order),
         )
         return children, aux
 
@@ -718,6 +741,8 @@ class OperationalNamelist:
             ra_lw_physics,
             rad_rk_tendf,
             acoustic_precision_mode,
+            hypsometric_opt,
+            h_sca_adv_order,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -783,6 +808,8 @@ class OperationalNamelist:
             ra_lw_physics=ra_lw_physics,
             rad_rk_tendf=rad_rk_tendf,
             acoustic_precision_mode=acoustic_precision_mode,
+            hypsometric_opt=hypsometric_opt,
+            h_sca_adv_order=h_sca_adv_order,
         )
 
 
@@ -1298,7 +1325,7 @@ def _acoustic_core_state_from_prep(
         theta_base=jnp.full_like(state.theta, prep.theta_offset),
     )
     grid_p_full, _stage_al_full, _stage_alt_full = diagnose_pressure_al_alt(
-        state, stage_base, namelist.metrics
+        state, stage_base, namelist.metrics, hypsometric_opt=int(namelist.hypsometric_opt)
     )
     # MOIST-CQW (default ON, GPUWRF_MOIST_CQW=0 disables for bisection): WRF builds the large-step
     # vertical PGF/buoyancy with the full moist water-mass loading
@@ -1358,10 +1385,20 @@ def _acoustic_core_state_from_prep(
     # ``wwE = grid%ww`` and the STAGE geopotential perturbation ``ph``.  This is
     # the large-step (frozen-during-acoustic-loop) half of the geopotential
     # tendency; ``advance_w_wrf`` adds the small-step half (omega/ph_1 evolution).
+    # v0.14 acoustic continuation: WRF top-row extrapolation weights cfn/cfn1
+    # (used by the real-case rhs_ph top-face advection row when open-top).
+    _dn_top = namelist.metrics.dn[-1]
+    _dn_safe = jnp.where(jnp.abs(_dn_top) > 1.0e-30, _dn_top, jnp.asarray(1.0, dtype=_dn_top.dtype))
+    _cfn = (0.5 * namelist.metrics.dnw[-1] + namelist.metrics.dn[-1]) / _dn_safe
+    _cfn1 = -0.5 * namelist.metrics.dnw[-1] / _dn_safe
+    _periodic_x, _specified, _nested = _acoustic_lateral_bc_flags(namelist)
     ph_tend_stage = rhs_ph_wrf(
         u=state.u,
         v=state.v,
-        ww=carry.ww,
+        # v0.14: WRF rhs_ph consumes the FRESH rk_step_prep calc_ww_cp stage
+        # omega (grid%ww), not a carried post-acoustic omega; prep.ww_save now
+        # holds exactly that (see advance_stage).
+        ww=prep.ww_save,
         ph=state.ph_perturbation,
         phb=ph_base,
         w=state.w,
@@ -1378,6 +1415,17 @@ def _acoustic_core_state_from_prep(
         msfty=namelist.metrics.msfty,
         non_hydrostatic=True,
         gravity=GRAVITY_M_S2,
+        # v0.14 real-case horizontal phi advection (the Switzerland p/ph-first
+        # stage divergence root): WRF order<=6 with map factors + specified
+        # trims when the case's h_sca_adv_order >= 4 and lateral BCs are
+        # specified/nested; idealized callers (order 2 default) are unchanged.
+        advective_order=int(namelist.h_sca_adv_order),
+        specified=bool(_specified or _nested),
+        msfux=namelist.metrics.msfux,
+        msfvy=namelist.metrics.msfvy,
+        cfn=_cfn,
+        cfn1=_cfn1,
+        top_lid=bool(namelist.top_lid),
     )
 
     # WIND-FIX: stage-constant coupled WORK-array boundary targets for the NORMAL
@@ -1475,7 +1523,11 @@ def _acoustic_core_state_from_prep(
             ph_save_for_spec = prep.ph_save
 
     return AcousticCoreState(
-        ww=carry.ww,
+        # v0.14: the small-step omega work array starts from the FRESH stage
+        # diagnostic (WRF grid%ww at loop entry = rk_step_prep calc_ww_cp);
+        # advance_mu_t overwrites the interior faces each substep and the
+        # bottom/top faces stay zero, exactly as WRF.
+        ww=prep.ww_save,
         ww_1=prep.ww_save,
         u=prep.u_work,
         u_1=prep.u_save,
@@ -1614,7 +1666,9 @@ def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, n
         t0=jnp.asarray(prep.theta_offset),
         theta_base=jnp.full_like(next_state.theta, prep.theta_offset),
     )
-    p_pert, _al, _alt = diagnose_pressure_al_alt(next_state, base, namelist.metrics)
+    p_pert, _al, _alt = diagnose_pressure_al_alt(
+        next_state, base, namelist.metrics, hypsometric_opt=int(namelist.hypsometric_opt)
+    )
     p_base = next_state.p_total - next_state.p_perturbation
     p_total = p_base + p_pert
     return next_state.replace(
@@ -2087,6 +2141,7 @@ def _augment_large_step_tendencies(
         dy_m=dy,
         non_hydrostatic=True,
         top_lid=bool(namelist.top_lid),
+        hypsometric_opt=int(namelist.hypsometric_opt),
     )
     u_t = u_t + ru_pgf
     v_t = v_t + rv_pgf
@@ -2352,13 +2407,54 @@ def _rk_scan_step(
             else None
         )
         candidate = apply_halo(stage_carry.state, halo_spec(namelist.grid))
+        # v0.14 ACOUSTIC-SUBSTEP FIX (fresh stage omega): WRF rk_step_prep
+        # RE-DIAGNOSES ``grid%ww`` from the STAGE u/v/mu at EVERY RK stage entry
+        # (module_em.F:127-133 -> calc_ww_cp) -- it never carries the post-
+        # acoustic omega across stages.  That fresh diagnostic is what
+        # small_step_prep saves as ``ww_save`` (= advance_mu_t's ``ww_1``
+        # subtraction reference and the end-of-stage omega restore) and what
+        # rhs_ph consumes.  ``stage_velocities.rom`` IS that calc_ww_cp omega
+        # (flux_advection.couple_velocities_periodic builds it from the same
+        # stage-entry haloed state).  The previous code threaded the CARRIED
+        # ``carry.ww`` (previous stage's acoustic omega; zero on the first step
+        # of a re-init) -- a per-stage omega-semantics divergence in the
+        # geopotential RHS and the small-step omega reference.  Legacy callers
+        # without flux advection keep the carried omega unchanged.
+        # v0.14 continuation: ``rom`` from couple_velocities_periodic wraps the
+        # x/y edges periodically -- exact in the interior (oracle parity
+        # 5.8e-16) but up to ~5x the physical omega on the outermost
+        # row/column of a real specified domain (continuation proof D1: band
+        # rmse 6.99 / max 116 vs oracle 2.48 / 24).  Threading that wrapped
+        # omega into ww_save/rhs_ph poisoned the lateral band and REGRESSED
+        # the h36->h37 mass residual (-27.7 -> -35.5 Pa/cell/h).  For
+        # specified/nested real domains build the stage omega with the
+        # edge-faithful calc_ww_cp port instead.
+        _per_x, _spec, _nest = _acoustic_lateral_bc_flags(namelist)
+        if stage_velocities is not None and (_spec or _nest):
+            ww_stage = stage_omega_specified(
+                haloed.u,
+                haloed.v,
+                haloed.mu_total,
+                c1h=namelist.metrics.c1h,
+                c2h=namelist.metrics.c2h,
+                dnw=namelist.metrics.dnw,
+                rdx=1.0 / float(namelist.grid.projection.dx_m),
+                rdy=1.0 / float(namelist.grid.projection.dy_m),
+                msfuy=namelist.metrics.msfuy,
+                msfvx=namelist.metrics.msfvx,
+                msftx=namelist.metrics.msftx,
+            )
+        elif stage_velocities is not None:
+            ww_stage = stage_velocities.rom
+        else:
+            ww_stage = stage_carry.ww
         prep = small_step_prep_wrf(
             candidate,
             int(stage.rk_step),
             float(stage.dt_rk),
             metrics=namelist.metrics,
             reference_state=rk1_reference,
-            ww=stage_carry.ww,
+            ww=ww_stage,
         )
         pressure = calc_p_rho_wrf(prep, step=0, non_hydrostatic=True)
         acoustic_result = _acoustic_scan(

@@ -125,7 +125,7 @@ class DryPhysicsTendencies:
 
 
 def _absolute_diagnostics(
-    state: State, metrics: DycoreMetrics, *, t0: float = 300.0
+    state: State, metrics: DycoreMetrics, *, t0: float = 300.0, hypsometric_opt: int = 1
 ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
     """Return WRF ``rk_step_prep`` diagnostics ``(ph', p', al', alt, php)``.
 
@@ -180,11 +180,37 @@ def _absolute_diagnostics(
     mass_base = c1h * mub[None, :, :] + c2h
     safe_base = jnp.where(jnp.abs(mass_base) > 1.0e-12, mass_base, jnp.asarray(1.0e-12, dtype=mass_base.dtype))
     alb = -rdnw * (phb[1:, :, :] - phb[:-1, :, :]) / safe_base
-    muts = mu_total + mu_pert  # grid%muts = grid%mut + grid%mu_2
-    mass_t = c1h * muts[None, :, :] + c2h
-    safe_t = jnp.where(jnp.abs(mass_t) > 1.0e-12, mass_t, jnp.asarray(1.0e-12, dtype=mass_t.dtype))
-    mu_term = c1h * mu_pert[None, :, :]
-    al = -(alb * mu_term + rdnw * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])) / safe_t
+    if int(hypsometric_opt) == 2:
+        # WRF calc_p_rho_phi hypsometric_opt=2 (module_big_step_utilities_em.F:
+        # 1043-1062, the v4 Registry DEFAULT used by every real case):
+        #   pfu = c3f(k+1)*muts + c4f(k+1) + ptop ; pfd = c3f(k)*muts + c4f(k) + ptop
+        #   phm = c3h(k)*muts + c4h(k) + ptop
+        #   al  = (d ph_total) / phm / LOG(pfd/pfu) - alb,   muts = MUB + MU (dry)
+        # The subtracted base ``alb`` must ALSO be the LOG form (real.exe
+        # integrates PHB from alb with the same relation under opt 2): the
+        # native-face proof shows the live WRF ``al`` equals
+        # LOG(total) - LOG(base) to ~1.7e-6 rel, while subtracting the linear
+        # alb leaves the one-signed hypso bias inside ``al`` and corrupts the
+        # dominant ``pb*al`` HPG face term over terrain.
+        muts = state.mu_total.astype(jnp.float64)  # WRF grid%muts = mut + mu_2 (dry total)
+        p_top = jnp.reshape(metrics.p_top, ()).astype(jnp.float64)
+
+        def _log_alpha(dph: jax.Array, mass_col: jax.Array) -> jax.Array:
+            pfu = metrics.c3f[1:, None, None] * mass_col + metrics.c4f[1:, None, None] + p_top
+            pfd = metrics.c3f[:-1, None, None] * mass_col + metrics.c4f[:-1, None, None] + p_top
+            phm = metrics.c3h[:, None, None] * mass_col + metrics.c4h[:, None, None] + p_top
+            return dph / phm / jnp.log(pfd / pfu)
+
+        dph_tot = (phb[1:, :, :] + ph_pert[1:, :, :]) - (phb[:-1, :, :] + ph_pert[:-1, :, :])
+        al = _log_alpha(dph_tot, muts[None, :, :]) - _log_alpha(
+            phb[1:, :, :] - phb[:-1, :, :], mub[None, :, :]
+        )
+    else:
+        muts = mu_total + mu_pert  # legacy: grid%muts read as State.mu_total + mu'
+        mass_t = c1h * muts[None, :, :] + c2h
+        safe_t = jnp.where(jnp.abs(mass_t) > 1.0e-12, mass_t, jnp.asarray(1.0e-12, dtype=mass_t.dtype))
+        mu_term = c1h * mu_pert[None, :, :]
+        al = -(alb * mu_term + rdnw * (ph_pert[1:, :, :] - ph_pert[:-1, :, :])) / safe_t
     ph_total = phb + ph_pert
     php = 0.5 * (ph_total[:-1, :, :] + ph_total[1:, :, :])
     return ph_pert, p_pert, al, alt, php
@@ -198,6 +224,7 @@ def large_step_horizontal_pgf(
     dy_m: float,
     non_hydrostatic: bool = True,
     top_lid: bool = False,
+    hypsometric_opt: int = 1,
 ) -> tuple[jax.Array, jax.Array]:
     """Return the WRF large-step *coupled* horizontal PGF for ``ru/rv_tend``.
 
@@ -220,7 +247,7 @@ def large_step_horizontal_pgf(
     singleton y axis, so the v-PGF is structurally zero there.
     """
 
-    ph, p_abs, al, alt, php = _absolute_diagnostics(state, metrics)
+    ph, p_abs, al, alt, php = _absolute_diagnostics(state, metrics, hypsometric_opt=hypsometric_opt)
     pb = (state.p_total - state.p_perturbation).astype(jnp.float64)
     mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
     mu_pert = state.mu_perturbation.astype(jnp.float64)
