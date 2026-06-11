@@ -3,6 +3,20 @@
 Date: 2026-06-11 05:05 WEST
 Owner: manager
 
+Update 2026-06-11 16:08 WEST: v0.14 release remains blocked by the
+Switzerland/Gotthard h36 strong-flow dry-dynamics residual, but the boundary is
+now tighter. Committed/pushed proof checkpoint `8a630f46` shows the first
+remaining `p/ph` error is created inside the single RK1 acoustic substep
+`21601 -> 21602`; the GPU-backed surface-`w` discriminator rejects the known
+decoupled-vs-WRF-coupled lower-boundary wind-feed deviation as the first
+creator (`0.0` improvement fraction). Current active sprint is
+`.agent/sprints/2026-06-11-v014-gpt-advance-w-term-split/`, running GPT-5.5
+xhigh in tmux `0:5` on branch `worker/gpt/v014-advance-w-term-split`. Endpoint:
+fix the local WRF-faithful defect if provable, otherwise isolate the exact
+post-`advance_mu_t` or intra-`advance_w_wrf()` term boundary. Do not launch
+Switzerland 72h, TOST, FP32 implementation, or the Fable/GPT performance audits
+until this short-gate blocker is fixed or explicitly bounded.
+
 Update 2026-06-11 05:05 WEST: Canary L2 d02 72h is no longer in flight; it is
 accepted as `PROCEED_BOUNDED_WITH_FOLLOWUP` in
 `proofs/v014/canary_d02_72h_field_gate_summary.md`. Run root:
