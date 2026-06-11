@@ -8,6 +8,7 @@ snapshots/sanitizers out of the compiled path.
 from __future__ import annotations
 
 import os
+import dataclasses
 from dataclasses import dataclass
 from functools import partial
 from typing import NamedTuple
@@ -34,6 +35,10 @@ from gpuwrf.coupling.boundary_apply import (
     normal_bdy_work_target_v,
     nested_ph_relax_tendency,
     nested_w_relax_tendency,
+    specified_relax_dry_tendencies,
+    SpecifiedRelaxTendencies,
+    tangential_bdy_work_target_u,
+    tangential_bdy_work_target_v,
     _full_ring_target_from_leaf,
 )
 from gpuwrf.coupling.physics_couplers import (
@@ -106,6 +111,7 @@ from gpuwrf.dynamics.flux_advection import (
     advect_w_flux,
     couple_velocities_periodic,
     stage_omega_specified,
+    couple_uv_specified,
 )
 from gpuwrf.dynamics.acoustic_wrf import (
     CPOVCV,
@@ -331,6 +337,23 @@ class OperationalNamelist:
     # lateral BCs are specified/nested.  Default 2 keeps every idealized /
     # periodic caller on the legacy byte-identical path.
     h_sca_adv_order: int = 2
+    # v0.14 stage3/wrapper-cadence sprint: WRF SPECIFIED-domain lateral-boundary
+    # cadence.  ON: per-stage relax_bdy_dry tendencies (u/v/t/ph all stages, mu
+    # at rk_step==1 -- the WRF quirk) flow through the acoustic loop, the
+    # spec-zone (ring-0) mass/theta/ph/tangential-wind work arrays are pinned to
+    # the wrfbdy trajectory every substep (WRF spec_bdyupdate/_ph), w gets the
+    # specified zero_grad_bdy ring copy, and the end-of-step lateral pass keeps
+    # only the ring-0 spec re-sync + full moisture (no relax-zone value nudge,
+    # no p'/pb forcing -- WRF has neither).  OFF (default): byte-identical to
+    # the previous once-per-step end-of-step nudge on every path.
+    specified_bdy_cadence: bool = False
+    # v0.14 stage3/wrapper-cadence sprint, candidate A: WRF SPECIFIED-boundary
+    # advection-order degradation (module_advect_em degrade_* blocks) for the
+    # flux-form theta/moisture/u/v/w operators.  The periodic implementation
+    # wraps every horizontal stencil; on a real specified domain rings 0-2
+    # advect with opposite-edge values (ring-1 mu increment err 11.7 Pa/stage
+    # vs WRF 0.94, immune to the boundary cadence).  Default OFF.
+    specified_adv_degrade: bool = False
     top_lid: bool = False
     run_physics: bool = True
     run_boundary: bool = True
@@ -560,6 +583,8 @@ class OperationalNamelist:
         acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,
         hypsometric_opt: int = 1,
         h_sca_adv_order: int = 2,
+        specified_bdy_cadence: bool = False,
+        specified_adv_degrade: bool = False,
     ) -> "OperationalNamelist":
         """Build a namelist using resident zero tendencies and flat metrics."""
 
@@ -614,6 +639,8 @@ class OperationalNamelist:
             acoustic_precision_mode=acoustic_precision_mode,
             hypsometric_opt=hypsometric_opt,
             h_sca_adv_order=h_sca_adv_order,
+            specified_bdy_cadence=specified_bdy_cadence,
+            specified_adv_degrade=specified_adv_degrade,
         )
 
     def tree_flatten(self):
@@ -681,6 +708,8 @@ class OperationalNamelist:
             self.acoustic_precision_mode,
             int(self.hypsometric_opt),
             int(self.h_sca_adv_order),
+            bool(self.specified_bdy_cadence),
+            bool(self.specified_adv_degrade),
         )
         return children, aux
 
@@ -743,6 +772,8 @@ class OperationalNamelist:
             acoustic_precision_mode,
             hypsometric_opt,
             h_sca_adv_order,
+            specified_bdy_cadence,
+            specified_adv_degrade,
         ) = aux
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
@@ -810,6 +841,8 @@ class OperationalNamelist:
             acoustic_precision_mode=acoustic_precision_mode,
             hypsometric_opt=hypsometric_opt,
             h_sca_adv_order=h_sca_adv_order,
+            specified_bdy_cadence=specified_bdy_cadence,
+            specified_adv_degrade=specified_adv_degrade,
         )
 
 
@@ -1287,6 +1320,7 @@ def _acoustic_core_state_from_prep(
     tendencies: Tendencies,
     *,
     lead_seconds=None,
+    bdy_relax: SpecifiedRelaxTendencies | None = None,
 ) -> AcousticCoreState:
     """Build the acoustic work-state directly from WRF ``small_step_prep``."""
 
@@ -1522,6 +1556,79 @@ def _acoustic_core_state_from_prep(
             )
             ph_save_for_spec = prep.ph_save
 
+    # v0.14 SPECIFIED-domain WRF boundary cadence (stage3/wrapper sprint).
+    # Root evidence (proofs/v014/switzerland_stage3_wrapper_cadence.json): with
+    # the once-per-step end-of-step nudge, the spec-zone ph drifted 126-276
+    # m2/s2 within ONE step (ring-0 p err ~200 Pa; WRF per-stage band increment
+    # 0.53) because the JAX small step advances the ring with full dynamics
+    # while WRF excludes it and walks it along the wrfbdy trajectory
+    # (spec_bdyupdate/_ph, zero_grad_bdy w) every substep, with relax_bdy_dry
+    # tendencies owning rings 1..relax_zone-1 per stage.
+    mu_spec_target = None
+    muts_spec_target = None
+    muave_spec_target = None
+    theta_spec_target = None
+    u_spec_tan_target = None
+    v_spec_tan_target = None
+    _spec_cadence = lead_seconds is not None and _specified_bdy_cadence_active(namelist)
+    if _spec_cadence:
+        cfg_b = namelist.boundary_config
+        cadence = float(cfg_b.update_cadence_s)
+        dtype_s = state.ph_perturbation.dtype
+        nz_m = int(state.theta.shape[0])
+        ny_m = int(state.theta.shape[1])
+        nx_m = int(state.theta.shape[2])
+        # (a) relax-zone ph tendency (relax_bdy_dry 'h' from the step-start
+        # reference, step-constant) -> flows through advance_w every substep.
+        if bdy_relax is not None:
+            ph_tend_stage = ph_tend_stage + bdy_relax.ph
+        # (b) spec-zone ring-0 targets at the STAGE-END lead: WRF's ring lands
+        # on the linear wrfbdy trajectory at the end of each RK stage (the
+        # within-stage linearisation difference is <= dt_stage/cadence of the
+        # interval increment).
+        lead_stage = lead_seconds + float(prep.dt_rk)
+        ph_strip_stage = interpolate_boundary_leaf(state.ph_bdy, lead_stage, cadence)
+        ph_bdy_target_full = _full_ring_target_from_leaf(
+            ph_strip_stage,
+            int(state.ph_perturbation.shape[0]),
+            ny_m,
+            nx_m,
+            dtype_s,
+        )
+        ph_save_for_spec = prep.ph_save
+        mu_strip = interpolate_boundary_leaf(state.mu_bdy, lead_stage, cadence)
+        mu_pin = _full_ring_target_from_leaf(mu_strip, 1, ny_m, nx_m, dtype_s)[0]
+        muts_pin = prep.mub + mu_pin
+        th_strip = interpolate_boundary_leaf(state.theta_bdy, lead_stage, cadence)
+        th_pin = _full_ring_target_from_leaf(th_strip, nz_m, ny_m, nx_m, dtype_s)
+        _c1h = namelist.metrics.c1h[:, None, None]
+        _c2h = namelist.metrics.c2h[:, None, None]
+        mass_pin = _c1h * muts_pin[None, :, :] + _c2h
+        mass_cur = _c1h * prep.mut[None, :, :] + _c2h
+        mu_spec_target = mu_pin
+        muts_spec_target = muts_pin
+        muave_spec_target = muts_pin - prep.mut
+        # coupled work-theta pin: small_step_finish reconstructs
+        # theta' = (work + t_save*mass_cur)/mass_stage -> theta'_leaf when the
+        # ring muts is pinned to muts_pin.
+        theta_spec_target = mass_pin * (th_pin - prep.theta_offset) - mass_cur * prep.t_save
+        # (c) TANGENTIAL ring-0 wind work pins (u S/N rows, v W/E columns) --
+        # the WIND-FIX normal targets only cover the normal faces.
+        _c1h3 = namelist.metrics.c1h[:, None, None]
+        _c2h3 = namelist.metrics.c2h[:, None, None]
+        mass_u_cur_t = _c1h3 * prep.muu[None, :, :] + _c2h3
+        mass_u_stage_t = _c1h3 * prep.muus[None, :, :] + _c2h3
+        mass_v_cur_t = _c1h3 * prep.muv[None, :, :] + _c2h3
+        mass_v_stage_t = _c1h3 * prep.muvs[None, :, :] + _c2h3
+        u_strip_stage = interpolate_boundary_leaf(state.u_bdy, lead_stage, cadence)
+        v_strip_stage = interpolate_boundary_leaf(state.v_bdy, lead_stage, cadence)
+        u_spec_tan_target = tangential_bdy_work_target_u(
+            u_strip_stage, prep.u_save, mass_u_cur_t, mass_u_stage_t, namelist.metrics.msfuy, config=cfg_b
+        )
+        v_spec_tan_target = tangential_bdy_work_target_v(
+            v_strip_stage, prep.v_save, mass_v_cur_t, mass_v_stage_t, namelist.metrics.msfvx, config=cfg_b
+        )
+
     return AcousticCoreState(
         # v0.14: the small-step omega work array starts from the FRESH stage
         # diagnostic (WRF grid%ww at loop entry = rk_step_prep calc_ww_cp);
@@ -1628,9 +1735,18 @@ def _acoustic_core_state_from_prep(
         u_work_bdy=u_work_bdy,
         v_work_bdy=v_work_bdy,
         # P0-6: NESTED ph' spec-zone in-loop target + stage-entry ph_save (None
-        # unless the nested force_geopotential=False boundary is active).
+        # unless the nested force_geopotential=False boundary is active); the
+        # v0.14 SPECIFIED cadence reuses the same in-loop spec_bdyupdate_ph slot
+        # with the stage-end-interpolated wrfbdy leaf.
         ph_bdy_target=ph_bdy_target_full,
         ph_save_for_spec=ph_save_for_spec,
+        # v0.14 SPECIFIED cadence ring-0 work pins (None on every other path).
+        mu_spec_target=mu_spec_target,
+        muts_spec_target=muts_spec_target,
+        muave_spec_target=muave_spec_target,
+        theta_spec_target=theta_spec_target,
+        u_spec_tan_target=u_spec_tan_target,
+        v_spec_tan_target=v_spec_tan_target,
         # SPLIT-EXPLICIT FIX (v0.4.0 r5): WRF ``php`` is built ONCE per RK stage in
         # rk_step_prep (calc_php) and held STAGE-CONSTANT through the acoustic loop;
         # thread the frozen stage array so advance_uv's 4th PGF term does NOT
@@ -1760,9 +1876,11 @@ def _acoustic_scan(
     tendencies: Tendencies,
     lead_seconds=None,
     capture_pre_halo: bool = False,
+    bdy_relax: SpecifiedRelaxTendencies | None = None,
 ) -> OperationalCarry | _PreHaloCaptureResult:
     acoustic = _acoustic_core_state_from_prep(
-        carry, prep, pressure, namelist, tendencies, lead_seconds=lead_seconds
+        carry, prep, pressure, namelist, tendencies, lead_seconds=lead_seconds,
+        bdy_relax=bdy_relax,
     )
     if bool(namelist.use_vertical_solver):
         # WRF calc_coef_w uses the FULL dry mass ``mut`` (solve_em.F:2676-2681),
@@ -1807,6 +1925,11 @@ def _acoustic_scan(
             periodic_x=periodic_x,
             specified=specified,
             nested=nested,
+            # v0.14 SPECIFIED cadence: WRF zero_grad_bdy on the spec-zone w
+            # work array after advance_w (specified domains only).
+            spec_w_zero_grad=bool(
+                lead_seconds is not None and _specified_bdy_cadence_active(namelist)
+            ),
         )
 
         # v0.10.0 Wave-A (Opus#1 unroll):
@@ -1865,7 +1988,7 @@ def _stage_transport_velocities(
 
     metrics = namelist.metrics
     grid = namelist.grid
-    return couple_velocities_periodic(
+    vel = couple_velocities_periodic(
         haloed.u,
         haloed.v,
         haloed.mu_total,
@@ -1880,6 +2003,77 @@ def _stage_transport_velocities(
         msfux=metrics.msfux,
         msfvy=metrics.msfvy,
     )
+    # v0.14 SPECIFIED-boundary advection degradation: stage the static switch +
+    # the edge-faithful FULL-FACE coupled velocities so every flux-form operator
+    # (theta/moisture scalar, u, v, w) runs the WRF degraded-tier boundary
+    # branch.  Every other path keeps the periodic vel untouched.
+    if _specified_adv_degrade_active(namelist):
+        ru_full, rv_full = couple_uv_specified(
+            haloed.u,
+            haloed.v,
+            haloed.mu_total,
+            c1h=metrics.c1h,
+            c2h=metrics.c2h,
+            msfuy=metrics.msfuy,
+            msfvx=metrics.msfvx,
+        )
+        vel = dataclasses.replace(vel, specified=True, ru_full=ru_full, rv_full=rv_full)
+    return vel
+
+
+def _specified_bdy_cadence_active(namelist: OperationalNamelist) -> bool:
+    """Static gate for the v0.14 SPECIFIED-domain WRF boundary cadence.
+
+    Active only when the namelist flag is on, a real lateral boundary runs, the
+    domain is specified (not the nested force_geopotential=False child), so
+    idealized / periodic / nested-replay paths stay byte-identical.
+    """
+
+    if not bool(getattr(namelist, "specified_bdy_cadence", False)):
+        return False
+    if not bool(namelist.run_boundary):
+        return False
+    _per_x, _spec, _nest = _acoustic_lateral_bc_flags(namelist)
+    return bool(_spec) and bool(namelist.boundary_config.force_geopotential)
+
+
+def _specified_adv_degrade_active(namelist: OperationalNamelist) -> bool:
+    """Static gate for the v0.14 SPECIFIED-boundary advection degradation.
+
+    Same domain conditions as the boundary cadence (real specified lateral
+    boundary, not the nested force_geopotential=False child), own flag so the
+    two mechanisms remain A/B-attributable at the venting gate.
+    """
+
+    if not bool(getattr(namelist, "specified_adv_degrade", False)):
+        return False
+    if not bool(namelist.run_boundary):
+        return False
+    _per_x, _spec, _nest = _acoustic_lateral_bc_flags(namelist)
+    return bool(_spec) and bool(namelist.boundary_config.force_geopotential)
+
+
+def _specified_bdy_relax(
+    reference: State,
+    namelist: OperationalNamelist,
+    lead_seconds,
+) -> SpecifiedRelaxTendencies | None:
+    """Step-constant WRF ``relax_bdy_dry`` bundle (None unless the cadence is on).
+
+    Computed from the rk1 reference (= the step-start state, exactly the fields
+    WRF's rk_step==1 ``relax_bdy_dry`` reads) at the step-start lead; the values
+    are therefore identical at every RK stage, matching the WRF tendf fold.
+    """
+
+    if lead_seconds is None or not _specified_bdy_cadence_active(namelist):
+        return None
+    return specified_relax_dry_tendencies(
+        reference,
+        lead_seconds,
+        namelist.metrics,
+        float(namelist.dt_s),
+        namelist.boundary_config,
+    )
 
 
 def _augment_large_step_tendencies(
@@ -1891,6 +2085,7 @@ def _augment_large_step_tendencies(
     physics_tendencies: DryPhysicsTendencies | None = None,
     step_origin: State | None = None,
     transport_velocities: CoupledVelocities | None = None,
+    bdy_relax: SpecifiedRelaxTendencies | None = None,
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -2169,13 +2364,31 @@ def _augment_large_step_tendencies(
     # WRF rk_addtend_dry per-stage merge (module_em.F:1711-1786): field-specific
     # map/mass coupling of RK1-fixed non-timesplit physics tendencies.  Physics-off
     # and dry idealized gates pass an empty bundle, so this remains identity there.
-    return rk_addtend_dry(
+    merged = rk_addtend_dry(
         tendencies,
         DryPhysicsTendencies() if physics_tendencies is None else physics_tendencies,
         rk_step=int(rk_step),
         metrics=metrics,
         mut=_base_mu(haloed),
     )
+    # v0.14 SPECIFIED WRF boundary cadence: relax_bdy_dry tendencies.  WRF folds
+    # the coupled u/v/t relax into the step-constant *_tendf lane at rk_step==1
+    # (solve_em.F:938-965 -> rk_addtend_dry :1735/:1746/:1770), so the NET
+    # per-stage contribution is the coupled relax itself at EVERY stage (the
+    # msf couple/uncouple pair cancels); the mu relax went straight into the
+    # stage-1 mu_tend and rk_tendency re-zeroes mu_tend at stages 2-3, so it is
+    # genuinely stage-1-only (quirk preserved).  The ph half of the bundle is
+    # consumed by ph_tend_stage in _acoustic_core_state_from_prep (the
+    # operational ph tendency lane is rhs_ph, not tendencies.ph).
+    if bdy_relax is not None:
+        mu_aug = merged.mu + bdy_relax.mu if int(rk_step) == 1 else merged.mu
+        merged = merged.replace(
+            u=merged.u + bdy_relax.ru,
+            v=merged.v + bdy_relax.rv,
+            theta=merged.theta + bdy_relax.t,
+            mu=mu_aug,
+        )
+    return merged
 
 
 # WRF advects every moisture species (vapour + condensates) in the RK3 large
@@ -2374,6 +2587,10 @@ def _rk_scan_step(
             if bool(namelist.use_flux_advection)
             else None
         )
+        # v0.14 SPECIFIED WRF boundary cadence: the step-constant relax_bdy_dry
+        # bundle from the rk1 reference (identical values at every stage; WRF
+        # computes it once at rk_step==1 and folds it into the *_tendf lane).
+        bdy_relax = _specified_bdy_relax(rk1_reference, namelist, lead_seconds)
         tendencies = _augment_large_step_tendencies(
             haloed,
             tendencies,
@@ -2382,6 +2599,7 @@ def _rk_scan_step(
             physics_tendencies=physics_tendencies,
             step_origin=rk1_reference,
             transport_velocities=stage_velocities,
+            bdy_relax=bdy_relax,
         )
         # WRF advances moisture in the LARGE step (NOT the acoustic substeps):
         # build the coupled moisture tendency d(mu*q)/dt for THIS stage from the
@@ -2466,6 +2684,7 @@ def _rk_scan_step(
             tendencies=tendencies,
             lead_seconds=lead_seconds,
             capture_pre_halo=capture_stage_pre_halo,
+            bdy_relax=bdy_relax,
         )
         captured_pre_halo_state = None
         if capture_stage_pre_halo:
@@ -3424,8 +3643,13 @@ def _physics_boundary_step_with_limiter_diagnostics(
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
         )
     if bool(namelist.run_boundary):
+        # v0.14 SPECIFIED WRF cadence: the in-loop spec pins + per-stage relax
+        # tendencies own the dry boundary band; the end-of-step pass keeps only
+        # the ring-0 spec re-sync + full moisture handling (WRF has no
+        # end-of-step dry relax write and never forces p'/pb).
         bounded = apply_lateral_boundaries(
-            next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics
+            next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics,
+            dry_spec_only=_specified_bdy_cadence_active(namelist),
         )
         if bool(namelist.disable_guards):
             next_state = bounded

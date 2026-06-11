@@ -49,6 +49,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+import jax
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
@@ -145,12 +146,30 @@ class BoundaryConfig:
 DEFAULT_BOUNDARY_CONFIG = BoundaryConfig()
 
 
+def _apply_3d_spec_only(field, boundary, lead_seconds, config: BoundaryConfig):
+    """Spec-zone-only (ring-0) hard set from the time-interpolated leaf.
+
+    The relax-zone half of :func:`_apply_3d` is intentionally skipped -- on the
+    WRF specified cadence the relax zone is owned by the per-stage
+    ``relax_bdy_dry`` tendencies inside the RK/acoustic loop, and WRF has no
+    end-of-step relax-zone value write.
+    """
+
+    forcing = interpolate_boundary_leaf(boundary, lead_seconds, config.update_cadence_s)
+    out = field
+    for side in SIDES:
+        out = _apply_side_spec(out, forcing, side, config)
+    return out
+
+
 def apply_lateral_boundaries(
     state: State,
     lead_seconds,
     dt_s: float,
     config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
     metrics: DycoreMetrics | None = None,
+    *,
+    dry_spec_only: bool = False,
 ) -> State:
     """Apply the WRF specified outer zone + relaxation-zone nudging in-place.
 
@@ -168,6 +187,38 @@ def apply_lateral_boundaries(
     ``None`` (idealized / d02 self-replay callers) the geopotential ring is left
     exactly as before, so those paths stay bit-for-bit unchanged.
     """
+
+    if dry_spec_only:
+        # WRF SPECIFIED cadence (v0.14 stage3/wrapper sprint): the in-loop spec
+        # pins + per-stage relax tendencies own the dry boundary band; this
+        # end-of-step pass only re-syncs the ring-0 spec values to the
+        # lead-time leaf (idempotent against the in-loop pins; also covers
+        # fields the loop does not pin, e.g. the tangential winds' carry) and
+        # keeps the FULL moisture handling (WRF moist spec+relax lives in
+        # rk_update_scalar, which this codebase still applies end-of-step).
+        # The diagnostic p'/pb are NEVER forced (WRF does not force p; ring
+        # values stay the last calc_p_rho EOS diagnosis of the pinned fields).
+        _spec3 = lambda field, leaf: _apply_3d_spec_only(field, leaf, lead_seconds, config)
+        u = _spec3(state.u, state.u_bdy)
+        v = _spec3(state.v, state.v_bdy)
+        w = _spec3(state.w, state.w_bdy)
+        theta = _spec3(state.theta, state.theta_bdy)
+        qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
+        mu_perturbation = _spec3(state.mu_perturbation[None, :, :], state.mu_bdy)[0]
+        mub = _spec3(_base_mu(state)[None, :, :], state.mub_bdy)[0]
+        ph_perturbation = _spec3(state.ph_perturbation, state.ph_bdy)
+        phb = _spec3(_base_geopotential(state), state.phb_bdy)
+        return state.replace(
+            u=u,
+            v=v,
+            w=w,
+            theta=theta,
+            qv=qv,
+            ph_total=phb + ph_perturbation,
+            ph_perturbation=ph_perturbation,
+            mu_total=mub + mu_perturbation,
+            mu_perturbation=mu_perturbation,
+        )
 
     u = _apply_3d(state.u, state.u_bdy, lead_seconds, dt_s, config)
     v = _apply_3d(state.v, state.v_bdy, lead_seconds, dt_s, config)
@@ -989,6 +1040,215 @@ def nested_w_relax_tendency(w, w_bdy_leaf, mut, msfty, c1f, c2f, dt_full: float,
     return tend_coupled / msfty.astype(dtype)[None, :, :]
 
 
+# ---------------------------------------------------------------------------
+# SPECIFIED-domain WRF boundary cadence (v0.14 stage3/wrapper-cadence sprint).
+# ---------------------------------------------------------------------------
+#
+# WRF cadence for a SPECIFIED real domain (d01, wrfbdy-driven), from pristine
+# solve_em.F / module_bc_em.F / module_bc.F:
+#
+#   * relax zone (b_dist = spec_zone .. relax_zone-1): ``relax_bdy_dry`` runs
+#     ONCE per step at rk_step==1 (solve_em.F:938-965) on the STEP-START fields,
+#     adding the Davies tendency (fcx*fls0 - gcx*laplacian, relax_bdytend_core)
+#     for the COUPLED ru/rv (couple_momentum), the MASS-WEIGHTED t (c1h/c2h) and
+#     ph (c1f/c2f), and the plain 2-D mu.  ``rk_addtend_dry`` folds u/v/t/ph into
+#     the step-constant ``*_tendf`` lane consumed at EVERY RK stage; the mu relax
+#     goes straight into the stage-1 ``mu_tend`` and is NOT re-added at stages
+#     2-3 (rk_tendency zeroes mu_tend each stage -- a WRF quirk we preserve).
+#     NO w relax under specified (module_bc_em.F:320-344 is nested-only).
+#
+#   * spec zone (ring 0): the small-step routines EXCLUDE it; instead
+#     ``spec_bdyupdate`` advances u_2/v_2/t_2/mu_2/muts by ``dts*bdy_tend`` every
+#     acoustic substep (solve_em.F:1346-1490), ``spec_bdyupdate_ph`` updates the
+#     coupled ph_2 (:1587), and ``zero_grad_bdy`` copies the nearest interior w
+#     into the ring (:1601-1609, specified only).  Net effect: ring 0 follows the
+#     linear-in-time wrfbdy trajectory within the step.  Our in-loop equivalent
+#     pins the ring-0 WORK arrays to the value whose small_step_finish
+#     reconstruction equals the STAGE-END interpolated leaf (the within-stage
+#     linearisation difference is <= dt_stage/cadence of the interval increment,
+#     ~0.1% -- second-order against the 200 Pa/stage free-dynamics drift this
+#     replaces).
+#
+#   * end of step: WRF has NO end-of-step dry-field overwrite and NEVER forces
+#     the diagnostic p; ``apply_lateral_boundaries(dry_spec_only=True)`` keeps
+#     only the ring-0 spec re-sync (idempotent against the in-loop pins) and the
+#     full moisture handling, dropping the once-per-step relax-zone value nudge
+#     (replaced by the per-stage tendencies above) and the p'/pb forcing.
+#
+# Approximation kept from the existing helpers (documented, O(ring mu drift)):
+# our leaves store DECOUPLED values, so relax residuals couple BOTH sides with
+# the step-start reference mass instead of WRF's file-coupled bdy values.
+
+
+@dataclass(frozen=True)
+class SpecifiedRelaxTendencies:
+    """Step-constant WRF ``relax_bdy_dry`` tendencies for the specified domain.
+
+    ``ru``/``rv`` are COUPLED momentum tendencies (added to the coupled
+    ``ru_tend``/``rv_tend`` lane at every RK stage, the rk_addtend_dry net
+    effect).  ``t`` and ``ph`` are mass-coupled and ALREADY divided by ``msfty``
+    (the ``t_tend += t_tendf/msfty`` convention).  ``mu`` is the plain 2-D mass
+    relax tendency, applied at rk_step==1 only (the WRF quirk).
+    """
+
+    ru: jax.Array
+    rv: jax.Array
+    t: jax.Array
+    ph: jax.Array
+    mu: jax.Array
+
+
+def specified_relax_dry_tendencies(
+    reference,
+    lead_seconds,
+    metrics,
+    dt_full: float,
+    config: BoundaryConfig,
+):
+    """Build the WRF ``relax_bdy_dry`` tendency bundle from the step-start state.
+
+    ``reference`` is the step-start (rk1 reference) :class:`State`; targets are
+    the time-interpolated decoupled boundary leaves at the step-start lead
+    (WRF evaluates ``bdy + dtbc*bdy_tend`` at the rk_step==1 call).  All five
+    relax stencils reuse :func:`_scatter_relax_tendency` (the exact WRF
+    relax_bdytend_core port with corner trims); the staggered u/v shapes flow
+    through unchanged because the stencil indexes the last two axes generically,
+    which reproduces WRF's ``ibe=ide`` (u) / ``jbe=jde`` (v) extensions.
+    """
+
+    cadence = float(config.update_cadence_s)
+    dtype = reference.u.dtype
+    c1h = metrics.c1h.astype(dtype)[:, None, None]
+    c2h = metrics.c2h.astype(dtype)[:, None, None]
+    c1f = metrics.c1f.astype(dtype)[:, None, None]
+    c2f = metrics.c2f.astype(dtype)[:, None, None]
+
+    mu_total = reference.mu_total.astype(dtype)
+    # face-averaged full dry mass (WRF calculate_full muu/muv; edge-padded faces)
+    muu = 0.5 * (
+        jnp.concatenate([mu_total[:, :1], mu_total], axis=1)
+        + jnp.concatenate([mu_total, mu_total[:, -1:]], axis=1)
+    )
+    muv = 0.5 * (
+        jnp.concatenate([mu_total[:1, :], mu_total], axis=0)
+        + jnp.concatenate([mu_total, mu_total[-1:, :]], axis=0)
+    )
+
+    z_u = int(reference.u.shape[0])
+    y_u = int(reference.u.shape[1])
+    x_u = int(reference.u.shape[2])
+    z_v, y_v, x_v = (int(s) for s in reference.v.shape)
+    nz = int(reference.theta.shape[0])
+    ny = int(reference.theta.shape[1])
+    nx = int(reference.theta.shape[2])
+    nzp1 = int(reference.ph_perturbation.shape[0])
+
+    u_leaf = interpolate_boundary_leaf(reference.u_bdy, lead_seconds, cadence)
+    v_leaf = interpolate_boundary_leaf(reference.v_bdy, lead_seconds, cadence)
+    t_leaf = interpolate_boundary_leaf(reference.theta_bdy, lead_seconds, cadence)
+    ph_leaf = interpolate_boundary_leaf(reference.ph_bdy, lead_seconds, cadence)
+    mu_leaf = interpolate_boundary_leaf(reference.mu_bdy, lead_seconds, cadence)
+
+    u_target = _full_ring_target_from_leaf(u_leaf, z_u, y_u, x_u, dtype)
+    v_target = _full_ring_target_from_leaf(v_leaf, z_v, y_v, x_v, dtype)
+    t_target = _full_ring_target_from_leaf(t_leaf, nz, ny, nx, dtype)
+    ph_target = _full_ring_target_from_leaf(ph_leaf, nzp1, ny, nx, dtype)
+    mu_target = _full_ring_target_from_leaf(mu_leaf, 1, ny, nx, dtype)[0]
+
+    # COUPLED residual space (couple_momentum / mass_weight); both sides use the
+    # step-start reference mass (decoupled-leaf approximation, see block comment).
+    mass_u = c1h * muu[None, :, :] + c2h
+    mass_v = c1h * muv[None, :, :] + c2h
+    mass_h = c1h * mu_total[None, :, :] + c2h
+    mass_f = c1f * mu_total[None, :, :] + c2f
+    msfuy = metrics.msfuy.astype(dtype)[None, :, :]
+    msfvx = metrics.msfvx.astype(dtype)[None, :, :]
+    msfty = metrics.msfty.astype(dtype)[None, :, :]
+
+    ru_relax = _scatter_relax_tendency(
+        mass_u * reference.u.astype(dtype) / msfuy,
+        mass_u * u_target / msfuy,
+        float(dt_full),
+        config,
+    )
+    rv_relax = _scatter_relax_tendency(
+        mass_v * reference.v.astype(dtype) / msfvx,
+        mass_v * v_target / msfvx,
+        float(dt_full),
+        config,
+    )
+    # theta: same mass couples both sides, so the WRF t0=300 offset cancels in
+    # the residual and the full-theta leaf convention can be used directly.
+    t_relax = _scatter_relax_tendency(
+        mass_h * reference.theta.astype(dtype),
+        mass_h * t_target,
+        float(dt_full),
+        config,
+    ) / msfty
+    ph_relax = _scatter_relax_tendency(
+        mass_f * reference.ph_perturbation.astype(dtype),
+        mass_f * ph_target,
+        float(dt_full),
+        config,
+    ) / msfty
+    mu_relax = _scatter_relax_tendency(
+        reference.mu_perturbation.astype(dtype)[None, :, :],
+        mu_target[None, :, :],
+        float(dt_full),
+        config,
+    )[0]
+
+    return SpecifiedRelaxTendencies(ru=ru_relax, rv=rv_relax, t=t_relax, ph=ph_relax, mu=mu_relax)
+
+
+def tangential_bdy_work_target_u(
+    u_bdy_strip, u_save, mass_u_cur, mass_u_stage, msfuy, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+):
+    """Coupled work-array ring-0 target for the TANGENTIAL u rows (S/N edges).
+
+    Same reconstruction algebra as :func:`normal_bdy_work_target_u`, on the
+    spec-zone ROWS of the u faces (WRF ``spec_bdyupdate(u, 'u')`` covers the
+    y-side spec rows with the full face range -- y-sides own the corners).
+    Only the ``spec_zone`` outer rows are meaningful; the rest stays zero.
+    """
+
+    z_len, y_len, x_len = u_save.shape  # x_len == nx+1
+    target = jnp.zeros_like(u_save)
+    for b_dist in range(int(config.spec_zone)):
+        s_strip = _strip(u_bdy_strip, "S", b_dist, z_len, x_len)
+        n_strip = _strip(u_bdy_strip, "N", b_dist, z_len, x_len)
+        rs = b_dist
+        rn = y_len - 1 - b_dist
+        ts = (s_strip * mass_u_stage[:, rs, :] - u_save[:, rs, :] * mass_u_cur[:, rs, :]) / msfuy[rs, :][None, :]
+        tn = (n_strip * mass_u_stage[:, rn, :] - u_save[:, rn, :] * mass_u_cur[:, rn, :]) / msfuy[rn, :][None, :]
+        target = target.at[:, rs, :].set(ts)
+        target = target.at[:, rn, :].set(tn)
+    return target
+
+
+def tangential_bdy_work_target_v(
+    v_bdy_strip, v_save, mass_v_cur, mass_v_stage, msfvx, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+):
+    """Coupled work-array ring-0 target for the TANGENTIAL v columns (W/E edges).
+
+    WRF ``spec_bdyupdate(v, 'v')`` x-side rows trim the corners (j in
+    [b_dist+1, jbe-b_dist-1]); the caller applies that trim when scattering.
+    """
+
+    z_len, y_len, x_len = v_save.shape  # y_len == ny+1
+    target = jnp.zeros_like(v_save)
+    for b_dist in range(int(config.spec_zone)):
+        w_strip = _strip(v_bdy_strip, "W", b_dist, z_len, y_len)
+        e_strip = _strip(v_bdy_strip, "E", b_dist, z_len, y_len)
+        cw = b_dist
+        ce = x_len - 1 - b_dist
+        tw = (w_strip * mass_v_stage[:, :, cw] - v_save[:, :, cw] * mass_v_cur[:, :, cw]) / msfvx[:, cw][None, :]
+        te = (e_strip * mass_v_stage[:, :, ce] - v_save[:, :, ce] * mass_v_cur[:, :, ce]) / msfvx[:, ce][None, :]
+        target = target.at[:, :, cw].set(tw)
+        target = target.at[:, :, ce].set(te)
+    return target
+
+
 def spec_bdyupdate_ph_inloop(
     ph_work, ph_bdy_leaf, ph_save, mu_tend, muts, c1f, c2f, dts: float, config: BoundaryConfig
 ):
@@ -1046,4 +1306,8 @@ __all__ = [
     "nested_ph_relax_tendency",
     "nested_w_relax_tendency",
     "spec_bdyupdate_ph_inloop",
+    "SpecifiedRelaxTendencies",
+    "specified_relax_dry_tendencies",
+    "tangential_bdy_work_target_u",
+    "tangential_bdy_work_target_v",
 ]

@@ -100,6 +100,13 @@ class CoupledVelocities:
     msfux: jax.Array | None = None  # (ny, nx) periodic-collapsed u-point x map factor
     msfvy: jax.Array | None = None  # (ny, nx) periodic-collapsed v-point y map factor
     msfvx: jax.Array | None = None  # (ny, nx) periodic-collapsed v-point x map factor
+    # v0.14 SPECIFIED-boundary advection degradation: static switch + the
+    # edge-faithful FULL-FACE coupled velocities (couple_uv_specified; the
+    # periodic-collapsed ru/rv drop the last staggered face and wrap face 0's
+    # mass).  None/False on every existing path (byte-identical).
+    specified: bool = False
+    ru_full: jax.Array | None = None  # (nz, ny, nx+1) edge-faithful coupled u
+    rv_full: jax.Array | None = None  # (nz, ny+1, nx) edge-faithful coupled v
 
 
 def _muu_face(mu_total: jax.Array) -> jax.Array:
@@ -223,6 +230,165 @@ def stage_omega_specified(
     return rom
 
 
+# ---------------------------------------------------------------------------
+# v0.14 SPECIFIED-boundary horizontal flux degradation (stage3/wrapper sprint).
+#
+# WRF degrades the horizontal flux order near every non-periodic/non-symmetric
+# boundary (module_advect_em.F, the ``degrade_*`` blocks of advect_scalar :3392+,
+# advect_u :126-1526, advect_v :1530-3024, advect_w :4364+, all horz_order==5):
+#   * the outermost cells/faces get NO horizontal advection at all (the spec
+#     zone is boundary-driven),
+#   * the flux face next to the boundary is 2nd-order (for the NORMAL momentum
+#     component with the SPECIFIED upstream rule: the boundary-face value is
+#     replaced by the interior face under inflow),
+#   * the next face in is 3rd-order (flux3 = flux4 - upwind correction),
+#   * faces >= 3 cells in use the full 5th-order flux.
+# The periodic JAX implementation wraps every stencil with jnp.roll, so rings
+# 0-2 of a real specified domain advect with OPPOSITE-EDGE values and no order
+# degradation -- the documented out-of-scope restriction in this module's
+# docstring, and the v0.14 ring-1 mass-drift fingerprint (stage-compare ring-1
+# mu increment error 11.7 Pa/stage vs WRF 0.94, immune to the boundary-cadence
+# fix because it enters through the large-step tendencies).
+# ---------------------------------------------------------------------------
+
+
+def _shift0(field: jax.Array, shift: int, axis: int) -> jax.Array:
+    """Shift ``field`` by ``shift`` along ``axis`` with ZERO fill (no wrap).
+
+    ``shift=+1`` brings cell ``i-1`` to position ``i`` (like ``jnp.roll(+1)``)
+    but fills the vacated edge with zeros; the specified tier masks never read
+    the filled cells.
+    """
+
+    n = int(field.shape[axis])
+    s = int(shift)
+    if s == 0:
+        return field
+    pad = [(0, 0)] * field.ndim
+    if s > 0:
+        pad[axis] = (s, 0)
+        sl = [slice(None)] * field.ndim
+        sl[axis] = slice(0, n)
+    else:
+        pad[axis] = (0, -s)
+        sl = [slice(None)] * field.ndim
+        sl[axis] = slice(-s, n - s)
+    return jnp.pad(field, pad)[tuple(sl)]
+
+
+def _axis_index(field: jax.Array, axis: int) -> jax.Array:
+    n = int(field.shape[axis])
+    shape = [1] * field.ndim
+    shape[axis] = n
+    return jnp.arange(n).reshape(shape)
+
+
+def specified_flux_faces(
+    field: jax.Array,
+    vel: jax.Array,
+    axis: int,
+    *,
+    upstream: bool = False,
+) -> jax.Array:
+    """WRF order-5 SPECIFIED-boundary tiered flux faces along ``axis``.
+
+    Face index ``m`` sits between cells ``m-1`` and ``m`` (the same convention
+    as :func:`flux5_face_periodic`); ``vel`` is the transporting velocity at
+    the SAME face locations.  Tier map for axis extent ``n`` (spec_bdy width 1,
+    WRF advect_* horz_order==5 degrade blocks):
+
+      m == 1        2nd order (with the specified upstream rule when
+                    ``upstream`` -- the NORMAL momentum component: the
+                    boundary-side value is replaced by the interior one under
+                    inflow/outflow, module_advect_em.F "specified uses upstream
+                    normal wind at boundaries")
+      m == 2        flux3 (flux4 - sign(vel)*correction)
+      3..n-3        flux5 (flux6 - sign(vel)*correction)
+      m == n-2      flux3
+      m == n-1      2nd order (mirrored upstream rule when ``upstream``)
+      m == 0        ZERO (never consumed: the outermost cells get no advection)
+
+    Every stencil neighbour is fetched with the zero-fill shift, so no value
+    ever wraps across the domain.  Returns ``vel * face_value`` (the flux).
+    """
+
+    q_im3 = _shift0(field, 3, axis)
+    q_im2 = _shift0(field, 2, axis)
+    q_im1 = _shift0(field, 1, axis)
+    q_i = field
+    q_ip1 = _shift0(field, -1, axis)
+    q_ip2 = _shift0(field, -2, axis)
+
+    face6 = (37.0 * (q_i + q_im1) - 8.0 * (q_ip1 + q_im2) + (q_ip2 + q_im3)) / 60.0
+    corr6 = ((q_ip2 - q_im3) - 5.0 * (q_ip1 - q_im2) + 10.0 * (q_i - q_im1)) / 60.0
+    face5 = face6 - jnp.sign(vel) * corr6
+    face4 = (7.0 * (q_i + q_im1) - (q_ip1 + q_im2)) / 12.0
+    corr4 = ((q_ip1 - q_im2) - 3.0 * (q_i - q_im1)) / 12.0
+    face3 = face4 + jnp.sign(vel) * corr4
+    face2 = 0.5 * (q_i + q_im1)
+    if upstream:
+        # WRF: at the low face (m==1) the boundary-side value is q_im1 (the
+        # spec face); under inflow (q_i < 0, flow INTO the domain edge) it is
+        # replaced by the interior value q_i.  Mirrored at the high face.
+        low = 0.5 * (q_i + jnp.where(q_i < 0.0, q_i, q_im1))
+        high = 0.5 * (q_im1 + jnp.where(q_im1 > 0.0, q_im1, q_i))
+        n = int(field.shape[axis])
+        idx = _axis_index(field, axis)
+        face2 = jnp.where(idx == 1, low, jnp.where(idx == n - 1, high, face2))
+
+    n = int(field.shape[axis])
+    idx = _axis_index(field, axis)
+    five = (idx >= 3) & (idx <= n - 3)
+    three = (idx == 2) | (idx == n - 2)
+    two = (idx == 1) | (idx == n - 1)
+    face = jnp.where(five, face5, jnp.where(three, face3, jnp.where(two, face2, 0.0)))
+    return vel * face
+
+
+def _specified_div(fq: jax.Array, axis: int) -> jax.Array:
+    """Masked flux divergence ``fq(m+1) - fq(m)`` for cells ``1..n-2``.
+
+    The outermost cells (the WRF spec zone) receive NO horizontal advection
+    (the divergence loops run ``[ids+1, ide-2]`` / ``[jds+1, jde-2]``).
+    """
+
+    div = _shift0(fq, -1, axis) - fq
+    n = int(fq.shape[axis])
+    idx = _axis_index(fq, axis)
+    interior = (idx >= 1) & (idx <= n - 2)
+    return jnp.where(interior, div, 0.0)
+
+
+def couple_uv_specified(
+    u: jax.Array,
+    v: jax.Array,
+    mu_total: jax.Array,
+    *,
+    c1h: jax.Array,
+    c2h: jax.Array,
+    msfuy: jax.Array,
+    msfvx: jax.Array,
+) -> tuple[jax.Array, jax.Array]:
+    """Edge-faithful FULL-FACE coupled velocities for the specified path.
+
+    Same construction as :func:`stage_omega_specified` (edge-padded face
+    masses, the actual staggered faces, NO wrap): ``ru`` on ``(nz, ny, nx+1)``,
+    ``rv`` on ``(nz, ny+1, nx)``.
+    """
+
+    mu_pad_x = jnp.pad(mu_total, ((0, 0), (1, 0)), mode="edge")
+    muu = 0.5 * (mu_pad_x[:, 1:] + mu_pad_x[:, :-1])
+    muu = jnp.concatenate([muu, mu_total[:, -1:]], axis=1)
+    mu_pad_y = jnp.pad(mu_total, ((1, 0), (0, 0)), mode="edge")
+    muv = 0.5 * (mu_pad_y[1:, :] + mu_pad_y[:-1, :])
+    muv = jnp.concatenate([muv, mu_total[-1:, :]], axis=0)
+    c1 = c1h[:, None, None]
+    c2 = c2h[:, None, None]
+    ru = (c1 * muu[None, :, :] + c2) * u / msfuy[None, :, :]
+    rv = (c1 * muv[None, :, :] + c2) * v / msfvx[None, :, :]
+    return ru, rv
+
+
 def couple_velocities_periodic(
     u: jax.Array,
     v: jax.Array,
@@ -341,16 +507,25 @@ def advect_scalar_flux(
     """
 
     # ---- x flux divergence ----
-    # fqx located at left face of cell i; ru is the coupled u at face i.
-    fqx = vel.ru * flux5_face_periodic(field, vel.ru, axis=2)  # (nz, ny, nx)
-    fqx_ip1 = jnp.roll(fqx, -1, axis=2)
     msftx = _mass_factor_or_one(vel.msftx, field)
-    tend = -msftx[None, :, :] * rdx * (fqx_ip1 - fqx)
+    if bool(getattr(vel, "specified", False)):
+        # v0.14 SPECIFIED-boundary degraded fluxes (advect_scalar degrade_*
+        # blocks): tiered faces, zero-fill stencils, NO advection for the
+        # outermost cells in each direction.
+        fqx = specified_flux_faces(field, vel.ru, axis=2)
+        tend = -msftx[None, :, :] * rdx * _specified_div(fqx, axis=2)
+        fqy = specified_flux_faces(field, vel.rv, axis=1)
+        tend = tend - msftx[None, :, :] * rdy * _specified_div(fqy, axis=1)
+    else:
+        # fqx located at left face of cell i; ru is the coupled u at face i.
+        fqx = vel.ru * flux5_face_periodic(field, vel.ru, axis=2)  # (nz, ny, nx)
+        fqx_ip1 = jnp.roll(fqx, -1, axis=2)
+        tend = -msftx[None, :, :] * rdx * (fqx_ip1 - fqx)
 
-    # ---- y flux divergence ----
-    fqy = vel.rv * flux5_face_periodic(field, vel.rv, axis=1)  # (nz, ny, nx)
-    fqy_jp1 = jnp.roll(fqy, -1, axis=1)
-    tend = tend - msftx[None, :, :] * rdy * (fqy_jp1 - fqy)
+        # ---- y flux divergence ----
+        fqy = vel.rv * flux5_face_periodic(field, vel.rv, axis=1)  # (nz, ny, nx)
+        fqy_jp1 = jnp.roll(fqy, -1, axis=1)
+        tend = tend - msftx[None, :, :] * rdy * (fqy_jp1 - fqy)
 
     # ---- z flux divergence (order 3, rigid top/bottom) ----
     nz = int(field.shape[0])
@@ -631,14 +806,27 @@ def advect_scalar_flux_limited(
     dx = 1.0 / rdx
     dy = 1.0 / rdy
 
+    # v0.14 SPECIFIED-boundary degradation (advect_scalar_pd/_mono carry the
+    # same degrade blocks as advect_scalar): tiered high-order faces with
+    # zero-fill stencils, donor faces zeroed at the never-consumed outermost
+    # face, divergences masked to the WRF cell bounds below.
+    _specified = bool(getattr(vel, "specified", False))
+
     # ---- low-order (first-order upwind / donor-cell) fluxes from field_old ----
     fqxl = _flux_upwind_face(field_old, vel.ru, mu_u, dx, dt, axis=2)  # face i
     fqyl = _flux_upwind_face(field_old, vel.rv, mu_v, dy, dt, axis=1)  # face j
     fqzl = _flux_upwind_face_z(field_old, vel.rom, mu_h, rdzw, dt)  # face k (nz+1)
+    if _specified:
+        fqxl = jnp.where(_axis_index(fqxl, 2) == 0, 0.0, fqxl)
+        fqyl = jnp.where(_axis_index(fqyl, 1) == 0, 0.0, fqyl)
 
     # ---- high-order fluxes (= plain path), then antidiffusive A = hi - lo ----
-    fqx = _high_order_flux_x(field, vel.ru) - fqxl  # face i
-    fqy = _high_order_flux_y(field, vel.rv) - fqyl  # face j
+    if _specified:
+        fqx = specified_flux_faces(field, vel.ru, axis=2) - fqxl
+        fqy = specified_flux_faces(field, vel.rv, axis=1) - fqyl
+    else:
+        fqx = _high_order_flux_x(field, vel.ru) - fqxl  # face i
+        fqy = _high_order_flux_y(field, vel.rv) - fqyl  # face j
     fqz = _high_order_flux_z(field, vel.rom, fzm, fzp) - fqzl  # face k (nz+1)
 
     # ---- low-order updated coupled value (WRF ph_low / ph_upwind) ----
@@ -648,8 +836,9 @@ def advect_scalar_flux_limited(
     # start-of-step coupled mass is ``c1*mu_old+c2``.  Use that for the monotone
     # low-order update exactly as WRF builds it.
     mass_old = c1[:, None, None] * mu_old[None, :, :] + c2[:, None, None]  # (nz, ny, nx)
-    fqxl_ip1 = jnp.roll(fqxl, -1, axis=2)
-    fqyl_jp1 = jnp.roll(fqyl, -1, axis=1)
+    _ip1 = (lambda a, ax: _shift0(a, -1, ax)) if _specified else (lambda a, ax: jnp.roll(a, -1, axis=ax))
+    fqxl_ip1 = _ip1(fqxl, 2)
+    fqyl_jp1 = _ip1(fqyl, 1)
     fqzl_kp1 = fqzl[1:, :, :]
     fqzl_k = fqzl[:nz, :, :]
     div_low = (
@@ -659,8 +848,8 @@ def advect_scalar_flux_limited(
     ph_low = mass_old * field_old - dt * div_low
 
     # Antidiffusive face values offset to the i+1 / j+1 / k+1 face for divergence.
-    fqx_ip1 = jnp.roll(fqx, -1, axis=2)
-    fqy_jp1 = jnp.roll(fqy, -1, axis=1)
+    fqx_ip1 = _ip1(fqx, 2)
+    fqy_jp1 = _ip1(fqy, 1)
     fqz_kp1 = fqz[1:, :, :]
     fqz_k = fqz[:nz, :, :]
 
@@ -767,10 +956,17 @@ def advect_scalar_flux_limited(
     fqx_total = fqx_lim + fqxl
     fqy_total = fqy_lim + fqyl
     fqz_total = fqz_lim + fqzl
-    fqx_total_ip1 = jnp.roll(fqx_total, -1, axis=2)
-    fqy_total_jp1 = jnp.roll(fqy_total, -1, axis=1)
     fqz_total_kp1 = fqz_total[1:, :, :]
     fqz_total_k = fqz_total[:nz, :, :]
+    if _specified:
+        # WRF cell bounds under specified: x [ids+1, ide-2], y [jds+1, jde-2];
+        # the vertical divergence covers the full tile.
+        tend = -msftx[None, :, :] * rdx * _specified_div(fqx_total, axis=2)
+        tend = tend - msftx[None, :, :] * rdy * _specified_div(fqy_total, axis=1)
+        tend = tend - rdzw[:, None, None] * (fqz_total_kp1 - fqz_total_k)
+        return tend
+    fqx_total_ip1 = jnp.roll(fqx_total, -1, axis=2)
+    fqy_total_jp1 = jnp.roll(fqy_total, -1, axis=1)
     tend = -msftx[None, :, :] * rdx * (fqx_total_ip1 - fqx_total)
     tend = tend - msftx[None, :, :] * rdy * (fqy_total_jp1 - fqy_total)
     tend = tend - rdzw[:, None, None] * (fqz_total_kp1 - fqz_total_k)
@@ -949,6 +1145,44 @@ def advect_u_flux(
     """
 
     nx = vel.ru.shape[-1]
+    if bool(getattr(vel, "specified", False)) and vel.ru_full is not None and vel.rv_full is not None:
+        # v0.14 SPECIFIED degraded path (advect_u order-5 degrade blocks).
+        # Works on the FULL staggered u (nz, ny, nx+1); the generic tier map in
+        # the face-index frame reproduces WRF's staggered bounds exactly
+        # (x flux faces F[i] between u(i-1), u(i): i==1 -> 2nd-order with the
+        # specified UPSTREAM normal-wind rule, i==2 -> flux3, [3, nx-2] ->
+        # flux5, i==nx-1 -> flux3, i==nx -> 2nd+upstream; u faces updated
+        # [ids+1, ide-1] = [1, nx-1] in EVERY term -- the ring normal faces are
+        # owned by the boundary machinery).
+        nxs = int(u.shape[-1])  # nx+1 staggered faces
+        if vel.msfux is None:
+            msfux_f = jnp.ones((int(u.shape[1]), nxs), dtype=u.dtype)
+        else:
+            msfux_f = jnp.asarray(vel.msfux, dtype=u.dtype)
+            if int(msfux_f.shape[-1]) == nxs - 1:
+                # periodic-collapsed factor: faces 0..nx-1 exact; the edge-pad
+                # face nx is masked out of the update range anyway.
+                msfux_f = jnp.concatenate([msfux_f, msfux_f[:, -1:]], axis=-1)
+        velx = 0.5 * (vel.ru_full + _shift0(vel.ru_full, 1, 2))
+        fqx = specified_flux_faces(u, velx, axis=2, upstream=True)
+        tend = -msfux_f[None, :, :] * rdx * _specified_div(fqx, axis=2)
+        # y-flux: vel = 0.5*(rv(i)+rv(i-1)) onto the u stagger (zero-padded
+        # columns are masked by the final face mask); flux faces along y follow
+        # the scalar tier map, divergence rows [jds+1, jde-2].
+        rv_pad = jnp.pad(vel.rv_full, ((0, 0), (0, 0), (1, 1)))
+        rv_at_u = 0.5 * (rv_pad[:, :, 1:] + rv_pad[:, :, :-1])  # (nz, ny+1, nx+1)
+        vely = rv_at_u[:, : int(u.shape[1]), :]
+        fqy = specified_flux_faces(u, vely, axis=1)
+        tend = tend - msfux_f[None, :, :] * rdy * _specified_div(fqy, axis=1)
+        # z-flux (order 3): rom onto u faces with zero-padded columns.
+        rom_pad = jnp.pad(vel.rom, ((0, 0), (0, 0), (1, 1)))
+        rom_at_u = 0.5 * (rom_pad[:, :, 1:] + rom_pad[:, :, :-1])
+        tend = tend + _vertical_flux_div_3(u, rom_at_u, rdzw, fzm, fzp)
+        # WRF advect_u under specified updates ONLY faces [ids+1, ide-1].
+        face_idx = jnp.arange(nxs).reshape(1, 1, nxs)
+        face_mask = (face_idx >= 1) & (face_idx <= nxs - 2)
+        return jnp.where(face_mask, tend, 0.0)
+
     u_f = _collapse_x_face_periodic(u, nx=nx) if u.shape[-1] == nx + 1 else u  # collapse to nx periodic faces
     msfux = _x_face_factor_or_one(vel.msfux, nx=nx, reference=u_f)
     # x-flux: at u-face i the velocity is 0.5*(ru(i)+ru(i-1)); flux5 stencil on u_f.
@@ -979,6 +1213,45 @@ def advect_v_flux(
     """WRF flux-form coupled v advection tendency (h=5, v=3).  v on y-faces."""
 
     ny = vel.rv.shape[-2]
+    if bool(getattr(vel, "specified", False)) and vel.ru_full is not None and vel.rv_full is not None:
+        # v0.14 SPECIFIED degraded path (advect_v order-5 degrade blocks; the
+        # mirror of advect_u with the upstream rule on the NORMAL y faces).
+        nys = int(v.shape[-2])  # ny+1 staggered faces
+
+        def _v_factor(factor):
+            if factor is None:
+                return jnp.ones((nys, int(v.shape[-1])), dtype=v.dtype)
+            arr = jnp.asarray(factor, dtype=v.dtype)
+            if int(arr.shape[-2]) == nys - 1:
+                # periodic-collapsed factor: rows 0..ny-1 exact; the edge-pad
+                # row ny is masked out of the update range anyway.
+                arr = jnp.concatenate([arr, arr[-1:, :]], axis=-2)
+            return arr
+
+        msfvy_f = _v_factor(vel.msfvy)
+        msfvx_f = _v_factor(vel.msfvx)
+        # x-flux: vel = 0.5*(ru(j)+ru(j-1)) onto the v stagger; scalar tier map
+        # along x, divergence cells [ids+1, ide-2].
+        ru_pad = jnp.pad(vel.ru_full, ((0, 0), (1, 1), (0, 0)))
+        ru_at_v = 0.5 * (ru_pad[:, 1:, :] + ru_pad[:, :-1, :])  # (nz, ny+1, nx+1)
+        velx = ru_at_v[:, :, : int(v.shape[-1])]
+        fqx = specified_flux_faces(v, velx, axis=2)
+        tend = -msfvy_f[None, :, :] * rdx * _specified_div(fqx, axis=2)
+        # y-flux: vel = 0.5*(rv(j)+rv(j-1)); upstream rule on the normal faces.
+        vely = 0.5 * (vel.rv_full + _shift0(vel.rv_full, 1, 1))
+        fqy = specified_flux_faces(v, vely, axis=1, upstream=True)
+        tend = tend - msfvy_f[None, :, :] * rdy * _specified_div(fqy, axis=1)
+        # z-flux (order 3): rom onto v faces with zero-padded rows.
+        rom_pad = jnp.pad(vel.rom, ((0, 0), (1, 1), (0, 0)))
+        rom_at_v = 0.5 * (rom_pad[:, 1:, :] + rom_pad[:, :-1, :])
+        tend = tend + (msfvy_f / msfvx_f)[None, :, :] * _vertical_flux_div_3(
+            v, rom_at_v, rdzw, fzm, fzp
+        )
+        # WRF advect_v under specified updates ONLY faces [jds+1, jde-1].
+        row_idx = jnp.arange(nys).reshape(1, nys, 1)
+        row_mask = (row_idx >= 1) & (row_idx <= nys - 2)
+        return jnp.where(row_mask, tend, 0.0)
+
     v_f = v[:, :ny, :] if v.shape[-2] == ny + 1 else v
     msfvy = _y_face_factor_or_one(vel.msfvy, ny=ny, reference=v_f)
     msfvx = _y_face_factor_or_one(vel.msfvx, ny=ny, reference=v_f)
@@ -1032,6 +1305,16 @@ def advect_w_flux(
     # ru/rv on mass levels -> interpolate to w (full) levels: rw(k)=fzm(k)*r(k)+fzp(k)*r(k-1).
     ru_w = _mass_to_full_levels(vel.ru, fzm, fzp)  # (nz+1, ny, nx)
     rv_w = _mass_to_full_levels(vel.rv, fzm, fzp)
+    if bool(getattr(vel, "specified", False)):
+        # v0.14 SPECIFIED degraded path: w is mass-located horizontally, so the
+        # scalar tier map + cell bounds apply (advect_w degrade blocks mirror
+        # advect_scalar).  The face-0 wrap of the collapsed ru/rv is masked.
+        fqx = specified_flux_faces(w, ru_w, axis=2)
+        tend = -msftx[None, :, :] * rdx * _specified_div(fqx, axis=2)
+        fqy = specified_flux_faces(w, rv_w, axis=1)
+        tend = tend - msftx[None, :, :] * rdy * _specified_div(fqy, axis=1)
+        tend = tend + _vertical_flux_div_w(w, vel.rom, rdn, top_lid=top_lid)
+        return tend
     # x-flux of w by ru_w (w and ru_w both on full levels, mass-located in x).
     fqx = ru_w * flux5_face_periodic(w, ru_w, axis=2)
     tend = -msftx[None, :, :] * rdx * (jnp.roll(fqx, -1, axis=2) - fqx)
@@ -1208,7 +1491,9 @@ def _restore_periodic_u_face(tend: jax.Array, was_face: bool) -> jax.Array:
 __all__ = [
     "CoupledVelocities",
     "couple_velocities_periodic",
+    "couple_uv_specified",
     "flux5_face_periodic",
+    "specified_flux_faces",
     "advect_scalar_flux",
     "advect_scalar_flux_limited",
     "advect_moisture_scalars",
