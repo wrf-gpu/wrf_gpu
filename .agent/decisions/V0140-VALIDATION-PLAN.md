@@ -4,16 +4,17 @@ Date: 2026-06-08
 Owner: GPT-5.5 xhigh validation architect
 Branch: `worker/gpt/v013-valplan`
 
-2026-06-11 16:08 WEST manager update: Switzerland/Gotthard remains the only
-active validation blocker before renewed long GPU gates. Latest pushed proof
-checkpoint `8a630f46` narrows the first remaining h36 `p/ph` error to the RK1
-acoustic substep `21601 -> 21602` and rejects the lower-boundary surface-`w`
-feed deviation with a GPU discriminator (`p/ph` RMSE unchanged, improvement
-fraction `0.0`). Active worker is GPT-5.5 xhigh in tmux `0:5`, sprint
-`.agent/sprints/2026-06-11-v014-gpt-advance-w-term-split/`, targeting
-post-`advance_mu_t` inputs and intra-`advance_w_wrf()` terms. Continue to block
-Switzerland 72h, TOST, FP32 implementation, and performance audits until this
-short-gate blocker is fixed or formally bounded.
+2026-06-11 16:42 WEST manager update: Switzerland/Gotthard remains the only
+active validation blocker before renewed long GPU gates. GPT advance-w term
+split completed as `NARROWED_NO_FIX`:
+`.agent/reviews/2026-06-11-v014-gpt-advance-w-term-split.md` and
+`proofs/v014/switzerland_advance_w_term_split.{py,json}`. It rejects
+post-`advance_mu_t` mass inputs as the primary `p/ph` creator: WRF-call-21602
+`mu/muts/muave` inputs improve `p` by only `0.112%` and `ph` by `0.0018%`.
+The next validation-enabling proof is a short WRF-native intra-`advance_w`
+dump for call `21601 -> 21602`, then comparison against the Python harness.
+Continue to block Switzerland 72h, TOST, FP32 implementation, and performance
+audits until this short-gate blocker is fixed or formally bounded.
 
 2026-06-11 05:05 WEST manager update: field-gate state is now:
 

@@ -3,6 +3,29 @@
 Date: 2026-06-08 23:11 WEST
 Owner: manager
 
+Update 2026-06-11 16:42 WEST: GPT advance-w term split completed and is
+accepted as `NARROWED_NO_FIX`:
+`.agent/reviews/2026-06-11-v014-gpt-advance-w-term-split.md`,
+`proofs/v014/switzerland_advance_w_term_split.{py,json}`. It rejects the
+manager's previous dry-mass boundary as the primary `p/ph` creator: replacing
+available post-`advance_mu_t` mass inputs with WRF-call-21602-derived
+`mu/muts/muave` improves `p` by only `0.112%` and `ph` by only `0.0018%`.
+It independently reconfirms surface-`w` is bit-identical to baseline at the
+scored stage. Strongest term clues: zeroing/recomputing `rw_tend` improves
+`p` by about `32%` but worsens `ph` by about `6.84%`; zeroing `ph_tend`
+improves `ph` by `25.84%` and `p` by `9.07%`. No WRF-faithful source fix is
+proven.
+
+Next active debug step: generate a short WRF-native intra-`advance_w` dump for
+call `21601 -> 21602`, not a 72h GPU gate. Required arrays are post-
+`advance_mu_t` inputs (`mu_2`, `muts`, `muave`, `ww`, `t_2`, `ph_tend`,
+`rw_tend`), RHS before/after vertical phi advection, implicit coefficients
+`a/alpha/gamma`, Thomas RHS/solved `w`, finished `ph`, and immediate
+post-`calc_p_rho` `p/al/alt`. Compare those arrays against the Python harness
+at the same h36 boundary. Do not start Switzerland 72h, TOST, FP32
+implementation, or performance audit until this h36 short-gate blocker is
+fixed or formally bounded.
+
 Update 2026-06-11 16:08 WEST: latest pushed manager state is `d6dd0431`
 plus polling-discipline commit `9a8e9fe8`. The previous GPT residual sprint is
 accepted and pushed as `8a630f46`: it narrows the first Switzerland/Gotthard
@@ -12,20 +35,7 @@ lower-boundary surface-`w` feed is **not** the first `p/ph` creator
 (`p/ph` interior RMSE unchanged at `1.126197518453275` /
 `0.43526395846317767`, improvement fraction `0.0`). Boundary cadence,
 specified stage omega, real-case `rhs_ph`, final wrapper pressure refresh, and
-surface-`w` are demoted/excluded. Remaining exact target: post-`advance_mu_t`
-inputs consumed by `advance_w` and/or internal `advance_w_wrf()` terms
-(`rhs_seed`, vertical phi advection, `rw_tend`, implicit pressure/Thomas solve,
-`ph_next`).
-
-Active worker: GPT-5.5 xhigh in tmux `0:5`, worktree
-`.claude/worktrees/gpt-advance-w-term-split`, branch
-`worker/gpt/v014-advance-w-term-split`, sprint contract
-`.agent/sprints/2026-06-11-v014-gpt-advance-w-term-split/`. Expected report:
-`.agent/reviews/2026-06-11-v014-gpt-advance-w-term-split.md`. Manager should
-not micromanage; poll roughly every 15 minutes unless a DONE marker appears or
-resource safety requires earlier action. Do not start Switzerland 72h, TOST,
-FP32 implementation, or performance audit until this h36 short-gate blocker is
-fixed or formally bounded.
+surface-`w` are demoted/excluded.
 
 Update 2026-06-11 05:05 WEST: Canary L2 d02 72h is completed and accepted as
 bounded/proceed, not active. Run root:
