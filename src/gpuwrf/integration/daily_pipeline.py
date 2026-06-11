@@ -487,6 +487,10 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         dampcoef=0.2,
         epssm=0.5,
         top_lid=True,
+        # WRF Registry default hypsometric_opt=2 (LOG form) -- every real case runs
+        # with it; the replay metrics carry the true wrfinput C3F/C4F/C3H/C4H/P_TOP.
+        # v0.14 Switzerland h36 mass-venting root cause was the linear (1) form.
+        hypsometric_opt=2,
         radiation_static=radiation_static,
         topo_shading=topo_shading,
         slope_rad=slope_rad,
