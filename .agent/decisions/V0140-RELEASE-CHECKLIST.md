@@ -98,14 +98,15 @@ gate. Its hourly evidence indicates the previous wrong boundary band was partly
 compensating an interior dry-mass sink. The active root lane is now the interior
 acoustic `advance_w` / `phi` hydrostatic sink/pressure-rise pair, with
 `rw_tend`/`ph_tend` consumption and post-stage `calc_p_rho`/grid-p refresh as
-secondary suspects. A GPT-5.5 xhigh verifier/debugger is launched from
-`.agent/sprints/2026-06-11-v014-gpt-stage3-wrapper-verifier/` to review Fable's
-complex diff and produce the next `advance_w`/`phi` discriminator or exact plan.
-Do not immediately launch another Fable/Mythos xhigh sprint. Continue first
-with GPT-5.5 xhigh verification/residual-fix sprints, then Fable medium/high if
-GPT stalls. Reserve another Fable/Mythos xhigh run for roughly ten inconclusive
-cheaper follow-up sprints or an explicitly documented exceptional kernel-level
-impasse.
+secondary suspects. GPT-5.5 xhigh verifier report
+`proofs/v014/gpt_stage3_wrapper_verifier.md` accepted the boundary/advection
+proof only after a local `dry_spec_only` specified-`w` wrapper correction; that
+correction is committed on the Fable branch as `019bc71b` (`tests/test_v014_specified_bdy_cadence.py`
+now `6 passed`). Do not immediately launch another Fable/Mythos xhigh sprint.
+Continue first with GPT-5.5 xhigh verification/residual-fix sprints on the
+`advance_w`/`phi` discriminator, then Fable medium/high if GPT stalls. Reserve
+another Fable/Mythos xhigh run for roughly ten inconclusive cheaper follow-up
+sprints or an explicitly documented exceptional kernel-level impasse.
 
 Update 2026-06-10 22:49 WEST: the nested-pipeline Noah-MP source fix and h1-h4
 land-gate scorer are merged/pushed (`c2310c5b`, `c6800bfa`). The d01 LU16
@@ -143,7 +144,7 @@ scalable GPU rewrite.
 | Grid-cell parity | Active closeout. RRTMG `T3D=t` dry-temperature input bug is fixed and proof-bounded: GLW RMSE `17.5203 -> 0.3515 W/m2`; mass-coupled RTHRATEN RMSE `2.4884 -> 0.3646`, max_abs `19.4253 -> 2.7984`. Strict Step-1 remains red/bounded at max_abs `55.9297`, RMSE `0.4997`, p99 `0.9529`; MYNN owns the worst-cell max/floor, while remaining RRTMG is still field-significant. | Commit the RRTMG fix, then record an explicit tolerance-policy decision for the non-bitwise MYNN/RRTMG mass-coupled Step-1 gate. Before long validation, run a short operational all-field rollout falsifier. |
 | Memory/FP32 Mythos lane | Closed and manager-merged. Accepted commits: `26815feb` MYNN BouLac tiling + shared RK-stage transport velocities, `bc847db2` default-inert FP32 acoustic precision-mode contract, `8f735a56` proofs/roadmaps/closeout. Latest post-LU16-fix exact-branch preflight is green (`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`: `rc=0`, peak total VRAM `9783 MiB`, all domains finite, no OOM markers). Mixed FP32 R1/R2 remains blocked until the fp64 validation frontier is fully closed. | Done for v0.14 except final release-note framing. No broad FP32 claim from default-inert scaffolding. FP32 acoustic becomes a v0.15 high-priority implementation lane unless field-gate failure forces a v0.14 revisit. |
 | Validation tooling | Grid-Delta Atlas gate is specified in `.agent/decisions/V0140-GRID-DELTA-ATLAS-GATE.md`. GPU runbook exists in `docs/GPU_RUNBOOK.md`. Offline Atlas tooling is merged (`07e1ab2e`) and ready for post-parity validation data. Pre-result tolerance candidate is accepted in `proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json`: ten hard documented fields, static exact/tight checks, and `P/PH/MU/RAINC` critical report-only. | Final scoring uses the accepted manifest, produces summary, markdown report, compact plots, and README-ready dashboard for all common numeric wrfout fields. A 72h/120h field-parity/stability run is stronger evidence than station-only TOST and is now the primary validation artifact. |
-| Switzerland/Gotthard | CPU72 truth is complete at `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`: 73 `wrfout_d01_*`, `rc=0`, `SUCCESS COMPLETE WRF`, last-frame finite PASS. Timing: total wall `2906.3 s`, mainloop `2887.6 s`, 24 dmpar MPI ranks. Resource CSVs are under `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources`; peak 24-rank `wrf.exe` RSS sum `12636.176 MiB`. LBC-clock bug fixed and proven. HPG native-face mismatch fixed but refuted as blocker. Real-case `rhs_ph` + edge-faithful stage omega + WRF dycore constants are merged/proven and improve residual `-27.697 -> -21.883 Pa/cell/h`, but excess outflux only moves ~4%, so blocker remains open. Fable xhigh then proved stage/wrapper boundary cadence + specified advection fixes collapse boundary-band errors, but the hourly gate still fails and points to an interior acoustic `advance_w`/`phi` sink. | Do not rerun 72h yet. GPT verifier/debugger is active on `.agent/sprints/2026-06-11-v014-gpt-stage3-wrapper-verifier/`; next gate is an WRF-anchored `advance_w`/`phi` discriminator and h36 storm-state short gate collapse/bounding before the 72h GPU rerun with resource CSVs and atlas. |
+| Switzerland/Gotthard | CPU72 truth is complete at `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`: 73 `wrfout_d01_*`, `rc=0`, `SUCCESS COMPLETE WRF`, last-frame finite PASS. Timing: total wall `2906.3 s`, mainloop `2887.6 s`, 24 dmpar MPI ranks. Resource CSVs are under `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources`; peak 24-rank `wrf.exe` RSS sum `12636.176 MiB`. LBC-clock bug fixed and proven. HPG native-face mismatch fixed but refuted as blocker. Real-case `rhs_ph` + edge-faithful stage omega + WRF dycore constants are merged/proven and improve residual `-27.697 -> -21.883 Pa/cell/h`, but excess outflux only moves ~4%, so blocker remains open. Fable xhigh then proved stage/wrapper boundary cadence + specified advection fixes collapse boundary-band errors, but the hourly gate still fails and points to an interior acoustic `advance_w`/`phi` sink. GPT verifier accepted that conclusion after one local Fable-branch correction (`019bc71b`). | Do not rerun 72h yet. Next gate is an WRF-anchored `advance_w`/`phi` discriminator from `proofs/v014/gpt_stage3_wrapper_verifier.md`, followed by h36 storm-state short-gate collapse/bounding before the 72h GPU rerun with resource CSVs and atlas. |
 | Canary field parity | L2 d02 has retained CPU-WRF 72h truth: 15 complete backfill cases in `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output`, each with 73 d02 frames. The selected gate case is `20260501_18z_l2_72h_20260519T173026Z`. Prior blockers closed: LBC cadence (`53770411`), PSFC diagnostic, moist-cqw pressure dynamics (`7c819067`, default ON), nested Noah-MP activation (`c2310c5b`), and the d01 LU16/sand nonfinite blocker (`22a2cc0c` + `aff7d124` + `5a708074`). The post-fix 72h GPU run completed at `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`; proof summary `proofs/v014/canary_d02_72h_field_gate_summary.md`; atlas `rc=0`. | Accepted as bounded/proceed. Keep plots/benchmarks for release docs; do not spend correctness tokens here unless a later review overturns the bounded decision. |
 | Performance regression | Prepared, conditional on Switzerland passing. Canary 72h shows only `1.059x` to `1.069x` against an approximate 28-rank CPU denominator, far below the project speed premise and below the old v0.12 speed story. | After Switzerland/Gotthard 72h is green/bounded, run the prepared independent Fable and GPT performance audits in parallel. Fable may implement simple identity-preserving speedups; GPT reports only. Reconcile findings, rerun Canary+Switzerland with all safe caches enabled, and use that measured current-max speed for v0.14 while moving complex optimization to v0.15. Both reports must explain `WHY_NOT_10X_YET`, `NEAR_OPTIMUM_KERNEL_PATHS`, and `COMPUTE_OVER_MEMORY_OPTIONS`. |
 | Powered TOST | Three cases are durable; marathon paused. | Secondary station sanity only. TOST is no longer a v0.14 release gate and must not delay or override Switzerland/Canary all-field evidence. |
@@ -194,11 +195,12 @@ scalable GPU rewrite.
    Merged subfixes (`3d0b439c`, `79b0c22e`, merge `82f6b703`) close the HPG
    native-face and real-case `rhs_ph`/stage-omega defects, but not the gate.
    Fable worker commit `a5f28252` proves the stage/wrapper boundary cadence and
-   specified advection lane is real but not the venting driver. Current active
-   lane: GPT verifier/debugger must review that complex default-off patch and
-   produce the next WRF-anchored `advance_w`/`phi` discriminator for the
-   interior hydrostatic sink/pressure-rise pair. Do not start the 72h gate until
-   the h36 short-gate residual materially collapses or is formally bounded.
+   specified advection lane is real but not the venting driver; GPT verifier
+   report `proofs/v014/gpt_stage3_wrapper_verifier.md` required and received
+   the local specified-`w` correction `019bc71b`. Current active lane: start the
+   WRF-anchored `advance_w`/`phi` discriminator for the interior hydrostatic
+   sink/pressure-rise pair. Do not start the 72h gate until the h36 short-gate
+   residual materially collapses or is formally bounded.
 12. Rerun Switzerland/Gotthard 72h GPU-vs-CPU field-parity/stability with
    resource CSVs after the h36 strong-flow gate is fixed or formally bounded.
 13. Run Grid-Delta Atlas on the selected paired cases using the accepted
