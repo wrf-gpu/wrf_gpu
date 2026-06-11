@@ -1,0 +1,375 @@
+{
+ "schema": "v014_switzerland_post_lbc_residual",
+ "generated_utc": "2026-06-11T03:55:00.585584",
+ "g1_mass_budget_closure": {
+  "rows": [
+   {
+    "window": "h24->h25",
+    "cpu": {
+     "dM_pa_per_cell_h": -109.40816497802734,
+     "net_influx_pa_per_cell_h": -108.0336685180664,
+     "residual": -1.3744964599609375
+    },
+    "gpu_full": {
+     "dM_pa_per_cell_h": -85.14286041259766,
+     "net_influx_pa_per_cell_h": -80.97512817382812,
+     "residual": -4.167732238769531
+    }
+   },
+   {
+    "window": "h36->h37",
+    "cpu": {
+     "dM_pa_per_cell_h": -69.33673095703125,
+     "net_influx_pa_per_cell_h": -74.51517486572266,
+     "residual": 5.178443908691406
+    },
+    "gpu_full": {
+     "dM_pa_per_cell_h": -96.7551040649414,
+     "net_influx_pa_per_cell_h": -91.76020050048828,
+     "residual": -4.994903564453125
+    }
+   },
+   {
+    "window": "h40->h41",
+    "cpu": {
+     "dM_pa_per_cell_h": -34.3775520324707,
+     "net_influx_pa_per_cell_h": -34.28877639770508,
+     "residual": -0.088775634765625
+    },
+    "gpu_full": {
+     "dM_pa_per_cell_h": -76.7448959350586,
+     "net_influx_pa_per_cell_h": -72.39068603515625,
+     "residual": -4.354209899902344
+    }
+   },
+   {
+    "window": "h48->h49",
+    "cpu": {
+     "dM_pa_per_cell_h": -17.897958755493164,
+     "net_influx_pa_per_cell_h": -18.190561294555664,
+     "residual": 0.2926025390625
+    },
+    "gpu_full": {
+     "dM_pa_per_cell_h": -15.989795684814453,
+     "net_influx_pa_per_cell_h": -9.929656028747559,
+     "residual": -6.0601396560668945
+    }
+   },
+   {
+    "window": "h60->h61",
+    "cpu": {
+     "dM_pa_per_cell_h": -52.48979568481445,
+     "net_influx_pa_per_cell_h": -46.942726135253906,
+     "residual": -5.547069549560547
+    },
+    "gpu_full": {
+     "dM_pa_per_cell_h": -70.86734771728516,
+     "net_influx_pa_per_cell_h": -65.16141510009766,
+     "residual": -5.7059326171875
+    }
+   },
+   {
+    "window": "h66->h67",
+    "cpu": {
+     "dM_pa_per_cell_h": 16.17346954345703,
+     "net_influx_pa_per_cell_h": 21.819643020629883,
+     "residual": -5.646173477172852
+    },
+    "gpu_full": {
+     "dM_pa_per_cell_h": -87.15306091308594,
+     "net_influx_pa_per_cell_h": -81.8774185180664,
+     "residual": -5.275642395019531
+    }
+   },
+   {
+    "window": "h71->h72",
+    "cpu": {
+     "dM_pa_per_cell_h": 2.6020407676696777,
+     "net_influx_pa_per_cell_h": 1.0928571224212646,
+     "residual": 1.509183645248413
+    },
+    "gpu_full": {
+     "dM_pa_per_cell_h": -50.31632614135742,
+     "net_influx_pa_per_cell_h": -46.43800735473633,
+     "residual": -3.8783187866210938
+    }
+   }
+  ],
+  "max_abs_residual": 6.0601396560668945,
+  "pass": true,
+  "meaning": "both runs conserve dry mass to sampling error; the GPU MU deficit is wind-vented through the LBC zone"
+ },
+ "g2_reinit_probe_locally_generated": {
+  "probe_vs_full": [
+   {
+    "valid_h": 37,
+    "probe_mu_rmse": 63.556060791015625,
+    "probe_mu_bias": -54.42308807373047,
+    "full_mu_rmse": 67.1182632446289,
+    "full_mu_bias": -37.551761627197266
+   },
+   {
+    "valid_h": 38,
+    "probe_mu_rmse": 113.60922241210938,
+    "probe_mu_bias": -99.43075561523438,
+    "full_mu_rmse": 90.80252838134766,
+    "full_mu_bias": -59.11671829223633
+   },
+   {
+    "valid_h": 39,
+    "probe_mu_rmse": 162.17147827148438,
+    "probe_mu_bias": -139.57818603515625,
+    "full_mu_rmse": 122.41788482666016,
+    "full_mu_bias": -85.57547760009766
+   },
+   {
+    "valid_h": 40,
+    "probe_mu_rmse": 219.69390869140625,
+    "probe_mu_bias": -187.25656127929688,
+    "full_mu_rmse": 169.13966369628906,
+    "full_mu_bias": -124.86192321777344
+   },
+   {
+    "valid_h": 41,
+    "probe_mu_rmse": 268.2243347167969,
+    "probe_mu_bias": -227.84402465820312,
+    "full_mu_rmse": 212.0895538330078,
+    "full_mu_bias": -160.52574157714844
+   },
+   {
+    "valid_h": 42,
+    "probe_mu_rmse": 321.4336853027344,
+    "probe_mu_bias": -278.34246826171875,
+    "full_mu_rmse": 260.6300964355469,
+    "full_mu_bias": -207.83377075195312
+   },
+   {
+    "valid_h": 43,
+    "probe_mu_rmse": 369.91583251953125,
+    "probe_mu_bias": -325.28472900390625,
+    "full_mu_rmse": 304.706787109375,
+    "full_mu_bias": -252.23297119140625
+   },
+   {
+    "valid_h": 44,
+    "probe_mu_rmse": 381.74908447265625,
+    "probe_mu_bias": -337.01513671875,
+    "full_mu_rmse": 314.947509765625,
+    "full_mu_bias": -262.9088134765625
+   },
+   {
+    "valid_h": 45,
+    "probe_mu_rmse": 371.0189514160156,
+    "probe_mu_bias": -328.2637634277344,
+    "full_mu_rmse": 303.08074951171875,
+    "full_mu_bias": -254.09410095214844
+   },
+   {
+    "valid_h": 46,
+    "probe_mu_rmse": 352.0033264160156,
+    "probe_mu_bias": -312.9535217285156,
+    "full_mu_rmse": 283.1754150390625,
+    "full_mu_bias": -239.39907836914062
+   },
+   {
+    "valid_h": 47,
+    "probe_mu_rmse": 338.26409912109375,
+    "probe_mu_bias": -302.68084716796875,
+    "full_mu_rmse": 268.8039245605469,
+    "full_mu_bias": -229.09262084960938
+   },
+   {
+    "valid_h": 48,
+    "probe_mu_rmse": 332.4739685058594,
+    "probe_mu_bias": -299.5948486328125,
+    "full_mu_rmse": 261.44244384765625,
+    "full_mu_bias": -225.279541015625
+   }
+  ],
+  "calm_start_baseline_h1_h6": [
+   {
+    "lead_h": 1,
+    "mu_rmse": 27.949848175048828
+   },
+   {
+    "lead_h": 2,
+    "mu_rmse": 30.253604888916016
+   },
+   {
+    "lead_h": 3,
+    "mu_rmse": 32.2719612121582
+   },
+   {
+    "lead_h": 4,
+    "mu_rmse": 33.99183654785156
+   },
+   {
+    "lead_h": 5,
+    "mu_rmse": 35.41950225830078
+   },
+   {
+    "lead_h": 6,
+    "mu_rmse": 34.502281188964844
+   }
+  ],
+  "probe_lead6_mu_bias": -278.34246826171875,
+  "pass": true,
+  "meaning": "from a bit-true CPU-truth IC at h36 the GPU re-develops the venting within 6h at >= the full-run rate: NOT accumulated drift, NOT chaos"
+ },
+ "g3_depth_independent_divergence": {
+  "rows": {
+   "depth_2": {
+    "cpu_net_influx": -74.97721099853516,
+    "probe_net_influx": -105.83818054199219,
+    "excess_outflux": -30.86096954345703
+   },
+   "depth_8": {
+    "cpu_net_influx": -74.51517486572266,
+    "probe_net_influx": -103.12997436523438,
+    "excess_outflux": -28.61479949951172
+   },
+   "depth_20": {
+    "cpu_net_influx": -73.5781021118164,
+    "probe_net_influx": -100.77242279052734,
+    "excess_outflux": -27.194320678710938
+   }
+  },
+  "pass": true,
+  "meaning": "excess outflux ~constant from depth 2 to depth 20: the divergence bias is INTERIOR-WIDE, not a boundary-zone artifact"
+ },
+ "g4_night_continuation": {
+  "rows": [
+   {
+    "valid_h": 37,
+    "swdown_diff_mean": 101.664306640625,
+    "probe_mu_bias": -54.42308807373047
+   },
+   {
+    "valid_h": 38,
+    "swdown_diff_mean": 85.74319458007812,
+    "probe_mu_bias": -99.43075561523438
+   },
+   {
+    "valid_h": 39,
+    "swdown_diff_mean": 43.26629638671875,
+    "probe_mu_bias": -139.57818603515625
+   },
+   {
+    "valid_h": 40,
+    "swdown_diff_mean": 1.583796739578247,
+    "probe_mu_bias": -187.25656127929688
+   },
+   {
+    "valid_h": 41,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -227.84402465820312
+   },
+   {
+    "valid_h": 42,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -278.34246826171875
+   },
+   {
+    "valid_h": 43,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -325.28472900390625
+   },
+   {
+    "valid_h": 44,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -337.01513671875
+   },
+   {
+    "valid_h": 45,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -328.2637634277344
+   },
+   {
+    "valid_h": 46,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -312.9535217285156
+   },
+   {
+    "valid_h": 47,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -302.68084716796875
+   },
+   {
+    "valid_h": 48,
+    "swdown_diff_mean": 0.0,
+    "probe_mu_bias": -299.5948486328125
+   }
+  ],
+  "night_mu_bias_change": -71.75082397460938,
+  "pass": true,
+  "meaning": "venting continues at full rate after SWDOWN->0: SW/cloud-albedo radiation error is NOT the mass driver"
+ },
+ "g5_microphysics_symptoms": {
+  "hour1_condensate_annihilation": {
+   "qcloud_mean_ic_h36": 4.797682322532637e-06,
+   "qcloud_mean_probe_h37": 8.232973982558178e-07,
+   "qcloud_mean_cpu_h37": 5.295955816109199e-06,
+   "fraction_lost_vs_cpu": 0.8445422456600717
+  },
+  "qnice_zero_first_hours": [
+   {
+    "lead_h": 1,
+    "gpu_max": 0.0,
+    "cpu_max": 2080847.875
+   },
+   {
+    "lead_h": 2,
+    "gpu_max": 0.0,
+    "cpu_max": 2069893.625
+   },
+   {
+    "lead_h": 3,
+    "gpu_max": 0.0,
+    "cpu_max": 882327.5
+   },
+   {
+    "lead_h": 4,
+    "gpu_max": 0.0,
+    "cpu_max": 1965800.5
+   },
+   {
+    "lead_h": 6,
+    "gpu_max": 565359.125,
+    "cpu_max": 958455.4375
+   }
+  ],
+  "qnrain_burst_within_wrf_clamp_band": {
+   "burst_value_per_kg": 41779988.0,
+   "qr_at_burst": 0.00016832732944749296,
+   "wrf_mvd_band_ceiling_per_kg": 50305906.0040751,
+   "violates_band": false
+  }
+ },
+ "g6_no_microphysics_discriminator": {
+  "available": true,
+  "rows": [
+   {
+    "valid_h": 37,
+    "nomp_mu_rmse": 67.191650390625,
+    "nomp_mu_bias": -56.940738677978516,
+    "withmp_mu_rmse": 63.556060791015625,
+    "withmp_mu_bias": -54.42308807373047
+   },
+   {
+    "valid_h": 38,
+    "nomp_mu_rmse": 117.78642272949219,
+    "nomp_mu_bias": -102.13299560546875,
+    "withmp_mu_rmse": 113.60922241210938,
+    "withmp_mu_bias": -99.43075561523438
+   },
+   {
+    "valid_h": 39,
+    "nomp_mu_rmse": 164.723388671875,
+    "nomp_mu_bias": -141.19570922851562,
+    "withmp_mu_rmse": 162.17147827148438,
+    "withmp_mu_bias": -139.57818603515625
+   }
+  ],
+  "venting_persists_without_mp": true
+ }
+}
