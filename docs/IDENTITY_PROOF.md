@@ -44,14 +44,19 @@ Into `--asset-dir` (PNG) and `--proof-dir` (`identity_proof_manifest.json`):
 ## Reproduce
 
 One documented command per region. Pin CPU work with `taskset` and keep the GPU free.
-Deterministic: the scatter subsample uses a fixed seed.
+Deterministic: the scatter subsample uses a fixed seed. Set `CPU_DIR` and `GPU_DIR`
+to the paired `wrfout` directories for your own run (one CPU-WRF run, one GPU run,
+same init) — the tool is fully data-driven, so the same two commands reproduce the
+plots against any matching pair.
 
 ### Switzerland d01 (72 h, init 2023-01-15 00Z)
 
 ```bash
+CPU_DIR=<your-switzerland-cpu-wrf-run>/run_cpu     # paired CPU-WRF wrfout dir
+GPU_DIR=<your-switzerland-gpu-run>/gpu_output      # paired GPU wrfout dir
 taskset -c 0-3 python3 scripts/build_identity_proof_plots.py \
-  --cpu-dir /mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu \
-  --gpu-dir /mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_thetafix_20260612T012219Z/gpu_output \
+  --cpu-dir "$CPU_DIR" \
+  --gpu-dir "$GPU_DIR" \
   --domain d01 --init "2023-01-15T00:00:00+00:00" \
   --case-id switzerland_d01_72h \
   --region-label "Switzerland d01 72h (2023-01-15 00Z)" \
@@ -63,9 +68,11 @@ taskset -c 0-3 python3 scripts/build_identity_proof_plots.py \
 ### Canary L2 d02 (72 h, init 2026-05-01 18Z)
 
 ```bash
+CPU_DIR=<your-canary-cpu-wrf-run>                  # paired CPU-WRF wrfout dir
+GPU_DIR=<your-canary-gpu-run>/gpu_output/<case>    # paired GPU wrfout dir
 taskset -c 0-3 python3 scripts/build_identity_proof_plots.py \
-  --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z \
-  --gpu-dir /mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z \
+  --cpu-dir "$CPU_DIR" \
+  --gpu-dir "$GPU_DIR" \
   --domain d02 --init "2026-05-01T18:00:00+00:00" \
   --case-id canary_l2_d02_72h \
   --region-label "Canary L2 d02 72h (2026-05-01 18Z)" \

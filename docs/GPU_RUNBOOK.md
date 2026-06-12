@@ -4,6 +4,14 @@ This is the supported way to run long GPU validations from this repository. Do
 not depend on a helper under `/tmp`; those disappear and were the source of the
 failed launch attempt on 2026-06-08.
 
+> **Paths in this runbook are the maintainer's reference layout.** Concrete
+> `/mnt/data/...` directories (run roots, the Canary CPU-WRF truth, the AEMET
+> station dataset) are the paths on the reference workstation. **Substitute your
+> own** writable run root and your own case/truth directories — every command
+> here takes the paths as explicit arguments or honours an environment override
+> (`GPUWRF_TOST_RUN_DIR`, `GPUWRF_AEMET_ROOT`, `PYTHON`, `--input-dir`,
+> `--cpu-truth-root`, `--out-dir`). Nothing here requires the literal paths.
+
 ## Golden Path
 
 From the repository root:
@@ -50,18 +58,19 @@ no log output. Check GPU memory/process state before assuming it is hung.
 
 ## Powered TOST n=15
 
-Foreground:
+Foreground (set `PYTHON` only if your GPU-enabled interpreter is not the default
+`python3` on `PATH`):
 
 ```bash
-PYTHON=/home/enric/miniconda3/bin/python \
-  scripts/run_powered_tost_n15.sh --resume
+scripts/run_powered_tost_n15.sh --resume
+# or, to pin a specific interpreter:
+PYTHON=/path/to/your/python scripts/run_powered_tost_n15.sh --resume
 ```
 
 Detached, with durable log/rc/runinfo:
 
 ```bash
-PYTHON=/home/enric/miniconda3/bin/python \
-  scripts/run_powered_tost_n15.sh --detach --resume
+scripts/run_powered_tost_n15.sh --detach --resume
 ```
 
 Default detached artifacts:

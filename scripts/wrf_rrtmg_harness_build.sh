@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Maintainer-only oracle build tool. It links the *real* WRF Fortran RRTMG
+# objects into a small harness so RRTMG kernels can be parity-checked against a
+# genuine (non-JAX) WRF oracle. It requires a local WRF Fortran build; the paths
+# below default to the maintainer's reference layout and are all overridable via
+# environment variables. It is NOT needed to run a forecast (see docs/quickstart.md).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -7,10 +12,10 @@ OUT="${SCRATCH}/wrf_rrtmg_harness"
 OBJ="${SCRATCH}/wrf_rrtmg_harness.o"
 LOG="${SCRATCH}/wrf_rrtmg_harness_build.log"
 RUNTIME="${SCRATCH}/rrtmg_runtime"
-WRF_ROOT="/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF"
-WRF_BUILD="${WRF_ROOT}/_build_gen2_dmpar"
-WRF_ENV="/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build"
-MOD_DIR="${WRF_ROOT}/install_gen2_dmpar/modules"
+WRF_ROOT="${WRF_ROOT:-/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF}"
+WRF_BUILD="${WRF_BUILD:-${WRF_ROOT}/_build_gen2_dmpar}"
+WRF_ENV="${WRF_ENV:-/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build}"
+MOD_DIR="${WRF_MOD_DIR:-${WRF_ROOT}/install_gen2_dmpar/modules}"
 SW_OBJ="${WRF_BUILD}/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o"
 LW_OBJ="${WRF_BUILD}/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o"
 SW_DATA="${WRF_ROOT}/install_gen2_dmpar/run/RRTMG_SW_DATA"
@@ -21,9 +26,10 @@ LW_DATA="${WRF_ROOT}/install_gen2_dmpar/run/RRTMG_LW_DATA"
 # pristine build ships the same module_ra_rrtmg_sw/lw objects + RRTMG data files
 # and is a genuine (non-JAX) WRF Fortran oracle. It only lacks the WRF framework
 # error handler wrf_error_fatal3, which we satisfy with a tiny local stub.
-PRISTINE_PHYS="/home/enric/src/wrf_pristine/WRF/phys"
-PRISTINE_RUN="/home/enric/src/wrf_pristine/WRF/run"
-PRISTINE_FC="/home/enric/miniconda3/envs/wrfbuild/bin/gfortran"
+# All three are overridable for a different local WRF build.
+PRISTINE_PHYS="${WRF_PRISTINE_PHYS:-/home/enric/src/wrf_pristine/WRF/phys}"
+PRISTINE_RUN="${WRF_PRISTINE_RUN:-/home/enric/src/wrf_pristine/WRF/run}"
+PRISTINE_FC="${WRF_PRISTINE_FC:-gfortran}"
 USE_PRISTINE=0
 if [[ ! -f "${SW_OBJ}" || ! -f "${LW_OBJ}" ]] \
    && [[ -f "${PRISTINE_PHYS}/module_ra_rrtmg_sw.o" && -f "${PRISTINE_PHYS}/module_ra_rrtmg_lw.o" ]]; then
