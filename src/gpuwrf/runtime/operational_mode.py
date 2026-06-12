@@ -147,7 +147,24 @@ from gpuwrf.runtime.operational_state import OperationalCarry, initial_operation
 config.update("jax_enable_x64", True)
 
 _THETA_LIMITER_MIN_K = 0.0
-_THETA_LIMITER_MAX_K = 500.0
+# v0.14 Switzerland venting ROOT CAUSE (proofs/v014/switzerland_midlevel_momentum_budget,
+# switzerland_theta_advection_operator_oracle, the norad/nophys bisect runs):
+# the previous 500 K ceiling SAT BELOW the real stratospheric theta of the
+# Switzerland d01 top level (k43 theta up to 507.5 K, >500 K over 62-98 % of the
+# domain from h33 on; p_top=5000 Pa).  The "non-load-bearing safety net"
+# therefore FIRED EVERY STEP: it crushed the interior top-level theta to 500 K
+# while apply_lateral_boundaries restored the wrfbdy >500 K band afterwards, so
+# each step re-clipped the boundary ring and the limiter's mass-conserving
+# redistribution pumped the clipped theta into the whole interior as a steady
+# ~+0.5 K/h tropospheric heating (profile proportional to the 500-theta
+# headroom, physics-independent: identical with mp=0, radiation off, and ALL
+# physics off).  The heated columns expand hydrostatically, diverge at mid/upper
+# levels, and export dry mass -- THE -26.5 Pa/cell/h depth-8 venting -- with the
+# low-level inflow / mid-level outflow u-dipole as the secondary (heat-low)
+# circulation.  WRF has NO theta clamp; the envelope must be unreachable for any
+# physical state.  Theta(1 hPa) ~ 870 K, far above any p_top this port runs, so
+# 1000 K keeps the guard a genuine NaN/blow-up trap and nothing else.
+_THETA_LIMITER_MAX_K = 1000.0
 _RVRD = 461.6 / 287.0
 # WRF reciprocal earth radius (share/module_model_constants.F:43), consumed by
 # the rk_tendency curvature term on the vertical momentum.
@@ -1137,7 +1154,11 @@ def _limit_guarded_dynamics_state_with_diagnostics(candidate: State, origin: Sta
 
     The fix drops the tight per-level monotonic bounds so the limiter uses ONLY the
     WIDE physical envelope ``[_THETA_LIMITER_MIN_K, _THETA_LIMITER_MAX_K]`` =
-    ``[0, 500] K`` plus the non-finite trap.  For any physically reasonable theta the
+    ``[0, 1000] K`` plus the non-finite trap (v0.14: the earlier 500 K ceiling was
+    BELOW the real Switzerland-d01 top-level stratospheric theta of up to 507.5 K
+    and made the guard load-bearing again -- the steady boundary-ring clip +
+    redistribution heat pump behind the -26.5 Pa/cell/h venting; see the
+    ``_THETA_LIMITER_MAX_K`` comment).  For any physically reasonable theta the
     envelope never fires (``limited_mask`` all-False), so the increment limiter is a
     strict identity AND its mass-redistribution residual is ~0 — i.e. it becomes a
     genuine non-load-bearing safety net that catches only NaN/Inf and true blow-ups,
