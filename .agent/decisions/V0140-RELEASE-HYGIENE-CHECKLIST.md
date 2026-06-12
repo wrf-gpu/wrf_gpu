@@ -103,3 +103,64 @@ must be coherent and professional, not a dump.
 - A curated, coherent released doc set (incl. the AI archive index/framing).
 - A short RELEASE_NOTES / CHANGELOG for v0.14.
 - An honest KNOWN_ISSUES.
+
+## G. Added anti-slop items (Opus release-cleanup worker, 2026-06-12)
+
+Additional things a serious scientific software release should get right that
+were not explicit above. `[done]` = handled in the `opus-release-cleanup`
+branch; `[manager]` = needs the manager (gate numbers, GPU smoke, or a decision).
+
+- **Version-string consistency.** `pyproject.toml` `version` must match the
+  release tag, and the CUDA extra (`jax[cudaNN]`) must match the README's pinned
+  CUDA. `[done — bumped 0.13.0 → 0.14.0; reconciled cuda12 → cuda13]`
+- **No misrepresented defaults in docs.** A documented default path/value must
+  match what the code actually does (e.g. the JIT cache default was documented
+  as a private `/mnt/data` path but the code uses a portable per-user dir).
+  `[done — resource-profile.md fixed]`
+- **Cross-doc figure consistency.** The same quantity must read the same across
+  README/quickstart/KNOWN_ISSUES (e.g. the wrfout writer variable count was
+  "64" in quickstart vs "104" elsewhere). `[done — quickstart fixed to 104]`
+- **Standard repo files present and real.** `LICENSE` (actual license text, not
+  just notes), `CITATION`/`CITATION.cff`, `CONTRIBUTING.md` (user-facing, not
+  only the agent-process file), `CHANGELOG.md`, top-level `KNOWN_ISSUES.md`.
+  `[done — CONTRIBUTING.md, CHANGELOG.md, KNOWN_ISSUES.md added; LICENSE_NOTES
+  placeholder cleaned] [manager — LICENSE + CITATION.cff pending the license
+  decision]`
+- **`pip install -e .` resolves on a clean env** and the package imports +
+  console script runs CPU-only (the real new-user path, GPU not required to
+  install). `[done — verified in a fresh venv on CPU; jax CpuDevice, gpuwrf
+  import OK, `gpuwrf run --help` OK]`
+- **Scripts referenced by docs have no hard-coded personal interpreter/data
+  paths.** Personal `PYTHON=/home/enric/...` and `/mnt/data/...` defaults in
+  user-facing scripts/runbook must be env-overridable with portable defaults or
+  clearly framed as the maintainer's reference layout. `[done — run_powered_tost_n15.sh,
+  verify/_common.sh, wrf_rrtmg_harness_build.sh, GPU_RUNBOOK.md, IDENTITY_PROOF.md]`
+- **`.gitignore` covers agent/tooling sandboxes + editor cruft.** `.codex/`,
+  `.claude/worktrees/`, `cache/`, `.agents/`, `*~/*.swp/*.bak/.DS_Store`.
+  `[done]`
+- **Empty/placeholder-only committed docs.** Egregious 0-byte/placeholder-only
+  `.md` files read as half-written; give them an honest one-line note or remove.
+  `[done — 3 empty agy review/council .md given honest empty-result notes;
+  empty .stderr/.stdout command-logs and .done sentinels left as intentional
+  sprint evidence]`
+- **Archive framing.** `.agent/README.md` must explicitly frame the archive as a
+  point-in-time development log whose verdicts are NOT current truth, and point
+  to the authoritative top-level docs. `[done]`
+- **Secrets/keys scan.** `[done — repo-wide tracked-file scan: no API keys,
+  tokens, private keys, or password literals found]`
+- **`<<MANAGER-FILL>>` / `<manager: ...>` placeholders are the only intentional
+  blanks** in shipped docs, and they are clearly marked. No other slop markers
+  in the top-level/user-facing set. `[done — verified; the gate-number blanks
+  are the manager's to fill]`
+
+### Still needs the manager (out of CPU-only scope)
+
+- **Final 72 h gate numbers** for README / RELEASE_NOTES / KNOWN_ISSUES
+  (`<<MANAGER-FILL>>` / `<manager: ...>` placeholders).
+- **Live GPU smoke** of the documented Switzerland run end-to-end (a real
+  forecast hour) after the gates free the card — the one runnability step that
+  cannot be CPU-verified.
+- **README/RELEASE_NOTES version-narrative bump v0.13.0 → v0.14.0** (the prose
+  still reads "v0.13.0"; this is release-content the manager owns alongside the
+  gate numbers, kept out of this hygiene branch to avoid inventing results).
+- **LICENSE + CITATION.cff** once the license is chosen.

@@ -380,7 +380,9 @@ For long GPU validation jobs, use the versioned run wrappers, not a helper under
 
 ```bash
 scripts/run_gpu_lowprio.sh --cores 0-23 -- python -m gpuwrf.cli run ...
-PYTHON=/home/enric/miniconda3/bin/python scripts/run_powered_tost_n15.sh --detach --resume
+# Optional env: PYTHON selects the interpreter (defaults to python3 on PATH);
+# GPUWRF_TOST_RUN_DIR sets a writable run root (defaults under the repo).
+scripts/run_powered_tost_n15.sh --detach --resume
 ```
 
 The full lock/log/resume procedure is in [docs/GPU_RUNBOOK.md](docs/GPU_RUNBOOK.md).
