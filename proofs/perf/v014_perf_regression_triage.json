@@ -1,0 +1,70 @@
+{
+  "schema": "PerfRegressionTriage-v014",
+  "schema_version": 1,
+  "date": "2026-06-12",
+  "agent": "opus-perf-regression",
+  "branch": "opus-perf-regression",
+  "base_commit": "0c333235",
+  "case": {
+    "name": "Switzerland d01 reinit h36 (replay)",
+    "input_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+    "grid": "128x128x44",
+    "time_step_s": 18,
+    "acoustic_substeps": 10,
+    "forecast_entry": "run_forecast_operational -> _run_forecast_operational_jit (default replay path; per-radiation-interval while-loop)",
+    "force_fp64": true,
+    "gpu": "RTX 5090 Blackwell",
+    "env": "PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false; taskset -c 0-3 OMP=4; with_gpu_lock perf-triage"
+  },
+  "measurement_3h": {
+    "baseline_per_hour_wall_s": [
+      80.73,
+      80.08,
+      34.8
+    ],
+    "baseline_total_wall_s": 220.83,
+    "baseline_forecast_scan_compiles": 2,
+    "baseline_forecast_compile_times_s": [
+      31.72,
+      31.93
+    ],
+    "steady_state_per_hour_s": 34.8,
+    "steady_state_ms_per_step": 173.0,
+    "steps_per_hour": 200
+  },
+  "regression_attribution_72h": {
+    "mission_measured_gpu_wall_s": 2762,
+    "mission_measured_cpu_wall_s": 2906,
+    "measured_speedup_x": 1.05,
+    "steady_state_dynamics_s": 2491,
+    "steady_state_pct": 90.2,
+    "compile_cold_start_s": 63,
+    "compile_pct": 2.3,
+    "per_hour_host_overhead_s": "~200 (finite_summary full-state pulls x2/hr + wrfout write + land refresh + boundary rewindow)",
+    "per_hour_host_pct": "~7"
+  },
+  "trivial_identity_safe_fixes_shipped": [],
+  "compile_double_compile_finding": {
+    "cause": "raw replay state is MIXED precision (DEFAULT_DTYPES perf matrix: theta/u/v fp32, w/mu/ph fp64); the force_fp64 forecast upcasts INSIDE the jit, so hour-1 input signature = fp32-mixed (compile #1, 31.7s) and hours 2+ feed back the all-fp64 body output (compile #2, 31.9s). 20 of 91 state leaves flip fp32->fp64 between the two cache keys.",
+    "double_compile_proven": "JAX_LOG_COMPILES=1: jit(_run_forecast_operational_jit) compiled TWICE with two distinct persistent-cache keys (...142a3bd vs ...4e9e662).",
+    "attempted_fix": "hoist _enforce_operational_precision(force_fp64) to the python entry BEFORE the jit -> collapsed 2 compiles to 1, saved 46.3s/3h (220.8->174.5s), steady-state UNCHANGED.",
+    "fix_REVERTED_reason": "NOT bit-identical. Determinism control proven: two same-code runs are 0.0-diff bit-identical. But baseline (fp32-input graph hour1) vs fixed (fp64 graph all hours) differ at fp32-epsilon at hour 1 (U rel 4.78e-07, P 4.6e-3 Pa abs, ~2-20%% of cells in last fp32 bits) then chaotically amplify (hour3 U rel 2.5e-3). XLA fuses/orders the fp32-input vs fp64-input graphs differently; forcing hour-1 onto the fp64 graph shifts hour-1 by fp32-eps. Per mission rule 'ANY doubt about identity -> do not change', reverted.",
+    "verdict": "the double-compile is INTRINSIC to feeding a mixed-precision fp32 state into an fp64 forecast; eliminating it requires making the operational state fp64 end-to-end (the more-correct path, but changes current baseline hour-1 by fp32-eps) = v0.15 precision-matrix decision, NOT a trivial identity-safe v0.14 fix."
+  },
+  "instrumentation_audit": {
+    "limiter_diagnostics_per_step": "NOT overhead: _physics_boundary_step delegates to _physics_boundary_step_with_limiter_diagnostics, but the diagnostics are a byproduct of the guard that runs anyway for correctness; XLA DCEs the discarded output. No extra work.",
+    "debug_callbacks": "all jax.debug.print / snapshot calls are gated behind `if debug:` / enabled= (static). None run unconditionally in production scan.",
+    "host_syncs_in_step_loop": "NONE. block_until_ready calls are HOST-loop level (per output chunk / per hour), not per timestep.",
+    "static_args": "hours/n_steps/cadence statics are per-run/per-output-interval constants; no per-step Python-int churn. No closure-jit re-compile."
+  },
+  "deep_causes_deferred_v015": [
+    "steady-state 173 ms/step on 128x128x44 is the 3x->1x regression (90%% of wall).",
+    "per-substep w_damp inside advance_w_wrf (x10 acoustic substeps/step) vs WRF once-per-RK-stage (advance_w.py:310; w_damping=1 active) -- identity-sensitive, fires differently in strong-CFL.",
+    "safe_* jnp.where floors (mass_h/mass_f_mut/theta_ref) per substep (advance_w.py:327,330,363) -- guard, removal changes near-zero behavior.",
+    "per-substep mass denominator rebuild (mass_h = c1h*muts+c2h) hoistable to stage prep (advance_w.py:326) -- code-motion refactor.",
+    "two Thomas lax.scan unroll=False over ~44 levels (advance_w.py) -- A/B unroll needs profiler.",
+    "unconditional guard passes (_limit_guarded_dynamics_state, _valid_mixing_ratio, _finite_or_origin) every step when disable_guards=False -- safe-floor pattern, identity-sensitive.",
+    "per-hour double full-state host pull: finite_summary(state) (daily_pipeline.py:1118) + prepare_wrfout_payload -- ~2 device->host pulls/hr; finite NaN-guard could reuse the writer payload or be an on-device bool reduce. Per-hour (~7%% of wall), not per-step; touches fail-closed NaN guard so deferred.",
+    "operational state precision matrix: building/carrying the operational state fp64 end-to-end (force_fp64 cases) would remove the double-compile AND the per-step _enforce_operational_precision converts, at fp32-eps numeric shift = needs the v0.15 precision ADR."
+  ]
+}
