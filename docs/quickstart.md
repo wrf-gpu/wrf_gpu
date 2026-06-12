@@ -133,10 +133,11 @@ ncdump -h runs/my_forecast/wrfout_d02_*    # dimensions + variables
 python -c "import xarray as xr; print(xr.open_dataset('runs/my_forecast/wrfout_d02_...'))"
 ```
 
-The operational writer emits a focused **64-variable** subset of WRF's 375
-variables (all core meteorological/spatial/vertical/soil fields; the missing
-ones are stochastic-seed and Noah-MP snow-layer diagnostics). See known issue
-**KI-3** in [KNOWN_ISSUES.md](KNOWN_ISSUES.md) and the README scope table.
+The operational writer emits a focused **104-variable** subset of WRF's 375
+variables (all core meteorological/spatial/vertical/soil fields plus radiation
+flux + Noah-MP snow-layer; the missing ones are stochastic-seed arrays and
+less-common diagnostics). See known issue **KI-3** in
+[KNOWN_ISSUES.md](KNOWN_ISSUES.md) and the README scope table.
 
 ## 5. (Optional) replay / compare against CPU-WRF
 

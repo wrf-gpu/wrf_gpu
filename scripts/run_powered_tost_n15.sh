@@ -6,7 +6,12 @@
 #   scripts/run_powered_tost_n15.sh --resume
 #
 # Detached, durable log/rc/runinfo:
-#   PYTHON=/home/enric/miniconda3/bin/python scripts/run_powered_tost_n15.sh --detach --resume
+#   scripts/run_powered_tost_n15.sh --detach --resume
+#
+# Env overrides (all optional):
+#   PYTHON              interpreter to use (default: python3 on PATH)
+#   GPUWRF_TOST_RUN_DIR run/log root (default: <repo>/runs/powered_tost_n15)
+#   GPUWRF_AEMET_ROOT   AEMET station dataset root (no default; required for scoring)
 
 set -euo pipefail
 
@@ -16,7 +21,7 @@ SELF="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
 cd "$ROOT"
 
 DETACH=0
-OUT_DIR="${GPUWRF_TOST_RUN_DIR:-/mnt/data/wrf_gpu_validation/v0130_marathon}"
+OUT_DIR="${GPUWRF_TOST_RUN_DIR:-$ROOT/runs/powered_tost_n15}"
 LOG_NAME="${GPUWRF_TOST_LOG_NAME:-n15_current}"
 CORES="${GPUWRF_GPU_CORES:-0-23}"
 PY="${PYTHON:-python3}"
@@ -29,8 +34,10 @@ usage() {
     "" \
     "Common:" \
     "  scripts/run_powered_tost_n15.sh --resume" \
-    "  PYTHON=/home/enric/miniconda3/bin/python scripts/run_powered_tost_n15.sh --detach --resume" \
-    "  scripts/run_powered_tost_n15.sh --dry-run --resume" >&2
+    "  scripts/run_powered_tost_n15.sh --detach --resume" \
+    "  scripts/run_powered_tost_n15.sh --dry-run --resume" \
+    "" \
+    "Env: PYTHON, GPUWRF_TOST_RUN_DIR, GPUWRF_AEMET_ROOT (all optional)." >&2
 }
 
 while [[ $# -gt 0 ]]; do
@@ -100,7 +107,9 @@ fi
 runner_cmd=(
   env
   GPUWRF_GPU_LOCK_WRAPPER=
-  GPUWRF_AEMET_ROOT="${GPUWRF_AEMET_ROOT:-/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations}"
+  # AEMET station observations are user-supplied (not redistributed here).
+  # Point GPUWRF_AEMET_ROOT at your local copy before the station-RMSE scoring step.
+  GPUWRF_AEMET_ROOT="${GPUWRF_AEMET_ROOT:-}"
   "$PY"
   proofs/v0120/powered_tost_n15/run_powered_tost_n15_v0120.py
   "${FORWARD_ARGS[@]}"

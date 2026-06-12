@@ -82,3 +82,25 @@ data/
 
 # publish/ = local working folder (paper drafts, figures, analysis) — NOT part of the release
 /publish/
+
+# Agent/tooling sandboxes and local caches — NOT part of the release
+# (gitignore does not support trailing inline comments; keep patterns bare)
+# .codex/        Codex/GPT worker git worktrees (multi-GB scratch)
+# .claude/worktrees/  Claude Code agent git worktrees
+# .agents/       transient agent scratch dir
+# cache/         local tool cache (e.g. projects.json)
+# .gpuwrf-cache*/  any JIT/compile cache variant left in-tree
+.codex/
+.claude/worktrees/
+.agents/
+cache/
+.gpuwrf-cache*/
+
+# Editor / OS backups and cruft
+*~
+*.swp
+*.swo
+*.bak
+*.orig
+.DS_Store
+Thumbs.db

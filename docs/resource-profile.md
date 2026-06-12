@@ -50,9 +50,11 @@ JAX/XLA compiles the timestep program the first time it runs. This is a
   executable is read from disk, so **subsequent runs skip the ~5 min compile**
   and start integrating almost immediately. The cache changes nothing about the
   numerics — the cached executable is bit-for-bit the same program.
-- Default cache dir: `/mnt/data/gpuwrf_jax_cache`. Override with
-  `GPUWRF_JAX_CACHE_DIR` (or the standard JAX `JAX_COMPILATION_CACHE_DIR`).
-  Disable for a clean cold-compile benchmark with `GPUWRF_JAX_CACHE=0`.
+- Default cache dir: a portable per-user path (`$XDG_CACHE_HOME/gpuwrf/jit`, or
+  `$HOME/.cache/gpuwrf/jit`) — never `/tmp`, so it survives a reboot and works
+  out of the box on a fresh clone. Override with `GPUWRF_JAX_CACHE_DIR` (or the
+  standard JAX `JAX_COMPILATION_CACHE_DIR`). Disable for a clean cold-compile
+  benchmark with `GPUWRF_JAX_CACHE=0`.
 
 **Implication for short jobs:** a 1 h smoke run is dominated by the cold compile
 on its first invocation. Always warm the cache once before timing or before
