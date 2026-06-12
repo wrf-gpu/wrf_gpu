@@ -1,0 +1,65 @@
+{
+  "schema": "v014_switzerland_ustar_forecast_refutation",
+  "generated_utc": "2026-06-12T01:08:00+00:00",
+  "objective": "DECISIVE forecast-level adjudication of BOTH adjudicated venting lanes (surface-layer ustar drag PRIMARY; wrfbdy static-IC-mass normal-momentum target FALLBACK) for the Switzerland d01 h36 strong-flow dry-mass venting (binding: depth-8 h37 excess outflux -26.5 Pa/cell/h vs CPU; target ~0).",
+
+  "lane_1_surface_ustar": {
+    "verdict": "REFUTED at the forecast level",
+    "method": {
+      "knob": "Scaled the LIVE-path surface-layer ustar (and consistent stress tau~ustar^2) to/over WRF magnitude by wrapping physics_couplers.surface_layer (the use_noahmp=False + sf_sfclay_physics=5 -> surface_adapter -> surface_layer path the Switzerland d01 forecast ACTUALLY runs; the noahmp_coupler path the prior proofs targeted is DEAD for this case).",
+      "forecast": "2 h open-top forecast from h36 reinit, production config, then the established switzerland_hpg_native_face_fix.budget_between depth-8 control surface vs CPU.",
+      "patch_reaches_forecast_PROVEN": "x1.64 -> output wrfout UST mean 0.560 -> 0.953 (>WRF 0.624; warm-blend compounds); U mean ratio 0.989, V 0.971 (winds DID brake); x5.0 -> nonfinite blow-up at hour 1. The patch demonstrably alters the live dynamics. (The first 'inert' x164 dir was STALE output from a first wrong-patch run on the dead noahmp_coupler path; the correct-patch rerun is gpu_output_ustar_x164clean.)"
+    },
+    "decisive_result_h37_depth8": {
+      "cpu_net_influx": -74.52,
+      "baseline_phys_tendf_net_influx": -101.06,
+      "ustar_corrected_net_influx": -100.75,
+      "baseline_excess": -26.545,
+      "ustar_corrected_excess": -26.238,
+      "venting_collapse_fraction": 0.0116
+    },
+    "reading": "Correcting (even OVER-correcting, output UST 0.95 vs WRF 0.62) the surface ustar/drag moves the depth-8 venting only ~1% (-26.5 -> -26.2). The flux-localizer substep sign-flip is real but does NOT propagate to the binding control-surface budget. Surface momentum drag is NOT the venting driver."
+  },
+
+  "lane_1_root_why_ustar_is_low": {
+    "oracle": "proofs/v014/switzerland_sfclay_ustar_oracle.{py,json}",
+    "warm_step_h36_interior_depth8": {
+      "wrf_ust": 0.624,
+      "jax_ustar_out": 0.260,
+      "jax_ust_in_carried": 0.000,
+      "jax_K_wspd_over_psix": 0.520,
+      "jax_znt": 0.344,
+      "jax_psix": 9.41,
+      "jax_wspd": 6.31
+    },
+    "root": "TWO compounding factors: (1) the h36 reinit seeds state.ustar = 0.0 (d02_replay loads no UST; the warm blend ust=0.5*ust_in+0.5*K*wspd/psix starts from 0), so a single warm step gives 0.5*0.52=0.26; over a forecast the blend converges to K*wspd/psix~0.52 (84% of WRF). (2) The residual 0.52 vs 0.62 gap is psix=9.41 slightly too large. NEITHER is the venting lever (lane refuted above), so no surface fix was shipped.",
+    "note_no_clamp": "These are diagnostics, not fixes; no clamp/mask/multiplier was shipped (the lane is refuted)."
+  },
+
+  "lane_2_boundary_static_IC_mass": {
+    "verdict": "ANALYTICALLY BOUNDED NEGLIGIBLE at the binding h37 metric (NOT IMPLEMENTED)",
+    "auditor_root": "d02_replay.load_wrfbdy_boundary_leaves:1713 decouples the wrfbdy normal momentum V_BYS with the STATIC IC dry mass (frozen mass_strips); as the domain vents the implied target velocity v=V_BYS/mass_IC drifts vs the WRF live-mass uncouple v=V_BYS/mass_live.",
+    "quantitative_bound_h37": {
+      "cpu_interior_mass_ratio_live_over_IC": 0.99922,
+      "gpu_interior_mass_ratio_live_over_IC": 0.99866,
+      "implied_boundary_velocity_bias_percent_of_wind": 0.134,
+      "implied_velocity_bias_m_s_at_10ms_wind": 0.013,
+      "flux_sensitivity_pa_cell_h_per_1ms_lowlevel": 172,
+      "max_possible_h37_venting_contribution_pa_cell_h": "<~2 (0.013 m/s x 172, and only on the boundary faces, not the full depth-8 budget)"
+    },
+    "reading": "At h36->h37 (the binding metric) the GPU interior mass has dropped only 0.13% (111 Pa), so the static-IC vs live-mass uncoupling discrepancy is ~0.013 m/s of boundary wind -- TWO orders of magnitude below the ~0.15 m/s low-level bias the flux sensitivity says is needed for -26.5. The bias is self-referential (grows only AS the domain vents) so it is near-zero at the h37 binding metric and cannot be the h37 driver. (Consistent with the auditor's own strength-sweep: forcing the target only moved venting 19% and could not reach CPU.) The fix was therefore NOT shipped -- it is bounded to <1% of the h37 venting.",
+    "fix_recipe_if_pursued_later": "Make normal_bdy_work_target_u/v (boundary_apply.py:689-736) + the spec-zone application uncouple the COUPLED wrfbdy momentum with the LIVE stage mass (prep.muu/muv, already available at operational_mode.py:1525-1538) instead of consuming the statically-decoupled leaf. Env-gate it. Expected effect at h37: <1% per the bound above; may matter only at long lead (h60+) once mass has drifted ~1%."
+  },
+
+  "overall_verdict": "BOTH adjudicated lanes (surface ustar PRIMARY, boundary static-IC-mass FALLBACK) are REFUTED / bounded-negligible at the binding h36->h37 depth-8 metric. Surface ustar correction (forecast-measured) collapses venting 1.2%; the boundary static-mass bias is analytically <1% at h37 (mass has barely drifted by h37). The -26.5 Pa/cell/h venting at h37 is NOT driven by surface momentum drag OR the boundary mass-uncouple. The driver is the interior free-troposphere over-strong (Foehn) jet itself -- the domain-wide vertical U dipole the flux-localizer mapped -- which neither surface drag nor the lateral-boundary target corrects. The next target must be the interior dynamics producing that jet (large-step/acoustic momentum balance), NOT the surface or boundary lanes.",
+
+  "artifacts": {
+    "decisive_driver": "proofs/v014/switzerland_ustar_decisive.{py,json}",
+    "ustar_oracle": "proofs/v014/switzerland_sfclay_ustar_oracle.{py,json}",
+    "patch_reach_check": "proofs/v014/switzerland_ustar_patch_reach_check.py (eager _physics_step_forcing: ustar x1.64 -> ru_tendf k0 mean 336->172, drag tendency demonstrably changes)",
+    "forecasts": [
+      "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x164clean (x1.64 correct-patch, h37 excess -26.24, stable)",
+      "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x500 (x5.0, BLEW UP hour 1 -> proves the patch reaches dynamics)"
+    ]
+  }
+}
