@@ -18,7 +18,18 @@
       "ustar_corrected_excess": -26.238,
       "venting_collapse_fraction": 0.0116
     },
-    "reading": "Correcting (even OVER-correcting, output UST 0.95 vs WRF 0.62) the surface ustar/drag moves the depth-8 venting only ~1% (-26.5 -> -26.2). The flux-localizer substep sign-flip is real but does NOT propagate to the binding control-surface budget. Surface momentum drag is NOT the venting driver."
+    "reading": "Correcting (even OVER-correcting, output UST 0.95 vs WRF 0.62) the surface ustar/drag moves the depth-8 venting only ~1% (-26.5 -> -26.2). The flux-localizer substep sign-flip is real but does NOT propagate to the binding control-surface budget. Surface momentum drag is NOT the venting driver.",
+    "vertical_U_bias_h37_interior_depth8_vs_CPU": {
+      "comment": "Strong drag DID fix the low-level over-strength (and overshoot it) but left the mid-level untouched, so the NET depth-8 mass-flux venting barely moved -- the venting is set by the MID-troposphere outflux, not the low-level.",
+      "k0":  {"cpu_u": 3.16, "baseline_bias": 0.388, "ustar_x164_bias": -2.090},
+      "k2":  {"cpu_u": 5.02, "baseline_bias": 0.601, "ustar_x164_bias": -1.223},
+      "k4":  {"cpu_u": 6.44, "baseline_bias": 0.547, "ustar_x164_bias": -0.909},
+      "k6":  {"cpu_u": 8.37, "baseline_bias": 0.466, "ustar_x164_bias": -0.606},
+      "k9":  {"cpu_u": 12.96,"baseline_bias": -0.032,"ustar_x164_bias": -0.438},
+      "k15": {"cpu_u": 16.15,"baseline_bias": -0.073,"ustar_x164_bias": 0.348},
+      "k25": {"cpu_u": 23.51,"baseline_bias": 0.012, "ustar_x164_bias": 0.193},
+      "k35": {"cpu_u": 20.14,"baseline_bias": -0.026,"ustar_x164_bias": -0.053}
+    }
   },
 
   "lane_1_root_why_ustar_is_low": {
