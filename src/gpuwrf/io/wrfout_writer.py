@@ -111,6 +111,8 @@ MICROPHYSICS_EXTRA_VARIABLES: tuple[str, ...] = (
 GRID_COORDINATE_VARIABLES: tuple[str, ...] = (
     "ZNU",
     "ZNW",
+    "ZS",
+    "DZS",
     "MAPFAC_M",
     "MAPFAC_U",
     "MAPFAC_V",
@@ -604,6 +606,12 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
     # --- P0-5a (b) grid-static coordinate / map-factor / Coriolis fields ---
     "ZNU": _spec("ZNU", Z_HALF, "Z  ", "eta values on half (mass) levels", ""),
     "ZNW": _spec("ZNW", Z_FULL, "Z  ", "eta values on full (w) levels", "", stagger="Z"),
+    # Static Noah/Noah-MP soil-layer geometry (init_soil_depth_2; the same arrays
+    # WRF repeats every history frame). ZS = layer-center depths, DZS = layer
+    # thicknesses; 1-D columns of length soil_layers_stag. No coordinates attr
+    # (matches the reference wrfout, which omits it for these 1-D soil fields).
+    "ZS": _spec("ZS", SOIL_1D, "Z  ", "DEPTHS OF CENTERS OF SOIL LAYERS", "m", stagger="Z"),
+    "DZS": _spec("DZS", SOIL_1D, "Z  ", "THICKNESSES OF SOIL LAYERS", "m", stagger="Z"),
     "MAPFAC_M": _spec("MAPFAC_M", XY, "XY ", "Map scale factor on mass grid", "", coordinates="XLONG XLAT XTIME"),
     "MAPFAC_U": _spec(
         "MAPFAC_U", MAPFAC_U_XY, "XY ", "Map scale factor on u-grid", "",
@@ -1667,6 +1675,26 @@ def _add_grid_coordinate_fields(
         if eta_host.shape == (nz + 1,):
             fields["ZNW"] = _coerce_array("ZNW", eta_host, (nz + 1,))
             fields["ZNU"] = _coerce_array("ZNU", 0.5 * (eta_host[:-1] + eta_host[1:]), (nz,))
+
+    # ZS/DZS: static Noah/Noah-MP soil-layer geometry. Pure constants of the soil
+    # configuration (WRF init_soil_depth_2, module_soil_pre.F:1128-1151): DZS =
+    # layer thicknesses, ZS = layer-center depths derived from DZS. WRF carries
+    # them in every history frame so downstream tools can reconstruct the soil
+    # column. They depend ONLY on the soil_layers_stag count, so they are always
+    # emittable (no metrics/state source needed) -- the SAME arrays the real-init
+    # + Noah-MP land hook consume. Computed in real(4) to bit-match the Fortran
+    # init_soil_depth_2, whose fp32 cumulative sum rounds ZS(3)=0.70000005
+    # (0x3f333334) -- an fp64 accumulation rounds the other way (0x3f333333).
+    n_soil = int(dimensions["soil_layers_stag"])
+    if n_soil == 4:
+        f32 = np.float32
+        dzs_host = np.array([0.1, 0.3, 0.6, 1.0], dtype=np.float32)
+        zs_host = np.zeros(n_soil, dtype=np.float32)
+        zs_host[0] = f32(0.5) * dzs_host[0]
+        for _l in range(1, n_soil):
+            zs_host[_l] = zs_host[_l - 1] + f32(0.5) * dzs_host[_l - 1] + f32(0.5) * dzs_host[_l]
+        fields["ZS"] = _coerce_array("ZS", zs_host, (n_soil,))
+        fields["DZS"] = _coerce_array("DZS", dzs_host, (n_soil,))
 
     metrics = _lookup(grid, "metrics")
     if metrics is not None:
