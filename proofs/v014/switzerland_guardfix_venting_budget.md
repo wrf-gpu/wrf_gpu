@@ -48,10 +48,37 @@ states, redistribution residual identically 0). One-line constant change; the
 limiter mechanism itself is untouched. `tests/savepoint/test_dycore_limiter.py`
 updated to the corrected envelope (3/3 pass).
 
-## Binding-metric confirmation
+## Binding-metric confirmation (PASS)
 
 `switzerland_guardfix_venting_budget.{py,json}` — production-config 3 h reinit
 run (`gpu_output_guardfix`, physics ON, guards ON, ONLY the ceiling changed) vs
-CPU truth: depth-8 excess h37/h38, field metrics h37-h39 (stability), warm-bias
-profile collapse, u-dipole bands, k43 frac>500 restoration. See JSON for the
-numbers quoted in the handoff.
+CPU truth:
+
+| metric | baseline (phys_tendf) | guardfix |
+|---|---:|---:|
+| depth-8 excess outflux h37 (Pa/cell/h) | **−26.54** | **+8.54** |
+| depth-8 excess h37→h38 window | −26.9 (speccad) / −21.5 | +14.91 |
+| depth-8 excess h36→h38 cumulative per h | ~−21.5..−26.9 | **+6.37** |
+| CPU own residual (metric noise floor) | ±5.2 | — |
+| interior warm bias h37 (k0/k6/k15/k20, K) | +0.30/+0.61/+0.48/+0.47 | −0.23/+0.01/−0.03/+0.01 |
+| interior warm bias h38 (K, max over k) | +1.28 | ±0.21 |
+| k43 frac(theta>500K) h37 (CPU 0.693) | 0.100 (crushed) | 0.667 (free) |
+| mu bias h38 (Pa) | −83.4 | +19.2 |
+| u/v/t/w rmse h38 | 1.17/0.83/0.85/0.140 | 0.86/0.68/0.49/0.105 |
+| u-dipole bands h38 (k00/k01-07/k10-24/k27-33, m/s) | +0.30/+0.45..1.02/−0.65/+0.25 | +0.12/+0.19/−0.08/+0.18 |
+| stability | — | h39 finite, u rmse 0.96, w rmse 0.12, no growth pathology |
+
+The venting excess collapses from −26.5 to +6..+15 (sign REVERSED, magnitude at
+the metric's CPU-residual noise scale); the spurious heating, the vertical
+U dipole, and the top-level theta crush all collapse together. The residual
+small positive excess (GPU retains slightly more mass) is a separate,
+order-smaller lane (mu bias +19 Pa @h38 vs −83 baseline).
+
+Limiter identity proof at the fixed ceiling: on the REAL h36 state the guard
+limits **0 cells** (max |Δ| = 0.0) vs **10,100 cells** (= 61.6 % of k43) that
+the old 500 K ceiling clipped EVERY step.
+
+Blast radius note: Canary d02 (May run) k43 theta reaches 502.8 K with 13.9 %
+of the domain >500 K — the same latent pump was active on the Canary domains
+whenever >500 K stratospheric air was present (candidate KI-9 mu/psfc-drift
+contributor). The fix benefits all domains.
