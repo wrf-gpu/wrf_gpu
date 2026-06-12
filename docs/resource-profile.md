@@ -73,24 +73,35 @@ history** — a few GiB for a single-domain 24 h run, more for nested runs.
   being finalized with the v0.12.0 standalone CLI; see the quickstart for the
   current invocation.
 
-## Wall-clock & energy (measured, warmed)
+## Wall-clock & energy (measured, v0.14)
 
-On the 3 km Canary d02 fixture, warmed (compile excluded), fp64:
+**v0.14 runs at parity with 28-rank CPU-WRF.** On the final 72 h GPU-vs-CPU
+field-parity gates (fp64, reference RTX 5090 workstation):
 
-- **≈ 15.35 s per forecast-hour** on one RTX 5090 (≈ 42.6 ms/step at dt=10 s).
-- **≈ 2.47× warm real-user wall-clock speedup** vs 28-rank CPU-WRF on the same
-  workstation for the d02 single-domain path. The honest apples-to-apples band
-  is **5–8× per-step**, with a strict dt-parity floor of **~3.2×**; the kernel /
-  compute-only ceiling (~5.3×–7.84×) is a per-step number and is **not** the
-  real-user wall-clock headline. Provenance: `proofs/perf/speedup_denominator.md`.
-- **Energy:** GPU 267 W × 15.4 s/forecast-hour ≈ 4.1 kJ per forecast-hour vs CPU
-  ~200 W × 83 s ≈ 16.6 kJ — **~4× less energy** to the same 24 h forecast.
+- **Switzerland d01** 72 h: GPU **~2762 s** vs CPU **2906 s** — **~1.05×**.
+- **Canary L2 d02** 72 h: GPU **~8200 s** vs CPU **8713 s** — **~1.06×**.
+- Steady-state deep-kernel cost is **~173 ms/step** and is ~90% of the wall
+  (`proofs/perf/v014_perf_regression_triage.json`).
 
-**(Projected)** On large, GPU-saturating grids the energy-to-solution advantage
-is projected to widen to 4–8×. The whole-Earth-at-1 km memory and rack-scale
-figures in the README are explicitly labelled **projected** (memory is exact
-arithmetic; wall-clock is a roofline projection of the not-yet-implemented
-multi-GPU domain-decomposition path).
+v0.14 is a **memory + WRF-identity release, not a performance release**:
+completing the fully WRF-faithful dycore + physics raised per-step compute to
+parity (the earlier, faster per-forecast-hour numbers were measured on an
+**incomplete dycore** and no longer reflect the shipped code). **No multi-×
+speedup is claimed.** Performance recovery — the fp64-operational-state ADR is
+the flagged highest-leverage lever — is the dedicated focus of **v0.15**.
+
+- **Energy:** at the current parity wall-clock the GPU is **roughly at energy
+  parity** with 28-rank CPU-WRF (no multiple is claimed). The card draws ~267 W;
+  an honest GPU-vs-CPU energy-to-solution figure is **pending the v0.15
+  performance re-measurement** and is not asserted for v0.14.
+
+**Whole-Earth-at-1 km (PROJECTED).** The whole-Earth-at-1 km memory and
+rack-scale figures in the README are explicitly labelled **projected**: the
+memory is exact arithmetic, but any global wall-clock estimate is **contingent on
+the v0.15 performance recovery and on real multi-GPU throughput** (the
+domain-decomposition path is bit-identity-proven on a CPU fake mesh only;
+real multi-GPU throughput is not yet shipped). It is a "where this is going"
+note, not a near-term capability or a benchmark.
 
 ## Quick sizing checklist
 

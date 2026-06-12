@@ -9,31 +9,44 @@ the GPU memory hierarchy from day one and validates against WRF as an oracle
 rather than inheriting WRF's architecture. The operational target is **Canary
 Islands daily forecasting** (3 km then 1 km) on a single-workstation RTX 5090.
 
-### Built for the GPU era — measured, and built to scale to the planet
+### WRF-v4 identity — a clean JAX GPU rewrite that reproduces WRF cell-for-cell
 
-**~4× more forecast per kilowatt-hour than CPU-WRF.** On the measured 3 km
-Canary Islands (d02) fixture, a single consumer RTX 5090 produces the same 24 h
-WRF forecast using **~4× less energy** than 28-rank CPU-WRF on an AMD Ryzen 9
-9950X — GPU 267 W × 15.4 s/forecast-hour ≈ 4.1 kJ vs CPU ~200 W × 83 s ≈ 16.6 kJ
-(~5× faster, measured warmed, fp64).¹ On large, GPU-saturating grids the
-energy-to-solution advantage is projected to widen to **4–8×**.
+**v0.14 reproduces WRF v4 cell-for-cell over 72 h forecasts in two independent
+regions.** A clean JAX GPU rewrite — not a Fortran-source port — closes two
+**72 h GPU-vs-CPU-WRF field-parity gates** (**Switzerland d01** + **Canary L2
+d02**), each stable to h72 with **9/10 prognostic fields within frozen
+tolerance** and the full dynamics/thermodynamics core **cell-for-cell
+identical** (`r ≈ 0.99–1.00`). The headline fix is the **Switzerland venting
+root cause** — a `_THETA_LIMITER_MAX_K=500 K` masking clamp firing on real
+~507 K stratospheric theta, removed by raising it to a non-load-bearing 1000 K —
+on a memory-stable single-GPU stack. It is proven by a **reproducible, CPU-only
+identity-proof system** (the two dashboards below).
 
-**The whole Earth at 1 km fits in a single rack.** The global 1 km, 50-level
-atmospheric state — ~25 billion cells, ~4.3 TB (≈13 TB with solver working
-memory) — fits in the HBM of one **NVIDIA GB300 NVL72**; ~**2–3 such racks**
-project to sub-day wall-clock per 24 h global forecast — a resolution
-effectively out of reach for CPU-WRF.²
+**Performance is at parity with CPU-WRF — and is the focus of v0.15.** On the
+final 72 h gates the GPU runs the same forecast at **~1.05× (Switzerland) /
+~1.06× (Canary)** — i.e. **on par** with 28-rank CPU-WRF on the reference
+RTX 5090 workstation. v0.14 is a **memory + WRF-identity release, not a
+performance release**: completing the fully WRF-faithful dycore + physics
+(v0.13/v0.14) raised per-step compute to parity, so the earlier, faster speedup
+numbers — measured on an incomplete dycore — **no longer hold and are not
+v0.14 claims.** **Performance recovery is the dedicated focus of v0.15.** No
+multi-× speed and no per-kWh claim is made for v0.14 (roughly at energy parity
+at the current wall-clock, pending an honest v0.15 re-measurement).
 
-<sub>¹ **Measured** on the d02 fixture, warmed, fp64; card power vs CPU-package
-power. Speedup band 5–8×, strict dt-parity floor ~3.2×
-(`proofs/perf/speedup_denominator.md`).</sub>
-<sub>² **Projected, not measured:** assumes the planned single-node multi-GPU
-domain-decomposition path (sharding code present and bit-identity-proven on a
-fake mesh — v0.13.0 extends it to `shard_map` + `lax.ppermute` halo, still
-fake-mesh-only — but real multi-GPU throughput is not yet shipped as of v0.13.0).
-The memory figures are exact arithmetic (168 B/cell × 50 levels × 510 M km² ≈ 4.3 TB;
-×3.09 XLA peak ≈ 13 TB); the wall-clock is a roofline projection, not a
-benchmark.</sub>
+**The whole Earth at 1 km fits in a single rack (PROJECTED).** The global 1 km,
+50-level atmospheric state — ~25 billion cells, ~4.3 TB (≈13 TB with solver
+working memory) — fits in the HBM of one **NVIDIA GB300 NVL72**. This is exact
+memory arithmetic; it is a **"where this is going" note, not a near-term
+capability** — any global wall-clock estimate is **contingent on the v0.15
+performance recovery and on real multi-GPU throughput, both of which are
+unmeasured.**¹
+
+<sub>¹ **Projected, not measured:** the memory figures are exact arithmetic
+(168 B/cell × 50 levels × 510 M km² ≈ 4.3 TB; ×3.09 XLA peak ≈ 13 TB). The
+single-node multi-GPU domain-decomposition path is **bit-identity-proven on a
+CPU fake mesh only** (`shard_map` + `lax.ppermute` halo); **real multi-GPU
+throughput is not yet shipped**, and a global wall-clock figure would also
+require the v0.15 performance recovery. No global benchmark is claimed.</sub>
 
 ## Quickstart
 
@@ -81,7 +94,7 @@ cache override): **[docs/resource-profile.md](docs/resource-profile.md)**.
 | GPU / VRAM | NVIDIA GPU with **≥ 26 GiB free VRAM** for 3 km d02 at fp64 (RTX 5090 / 32 GiB reference). Peak **≈ 24.6 GiB** during d02 integration; the smaller d01 9 km standalone case peaks **≈ 4.7 GiB**. |
 | Cold JIT compile | **≈ 4 min 55 s** on the **first** d02 run before integration begins (no output during compile). The **persistent on-disk JIT cache (on by default in v0.12.0)** turns later runs into a **~10 s cache read** — measured **cold ~147 s → cache-hit ~29 s** for the d01 hour-1 wrapper (compile + first execute). The cached executable is **bit-identical** to the cold one (zero numerics change). |
 | Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
-| Warm throughput | **≈ 15–17 s wall-clock per forecast-hour** (fp64; d02 3 km 15.35–16.39 s, d01 9 km 16.69 s — launch-bound, so similar across these grid sizes). Apples-to-apples warm-kernel speedup ≈ **5× (band 5–8×)** vs 28-rank CPU-WRF on the same workstation; **warm real-user wall ≈ 2.5×**. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) for the full cold/warm/kernel reconciliation. |
+| Warm throughput | **At parity with 28-rank CPU-WRF** on the reference workstation: the final 72 h GPU-vs-CPU gates ran **~1.05×** (Switzerland d01: GPU 2762 s vs CPU 2906 s) / **~1.06×** (Canary L2 d02: GPU ~8200 s vs CPU 8713 s), both fp64. Steady-state deep-kernel cost ~**173 ms/step** (~90% of wall on the d01 128×128×44 triage). v0.14 is a memory + WRF-identity release, **not** a performance release — completing the fully WRF-faithful dycore raised per-step compute to parity; **performance recovery is the dedicated focus of v0.15**. No multi-× speedup is claimed. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) for the measured breakdown. |
 | Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
 
 ## Current status — v0.14.0
@@ -264,7 +277,7 @@ Proof objects live under [`proofs/v014/`](proofs/v014/) (v0.14.0-specific: ident
 - **Restart bit-identity.** A-path vs B1+B2 (restart at midpoint): 75/75 fields bit-identical (`proofs/v0110/restart_continuity.json`).
 - **DGX single-GPU-default bit-identity.** With `ShardingConfig.disabled()` (the production default): 56/56 State field SHA-256 hashes bit-identical between the reference trunk and the DGX-d2 sharding-disabled path.
 - **Powered TOST equivalence (n=15).** The MAM corpus is prepared (forcing retained, CPU-WRF references assembled). **v0.13.0 unblocked the GPU scoring path** — the v0.12.0 `daily_pipeline` / `run_one_case` `rc=2` that blocked the campaign was root-caused (two conflated sources) and **fixed**; the scoring path is proven `rc=0` on a real GPU `wrfout` vs CPU-WRF (`SCORING_PATH_RC0_PROVEN`, 7 tests; `proofs/v013/tost_rc2_fix.json`, `proofs/v013/tost_scoring_path_cpu_proof.json`). **v0.14 did not run a powered n=15 TOST** — v0.14 is a memory + WRF-identity release whose headline evidence is the two 72 h GPU-vs-CPU-WRF field-parity gates, not a station-RMSE equivalence campaign; the powered campaign stays **deferred (KI-5)**. **n=15 is honestly underpowered** (n≈27 needed to detect a 10% RMSE difference at α=0.05, β=0.20). The **operational equivalence evidence remains the d02 coupled-skill result above** plus the runnable equivalence demo (whose 24 h verdict is `NOT_EQUIVALENT`). **No "TOST PASS" / "statistical equivalence" is claimed.** Margins + power analysis: [`.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md`](.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md).
-- **End-to-end wall-clock speedup.** Three honest numbers, kept distinct (full reconciliation in [docs/PERFORMANCE.md](docs/PERFORMANCE.md)): (1) **warm-kernel apples-to-apples ≈ 5× (band 5–8×, dt-parity floor ~3.2×)** — compute-only per-forecast-hour, one RTX 5090 vs 28-rank CPU-WRF on the same d02 grid, both fp64 ([`proofs/perf/speedup_denominator.md`](proofs/perf/speedup_denominator.md)); (2) **warm real-user wall ≈ 2.5×** (includes IO + case build, persistent cache warm); (3) the **equivalence-demo real-user** number on the 24 h d02 case — **~4.26× warm-cached** (GPU 561.3 s vs CPU 2393.2 s) and **~1.70× cold** (GPU 1408.6 s, cold ~5-min compile). The cold-vs-warm gap is entirely the persistent JIT cache + IO/case-build, not a numerics change. The compute-only kernel ceiling is a per-step number, never the real-user headline.
+- **End-to-end wall-clock — at parity with CPU-WRF (v0.14 measured).** The two final 72 h GPU-vs-CPU gates ran **Switzerland ~1.05×** (GPU 2762 s vs CPU 2906 s) and **Canary ~1.06×** (GPU ~8200 s vs CPU 8713 s) — i.e. **on par** with 28-rank CPU-WRF on the same RTX 5090 workstation, both fp64. The v0.14 perf-triage (`proofs/perf/v014_perf_regression_triage.json`) breaks this down as **~90% genuine deep-kernel steady-state** (~173 ms/step on d01 128×128×44), **~7% per-hour host overhead** (finite-summary state pulls + wrfout write + boundary rewindow), and **~2.3% compile**. This is a real regression from earlier versions: those faster numbers were measured on an **incomplete/faster dycore**, and completing the fully WRF-faithful dycore + physics raised per-step compute to parity — a multi-× warm-kernel ratio is mathematically incompatible with this ~1.05× end-to-end, so the earlier 5×/2.5×/4.26× figures are **superseded and are not v0.14 claims**. Performance recovery (the fp64-operational-state ADR is the flagged highest-leverage lever) is the dedicated focus of **v0.15**. Full breakdown: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 **Standalone AIFS end-to-end (native init, no CPU-WRF dependency).** The full native pipeline (AIFS met_em → `build_real_init` → native LBC → `run_forecast_operational_segmented` → wrfout) ran stable and finite for 6 h on case `20260428_18z` (`proofs/v0110/standalone_e2e`). This confirms the native-init path is operational. No 24 h or RMSE claim is made from this 6 h smoke.
 
@@ -356,7 +369,7 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 | Run a forecast | [`docs/quickstart.md`](docs/quickstart.md) — `python -m gpuwrf.cli run …` |
 | Run long GPU validation / powered TOST reliably | [`docs/GPU_RUNBOOK.md`](docs/GPU_RUNBOOK.md) — `scripts/run_gpu_lowprio.sh`, `scripts/run_powered_tost_n15.sh` |
 | Run & verify the GPU-vs-CPU equivalence demo | [`docs/equivalence-demo.md`](docs/equivalence-demo.md) — `scripts/equivalence_demo.py` |
-| Understand the cold/warm/kernel speedup numbers | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/perf/speedup_denominator.md`](proofs/perf/speedup_denominator.md) |
+| Understand the v0.14 performance (~1.05× parity + triage breakdown) | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/perf/v014_perf_regression_triage.json`](proofs/perf/v014_perf_regression_triage.json) |
 | Check current known issues | [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) |
 | Reproduce the proof collection on CPU | [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) — `scripts/verify_reproducibility.sh` |
 | Run the community-standard validation suite | [`docs/VALIDATION.md`](docs/VALIDATION.md) — `scripts/community_validation.sh` |
