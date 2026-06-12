@@ -1,6 +1,6 @@
 {
   "asset_dir": "docs/assets/v014/identity_proof/switzerland_d01",
-  "command": "scripts/build_identity_proof_plots.py --cpu-dir /mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu --gpu-dir /mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_thetafix_20260612T012219Z/gpu_output --domain d01 --init 2023-01-15T00:00:00+00:00 --case-id switzerland_d01_72h --region-label Switzerland d01 72h (2023-01-15 00Z) --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir proofs/v014/identity_proof/switzerland_d01 --asset-dir docs/assets/v014/identity_proof/switzerland_d01",
+  "command": "scripts/build_identity_proof_plots.py --cpu-dir /mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu --gpu-dir /mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_FINAL_20260612T062354Z/gpu_output --domain d01 --init 2023-01-15T00:00:00+00:00 --case-id switzerland_d01_72h --region-label Switzerland d01 72h (2023-01-15 00Z) --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir proofs/v014/identity_proof/switzerland_d01 --asset-dir docs/assets/v014/identity_proof/switzerland_d01",
   "cpu_only": true,
   "field_metrics": [
     {
@@ -121,27 +121,27 @@
       "within_tolerance": true
     },
     {
-      "bias": -0.06188197189205575,
-      "correlation": 0.03058505732428425,
+      "bias": 1.0416988867352612,
+      "correlation": 0.301074101012733,
       "field": "RAINNC",
       "finite_pair_fraction": 1.0,
       "limit": 1.0,
-      "max_abs": 47.339630752801895,
-      "p99_abs": 20.792866090834142,
-      "rmse": 5.994207476044908,
+      "max_abs": 42.02012872695923,
+      "p99_abs": 15.550358815193176,
+      "rmse": 5.1857030347811675,
       "scored_metric": "rmse",
-      "value": 5.994207476044908,
+      "value": 5.1857030347811675,
       "within_tolerance": false
     }
   ],
-  "generated_utc": "2026-06-12T06:12:14.763317+00:00",
+  "generated_utc": "2026-06-12T07:36:26.345232+00:00",
   "gpu_used": false,
   "headline": {
     "all_within": false,
     "n_scored": 10,
     "n_within": 9,
     "worst_field": "RAINNC",
-    "worst_fraction_of_limit": 5.994207476044908
+    "worst_fraction_of_limit": 5.1857030347811675
   },
   "honest_scope": "Honest scope: differences shown at true scale; variable set = predeclared focused-writer hard-gate fields; report-only / bounded fields labelled, breaches drawn red.",
   "identity_fields_compared": [
