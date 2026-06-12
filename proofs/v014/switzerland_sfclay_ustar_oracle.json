@@ -1,0 +1,33 @@
+{
+ "schema": "v014_switzerland_sfclay_ustar_oracle",
+ "generated_utc": "2026-06-12T00:06:39.150587+00:00",
+ "note": "warm-step (first_timestep=False) operational surface chain at h36 reinit",
+ "interior_depth8_means": {
+  "wrf_ust": 0.6238172650337219,
+  "jax_ustar_out": 0.26015119599305875,
+  "jax_ust_in_carried": 0.0,
+  "jax_wspd_raw": 6.313175969328976,
+  "jax_wspd_implied_with_vconv": 6.315820874004605,
+  "jax_znt": 0.343976177742105,
+  "jax_za": 23.43306328153746,
+  "jax_gz1oz0": 4.630414687636095,
+  "jax_psim": -4.778907654947626,
+  "jax_psix": 9.409322342583723,
+  "jax_K_wspd_over_psix": 0.5203023919861175,
+  "jax_br": 0.14179034829214673,
+  "jax_zol": 3.107461149831117,
+  "wrf_pblh": 758.0508422851562,
+  "wrf_wspd10": 5.07442045211792
+ },
+ "land_only_depth8": {
+  "wrf_ust_land": 0.6266041398048401,
+  "jax_ust_land": 0.26132157028564185,
+  "jax_fraction_of_wrf_land": 0.4170441171471228,
+  "land_fraction": 0.99359130859375
+ },
+ "fractions": {
+  "jax_ust_out_over_wrf": 0.41703109319841547,
+  "jax_ust_in_over_wrf": 0.0
+ },
+ "diagnosis_hint": "If K*wspd/psix (the half WRF drives ust toward) is itself ~WRF UST, the carried ust_in is dragging the blend down (carry/seed defect). If K*wspd/psix is itself low, the deficit is in wspd (missing vconv) or psix (znt too small -> gz1oz0 too big, or psim wrong)."
+}
