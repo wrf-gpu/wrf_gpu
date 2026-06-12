@@ -149,19 +149,18 @@ is: **short-lead fields track CPU-WRF within tolerance; by 24 h the run is
 its residual is dominated by that same dynamical divergence** (after the
 diagnostic offset was removed).
 
-**Speedup (this demo):** the warm-cache GPU run integrated the 24 h d02 forecast
-in **561.3 s** (forecast-only) vs an estimated **2393.2 s** for the CPU-WRF d02
-solver (from the retained RSL per-step timing, d02 model step 6 s × 14 400
-steps) — **~4.26×**. The earlier **cold-compile** run of the same demo took
-**1408.6 s → ~1.70×**; the difference is entirely the persistent JIT cache (a
-cold ~5-minute XLA compile vs a ~10 s cache read) plus IO/case-build overhead,
-not a numerics change. This is a same-card, fp64, single-forecast **real-user
-wall-clock** comparison of the d02 main solver only; it is **not** the
-warm/compute-only kernel speedup (~5×, band 5–8×, dt-parity floor ~3.2×) quoted
-in [`PERFORMANCE.md`](PERFORMANCE.md) and
-[`../proofs/perf/speedup_denominator.md`](../proofs/perf/speedup_denominator.md).
-See the speedup-reconciliation paragraph in [`PERFORMANCE.md`](PERFORMANCE.md)
-for how the cold-real-user, warm-real-user, and warm-kernel numbers relate.
+**Speedup (this demo) — earlier-version numbers, superseded.** This demo's
+historical timing (warm-cache GPU 561.3 s → ~4.26×, cold 1408.6 s → ~1.70× vs an
+estimated 2393.2 s CPU-WRF d02 solver) was measured on the **earlier, faster
+dycore** and **no longer reflects the shipped v0.14 code.** Completing the
+WRF-faithful dynamics + physics in v0.13/v0.14 raised per-step compute to
+**parity** with 28-rank CPU-WRF — the final 72 h gates measured **~1.05×
+(Switzerland) / ~1.06× (Canary)** — so the ~4.26×/~1.70× figures are
+**superseded and are not v0.14 claims.** v0.14 is a memory + WRF-identity
+release; performance recovery is the dedicated focus of **v0.15**. The honest
+current performance breakdown is in [`PERFORMANCE.md`](PERFORMANCE.md). What this
+demo still demonstrates is the **field-by-field equivalence verdict** above, not
+a speedup.
 
 A documented exceedance with its numbers is exactly the point of a self-serve
 demo. The PSFC diagnostic offset is now closed; the remaining gap is the
@@ -173,8 +172,10 @@ lead-time wind divergence, which is the tracked follow-up (KI-9 in
 **Designed to test:** whether, given the *same* initial and lateral-boundary
 conditions, the independent JAX GPU integrator reproduces the retained CPU-WRF
 (Fortran WRF v4) forecast field-by-field, grid-point-by-grid-point,
-hour-by-hour, within the predeclared operational tolerance, while running faster
-on the GPU. It is an honest cross-implementation check that emits an
+hour-by-hour, within the predeclared operational tolerance. (At v0.14 the GPU runs
+this case at **parity** with 28-rank CPU-WRF, not faster — see
+[`PERFORMANCE.md`](PERFORMANCE.md).) It is an honest cross-implementation check
+that emits an
 `EQUIVALENT` / `NOT_EQUIVALENT` verdict from the data (see the observed result
 above — the current default-case verdict is `NOT_EQUIVALENT`, with the
 exceedances and likely causes documented).

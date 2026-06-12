@@ -1,14 +1,69 @@
-# Performance — measured, reproducible (v0.12.0 standalone path)
+# Performance — measured, reproducible (v0.14)
 
-This page gives the **honest, reproducible** performance numbers for the v0.12.0
-standalone CLI (`gpuwrf run`), with exact command lines. Every number is measured,
-not claimed; precision, domain, and warm/cold are labelled. For sizing and the
-already-documented cold-compile / VRAM behaviour see
-[`resource-profile.md`](resource-profile.md); for the full speedup-vs-CPU-WRF
-analysis see [`../proofs/perf/speedup_denominator.md`](../proofs/perf/speedup_denominator.md).
+**v0.14 headline: the GPU port runs the same 72 h forecast at parity with
+28-rank CPU-WRF (~1.05×–1.06×).** v0.14 is a **memory + WRF-identity release, not
+a performance release.** Completing the fully WRF-faithful dycore + physics
+(v0.13/v0.14) raised per-step compute to parity — so the earlier multi-×
+speedup numbers, which were measured on an **incomplete/faster dycore**, **no
+longer reflect the shipped code and are not v0.14 claims.** Performance recovery
+is the dedicated focus of **v0.15**.
+
+This page gives the **honest, reproducible** performance numbers, with exact
+command lines. Every number is measured, not claimed; precision, domain, and
+warm/cold are labelled. For sizing and the cold-compile / VRAM behaviour see
+[`resource-profile.md`](resource-profile.md).
 
 **A modest honest number beats an impressive shaky one.** Where a value is
-projected or pending, it says so.
+projected, pending, or superseded, it says so.
+
+## v0.14 measured — at parity with CPU-WRF (the load-bearing number)
+
+The two final 72 h GPU-vs-CPU-WRF field-parity gates were timed end-to-end on the
+reference RTX 5090 workstation, both fp64, against retained 28-rank CPU-WRF
+(V4.7.1) truth:
+
+| Region | GPU wall | CPU wall (28-rank) | Ratio | Peak VRAM |
+|---|---|---|---|---|
+| **Switzerland d01** 72 h | **~2762 s** | **2906 s** | **~1.05×** | ~19.8 GiB |
+| **Canary L2 d02** 72 h | **~8200 s** | **8713 s** | **~1.06×** | ~20.3 GiB |
+
+This is **at parity** with CPU-WRF — not a multi-× speedup. The v0.14 perf-triage
+(`proofs/perf/v014_perf_regression_triage.json`, Switzerland d01 128×128×44,
+dt=18 s, 10 acoustic substeps) attributes the wall-clock cleanly and proves the
+parity is real, not an instrumentation artifact:
+
+| Component | Share of wall | What it is |
+|---|---|---|
+| **Deep-kernel steady state** | **~90%** | Genuine per-step compute, **~173 ms/step** (200 steps/forecast-hour) — the dominant cost on the finished dycore. |
+| **Per-hour host overhead** | **~7%** | `finite_summary` full-state pulls (×2/hr) + `wrfout` write + land refresh + boundary rewindow — per **hour**, not per step. |
+| **Compile (cold start)** | **~2.3%** | One-time XLA compile (~63 s of a 72 h run), removed on later runs by the persistent JIT cache. |
+
+Because ~90% of the wall is genuine deep-kernel steady state, a multi-× warm-kernel
+ratio is **mathematically incompatible** with the measured ~1.05× end-to-end: the
+old "5× warm kernel" figure cannot coexist with a 1.05× wall on the same code, and
+does **not** reflect v0.14.
+
+**Why the regression vs earlier versions.** Earlier releases were timed on an
+**incomplete/faster dycore** (fewer operators in the acoustic/`advance_w` solve,
+a lighter physics fold). v0.13/v0.14 completed the WRF-faithful dynamics +
+physics (per-substep `advance_w` with `w_damp`, the physics-`tendf` fold + 2-D
+Smagorinsky on the default path, full guard passes), which raised per-step compute
+to parity. The triage also found an **intrinsic double-compile** when a
+mixed-precision (fp32/fp64) raw state is fed into the `force_fp64` forecast; the
+identity-safe collapse of it shifts hour-1 by fp32-ε, so it was **not** landed in
+v0.14. Making the **operational state fp64 end-to-end** removes both the
+double-compile and the per-step precision converts — that is the flagged
+**highest-leverage v0.15 lever** (a precision-matrix ADR), deferred precisely
+because it changes the current baseline at fp32-ε.
+
+**v0.15 performance plan (where the recovery comes from).** The triage's deferred
+deep causes (`deep_causes_deferred_v015`) are the v0.15 worklist: the fp64
+operational-state ADR (removes the double-compile + per-step converts), hoisting
+the per-substep mass-denominator rebuild and `safe_*` floors out of the acoustic
+inner loop where identity-safe, A/B-profiling the two Thomas `lax.scan` unrolls,
+folding the per-hour double full-state host pull into the writer payload, and the
+optional hand-fused-kernel branch. No v0.15 number is claimed here — it will be
+re-measured honestly.
 
 ## Reference setup
 
@@ -43,11 +98,18 @@ The pipeline reports `wall_clock_per_hour_s`: element `[0]` carries the XLA comp
 (cold or cache-read) + the first hour's execution + JAX warmup; elements `[1:]` are the
 **warm** steady-state per-forecast-hour cost.
 
-## Benchmark table (measured, fp64, d01)
+## Standalone-path benchmark table (d01) — JIT-cache + VRAM mechanism
+
+> **Note on the throughput row.** The **16.69 s/forecast-hour** figure below was
+> measured on the **earlier (v0.12.0) standalone d01 path**, before the
+> v0.13/v0.14 dycore completion raised per-step compute. It is **superseded by the
+> v0.14 parity measurement above** for the current shipped code and is retained
+> here only as standalone-path/JIT-cache provenance. The **persistent JIT cache,
+> cold/warm compile, and VRAM** behaviour in this table still holds in v0.14.
 
 | Metric | Value | Precision / domain | Source |
 |---|---|---|---|
-| **Warm throughput** | **16.69 s / forecast-hour** (≈ 46 ms/step) | fp64, d01 9 km | 3 independent warm hours: 16.69, 16.69, 16.68 s |
+| Warm throughput (**earlier v0.12.0 dycore — superseded**) | 16.69 s / forecast-hour (≈ 46 ms/step) | fp64, d01 9 km | 3 independent warm hours: 16.69, 16.69, 16.68 s |
 | Cold compile + 1st hour (cache **disabled**) | 147.6 s (hour-1) | `GPUWRF_JAX_CACHE=0` | `cold_run.json` |
 | Cold compile + 1st hour (empty cache, populating) | 150.3 s (hour-1) | empty `JAX_COMPILATION_CACHE_DIR` | `cachepop_run.json` |
 | 1st hour with **warm cache** (clean cache hit) | **29.3 s** (≈ compile-via-cache ~10 s + first-execute ~16.7 s) | warm `JAX_COMPILATION_CACHE_DIR`, no pipeline probes | `driver_warm.json` |
@@ -93,64 +155,35 @@ no pipeline probes) and reported in `v0120_standalone_bench.json`. See
 `docs/resource-profile.md` for the previously documented **~4 min 55 s cold compile** on
 the larger d02 program.
 
-## Where this sits vs the published speedup
+## Historical speedup numbers — superseded by the v0.14 measurement
 
-The published apples-to-apples speedup is the **d02** number, not d01:
+> **These numbers do NOT describe v0.14.** Earlier releases reported a warm-kernel
+> "~5×" (band 5–8×, dt-parity floor ~3.2×), a warm real-user "~2.5×", and
+> equivalence-demo "~4.26× warm-cached / ~1.70× cold" — all measured on an
+> **incomplete/faster dycore**. Completing the WRF-faithful dynamics + physics in
+> v0.13/v0.14 raised per-step compute to **parity** (the ~1.05×–1.06× measured
+> above). A multi-× warm-kernel ratio is **mathematically incompatible** with the
+> measured ~1.05× end-to-end on the shipped code, so **these figures are
+> superseded and are not v0.14 claims.** They are kept below only as historical
+> context for the project's trajectory; the binding v0.14 number is the parity
+> measurement and triage at the top of this page.
 
-- **~5× warm, apples-to-apples** (band **5–8×**), strict **dt-parity floor ~3.2×**,
-  real-user warm wall **~2.5×** — one RTX 5090 vs 28-rank CPU-WRF on the same workstation,
-  both fp64, same 3 km d02 grid. Full provenance and caveats:
-  [`../proofs/perf/speedup_denominator.md`](../proofs/perf/speedup_denominator.md).
+For the record, the earlier-version figures (one RTX 5090 vs 28-rank CPU-WRF,
+same workstation, both fp64, d02 3 km grid; **incomplete/faster dycore,
+superseded**):
 
-The **d01** warm number here (16.69 s/fc-hour) is **in-family** with the established d02
-numerator (15.35–16.39 s/fc-hour): same dt / substep / radiation structure, and at these
-GPU-underutilized grid sizes the per-step cost is set by the launch-bound step structure
-rather than the cell count. **This d01 run confirms the warm-throughput family; it does not
-establish a new headline** — there is no clean uncontended CPU-WRF standalone-d01
-denominator, so no new ratio is claimed.
+| Number (earlier version, **superseded**) | Value (historical) | What it measured |
+|---|---|---|
+| Warm kernel (apples-to-apples) | ~5× (band 5–8×, dt-parity floor ~3.2×) | Compute-only per-forecast-hour on the earlier dycore (`proofs/perf/speedup_denominator.md`, dated 2026-05-30). |
+| Warm real-user wall | ~2.5× | Full command-to-finish wall after the JIT cache is warm, earlier dycore. |
+| Equivalence-demo real-user | ~4.26× warm-cached / ~1.70× cold | `equivalence_demo.py` 24 h d02, earlier dycore (`proofs/v0120/equivalence_demo_20260509_d02_FINAL.json`). |
 
-### Speedup reconciliation — why there are three different numbers (and none is dishonest)
-
-Readers see three speedup numbers in this project. They differ because they measure
-**different things**; this is the one place that reconciles them so a skeptic cannot claim
-one contradicts another. All are one RTX 5090 vs 28-rank CPU-WRF on the same workstation,
-both fp64, same d02 3 km grid.
-
-| Number | Value | What it measures | Source |
-|---|---|---|---|
-| **Warm kernel (apples-to-apples)** | **~5×** (band **5–8×**, strict **dt-parity floor ~3.2×**) | **Compute-only** per-forecast-hour: warmed GPU step (compile excluded, IO excluded), GPU dt=10 s vs CPU dt=6 s, normalized to the same model time. The defensible engineering speedup. | [`../proofs/perf/speedup_denominator.md`](../proofs/perf/speedup_denominator.md) |
-| **Warm real-user wall** | **~2.5×** | Full command-to-finish wall after the JIT cache is warm: includes IO + case build + JAX dispatch overhead, not just the kernel. | warm real-user d02, inherited |
-| **Equivalence-demo real-user** | **~4.26× warm-cached**, **~1.70× cold** | The `equivalence_demo.py` 24 h d02 run: end-to-end GPU wall vs the retained CPU-WRF d02 solver wall (CPU dt=6 s × 14 400 steps from the RSL logs). | `proofs/v0120/equivalence_demo_20260509_d02_FINAL.json` (4.26×) and `…_d02.json` (1.70×) |
-
-**How they relate, precisely:**
-
-- **Cold vs warm in the equivalence demo (1.70× → 4.26×).** The *same* demo run took **1408.6 s**
-  the first time (cold ~5-minute XLA compile included → **1.70×** vs CPU 2393.2 s) and
-  **561.3 s** with a warm persistent JIT cache (cold compile replaced by a ~10 s cache read →
-  **4.26×**). The difference is **entirely the persistent JIT cache plus IO/case-build**, not a
-  numerics change — the cached executable is bit-identical to the cold one. So the cold number
-  is the honest *first-run* experience; the warm number is the honest *every-subsequent-run*
-  experience.
-- **Equivalence-demo warm-cached (4.26×) vs warm real-user (~2.5×).** The equivalence demo's GPU
-  wall is the **forecast-only** integration (561.3 s) divided by the CPU **d02-solver-only** wall
-  (the RSL per-step timing for d02, excluding the CPU's own IO and the d01 parent). The ~2.5×
-  warm real-user headline is a stricter, fuller-overhead command-to-finish ratio. They bound the
-  real-user experience from both sides; the demo's solver-vs-solver framing is more favourable
-  because it strips matched overhead from both numerator and denominator.
-- **Warm real-user (~2.5×) vs warm kernel (~5×).** The kernel number is compute-only per model
-  time; the real-user number adds IO, case build, and dispatch tax that the kernel number
-  excludes. The gap between them is overhead, **not** a precision or correctness difference.
-- **The dt trap.** CPU-WRF runs d02 at **dt=6 s** (parent_time_step_ratio=3); the warm-kernel
-  numerator runs the GPU at **dt=10 s**. All speedup numbers are computed **per forecast-hour
-  (same model time)**, never per-step — a per-step comparison would be meaningless and is
-  reported only to expose the trap. The **dt-parity floor ~3.2×** is what remains if the GPU is
-  forced to the CPU's 6 s step.
-
-**Bottom line:** the honest, defensible engineering number is **~5× warm kernel (5–8× band, ~3.2×
-dt-parity floor)**; the honest real-user experience is **~2.5× warm wall** (first run slower by the
-cold compile, which the persistent JIT cache removes thereafter). The 4.26× / 1.70× equivalence-demo
-numbers are the same physics measured solver-to-solver, warm and cold respectively. None contradicts
-another.
+`proofs/perf/speedup_denominator.md` remains in the repo as a dated (2026-05-30)
+record of the **earlier-version** measurement; it is **not** the current
+authority. The current authority is the v0.14 parity table + the perf-triage
+breakdown at the top of this page. The **cold→warm JIT-cache** behaviour the demo
+exposed (cold compile vs ~10 s bit-identical cache read) still holds in v0.14 — it
+is a compile-time effect, not a forecast-speed claim.
 
 ### Precision: there is no faster fp32 standalone path today
 
@@ -163,10 +196,17 @@ none is reachable through the CLI.
 
 ## Safe-speedup candidate MEASURED — and rejected on the coupled path
 
+> Historical record of one rejected flag (earlier-version baseline; the 16.71
+> s/forecast-hour baseline below is the pre-v0.14 dycore, **superseded** by the
+> v0.14 parity measurement at the top). Kept because the *conclusion* — keep XLA
+> defaults — still holds, and the launch-tax target it identifies feeds the v0.15
+> performance work.
+
 The warmed step is **launch-bound** (`cuLaunchKernelEx` = 38% of CUDA-API time; only 5.5%
 of launches are CUDA-graph-captured today), so `XLA_FLAGS=--xla_gpu_graph_min_graph_size=1`
 (lower the CUDA-graph capture threshold 5→1) was the leading candidate — it gave **1.71×**
-on the **dynamics-only** dycore in a prior sprint (`proofs/perf/fusion_results.md`).
+on the **dynamics-only** dycore in a prior sprint (`proofs/perf/fusion_results.md`), but
+**did not carry to the coupled step** (below) and was not landed.
 
 **This sprint re-measured it on the full coupled standalone path and it is a regression, so
 it was NOT landed:**
