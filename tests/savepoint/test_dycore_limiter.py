@@ -8,14 +8,18 @@ from gpuwrf.runtime.operational_mode import _positive_definite_theta_increment_l
 
 def test_theta_positive_definite_limiter_counts_first_cell_and_conserves_mass() -> None:
     origin = jnp.full((1, 2, 3), 300.0, dtype=jnp.float64)
-    candidate = origin.at[0, 0, 1].set(-10.0).at[0, 1, 2].set(610.0)
+    # v0.14: the envelope ceiling is 1000 K (a pure NaN/blow-up trap; the earlier
+    # 500 K ceiling sat below real stratospheric theta and was load-bearing --
+    # the Switzerland venting root cause).  Use a candidate above the new
+    # ceiling to exercise the clip path.
+    candidate = origin.at[0, 0, 1].set(-10.0).at[0, 1, 2].set(1110.0)
     mass = jnp.ones_like(origin)
 
     limited, diagnostics = _positive_definite_theta_increment_limiter(candidate, origin, mass)
 
     limited_np = np.asarray(limited)
     assert float(limited_np.min()) >= 0.0
-    assert float(limited_np.max()) <= 500.0
+    assert float(limited_np.max()) <= 1000.0
     assert int(np.asarray(diagnostics["theta_limited_cell_count"])) == 2
     np.testing.assert_array_equal(np.asarray(diagnostics["theta_first_limited_cell_xyz"]), np.array([1, 0, 0]))
     assert abs(float(np.asarray(diagnostics["theta_mass_residual"]))) < 1.0e-9
