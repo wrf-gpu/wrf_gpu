@@ -85,11 +85,11 @@ The tool is fully data-driven via the `--cpu-dir/--gpu-dir/--init/--domain` (or
 `--case-json`) arguments, so the **final** v0.14 release runs reuse the exact same two
 commands against their own `run_root`s.
 
-## Sample results (development runs)
+## Results (final v0.14 release runs)
 
 | Region | Variables | Leads | Within frozen tolerance | Worst field |
 | --- | --- | --- | --- | --- |
-| Switzerland d01 | 10 | 72 | **9 / 10** | `RAINNC` precip 5.99 mm RMSE vs 1.0 mm (bounded-not-exact) |
+| Switzerland d01 | 10 | 72 | **9 / 10** | `RAINNC` precip 5.19 mm RMSE vs 1.0 mm (bounded-not-exact; ≈0.78× the field's std 6.6 mm) |
 | Canary L2 d02 | 10 | 72 | **9 / 10** | `QVAPOR` 1.45×10⁻³ kg/kg RMSE vs 1.0×10⁻³ (marginal, +45%) |
 
 In both regions the full dynamics/thermodynamics core (`T, U, V, W, T2, U10, V10, PSFC`)

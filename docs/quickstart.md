@@ -60,10 +60,11 @@ my_case/
 You can produce these from any standard WRF preprocessing chain (WPS +
 `real.exe`). **Bring your existing WRF `namelist.input`** — the supported
 matrix runs as-is, and anything unsupported fails closed with a named reason
-(see [namelist-compatibility.md](namelist-compatibility.md)). The one common
-edit: WRF's real-data diffusion defaults (`diff_opt=1`, `km_opt=4`,
-Smagorinsky) are not yet supported — switch to constant-K (`diff_opt=2`,
-`km_opt=1`).
+(see [namelist-compatibility.md](namelist-compatibility.md)). WRF's real-data
+diffusion default (`diff_opt=1`, `km_opt=4`, 2-D Smagorinsky) **runs as-is**;
+the constant-K path (`diff_opt=2`, `km_opt=1`) is also supported. (3-D
+TKE / full-Smagorinsky closures, `km_opt=2/3/5`, fail closed — switch to
+`km_opt=1` or `4`.)
 
 ## 3. Run a standalone forecast
 
@@ -165,6 +166,6 @@ not from-scratch native init — see the README honesty note.)
 |---|---|
 | Run "hangs" for ~5 min on first launch, no output | Cold JIT compile. Normal. Warm the cache; subsequent runs are fast. |
 | `RESOURCE_EXHAUSTED` / OOM | Not enough free VRAM (need ≥ ~26 GiB for d02 fp64). Use a bigger card or a smaller domain. |
-| Namelist rejected with a named scheme error | Unsupported option, fail-closed. Switch to a supported scheme (see namelist-compatibility.md); for diffusion use `diff_opt=2`/`km_opt=1`. |
+| Namelist rejected with a named scheme error | Unsupported option, fail-closed. Switch to a supported scheme (see namelist-compatibility.md); for diffusion use `diff_opt=1`/`km_opt=4` (2-D Smagorinsky) or `diff_opt=2`/`km_opt=1` (constant-K). |
 | Scratch fills up / RAM exhausted | `--scratch-dir` pointed at tmpfs. Use a local NVMe path. |
 | `jax.devices()` shows only CPU | JAX CUDA wheel/driver mismatch. Reinstall `jax[cuda13]` (or the nightly CUDA wheel). |
