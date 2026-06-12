@@ -271,6 +271,39 @@ def test_grid_metric_and_derived_diagnostics_present_and_finite(tmp_path: Path):
         np.testing.assert_allclose(float(dataset["RDY"][0]), 1.0 / 3000.0, rtol=1e-5)
 
 
+def test_rainnc_is_wrf_all_phase_total(tmp_path: Path):
+    """RAINNC must follow WRF's wrfout convention (module_mp_thompson.F:1298-1306).
+
+    WRF accumulates RAINNC = rain + snow + graupel + ice (the ALL-PHASE total),
+    with SNOWNC = snow + ice and GRAUPELNC = graupel as overlapping subsets. The
+    GPU State keeps DISJOINT accumulators (rain_acc=liquid only), so the writer
+    must fold them into the total. A rain-only RAINNC under-counts frozen Alpine
+    precip (the v0.14 Switzerland 72h RAINNC gate miss) and lets SNOWNC > RAINNC,
+    which is impossible in WRF.
+    """
+
+    state, grid, namelist, land = _full_operational_case()
+    # _full_operational_case sets rain_acc=2.0, snow_acc=0.5, graupel_acc=0.1,
+    # ice_acc=0.05 -> WRF total RAINNC = 2.65, SNOWNC = 0.55, GRAUPELNC = 0.1.
+    path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
+    write_wrfout_netcdf(
+        state, grid, namelist, path,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18), land_state=land,
+    )
+    with Dataset(path) as dataset:
+        rainnc = np.asarray(dataset["RAINNC"][0])
+        snownc = np.asarray(dataset["SNOWNC"][0])
+        graupelnc = np.asarray(dataset["GRAUPELNC"][0])
+        # All-phase total, not rain-only.
+        np.testing.assert_allclose(rainnc, 2.65, rtol=0, atol=1e-4)
+        np.testing.assert_allclose(snownc, 0.55, rtol=0, atol=1e-4)
+        np.testing.assert_allclose(graupelnc, 0.10, rtol=0, atol=1e-4)
+        # WRF invariants: RAINNC is the superset of every frozen channel.
+        assert np.all(rainnc >= snownc - 1e-6), "RAINNC must include SNOWNC"
+        assert np.all(rainnc >= graupelnc - 1e-6), "RAINNC must include GRAUPELNC"
+
+
 def test_existing_variables_unchanged_when_metrics_added(tmp_path: Path):
     """The A1/A2 additions must not perturb any pre-existing variable's values."""
 
