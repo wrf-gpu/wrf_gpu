@@ -1,0 +1,69 @@
+{
+  "verdict": "BUG_FIXED_PARTIAL + BOUNDED_SENSITIVITY",
+  "gate_limit_mm": 1.0,
+  "rainnc_rmse_pooled_current_rain_only": 5.994207859039307,
+  "rainnc_rmse_pooled_corrected_all_phase": 5.185702800750732,
+  "h72_field_corr_corrected": 0.30576420455714515,
+  "h72_cpu_mean_mm": 5.483310699462891,
+  "h72_gpu_corrected_mean_mm": 5.570326328277588,
+  "h72_bias_corrected_mm": 0.08701533079147339,
+  "cpu_field_wet_mean_mm": 6.771744251251221,
+  "cpu_field_std_mm": 6.628188133239746,
+  "note": "corrected = current_RAINNC(rain_acc)+SNOWNC(snow+ice)+GRAUPELNC(graupel); reproduces atlas current=5.994",
+  "per_lead_tail": [
+    {
+      "file": "1_2023-01-17_19:00:00",
+      "rmse_cur": 8.12758731842041,
+      "rmse_corr": 6.744973659515381,
+      "bias_cur": -1.294703483581543,
+      "bias_corr": 0.41770946979522705,
+      "cpu_mean": 5.1246337890625,
+      "gpu_corr_mean": 5.5423431396484375
+    },
+    {
+      "file": "1_2023-01-17_20:00:00",
+      "rmse_cur": 8.151575088500977,
+      "rmse_corr": 6.746991157531738,
+      "bias_cur": -1.431123971939087,
+      "bias_corr": 0.2827293276786804,
+      "cpu_mean": 5.264787673950195,
+      "gpu_corr_mean": 5.547516822814941
+    },
+    {
+      "file": "1_2023-01-17_21:00:00",
+      "rmse_cur": 8.153892517089844,
+      "rmse_corr": 6.734233856201172,
+      "bias_cur": -1.524894118309021,
+      "bias_corr": 0.19054371118545532,
+      "cpu_mean": 5.362683296203613,
+      "gpu_corr_mean": 5.553226947784424
+    },
+    {
+      "file": "1_2023-01-17_22:00:00",
+      "rmse_cur": 8.154267311096191,
+      "rmse_corr": 6.7248854637146,
+      "bias_cur": -1.5823177099227905,
+      "bias_corr": 0.13444268703460693,
+      "cpu_mean": 5.424112319946289,
+      "gpu_corr_mean": 5.5585551261901855
+    },
+    {
+      "file": "1_2023-01-17_23:00:00",
+      "rmse_cur": 8.156001091003418,
+      "rmse_corr": 6.720204830169678,
+      "bias_cur": -1.611456274986267,
+      "bias_corr": 0.1064068078994751,
+      "cpu_mean": 5.457454204559326,
+      "gpu_corr_mean": 5.563860893249512
+    },
+    {
+      "file": "1_2023-01-18_00:00:00",
+      "rmse_cur": 8.167627334594727,
+      "rmse_corr": 6.724389553070068,
+      "bias_cur": -1.6323516368865967,
+      "bias_corr": 0.08701533079147339,
+      "cpu_mean": 5.483310699462891,
+      "gpu_corr_mean": 5.570326328277588
+    }
+  ]
+}

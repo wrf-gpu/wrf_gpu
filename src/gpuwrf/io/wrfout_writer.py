@@ -1433,10 +1433,18 @@ def _build_output_fields(
         if value is not None:
             fields[wrf_name] = value
 
-    # --- P0-5a (c) accumulated precipitation partition. WRF SNOWNC = grid-scale
-    # snow + ice (mm); GRAUPELNC = grid-scale graupel (mm). Source = the State
+    # --- P0-5a (c) accumulated precipitation partition. Source = the State
     # precip accumulators that coupling.physics_couplers advances each
-    # microphysics step. Emitted only when present (microphysics active). ---
+    # microphysics step as DISJOINT channels (rain_acc=liquid, snow_acc, ice_acc,
+    # graupel_acc). WRF's wrfout convention (module_mp_thompson.F:1298-1306) is:
+    #   RAINNC    = rain + snow + graupel + ice   (TOTAL accumulated precip, all phases)
+    #   SNOWNC    = snow + ice                     (frozen subset)
+    #   GRAUPELNC = graupel
+    # i.e. SNOWNC/GRAUPELNC are OVERLAPPING subsets of RAINNC, not extra channels.
+    # The internal accumulators stay disjoint (conservation budget / SR / restart
+    # rely on that); only the wrfout mapping folds them into WRF's total here.
+    # Emitted only when present (microphysics active). ---
+    rain_acc = _optional_field_array(state, ("rain_acc", "RAINNC"), shape_xy)
     snow_acc = _optional_field_array(state, ("snow_acc", "SNOWNC"), shape_xy)
     ice_acc = _optional_field_array(state, ("ice_acc",), shape_xy)
     graupel_acc = _optional_field_array(state, ("graupel_acc", "GRAUPELNC"), shape_xy)
@@ -1447,6 +1455,20 @@ def _build_output_fields(
         fields["SNOWNC"] = _coerce_array("SNOWNC", snowice, shape_xy)
     if graupel_acc is not None:
         fields["GRAUPELNC"] = graupel_acc
+    # WRF RAINNC is the all-phase total; overwrite the rain-only default written
+    # above (RAINNC: rain_acc) when any frozen channel is present so SNOWNC never
+    # exceeds RAINNC and the domain precip total matches CPU-WRF.
+    if any(a is not None for a in (snow_acc, graupel_acc, ice_acc)):
+        def _zero_xy(a: np.ndarray | None) -> np.ndarray:
+            return np.asarray(a, dtype=np.float64) if a is not None else np.zeros(shape_xy, dtype=np.float64)
+
+        rainnc_total = (
+            _zero_xy(rain_acc)
+            + _zero_xy(snow_acc)
+            + _zero_xy(graupel_acc)
+            + _zero_xy(ice_acc)
+        )
+        fields["RAINNC"] = _coerce_array("RAINNC", rainnc_total, shape_xy)
 
     # --- P0-5a (b) grid-static coordinate / map-factor / Coriolis fields. Source
     # = GridSpec.metrics + GridSpec.vertical (always present on a real GridSpec).
