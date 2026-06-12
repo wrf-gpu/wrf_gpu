@@ -4,14 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpuwrf"
-version = "0.13.0"
+version = "0.14.0"
 description = "A GPU-native WRF-compatible regional NWP model (JAX dynamical core + physics)"
+readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
 # Core runtime deps actually imported on the operational path
 # (import gpuwrf -> daily_pipeline -> operational_mode -> io/validation).
 # Backend-specific GPU/Triton deps (cupy, torch, triton) and the CUDA jaxlib are
 # intentionally NOT here -- see the [project.optional-dependencies] extras and
-# README for the `pip install "jax[cuda12]"` step. CPU jax pulls in jaxlib so a
+# README for the `pip install "jax[cuda13]"` step. CPU jax pulls in jaxlib so a
 # plain `pip install -e .` import-checks without a GPU.
 dependencies = [
   "jax>=0.4",
@@ -28,8 +30,9 @@ dependencies = [
 dev = ["pytest>=7"]
 # GPU execution: install the CUDA jaxlib for your platform. This is documented
 # separately because the right wheel depends on the local CUDA/driver; pinning
-# it here would break CPU-only / non-CUDA installs.
-cuda = ["jax[cuda12]>=0.4"]
+# it here would break CPU-only / non-CUDA installs. The reference stack is CUDA 13
+# (see README / docs/quickstart.md); use jax[cuda12] instead on a CUDA 12 host.
+cuda = ["jax[cuda13]>=0.4"]
 # Optional alternate compute backends (not needed for the JAX path).
 cupy = ["cupy-cuda12x>=12"]
 triton = ["torch>=2.1", "triton>=2.1"]

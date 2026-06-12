@@ -25,8 +25,9 @@ VERIFY_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${VERIFY_COMMON_DIR}/../.." && pwd)"
 export PYTHONPATH="${REPO_ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}"
 
-# Prefer the project's conda python (where JAX+CUDA is installed); fall back to PATH python3.
-PYBIN="${VERIFY_PYBIN:-/home/enric/miniconda3/bin/python3}"
+# Interpreter: honour VERIFY_PYBIN if set (point it at the env where JAX+CUDA is
+# installed), otherwise use python3 from PATH. No hard-coded personal path.
+PYBIN="${VERIFY_PYBIN:-$(command -v python3)}"
 if [ ! -x "${PYBIN}" ]; then PYBIN="$(command -v python3)"; fi
 export PYBIN
 
