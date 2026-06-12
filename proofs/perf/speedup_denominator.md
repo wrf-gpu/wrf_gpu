@@ -1,5 +1,13 @@
 # CPU-WRF Speedup Denominator — rigorous, provenance-backed
 
+> **⚠ SUPERSEDED (2026-06-12, v0.14):** the speedup multipliers below were
+> measured on 2026-05-30 against an earlier, faster, **incomplete** dycore.
+> Completing the fully WRF-faithful dycore + physics (v0.13/v0.14) raised
+> per-step compute to **parity** with 28-rank CPU-WRF; the v0.14 measured
+> end-to-end speedup is **~1.05×** (see `proofs/perf/v014_perf_regression_triage.json`
+> and `docs/PERFORMANCE.md`). This file is retained as a dated historical
+> record — its multipliers are **NOT** current v0.14 claims.
+
 **Author:** opus frontrunner (`worker/opus/speedup-denominator`)
 **Date:** 2026-05-30
 **Mode:** READ-ONLY analysis of existing WRF timing logs. No new WRF runs, no GPU, no forecast. `taskset -c 0-3`.
