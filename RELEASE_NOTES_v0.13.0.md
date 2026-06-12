@@ -134,9 +134,9 @@ KF/BMJ/Tiedtke/Grell-Freitas cumulus), all of which carries forward unchanged.
   v0.12.0 was root-caused (two conflated sources: a per-case `L2_D02_BLOCKED` and an
   orchestrator `<2-scored` conflation) and **fixed**; the scoring path is proven
   `rc=0` on a real GPU `wrfout` vs CPU-WRF (`SCORING_PATH_RC0_PROVEN`), 7 tests. The
-  **powered n=15 TOST itself is `<<MANAGER-FILL: TOST n=15 result>>`** — see the
-  Resolved-at-tag section. No "TOST PASS" / statistical-equivalence is claimed
-  pending that result. Proofs: `proofs/v013/tost_rc2_fix.json`,
+  **powered n=15 TOST campaign itself was not run for this release** — see the
+  Resolved-at-tag section. No "TOST PASS" / statistical-equivalence is claimed.
+  Proofs: `proofs/v013/tost_rc2_fix.json`,
   `proofs/v013/tost_scoring_path_cpu_proof.json`.
 
 ## Honest equivalence framing — the credibility gate is NOT closed
@@ -172,7 +172,7 @@ See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
 | **KI-9** | **The credibility gate.** Equivalence demo: **24 h d02 `NOT_EQUIVALENT`**, dominated by **lead-time wind divergence** (3D V pooled RMSE 8.13 m/s). v0.13.0 ships off-by-default fidelity levers but does **not** close it (hard dycore-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob). | Documented gap |
 | KI-4 | d02 **U10** episodic final-lead under-prediction (8.06 vs 7.5 m/s bar); within bar at all other leads, beats persistence 23/24. Tied to KI-9 / MYNN cloud PDF. | Documented residual |
 | KI-3 | Focused **104-variable** `wrfout` (vs WRF's full 375-var schema). Remaining gap is mostly stochastic-seed + less-common diagnostics. | Scope boundary |
-| KI-5 | Powered **n=15 TOST**: scoring path **unblocked** (rc=2 fixed); the run itself is `<<MANAGER-FILL: TOST n=15 result>>`. **No TOST PASS is claimed** pending that result (n=15 underpowered; n≈27 for full power). | Scope boundary |
+| KI-5 | Powered **n=15 TOST**: scoring path **unblocked** (rc=2 fixed); the powered campaign was not run for this release. **No TOST PASS is claimed** (n=15 underpowered; n≈27 for full power). | Scope boundary |
 | KI-6 | RRTMG SW intermediate `taug` differs in 4 UV bands; integrated fluxes pass tier-1 (< 0.05 % rel). Pre-existing; carried. | Isolated |
 | KI-7 | Free-running (`run_boundary=False`) on **wide domains** (nx≈160+) can go unstable beyond ~14 h. Operational path uses boundary forcing. | Robustness edge |
 | **KI-10** | **Moisture advection cadence refinements** (GPT Q1/Q3): the opt-in moisture flux-advection shares the theta acoustic-cadence rather than accumulating acoustic fluxes, and physics-tendency folding is not yet WRF-cadence-exact. Default-off, so no shipped-behavior impact. | Fidelity refinement |
@@ -184,18 +184,15 @@ See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) for full detail.
   (24 h nested 1 km + GWD OOM'd at ~sim-hr 7) is closed by the RRTMG VRAM chunking:
   `PIPELINE_GREEN`, 24/24 `wrfout` per domain, all-finite at +24 h, forecast-only
   ≈ 1.86 h (`proofs/v013/gwd_nested_24h_gate.json`). `gwd_opt=1` honoured by default.
-- **Integrated GPU smoke gate (Step A) — `<<MANAGER-FILL: integrated 24 h 9/3/1 km
-  nested smoke result (proofs/v013/integrated_smoke_24h_nested.json) — PIPELINE_GREEN,
-  all-finite, warm-cache wall-clock>>`.** This is a "does the integrated v0.13 trunk
-  run clean + fast end-to-end" gate (no CPU compare), gating the Tier-3 rollout.
-- **Powered n=15 TOST — `<<MANAGER-FILL: TOST n=15 verdict + the real equivalence
-  numbers (T2/U10/V10), or "not scored" with reason>>`.** The scoring path is proven
-  `rc=0`; the campaign result is pending. **No equivalence / TOST PASS is claimed
-  until this is filled.**
-- **Compile-speed autotune-cache effect — `<<MANAGER-FILL: GPU cold→warm
-  autotune-cache speedup, measured on the integrated smoke, or "gated/unadvertised –
-  not yet measured">>`.** The infra is GPU-validated (clean import, no abort); the
-  *effect* is gated until measured.
+- **Integrated GPU smoke gate (Step A) — represented by the nested 24 h 1 km gate
+  above** (`PIPELINE_GREEN`, 24/24 `wrfout` per domain, all-finite at +24 h,
+  forecast-only ≈ 1.86 h; `proofs/v013/gwd_nested_24h_gate.json`). This is a "does
+  the integrated v0.13 trunk run clean + fast end-to-end" gate (no CPU compare).
+- **Powered n=15 TOST — not scored for this release.** The scoring path is proven
+  `rc=0`; the powered campaign was not run. **No equivalence / TOST PASS is claimed.**
+- **Compile-speed autotune-cache effect — gated/unadvertised, not yet measured on
+  GPU.** The infra is GPU-validated (clean import, no abort); the *effect* is gated
+  until measured.
 
 ## Deliberately deferred to v0.14+ (deliberate scope boundaries, not silent gaps)
 

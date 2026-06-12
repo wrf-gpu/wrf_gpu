@@ -128,12 +128,13 @@ blocked the powered-TOST campaign in v0.12.0 was root-caused (two conflated sour
 proven `rc=0` on a real GPU `wrfout` vs CPU-WRF (`SCORING_PATH_RC0_PROVEN`, 7 tests). Proofs:
 `proofs/v013/tost_rc2_fix.json`, `proofs/v013/tost_scoring_path_cpu_proof.json`.
 
-**The powered n=15 TOST result itself is `<<MANAGER-FILL: TOST n=15 verdict + the real
-equivalence numbers (T2/U10/V10), or "not scored" with reason>>`.** **n=15 is honestly
-underpowered** (n≈27 needed to detect a 10 % RMSE difference at α=0.05, β=0.20; n=15 does not
-confidently detect the ADR-029 margins). The operational equivalence evidence remains the d02
-coupled-skill single-case result plus the nested 24 h proof. **No "TOST PASS" is claimed** for
-any version pending the powered result.
+**v0.14 did not run a powered n=15 TOST.** v0.14 is a memory + WRF-identity release whose
+headline evidence is the two 72 h GPU-vs-CPU-WRF field-parity gates (Switzerland d01, Canary
+L2 d02), not a station-RMSE equivalence campaign; the powered campaign stays deferred. **n=15
+is honestly underpowered** (n≈27 needed to detect a 10 % RMSE difference at α=0.05, β=0.20;
+n=15 does not confidently detect the ADR-029 margins). The operational equivalence evidence
+remains the d02 coupled-skill single-case result plus the nested 24 h proof. **No "TOST PASS"
+is claimed** for any version.
 
 ---
 
@@ -319,8 +320,9 @@ guard replacements: 0. Proof: `proofs/v0110/conservation_budgets_closed.json`.
   (`proofs/v013/myj_janjic_oracle.json`). End-to-end coupled-RMSE vs CPU-WRF is the carry-over.
 - **Classic RRTM LW cross-model skeptic pass — DONE.** No JAX port bug (max div 2.7×10⁻¹³); F1
   grid-aware `_nbuf` + F2/F3 fail-loud guards merged.
-- **Powered n=15 TOST scoring path — UNBLOCKED** (rc=2 fixed, scoring `rc=0` proven). The
-  campaign result itself is `<<MANAGER-FILL: TOST n=15 result>>` — see KI-5.
+- **Powered n=15 TOST scoring path — UNBLOCKED** (rc=2 fixed, scoring `rc=0` proven). v0.14
+  did not run the powered campaign (the 72 h field-parity gates are the v0.14 evidence); it
+  stays deferred and no TOST PASS is claimed — see KI-5.
 
 ## Deferred to v0.14+ (deliberate scope boundaries, not silent gaps)
 
