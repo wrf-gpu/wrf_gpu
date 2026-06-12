@@ -112,11 +112,16 @@ taskset -c 0-3 python3 scripts/build_identity_proof_plots.py \
 
 ## Performance — honest ~1.05×, deferred to v0.15
 
-v0.14 is **not** a performance release. Warm per-forecast-hour throughput is
-roughly on par with 28-rank CPU-WRF (~1.05× Switzerland, ~1.06× Canary). The
-v0.13.0 perf-triage attributed the earlier 3×→1× change to a double-compile
-(fp32→fp64 graph) with no trivial identity-safe fix; **performance recovery is
-the dedicated focus of v0.15**. No performance headline is claimed for v0.14.
+v0.14 is **not** a performance release. End-to-end the GPU runs the 72 h
+forecast at parity with 28-rank CPU-WRF (~1.05× Switzerland, ~1.06× Canary). The
+v0.14 perf-triage (`proofs/perf/v014_perf_regression_triage.json`) shows this is
+**~90% genuine deep-kernel steady-state** (~173 ms/step) — the price of the
+now-complete, fully WRF-faithful dycore + physics, which is what raised per-step
+compute over the earlier, faster, incomplete-dycore builds — plus ~7% per-hour
+host overhead and ~2.3% compile (a separable mixed fp32→fp64 double-compile,
+targeted by the v0.15 fp64 operational-state ADR). There is no trivial
+identity-safe fix; **performance recovery is the dedicated focus of v0.15**. No
+performance headline is claimed for v0.14.
 
 ## Carried forward unchanged
 
