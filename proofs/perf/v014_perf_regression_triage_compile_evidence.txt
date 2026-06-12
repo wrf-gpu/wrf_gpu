@@ -1,0 +1,15 @@
+# JAX_LOG_COMPILES evidence — v0.14 perf regression triage (2026-06-12)
+# case: Switzerland d01 reinit h36 replay, 128x128x44, dt=18s, force_fp64=True, RTX 5090
+
+## BASELINE (HEAD 0c333235): _run_forecast_operational_jit compiled TWICE
+Persistent compilation cache hit for 'jit__run_forecast_operational_jit' with key 'jit__run_forecast_operational_jit-4131c845943fb0ef5a9b411899e26e0a6112a3bd0984d9bd3bb10e3cdf8c1a5b'
+Finished XLA compilation of jit(_run_forecast_operational_jit) in 31.720726728 sec
+Persistent compilation cache hit for 'jit__run_forecast_operational_jit' with key 'jit__run_forecast_operational_jit-3aa69afbb32ccb8b433512a27ae2309a6ea4e9e662077dccee23a4ec5bff1c5f'
+Finished XLA compilation of jit(_run_forecast_operational_jit) in 31.929583073 sec
+
+## FIXED (attempted, REVERTED): compiled ONCE
+Finished XLA compilation of jit(_run_forecast_operational_jit) in 31.882403135 sec
+
+## per-hour wall (s): baseline=[80.73,80.08,34.80] total=220.83 ; fixed=[80.64,34.56,34.80] total=174.54
+## determinism control: fixed-run1 vs fixed-run2 (same code) = 0.0 diff on ALL fields/hours (GPU is bit-reproducible run-to-run)
+## identity check: baseline vs fixed hour1 U rel=4.78e-07 (fp32-eps), hour3 U rel=2.48e-03 (chaotic amplification) -> NOT bit-identical -> reverted
