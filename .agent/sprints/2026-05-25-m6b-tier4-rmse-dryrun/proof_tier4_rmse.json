@@ -1,6 +1,0 @@
-{
-  "artifact_type": "m6b_tier4_rmse_dryrun_stage2",
-  "reason": "stage1 failed: bounds/finiteness blocker on 20260429_18z_l3_24h_20260524T204451Z",
-  "stage": 2,
-  "status": "NOT_RUN"
-}

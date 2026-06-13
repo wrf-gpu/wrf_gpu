@@ -1,8 +1,0 @@
-{
-  "escalation_events": 0,
-  "notes": "M5-S1.y preserves the Fortran harness oracle: small table paths and default-IN rain-freezing table gathers are wired, raw HLO launches are reported honestly, and strict ADR-005 parity remains partially unresolved.",
-  "reviewer_rejections": 3,
-  "sprint": "2026-05-20-m5-s1-thompson-microphysics-column",
-  "sprint_attempts": 6,
-  "worker": "codex-gpt-5.5"
-}

@@ -1,8 +1,0 @@
-source_path=/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d02
-d02_shape_nz_ny_nx=(44,66,159)
-patch16_bytes=7634917
-patch16_cells=256
-full_d02_cells=10494
-linear_full_d02_estimate_bytes=312971949
-linear_full_d02_estimate_gib=0.291
-recommendation=defer Tier-3 full-domain bundle unless M6B1 requests it; current 4-step/11-boundary estimate is below 20 GiB but coefficient-only compression may not hold once full WRF scratch fields are emitted.

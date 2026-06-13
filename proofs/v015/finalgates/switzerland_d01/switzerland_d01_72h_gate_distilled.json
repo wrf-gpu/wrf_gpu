@@ -1,0 +1,121 @@
+{
+ "region": "switzerland_d01_72h",
+ "schema": "v015-finalgate-distilled-v1",
+ "source_compare_json": "/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/switzerland_d01_72h_grid_compare.json",
+ "paired_files": 72,
+ "top_verdict": "FAIL",
+ "frozen_manifest": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json",
+ "hard_fields": {
+  "T": {
+   "pass": true,
+   "overall_rmse": 0.714290477370076,
+   "limit": 1.5,
+   "h72_rmse": 0.5318380576747235,
+   "max_abs": 11.5426025390625,
+   "p99_abs": 2.568023681640625,
+   "bias": -0.022093377871594082,
+   "pearson_r": 0.9999421101519411,
+   "finite_pair_fraction": 1.0
+  },
+  "U": {
+   "pass": true,
+   "overall_rmse": 1.3008739292596698,
+   "limit": 1.8,
+   "h72_rmse": 1.1163342380988985,
+   "max_abs": 26.116130471229553,
+   "p99_abs": 4.852321624755859,
+   "bias": 0.04931061098806579,
+   "pearson_r": 0.9927716455077369,
+   "finite_pair_fraction": 1.0
+  },
+  "V": {
+   "pass": true,
+   "overall_rmse": 1.0380500770218852,
+   "limit": 1.8,
+   "h72_rmse": 0.9068819510542309,
+   "max_abs": 16.761050701141357,
+   "p99_abs": 4.057854652404785,
+   "bias": 0.020524751980276368,
+   "pearson_r": 0.9864928976407077,
+   "finite_pair_fraction": 1.0
+  },
+  "W": {
+   "pass": true,
+   "overall_rmse": 0.14428581355927572,
+   "limit": 0.3,
+   "h72_rmse": 0.09377813778745582,
+   "max_abs": 4.312096476554871,
+   "p99_abs": 0.5680225491523743,
+   "bias": -0.0016040341034610672,
+   "pearson_r": 0.8202887293404804,
+   "finite_pair_fraction": 1.0
+  },
+  "QVAPOR": {
+   "pass": true,
+   "overall_rmse": 0.0005858354006480073,
+   "limit": 0.001,
+   "h72_rmse": 0.0004313909892851731,
+   "max_abs": 0.004843062488362193,
+   "p99_abs": 0.0024164135102182627,
+   "bias": 0.00021747862377099222,
+   "pearson_r": 0.9521296567330286,
+   "finite_pair_fraction": 1.0
+  },
+  "T2": {
+   "pass": true,
+   "overall_rmse": 0.773015937167248,
+   "limit": 1.5,
+   "h72_rmse": 1.0193839356829142,
+   "max_abs": 8.538986206054688,
+   "p99_abs": 2.989029884338379,
+   "bias": 0.013724012287437089,
+   "pearson_r": 0.991792138795986,
+   "finite_pair_fraction": 1.0
+  },
+  "U10": {
+   "pass": true,
+   "overall_rmse": 1.1454359903967366,
+   "limit": 1.5,
+   "h72_rmse": 1.124306514993885,
+   "max_abs": 12.456016302108765,
+   "p99_abs": 3.667344808578491,
+   "bias": 0.26461884079120224,
+   "pearson_r": 0.918479874093146,
+   "finite_pair_fraction": 1.0
+  },
+  "V10": {
+   "pass": true,
+   "overall_rmse": 1.0429817480706185,
+   "limit": 1.5,
+   "h72_rmse": 0.9321251406548919,
+   "max_abs": 11.008238554000854,
+   "p99_abs": 3.449138879776001,
+   "bias": 0.18787062037931476,
+   "pearson_r": 0.928331398332194,
+   "finite_pair_fraction": 1.0
+  },
+  "PSFC": {
+   "pass": true,
+   "overall_rmse": 29.102212258375786,
+   "limit": 120.0,
+   "h72_rmse": 28.874289433772027,
+   "max_abs": 228.0390625,
+   "p99_abs": 86.34789276123047,
+   "bias": 3.0061877303653293,
+   "pearson_r": 0.9999935271131484,
+   "finite_pair_fraction": 1.0
+  },
+  "RAINNC": {
+   "pass": false,
+   "overall_rmse": 5.078543410222752,
+   "limit": 1.0,
+   "h72_rmse": 6.617014203877685,
+   "max_abs": 41.96330451965332,
+   "p99_abs": 15.502821922302246,
+   "bias": 0.9797578950448922,
+   "pearson_r": 0.31121371039915413,
+   "finite_pair_fraction": 1.0
+  }
+ },
+ "hard_gate_passes": "9/10"
+}

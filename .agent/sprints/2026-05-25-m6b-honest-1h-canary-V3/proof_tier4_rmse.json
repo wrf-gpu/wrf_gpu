@@ -1,6 +1,0 @@
-{
-  "artifact_type": "m6b_v3_tier4_rmse",
-  "fields": {},
-  "reason": "blocked_before_valid_1h_rmse:WIND_BOUNDS",
-  "status": "NOT_RUN"
-}

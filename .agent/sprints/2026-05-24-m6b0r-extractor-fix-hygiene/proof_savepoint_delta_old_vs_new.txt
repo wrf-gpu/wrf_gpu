@@ -1,9 +1,0 @@
-column a max_abs_delta_old_vs_new = 0.0
-column alpha max_abs_delta_old_vs_new = 0.0
-column gamma max_abs_delta_old_vs_new = 0.0
-patch16 a max_abs_delta_old_vs_new = 0.0
-patch16 alpha max_abs_delta_old_vs_new = 0.0
-patch16 gamma max_abs_delta_old_vs_new = 0.0
-golden a max_abs_delta_old_vs_new = 0.0
-golden alpha max_abs_delta_old_vs_new = 0.0
-golden gamma max_abs_delta_old_vs_new = 0.0

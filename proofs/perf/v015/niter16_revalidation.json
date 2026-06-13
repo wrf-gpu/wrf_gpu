@@ -1,0 +1,118 @@
+{
+  "schema": "V015Niter16Revalidation",
+  "date_utc": "2026-06-13",
+  "agent": "fable-v015-kernel-final",
+  "objective": "Clean-GPU re-validation of the shipped GPUWRF_MYNN_COND_NITER=16 default (the lanes-1+2 worker's own 3-h confirmation was blocked by the transient GPU degradation).",
+  "case": "Switzerland d01 reinit-h36, 128x128x44, dt=18 s, force_fp64, RTX 5090, 3 production hours (600 steps), probe_ab_identity.py harness",
+  "baseline": {
+    "tag": "v015fin_niter50",
+    "env_niter": "50",
+    "per_hour_wall_s": [
+      462.343,
+      492.532,
+      36.413
+    ],
+    "steady_ms_per_step": 182.06,
+    "host_overhead": {
+      "finite_summary_s": 0.0446,
+      "all_finite": true,
+      "finite_guard_summary_s": 0.009,
+      "guard_agrees": true
+    }
+  },
+  "candidate_default": {
+    "tag": "v015fin_default16",
+    "env_niter": "(default 16)",
+    "per_hour_wall_s": [
+      137.418,
+      885.67,
+      25.525
+    ],
+    "steady_ms_per_step": 127.62,
+    "host_overhead": {
+      "finite_summary_s": 0.015,
+      "all_finite": true,
+      "finite_guard_summary_s": 0.0005,
+      "guard_agrees": true
+    }
+  },
+  "hash_divergence_expected_tierP": {
+    "hour1": {
+      "n_leaves": 56,
+      "n_hash_diff": 33
+    },
+    "hour2": {
+      "n_leaves": 56,
+      "n_hash_diff": 33
+    },
+    "hour3": {
+      "n_leaves": 56,
+      "n_hash_diff": 33
+    }
+  },
+  "field_gate_vs_frozen_v014_manifest": {
+    "comparator": "proofs/perf/v015/compare_tiered_identity.py",
+    "manifest": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json (FROZEN)",
+    "gated_fields": {
+      "p": {
+        "rmse": 0.0446072301435241,
+        "max_abs": 2.794817213420174,
+        "manifest_field": "PSFC",
+        "manifest_rmse_limit": 120.0,
+        "rmse_over_limit": 0.00037172691786270084
+      },
+      "qv": {
+        "rmse": 3.100486369338457e-08,
+        "max_abs": 1.618626534492535e-05,
+        "manifest_field": "QVAPOR",
+        "manifest_rmse_limit": 0.001,
+        "rmse_over_limit": 3.100486369338457e-05
+      },
+      "rain_acc": {
+        "rmse": 6.656494033744728e-06,
+        "max_abs": 0.00039946462397642823,
+        "manifest_field": "RAINNC",
+        "manifest_rmse_limit": 1.0,
+        "rmse_over_limit": 6.656494033744728e-06
+      },
+      "theta": {
+        "rmse": 0.000357929850916577,
+        "max_abs": 0.04507946872541879,
+        "manifest_field": "T",
+        "manifest_rmse_limit": 1.5,
+        "rmse_over_limit": 0.00023861990061105134
+      },
+      "u": {
+        "rmse": 0.0006971085771456854,
+        "max_abs": 0.10040794202832948,
+        "manifest_field": "U",
+        "manifest_rmse_limit": 1.8,
+        "rmse_over_limit": 0.0003872825428587141
+      },
+      "v": {
+        "rmse": 0.000607253152408127,
+        "max_abs": 0.07544705902006754,
+        "manifest_field": "V",
+        "manifest_rmse_limit": 1.8,
+        "rmse_over_limit": 0.00033736286244895943
+      },
+      "w": {
+        "rmse": 0.00019200885807905426,
+        "max_abs": 0.010635350746848904,
+        "manifest_field": "W",
+        "manifest_rmse_limit": 0.3,
+        "rmse_over_limit": 0.0006400295269301809
+      }
+    },
+    "worst_rmse_over_manifest_limit": 0.0006400295269301809,
+    "hard_gate_fails": [],
+    "verdict": "PASS"
+  },
+  "speedup_recheck": {
+    "niter50_ms_per_step": 182.06,
+    "default16_ms_per_step": 127.62,
+    "ratio": 1.427,
+    "note": "clean-GPU steady walls from hour3/200 steps; baseline here is the merged branch graph with NITER=50 (floors-off), not the v0.14 tag graph (S1 measured that at 173.9 ms/step)."
+  },
+  "verdict": "PASS"
+}

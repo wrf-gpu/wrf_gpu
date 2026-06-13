@@ -1,5 +1,0 @@
-# Build artifacts -- rebuilt on demand by build.sh / the test fixture.
-*.o
-*.mod
-*.so
-__pycache__/

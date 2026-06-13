@@ -134,6 +134,29 @@ T2_SUBL_QG = 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
 T1_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.86
 T2_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
 
+# ---- v0.15 cold-phase riming (WRF module_mp_thompson.F:2403-2440, 2758-2776) ----
+# Snow collecting cloud water: prs_scw = rhof * t1_qs_qc * Ef_sw * rc * smoe,
+# with t1_qs_qc = PI*0.25*av_s (line 794; the snow gamma moments live in smoe).
+T1_QS_QC = PI * 0.25 * AV_S
+# Graupel collecting cloud water (mu_g=0 single-density mp8 convention):
+# prg_gcw = rhof * t1_qg_qc * Ef_gw * rc * N0_g * ilamg**cge(9), with
+# cge(9) = bv_g + 3 + mu_g and t1_qg_qc = PI*0.25*av_g*cgg(9) (lines 766/2432).
+CGE9 = BV_G_MP8 + 3.0 + MU_G
+CGG9 = math.gamma(CGE9)
+T1_QG_QC = PI * 0.25 * AV_G_MP8 * CGG9
+# Mass-weighted graupel fall speed for the Stokes number (vtg of line 2421):
+# vtg = rhof*av_g*Gamma(bv_g+mu_g+4)/Gamma(mu_g+4) * ilamg**bv_g.
+CGG6_OVER_CGG3 = math.gamma(BV_G_MP8 + MU_G + 4.0) / math.gamma(MU_G + 4.0)
+RHO_W_RIME = 1000.0  # liquid water density in the graupel Stokes number
+# t_Efsw snow-bin geometry (WRF lines 862-872): nbs=100 log bins from D0s=300um
+# to 2 cm, Ds(n) = sqrt(xDx(n)*xDx(n+1)); the lookup uses Ds(1)/Ds(nbs).
+NBS_EFSW = 100
+_XDX_S_FIRST = 300.0e-6
+_XDX_S_LAST = 0.02
+_S_BIN_RATIO = math.exp(math.log(_XDX_S_LAST / _XDX_S_FIRST) / NBS_EFSW)
+DS_FIRST = math.sqrt(_XDX_S_FIRST * (_XDX_S_FIRST * _S_BIN_RATIO))
+DS_LAST = math.sqrt((_XDX_S_LAST / _S_BIN_RATIO) * _XDX_S_LAST)
+
 
 def constant_table() -> dict[str, float]:
     """Returns scalar constants for tests and ADR/report generation."""

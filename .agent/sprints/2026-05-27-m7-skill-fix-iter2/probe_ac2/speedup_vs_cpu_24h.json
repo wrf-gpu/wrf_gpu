@@ -1,7 +1,0 @@
-{
-  "reason": "ValueError: --restart-at-hour must be between 1 and hours - 1",
-  "schema": "M7DailyPipelineSpeedupVsCpu24h",
-  "schema_version": 1,
-  "status": "BLOCKED",
-  "upstream_verdict": "PIPELINE_BLOCKED"
-}

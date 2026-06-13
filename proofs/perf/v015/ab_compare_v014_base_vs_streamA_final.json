@@ -1,0 +1,40 @@
+{
+  "schema": "V015ABCompare",
+  "a": "v014_base",
+  "b": "streamA_final",
+  "hours_compared": [
+    "hour1",
+    "hour2",
+    "hour3"
+  ],
+  "leaves_per_hour": {
+    "hour1": 56,
+    "hour2": 56,
+    "hour3": 56
+  },
+  "bit_identical": true,
+  "mismatch_count": 0,
+  "mismatches_first20": [],
+  "wall_a_per_hour_s": [
+    81.521,
+    80.131,
+    35.77
+  ],
+  "wall_b_per_hour_s": [
+    456.222,
+    544.155,
+    38.472
+  ],
+  "steady_a_ms_per_step": 178.85,
+  "steady_b_ms_per_step": 192.36,
+  "host_overhead_a": {
+    "finite_summary_s": 0.0118,
+    "all_finite": true
+  },
+  "host_overhead_b": {
+    "finite_summary_s": 0.0147,
+    "all_finite": true,
+    "finite_guard_summary_s": 0.0005,
+    "guard_agrees": true
+  }
+}

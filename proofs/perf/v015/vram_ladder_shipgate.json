@@ -1,0 +1,70 @@
+{
+  "schema": "V015VramLadderShipGate",
+  "deliverable": "1b \u2014 VRAM ladder + large-grid stability (v0.15 ship gate)",
+  "tiling": "GPUWRF_MP_COLUMN_TILING=1 (MP column tiling ON, via the 1a fix that makes it engage on the real 3D layout)",
+  "allocator": "cuda_async",
+  "verdict": "FAIL \u2014 MP column tiling alone does NOT unlock the large 1km grids",
+  "root_cause": "With MP tiling capping the Thompson working set, the SMALLEST ladder rung (264x636 = 167,904 cols, the Switzerland-scale target) STILL OOMs on a SINGLE 18.72 GiB (20,098,507,880-byte) NON-Thompson allocation. At 167,904 cols the resident operational state alone is ~26 GiB (MaxInUse 26.22 GiB before the failing alloc), leaving ~6 GiB free against an 18.72 GiB single transient \u2014 physically impossible on the 32 GiB RTX 5090. The 18.72 GiB op is a full-ncol spectral/g-point or dycore transient (~14,960 elems/col = nz*~340), NOT Thompson \u2014 so MP tiling, which only caps Thompson, cannot help.",
+  "pre_tiling_reference": "proofs/perf/v015/km_bench/largest_probe.json \u2014 pre-tiling OOM was a ~28 GiB Thompson temp arena at 209,880; capping THAT just exposes the next 18.72 GiB ceiling elsewhere.",
+  "ship_target_status": {
+    "p1km_640x320 (204,800)": "DOES NOT FIT (>125,928 ceiling)",
+    "canary_560x280 (156,800)": "DOES NOT FIT (>125,928 ceiling)",
+    "switzerland_264x636 (167,904)": "DOES NOT FIT (OOM confirmed)",
+    "largest_proven_stable": "125,928 cols (~20-21 GiB, finite) -- a real but PARTIAL win vs pre-tiling"
+  },
+  "ladder_records": [
+    {
+      "ny": 264,
+      "nx": 636,
+      "ncol": 167904,
+      "ran_ok": false,
+      "oom": true,
+      "stable": false,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 109.35MiB.",
+      "wall_total_s": 147.9
+    }
+  ],
+  "recommendation": "The v0.15 large-grid / 1km headline CANNOT ship as a default capability: MP column tiling is necessary-but-insufficient. The binding ceiling is a non-Thompson 18.72 GiB single allocation that needs its OWN column-tiling lane (radiation g-point / dycore) \u2014 out of scope for the v0.15 kernel-final close. Document as a SCOPE NOTE: v0.15 ships the niter=16 perf headline; large-grid 1km is a documented follow-on (next-version VRAM lane), NOT a v0.15 claim.",
+  "post_tiling_ceiling": {
+    "largest_stable_ncol": 125928,
+    "note": "With MP tiling ON, all grids <= 125,928 cols fit STABLY + FINITE (peak ~20-21 GiB, ms/step 250-510). 167,904 (Switzerland-scale) OOMs on the 18.72 GiB non-Thompson alloc. The named targets are ABOVE this ceiling.",
+    "fitting_rungs": [
+      {
+        "ncol": 125928,
+        "peak_gib": 20.09,
+        "ms_per_step": 506.1,
+        "finite": true
+      },
+      {
+        "ncol": 125928,
+        "peak_gib": 21.2,
+        "ms_per_step": 509.5,
+        "finite": true
+      },
+      {
+        "ncol": 94446,
+        "peak_gib": 21.2,
+        "ms_per_step": 383.2,
+        "finite": true
+      },
+      {
+        "ncol": 104940,
+        "peak_gib": 21.2,
+        "ms_per_step": 453.8,
+        "finite": true
+      },
+      {
+        "ncol": 83952,
+        "peak_gib": 21.2,
+        "ms_per_step": 361.9,
+        "finite": true
+      },
+      {
+        "ncol": 62964,
+        "peak_gib": 21.2,
+        "ms_per_step": 249.5,
+        "finite": true
+      }
+    ]
+  }
+}

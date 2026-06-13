@@ -11,42 +11,49 @@ Islands daily forecasting** (3 km then 1 km) on a single-workstation RTX 5090.
 
 ### WRF-v4 identity — a clean JAX GPU rewrite that reproduces WRF cell-for-cell
 
-**v0.14 reproduces WRF v4 cell-for-cell over 72 h forecasts in two independent
-regions.** A clean JAX GPU rewrite — not a Fortran-source port — closes two
-**72 h GPU-vs-CPU-WRF field-parity gates** (**Switzerland d01** + **Canary L2
-d02**), each stable to h72 with **9/10 prognostic fields within frozen
-tolerance** and the full dynamics/thermodynamics core **cell-for-cell
-identical** (`r ≈ 0.99–1.00`). The headline fix is the **Switzerland venting
-root cause** — a `_THETA_LIMITER_MAX_K=500 K` masking clamp firing on real
-~507 K stratospheric theta, removed by raising it to a non-load-bearing 1000 K —
-on a memory-stable single-GPU stack. It is proven by a **reproducible, CPU-only
+**v0.15 reproduces WRF v4 cell-for-cell over 72 h forecasts in two independent
+regions, and delivers the project's final fp64 GPU kernel.** A clean JAX GPU
+rewrite — not a Fortran-source port — closes two **72 h GPU-vs-CPU-WRF
+field-parity gates** (**Switzerland d01** + **Canary L2 d02**), each stable to
+h72 with **9/10 prognostic fields within frozen tolerance** and the full
+dynamics/thermodynamics core **cell-for-cell identical** (`r ≈ 0.99–1.00`).
+v0.15 is **cleaner than v0.14 at the atlas level** (1 tolerance failure per
+region vs v0.14's 3): the **MUB/PB nest-base-state seam is fixed** (250.7 →
+**0.0078 Pa**) and Switzerland DZS/ZS are now emitted. The release also lands
+two WRF-fidelity fixes — **MYNN-EDMF condensation `niter` 50 → 16** (matching
+WRF's own convergence early-exit) and **Thompson cold-collection** (moving
+Switzerland RAINNC 5.99 → 5.08 mm). It is proven by a **reproducible, CPU-only
 identity-proof system** (the two dashboards below).
 
-**Performance is at parity with CPU-WRF — and is the focus of v0.15.** On the
-final 72 h gates the GPU runs the same forecast at **~1.05× (Switzerland) /
-~1.06× (Canary)** — i.e. **on par** with 28-rank CPU-WRF on the reference
-RTX 5090 workstation. v0.14 is a **memory + WRF-identity release, not a
-performance release**: completing the fully WRF-faithful dycore + physics
-(v0.13/v0.14) raised per-step compute to parity, so the earlier, faster speedup
-numbers — measured on an incomplete dycore — **no longer hold and are not
-v0.14 claims.** **Performance recovery is the dedicated focus of v0.15.** No
-multi-× speed and no per-kWh claim is made for v0.14 (roughly at energy parity
-at the current wall-clock, pending an honest v0.15 re-measurement).
+**v0.15 is a kernel-architecture + WRF-fidelity release — NOT an end-to-end
+speedup release.** On the final 72 h gates the GPU runs the same forecast at
+**~parity total-wall** (**Switzerland 0.99×**, **Canary 1.04×** vs 24/28-rank
+CPU-WRF), with **forecast-only stepping ~1.05–1.20×**, on the reference RTX 5090
+workstation. The per-step MYNN-condensation `niter` win is real (~1.4× on that
+isolated kernel) but is **diluted in the full pipeline** and offset by a heavier
+one-time compile (~8–12 min) and **higher peak VRAM** (Switzerland 20.5 → 22.9
+GiB, Canary 21.1 → 29.8 GiB — a disclosed regression). The fp64 GPU kernel is
+**adversarially confirmed near-optimal without megakernels** (the step is
+device-bound). **No multi-× speedup, no large-grid / 1 km speedup, and no
+per-kWh claim is made for v0.15.** The genuine speedup AND 1 km scalability both
+require **one** lever — the **fp32-operational-state restructuring**
+(ADR-007/031) — a separate, deferred major milestone, named precisely below.
 
 **The whole Earth at 1 km fits in a single rack (PROJECTED).** The global 1 km,
 50-level atmospheric state — ~25 billion cells, ~4.3 TB (≈13 TB with solver
 working memory) — fits in the HBM of one **NVIDIA GB300 NVL72**. This is exact
 memory arithmetic; it is a **"where this is going" note, not a near-term
-capability** — any global wall-clock estimate is **contingent on the v0.15
-performance recovery and on real multi-GPU throughput, both of which are
-unmeasured.**¹
+capability** — any global wall-clock estimate is **contingent on the
+fp32-operational performance lever and on real multi-GPU throughput, both of
+which are unmeasured.**¹
 
 <sub>¹ **Projected, not measured:** the memory figures are exact arithmetic
 (168 B/cell × 50 levels × 510 M km² ≈ 4.3 TB; ×3.09 XLA peak ≈ 13 TB). The
 single-node multi-GPU domain-decomposition path is **bit-identity-proven on a
 CPU fake mesh only** (`shard_map` + `lax.ppermute` halo); **real multi-GPU
 throughput is not yet shipped**, and a global wall-clock figure would also
-require the v0.15 performance recovery. No global benchmark is claimed.</sub>
+require the fp32-operational performance lever. No global benchmark is
+claimed.</sub>
 
 ## Quickstart
 
@@ -80,9 +87,9 @@ dependency**). Bring your existing WRF `namelist.input` — the supported matrix
 runs as-is; unsupported options fail closed with a named reason
 ([docs/namelist-compatibility.md](docs/namelist-compatibility.md)).
 
-> **First run is slow on purpose.** JAX/XLA does a **~5-minute cold compile with
-> no output before integration starts** — it is compiling, not hung. Every later
-> run reads the cached executable and skips it.
+> **First run is slow on purpose.** JAX/XLA does a **~8–12 min one-time cold
+> compile with no output before integration starts** — it is compiling, not
+> hung. Every later run reads the cached executable and skips it.
 
 ## System requirements & resource profile
 
@@ -91,25 +98,25 @@ cache override): **[docs/resource-profile.md](docs/resource-profile.md)**.
 
 | Resource | What to expect |
 |---|---|
-| GPU / VRAM | NVIDIA GPU with **≥ 26 GiB free VRAM** for 3 km d02 at fp64 (RTX 5090 / 32 GiB reference). Peak **≈ 24.6 GiB** during d02 integration; the smaller d01 9 km standalone case peaks **≈ 4.7 GiB**. |
-| Cold JIT compile | **≈ 4 min 55 s** on the **first** d02 run before integration begins (no output during compile). The **persistent on-disk JIT cache (on by default in v0.12.0)** turns later runs into a **~10 s cache read** — measured **cold ~147 s → cache-hit ~29 s** for the d01 hour-1 wrapper (compile + first execute). The cached executable is **bit-identical** to the cold one (zero numerics change). |
+| GPU / VRAM | NVIDIA GPU with **≥ 31 GiB free VRAM** for the nested 72 h case at fp64 (RTX 5090 / 32 GiB reference). On the final 72 h gates peak VRAM was **22.9 GiB** (Switzerland d01) and **29.8 GiB** (Canary L2 d02, nested) — **up from v0.14's 20.5 / 21.1 GiB**, a disclosed regression from the `niter`-16 unrolled temporaries + larger nested arena. The intrinsic ~21.7 GiB fp64 dycore working set is the binding ceiling; the deferred fp32-operational restructuring ~halves it. The smaller d01 9 km standalone case peaks **≈ 4.7 GiB**. |
+| Cold JIT compile | **~8–12 min** one-time on the first run before integration begins (no output during compile; the v0.15 operational graph is heavier than v0.14's ~5 min). The **persistent on-disk JIT cache (on by default since v0.12.0)** turns later runs into a fast cache read — measured **cold ~147 s → cache-hit ~29 s** for the d01 hour-1 wrapper (compile + first execute). The cached executable is **bit-identical** to the cold one (zero numerics change). |
 | Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
-| Warm throughput | **At parity with 28-rank CPU-WRF** on the reference workstation: the final 72 h GPU-vs-CPU gates ran **~1.05×** (Switzerland d01: GPU 2762 s vs CPU 2906 s) / **~1.06×** (Canary L2 d02: GPU ~8200 s vs CPU 8713 s), both fp64. Steady-state deep-kernel cost ~**173 ms/step** (~90% of wall on the d01 128×128×44 triage). v0.14 is a memory + WRF-identity release, **not** a performance release — completing the fully WRF-faithful dycore raised per-step compute to parity; **performance recovery is the dedicated focus of v0.15**. No multi-× speedup is claimed. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) for the measured breakdown. |
+| Warm throughput | **~Parity with 24/28-rank CPU-WRF** on the reference workstation: the final 72 h GPU-vs-CPU gates ran **total-wall 0.99×** (Switzerland d01: GPU 2941 s vs CPU 2906 s) / **1.04×** (Canary L2 d02: GPU 8414 s vs CPU ~8713 s), both fp64; **forecast-only stepping ~1.20× / ~1.05×**, and **warmed steady-state ~1.51× vs 24-rank (~1.29× vs 28-rank)** — the operationally-relevant figure for repeated/long runs (the ~8–12 min one-time compile, which the CPU never pays, is what pulls total-wall to parity). v0.15 ships the **final fp64 kernel** (adversarially confirmed near-optimal, device-bound); the per-step MYNN-condensation `niter` win (~1.4× isolated) dilutes to ~1.05–1.20× in the full pipeline. **No multi-× and no large-grid speedup is claimed** — the genuine speedup lever is the deferred fp32-operational restructuring. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) and `proofs/perf/v015/kernel_characterization.md` for the measured breakdown. |
 | Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
 
-## Current status — v0.14.0
+## Current status — v0.15.0
 
-**v0.14.0 is a memory + WRF-identity release, not a performance release.** It pairs the v0.13.0 memory-stability work with a reproducible GPU↔CPU **identity-proof** system and closes two **72 h GPU-vs-CPU-WRF field-parity gates** on the final code — **Switzerland d01** and **Canary L2 d02** — each stable to h72 with **9/10 prognostic fields within frozen tolerance** and the full dynamics/thermodynamics core cell-for-cell identical. The headline v0.14 fix is the **Switzerland venting root cause**: a `_THETA_LIMITER_MAX_K=500 K` masking clamp that was firing on real ~507 K stratospheric theta (raised to a non-load-bearing 1000 K), plus **advance_w WRF-faithfulness** (`pg_buoy` carried-p, w-coriolis/curvature, open top), the **physics-`tendf` fold + 2D Smagorinsky** now applied on the default path, **h_diabatic** mass, the **RAINNC all-phase WRF-convention fix** (snow + graupel + ice were being dropped), and the **DZS/ZS** writer registration. Warm throughput is honestly **~1.05×** (Switzerland) / **~1.06×** (Canary) on par with CPU-WRF; performance is the dedicated focus of **v0.15**.
+**v0.15.0 is a kernel-architecture + WRF-fidelity release, NOT an end-to-end speedup release.** It delivers the project's **final fp64 GPU kernel** (adversarially confirmed near-optimal without megakernels; the step is device-bound), two WRF-fidelity fixes (**MYNN-EDMF condensation `niter` 50 → 16**, matching WRF's own convergence early-exit; **Thompson cold-collection**), and re-closes both **72 h GPU-vs-CPU-WRF field-parity gates** on the final code — **Switzerland d01** and **Canary L2 d02** — each stable to h72 with **9/10 prognostic fields within frozen tolerance** and the full dynamics/thermodynamics core cell-for-cell identical. v0.15 is **cleaner than v0.14 at the atlas level** (1 tolerance failure per region vs v0.14's 3): the **MUB/PB nest-base-state seam is fixed** (250.7 → **0.0078 Pa**) and Switzerland **DZS/ZS** are now emitted paired. **Performance is honestly ~parity total-wall** (Switzerland **0.99×**, Canary **1.04×** vs CPU-WRF), forecast-only **~1.05–1.20×**; the `niter` win (~1.4× isolated) dilutes in the full pipeline and is offset by a heavier ~8–12 min one-time compile and **higher peak VRAM** (20.5 → 22.9 GiB Switzerland, 21.1 → 29.8 GiB Canary — a disclosed regression). **No multi-× and no large-grid / 1 km speedup is claimed.** The single structural lever for both real speedup and 1 km scalability is the deferred **fp32-operational-state restructuring** (ADR-007/031).
 
-The one out-of-envelope field per region is a **bounded diagnostic, not an identity failure**: `RAINNC` precipitation sensitivity on Switzerland (**5.19 mm RMSE** vs a 1.0 mm bound, ≈0.78× the field's own 6.6 mm std) and the tight `QVAPOR` moisture margin on Canary (**1.45×10⁻³ kg/kg**, +45%); Canary also carries a localized **static `MUB`/`PB` nest-frame-seam base-state artifact** (Atlas max_abs 250.7 / 249.9). These four bounded misses are pre-existing/physical, match the class the accepted Canary gate and v0.11/v0.12 shipped with, and are carried to v0.15 as the "fix remaining deviations" lane — the frozen tolerance limits are **unchanged** (no goalpost moving).
+The one out-of-envelope field per region is a **bounded diagnostic, not an identity failure**: `RAINNC` precipitation sensitivity on Switzerland (**5.08 mm RMSE** vs a 1.0 mm bound — cold-collection moved it −15 % from v0.14's 5.99 mm) and the tight `QVAPOR` moisture margin on Canary (**1.44×10⁻³ kg/kg** vs 1.0×10⁻³, +44%; **no regression** from v0.14's 1.45×10⁻³). These two bounded misses are pre-existing/physical, match the class the accepted v0.11–v0.14 gates shipped with, and are carried to the v0.16 stability lane — the frozen tolerance limits are **unchanged** (no goalpost moving). (v0.14's separate MUB/PB nest-frame-seam miss is now **fixed**.)
 
 ### WRF-v4 identity proof — both regions, all cells, all 72 leads
 
-The v0.14 identity-proof system renders a CPU-only, publication-quality visual proof that the GPU port is true to CPU-WRF v4 across **all grid cells, all 72 forecast leads, and all core internal variables**. Full method + reproduce commands: **[docs/IDENTITY_PROOF.md](docs/IDENTITY_PROOF.md)**.
+The identity-proof system renders a CPU-only, publication-quality visual proof that the GPU port is true to CPU-WRF v4 across **all grid cells, all 72 forecast leads, and all core internal variables**. Full method + reproduce commands: **[docs/IDENTITY_PROOF.md](docs/IDENTITY_PROOF.md)**.
 
-![GPU↔CPU identity proof — Switzerland d01 72 h](docs/assets/v014/identity_proof/switzerland_d01/identity_dashboard.png)
+![GPU↔CPU identity proof — Switzerland d01 72 h](docs/assets/v015/identity_proof/switzerland_d01/identity_dashboard.png)
 
-![GPU↔CPU identity proof — Canary L2 d02 72 h](docs/assets/v014/identity_proof/canary_l2_d02/identity_dashboard.png)
+![GPU↔CPU identity proof — Canary L2 d02 72 h](docs/assets/v015/identity_proof/canary_l2_d02/identity_dashboard.png)
 
 Reproduce against any matching CPU/GPU `wrfout` pair (CPU-only, never touches the GPU):
 
@@ -123,15 +130,15 @@ taskset -c 0-3 python3 scripts/build_identity_proof_plots.py \
   --asset-dir docs/assets/v014/identity_proof/switzerland_d01
 ```
 
-> **Honest framing — read this first.** wrf_gpu is a **WRF-compatible reimplementation** (a clean JAX rewrite validated against WRF as an oracle), **not a Fortran-source port**, and a **transparent research artifact, not a full WRF replacement.** v0.14 closes the 72 h field-parity gates on both regions and proves the dynamics/thermodynamics core cell-for-cell identical; the broader **24 h/72 h forecast-skill equivalence (T2/U10/V10) vs CPU-WRF is still the credibility gate and is NOT claimed closed.** It is a hard dynamics-`ph'` / MYNN / `*_tendf` GPU problem, and it is the dominant carry-over (KI-9 / KI-4 below). The v0.13.0 fidelity levers (moisture flux-advection into RK3, MYJ+Janjic, clear-sky diagnostics) remain available **off-by-default**.
+> **Honest framing — read this first.** wrf_gpu is a **WRF-compatible reimplementation** (a clean JAX rewrite validated against WRF as an oracle), **not a Fortran-source port**, and a **transparent research artifact, not a full WRF replacement.** v0.15 re-closes the 72 h field-parity gates on both regions and proves the dynamics/thermodynamics core cell-for-cell identical; the broader **24 h/72 h forecast-skill equivalence (T2/U10/V10) vs CPU-WRF is still the credibility gate and is NOT claimed closed.** It is a hard dynamics-`ph'` / MYNN / `*_tendf` GPU problem, and it is the dominant carry-over (KI-9 / KI-4 below). The v0.13.0 fidelity levers (moisture flux-advection into RK3, MYJ+Janjic, clear-sky diagnostics) remain available **off-by-default**.
 
 The standalone path is **fp64-only** (no fp32 standalone path is reachable through the CLI; gated-fp32 is no faster on this memory-bound workload and remains an experimental ADR-007 preview).
 
 The system performs **native real-init** (assembles `wrfinput`/`wrfbdy` from met_em-stage forcing, no `real.exe` and no CPU-WRF artifact for the initial/boundary state), runs a **nonhydrostatic split-explicit ARW dycore** on the GPU, exposes a **WRF-compatible namelist** with a **GPU-operational physics menu** and a **fail-closed boundary** on everything not yet ported. All of the v0.13.0 capability — the RRTMG VRAM-floor chunking, GWD-on-nested, GPU-validated compile-speed infra, MYJ+Janjic operational, moisture flux-advection into RK3, multi-GPU fake-mesh sharding — and the v0.12.0 capability — the standalone out-of-box CLI, standalone live-nested `--max-dom`, persistent JIT cache, fail-closed scheme catalog, WRF-faithful PSFC fix, runnable equivalence demo — and the v0.11.0 capability — live multi-domain nesting, full restart continuity, conservation-closed budgets, MYNN-EDMF, topographic/slope radiation, terrain-slope diffusion, Kain-Fritsch/BMJ/Tiedtke/Grell-Freitas cumulus — carries forward unchanged.
 
-This is a deliberate step beyond v0.1.0, which was a single-domain **replay** path that consumed CPU-WRF/Gen2 artifacts for initialization. v0.3.0 added native metgrid; v0.4.0 added native real-init (proven equivalent to `real.exe` at t=0); v0.6.0 expanded the operational physics menu; v0.9.0 consolidated these into a standalone forecast system; v0.10.0 removed one faithful Thompson sedimentation inefficiency; v0.11.0 added live nesting, restart, conservation, MYNN-EDMF, topographic radiation, and slope diffusion; v0.12.0 turned the standalone native-init + live-nested path into a working out-of-box CLI with a persistent JIT cache, a fail-closed scheme catalog, the PSFC fix, and a runnable equivalence demo; v0.13.0 lifted the single-GPU VRAM ceiling (RRTMG chunking), turned GWD on by default on the nested 1 km path, re-landed the GPU-validated compile-speed infra, and hardened validation/reproducibility; **v0.14.0 root-causes the Switzerland venting (a stratospheric-theta masking clamp), lands advance_w WRF-faithfulness + the physics-`tendf` fold + 2D Smagorinsky on the default path, fixes RAINNC all-phase accumulation + DZS/ZS writer registration, and closes 72 h GPU-vs-CPU-WRF field-parity gates on Switzerland d01 and Canary L2 d02 with a reproducible identity-proof system.**
+This is a deliberate step beyond v0.1.0, which was a single-domain **replay** path that consumed CPU-WRF/Gen2 artifacts for initialization. v0.3.0 added native metgrid; v0.4.0 added native real-init (proven equivalent to `real.exe` at t=0); v0.6.0 expanded the operational physics menu; v0.9.0 consolidated these into a standalone forecast system; v0.10.0 removed one faithful Thompson sedimentation inefficiency; v0.11.0 added live nesting, restart, conservation, MYNN-EDMF, topographic radiation, and slope diffusion; v0.12.0 turned the standalone native-init + live-nested path into a working out-of-box CLI with a persistent JIT cache, a fail-closed scheme catalog, the PSFC fix, and a runnable equivalence demo; v0.13.0 lifted the single-GPU VRAM ceiling (RRTMG chunking), turned GWD on by default on the nested 1 km path, re-landed the GPU-validated compile-speed infra, and hardened validation/reproducibility; v0.14.0 root-causes the Switzerland venting (a stratospheric-theta masking clamp), lands advance_w WRF-faithfulness + the physics-`tendf` fold + 2D Smagorinsky on the default path, fixes RAINNC all-phase accumulation + DZS/ZS writer registration, and closes 72 h GPU-vs-CPU-WRF field-parity gates on Switzerland d01 and Canary L2 d02 with a reproducible identity-proof system; **v0.15.0 delivers the project's final fp64 GPU kernel (adversarially confirmed near-optimal, device-bound), lands the MYNN-EDMF condensation `niter` 50 → 16 + Thompson cold-collection WRF-fidelity fixes, fixes the MUB/PB nest-base-state seam (250.7 → 0.0078 Pa), and re-closes both 72 h gates 9/10 within frozen tolerance — an honest ~parity-total-wall release, with the genuine speedup + 1 km scalability both deferred to the fp32-operational-state restructuring.**
 
-> **Scope boundary for v0.14.0.** This release ships the memory-stability + identity-proof work and the two 72 h field-parity gates above. The broader **24 h/72 h forecast-skill equivalence (T2/U10/V10) vs CPU-WRF (KI-9)**, the four **bounded misses** (RAINNC precip sensitivity, Canary MUB/PB nest-frame-seam base state, QVAPOR moisture margin), the **performance recovery** (warm ~1.05× → v0.15 focus), **2-way nesting equivalence (KI-11)**, **multi-hardware reproduction**, and the **Tier-3 scheme long-tail** are deferred to **v0.15+** — deliberate scope boundaries, not hidden gaps. The full list is in the [Honest boundaries](#honest-boundaries--what-v0140-does-not-claim) section and [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md).
+> **Scope boundary for v0.15.0.** This release ships the final fp64 GPU kernel, the WRF-fidelity `niter`/cold-collection fixes, the MUB/PB seam fix, and the two re-closed 72 h field-parity gates above. The broader **24 h/72 h forecast-skill equivalence (T2/U10/V10) vs CPU-WRF (KI-9)**, the two carried **bounded misses** (Switzerland RAINNC precip sensitivity, Canary QVAPOR moisture margin → v0.16 stability lane), the **genuine speedup + 1 km scalability** (both gated on the deferred **fp32-operational-state restructuring**, ADR-007/031), **2-way nesting equivalence (KI-11)**, **multi-hardware reproduction**, and the **Tier-3 scheme long-tail** are deferred — deliberate scope boundaries, not hidden gaps. The full list is in the [Honest boundaries](#honest-boundaries--what-v0150-does-not-claim) section and [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md).
 
 > **Honesty note.** Two distinct claims are kept separate throughout this README and must not be conflated:
 > 1. **Native init** is proven equivalent to `real.exe` at t=0 (savepoint parity) and produces a stable forecast.
@@ -240,13 +247,13 @@ delta-to-complete-WRF ledger is in the [Roadmap](#roadmap--delta-to-a-complete-w
 
 ### Validation (v0.14.0)
 
-Proof objects live under [`proofs/v014/`](proofs/v014/) (v0.14.0-specific: identity proof + grid-delta atlas), [`proofs/v013/`](proofs/v013/) and [`proofs/v0130/`](proofs/v0130/) (carried v0.13.0 evidence), [`proofs/v0120/`](proofs/v0120/) (carried v0.12.0 evidence), [`proofs/v0110/`](proofs/v0110/) (carried v0.11.0 evidence), and the previous baseline proofs under [`proofs/v090/`](proofs/v090/) and [`proofs/v0100/`](proofs/v0100/).
+Proof objects live under [`proofs/v015/finalgates/`](proofs/v015/finalgates/) (v0.15.0-specific: the two 72 h gates + distilled per-field summaries) and [`proofs/perf/v015/`](proofs/perf/v015/) (the final-kernel characterization), [`proofs/v014/`](proofs/v014/) (carried v0.14.0 identity proof + the **frozen** grid-delta-atlas tolerance manifest), [`proofs/v013/`](proofs/v013/) and [`proofs/v0130/`](proofs/v0130/) (carried v0.13.0 evidence), [`proofs/v0120/`](proofs/v0120/) (carried v0.12.0 evidence), [`proofs/v0110/`](proofs/v0110/) (carried v0.11.0 evidence), and the previous baseline proofs under [`proofs/v090/`](proofs/v090/) and [`proofs/v0100/`](proofs/v0100/).
 
 **v0.14.0 new evidence:**
 
-- **Switzerland d01 72 h field-parity gate (GPU).** Stable to h72; **9/10 prognostic fields within frozen tolerance**, dynamics/thermo/mass all green. The one Grid-Delta Atlas hard-gate miss is **RAINNC rmse 5.19 mm vs the 1.0 mm bound** (bounded precip sensitivity, ≈0.78× the field's std 6.6 mm; the RAINNC all-phase WRF-convention bug is FIXED; DZS/ZS now PASS). Run `v014_switzerland_d01_72h_FINAL_20260612T062354Z` vs CPU truth `v014_switzerland_72h_cpu_20260610T122909Z`; GPU ~2762 s vs CPU 2906 s ≈ 1.05×, peak VRAM ~19.8 GiB.
-- **Canary L2 d02 72 h field-parity gate (GPU).** Stable to h72; operational verdict **L2_D02_GREEN** (bounds + rmse + pipeline PASS); **9/10 prognostic fields within frozen tolerance**. The v0.14 default-on changes (open-top, 2D Smagorinsky, physics-`tendf` fold, theta-ceiling 1000 K) do not regress Canary. Three bounded Atlas misses: **MUB max_abs 250.7 + PB max_abs 249.9** (static nest-frame-seam base-state artifact, localized) and **QVAPOR rmse 1.45×10⁻³ vs 1.0×10⁻³ kg/kg** (+45%). Run `v014_canary_d02_72h_FINAL_20260612T062354Z` vs CPU truth `20260501_18z_l2_72h_20260519T173026Z`; GPU ~8200 s vs CPU 8713 s ≈ 1.06×, peak VRAM ~20.3 GiB.
-- **GPU↔CPU identity-proof system (CPU-only, reproducible).** Per-variable RMSE/bias time series with the frozen tolerance line, variable×lead scoreboard, 1:1 cell scatter, signed spatial-difference maps, and a README-embeddable dashboard — over all cells, all 72 leads, all core variables, for both regions. `r ≈ 0.99–1.00` cell-for-cell on the prognostic core. Reproduce via `scripts/build_identity_proof_plots.py` (`docs/IDENTITY_PROOF.md`), assets under `docs/assets/v014/identity_proof/`.
+- **Switzerland d01 72 h field-parity gate (GPU).** Stable to h72; **9/10 prognostic fields within frozen tolerance**, dynamics/thermo/mass all green; **1 atlas tolerance failure** (vs v0.14's 3). The one Grid-Delta Atlas hard-gate miss is **RAINNC rmse 5.08 mm vs the 1.0 mm bound** (bounded precip sensitivity; cold-collection moved it −15 % from v0.14's 5.99 mm; DZS/ZS now PASS paired). Run `v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z` vs CPU truth `v014_switzerland_72h_cpu_20260610T122909Z`; **total-wall GPU 2941 s vs CPU 2906 s ≈ 0.99× (forecast-only ~1.20×)**, peak VRAM **22.9 GiB**. Proof: `proofs/v015/finalgates/switzerland_d01/`.
+- **Canary L2 d02 72 h field-parity gate (GPU).** Stable to h72; operational verdict **L2_D02_GREEN** (bounds + rmse + pipeline PASS); **9/10 prognostic fields within frozen tolerance**; **1 atlas tolerance failure** (vs v0.14's 3). The lone bounded Atlas miss is **QVAPOR rmse 1.44×10⁻³ vs 1.0×10⁻³ kg/kg** (+44%, no regression from v0.14's 1.45×10⁻³); the v0.14 **MUB/PB nest-frame-seam** statics are now **fixed** (250.7 → 0.0078 Pa). Run `v015_canary_d02_72h_gpu_finalgates_20260613T095113Z` vs CPU truth `20260501_18z_l2_72h_20260519T173026Z`; **total-wall GPU 8414 s vs CPU ~8713 s ≈ 1.04× (forecast-only ~1.05×)**, peak VRAM **29.8 GiB**. Proof: `proofs/v015/finalgates/canary_l2_d02/`.
+- **GPU↔CPU identity-proof system (CPU-only, reproducible).** Per-variable RMSE/bias time series with the frozen tolerance line, variable×lead scoreboard, 1:1 cell scatter, signed spatial-difference maps, and a README-embeddable dashboard — over all cells, all 72 leads, all core variables, for both regions. `r ≈ 0.99–1.00` cell-for-cell on the prognostic core. Reproduce via `scripts/build_identity_proof_plots.py` (`docs/IDENTITY_PROOF.md`), assets under `docs/assets/v015/identity_proof/`.
 - **Switzerland venting root cause + fix.** The d01 strong-flow mass venting was a `_THETA_LIMITER_MAX_K=500 K` masking clamp firing on real ~507 K stratospheric theta; raised to a non-load-bearing 1000 K, with advance_w WRF-faithfulness (`pg_buoy` carried-p, w-coriolis/curvature, open top), the physics-`tendf` fold + 2D Smagorinsky on the default path, and `h_diabatic` mass.
 
 **Carried v0.13.0 evidence (CPU-reproducible unless noted):**
@@ -277,21 +284,21 @@ Proof objects live under [`proofs/v014/`](proofs/v014/) (v0.14.0-specific: ident
 - **Restart bit-identity.** A-path vs B1+B2 (restart at midpoint): 75/75 fields bit-identical (`proofs/v0110/restart_continuity.json`).
 - **DGX single-GPU-default bit-identity.** With `ShardingConfig.disabled()` (the production default): 56/56 State field SHA-256 hashes bit-identical between the reference trunk and the DGX-d2 sharding-disabled path.
 - **Powered TOST equivalence (n=15).** The MAM corpus is prepared (forcing retained, CPU-WRF references assembled). **v0.13.0 unblocked the GPU scoring path** — the v0.12.0 `daily_pipeline` / `run_one_case` `rc=2` that blocked the campaign was root-caused (two conflated sources) and **fixed**; the scoring path is proven `rc=0` on a real GPU `wrfout` vs CPU-WRF (`SCORING_PATH_RC0_PROVEN`, 7 tests; `proofs/v013/tost_rc2_fix.json`, `proofs/v013/tost_scoring_path_cpu_proof.json`). **v0.14 did not run a powered n=15 TOST** — v0.14 is a memory + WRF-identity release whose headline evidence is the two 72 h GPU-vs-CPU-WRF field-parity gates, not a station-RMSE equivalence campaign; the powered campaign stays **deferred (KI-5)**. **n=15 is honestly underpowered** (n≈27 needed to detect a 10% RMSE difference at α=0.05, β=0.20). The **operational equivalence evidence remains the d02 coupled-skill result above** plus the runnable equivalence demo (whose 24 h verdict is `NOT_EQUIVALENT`). **No "TOST PASS" / "statistical equivalence" is claimed.** Margins + power analysis: [`.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md`](.agent/decisions/ADR-029-STATISTICS-DESIGN-TOST.md).
-- **End-to-end wall-clock — at parity with CPU-WRF (v0.14 measured).** The two final 72 h GPU-vs-CPU gates ran **Switzerland ~1.05×** (GPU 2762 s vs CPU 2906 s) and **Canary ~1.06×** (GPU ~8200 s vs CPU 8713 s) — i.e. **on par** with 28-rank CPU-WRF on the same RTX 5090 workstation, both fp64. The v0.14 perf-triage (`proofs/perf/v014_perf_regression_triage.json`) breaks this down as **~90% genuine deep-kernel steady-state** (~173 ms/step on d01 128×128×44), **~7% per-hour host overhead** (finite-summary state pulls + wrfout write + boundary rewindow), and **~2.3% compile**. This is a real regression from earlier versions: those faster numbers were measured on an **incomplete/faster dycore**, and completing the fully WRF-faithful dycore + physics raised per-step compute to parity — a multi-× warm-kernel ratio is mathematically incompatible with this ~1.05× end-to-end, so the earlier 5×/2.5×/4.26× figures are **superseded and are not v0.14 claims**. Performance recovery (the fp64-operational-state ADR is the flagged highest-leverage lever) is the dedicated focus of **v0.15**. Full breakdown: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
+- **End-to-end wall-clock — ~parity with CPU-WRF (v0.15 measured).** The two final 72 h GPU-vs-CPU gates ran **Switzerland total-wall 0.99×** (GPU 2941 s vs CPU 2906 s; forecast-only ~1.20×) and **Canary total-wall 1.04×** (GPU 8414 s vs CPU ~8713 s; forecast-only ~1.05×) on the same RTX 5090 workstation, both fp64. The ~8–12 min one-time compile is included in total-wall. The fp64 kernel is **adversarially confirmed near-optimal without megakernels** — the step is **device-bound** (~4 % idle), every host-side lever (graph capture, hoist, scan-unrolls) is shipped or proven wall-neutral, and the cuSPARSE PCR tridiagonal solve + column tiling are already live. The per-step MYNN-condensation `niter` win (~1.4× isolated) dilutes to forecast-only ~1.05–1.20× in the full pipeline. The genuine speedup AND 1 km scalability both require the deferred **fp32-operational-state restructuring** (ADR-007/031); the earlier 5×/2.5×/4.26× figures (incomplete dycore) and the "6–10× large-grid" framing remain **superseded / refuted and are not v0.15 claims**. Full breakdown: [docs/PERFORMANCE.md](docs/PERFORMANCE.md) and `proofs/perf/v015/kernel_characterization.md`.
 
 **Standalone AIFS end-to-end (native init, no CPU-WRF dependency).** The full native pipeline (AIFS met_em → `build_real_init` → native LBC → `run_forecast_operational_segmented` → wrfout) ran stable and finite for 6 h on case `20260428_18z` (`proofs/v0110/standalone_e2e`). This confirms the native-init path is operational. No 24 h or RMSE claim is made from this 6 h smoke.
 
-### Honest boundaries — what v0.14.0 does NOT claim
+### Honest boundaries — what v0.15.0 does NOT claim
 
 - **Not a universal WRF v4.** Standard regional ARW configs only. Exotic/rare features are README-TODO and fail-closed.
 - **Not the full physics catalog.** WRF v4 has roughly 24 microphysics, 12 PBL, many surface-layer/LSM/cumulus/radiation options; v0.14.0 covers the common operational subset above. Everything else fails closed with a named reason.
 - **24 h forecast-skill equivalence is NOT closed — the credibility gate.** On the runnable equivalence demo (24 h d02), the verdict is `NOT_EQUIVALENT`: 6 of 10 fields exceed the predeclared tolerance, **dominated by lead-time wind divergence** (3D V pooled RMSE 8.13 m s⁻¹ vs a 1.8 m s⁻¹ bar). Short-lead fields track CPU-WRF within tolerance; PSFC is improved (707.8 → 415.3 Pa) but still out of bar, with its residual driven by that same dynamical divergence. **Neither the winds nor PSFC are equivalent at 24 h.** v0.13.0 ships off-by-default fidelity levers toward this gap (moisture flux-advection into RK3, MYJ+Janjic, clear-sky diagnostics) but does **not** close it — it is hard dynamics-`ph'`/MYNN/`*_tendf` GPU work with no cheap knob. This is the gate for any "operational / replacement" claim. See [docs/equivalence-demo.md](docs/equivalence-demo.md) (KI-9).
-- **72 h field-parity gates pass with four bounded misses — full forecast-skill equivalence is not claimed.** Both v0.14 72 h GPU-vs-CPU-WRF gates close with **9/10 prognostic fields within frozen tolerance** and the dynamics/thermo core cell-for-cell identical, but each region has one out-of-envelope **bounded** diagnostic — Switzerland `RAINNC` 5.19 mm vs the 1.0 mm bound, Canary `QVAPOR` 1.45×10⁻³ vs 1.0×10⁻³ kg/kg — and Canary additionally carries a localized static `MUB`/`PB` nest-frame-seam base-state artifact (Atlas max_abs 250.7 / 249.9). These four bounded misses are pre-existing/physical, **not** identity failures; the frozen limits are unchanged and the misses are carried to v0.15. The standalone native-init/live-nested CLI proofs remain **2 h smokes** and the standalone AIFS e2e a **6 h smoke**; the standalone nested **24 h 1 km** gate passes (`PIPELINE_GREEN`, all-finite, GWD-on).
+- **72 h field-parity gates pass with one bounded miss per region — full forecast-skill equivalence is not claimed.** Both v0.15 72 h GPU-vs-CPU-WRF gates close with **9/10 prognostic fields within frozen tolerance** and the dynamics/thermo core cell-for-cell identical, but each region has one out-of-envelope **bounded** diagnostic — Switzerland `RAINNC` 5.08 mm vs the 1.0 mm bound (cold-collection moved it −15 % from v0.14), Canary `QVAPOR` 1.44×10⁻³ vs 1.0×10⁻³ kg/kg (no regression). These bounded misses are pre-existing/physical, **not** identity failures; the frozen limits are unchanged and the misses are carried to the v0.16 stability lane. (v0.14's MUB/PB nest-frame-seam miss is now **fixed**, 250.7 → 0.0078 Pa — v0.15 is cleaner: 1 atlas tolerance failure per region vs v0.14's 3.) The standalone native-init/live-nested CLI proofs remain **2 h smokes** and the standalone AIFS e2e a **6 h smoke**; the standalone nested **24 h 1 km** gate passes (`PIPELINE_GREEN`, all-finite, GWD-on).
 - **Not full two-way nesting.** One-way live nesting is proven over a 24 h window. The two-way feedback path is finite/stable but its 24 h real-GPU equivalence vs CPU-WRF is **untested** (KI-11); nested in-loop `w` relaxation is off.
-- **Multi-GPU throughput unmeasured.** The `shard_map` + `lax.ppermute` halo sharding is bit-identical on a CPU fake mesh, but this workstation has one physical RTX 5090 — real multi-GPU throughput / NVLink-NCCL bandwidth / collective overlap are **UNMEASURED**; the per-watt / whole-Earth claims stay **PROJECTED**.
+- **Multi-GPU throughput unmeasured.** The `shard_map` + `lax.ppermute` halo sharding is bit-identical on a CPU fake mesh, but this workstation has one physical RTX 5090 — real multi-GPU throughput / NVLink-NCCL bandwidth / collective overlap are **UNMEASURED**; the whole-Earth memory note stays **PROJECTED**. **No per-watt / per-kWh claim is made.**
 - **Compile-speed autotune-cache effect not yet measured.** The infra is GPU-validated (clean import, no abort); the persistent autotune cache is opt-in/default-off and its cold→warm *effect* on GPU is gated/unadvertised until measured.
 - **Moisture flux-advection + clear-sky diagnostics are opt-in, not operational defaults.** They are wired and proven (default-off, byte-identical when off); operationalizing them — with the cadence refinements (KI-10) — is a v0.15+ item.
-- **Performance is not the v0.14 story.** Warm throughput is honestly **~1.05×** (Switzerland) / **~1.06×** (Canary) on par with 28-rank CPU-WRF; v0.14 is a memory + WRF-identity release, and performance recovery is the dedicated focus of **v0.15**.
+- **v0.15 is NOT an end-to-end speedup release, and claims no large-grid speedup.** Total-wall is **~parity** (Switzerland 0.99×, Canary 1.04× vs CPU-WRF); forecast-only is ~1.05–1.20×. The fp64 kernel is adversarially confirmed near-optimal without megakernels (device-bound), so there is **no large host-side lever left**. The earlier "~6–10× per-cell at large grids" framing is **REFUTED by the project's own `km_bench`** (per-cell cost slightly *worsens*; the honest large-grid asymptote is ~1.6×, deployment ~2× with the structurally-deferred Pallas+fp32 levers) — **no large-grid / 1 km speedup is claimed for v0.15**. The genuine speedup AND 1 km scalability both require the deferred **fp32-operational-state restructuring** (ADR-007/031). See `proofs/perf/v015/kernel_characterization.md`.
 - **fp64-only standalone.** The standalone CLI path forces pure fp64; there is no fp32 standalone path (gated-fp32 is an experimental ADR-007 preview and is no faster on this memory-bound workload).
 - **Not DFI / FDDA / spectral-nudging / adaptive-Δt** (fixed Δt only), **not aerosol-coupled microphysics** (Thompson-aerosol `mp=28`/Morrison-aerosol `mp=40`/NSSL fail closed), and **not urban (BEP/BEM) / lake / WRF-Chem / WRF-Fire / WRF-Hydro** (these are rejected, not roadmap).
 - **Free-running limited-area (run_boundary=False) on wide domains.** Free-running without lateral-boundary relaxation on wide domains (nx≈160+) can go unstable beyond ~14 h. The validated operational path uses boundary forcing. See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
@@ -300,15 +307,16 @@ Proof objects live under [`proofs/v014/`](proofs/v014/) (v0.14.0-specific: ident
 - **No powered n=15 TOST PASS.** v0.13.0 unblocked the scoring path (rc=2 fixed, `rc=0` proven); v0.14 did not run the powered campaign (the 72 h field-parity gates are the v0.14 evidence). No TOST PASS is claimed; deferred (KI-5).
 - **v0.2.0 paper tag not yet released.** The stable paper-baseline intended at v0.2.0 was never formally tagged. All prior releases (v0.1.0 and up) remain accessible in the git history and in the org repo; v0.2.0 stays accessible for paper claims.
 
-**Deliberately deferred to v0.15+ (deliberate scope boundaries, not silent gaps):**
+**Deliberately deferred to v0.16+ (deliberate scope boundaries, not silent gaps):**
 
-- **24 h/72 h forecast-skill closure (T2/U10/V10) vs CPU-WRF** (KI-9) — the credibility gate; v0.14 closes the 72 h field-parity gates but not the broader skill-equivalence campaign. Hard dynamics-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob.
-- **The four bounded misses** — RAINNC precip sensitivity (Switzerland), Canary MUB/PB nest-frame-seam base state, QVAPOR moisture margin — carried as the v0.15 "fix remaining deviations" lane; frozen limits unchanged.
-- **Performance recovery (warm ~1.05×)** — the dedicated focus of v0.15.
+- **24 h/72 h forecast-skill closure (T2/U10/V10) vs CPU-WRF** (KI-9) — the credibility gate; v0.15 re-closes the 72 h field-parity gates but not the broader skill-equivalence campaign. Hard dynamics-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob.
+- **The two carried bounded misses** — RAINNC precip sensitivity (Switzerland, 5.08 mm) and QVAPOR moisture margin (Canary, 1.44×10⁻³) — carried to the v0.16 stability lane; frozen limits unchanged. (v0.14's MUB/PB seam is fixed in v0.15.)
+- **Genuine end-to-end speedup + 1 km scalability** — both gated on the **fp32-operational-state restructuring** (ADR-007/031): it ~halves the VRAM arena (1 km fits) and removes the mixed-precision compile pathology (the opt-in fp32-BouLac ~1.67× lands). The v0.15 fp64 kernel is already near-optimal; this is the named next major lever, not a tweak.
+- **Higher peak VRAM (a v0.15 regression)** — 20.5 → 22.9 GiB (Switzerland) / 21.1 → 29.8 GiB (Canary) from the `niter`-16 unrolled temporaries + larger nested arena; the fp32-operational restructuring ~halves the dycore arena.
 - **Moisture-advection cadence refinements** (KI-10) — acoustic-accumulated fluxes + WRF-cadence-exact physics-tendency folding; then operationalize moisture advection on the default path.
 - **Two-way nesting 24 h real-GPU equivalence vs CPU-WRF** (KI-11) — only finite/stable proven.
 - **Tier-2 speed/architecture remainder** — sub-jit split + recompile hygiene, parallel-compile + dev `--fast-compile`, CPU-flock for idle nightly cores.
-- **Multi-hardware / independent reproduction** — v0.14.0 is one RTX 5090, one JAX/CUDA stack.
+- **Multi-hardware / independent reproduction** — v0.15.0 is one RTX 5090, one JAX/CUDA stack.
 - **New-Tiedtke cumulus scan-wiring** — recognized/accepted but not separately source-gated; fail-closed if selected.
 - **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps on this workload.
 - **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and the **`*_tendf` source-tendency adapter** for RK-stage physics.
@@ -369,11 +377,11 @@ Consolidated, honestly-prioritized ledger of everything still deferred / simplif
 | Run a forecast | [`docs/quickstart.md`](docs/quickstart.md) — `python -m gpuwrf.cli run …` |
 | Run long GPU validation / powered TOST reliably | [`docs/GPU_RUNBOOK.md`](docs/GPU_RUNBOOK.md) — `scripts/run_gpu_lowprio.sh`, `scripts/run_powered_tost_n15.sh` |
 | Run & verify the GPU-vs-CPU equivalence demo | [`docs/equivalence-demo.md`](docs/equivalence-demo.md) — `scripts/equivalence_demo.py` |
-| Understand the v0.14 performance (~1.05× parity + triage breakdown) | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/perf/v014_perf_regression_triage.json`](proofs/perf/v014_perf_regression_triage.json) |
+| Understand the v0.15 performance (~parity total-wall + final-kernel characterization) | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/perf/v015/kernel_characterization.md`](proofs/perf/v015/kernel_characterization.md), [`proofs/v015/finalgates/V015_FINAL_GATES_SUMMARY.md`](proofs/v015/finalgates/V015_FINAL_GATES_SUMMARY.md) |
 | Check current known issues | [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) |
 | Reproduce the proof collection on CPU | [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) — `scripts/verify_reproducibility.sh` |
 | Run the community-standard validation suite | [`docs/VALIDATION.md`](docs/VALIDATION.md) — `scripts/community_validation.sh` |
-| See the v0.14.0 identity proof + 72 h gates | [`docs/IDENTITY_PROOF.md`](docs/IDENTITY_PROOF.md), [`proofs/v014/`](proofs/v014/), `docs/assets/v014/identity_proof/` |
+| See the v0.15.0 identity proof + 72 h gates | [`docs/IDENTITY_PROOF.md`](docs/IDENTITY_PROOF.md), [`proofs/v015/finalgates/`](proofs/v015/finalgates/), `docs/assets/v015/identity_proof/` |
 | See v0.13.0 proof objects | [`proofs/v013/`](proofs/v013/), [`proofs/v0130/`](proofs/v0130/) |
 | See prior release proofs | [`proofs/v0120/`](proofs/v0120/), [`proofs/v0110/`](proofs/v0110/), [`proofs/v090/`](proofs/v090/), [`proofs/v0100/`](proofs/v0100/) |
 | See the full WRF v4 gap inventory | [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md), [`PROJECT_PLAN.md`](PROJECT_PLAN.md) |
@@ -410,9 +418,10 @@ python -m gpuwrf.cli run --help
 pytest -q
 ```
 
-The first invocation pays a **~5-minute cold JIT compile** (d02) before
-integration and uses **≈ 24.6 GiB VRAM** at fp64; the **persistent JIT cache
-turns every later run into a ~10 s cache read** (bit-identical executable) — see
+The first invocation pays a **~8–12 min cold JIT compile** before
+integration and uses up to **~29.8 GiB VRAM** at fp64 on the nested 72 h case
+(d01 single-domain peaks ~22.9 GiB); the **persistent JIT cache turns every
+later run into a fast cache read** (bit-identical executable) — see
 [docs/resource-profile.md](docs/resource-profile.md) and
 [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
@@ -428,15 +437,16 @@ scripts/run_powered_tost_n15.sh --detach --resume
 
 The full lock/log/resume procedure is in [docs/GPU_RUNBOOK.md](docs/GPU_RUNBOOK.md).
 
-## Known issues (v0.14.0)
+## Known issues (v0.15.0)
 
 Full detail with symptom / ruled-out / workaround / follow-up in
 **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
 
 | ID | Summary | Severity |
 |---|---|---|
-| **v0.14 bounded misses** | Four bounded, pre-existing/physical diagnostics out of frozen envelope on the 72 h gates (limits unchanged): Switzerland **RAINNC** 5.19 mm vs 1.0 mm (precip sensitivity, ≈0.78× field std), Canary **QVAPOR** 1.45×10⁻³ vs 1.0×10⁻³ kg/kg (+45%), Canary static **MUB/PB** nest-frame-seam base state (Atlas max_abs 250.7 / 249.9). Carried to v0.15 as the "fix remaining deviations" lane. | Bounded acceptance |
-| **KI-9** | **The credibility gate.** v0.14 closed both 72 h field-parity gates (dynamics/thermo core cell-for-cell identical), but the broader **24 h/72 h forecast-skill equivalence** is still open — equivalence demo 24 h d02 `NOT_EQUIVALENT`, dominated by **lead-time wind divergence** (3D V pooled RMSE 8.13 m/s). Hard dynamics-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob. | Documented gap |
+| **v0.15 bounded misses** | Two bounded, pre-existing/physical diagnostics out of frozen envelope on the 72 h gates (limits unchanged): Switzerland **RAINNC** 5.08 mm vs 1.0 mm (precip sensitivity; −15 % from v0.14 via cold-collection), Canary **QVAPOR** 1.44×10⁻³ vs 1.0×10⁻³ kg/kg (+44%, no regression). v0.14's MUB/PB seam is **fixed** (250.7 → 0.0078 Pa). Carried to the v0.16 stability lane. | Bounded acceptance |
+| **v0.15 perf / scalability** | NOT an end-to-end speedup release: total-wall ~parity (0.99×/1.04×), forecast-only ~1.05–1.20×; fp64 kernel near-optimal (device-bound). No large-grid / 1 km speedup (the "6–10×" framing is refuted by `km_bench`). Genuine speedup + 1 km both gated on the deferred **fp32-operational-state restructuring** (ADR-007/031). Peak VRAM rose (22.9 / 29.8 GiB). | Documented next-lever |
+| **KI-9** | **The credibility gate.** v0.15 re-closed both 72 h field-parity gates (dynamics/thermo core cell-for-cell identical), but the broader **24 h/72 h forecast-skill equivalence** is still open — equivalence demo 24 h d02 `NOT_EQUIVALENT`, dominated by **lead-time wind divergence** (3D V pooled RMSE 8.13 m/s). Hard dynamics-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob. | Documented gap |
 | **KI-4** | d02 **U10** episodic final-lead (h+24) under-prediction (8.06 m/s vs 7.5 m/s bar); within bar at all other leads, beats persistence 23/24. Tied to KI-9. | Documented residual |
 | **KI-3** | Operational `wrfout` is a focused **104-variable** subset (vs WRF's 375). | Scope boundary |
 | **KI-5** | Powered **n=15 TOST**: scoring path **unblocked** (rc=2 fixed); v0.14 did not run the powered campaign (the 72 h field-parity gates are the v0.14 evidence). **No TOST PASS is claimed**; deferred. | Scope boundary |

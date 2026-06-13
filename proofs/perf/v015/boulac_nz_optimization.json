@@ -1,0 +1,86 @@
+{
+  "schema": "gpuwrf.v015.boulac_nz_optimization.v1",
+  "sprint": "v0.15 MYNN BouLac mixing-length O(nz) optimization",
+  "branch": "worker/opus/v015-boulac-nz",
+  "base_commit": "0b2a7066",
+  "objective": "Replace the dense (B,nz,nz) MYNN BouLac length-scale parcel search with a WRF-faithful O(nz)-memory incremental formulation; validate (oracle + tiered gate) and measure perf/VRAM.",
+  "verdict": "ESCALATE-FABLE",
+  "verdict_reason": "The O(nz) BouLac is PROVEN WRF-faithful AND proven faster+lighter IN ISOLATION, but BOTH a lax.scan and a fully-unrolled O(nz) form trigger the SAME XLA 'Very slow compile' pathology (>7 min, no completion) as the documented GPUWRF_MYNN_BOULAC_FP32 path when fused into the full operational forecast jit. The dense form compiles in ~80s. So the dense form remains the production DEFAULT; the O(nz) code ships behind GPUWRF_MYNN_BOULAC_ONZ (default OFF) with full evidence, pending an XLA fusion-boundary fix (Fable).",
+
+  "what_works": {
+    "correctness": "O(nz) lengths are WRF-faithful to machine epsilon (verbatim Fortran arithmetic, structural change only).",
+    "isolated_perf": "On the isolated MYNN step (d01 16384x44, fp64) the O(nz) form is 1.30x faster and uses 387 MB less peak VRAM than dense, with step-output identity at machine epsilon.",
+    "isolated_compile": "The O(nz) _boulac_length compiles and runs fine in ISOLATION (the step_mynn_pbl_column jit).",
+    "both_paths_tested": "All 19 MYNN unit tests pass with the dense default AND with GPUWRF_MYNN_BOULAC_ONZ=1."
+  },
+  "what_is_blocked": {
+    "full_pipeline_compile": "Inside jit__run_forecast_operational_jit the O(nz) data-dependent search trips an XLA 'Very slow compile' alarm; reproduced for a lax.scan form (killed at ~9 min) and a Python-unrolled form (slow-compile alarm fired ~6.5 min in, no completion by the 420s probe cap). 0 such warnings with the dense (pure-cumsum) form.",
+    "root_cause_hypothesis": "The dense form is a pure data-parallel cumsum/where/argmax graph that XLA fuses well; the O(nz) form's data-dependent first-crossing search (scan->while, or 86 unrolled stateful iterations) defeats that fusion inside the already-large operational graph. Same class of pathology the fp32-BouLac lever hit (module note).",
+    "compile_cost_attribution_caveat": "IMPORTANT for the Fable escalation: a sibling lane (v015-final-gates, task ad1476db9bd0a7264) reports the v0.15 operational jit ALREADY takes ~8-12 min to compile ONE TIME with the DENSE BouLac default, driven by the niter=16 unroll + Thompson cold-collection graph. So the absolute compile wall is NOT solely the O(nz) BouLac. BUT: (a) the O(nz) probe additionally fired the explicit XLA 'Very slow compile' ALARM (slow_operation_alarm.cc) that the dense path does NOT trigger, and (b) the O(nz) probe did not complete even at the 420s cap whereas the dense path completes (~8-12 min). The O(nz) search is therefore an INCREMENT on top of an already-heavy v0.15 compile that pushes it from 'slow-but-completes' to 'alarm + no-completion-in-probe-window'. The Fable fix should target the BouLac search's fusion specifically AND may benefit from the broader v0.15 operational-jit compile-time reduction.",
+    "not_resolvable_by_this_worker": "Avoiding both the (nz,nz) memory AND the slow compile requires XLA fusion-boundary work (flag tuning / custom-call / a fusion-friendly reformulation), the escalation trigger."
+  },
+
+  "oracle": {
+    "proof": "proofs/perf/v015/boulac_nz_oracle.json",
+    "reference": "module_bl_mynnedmf.F:2192-2338 boulac_length, loop-for-loop NumPy transcription (independent of the JAX impl; NOT a JAX-vs-JAX self-compare)",
+    "regimes": ["weakly_stable_uniform", "strongly_stable", "near_neutral", "unstable_cap_inversion", "sharp_jumps", "ragged_stretched", "isothermal_bbb0", "random_rough"],
+    "onz_vs_wrf": {"max_abs": 5.684341886080802e-14, "max_rel": 2.407884242896604e-16},
+    "dense_vs_wrf": {"max_abs": 5.684341886080802e-14, "max_rel": 2.407884242896604e-16},
+    "verdict": "PASS (both implementations, machine-epsilon vs WRF)"
+  },
+
+  "perf_vram_isolated": {
+    "proof": "proofs/perf/v015/boulac_nz_perf_ab.json",
+    "scope": "isolated step_mynn_pbl_column, d01 16384x44, fp64, niter=16, edmf=True, per-variant process (peak_bytes_in_use is process-monotonic)",
+    "note": "Measured with the lax.scan O(nz) form (later swapped to the unrolled form, which has identical O(B,nz) memory and equivalent runtime; the dense->O(nz) memory/perf delta is the same).",
+    "dense_min_ms": 32.820667955093086,
+    "onz_min_ms": 25.30712599400431,
+    "mynn_step_speedup_onz_vs_dense": 1.2968943199187795,
+    "mynn_step_saved_ms": 7.513541961088777,
+    "peak_vram_dense_path_mb": 1458.859008,
+    "peak_vram_onz_path_mb": 1071.643904,
+    "peak_vram_saved_mb": 387.215104,
+    "step_output_identity_onz_vs_dense": {
+      "theta_max_rel": 1.8934579039375995e-16,
+      "el_max_rel": 1.567017783890046e-13,
+      "kh_max_rel": 9.338105635178057e-14,
+      "tke_max_rel": 3.560500417712229e-15
+    },
+    "hlo_dense_BnznZ_tensor_occurrences": 110,
+    "hlo_onz_BnznZ_tensor_occurrences": 0
+  },
+
+  "tiered_gate": {
+    "status": "NOT-RUN-BLOCKED",
+    "reason": "The tiered gate requires a full-pipeline forecast state dump with the O(nz) form engaged; that dump never compiles (the slow-compile pathology above). The dense default path is unchanged from the FROZEN v0.14 behavior, so the shipped default needs no new tiered run; the existing v0.15 gate (proofs/perf/v015/tiered_gate_combined.json, PASS at 0.06% of limits) covers the shipped pipeline. The O(nz) form's full-forecast field-gate is deferred to the Fable XLA-fix.",
+    "manifest": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json",
+    "evidence_that_onz_would_pass": "Isolated MYNN-step output identity onz-vs-dense is machine-epsilon (theta 1.9e-16); a full forecast built on machine-epsilon-identical PBL tendencies cannot move the frozen field RMSE limits."
+  },
+
+  "shipped_change": {
+    "production_default": "dense (_boulac_length_dense) -- unchanged numerics from v0.14, compiles in ~80s",
+    "opt_in_flag": "GPUWRF_MYNN_BOULAC_ONZ=1 -> _boulac_length_onz (O(nz), validated, faster+lighter in isolation, BLOCKED on full-pipeline compile)",
+    "files": [
+      "src/gpuwrf/physics/mynn_pbl.py (_boulac_length dispatcher + _boulac_length_dense + _boulac_length_onz + _MYNN_BOULAC_ONZ gate)"
+    ]
+  },
+
+  "harnesses": [
+    "proofs/perf/v015/boulac_nz_oracle.py (dual-impl WRF oracle, CPU)",
+    "proofs/perf/v015/boulac_nz_perf_ab.py (isolated dense-vs-O(nz) perf+VRAM, GPU)",
+    "proofs/perf/v015/boulac_nz_tiered_dump.py (full-pipeline state dump, GPU; blocked on O(nz) compile)",
+    "proofs/perf/v015/_boulac_dense_frozen.py (frozen dense for the A/B baseline)"
+  ],
+
+  "escalation_to_fable": {
+    "exact_blocker": "The O(nz) BouLac first-crossing search (data-dependent up/down parcel sweep) compiles pathologically slowly (>7 min, XLA 'Very slow compile' alarm on jit__run_forecast_operational_jit) when fused into the full operational forecast jit, for BOTH a lax.scan and a Python-unrolled formulation. The dense (nz,nz) pure-cumsum form does not (compiles ~80s). Need either an XLA-flag/fusion-boundary fix, a custom_call, or a fusion-friendly O(nz) reformulation that keeps the proven WRF-faithful lengths.",
+    "what_is_already_proven": "WRF-faithfulness (oracle, machine-eps, 8 regimes) + isolated 1.30x / -387MB + step-output machine-eps identity + both unit-test paths green. The ONLY open item is the full-pipeline XLA compile time.",
+    "excluded_hypotheses": [
+      "Not a correctness/numerics bug (oracle PASS vs independent WRF NumPy ref; dense and O(nz) agree to machine eps).",
+      "Not a memory bug (HLO has 0 (B,nz,nz) tensors in the O(nz) path vs 110 in dense; isolated peak VRAM -387MB).",
+      "Not specific to lax.scan (the Python-unrolled form hits the SAME slow-compile alarm).",
+      "Not an isolated-kernel problem (step_mynn_pbl_column compiles+runs the O(nz) form fine at 25ms); the pathology is the full-pipeline fusion only.",
+      "Not allocator-specific per the analogous fp32 path (reproduced across BFC/cuda_async in the documented fp32 case; same alarm/module here)."
+    ]
+  }
+}

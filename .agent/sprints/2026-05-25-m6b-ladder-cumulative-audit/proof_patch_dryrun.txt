@@ -1,4 +1,0 @@
-checking file dyn_em/solve_em.F
-patch: **** malformed patch at line 19:     USE small_step_gpu, ONLY : calc_p_rho_gpu, calc_coef_w_gpu, sumflux_gpu
-
-RC=2

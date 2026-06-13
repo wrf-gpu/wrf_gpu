@@ -1,2 +1,0 @@
-ls: cannot access 'scripts/warm_bubble*': No such file or directory
-scripts/m6_warm_bubble_test.py

@@ -289,7 +289,14 @@ def load_gen2_surface_fields(run: Gen2Run, lead_h: float, *, domain: str = "d02"
         raise ValueError("Gen2 d02 drift comparison currently requires hourly lead files")
     initial = files[0]
     path = files[lead_index]
-    precip_vars = ("RAINC", "RAINNC", "SNOWNC", "GRAUPELNC")
+    # WRF accumulator convention (module_mp_thompson.F:1298-1306): RAINNC is the
+    # ALL-PHASE grid-scale total (rain+snow+graupel+ice); SNOWNC/GRAUPELNC are
+    # OVERLAPPING frozen subsets of RAINNC, not additive channels. Total surface
+    # precipitation is therefore RAINC + RAINNC only — the previous
+    # (+SNOWNC+GRAUPELNC) sum double-counted the frozen part of the CPU
+    # reference (v0.15 all-green fix; the GPU side already sums its DISJOINT
+    # internal accumulators rain+snow+graupel+ice = the same all-phase total).
+    precip_vars = ("RAINC", "RAINNC")
     precip = sum(_read_wrfout_2d(path, name) - _read_wrfout_2d(initial, name) for name in precip_vars)
     return {
         "U10": _read_wrfout_2d(path, "U10"),
@@ -574,7 +581,7 @@ def build_tier3_artifact(
             "reduced_tsc": "same reduced grid across all dt values; no regridding",
             "pinned_d02": "GPU and Gen2 d02 compared on the same mass grid; surface variables are already unstaggered",
             "qv2_mapping": "GPU qv2 is surface_layer Q2 diagnostic; Gen2 reference variable is Q2",
-            "precip_mapping": "GPU precip is rain+snow+graupel+ice accumulators; Gen2 precip is RAINC+RAINNC+SNOWNC+GRAUPELNC minus t0",
+            "precip_mapping": "GPU precip is the disjoint rain+snow+graupel+ice accumulators (all-phase total); Gen2 precip is RAINC+RAINNC minus t0 (WRF RAINNC is already the all-phase total; SNOWNC/GRAUPELNC are overlapping subsets)",
         },
         "norm_definitions": {
             "max_abs": "max(abs(candidate-reference)) over the 2D surface domain",

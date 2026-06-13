@@ -1,8 +1,0 @@
-{
-  "decision": "PROCEED_TO_M6B5",
-  "diverging_field_count": 0,
-  "operator": "acoustic_recurrence",
-  "passed": true,
-  "substep": 1,
-  "threshold": 15
-}

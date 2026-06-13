@@ -1,8 +1,0 @@
-{
-  "decision": "PROCEED_TO_M6B4",
-  "diverging_field_count": 0,
-  "operator": "small_step_scratch",
-  "passed": true,
-  "substep": 1,
-  "threshold": 15
-}

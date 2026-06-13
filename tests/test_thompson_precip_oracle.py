@@ -86,7 +86,9 @@ def test_implicit_sed_is_more_diffusive_and_gated_off_by_default():
     from implicit_sedimentation_prototype import sedimentation_implicit
 
     faithful = run_scheme("faithful_explicit")
-    implicit = run_scheme("implicit", lambda s, dt: sedimentation_implicit(s, dt, nsub=1))
+    # **kw absorbs the v0.15 ``vts_boost`` keyword the production body now
+    # threads into ``_sedimentation`` (the prototype has no riming boost).
+    implicit = run_scheme("implicit", lambda s, dt, **kw: sedimentation_implicit(s, dt, nsub=1))
 
     # implicit single-sweep BE over-precipitates relative to faithful explicit
     # (more diffusive: smears the falling front to the surface) -> documented

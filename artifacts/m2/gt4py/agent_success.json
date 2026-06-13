@@ -1,8 +1,0 @@
-{
-  "candidate": "gt4py",
-  "sprint_count": 0,
-  "reviewer_rejections": 0,
-  "escalation_events": 0,
-  "blocked_by": "toolchain (DaCe 0.10.0 + Python 3.13 SymPy break, M2-S1 scout)",
-  "notes": "No implementation sprint was opened; candidate is EXCLUDED from ADR-001 with reviewer_decision=excluded in stencil_failure.json + column_failure.json."
-}

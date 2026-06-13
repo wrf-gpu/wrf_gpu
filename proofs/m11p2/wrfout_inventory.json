@@ -1,7 +1,0 @@
-{
-  "reason": "nonfinite model state after forecast hour 1",
-  "schema": "M7DailyPipelineWrfoutInventory",
-  "schema_version": 1,
-  "status": "BLOCKED",
-  "upstream_verdict": "PIPELINE_BLOCKED"
-}

@@ -1,5 +1,0 @@
-build_mode=fp32
-fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fallow-argument-mismatch -fconvert=big-endian -frecord-marker=4 -DRWORDSIZE=4 -DIWORDSIZE=4
-gfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
-rrtm_data=~/src/wrf_pristine/WRF/run/RRTM_DATA
-wrf_source=~/src/wrf_pristine/WRF/phys/module_ra_rrtm.F

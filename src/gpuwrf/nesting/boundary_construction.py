@@ -253,25 +253,34 @@ def build_child_boundary_package(
         new = _fit(new_strips, zt, st, ref.dtype)
         return jnp.stack([old, new], axis=0)
 
-    pb_parent = parent_state.p_total - parent_state.p_perturbation
-    phb_parent = parent_state.ph_total - parent_state.ph_perturbation
-    mub_parent = parent_state.mu_total - parent_state.mu_perturbation
-
     theta_new = _child_ring_3d(parent_state.theta, weights.mass, reg, w, side_len)
     qv_new = _child_ring_3d(parent_state.qv, weights.mass, reg, w, side_len)
     w_new = _child_ring_3d(parent_state.w, weights.mass, reg, w, side_len)
     p_new = _child_ring_3d(parent_state.p_perturbation, weights.mass, reg, w, side_len)
-    pb_new = _child_ring_3d(pb_parent, weights.mass, reg, w, side_len)
     ph_new = _child_ring_3d(parent_state.ph_perturbation, weights.mass, reg, w, side_len)
-    phb_new = _child_ring_3d(phb_parent, weights.mass, reg, w, side_len)
     u_new = _child_ring_3d(parent_state.u, weights.u, reg, w, side_len)
     v_new = _child_ring_3d(parent_state.v, weights.v, reg, w, side_len)
     mu_new = _child_ring_2d(parent_state.mu_perturbation, weights.mass, reg, w, side_len)
-    mub_new = _child_ring_2d(mub_parent, weights.mass, reg, w, side_len)
 
     child_phb = child_state.ph_total - child_state.ph_perturbation
     child_pb = child_state.p_total - child_state.p_perturbation
     child_mub = child_state.mu_total - child_state.mu_perturbation
+
+    # WRF NEVER laterally forces the nest BASE state: ``inc/nest_forcedown_interp.inc``
+    # forces u_2/v_2/w_2/ph_2/t_2/mu_2/moist only, and the nest keeps the
+    # ``start_em`` base (PB/MUB/PHB = base formula of the blended terrain) at every
+    # cell including the boundary frame.  Packing SINT-interpolated PARENT base
+    # here (as pre-v0.15 did) dragged the child's static MUB/PB ring toward
+    # ``interp(parent base)``, which differs from ``formula(blended HGT)`` by the
+    # base-formula nonlinearity over steep terrain -- the Canary L2 d02 Atlas
+    # ``MUB``/``PB`` ~250 Pa nest-frame seam (CPU-WRF truth has NO such seam).
+    # The consumer (`apply_lateral_boundaries`) reconstructs totals as
+    # ``base + perturbation``, so the base leaves are packed from the CHILD's OWN
+    # static base: the spec/relax application becomes an identity and the child
+    # base stays exactly the WRF ``start_domain`` base, matching CPU-WRF.
+    pb_new = field_sides_3d(child_pb, w, side_len)
+    phb_new = field_sides_3d(child_phb, w, side_len)
+    mub_new = field_sides_2d(child_mub, w, side_len)
 
     return child_state.replace(
         u_bdy=two_time(child_state.u_bdy, child_state.u, u_new),

@@ -1,0 +1,223 @@
+{
+  "scope": "v0.15 VIABILITY: fp32 vs fp64 grid ladder on the REAL merged operational step (1 compile/point)",
+  "device": "cuda:0",
+  "anchor": {
+    "run_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable",
+    "run_id": "run_h36",
+    "domain": "d01",
+    "base_grid": "128x128x44",
+    "base_ncol": 16384,
+    "dt_s": 18.0
+  },
+  "precision_semantics": {
+    "fp64": "force_fp64=True, all-fp64 carried state = the SHIPPED v0.15 default step",
+    "fp32": "force_fp64=False, DEFAULT_DTYPES fp32-gated storage matrix; acoustic perturbation solve fp64-PINNED by construction. Runnable mixed-precision, NOT all-fp32 acoustic."
+  },
+  "timing_method": "compile at N=36 steps; ms/step = best-of-2 warm wall / N. Fixed per-call overhead cancels in the fp32/fp64 ratio.",
+  "config_notes": {
+    "run_boundary": false,
+    "gwd_opt": 0,
+    "use_noahmp": false,
+    "acoustic_substeps": 10
+  },
+  "records": [
+    {
+      "precision": "fp64",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 54.76630716701038,
+      "warm_s": [
+        2.5381715659750625,
+        2.538414868991822
+      ],
+      "warm_min_s": 2.5381715659750625,
+      "ms_per_step": 70.50476572152951,
+      "ms_per_forecast_hour": 14100.953144305902,
+      "peak_vram_gib": 3.4390013217926025,
+      "out_finite": true,
+      "out_theta_dtype": "float64",
+      "out_u_dtype": "float64"
+    },
+    {
+      "precision": "fp32",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 61.82772365299752,
+      "warm_s": [
+        2.5146168709616177,
+        2.5214452350046486
+      ],
+      "warm_min_s": 2.5146168709616177,
+      "ms_per_step": 69.85046863782271,
+      "ms_per_forecast_hour": 13970.093727564543,
+      "peak_vram_gib": 3.4390013217926025,
+      "out_finite": true,
+      "out_theta_dtype": "float32",
+      "out_u_dtype": "float32"
+    },
+    {
+      "precision": "fp64",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 36,
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 73.96975557901897,
+      "warm_s": [
+        9.167929023038596,
+        9.166849914996419
+      ],
+      "warm_min_s": 9.166849914996419,
+      "ms_per_step": 254.63471986101166,
+      "ms_per_forecast_hour": 50926.94397220233,
+      "peak_vram_gib": 10.542046308517456,
+      "out_finite": true,
+      "out_theta_dtype": "float64",
+      "out_u_dtype": "float64"
+    },
+    {
+      "precision": "fp32",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 36,
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 79.6222433099756,
+      "warm_s": [
+        8.972358945000451,
+        8.974289321980905
+      ],
+      "warm_min_s": 8.972358945000451,
+      "ms_per_step": 249.2321929166792,
+      "ms_per_forecast_hour": 49846.43858333584,
+      "peak_vram_gib": 10.542046308517456,
+      "out_finite": true,
+      "out_theta_dtype": "float32",
+      "out_u_dtype": "float32"
+    },
+    {
+      "precision": "fp64",
+      "ny": 256,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 98304,
+      "tile_factor": [
+        2,
+        3
+      ],
+      "n_steps": 36,
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 11.12GiB.",
+      "peak_vram_gib": 10.542046308517456,
+      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/fp32_fp64_ladder.py\", line 76, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 11.12GiB.\n"
+    },
+    {
+      "precision": "fp32",
+      "ny": 256,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 98304,
+      "tile_factor": [
+        2,
+        3
+      ],
+      "n_steps": 36,
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 78.06196576199727,
+      "warm_s": [
+        13.005928326048888,
+        13.006680905004032
+      ],
+      "warm_min_s": 13.005928326048888,
+      "ms_per_step": 361.27578683469136,
+      "ms_per_forecast_hour": 72255.15736693828,
+      "peak_vram_gib": 13.474049806594849,
+      "out_finite": true,
+      "out_theta_dtype": "float32",
+      "out_u_dtype": "float32"
+    },
+    {
+      "precision": "fp32",
+      "ny": 384,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "n_steps": 36,
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.75GiB.",
+      "peak_vram_gib": 13.474049806594849,
+      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/fp32_fp64_ladder.py\", line 76, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.75GiB.\n"
+    }
+  ],
+  "fp32_vs_fp64_ratios": [
+    {
+      "ncol": 16384,
+      "fp64_ms": 70.50476572152951,
+      "fp32_ms": 69.85046863782271,
+      "fp32_speedup_over_fp64": 1.0093671108650588,
+      "fp64_gib": 3.4390013217926025,
+      "fp32_gib": 3.4390013217926025,
+      "fp64_over_fp32_vram": 1.0
+    },
+    {
+      "ncol": 65536,
+      "fp64_ms": 254.63471986101166,
+      "fp32_ms": 249.2321929166792,
+      "fp32_speedup_over_fp64": 1.021676681816697,
+      "fp64_gib": 10.542046308517456,
+      "fp32_gib": 10.542046308517456,
+      "fp64_over_fp32_vram": 1.0
+    }
+  ],
+  "largest_fp64_grid": {
+    "ncol": 65536,
+    "ny": 256,
+    "nx": 256,
+    "peak_vram_gib": 10.542046308517456,
+    "ms_per_step": 254.63471986101166
+  },
+  "largest_fp32_grid": {
+    "ncol": 98304,
+    "ny": 256,
+    "nx": 384,
+    "peak_vram_gib": 13.474049806594849,
+    "ms_per_step": 361.27578683469136
+  }
+}

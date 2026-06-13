@@ -1,8 +1,0 @@
-{
-  "decision": "PROCEED_TO_M6_PERF_DESIGN",
-  "diverging_field_count": 0,
-  "operator": "coupled_step",
-  "passed": true,
-  "step": 1,
-  "threshold": 15
-}

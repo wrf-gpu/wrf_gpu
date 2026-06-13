@@ -1,6 +1,0 @@
-{
-  "artifact_type": "m6b_retry_d2h_inheritance",
-  "source": ".agent/sprints/2026-05-25-m6b-d2h-warmed-recapture/d2h_warmed_memo.md",
-  "status": "GO",
-  "summary": "warmed D2H memo present; parsed as GO"
-}

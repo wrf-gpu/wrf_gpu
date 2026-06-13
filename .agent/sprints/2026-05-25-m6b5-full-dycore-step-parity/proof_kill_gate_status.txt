@@ -1,8 +1,0 @@
-{
-  "decision": "PROCEED_TO_M6B6",
-  "diverging_field_count": 0,
-  "operator": "dycore_step",
-  "passed": true,
-  "step": 1,
-  "threshold": 15
-}

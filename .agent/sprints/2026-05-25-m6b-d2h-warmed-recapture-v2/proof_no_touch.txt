@@ -1,5 +1,0 @@
-        <Function test_required_top_level_files_exist>
-      <Module test_skill_metadata.py>
-        <Function test_all_skills_have_metadata_and_evals>
-
-========================= 679 tests collected in 1.83s =========================

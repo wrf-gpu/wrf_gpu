@@ -1,3 +1,0 @@
-src/gpuwrf/coupling/boundary_apply.py:141:        pad = jnp.take(values, jnp.array([0]), axis=axis)
-src/gpuwrf/coupling/boundary_apply.py:144:    pad = jnp.take(values, jnp.array([values.shape[axis] - 1]), axis=axis)
-src/gpuwrf/physics/rrtmg_lw.py:803:    k0 = jnp.where(has_interval, jnp.maximum(first_below - 1, 0), pprof.shape[0] - 1)

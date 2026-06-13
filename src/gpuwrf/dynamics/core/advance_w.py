@@ -21,10 +21,66 @@ post-``pg_buoy_w`` ``cqw``.
 
 from __future__ import annotations
 
+import os
+
 import jax
 import jax.numpy as jnp
 
 GRAVITY_M_S2 = 9.81  # WRF ``g`` constant used in the small-step solver.
+
+
+def _thomas_unroll() -> int:
+    """Unroll factor for the two Thomas ``lax.scan`` sweeps (v0.15 perf knob).
+
+    Default ``1`` keeps the v0.14 ``lax.scan(unroll=False)`` lowering.
+    Unrolling replicates the loop body in program order without reassociating
+    any arithmetic (the same ops on the same values in the same sequence), so
+    every factor is bit-identical in fp64 (proofs/perf/v015/ab_s1_flat16.json:
+    the only leaf-hash flips are the niter-16 numerics, never the Thomas
+    lowering).
+
+    Left at the v0.14 default deliberately for v0.15: the S1 bisect measured
+    the unroll as wall-NEUTRAL-to-slightly-worse at the step level (the solve is
+    a small fraction; cond16+thomas45=118.6 vs cond16-only=119.8 ms -- within
+    noise), while the larger unroll factors materially inflate first-compile
+    time (XLA "Very slow compile").  So the unroll buys no step-level wall and is
+    not flipped on by default.  Set ``GPUWRF_THOMAS_UNROLL=8`` (or 45) to opt
+    into the maximal-fusion Thomas lowering if a specific profile wants it.
+    """
+
+    return max(1, int(os.environ.get("GPUWRF_THOMAS_UNROLL", "1")))
+
+
+def _safe_floors() -> bool:
+    """Debug-only guard for the hot-path column-mass / theta-ref divisors.
+
+    The acoustic ``advance_w`` divides by the hybrid-coordinate column masses
+    (``mass_h = c1h*muts+c2h``, ``mass_f_mut``, ``mass_f_muts``) and the total
+    reference theta (``theta_total_ref = t0 + t_1``).  All four are bounded away
+    from zero by construction on valid data: the hybrid column masses satisfy
+    ``c1f*mut + c2f >= ptop``-scale and the reference theta is ``300 K`` plus a
+    bounded perturbation.  WRF divides by them directly.  The port floored each
+    with a per-substep full-grid ``jnp.where(|x|>eps, x, eps)``, which can never
+    fire on a valid state but costs four ``abs``+``where`` passes every substep
+    (XLA cannot drop them -- the value is data-dependent).
+
+    Default OFF (v0.15): divide directly, matching WRF and bit-identical to the
+    floored path WHENEVER no floor would fire (proven on the real case by the
+    fp64 A/B leaf-hash gate: any firing floor would inject a NaN/Inf and blow
+    the gate, so 0/168 == no floor fired).  Set ``GPUWRF_ADVANCE_W_SAFE_FLOORS=1``
+    to restore the unconditional guards for triage of a degenerate state
+    (M4 debuggability-hooks convention: zero-cost in production, switchable on).
+    """
+
+    return os.environ.get("GPUWRF_ADVANCE_W_SAFE_FLOORS", "0") == "1"
+
+
+def _floor_pos(x: jax.Array, eps: float) -> jax.Array:
+    """Floor ``|x|`` away from ``eps`` only when the debug guard is enabled."""
+    if not _safe_floors():
+        return x
+    return jnp.where(jnp.abs(x) > eps, x, jnp.asarray(eps, dtype=x.dtype))
+
 
 # WRF vertical-CFL ``w_damping`` constants (``share/module_model_constants.F:88-89``).
 W_ALPHA = 0.3   # strength m/s/s
@@ -324,12 +380,10 @@ def advance_w_wrf(
 
     # --- t_2ave (WRF :1341-1344) on mass levels k=1..k_end (Python 0..nz-1) ---
     mass_h = c1h[:, None, None] * muts[None, :, :] + c2h[:, None, None]
-    safe_mass_h = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))
+    safe_mass_h = _floor_pos(mass_h, 1.0e-12)
     t_2ave_half = 0.5 * (eps_p * t_2 + eps_m * t_2ave)
     theta_total_ref = float(t0) + t_1
-    safe_theta_ref = jnp.where(
-        jnp.abs(theta_total_ref) > 1.0e-6, theta_total_ref, jnp.asarray(1.0e-6, dtype=theta_total_ref.dtype)
-    )
+    safe_theta_ref = _floor_pos(theta_total_ref, 1.0e-6)
     t_2ave_next = (t_2ave_half + (c1h[:, None, None] * muave[None, :, :]) * float(t0)) / (
         safe_mass_h * safe_theta_ref
     )
@@ -341,6 +395,17 @@ def advance_w_wrf(
     rhs = rhs.at[1:, :, :].set(rhs_main)
     # rhs(i,1) = 0 (WRF :1333)
     rhs = rhs.at[0, :, :].set(0.0)
+
+    # NOTE (v0.15 kernel probe, NEGATIVE result, kept for the record): hoisting
+    # the stage-constant denominators (mass_f_mut / safe_mass_f_mut /
+    # safe_mass_h_mut / coef_mass) out of the substep scan to once-per-stage
+    # was tried and REVERTED: it measured SLOWER (178.9 -> 188.7 ms/step,
+    # proofs/perf/v015/ab_streamA.json) because the inline broadcast-FMA
+    # recompute fuses into the consumers for free while the hoisted arrays
+    # cost real DRAM loads -- and it was NOT bit-identical in-program
+    # (proofs/perf/v015/ab_compare_v014_base_vs_streamA.json: XLA FMA
+    # contraction differs across fusion contexts). Keep these computed
+    # in place, exactly as WRF/v0.14.
 
     # --- phi advection term (WRF ELSE branch, phi_adv_z==1, :1370-1382) ---
     # wdwn(k+1) = 0.5*(ww(k+1)+ww(k))*rdnw(k)*(ph_1(k+1)-ph_1(k)+phb(k+1)-phb(k))
@@ -360,9 +425,7 @@ def advance_w_wrf(
     # --- finalize rhs as the explicit ph predictor (WRF :1393-1398) ---
     # rhs(k) = ph(k) + msfty*rhs(k)/(c1f(k)*mut+c2f(k)) for k=2..k_end+1 (faces 1..nz)
     mass_f_mut = c1f[:, None, None] * mut[None, :, :] + c2f[:, None, None]  # (nz+1, ny, nx)
-    safe_mass_f_mut = jnp.where(
-        jnp.abs(mass_f_mut) > 1.0e-12, mass_f_mut, jnp.asarray(1.0e-12, dtype=mass_f_mut.dtype)
-    )
+    safe_mass_f_mut = _floor_pos(mass_f_mut, 1.0e-12)
     rhs = rhs.at[1:, :, :].set(
         ph[1:, :, :] + msfty[None, :, :] * rhs[1:, :, :] / safe_mass_f_mut[1:, :, :]
     )
@@ -473,13 +536,22 @@ def advance_w_wrf(
         out = (w_k - a_k * prev_w) * alpha_k
         return out, out
 
+    _u = _thomas_unroll()
+    _scan_unroll = _u if _u > 1 else False  # 1 -> False == the exact v0.14 lowering
     _, fwd_tail = jax.lax.scan(
-        _fwd, w_next[0], (a[1:, :, :], alpha[1:, :, :], w_next[1:, :, :]), unroll=False
+        _fwd, w_next[0], (a[1:, :, :], alpha[1:, :, :], w_next[1:, :, :]), unroll=_scan_unroll
     )
     w_fwd = jnp.concatenate((w_next[0][None, ...], fwd_tail), axis=0)
 
     # --- Thomas back substitution (WRF :1546-1550): w(k)=w(k)-gamma(k)*w(k+1) for k=k_end..2 ---
     # i.e. faces nz-1 down to 1. Faces 0 and nz are fixed boundaries.
+    # NOTE (v0.15 kernel probe): a ``reverse=True`` rewrite of this flip-scan-
+    # flip removes three full-grid reversed copies per substep and is bitwise-
+    # equal at the lax level (tests/test_v015_stream_a_bitwise.py), but in the
+    # FULL program the changed fusion context shifted last bits (XLA FMA
+    # contraction is fusion-context-dependent) and it measured wall-neutral at
+    # 128^2 -- so the v0.14 formulation is kept verbatim; revisit inside the
+    # planned Pallas column solve where the op order is forced explicitly.
     def _back(next_w, entries):
         gamma_k, w_k = entries
         out = w_k - gamma_k * next_w
@@ -488,7 +560,7 @@ def advance_w_wrf(
     if nz >= 2:
         gamma_rev = gamma[1:nz, :, :][::-1]
         w_rev = w_fwd[1:nz, :, :][::-1]
-        _, interior_rev = jax.lax.scan(_back, w_fwd[nz], (gamma_rev, w_rev), unroll=False)
+        _, interior_rev = jax.lax.scan(_back, w_fwd[nz], (gamma_rev, w_rev), unroll=_scan_unroll)
         interior = interior_rev[::-1]
         w_solved = jnp.concatenate((w_fwd[0][None, ...], interior, w_fwd[nz][None, ...]), axis=0)
     else:
@@ -522,9 +594,7 @@ def advance_w_wrf(
     # --- geopotential finish (WRF :1581-1586): ph(k)=rhs(k)+msfty*0.5*dts*g*(1+eps)*w(k)/(c1f(k)*muts+c2f(k))
     # for k=k_end+1..2 (faces 1..nz). ---
     mass_f_muts = c1f[:, None, None] * muts[None, :, :] + c2f[:, None, None]
-    safe_mass_f_muts = jnp.where(
-        jnp.abs(mass_f_muts) > 1.0e-12, mass_f_muts, jnp.asarray(1.0e-12, dtype=mass_f_muts.dtype)
-    )
+    safe_mass_f_muts = _floor_pos(mass_f_muts, 1.0e-12)
     ph_next = ph
     ph_upd = rhs[1:, :, :] + msfty[None, :, :] * 0.5 * float(dts) * g * eps_p * w_solved[1:, :, :] / safe_mass_f_muts[1:, :, :]
     ph_next = ph_next.at[1:, :, :].set(ph_upd)

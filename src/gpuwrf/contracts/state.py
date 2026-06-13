@@ -102,6 +102,14 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "Nc": mass_3d,
         "Nn": mass_3d,
         "rainc_acc": surface_2d,
+        # v0.15 MYNN SGS-cloud leaves (append-only): closure-2.6 prognostic
+        # total-water variance qsq plus the mym_condensation CASE(2) subgrid
+        # cloud state (qc_bl/qi_bl/cldfra_bl) the icloud_bl radiation merge and
+        # the SGS-aware thlv buoyancy consume.
+        "qsq": mass_3d,
+        "qc_bl": mass_3d,
+        "qi_bl": mass_3d,
+        "cldfra_bl": mass_3d,
     }
 
 
@@ -457,6 +465,12 @@ class State:
         "Nc",
         "Nn",
         "rainc_acc",
+        # --- v0.15 MYNN SGS-cloud leaves (append-only; same reconstruction
+        # contract as the v0.6.0 block above) ---
+        "qsq",
+        "qc_bl",
+        "qi_bl",
+        "cldfra_bl",
     )
 
     def __init__(
@@ -518,6 +532,11 @@ class State:
         Nc: jax.Array | None = None,
         Nn: jax.Array | None = None,
         rainc_acc: jax.Array | None = None,
+        # --- v0.15 MYNN SGS-cloud leaves (append-only) ---
+        qsq: jax.Array | None = None,
+        qc_bl: jax.Array | None = None,
+        qi_bl: jax.Array | None = None,
+        cldfra_bl: jax.Array | None = None,
     ) -> None:
         self.u = u
         self.v = v
@@ -595,6 +614,30 @@ class State:
             jnp.zeros_like(rain_acc, dtype=DEFAULT_DTYPES.dtype_for("rainc_acc"))
             if rainc_acc is None
             else _as_dtype(rainc_acc, DEFAULT_DTYPES.dtype_for("rainc_acc"))
+        )
+        # v0.15 MYNN SGS-cloud leaves. ``None`` -> zeros (the WRF cold start:
+        # qsq=0, no BL cloud) so existing call sites and pre-v0.15 flattens
+        # still construct. qsq templates on qke (FP64 turbulence family);
+        # qc_bl/qi_bl/cldfra_bl template on qc (FP32-gated diagnostics).
+        self.qsq = (
+            jnp.zeros_like(qke, dtype=DEFAULT_DTYPES.dtype_for("qsq"))
+            if qsq is None
+            else _as_dtype(qsq, DEFAULT_DTYPES.dtype_for("qsq"))
+        )
+        self.qc_bl = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qc_bl"))
+            if qc_bl is None
+            else _as_dtype(qc_bl, DEFAULT_DTYPES.dtype_for("qc_bl"))
+        )
+        self.qi_bl = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qi_bl"))
+            if qi_bl is None
+            else _as_dtype(qi_bl, DEFAULT_DTYPES.dtype_for("qi_bl"))
+        )
+        self.cldfra_bl = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("cldfra_bl"))
+            if cldfra_bl is None
+            else _as_dtype(cldfra_bl, DEFAULT_DTYPES.dtype_for("cldfra_bl"))
         )
 
     @classmethod

@@ -1,7 +1,0 @@
-operator=dycore_step
-outcome=SIXTH-DYCORE-STEP-PARITY-ACHIEVED
-passed=True
-geometric_growth_bound=M6B4 per-substep tolerance x 300
-column: passed=True max_abs_delta=6.938893903907228e-18 at column/step10/w
-patch16: passed=True max_abs_delta=4.440892098500626e-16 at patch16/step10/w
-golden: passed=True max_abs_delta=1.1102230246251565e-16 at golden/step10/w

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 from functools import partial
 from typing import Iterable
@@ -12,6 +13,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from gpuwrf.debug.asserts import assert_finite, assert_physical_bounds
+from gpuwrf.physics import column_tiling
 from gpuwrf.physics.thompson_constants import (
     AM_G_MP8,
     AM_I,
@@ -34,7 +36,9 @@ from gpuwrf.physics.thompson_constants import (
     CCG3_NU12,
     CCG4_NU12,
     CCG5_NU12,
+    CGE9,
     CGE11,
+    CGG6_OVER_CGG3,
     CIE2,
     CIG3,
     CIG6,
@@ -57,11 +61,15 @@ from gpuwrf.physics.thompson_constants import (
     D0I,
     D0R,
     D0S,
+    DS_FIRST,
+    DS_LAST,
     EPS,
     FV_R,
+    FV_S,
     HGFR,
     LFUS,
     LSUB,
+    NBS_EFSW,
     NT_C,
     NU_C_MP8,
     OBMG,
@@ -80,10 +88,13 @@ from gpuwrf.physics.thompson_constants import (
     R_D,
     RHO_NOT,
     RV,
+    RHO_W_RIME,
     T1_MELT_QG,
     T1_MELT_QS,
+    T1_QG_QC,
     T1_QR_EV,
     T1_QR_QC,
+    T1_QS_QC,
     T1_SUBL_QG,
     T1_SUBL_QS,
     T2_MELT_QG,
@@ -116,6 +127,8 @@ from gpuwrf.physics.thompson_tables import (
     R_I_FIRST,
     THOMPSON_TABLES,
     ThompsonTableBundle,
+    COLD_COLLECTION_TABLES,
+    ColdCollectionTables,
 )
 
 
@@ -145,8 +158,63 @@ def _work_dtype():
     return jnp.float32 if os.environ.get("GPUWRF_THOMPSON_FP32", "0") == "1" else jnp.float64
 
 
+# --- Column tiling (v0.15 kernel-final, VRAM ceiling) --------------------------
+# The full operational Thompson step is the largest UN-tiled column-physics
+# working set (proofs/perf/v015/km_bench/vram_ceiling_findings.json): at the
+# 640x320 1-km target (~205k cols) its fused intermediates contribute to the
+# single ~28 GiB temp arena that OOMs the 32 GiB card.  Running the identical
+# body over fixed-size leading-column tiles (the SAME lax.scan pattern proven
+# exact for RRTMG and MYNN) caps the per-step transient to one tile.  Tiling
+# engages ONLY for grids whose flattened column count exceeds one tile, so the
+# production Switzerland case (128x128 = 16384 cols == one tile) NEVER tiles and
+# keeps its byte-identical untiled graph either way.
+#
+# DEFAULT OFF (v0.15 ship-gate decision, proofs/perf/v015/vram_mp_tiling.json):
+# the multi-tile lax.scan moves XLA fusion boundaries, so the tiled result is
+# NOT byte-identical to the monolithic body — it differs at the fp64 noise floor
+# (worst measured 2.8e-14 K on T, 1 of 720,896 cells; reshape itself is
+# byte-exact, the residual is the scan-vs-monolith FMA-contraction boundary,
+# i.e. the documented Tier-P phenomenon of V0150-TIERED-IDENTITY-ADR).  That is
+# trivially inside the v0.14 frozen tolerance (1.9e-14 of the 1.5 K T limit) but
+# fails a STRICT byte gate, so tiling is an OPT-IN large-grid (>16384-col) VRAM
+# lever, NOT a default: `GPUWRF_MP_COLUMN_TILING=1` to enable.  The default
+# production graph stays byte-identical to v0.14.
+_MP_COLUMN_TILING = column_tiling.env_bool("GPUWRF_MP_COLUMN_TILING", False)
+_MP_COLUMN_TILE_COLS = max(0, column_tiling.env_int("GPUWRF_MP_COLUMN_TILE_COLS", 16384))
+
+
 def _fp32_enabled() -> bool:
     return os.environ.get("GPUWRF_THOMPSON_FP32", "0") == "1"
+
+
+def _riming_enabled() -> bool:
+    """v0.15 cold-phase riming gate (default ON; the WRF-faithful path).
+
+    The Switzerland d01 RAINNC 5.19 mm miss was PROVEN non-chaotic
+    (proofs/v015/falsifier_rainnc_report.json: WRF internal variability is
+    0.057 mm pooled over 72 h) and the dominant missing Thompson process set is
+    cold-phase collection.  ``GPUWRF_THOMPSON_RIMING=0`` restores the pre-v0.15
+    deposition-only cold growth bitwise.
+    """
+
+    return os.environ.get("GPUWRF_THOMPSON_RIMING", "1").strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _cold_collection_enabled() -> bool:
+    """v0.15 cold-collection gate (rain-collecting-snow/graupel + Bigg freezing).
+
+    Default ON when the bit-exact WRF cold-collection fixture
+    (``thompson-cold-collection-v1.npz``) is present.  These rain->graupel sinks
+    below 0 C are the dominant missing Thompson process for the January Alpine
+    Switzerland RAINNC surplus (the coldmix column oracle shows the port retains
+    rain WRF freezes/collects into graupel aloft -- proofs/v015/cold_collection_
+    oracle/).  ``GPUWRF_THOMPSON_COLD_COLLECTION=0`` restores the riming-only
+    cold growth bitwise.
+    """
+
+    if COLD_COLLECTION_TABLES is None:
+        return False
+    return os.environ.get("GPUWRF_THOMPSON_COLD_COLLECTION", "1").strip().lower() not in {"0", "false", "no", "off"}
 
 
 def _cast_state(state: "ThompsonColumnState", dtype) -> "ThompsonColumnState":
@@ -853,13 +921,12 @@ def _ice_sources_with_process_flags(
     )
     state = state.replace(rho=density_from_pressure_temperature(state.p, state.T, state.qv))
 
-    tempc, diffu, _visco, tcond, _lvap, ocp, rhof, rhof2, vsc2 = _air_properties(state)
-    del tempc, rhof
+    tempc, diffu, visco, tcond, lvap2, ocp, rhof, rhof2, vsc2 = _air_properties(state)
     qvsi = saturation_mixing_ratio_ice(state.p, state.T)
     ssati = state.qv / qvsi - 1.0
     t1_subl, rvs = _sublimation_prefactor(state, ssati, diffu, tcond)
     ri, ni, _lami, ilami, xdi, xmi, active_ice = _ice_distribution(state.qi, state.Ni, state.rho)
-    rs, _xds, _smo0, smo1, smof, c_snow, active_snow = _snow_moments(state.qs, state.rho, state.T - 273.15, tables)
+    rs, xds, smo0, smo1, smof, c_snow, active_snow = _snow_moments(state.qs, state.rho, state.T - 273.15, tables)
     rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.rho)
 
     idx_i = jnp.where(ri > R_I_FIRST, _lookup_digit_index(ri, -10, N_I_TABLE), 0)
@@ -889,6 +956,12 @@ def _ice_sources_with_process_flags(
 
     prs_sde = c_snow * t1_subl * diffu * ssati * rvs * (T1_SUBL_QS * smo1 + T2_SUBL_QS * rhof2 * vsc2 * smof)
     prs_sde = jnp.where(active_snow, jnp.where(prs_sde < 0.0, jnp.maximum(-rs / float(dt), prs_sde), jnp.minimum(prs_sde, jnp.maximum(state.qv - qvsi, 0.0) * state.rho / float(dt) * 0.999)), 0.0)
+    # WRF ordering (module_mp_thompson.F): the riming snow->graupel split (line
+    # 2758) compares prs_scw against this PER-CELL-clamped prs_sde, BEFORE the
+    # GLOBAL multi-term deposition vapor-conservation ratio (line ~2862) scales
+    # it. Capture the pre-ratio value for the riming comparison so a
+    # deposition-limited (ratio<1) cell does not spuriously trip riming_dom.
+    prs_sde_preratio = prs_sde
     vapor_rate_max = (state.qv - qvsi) * state.rho / float(dt) * 0.999
     prg_gde = C_CUBE * t1_subl * diffu * ssati * rvs * n0_g * (T1_SUBL_QG * ilamg**CRE10 + T2_SUBL_QG * vsc2 * rhof2 * ilamg**CGE11)
     prg_gde = jnp.where(active_graupel & (ssati < -EPS), jnp.maximum(jnp.maximum(-rg / float(dt), prg_gde), vapor_rate_max), 0.0)
@@ -922,13 +995,249 @@ def _ice_sources_with_process_flags(
         T=updated_T,
         rho=density_from_pressure_temperature(state.p, updated_T, updated_qv),
     )
-    return updated, graupel_melt
+
+    # ---- v0.15 cold-phase riming: snow/graupel collecting cloud water ----
+    # WRF module_mp_thompson.F:2403-2440 (prs_scw via t_Efsw, prg_gcw via the
+    # graupel Stokes-number efficiency), 2758-2776 (rimed-snow -> graupel
+    # conversion split + the snow fall-speed boost vts_boost), 2879-2890
+    # (cloud-water conservation), 3094/3100 (qs/qg tendencies), 3165-3173
+    # (collected-water freezing heat, T<T_0 branch only).  Rates are computed
+    # from the SAME pass fields the deposition rates used (state) and applied
+    # after the deposition update, mirroring WRF's one-pass rate + joint apply.
+    # The remaining V4.7.1 cold-collision set (rain-snow qr_acr_qs, rain-graupel
+    # qr_acr_qg tables, Hallett-Mossop rime splintering, the bucketed graupel
+    # density/volume prognostic) is still absent and documented in
+    # proofs/v015/all_green_fixes.md.  GPUWRF_THOMPSON_RIMING=0 rolls back.
+    #
+    # dt gate: WRF (line 2840) keeps riming for dt>120 s but reroutes the
+    # collected water to RAIN (prr_rcw += prs_scw+prg_gcw) instead of snow/
+    # graupel -- the GPU's split-step structure applies warm-rain collection
+    # BEFORE this point, so that late rain reroute is not expressible here.
+    # ``dt`` is a STATIC Python float, so this is a compile-time branch; every
+    # in-scope grid (Switzerland/Canary mp dt = 18 s, all operational dt <=
+    # 60 s) takes the riming path.  A dt>120 s config would fall back to
+    # deposition-only cold growth -- a documented scope limit, not a silent
+    # masking of the riming-on path.
+    vts_boost = jnp.ones_like(state.qs)
+    if _riming_enabled() and float(dt) <= 120.0:
+        odts = 1.0 / float(dt)
+        rc_rime, _lamc_r, _xdc_r, mvd_c, active_cloud = _cloud_distribution(state.qc, state.rho)
+        # smoe = Field snow moment at order cse(13) = bv_s+2 (WRF 2085-2101),
+        # evaluated with the same smo2 = rs/am_s and tc0 convention as
+        # _snow_moments.
+        tc0 = jnp.minimum(-0.1, state.T - 273.15)
+        smo2 = jnp.maximum(state.qs * state.rho, R1) / AM_S
+        smoe = _snow_moment(tables.cse[12], smo2, tc0, tables)
+        # Ef_sw: snow-bin index over Ds(1..100) (log bins D0s..2cm, WRF 862-872;
+        # Fortran idx = 1 + INT(...) truncates toward zero, then MIN(nbs)).
+        xds_pos = NBS_EFSW * jnp.log(jnp.maximum(xds, DS_FIRST) / DS_FIRST) / math.log(DS_LAST / DS_FIRST)
+        idx_s_eff = jnp.clip(jnp.trunc(xds_pos), 0, NBS_EFSW - 1).astype(jnp.int32)
+        idx_c_rime = jnp.clip(jnp.floor(mvd_c * 1.0e6).astype(jnp.int32) - 1, 0, N_EFRW_C - 1)
+        ef_sw = _take2(tables.t_Efsw, idx_s_eff, idx_c_rime)
+        scw_gate = active_snow & active_cloud & (mvd_c > D0C) & (xds > D0S)
+        prs_scw = jnp.where(scw_gate, rhof * T1_QS_QC * ef_sw * rc_rime * smoe, 0.0)
+        prs_scw = jnp.minimum(rc_rime * odts, prs_scw)
+
+        # Graupel collecting cloud water (GPU single-density mp8 PSD convention,
+        # mu_g=0): Stokes-number efficiency of WRF 2414-2431.
+        xdg = 4.0 * ilamg
+        vtg = rhof * AV_G_MP8 * CGG6_OVER_CGG3 * ilamg**BV_G_MP8
+        stoke_g = mvd_c * mvd_c * vtg * RHO_W_RIME / (9.0 * jnp.maximum(visco, R1) * jnp.maximum(xdg, R1))
+        ef_gw = jnp.where(
+            stoke_g >= 0.4,
+            jnp.where(stoke_g > 10.0, 0.77, 0.55 * jnp.log10(jnp.maximum(2.51 * stoke_g, R1))),
+            0.0,
+        )
+        ef_gw = jnp.where(state.T > T_0, ef_gw * 0.1, ef_gw)
+        gcw_gate = active_graupel & (rg >= 1.0e-6) & active_cloud & (mvd_c > D0C)
+        prg_gcw = jnp.where(gcw_gate, rhof * T1_QG_QC * ef_gw * rc_rime * n0_g * ilamg**CGE9, 0.0)
+
+        # Rimed-snow -> graupel conversion + snow fall-speed boost (WRF 2758-2776).
+        # Compare against the PRE-global-ratio prs_sde (WRF runs this block before
+        # the deposition vapor-conservation ratio); the per-cell rate_max clamp at
+        # line 913 is already applied, matching WRF lines 2690-2692.
+        riming_dom = (prs_scw > 2.0 * prs_sde_preratio) & (prs_sde_preratio > EPS)
+        r_frac = jnp.minimum(30.0, prs_scw / jnp.maximum(prs_sde_preratio, EPS))
+        g_frac = jnp.minimum(0.95, 0.15 + (r_frac - 2.0) * 0.028)
+        vts_single = AV_S * xds**BV_S * jnp.exp(-FV_S * xds)
+        const_ri = jnp.clip(-(mvd_c * 0.5e6) * vts_single / jnp.minimum(-0.1, tempc), 0.1, 10.0)
+        rime_dens = (0.051 + 0.114 * const_ri - 0.0055 * const_ri * const_ri) * 1000.0
+        g_frac = jnp.where(rime_dens < 150.0, 0.0, g_frac)  # A. Jensen low-density cutoff
+        g_frac = jnp.where(riming_dom, g_frac, 0.0)
+        vts_boost = jnp.where(riming_dom, jnp.minimum(1.5, 1.1 + (r_frac - 2.0) * 0.014), 1.0)
+        prg_scw = g_frac * prs_scw
+        png_scw = jnp.where(riming_dom & (rs > R1), prg_scw * smo0 / jnp.maximum(rs, R1), 0.0)
+        prs_scw = prs_scw - prg_scw
+
+        # Cloud-water conservation (WRF 2879-2890): the collected sum may not
+        # deplete more cloud water than exists this step.
+        collected = prs_scw + prg_scw + prg_gcw
+        ratio_qc = jnp.where(collected > rc_rime * odts, rc_rime * odts / jnp.maximum(collected, EPS), 1.0)
+        prs_scw = prs_scw * ratio_qc
+        prg_scw = prg_scw * ratio_qc
+        prg_gcw = prg_gcw * ratio_qc
+
+        # ratio_qc already bounds the collected sum by rc_rime*odts and the
+        # deposition block never touches qc, so the qc sink below equals the
+        # qs+qg gain exactly (no extra clamp -> no mass creation/destruction).
+        scw_total_dt = (prs_scw + prg_scw + prg_gcw) * float(dt) / state.rho
+        lfus2_rime = LSUB - lvap2
+        rime_heat = jnp.where(state.T < T_0, lfus2_rime * ocp * scw_total_dt, 0.0)
+        rime_T = updated.T + rime_heat
+        updated = updated.replace(
+            qc=updated.qc - scw_total_dt,
+            qs=updated.qs + prs_scw * float(dt) / state.rho,
+            qg=updated.qg + (prg_scw + prg_gcw) * float(dt) / state.rho,
+            Ns=jnp.maximum(0.0, updated.Ns - png_scw * float(dt) / state.rho),
+            T=rime_T,
+            rho=density_from_pressure_temperature(state.p, rime_T, updated.qv),
+        )
+    return updated, graupel_melt, vts_boost
+
+
+def _take4(table, i, j, k, m):
+    """Dynamic 4-D table read (C-order) lowered as a single gather.
+
+    ``table`` has shape (n0, n1, n2, n3); indices are int arrays broadcast to a
+    common shape.  Matches WRF's flat lookup of a (d0,d1,d2,d3) Fortran array
+    that this fixture stores in C-order with the SAME axis meaning.
+    """
+
+    n1, n2, n3 = table.shape[1], table.shape[2], table.shape[3]
+    flat = (((i.astype(jnp.int32) * n1 + j.astype(jnp.int32)) * n2
+             + k.astype(jnp.int32)) * n3 + m.astype(jnp.int32))
+    return jnp.take(jnp.ravel(table), flat)
+
+
+def _cold_collection(
+    state: ThompsonColumnState,
+    dt: float,
+    cold_tables: ColdCollectionTables,
+) -> ThompsonColumnState:
+    """v0.15 rain-collecting-snow (qr_acr_qs) + rain-collecting-graupel
+    (qr_acr_qg) below 0 C (module_mp_thompson.F:2484-2548 + tendencies
+    3058-3120).
+
+    These two table-driven collection-collision processes convert RAIN to
+    GRAUPEL (and exchange snow) when rain coexists with snow/graupel below
+    freezing -- the dominant missing rain sink for the January Alpine
+    Switzerland RAINNC surplus.  ``twet`` is the wet-bulb temperature; for the
+    sub-freezing levels that drive this case ``twet == temp`` (WRF only solves
+    the LCL wet-bulb on the warm ``k_melting`` levels), so the cold branch
+    (twet < T_0) is selected by ``state.T < T_0``.  The warm rcs/rcg branch
+    (rain melting snow/graupel below the melting line) is the small reverse
+    contribution and is included with the same ``twet`` approximation.
+
+    Rates are read from the bit-exact Fortran tables (no recomputation); mass and
+    number tendencies are wired exactly as WRF's qrten/qsten/qgten/nrten/ngten.
+    """
+
+    odts = 1.0 / float(dt)
+
+    rho = state.rho
+    rr = jnp.maximum(state.qr * rho, R1)
+    rs = jnp.maximum(state.qs * rho, R1)
+    rg = jnp.maximum(state.qg * rho, R1)
+    nr = jnp.maximum(state.Nr * rho, R2)
+
+    # Rain slope/intercept for idx_r / idx_r1 (WRF 2319-2333).
+    _, _nr_c, lamr, _ilamr, _mvd_r, _n0r, active_rain = _rain_distribution(state.qr, state.Nr, state.rho)
+    rr_idx = jnp.maximum(rr, R_R_FIRST)
+    n0r_exp = ORG1 * rr_idx / AM_R * lamr**CRE1
+    idx_r = _lookup_digit_index(rr_idx, -6, N_R_TABLE)
+    idx_r1 = _lookup_digit_index(n0r_exp, 6, N_R1_TABLE)
+
+    # Snow content index idx_s (WRF 2340-2349); ntb_s = 37, r_s(1)=1e-6.
+    idx_s = _lookup_digit_index(jnp.maximum(rs, 1.0e-6), -6, 37)
+    # Snow temperature index idx_t (WRF 2257-2259): INT((tempc-2.5)/5)-1,
+    # idx_t=MAX(1,-idx_t), idx_t=MIN(idx_t,ntb_t=9). 0-based here.
+    tempc = state.T - 273.15
+    idx_t_f = jnp.floor((tempc - 2.5) / 5.0) - 1.0  # INT toward -inf == floor for negatives
+    # WRF uses INT() (truncation toward zero); for (tempc-2.5)/5 < 0 this differs
+    # from floor.  Reproduce INT (truncate toward zero) exactly.
+    val_t = (tempc - 2.5) / 5.0
+    idx_t_int = jnp.trunc(val_t) - 1.0
+    idx_t = jnp.clip(-idx_t_int, 1.0, 9.0).astype(jnp.int32) - 1  # 0-based
+
+    # Graupel content index idx_g + intercept index idx_g1 (WRF 2355-2380).
+    # mp8 single density (am_g = AM_G_MP8, mu_g=0): ogg1=1, cge(1,1)=bm_g+1=4
+    # and the (cgg(3)*ogg2*ogg1)**bm_g factor == 1, so
+    #   N0_exp = rg/am_g * lamg**4   (WRF 2369-2370 reduced for mu_g=0).
+    # ``lamg`` from the shared graupel distribution helper.
+    _rg_d, _ng_d, lamg, _ilamg_d, _n0g_d, _act_g = _graupel_distribution(state.qg, state.rho)
+    idx_g = _lookup_digit_index(jnp.maximum(rg, 1.0e-6), -6, 37)
+    n0g_exp = rg / AM_G_MP8 * lamg ** 4.0
+    idx_g1 = _lookup_digit_index(jnp.maximum(n0g_exp, 1.0e2), 2, 37)
+
+    cold = state.T < T_0
+    have_rain = active_rain & (rr >= R_R_FIRST)
+    have_snow = state.qs > R1
+    have_graupel = state.qg > R1
+
+    # ---- Rain collecting snow (cold branch, twet<T_0 == state.T<T_0) ----
+    racs_gate = have_rain & have_snow & cold
+    tmr_racs2 = _take4(cold_tables.tmr_racs2, idx_s, idx_t, idx_r1, idx_r)
+    tcr_sacr2 = _take4(cold_tables.tcr_sacr2, idx_s, idx_t, idx_r1, idx_r)
+    tmr_racs1 = _take4(cold_tables.tmr_racs1, idx_s, idx_t, idx_r1, idx_r)
+    tcr_sacr1 = _take4(cold_tables.tcr_sacr1, idx_s, idx_t, idx_r1, idx_r)
+    tcs_racs1 = _take4(cold_tables.tcs_racs1, idx_s, idx_t, idx_r1, idx_r)
+    tms_sacr1 = _take4(cold_tables.tms_sacr1, idx_s, idx_t, idx_r1, idx_r)
+    tnr_racs1 = _take4(cold_tables.tnr_racs1, idx_s, idx_t, idx_r1, idx_r)
+    tnr_racs2 = _take4(cold_tables.tnr_racs2, idx_s, idx_t, idx_r1, idx_r)
+    tnr_sacr1 = _take4(cold_tables.tnr_sacr1, idx_s, idx_t, idx_r1, idx_r)
+    tnr_sacr2 = _take4(cold_tables.tnr_sacr2, idx_s, idx_t, idx_r1, idx_r)
+
+    prr_rcs = -(tmr_racs2 + tcr_sacr2 + tmr_racs1 + tcr_sacr1)
+    prs_rcs = tmr_racs2 + tcr_sacr2 - tcs_racs1 - tms_sacr1
+    prg_rcs = tmr_racs1 + tcr_sacr1 + tcs_racs1 + tms_sacr1
+    prr_rcs = jnp.maximum(-rr * odts, prr_rcs)
+    prs_rcs = jnp.maximum(-rs * odts, prs_rcs)
+    prg_rcs = jnp.minimum((rr + rs) * odts, prg_rcs)
+    pnr_rcs = jnp.minimum(nr * odts, tnr_racs1 + tnr_racs2 + tnr_sacr1 + tnr_sacr2)
+    png_rcs = pnr_rcs
+
+    prr_rcs = jnp.where(racs_gate, prr_rcs, 0.0)
+    prs_rcs = jnp.where(racs_gate, prs_rcs, 0.0)
+    prg_rcs = jnp.where(racs_gate, prg_rcs, 0.0)
+    pnr_rcs = jnp.where(racs_gate, pnr_rcs, 0.0)
+    png_rcs = jnp.where(racs_gate, png_rcs, 0.0)
+
+    # ---- Rain collecting graupel (cold branch) ----
+    racg_gate = have_rain & have_graupel & cold
+    tmr_racg = _take4(cold_tables.tmr_racg, idx_g1, idx_g, idx_r1, idx_r)
+    tcr_gacr = _take4(cold_tables.tcr_gacr, idx_g1, idx_g, idx_r1, idx_r)
+    tnr_racg = _take4(cold_tables.tnr_racg, idx_g1, idx_g, idx_r1, idx_r)
+    tnr_gacr = _take4(cold_tables.tnr_gacr, idx_g1, idx_g, idx_r1, idx_r)
+
+    prg_rcg = jnp.minimum(rr * odts, tmr_racg + tcr_gacr)
+    prr_rcg = -prg_rcg
+    pnr_rcg = jnp.minimum(nr * odts, tnr_racg + tnr_gacr)
+    prg_rcg = jnp.where(racg_gate, prg_rcg, 0.0)
+    prr_rcg = jnp.where(racg_gate, prr_rcg, 0.0)
+    pnr_rcg = jnp.where(racg_gate, pnr_rcg, 0.0)
+
+    # ---- Mass / number tendency assembly (WRF 3058-3120; only the rcs/rcg
+    # terms; the other tendencies are already applied by the earlier blocks). ----
+    orho = 1.0 / rho
+    d_qr = (prr_rcs + prr_rcg) * float(dt) * orho
+    d_qs = prs_rcs * float(dt) * orho
+    d_qg = (prg_rcs + prg_rcg) * float(dt) * orho
+    d_nr = -(pnr_rcs + pnr_rcg) * float(dt) * orho
+    d_ng = png_rcs * float(dt) * orho  # WRF: ngten += png_rcs (cold png_rcg=0)
+
+    new_qr = jnp.maximum(0.0, state.qr + d_qr)
+    new_qs = jnp.maximum(0.0, state.qs + d_qs)
+    new_qg = jnp.maximum(0.0, state.qg + d_qg)
+    new_nr = jnp.maximum(0.0, state.Nr + d_nr)
+    new_ng = jnp.maximum(0.0, state.Ng + d_ng)
+
+    return state.replace(qr=new_qr, qs=new_qs, qg=new_qg, Nr=new_nr, Ng=new_ng)
 
 
 def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBundle = THOMPSON_TABLES) -> ThompsonColumnState:
     """Legacy wrapper for callers that do not need process flags."""
 
-    updated, _graupel_melt = _ice_sources_with_process_flags(state, dt, tables)
+    updated, _graupel_melt, _vts_boost = _ice_sources_with_process_flags(state, dt, tables)
     return updated
 
 
@@ -1078,10 +1387,10 @@ def _sed_implicit_q(q, vt, dz, rho, dt, nsub):
     return qf.astype(q_dt), sf
 
 
-def _sedimentation_implicit(state: ThompsonColumnState, dt: float, nsub: int):
+def _sedimentation_implicit(state: ThompsonColumnState, dt: float, nsub: int, vts_boost=None):
     """EXPERIMENTAL implicit backward-Euler sedimentation (gated, default OFF)."""
 
-    vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state)
+    vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state, vts_boost)
     dz = jnp.maximum(state.dz, 1.0)
     rho = jnp.maximum(state.rho, R1)
     qr, pr = _sed_implicit_q(state.qr, vt_r_mass, dz, rho, dt, nsub)
@@ -1129,14 +1438,16 @@ def _fill_down(vt, active):
     return jnp.moveaxis(filled, 0, -1)
 
 
-def _fall_speeds(state: ThompsonColumnState):
+def _fall_speeds(state: ThompsonColumnState, vts_boost=None):
     """Mass/number terminal fall speeds per species (m/s), WRF formulas.
 
     Rain:    module_mp_thompson.F:3616-3628 (vtrk mass, vtnrk number).
     Ice:     module_mp_thompson.F:3678-3691 (vtik mass, vtnik number).
     Snow:    module_mp_thompson.F:3711-3721 Field two-gamma moment-ratio mass
-             speed, with the currently inactive WRF melt/riming adjustments left
-             at their neutral values.
+             speed; ``vts_boost`` is the WRF riming fall-speed factor (line
+             3721 ``vts*vts_boost(k)``) produced by the v0.15 riming block
+             (1.0 where riming is not dominant; the melt adjustment remains at
+             its neutral value).
     Graupel: module_mp_thompson.F:3758-3766 mass speed with av_g/bv_g (idx_bg1).
     """
 
@@ -1169,7 +1480,12 @@ def _fall_speeds(state: ThompsonColumnState):
     act_s = state.qs > R1
     tempc = state.T - 273.15
     _rs2, xds, _smo0, _smo1, _smof, _csnow, _act_s = _snow_moments(state.qs, rho, tempc)
-    vt_s_mass = _fill_down(_snow_terminal_velocity_wrf(rhof, xds, act_s), act_s)
+    vts_raw = _snow_terminal_velocity_wrf(rhof, xds, act_s)
+    if vts_boost is not None:
+        # WRF line 3721: vts = vts*vts_boost(k) (riming-dominant layers fall up
+        # to 1.5x faster; boost==1.0 elsewhere and with riming disabled).
+        vts_raw = vts_raw * vts_boost
+    vt_s_mass = _fill_down(vts_raw, act_s)
 
     act_g = state.qg > R1
     rg = jnp.maximum(state.qg * rho, R1)
@@ -1329,7 +1645,7 @@ def _sed_cloud_water(state: ThompsonColumnState, dt: float):
     return qc_new.astype(qc_dt), cloudw_surface_loss.astype(jnp.float64)
 
 
-def _sedimentation(state: ThompsonColumnState, dt: float):
+def _sedimentation(state: ThompsonColumnState, dt: float, vts_boost=None):
     """Faithful WRF sedimentation of rain/ice/snow/graupel + cloud water; precip mm.
 
     WRF module_mp_thompson.F:3784-3939.  Advects the four precipitating channels
@@ -1348,9 +1664,9 @@ def _sedimentation(state: ThompsonColumnState, dt: float):
     nsub = _implicit_sed_nsub()
     if nsub > 0:
         # EXPERIMENTAL implicit backward-Euler sedimentation (gated, default OFF).
-        return _sedimentation_implicit(state, dt, nsub)
+        return _sedimentation_implicit(state, dt, nsub, vts_boost)
 
-    vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state)
+    vt_r_mass, vt_r_num, vt_i_mass, vt_i_num, vt_s_mass, vt_g_mass, vt_g_num = _fall_speeds(state, vts_boost)
     dz = jnp.maximum(state.dz, 1.0)
     rho = jnp.maximum(state.rho, R1)
 
@@ -1438,11 +1754,17 @@ def _thompson_source_sink_body(state: ThompsonColumnState, dt: float, debug: boo
     fallback = state
     state = _debug_checks(state, debug)
     state = _warm_rain_collection(state, dt)
-    state, graupel_melt = _ice_sources_with_process_flags(state, dt)
+    state, graupel_melt, vts_boost = _ice_sources_with_process_flags(state, dt)
+    if _cold_collection_enabled():
+        # rain-collecting-snow / rain-collecting-graupel below 0 C: convert rain
+        # to graupel where supercooled rain meets snow/graupel (WRF 2484-2548).
+        # Computed after the freeze/riming staging pass, mirroring WRF's
+        # single-pass rate staging before sedimentation.
+        state = _cold_collection(state, dt, COLD_COLLECTION_TABLES)
     state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
     state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
     if sediment:
-        state, precip = _sedimentation(state, dt)
+        state, precip = _sedimentation(state, dt, vts_boost=vts_boost)
     else:
         zero = jnp.zeros(state.qv.shape[:-1], dtype=state.qv.dtype)
         precip = {"rain": zero, "snow": zero, "graupel": zero, "ice": zero}
@@ -1482,13 +1804,79 @@ def _step_thompson_column_full_impl(state: ThompsonColumnState, dt: float, debug
     return _thompson_source_sink_body(state, dt, debug, sediment=True)
 
 
+def _maybe_tiled_thompson_full(state: ThompsonColumnState, dt: float, debug: bool):
+    """Runs the full Thompson step over fixed-size leading-column tiles.
+
+    The production column view (`_thompson_column_from_state`) is laid out
+    ``(ny, nx, nz)`` — the horizontal grid in the LEADING axes, vertical
+    trailing.  The Thompson kernel is per-column (every op is broadcast over the
+    leading axes; sedimentation moves only along the trailing vertical axis), so
+    flattening the leading horizontal axes to a single column axis ``(ny*nx, nz)``
+    and reshaping the outputs back is a pure execution-shape change with no math,
+    no clamps, no cross-column coupling.  When that flattened width exceeds one
+    tile, we run the kernel over fixed-size column tiles under ``lax.scan`` to
+    cap the per-step working set to ONE tile.
+
+    Engages only when the flattened column count exceeds one tile
+    (``GPUWRF_MP_COLUMN_TILE_COLS``, default 16384) — the production 128x128 case
+    is exactly one 16384-col tile and stays byte-for-byte on the untiled graph.
+    No Thompson op couples columns, so the tiled result is value-identical per
+    column — exact-output gate in
+    ``proofs/perf/v015/km_bench/mp_tiling_identity_fit.json``; pattern + VRAM
+    precedent in ``proofs/v013/rrtmg_column_tile_vram_suite.json``.
+    """
+
+    profile = jnp.asarray(state.qv)
+    # The column view always carries the vertical axis trailing; everything in
+    # front of it is the (flattened) horizontal column axis.
+    lead_shape = tuple(profile.shape[:-1])  # e.g. (ny, nx) or (ncol,)
+    ncol = 1
+    for d in lead_shape:
+        ncol *= int(d)
+    tiling_active = (
+        _MP_COLUMN_TILING
+        and _MP_COLUMN_TILE_COLS > 0
+        and profile.ndim >= 2
+        and ncol > _MP_COLUMN_TILE_COLS
+    )
+    if not tiling_active:
+        return _step_thompson_column_full_impl(state, dt, debug)
+
+    # Flatten the leading horizontal axes of every per-column leaf to a single
+    # column axis so the generic column tiler can scan over fixed-size tiles;
+    # leaves that do not share this leading shape (scalars, per-level constants)
+    # pass through unchanged.
+    def _flatten_leaf(a):
+        a = jnp.asarray(a)
+        if a.ndim >= len(lead_shape) + 1 and tuple(a.shape[: len(lead_shape)]) == lead_shape:
+            return a.reshape((ncol,) + tuple(a.shape[len(lead_shape):]))
+        return a
+
+    def _restore_leaf(a):
+        a = jnp.asarray(a)
+        if a.ndim >= 1 and int(a.shape[0]) == ncol:
+            return a.reshape(lead_shape + tuple(a.shape[1:]))
+        return a
+
+    flat_state = jax.tree_util.tree_map(_flatten_leaf, state)
+    tiled = column_tiling.tiled_column_apply(
+        lambda tile: _step_thompson_column_full_impl(tile, dt, debug),
+        flat_state,
+        ncol=ncol,
+        tile_cols=int(_MP_COLUMN_TILE_COLS),
+    )
+    return jax.tree_util.tree_map(_restore_leaf, tiled)
+
+
 @partial(jax.jit, static_argnames=("dt", "debug"))
 def step_thompson_column_with_precip(state: ThompsonColumnState, dt: float, *, debug: bool = False):
     """Advances one full Thompson column step; returns ``(State, precip-dict-mm)``.
 
     This is the operational coupling entry: it runs the source/sink processes
     AND faithful sedimentation, returning the surface precipitation accumulated
-    over the step (mm) per channel for the State precip accumulators.
+    over the step (mm) per channel for the State precip accumulators.  Batches
+    wider than ``GPUWRF_MP_COLUMN_TILE_COLS`` run tile-by-tile (VRAM cap,
+    value-identical; see :func:`_maybe_tiled_thompson_full`).
     """
 
-    return _step_thompson_column_full_impl(state, dt, debug)
+    return _maybe_tiled_thompson_full(state, dt, debug)

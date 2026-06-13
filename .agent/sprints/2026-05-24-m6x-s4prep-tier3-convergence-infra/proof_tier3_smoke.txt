@@ -1,5 +1,0 @@
-{
-  "output": ".agent/sprints/2026-05-24-m6x-s4prep-tier3-convergence-infra/proof_tier3_smoke_current_state.json",
-  "verdict": "PASS_TIER3",
-  "rationale": "All refined dt-pair RMSE/Linf norms stayed within the configured growth bounds."
-}

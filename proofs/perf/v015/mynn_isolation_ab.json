@@ -1,0 +1,89 @@
+{
+  "scope": "v0.15 MYNN PBL isolation: column-tiling A/B on the dominant 88ms/step kernel",
+  "device": "cuda:0",
+  "shape": {
+    "B": 16384,
+    "nz": 44
+  },
+  "dt_s": 18.0,
+  "dx_m": 3000.0,
+  "edmf": true,
+  "note": "step_mynn_pbl_column isolated, fp64; tiling proven GPU-bit-identical (module note). Production d01 path = untiled_16384 (tile==B).",
+  "results": {
+    "untiled_16384": {
+      "tile_cols": 16384,
+      "min_ms": 51.16592696867883,
+      "samples_ms": [
+        52.9330910067074,
+        52.10044397972524,
+        51.372428017202765,
+        51.16592696867883,
+        51.400788011960685,
+        51.23731802450493
+      ],
+      "bit_identical_vs_untiled": null,
+      "max_abs_theta_diff_vs_untiled": null,
+      "speedup_vs_untiled": 1.0
+    },
+    "tile_8192": {
+      "tile_cols": 8192,
+      "min_ms": 58.8058780413121,
+      "samples_ms": [
+        60.654642002191395,
+        60.18074799794704,
+        58.8058780413121,
+        58.82973701227456,
+        58.84865700500086,
+        58.92273801146075
+      ],
+      "bit_identical_vs_untiled": true,
+      "max_abs_theta_diff_vs_untiled": 0.0,
+      "speedup_vs_untiled": 0.8700818467965724
+    },
+    "tile_4096": {
+      "tile_cols": 4096,
+      "min_ms": 65.40606002090499,
+      "samples_ms": [
+        65.73635200038552,
+        65.58003096142784,
+        65.42002997593954,
+        65.40606002090499,
+        67.83351901685819,
+        66.06288498733193
+      ],
+      "bit_identical_vs_untiled": true,
+      "max_abs_theta_diff_vs_untiled": 0.0,
+      "speedup_vs_untiled": 0.7822811365235156
+    },
+    "tile_2048": {
+      "tile_cols": 2048,
+      "min_ms": 83.19195103831589,
+      "samples_ms": [
+        87.13199198246002,
+        85.1327269920148,
+        83.67314503993839,
+        83.19195103831589,
+        83.67799501866102,
+        83.49985303357244
+      ],
+      "bit_identical_vs_untiled": true,
+      "max_abs_theta_diff_vs_untiled": 0.0,
+      "speedup_vs_untiled": 0.6150345836355399
+    },
+    "tile_1024": {
+      "tile_cols": 1024,
+      "min_ms": 150.45181597815827,
+      "samples_ms": [
+        155.32894397620112,
+        150.45181597815827,
+        150.45405604178086,
+        153.22367701446638,
+        152.18798001296818,
+        150.79639799660072
+      ],
+      "bit_identical_vs_untiled": true,
+      "max_abs_theta_diff_vs_untiled": 0.0,
+      "speedup_vs_untiled": 0.34008181713211627
+    }
+  }
+}

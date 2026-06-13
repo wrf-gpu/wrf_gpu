@@ -1,0 +1,19 @@
+{
+  "schema": "V015NvtxPhases",
+  "source": "nsys_steady50_nvtx_gpu_proj_sum.csv",
+  "steps": 150.0,
+  "phases_ms": {
+    "MYNN_PBL(EDMF)": 13292.0,
+    "dycore_inner_scans": 1487.8,
+    "Thompson": 304.3,
+    "step_body_other": 152.7
+  },
+  "phases_ms_per_step": {
+    "MYNN_PBL(EDMF)": 88.61,
+    "dycore_inner_scans": 9.92,
+    "Thompson": 2.03,
+    "step_body_other": 1.02
+  },
+  "total_ms": 15236.8,
+  "total_ms_per_step": 101.58
+}

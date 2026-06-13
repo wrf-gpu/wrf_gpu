@@ -1,6 +1,0 @@
-ladder_schema=m6b0r-tolerance-ladder-v1
-fields=a,alpha,cofrz,coftz,cofwr,cofwt,cofwz,gamma,muts,rdzw,tri_a,tri_b,tri_c
-perturbation_minimum_factor=10.0
-a: units=dimensionless dtype=float64 abs=1e-11 rel=1e-12 ulp=8 accumulation=none
-alpha: units=dimensionless dtype=float64 abs=1e-11 rel=1e-12 ulp=8 accumulation=none
-gamma: units=dimensionless dtype=float64 abs=1e-11 rel=1e-12 ulp=8 accumulation=none

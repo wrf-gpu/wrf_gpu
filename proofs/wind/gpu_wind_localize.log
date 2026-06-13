@@ -1,5 +1,0 @@
-[lead 24h done in 843.5s] V10 all-RMSE=3.275 water-RMSE=3.322 land-RMSE=2.570
-[lead 48h done in 650.7s] V10 all-RMSE=3.212 water-RMSE=3.202 land-RMSE=3.346
-
-wrote proofs/wind/gpu_wind_localize.json
-wrote proofs/wind/gpu_wind_localize_fields.npz

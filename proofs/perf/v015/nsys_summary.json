@@ -1,0 +1,318 @@
+{
+  "schema": "V015NsysSummary",
+  "steps_total": 150,
+  "cuda_api": {
+    "total_api_ms": 31952.0,
+    "launch_calls": 2093742,
+    "launch_total_ms": 23924.9,
+    "launch_mean_us": 11.43,
+    "launches_per_step_est": 13958.3,
+    "top": [
+      {
+        "name": "cuLaunchKernelEx",
+        "calls": 2083154,
+        "total_ms": 23892.1
+      },
+      {
+        "name": "cuMemcpyDtoDAsync_v2",
+        "calls": 488922,
+        "total_ms": 3572.7
+      },
+      {
+        "name": "cuStreamSynchronize",
+        "calls": 4438,
+        "total_ms": 2799.5
+      },
+      {
+        "name": "cuGraphLaunch",
+        "calls": 45636,
+        "total_ms": 926.6
+      },
+      {
+        "name": "cuMemcpyDtoHAsync_v2",
+        "calls": 4295,
+        "total_ms": 275.4
+      },
+      {
+        "name": "cuMemcpyHtoDAsync_v2",
+        "calls": 2681,
+        "total_ms": 107.1
+      },
+      {
+        "name": "cuMemHostAlloc",
+        "calls": 295,
+        "total_ms": 81.0
+      },
+      {
+        "name": "cuModuleLoadFatBinary",
+        "calls": 329,
+        "total_ms": 57.5
+      },
+      {
+        "name": "cuModuleUnload",
+        "calls": 329,
+        "total_ms": 40.5
+      },
+      {
+        "name": "cuStreamIsCapturing",
+        "calls": 490256,
+        "total_ms": 36.9
+      }
+    ]
+  },
+  "gpu_kernels": {
+    "distinct": 118,
+    "instances": 2093742,
+    "instances_per_step_est": 13958.3,
+    "total_kernel_ms": 14910.0,
+    "mean_kernel_us": 7.12,
+    "top": [
+      {
+        "name": "loop_multiply_fusion_1",
+        "instances": 567000,
+        "total_ms": 12264.8,
+        "mean_us": 21.6
+      },
+      {
+        "name": "loop_add_fusion_7",
+        "instances": 940410,
+        "total_ms": 914.4,
+        "mean_us": 1.0
+      },
+      {
+        "name": "loop_or_select_fusion",
+        "instances": 5400,
+        "total_ms": 388.0,
+        "mean_us": 71.8
+      },
+      {
+        "name": "void pcrGtsvBatchSharedMemKernelLoop<double>(pcrGtsvBatchGlobalMemParams_t<T1>)",
+        "instances": 1350,
+        "total_ms": 362.1,
+        "mean_us": 268.2
+      },
+      {
+        "name": "loop_multiply_fusion",
+        "instances": 178233,
+        "total_ms": 200.0,
+        "mean_us": 1.1
+      },
+      {
+        "name": "stream_executor::gpu::RedzoneAllocatorKernelImpl(unsigned char *, unsigned char, unsigned long, unsigned int *",
+        "instances": 6400,
+        "total_ms": 198.3,
+        "mean_us": 31.0
+      },
+      {
+        "name": "loop_subtract_fusion",
+        "instances": 174151,
+        "total_ms": 174.1,
+        "mean_us": 1.0
+      },
+      {
+        "name": "loop_select_fusion_10",
+        "instances": 59400,
+        "total_ms": 104.7,
+        "mean_us": 1.8
+      },
+      {
+        "name": "loop_add_fusion_13",
+        "instances": 90990,
+        "total_ms": 86.4,
+        "mean_us": 1.0
+      },
+      {
+        "name": "void pcrGtsvBatchFirstPass<double>(pcrGtsvBatchGlobalMemParams_t<T1>)",
+        "instances": 1350,
+        "total_ms": 69.8,
+        "mean_us": 51.7
+      },
+      {
+        "name": "wrapped_slice_56",
+        "instances": 4050,
+        "total_ms": 21.2,
+        "mean_us": 5.2
+      },
+      {
+        "name": "loop_multiply_fusion_9",
+        "instances": 11880,
+        "total_ms": 16.7,
+        "mean_us": 1.4
+      },
+      {
+        "name": "loop_select_fusion_6",
+        "instances": 7920,
+        "total_ms": 13.4,
+        "mean_us": 1.7
+      },
+      {
+        "name": "loop_subtract_fusion_7",
+        "instances": 11610,
+        "total_ms": 13.0,
+        "mean_us": 1.1
+      },
+      {
+        "name": "wrapped_slice_57",
+        "instances": 4050,
+        "total_ms": 10.5,
+        "mean_us": 2.6
+      },
+      {
+        "name": "loop_select_fusion_8",
+        "instances": 7920,
+        "total_ms": 10.2,
+        "mean_us": 1.3
+      },
+      {
+        "name": "loop_select_fusion_9",
+        "instances": 7920,
+        "total_ms": 9.8,
+        "mean_us": 1.2
+      },
+      {
+        "name": "loop_divide_fusion",
+        "instances": 5415,
+        "total_ms": 8.1,
+        "mean_us": 1.5
+      },
+      {
+        "name": "loop_add_compare_divide_transpose_fusion",
+        "instances": 8,
+        "total_ms": 5.3,
+        "mean_us": 665.1
+      },
+      {
+        "name": "input_concatenate_fusion_35",
+        "instances": 270,
+        "total_ms": 3.7,
+        "mean_us": 13.7
+      },
+      {
+        "name": "wrapped_slice_55",
+        "instances": 4050,
+        "total_ms": 3.1,
+        "mean_us": 0.8
+      },
+      {
+        "name": "input_concatenate_fusion_54",
+        "instances": 270,
+        "total_ms": 2.1,
+        "mean_us": 7.6
+      },
+      {
+        "name": "stream_executor::gpu::<unnamed>::DelayKernel(volatile stream_executor::GpuSemaphoreState *, stream_executor::G",
+        "instances": 240,
+        "total_ms": 2.0,
+        "mean_us": 8.4
+      },
+      {
+        "name": "void stream_executor::gpu::xla_fp_comparison<double>(T1 *, T1 *, float, unsigned long, int *)",
+        "instances": 388,
+        "total_ms": 1.8,
+        "mean_us": 4.7
+      },
+      {
+        "name": "input_transpose_fusion_78",
+        "instances": 270,
+        "total_ms": 1.8,
+        "mean_us": 6.7
+      }
+    ]
+  },
+  "gpu_sum_top": [
+    {
+      "name": "loop_multiply_fusion_1",
+      "total_ms": 12264.8,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "loop_add_fusion_7",
+      "total_ms": 914.4,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "[CUDA memcpy Device-to-Device]",
+      "total_ms": 444.9,
+      "category": "MEMORY_OPER"
+    },
+    {
+      "name": "loop_or_select_fusion",
+      "total_ms": 388.0,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "void pcrGtsvBatchSharedMemKernelLoop<double>(pcrGtsvBatchGlobalMemParams_t<T1>)",
+      "total_ms": 362.1,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "loop_multiply_fusion",
+      "total_ms": 200.0,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "stream_executor::gpu::RedzoneAllocatorKernelImpl(unsigned char *, unsigned char, unsigned long, unsigned int *",
+      "total_ms": 198.3,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "loop_subtract_fusion",
+      "total_ms": 174.1,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "loop_select_fusion_10",
+      "total_ms": 104.7,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "loop_add_fusion_13",
+      "total_ms": 86.4,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "void pcrGtsvBatchFirstPass<double>(pcrGtsvBatchGlobalMemParams_t<T1>)",
+      "total_ms": 69.8,
+      "category": "CUDA_KERNEL"
+    },
+    {
+      "name": "[CUDA memcpy Host-to-Device]",
+      "total_ms": 41.5,
+      "category": "MEMORY_OPER"
+    }
+  ],
+  "nvtx_gpu_projection": [
+    {
+      "range": "TSL:Thunk:#hlo_op=while.1992#",
+      "proj_total_ms": 33211.2
+    },
+    {
+      "range": "TSL:XlaModule:#hlo_module=jit__run_forecast_operational_jit,program_id=594#",
+      "proj_total_ms": 23551.8
+    },
+    {
+      "range": "TSL:Thunk:#name=jit(_run_forecast_operational_jit)/while/body/closed_call/jit(step_mynn_pbl_column),hlo_op=while.1952#",
+      "proj_total_ms": 13814.4
+    },
+    {
+      "range": "TSL:Thunk:#name=jit(_run_forecast_operational_jit)/while/body/closed_call/jit(step_mynn_pbl_column)/vmap(vmap())/while/body/closed_call,hlo_op=while.1#",
+      "proj_total_ms": 12998.7
+    },
+    {
+      "range": "TSL:Thunk:#name=jit(_run_forecast_operational_jit)/while/body/closed_call/jit(step_mynn_pbl_column)/vmap(vmap())/while/body/closed_call/while/body/closed_call,hlo_op=loop_multiply_fusion.1#",
+      "proj_total_ms": 12264.8
+    },
+    {
+      "range": "TSL:XlaModule:#hlo_module=jit__run_forecast_operational_jit,program_id=335#",
+      "proj_total_ms": 9659.3
+    },
+    {
+      "range": "TSL:Thunk:#hlo_op=while.1991#",
+      "proj_total_ms": 2628.2
+    },
+    {
+      "range": "TSL:Thunk:#hlo_op=while.1990#",
+      "proj_total_ms": 1240.9
+    }
+  ]
+}

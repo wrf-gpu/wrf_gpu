@@ -1,9 +1,0 @@
-E0528 15:56:59.919320  418547 slow_operation_alarm.cc:73]
-********************************
-[Compiling module jit_run_forecast_operational for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************
-E0528 15:57:20.383688  418430 slow_operation_alarm.cc:140] The operation took 2m20.464427469s
-
-********************************
-[Compiling module jit_run_forecast_operational for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
-********************************

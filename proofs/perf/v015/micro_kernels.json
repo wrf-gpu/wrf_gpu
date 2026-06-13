@@ -1,0 +1,171 @@
+{
+  "schema": "V015KernelProbeMicro",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "nz": 44,
+  "128x128_fp64": {
+    "advance_w_ms": 0.6299400120042264,
+    "advance_w_min_bytes": 117178368,
+    "advance_w_achieved_GBps_lower_bound": 186.0,
+    "thomas": {
+      "scan_unroll1_ms": 0.504549010656774,
+      "bitwise_vs_unroll1_u1": true,
+      "scan_unroll4_ms": 0.166146521223709,
+      "bitwise_vs_unroll1_u4": true,
+      "scan_unroll8_ms": 0.2106119936797768,
+      "bitwise_vs_unroll1_u8": true,
+      "scan_unroll45_ms": 0.15396601520478725,
+      "bitwise_vs_unroll1_u45": true,
+      "assoc_scan_ms": 0.11233103577978909,
+      "assoc_rel_err_max": 6.025502025941673e-16,
+      "bytes_touch_floor_ms": 0.13458600733429193,
+      "bytes": 23592960
+    },
+    "bandwidth": {
+      "copy_1r1w_ms": 0.1364160270895809,
+      "copy_bytes": 11796480,
+      "stencil6_ms": 0.14373604790307581,
+      "stencil_bytes": 11796480
+    }
+  },
+  "128x128_fp32": {
+    "advance_w_ms": 0.5426795105449855,
+    "advance_w_min_bytes": 58589184,
+    "advance_w_achieved_GBps_lower_bound": 108.0,
+    "thomas": {
+      "scan_unroll1_ms": 0.45047348248772323,
+      "bitwise_vs_unroll1_u1": true,
+      "scan_unroll4_ms": 0.24990152451209724,
+      "bitwise_vs_unroll1_u4": true,
+      "scan_unroll8_ms": 0.19253650680184364,
+      "bitwise_vs_unroll1_u8": true,
+      "scan_unroll45_ms": 0.1480559876654297,
+      "bitwise_vs_unroll1_u45": true,
+      "assoc_scan_ms": 0.2545769966673106,
+      "assoc_rel_err_max": 3.184444210546644e-07,
+      "bytes_touch_floor_ms": 0.1254259841516614,
+      "bytes": 11796480
+    },
+    "bandwidth": {
+      "copy_1r1w_ms": 0.12522100587375462,
+      "copy_bytes": 5898240,
+      "stencil6_ms": 0.13186602154746652,
+      "stencil_bytes": 5898240
+    }
+  },
+  "256x256_fp64": {
+    "advance_w_ms": 1.2793854984920472,
+    "advance_w_min_bytes": 468713472,
+    "advance_w_achieved_GBps_lower_bound": 366.4,
+    "thomas": {
+      "scan_unroll1_ms": 0.5501549749169499,
+      "bitwise_vs_unroll1_u1": true,
+      "scan_unroll4_ms": 0.4158134979661554,
+      "bitwise_vs_unroll1_u4": true,
+      "scan_unroll8_ms": 0.4148334846831858,
+      "bitwise_vs_unroll1_u8": true,
+      "scan_unroll45_ms": 0.1382859773002565,
+      "bitwise_vs_unroll1_u45": true,
+      "assoc_scan_ms": 0.41115304338745773,
+      "assoc_rel_err_max": 6.12064603375041e-16,
+      "bytes_touch_floor_ms": 0.19391102250665426,
+      "bytes": 94371840
+    },
+    "bandwidth": {
+      "copy_1r1w_ms": 0.15257651102729142,
+      "copy_bytes": 47185920,
+      "stencil6_ms": 0.17725102952681482,
+      "stencil_bytes": 47185920
+    }
+  },
+  "256x256_fp32": {
+    "advance_w_ms": 0.7090200087986887,
+    "advance_w_min_bytes": 234356736,
+    "advance_w_achieved_GBps_lower_bound": 330.5,
+    "thomas": {
+      "scan_unroll1_ms": 0.5371739971451461,
+      "bitwise_vs_unroll1_u1": true,
+      "scan_unroll4_ms": 0.1737709972076118,
+      "bitwise_vs_unroll1_u4": true,
+      "scan_unroll8_ms": 0.25384200853295624,
+      "bitwise_vs_unroll1_u8": true,
+      "scan_unroll45_ms": 0.15387099119834602,
+      "bitwise_vs_unroll1_u45": true,
+      "assoc_scan_ms": 0.11097098467871547,
+      "assoc_rel_err_max": 3.259871164118522e-07,
+      "bytes_touch_floor_ms": 0.14594598906114697,
+      "bytes": 47185920
+    },
+    "bandwidth": {
+      "copy_1r1w_ms": 0.13004100765101612,
+      "copy_bytes": 23592960,
+      "stencil6_ms": 0.11247099610045552,
+      "stencil_bytes": 23592960
+    }
+  },
+  "512x512_fp64": {
+    "advance_w_ms": 4.864434013143182,
+    "advance_w_min_bytes": 1874853888,
+    "advance_w_achieved_GBps_lower_bound": 385.4,
+    "thomas": {
+      "scan_unroll1_ms": 1.5399880066979676,
+      "bitwise_vs_unroll1_u1": true,
+      "scan_unroll4_ms": 1.486911962274462,
+      "bitwise_vs_unroll1_u4": true,
+      "scan_unroll8_ms": 1.3370854721870273,
+      "bitwise_vs_unroll1_u8": true,
+      "scan_unroll45_ms": 1.3359455042518675,
+      "bitwise_vs_unroll1_u45": true,
+      "assoc_scan_ms": 1.2904449831694365,
+      "assoc_rel_err_max": 6.098841270772057e-16,
+      "bytes_touch_floor_ms": 0.4217584792058915,
+      "bytes": 377487360
+    },
+    "bandwidth": {
+      "copy_1r1w_ms": 0.2585969923529774,
+      "copy_bytes": 188743680,
+      "stencil6_ms": 0.18310648738406599,
+      "stencil_bytes": 188743680
+    }
+  },
+  "512x512_fp32": {
+    "advance_w_ms": 2.008620969718322,
+    "advance_w_min_bytes": 937426944,
+    "advance_w_achieved_GBps_lower_bound": 466.7,
+    "thomas": {
+      "scan_unroll1_ms": 0.9069624939002097,
+      "bitwise_vs_unroll1_u1": true,
+      "scan_unroll4_ms": 0.7121555099729449,
+      "bitwise_vs_unroll1_u4": true,
+      "scan_unroll8_ms": 0.8622820023447275,
+      "bitwise_vs_unroll1_u8": true,
+      "scan_unroll45_ms": 0.6491300009656698,
+      "bitwise_vs_unroll1_u45": true,
+      "assoc_scan_ms": 0.5300594784785062,
+      "assoc_rel_err_max": 3.2216149747910094e-07,
+      "bytes_touch_floor_ms": 0.2662519982550293,
+      "bytes": 188743680
+    },
+    "bandwidth": {
+      "copy_1r1w_ms": 0.1781765022315085,
+      "copy_bytes": 94371840,
+      "stencil6_ms": 0.16775602125562727,
+      "stencil_bytes": 94371840
+    }
+  },
+  "alu_512_fp64": {
+    "elements": 11796480,
+    "div_ms": 0.3120369801763445,
+    "exp_ms": 0.347238004906103,
+    "pow1p4_ms": 1.2987904774490744,
+    "sqrt_ms": 0.2499069960322231,
+    "fma16_ms": 0.5933390057180077
+  },
+  "alu_512_fp32": {
+    "elements": 11796480,
+    "div_ms": 0.2179669972974807,
+    "exp_ms": 0.19229098688811064,
+    "pow1p4_ms": 0.14664098853245378,
+    "sqrt_ms": 0.11295601143501699,
+    "fma16_ms": 0.22207197616808116
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "V015VramLadderFinite",
+  "scope": "largest-grid VRAM ladder AFTER MP column tiling, with per-rung finiteness",
+  "allocator": "cuda_async",
+  "vram_ceiling_gib": 31.8427734375,
+  "mp_column_tiling": {
+    "GPUWRF_MP_COLUMN_TILING": "1",
+    "GPUWRF_MP_COLUMN_TILE_COLS": "(default 16384)"
+  },
+  "before_reference": "proofs/perf/v015/km_bench/largest_probe.json (26.25 GiB @167,904; OOM 28.44 GiB single alloc @209,880 pre-tiling)",
+  "records": [
+    {
+      "ny": 264,
+      "nx": 636,
+      "ncol": 167904,
+      "ran_ok": false,
+      "oom": true,
+      "stable": false,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 109.35MiB.",
+      "wall_total_s": 147.9
+    }
+  ],
+  "ship_target_verdicts": {
+    "640x320_1km": {
+      "target_cols": 204800,
+      "fits": false,
+      "bracketed_by": null
+    },
+    "canary_560x280": {
+      "target_cols": 156800,
+      "fits": false,
+      "bracketed_by": null
+    },
+    "switzerland_264x636": {
+      "target_cols": 167904,
+      "fits": false,
+      "bracketed_by": null
+    }
+  },
+  "all_targets_fit_and_stable": false
+}

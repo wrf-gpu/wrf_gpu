@@ -1,5 +1,0 @@
-M3 splits the core surface into four small contracts: `GridSpec` owns frozen domain metadata plus the two grid arrays; `State` owns only prognostic arrays; `Tendencies` owns same-shaped preallocated buffers; `HaloSpec` owns future exchange metadata. The split keeps the timestep carry compact and makes every persistent byte visible to `State.bytes()` / `Tendencies.bytes()`.
-
-The hot path is deliberately one function, `dummy_step`, called only inside `run_dummy_loop`'s `jax.lax.scan`. It uses no array constructors and performs an add/subtract chain on `theta` so XLA must carry a real field through the loop without introducing dycore math. The only `jnp.zeros` calls are init-time field allocations; the only `jnp.linspace` call creates the static eta coordinate in the Canary template.
-
-The transfer audit uses `jax.profiler.trace` because Nsight counters are blocked by the documented workstation perfmon restriction. The trace is scanned for memcpy/transfer events and the JSON records the trace directory for reviewer inspection. HLO text is stored as readable proof that the scan body fuses.

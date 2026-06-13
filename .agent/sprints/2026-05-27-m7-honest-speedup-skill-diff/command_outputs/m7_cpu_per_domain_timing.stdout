@@ -1,1 +1,0 @@
-{"cpu_output": "/tmp/wrf_gpu2_honest/.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/cpu_per_domain_wall_clock.json", "d02_only_speedup": 50.20484702814852, "selected_cpu_run_id": "20260521_18z_l3_24h_20260522T133443Z", "speedup_output": "/tmp/wrf_gpu2_honest/.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/honest_speedup_table.json", "status": "PASS"}

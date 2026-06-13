@@ -1,0 +1,74 @@
+{
+  "schema": "V015DefaultFlip",
+  "date_utc": "2026-06-12",
+  "agent": "opus-v015-perfmem",
+  "branch": "v015-perf-mem",
+  "base_commit": "42cbaac8",
+  "case": "Switzerland d01 reinit-h36, 128x128x44, dt=18s, force_fp64, RTX 5090 (32 GiB)",
+  "summary": "Lane 1 clean-perf: default-ON the proven, well-behaved v0.15 wall win (MYNN condensation niter 50->16) and make the hot acoustic-path safe-floor guards a debug-only branch (bit-identical). The heavier proven levers (fp32 BouLac, cond-loop unroll, Thomas unroll) are documented opt-in env flags, NOT defaults, because each triggers an XLA 'very slow compile' pathology in the full operational pipeline that makes them unsuitable as a default despite being correctness/identity-safe.",
+
+  "production_default_changes": {
+    "GPUWRF_MYNN_COND_NITER": {
+      "old": 50, "new": 16,
+      "tier": "P (physics-bounded / tiered field gate)",
+      "win": "the dominant v0.15 wall axis: -70 ms/step (S1 bisect; 50->16 unrolled 190->120 ms; fori lowering captures the same iteration cut)",
+      "identity_evidence": [
+        "proofs/perf/v015/cond_niter_oracle.json (RE-CONFIRMED this sprint): unrolled==fori bitwise at niter=16; convergent-regime residual < WRF's own exit threshold diff=1e-6 (unit-sweep worst 1.6e-7); WRF itself exits the condensation loop in <8 iters so the fixed 50 is the deviation, not 16",
+        "proofs/perf/v015/tiered_gate_cond16.json: short-forecast frozen-tolerance field gate PASS, worst rmse/limit = 0.00064 (0.064% of the v0.14 GPU-vs-CPU-WRF limits)",
+        "proofs/perf/v015/tiered_gate_combined.json (cond16 + fp32 BouLac): PASS, worst rmse/limit = 0.00063"
+      ],
+      "rollback": "GPUWRF_MYNN_COND_NITER=50"
+    },
+    "advance_w_safe_floors": {
+      "knob": "GPUWRF_ADVANCE_W_SAFE_FLOORS",
+      "old": "unconditional jnp.where(|x|>eps,x,eps) on mass_h / mass_f_mut / mass_f_muts / theta_total_ref every acoustic substep",
+      "new": "debug-only guard, default OFF -> divide directly (matches WRF; deletes 4 full-grid abs+where per substep)",
+      "tier": "S (bit-identical)",
+      "identity_argument": "the hybrid-coordinate column masses (c1f*mut+c2f >= ptop-scale) and reference theta (t0 + bounded perturbation) are bounded away from zero by construction on valid data, so the floor never fires; removing it is bit-identical whenever no floor would fire. A firing floor would inject NaN/Inf and blow the fp64 leaf-hash gate, so the gate doubles as the no-fire proof.",
+      "rollback": "GPUWRF_ADVANCE_W_SAFE_FLOORS=1"
+    }
+  },
+
+  "validated_opt_in_levers_NOT_defaulted": {
+    "GPUWRF_MYNN_BOULAC_FP32": {
+      "default": "OFF (was being trialled ON; reverted)",
+      "correctness": "PROVEN: 1-step injection theta rel 1.9e-10 (mynn_fp32_boulac_ab.json); tiered field gate PASS at 0.06% (tiered_gate_combined.json); ~8 ms/step faster on the MYNN step (50.6->42.1 ms isolated)",
+      "why_not_default": "turning it ON in the FULL operational forecast jit triggers an XLA 'Very slow compile' pathology (the mixed fp32/fp64 BouLac fusion); reproduced this sprint across BFC + cuda_async allocators and autotune on/off: compile crawls >4 min then the run stalls (GPU-blocked, cputime frozen). The SAME pipeline with this knob OFF showed 0 slow-compile warnings on the cond16-only A/B and compiled in ~80 s.",
+      "opt_in": "GPUWRF_MYNN_BOULAC_FP32=1"
+    },
+    "GPUWRF_MYNN_COND_UNROLL": {
+      "default": "OFF",
+      "correctness": "bitwise-identical to the fori lowering at equal niter (cond_niter_oracle.json qc16_unrolled_vs_fori_bitwise=true)",
+      "why_not_default": "peeling 16 EDMF condensation bodies blows up the HLO -> XLA 'Very slow compile' + observed stall; the niter cut (the actual win) is captured by the fori lowering too",
+      "opt_in": "GPUWRF_MYNN_COND_UNROLL=1 (best paired with command-buffer capture for a long run)"
+    },
+    "GPUWRF_THOMAS_UNROLL": {
+      "default": 1,
+      "correctness": "bit-identical in fp64 at any factor (program-order replication, no reassociation)",
+      "why_not_default": "step-level wall-neutral (S1: cond16+thomas45 118.6 vs cond16-only 119.8 ms, within noise) while the full 45-deep unroll triggers the 'Very slow compile' pathology; 8-deep is the moderate opt-in",
+      "opt_in": "GPUWRF_THOMAS_UNROLL=8 (or 45)"
+    }
+  },
+
+  "wall_measurements_authoritative_S1_cleanGPU": {
+    "note": "Wall numbers are taken from the S1 sprint's committed clean-GPU A/B proofs on the IDENTICAL case + code (proofs/perf/v015/ab_s1_*.json / s1_bisect_walls.json). This sprint RE-VERIFIED the v0.14 baseline at 173.88 ms/step (ab_v014ref, matches S1's ab_s1_base 173.91 to 0.03 ms), confirming the harness; but the box's GPU stepping degraded mid-sprint (steady ~900 ms/step launch-bound throttle on every config incl. the verified baseline), so this sprint's own steady ms/step for the new default is NOT a clean measurement and is intentionally not quoted as the headline.",
+    "v014_base_ms_per_step": 173.9,
+    "default_now_cond16_ms_per_step": 123.5,
+    "default_now_speedup_vs_v014": 1.41,
+    "default_now_speedup_vs_24rank_cpu_wrf": "200.5/123.5 = 1.62x (cpu denom from s1_findings.py)",
+    "opt_in_cond16_plus_fp32boulac_ms_per_step": 108.2,
+    "opt_in_speedup_vs_v014": 1.61,
+    "opt_in_speedup_vs_24rank_cpu_wrf": 1.85
+  },
+
+  "reconfirmation_this_sprint": {
+    "v014_baseline_match": "ab_v014ref steady 173.88 ms/step == S1 ab_s1_base 173.91 (harness verified)",
+    "cond_niter_oracle_rerun": "reproduced bit-for-bit incl qc16_unrolled_vs_fori_bitwise=true",
+    "compile_pathology_isolation": "cond16-only A/B emitted 0 'Very slow compile' warnings and compiled in ~80 s; every fp32-BouLac / cond-unroll / thomas-unroll config emitted the warning and stalled -> these are opt-in, not defaults"
+  },
+
+  "deferred_honestly": {
+    "w_damp_once_per_stage": "trim 2a (move w_damp_vertical_cfl from per-acoustic-substep to once-per-RK-stage rw_tend assembly). DEFERRED: it is a SEMANTIC change (per-substep dt=dts threshold vs per-stage dt=dt; WRF cadence), needs its own tiered-gate proof on the w_damping=1 operational path, and its only wall benefit is launch reduction -- which S1 proved is WALL-NEUTRAL in the device-bound cond16 regime (command-buffer capture removed 13,762 launches/step for 0 wall change). Not worth the dycore-staging risk for 0 measured wall.",
+    "t_2ave_denominator_hoist": "trim 2c. DEFERRED: the in-file v0.15 kernel-probe note (advance_w.py) already records this was TRIED and REVERTED -- it measured SLOWER (178.9->188.7 ms/step, ab_streamA.json) because the inline broadcast-FMA recompute fuses into consumers for free while the hoisted arrays cost real DRAM loads, AND it was NOT bit-identical in-program (XLA FMA contraction differs across fusion contexts)."
+  }
+}

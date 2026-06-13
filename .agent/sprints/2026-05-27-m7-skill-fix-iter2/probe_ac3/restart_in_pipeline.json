@@ -1,6 +1,0 @@
-{
-  "reason": "--restart-at-hour was not requested",
-  "schema": "M7DailyPipelineRestartProbe",
-  "schema_version": 1,
-  "status": "NOT_RUN"
-}

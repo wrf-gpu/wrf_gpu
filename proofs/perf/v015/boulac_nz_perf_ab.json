@@ -1,0 +1,83 @@
+{
+  "scope": "v0.15 BouLac O(nz) perf+VRAM A/B (isolated step_mynn_pbl_column, d01 16384x44)",
+  "device": "cuda:0",
+  "shape": {
+    "B": 16384,
+    "nz": 44
+  },
+  "dt_s": 18.0,
+  "dx_m": 3000.0,
+  "edmf": true,
+  "dense_nznz": {
+    "label": "dense_nznz",
+    "min_ms": 32.820667955093086,
+    "samples_ms": [
+      32.820667955093086,
+      32.899059006012976,
+      33.003659977111965,
+      33.176361001096666,
+      33.10522000538185,
+      33.00390002550557,
+      32.851418014615774,
+      32.845868030563
+    ],
+    "peak_vram_bytes_before": 235930368,
+    "peak_vram_bytes_after": 1458859008,
+    "peak_vram_delta_mb": 1222.92864,
+    "device": "cuda:0",
+    "shape": {
+      "B": 16384,
+      "nz": 44
+    }
+  },
+  "scan_onz": {
+    "label": "scan_onz",
+    "min_ms": 25.30712599400431,
+    "samples_ms": [
+      26.31162403849885,
+      25.30712599400431,
+      26.379155984614044,
+      26.027121988590807,
+      26.14920400083065,
+      26.35962498607114,
+      26.277343975380063,
+      26.598787982948124
+    ],
+    "peak_vram_bytes_before": 235929856,
+    "peak_vram_bytes_after": 1071643904,
+    "peak_vram_delta_mb": 835.714048,
+    "device": "cuda:0",
+    "shape": {
+      "B": 16384,
+      "nz": 44
+    }
+  },
+  "mynn_step_speedup_scan_vs_dense": 1.2968943199187795,
+  "mynn_step_saved_ms": 7.513541961088777,
+  "peak_vram_dense_path_mb": 1458.859008,
+  "peak_vram_scan_path_mb": 1071.643904,
+  "peak_vram_saved_mb": 387.215104,
+  "scan_vs_dense_step_output_identity": {
+    "theta": {
+      "max_abs": 5.684341886080802e-14,
+      "max_rel": 1.8934579039375995e-16,
+      "rmse": 6.69489673871845e-17
+    },
+    "el": {
+      "max_abs": 6.693312570860144e-12,
+      "max_rel": 1.567017783890046e-13,
+      "rmse": 1.0977975300242448e-14
+    },
+    "kh": {
+      "max_abs": 4.1744385725905886e-13,
+      "max_rel": 9.338105635178057e-14,
+      "rmse": 5.252695186910135e-16
+    },
+    "tke": {
+      "max_abs": 1.7763568394002505e-15,
+      "max_rel": 3.560500417712229e-15,
+      "rmse": 4.061978109324672e-18
+    }
+  },
+  "note": "Each variant in its OWN process (peak_bytes_in_use is process-monotonic). Isolated MYNN step; full-pipeline wall is in the tiered-gate probe steady_ms_per_step. The scan path HLO has 0 dense (B,nz,nz) tensors (110 occurrences in the dense path)."
+}

@@ -1,0 +1,8 @@
+jax_trace/
+*.nsys-rep
+*.sqlite
+*.xplane.pb
+__pycache__/
+ab_*_state.npz
+hlo_dump_*/
+hlo_dump_localize_base/

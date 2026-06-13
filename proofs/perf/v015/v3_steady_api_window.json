@@ -1,0 +1,34 @@
+{
+  "window_s": 6.65,
+  "steps": 50,
+  "api": [
+    {
+      "name": "cuGraphLaunch",
+      "calls_per_step": 7.3,
+      "ms_per_step": 131.046,
+      "avg_us": 17853.7,
+      "max_us": 54722.4
+    },
+    {
+      "name": "cudaLaunchKernel_v7000",
+      "calls_per_step": 18.2,
+      "ms_per_step": 0.075,
+      "avg_us": 4.1,
+      "max_us": 22.0
+    },
+    {
+      "name": "cuLaunchKernelEx",
+      "calls_per_step": 11.0,
+      "ms_per_step": 0.027,
+      "avg_us": 2.4,
+      "max_us": 11.4
+    },
+    {
+      "name": "cuMemcpyHtoDAsync_v2",
+      "calls_per_step": 0.2,
+      "ms_per_step": 0.018,
+      "avg_us": 79.9,
+      "max_us": 293.1
+    }
+  ]
+}

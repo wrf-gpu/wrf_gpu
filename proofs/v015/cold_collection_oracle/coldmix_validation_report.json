@@ -1,0 +1,172 @@
+{
+  "savepoint": "/mnt/data/wrf_gpu2/physics_oracle/microphysics_coldmix",
+  "n_columns": 8,
+  "n_levels": 44,
+  "regime": {
+    "T_min_K": 211.99999649701203,
+    "T_max_K": 273.9999967884287,
+    "cold_rain_snow_levels": 184,
+    "cold_rain_graupel_levels": 138
+  },
+  "wrf_reference": {
+    "qr_column_delta_kg": -0.15499899594578892,
+    "qg_column_delta_kg": 0.2799716080266124,
+    "rainncv_mm_per_col": [
+      0.013090532273054123,
+      0.01709706336259842,
+      0.021476995199918747,
+      0.026224907487630844,
+      0.03393235057592392,
+      0.039333462715148926,
+      0.04496227204799652,
+      0.050801873207092285
+    ],
+    "total_rainncv_mm": 0.24691945686936378
+  },
+  "jax_scheme_cold_collection_ON": {
+    "surface_precip_mm": 0.24620883047014416,
+    "precip_by_species_mm": {
+      "rain": 0.24620883047014416,
+      "snow": 0.0,
+      "graupel": 0.0,
+      "ice": 0.0,
+      "cloudw": 9.281768232356392e-05
+    },
+    "per_field": {
+      "qv": {
+        "active_cells": 352,
+        "max_abs": 0.00016719642125467686,
+        "max_rel": 0.17145815885932628,
+        "mean_rel": 0.01319835378325267
+      },
+      "qc": {
+        "active_cells": 235,
+        "max_abs": 0.00014103731483830457,
+        "max_rel": 9.674510415992625,
+        "mean_rel": 0.358463537328875
+      },
+      "qr": {
+        "active_cells": 240,
+        "max_abs": 0.000293077935437832,
+        "max_rel": 11.75505623014445,
+        "mean_rel": 0.8724640940493891
+      },
+      "qi": {
+        "active_cells": 208,
+        "max_abs": 0.00025315486321719494,
+        "max_rel": 1.0,
+        "mean_rel": 0.21571276553273816
+      },
+      "qs": {
+        "active_cells": 312,
+        "max_abs": 4.933821133498923e-05,
+        "max_rel": 0.30948739651941176,
+        "mean_rel": 0.04916888991843467
+      },
+      "qg": {
+        "active_cells": 214,
+        "max_abs": 0.003289579895188483,
+        "max_rel": 1.0,
+        "mean_rel": 0.29524396194594205
+      },
+      "ni": {
+        "active_cells": 227,
+        "max_abs": 5249285.312484374,
+        "max_rel": 1.0,
+        "mean_rel": 0.3618271888707917
+      },
+      "nr": {
+        "active_cells": 240,
+        "max_abs": 7064.29296875,
+        "max_rel": 326.951882176818,
+        "mean_rel": 17.978176252123585
+      }
+    },
+    "column_deltas_vs_wrf": {
+      "qr": {
+        "wrf_column_delta": -0.15499899594578892,
+        "jax_column_delta": -0.16042224626807164,
+        "ratio_jax_over_wrf": 1.0349889384069269
+      },
+      "qg": {
+        "wrf_column_delta": 0.2799716080266124,
+        "jax_column_delta": 0.2552760098484828,
+        "ratio_jax_over_wrf": 0.9117924908450639
+      },
+      "nr": {
+        "wrf_column_delta": -472611.91718292236,
+        "jax_column_delta": -780646.5303291747,
+        "ratio_jax_over_wrf": 1.65177072762435
+      }
+    }
+  },
+  "jax_scheme_cold_collection_OFF": {
+    "per_field": {
+      "qv": {
+        "active_cells": 352,
+        "max_abs": 0.00016719642125467686,
+        "max_rel": 0.17145815885932628,
+        "mean_rel": 0.01319835378325267
+      },
+      "qc": {
+        "active_cells": 235,
+        "max_abs": 0.00014103731483830457,
+        "max_rel": 9.674510415992625,
+        "mean_rel": 0.358463537328875
+      },
+      "qr": {
+        "active_cells": 240,
+        "max_abs": 0.0012666441577881802,
+        "max_rel": 36.67852733611353,
+        "mean_rel": 12.809967964974767
+      },
+      "qi": {
+        "active_cells": 208,
+        "max_abs": 0.00025315486321719494,
+        "max_rel": 1.0,
+        "mean_rel": 0.21571276553273816
+      },
+      "qs": {
+        "active_cells": 312,
+        "max_abs": 0.00010240826202294903,
+        "max_rel": 0.30948739651941176,
+        "mean_rel": 0.06632834256223621
+      },
+      "qg": {
+        "active_cells": 214,
+        "max_abs": 0.004400506819238254,
+        "max_rel": 1.0,
+        "mean_rel": 0.5546483599561972
+      },
+      "ni": {
+        "active_cells": 227,
+        "max_abs": 5249285.312484374,
+        "max_rel": 1.0,
+        "mean_rel": 0.3618271888707917
+      },
+      "nr": {
+        "active_cells": 240,
+        "max_abs": 6409.264949589155,
+        "max_rel": 324.889008788544,
+        "mean_rel": 22.607623538267163
+      }
+    },
+    "column_deltas_vs_wrf": {
+      "qr": {
+        "wrf_column_delta": -0.15499899594578892,
+        "jax_column_delta": -0.027979896637163243,
+        "ratio_jax_over_wrf": 0.18051663152030512
+      },
+      "qg": {
+        "wrf_column_delta": 0.2799716080266124,
+        "jax_column_delta": 0.04498381142229743,
+        "ratio_jax_over_wrf": 0.16067276156809993
+      },
+      "nr": {
+        "wrf_column_delta": -472611.91718292236,
+        "jax_column_delta": -183184.8313869671,
+        "ratio_jax_over_wrf": 0.38760095699420594
+      }
+    }
+  }
+}

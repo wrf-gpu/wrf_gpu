@@ -1,0 +1,59 @@
+{
+  "purpose": "PBLH entrainment-depth bias over ocean (QVAPOR redistribution mechanism)",
+  "pblh_ocean": [
+    {
+      "stamp": "2026-05-01_19:00:00",
+      "cpu_pblh_mean_m": 327.7385005336947,
+      "gpu_pblh_mean_m": 311.6701056270276,
+      "pblh_bias_m": -16.068394906667134,
+      "pblh_pct_bias": -4.902809673108621,
+      "cpu_pblh_median_m": 307.65277099609375,
+      "gpu_pblh_median_m": 293.68768310546875
+    },
+    {
+      "stamp": "2026-05-02_06:00:00",
+      "cpu_pblh_mean_m": 594.0375033428596,
+      "gpu_pblh_mean_m": 454.2157904164203,
+      "pblh_bias_m": -139.82171292643935,
+      "pblh_pct_bias": -23.53752282298895,
+      "cpu_pblh_median_m": 611.9442138671875,
+      "gpu_pblh_median_m": 444.8968505859375
+    },
+    {
+      "stamp": "2026-05-02_18:00:00",
+      "cpu_pblh_mean_m": 544.0827278595311,
+      "gpu_pblh_mean_m": 476.8731019638196,
+      "pblh_bias_m": -67.20962589571157,
+      "pblh_pct_bias": -12.352832107006979,
+      "cpu_pblh_median_m": 550.9268798828125,
+      "gpu_pblh_median_m": 478.611328125
+    },
+    {
+      "stamp": "2026-05-03_06:00:00",
+      "cpu_pblh_mean_m": 558.906293561026,
+      "gpu_pblh_mean_m": 524.0297043093274,
+      "pblh_bias_m": -34.87658925169856,
+      "pblh_pct_bias": -6.240149673299474,
+      "cpu_pblh_median_m": 570.7537841796875,
+      "gpu_pblh_median_m": 515.2493896484375
+    },
+    {
+      "stamp": "2026-05-03_18:00:00",
+      "cpu_pblh_mean_m": 473.0281730213799,
+      "gpu_pblh_mean_m": 445.7784748581107,
+      "pblh_bias_m": -27.249698163269226,
+      "pblh_pct_bias": -5.760692431746047,
+      "cpu_pblh_median_m": 469.07037353515625,
+      "gpu_pblh_median_m": 447.3271789550781
+    },
+    {
+      "stamp": "2026-05-04_18:00:00",
+      "cpu_pblh_mean_m": 367.22857623813877,
+      "gpu_pblh_mean_m": 406.46703970947584,
+      "pblh_bias_m": 39.2384634713371,
+      "pblh_pct_bias": 10.685024535207171,
+      "cpu_pblh_median_m": 375.35662841796875,
+      "gpu_pblh_median_m": 410.0751647949219
+    }
+  ]
+}

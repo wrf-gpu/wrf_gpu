@@ -1,0 +1,251 @@
+{
+  "schema": "gpuwrf.v015.boulac_nz_oracle.v2",
+  "scope": "MYNN BouLac mixing-length: O(nz) unrolled (candidate) AND dense (default) vs WRF nested-DO-WHILE NumPy reference",
+  "wrf_reference": "module_bl_mynnedmf.F:2192-2338 (boulac_length), loop-for-loop NumPy transcription",
+  "constants": {
+    "beta_gtr": 0.0327,
+    "Lmax": 1500.0
+  },
+  "nz": 44,
+  "n_cases": 8,
+  "regimes": [
+    "weakly_stable_uniform",
+    "strongly_stable",
+    "near_neutral",
+    "unstable_cap_inversion",
+    "sharp_jumps",
+    "ragged_stretched",
+    "isothermal_bbb0",
+    "random_rough"
+  ],
+  "abs_tol": 1e-09,
+  "rel_tol": 1e-10,
+  "verdict": "PASS",
+  "overall_worst": {
+    "impl": "onz",
+    "case": "near_neutral",
+    "field": "lb2",
+    "max_abs": 5.684341886080802e-14,
+    "max_rel": 2.203442846270061e-16
+  },
+  "implementations": {
+    "onz": {
+      "verdict": "PASS",
+      "overall_max_abs": 5.684341886080802e-14,
+      "overall_max_rel": 2.407884242896604e-16,
+      "worst": {
+        "case": "near_neutral",
+        "field": "lb2",
+        "max_abs": 5.684341886080802e-14,
+        "max_rel": 2.203442846270061e-16
+      },
+      "per_case": [
+        {
+          "case": "weakly_stable_uniform",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.0093881150655557e-16
+        },
+        {
+          "case": "weakly_stable_uniform",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.0043570085448067e-16
+        },
+        {
+          "case": "strongly_stable",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.2828844363653305e-16
+        },
+        {
+          "case": "strongly_stable",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.2828844363653305e-16
+        },
+        {
+          "case": "near_neutral",
+          "field": "lb1",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.1948774642146644e-16
+        },
+        {
+          "case": "near_neutral",
+          "field": "lb2",
+          "max_abs": 5.684341886080802e-14,
+          "max_rel": 2.203442846270061e-16
+        },
+        {
+          "case": "unstable_cap_inversion",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.3023328056539e-16
+        },
+        {
+          "case": "unstable_cap_inversion",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.3023328056539e-16
+        },
+        {
+          "case": "sharp_jumps",
+          "field": "lb1",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.407884242896604e-16
+        },
+        {
+          "case": "sharp_jumps",
+          "field": "lb2",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.2172475331614838e-16
+        },
+        {
+          "case": "ragged_stretched",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.23627138465529e-16
+        },
+        {
+          "case": "ragged_stretched",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.1012116302271897e-16
+        },
+        {
+          "case": "isothermal_bbb0",
+          "field": "lb1",
+          "max_abs": 0.0,
+          "max_rel": 0.0
+        },
+        {
+          "case": "isothermal_bbb0",
+          "field": "lb2",
+          "max_abs": 0.0,
+          "max_rel": 0.0
+        },
+        {
+          "case": "random_rough",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.136340525739435e-16
+        },
+        {
+          "case": "random_rough",
+          "field": "lb2",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.2202761705931902e-16
+        }
+      ]
+    },
+    "dense": {
+      "verdict": "PASS",
+      "overall_max_abs": 5.684341886080802e-14,
+      "overall_max_rel": 2.407884242896604e-16,
+      "worst": {
+        "case": "near_neutral",
+        "field": "lb2",
+        "max_abs": 5.684341886080802e-14,
+        "max_rel": 2.203442846270061e-16
+      },
+      "per_case": [
+        {
+          "case": "weakly_stable_uniform",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.0093881150655557e-16
+        },
+        {
+          "case": "weakly_stable_uniform",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.0043570085448067e-16
+        },
+        {
+          "case": "strongly_stable",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.2828844363653305e-16
+        },
+        {
+          "case": "strongly_stable",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.2828844363653305e-16
+        },
+        {
+          "case": "near_neutral",
+          "field": "lb1",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.1948774642146644e-16
+        },
+        {
+          "case": "near_neutral",
+          "field": "lb2",
+          "max_abs": 5.684341886080802e-14,
+          "max_rel": 2.203442846270061e-16
+        },
+        {
+          "case": "unstable_cap_inversion",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.3023328056539e-16
+        },
+        {
+          "case": "unstable_cap_inversion",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.3023328056539e-16
+        },
+        {
+          "case": "sharp_jumps",
+          "field": "lb1",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.407884242896604e-16
+        },
+        {
+          "case": "sharp_jumps",
+          "field": "lb2",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.2172475331614838e-16
+        },
+        {
+          "case": "ragged_stretched",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.23627138465529e-16
+        },
+        {
+          "case": "ragged_stretched",
+          "field": "lb2",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.1012116302271897e-16
+        },
+        {
+          "case": "isothermal_bbb0",
+          "field": "lb1",
+          "max_abs": 0.0,
+          "max_rel": 0.0
+        },
+        {
+          "case": "isothermal_bbb0",
+          "field": "lb2",
+          "max_abs": 0.0,
+          "max_rel": 0.0
+        },
+        {
+          "case": "random_rough",
+          "field": "lb1",
+          "max_abs": 1.4210854715202004e-14,
+          "max_rel": 2.136340525739435e-16
+        },
+        {
+          "case": "random_rough",
+          "field": "lb2",
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 2.2202761705931902e-16
+        }
+      ]
+    }
+  }
+}

@@ -1,2 +1,0 @@
-/tmp/wrf_gpu2_m6acc2/scripts/m6b_real_ic_operational_compare.py:97: RuntimeWarning: invalid value encountered in subtract
-  diff = np.abs(left - right)

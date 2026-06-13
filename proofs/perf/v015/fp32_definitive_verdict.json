@@ -1,0 +1,26 @@
+{
+  "schema": "V015Fp32DefinitiveVerdict",
+  "deliverable": "PRIORITY 2 \u2014 fp32 definitive LAND-or-NO-GO",
+  "decision": "NO-GO",
+  "identity": {
+    "status": "PROVEN clean (not the blocker)",
+    "theta_max_rel": 1.8831628855268264e-10,
+    "theta_rmse": 1.0880302323600038e-09,
+    "tiered_field_gate": "PASS at 0.06% of frozen limits (tiered_gate_combined.json)"
+  },
+  "isolated_kernel_speed": {
+    "fp64_boulac_min_ms": 50.583982025273144,
+    "fp32_boulac_min_ms": 42.11026499979198,
+    "isolated_speedup": 1.2012268748611064,
+    "note": "isolated MYNN-BouLac step only; ~8 ms/step on a ~127 ms/step (niter=16) full step = small lever even if it landed cleanly"
+  },
+  "blocker_full_pipeline": {
+    "pathology": "XLA \"Very slow compile\" of the mixed fp32/fp64 BouLac fusion in the FULL operational forecast jit: compile crawls >4 min then the run STALLS (GPU-blocked, cputime frozen).",
+    "reproduced_across": "BFC + cuda_async allocators AND autotune on/off (this sprint and prior); the SAME pipeline with the knob OFF shows 0 slow-compile warnings and compiles in ~80 s.",
+    "why_cache_does_not_rescue": "The disqualifier is the run STALL (a hung GPU execution), not merely the compile wall. A persistent compile cache amortizes re-COMPILE cost across processes; it cannot fix a run that hangs after compiling. A one-time cached compile is moot if the resulting executable stalls.",
+    "evidence": "proofs/perf/v015/default_flip_v015.json (validated_opt_in_levers_NOT_defaulted.GPUWRF_MYNN_BOULAC_FP32)"
+  },
+  "verdict_rationale": "LAND requires (compile one-time+cached across processes) AND (run stable) AND (measured net speedup). The run is NOT stable (stalls), so the gate is unmet regardless of compile caching or the small isolated speedup. fp32 stays OPT-IN (GPUWRF_MYNN_BOULAC_FP32=1, GPUWRF_THOMPSON_FP32=1); chapter CLOSED.",
+  "ship_headline": "v0.15 ships niter=16 (1.41-1.43x v0.14 / ~1.62x CPU) as the perf headline; fp32 is documented opt-in, not default.",
+  "time_box_note": "PRIORITY 1 (1a identity fix + 1b VRAM ladder + ceiling search) consumed the GPU budget; per the contract, this NO-GO is written from the reproduced compile/stall-pathology evidence rather than a fresh cold/warm-cache attempt, because the STALL (not compile time) is the disqualifier and is allocator/autotune-invariant."
+}

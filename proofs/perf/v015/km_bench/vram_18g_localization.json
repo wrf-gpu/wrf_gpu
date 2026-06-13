@@ -1,0 +1,68 @@
+{
+  "schema": "V015Vram18GLocalization",
+  "date_utc": "2026-06-13",
+  "agent": "opus-v015-vram-ceiling",
+  "branch": "worker/opus/v015-vram-ceiling",
+  "objective": "Localize the single ~18.72 GiB non-Thompson allocation that binds the v0.15 1km grids (167,904 / 204,800 cols) above the ~125,928-col ceiling, then fix-or-scope.",
+  "verdict": "SCOPE-DEFER",
+  "headline": "The binding allocation is NOT a single un-tiled physics/dycore array. It is XLA's coalesced `preallocated-temp` scratch arena for the fused `_run_forecast_operational_jit` program. Buffer-assignment, XLA rematerialization, and the live bfc OOM all agree. There is no un-tiled g-point / dycore transient to column-tile away; the existing per-column scan-tile pattern cannot reduce a fused-program live-set.",
+  "method": [
+    "PHASE A (authoritative): compiled the FULL operational pipeline (real Canairy d02 case: mp=8 Thompson, pbl=5 MYNN, sfclay=5, cu=0, ra_sw/lw=4 RRTMG, diff_opt=1 km_opt=4 2D-Smagorinsky) at the base grid (66x159=10,494 cols) with XLA HLO + buffer-assignment dumping. Parsed module_0951.jit__run_forecast_operational_jit buffer-assignment for the largest allocations; scaled linearly to 167,904 cols (linear in ncol, R2 0.997 per grid_scaling.json).",
+    "PHASE B (corroboration): attempted the 167,904-col (132x1272) forecast under the platform/bfc allocator to capture XLA's own memory diagnostics."
+  ],
+  "evidence": {
+    "buffer_assignment_top_allocations_base_grid": [
+      {"rank": 1, "bytes": 1455703344, "gib_base": 1.356, "gib_at_167904col": 21.69, "kind": "preallocated-temp (XLA coalesced scratch arena for the whole fused module)"},
+      {"rank": 2, "bytes": 28800000, "gib_base": 0.027, "gib_at_167904col": 0.43, "kind": "parameter 47 f64[25,4,5,45,160] (static radiation/boundary table, NOT ncol-scaling)"},
+      {"rank": 3, "bytes": 28800000, "gib_base": 0.027, "gib_at_167904col": 0.43, "kind": "parameter 45 f64[25,4,5,45,160] (static table)"}
+    ],
+    "gap_note": "The #1 allocation (1.356 GiB) is ~50x larger than #2 (0.027 GiB). The arena is the ONLY large allocation; everything else is tiny static tables or single 2D/3D fields. There is no second giant.",
+    "total_program_allocation": {"gib_base": 1.797, "gib_at_167904col": 28.76, "arena_fraction": 0.75},
+    "arena_composition": {
+      "num_values_packed": 569,
+      "value_shapes": "full-grid fp64 fields: f64[44,66,159] (961 occ), f64[45,66,159] (313), f64[44,66,160] (93) and their RK/acoustic carry tuples",
+      "elems_per_col_at_base": 17340,
+      "elems_per_col_per_level": 394,
+      "interpretation": "arena = ~394 coexisting full-grid (nz,ny,nx) fp64 temporaries at peak. The ship-gate signature 'nz x 340 = 14,960 elems/col' IS this live-field count (cuda_async measured ~340; bfc buffer-assignment shows ~394 -- same phenomenon, allocator-dependent rounding). It is NOT one array with a 340-wide dimension."
+    },
+    "xla_rematerialization_167904col": {
+      "source": "hlo_rematerialization.cc:3233 (compile of the 167,904 program)",
+      "message": "Can't reduce memory use below 21.60GiB (23191710308 bytes) by rematerialization; only reduced to 21.74GiB (23339968441 bytes), down from 23.36GiB (25080307317 bytes) originally",
+      "meaning": "XLA's OWN compute-for-memory pass already ran and proved the fused dycore live-set is irreducible by recomputation below ~21.6 GiB. This is an independent lower bound on the working-set floor at fp64."
+    },
+    "live_bfc_oom_167904col": {
+      "source": "bfc_allocator.cc:502 + RESOURCE_EXHAUSTED",
+      "message": "Allocator (GPU_0_bfc) ran out of memory trying to allocate 18.51GiB (rounded to 19874694656) requested by op",
+      "meaning": "The 18.51 GiB single allocation request = the preallocated-temp arena. Matches the ship-gate's '18.72 GiB single non-Thompson allocation' (cuda_async). With ~6-26 GiB already resident (operational state + tables), this exceeds the 32 GiB RTX 5090 -> OOM."
+    }
+  },
+  "excluded_hypotheses": {
+    "rrtmg_gpoint_transient": "REFUTED. RRTMG SW (_shortwave_column_tiled_impl, rrtmg_sw.py:2273) AND LW (_longwave_column_tiled_impl, rrtmg_lw.py:2627) are BOTH column-tiled (default ON, 16384-col tiles). Outputs are (ncol,nz)-class flux/heating arrays (~9 fields). The big pre-fusion g-point shapes (f64[10494,44,48], f64[10494,44,3,16]) appear only INSIDE the scan body as per-tile work and are NOT live top-level buffers (0 occurrences as allocations in the final buffer-assignment).",
+    "mynn_boulac_dense_matrix": "REFUTED. step_mynn_pbl_column -> _tiled_mynn_step (mynn_pbl.py:1574) runs the (B,nz,nz) BouLac matrices inside a 16384-col scan-tile. f64[10494,44,44] appears only as a transient packed/reused inside the arena (3 value-refs), not a standalone 9.9 GiB buffer.",
+    "thompson_mp_arena": "REFUTED (and out of scope/sibling-owned). Thompson is column-tiled (thompson_column.py:1862). MP adapters produce (ncol,nz) fields only.",
+    "cumulus_gf_tiedtke_vmap": "REFUTED for this case. The real Canairy d02 namelist has cu_physics=0 (only d01=1); no cumulus scheme runs on the probed domain.",
+    "acoustic_scan_trajectory_materialization": "REFUTED. The acoustic lax.scan (operational_mode.py:2029) returns None as the stacked output (xs=None, second carry element None) and _acoustic_unroll() defaults to 1 -- only the final carry is kept, no (K,nz,ny,nx) trajectory is materialized.",
+    "single_giant_dycore_array": "REFUTED. No single allocation exceeds 1.356 GiB at base. The 'giant' is the COALESCED arena of ~394 ordinary full-grid fields, not one array."
+  },
+  "tileability_classification": {
+    "verdict": "NOT tileable with the existing per-column scan-tile pattern (column_tiling.tiled_column_apply / RRTMG / MYNN).",
+    "why": [
+      "The binding allocation is not a single op -- it is the union of ~394 distinct full-grid fp64 temporaries that XLA holds live simultaneously across the fused RK3 stages + acoustic substeps + 2D-Smagorinsky horizontal diffusion (km_opt=4) + advection + lateral-boundary + halo + physics-merge (which also holds the full `physical_origin` State snapshot live for the whole step).",
+      "The dominant ops are HORIZONTALLY COUPLED (advection/diffusion stencils, halo exchange, lateral boundaries). tiled_column_apply assumes per-column independence; applying it to these would be NON-value-identical (it would drop the horizontal-neighbour contributions at tile edges). That violates the V0150-TIERED-IDENTITY contract.",
+      "XLA rematerialization (the compiler's built-in memory-vs-compute optimizer) already ran and could not push the live-set below 21.6 GiB -- the working-set floor of the fp64 dycore program is intrinsic, not a missing-tile bug."
+    ]
+  },
+  "faithful_fix_options_for_manager": [
+    {"option": "fp32 (or mixed-precision) operational state", "saving": "halves the arena: ~21.7 -> ~10.8 GiB @167,904, which would fit all named 1km targets", "effort": "LARGE -- this is the separate fp64-operational ADR lane (V0150 top lever per memory), a pervasive precision change requiring a tiered-identity re-gate across all schemes. NOT a column-tile.", "owner": "fp64-operational-state ADR lane, not this VRAM-tile task"},
+    {"option": "spatial (domain) decomposition of the whole dycore with halos", "saving": "caps the per-shard live-set to a sub-domain", "effort": "VERY LARGE -- a fundamentally different decomposition than column-tiling: requires halo-exchange-correct sharded advection/diffusion/acoustic; this is the multi-GPU / sharded-horizontal lane (sharded_horizontal.py exists but is not the single-GPU operational path).", "owner": "multi-GPU / sharded lane"},
+    {"option": "shrink the live-set op-by-op (e.g. avoid materializing the full physical_origin snapshot; fuse/donate more aggressively)", "saving": "each removed full-grid field ~0.077 GiB @167,904; would need ~140 fields removed to reach the target -- not feasible from micro-opts since most fields are genuinely needed across the step", "effort": "MEDIUM-LARGE, LOW yield, HIGH regression risk on a bit-identity-gated dycore"}
+  ],
+  "recommendation": "v0.15 cannot ship a default-capability 1km/large-grid headline on a single 32 GiB RTX 5090: the binding constraint is the intrinsic fp64 working-set of the fused dycore (~21.7 GiB irreducible @167,904), not a missing column-tile. The largest stable single-GPU grid remains ~125,928 cols (per the ship-gate). The real unlock is the fp64->fp32 operational-state ADR (halves the working set) and/or sharded-horizontal multi-GPU -- both are their own milestones, out of scope for the v0.15 kernel-final close. Document large-grid 1km as a next-version lane.",
+  "proof_artifacts": [
+    "proofs/perf/v015/km_bench/localize_18g_alloc.py (Phase A buffer-assignment localizer)",
+    "proofs/perf/v015/km_bench/localize_18g_alloc.json (Phase A result)",
+    "proofs/perf/v015/km_bench/hlo_dump_localize_base/module_0951.*buffer-assignment.txt (raw XLA buffer assignment)",
+    "proofs/perf/v015/km_bench/oom_breakdown_167904.py (Phase B live OOM probe)",
+    "proofs/perf/v015/km_bench/oom_breakdown_167904.json + .txt"
+  ]
+}

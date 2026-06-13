@@ -1,0 +1,90 @@
+{
+  "schema": "V015ViabilityVerdict",
+  "date_utc": "2026-06-13",
+  "agent": "opus-v015-viability",
+  "branch": "worker/opus/v015-viability",
+  "base_commit": "ae527b02 (v0.15 HEAD on worker/gpt/v013-close-manager)",
+  "device": "NVIDIA GeForce RTX 5090 (GB202, cc12.0, 32607 MiB)",
+  "question": "Is the wrf_gpu port a dead end at ~parity, or is the parity an fp64/precision/grid artifact with a clear path to a real speedup?",
+
+  "VERDICT": "VIABLE-BUT-WORKSTATION-CEILING-IS-MODEST -> the genuine large speedup is GATED ON the fp32-operational (acoustic-perturbation-form, ADR-031) restructuring, which is MEASURED to give ~4x step + ~2x VRAM at the core step. NOT a dead end. The current fp64 workstation case is ~parity by hardware law (GeForce fp64 = 1/64 rate); the lever to break it is identified, measured, and unbuilt.",
+
+  "headline_sentence": "Not a dead end: the ~parity is an fp64 artifact (a GeForce 5090's fp64 is 1/64 its fp32 rate, ~0.77x the CPU's ALU peak, and the 128^2 grid is too small to expose the GPU's bandwidth/parallelism edges); the lever is fp32-operational, which is MEASURED on this GPU to cut the core operational step ~4.3x and halve VRAM -- but it requires the deferred acoustic perturbation-form rewrite (ADR-031), because the acoustic solve is fp64-PINNED by construction today and the wired storage-fp32 does ~nothing.",
+
+  "A_config_verification": {
+    "right_code_ran": true,
+    "niter16_default": "CONFIRMED in source: mynn_edmf.py:65 os.environ.get('GPUWRF_MYNN_COND_NITER','16'); re-validated clean at 127.6 vs niter50 182.1 = 1.43x (niter16_revalidation.json).",
+    "force_fp64_default": "CONFIRMED: nested_pipeline.py:173 and daily_pipeline.py:481 force_fp64=True.",
+    "cold_collection_default_on": "CONFIRMED: thompson_column.py:217 default '1' when table present.",
+    "mp_column_tiling_default": "OPT-IN (False) in source (thompson_column.py:180) -- the kernel-char doc's 'SHIPPED DEFAULT' is a doc overstatement; it does NOT affect the standard-grid gate but MUST be enabled for large grids. MINOR DOC DISCREPANCY, flagged.",
+    "all_optimization_lanes_merged": "CONFIRMED via merge history: v015-kernel-final, v015-perf-mem, v015-kernel-probe, v015-boulac-nz, v015-vram-ceiling, v015-final-gates all merged into the branch. No lost work.",
+    "methodology_sound": "YES and CONSERVATIVE-FOR-GPU. CPU denom = 24-rank dmpar gfortran, same 128x128x44 dt=18 grid, mainloop 2887.6s (cpu_timing.json). GPU total-wall 2941.3s INCLUDES the one-time ~15-min fp64 double-compile (hours 1-2 at ~470s+~453s in pipeline_run_20260521.json) that the CPU never pays. The shipped 0.99x total-wall is therefore conservative; the WARMED steady GPU rate is 26.65 s/fc-hr (h4-72 mean) vs CPU 40.11 s/fc-hr mainloop = 1.51x. No methodology error inflates parity against the GPU.",
+    "rank_denominator_caveat": "Gate used 24-rank CPU; km_feasibility_verdict.json used 28-rank. The warmed speedup is 1.51x vs 24-rank but ~1.29x vs a (linearly-estimated) 28-rank CPU. Denominator must be stated with every speedup number.",
+    "identity_intact": "Switzerland 9/10 PASS (RAINNC 5.08mm bounded), Canary 9/10 PASS (QVAPOR 1.44e-3 bounded) -- same bounded-diagnostic class as shipped v0.14; no tolerance moved."
+  },
+
+  "B_fp32_vs_fp64_on_real_step": {
+    "summary": "TWO distinct fp32 stories. (1) The fp32 the project has WIRED today (DEFAULT_DTYPES storage matrix, force_fp64=False) gives ~NO speedup and ~NO VRAM saving, because the acoustic perturbation solve is fp64-PINNED by construction (operational_mode.py ~1253-1455 hardcode .astype(jnp.float64) on theta/p/ph/w/u/v; the binding ~394-temporary arena stays fp64). (2) A TRUE all-fp32 step (acoustic un-pinned, measured as a cost proxy by toggling x64 off) gives ~4.3x step + ~2x VRAM -- but that requires the deferred ADR-031 perturbation-form rewrite.",
+
+    "wired_storage_fp32_ladder": {
+      "method": "fp32_fp64_ladder.py -- real run_forecast_operational, COST-proxy tiling (boundary/GWD/NoahMP off), 1 compile/point, anchor=128x128x44 dt=18 Switzerland-d01-reinit-h36, bfc allocator MEM_FRACTION 0.93.",
+      "rows": [
+        {"ncol": 16384, "fp64_ms": 70.50, "fp32_ms": 69.85, "fp32_speedup": 1.009, "fp64_gib": 3.44, "fp32_gib": 3.44, "vram_ratio": 1.00},
+        {"ncol": 65536, "fp64_ms": 254.63, "fp32_ms": 249.23, "fp32_speedup": 1.022, "fp64_gib": 10.54, "fp32_gib": 10.54, "vram_ratio": 1.00}
+      ],
+      "ceiling": {"largest_fp64": "65536 cols @ 10.54 GiB (98304 OOM)", "largest_fp32": "98304 cols @ 13.47 GiB (147456 OOM)", "note": "wired-fp32 extends the ceiling ~1.5x (saves only on the prognostic-leaf fraction near the cap); the dominant fp64 acoustic arena is unchanged. Absolute ceilings are bfc/MEM_FRACTION-pessimistic; the committed cuda_async fp64 ceiling is 167904 cols @ 26.25 GiB (grid_scaling.json)."},
+      "conclusion": "The fp32 the project can RUN today is essentially WORTHLESS for perf and scalability at every grid size measured (1.01x and 1.02x, identical peak VRAM). This is the crux of why v0.15 hit ~parity even though fp32 knobs 'exist'."
+    },
+
+    "true_fp32_cost_proxy": {
+      "method": "true_fp32_cost_proxy.py -- build with x64 ON (fp64 guards pass), TOGGLE x64 OFF for the step so every in-step .astype(float64) truncates to fp32 -> the state + the acoustic ~394-temporary arena run fp32 (metrics stay fp64, a tiny 2D fraction -> this is a slight UNDER-estimate of full fp32). NUMERICS NOT VALIDATED (acoustic catastrophic-cancellation; 36-step finiteness does NOT imply a stable forecast); only kernel COST + VRAM are measured, as a faithful proxy for a TRUE all-fp32 step.",
+      "anchor_128sq": {"fp64_ms": 70.49, "true_fp32_ms": 16.4, "speedup": 4.30, "fp64_gib_clean": 3.44, "true_fp32_gib_clean_isolated": 1.66, "vram_ratio": 2.07, "note": "speedup robust across smoke (16.37) + ladder (16.44); fp64-ref reproduced 70.49 to 0.01ms across 3 measurements. Clean VRAM from isolated single-process runs (see monotonic caveat)."},
+      "ceiling_proof_147456": {"fp64_ref": "OOM (needed 18.80 GiB)", "true_fp32": "FITS @ 9.65 GiB, 119.3 ms/step", "vram_ratio": "~1.95x", "significance": "fp32 RUNS a 147,456-col (1km-class) grid that fp64 CANNOT -- the direct measured proof that fp32 unlocks the deployment grids fp64 OOMs on. Matches the committed arena analysis (21.7->10.8 GiB)."},
+      "ladder_ceilings": {"largest_fp64_in_harness": "65,536 cols (98,304 OOM); committed cuda_async fp64 ceiling = 167,904 cols @ 26.25 GiB", "largest_true_fp32_in_harness": "262,144 cols @ 16.80 GiB (409,600 OOM)", "result": "true-fp32 fits 262,144 cols = 4x the in-harness fp64 ceiling and 1.56x the committed cuda_async fp64 ceiling. Both 1km Canary deployment targets (560x280=156,800 and 640x320=204,800 cols) FIT in fp32 -- the 640x320 one OOMs in fp64 (32.3 GiB, km_feasibility_verdict.json)."},
+      "large_grid_scaling": {"true_fp32_marginal_us_per_col": 0.79, "fp64_marginal_us_per_col": 3.75, "fp32_over_fp64_marginal": 4.7, "per_col_us": {"fp32": {"16384": 1.00, "147456": 0.81, "262144": 0.80}, "fp64": {"16384": 4.30, "65536": 3.89}}, "note": "the fp32 core-step win is ~4.3x at the anchor and ~4.7x marginal at large grid -- it does NOT shrink with grid, and fp32 per-col improves slightly with grid (better saturation)."},
+      "monotonic_vram_caveat": "reset_memory_stats is UNAVAILABLE on this jaxlib/device, so per-point peak_bytes_in_use is the running monotonic process peak (contaminated by earlier larger points). Clean per-precision VRAM is taken from isolated single-process runs and from the OOM-vs-fit boundary (a real allocation failure, monotonic-independent). The committed grid_scaling_bench.py flags the same limitation.",
+      "interpretation": "At the CORE step (boundary/GWD/NoahMP off) fp32 is a LARGE win because the cost is dominated by (a) the fp64-pinned 10-substep acoustic arena -- fp64 on GeForce is 1/64 rate, genuinely ALU-bound and ~4x slower than fp32 -- and (b) pow-heavy radiation/physics (pow ~8.9x faster in fp32). The PRODUCTION full step (119.8 ms/step @128^2, WITH boundary/GWD/NoahMP) would see a SMALLER ratio: conservatively ~1.8-3x, since mass/pressure stay fp64-locked for conservation and the added components are not all fp32-able. STILL a real, large lever vs the current ~parity.",
+      "caveat": "Cost-only; not a validated forecast. The PATH to making it valid is ADR-031 (perturbation-authoritative acoustic): thread explicit BaseState through the small-step path so p'/ph'/mu' are authoritative and absolute totals are reconstructed only at controlled interfaces -- never fp32 total-minus-perturbation in the loop. R0 label scaffold exists; R1/R2 unbuilt. A multi-sprint MAJOR milestone, not a flag flip."
+    },
+
+    "micro_kernel_crosscheck": {
+      "source": "micro_kernels.json (committed)",
+      "advance_w_fp32_speedup": {"128sq": 1.16, "256sq": 1.80, "512sq": 2.42, "note": "the fp32 dycore win GROWS with grid size -- at 128^2 the kernels are BW/latency-bound (fp32 barely helps); at 512^2 fp32 BW (467 GB/s) exceeds fp64 BW (385) and the win reaches 2.4x. The brief's cited 1.8-2.4x is the 256-512^2 regime, NOT 128^2."},
+      "pow_fp32_speedup": "~8.9x (pow-heavy physics; FINDINGS-FINAL doc) -- the source of the large radiation contribution to the 4.3x core-step proxy.",
+      "reconciliation": "The isolated-kernel fp32 wins (1.16-2.42x dycore, 8.9x pow) are consistent with the ~4.3x CORE-step proxy once you account for the fp64 acoustic arena (the dominant core cost) going fp32."
+    }
+  },
+
+  "C_bound_analysis": {
+    "verdict": "DEVICE-BOUND (not launch-bound, not bandwidth-saturated, not XLA-codegen). Settled by s1-host-removal clean nsys: 4.2% GPU idle, device-busy 168.5 ms/step at niter50; ~112-116 ms/step at niter16 (s1_bisect row D). The probe's earlier 'launch-bound, 16 ms device floor' was a CUPTI dropped-events artifact, refuted by whole-step CUDA-graph capture being WALL-NEUTRAL in 4 A/B pairs (launches 13958->196, wall unchanged).",
+    "why_parity_at_128sq_fp64": {
+      "hardware_roofline": "GeForce 5090 fp64 = 1/64 fp32 = ~1.7 TFLOP/s = ~0.77x the 24-rank CPU's ~2.2 TFLOP/s AVX-512 peak. The GPU's ONLY structural edges are DRAM BW (~20x) and parallelism.",
+      "grid_too_small": "At 128^2 even a trivial 1R1W copy kernel reaches only 86 GB/s = 5% of the 1792 GB/s peak (micro_kernels.json); the coupled step (a chain of ~10-18k tiny dependent kernels, mean ~10-21 us) never reaches even that. So at 128^2 fp64 NONE of the GPU's edges are exposed while the CPU runs the domain CACHE-RESIDENT in fp32 -> ~parity is the expected hardware outcome, not a code defect.",
+      "bw_utilization_vs_grid": {"copy_1R1W_pct_peak": {"128sq_fp64": 5, "256sq_fp64": 17, "512sq_fp64": 41}, "note": "BW util grows with grid but plateaus; the coupled step is below the copy ceiling at all sizes."}
+    },
+    "host_levers_exhausted": "CUDA-graph capture (wall-neutral), denominator/stage hoist (anti-opt -5.5%), scan-unrolls (~0), command-buffer flag (off). cuSPARSE PCR tridiag already live for the PBL solve. Remaining LARGE levers are all DEVICE-STRUCTURAL: fp32-operational, Pallas megakernels, BouLac O(nz^2)->O(nz)."
+  },
+
+  "D_roofline_projection": {
+    "denominator_note": "Speedups stated vs 24-rank CPU (the gate denom) unless noted; vs 28-rank they are ~0.86x of these.",
+    "workstation_5090_fp64_now": {"standard_128sq": "warmed 1.51x (steady) / ~parity total-wall (fp64 double-compile dilutes); deployment 1km 560x280 ~1.6-2.7x (~2x), asymptote 1.63x (grid_scaling fit, saturation REFUTED -- NOT 6-10x)."},
+    "workstation_5090_fp32_operational_PROJECTED": {
+      "core_step_measured_ratio": 4.31,
+      "production_full_step_estimate": "1.8-3x ON TOP of the fp64 baseline at standard grid; at the 1km deployment grid the fp32 win STACKS with the ~2x grid-amortization AND the ~2x VRAM reduction UNLOCKS the larger grids that fp64 OOMs on (committed analysis: fp32 halves the ~21.7 GiB arena to ~10.8 GiB, so all 1km Canary targets fit). Net workstation 1km fp32 plausible band ~3-6x vs 24-rank CPU. UNBUILT (ADR-031).",
+      "two_birds_one_stone": "fp32-operational ALSO removes the ~15-min fp64 double-compile (the thing diluting the warmed 1.51x to parity) AND the fp32-BouLac compile-stall pathology. The SAME lever fixes perf, VRAM/scalability, and the compile overhead."
+    },
+    "datacenter_h200_gb300_PROJECTED": {
+      "fp64_rate": "H200/GB300 fp64 = 1:2 of fp32 = ~34 TFLOP/s (vs 5090's 1.7) = ~20x more fp64 ALU + HBM 4.8 TB/s (~2.7x the 5090's 1.79). On datacenter HW the fp64 penalty largely VANISHES, so even the fp64 path should clear the CPU comfortably; with fp32 + large grid + multi-GPU sharding the 'massive speedup' / whole-Earth-1km goal is reachable. This is the 1.0.0 cluster regime.",
+      "honest_band": "Not measured here (no datacenter GPU on this workstation); projection from rate/BW ratios. The DIRECTION is sound; the magnitude is a roofline estimate, not a measurement."
+    }
+  },
+
+  "is_it_a_dead_end": "NO. (1) The ~parity is explained by hardware law (fp64 1/64 rate + sub-saturation at 128^2), not a broken architecture -- the prior CUDA-Fortran attempt ran 4.8x SLOWER; this JAX port is already ~parity-to-1.5x warmed and near-optimal at fp64. (2) The single lever to a real speedup -- fp32-operational -- is MEASURED to give ~4.3x core-step + ~2x VRAM on THIS GPU, and is a known, scoped (ADR-031), unbuilt milestone. (3) Datacenter HW removes the fp64 penalty outright. The honest caveat: on THIS workstation in fp64 the ceiling is MODEST (~1.5x warmed, ~2x at 1km); the 10x+ needs fp32-operational and/or cluster.",
+
+  "proof_paths": [
+    "proofs/perf/v015/viability/fp32_fp64_ladder.json (wired-fp32 vs fp64 grid ladder + ceilings)",
+    "proofs/perf/v015/viability/true_fp32_cost_proxy.json (TRUE all-fp32 cost/VRAM proxy + in-harness fp64 ref)",
+    "proofs/perf/v015/viability/fp32_fp64_ab_bench.py, fp32_fp64_ladder.py, true_fp32_cost_proxy.py (harnesses)",
+    "cross-ref committed: micro_kernels.json, s1_bisect_walls.json, kernel_characterization.{md,json}, km_bench/{grid_scaling,km_feasibility_verdict,vram_18g_localization}.json, niter16_revalidation.json, fp32_definitive_verdict.json, .agent/decisions/ADR-031-mixed-perturb-fp32-acoustic-DRAFT.md"
+  ]
+}

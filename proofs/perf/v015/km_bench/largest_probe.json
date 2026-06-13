@@ -1,0 +1,45 @@
+{
+  "scope": "largest-grid probe (allocator=cuda_async)",
+  "allocator": "cuda_async",
+  "records": [
+    {
+      "ny": 198,
+      "nx": 477,
+      "ncol": 94446,
+      "warmed_ms_per_step": 473.2980781377086,
+      "ms_per_forecast_hour": 170387.3081295751,
+      "peak_vram_gib": 14.097437091171741,
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 198,
+      "nx": 636,
+      "ncol": 125928,
+      "warmed_ms_per_step": 631.4352132224789,
+      "ms_per_forecast_hour": 227316.67676009238,
+      "peak_vram_gib": 19.84266060590744,
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 264,
+      "nx": 636,
+      "ncol": 167904,
+      "warmed_ms_per_step": 863.8546224990731,
+      "ms_per_forecast_hour": 310987.66409966635,
+      "peak_vram_gib": 26.245478942990303,
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 264,
+      "nx": 795,
+      "ncol": 209880,
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 28.44GiB.",
+      "peak_vram_gib": 26.245478942990303
+    }
+  ]
+}

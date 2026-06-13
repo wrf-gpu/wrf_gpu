@@ -1,8 +1,0 @@
-{
-  "decision": "PROCEED_TO_M6B2",
-  "diverging_field_count": 0,
-  "operator": "advance_mu_t",
-  "passed": true,
-  "substep": 1,
-  "threshold": 15
-}
