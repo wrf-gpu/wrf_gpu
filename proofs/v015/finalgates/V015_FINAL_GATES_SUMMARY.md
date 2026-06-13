@@ -99,9 +99,26 @@ carry drawn red against the tolerance line, not hidden). 5 plots/region + manife
   `identity_scatter_1to1.png`, `identity_spatial_diff_maps.png`,
   `identity_timeseries_rmse_bias.png`, `identity_proof_manifest.json`.
 
+## Long-horizon divergence verdict on the two carries (ADDED, does not move the gate)
+
+The two strict-tolerance carries were tested against the principal's long-horizon
+non-escalating-divergence criterion (`.agent/decisions/REDUCED-PRECISION-EQUIVALENCE-AND-FP32-RIGOR.md §3`).
+Measured result: **both are BOUNDED / non-escalating over 72 h — NOT run-aways.**
+Switzerland RAINNC saturates (early→late slope ratio +0.05) at ~1.1× the precip field's
+own spatial spread; Canary QVAPOR saturates (ratio −0.04) at 0.47× the moisture field's
+spread. All other 9 fields per region are non-escalating too. So each carry is a
+tight-per-cell-tolerance miss carried to 0.16, not a stability failure. The strict
+frozen-tolerance 9/10 (red on the carry) is unchanged.
+
+- Verdict: `proofs/v015/long_horizon_divergence_verdict.json` + `proofs/v015/LONG_HORIZON_DIVERGENCE_VERDICT.md`
+- Added dashboard panel per region (adjacent to the unchanged identity dashboards):
+  `docs/assets/v015/identity_proof/{switzerland_d01,canary_l2_d02}/long_horizon_divergence_panel.png`
+
 ## Honesty / rules compliance
 
 - Frozen manifest used unchanged; no tolerance moved, no masking clamp, no JAX-vs-JAX
   (both scored vs retained CPU-WRF truth). All GPU work ran under `with_gpu_lock.sh`.
 - The two out-of-envelope fields (Switzerland RAINNC, Canary QVAPOR) are the same
-  bounded-diagnostic class as the shipped v0.14 release, reported at true value.
+  bounded-diagnostic class as the shipped v0.14 release, reported at true value. The
+  long-horizon divergence test above confirms they are bounded/non-escalating, ADDING a
+  second criterion without moving or loosening the strict per-cell tolerance.

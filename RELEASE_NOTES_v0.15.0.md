@@ -74,8 +74,18 @@ the CPU's ALU peak; its edges are bandwidth + parallelism).
   - **Canary L2 d02:** lone out-of-envelope field **QVAPOR 1.44e-3 vs 1.0e-3**
     (carried, **no regression** vs v0.14's 1.45e-3; MYNN marine-entrainment class
     → 0.16 lane). Worst non-QVAPOR field U10 at 0.77× limit.
-- Identity-proof dashboards (5 plots/region, the carried field drawn red, not
-  hidden): `docs/assets/v015/identity_proof/{switzerland_d01,canary_l2_d02}/`.
+- **No run-aways (long-horizon non-escalating-divergence check).** Both carried
+  fields are **BOUNDED / non-escalating over 72 h**, NOT stability run-aways:
+  Switzerland RAINNC saturates (late divergence slope = 4.6 % of early; max 1.13×
+  the precip field's own spatial std), Canary QVAPOR is flat/negative-slope
+  (max 0.47× the oracle's moisture spread). Every other field is non-escalating
+  too. So the two carries are a **tight-per-cell-tolerance miss correctly carried
+  to 0.16, not a stability failure.** This is a SECOND gate ADDED alongside (not
+  replacing) the strict frozen tolerance, which still draws the carry red.
+  Verdict: `proofs/v015/LONG_HORIZON_DIVERGENCE_VERDICT.md`.
+- Identity-proof dashboards (5 plots/region + a dual-gate long-horizon-divergence
+  panel showing "NO RUN-AWAY"; the carried field still drawn red under the strict
+  gate, not hidden): `docs/assets/v015/identity_proof/{switzerland_d01,canary_l2_d02}/`.
 
 ### 5. Benchmark (honest — single cold 72 h run)
 | region | GPU total-wall | CPU baseline | total-wall | forecast-only | peak VRAM |
