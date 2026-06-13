@@ -1,7 +1,0 @@
-{
-  "schema": "PressureDriftFixD02Score",
-  "description": "d02 3km case3 (OOM-safe segmented _advance_chunk harness, --segment-steps 60), full-domain T2 vs corpus L3 d02, through the alb-from-phb fix. The d02 full-pipeline diagnosis harness OOMed (16GiB single XLA intermediate on 159x66 grid, infra limit not the fix); this segmented harness routes the same _refresh_grid_p_from_finished->diagnose_pressure_al_alt path.",
-  "baseline_prefix_validated": {"t2_rmse_6h": 1.88, "t2_rmse_12h": 2.14, "t2_rmse_24h": 1.11, "t2_bias_6h": 1.39, "t2_bias_12h": 1.58, "t2_bias_24h": 0.88, "psfc_bias_Pa": 2456},
-  "alb_from_phb_fix": {"t2_rmse_6h": 1.140, "t2_rmse_12h": 1.349, "t2_rmse_24h": 0.627, "t2_bias_6h": 0.082, "t2_bias_12h": 0.313, "t2_bias_24h": -0.261, "verdict": "D02_VALIDATED", "case_passed": true, "wall_s": 732},
-  "note": "Pressure-Exner half of the d02 T2 bias removed; warm bias near zero. d02 still carries a smaller theta-side PBL residual at mid-leads (12h 1.35K) but 6h/24h drop below the prior numbers across the board."
-}

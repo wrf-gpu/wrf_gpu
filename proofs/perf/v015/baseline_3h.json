@@ -1,0 +1,14 @@
+{
+  "schema": "V015KernelProbeBaseline",
+  "case": "Switzerland d01 reinit h36 replay, 128x128x44, dt=18s, force_fp64",
+  "entry": "dp._run_forecast_sequence -> run_forecast_operational (1 jit call/hour)",
+  "per_hour_wall_s": [
+    82.273,
+    81.799,
+    35.575
+  ],
+  "total_wall_s": 225.195,
+  "steps_per_hour": 200,
+  "steady_state_ms_per_step_hour3": 177.87,
+  "n_files": 3
+}

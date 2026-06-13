@@ -1,3 +1,0 @@
-        <Function test_all_skills_have_metadata_and_evals>
-
-========================= 583 tests collected in 2.37s =========================

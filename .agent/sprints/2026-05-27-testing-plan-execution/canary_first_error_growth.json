@@ -1,7 +1,0 @@
-{
-  "reason": "Requires per-hour GPU-vs-CPU curves across the 14-day corpus; only single-day aggregate skill artifact is available.",
-  "schema": "PublicationFirstErrorGrowth",
-  "schema_version": 1,
-  "source_skill_artifact": "/tmp/wrf_gpu2_testexec/.agent/sprints/2026-05-27-m7-honest-speedup-skill-diff/gpu_vs_cpu_skill_diff.json",
-  "status": "NOT_EVALUATED"
-}

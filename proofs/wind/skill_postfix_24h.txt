@@ -1,6 +1,0 @@
-field  lead  persRMSE  oldGPU  newGPU   oldSkill  newSkill  outcome
-U10    24h    2.118   2.539   1.671   -0.199    +0.211   WIN
-V10    24h    2.054   3.275   1.565   -0.594    +0.238   WIN
-T2     24h    1.122   1.040   1.232   +0.073    -0.097   loss
-     U10 water-RMSE=1.630 land-RMSE=2.154 bias=+0.623
-     V10 water-RMSE=1.517 land-RMSE=2.113 bias=-0.209

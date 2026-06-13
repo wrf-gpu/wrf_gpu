@@ -1,4 +1,0 @@
-Processing [/tmp/m7_profile_artifacts/m7_20260521_warm_360.sqlite] with [/opt/nvidia/nsight-systems/2025.5.2/host-linux-x64/reports/cuda_api_sum.py] to [/tmp/m7_profile_artifacts/m7_20260521_warm_360_stats_cuda_api_sum.json]... PROCESSED
-
-Processing [/tmp/m7_profile_artifacts/m7_20260521_warm_360.sqlite] with [/opt/nvidia/nsight-systems/2025.5.2/host-linux-x64/reports/cuda_gpu_trace.py] to [/tmp/m7_profile_artifacts/m7_20260521_warm_360_stats_cuda_gpu_trace.json]... PROCESSED
-

@@ -1,0 +1,11 @@
+run_root=/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z
+started_utc=20260613T094842Z
+branch=worker/opus/v015-final-gates
+head=8dc6b46667efb58f48fd70435bc77c1b65e59fa8
+kind=v015_switzerland_d01_72h_field_parity_finalgate
+defaults=niter16,thompson_cold_collection_on,dense_boulac
+cpu_truth=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
+domain=d01
+hours=72
+launch=harness_background
+status=launching

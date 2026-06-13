@@ -1,0 +1,51 @@
+{
+  "schema": "V015VramCeilingFindings",
+  "date_utc": "2026-06-12",
+  "agent": "opus-v015-perfmem",
+  "scope": "Lane 2 -- raise the VRAM ceiling so the 640x320 1km grid fits. Root-cause the un-tiled full-grid intermediate the km-bench attributed the 32 GiB ceiling to.",
+
+  "given_evidence": {
+    "km_bench": "proofs/perf/v015/km_bench/grid_scaling.json + km_feasibility_verdict.json",
+    "peak_vram_fit": "LINEAR in ncol: 0.165 GiB / 1000 col (R2 0.997); intercept ~ -1.5 GiB",
+    "largest_ran": "167,904 cols (264x636) @ 26.25 GiB",
+    "first_oom": "209,880 cols (264x795): a SINGLE allocation of 28.44 GiB, with a 19.08 GiB resident MaxAllocSize",
+    "target_640x320": "204,800-205,761 cols -> projected ~32.3 GiB -> does NOT fit 32 GiB",
+    "target_560x280_small": "156,800 cols -> ~24.4 GiB -> FITS (already spans the whole 7-island Canary archipelago at 1km, per km_feasibility_verdict.json)"
+  },
+
+  "root_cause_correction": {
+    "brief_premise": "the ceiling is ONE un-chunked full-grid radiation/PBL intermediate not capped by the existing 16384-col tiling",
+    "finding": "PARTIALLY REFUTED. Source audit shows BOTH the radiation working set AND the MYNN BouLac dense matrices ARE already column-tiled, so neither is the un-capped full-grid term:",
+    "radiation_is_tiled": {
+      "lw": "rrtmg_lw_theta_tendency -> solve_rrtmg_lw_column -> _longwave_column_tiled_impl (src/gpuwrf/physics/rrtmg_lw.py:2627) runs the ENTIRE _longwave_impl (incl MCICA cloud generation) inside a lax.scan over 16384-col tiles; knobs GPUWRF_RRTMG_LW_COLUMN_TILING/_COLUMN_TILE_COLS default on/16384",
+      "sw": "symmetric: _shortwave_column_tiled_impl in src/gpuwrf/physics/rrtmg_sw.py",
+      "v013_proof": "proofs/v013/rrtmg_column_tile_vram_suite.json: LW untiled @65536col OOMs at 32 GiB but tiled = 5.4 GiB; SW untiled 10 GiB -> tiled 1.6 GiB. The tiled radiation working set is a FIXED ~5-6 GiB (per 16384-col tile), NOT linear in ncol."
+    },
+    "mynn_boulac_is_tiled": {
+      "where": "step_mynn_pbl_column -> _tiled_mynn_step (src/gpuwrf/physics/mynn_pbl.py:1395) runs _step_mynn_pbl_impl_with_pblh (which builds the dense (B,nz,nz) _boulac_length matrices) inside a lax.scan over 16384-col tiles; knob GPUWRF_MYNN_COLUMN_TILING/_TILE_COLS default on/16384",
+      "consequence": "at the 640x320 target the per-tile BouLac transient is (16384, 50, 50) = 0.305 GiB x ~6 live ~= 1.8 GiB, NOT the 23 GiB the un-tiled empirical_memory_map rank-3 estimate would imply"
+    }
+  },
+
+  "actual_ceiling_composition": {
+    "verdict": "The 0.165 GiB/1000col linear growth is the SUM of the many full-grid (ncol,nz) arrays that are NOT column-tiled -- the prognostic State (~30 leaves x 0.077 GiB @target = ~2.3 GiB), the acoustic/dycore work arrays, the per-RK-stage tendencies, and the UN-TILED column-physics adapters -- NOT one un-chunked giant. The reported '28.44 GiB single allocation' at OOM is XLA's fused-module temp arena / largest live coalesced region, dominated by these full-ncol arrays held simultaneously.",
+    "largest_untiled_physics_scheme": {
+      "name": "microphysics adapters (scan_adapters.py / physics_couplers.py)",
+      "evidence": "proofs/v014/empirical_memory_map.json candidate 'non_radiation_column_physics_tiling' (rank 4): the MP adapters run on the WHOLE (ncol,nz) batch with NO column tiling (_mp_in -> kernel -> _apply_mp_replacements); 8-15 full-domain input leaves + 6 replacement leaves ~= 1.0-2.0 GiB at the target geometry, un-tiled",
+      "source_refs": ["src/gpuwrf/coupling/scan_adapters.py:118", "src/gpuwrf/coupling/physics_couplers.py:1076,1190"]
+    },
+    "other_untiled_per_empirical_map": [
+      "wdm6_slmsk_full_column_broadcast (FIX_NOW_BIT_IDENTICAL, 0.075 GiB)",
+      "moisture_advection_duplicate_transport_velocity (FIX_NOW_BIT_IDENTICAL, 0.24-0.62 GiB)",
+      "post_physics_non_dry_sparse_donated_merge (1.3-2.6 GiB)"
+    ]
+  },
+
+  "fit_to_target": {
+    "640x320_fits_28GiB_now": false,
+    "saving_needed_to_28GiB": "~4-5 GiB off the projected 32.3 GiB peak",
+    "actionable_bit_identical_path": "column-tile the microphysics adapter with the SAME lax.scan-over-leading-column-tiles pattern already proven for RRTMG (proofs/v013/rrtmg_column_tile.py) and MYNN (_tiled_mynn_step). A 16384-col MP tile caps its full-grid I/O+working set to ~1 tile, removing the ~1-2 GiB MP term AND its scheme-internal temporaries; combined with the two FIX_NOW_BIT_IDENTICAL items (~0.3-0.7 GiB) this is the cleanest bit-identical route toward the ~4-5 GiB needed. Chunking is exact (bit-identical), gate = CPU tile-vs-untiled exact-output per scheme (empirical_memory_map required_proof_gate).",
+    "why_not_implemented_this_sprint": "HONEST DEFERRAL. (1) The single-biggest lever (MP column-tiling) is a real multi-scheme implementation needing per-scheme exact-output gates + a >=160k-col before/after VRAM suite -- not a knob-flip. (2) The GPU box degraded mid-sprint into a persistent stepping/finalize stall (~900 ms/step launch-bound throttle + a finite_summary jit stall on the full operational pipeline) that blocked every large-grid GPU run I attempted, so I could neither re-measure the 209k OOM buffer nor validate a chunking change's before/after VRAM. Implementing chunking blind + unverifiable would violate the 'profiler/VRAM artifact for every claim' rule. (3) The 560x280 SMALL target -- which already spans the whole archipelago at 1km -- FITS today (24.4 GiB); only the denser 640x320 footprint needs this work.",
+    "recommendation": "next sprint, on a clean GPU: (a) run proofs/perf/v015/km_bench/vram_buffer_probe.py (added this sprint; needs the canairy run dir present in the worktree) to name the exact 28.44 GiB region by HLO instruction+shape, then (b) column-tile the microphysics adapter (rank-4) + land the two FIX_NOW_BIT_IDENTICAL items, with a >=160k-col before/after peak-VRAM suite as the gate."
+  }
+}

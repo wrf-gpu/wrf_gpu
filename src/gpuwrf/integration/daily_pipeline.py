@@ -640,6 +640,80 @@ def finite_summary(state: Any) -> dict[str, Any]:
     return {"all_finite": bool(all_finite), "field_count": int(len(fields)), "fields": fields}
 
 
+_ALL_FINITE_DEVICE_FN = None
+
+
+def _all_finite_device(arrays: tuple):
+    """ONE on-device all-finite reduction over the given float arrays.
+
+    Lowers to per-array ``isfinite``+``all`` reduces fused by XLA; only a single
+    boolean scalar crosses the device->host boundary (vs ``finite_summary``'s
+    full-state pull). Pure read -- touches no state value. The jit is built
+    lazily so this module keeps its jax-free import surface.
+    """
+
+    global _ALL_FINITE_DEVICE_FN
+    if _ALL_FINITE_DEVICE_FN is None:
+        import jax
+        import jax.numpy as jnp
+
+        @jax.jit
+        def _fn(arrs):
+            flags = [jnp.isfinite(a).all() for a in arrs]
+            return jnp.stack(flags).all() if flags else jnp.asarray(True)
+
+        _ALL_FINITE_DEVICE_FN = _fn
+    return _ALL_FINITE_DEVICE_FN(arrays)
+
+
+def finite_guard_summary(state: Any) -> dict[str, Any]:
+    """``finite_summary`` with a device-side fast path (v0.15 Stream-A).
+
+    The per-hour pipeline guards only consume ``summary["all_finite"]`` on the
+    success path, but ``finite_summary`` pulls EVERY state leaf to host (a full
+    device->host state transfer 2x/forecast-hour) just to compute it. This
+    wrapper first runs one jitted on-device all-finite reduce (one bool scalar
+    transferred). Only when that reduce reports a non-finite value -- or the
+    device path cannot run -- does it fall back to the full host
+    ``finite_summary``, so every FAILURE payload remains byte-identical
+    (fail-closed semantics and report content unchanged). Identity: the model
+    state is never modified; success-path consumers read only ``all_finite``.
+    """
+
+    try:
+        import jax
+
+        device_arrays = []
+        host_ok = True
+        n_fields = 0
+        for _, value in _field_items(state):
+            if isinstance(value, jax.Array):
+                if np.issubdtype(np.dtype(value.dtype), np.inexact):
+                    device_arrays.append(value)
+                    n_fields += 1
+                elif np.issubdtype(np.dtype(value.dtype), np.number):
+                    n_fields += 1  # integer leaves are always finite
+                continue
+            # host-resident leaves (numpy/scalars): check here, no transfer needed
+            try:
+                array = np.asarray(value)
+            except Exception:
+                continue
+            if not np.issubdtype(array.dtype, np.number):
+                continue
+            n_fields += 1
+            if np.issubdtype(array.dtype, np.inexact) and not bool(np.isfinite(array).all()):
+                host_ok = False
+        if not device_arrays and host_ok:
+            return finite_summary(state)
+        ok = host_ok and bool(_all_finite_device(tuple(device_arrays)))
+    except Exception:  # noqa: BLE001 -- guard must fail closed to the host path
+        return finite_summary(state)
+    if not ok:
+        return finite_summary(state)
+    return {"all_finite": True, "field_count": int(n_fields), "fields": {}}
+
+
 def _wrfout_name(valid_time: datetime, domain: str) -> str:
     return f"wrfout_{domain}_{valid_time:%Y-%m-%d_%H:%M:%S}"
 
@@ -1095,7 +1169,7 @@ def _run_forecast_sequence(
                 break  # the hour boundary is handled by the main path below
             lead_minutes = (hour - 1) * 60.0 + seg * segment_minutes
             if any(s.fires_at(lead_minutes) for s in streams):
-                seg_summary = finite_summary(state)
+                seg_summary = finite_guard_summary(state)
                 if not seg_summary["all_finite"]:
                     _flush_writer()
                     raise PipelineBlocked(
@@ -1115,7 +1189,7 @@ def _run_forecast_sequence(
         elapsed = time.perf_counter() - start
         per_hour_wall_s.append(float(elapsed))
 
-        summary = finite_summary(state)
+        summary = finite_guard_summary(state)
         if not summary["all_finite"]:
             _flush_writer()
             raise PipelineBlocked(
@@ -1139,7 +1213,7 @@ def _run_forecast_sequence(
             state, land_record = _refresh_hourly_land_state(
                 state, run_dir, config.domain, hour, use_noahmp=bool(config.use_noahmp))
             land_refresh_records.append(land_record)
-            summary = finite_summary(state)
+            summary = finite_guard_summary(state)
             if not summary["all_finite"]:
                 _flush_writer()
                 raise PipelineBlocked(

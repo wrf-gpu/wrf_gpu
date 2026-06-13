@@ -118,6 +118,11 @@ STATE_FIELD_ORDER = (
     "Nc",
     "Nn",
     "rainc_acc",
+    # --- v0.15 MYNN SGS-cloud leaves (append-only) ---
+    "qsq",
+    "qc_bl",
+    "qi_bl",
+    "cldfra_bl",
 )
 
 
@@ -212,6 +217,16 @@ PRECISION_MATRIX = {
     "Nc": (FP32_GATED, True),
     "Nn": (FP32_GATED, True),
     "rainc_acc": (FP64, False),
+    # --- v0.15 MYNN SGS-cloud leaves ---
+    # qsq is the closure-2.6 prognostic total-water variance: it lives in the
+    # same TKE-budget family as qke (FP64 after the qke-fp64-fix) and its
+    # magnitudes are O(1e-8..1e-6), so it is FP64-locked. The SGS cloud
+    # condensate/fraction are diagnostic radiation/buoyancy inputs recomputed
+    # every MYNN step; FP32-gated like qc.
+    "qsq": (FP64, False),
+    "qc_bl": (FP32_GATED, True),
+    "qi_bl": (FP32_GATED, True),
+    "cldfra_bl": (FP32_GATED, True),
 }
 
 

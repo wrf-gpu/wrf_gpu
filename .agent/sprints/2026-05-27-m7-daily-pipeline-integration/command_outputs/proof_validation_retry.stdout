@@ -1,7 +1,0 @@
-pipeline_run_20260521.json: verdict=PIPELINE_GREEN
-wrfout_inventory.json: status=PASS
-station_scores_20260521.json: status=PASS
-restart_in_pipeline.json: status=PASS
-repeatability.json: status=PASS
-speedup_vs_cpu_24h.json: status=PASS
-proof validation PASS

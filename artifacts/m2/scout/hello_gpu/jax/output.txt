@@ -1,3 +1,0 @@
-candidate=jax version=0.10.0
-devices=[CudaDevice(id=0)]
-result=[2.0, 4.0, 6.0, 8.0]

@@ -1,0 +1,72 @@
+{
+  "schema": "V015MPTilingIdentity",
+  "deliverable": "1a \u2014 MP column-tiling identity (v0.15 ship gate)",
+  "case": "Switzerland d01 reinit-h36 REAL production column view, native (ny,nx,nz)=(128,128,44)=16384 cols",
+  "method": "tiled (lax.scan over flattened-column tiles) vs untiled monolithic body; per-leaf BYTE equality on 16 state leaves + 4 precip channels (20 leaves)",
+  "tile_sizes_tested": [
+    4096,
+    5000,
+    8192
+  ],
+  "byte_identity": {
+    "verdict": "FAIL_STRICT_BYTE",
+    "n_leaves": 20,
+    "n_bitwise_fail": 4,
+    "mismatching_leaves": {
+      "T": {
+        "max_abs_diff": 2.842170943040401e-14,
+        "n_diff": 1,
+        "shape": [
+          128,
+          128,
+          44
+        ]
+      },
+      "rho": {
+        "max_abs_diff": 2.220446049250313e-16,
+        "n_diff": 1,
+        "shape": [
+          128,
+          128,
+          44
+        ]
+      },
+      "precip.rain": {
+        "max_abs_diff": 5.421010862427522e-20,
+        "n_diff": 95,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "precip.snow": {
+        "max_abs_diff": 4.336808689942018e-18,
+        "n_diff": 1165,
+        "shape": [
+          128,
+          128
+        ]
+      }
+    }
+  },
+  "root_cause_decomposition": {
+    "reshape_only_flatten_restore_no_scan": "bitwise_fail=0/20 (BYTE-EXACT) \u2014 the (ny,nx,nz)->(ncol,nz) flatten + restore is a pure bijection, introduces NO bit change",
+    "multi_tile_lax_scan": "bitwise_fail=4/20, worst 2.84e-14 K on T \u2014 IDENTICAL diff for tile=4096/5000/8192, so it is the scan-vs-monolith XLA fusion-boundary FMA contraction, NOT a pad/logic bug",
+    "conclusion": "Residual is the documented Tier-P fusion-boundary phenomenon (V0150-TIERED-IDENTITY-ADR): op-identical math, last-bit differs when fusion boundaries move. Column tiling moves them by construction."
+  },
+  "tier_p_assessment": {
+    "worst_state_abs_diff_K": 2.84e-14,
+    "manifest_T_rmse_limit_K": 1.5,
+    "worst_over_limit": 1.8933333333333334e-14,
+    "precip_rain_max_abs_diff_mm": 5.421010862427522e-20,
+    "precip_snow_max_abs_diff_mm": 4.336808689942018e-18,
+    "verdict": "TIER_P_PASS \u2014 sub-ulp, ~1.9e-14 of the frozen T limit; cannot move any operational gate"
+  },
+  "ship_decision": {
+    "default": "GPUWRF_MP_COLUMN_TILING DEFAULT-OFF",
+    "rationale": "Production 128x128=16384 cols == one tile so tiling NEVER engages in the default forecast anyway; defaulting OFF keeps the v0.15 default graph BYTE-IDENTICAL to v0.14 (passes the strict gate for what actually ships). Tiling is an OPT-IN large-grid (>16384-col) VRAM lever with documented Tier-P sub-ulp deviation.",
+    "opt_in": "GPUWRF_MP_COLUMN_TILING=1"
+  },
+  "source_fix": "src/gpuwrf/physics/thompson_column.py _maybe_tiled_thompson_full: activation gate was ndim==2 but the production column view is (ny,nx,nz) 3-D, so tiling NEVER engaged in production (silently inert on every forecast, never a passing GPU proof). Fix flattens leading horizontal axes to a single column axis (byte-exact reshape) so tiling can actually engage on the real layout. New 3-D regression tests in tests/test_v015_mp_column_tiling.py.",
+  "raw_gate_artifact": "proofs/perf/v015/km_bench/mp_tiling_identity_fit.json"
+}

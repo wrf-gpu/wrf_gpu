@@ -1,0 +1,157 @@
+{
+  "schema": "V015S1HostRemovalFindings",
+  "case": "Switzerland d01 reinit-h36, 128x128x44, dt=18s, force_fp64, RTX 5090",
+  "cpu_denominator_ms_per_step": 200.5,
+  "variants": {
+    "s1_base": {
+      "steady_ms_per_step": 173.91,
+      "per_hour_wall_s": [
+        82.32,
+        79.817,
+        34.781
+      ],
+      "speedup_vs_s1_base": 1.0,
+      "env": {}
+    },
+    "s1_base_dump": {
+      "steady_ms_per_step": 174.71,
+      "per_hour_wall_s": [
+        81.276,
+        79.704,
+        34.943
+      ],
+      "speedup_vs_s1_base": 0.995,
+      "env": {},
+      "leaf_hash_vs_base": {
+        "mismatch": 0,
+        "total": 168
+      }
+    },
+    "s1_cbwhile": {
+      "steady_ms_per_step": 203.16,
+      "per_hour_wall_s": [
+        455.336,
+        445.04,
+        40.632
+      ],
+      "speedup_vs_s1_base": 0.856,
+      "env": {
+        "XLA_FLAGS": "--xla_gpu_enable_command_buffer=FUSION,CUBLAS,CUBLASLT,CUDNN,CUSTOM_CALL,CONDITIONAL,WHILE,DYNAMIC_SLICE_FUSION,DYNAMIC_SLICE_COPY_FUSION"
+      },
+      "leaf_hash_vs_base": {
+        "mismatch": 99,
+        "total": 168
+      }
+    },
+    "s1_cond16": {
+      "steady_ms_per_step": 123.48,
+      "per_hour_wall_s": [
+        443.169,
+        450.881,
+        24.696
+      ],
+      "speedup_vs_s1_base": 1.408,
+      "env": {
+        "GPUWRF_MYNN_COND_NITER": "16",
+        "GPUWRF_MYNN_COND_UNROLL": "1"
+      },
+      "leaf_hash_vs_base": {
+        "mismatch": 99,
+        "total": 168
+      }
+    },
+    "s1_cond16_fp32boulac": {
+      "steady_ms_per_step": 108.19,
+      "per_hour_wall_s": [
+        445.957,
+        447.387,
+        21.639
+      ],
+      "speedup_vs_s1_base": 1.607,
+      "env": {
+        "GPUWRF_MYNN_COND_NITER": "16",
+        "GPUWRF_MYNN_COND_UNROLL": "1",
+        "GPUWRF_MYNN_BOULAC_FP32": "1"
+      },
+      "leaf_hash_vs_base": {
+        "mismatch": 99,
+        "total": 168
+      }
+    },
+    "s1_flat16": {
+      "steady_ms_per_step": 120.3,
+      "per_hour_wall_s": [
+        460.068,
+        492.914,
+        24.06
+      ],
+      "speedup_vs_s1_base": 1.446,
+      "env": {
+        "GPUWRF_THOMPSON_SED_UNROLL": "16",
+        "GPUWRF_THOMAS_UNROLL": "45",
+        "GPUWRF_MYNN_COND_NITER": "16",
+        "GPUWRF_MYNN_COND_UNROLL": "1"
+      },
+      "leaf_hash_vs_base": {
+        "mismatch": 99,
+        "total": 168
+      }
+    },
+    "s1_flat16_cbnoslice": {
+      "steady_ms_per_step": 120.76,
+      "per_hour_wall_s": [
+        469.884,
+        514.229,
+        24.152
+      ],
+      "speedup_vs_s1_base": 1.44,
+      "env": {
+        "GPUWRF_THOMPSON_SED_UNROLL": "16",
+        "GPUWRF_THOMAS_UNROLL": "45",
+        "GPUWRF_MYNN_COND_NITER": "16",
+        "GPUWRF_MYNN_COND_UNROLL": "1",
+        "XLA_FLAGS": "--xla_gpu_enable_command_buffer=FUSION,CUBLAS,CUBLASLT,CUDNN,CUSTOM_CALL,CONDITIONAL,WHILE --xla_enable_command_buffers_during_profiling=true"
+      },
+      "leaf_hash_vs_base": {
+        "mismatch": 99,
+        "total": 168
+      }
+    },
+    "s1_flat16_cbwhile": {
+      "steady_ms_per_step": 122.94,
+      "per_hour_wall_s": [
+        504.759,
+        516.915,
+        24.588
+      ],
+      "speedup_vs_s1_base": 1.415,
+      "env": {
+        "GPUWRF_THOMPSON_SED_UNROLL": "16",
+        "GPUWRF_THOMAS_UNROLL": "45",
+        "GPUWRF_MYNN_COND_NITER": "16",
+        "GPUWRF_MYNN_COND_UNROLL": "1",
+        "XLA_FLAGS": "--xla_gpu_enable_command_buffer=FUSION,CUBLAS,CUBLASLT,CUDNN,CUSTOM_CALL,CONDITIONAL,WHILE,DYNAMIC_SLICE_FUSION,DYNAMIC_SLICE_COPY_FUSION --xla_enable_command_buffers_during_profiling=true"
+      },
+      "leaf_hash_vs_base": {
+        "mismatch": 99,
+        "total": 168
+      }
+    }
+  },
+  "speedups_vs_cpu": {
+    "s1_base": 1.15,
+    "s1_base_dump": 1.15,
+    "s1_cbwhile": 0.99,
+    "s1_cond16": 1.62,
+    "s1_cond16_fp32boulac": 1.85,
+    "s1_flat16": 1.67,
+    "s1_flat16_cbnoslice": 1.66,
+    "s1_flat16_cbwhile": 1.63
+  },
+  "attached": [
+    "cond_niter_oracle.json",
+    "nsys_summary.json",
+    "tiered_gate_combined.json",
+    "tiered_gate_flat16_cbwhile.json"
+  ]
+}

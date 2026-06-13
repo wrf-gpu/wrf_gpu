@@ -1,0 +1,191 @@
+{
+ "schema": "V015KernelCharacterization",
+ "date_utc": "2026-06-13",
+ "author": "opus-v015-kernel-review",
+ "case_128": "Switzerland d01 reinit-h36, 128x128x44, dt=18s, force_fp64, RTX 5090 GB202",
+ "cpu_denominator_128_ms_per_step": 200.5,
+ "cpu_denominator_note": "24-rank gfortran dmpar, run_h36/cpu_timing.json (40.11 s/fc-hr @128^2).",
+ "frozen_identity_manifest": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json",
+ "phase_breakdown_128_niter50": {
+  "source": "nvtx_phase_attribution.json (150 steps)",
+  "device_busy_ms_per_step": {
+   "MYNN_PBL(EDMF)": 88.61,
+   "dycore_inner_scans": 9.92,
+   "Thompson": 2.03,
+   "step_body_other": 1.02
+  },
+  "total_device_busy_ms_per_step": 101.58,
+  "full_wall_ms_per_step": 177.87,
+  "note": "device-busy total (101.6) < full wall (177.9): the gap is per-iteration while-loop/scan machinery; shipped niter=16 cuts MYNN-EDMF 88.6->~2.7 ms (device) and wall 173.9->119.8."
+ },
+ "shipped_state_128": {
+  "v014_baseline_ms_per_step": 173.9,
+  "v014_speedup_vs_cpu": 1.15,
+  "niter16_default_ms_per_step": 119.8,
+  "niter16_speedup_vs_v014": 1.45,
+  "niter16_speedup_vs_cpu": 1.67,
+  "plus_fp32_boulac_optin_ms_per_step": 104.0,
+  "plus_fp32_boulac_speedup_vs_cpu": 1.93,
+  "fp32_boulac_status": "OPT-IN (compile pathology blocks default); forecast steady 108.2 (ab_s1_cond16_fp32boulac.json)"
+ },
+ "grid_scaling": {
+  "source": "km_bench/grid_scaling.json + km_feasibility_verdict.json",
+  "fit_ms_per_step": {
+   "model": "warmed_ms_per_step = a + b*ncol  (pooled 7 points, 10.5k-168k cols)",
+   "a_intercept_ms": 19.578,
+   "b_slope_ms_per_col": 0.004937016593548831,
+   "b_slope_ms_per_1000col": 4.937,
+   "R2": 0.9974,
+   "asymptotic_fit_ncol_ge_42k": {
+    "intercept_ms": 7.232,
+    "slope_ms_per_1000col": 5.0342
+   },
+   "ncol_ratio_small_to_big": 16.0,
+   "ms_ratio_small_to_big": 13.906,
+   "sublinear_saturation_confirmed": false
+  },
+  "per_cell_us_by_ncol": {
+   "10494": 5.92,
+   "20988": 6.97,
+   "41976": 5.529,
+   "62964": 5.057,
+   "94446": 5.011,
+   "125928": 5.014,
+   "167904": 5.145
+  },
+  "peak_vram_gib_by_ncol": {
+   "10494": 3.96,
+   "20988": 3.96,
+   "41976": 5.5,
+   "62964": 9.15,
+   "94446": 14.1,
+   "125928": 19.84,
+   "167904": 26.25
+  },
+  "speedup_vs_cpu28_by_ncol": {
+   "10494": 1.36,
+   "20988": 1.16,
+   "41976": 1.46,
+   "62964": 1.59,
+   "94446": 1.61,
+   "125928": 1.61,
+   "167904": 1.57
+  },
+  "saturation_hypothesis": "REFUTED -- full coupled step ~linear in ncol; per-cell cost slightly WORSENS at large grids.",
+  "largest_grid_fit_32gib": {
+   "approx": "~600x300 / ~426x426 square",
+   "ncol": "~180,000",
+   "peak_vram_gib": "~28.5",
+   "measured_largest_ran": "264x636=167904 cols @26.25 GiB",
+   "first_oom": "264x795=209880 cols (28.44 GiB single op)"
+  }
+ },
+ "deployment_1km_speedup": {
+  "source": "km_feasibility_verdict.json targets",
+  "560x280_fits": true,
+  "560x280_speedup_vs_cpu28": [
+   1.6,
+   2.59
+  ],
+  "560x280_speedup_with_S2_pallas": [
+   2.08,
+   4.14
+  ],
+  "bottom_line": "GPU rewrite is USEFUL but MODEST at 1km scale on the 5090: ~1.5-2.7x faster than 28-rank CPU-WRF (centered ~2x), ~1.9-2.7x with S2 megakernel. 560x280 FITS (24.5 GiB); 640x320 & 720x360 do NOT (32/41 GiB); cap ~600x300. NOT the 6-10x the saturation hypothesis predicted."
+ },
+ "compile_amortization_128": {
+  "cold_compile_s_per_graph": 448.0,
+  "warm_cache_deser_s_per_graph": 32.0,
+  "n_graphs": 2,
+  "steady_asymptote_speedup_vs_cpu": 1.67,
+  "effective_speedup_warm_by_fc_hours": {
+   "1": 0.46,
+   "3": 0.89,
+   "6": 1.16,
+   "12": 1.37,
+   "24": 1.51,
+   "48": 1.59,
+   "72": 1.61,
+   "120": 1.64
+  },
+  "effective_speedup_cold_by_fc_hours": {
+   "1": 0.04,
+   "3": 0.12,
+   "6": 0.23,
+   "12": 0.41,
+   "24": 0.65,
+   "48": 0.94,
+   "72": 1.1,
+   "120": 1.28
+  }
+ },
+ "asymptotic_large_grid": {
+  "gpu_marginal_us_per_col_step": 4.937,
+  "cpu28_marginal_us_per_col_step": 8.061,
+  "asymptotic_speedup_full_step": 1.63,
+  "copy_kernel_bw_ladder_GBps": {
+   "128": 86.0,
+   "256": 309.0,
+   "512": 730.0
+  },
+  "honest_caveat": "The 87->730 GB/s copy-kernel BW ladder is a TRIVIAL 1R1W microbench, NOT the coupled step. The full step's marginal per-cell cost is ~flat, so the asymptotic full-step speedup is ~2x, not 6-10x. fp64 on the 5090 (GeForce) = 1/64 fp32 rate = ~0.77x the CPU's ALU peak; the GPU's only edges are DRAM BW (20x) + parallelism, exposed only partially even at large grids."
+ },
+ "profile_bound_resolution": {
+  "verdict": "DEVICE-BOUND (settled by s1-host-removal clean nsys: 4.2% GPU idle, device busy 168.5 ms/step).",
+  "refuted_prior_read": "The kernel-probe's 'launch-bound, GPU ~90% idle, 16 ms device floor' was a CUPTI dropped-events undercount; whole-step CUDA-graph capture collapsed launches 13958->196 but was WALL-NEUTRAL in 4 A/B pairs.",
+  "consequence": "Host-side levers (capture, hoist, scan-unrolls) are exhausted/wall-neutral. Remaining device-side structural levers: Pallas column megakernels, BouLac O(nz^2)->O(nz), fp32 operational state."
+ },
+ "angle_ledger": {
+  "shipped": [
+   "niter50to16 (1.45x)",
+   "MP column tiling (enables large grids)",
+   "finite-guard device-side",
+   "advance_w safe-floor gating",
+   "cuSPARSE PCR for MYNN/BouLac tridiag (solve_tridiagonal_xla, ALREADY live)"
+  ],
+  "deferred": [
+   "fp32-BouLac (opt-in, compile-pathology-blocked, +1.1x)",
+   "Pallas column megakernels (the only >2.5x / 512^2 / H200 lever)",
+   "fp32 operational state + mixed-perturb-fp32 acoustic (needs Pallas first)",
+   "BouLac dense search O(nz^2)->O(nz) (NAMED low-risk ~1.1x, the one real gap)",
+   "batch nests/ensemble (throughput, not per-step)"
+  ],
+  "closed_with_evidence": [
+   "whole-step CUDA-graph capture (wall-neutral, 4 A/B)",
+   "denominator/stage-constant hoist (anti-opt -5.5%)",
+   "scan-unrolls in-program (~0)",
+   "Thomas reverse-scan (neutral)",
+   "command-buffer global flag (off)",
+   "implicit sed (fidelity-rejected)",
+   "alt tridiag PCR (already shipped where it matters)",
+   "multi-stream overlap (device-bound, nothing to overlap)",
+   "XLA capture flag set (A/B'd)",
+   "device-floor-without-Pallas (no large win)"
+  ],
+  "not_checked_quantitatively": [
+   "wrapped_transpose elimination (bounded SMALL by kernel counts)"
+  ]
+ },
+ "named_missed_low_risk_lever": {
+  "name": "BouLac dense search O(nz^2)->O(nz) (WRF's own incremental algorithm)",
+  "cost_today": "23M-element fp64 reduce x2/step ~= 14.5 ms fp64 (~7 fp32) ~= 12% of the 119.8 ms post-niter wall",
+  "expected_payoff": "~1.1x on its own (~119.8 -> ~109 ms); device-side, algorithmic, no precision change, tiered-gateable, independent of the Pallas exclusion",
+  "recommendation": "land as a small v0.15 device sprint OR explicitly accept as a documented carry"
+ },
+ "corrections_to_prior_record": [
+  "REFUTED: '15.4-16.3 ms device floor @128^2' (probe + FINDINGS-FINAL S6) -- CUPTI drop artifact; real cond16 device-busy floor ~112-116 ms/step (s1_bisect row D).",
+  "REFUTED: '6-10x per-cell / much-better-speed at large grids' (FINDINGS-FINAL S2/S3/S5) -- km_feasibility_verdict 'saturation REFUTED'; honest large-grid speedup ~1.5-2.7x (centered ~2x), asymptote 1.63x. The 6-10x was a trivial copy-kernel microbench, not the coupled step."
+ ],
+ "verdict": {
+  "near_optimal_without_pallas": "YES, with one named exception (BouLac O(nz^2)->O(nz) ~1.1x + opt-in fp32-BouLac ~1.1x).",
+  "pallas_is_only_large_lever": "YES -- only path to >2.5x @128^2 and the only 512^2/H200 lever.",
+  "pallas_deployment_payoff": "MODEST/measured-bounded: ~2.08-4.14x vs 28-rank CPU at 1km 560x280 (vs ~1.6-2.59x without). NOT 6-10x.",
+  "v015_can_be_called_final": "CAN -- if the README uses honest numbers (1.45x/1.67x @128^2; ~1.6-2.7x ~2x @1km; NOT 6-10x), documents Pallas+fp32 as the named deferred >2.5x future-version path, and the manager lands-or-carries the BouLac O(nz^2)->O(nz) lever."
+ },
+ "plots": {
+  "phase_breakdown": "docs/assets/v015/kernel/phase_breakdown_128.png",
+  "grid_scaling": "docs/assets/v015/kernel/grid_scaling.png",
+  "compile_amortization": "docs/assets/v015/kernel/compile_amortization.png",
+  "asymptotic_largegrid": "docs/assets/v015/kernel/asymptotic_largegrid.png"
+ }
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "V015OOMBreakdown167904",
+  "grid": {
+    "ny": 132,
+    "nx": 1272,
+    "ncol": 167904
+  },
+  "allocator": "platform/bfc",
+  "ran_ok": false,
+  "oom": true,
+  "breakdown_lines": [
+    "RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.51GiB."
+  ],
+  "xla_compile_stderr_evidence": [
+    "W hlo_rematerialization.cc:3233] Can't reduce memory use below 21.60GiB (23191710308 bytes) by rematerialization; only reduced to 21.74GiB (23339968441 bytes), down from 23.36GiB (25080307317 bytes) originally",
+    "W bfc_allocator.cc:502] Allocator (GPU_0_bfc) ran out of memory trying to allocate 18.51GiB (rounded to 19874694656)requested by op"
+  ],
+  "interpretation": "The 18.51 GiB single allocation request is XLA's preallocated-temp coalesced scratch arena (the same buffer the cuda_async ship-gate measured at 18.72 GiB), NOT a single physics/dycore array. XLA's own rematerialization pass already minimized the fused-dycore live-set and could not push it below 21.6 GiB at fp64. See vram_18g_localization.json for the full localization + SCOPE-DEFER verdict."
+}

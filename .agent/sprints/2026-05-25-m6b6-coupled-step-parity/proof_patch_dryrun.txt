@@ -1,4 +1,0 @@
-$ patch -p1 --dry-run -d /tmp/wrf_test_m6b6 < external/wrf_savepoint_patch/solve_em.F.patch
-checking file dyn_em/solve_em.F
-$ patch -p1 --dry-run -d /tmp/wrf_test_m6b6 < external/wrf_savepoint_patch/module_small_step_em.F.patch
-checking file dyn_em/module_small_step_em.F

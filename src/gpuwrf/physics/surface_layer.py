@@ -1,22 +1,34 @@
-"""WRF revised Monin-Obukhov surface layer (``sfclayrev``), JAX port.
+"""WRF MYNN surface layer (``module_sf_mynn.F``, ``sf_sfclay_physics=5``), JAX port.
 
-Faithful, fully vectorized transcription of the WRF revised surface-layer scheme
-(Jimenez et al. 2012, MWR 140, 898-918) as implemented in the CCPP core
-``sf_sfclayrev_run``:
+Faithful, fully vectorized transcription of the genuine WRF MYNN surface-layer
+scheme as implemented in:
 
-  /home/enric/src/wrf_pristine/WRF/phys/physics_mmm/sf_sfclayrev.F90
+  /home/enric/src/wrf_pristine/WRF/phys/module_sf_mynn.F
 
-(which ``module_sf_sfclayrev.F`` on this workstation delegates to via
-``sf_sfclayrev_pre_run`` -> lowest-level column -> ``sf_sfclayrev_run``).
+This is the surface layer paired with the MYNN PBL (the Canary DEFAULT
+``sf_sfclay_physics=5``), routed here via
+``coupling.physics_couplers.surface_adapter``. The surface-FLUX path is genuine
+MYNN -- NOT the revised-MM5 (``sfclayrev``) scheme. (Earlier revisions of THIS
+docstring mislabeled it "sfclayrev"; the algebra below was already MYNN. Fixed
+2026-06-13, worker/opus/v015-qvapor-green, no code change.) The MYNN-distinctive
+markers are all present and oracle-validated against the byte-identical pristine
+``module_sf_mynn.F`` (``proofs/v090/mynnsl_parity.json``,
+``proofs/b2/surface_mynn_parity_wrf.json``):
 
-Every block carries the ``sf_sfclayrev.F90:<line>`` reference for the Fortran it
-ports. This is a clean rebuild; it does NOT resurrect the FAILED M12 MM5
-``module_sf_sfclay.F`` attempt. The two schemes differ fundamentally:
+* the fixed-point ``zolrib`` z/L solve (module_sf_mynn.F:1984-2048), NOT the
+  sfclayrev secant ``zolri``;
+* ``CPM = CP*(1 + 0.84*QV1D)`` (module_sf_mynn.F:552), NOT sfclayrev's 0.80;
+* the ``QSFC``/``QSFCMR`` dual specific-humidity / mixing-ratio split
+  (module_sf_mynn.F:533-534);
+* the thermal-roughness ``PSIH`` baseline ``zolzt`` (module_sf_mynn.F:824);
+* COARE 3.0 Charnock water z0 + Andreas (1989) viscosity + Fairall (2003) z0t/z0q.
 
-* MM5 sfclay used closed-form regime PSIM/PSIH; sfclayrev uses Cheng & Brutsaert
-  (2005, CB05) *integrated* similarity functions tabulated over z/L and a
-  bulk-Richardson Newton/secant solve (``zolri``) for z/L.
-* sfclayrev recomputes PSIH/PSIT/PSIQ over water with Fairall (2003) z0t/z0q.
+The Cheng & Brutsaert (2005, CB05) integrated similarity functions and the CB05
+z/L lookup tables defined below are SHARED by both MYNN and sfclayrev (MYNN uses
+the identical CB05 ``psim_*``/``psih_*`` forms), so the ``sf_sfclayrev.F90:<line>``
+references kept on THOSE table helpers identify the shared CB05 algebra, not a
+scheme choice. The load-bearing flux / z-L blocks carry ``module_sf_mynn.F:<line>``
+anchors. It does NOT resurrect the FAILED M12 MM5 ``module_sf_sfclay.F`` attempt.
 
 Computation is in float64 (x64 enabled at package import); callers cast outputs
 to the frozen storage dtype at the coupling boundary.

@@ -1,0 +1,25 @@
+{
+  "schema": "V015CondNiterOracle",
+  "envelope": "qt 0-30 g/kg x thl 250-330 K x p 100-1050 hPa (401,841 states)",
+  "qc16_vs_qc50": {
+    "max_abs": 0.004201603582924419,
+    "max_rel_where_b_gt_1e-12": 11.206615748543015,
+    "n_diff": 271623,
+    "n_total": 401841
+  },
+  "thv16_vs_thv50": {
+    "max_abs": 8.253772521608255,
+    "max_rel_where_b_gt_1e-12": 0.026014883825309552,
+    "n_diff": 269160,
+    "n_total": 401841
+  },
+  "qc8_vs_qc50": {
+    "max_abs": 0.004721611709197347,
+    "max_rel_where_b_gt_1e-12": 11.971210760682931,
+    "n_diff": 304804,
+    "n_total": 401841
+  },
+  "qc16_unrolled_vs_fori_bitwise": true,
+  "qc_scale_typical_kgkg": 0.001,
+  "note": "MEASURED VERDICT (2026-06-12): in the CONVERGENT regime the 16-iter residual is < WRF's own exit threshold diff=1e-6 (unit sweep max 1.6e-7). The envelope's warm+very-moist corner is NON-convergent for the WRF iteration itself (|lambda|>1: qs-feedback gain exceeds the 0.5 damping): there qc oscillates and qc50 vs qc16 are different phase samples (max_abs ~4e-3) -- WRF's own 50th iterate is equally arbitrary there (its early-exit never trips). Consequence: the niter cap is justified analytically ONLY in the convergent regime; the production decision rests on the Tier-P field gate (compare_tiered_identity vs the frozen v0.14 manifest). The unrolled==fori bitwise bit proves the lowering knob alone changes nothing at equal niter."
+}

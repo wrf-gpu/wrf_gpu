@@ -1,0 +1,161 @@
+{
+  "schema": "V015ABCompare",
+  "a": "v014_base",
+  "b": "streamA",
+  "hours_compared": [
+    "hour1",
+    "hour2",
+    "hour3"
+  ],
+  "leaves_per_hour": {
+    "hour1": 56,
+    "hour2": 56,
+    "hour3": 56
+  },
+  "bit_identical": false,
+  "mismatch_count": 99,
+  "mismatches_first20": [
+    {
+      "hour": "hour1",
+      "leaf": "Ni",
+      "a": "544cceea14f3c905:float64[44, 128, 128]",
+      "b": "9a6d05487297a7f4:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "Nr",
+      "a": "95e6e32c2ad61715:float64[44, 128, 128]",
+      "b": "5808f565d9461e8e:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "fltv",
+      "a": "4ddd58581549ab6f:float64[128, 128]",
+      "b": "f1548b4cb9ec7c73:float64[128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "graupel_acc",
+      "a": "c5d3190a1076a45d:float64[128, 128]",
+      "b": "df80b2d69f87b5c1:float64[128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "ice_acc",
+      "a": "be63663680151e02:float64[128, 128]",
+      "b": "1fe8fb2e132b6dcf:float64[128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "mu",
+      "a": "4888425f35290a07:float64[128, 128]",
+      "b": "68436fcba4197c83:float64[128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "mu_perturbation",
+      "a": "b3c21ee88e3a21c2:float64[128, 128]",
+      "b": "a20f8c2b531050b5:float64[128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "mu_total",
+      "a": "4888425f35290a07:float64[128, 128]",
+      "b": "68436fcba4197c83:float64[128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "p",
+      "a": "1806c372644171c3:float64[44, 128, 128]",
+      "b": "8444d323d67ffb81:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "p_perturbation",
+      "a": "7502ba46e51016e6:float64[44, 128, 128]",
+      "b": "7ae38c193511bb5b:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "p_total",
+      "a": "1806c372644171c3:float64[44, 128, 128]",
+      "b": "8444d323d67ffb81:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "ph",
+      "a": "343704311b866c94:float64[45, 128, 128]",
+      "b": "ec39b03a7af1ac8e:float64[45, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "ph_perturbation",
+      "a": "8544b72fb83b9a51:float64[45, 128, 128]",
+      "b": "b23657adb690158b:float64[45, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "ph_total",
+      "a": "343704311b866c94:float64[45, 128, 128]",
+      "b": "ec39b03a7af1ac8e:float64[45, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "qc",
+      "a": "a3131021b78b5a78:float64[44, 128, 128]",
+      "b": "f78e3f321c9e01de:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "qg",
+      "a": "3c62bbf4a0f8f0e3:float64[44, 128, 128]",
+      "b": "2a16466c9e98fae4:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "qi",
+      "a": "108dcff2323e486b:float64[44, 128, 128]",
+      "b": "44b0015a7a05b3d6:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "qke",
+      "a": "9bc95a1bc42cabbc:float64[44, 128, 128]",
+      "b": "858abba77b60e5aa:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "qr",
+      "a": "d5de5f7544c67132:float64[44, 128, 128]",
+      "b": "aea4ab2ef82cd5ee:float64[44, 128, 128]"
+    },
+    {
+      "hour": "hour1",
+      "leaf": "qs",
+      "a": "e7b6d3291bf274d8:float64[44, 128, 128]",
+      "b": "5a8866921c7cc3b4:float64[44, 128, 128]"
+    }
+  ],
+  "wall_a_per_hour_s": [
+    81.521,
+    80.131,
+    35.77
+  ],
+  "wall_b_per_hour_s": [
+    447.785,
+    541.475,
+    37.747
+  ],
+  "steady_a_ms_per_step": 178.85,
+  "steady_b_ms_per_step": 188.73,
+  "host_overhead_a": {
+    "finite_summary_s": 0.0118,
+    "all_finite": true
+  },
+  "host_overhead_b": {
+    "finite_summary_s": 0.0136,
+    "all_finite": true,
+    "finite_guard_summary_s": 0.0005,
+    "guard_agrees": true
+  }
+}

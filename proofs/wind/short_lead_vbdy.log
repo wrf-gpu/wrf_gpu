@@ -1,7 +1,0 @@
-# short-lead V-boundary probe (case2 0509 18z L2 d02), GPU forecast.
-# Confirms the normal-component (V at S/N) blows up in the relaxation zone fast
-# (rows 1-4 already -17..-9 m/s at 90 steps; spec row 0 correctly pinned ~-3.8).
-# Second/third lead lines aborted on a transient OOM while the speed agent was
-# co-resident; the 0.25h line is sufficient to time the blow-up.
-lead 0.25h: staggered v[z=0] S rows0-4: [ -3.8  -17.   -13.5  -10.78  -9.32]
-            staggered v[z=0] N rows-5..-1: [ 3.19  4.73  7.59 11.85 -2.71]

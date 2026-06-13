@@ -30,6 +30,7 @@ WRF file:line anchors are cited inline.
 
 from __future__ import annotations
 
+import os
 from functools import partial
 
 import jax
@@ -38,6 +39,68 @@ import jax.numpy as jnp
 from jax import lax
 
 config.update("jax_enable_x64", True)
+
+
+def _cond_niter() -> int:
+    """Condensation fixed-point iteration cap (v0.15 S1 host-removal knob).
+
+    Default ``16`` (v0.15) is the WRF-faithful cap and the dominant v0.15 wall
+    win (-70 ms/step, the only strong device axis; S1 bisect row D).  WRF's own
+    cap is 50 (``module_bl_mynnedmf.F:6794-6851``) BUT it carries an
+    ``if (abs(QC-QCold)<diff) exit`` early-out and "usually converges in < 8
+    iterations"; the port dropped the data-dependent exit (it would lower to a
+    capture-breaking ``while``), so the WRF-faithful fixed cap is SMALLER than
+    50, not larger: ``16`` keeps the residual below WRF's own exit threshold
+    (diff=1e-6) wherever the iteration CONVERGES (measured 1.6e-7 worst case);
+    in the warm+very-moist corner the WRF iteration itself does not converge
+    (qs-feedback gain beats the 0.5 damping) and qc50 vs qc16 are different
+    phase samples of the oscillation -- WRF's 50th iterate is equally arbitrary
+    there.  This is therefore a TIERED (not bitwise) identity change: the niter
+    oracle (proofs/perf/v015/cond_niter_oracle.json) bounds the convergent
+    regime, and the frozen-tolerance field gate PASSES at 0.06% of the manifest
+    limits (proofs/perf/v015/tiered_gate_cond16.json / tiered_gate_combined.json).
+    Rollback to the WRF hard cap with ``GPUWRF_MYNN_COND_NITER=50``.
+    """
+
+    return max(1, int(os.environ.get("GPUWRF_MYNN_COND_NITER", "16")))
+
+
+def _cond_unroll() -> bool:
+    """Lower the condensation fixed point as a Python-unrolled chain (v0.15 S1).
+
+    Default OFF (v0.15): keep the v0.14 ``lax.fori_loop`` lowering.  Setting it
+    ON peels the fixed point into a straight-line chain and removes the innermost
+    ``while`` so the EDMF plume body fuses into one kernel; it is numerically the
+    SAME (bitwise-proven at niter=16 by the cond-niter oracle
+    ``qc16_unrolled_vs_fori_bitwise=true`` in
+    proofs/perf/v015/cond_niter_oracle.json -- loop peeling, no reassociation).
+
+    Why default OFF despite the S1 ship candidate using it: peeling 16 EDMF
+    condensation bodies (each already carrying the unrolled EDMF level loop)
+    triggers an XLA "Very slow compile" pathology -- a >10 min first-compile of
+    a huge HLO, reproduced on this branch at both THOMAS_UNROLL=8 and =45.  The
+    DOMINANT wall win is the niter cut itself (50->16 = -70 ms; S1 bisect), which
+    the fori lowering captures too (16 iterations instead of 50 either way).  The
+    unroll adds only a marginal fusion benefit on top and is not worth the
+    compile-ergonomics cost as a default.  Set ``GPUWRF_MYNN_COND_UNROLL=1`` to
+    opt into the fully-fused variant (e.g. for a long production run where the
+    one-time compile amortizes and command-buffer capture is also engaged).
+    """
+
+    return os.environ.get("GPUWRF_MYNN_COND_UNROLL", "0") == "1"
+
+
+def _edmf_level_unroll() -> int:
+    """Unroll factor for the 42-level EDMF plume-rise ``lax.scan`` (v0.15 S1).
+
+    Default ``1`` is the exact v0.14 lowering.  Values > 1 peel the level loop
+    (same-op-order class as the Thomas unroll); a value >= nz-2 (44-2 = 42 for
+    the d01 case -- use e.g. 64) fully flattens the scan so no ``while`` thunk
+    remains and the EDMF chain joins the step's command buffer.  Fusion
+    boundaries shift => TIERED identity regime, not bitwise.
+    """
+
+    return max(1, int(os.environ.get("GPUWRF_MYNN_EDMF_LEVEL_UNROLL", "1")))
 
 # ---- WRF model constants (module_model_constants.F) ----
 R_D = 287.0
@@ -103,12 +166,20 @@ def _qsat_blend(t, p):
     return out
 
 
-def _condensation_edmf(qt, thl, p, zagl, niter=50):
+def _condensation_edmf(qt, thl, p, zagl, niter=None):
     """WRF `condensation_edmf` (line 6794): zero/one moist adjustment for a plume.
 
     Returns (thv, qc). fp64. Fixed iteration count (JAX-friendly; WRF caps at 50
     and converges in <8). The `if (abs(QC-QCold)<diff) exit` early-out is dropped
-    (extra iterations are idempotent once converged)."""
+    (extra iterations are idempotent once converged).
+
+    v0.15 S1 knobs (see `_cond_niter`/`_cond_unroll` docstrings): the default
+    (niter=50, fori) is the exact v0.14 numerics AND lowering; the S1 candidate
+    (GPUWRF_MYNN_COND_NITER=16 + GPUWRF_MYNN_COND_UNROLL=1) is the WRF-faithful
+    convergence cap, Python-unrolled so the innermost ``while`` -- 82% of all
+    kernel time and the largest launch family -- disappears into one fusion."""
+    if niter is None:
+        niter = _cond_niter()
     exn = (p / P1000MB) ** RCP
     qc = jnp.zeros_like(qt)
 
@@ -117,7 +188,11 @@ def _condensation_edmf(qt, thl, p, zagl, niter=50):
         qs = _qsat_blend(t, p)
         return 0.5 * qc + 0.5 * jnp.maximum(qt - qs, 0.0)
 
-    qc = lax.fori_loop(0, niter, body, qc)
+    if _cond_unroll():
+        for _ in range(int(niter)):
+            qc = body(None, qc)
+    else:
+        qc = lax.fori_loop(0, niter, body, qc)
     t = exn * thl + XLVCP * qc
     qs = _qsat_blend(t, p)
     qc = jnp.maximum(qt - qs, 0.0)
@@ -328,7 +403,12 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
             return new_carry, (emit_a, emit_w, emit_qt, emit_qc, emit_thl, emit_u, emit_v)
 
         ks = jnp.arange(1, nz - 1)
-        _, (ea, ew, eqt, eqc, ethl, eu, ev) = lax.scan(step, carry0, ks)
+        # v0.15 S1: optional level-loop peel (see `_edmf_level_unroll`); the
+        # default 1 lowers byte-equal to the pre-v0.15 `lax.scan(step, c, ks)`.
+        _lvl_u = _edmf_level_unroll()
+        _, (ea, ew, eqt, eqc, ethl, eu, ev) = lax.scan(
+            step, carry0, ks, unroll=_lvl_u if _lvl_u > 1 else False
+        )
         # ea[i] corresponds to WRF level K = i+1 (Fortran kts+1..kte-1), i.e. the
         # scanned levels 1..nz-2 (0-based). Build full UP arrays of length nz with:
         #   UP[0] = surface updraft (upw0 etc., WRF UPW(1,ip))
@@ -413,6 +493,20 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     edmf_a_inner = jnp.where(active, edmf_a_inner, 0.0)
     maxmf = jnp.max(jnp.where(active, edmf_aw_inner, 0.0))
 
+    # mean in-plume properties (WRF lines 870-889): area-weighted plume means
+    # edmf_qt1/edmf_thl1/edmf_qc1 = sum(UPA*UPX)/sum(UPA) where sum(UPA)>0; only
+    # edmf_a is multiplied by Psig_w. Consumed by the DMP shallow-cu
+    # cldfra/qc_bl overwrite (mynn_sgs_cloud.dmp_shallow_cu_overwrite).
+    upa_sum = jnp.sum(UPA, axis=0)                      # length nz, pre-Psig
+    safe = jnp.maximum(upa_sum, 1e-30)
+    has_a = upa_sum > 0.0
+    edmf_qc_inner = jnp.where(has_a, jnp.sum(UPA * UPQC, axis=0) / safe, 0.0)
+    edmf_qt_inner = jnp.where(has_a, jnp.sum(UPA * UPQT, axis=0) / safe, 0.0)
+    edmf_thl_inner = jnp.where(has_a, jnp.sum(UPA * UPTHL, axis=0) / safe, 0.0)
+    edmf_qc_inner = jnp.where(active, edmf_qc_inner, 0.0)
+    edmf_qt_inner = jnp.where(active, edmf_qt_inner, 0.0)
+    edmf_thl_inner = jnp.where(active, edmf_thl_inner, 0.0)
+
     return {
         "s_aw": s_aw,
         "s_awqv": s_awqv,
@@ -422,6 +516,9 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
         "s_awu": s_awu,
         "s_awv": s_awv,
         "edmf_a": edmf_a_inner,
+        "edmf_qc": edmf_qc_inner,
+        "edmf_qt": edmf_qt_inner,
+        "edmf_thl": edmf_thl_inner,
         "maxmf": maxmf,
         "active": active.astype(jnp.float64),
         "psig_w": psig_w,

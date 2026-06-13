@@ -49,6 +49,11 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         # but never to this set).
         "Nc",
         "Nn",
+        # v0.15 MYNN SGS-cloud diagnostics (FP32_GATED like qc); the prognostic
+        # total-water variance qsq stays FP64-locked with the qke TKE family.
+        "qc_bl",
+        "qi_bl",
+        "cldfra_bl",
     }
     integer_static = {"lu_index"}
     locked = set(State.__slots__) - gated - integer_static

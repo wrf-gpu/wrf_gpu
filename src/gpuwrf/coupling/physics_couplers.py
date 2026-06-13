@@ -22,6 +22,7 @@ from gpuwrf.physics.mynn_pbl import (
     step_mynn_pbl_column,
     step_mynn_pbl_column_with_pblh,
 )
+from gpuwrf.physics.mynn_sgs_cloud import sgs_cloud_enabled
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
 from gpuwrf.physics.gwd_gwdo import GWDOColumnState, GWDOStatics, gwdo_columns
 from gpuwrf.physics.surface_layer import surface_layer, surface_layer_with_diagnostics
@@ -1000,6 +1001,30 @@ def _rrtmg_column_inputs(
     qs_columns = _to_columns(state.qs)
     qg_columns = _to_columns(state.qg)
     cloud_fraction = _cloud_fraction_columns(state)
+    if sgs_cloud_enabled():
+        # WRF icloud_bl=1 (Registry default; both CPU-truth regions run it):
+        # radiation sees the MYNN subgrid BL clouds. module_radiation_driver.F
+        # :1404-1431 -- after the first step CLDFRA := CLDFRA_BL everywhere
+        # (mym_condensation CASE(2) folds resolved qc/qi/qs into its cloud
+        # fraction via the rh/q1 boosts, so it IS the full-column fraction),
+        # and the SGS condensate is added ONLY where resolved hydrometeors are
+        # absent (qc<1e-6 / qi<1e-8 and cldfra_bl>0.001). WRF saves/restores
+        # qc/qi around radiation (lines 1217/3266), i.e. the merge is a
+        # radiation-input view only -- exactly what these local columns are.
+        cldfra_bl_cols = _to_columns(state.cldfra_bl)
+        qc_bl_cols = _to_columns(state.qc_bl)
+        qi_bl_cols = _to_columns(state.qi_bl)
+        not_first = jnp.asarray(lead_seconds, dtype=jnp.float64) > 0.0
+        cloud_fraction = jnp.where(
+            not_first, jnp.clip(cldfra_bl_cols, 0.0, 1.0), cloud_fraction
+        )
+        bl_active = cldfra_bl_cols > 0.001
+        qc_columns = qc_columns + jnp.where(
+            (qc_columns < 1.0e-6) & bl_active, qc_bl_cols, 0.0
+        )
+        qi_columns = qi_columns + jnp.where(
+            (qi_columns < 1.0e-8) & bl_active, qi_bl_cols, 0.0
+        )
     dz = _column_dz_from_state(state, grid)
     rho = _to_columns(_rho_from_state(state))
     surface_shape = state.t_skin.shape
@@ -1367,6 +1392,8 @@ def _mynn_column_from_state(state: State, grid: GridSpec | None) -> MynnPBLColum
         zeros,  # el (kernel output)
         qc=_to_columns(state.qc),
         qi=_to_columns(state.qi),
+        qs=_to_columns(state.qs),
+        qsq=_to_columns(state.qsq),
     )
 
 
@@ -1463,6 +1490,14 @@ def _state_from_mynn_output(
         theta=theta_new.astype(_output_dtype(state, "theta")),
         qv=qv_new,
         qke=(2.0 * _from_columns(out.tke)).astype(_output_dtype(state, "qke")),
+        # v0.15 MYNN SGS-cloud chain: persist the closure-2.6 prognostic
+        # total-water variance and the mym_condensation/DMP subgrid cloud the
+        # icloud_bl radiation merge consumes. With the chain disabled these are
+        # zeros-in/zeros-out (no behavior change).
+        qsq=_from_columns(out.qsq).astype(_output_dtype(state, "qsq")),
+        qc_bl=_from_columns(out.qc_bl).astype(_output_dtype(state, "qc_bl")),
+        qi_bl=_from_columns(out.qi_bl).astype(_output_dtype(state, "qi_bl")),
+        cldfra_bl=_from_columns(out.cldfra_bl).astype(_output_dtype(state, "cldfra_bl")),
     )
 
 

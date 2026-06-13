@@ -1,4 +1,0 @@
-slice_peak_m_s=1.327232772280
-c2_peak_m_s=1.301713641057
-peak_amplitude_error_fraction=0.019227321504
-trajectory_rmse_fraction=0.387407212716

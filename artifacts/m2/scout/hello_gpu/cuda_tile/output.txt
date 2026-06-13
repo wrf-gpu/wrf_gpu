@@ -1,3 +1,0 @@
-candidate=cuda_tile cuda_runtime=13010
-device=NVIDIA GeForce RTX 5090
-result=[2, 4, 6, 8]

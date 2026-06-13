@@ -16,6 +16,7 @@ from gpuwrf.physics.mynn_constants import (
     A1,
     A2,
     B1,
+    B2,
     C1,
     C2,
     C5,
@@ -61,6 +62,11 @@ from gpuwrf.physics.mynn_constants import (
     TKE_EPS,
     ZMAX,
 )
+from gpuwrf.physics.mynn_sgs_cloud import (
+    dmp_shallow_cu_overwrite,
+    mym_condensation_cloudpdf2,
+    sgs_cloud_enabled,
+)
 from gpuwrf.physics.mynn_surface_stub import surface_layer
 from gpuwrf.physics.tridiagonal_solver import solve_tridiagonal
 
@@ -86,12 +92,14 @@ def _env_int(name: str, default: int) -> int:
 
 
 # Leading-column tiling over the flattened batch axis (the RRTMG pattern,
-# proofs/v013/rrtmg_column_tile.json).  The BouLac free-atmosphere length
-# (`_boulac_length`) unrolls the WRF parcel search into dense ``(B, nz, nz)``
-# PE-accumulation matrices: at 641x321x50 fp64 ONE such matrix is ~3.8 GiB and
-# several are live at once, so a whole-domain batch dominates the non-radiation
-# physics peak.  Every MYNN op is per-column (reductions run over the level
-# axis; the EDMF plume sum runs inside a per-column vmap).  Tile-vs-untiled is
+# proofs/v013/rrtmg_column_tile.json).  The default BouLac free-atmosphere
+# length (`_boulac_length_dense`) materialises dense ``(B, nz, nz)`` PE matrices:
+# at 641x321x50 fp64 ONE such matrix is ~3.8 GiB and several are live at once, so
+# a whole-domain batch dominates the non-radiation physics peak.  (The O(nz)
+# `_boulac_length_onz` drops these but is default-OFF on an XLA compile
+# pathology; see `_MYNN_BOULAC_ONZ`.)  Every MYNN op is per-column (reductions
+# run over the level axis; the EDMF plume sum runs inside a per-column vmap).
+# Tile-vs-untiled is
 # proven bit-identical on GPU including ragged tiles at the production tile
 # width; on the CPU backend the implicit tridiagonal solves can differ by
 # 1-2 ulp on scattered columns from batch-width-dependent SIMD codegen (all
@@ -102,6 +110,59 @@ def _env_int(name: str, default: int) -> int:
 # whole-batch reference path used by proofs.
 _MYNN_COLUMN_TILING = _env_bool("GPUWRF_MYNN_COLUMN_TILING", True)
 _MYNN_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_MYNN_COLUMN_TILE_COLS", 16384))
+
+# v0.15 perf lever (default OFF, proven opt-in): run the dense (B, nz, nz)
+# BouLac free-atmosphere length-scale parcel search (`_boulac_length_dense`) in
+# fp32 and cast the (lb1, lb2) lengths back to the caller dtype.  The BouLac
+# matrices are the measured non-radiation hot spot (NVTX: MYNN_PBL(EDMF) ~88
+# ms/step on d01, ~87% of the step; one fp64 (16384,44,44) array = 254 MB and
+# ~20 live).
+# The length scale is a capped/blended diagnostic mixing length, so fp32 on it is
+# an operational-impact question (NOT bitwise).  CORRECTNESS PROVEN: 1-step
+# injection theta rel 1.9e-10 (proofs/perf/v015/mynn_fp32_boulac_ab.json) and the
+# short-forecast frozen-tolerance field gate PASSES at 0.06% of the manifest
+# limits (proofs/perf/v015/tiered_gate_combined.json).
+#
+# Why DEFAULT OFF despite being correctness-safe and ~8 ms faster on the MYNN
+# step: turning it ON in the FULL operational pipeline triggers an XLA "Very slow
+# compile" pathology -- the mixed fp32/fp64 BouLac fusion makes the operational
+# forecast jit compile crawl (>4 min, then stalls), reproduced on this branch
+# across BFC/cuda_async allocators and with autotuning on/off.  The SAME pipeline
+# with this knob OFF compiles cleanly in ~80 s (0 slow-compile warnings).  The
+# DOMINANT v0.15 wall win (GPUWRF_MYNN_COND_NITER=16, -70 ms/step) is independent
+# of this and stays default-ON.  Set GPUWRF_MYNN_BOULAC_FP32=1 to opt in where the
+# one-time compile cost is acceptable (it is a validated, field-gate-passing win).
+_MYNN_BOULAC_FP32 = _env_bool("GPUWRF_MYNN_BOULAC_FP32", False)
+
+# v0.15 BouLac O(nz) memory lever (default OFF -- BLOCKED by an XLA pathology).
+# The production `_boulac_length` materialises dense (B, nz, nz) PE-accumulation
+# matrices to find the parcel up/down length scale; `_boulac_length_onz` is a
+# WRF-faithful O(nz)-memory reformulation (the inner izz parcel search runs as a
+# straight-line unrolled loop over the search axis, carrying only O(B, nz)
+# accumulators).  It is PROVEN correct (proofs/perf/v015/boulac_nz_oracle.json:
+# max_rel 2.4e-16 vs a loop-for-loop WRF NumPy transcription across 8
+# stratification regimes) and PROVEN faster + lighter IN ISOLATION
+# (proofs/perf/v015/boulac_nz_perf_ab.json: 1.30x / -387 MB on the d01 16384x44
+# step, step-output theta identical to 1.9e-16).  BUT when fused into the FULL
+# operational forecast jit it triggers the SAME XLA "Very slow compile" pathology
+# as GPUWRF_MYNN_BOULAC_FP32 (>7 min, no completion; reproduced for both a
+# lax.scan and a Python-unrolled form, BFC + cuda_async, autotune on/off): the
+# data-dependent O(nz) search defeats the fusion that the pure-cumsum dense form
+# enjoys.  So the dense form stays the DEFAULT (it compiles in ~80 s and is the
+# v0.14-frozen-gate-passing path).  Set GPUWRF_MYNN_BOULAC_ONZ=1 to opt in once
+# the XLA compile pathology is resolved (Fable escalation: fusion-boundary work).
+_MYNN_BOULAC_ONZ = _env_bool("GPUWRF_MYNN_BOULAC_ONZ", False)
+
+# v0.15 IDENTITY fix (default ON): the WRF MYNN-EDMF subgrid-cloud chain --
+# mym_condensation CASE(2) (bl_mynn_cloudpdf=2, the WRF Registry default the
+# CPU truth runs with), the closure-2.6 prognostic total-water variance qsq,
+# the DMP shallow-cu cldfra/qc_bl overwrite, and the SGS-cloud-aware thlv
+# buoyancy. Without it the cloud-topped marine boundary layer under-entrains
+# (no cloud buoyancy + no cloud for radiation) -> the Canary L2 d02 QVAPOR
+# inversion-height miss (rmse 1.45e-3 vs the 1.0e-3 frozen limit).
+# GPUWRF_MYNN_SGS_CLOUD=0 restores the pre-v0.15 dry-buoyancy path (shared
+# gate with the icloud_bl radiation merge; see mynn_sgs_cloud.sgs_cloud_enabled).
+_MYNN_SGS_CLOUD = sgs_cloud_enabled()
 
 CP_MYNN = 7.0 * 287.0 / 2.0
 RCP_MYNN = 287.0 / CP_MYNN
@@ -128,9 +189,19 @@ class MynnPBLColumnState:
         "el",
         "qc",
         "qi",
+        # --- v0.15 SGS-cloud leaves (append-only so old flattens reconstruct) ---
+        # qs: resolved snow (feeds the WRF thlv rebuild + rh_hack);
+        # qsq: PROGNOSED total-water variance <q'w q'w> (closure 2.6);
+        # qc_bl/qi_bl/cldfra_bl: mym_condensation CASE(2) SGS cloud outputs.
+        "qs",
+        "qsq",
+        "qc_bl",
+        "qi_bl",
+        "cldfra_bl",
     )
 
-    def __init__(self, u, v, w, theta, qv, tke, p, rho, dz, km, kh, el, qc=None, qi=None) -> None:
+    def __init__(self, u, v, w, theta, qv, tke, p, rho, dz, km, kh, el, qc=None, qi=None,
+                 qs=None, qsq=None, qc_bl=None, qi_bl=None, cldfra_bl=None) -> None:
         self.u = u
         self.v = v
         self.w = w
@@ -145,6 +216,11 @@ class MynnPBLColumnState:
         self.el = el
         self.qc = jnp.zeros_like(qv) if qc is None else qc
         self.qi = jnp.zeros_like(qv) if qi is None else qi
+        self.qs = jnp.zeros_like(qv) if qs is None else qs
+        self.qsq = jnp.zeros_like(qv) if qsq is None else qsq
+        self.qc_bl = jnp.zeros_like(qv) if qc_bl is None else qc_bl
+        self.qi_bl = jnp.zeros_like(qv) if qi_bl is None else qi_bl
+        self.cldfra_bl = jnp.zeros_like(qv) if cldfra_bl is None else cldfra_bl
 
     def replace(self, **updates) -> "MynnPBLColumnState":
         """Returns a same-layout pytree with named fields replaced."""
@@ -200,6 +276,8 @@ def _clip_state(state: MynnPBLColumnState) -> MynnPBLColumnState:
         qv=jnp.maximum(state.qv, 0.0),
         qc=jnp.maximum(state.qc, 0.0),
         qi=jnp.maximum(state.qi, 0.0),
+        qs=jnp.maximum(state.qs, 0.0),
+        qsq=jnp.maximum(state.qsq, 0.0),
         tke=jnp.maximum(state.tke, TKE_EPS),
         rho=jnp.maximum(state.rho, 1.0e-4),
         dz=jnp.maximum(state.dz, 1.0),
@@ -276,6 +354,13 @@ def _specific_moisture_components(state: MynnPBLColumnState):
     return sqv, sqc, sqi, sqw
 
 
+def _specific_snow_content(state: MynnPBLColumnState):
+    """WRF ``sqs`` (snow specific content); excluded from ``sqw`` (driver :675)."""
+
+    qv = jnp.maximum(state.qv, 0.0)
+    return jnp.maximum(state.qs, 0.0) / (1.0 + qv)
+
+
 def _liquid_potential_temperature(state: MynnPBLColumnState):
     """WRF ``thl`` from theta plus cloud liquid/ice specific contents."""
 
@@ -284,16 +369,37 @@ def _liquid_potential_temperature(state: MynnPBLColumnState):
     return state.theta - XLVCP_MYNN / exner * sqc - XLSCP_MYNN / exner * sqi
 
 
-def _moist_virtual_potential(state: MynnPBLColumnState):
-    """WRF ``thv`` and cloud-aware ``thlv`` used by MYNN level-2 closure."""
+def _moist_virtual_potential(state: MynnPBLColumnState, sgs_cloud: bool = False):
+    """WRF ``thv`` and cloud-aware ``thlv`` used by MYNN level-2 closure.
+
+    ``sgs_cloud=True`` applies the WRF driver ``thlv1`` rebuild AFTER
+    ``mym_condensation``/``DMP_mf`` (module_bl_mynnedmf.F:1005-1009):
+
+        thlv1(k) = (th1 - xlvcp/ex*max(qc_bl1, sqc1)
+                        - xlscp/ex*max(qi_bl1, sqi1+sqs1)) * (1+p608*sqv1)
+
+    i.e. the SGS cloud condensate (``state.qc_bl``/``state.qi_bl``) enters the
+    buoyancy variable wherever it exceeds the resolved condensate. This is the
+    load-bearing SGS-cloud buoyancy coupling (``use_buoy=.false.`` makes the
+    vt/vq route dead); without it a cloud-topped marine boundary layer sees a
+    spuriously stable cloud layer and under-entrains (the Canary QVAPOR
+    inversion-height miss). ``sgs_cloud=False`` keeps the resolved-only form
+    used at the driver entry and by the cold-start ``mym_initialize`` path.
+    """
 
     sqv, sqc, sqi, _sqw = _specific_moisture_components(state)
     exner = _exner_from_pressure(state.p)
     thv = state.theta * (1.0 + P608 * sqv)
+    if sgs_cloud:
+        liq = jnp.maximum(state.qc_bl, sqc)
+        ice = jnp.maximum(state.qi_bl, sqi + _specific_snow_content(state))
+    else:
+        liq = sqc
+        ice = sqi
     thlv = (
         state.theta
-        - XLVCP_MYNN / exner * sqc
-        - XLSCP_MYNN / exner * sqi
+        - XLVCP_MYNN / exner * liq
+        - XLSCP_MYNN / exner * ice
     ) * (1.0 + P608 * sqv)
     return thv, thlv
 
@@ -322,9 +428,15 @@ def _flux_richardson(ri, ri1, ri2, ri3, ri4, rfc):
 
 
 def _mym_level2(state: MynnPBLColumnState):
-    """WRF MYNN `mym_level2`: level-2 gradients and stability functions."""
+    """WRF MYNN `mym_level2`: level-2 gradients and stability functions.
 
-    _thv, thlv = _moist_virtual_potential(state)
+    The buoyancy gradient uses the SGS-cloud-aware ``thlv`` (the WRF driver
+    thlv1 rebuild with ``max(qc_bl, sqc)``); for states whose ``qc_bl``/``qi_bl``
+    leaves are zero (cold start, analytic fixtures, pre-condensation callers)
+    this reduces EXACTLY to the previous resolved-only form.
+    """
+
+    _thv, thlv = _moist_virtual_potential(state, sgs_cloud=True)
     thl = _liquid_potential_temperature(state)
     _sqv, _sqc, _sqi, sqw = _specific_moisture_components(state)
     dzk = _interface_dz(state.dz)[..., 1:]
@@ -415,22 +527,206 @@ def _scale_aware_psig_bl(dx, pblh):
     return (dxdh2 + 0.106 * dxdh23) / (dxdh2 + 0.066 * dxdh23 + 0.071)
 
 
-def _boulac_length(zw, dz, qtke, theta):
-    """Vectorized WRF ``boulac_length`` (``module_bl_mynnedmf.F:2192-2338``).
+def _boulac_length_onz(zw, dz, qtke, theta):
+    """WRF ``boulac_length`` (``module_bl_mynnedmf.F:2192-2338``), O(nz) memory.
+
+    DEFAULT-OFF (``GPUWRF_MYNN_BOULAC_ONZ``): proven correct + faster/lighter in
+    ISOLATION but BLOCKED by an XLA "Very slow compile" pathology in the full
+    operational forecast jit -- see the ``_MYNN_BOULAC_ONZ`` note above and the
+    dispatcher :func:`_boulac_length`.
 
     For each level ``iz`` it integrates the buoyant displacement a parcel with
     TKE ``qtke(iz)`` can travel up (``dlu``) and down (``dld``) before its TKE is
     consumed by potential energy, then returns ``lb1=min(dlu,dld)`` and
-    ``lb2=sqrt(dlu*dld)``. The Fortran does this with two nested data-dependent
-    while loops per ``iz``; here the inner search is unrolled into the dense
-    (nz x nz) PE-accumulation matrices and the first TKE-crossing is selected
-    with a cumulative-OR mask. ``beta = gtr`` is the buoyancy coefficient.
+    ``lb2=sqrt(dlu*dld)``.  ``beta = gtr`` is the buoyancy coefficient.
+
+    WRF runs two nested data-dependent ``DO WHILE`` loops per source level
+    ``iz`` (the inner search over ``izz``).  This is a faithful structural
+    transcription: the inner ``izz`` search is a Python-unrolled loop over the
+    search axis, with the *source level* carried as a batched ``(..., nz)``
+    vector so every column AND every source level advances its own
+    ``zup``/``zup_inf``/``zzz``/``found`` accumulators in lock-step.  At search
+    position ``izz`` (a scalar level), source ``iz`` is active iff ``iz <= izz``
+    (upward) / ``iz >= izz`` (downward); that single conditional reproduces
+    WRF's "start the search at ``izz=iz``" semantics.  Only O(B, nz) state is
+    live -- the dense ``_boulac_length_dense`` materialises ``(B, nz, nz)`` PE
+    matrices.  The per-crossing arithmetic is the verbatim Fortran formula; this
+    is an algorithmic/memory change, NOT a numerics change.
+
+    Arrays are last-axis (``..., nz``); ``zw`` is the WRF ``zw(kts:kte)`` subset
+    (length nz).  WRF references ``zw(kte+1)`` (the top interface) and
+    ``zw(iz+1)``; we reconstruct those from the cumulative layer depths so no
+    extra interface array is threaded through.
+    """
+
+    # v0.15 optional fp32 island (default OFF): the parcel search is
+    # bandwidth-bound; computing it in fp32 halves the transient HBM traffic.
+    # Cast inputs in, cast (lb1, lb2) back to caller dtype at the return.
+    # Engaged via GPUWRF_MYNN_BOULAC_FP32=1; proven by the frozen
+    # field-tolerance gate, not assumed bit-identical.
+    _out_dtype = jnp.result_type(zw, dz, qtke, theta)
+    work_dtype = _out_dtype
+    if _MYNN_BOULAC_FP32 and _out_dtype == jnp.float64:
+        work_dtype = jnp.float32
+        zw = zw.astype(work_dtype)
+        dz = dz.astype(work_dtype)
+        qtke = qtke.astype(work_dtype)
+        theta = theta.astype(work_dtype)
+
+    beta = jnp.asarray(GTR, dtype=work_dtype)
+    nz = dz.shape[-1]
+    batch_shape = jnp.broadcast_shapes(
+        zw.shape[:-1], dz.shape[:-1], qtke.shape[:-1], theta.shape[:-1]
+    )
+    col_shape = batch_shape + (nz,)
+    zw = jnp.broadcast_to(zw, col_shape)
+    dz = jnp.broadcast_to(dz, col_shape)
+    qtke = jnp.broadcast_to(qtke, col_shape)
+    theta = jnp.broadcast_to(theta, col_shape)
+
+    # Full interface heights zwf(kts:kte+1), length nz+1: zwf[k]=sum(dz[:k]).
+    zwf = _edge_heights(dz)                 # (..., nz+1); zwf[...,0]=0
+    zw_top = zwf[..., -1:]                   # zw(kte+1)
+    zw_kp1 = zwf[..., 1:]                     # zw(k+1) for k=0..nz-1, length nz
+
+    i_idx = jnp.arange(nz)
+    src_is_top = i_idx == (nz - 1)           # iz==kte: no upward integration
+    src_is_bot = i_idx == 0                  # iz==kts: no downward integration
+
+    zero_cols = jnp.zeros(col_shape, dtype=work_dtype)
+    false_cols = jnp.zeros(col_shape, dtype=bool)
+
+    # The inner ``izz`` search is a Python-unrolled loop over the search axis,
+    # NOT a lax.scan: the loop body is the same per-step accumulator update, but
+    # unrolling keeps the working set at O(B, nz) (no dense (B,nz,nz)) while
+    # producing a STRAIGHT-LINE elementwise graph that XLA fuses quickly.  A
+    # lax.scan here lowers to an XLA ``while`` whose body, nested inside the full
+    # operational forecast jit, tripped a "Very slow compile" pathology; the
+    # unrolled form has identical numerics (verified by the column oracle) and
+    # compiles cleanly.  The accumulators are (..., nz) over the SOURCE level.
+
+    th_jp1 = jnp.concatenate((theta[..., 1:], theta[..., -1:]), axis=-1)  # theta(k+1)
+    th_jm1 = jnp.concatenate((theta[..., :1], theta[..., :-1]), axis=-1)  # theta(k-1)
+    dz_jm1 = jnp.concatenate((dz[..., :1], dz[..., :-1]), axis=-1)        # dz(k-1)
+
+    def _bcast(arr, izz):
+        # broadcast the scalar-level-izz slice (a (...,) leaf) over (..., nz).
+        return arr[..., izz][..., None]
+
+    # ---------------- UPWARD search (dlu) ----------------
+    # WRF default (no crossing found): dlu(iz)=zw(kte+1)-zw(iz)-dz(iz)*0.5.
+    dlu = zw_top - zw - dz * 0.5
+    zup, zup_inf, zzz, found = zero_cols, zero_cols, zero_cols, false_cols
+    for izz in range(nz - 1):                     # izz = 0 .. nz-2 (upward)
+        th_j = _bcast(theta, izz)
+        th_jp = _bcast(th_jp1, izz)               # theta(izz+1)
+        dzt = _bcast(dz, izz)
+        active = (i_idx <= izz) & (~src_is_top)   # source iz<=izz can integrate up
+        zup_new = zup + beta * (th_jp + th_j) * dzt * 0.5 - beta * theta * dzt
+        zzz_new = zzz + dzt
+        cross = active & (~found) & (qtke < zup_new) & (qtke >= zup_inf)
+        bbb = jnp.where(jnp.abs(th_jp - th_j) > 0.0, (th_jp - th_j) / dzt, 0.0)
+        rad = jnp.maximum(
+            (beta * (th_j - theta)) ** 2 + 2.0 * bbb * beta * (qtke - zup_inf), 0.0
+        )
+        tl_b = (-beta * (th_j - theta) + jnp.sqrt(rad)) / jnp.where(
+            bbb != 0.0, bbb * beta, 1.0
+        )
+        tl_lin = jnp.where(
+            th_j != theta,
+            (qtke - zup_inf) / (beta * jnp.where(th_j != theta, th_j - theta, 1.0)),
+            0.0,
+        )
+        tl = jnp.where(bbb != 0.0, tl_b, tl_lin)
+        dlu = jnp.where(cross, zzz_new - dzt + tl, dlu)
+        found = found | cross
+        # accumulators only advance on active source levels (WRF's zup/zzz/
+        # zup_inf move only while the search runs).
+        zup = jnp.where(active, zup_new, zup)
+        zzz = jnp.where(active, zzz_new, zzz)
+        zup_inf = jnp.where(active, zup_new, zup_inf)
+
+    # ---------------- DOWNWARD search (dld) ----------------
+    # WRF default (no crossing found): dld(iz)=zw(iz).
+    dld = zw
+    zdo, zdo_sup, zzz, found = zero_cols, zero_cols, zero_cols, false_cols
+    for izz in range(nz - 1, 0, -1):              # izz = nz-1 .. 1 (downward)
+        th_j = _bcast(theta, izz)
+        th_jm = _bcast(th_jm1, izz)               # theta(izz-1)
+        dzt = _bcast(dz_jm1, izz)                  # dz(izz-1)
+        active = (i_idx >= izz) & (~src_is_bot)   # source iz>=izz can integrate down
+        zdo_new = zdo + beta * theta * dzt - beta * (th_jm + th_j) * dzt * 0.5
+        zzz_new = zzz + dzt
+        cross = active & (~found) & (qtke < zdo_new) & (qtke >= zdo_sup)
+        bbb = jnp.where(jnp.abs(th_j - th_jm) > 0.0, (th_j - th_jm) / dzt, 0.0)
+        rad = jnp.maximum(
+            (beta * (th_j - theta)) ** 2 + 2.0 * bbb * beta * (qtke - zdo_sup), 0.0
+        )
+        tl_b = (beta * (th_j - theta) + jnp.sqrt(rad)) / jnp.where(
+            bbb != 0.0, bbb * beta, 1.0
+        )
+        tl_lin = jnp.where(
+            th_j != theta,
+            (qtke - zdo_sup) / (beta * jnp.where(th_j != theta, th_j - theta, 1.0)),
+            0.0,
+        )
+        tl = jnp.where(bbb != 0.0, tl_b, tl_lin)
+        dld = jnp.where(cross, zzz_new - dzt + tl, dld)
+        found = found | cross
+        zdo = jnp.where(active, zdo_new, zdo)
+        zzz = jnp.where(active, zzz_new, zzz)
+        zdo_sup = jnp.where(active, zdo_new, zdo_sup)
+
+    # dld(iz) = min(dld(iz), zw(iz+1)); soft Lmax limit on both.
+    dld = jnp.minimum(dld, zw_kp1)
+    dlu = jnp.maximum(0.1, dlu / (1.0 + dlu / NL_BOULAC_LMAX))
+    dld = jnp.maximum(0.1, dld / (1.0 + dld / NL_BOULAC_LMAX))
+
+    lb1 = jnp.minimum(dlu, dld)
+    lb2 = jnp.sqrt(dlu * dld)
+    # WRF copies the top level from kte-1.
+    lb1 = jnp.concatenate((lb1[..., :-1], lb1[..., -2:-1]), axis=-1)
+    lb2 = jnp.concatenate((lb2[..., :-1], lb2[..., -2:-1]), axis=-1)
+    if _MYNN_BOULAC_FP32 and _out_dtype == jnp.float64:
+        lb1 = lb1.astype(_out_dtype)
+        lb2 = lb2.astype(_out_dtype)
+    return lb1, lb2
+
+
+def _boulac_length_dense(zw, dz, qtke, theta):
+    """Vectorized WRF ``boulac_length`` (``module_bl_mynnedmf.F:2192-2338``).
+
+    PRODUCTION DEFAULT.  For each level ``iz`` it integrates the buoyant
+    displacement a parcel with TKE ``qtke(iz)`` can travel up (``dlu``) and down
+    (``dld``) before its TKE is consumed by potential energy, then returns
+    ``lb1=min(dlu,dld)`` and ``lb2=sqrt(dlu*dld)``. The Fortran does this with
+    two nested data-dependent while loops per ``iz``; here the inner search is
+    unrolled into the dense (nz x nz) PE-accumulation matrices and the first
+    TKE-crossing is selected with a cumulative-OR mask. ``beta = gtr`` is the
+    buoyancy coefficient.
+
+    This O(nz^2)-memory form is the DEFAULT because it compiles in ~80 s in the
+    full operational forecast jit; the O(nz) :func:`_boulac_length_onz` is
+    correct and lighter in isolation but trips an XLA slow-compile pathology in
+    that jit (see the ``_MYNN_BOULAC_ONZ`` note).
 
     Arrays are last-axis (``..., nz``); ``zw`` is the WRF ``zw(kts:kte)`` subset
     (length nz). WRF references ``zw(kte+1)`` (the top interface) and
     ``zw(iz+1)``; we reconstruct those from the cumulative layer depths so no
     extra interface array is threaded through.
     """
+
+    # v0.15 optional fp32 island (default OFF): the dense (B, nz, nz) parcel
+    # search below is bandwidth-bound; computing it in fp32 halves the transient
+    # HBM traffic.  Cast inputs in, cast (lb1, lb2) back to caller dtype at the
+    # return.  Engaged via GPUWRF_MYNN_BOULAC_FP32=1; proven by the frozen
+    # field-tolerance gate, not assumed bit-identical.
+    _out_dtype = jnp.result_type(zw, dz, qtke, theta)
+    if _MYNN_BOULAC_FP32 and _out_dtype == jnp.float64:
+        zw = zw.astype(jnp.float32)
+        dz = dz.astype(jnp.float32)
+        qtke = qtke.astype(jnp.float32)
+        theta = theta.astype(jnp.float32)
 
     beta = GTR
     nz = dz.shape[-1]
@@ -531,7 +827,26 @@ def _boulac_length(zw, dz, qtke, theta):
     # WRF copies the top level from kte-1.
     lb1 = jnp.concatenate((lb1[..., :-1], lb1[..., -2:-1]), axis=-1)
     lb2 = jnp.concatenate((lb2[..., :-1], lb2[..., -2:-1]), axis=-1)
+    if _MYNN_BOULAC_FP32 and _out_dtype == jnp.float64:
+        lb1 = lb1.astype(_out_dtype)
+        lb2 = lb2.astype(_out_dtype)
     return lb1, lb2
+
+
+def _boulac_length(zw, dz, qtke, theta):
+    """Dispatch the BouLac length scale: dense (default) or O(nz) (opt-in).
+
+    Both forms produce the same WRF lengths (oracle: identical to ~machine eps;
+    proofs/perf/v015/boulac_nz_oracle.json + boulac_nz_perf_ab.json).  The dense
+    form is the DEFAULT: it compiles fast in the full operational forecast jit.
+    The O(nz) form (``GPUWRF_MYNN_BOULAC_ONZ=1``) is correct and lighter but is
+    BLOCKED on an XLA slow-compile pathology in that jit -- see
+    ``_MYNN_BOULAC_ONZ``.
+    """
+
+    if _MYNN_BOULAC_ONZ:
+        return _boulac_length_onz(zw, dz, qtke, theta)
+    return _boulac_length_dense(zw, dz, qtke, theta)
 
 
 def _mym_length_option1(state: MynnPBLColumnState, qke, dtv, fltv, ustar, dx, xland=1.0):
@@ -1066,6 +1381,48 @@ def _mym_predict_qke(state: MynnPBLColumnState, qke, turb, dt, ustar, flux):
     return qke_new, qwt, qdiss, pdk
 
 
+def _mym_predict_qsq(state: MynnPBLColumnState, qsq, turb, dt, s_aw=None):
+    """WRF ``mym_predict`` closure-2.6 prognostic total-water variance ``qsq``.
+
+    Transcribes module_bl_mynnedmf.F mym_predict ``IF (closure > 2.5)``
+    (lines ~3185-3220 of the subroutine): implicit vertical diffusion with
+    ``kmdz = rhoz*dfq`` (incl. the JOE conservation/MF stability floors when the
+    EDMF ``s_aw`` is active), production ``rp = pdq(k+1)+pdq(k)`` with the WRF
+    surface row ``pdq(kts)=pdq(kts+1)``, dissipation ``bp = 2*qkw/(b2*0.5*
+    (el(k+1)+el(k)))``, zero-gradient top (``a(kte)=-1``), and the post-solve
+    ``qsq = MAX(x, 1e-17)`` floor.  ``qsq`` feeds the mym_condensation CASE(2)
+    sigma at the NEXT step (WRF call order: condensation before predict).
+    """
+
+    dz = state.dz
+    dtz = dt / dz
+    rhoinv = 1.0 / jnp.maximum(state.rho, 1.0e-4)
+    qkw_mass = jnp.sqrt(jnp.maximum(2.0 * state.tke, 0.0))
+    kmdz = _rho_interfaces(state, turb["dfq"])
+    if s_aw is not None:
+        kmdz = _apply_s_aw_stability_floor(kmdz, s_aw)
+
+    # WRF pdq(kts) = pdq(kts+1) before rp (mym_predict lines 151-153).
+    pdq = turb["pdq"]
+    pdq = jnp.concatenate((pdq[..., 1:2], pdq[..., 1:]), axis=-1)
+
+    el_pair = 0.5 * (turb["el"][..., 1:] + turb["el"][..., :-1])
+    b2l = jnp.maximum(B2 * el_pair, 1.0e-6)
+    bp_i = 2.0 * qkw_mass[..., :-1] / b2l
+    rp_i = pdq[..., 1:] + pdq[..., :-1]
+    lower = -dtz[..., :-1] * kmdz[..., :-2] * rhoinv[..., :-1]
+    diag = 1.0 + dtz[..., :-1] * (kmdz[..., :-2] + kmdz[..., 1:-1]) * rhoinv[..., :-1] + bp_i * dt
+    upper = -dtz[..., :-1] * kmdz[..., 1:-1] * rhoinv[..., :-1]
+    rhs = rp_i * dt + qsq[..., :-1]
+
+    # zero-gradient top row: a(kte)=-1, b=1, c=0, d=0 -> x(kte)=x(kte-1)
+    a = jnp.concatenate((lower, -jnp.ones_like(qsq[..., -1:])), axis=-1)
+    b = jnp.concatenate((diag, jnp.ones_like(qsq[..., -1:])), axis=-1)
+    c = jnp.concatenate((upper, _zero_edge_like(qsq)), axis=-1)
+    d = jnp.concatenate((rhs, _zero_edge_like(qsq)), axis=-1)
+    return jnp.maximum(_solve_tridiagonal(a, b, c, d), 1.0e-17)
+
+
 def _apply_s_aw_stability_floor(kdz, s_aw):
     """WRF MYNN-EDMF stability floor on interface K*dz arrays."""
 
@@ -1273,14 +1630,68 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
     ``edmf`` activates the MYNN-EDMF mass-flux nonlocal scalar transport (the
     ``s_awqv``/``s_awthl`` updraft flux) in the theta/qv solves. ``dx`` is the
     horizontal grid spacing (m) the mass-flux plume sizing needs.
+
+    v0.15 SGS-cloud chain (WRF driver order, module_bl_mynnedmf.F:900-1100):
+    GET_PBLH -> mym_condensation(CASE 2, sigma from the prognosed ``qsq``) ->
+    DMP_mf (+ shallow-cu cldfra/qc_bl overwrite) -> SGS-aware ``thlv`` ->
+    mym_turbulence -> mym_predict (qke + closure-2.6 ``qsq``) -> tendencies.
+    ``GPUWRF_MYNN_SGS_CLOUD=0`` rolls back to the pre-v0.15 dry-buoyancy path.
     """
 
     state = _clip_state(state)
     flux, wind, fltv, rhosfc = _surface_terms(state, surface)
     qke = 2.0 * state.tke
+    sgs_cloud = _MYNN_SGS_CLOUD
+    mf = None
+    if sgs_cloud:
+        # WRF GET_PBLH runs before mym_condensation; the same value feeds
+        # DMP_mf (bitwise-identical to the previous turb["pblh"] EDMF input).
+        pblh0 = _get_pblh(state, qke)
+        sqv, sqc, sqi, sqw = _specific_moisture_components(state)
+        exner = _exner_from_pressure(state.p)
+        qc_bl, qi_bl, cldfra_bl = mym_condensation_cloudpdf2(
+            theta=state.theta,
+            p=state.p,
+            exner=exner,
+            dz=state.dz,
+            qw=sqw,
+            qc=sqc,
+            qi=sqi,
+            qs=_specific_snow_content(state),
+            qsq=state.qsq,
+            pblh=pblh0,
+        )
+        if edmf:
+            mf = _edmf_arrays_from_state(state, flux, fltv, pblh0, dt, dx)
+            qc_bl, cldfra_bl = dmp_shallow_cu_overwrite(
+                qc_bl=qc_bl,
+                cldfra_bl=cldfra_bl,
+                edmf_a=mf["edmf_a"],
+                edmf_qc=mf["edmf_qc"],
+                edmf_qt=mf["edmf_qt"],
+                theta=state.theta,
+                thl=_liquid_potential_temperature(state),
+                qw=sqw,
+                p=state.p,
+                exner=exner,
+                dz=state.dz,
+                xland=jnp.broadcast_to(
+                    jnp.asarray(flux.xland, dtype=state.theta.dtype), fltv.shape
+                ),
+            )
+        # The freshly diagnosed SGS cloud enters the buoyancy (thlv) used by
+        # mym_level2/mym_turbulence below (the WRF thlv1 rebuild).
+        state = state.replace(qc_bl=qc_bl, qi_bl=qi_bl, cldfra_bl=cldfra_bl)
     turb = _mym_turbulence(state, qke, fltv, flux.ustar, dx, flux.xland)
     qke_new, _qwt, qdiss, _pdk = _mym_predict_qke(state, qke, turb, dt, flux.ustar, flux)
-    mf = _edmf_arrays_from_state(state, flux, fltv, turb["pblh"], dt, dx) if edmf else None
+    if sgs_cloud:
+        qsq_new = _mym_predict_qsq(
+            state, state.qsq, turb, dt, s_aw=mf["s_aw"] if mf is not None else None
+        )
+    else:
+        qsq_new = state.qsq
+    if edmf and mf is None:
+        mf = _edmf_arrays_from_state(state, flux, fltv, turb["pblh"], dt, dx)
     u, v, theta, qv = _apply_mean_tendencies(state, turb, dt, flux, wind, rhosfc, mf=mf)
     km, kh = _retrieve_exchange_coeffs(state, turb)
     tke = 0.5 * qke_new
@@ -1294,7 +1705,10 @@ def _step_mynn_pbl_impl_with_pblh(state: MynnPBLColumnState, dt: float, debug: b
     kh = assert_finite(kh, "mynn_kh", enabled=debug)
     el = assert_finite(turb["el"], "mynn_el", enabled=debug)
     del qdiss
-    return state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el), turb["pblh"]
+    return (
+        state.replace(u=u, v=v, theta=theta, qv=qv, tke=tke, km=km, kh=kh, el=el, qsq=qsq_new),
+        turb["pblh"],
+    )
 
 
 def _step_mynn_pbl_impl(state: MynnPBLColumnState, dt: float, debug: bool, surface=None,

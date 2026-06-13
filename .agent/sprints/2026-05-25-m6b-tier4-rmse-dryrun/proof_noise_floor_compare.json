@@ -1,6 +1,0 @@
-{
-  "artifact_type": "m6b_tier4_rmse_dryrun_stage3",
-  "reason": "stage2 not run; stage1 blocker",
-  "stage": 3,
-  "status": "NOT_RUN"
-}

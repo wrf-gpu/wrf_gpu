@@ -1,5 +1,0 @@
-evals/agentos/test_no_contradictory_rules.py::test_bitwise_is_not_default_requirement
-evals/agentos/test_required_files.py::test_required_top_level_files_exist
-evals/agentos/test_skill_metadata.py::test_all_skills_have_metadata_and_evals
-
-642 tests collected in 2.06s

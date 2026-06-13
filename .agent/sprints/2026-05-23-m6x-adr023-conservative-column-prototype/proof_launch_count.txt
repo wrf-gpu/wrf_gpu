@@ -1,4 +1,0 @@
-{
-  "hlo_bytes": 104450,
-  "vertical_operator_kernel_launches": 20
-}

@@ -1,0 +1,18 @@
+{
+  "cpu_baseline": {
+    "cpu_wall_24h_s": null,
+    "method": "no WRF timing records or wrfout fallback files found",
+    "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+    "status": "FAIL"
+  },
+  "note": "CPU denominator is derived from existing Gen2 WRF logs for the contracted run. Pipeline wall includes IC load, hourly GPU forecast calls, wrfout writes, inventory, and scoring.",
+  "pipeline_wall_24h_s": 2941.3430311690317,
+  "schema": "M7DailyPipelineSpeedupVsCpu24h",
+  "schema_version": 1,
+  "speedup": null,
+  "status": "FAIL",
+  "target_speedup_band": [
+    4.0,
+    8.0
+  ]
+}

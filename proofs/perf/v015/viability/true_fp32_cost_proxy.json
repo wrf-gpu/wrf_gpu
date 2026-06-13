@@ -1,0 +1,161 @@
+{
+  "scope": "v0.15 VIABILITY: TRUE all-fp32 step COST+VRAM proxy (x64 globally OFF; numerics intentionally invalid, cost/VRAM faithful)",
+  "device": "cuda:0",
+  "x64_build_time": true,
+  "x64_during_step": false,
+  "anchor": {
+    "base_grid": "128x128x44",
+    "base_ncol": 16384,
+    "dt_s": 18.0
+  },
+  "caveat": "Numerics are GARBAGE by design (acoustic detonates in fp32); this measures ONLY the kernel COST and VRAM working-set a true all-fp32 step would have. Cross-reference fp64 numbers from fp32_fp64_ladder.json / grid_scaling.json.",
+  "timing_method": "compile at N=36 steps; ms/step = best-of-2 warm wall / N.",
+  "fp64_refs": [
+    {
+      "ny": 128,
+      "nx": 128,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "precision": "fp64_ref",
+      "x64_during_step": true,
+      "ran_ok": true,
+      "oom": false,
+      "ms_per_step": 70.49190758455855,
+      "peak_vram_gib": 3.438950777053833,
+      "out_theta_dtype": "float64",
+      "out_theta_finite": true
+    },
+    {
+      "ny": 384,
+      "nx": 384,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "precision": "fp64_ref",
+      "x64_during_step": true,
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.80GiB.",
+      "peak_vram_gib": 3.672781467437744
+    }
+  ],
+  "inharness_true_fp32_vs_fp64_ratios": [
+    {
+      "ncol": 16384,
+      "fp64_ms": 70.49190758455855,
+      "true_fp32_ms": 16.436408999854596,
+      "true_fp32_speedup": 4.288765726454127,
+      "fp64_gib": 3.438950777053833,
+      "true_fp32_gib": 3.672781467437744,
+      "fp64_over_fp32_vram": 0.9363341673178722
+    }
+  ],
+  "records": [
+    {
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "x64_during_step": false,
+      "state_theta_dtype_in": "float32",
+      "metrics_msftx_dtype_in": "float64",
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 8.425273278029636,
+      "warm_s": [
+        0.5917107239947654,
+        0.5925955920247361
+      ],
+      "ms_per_step": 16.436408999854596,
+      "peak_vram_gib": 3.672781467437744,
+      "out_theta_dtype": "float32",
+      "out_theta_finite": true
+    },
+    {
+      "ny": 384,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "n_steps": 36,
+      "x64_during_step": false,
+      "state_theta_dtype_in": "float32",
+      "metrics_msftx_dtype_in": "float64",
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 65.03436783596408,
+      "warm_s": [
+        4.307272028003354,
+        4.294845229014754
+      ],
+      "ms_per_step": 119.30125636152094,
+      "peak_vram_gib": 9.649153470993042,
+      "out_theta_dtype": "float32",
+      "out_theta_finite": true
+    },
+    {
+      "ny": 512,
+      "nx": 512,
+      "nz": 44,
+      "ncol": 262144,
+      "tile_factor": [
+        4,
+        4
+      ],
+      "n_steps": 36,
+      "x64_during_step": false,
+      "state_theta_dtype_in": "float32",
+      "metrics_msftx_dtype_in": "float64",
+      "ran_ok": true,
+      "oom": false,
+      "cold_s": 71.40529036003863,
+      "warm_s": [
+        7.60395768599119,
+        7.583076510985848
+      ],
+      "ms_per_step": 210.6410141940513,
+      "peak_vram_gib": 16.79784870147705,
+      "out_theta_dtype": "float32",
+      "out_theta_finite": true
+    },
+    {
+      "ny": 640,
+      "nx": 640,
+      "nz": 44,
+      "ncol": 409600,
+      "tile_factor": [
+        5,
+        5
+      ],
+      "n_steps": 36,
+      "x64_during_step": false,
+      "state_theta_dtype_in": "float32",
+      "metrics_msftx_dtype_in": "float64",
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 19.65GiB.",
+      "peak_vram_gib": 16.79784870147705,
+      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/true_fp32_cost_proxy.py\", line 100, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree)\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 19.65GiB.\n"
+    }
+  ],
+  "largest_true_fp32_grid": {
+    "ncol": 262144,
+    "ny": 512,
+    "nx": 512,
+    "peak_vram_gib": 16.79784870147705,
+    "ms_per_step": 210.6410141940513
+  }
+}

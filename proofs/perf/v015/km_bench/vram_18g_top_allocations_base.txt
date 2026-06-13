@@ -1,0 +1,12 @@
+# v0.15 18.72 GiB localization -- top XLA allocations in jit__run_forecast_operational_jit (base grid 66x159=10494 cols)
+# scaled linearly to the 167,904-col OOM grid (Switzerland-scale 1km target).
+
+rank 1: 1455703344 bytes = 1.356 GiB base -> 21.69 GiB @167904col  [preallocated-temp (XLA coalesced scratch arena for the whole fused module)]
+rank 2: 28800000 bytes = 0.027 GiB base -> 0.43 GiB @167904col  [parameter 47 f64[25,4,5,45,160] (static radiation/boundary table, NOT ncol-scaling)]
+rank 3: 28800000 bytes = 0.027 GiB base -> 0.43 GiB @167904col  [parameter 45 f64[25,4,5,45,160] (static table)]
+
+TOTAL program: 1.797 GiB base -> 28.76 GiB @167904col (arena = 75%).
+Arena packs ~569 full-grid fp64 temporaries (f64[44,66,159] / f64[45,66,159] / f64[44,66,160]) = ~394 coexisting full-grid fields.
+
+XLA rematerialization @167904: "Cant reduce memory use below 21.60GiB ... down from 23.36GiB originally" (hlo_rematerialization.cc:3233).
+bfc OOM @167904: "ran out of memory trying to allocate 18.51GiB ... requested by op" (bfc_allocator.cc:502).

@@ -10,9 +10,12 @@ from jax import config
 import jax.numpy as jnp
 
 from gpuwrf.physics.thompson_column import (
+    COLD_COLLECTION_TABLES,
     ThompsonColumnState,
     _cast_state,
     _clip_species,
+    _cold_collection,
+    _cold_collection_enabled,
     _finish,
     _ice_sources_with_process_flags,
     _instant_melt_freeze,
@@ -41,7 +44,9 @@ def _step_thompson_column_stripped_impl(state: ThompsonColumnState, dt: float) -
     state = _cast_state(state, work)
     state = _clip_species(state)
     state = _warm_rain_collection(state, dt)
-    state, graupel_melt = _ice_sources_with_process_flags(state, dt)
+    state, graupel_melt, _vts_boost = _ice_sources_with_process_flags(state, dt)
+    if _cold_collection_enabled():
+        state = _cold_collection(state, dt, COLD_COLLECTION_TABLES)
     state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
     state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
     state = _instant_melt_freeze(state, dt)

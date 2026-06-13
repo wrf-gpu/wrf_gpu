@@ -1,5 +1,0 @@
-{"centroid_z_300s": 1564.361638038287, "centroid_z_600s": 1019.5896356943937, "epssm": 0.0, "first_nonfinite_step": null, "w_max_300s": 0.6757584387104651, "w_max_600s": 0.1682302069578786}
-{"centroid_z_300s": 1565.5560216842773, "centroid_z_600s": 1017.743241957037, "epssm": 0.1, "first_nonfinite_step": null, "w_max_300s": 0.2890913445206212, "w_max_600s": 0.040971098510138464}
-{"centroid_z_300s": 1566.7372587355865, "centroid_z_600s": 1016.0670334855229, "epssm": 0.3, "first_nonfinite_step": null, "w_max_300s": 0.10053715445936053, "w_max_600s": 0.0}
-epssm_outputs_differ= True
-note=public nonhydrostatic scan honors epssm, but all three runs fail the warm-bubble 5-10 m/s gate after path unification

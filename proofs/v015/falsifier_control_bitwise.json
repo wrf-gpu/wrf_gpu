@@ -1,0 +1,17 @@
+{
+ "paired_leads": 72,
+ "perturbation": "T[0,20,64,64] += 1e-3 K in wrfinput_d01 (single point, ~6e-5 relative)",
+ "pooled_rmse": {
+  "RAINNC": 0.0,
+  "T2": 0.0,
+  "U10": 0.0,
+  "V10": 0.0,
+  "PSFC": 0.0,
+  "QVAPOR": 0.0,
+  "T": 0.0,
+  "U": 0.0,
+  "V": 0.0,
+  "W": 0.0
+ },
+ "note": "CONTROL MEMBER: the perturbed variable was the wrfinput 'T' array, which wrf.exe DOES NOT integrate under use_theta_m=1 (the prognostic read is THM). Result: 72/72 leads BITWISE IDENTICAL to the truth run across all ten gate fields -> proves the falsifier infrastructure (same binary/inputs/24 ranks, fresh run) is bitwise reproducible; any nonzero divergence in the THM-perturbed member (falsifier_rainnc_report.json) is attributable to the 1e-3 K perturbation alone."
+}

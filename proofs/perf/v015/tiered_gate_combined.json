@@ -1,0 +1,162 @@
+{
+  "schema": "V015TieredIdentity",
+  "base": "proofs/perf/v015/ab_s1_base_dump_state.npz",
+  "cand": "proofs/perf/v015/ab_s1_cond16_fp32boulac_state.npz",
+  "hours": 3.0,
+  "gated_fields": {
+    "p": {
+      "rmse": 0.042729951643401085,
+      "max_abs": 3.8679735702171456,
+      "manifest_field": "PSFC",
+      "manifest_rmse_limit": 120.0,
+      "rmse_over_limit": 0.0003560829303616757
+    },
+    "qv": {
+      "rmse": 3.3529951367163005e-08,
+      "max_abs": 1.3012064723785972e-05,
+      "manifest_field": "QVAPOR",
+      "manifest_rmse_limit": 0.001,
+      "rmse_over_limit": 3.3529951367163004e-05
+    },
+    "rain_acc": {
+      "rmse": 7.011330922938519e-06,
+      "max_abs": 0.00043752486174576666,
+      "manifest_field": "RAINNC",
+      "manifest_rmse_limit": 1.0,
+      "rmse_over_limit": 7.011330922938519e-06
+    },
+    "theta": {
+      "rmse": 0.00035918522639300513,
+      "max_abs": 0.038531713809788926,
+      "manifest_field": "T",
+      "manifest_rmse_limit": 1.5,
+      "rmse_over_limit": 0.00023945681759533676
+    },
+    "u": {
+      "rmse": 0.000674080788791364,
+      "max_abs": 0.09933685871645426,
+      "manifest_field": "U",
+      "manifest_rmse_limit": 1.8,
+      "rmse_over_limit": 0.0003744893271063133
+    },
+    "v": {
+      "rmse": 0.0006077135406325148,
+      "max_abs": 0.06055848818054699,
+      "manifest_field": "V",
+      "manifest_rmse_limit": 1.8,
+      "rmse_over_limit": 0.0003376186336847305
+    },
+    "w": {
+      "rmse": 0.00018813753648939076,
+      "max_abs": 0.007676264242808886,
+      "manifest_field": "W",
+      "manifest_rmse_limit": 0.3,
+      "rmse_over_limit": 0.0006271251216313025
+    }
+  },
+  "worst_rmse_over_manifest_limit": 0.0006271251216313025,
+  "hard_gate_fails": [],
+  "verdict": "PASS",
+  "ungated_leaf_deltas": {
+    "Ni": {
+      "rmse": 472.9726569776117,
+      "max_abs": 397912.4784562166
+    },
+    "Nr": {
+      "rmse": 0.05995627253161962,
+      "max_abs": 11.9249399257954
+    },
+    "p_total": {
+      "rmse": 0.042729951643401085,
+      "max_abs": 3.8679735702171456
+    },
+    "p_perturbation": {
+      "rmse": 0.04272995164340107,
+      "max_abs": 3.8679735702073685
+    },
+    "mu": {
+      "rmse": 0.02677354407383245,
+      "max_abs": 0.6954136663553072
+    },
+    "mu_total": {
+      "rmse": 0.02677354407383245,
+      "max_abs": 0.6954136663553072
+    },
+    "mu_perturbation": {
+      "rmse": 0.026773544073645465,
+      "max_abs": 0.6954136663517261
+    },
+    "ph": {
+      "rmse": 0.0167726702303998,
+      "max_abs": 1.0797795765829505
+    },
+    "ph_total": {
+      "rmse": 0.0167726702303998,
+      "max_abs": 1.0797795765829505
+    },
+    "ph_perturbation": {
+      "rmse": 0.016772670230397725,
+      "max_abs": 1.0797795765829505
+    },
+    "qke": {
+      "rmse": 0.0005182033031508322,
+      "max_abs": 0.07052309583217742
+    },
+    "ustar": {
+      "rmse": 4.564544884760977e-05,
+      "max_abs": 0.0009807459641234528
+    },
+    "tau_u": {
+      "rmse": 4.0467278065522435e-05,
+      "max_abs": 0.0009546523698140685
+    },
+    "tau_v": {
+      "rmse": 3.911425298775068e-05,
+      "max_abs": 0.0006370680125929451
+    },
+    "fltv": {
+      "rmse": 7.70170538682564e-06,
+      "max_abs": 0.0004204229945260513
+    },
+    "theta_flux": {
+      "rmse": 7.693683338678825e-06,
+      "max_abs": 0.00041955309149596784
+    },
+    "rhosfc": {
+      "rmse": 7.283826923617554e-06,
+      "max_abs": 5.5849552154541016e-05
+    },
+    "snow_acc": {
+      "rmse": 4.823604455225017e-06,
+      "max_abs": 0.00031429761698698044
+    },
+    "ice_acc": {
+      "rmse": 2.2874754700102555e-07,
+      "max_abs": 9.539550720094776e-06
+    },
+    "qc": {
+      "rmse": 3.434339782991565e-08,
+      "max_abs": 1.6682137794840764e-05
+    },
+    "qs": {
+      "rmse": 6.898275488113107e-09,
+      "max_abs": 6.333916739850022e-07
+    },
+    "qi": {
+      "rmse": 6.004151386060821e-09,
+      "max_abs": 6.614599646864202e-07
+    },
+    "qv_flux": {
+      "rmse": 9.845993300379566e-10,
+      "max_abs": 5.080466048727685e-08
+    },
+    "qr": {
+      "rmse": 6.17477751156966e-10,
+      "max_abs": 1.0148350563974957e-07
+    },
+    "qg": {
+      "rmse": 8.433959511372835e-12,
+      "max_abs": 3.6578054486015126e-09
+    }
+  }
+}

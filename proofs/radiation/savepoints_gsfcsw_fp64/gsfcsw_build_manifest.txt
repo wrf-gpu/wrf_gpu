@@ -1,4 +1,0 @@
-build_mode=fp64
-fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8
-gfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
-wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_gsfcsw.F

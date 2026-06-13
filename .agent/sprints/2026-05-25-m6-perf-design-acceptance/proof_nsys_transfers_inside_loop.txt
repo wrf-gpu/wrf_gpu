@@ -1,4 +1,0 @@
-status=PASS
-cudaMemcpyHtoD_inside_loop=0
-cudaMemcpyDtoH_inside_loop=0
-region=m6_perf_acceptance_timestep_loop

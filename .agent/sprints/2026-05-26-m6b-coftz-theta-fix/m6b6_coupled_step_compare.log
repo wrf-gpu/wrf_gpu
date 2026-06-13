@@ -1,8 +1,0 @@
-usage: m6b6_coupled_step_compare.py [-h] [--tier {column,patch16,golden,all}]
-                                    [--steps STEPS]
-                                    [--savepoint-root SAVEPOINT_ROOT]
-                                    [--output OUTPUT]
-                                    [--source-wrfout SOURCE_WRFOUT]
-                                    [--source-wrfbdy SOURCE_WRFBDY]
-                                    [--synthetic-dryrun]
-m6b6_coupled_step_compare.py: error: --tier is required unless --synthetic-dryrun is set

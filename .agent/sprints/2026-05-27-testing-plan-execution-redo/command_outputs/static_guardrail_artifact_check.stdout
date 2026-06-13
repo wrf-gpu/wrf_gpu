@@ -1,5 +1,0 @@
-static_guardrails_pass=True
-20260521_step2_bitwise=True
-m6b6_depths=column:10,golden:10,patch16:10
-restart_fields=47 restart_bitwise=True
-d2h_inter_kernel_inside_window=0 h2d_inside_loop_window=0 d2h_status=PASS

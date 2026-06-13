@@ -396,6 +396,11 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     "Nc": XYZ,
     "Nn": XYZ,
     "rainc_acc": XY,
+    # v0.15 MYNN SGS-cloud leaves (closure-2.6 qsq + mym_condensation cloud).
+    "qsq": XYZ,
+    "qc_bl": XYZ,
+    "qi_bl": XYZ,
+    "cldfra_bl": XYZ,
     "u_bdy": ("Time", "gpuwrf_u_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "v_bdy": ("Time", "gpuwrf_v_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "theta_bdy": ("Time", "gpuwrf_theta_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
@@ -1402,6 +1407,12 @@ def _units_for_leaf(leaf: str) -> str:
         return "kg-1"
     if leaf == "qke":
         return "m2 s-2"
+    if leaf == "qsq":
+        return "kg2 kg-2"
+    if leaf in {"qc_bl", "qi_bl"}:
+        return "kg kg-1"
+    if leaf == "cldfra_bl":
+        return ""
     if leaf in {"ustar", "roughness_m"}:
         return "m" if leaf == "roughness_m" else "m s-1"
     if leaf in {"theta_flux", "fltv"}:

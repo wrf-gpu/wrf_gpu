@@ -1975,6 +1975,13 @@ def _acoustic_scan(
             cqw=cqw_field,
             c2a=prep.c2a,
         )
+        # NOTE (v0.15 kernel probe, NEGATIVE result): precomputing the four
+        # advance_w stage-constant denominator arrays here (like a/alpha/gamma)
+        # and closing them into the substep scan was tried and REVERTED -- it
+        # measured SLOWER (inline broadcast-FMA recompute fuses for free;
+        # materialized arrays cost DRAM loads) and was NOT bit-identical
+        # in-program (XLA FMA contraction is fusion-context-dependent). See
+        # proofs/perf/v015/ab_compare_v014_base_vs_streamA.json.
 
         periodic_x, specified, nested = _acoustic_lateral_bc_flags(namelist)
         stage_cfg = AcousticCoreConfig(

@@ -1,0 +1,17 @@
+{
+  "schema": "V015KernelProbeTraceSteady",
+  "case": "Switzerland d01 reinit h36 replay, 128x128x44, dt=18s, force_fp64",
+  "walls": {
+    "hour1_warm_s": 446.948,
+    "hour2_warm_s": 450.122,
+    "hour3_rewindow_s": 0.0018,
+    "hour3_steady_jit_s": 35.885,
+    "steady_ms_per_step": 179.43,
+    "finite_summary_s": 0.033,
+    "surface_diagnostics_s": 5.168,
+    "prepare_wrfout_payload_s": 0.229,
+    "land_refresh_s": 0.719,
+    "hour4_traced_s": 199.327
+  },
+  "trace_dir": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-a9d253235b98dc17d/proofs/perf/v015/jax_trace"
+}

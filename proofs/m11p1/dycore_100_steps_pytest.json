@@ -1,7 +1,0 @@
-{
-  "artifact_type": "m11p1_dycore_100_steps_pytest",
-  "command": "taskset -c 0-3 pytest -q tests/savepoint/test_dycore_100_steps.py",
-  "duration_seconds": 451.53,
-  "result": "PASS",
-  "stdout_summary": "1 passed in 451.53s (0:07:31)"
-}

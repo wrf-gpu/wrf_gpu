@@ -1,0 +1,26 @@
+{
+  "schema": "V015Localize18G",
+  "oom_grid_ncol": 167904,
+  "base_grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44,
+    "ncol": 10494
+  },
+  "phase_a": {
+    "dump_dir": "/home/enric/src/wrf_gpu2/.claude/worktrees/agent-adc733e01dbae7ef4/proofs/perf/v015/km_bench/hlo_dump_localize_base",
+    "n_buffer_assignment_files": 40,
+    "largest_buffers_ge_64MiB": [
+      {
+        "bytes": 1455703344,
+        "gib": 1.356,
+        "gib_at_167904col": 21.69,
+        "shape": "f64[44,66,159]",
+        "op": null,
+        "line": "allocation 616: size 1455703344, preallocated-temp:",
+        "file": "module_0951.jit__run_forecast_operational_jit.sm_12.0a_gpu_after_optimizations-buffer-assignment.txt"
+      }
+    ],
+    "largest_hlo_shape_tokens_ge_256MiB": []
+  }
+}

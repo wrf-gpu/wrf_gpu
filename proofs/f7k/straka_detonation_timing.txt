@@ -1,5 +1,0 @@
-t=  60 finite=True maxw=7.32 thmin=-14.92
-t= 120 finite=True maxw=14.66 thmin=-14.80
-t= 180 finite=True maxw=21.31 thmin=-14.68
-t= 240 finite=False maxw=-1.00 thmin=nan
-FIRST_NONFINITE_AT_t=240

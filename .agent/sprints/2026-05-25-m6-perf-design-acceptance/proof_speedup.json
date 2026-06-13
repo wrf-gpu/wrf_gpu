@@ -1,9 +1,0 @@
-{
-  "artifact_type": "m6_perf_acceptance_speedup",
-  "cpu_mode": "recovered_after_wrfgpu_openacc_failure",
-  "cpu_wall_time_s": 687.3140738010406,
-  "jax_operational_wall_time_s": 0.0021100859994476195,
-  "speedup": 325727.9911723818,
-  "status": "PASS",
-  "threshold": 1.2
-}

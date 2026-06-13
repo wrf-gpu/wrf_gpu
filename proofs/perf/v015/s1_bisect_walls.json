@@ -1,0 +1,29 @@
+{
+  "schema": "V015S1BisectWalls",
+  "date_utc": "2026-06-12",
+  "case": "Switzerland d01 reinit-h36 128x128x44 dt=18s force_fp64, RTX 5090",
+  "instrument": "probe_nsys_steady.py STEADY50 (3rd 50-step call, warmed, no profiler unless noted) or probe_ab_identity hour3/200",
+  "cpu_denominator_ms_per_step": 200.5,
+  "flags_capture_noslice": "--xla_gpu_enable_command_buffer=FUSION,CUBLAS,CUBLASLT,CUDNN,CUSTOM_CALL,CONDITIONAL,WHILE --xla_gpu_command_buffer_update_mode=NEVER_UPDATE --xla_enable_command_buffers_during_profiling=true",
+  "rows": [
+    {"tag": "base", "knobs": "none", "flags": "none", "wall_ms_per_step": 173.9, "source": "ab_s1_base hour3"},
+    {"tag": "V1", "knobs": "none", "flags": "capture FULL (incl DYNAMIC_SLICE_*)", "wall_ms_per_step": 203.2, "source": "ab_s1_cbwhile hour3", "hashes_vs_base": "99/168 FLIP (DYNAMIC_SLICE rewriter)"},
+    {"tag": "F", "knobs": "cond50-unroll", "flags": "none", "wall_ms_per_step": 186.7, "source": "STEADY50", "note": "reproduces the prior sprint's reverted 192.4 regression on this base"},
+    {"tag": "E", "knobs": "cond50-unroll + thomas45 + sed16", "flags": "capture noslice + NEVER_UPDATE", "wall_ms_per_step": 190.6, "source": "STEADY50", "note": "capture does NOT rescue niter50: device-bound"},
+    {"tag": "D", "knobs": "cond16-unroll ONLY", "flags": "none", "wall_ms_per_step": 119.8, "source": "STEADY50", "nsys": "6728 cuLaunch/step, device busy 112 ms/step (steady win), 10164 kernels/step -> DEVICE-bound"},
+    {"tag": "A", "knobs": "cond16 + thomas45", "flags": "capture noslice + NEVER_UPDATE", "wall_ms_per_step": 118.6, "source": "STEADY50"},
+    {"tag": "B", "knobs": "cond16 + sed16", "flags": "capture noslice + NEVER_UPDATE", "wall_ms_per_step": 126.3, "source": "STEADY50"},
+    {"tag": "C", "knobs": "cond16 + thomas8 + sed16", "flags": "capture noslice + NEVER_UPDATE", "wall_ms_per_step": 120.6, "source": "STEADY50"},
+    {"tag": "V2", "knobs": "cond16 + thomas45 + sed16", "flags": "none", "wall_ms_per_step": 120.3, "source": "ab_s1_flat16 hour3", "hashes_vs_base": "99/168 (Tier-P: niter16 numerics)"},
+    {"tag": "V5", "knobs": "cond16 + thomas45 + sed16", "flags": "capture noslice (ALWAYS_UPDATE)", "wall_ms_per_step": 120.8, "source": "ab_s1_flat16_cbnoslice hour3", "hashes_vs_V2": "0/168 == capture-noslice is numerics-transparent"},
+    {"tag": "V6", "knobs": "cond16 + thomas45 + sed16", "flags": "capture noslice + NEVER_UPDATE", "wall_ms_per_step": 123.4, "source": "STEADY50"},
+    {"tag": "V3", "knobs": "cond16 + thomas45 + sed16", "flags": "capture FULL (incl DYNAMIC_SLICE_*)", "wall_ms_per_step": 122.9, "source": "ab_s1_flat16_cbwhile hour3", "nsys": "196 cuLaunch/step, 7.3 cuGraphLaunch/step avg 17.9ms (ALWAYS_UPDATE patch cost), tiered field gate PASS"}
+  ],
+  "readings": [
+    "The ONLY strong wall axis is the condensation niter: 50->16 (unrolled) = -70 ms (190->120) regardless of every other knob/flag.",
+    "Host-launch removal works mechanically (V3: 13,958->196 launches/step; launch API 159->0.5 ms/step) but the wall is DEVICE-bound at ~112-120 ms in cond16 builds (D nsys), so capture is wall-neutral here.",
+    "The prior sprint's 'post-fix device 15.4 ms/step floor' is refuted as a CUPTI-drop undercount: the same-structure cond-unroll builds measure 112-116 ms/step device busy on a clean profile; its '4-7x from host removal' projection inherited that error.",
+    "capture-noslice is bitwise-transparent (V5==V2 0/168); the DYNAMIC_SLICE_* command types alone caused the 99/168 numerics flips of V1/V3.",
+    "ALWAYS_UPDATE graph patching costs ~17.9 ms per cuGraphLaunch on this program (V3 forensics); NEVER_UPDATE (VMM) removes it but exposes the same device floor."
+  ]
+}

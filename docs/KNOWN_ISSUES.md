@@ -1,16 +1,34 @@
-# Known Issues — v0.13.0
+# Known Issues — v0.15.0
 
-Honest, code-grounded list of the open issues shipped with v0.13.0. Each entry states the
-symptom, what was ruled out, the current best understanding, the workaround, and the tracked
-follow-up. No spin.
+Honest, code-grounded list of the open issues. Each entry states the symptom, what was ruled
+out, the current best understanding, the workaround, and the tracked follow-up. No spin. This
+is the deep per-issue history (KI-1…KI-11, including resolved items); the release-scoped
+summary is in the top-level [`KNOWN_ISSUES.md`](../KNOWN_ISSUES.md).
 
 > **The headline known issue is KI-9: 24 h forecast-skill (T2/U10/V10) equivalence vs CPU-WRF
 > is NOT closed.** This is the credibility gate for any "operational / replacement" claim. It is
-> a hard dynamics-`ph'` / MYNN / `*_tendf` GPU effort with **no cheap knob**; v0.13.0 ships
-> several off-by-default fidelity levers toward it (moisture flux-advection into RK3, MYJ+Janjic
-> operational, clear-sky diagnostics) but does **not** close it.
+> a hard dynamics-`ph'` / MYNN / `*_tendf` GPU effort with **no cheap knob**; the off-by-default
+> fidelity levers (moisture flux-advection into RK3, MYJ+Janjic operational, clear-sky
+> diagnostics) move toward it but do **not** close it.
 
-**Changes in v0.13.0:**
+**Changes in v0.15.0:**
+
+- **MUB/PB nest-base-state seam — RESOLVED.** v0.14's static base-state mass/pressure
+  nest-frame-seam Atlas miss (max_abs 250.7 / 249.9) is **fixed** (250.7 → 0.0078 Pa); the nest
+  now packs its own static base ring. v0.15 is cleaner than v0.14: 1 atlas tolerance failure per
+  region (vs 3). Proof: `proofs/v015/finalgates/`.
+- **MYNN-EDMF condensation `niter` 50 → 16 + Thompson cold-collection** WRF-fidelity fixes land
+  default-on (Switzerland RAINNC 5.99 → 5.08 mm).
+- **Performance is honestly ~parity total-wall** (0.99×/1.04×), forecast-only ~1.05–1.20×; the
+  fp64 kernel is near-optimal (device-bound). **No multi-× / large-grid speedup is claimed** (the
+  "6–10× per-cell" framing is refuted by `km_bench`). Genuine speedup + 1 km scalability are both
+  gated on the deferred **fp32-operational-state restructuring** (ADR-007/031). Peak VRAM rose
+  (22.9 / 29.8 GiB) — a disclosed regression.
+- The two carried bounded misses are now **RAINNC** (Switzerland, 5.08 mm) and **QVAPOR**
+  (Canary, 1.44×10⁻³, no regression) → v0.16 stability lane. The earlier v0.13.0-era change log
+  is retained below for history.
+
+**Changes in v0.13.0 (historical):**
 
 - **GWD on the nested 1 km path — RESOLVED / now default-on.** The v0.12.0 deferral (24 h nested
   1 km + GWD OOM'd at ~sim-hr 7) is closed: the RRTMG VRAM-floor chunking (SW −88.6 % / LW

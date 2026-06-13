@@ -62,6 +62,9 @@ class ThompsonTableBundle(NamedTuple):
     snow_sa: jnp.ndarray
     snow_sb: jnp.ndarray
     cse: jnp.ndarray
+    # v0.15 riming: snow-collecting-cloud-water collection efficiency
+    # (WRF table_Efsw, indexed (snow-bin, cloud-mvd-micron)).
+    t_Efsw: jnp.ndarray
 
 
 R_R_FIRST = 9.999999974752427e-07
@@ -118,10 +121,73 @@ def load_thompson_tables(path: Path = TABLE_ASSET) -> ThompsonTableBundle:
         snow_sa=jnp.asarray(arrays["snow_sa"], dtype=jnp.float64),
         snow_sb=jnp.asarray(arrays["snow_sb"], dtype=jnp.float64),
         cse=jnp.asarray(arrays["cse"], dtype=jnp.float64),
+        t_Efsw=jnp.asarray(arrays["t_Efsw"], dtype=jnp.float64),
     )
 
 
 THOMPSON_TABLES = load_thompson_tables()
+
+
+# ---------------------------------------------------------------------------
+# v0.15 cold-collection lookup tables (rain-collecting-snow qr_acr_qs,
+# rain-collecting-graupel qr_acr_qg, Bigg rain-freezing freezeH2O).  Extracted
+# bit-exact from the pristine WRF .dat tables via
+# proofs/v015/cold_collection_oracle/extract_collision_tables.py.  These are the
+# Fortran-computed table contents, not a recomputation.
+# ---------------------------------------------------------------------------
+COLD_TABLE_ASSET = ROOT / "data" / "fixtures" / "thompson-cold-collection-v1.npz"
+
+COLD_TABLE_NAMES = (
+    # qr_acr_qs: (ntb_s, ntb_t, ntb_r1, ntb_r)
+    "tcs_racs1", "tmr_racs1", "tcs_racs2", "tmr_racs2",
+    "tcr_sacr1", "tms_sacr1", "tcr_sacr2", "tms_sacr2",
+    "tnr_racs1", "tnr_racs2", "tnr_sacr1", "tnr_sacr2",
+    # qr_acr_qg (mp8 single density plane squeezed): (ntb_g1, ntb_g, ntb_r1, ntb_r)
+    # cold-branch subset only (tcg_racg is warm-rcg only; Bigg rain-freezing
+    # qrfz tables are already in thompson-tables-v1.npz).
+    "tmr_racg", "tcr_gacr", "tnr_racg", "tnr_gacr",
+)
+
+
+class ColdCollectionTables(NamedTuple):
+    """rain-snow / rain-graupel WRF cold-collection lookup tables (fp64)."""
+
+    tcs_racs1: jnp.ndarray
+    tmr_racs1: jnp.ndarray
+    tcs_racs2: jnp.ndarray
+    tmr_racs2: jnp.ndarray
+    tcr_sacr1: jnp.ndarray
+    tms_sacr1: jnp.ndarray
+    tcr_sacr2: jnp.ndarray
+    tms_sacr2: jnp.ndarray
+    tnr_racs1: jnp.ndarray
+    tnr_racs2: jnp.ndarray
+    tnr_sacr1: jnp.ndarray
+    tnr_sacr2: jnp.ndarray
+    tmr_racg: jnp.ndarray
+    tcr_gacr: jnp.ndarray
+    tnr_racg: jnp.ndarray
+    tnr_gacr: jnp.ndarray
+
+
+def cold_tables_available(path: Path = COLD_TABLE_ASSET) -> bool:
+    """True when the cold-collection fixture is present (lane is gated off it)."""
+
+    return Path(path).exists()
+
+
+@lru_cache(maxsize=1)
+def load_cold_collection_tables(path: str = str(COLD_TABLE_ASSET)) -> ColdCollectionTables:
+    """Loads the cold-collection tables as fp64 JAX arrays (once per interpreter)."""
+
+    with np.load(Path(path), allow_pickle=False) as loaded:
+        arrays = {name: jnp.asarray(loaded[name], dtype=jnp.float64) for name in COLD_TABLE_NAMES}
+    return ColdCollectionTables(**arrays)
+
+
+COLD_COLLECTION_TABLES = (
+    load_cold_collection_tables() if cold_tables_available() else None
+)
 
 
 TABLE_SOURCE_LINES = {

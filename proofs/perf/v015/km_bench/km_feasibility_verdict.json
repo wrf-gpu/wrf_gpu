@@ -1,0 +1,110 @@
+{
+  "scope": "v0.15 km-bench: 1km Canaries training-grid feasibility on RTX 5090 (32GB)",
+  "date_utc": "2026-06-12",
+  "agent": "opus-km-bench",
+  "device": "RTX 5090 GB202 32607 MiB",
+  "method": "Measured warmed step throughput + peak VRAM at 7 grid sizes (10.5k-168k cols, spatial-tile cost proxies of the real d02 case); core=dycore+rad+PBL-MYNN, boundary/GWD/NoahMP OFF. Calibrated to measured full-production 128x128 step (178 ms/step @dt18 -> 35.6 s/fc-hr, perf_fix_findings.json) via additive/multiplicative carries -> speedup band. CPU denom=28-rank gfortran dmpar, linear in cells (43.28 s/fc-hr @128^2, 61.03 @150^2). All anchors measured on this workstation.",
+  "fits": {
+    "core_ms_per_step": {
+      "a_ms": 19.58,
+      "b_ms_per_1000col": 4.937,
+      "R2": 0.997
+    },
+    "peak_vram": {
+      "intercept_gib": -1.52,
+      "slope_gib_per_1000col": 0.1654,
+      "note": "LINEAR in ncol -> radiation/MYNN 16384-col tiling does NOT cap total VRAM; a full-grid un-chunked intermediate (~19-28 GiB single op at target) is the real ceiling. Measured: 167904 cols ran @26.25 GiB; 209880 cols OOM (28.44 GiB single alloc)."
+    },
+    "cpu28": {
+      "s_per_fc_hr_per_1000col": 2.902
+    }
+  },
+  "targets": [
+    {
+      "grid": "560x280 (small)",
+      "nx": 560,
+      "ny": 280,
+      "ncol": 156800,
+      "peak_vram_gib": 24.4,
+      "fits_32gb": true,
+      "gpu_s_per_fc_hr_dt18": [
+        174,
+        281
+      ],
+      "gpu_24h_wall_h_dt18": [
+        1.2,
+        1.9
+      ],
+      "cpu28_s_per_fc_hr_dt18": 451,
+      "speedup_vs_cpu_current": [
+        1.6,
+        2.59
+      ],
+      "speedup_vs_cpu_S2_megakernel": [
+        2.08,
+        4.14
+      ]
+    },
+    {
+      "grid": "640x320 (balanced)",
+      "nx": 640,
+      "ny": 320,
+      "ncol": 204800,
+      "peak_vram_gib": 32.3,
+      "fits_32gb": false,
+      "gpu_s_per_fc_hr_dt18": [
+        222,
+        365
+      ],
+      "gpu_24h_wall_h_dt18": [
+        1.5,
+        2.4
+      ],
+      "cpu28_s_per_fc_hr_dt18": 590,
+      "speedup_vs_cpu_current": [
+        1.62,
+        2.66
+      ],
+      "speedup_vs_cpu_S2_megakernel": [
+        2.1,
+        4.26
+      ]
+    },
+    {
+      "grid": "720x360 (large)",
+      "nx": 720,
+      "ny": 360,
+      "ncol": 259200,
+      "peak_vram_gib": 41.3,
+      "fits_32gb": false,
+      "gpu_s_per_fc_hr_dt18": [
+        275,
+        460
+      ],
+      "gpu_24h_wall_h_dt18": [
+        1.8,
+        3.1
+      ],
+      "cpu28_s_per_fc_hr_dt18": 748,
+      "speedup_vs_cpu_current": [
+        1.62,
+        2.72
+      ],
+      "speedup_vs_cpu_S2_megakernel": [
+        2.11,
+        4.35
+      ]
+    }
+  ],
+  "largest_grid_that_fits_32gb": {
+    "approx": "~600x300 / ~426x426 square",
+    "ncol": "~180,000",
+    "peak_vram_gib": "~28.5",
+    "measured_largest_ran": "264x636=167904 cols @26.25 GiB",
+    "first_oom": "264x795=209880 cols (28.44 GiB single op)"
+  },
+  "island_answer": "560x280 SMALL target already spans the WHOLE 7-island archipelago at 1km and FITS (~24.5 GiB). 640x320/720x360 are denser all-islands footprints that do NOT fit. All 7 islands (TF GC LP VF LR LG EH) fit in ONE 1km grid at the 560x280 footprint; per-island splitting only needed for a >600x300 footprint.",
+  "saturation_hypothesis": "REFUTED. ms/step ~LINEAR in ncol (slope ~4.9-5.0 ms/1000col; throughput plateaus ~195-200 cols/ms then declines). GPU does NOT saturate better at large grids; per-cell cost slightly WORSENS. The 6-10x per-cell roofline did not hold for the full coupled step (compute/bandwidth-bound at large ncol; launch-bound only via the fixed ~20ms intercept at small grids).",
+  "speedup_explained": "Speedup rises ~1.1x (128^2) -> ~1.5-2.7x at 1km targets ONLY because the fixed ~20ms GPU launch intercept amortizes over more cells, NOT per-cell saturation. dt=18s assumed both sides; true 1km CFL dt~6s -> 3x steps both -> same ratio, 3x longer walls.",
+  "bottom_line": "GPU rewrite is USEFUL but MODEST at 1km scale on the 5090: ~1.5-2.7x faster than 28-rank CPU-WRF (centered ~2x), ~1.9-2.7x with S2 megakernel. 560x280 FITS (24.5 GiB); 640x320 & 720x360 do NOT (32/41 GiB); cap ~600x300. NOT the 6-10x the saturation hypothesis predicted."
+}

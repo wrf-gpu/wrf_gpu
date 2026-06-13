@@ -1,5 +1,0 @@
-mode=fp64
-full_wrf_exe=false
-wrf_source=~/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F
-compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
-fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -ffpe-summary=none -fdefault-real-8 -fdefault-double-8

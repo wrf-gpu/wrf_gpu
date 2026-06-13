@@ -1,2 +1,0 @@
-api_name|n
-cuMemcpyDtoHAsync_v2|53

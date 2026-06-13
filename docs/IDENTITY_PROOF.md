@@ -98,8 +98,25 @@ cell-for-cell on the prognostic fields. The single out-of-envelope field per reg
 bounded diagnostic (precipitation in Switzerland, the tight moisture limit in Canary),
 shown honestly rather than hidden.
 
+## Results (final v0.15 release runs)
+
+Re-run on v0.15 code (`niter=16`, Thompson cold-collection ON, dense BouLac) against the
+same retained CPU-WRF truth and the same frozen manifest. Assets live under
+`docs/assets/v015/identity_proof/{switzerland_d01,canary_l2_d02}/`. Full numbers and
+benchmarks: `proofs/v015/finalgates/V015_FINAL_GATES_SUMMARY.md`.
+
+| Region | Variables | Leads | Within frozen tolerance | Worst field |
+| --- | --- | --- | --- | --- |
+| Switzerland d01 | 10 | 72 | **9 / 10** | `RAINNC` precip 5.08 mm RMSE vs 1.0 mm (bounded-not-exact; cold-collection moved it toward the bound, 5.99→5.08 mm vs v0.14, still above) |
+| Canary L2 d02 | 10 | 72 | **9 / 10** | `QVAPOR` 1.44×10⁻³ kg/kg RMSE vs 1.0×10⁻³ (carried envelope; no regression, v0.14 1.452e-3 → v0.15 1.442e-3) |
+
+Both stable to h72 with `finite_pair_fraction=1.0` on every field. At the atlas level v0.15
+is cleaner than v0.14 (1 tolerance failure per region vs 3): Switzerland DZS/ZS are now
+paired and Canary MUB/PB boundary-frame statics are fixed.
+
 ## Embedding in the release README
 
 ```markdown
-![GPU↔CPU identity proof — Switzerland d01](docs/assets/v014/identity_proof/switzerland_d01/identity_dashboard.png)
+![GPU↔CPU identity proof — Switzerland d01](docs/assets/v015/identity_proof/switzerland_d01/identity_dashboard.png)
+![GPU↔CPU identity proof — Canary L2 d02](docs/assets/v015/identity_proof/canary_l2_d02/identity_dashboard.png)
 ```

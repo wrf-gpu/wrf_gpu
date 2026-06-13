@@ -1,0 +1,110 @@
+{
+  "schema": "V015VramCeilingTiled",
+  "scope": "post-MP-tiling operational-pipeline VRAM ceiling search (tiling ON)",
+  "allocator": "cuda_async",
+  "note": "264x636=167,904 OOM'd on a single 18.72 GiB NON-Thompson allocation; this search finds where the operational pipeline actually fits + runs finite under 32 GiB with MP tiling ON.",
+  "targets": {
+    "canary_560x280": 156800,
+    "p1km_640x320": 204800,
+    "switzerland_264x636": 167904
+  },
+  "records": [
+    {
+      "ny": 198,
+      "nx": 636,
+      "ncol": 125928,
+      "warmed_ms_per_step": 506.09725080559855,
+      "ms_per_forecast_hour": 182195.0102900155,
+      "peak_vram_gib": 20.088057562708855,
+      "ran_ok": true,
+      "oom": false,
+      "finiteness": {
+        "all_finite": true,
+        "flagged": {}
+      },
+      "stable": true,
+      "wall_total_s": 220.2
+    },
+    {
+      "ny": 132,
+      "nx": 954,
+      "ncol": 125928,
+      "warmed_ms_per_step": 509.50265988811026,
+      "ms_per_forecast_hour": 183420.95755971968,
+      "peak_vram_gib": 21.20189681649208,
+      "ran_ok": true,
+      "oom": false,
+      "finiteness": {
+        "all_finite": true,
+        "flagged": {}
+      },
+      "stable": true,
+      "wall_total_s": 223.8
+    },
+    {
+      "ny": 198,
+      "nx": 477,
+      "ncol": 94446,
+      "warmed_ms_per_step": 383.20075019308,
+      "ms_per_forecast_hour": 137952.2700695088,
+      "peak_vram_gib": 21.20189681649208,
+      "ran_ok": true,
+      "oom": false,
+      "finiteness": {
+        "all_finite": true,
+        "flagged": {}
+      },
+      "stable": true,
+      "wall_total_s": 191.6
+    },
+    {
+      "ny": 132,
+      "nx": 795,
+      "ncol": 104940,
+      "warmed_ms_per_step": 453.84658208220367,
+      "ms_per_forecast_hour": 163384.76954959333,
+      "peak_vram_gib": 21.20189681649208,
+      "ran_ok": true,
+      "oom": false,
+      "finiteness": {
+        "all_finite": true,
+        "flagged": {}
+      },
+      "stable": true,
+      "wall_total_s": 223.1
+    },
+    {
+      "ny": 132,
+      "nx": 636,
+      "ncol": 83952,
+      "warmed_ms_per_step": 361.86664080499514,
+      "ms_per_forecast_hour": 130271.99068979826,
+      "peak_vram_gib": 21.20189681649208,
+      "ran_ok": true,
+      "oom": false,
+      "finiteness": {
+        "all_finite": true,
+        "flagged": {}
+      },
+      "stable": true,
+      "wall_total_s": 210.2
+    },
+    {
+      "ny": 198,
+      "nx": 318,
+      "ncol": 62964,
+      "warmed_ms_per_step": 249.51630394530687,
+      "ms_per_forecast_hour": 89825.86942031047,
+      "peak_vram_gib": 21.20189681649208,
+      "ran_ok": true,
+      "oom": false,
+      "finiteness": {
+        "all_finite": true,
+        "flagged": {}
+      },
+      "stable": true,
+      "wall_total_s": 185.1
+    }
+  ],
+  "largest_stable_ncol": 125928
+}

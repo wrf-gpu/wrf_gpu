@@ -1,0 +1,202 @@
+{
+  "scope": "v0.15 km-bench: GPU step-throughput + peak-VRAM vs column count",
+  "device": "cuda:0",
+  "base_grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44,
+    "ncol": 10494,
+    "note": "the REAL d02 case is 66x159x44 = 10,494 cols, NOT 128x128; the 128x128/16384-col baseline in the brief does not match this fixture. Tile factors are relative to 66x159."
+  },
+  "dt_s": 10.0,
+  "steps_per_forecast_hour": 360.0,
+  "config_notes": {
+    "run_boundary": false,
+    "gwd_opt": 0,
+    "use_noahmp": false,
+    "radiation_cadence_steps": 180,
+    "force_fp64": true,
+    "acoustic_substeps": 10,
+    "rrtmg_lw_col_tile": 16384,
+    "rrtmg_sw_col_tile": 16384,
+    "mynn_col_tile": 16384,
+    "note": "Larger grids are COST proxies built by spatially tiling the real 128x128 state/grid; physics kernel cost depends on array shapes (ncol,nz) not values. boundary/GWD/NoahMP disabled uniformly at ALL sizes so the scaling law is apples-to-apples on the dycore+radiation+PBL core. This core 128x128 ms/step is BELOW the full production ~178 ms/step that also pays boundary+GWD+NoahMP."
+  },
+  "warmed_method": "two-hours-point marginal: per_step=(warm_h2-warm_h1)/(n2-n1), removes fixed per-call exec overhead; warm_h2 = mean of two samples; donate-safe re-tiled state per timed call.",
+  "records": [
+    {
+      "ny": 66,
+      "nx": 159,
+      "ncol": 10494,
+      "warmed_ms_per_step": 62.12,
+      "ms_per_forecast_hour": 22363,
+      "peak_vram_gib": 3.96,
+      "vram_allocator": "bfc",
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 66,
+      "nx": 318,
+      "ncol": 20988,
+      "warmed_ms_per_step": 146.28,
+      "ms_per_forecast_hour": 52662,
+      "peak_vram_gib": 3.96,
+      "vram_allocator": "bfc",
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 132,
+      "nx": 318,
+      "ncol": 41976,
+      "warmed_ms_per_step": 232.07,
+      "ms_per_forecast_hour": 83546,
+      "peak_vram_gib": 5.5,
+      "vram_allocator": "bfc",
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 132,
+      "nx": 477,
+      "ncol": 62964,
+      "warmed_ms_per_step": 318.44,
+      "ms_per_forecast_hour": 114638,
+      "peak_vram_gib": 9.15,
+      "vram_allocator": "bfc",
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 198,
+      "nx": 477,
+      "ncol": 94446,
+      "warmed_ms_per_step": 473.3,
+      "ms_per_forecast_hour": 170387,
+      "peak_vram_gib": 14.1,
+      "vram_allocator": "cuda_async",
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 198,
+      "nx": 636,
+      "ncol": 125928,
+      "warmed_ms_per_step": 631.44,
+      "ms_per_forecast_hour": 227317,
+      "peak_vram_gib": 19.84,
+      "vram_allocator": "cuda_async",
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 264,
+      "nx": 636,
+      "ncol": 167904,
+      "warmed_ms_per_step": 863.85,
+      "ms_per_forecast_hour": 310988,
+      "peak_vram_gib": 26.25,
+      "vram_allocator": "cuda_async",
+      "ran_ok": true,
+      "oom": false
+    },
+    {
+      "ny": 264,
+      "nx": 795,
+      "ncol": 209880,
+      "ran_ok": false,
+      "oom": true,
+      "vram_allocator": "cuda_async",
+      "error": "single 28.44 GiB allocation > free; MaxAllocSize 19.08 GiB, device 33.66 GB total"
+    }
+  ],
+  "fit": {
+    "model": "warmed_ms_per_step = a + b*ncol  (pooled 7 points, 10.5k-168k cols)",
+    "a_intercept_ms": 19.578,
+    "b_slope_ms_per_col": 0.004937016593548831,
+    "b_slope_ms_per_1000col": 4.937,
+    "R2": 0.9974,
+    "asymptotic_fit_ncol_ge_42k": {
+      "intercept_ms": 7.232,
+      "slope_ms_per_1000col": 5.0342
+    },
+    "ncol_ratio_small_to_big": 16.0,
+    "ms_ratio_small_to_big": 13.906,
+    "sublinear_saturation_confirmed": false
+  },
+  "largest_grid_that_fit": {
+    "ny": 264,
+    "nx": 636,
+    "ncol": 167904,
+    "peak_vram_gib": 26.25,
+    "allocator": "cuda_async",
+    "warmed_ms_per_step": 863.85,
+    "ms_per_forecast_hour": 310988,
+    "note": "largest grid that ran in ~30 GiB; next size up (209,880 cols) OOMs on a 28.44 GiB single op"
+  },
+  "analysis": {
+    "per_segment_marginal_slopes": [
+      {
+        "from_ncol": 10494,
+        "to_ncol": 20988,
+        "marginal_ms_per_1000col": 8.02
+      },
+      {
+        "from_ncol": 20988,
+        "to_ncol": 41976,
+        "marginal_ms_per_1000col": 4.088
+      },
+      {
+        "from_ncol": 41976,
+        "to_ncol": 62964,
+        "marginal_ms_per_1000col": 4.115
+      },
+      {
+        "from_ncol": 62964,
+        "to_ncol": 94446,
+        "marginal_ms_per_1000col": 4.919
+      },
+      {
+        "from_ncol": 94446,
+        "to_ncol": 125928,
+        "marginal_ms_per_1000col": 5.023
+      },
+      {
+        "from_ncol": 125928,
+        "to_ncol": 167904,
+        "marginal_ms_per_1000col": 5.537
+      }
+    ],
+    "throughput_cols_per_ms": {
+      "10494": 168.9,
+      "20988": 143.5,
+      "41976": 180.9,
+      "62964": 197.7,
+      "94446": 199.5,
+      "125928": 199.4,
+      "167904": 194.4
+    },
+    "saturation_verdict": {
+      "strong_launchbound_saturation_hypothesis": "REFUTED",
+      "summary": "ms/step is ~LINEAR in column count (R2=0.997, slope ~4.9-5.0 ms/1000col). The MARGINAL per-column slope RISES from 4.1 to 5.5 ms/1000col as the grid grows (it does not fall), and per-column throughput PLATEAUS at ~195-200 cols/ms and slightly DECLINES at the top (194 at 168k). A launch-bound, GPU-idle step would show ms/step nearly CONSTANT with ncol and throughput RISING steeply; neither is observed. Bigger grids therefore do NOT saturate the GPU better here -- they cost proportionally more wall time. The mild overall sublinearity (ncol x16 -> ms/step x13.9, ratio 0.87) is entirely the ~20 ms fixed per-step intercept (per-call dispatch + the 16,384-column radiation/MYNN tile floor), NOT genuine per-column saturation headroom."
+    },
+    "largest_grid_that_fit_~30GiB": {
+      "ny": 264,
+      "nx": 636,
+      "ncol": 167904,
+      "peak_vram_gib": 26.25,
+      "allocator": "cuda_async",
+      "warmed_ms_per_step": 863.85,
+      "ms_per_forecast_hour": 310988
+    },
+    "oom_ceiling": {
+      "first_oom_ncol": 209880,
+      "failing_single_alloc_gib": 28.44,
+      "device_total_gb": 33.66,
+      "max_alloc_size_gib": 19.08,
+      "note": "Even with cuda_async, 209,880 cols needs one 28.44 GiB op (and a 19.08 GiB resident buffer) -> exceeds the 33.66 GB device once other live buffers are held. A single op that large means some radiation/PBL intermediate is NOT bounded by the 16,384-column tile floor and scales with full ncol; that un-chunked buffer is the practical VRAM ceiling, well before compute would."
+    }
+  },
+  "raw_runs_note": "4 smallest points measured under default BFC allocator (faithful low peak_bytes_in_use); 3 largest under XLA_PYTHON_CLIENT_ALLOCATOR=cuda_async to bypass BFC fragmentation (BFC OOMed on one ~9.5 GiB op at 94k cols despite only 9 GiB peak). ms/step is allocator-independent (compute identical) and pooled; VRAM peaks are tagged by allocator. async peaks are the headline since they reached the largest grids. Per-allocator raw artifacts: bench run = this file's prior version; async run = largest_probe.json."
+}

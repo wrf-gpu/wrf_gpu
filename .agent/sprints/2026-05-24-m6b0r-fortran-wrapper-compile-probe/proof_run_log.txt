@@ -1,2 +1,0 @@
-OK: wrote /tmp/wrapprobe_test.h5
-PERF: 200 calls,      58.27 us/call

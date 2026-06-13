@@ -1,2 +1,0 @@
-/tmp/wrf_gpu2_m6acc/scripts/diagnostic_operator_term_budget_tracer.py:64: RuntimeWarning: overflow encountered in multiply
-  "l2": float(np.sqrt(np.nansum(finite * finite))),

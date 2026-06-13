@@ -1,0 +1,209 @@
+{
+  "schema": "V015MPTilingIdentity",
+  "variant": "fit (REAL production (ny,nx,nz)=(128,128,44) 3-D layout, forced tile so it spans multiple tiles AND the untiled reference fits on 32GiB)",
+  "case": "Switzerland d01 reinit-h36 REAL production column view at native (ny,nx,nz)",
+  "backend": "gpu",
+  "device": "cuda:0",
+  "lead_shape_ny_nx": [
+    128,
+    128
+  ],
+  "ncol": 16384,
+  "tile_cols": 5000,
+  "n_tiles": 4,
+  "padded_ncol": 20000,
+  "repeat_pad_cols": 3616,
+  "dt_s": 10.0,
+  "wall_s": {
+    "tiled": 3.128,
+    "untiled": 4.963
+  },
+  "leaves": {
+    "qv": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "qc": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "qr": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "qi": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "qs": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "qg": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "Ni": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "Nr": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "Ns": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "Ng": {
+      "bitwise": true,
+      "dtype": "float32",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "T": {
+      "bitwise": false,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128,
+        44
+      ],
+      "max_abs_diff": 2.842170943040401e-14,
+      "n_diff": 1
+    },
+    "p": {
+      "bitwise": true,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "rho": {
+      "bitwise": false,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128,
+        44
+      ],
+      "max_abs_diff": 2.220446049250313e-16,
+      "n_diff": 1
+    },
+    "dz": {
+      "bitwise": true,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "w": {
+      "bitwise": true,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128,
+        44
+      ]
+    },
+    "precip.cloudw": {
+      "bitwise": true,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "precip.graupel": {
+      "bitwise": true,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "precip.ice": {
+      "bitwise": true,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "precip.rain": {
+      "bitwise": false,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128
+      ],
+      "max_abs_diff": 5.421010862427522e-20,
+      "n_diff": 95
+    },
+    "precip.snow": {
+      "bitwise": false,
+      "dtype": "float64",
+      "shape": [
+        128,
+        128
+      ],
+      "max_abs_diff": 4.336808689942018e-18,
+      "n_diff": 1165
+    }
+  },
+  "n_leaves": 20,
+  "n_bitwise_fail": 4,
+  "verdict": "FAIL"
+}
