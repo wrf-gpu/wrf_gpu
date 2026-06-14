@@ -1,0 +1,368 @@
+{
+  "schema": "ADR031S2CompactFp32KmBench",
+  "scope": "COMPACT-island fp32 vs NATIVE vs fp64 on real tiled Switzerland d01 operational step",
+  "device": "cuda:0",
+  "anchor": {
+    "run_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable",
+    "run_id": "run_h36",
+    "domain": "d01",
+    "base_grid": {
+      "ny": 128,
+      "nx": 128,
+      "nz": 44
+    },
+    "dt_s": 18.0,
+    "steps": 36
+  },
+  "precision_semantics": {
+    "fp64": "force_fp64=True, all leaves fp64",
+    "native": "MIXED_PERTURB_FP32 + COMPACT=0: fp32 work + type-promotion fp64 islands; carries fp64 islands",
+    "compact": "MIXED_PERTURB_FP32 + COMPACT=1: carried island+metric arrays demoted fp32; explicit-fp64 cancellations only"
+  },
+  "records": [
+    {
+      "precision": "fp64",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_MIXED_FP32_COMPACT": "0",
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 58.64453496504575,
+      "warm_s": [
+        2.5327897259849124,
+        2.5351549650076777
+      ],
+      "warm_min_s": 2.5327897259849124,
+      "estimated_compile_s": 56.11174523906084,
+      "ms_per_step": 70.35527016624756,
+      "peak_vram_gib": 3.767024517059326,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "w": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 72310,
+        "f32_decls": 2752,
+        "f64_over_total_decls": 0.9633369747675256,
+        "convert_ops": 425,
+        "f64_3d_array_decls": 38280,
+        "f32_3d_array_decls": 776,
+        "hlo_chars": 14359044
+      }
+    },
+    {
+      "precision": "native",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_MIXED_FP32_COMPACT": "0",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 71.29108630598057,
+      "warm_s": [
+        2.512517314986326,
+        2.5124105039867572
+      ],
+      "warm_min_s": 2.5124105039867572,
+      "estimated_compile_s": 68.77867580199381,
+      "ms_per_step": 69.78918066629882,
+      "peak_vram_gib": 3.767024517059326,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float64",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 69818,
+        "f32_decls": 10055,
+        "f64_over_total_decls": 0.8741126538379678,
+        "convert_ops": 1768,
+        "f64_3d_array_decls": 34612,
+        "f32_3d_array_decls": 6240,
+        "hlo_chars": 15236672
+      }
+    },
+    {
+      "precision": "compact",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 2.5206444790237583,
+      "warm_s": [
+        2.509519201994408,
+        2.507336183974985
+      ],
+      "warm_min_s": 2.507336183974985,
+      "estimated_compile_s": 0.013308295048773289,
+      "ms_per_step": 69.64822733263848,
+      "peak_vram_gib": 3.767024517059326,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float64",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 69818,
+        "f32_decls": 10055,
+        "f64_over_total_decls": 0.8741126538379678,
+        "convert_ops": 1768,
+        "f64_3d_array_decls": 34612,
+        "f32_3d_array_decls": 6240,
+        "hlo_chars": 15236672
+      }
+    },
+    {
+      "precision": "fp64",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_MIXED_FP32_COMPACT": "0",
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 74.57049948000349,
+      "warm_s": [
+        9.170453288010322,
+        9.169443539984059
+      ],
+      "warm_min_s": 9.169443539984059,
+      "estimated_compile_s": 65.40105594001943,
+      "ms_per_step": 254.70676499955718,
+      "peak_vram_gib": 11.608790159225464,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "w": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 70998,
+        "f32_decls": 2353,
+        "f64_over_total_decls": 0.9679213643985767,
+        "convert_ops": 361,
+        "f64_3d_array_decls": 37802,
+        "f32_3d_array_decls": 609,
+        "hlo_chars": 14186063
+      }
+    },
+    {
+      "precision": "native",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_MIXED_FP32_COMPACT": "0",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 83.18181266100146,
+      "warm_s": [
+        8.821319702023175,
+        8.82269365398679
+      ],
+      "warm_min_s": 8.821319702023175,
+      "estimated_compile_s": 74.36049295897828,
+      "ms_per_step": 245.03665838953262,
+      "peak_vram_gib": 11.608790159225464,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float64",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 65751,
+        "f32_decls": 9339,
+        "f64_over_total_decls": 0.8756292449061127,
+        "convert_ops": 1806,
+        "f64_3d_array_decls": 33377,
+        "f32_3d_array_decls": 5936,
+        "hlo_chars": 14245731
+      }
+    },
+    {
+      "precision": "compact",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 8.817694763012696,
+      "warm_s": [
+        8.820232772966847,
+        8.820506356016267
+      ],
+      "warm_min_s": 8.820232772966847,
+      "estimated_compile_s": 0.0,
+      "ms_per_step": 245.00646591574574,
+      "peak_vram_gib": 11.608790159225464,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float64",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 65751,
+        "f32_decls": 9339,
+        "f64_over_total_decls": 0.8756292449061127,
+        "convert_ops": 1806,
+        "f64_3d_array_decls": 33377,
+        "f32_3d_array_decls": 5936,
+        "hlo_chars": 14245731
+      }
+    }
+  ],
+  "ratios_vs_fp64": [
+    {
+      "ncol": 16384,
+      "fp64_ms_per_step": 70.35527016624756,
+      "fp64_peak_gib": 3.767024517059326,
+      "native_ms_per_step": 69.78918066629882,
+      "native_speedup_over_fp64": 1.0081114220649119,
+      "native_peak_gib": 3.767024517059326,
+      "native_vram_drop_vs_fp64": 1.0,
+      "compact_ms_per_step": 69.64822733263848,
+      "compact_speedup_over_fp64": 1.010151627122285,
+      "compact_peak_gib": 3.767024517059326,
+      "compact_vram_drop_vs_fp64": 1.0
+    },
+    {
+      "ncol": 65536,
+      "fp64_ms_per_step": 254.70676499955718,
+      "fp64_peak_gib": 11.608790159225464,
+      "native_ms_per_step": 245.03665838953262,
+      "native_speedup_over_fp64": 1.0394639180667085,
+      "native_peak_gib": 11.608790159225464,
+      "native_vram_drop_vs_fp64": 1.0,
+      "compact_ms_per_step": 245.00646591574574,
+      "compact_speedup_over_fp64": 1.039592012592628,
+      "compact_peak_gib": 11.608790159225464,
+      "compact_vram_drop_vs_fp64": 1.0
+    }
+  ],
+  "fp64_oom_ncols": [],
+  "compact_runnable_ncols": [
+    16384,
+    65536
+  ],
+  "native_runnable_ncols": [
+    16384,
+    65536
+  ],
+  "compact_unlocks_fp64_oom_ncols": []
+}

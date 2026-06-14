@@ -1,0 +1,842 @@
+{
+  "schema": "V016FullWsFp32KmBench",
+  "scope": "FULL-WORKING-SET fp32 (State totals+w fp32, mu* fp64, acoustic COMPACT islands) vs fp64, real tiled Switzerland d01",
+  "device": "cuda:0",
+  "GPUWRF_FP32_FULLWS": "1",
+  "GPUWRF_MIXED_FP32_COMPACT": "1",
+  "fullws_fp32_fields": [
+    "p",
+    "p_total",
+    "p_perturbation",
+    "ph",
+    "ph_total",
+    "ph_perturbation",
+    "w"
+  ],
+  "anchor": {
+    "run_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable",
+    "run_id": "run_h36",
+    "domain": "d01",
+    "base_grid": {
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384
+    },
+    "dt_s": 18.0,
+    "steps": 24
+  },
+  "records": [
+    {
+      "precision": "fp64",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 24,
+      "hours": 0.12,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_FP32_FULLWS": "1",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "fullws_enabled": true,
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "w": "float64",
+        "p": "float64",
+        "p_total": "float64",
+        "ph_total": "float64",
+        "mu_total": "float64",
+        "p_perturbation": "float64",
+        "ph_perturbation": "float64",
+        "mu_perturbation": "float64"
+      },
+      "input_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 369606688,
+          "float32": 14417920,
+          "int32": 65536,
+          "other": 0
+        },
+        "fp64_mib": 352.4844055175781,
+        "fp32_mib": 13.75,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "w",
+            "dtype": "float64",
+            "mib": 5.625
+          }
+        ]
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 57.86162915697787,
+      "warm_s": [
+        1.696352161001414,
+        1.6958050670218654
+      ],
+      "warm_min_s": 1.6958050670218654,
+      "estimated_compile_s": 56.165824089956004,
+      "ms_per_step": 70.6585444592444,
+      "ms_per_forecast_hour": 14131.708891848879,
+      "peak_vram_gib": 3.73077654838562,
+      "out_finite": true,
+      "output_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 369606688,
+          "float32": 14417920,
+          "int32": 65536,
+          "other": 0
+        },
+        "fp64_mib": 352.4844055175781,
+        "fp32_mib": 13.75,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "w",
+            "dtype": "float64",
+            "mib": 5.625
+          }
+        ]
+      },
+      "out_dtypes": {
+        "w": "float64",
+        "p_total": "float64",
+        "ph_total": "float64",
+        "mu_total": "float64"
+      }
+    },
+    {
+      "precision": "fullws",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 24,
+      "hours": 0.12,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_FP32_FULLWS": "1",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "fullws_enabled": true,
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float32",
+        "p": "float32",
+        "p_total": "float32",
+        "ph_total": "float32",
+        "mu_total": "float64",
+        "p_perturbation": "float32",
+        "ph_perturbation": "float32",
+        "mu_perturbation": "float32"
+      },
+      "input_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 118716960,
+          "float32": 139862784,
+          "int32": 65536,
+          "other": 0
+        },
+        "fp64_mib": 113.21731567382812,
+        "fp32_mib": 133.383544921875,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "qke",
+            "dtype": "float64",
+            "mib": 5.5
+          }
+        ]
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 77.77401023200946,
+      "warm_s": [
+        1.53182715899311,
+        1.535701529996004
+      ],
+      "warm_min_s": 1.53182715899311,
+      "estimated_compile_s": 76.24218307301635,
+      "ms_per_step": 63.826131624712914,
+      "ms_per_forecast_hour": 12765.226324942583,
+      "peak_vram_gib": 3.73077654838562,
+      "out_finite": true,
+      "output_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 118716960,
+          "float32": 139862784,
+          "int32": 65536,
+          "other": 0
+        },
+        "fp64_mib": 113.21731567382812,
+        "fp32_mib": 133.383544921875,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 32.773590087890625
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 32.0452880859375
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float32",
+            "mib": 16.02264404296875
+          },
+          {
+            "field": "qke",
+            "dtype": "float64",
+            "mib": 5.5
+          }
+        ]
+      },
+      "out_dtypes": {
+        "w": "float32",
+        "p_total": "float32",
+        "ph_total": "float32",
+        "mu_total": "float64"
+      }
+    },
+    {
+      "precision": "fp64",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 24,
+      "hours": 0.12,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_FP32_FULLWS": "1",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "fullws_enabled": true,
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "w": "float64",
+        "p": "float64",
+        "p_total": "float64",
+        "ph_total": "float64",
+        "mu_total": "float64",
+        "p_perturbation": "float64",
+        "ph_perturbation": "float64",
+        "mu_perturbation": "float64"
+      },
+      "input_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 997666848,
+          "float32": 57671680,
+          "int32": 262144,
+          "other": 0
+        },
+        "fp64_mib": 951.4492492675781,
+        "fp32_mib": 55.0,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "w",
+            "dtype": "float64",
+            "mib": 22.5
+          }
+        ]
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 70.91402187099447,
+      "warm_s": [
+        6.118148570996709,
+        6.117440906004049
+      ],
+      "warm_min_s": 6.117440906004049,
+      "estimated_compile_s": 64.79658096499043,
+      "ms_per_step": 254.89337108350202,
+      "ms_per_forecast_hour": 50978.674216700405,
+      "peak_vram_gib": 11.426028490066528,
+      "out_finite": true,
+      "output_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 997666848,
+          "float32": 57671680,
+          "int32": 262144,
+          "other": 0
+        },
+        "fp64_mib": 951.4492492675781,
+        "fp32_mib": 55.0,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "w",
+            "dtype": "float64",
+            "mib": 22.5
+          }
+        ]
+      },
+      "out_dtypes": {
+        "w": "float64",
+        "p_total": "float64",
+        "ph_total": "float64",
+        "mu_total": "float64"
+      }
+    },
+    {
+      "precision": "fullws",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 24,
+      "hours": 0.12,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_FP32_FULLWS": "1",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "fullws_enabled": true,
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float32",
+        "p": "float32",
+        "p_total": "float32",
+        "ph_total": "float32",
+        "mu_total": "float64",
+        "p_perturbation": "float32",
+        "ph_perturbation": "float32",
+        "mu_perturbation": "float32"
+      },
+      "input_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 264145440,
+          "float32": 424432384,
+          "int32": 262144,
+          "other": 0
+        },
+        "fp64_mib": 251.90872192382812,
+        "fp32_mib": 404.770263671875,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "qke",
+            "dtype": "float64",
+            "mib": 22.0
+          }
+        ]
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 87.91372469998896,
+      "warm_s": [
+        5.5097878990345635,
+        5.508957901969552
+      ],
+      "warm_min_s": 5.508957901969552,
+      "estimated_compile_s": 82.40476679801941,
+      "ms_per_step": 229.53991258206466,
+      "ms_per_forecast_hour": 45907.98251641293,
+      "peak_vram_gib": 11.426028490066528,
+      "out_finite": true,
+      "output_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 264145440,
+          "float32": 424432384,
+          "int32": 262144,
+          "other": 0
+        },
+        "fp64_mib": 251.90872192382812,
+        "fp32_mib": 404.770263671875,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 65.29312133789062
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 63.8421630859375
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float32",
+            "mib": 31.92108154296875
+          },
+          {
+            "field": "qke",
+            "dtype": "float64",
+            "mib": 22.0
+          }
+        ]
+      },
+      "out_dtypes": {
+        "w": "float32",
+        "p_total": "float32",
+        "ph_total": "float32",
+        "mu_total": "float64"
+      }
+    },
+    {
+      "precision": "fp64",
+      "ny": 384,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "n_steps": 24,
+      "hours": 0.12,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_FP32_FULLWS": "1",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "fullws_enabled": true,
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "w": "float64",
+        "p": "float64",
+        "p_total": "float64",
+        "ph_total": "float64",
+        "mu_total": "float64",
+        "p_perturbation": "float64",
+        "ph_perturbation": "float64",
+        "mu_perturbation": "float64"
+      },
+      "input_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 1886036000,
+          "float32": 129761280,
+          "int32": 589824,
+          "other": 0
+        },
+        "fp64_mib": 1798.6640930175781,
+        "fp32_mib": 123.75,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 97.81265258789062
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 97.81265258789062
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float64",
+            "mib": 95.6390380859375
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float64",
+            "mib": 95.6390380859375
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float64",
+            "mib": 95.6390380859375
+          },
+          {
+            "field": "qv_bdy",
+            "dtype": "float64",
+            "mib": 95.6390380859375
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 95.6390380859375
+          },
+          {
+            "field": "w",
+            "dtype": "float64",
+            "mib": 50.625
+          }
+        ]
+      },
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.80GiB.",
+      "peak_vram_gib": 11.426028490066528,
+      "_tb": "    )\n    ^\n  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in tree_map\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in <genexpr>\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.wt-fp32-full/proofs/perf/v016/fullws_fp32_km_bench.py\", line 77, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x,\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.80GiB.\n"
+    },
+    {
+      "precision": "fullws",
+      "ny": 384,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "n_steps": 24,
+      "hours": 0.12,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_FP32_FULLWS": "1",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "fullws_enabled": true,
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float32",
+        "p": "float32",
+        "p_total": "float32",
+        "ph_total": "float32",
+        "mu_total": "float64",
+        "p_perturbation": "float32",
+        "ph_perturbation": "float32",
+        "mu_perturbation": "float32"
+      },
+      "input_state_footprint": {
+        "bytes_by_dtype": {
+          "float64": 437099040,
+          "float32": 854229760,
+          "int32": 589824,
+          "other": 0
+        },
+        "fp64_mib": 416.8501281738281,
+        "fp32_mib": 814.656982421875,
+        "top_leaves": [
+          {
+            "field": "ph_bdy",
+            "dtype": "float64",
+            "mib": 97.81265258789062
+          },
+          {
+            "field": "w_bdy",
+            "dtype": "float64",
+            "mib": 97.81265258789062
+          },
+          {
+            "field": "p_bdy",
+            "dtype": "float64",
+            "mib": 95.6390380859375
+          },
+          {
+            "field": "qke",
+            "dtype": "float64",
+            "mib": 49.5
+          },
+          {
+            "field": "qsq",
+            "dtype": "float64",
+            "mib": 49.5
+          },
+          {
+            "field": "u_bdy",
+            "dtype": "float32",
+            "mib": 47.81951904296875
+          },
+          {
+            "field": "v_bdy",
+            "dtype": "float32",
+            "mib": 47.81951904296875
+          },
+          {
+            "field": "theta_bdy",
+            "dtype": "float32",
+            "mib": 47.81951904296875
+          }
+        ]
+      },
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.51GiB.",
+      "peak_vram_gib": 11.426028490066528,
+      "_tb": "    )\n    ^\n  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in tree_map\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in <genexpr>\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.wt-fp32-full/proofs/perf/v016/fullws_fp32_km_bench.py\", line 77, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x,\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.51GiB.\n"
+    }
+  ],
+  "fullws_vs_fp64_ratios": [
+    {
+      "ncol": 16384,
+      "fp64_ms_per_step": 70.6585444592444,
+      "fullws_ms_per_step": 63.826131624712914,
+      "fullws_speedup_over_fp64": 1.1070472651343644,
+      "fp64_peak_gib": 3.73077654838562,
+      "fullws_peak_gib": 3.73077654838562,
+      "fp64_over_fullws_vram": 1.0,
+      "fp64_compile_s": 56.165824089956004,
+      "fullws_compile_s": 76.24218307301635
+    },
+    {
+      "ncol": 65536,
+      "fp64_ms_per_step": 254.89337108350202,
+      "fullws_ms_per_step": 229.53991258206466,
+      "fullws_speedup_over_fp64": 1.1104533770020193,
+      "fp64_peak_gib": 11.426028490066528,
+      "fullws_peak_gib": 11.426028490066528,
+      "fp64_over_fullws_vram": 1.0,
+      "fp64_compile_s": 64.79658096499043,
+      "fullws_compile_s": 82.40476679801941
+    }
+  ],
+  "fullws_unlocks_fp64_oom_ncols": []
+}

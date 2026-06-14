@@ -1,0 +1,311 @@
+{
+  "schema": "ADR031S2CompactFp32KmBench",
+  "scope": "COMPACT-island fp32 vs NATIVE vs fp64 on real tiled Switzerland d01 operational step",
+  "device": "cuda:0",
+  "anchor": {
+    "run_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable",
+    "run_id": "run_h36",
+    "domain": "d01",
+    "base_grid": {
+      "ny": 128,
+      "nx": 128,
+      "nz": 44
+    },
+    "dt_s": 18.0,
+    "steps": 36
+  },
+  "precision_semantics": {
+    "fp64": "force_fp64=True, all leaves fp64",
+    "native": "MIXED_PERTURB_FP32 + COMPACT=0: fp32 work + type-promotion fp64 islands; carries fp64 islands",
+    "compact": "MIXED_PERTURB_FP32 + COMPACT=1: carried island+metric arrays demoted fp32; explicit-fp64 cancellations only"
+  },
+  "records": [
+    {
+      "precision": "fp64",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_MIXED_FP32_COMPACT": "0",
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 57.64331438305089,
+      "warm_s": [
+        2.53703016997315,
+        2.538234330015257
+      ],
+      "warm_min_s": 2.53703016997315,
+      "estimated_compile_s": 55.10628421307774,
+      "ms_per_step": 70.47306027703195,
+      "peak_vram_gib": 3.7671449184417725,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "w": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 72310,
+        "f32_decls": 2752,
+        "f64_over_total_decls": 0.9633369747675256,
+        "convert_ops": 425,
+        "f64_3d_array_decls": 38280,
+        "f32_3d_array_decls": 776,
+        "hlo_chars": 14358471
+      }
+    },
+    {
+      "precision": "compact",
+      "ny": 128,
+      "nx": 128,
+      "nz": 44,
+      "ncol": 16384,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 75.28550608601654,
+      "warm_s": [
+        2.286788452998735,
+        2.287452138029039
+      ],
+      "warm_min_s": 2.286788452998735,
+      "estimated_compile_s": 72.9987176330178,
+      "ms_per_step": 63.52190147218709,
+      "peak_vram_gib": 3.7671449184417725,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float64",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 36928,
+        "f32_decls": 37270,
+        "f64_over_total_decls": 0.49769535566996415,
+        "convert_ops": 1694,
+        "f64_3d_array_decls": 24003,
+        "f32_3d_array_decls": 14428,
+        "hlo_chars": 14451602
+      }
+    },
+    {
+      "precision": "fp64",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_MIXED_FP32_COMPACT": "0",
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 68.3990112739848,
+      "warm_s": [
+        9.169301435991656,
+        9.169667518988717
+      ],
+      "warm_min_s": 9.169301435991656,
+      "estimated_compile_s": 59.22970983799314,
+      "ms_per_step": 254.70281766643487,
+      "peak_vram_gib": 11.608535289764404,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "w": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 70998,
+        "f32_decls": 2353,
+        "f64_over_total_decls": 0.9679213643985767,
+        "convert_ops": 361,
+        "f64_3d_array_decls": 37802,
+        "f32_3d_array_decls": 609,
+        "hlo_chars": 14186207
+      }
+    },
+    {
+      "precision": "compact",
+      "ny": 256,
+      "nx": 256,
+      "nz": 44,
+      "ncol": 65536,
+      "tile_factor": [
+        2,
+        2
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 85.8332803149824,
+      "warm_s": [
+        8.2958537240047,
+        8.295628332009073
+      ],
+      "warm_min_s": 8.295628332009073,
+      "estimated_compile_s": 77.53765198297333,
+      "ms_per_step": 230.43412033358538,
+      "peak_vram_gib": 11.608535289764404,
+      "out_finite": true,
+      "out_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "w": "float64",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "hlo_f64_footprint": {
+        "available": true,
+        "f64_decls": 36739,
+        "f32_decls": 35489,
+        "f64_over_total_decls": 0.508653153901534,
+        "convert_ops": 1685,
+        "f64_3d_array_decls": 23436,
+        "f32_3d_array_decls": 13639,
+        "hlo_chars": 14281643
+      }
+    },
+    {
+      "precision": "fp64",
+      "ny": 384,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": true,
+      "acoustic_precision_mode": "fp64_default",
+      "GPUWRF_MIXED_FP32_COMPACT": "0",
+      "input_dtypes": {
+        "u": "float64",
+        "theta": "float64",
+        "p_perturbation": "float64",
+        "p_total": "float64"
+      },
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.80GiB.",
+      "peak_vram_gib": 11.608535289764404,
+      "_tb": "  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in tree_map\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in <genexpr>\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.wt-fp32-compact/proofs/perf/v016/compact_fp32_km_bench.py\", line 65, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.80GiB.\n"
+    },
+    {
+      "precision": "compact",
+      "ny": 384,
+      "nx": 384,
+      "nz": 44,
+      "ncol": 147456,
+      "tile_factor": [
+        3,
+        3
+      ],
+      "n_steps": 36,
+      "hours": 0.18,
+      "force_fp64": false,
+      "acoustic_precision_mode": "mixed_perturb_fp32",
+      "GPUWRF_MIXED_FP32_COMPACT": "1",
+      "input_dtypes": {
+        "u": "float32",
+        "theta": "float32",
+        "p_perturbation": "float32",
+        "p_total": "float64"
+      },
+      "ran_ok": false,
+      "oom": true,
+      "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.80GiB.",
+      "peak_vram_gib": 11.608535289764404,
+      "_tb": "  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in tree_map\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/enric/miniconda3/lib/python3.13/site-packages/jax/_src/tree_util.py\", line 397, in <genexpr>\n    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.wt-fp32-compact/proofs/perf/v016/compact_fp32_km_bench.py\", line 65, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.80GiB.\n"
+    }
+  ],
+  "ratios_vs_fp64": [
+    {
+      "ncol": 16384,
+      "fp64_ms_per_step": 70.47306027703195,
+      "fp64_peak_gib": 3.7671449184417725,
+      "compact_ms_per_step": 63.52190147218709,
+      "compact_speedup_over_fp64": 1.1094293250633942,
+      "compact_peak_gib": 3.7671449184417725,
+      "compact_vram_drop_vs_fp64": 1.0
+    },
+    {
+      "ncol": 65536,
+      "fp64_ms_per_step": 254.70281766643487,
+      "fp64_peak_gib": 11.608535289764404,
+      "compact_ms_per_step": 230.43412033358538,
+      "compact_speedup_over_fp64": 1.1053172911100022,
+      "compact_peak_gib": 11.608535289764404,
+      "compact_vram_drop_vs_fp64": 1.0
+    }
+  ],
+  "fp64_oom_ncols": [
+    147456
+  ],
+  "compact_runnable_ncols": [
+    16384,
+    65536
+  ],
+  "native_runnable_ncols": [],
+  "compact_unlocks_fp64_oom_ncols": []
+}

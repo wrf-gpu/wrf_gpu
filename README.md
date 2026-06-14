@@ -130,8 +130,27 @@ cache override): **[docs/resource-profile.md](docs/resource-profile.md)**.
 | GPU / VRAM | NVIDIA GPU with **≥ 31 GiB free VRAM** for the nested 72 h case at fp64 (RTX 5090 / 32 GiB reference). On the final 72 h gates peak VRAM was **22.9 GiB** (Switzerland d01) and **29.8 GiB** (Canary L2 d02, nested) — **up from v0.14's 20.5 / 21.1 GiB**, a disclosed regression from the `niter`-16 unrolled temporaries + larger nested arena. The intrinsic ~21.7 GiB fp64 dycore working set is the binding ceiling; v0.16 proves this peak is **transient working memory, not persistent fp64 State**, so **fp32 does not reduce it** (demoting −700 MiB of persistent fp64 State moves the peak 0 GiB) — the VRAM levers are **algorithmic** (the chunked/O(nz) MYNN BouLac memory fix, which already unlocks a 1 km single domain) and **multi-GPU sharding**. The smaller d01 9 km standalone case peaks **≈ 4.7 GiB**. |
 | Cold JIT compile | **~8–12 min** one-time on the first run before integration begins (no output during compile; the v0.15 operational graph is heavier than v0.14's ~5 min). The **persistent on-disk JIT cache (on by default since v0.12.0)** turns later runs into a fast cache read — measured **cold ~147 s → cache-hit ~29 s** for the d01 hour-1 wrapper (compile + first execute). The cached executable is **bit-identical** to the cold one (zero numerics change). |
 | Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
-| Warm throughput | **~Parity to modest, by denominator (Switzerland d01 72 h, fp64, vs 24-rank CPU-WRF unless noted):** **cold total-wall 0.99×** (GPU 2941 s vs CPU 2906 s; incl. the one-time ~8–12 min compile the CPU never pays); **forecast incl. compile 1.04×** (per the finalgate `wall_clock_forecast_only_s`); **warmed steady-state (h4–h72) ~1.51×** (1.30× vs 28-rank) — the operationally-relevant figure for repeated/long runs. Canary L2 d02 cold total-wall **1.04×**. The shipped **final fp64 kernel** is adversarially confirmed near-optimal (device-bound); the per-step MYNN-condensation `niter` win (~1.4× isolated) is diluted by the full pipeline + compile. **No multi-× and no large-grid speedup is claimed.** v0.16 concludes the fp32 make-or-break: the valid-numerics fp32 ceiling is **~1.1×** (proven), so the remaining genuine-speedup levers are **algorithmic / multi-GPU**, not fp32. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md), `proofs/perf/v015/kernel_characterization.md`, and [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/). |
+| Warm throughput | **~Parity to modest, by denominator (Switzerland d01 72 h, fp64, vs 24-rank CPU-WRF unless noted):** **cold total-wall 0.99×** (GPU 2941 s vs CPU 2906 s; incl. the one-time ~8–12 min compile the CPU never pays); **forecast incl. compile 1.04×** (per the finalgate `wall_clock_forecast_only_s`); **warmed steady-state (h4–h72) ~1.51×** (1.30× vs 28-rank) — the operationally-relevant figure for repeated/long runs. Canary L2 d02 cold total-wall **1.04×**. The shipped **final fp64 kernel** is adversarially confirmed near-optimal (device-bound); the per-step MYNN-condensation `niter` win (~1.4× isolated) is diluted by the full pipeline + compile. **No multi-× and no large-grid speedup is claimed.** v0.16 concludes the fp32 make-or-break: the valid-numerics fp32 ceiling is **~1.1×** (proven), so the remaining genuine-speedup levers are **algorithmic / multi-GPU**, not fp32. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md), `proofs/perf/v015/kernel_characterization.md`, and **the full speed-up-ceiling proof (Beweisführung)** at [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/). |
 | Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
+
+> ### 📐 The full speed-up-ceiling proof (the *Beweisführung*) → [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/)
+>
+> The complete, self-contained evidence that the **valid-numerics fp32 ceiling on
+> this RTX 5090 is `~1.1×`, not `~4×`/`~6×`** — **double-confirmed** (Opus
+> implementation + independent GPT reproduction, both *IMPOSSIBILITY CONFIRMED*):
+> roofline derivation, two blind cross-checks, the numerical-soundness oracles, and
+> **every measured benchmark JSON**. Three measured pillars: **(1)** demoting the
+> persistent State to fp32 = **0 % VRAM** (the peak is *transient* — XLA `temp_size`
+> 1975 → 2001 MiB while State shrank 366 → 247 MiB); **(2)** the base absolutes
+> `p_total`/`ph_total` (~1e5) **can't be stored fp32** — corrupting the
+> geopotential/PGF gradients **27× / 127×** (precision lost at *storage*); **(3)**
+> the transient peak is **precision-insensitive**, fp64-pinned by the cancellation
+> islands (EOS/PGF/`advance_w`) + `qke` finiteness (fp32 → 3036 non-finite cells at
+> 1 km). The `~4.3×` cost-proxy is numerically **invalid** (global-fp32, no pins);
+> double-single = fp64-equivalent storage + 16× time; `6×` exceeds the roofline
+> regardless. **The real wins:** the genuine ~1.1× fp32 lane + the **1 km-unlock**
+> (chunked BouLac, orthogonal to fp32) + honest fp64 parity + the cluster
+> weak-scaling path.
 
 ## Current status — v0.16.0
 

@@ -1,0 +1,38 @@
+{
+  "schema": "GptDoubleSingleCancellationProbe",
+  "scope": "synthetic O(1e5)-minus-O(1e5) cancellation with O(1e0) residuals",
+  "n": 2000000,
+  "repeat": 5,
+  "bytes_per_scalar": {
+    "fp32": 4,
+    "fp64": 8,
+    "double_single": 8
+  },
+  "best_wall_s": {
+    "fp64": 0.0007877860334701836,
+    "fp32": 0.0007867760141380131,
+    "double_single": 0.012610500969458371
+  },
+  "relative_cpu_time_vs_fp64": {
+    "fp32": 0.9987179014487965,
+    "double_single": 16.007520359188568
+  },
+  "accuracy_vs_fp64_residual": {
+    "fp64": {
+      "max_abs": 0.0,
+      "rmse": 0.0,
+      "p99_abs": 0.0
+    },
+    "fp32": {
+      "max_abs": 0.007808633599779569,
+      "rmse": 0.0031876129057263588,
+      "p99_abs": 0.007025718513759785
+    },
+    "double_single": {
+      "max_abs": 2.3283064365386963e-10,
+      "rmse": 7.231289605083666e-11,
+      "p99_abs": 1.8917489796876907e-10
+    }
+  },
+  "interpretation": "double-single recovers the cancellation bits but uses two fp32 words per scalar, i.e. the same storage footprint as fp64, and more fp32 operations than either fp32 or fp64 subtraction in this microprobe"
+}
