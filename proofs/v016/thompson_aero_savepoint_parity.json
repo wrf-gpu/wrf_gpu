@@ -1,0 +1,231 @@
+{
+  "boundary": "mp_gt_driver in -> out (full column incl. sedimentation + surface aerosol emission)",
+  "comparison": "JAX-vs-WRF mp_physics=28 (NOT self-compare)",
+  "dt_s": 18.0,
+  "mp_physics": 28,
+  "n_columns": 5187,
+  "note": "Oracle state is float32 storage from a single-precision WRF build; the binding gate is the tier-1 carry band + 2-ULP theta criterion used to close the mp=8 Thompson lane (see proofs/v090, v0110).",
+  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero",
+  "oracle_itimestep": 1000,
+  "pass": true,
+  "pass_binding_carry_band": true,
+  "per_field": {
+    "nc": {
+      "carry_band": {
+        "abs": 100.0,
+        "rel": 0.02
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 0.998545314334788,
+      "max_abs_err": 73676.12067255005,
+      "max_rel_err": 1.0,
+      "p99_abs_err": 0.0,
+      "strict_band": {
+        "abs": 0.001,
+        "rel": 0.0001
+      },
+      "strict_pass": false
+    },
+    "ni": {
+      "carry_band": {
+        "abs": 100.0,
+        "rel": 0.02
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 1.0,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "p99_abs_err": 0.0,
+      "strict_band": {
+        "abs": 0.001,
+        "rel": 0.0001
+      },
+      "strict_pass": true
+    },
+    "nifa": {
+      "carry_band": {
+        "abs": 100.0,
+        "rel": 0.02
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 1.0,
+      "max_abs_err": 0.06020498787984252,
+      "max_rel_err": 3.979914760601694e-08,
+      "p99_abs_err": 5.7674334384505386e-05,
+      "strict_band": {
+        "abs": 0.001,
+        "rel": 0.0001
+      },
+      "strict_pass": true
+    },
+    "nr": {
+      "carry_band": {
+        "abs": 100.0,
+        "rel": 0.02
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 0.9892782655940551,
+      "max_abs_err": 0.3055585868015772,
+      "max_rel_err": 1.0452339216117998e+25,
+      "p99_abs_err": 2.0852227504905682e-08,
+      "strict_band": {
+        "abs": 0.001,
+        "rel": 0.0001
+      },
+      "strict_pass": false
+    },
+    "nwfa": {
+      "carry_band": {
+        "abs": 100.0,
+        "rel": 0.02
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 0.9998378814168288,
+      "max_abs_err": 73718.06604546309,
+      "max_rel_err": 0.00016635336873204836,
+      "p99_abs_err": 9.171568841934215,
+      "strict_band": {
+        "abs": 0.001,
+        "rel": 0.0001
+      },
+      "strict_pass": false
+    },
+    "qc": {
+      "carry_band": {
+        "abs": 1e-07,
+        "rel": 0.01
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 0.998545314334788,
+      "max_abs_err": 5.360812258689497e-09,
+      "max_rel_err": 1.0,
+      "p99_abs_err": 0.0,
+      "strict_band": {
+        "abs": 1e-09,
+        "rel": 1e-06
+      },
+      "strict_pass": false
+    },
+    "qg": {
+      "carry_band": {
+        "abs": 1e-07,
+        "rel": 0.01
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 1.0,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "p99_abs_err": 0.0,
+      "strict_band": {
+        "abs": 1e-09,
+        "rel": 1e-06
+      },
+      "strict_pass": true
+    },
+    "qi": {
+      "carry_band": {
+        "abs": 1e-07,
+        "rel": 0.01
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 1.0,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "p99_abs_err": 0.0,
+      "strict_band": {
+        "abs": 1e-09,
+        "rel": 1e-06
+      },
+      "strict_pass": true
+    },
+    "qr": {
+      "carry_band": {
+        "abs": 1e-07,
+        "rel": 0.01
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 0.9955044955044955,
+      "max_abs_err": 9.540230743862445e-10,
+      "max_rel_err": 1.598755168885135e+18,
+      "p99_abs_err": 1.3596938437661864e-15,
+      "strict_band": {
+        "abs": 1e-09,
+        "rel": 1e-06
+      },
+      "strict_pass": true
+    },
+    "qs": {
+      "carry_band": {
+        "abs": 1e-07,
+        "rel": 0.01
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 0.9990667227509332,
+      "max_abs_err": 3.160839691211836e-11,
+      "max_rel_err": 3.160839691211836e+19,
+      "p99_abs_err": 0.0,
+      "strict_band": {
+        "abs": 1e-09,
+        "rel": 1e-06
+      },
+      "strict_pass": true
+    },
+    "qv": {
+      "carry_band": {
+        "abs": 1e-07,
+        "rel": 0.01
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_2_float32_ulp": 0.999723960250276,
+      "max_abs_err": 5.491120884382195e-09,
+      "max_rel_err": 5.061634232485523e-07,
+      "p99_abs_err": 2.0144839820574149e-10,
+      "strict_band": {
+        "abs": 1e-09,
+        "rel": 1e-06
+      },
+      "strict_pass": true
+    },
+    "rainncv": {
+      "carry_band": {
+        "abs_mm": 0.0005,
+        "rel": 0.015
+      },
+      "carry_pass": true,
+      "max_abs_err_mm": 5.7108485847058064e-08
+    },
+    "th": {
+      "carry_band": {
+        "float32_ulp": 2.0
+      },
+      "carry_pass": true,
+      "enforced_cells": 228228,
+      "frac_within_1_float32_ulp": 0.9996056575003943,
+      "frac_within_2_float32_ulp": 1.0,
+      "max_abs_err": 4.417864482775258e-05,
+      "max_err_float32_ulp": 1.4476458337157965,
+      "strict_pass": false
+    }
+  },
+  "proof": "v016-thompson-aero-savepoint-parity",
+  "skipped_no_micro_columns_in_oracle": "reproduced via the kernel's per-column no_micro mask",
+  "status": "ORACLE-VALIDATED",
+  "strict_all_pass": false,
+  "use_aero_icbc": false,
+  "water_closure_max_rel_residual": 2.4213709348654717e-07,
+  "water_closure_pass": true,
+  "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
+  "wrf_source_sha256": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802",
+  "wrf_source_sha256_manifest": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802"
+}

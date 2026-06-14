@@ -1,0 +1,2 @@
+# Large intermediate state dumps (regenerable inputs to compare_tiered_identity); verdicts live in *_gate.json
+_*_state.npz

@@ -1,9 +1,33 @@
-# Known Issues — v0.15.0
+# Known Issues — v0.16.0
 
-Honest, code-grounded list of what is open or bounded in the v0.15 release. Each
+Honest, code-grounded list of what is open or bounded in the v0.16 release. Each
 entry states the symptom, the current understanding, the workaround, and the
 tracked follow-up. No spin. The deeper per-issue history (KI-1…KI-11, including
 resolved items) is in [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
+
+> **v0.16 release framing.** v0.16 is the **STABILITY** release: 24/25 L2
+> schemes coupled-green on a real case (`ALL_GREEN_OR_CARRIED`), the aerosol-aware
+> Thompson "+1" (`mp_physics=28`, WRF-module oracle PASS), and a **1 km-unlock**
+> (chunked MYNN BouLac: a 1 km single domain now fits on one RTX 5090,
+> bit-identical to dense). **Performance is still honestly ~parity** with CPU-WRF
+> (GeForce fp64 1/64 hardware law — no end-to-end speedup).
+
+## v0.16 open / bounded items (new or updated this release)
+
+| ID | Summary | Severity | Workaround / follow-up |
+|---|---|---|---|
+| **Performance ~parity** | fp64 GPU ≈ 24–28-rank CPU-WRF wall — a GeForce fp64 1/64 hardware law (the fp64 dycore sits at its 0.944 FLOP/byte roofline ridge, so the fp64-ALU term binds). **No end-to-end speedup.** | Honest finding | The fp32 make-or-break is **CONCLUDED** (double-confirmed: Opus + independent GPT): the valid-numerics fp32 ceiling is **~1.1×** (full-ws 16k 1.107× / 65k 1.110×, VRAM ratio 1.000; GPT reproduced 1.105× / 1.111×); larger fp32 speedups are **precluded** by the conservation/cancellation fp64 pins (the ~4.3× "cost proxy" is numerically invalid — corrupts conservation; qke non-finite at 1 km). The genuine ~1.1× fp32 lane ships now; the larger levers are algorithmic / multi-GPU. Fusion probed NEGATIVE (~0%). Evidence: `proofs/v016/fp32_verdict/`. |
+| **Noah-classic `sf_surface=2`** | The coupled coverage gate for Noah-classic land surface is the lone L2 carry (`SCOPED_CARRY` in the rollup) — it needs the WRF land/static-data bundle (soil/veg tables + static fields) wired into the real-case harness. | Scope-carry → v0.17 | Use Noah-MP (`sf_surface=4`, operational). |
+| **mp28 coupled field-gate** | The mp8-vs-mp28 ±advection coupled short-grid field-gate was queued on the contended single GPU and did not run in time. The mp28 **L1 WRF-module oracle (5187-col) is GREEN**, and CPU threading/restart/precision/catalog gates are green. | Bounded carry → v0.17 | GPU time only, no further code. mp28 is operationally wired + oracle-validated. |
+| **1 km working set** | A 1 km **single domain** now fits on one RTX 5090 via chunked BouLac (this release; **orthogonal to fp32**), **measured in a fresh process per grid**. Repeated multi-grid runs in one process can fragment allocator memory. Larger working sets (≥ ~196 k cols) still exceed 32 GiB in fp64. | Improved; bounded | Isolate grids per process or recycle the process between grids; **multi-GPU horizontal sharding** for the larger sets. (fp32 does **not** shrink the peak — v0.16 proves it is transient working memory, not persistent fp64 State; demoting −700 MiB of State moves the peak 0 GiB.) |
+| **RRTMG SW/LW variants** | Additional RRTMG radiation options need a WRF oracle rebuild before coupling. | Carry → v0.17 | Use the wired RRTMG/Dudhia/GSFC paths. |
+
+All v0.15 items below carry forward unchanged **except** the fp32 forward
+expectation — see the v0.16 forward-correction in the framing note below.
+
+---
+
+# Known Issues — v0.15.0 (carried forward)
 
 > **Release framing.** v0.15 is a **kernel-architecture + WRF-fidelity** release,
 > **not** an end-to-end speedup release. It delivers the project's final fp64 GPU
@@ -15,6 +39,19 @@ resolved items) is in [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
 > Performance is honestly **~parity total-wall** (0.99×/1.04×), forecast-only
 > ~1.05–1.20×; **no multi-× and no large-grid speedup is claimed.** The honest
 > numbers are below.
+>
+> **Forward correction (v0.16).** The v0.15 Performance/Precision items below name
+> the **fp32-operational-state restructuring** (ADR-007/031) as the deferred lever
+> for a genuine speedup and for ~halving VRAM. v0.16's make-or-break investigation
+> **supersedes that expectation** (double-confirmed: Opus + independent GPT): the
+> valid-numerics fp32 ceiling is **~1.1×** (not a large speedup) and fp32 does
+> **not** reduce the transient-dominated VRAM peak (0 GiB moved by a −700 MiB
+> persistent-State demotion; the base absolutes `p_total`/`ph_total` are
+> conservation-pinned to fp64 and corrupt the geopotential/PGF gradient 27×/127×
+> if stored fp32; qke goes non-finite in fp32 at 1 km). The remaining
+> genuine-speedup / VRAM levers are **algorithmic** (the chunked/O(nz) MYNN BouLac
+> fix) and **multi-GPU sharding**, not fp32. The v0.15 text is retained as
+> historical record. Evidence: `proofs/v016/fp32_verdict/`.
 
 ## Final-gate verdicts (both gates re-closed on the final v0.15 code)
 

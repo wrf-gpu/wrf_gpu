@@ -48,6 +48,15 @@ from gpuwrf.physics.thompson_column import (
     step_thompson_column,
     step_thompson_column_with_precip,
 )
+from gpuwrf.physics.thompson_aero_column import (
+    NA_CCN0,
+    NA_CCN1,
+    NA_IN0,
+    NA_IN1,
+    ThompsonAeroColumnState,
+    apply_surface_aerosol_emission,
+    step_thompson_aero_column_with_precip,
+)
 
 
 P0_PA = 100000.0
@@ -1319,6 +1328,191 @@ def thompson_adapter_with_tendencies(state: State, dt: float) -> tuple[State, Th
     """Explicit Thompson side-channel wrapper for validation call sites."""
 
     return thompson_adapter(state, dt, return_tendencies=True)
+
+
+# ------------------------------------------------------------------------------
+# v0.16 aerosol-aware Thompson (mp_physics=28) coupling
+# ------------------------------------------------------------------------------
+
+
+def _mass_level_height_columns(state: State):
+    """WRF ``phy_prep`` mass-level geometric height z (m MSL) as columns.
+
+    WRF hands ``thompson_init``/``mp_gt_driver`` the phy_prep height field
+    z = (PH+PHB)/g averaged to mass levels with the physics g=9.81
+    (module_model_constants.F). ``state.ph`` is the TOTAL geopotential on
+    interfaces (legacy alias of ``ph_total``), so the mass-level height is the
+    mean of the two bounding interface heights. Returns ``(ny, nx, nz)``.
+    """
+
+    z_face = state.ph.astype(jnp.float64) / WRF_PHYSICS_G_M_S2  # (nz+1, ny, nx)
+    z_mass = 0.5 * (z_face[:-1, :, :] + z_face[1:, :, :])
+    return _to_columns(z_mass)
+
+
+def _thompson_aero_column_from_state(state: State, grid: GridSpec | None = None) -> ThompsonAeroColumnState:
+    """Build the column-kernel input view for aerosol-aware Thompson (mp=28).
+
+    Mirrors :func:`_thompson_column_from_state` and additionally threads the
+    aerosol-aware prognostics: cloud droplet number ``Nc`` and the
+    water-/ice-friendly aerosol numbers ``nwfa``/``nifa`` (per kg).
+    """
+
+    T = _temperature_from_theta(state.theta, state.p)
+    rho = density_from_pressure_temperature(state.p, T, state.qv)
+    dz_columns = _column_dz_from_state(state, grid)
+    return ThompsonAeroColumnState(
+        _to_columns(state.qv),
+        _to_columns(state.qc),
+        _to_columns(state.qr),
+        _to_columns(state.qi),
+        _to_columns(state.qs),
+        _to_columns(state.qg),
+        _to_columns(state.Ni),
+        _to_columns(state.Nr),
+        _to_columns(state.Nc),
+        _to_columns(state.nwfa),
+        _to_columns(state.nifa),
+        _to_columns(T),
+        _to_columns(state.p),
+        _to_columns(rho),
+        Ns=_to_columns(state.Ns),
+        Ng=_to_columns(state.Ng),
+        dz=dz_columns,
+        w=_to_columns(_w_mass(state)),
+    )
+
+
+def _aerosol_surface_emission_columns(state: State, grid: GridSpec | None = None):
+    """WRF ``thompson_init`` fake surface aerosol emission (nwfa2d, nifa2d).
+
+    Inline jnp transcription of the ``nwfa2d`` closed form in
+    :func:`gpuwrf.physics.thompson_aero_column.climatological_aerosol_profiles`
+    (module_mp_thompson.F:493-558, use_aero_icbc=.false. path) so the jitted
+    timestep loop never crosses to the host (the frozen helper is NumPy).
+    ``nifa2d`` is zero in WRF for this path. Returns per-kg-per-second columns
+    shaped ``(ny, nx)`` (the column batch shape).
+    """
+
+    del grid
+    hgt = _mass_level_height_columns(state)  # (ny, nx, nz), m MSL
+    h0 = hgt[..., 0]
+    h_01 = jnp.where(
+        h0 <= 1000.0,
+        0.8,
+        jnp.where(h0 >= 2500.0, 0.01, 0.8 * jnp.cos(h0 * 0.001 - 1.0)),
+    )
+    ni_ccn3 = -1.0 * jnp.log(NA_CCN1 / NA_CCN0) / h_01
+    # Level 1 uses the LEVEL-2 height offset (WRF lines 508, 546).
+    dz1 = hgt[..., 1] - h0
+    nwfa1 = NA_CCN1 + NA_CCN0 * jnp.exp(-(dz1 / 1000.0) * ni_ccn3)
+    z1 = jnp.maximum(dz1, 1.0)
+    nwfa2d = nwfa1 * 0.000196 * (50.0 / z1)
+    return nwfa2d, jnp.zeros_like(nwfa2d)
+
+
+def _climatological_aerosol_profile_columns(state: State, grid: GridSpec | None = None):
+    """Inline jnp ``climatological_aerosol_profiles`` 3-D nwfa/nifa (per kg).
+
+    Faithful transcription of the frozen NumPy helper in
+    ``thompson_aero_column`` (module_mp_thompson.F:493-558) on the mass-level
+    heights derived from State geopotential. Returns ``(nwfa, nifa)`` columns
+    shaped ``(ny, nx, nz)``.
+    """
+
+    del grid
+    hgt = _mass_level_height_columns(state)  # (ny, nx, nz), m MSL
+    h0 = hgt[..., :1]
+    h_01 = jnp.where(
+        h0 <= 1000.0,
+        0.8,
+        jnp.where(h0 >= 2500.0, 0.01, 0.8 * jnp.cos(h0 * 0.001 - 1.0)),
+    )
+    ni_ccn3 = -1.0 * jnp.log(NA_CCN1 / NA_CCN0) / h_01
+    ni_in3 = -1.0 * jnp.log(NA_IN1 / NA_IN0) / h_01
+    dz_agl = hgt - h0
+    # Level 1 uses the LEVEL-2 height offset (WRF lines 508, 546).
+    dz1 = hgt[..., 1:2] - h0
+    dz_eff = jnp.concatenate([dz1, dz_agl[..., 1:]], axis=-1)
+    nwfa = NA_CCN1 + NA_CCN0 * jnp.exp(-(dz_eff / 1000.0) * ni_ccn3)
+    nifa = NA_IN1 + NA_IN0 * jnp.exp(-(dz_eff / 1000.0) * ni_in3)
+    return nwfa, nifa
+
+
+def thompson_aero_coldstart_init(state: State, grid: GridSpec | None = None) -> State:
+    """Cold-start nwfa/nifa from the WRF climatological aerosol profiles.
+
+    WRF ``thompson_init`` (use_aero_icbc=.false. equivalent) self-initializes
+    QNWFA/QNIFA from boundary-layer-following exponential climatologies when
+    the inputs carry no aerosol state. INIT-TIME ONLY construction (called from
+    the model build/init path, like the MYNN qke cold start) -- never inside
+    the timestep loop, so the host-side ``jnp.max`` check below is allowed.
+    A state that already carries a real (restart/forced) nwfa field is left
+    untouched, mirroring WRF's is_aerosol_aware input check.
+    """
+
+    if float(jnp.max(jnp.abs(jnp.asarray(state.nwfa)))) > 0.0:
+        return state
+    nwfa_cols, nifa_cols = _climatological_aerosol_profile_columns(state, grid)
+    return state.replace(
+        nwfa=_from_columns(nwfa_cols).astype(_output_dtype(state, "nwfa")),
+        nifa=_from_columns(nifa_cols).astype(_output_dtype(state, "nifa")),
+    )
+
+
+def _state_from_thompson_aero_output(state: State, out: ThompsonAeroColumnState, precip=None) -> State:
+    """Reassemble a State from aerosol-aware Thompson column-kernel output.
+
+    Extends :func:`_state_from_thompson_output` with the aerosol-aware
+    prognostics (Nc, nwfa, nifa). Precip accumulators advance with the same
+    per-step ``+=`` convention (rain/snow/graupel/ice; the aero ``cloudw``
+    surface-sedimentation channel is NOT an accumulator -- WRF RAINNCV is
+    rain+snow+graupel+ice, proofs/v016/thompson_aero_savepoint_parity.py).
+    """
+
+    theta = _theta_from_temperature(_from_columns(out.T), state.p, _output_dtype(state, "theta"))
+    updates = dict(
+        theta=theta,
+        qv=_from_columns(out.qv).astype(_output_dtype(state, "qv")),
+        qc=_from_columns(out.qc).astype(_output_dtype(state, "qc")),
+        qr=_from_columns(out.qr).astype(_output_dtype(state, "qr")),
+        qi=_from_columns(out.qi).astype(_output_dtype(state, "qi")),
+        qs=_from_columns(out.qs).astype(_output_dtype(state, "qs")),
+        qg=_from_columns(out.qg).astype(_output_dtype(state, "qg")),
+        Ni=_from_columns(out.Ni).astype(_output_dtype(state, "Ni")),
+        Nr=_from_columns(out.Nr).astype(_output_dtype(state, "Nr")),
+        Ns=_from_columns(out.Ns).astype(_output_dtype(state, "Ns")),
+        Ng=_from_columns(out.Ng).astype(_output_dtype(state, "Ng")),
+        Nc=_from_columns(out.Nc).astype(_output_dtype(state, "Nc")),
+        nwfa=_from_columns(out.nwfa).astype(_output_dtype(state, "nwfa")),
+        nifa=_from_columns(out.nifa).astype(_output_dtype(state, "nifa")),
+    )
+    if precip is not None:
+        updates["rain_acc"] = (jnp.asarray(state.rain_acc, dtype=jnp.float64) + precip["rain"]).astype(_output_dtype(state, "rain_acc"))
+        updates["snow_acc"] = (jnp.asarray(state.snow_acc, dtype=jnp.float64) + precip["snow"]).astype(_output_dtype(state, "snow_acc"))
+        updates["graupel_acc"] = (jnp.asarray(state.graupel_acc, dtype=jnp.float64) + precip["graupel"]).astype(_output_dtype(state, "graupel_acc"))
+        updates["ice_acc"] = (jnp.asarray(state.ice_acc, dtype=jnp.float64) + precip["ice"]).astype(_output_dtype(state, "ice_acc"))
+    return state.replace(**updates)
+
+
+def thompson_aero_adapter(state: State, dt: float, grid: GridSpec | None = None, *, return_tendencies: bool = False):
+    """Slice state to mp=28 inputs, call the aero kernel, reassemble State.
+
+    Mirrors :func:`thompson_adapter` (mp=8) with the aerosol-aware additions:
+    threads Nc/nwfa/nifa through the WRF-parity-gated aero column kernel
+    (proofs/v016/thompson_aero_savepoint_parity.json), then applies the WRF
+    fake surface aerosol emission (module_mp_thompson.F:1317-1326) computed
+    inline in jnp -- no host transfer inside the timestep loop.
+    """
+
+    column = _thompson_aero_column_from_state(state, grid)
+    out, precip = step_thompson_aero_column_with_precip(column, float(dt), debug=False)
+    nwfa2d, nifa2d = _aerosol_surface_emission_columns(state, grid)
+    out = apply_surface_aerosol_emission(out, nwfa2d, nifa2d, float(dt))
+    next_state = _state_from_thompson_aero_output(state, out, precip)
+    if return_tendencies:
+        return next_state, _thompson_tendency_side_channel(state, out, dt)
+    return next_state
 
 
 def _surface_fluxes_from_state(state: State) -> SurfaceFluxes:
@@ -2625,4 +2819,6 @@ __all__ = [
     "surface_layer_diagnostics",
     "thompson_adapter",
     "thompson_adapter_with_tendencies",
+    "thompson_aero_adapter",
+    "thompson_aero_coldstart_init",
 ]

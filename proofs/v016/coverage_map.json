@@ -1,0 +1,433 @@
+{
+  "schema": "V016CoverageMap",
+  "totals": {
+    "implemented_excl0": 37,
+    "coupled_runnable": 32,
+    "coupled_tested": 7,
+    "l2_targets": 25,
+    "reference_only": 5
+  },
+  "rows": [
+    {
+      "family": "mp_physics",
+      "option": 1,
+      "name": "Kessler warm rain",
+      "wrf_package": "kesslerscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 2,
+      "name": "Purdue-Lin",
+      "wrf_package": "linscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 3,
+      "name": "WSM3 simple ice",
+      "wrf_package": "wsm3scheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 4,
+      "name": "WSM5",
+      "wrf_package": "wsm5scheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 6,
+      "name": "WSM6",
+      "wrf_package": "wsm6scheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 8,
+      "name": "Thompson",
+      "wrf_package": "thompson",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": true,
+      "l2_target": false,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 10,
+      "name": "Morrison two-moment",
+      "wrf_package": "morr_two_moment",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 14,
+      "name": "WDM5",
+      "wrf_package": "wdm5scheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 16,
+      "name": "WDM6",
+      "wrf_package": "wdm6scheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 1,
+      "name": "YSU",
+      "wrf_package": "ysuscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 2,
+      "name": "MYJ",
+      "wrf_package": "myjpblscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 5,
+      "name": "MYNN",
+      "wrf_package": "mynnpblscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": true,
+      "l2_target": false,
+      "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 7,
+      "name": "ACM2",
+      "wrf_package": "acmpblscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 8,
+      "name": "BouLac",
+      "wrf_package": "boulacscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 99,
+      "name": "MRF",
+      "wrf_package": "mrfscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "sf_sfclay_physics",
+      "option": 1,
+      "name": "sfclayrev",
+      "wrf_package": "sfclayscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "sf_sfclay_physics",
+      "option": 2,
+      "name": "Janjic Eta surface layer",
+      "wrf_package": "myjsfcscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "sf_sfclay_physics",
+      "option": 3,
+      "name": "NCEP GFS surface layer",
+      "wrf_package": "gfssfcscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "sf_sfclay_physics",
+      "option": 5,
+      "name": "MYNN surface layer",
+      "wrf_package": "mynnsfclayscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": true,
+      "l2_target": false,
+      "reference_only": false
+    },
+    {
+      "family": "sf_sfclay_physics",
+      "option": 7,
+      "name": "Pleim-Xiu surface layer",
+      "wrf_package": "pxsfclayscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "sf_sfclay_physics",
+      "option": 91,
+      "name": "old MM5 surface layer",
+      "wrf_package": "sfclayscheme_old",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "cu_physics",
+      "option": 1,
+      "name": "Kain-Fritsch",
+      "wrf_package": "kfetascheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": true,
+      "l2_target": false,
+      "reference_only": false
+    },
+    {
+      "family": "cu_physics",
+      "option": 2,
+      "name": "Betts-Miller-Janjic",
+      "wrf_package": "bmjscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "cu_physics",
+      "option": 3,
+      "name": "Grell-Freitas",
+      "wrf_package": "gfscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "cu_physics",
+      "option": 5,
+      "name": "Grell-3D ensemble",
+      "wrf_package": "g3scheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "cu_physics",
+      "option": 6,
+      "name": "Tiedtke",
+      "wrf_package": "tiedtkescheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "cu_physics",
+      "option": 14,
+      "name": "KIM Simplified Arakawa-Schubert",
+      "wrf_package": "ksasscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "cu_physics",
+      "option": 16,
+      "name": "New Tiedtke",
+      "wrf_package": "ntiedtkescheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "sf_surface_physics",
+      "option": 1,
+      "name": "thermal-diffusion slab LSM",
+      "wrf_package": "slabscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "sf_surface_physics",
+      "option": 2,
+      "name": "Noah classic",
+      "wrf_package": "lsmscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "sf_surface_physics",
+      "option": 4,
+      "name": "Noah-MP",
+      "wrf_package": "noahmpscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": true,
+      "l2_target": false,
+      "reference_only": false
+    },
+    {
+      "family": "ra_sw_physics",
+      "option": 1,
+      "name": "Dudhia shortwave",
+      "wrf_package": "swradscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "ra_sw_physics",
+      "option": 2,
+      "name": "GSFC (Chou-Suarez) shortwave",
+      "wrf_package": "gsfcswscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "ra_sw_physics",
+      "option": 4,
+      "name": "RRTMG shortwave",
+      "wrf_package": "rrtmg_swscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": true,
+      "l2_target": false,
+      "reference_only": false
+    },
+    {
+      "family": "ra_lw_physics",
+      "option": 1,
+      "name": "RRTM longwave",
+      "wrf_package": "rrtmscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "ra_lw_physics",
+      "option": 4,
+      "name": "RRTMG longwave",
+      "wrf_package": "rrtmg_lwscheme",
+      "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": true,
+      "l2_target": false,
+      "reference_only": false
+    },
+    {
+      "family": "ra_lw_physics",
+      "option": 5,
+      "name": "GSFC/Goddard NUWRF longwave",
+      "wrf_package": "goddardlwscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    }
+  ],
+  "coupled_baseline": {
+    "mp_physics": 8,
+    "bl_pbl_physics": 5,
+    "sf_sfclay_physics": 5,
+    "cu_physics": 1,
+    "sf_surface_physics": 4,
+    "ra_sw_physics": 4,
+    "ra_lw_physics": 4
+  },
+  "mandatory_pairings": {
+    "bl_pbl_physics=2": "sf_sfclay_physics=2 (MYJ <-> Janjic Eta)",
+    "sf_sfclay_physics=2": "bl_pbl_physics=2 (Janjic Eta <-> MYJ)",
+    "cu_physics=6": "use_flux_advection=True + moist_adv_opt>=1 (Tiedtke RQVFTEN)"
+  }
+}

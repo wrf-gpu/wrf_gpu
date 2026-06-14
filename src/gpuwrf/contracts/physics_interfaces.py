@@ -258,6 +258,14 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "M20 physics-oracle factory savepoint at module_microphysics_driver.F:wdm6",
         diagnostics=("re_cloud", "re_ice", "re_snow"),
     ),
+    _mp_spec(
+        28,
+        "Thompson aerosol-aware",
+        "src/gpuwrf/physics/thompson_aero_column.py",
+        "v0.16 aerosol-aware Thompson pristine-WRF grid savepoint parity gate at "
+        "module_mp_thompson.F:mp_gt_driver (mp_physics=28; "
+        "proofs/v016/thompson_aero_savepoint_parity.py/.json)",
+    ),
     PhysicsStepSpec(
         family="pbl",
         option=1,

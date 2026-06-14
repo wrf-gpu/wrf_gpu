@@ -136,7 +136,11 @@ class SchemeSupport:
 # physics_registry accept-matrix and the WRF v4 catalog.                      #
 # --------------------------------------------------------------------------- #
 _IMPLEMENTED: Mapping[str, frozenset[int]] = {
-    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16}),
+    # mp=28 (aerosol-aware Thompson) is the v0.16 thompson_aero_adapter
+    # (coupling.physics_couplers; WRF grid-savepoint parity-gated,
+    # proofs/v016/thompson_aero_savepoint_parity.json; scan-wired in
+    # runtime.operational_mode._SCAN_WIRED_OPTIONS / _physics_step_forcing).
+    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28}),
     "cu_physics": frozenset({0, 1, 2, 3, 6}),
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
@@ -249,8 +253,8 @@ def _label(key: str) -> str:
 
 # Per-key fallback alternative text used for RECOGNIZED_FAIL_CLOSED schemes.
 _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
-    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/14/16 (8=Thompson is the "
-    "operational default).",
+    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/14/16/28 (8=Thompson is the "
+    "operational default; 28=aerosol-aware Thompson).",
     "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch, 3=Grell-"
     "Freitas, 6=Tiedtke requires active flux-form moisture advection for RQVFTEN).",
     "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/5/7/8/99 (5=MYNN, 1=YSU, 2=MYJ "
@@ -686,6 +690,38 @@ _RECOGNIZED_CONTROLS: tuple[RecognizedControl, ...] = (
         "(nonlocal/BouLac-blend) and 2 (local); other mixing-length options "
         "are not wired.",
         "Use bl_mynn_mixlength=1 or 2.",
+    ),
+    # --- Aerosol-aware Thompson (mp=28) input sub-options ------------------ #
+    # v0.16: the port runs ONLY the WRF thompson_init climatological self-init
+    # path (use_aero_icbc=.false.; nwfa/nifa cold-started from the BL-following
+    # exponential profiles + the fake surface nwfa2d emission). Reading aerosol
+    # ICs/BCs from WPS/met_em (use_aero_icbc=.true.) is NOT wired, so a .true.
+    # selection fails CLOSED (never a silent wrong-input-path run).
+    RecognizedControl(
+        "use_aero_icbc", "Thompson-aerosol-ICBC-input",
+        frozenset({0}),
+        "recognized; aerosol-aware Thompson (mp=28) is wired ONLY for the "
+        "climatological self-init path (use_aero_icbc=.false.: thompson_init "
+        "BL-following nwfa/nifa profiles + fake surface nwfa2d emission). "
+        "Reading QNWFA/QNIFA ICs/BCs from WPS/met_em (use_aero_icbc=.true.) "
+        "is not wired.",
+        "Set use_aero_icbc=.false. (climatological aerosol self-init).",
+    ),
+    RecognizedControl(
+        "wif_input_opt", "water-ice-friendly-aerosol-input",
+        frozenset({1}),
+        "recognized; only wif_input_opt=1 is accepted with the mp=28 "
+        "climatological self-init path. Other water-/ice-friendly aerosol "
+        "input modes are not wired.",
+        "Use wif_input_opt=1.",
+    ),
+    RecognizedControl(
+        "aer_init_opt", "aerosol-init",
+        frozenset({0, 1}),
+        "recognized; the port wires aer_init_opt=0/1 (the WRF thompson_init "
+        "climatological aerosol initialization family). Other aerosol-init "
+        "modes are not wired.",
+        "Use aer_init_opt=0 or 1.",
     ),
     # --- Physics cadence intervals (minutes) ------------------------------ #
     RecognizedControl(

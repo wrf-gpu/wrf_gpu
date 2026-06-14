@@ -25,6 +25,29 @@ WRF's own convergence early-exit) and **Thompson cold-collection** (moving
 Switzerland RAINNC 5.99 → 5.08 mm). It is proven by a **reproducible, CPU-only
 identity-proof system** (the two dashboards below).
 
+### v0.16 — stability, the aerosol "+1", and a 1 km-unlock (honest perf unchanged)
+
+**v0.16 proves coupled stability across the whole implemented physics menu**:
+every implemented L2 scheme runs **coupled-green on a real Switzerland d01 case**
+inside the frozen v0.14 tolerance band — **24 of 25 L2 targets GREEN**, the 25th
+(Noah-classic land surface) an honest scope-carry → **`ALL_GREEN_OR_CARRIED`**.
+It adds **aerosol-aware Thompson microphysics** (`mp_physics=28`) with a per-scheme
+**WRF-module oracle PASS** (5187-col, GPU), and a concrete **1 km-unlock**: a
+**chunked MYNN BouLac** that makes a **1 km single-domain fp64 forecast fit on one
+RTX 5090** (dense OOMs the 147 k-col step at ≈ 18.8 GiB; chunked **fits at 18.25
+GiB**) — **bit-identically** to the dense kernel. *(The fit is measured in a
+**fresh process per grid**; repeated multi-grid runs in one process can fragment
+allocator memory, so production should isolate grids per process or recycle the
+process.)* **Performance is still honestly
+~parity** with CPU-WRF (GeForce fp64 = 1/64 fp32: a hardware law, not a defect);
+the **fp32 make-or-break is now CONCLUDED** — the valid-numerics fp32 ceiling is a
+real but small **~1.1×**, **proven and independently cross-confirmed** (the
+~4.3× "cost proxy" is numerically **invalid**, so larger fp32 speedups are
+**precluded** by the conservation/cancellation fp64 pins) — and **fusion ≈ 0%**.
+**No end-to-end speedup is claimed.** Details:
+[`RELEASE_NOTES_v0.16.0.md`](RELEASE_NOTES_v0.16.0.md); evidence
+[`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/).
+
 **v0.15 is a kernel-architecture + WRF-fidelity release — NOT an end-to-end
 speedup release.** On the final 72 h gates the GPU runs the same forecast at
 **~parity total-wall** (**Switzerland 0.99×**, **Canary 1.04×** vs 24/28-rank
@@ -38,6 +61,12 @@ device-bound). **No multi-× speedup, no large-grid / 1 km speedup, and no
 per-kWh claim is made for v0.15.** The genuine speedup AND 1 km scalability both
 require **one** lever — the **fp32-operational-state restructuring**
 (ADR-007/031) — a separate, deferred major milestone, named precisely below.
+*(v0.16 update: a **1 km single domain now fits** on one RTX 5090 via the chunked
+BouLac memory fix — bit-identical, this release, and **orthogonal to fp32**. The
+fp32 make-or-break is now **CONCLUDED**: the valid-numerics fp32 ceiling is
+**~1.1×** (proven + cross-confirmed), so it is **not** the large speedup once
+hoped for — larger fp32 speedups are precluded by the conservation/cancellation
+fp64 pins. See [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/).)*
 
 **The whole Earth at 1 km fits in a single rack (PROJECTED).** The global 1 km,
 50-level atmospheric state — ~25 billion cells, ~4.3 TB (≈13 TB with solver
@@ -98,13 +127,29 @@ cache override): **[docs/resource-profile.md](docs/resource-profile.md)**.
 
 | Resource | What to expect |
 |---|---|
-| GPU / VRAM | NVIDIA GPU with **≥ 31 GiB free VRAM** for the nested 72 h case at fp64 (RTX 5090 / 32 GiB reference). On the final 72 h gates peak VRAM was **22.9 GiB** (Switzerland d01) and **29.8 GiB** (Canary L2 d02, nested) — **up from v0.14's 20.5 / 21.1 GiB**, a disclosed regression from the `niter`-16 unrolled temporaries + larger nested arena. The intrinsic ~21.7 GiB fp64 dycore working set is the binding ceiling; the deferred fp32-operational restructuring ~halves it. The smaller d01 9 km standalone case peaks **≈ 4.7 GiB**. |
+| GPU / VRAM | NVIDIA GPU with **≥ 31 GiB free VRAM** for the nested 72 h case at fp64 (RTX 5090 / 32 GiB reference). On the final 72 h gates peak VRAM was **22.9 GiB** (Switzerland d01) and **29.8 GiB** (Canary L2 d02, nested) — **up from v0.14's 20.5 / 21.1 GiB**, a disclosed regression from the `niter`-16 unrolled temporaries + larger nested arena. The intrinsic ~21.7 GiB fp64 dycore working set is the binding ceiling; v0.16 proves this peak is **transient working memory, not persistent fp64 State**, so **fp32 does not reduce it** (demoting −700 MiB of persistent fp64 State moves the peak 0 GiB) — the VRAM levers are **algorithmic** (the chunked/O(nz) MYNN BouLac memory fix, which already unlocks a 1 km single domain) and **multi-GPU sharding**. The smaller d01 9 km standalone case peaks **≈ 4.7 GiB**. |
 | Cold JIT compile | **~8–12 min** one-time on the first run before integration begins (no output during compile; the v0.15 operational graph is heavier than v0.14's ~5 min). The **persistent on-disk JIT cache (on by default since v0.12.0)** turns later runs into a fast cache read — measured **cold ~147 s → cache-hit ~29 s** for the d01 hour-1 wrapper (compile + first execute). The cached executable is **bit-identical** to the cold one (zero numerics change). |
 | Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
-| Warm throughput | **~Parity with 24/28-rank CPU-WRF** on the reference workstation: the final 72 h GPU-vs-CPU gates ran **total-wall 0.99×** (Switzerland d01: GPU 2941 s vs CPU 2906 s) / **1.04×** (Canary L2 d02: GPU 8414 s vs CPU ~8713 s), both fp64; **forecast-only stepping ~1.20× / ~1.05×**, and **warmed steady-state ~1.51× vs 24-rank (~1.29× vs 28-rank)** — the operationally-relevant figure for repeated/long runs (the ~8–12 min one-time compile, which the CPU never pays, is what pulls total-wall to parity). v0.15 ships the **final fp64 kernel** (adversarially confirmed near-optimal, device-bound); the per-step MYNN-condensation `niter` win (~1.4× isolated) dilutes to ~1.05–1.20× in the full pipeline. **No multi-× and no large-grid speedup is claimed** — the genuine speedup lever is the deferred fp32-operational restructuring. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) and `proofs/perf/v015/kernel_characterization.md` for the measured breakdown. |
+| Warm throughput | **~Parity to modest, by denominator (Switzerland d01 72 h, fp64, vs 24-rank CPU-WRF unless noted):** **cold total-wall 0.99×** (GPU 2941 s vs CPU 2906 s; incl. the one-time ~8–12 min compile the CPU never pays); **forecast incl. compile 1.04×** (per the finalgate `wall_clock_forecast_only_s`); **warmed steady-state (h4–h72) ~1.51×** (1.30× vs 28-rank) — the operationally-relevant figure for repeated/long runs. Canary L2 d02 cold total-wall **1.04×**. The shipped **final fp64 kernel** is adversarially confirmed near-optimal (device-bound); the per-step MYNN-condensation `niter` win (~1.4× isolated) is diluted by the full pipeline + compile. **No multi-× and no large-grid speedup is claimed.** v0.16 concludes the fp32 make-or-break: the valid-numerics fp32 ceiling is **~1.1×** (proven), so the remaining genuine-speedup levers are **algorithmic / multi-GPU**, not fp32. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md), `proofs/perf/v015/kernel_characterization.md`, and [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/). |
 | Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
 
-## Current status — v0.15.0
+## Current status — v0.16.0
+
+**v0.16.0 is the STABILITY release.** It proves that **every implemented L2 physics scheme runs coupled-green on a real case** (Switzerland d01, real terrain + real lateral boundaries + cross-scheme coupling + multi-step drift, inside the frozen v0.14 tolerance band): **24 of 25 L2 targets GREEN**, with the 25th (Noah-classic land surface, `sf_surface=2`) an honest scope-carry (needs the WRF land/static-data bundle) → rollup **`ALL_GREEN_OR_CARRIED`** (`proofs/v016/coverage/coverage_rollup.json`; dashboard `proofs/v016/dashboard/`). It adds the **aerosol-aware Thompson microphysics** (`mp_physics=28`, the "+1") — `QNWFA`/`QNIFA` prognostics end-to-end, per-scheme **oracle PASS** against the unmodified pristine WRF module (5187-col, GPU). And it ships a concrete **1 km-unlock**: a **chunked MYNN BouLac** (`GPUWRF_MYNN_BOULAC_CHUNKED=1`, default off) that makes a **1 km single-domain fp64 forecast fit on one RTX 5090** (dense OOMs the 147,456-col step at ≈ 18.8 GiB; chunked **fits at 18.25 GiB**), **bit-identically** to the dense kernel (`max_abs == 0.0` vs dense across 8 regimes). *(The fit is measured in a **fresh process per grid**; repeated multi-grid runs in one process can fragment allocator memory, so production should isolate grids per process or recycle the process.)* **Performance remains honestly ~parity** with CPU-WRF (the GeForce fp64 1/64 hardware law — no end-to-end speedup); the **fp32 make-or-break is now CONCLUDED and double-confirmed** (Opus full-working-set implementation + independent GPT reproduction): the **valid-numerics fp32 ceiling is a real but small ~1.1×** (full-working-set 16k 1.107× / 65k 1.110×, **VRAM ratio 1.000**; GPT reproduced 1.105× / 1.111×), with **0 % VRAM-peak reduction from precision alone**. The earlier **~4.3× "cost proxy" is numerically INVALID** (it turns x64 off and corrupts the conservation/cancellation pins — base absolutes can't be stored fp32 without corrupting the geopotential/PGF gradient 27×/127×; qke goes non-finite at 1 km), so **larger fp32 speedups are precluded** — it is **not** a next-version target. Fusion is ~0% (XLA already optimal). The real v0.16 wins are the genuine ~1.1× fp32 lane **plus** the 1 km-unlock above (orthogonal to fp32). See [`RELEASE_NOTES_v0.16.0.md`](RELEASE_NOTES_v0.16.0.md) and evidence [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/). The v0.15 fp64 kernel + 72 h two-region WRF identity carry forward unchanged.
+
+### Historical — v0.15.0
+
+> **Forward correction (v0.16).** The v0.15 text below names the
+> "fp32-operational-state restructuring" (ADR-007/031) as the deferred lever for
+> a genuine speedup and for ~halving VRAM. v0.16's make-or-break investigation
+> (double-confirmed: Opus + independent GPT) **supersedes that expectation**: the
+> valid-numerics fp32 ceiling is **~1.1×** (not a large speedup) and fp32 does
+> **not** reduce the transient-dominated VRAM peak (0 GiB moved by a −700 MiB
+> persistent-State demotion). The remaining genuine-speedup / VRAM levers are
+> **algorithmic** (the chunked/O(nz) MYNN BouLac fix, which unlocks a 1 km single
+> domain in v0.16) and **multi-GPU sharding**, not fp32. The v0.15 narrative is
+> retained below as historical record. See
+> [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/).
 
 **v0.15.0 is a kernel-architecture + WRF-fidelity release, NOT an end-to-end speedup release.** It delivers the project's **final fp64 GPU kernel** (adversarially confirmed near-optimal without megakernels; the step is device-bound), two WRF-fidelity fixes (**MYNN-EDMF condensation `niter` 50 → 16**, matching WRF's own convergence early-exit; **Thompson cold-collection**), and re-closes both **72 h GPU-vs-CPU-WRF field-parity gates** on the final code — **Switzerland d01** and **Canary L2 d02** — each stable to h72 with **9/10 prognostic fields within frozen tolerance** and the full dynamics/thermodynamics core cell-for-cell identical. v0.15 is **cleaner than v0.14 at the atlas level** (1 tolerance failure per region vs v0.14's 3): the **MUB/PB nest-base-state seam is fixed** (250.7 → **0.0078 Pa**) and Switzerland **DZS/ZS** are now emitted paired. **Performance is honestly ~parity total-wall** (Switzerland **0.99×**, Canary **1.04×** vs CPU-WRF), forecast-only **~1.05–1.20×**; the `niter` win (~1.4× isolated) dilutes in the full pipeline and is offset by a heavier ~8–12 min one-time compile and **higher peak VRAM** (20.5 → 22.9 GiB Switzerland, 21.1 → 29.8 GiB Canary — a disclosed regression). **No multi-× and no large-grid / 1 km speedup is claimed.** The single structural lever for both real speedup and 1 km scalability is the deferred **fp32-operational-state restructuring** (ADR-007/031).
 
@@ -159,7 +204,7 @@ open issues are in **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
 |---|---|---|---|
 | **Init** | Native real-init (`wrfinput`/`wrfbdy` from met_em, no `real.exe`); WRF restart | — | — |
 | **Dynamics** | Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K (`diff_opt=2`/`km_opt=1`) + 2-D Smagorinsky (`diff_opt=1`/`km_opt=4`) horizontal diffusion | 3-D TKE / full Smagorinsky closures (`km_opt=2/3/5`) → use `km_opt=1` or `4` | Moving/global nests; adaptive Δt |
-| **Microphysics** | Kessler, Lin, WSM3/5/6, Thompson, Morrison, WDM6 | Aerosol-coupled (Thompson-aerosol mp=28, Morrison-aerosol mp=40), NSSL | WRF-Chem |
+| **Microphysics** | Kessler, Lin, WSM3/5/6, Thompson, **aerosol-aware Thompson (mp=28, v0.16)**, Morrison, WDM6 | Aerosol-coupled Morrison (mp=40), NSSL | WRF-Chem |
 | **PBL / sfc** | YSU, MYNN-EDMF, ACM2, BouLac, **MYJ (v0.13.0)**; MYNN-SL, revised-MM5, Pleim-Xiu, **Janjic-Eta (v0.13.0)** sfclay | — | — |
 | **Cumulus** | Kain-Fritsch, BMJ, Tiedtke (requires active flux-form moisture advection for RQVFTEN), Grell-Freitas (scale-aware) | New-Tiedtke | — |
 | **Radiation** | RRTMG SW + LW with topographic shading + slope correction; Dudhia SW + classic RRTM LW (`ra_lw=1`, v0.13.0 skeptic-hardened); clear-sky `…C` flux diagnostics (v0.13.0, opt-in) | — | — |
@@ -168,7 +213,7 @@ open issues are in **[docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md)**.
 | **Output** | Focused 104-variable `wrfout` (core met/spatial/vertical/soil + radiation-flux + Noah-MP snow-layer) | — | Full 375-variable wrfout; auxhist streams (KI-3) |
 | **Multi-GPU** | `shard_map` + `lax.ppermute` halo sharding (v0.13.0), single-GPU default = zero overhead | — | Real multi-GPU throughput (needs DGX/NVLink; fake-mesh bit-identical only, not yet throughput-validated) |
 | **Data assim.** | Lateral-BC relaxation | — | DFI, FDDA, grid/obs/spectral nudging |
-| **Other** | — | — | Urban (BEP/BEM), lake, aerosol-coupled MP, WRF-Chem (rejected, not roadmap) |
+| **Other** | — | — | Urban (BEP/BEM), lake, fully aerosol-coupled MP / WRF-Chem (rejected, not roadmap; aerosol-*aware* Thompson `mp=28` self-init IS wired, v0.16) |
 
 These are **boundaries and a roadmap, not hidden gaps**: every unsupported
 namelist selection is rejected before any compute with a specific named reason —
@@ -181,7 +226,7 @@ delta-to-complete-WRF ledger is in the [Roadmap](#roadmap--delta-to-a-complete-w
 
 | Family | Namelist key | GPU-operational options (scan-wired) |
 |---|---|---|
-| Microphysics | `mp_physics` | 1 Kessler, 2 Purdue-Lin, 3 WSM3, 4 WSM5, 6 WSM6, 8 Thompson, 10 Morrison, 16 WDM6 |
+| Microphysics | `mp_physics` | 1 Kessler, 2 Purdue-Lin, 3 WSM3, 4 WSM5, 6 WSM6, 8 Thompson, 10 Morrison, 14 WDM5, 16 WDM6, **28 aerosol-aware Thompson (v0.16: QNWFA/QNIFA prognostics; WRF-module oracle PASS 5187-col GPU; coupled field-gate = carry)** |
 | PBL | `bl_pbl_physics` | 1 YSU, **2 MYJ (v0.13.0: jit/vmap rewrite, oracle PASS, mandatory Janjic pairing)**, **5 MYNN-EDMF** (v0.11.0: DMP mass flux + cloud-aware moisture/thermodynamics, WRF defaults `bl_mynn_edmf=1`/`bl_mynn_edmf_mom=1`), 7 ACM2, 8 BouLac |
 | Surface layer | `sf_sfclay_physics` | 1 revised-MM5, **2 Janjic-Eta (v0.13.0, paired with MYJ)**, 5 MYNN-SL, 7 Pleim-Xiu |
 | Cumulus | `cu_physics` | **1 Kain-Fritsch** (v0.11.0: column/savepoint parity PASS; d01 parent now has faithful KF), 2 BMJ (fp64), 3 Grell-Freitas (scale-aware), 6 Tiedtke (requires active flux-form moisture advection for RQVFTEN) |
@@ -300,7 +345,7 @@ Proof objects live under [`proofs/v015/finalgates/`](proofs/v015/finalgates/) (v
 - **Moisture flux-advection + clear-sky diagnostics are opt-in, not operational defaults.** They are wired and proven (default-off, byte-identical when off); operationalizing them — with the cadence refinements (KI-10) — is a v0.15+ item.
 - **v0.15 is NOT an end-to-end speedup release, and claims no large-grid speedup.** Total-wall is **~parity** (Switzerland 0.99×, Canary 1.04× vs CPU-WRF); forecast-only is ~1.05–1.20×. The fp64 kernel is adversarially confirmed near-optimal without megakernels (device-bound), so there is **no large host-side lever left**. The earlier "~6–10× per-cell at large grids" framing is **REFUTED by the project's own `km_bench`** (per-cell cost slightly *worsens*; the honest large-grid asymptote is ~1.6×, deployment ~2× with the structurally-deferred Pallas+fp32 levers) — **no large-grid / 1 km speedup is claimed for v0.15**. The genuine speedup AND 1 km scalability both require the deferred **fp32-operational-state restructuring** (ADR-007/031). See `proofs/perf/v015/kernel_characterization.md`.
 - **fp64-only standalone.** The standalone CLI path forces pure fp64; there is no fp32 standalone path (gated-fp32 is an experimental ADR-007 preview and is no faster on this memory-bound workload).
-- **Not DFI / FDDA / spectral-nudging / adaptive-Δt** (fixed Δt only), **not aerosol-coupled microphysics** (Thompson-aerosol `mp=28`/Morrison-aerosol `mp=40`/NSSL fail closed), and **not urban (BEP/BEM) / lake / WRF-Chem / WRF-Fire / WRF-Hydro** (these are rejected, not roadmap).
+- **Not DFI / FDDA / spectral-nudging / adaptive-Δt** (fixed Δt only); **aerosol-coupled Morrison (`mp=40`) and NSSL fail closed** (aerosol-aware Thompson `mp=28` is now wired in v0.16 — see the v0.16 status note above); and **not urban (BEP/BEM) / lake / WRF-Chem / WRF-Fire / WRF-Hydro** (these are rejected, not roadmap).
 - **Free-running limited-area (run_boundary=False) on wide domains.** Free-running without lateral-boundary relaxation on wide domains (nx≈160+) can go unstable beyond ~14 h. The validated operational path uses boundary forcing. See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
 - **RRTMG intermediate gas optical depth (`taug`) in 4 UV bands.** The top-layer convention differs from the WRF oracle fixture in 4 UV bands (bands 9, 10, 12, 13). Integrated flux outputs pass tier-1 (< 0.05% rel); this is a pre-existing, isolated oracle-fixture discrepancy. Carried to v0.14+ (KI-6). See [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
 - **Known bounded residual (U10).** U10 final-lead RMSE (h+24) is 8.06 m/s vs the 7.5 m/s operational bar on the validated d02 coupled-skill case — the same pre-existing episodic evening-peak westerly under-prediction as v0.9.0 (tied to KI-9). T2 and V10 are within bar at all leads; U10 beats persistence on 23/24 leads.
@@ -311,14 +356,15 @@ Proof objects live under [`proofs/v015/finalgates/`](proofs/v015/finalgates/) (v
 
 - **24 h/72 h forecast-skill closure (T2/U10/V10) vs CPU-WRF** (KI-9) — the credibility gate; v0.15 re-closes the 72 h field-parity gates but not the broader skill-equivalence campaign. Hard dynamics-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob.
 - **The two carried bounded misses** — RAINNC precip sensitivity (Switzerland, 5.08 mm) and QVAPOR moisture margin (Canary, 1.44×10⁻³) — carried to the v0.16 stability lane; frozen limits unchanged. (v0.14's MUB/PB seam is fixed in v0.15.)
-- **Genuine end-to-end speedup + 1 km scalability** — both gated on the **fp32-operational-state restructuring** (ADR-007/031): it ~halves the VRAM arena (1 km fits) and removes the mixed-precision compile pathology (the opt-in fp32-BouLac ~1.67× lands). The v0.15 fp64 kernel is already near-optimal; this is the named next major lever, not a tweak.
-- **Higher peak VRAM (a v0.15 regression)** — 20.5 → 22.9 GiB (Switzerland) / 21.1 → 29.8 GiB (Canary) from the `niter`-16 unrolled temporaries + larger nested arena; the fp32-operational restructuring ~halves the dycore arena.
+- **Genuine end-to-end speedup — the fp32 lever is now CONCLUDED, not a deferred promise.** v0.16's make-or-break full-working-set fp32 investigation (double-confirmed: Opus + independent GPT) proves the **valid-numerics fp32 ceiling is ~1.1×** (not the large speedup once hoped) and that **fp32 does not reduce the transient-dominated VRAM peak** (demoting −700 MiB of persistent fp64 State moves the peak 0 GiB). The remaining genuine-speedup levers are therefore **not** fp32: they are algorithmic (e.g. the MYNN BouLac dense→O(nz) shape rewrite that already unlocks 1 km, orthogonal to precision) and multi-GPU horizontal sharding. The fp64 kernel itself is already near-optimal. Evidence: [`proofs/v016/fp32_verdict/`](proofs/v016/fp32_verdict/).
+- **1 km scalability** — delivered for a 1 km **single domain** in v0.16 via the chunked/O(nz) MYNN BouLac memory fix (orthogonal to fp32). Larger working sets (≥ ~196 k cols) need **multi-GPU horizontal sharding** (proven: fp32 does not shrink the transient peak, so it is not the lever here).
+- **Higher peak VRAM (a v0.15 regression)** — 20.5 → 22.9 GiB (Switzerland) / 21.1 → 29.8 GiB (Canary) from the `niter`-16 unrolled temporaries + larger nested arena. (Note: v0.16 proves fp32 does **not** reduce this peak — it is transient working memory, not persistent fp64 State; the VRAM levers are algorithmic, e.g. the BouLac memory fix, and multi-GPU sharding.)
 - **Moisture-advection cadence refinements** (KI-10) — acoustic-accumulated fluxes + WRF-cadence-exact physics-tendency folding; then operationalize moisture advection on the default path.
 - **Two-way nesting 24 h real-GPU equivalence vs CPU-WRF** (KI-11) — only finite/stable proven.
 - **Tier-2 speed/architecture remainder** — sub-jit split + recompile hygiene, parallel-compile + dev `--fast-compile`, CPU-flock for idle nightly cores.
 - **Multi-hardware / independent reproduction** — v0.15.0 is one RTX 5090, one JAX/CUDA stack.
 - **New-Tiedtke cumulus scan-wiring** — recognized/accepted but not separately source-gated; fail-closed if selected.
-- **fp32 standalone path** — gated-fp32 operational mode (ADR-007), pending evidence it helps on this workload.
+- **fp32 standalone path** — gated-fp32 operational mode (ADR-007). v0.16 concludes the make-or-break investigation: the valid-numerics fp32 ceiling is **~1.1× with 0 % VRAM-peak reduction from precision alone** (proven + cross-confirmed), so an fp32 standalone path is **not** a large-speedup lever; the genuine ~1.1× fp32 lane is available, the larger levers are algorithmic / multi-GPU.
 - **Full 375-variable `wrfout`** (KI-3), **RRTMG SW `taug` UV-band fix** (KI-6), and the **`*_tendf` source-tendency adapter** for RK-stage physics.
 - **Tier-3 scheme long-tail** — ~22 microphysics, ~10 cumulus, ~8 PBL, ~12 radiation, ~4 surface-layer + ~6 LSM families; each opt-in / fail-closed until oracle-proven.
 

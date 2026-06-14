@@ -1,0 +1,19 @@
+{
+  "schema": "V016ReleasePlots",
+  "onekm_unlock": {
+    "dense_147k_oom_gib": 18.8,
+    "chunked_147k_fits_gib": 18.247225761413574,
+    "chunked_147k_ms_per_step": 566.5041762476903,
+    "bit_identical_vs_dense": true,
+    "max_rel_vs_wrf": 2.407884242896604e-16
+  },
+  "perf_panel": {
+    "fp64_vs_cpu": "~parity (hardware law)",
+    "genuine_fp32_speedup_proven": 1.11,
+    "genuine_fp32_vram_ratio": 1.0,
+    "fusion_speedup": "~0% (XLA optimal)",
+    "global_fp32_cost_proxy_INVALID": 4.29,
+    "global_fp32_cost_proxy_status": "DISPROVEN: numerically invalid (x64 off; corrupts conservation/cancellation; qke non-finite at 1km). Valid-numerics fp32 ceiling is ~1.1x, double-confirmed.",
+    "verdict": "valid-numerics fp32 ceiling ~1.1x + 0% VRAM (PROVEN, Opus+GPT); 1km unlock is the orthogonal BouLac dense->O(nz) lever (not fp32)."
+  }
+}

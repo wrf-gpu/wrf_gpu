@@ -100,6 +100,10 @@ MICROPHYSICS_EXTRA_VARIABLES: tuple[str, ...] = (
     "QNGRAUPEL",
     "QNCLOUD",
     "QNCCN",
+    # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers
+    # (State nwfa/nifa); emitted only when the source leaves are present.
+    "QNWFA",
+    "QNIFA",
     "QKE",
 )
 
@@ -602,6 +606,24 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         coordinates="XLONG XLAT XTIME",
     ),
     "QNCCN": _spec("QNCCN", XYZ, "XYZ", "CCN Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
+    # v0.16 aerosol-aware Thompson (mp=28) aerosol numbers (WRF Registry
+    # thompsonaero qnwfa/qnifa names/descriptions).
+    "QNWFA": _spec(
+        "QNWFA",
+        XYZ,
+        "XYZ",
+        "water-friendly aerosol number con",
+        "  kg-1",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    "QNIFA": _spec(
+        "QNIFA",
+        XYZ,
+        "XYZ",
+        "ice-friendly aerosol number con",
+        "  kg-1",
+        coordinates="XLONG XLAT XTIME",
+    ),
     "QKE": _spec("QKE", XYZ, "XYZ", "twice TKE from MYNN", "m2 s-2", coordinates="XLONG XLAT XTIME"),
     # --- P0-5a (b) grid-static coordinate / map-factor / Coriolis fields ---
     "ZNU": _spec("ZNU", Z_HALF, "Z  ", "eta values on half (mass) levels", ""),
@@ -1435,6 +1457,8 @@ def _build_output_fields(
         ("QNGRAUPEL", ("QNGRAUPEL", "Ng", "qngraupel")),
         ("QNCLOUD", ("QNCLOUD", "Nc", "qnc", "qnc_cloud")),
         ("QNCCN", ("QNCCN", "Nn", "qnn", "qccn")),
+        ("QNWFA", ("QNWFA", "nwfa", "qnwfa")),
+        ("QNIFA", ("QNIFA", "nifa", "qnifa")),
         ("QKE", ("QKE", "qke")),
     ):
         value = _optional_field_array(state, state_names, shape_xyz)

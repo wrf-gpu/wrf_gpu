@@ -263,8 +263,10 @@ def test_operational_set_is_consistent_with_adapter_tables() -> None:
     """Every scan-wired non-zero option (except the default-coupler-backed ones)
     has a concrete adapter; conversely every adapter is in the scan-wired set."""
 
-    # microphysics: mp=8 is the default thompson_adapter (not in MP_SCAN_ADAPTERS).
-    assert set(MP_SCAN_ADAPTERS) | {DEFAULT_MP_PHYSICS} >= set(OPERATIONAL_MP)
+    # microphysics: mp=8 is the default thompson_adapter and mp=28 the v0.16
+    # aerosol-aware thompson_aero_adapter; both are coupler-backed and routed
+    # explicitly in the step (not in MP_SCAN_ADAPTERS).
+    assert set(MP_SCAN_ADAPTERS) | {DEFAULT_MP_PHYSICS, 28} >= set(OPERATIONAL_MP)
     assert set(MP_SCAN_ADAPTERS) <= set(OPERATIONAL_MP)
     # PBL: bl=5 MYNN + bl=2 MYJ are routed explicitly in the step (not in the table).
     assert set(PBL_SCAN_ADAPTERS) | {DEFAULT_BL_PBL_PHYSICS, 2} >= set(OPERATIONAL_BL)

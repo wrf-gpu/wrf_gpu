@@ -159,6 +159,11 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     10: _mp_entry(10, "gpuwrf.physics.microphysics_morrison", "morrison_tendency", gpu=True),
     14: _mp_entry(14, "gpuwrf.physics.microphysics_wdm5", "wdm5_physics_tendency", gpu=True),
     16: _mp_entry(16, "gpuwrf.physics.microphysics_wdm6", "wdm6_physics_tendency", gpu=True),
+    # mp=28 aerosol-aware Thompson (v0.16): wired through the State adapter in
+    # coupling.physics_couplers (mirrors mp=8), advancing the moist species +
+    # Ni/Nr/Ns/Ng + the aerosol-aware prognostics Nc/nwfa/nifa and applying the
+    # WRF fake surface aerosol emission each step.
+    28: _mp_entry(28, "gpuwrf.coupling.physics_couplers", "thompson_aero_adapter", gpu=True, adapter=True),
 }
 
 # --- PBL (bl_pbl_physics) ------------------------------------------------------

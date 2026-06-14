@@ -26,8 +26,11 @@ from gpuwrf.io.wrfout_writer import MICROPHYSICS_EXTRA_VARIABLES, WRFOUT_VARIABL
 
 def test_registry_self_check_and_state_append_order() -> None:
     assert_registry_consistent()
-    assert physics_state_append_order() == ("Nc", "Nn", "rainc_acc")
-    assert V060_ADDITIVE_STATE_LEAVES == ("Nc", "Nn", "rainc_acc")
+    # v0.16 appends the aerosol-aware Thompson (mp=28) nwfa/nifa leaves to the
+    # additive set (append-only AFTER Nc/Nn; the State pytree appends them at
+    # the very END of __slots__, after rainc_acc -- see contracts/state.py).
+    assert physics_state_append_order() == ("Nc", "Nn", "nwfa", "nifa", "rainc_acc")
+    assert V060_ADDITIVE_STATE_LEAVES == ("Nc", "Nn", "nwfa", "nifa", "rainc_acc")
 
 
 def test_nest_field_list_is_registry_driven_for_two_moment_schemes() -> None:
@@ -47,9 +50,15 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
     # WDM5 (mp=14): 5-class moist (no graupel) + the WDM6 Nn/Nc/Nr number leaves.
     assert state_leaves_for_mp(14) == ("qv", "qc", "qr", "qi", "qs", "Nn", "Nc", "Nr")
     assert state_leaves_for_mp(16) == ("qv", "qc", "qr", "qi", "qs", "qg", "Nn", "Nc", "Nr")
+    # v0.16 aerosol-aware Thompson (mp=28): Registry thompsonaero scalars.
+    assert state_leaves_for_mp(28) == ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Nc", "nwfa", "nifa")
     assert NUMBER_WRFOUT_NAME["Nn"] == "QNCCN"
+    assert NUMBER_WRFOUT_NAME["nwfa"] == "QNWFA"
+    assert NUMBER_WRFOUT_NAME["nifa"] == "QNIFA"
     assert "QNCLOUD" in wrfout_names_for_mp(16)
     assert "QNCCN" in wrfout_names_for_mp(16)
+    assert "QNWFA" in wrfout_names_for_mp(28)
+    assert "QNIFA" in wrfout_names_for_mp(28)
 
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
@@ -61,7 +70,8 @@ def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     # slab(1)) + 6 radiation variants (RRTMG LW/SW under option 4, classic RRTM LW +
     # Dudhia SW under option 1, v0.13 Tier-3 GSFC/Chou-Suarez SW under option 2, v0.13
     # Tier-3 reference-only GSFC/Goddard NUWRF LW under option 5).
-    assert len(SCHEME_STEP_SPECS) == 37
+    # +1 in v0.16: aerosol-aware Thompson microphysics (mp=28).
+    assert len(SCHEME_STEP_SPECS) == 38
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("pbl", 2).writes_carry == ("tke_pbl", "el_pbl")
     assert scheme_step_spec("surface_layer", 2).owner_module.endswith("sfclay_janjic.py")

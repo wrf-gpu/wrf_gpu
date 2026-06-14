@@ -110,6 +110,12 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "qc_bl": mass_3d,
         "qi_bl": mass_3d,
         "cldfra_bl": mass_3d,
+        # v0.16 additive aerosol-aware Thompson (mp=28) leaves (append-only):
+        # water-/ice-friendly aerosol number concentrations on mass points.
+        # Ordered AFTER the v0.15 MYNN leaves so they remain at the very END of
+        # the leaf order (pytree-position stability for every prior leaf).
+        "nwfa": mass_3d,
+        "nifa": mass_3d,
     }
 
 
@@ -471,6 +477,14 @@ class State:
         "qc_bl",
         "qi_bl",
         "cldfra_bl",
+        # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
+        # WRF QNWFA/QNIFA water-/ice-friendly aerosol number concentrations
+        # (kg^-1). Appended at the VERY END (after the v0.6.0 + v0.15 additions)
+        # so every existing leaf keeps its pytree position; ``__init__`` gives
+        # them ``None`` defaults (-> zeros) so pre-v0.16 ``cls(*children)``
+        # flattens with the old leaf count still reconstruct.
+        "nwfa",
+        "nifa",
     )
 
     def __init__(
@@ -537,6 +551,9 @@ class State:
         qc_bl: jax.Array | None = None,
         qi_bl: jax.Array | None = None,
         cldfra_bl: jax.Array | None = None,
+        # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
+        nwfa: jax.Array | None = None,
+        nifa: jax.Array | None = None,
     ) -> None:
         self.u = u
         self.v = v
@@ -638,6 +655,21 @@ class State:
             jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("cldfra_bl"))
             if cldfra_bl is None
             else _as_dtype(cldfra_bl, DEFAULT_DTYPES.dtype_for("cldfra_bl"))
+        )
+        # v0.16 additive aerosol-aware Thompson (mp=28) leaves. Same ``None`` ->
+        # zeros pattern as Nc/Nn above (templated on qc, mass-3d) so existing
+        # call sites and pre-v0.16 pytree flattens (old leaf count) still
+        # construct; the cast keeps the ADR-007 precision matrix (FP32-gated)
+        # consistent.
+        self.nwfa = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("nwfa"))
+            if nwfa is None
+            else _as_dtype(nwfa, DEFAULT_DTYPES.dtype_for("nwfa"))
+        )
+        self.nifa = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("nifa"))
+            if nifa is None
+            else _as_dtype(nifa, DEFAULT_DTYPES.dtype_for("nifa"))
         )
 
     @classmethod
