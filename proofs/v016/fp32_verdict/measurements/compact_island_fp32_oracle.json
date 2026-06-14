@@ -1,0 +1,79 @@
+{
+  "case": "v016 COMPACT-ISLAND fp32 design oracle (real b6 column)",
+  "column_fixture": "wrf_step010_history_interp_full_timestep.nc",
+  "hypothesis": "Computing ONLY the large-minus-large cancellation (EOS bracket / base-geopotential difference) in fp64 and emitting an ALREADY-CANCELLED fp32 quantity lets the hot loop run GENUINELY fp32 (fp32 c2a * fp32 bracket, fp32 dphi) with p'/w errors at the fp32 noise floor -- so the compact island is numerically equivalent to the fp64-carrying PROMOTE form while removing the fp64 working set.",
+  "calc_p_rho": {
+    "nz": 44,
+    "c2a_max": 191942.70985883058,
+    "bracket_abs_max": 0.011307439545880158,
+    "bracket_abs_min_nz": 8.91102819227177e-06,
+    "physical_p_prime_scale_Pa": 1824.8287760416667,
+    "fp32_floor_Pa": 4.882812527284841e-05,
+    "p_prime_err_vs_ref": {
+      "naive": {
+        "max_abs": 0.0002848307292424579,
+        "mean_abs": 3.2655908861864185e-05,
+        "p99_abs": 0.0002498372394961735,
+        "rms": 6.733427502883575e-05
+      },
+      "promote": {
+        "max_abs": 6.541013362948433e-05,
+        "mean_abs": 1.1649080329290862e-05,
+        "p99_abs": 6.507806098852597e-05,
+        "rms": 2.1663832344042643e-05
+      },
+      "compact": {
+        "max_abs": 9.765625031832315e-05,
+        "mean_abs": 1.8676547490222156e-05,
+        "p99_abs": 9.590657565013317e-05,
+        "rms": 3.4849626690236134e-05
+      }
+    },
+    "rel_to_physical": {
+      "naive": 1.5608627668635268e-07,
+      "promote": 3.584453209433103e-08,
+      "compact": 5.3515295024092354e-08
+    },
+    "compact_vs_promote_max_abs_Pa": 0.00011928592789445247,
+    "fp32_eps": 1.1920928955078125e-07,
+    "phys_gate_rel": 1.1920928955078125e-06,
+    "GATE": {
+      "compact_passes": true,
+      "promote_passes": true,
+      "naive_fails": false,
+      "compact_matches_promote": true
+    }
+  },
+  "advance_w": {
+    "nz": 44,
+    "c2a_max": 191942.70985883058,
+    "phb_max": 195220.484375,
+    "dphb_top_fp32_ulp_m2s2": 0.015625,
+    "termAB_w_increment_scale": 6870.304089691186,
+    "fp32_floor": 0.0001934561760208453,
+    "err_vs_ref": {
+      "naive": {
+        "max_abs": 0.0009315025763498852,
+        "mean_abs": 0.00016947322019709836,
+        "p99_abs": 0.000826601213211688,
+        "rms": 0.00026123539212925633
+      },
+      "compact": {
+        "max_abs": 0.0009315025763498852,
+        "mean_abs": 0.00016947322019709836,
+        "p99_abs": 0.000826601213211688,
+        "rms": 0.00026123539212925633
+      }
+    },
+    "rel_to_scale": {
+      "naive": 1.3558389325846497e-07,
+      "compact": 1.3558389325846497e-07
+    },
+    "w_gate_rel": 5.96e-06,
+    "GATE": {
+      "compact_passes": true,
+      "naive_status": "passes"
+    }
+  },
+  "OVERALL_COMPACT_SOUND": false
+}

@@ -1,0 +1,81 @@
+{
+  "schema": "V016FullWsTransientMemoryProbe",
+  "scope": "transient (XLA temp) memory + HLO fp64/fp32 buffer-byte split, fp64 vs fullws, real Switzerland d01 op step",
+  "device": "cuda:0",
+  "tile": [
+    1,
+    1
+  ],
+  "ncol": 16384,
+  "steps": 4,
+  "fullws_fields": [
+    "p",
+    "p_total",
+    "p_perturbation",
+    "ph",
+    "ph_total",
+    "ph_perturbation",
+    "w"
+  ],
+  "fullws_enabled_at_import": true,
+  "results": {
+    "fp64": {
+      "memory_analysis": {
+        "temp_size_bytes": 2070911680,
+        "temp_size_mib": 1974.9752807617188,
+        "argument_size_mib": 366.2969055175781,
+        "output_size_mib": 366.29736328125,
+        "generated_code_size_mib": 102.69476318359375,
+        "alias_size_mib": 0.0
+      },
+      "hlo_buffer_bytes": {
+        "bytes_by_dtype_mib": {
+          "f64": 307274.0934371948,
+          "s32": 15876.937854766846,
+          "f32": 1037.2184028625488,
+          "s64": 27.930938720703125
+        },
+        "decls_by_dtype": {
+          "f64": 67947,
+          "s32": 608,
+          "f32": 2479,
+          "s64": 238
+        },
+        "f64_mib": 307274.0934371948,
+        "f32_mib": 1037.2184028625488,
+        "f64_fraction_of_float": 0.9966358081490029,
+        "hlo_chars": 14369904
+      },
+      "available": true
+    },
+    "fullws": {
+      "memory_analysis": {
+        "temp_size_bytes": 2098437808,
+        "temp_size_mib": 2001.2262420654297,
+        "argument_size_mib": 246.66336059570312,
+        "output_size_mib": 246.663818359375,
+        "generated_code_size_mib": 100.0836067199707,
+        "alias_size_mib": 0.0
+      },
+      "hlo_buffer_bytes": {
+        "bytes_by_dtype_mib": {
+          "f32": 26763.857288360596,
+          "f64": 240048.23110961914,
+          "s32": 15885.187854766846,
+          "s64": 27.930938720703125
+        },
+        "decls_by_dtype": {
+          "f32": 36468,
+          "f64": 32716,
+          "s32": 611,
+          "s64": 238
+        },
+        "f64_mib": 240048.23110961914,
+        "f32_mib": 26763.857288360596,
+        "f64_fraction_of_float": 0.8996902372412777,
+        "hlo_chars": 14414497
+      },
+      "available": true
+    }
+  }
+}

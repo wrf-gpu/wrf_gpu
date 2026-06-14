@@ -1,0 +1,56 @@
+{
+  "schema": "V016FullWsBaseAbsoluteOracle",
+  "scope": "fp32-STORAGE error of the ph_total/p_total base absolutes through the advance_w/advance_uv/calc_p_rho difference operators",
+  "fixture_file": "wrf_step010_history_interp_full_timestep.nc",
+  "operators": {
+    "geopotential_layer_diff_dphi": {
+      "abs_magnitude_max": 204008.47705078125,
+      "diff_physical_scale": 6770.991247558595,
+      "fp64_store_err": {
+        "max_abs": 0.0,
+        "rms": 0.0
+      },
+      "fullws_fp32store_fp64diff_err": {
+        "max_abs": 0.013110351574141532,
+        "rms": 0.004071601318642419
+      },
+      "naive_fp32store_fp32diff_err": {
+        "max_abs": 0.013110351574141532,
+        "rms": 0.004071595088500662
+      },
+      "fullws_rel_to_diff_scale": 1.9362529199648146e-06,
+      "naive_rel_to_diff_scale": 1.9362529199648146e-06,
+      "ph_pert_own_fp32_floor_abs": 0.00048828125,
+      "fullws_err_vs_pert_fp32_floor_ratio": 26.850000023841858
+    },
+    "pressure_horizontal_grad_pgf": {
+      "abs_magnitude_max": 101531.03190104167,
+      "pgf_physical_scale_pa": 5.0,
+      "fp64_store_err": {
+        "max_abs": 6.6346927951599355e-12,
+        "rms": 2.3809640817859905e-12
+      },
+      "fullws_fp32store_fp64diff_err": {
+        "max_abs": 0.006189080454186868,
+        "rms": 0.0020451800494196435
+      },
+      "naive_fp32store_fp32diff_err": {
+        "max_abs": 0.006189080454186868,
+        "rms": 0.0020451800494196435
+      },
+      "fullws_rel_to_pgf_scale": 0.0012378160908373737,
+      "naive_rel_to_pgf_scale": 0.0012378160908373737,
+      "p_pert_own_fp32_floor_abs_pa": 4.8828125045474735e-05,
+      "fullws_err_vs_pert_fp32_floor_ratio": 126.75236758369972
+    }
+  },
+  "verdict": {
+    "gate_ratio_threshold": 1.5,
+    "geopotential_fullws_vs_pert_floor_ratio": 26.850000023841858,
+    "pressure_pgf_fullws_vs_pert_floor_ratio": 126.75236758369972,
+    "geopotential_base_fp32_storage_safe": false,
+    "pressure_base_fp32_storage_safe": false,
+    "GATE_PASS": false,
+    "interpretation": "PASS => the base/total absolutes can be stored fp32 (FULLWS) because the storage error through the cancellation difference stays within the perturbation's own already-accepted fp32 floor. FAIL => storing the ~1e5 base absolute fp32 corrupts the geopotential/PGF gradient beyond the gated-fp32 budget; the base must stay fp64 (then FULLWS gives 0 VRAM since the base IS the large persistent array)."
+  }
+}
