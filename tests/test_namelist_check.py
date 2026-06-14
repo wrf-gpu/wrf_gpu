@@ -75,7 +75,8 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
 
 
 def test_registry_records_supported_active_suite() -> None:
-    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16})
+    # v0.16 adds mp=28 (aerosol-aware Thompson).
+    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28})
     assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 5, 7, 8, 99})
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 7, 91})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 1, 2, 4})
@@ -164,7 +165,10 @@ def test_implemented_scheme_passes() -> None:
 @pytest.mark.parametrize(
     "key, value, scheme_substring",
     [
-        ("mp_physics", 28, "Thompson"),  # aerosol-aware Thompson
+        # mp=28 (aerosol-aware Thompson) became IMPLEMENTED in v0.16; mp=29
+        # (RCON, the liquid-phase-modified Thompson-aero variant) remains the
+        # recognized-but-unimplemented Thompson-family example.
+        ("mp_physics", 29, "Thompson"),
         ("mp_physics", 50, "P3"),
         ("bl_pbl_physics", 4, "QNSE"),
         ("cu_physics", 7, "Zhang-McFarlane"),
@@ -276,13 +280,14 @@ def test_fortran_repeat_count_syntax_is_expanded() -> None:
 
     # 3*8 -> [8, 8, 8] all implemented -> passes.
     validate_supported_namelist("&physics\n mp_physics = 3*8,\n/")
-    # 2*28 -> two domains of a recognized-but-unimplemented scheme.
+    # 2*29 -> two domains of a recognized-but-unimplemented scheme (RCON;
+    # mp=28 aerosol-aware Thompson became implemented in v0.16).
     with pytest.raises(UnsupportedNamelistOption) as excinfo:
-        validate_supported_namelist("&physics\n mp_physics = 2*28,\n/")
+        validate_supported_namelist("&physics\n mp_physics = 2*29,\n/")
     sels = [s for s in excinfo.value.selections if s.key == "mp_physics"]
     assert len(sels) == 2
     assert all(s.outcome == "not_yet_implemented" for s in sels)
-    assert all(s.value == 28 for s in sels)
+    assert all(s.value == 29 for s in sels)
 
 
 # --------------------------------------------------------------------------- #
@@ -416,8 +421,10 @@ def test_operational_validator_still_rejects_unimplemented_and_out_of_scope() ->
     """The operational validator subsumes the full validate_namelist checks:
     recognized-but-unimplemented schemes and out-of-scope features still fail."""
 
+    # mp=29 (RCON) stays recognized-but-unimplemented (mp=28 aerosol-aware
+    # Thompson became implemented in v0.16).
     with pytest.raises(UnsupportedSchemeError) as excinfo:
-        validate_operational_namelist({"physics": {"mp_physics": [28]}})
+        validate_operational_namelist({"physics": {"mp_physics": [29]}})
     assert "NOT YET IMPLEMENTED" in str(excinfo.value)
 
     with pytest.raises(UnsupportedSchemeError) as excinfo2:

@@ -17,6 +17,8 @@ WRF Registry lines verified against
 * WSM5(4): ``moist:qv,qc,qr,qi,qs;state:re_cloud,re_ice,re_snow``.
 * WSM6(6): ``moist:qv,qc,qr,qi,qs,qg;state:re_cloud,re_ice,re_snow``.
 * Thompson(8): ``moist:qv,qc,qr,qi,qs,qg;scalar:qni,qnr;state:re_*``.
+* Thompson aerosol-aware(28): ``moist:qv..qg;scalar:qnc,qnr,qni,qnwfa,qnifa``
+  (WRF Registry package ``thompsonaero``; nwfa2d/nifa2d surface emission).
 * Morrison(10): ``moist:qv..qg;scalar:qni,qns,qnr,qng`` plus cuten state.
 * WDM6(16): ``moist:qv..qg;scalar:qnn,qnc,qnr;state:re_*``.
 * MYJ(2): ``state:tke_pbl,el_pbl``; requires Janjic Eta sfclay(2).
@@ -29,9 +31,10 @@ WRF Registry lines verified against
 
 Append-only State rule:
     Existing ``State.__slots__`` order is preserved. v0.6.0 additive dycore
-    leaves are frozen as ``Nc``, ``Nn``, and ``rainc_acc``; lanes that need
-    them must append them to ``State.__slots__`` / ``STATE_FIELD_ORDER`` /
-    ``PRECISION_MATRIX`` and bump restart schema deliberately. Land/PBL/cumulus
+    leaves are frozen as ``Nc``, ``Nn``, and ``rainc_acc``; v0.16 appends the
+    aerosol-aware Thompson (mp=28) prognostics ``nwfa``/``nifa`` AFTER them at
+    the very END of ``State.__slots__`` / ``STATE_FIELD_ORDER`` /
+    ``PRECISION_MATRIX`` (restart schema bumped deliberately). Land/PBL/cumulus
     save-state fields stay in ``PhysicsCarry`` sibling trees, following the
     existing Noah-MP carry pattern.
 """
@@ -42,7 +45,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension"
+PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension+v016-thompson-aero"
 
 
 @dataclass(frozen=True)
@@ -57,7 +60,7 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 14, 16)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8, 99)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
@@ -92,6 +95,11 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
     14: SchemeOption("mp_physics", 14, "WDM5", "wdm5scheme", "accepted", "microphysics"),
     16: SchemeOption("mp_physics", 16, "WDM6", "wdm6scheme", "accepted", "microphysics"),
+    # v0.16: aerosol-aware Thompson (WRF Registry package thompsonaero). The
+    # column kernel is WRF grid-savepoint parity-gated
+    # (proofs/v016/thompson_aero_savepoint_parity.json) and wired through
+    # coupling.physics_couplers.thompson_aero_adapter (mirrors mp=8).
+    28: SchemeOption("mp_physics", 28, "Thompson aerosol-aware", "thompson_aero", "implemented", "microphysics"),
 }
 
 PBL_SCHEMES: Mapping[int, SchemeOption] = {
@@ -200,13 +208,16 @@ MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     10: ("qv", "qc", "qr", "qi", "qs", "qg"),
     14: ("qv", "qc", "qr", "qi", "qs"),
     16: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    28: ("qv", "qc", "qr", "qi", "qs", "qg"),
 }
 
 
 # Number concentrations / WRF ``scalar`` array members. Existing Thompson-era
-# State leaves are preserved; WDM6 adds ``Nc`` and ``Nn`` append-only.
+# State leaves are preserved; WDM6 adds ``Nc`` and ``Nn`` append-only; the
+# v0.16 aerosol-aware Thompson (mp=28) appends ``nwfa``/``nifa`` AFTER them
+# (append-only; the State pytree appends them at the very END of __slots__).
 NUMBER_SPECIES_EXISTING: tuple[str, ...] = ("Ni", "Nr", "Ns", "Ng")
-NUMBER_SPECIES_ADDITIVE: tuple[str, ...] = ("Nc", "Nn")
+NUMBER_SPECIES_ADDITIVE: tuple[str, ...] = ("Nc", "Nn", "nwfa", "nifa")
 NUMBER_SPECIES: tuple[str, ...] = NUMBER_SPECIES_EXISTING + NUMBER_SPECIES_ADDITIVE
 
 NUMBER_REGISTRY_MEMBER: Mapping[str, str] = {
@@ -216,6 +227,8 @@ NUMBER_REGISTRY_MEMBER: Mapping[str, str] = {
     "Ng": "qng",
     "Nc": "qnc",
     "Nn": "qnn",
+    "nwfa": "qnwfa",
+    "nifa": "qnifa",
 }
 
 NUMBER_WRFOUT_NAME: Mapping[str, str] = {
@@ -225,6 +238,8 @@ NUMBER_WRFOUT_NAME: Mapping[str, str] = {
     "Ng": "QNGRAUPEL",
     "Nc": "QNCLOUD",
     "Nn": "QNCCN",
+    "nwfa": "QNWFA",
+    "nifa": "QNIFA",
 }
 
 MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
@@ -238,6 +253,8 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     10: ("Ni", "Ns", "Nr", "Ng"),
     14: ("Nn", "Nc", "Nr"),
     16: ("Nn", "Nc", "Nr"),
+    # WRF Registry package thompsonaero: scalar:qnc,qnr,qni,qnwfa,qnifa.
+    28: ("Ni", "Nr", "Nc", "nwfa", "nifa"),
 }
 
 

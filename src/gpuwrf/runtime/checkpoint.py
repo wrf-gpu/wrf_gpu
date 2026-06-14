@@ -37,7 +37,7 @@ SUPPORTED_FORMAT_VERSIONS = (1, 2, 3)
 # State leaves added after the original (v1/v2) checkpoint schema. The reader
 # backfills any of these absent from an older checkpoint with zeros, so old
 # restarts cold-start the new physics fields rather than failing closed.
-ADDITIVE_STATE_LEAVES_SINCE_V2 = ("Nc", "Nn", "rainc_acc")
+ADDITIVE_STATE_LEAVES_SINCE_V2 = ("Nc", "Nn", "rainc_acc", "nwfa", "nifa")
 
 # The frozen Noah-MP scope-options the land carry is valid under (tables.py mirror).
 NOAHMP_SCOPE_OPTIONS = {

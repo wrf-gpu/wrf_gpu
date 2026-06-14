@@ -55,6 +55,8 @@ from gpuwrf.coupling.physics_couplers import (
     surface_adapter,
     surface_layer_diagnostics,
     thompson_adapter,
+    thompson_aero_adapter,
+    thompson_aero_coldstart_init,
 )
 from gpuwrf.coupling.noahmp_surface_hook import (
     noahmp_surface_step,
@@ -278,6 +280,11 @@ _PHYSICS_NON_DRY_INCREMENT_FIELDS: tuple[str, ...] = (
     "Ng",
     "Nc",
     "Nn",
+    # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers: the
+    # thompson_aero_adapter advances nwfa/nifa (activation/scavenging/emission)
+    # and the scan must carry those increments like every other mp species.
+    "nwfa",
+    "nifa",
     "qke",
 )
 
@@ -2477,6 +2484,24 @@ def _augment_large_step_tendencies(
 _MOISTURE_SPECIES = ("qv", "qc", "qr", "qi", "qs", "qg")
 
 
+def _advected_scalar_species(namelist: "OperationalNamelist") -> tuple[str, ...]:
+    """Scalar species transported by the large-step flux advection.
+
+    The six moist species always advect (WRF ``moist_variable_loop``).  For the
+    aerosol-aware Thompson (mp=28) the two prognostic aerosol numbers
+    ``nwfa``/``nifa`` advect as well — WRF carries QNWFA/QNIFA in the
+    ``scalar`` array and transports it with the SAME ``rk_scalar_tend``
+    flux-form machinery (solve_em.F ``scalar_variable_loop``).  The selection
+    is STATIC (``mp_physics`` is jit static aux), so non-28 programs are
+    byte-for-byte unchanged.  The remaining number concentrations (Ni/Nr/Nc)
+    keep the port-wide no-transport convention used by mp=8/10/14/16.
+    """
+
+    if int(namelist.mp_physics) == 28:
+        return _MOISTURE_SPECIES + ("nwfa", "nifa")
+    return _MOISTURE_SPECIES
+
+
 def _moisture_coupled_tendencies(
     haloed: State,
     namelist: OperationalNamelist,
@@ -2513,7 +2538,8 @@ def _moisture_coupled_tendencies(
         if transport_velocities is not None
         else _stage_transport_velocities(haloed, namelist)
     )
-    fields = tuple(getattr(haloed, name) for name in _MOISTURE_SPECIES)
+    species = _advected_scalar_species(namelist)
+    fields = tuple(getattr(haloed, name) for name in species)
     # The limiter (moist_adv_opt 1/2) is the final-RK3-stage FCT; it needs the
     # start-of-step moisture (WRF ``moist_old``) and ``mu_old`` (grid%mu_1).  The
     # selection inside advect_moisture_scalars is STATIC, so on opt==0 / non-final
@@ -2524,7 +2550,7 @@ def _moisture_coupled_tendencies(
         and step_origin is not None
     )
     fields_old = (
-        tuple(getattr(step_origin, name) for name in _MOISTURE_SPECIES)
+        tuple(getattr(step_origin, name) for name in species)
         if use_limiter
         else None
     )
@@ -2585,6 +2611,7 @@ def _apply_moisture_large_step(
     q_tendencies: tuple[jax.Array, ...],
     dt_rk: float,
     metrics: DycoreMetrics,
+    species: tuple[str, ...] = _MOISTURE_SPECIES,
 ) -> State:
     """WRF scalar large-step update for moisture AFTER the acoustic loop.
 
@@ -2618,7 +2645,7 @@ def _apply_moisture_large_step(
     mass_new = metrics.c1h[:, None, None] * state.mu_total[None, :, :] + metrics.c2h[:, None, None]
     inv_mass_new = 1.0 / mass_new
     updates: dict[str, jax.Array] = {}
-    for name, q_tend in zip(_MOISTURE_SPECIES, q_tendencies):
+    for name, q_tend in zip(species, q_tendencies):
         q_old = getattr(step_origin, name)
         # q_new = (mut_old*moist_old + dt_rk*adv_tend) / mut_new (WRF scalar update).
         q_new = (mass_old * q_old + float(dt_rk) * q_tend) * inv_mass_new
@@ -2779,6 +2806,7 @@ def _rk_scan_step(
                     q_tendencies=q_tendencies,
                     dt_rk=float(stage.dt_rk),
                     metrics=namelist.metrics,
+                    species=_advected_scalar_species(namelist),
                 )
             )
         stage_carry = stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
@@ -3002,8 +3030,9 @@ def _noahmp_params(namelist: OperationalNamelist):
 # _SCAN_UNWIRED_REASON. The dispatcher (coupling.physics_dispatch) remains the
 # single fail-closed authority for option -> scheme + GPU-runnability.
 _SCAN_WIRED_OPTIONS = {
-    # mp=0 passive, 8 Thompson (existing couplers); 1/2/3/4/6/10/14/16 new scan adapters.
-    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 14, 16),
+    # mp=0 passive, 8 Thompson (existing couplers); 1/2/3/4/6/10/14/16 new scan
+    # adapters; 28 aerosol-aware Thompson (v0.16 thompson_aero_adapter).
+    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28),
     # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 / 8 BouLac wired
     # (v0.6.0 jax.lax.scan rewrites); 2 MYJ wired (v0.13 traceable MYJ+Janjic pair);
     # 99 MRF wired (v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F).
@@ -3118,7 +3147,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13 scan-wired "
-            "schemes (mp_physics in {0,1,2,3,4,6,8,10,14,16}, bl_pbl_physics in {0,1,2,5,7,8,99}, "
+            "schemes (mp_physics in {0,1,2,3,4,6,8,10,14,16,28}, bl_pbl_physics in {0,1,2,5,7,8,99}, "
             "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
@@ -3142,6 +3171,12 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     """
 
     enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    if int(namelist.mp_physics) == 28:
+        # v0.16 aerosol-aware Thompson: cold-start nwfa/nifa from the WRF
+        # thompson_init climatological profiles when the inputs carry no
+        # aerosol state (use_aero_icbc=.false. self-init; init-time only,
+        # no-op on restart/forced states).
+        enforced = thompson_aero_coldstart_init(enforced, namelist.grid)
     cumulus_carry = None
     # Only the STATEFUL cumulus adapters need a persistent carry: KF (1) threads
     # (w0avg, nca); BMJ (2) threads CLDEFI. The stateless GPU-batched adapter
@@ -3388,6 +3423,10 @@ def _physics_step_forcing(
     # --- microphysics slot ---
     if mp_opt == DEFAULT_MP_PHYSICS:
         next_state = thompson_adapter(next_state, float(namelist.dt_s))
+    elif mp_opt == 28:
+        # v0.16 aerosol-aware Thompson: same coupler shape as mp=8 plus the
+        # prognostic Nc/nwfa/nifa threading + surface aerosol emission.
+        next_state = thompson_aero_adapter(next_state, float(namelist.dt_s))
     elif mp_opt in MP_SCAN_ADAPTERS:
         next_state = MP_SCAN_ADAPTERS[mp_opt](next_state, float(namelist.dt_s), namelist.grid)
     # mp_opt == 0 -> passive (no microphysics).

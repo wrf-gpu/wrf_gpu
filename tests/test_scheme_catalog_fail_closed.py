@@ -186,8 +186,11 @@ def test_urban_bep_bem_is_out_of_scope() -> None:
 # Recognized-but-unimplemented + reference-only behavior under validate_namelist.
 # --------------------------------------------------------------------------- #
 def test_recognized_unimplemented_scheme_fails_closed_by_name() -> None:
+    # mp=28 (aerosol-aware Thompson) became IMPLEMENTED in v0.16; mp=29 (RCON,
+    # the liquid-phase-modified Thompson-aero variant) remains the recognized-
+    # but-unimplemented Thompson-family example.
     with pytest.raises(UnsupportedSchemeError) as excinfo:
-        validate_namelist({"physics": {"mp_physics": [10, 28]}})  # domain 2 = aero-Thompson
+        validate_namelist({"physics": {"mp_physics": [10, 29]}})  # domain 2 = RCON
     message = str(excinfo.value)
     assert "Thompson" in message
     assert "NOT YET IMPLEMENTED" in message

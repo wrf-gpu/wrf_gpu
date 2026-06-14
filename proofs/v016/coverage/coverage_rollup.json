@@ -1,0 +1,219 @@
+{
+  "schema": "V016CoverageRollup",
+  "l2_target_count": 25,
+  "tested_green": [
+    "cu2",
+    "cu3",
+    "cu6",
+    "lw1",
+    "mp1",
+    "mp10",
+    "mp14",
+    "mp16",
+    "mp2",
+    "mp3",
+    "mp4",
+    "mp6",
+    "pbl1",
+    "pbl2",
+    "pbl7",
+    "pbl8",
+    "pbl99",
+    "sfclay1",
+    "sfclay2",
+    "sfclay3",
+    "sfclay7",
+    "sfclay91",
+    "sw1",
+    "sw2"
+  ],
+  "tested_review": [],
+  "tested_fail": [],
+  "scoped_carry": [
+    "lsm2"
+  ],
+  "pending": [],
+  "n_green": 24,
+  "n_review": 0,
+  "n_fail": 0,
+  "n_carry": 1,
+  "n_pending": 0,
+  "gate_details": {
+    "pbl1": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.432,
+      "worst_dyn_over_limit": 0.32579641042501406,
+      "file": "pbl1_gate.json"
+    },
+    "pbl2": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.452,
+      "worst_dyn_over_limit": 0.3655466998155261,
+      "file": "pbl2_gate.json"
+    },
+    "pbl7": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.1,
+      "worst_dyn_over_limit": 0.2546379492768473,
+      "file": "pbl7_gate.json"
+    },
+    "pbl8": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.432,
+      "worst_dyn_over_limit": 0.3497061239531951,
+      "file": "pbl8_gate.json"
+    },
+    "pbl99": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.649,
+      "worst_dyn_over_limit": 0.2965818712706551,
+      "file": "pbl99_gate.json"
+    },
+    "cu2": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.01,
+      "worst_dyn_over_limit": 0.13241602477278605,
+      "file": "cu2_gate.json"
+    },
+    "cu3": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.102,
+      "worst_dyn_over_limit": 0.00543954922958513,
+      "file": "cu3_gate.json"
+    },
+    "cu6": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.072,
+      "worst_dyn_over_limit": 0.26214354198539874,
+      "file": "cu6_gate.json"
+    },
+    "mp1": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.988,
+      "worst_dyn_over_limit": 0.09204847637650797,
+      "file": "mp1_gate.json"
+    },
+    "mp2": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.724,
+      "worst_dyn_over_limit": 0.09180483412694136,
+      "file": "mp2_gate.json"
+    },
+    "mp3": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.655,
+      "worst_dyn_over_limit": 0.131461039912033,
+      "file": "mp3_gate.json"
+    },
+    "mp4": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.771,
+      "worst_dyn_over_limit": 0.11054328312718341,
+      "file": "mp4_gate.json"
+    },
+    "mp6": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.73,
+      "worst_dyn_over_limit": 0.11124579753815822,
+      "file": "mp6_gate.json"
+    },
+    "mp10": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.728,
+      "worst_dyn_over_limit": 0.0512701438805459,
+      "file": "mp10_gate.json"
+    },
+    "mp14": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.762,
+      "worst_dyn_over_limit": 0.11283319816208516,
+      "file": "mp14_gate.json"
+    },
+    "mp16": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.939,
+      "worst_dyn_over_limit": 0.11338316523816155,
+      "file": "mp16_gate.json"
+    },
+    "lw1": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 13.756,
+      "worst_dyn_over_limit": 0.01467531166853431,
+      "file": "lw1_gate.json"
+    },
+    "sw1": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.542,
+      "worst_dyn_over_limit": 0.006533078733920423,
+      "file": "sw1_gate.json"
+    },
+    "sw2": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.98,
+      "worst_dyn_over_limit": 0.001907404413471844,
+      "file": "sw2_gate.json"
+    },
+    "sfclay1": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.919,
+      "worst_dyn_over_limit": 0.11760494082223746,
+      "file": "sfclay1_gate.json"
+    },
+    "sfclay2": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.452,
+      "worst_dyn_over_limit": 0.3655466998155261,
+      "file": "sfclay2_gate.json"
+    },
+    "sfclay3": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 6.945,
+      "worst_dyn_over_limit": 0.21493329678405923,
+      "file": "sfclay3_gate.json"
+    },
+    "sfclay7": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.008,
+      "worst_dyn_over_limit": 0.10161204009135794,
+      "file": "sfclay7_gate.json"
+    },
+    "sfclay91": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.047,
+      "worst_dyn_over_limit": 0.11695693924479973,
+      "file": "sfclay91_gate.json"
+    },
+    "lsm2": {
+      "verdict": "SCOPED_CARRY",
+      "all_finite": false,
+      "peak_vram_gib": null,
+      "worst_dyn_over_limit": null,
+      "file": "lsm2_gate.json"
+    }
+  },
+  "overall": "ALL_GREEN_OR_CARRIED"
+}

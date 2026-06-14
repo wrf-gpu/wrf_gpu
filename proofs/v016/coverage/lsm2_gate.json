@@ -1,0 +1,15 @@
+{
+  "schema": "V016CoupledCoverageGate",
+  "family": "lsm",
+  "option": 2,
+  "hours": 1,
+  "case": "Switzerland d01 reinit h36 replay, 128x128x44, dt=18s, single-domain, fp64",
+  "baseline": "mp=8/bl=5/sf_sfclay=5/cu=0/ra=4/4/use_noahmp=False",
+  "candidate": {"sf_surface_physics": 2, "use_noahmp": false},
+  "all_finite": false,
+  "ran": false,
+  "error": "UnsupportedSchemeSelection: sf_surface_physics=2 (Noah-classic) requires explicit noahclassic_static + noahclassic_land bundles (WRF REDPRM + 4-layer carry); the Switzerland d01 replay case (_build_real_case) builds only the NoahMP land path and provides no Noah-classic bundle, so the operational scan fail-closes before any forecast step.",
+  "verdict": "SCOPED_CARRY",
+  "carry_reason": "Noah-classic is registry-accepted + L1-gated but NOT coupled-runnable on a real case without the WRF-derived 4-layer land/static bundle (REDPRM soil + TSLB carry + GSW/GLW forcing + TMN/THC/EMISS statics) materialized in _build_real_case. This is a real-case data-build task, not an additive coupling fix. v0.17: mirror the NoahMP land-build for Noah-classic, then re-run coupled_coverage_gate.py --family lsm --option 2.",
+  "evidence": "proofs/v016/coverage/_sweep.log (RUN lsm2 -> UnsupportedSchemeSelection -> DONE lsm2 verdict=NO_GATE_FILE rc=1, 187.1s)"
+}

@@ -1,0 +1,159 @@
+{
+  "schema": "V016CoupledCoverageGate",
+  "family": "sw",
+  "option": 1,
+  "hours": 1,
+  "case": "Switzerland d01 reinit h36 replay, 128x128x44, dt=18s, single-domain, fp64",
+  "baseline": "mp=8/bl=5/sf_sfclay=5/cu=0/ra=4/4/use_noahmp=False",
+  "candidate": {
+    "ra_sw_physics": 1
+  },
+  "all_finite": true,
+  "first_nonfinite_hour": null,
+  "bounds_violations": [],
+  "per_hour_wall_s": [
+    421.085
+  ],
+  "steady_ms_per_step": 2105.42,
+  "peak_vram_gib": 6.542,
+  "field_deltas_vs_baseline": {
+    "family_perturbs_dynamics": false,
+    "gated_fields": {
+      "p": {
+        "rmse": 0.12335659501076884,
+        "max_abs": 2.587088325744844,
+        "manifest_field": "PSFC",
+        "manifest_rmse_limit": 120.0,
+        "rmse_over_limit": 0.0010279716250897403
+      },
+      "qv": {
+        "rmse": 9.608013491331854e-08,
+        "max_abs": 9.948220970696676e-06,
+        "manifest_field": "QVAPOR",
+        "manifest_rmse_limit": 0.001,
+        "rmse_over_limit": 9.608013491331853e-05
+      },
+      "rain_acc": {
+        "rmse": 1.6454326493987657e-05,
+        "max_abs": 0.0015957068007029507,
+        "manifest_field": "RAINNC",
+        "manifest_rmse_limit": 1.0,
+        "rmse_over_limit": 1.6454326493987657e-05
+      },
+      "theta": {
+        "rmse": 0.009799618100880635,
+        "max_abs": 0.040089895705079925,
+        "manifest_field": "T",
+        "manifest_rmse_limit": 1.5,
+        "rmse_over_limit": 0.006533078733920423
+      },
+      "u": {
+        "rmse": 0.002667255796275127,
+        "max_abs": 0.05810247594057083,
+        "manifest_field": "U",
+        "manifest_rmse_limit": 1.8,
+        "rmse_over_limit": 0.0014818087757084038
+      },
+      "v": {
+        "rmse": 0.0024140875300912986,
+        "max_abs": 0.06311286375014546,
+        "manifest_field": "V",
+        "manifest_rmse_limit": 1.8,
+        "rmse_over_limit": 0.0013411597389396104
+      },
+      "w": {
+        "rmse": 0.0004679904888195644,
+        "max_abs": 0.006697253105309028,
+        "manifest_field": "W",
+        "manifest_rmse_limit": 0.3,
+        "rmse_over_limit": 0.0015599682960652148
+      }
+    },
+    "worst_dynamics_rmse_over_limit": 0.006533078733920423,
+    "hard_gate_fails": [],
+    "review_flags": [],
+    "ungated_top": {
+      "Nr": {
+        "rmse": 1817.9780849214922,
+        "max_abs": 1408822.3918850895
+      },
+      "Ni": {
+        "rmse": 587.7156075081954,
+        "max_abs": 401792.65968069836
+      },
+      "ph": {
+        "rmse": 0.9167866830085349,
+        "max_abs": 3.430444671364967
+      },
+      "ph_total": {
+        "rmse": 0.9167866830085349,
+        "max_abs": 3.430444671364967
+      },
+      "ph_perturbation": {
+        "rmse": 0.9167866830085334,
+        "max_abs": 3.430444671382247
+      },
+      "mu_perturbation": {
+        "rmse": 0.24755634064727552,
+        "max_abs": 0.7301978071739086
+      },
+      "mu": {
+        "rmse": 0.24755634064721274,
+        "max_abs": 0.7301978071773192
+      },
+      "mu_total": {
+        "rmse": 0.24755634064721274,
+        "max_abs": 0.7301978071773192
+      },
+      "p_perturbation": {
+        "rmse": 0.1233565950107695,
+        "max_abs": 2.5870883257421156
+      },
+      "p_total": {
+        "rmse": 0.12335659501076884,
+        "max_abs": 2.587088325744844
+      },
+      "qke": {
+        "rmse": 0.003590281054519454,
+        "max_abs": 0.7448221544761315
+      },
+      "Ng": {
+        "rmse": 0.0033866618648453637,
+        "max_abs": 0.71609360002169
+      },
+      "tau_u": {
+        "rmse": 0.0003086470203093966,
+        "max_abs": 0.00678981376954102
+      },
+      "tau_v": {
+        "rmse": 0.0002995128876400835,
+        "max_abs": 0.005636458911785436
+      },
+      "ustar": {
+        "rmse": 0.0002487877170147887,
+        "max_abs": 0.0032542780850195463
+      },
+      "fltv": {
+        "rmse": 4.976672307461545e-05,
+        "max_abs": 0.001628185088398959
+      },
+      "theta_flux": {
+        "rmse": 4.949103149003766e-05,
+        "max_abs": 0.0016503617924696345
+      },
+      "rhosfc": {
+        "rmse": 1.4637886040793018e-05,
+        "max_abs": 0.00010132789611816406
+      },
+      "snow_acc": {
+        "rmse": 1.0213793398837008e-05,
+        "max_abs": 0.00015284159488648807
+      },
+      "graupel_acc": {
+        "rmse": 3.684608879935834e-07,
+        "max_abs": 3.706871994877455e-05
+      }
+    }
+  },
+  "verdict": "PASS"
+}

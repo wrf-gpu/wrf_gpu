@@ -575,7 +575,7 @@ def apply_state_feedback(
         "mu_total": mu_val,
         "mu": mu_val,
     }
-    for name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Ns", "Ng", "qke", "Nc", "Nn"):
+    for name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Ns", "Ng", "qke", "Nc", "Nn", "nwfa", "nifa"):
         if hasattr(parent, name) and hasattr(child, name):
             updates[name] = _fb(getattr(parent, name), getattr(child, name), mass, mass_sm)
     return parent.replace(_cast=False, **updates)

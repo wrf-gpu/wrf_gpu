@@ -135,6 +135,8 @@ WRF_STANDARD_RESTART_VARIABLES: tuple[str, ...] = (
     "QNGRAUPEL",
     "QNCLOUD",
     "QNCCN",
+    "QNWFA",
+    "QNIFA",
     "QKE",
     "UST",
     "TSK",
@@ -336,6 +338,9 @@ STANDARD_RESTART_FIELDS: tuple[StandardRestartField, ...] = (
     StandardRestartField(STANDARD_FIELD_SPECS["QNGRAUPEL"], lambda state: state.Ng),
     StandardRestartField(STANDARD_FIELD_SPECS["QNCLOUD"], lambda state: state.Nc),
     StandardRestartField(STANDARD_FIELD_SPECS["QNCCN"], lambda state: state.Nn),
+    # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers.
+    StandardRestartField(STANDARD_FIELD_SPECS["QNWFA"], lambda state: state.nwfa),
+    StandardRestartField(STANDARD_FIELD_SPECS["QNIFA"], lambda state: state.nifa),
     StandardRestartField(STANDARD_FIELD_SPECS["QKE"], lambda state: state.qke),
     StandardRestartField(STANDARD_FIELD_SPECS["UST"], lambda state: state.ustar),
     StandardRestartField(STANDARD_FIELD_SPECS["TSK"], lambda state: state.t_skin),
@@ -401,6 +406,9 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     "qc_bl": XYZ,
     "qi_bl": XYZ,
     "cldfra_bl": XYZ,
+    # v0.16 aerosol-aware Thompson (mp=28) QNWFA/QNIFA prognostics.
+    "nwfa": XYZ,
+    "nifa": XYZ,
     "u_bdy": ("Time", "gpuwrf_u_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "v_bdy": ("Time", "gpuwrf_v_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "theta_bdy": ("Time", "gpuwrf_theta_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
@@ -1403,7 +1411,7 @@ def _units_for_leaf(leaf: str) -> str:
         return "Pa"
     if leaf in {"ph", "ph_total", "ph_perturbation"}:
         return "m2 s-2"
-    if leaf in {"Ni", "Nr", "Ns", "Ng", "Nc", "Nn"}:
+    if leaf in {"Ni", "Nr", "Ns", "Ng", "Nc", "Nn", "nwfa", "nifa"}:
         return "kg-1"
     if leaf == "qke":
         return "m2 s-2"

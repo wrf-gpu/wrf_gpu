@@ -54,6 +54,10 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         "qc_bl",
         "qi_bl",
         "cldfra_bl",
+        # v0.16 additive aerosol-aware Thompson (mp=28) aerosol numbers
+        # (FP32_GATED, same class as Nc/Nn).
+        "nwfa",
+        "nifa",
     }
     integer_static = {"lu_index"}
     locked = set(State.__slots__) - gated - integer_static
