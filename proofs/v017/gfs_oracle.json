@@ -1,0 +1,529 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -6.656961391216903e-07,
+          "max_abs": 2.5302197623466036e-16,
+          "max_rel": 3.800862908183064e-10,
+          "oracle": -6.656961388686683e-07,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 6.656961388686683e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0011107342896074397,
+          "max_abs": 7.698616050211271e-14,
+          "max_rel": 6.931105055196007e-11,
+          "oracle": 0.001110734289684426,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.001110734289684426
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -9.971955032866594e-05,
+          "max_abs": 2.3114851504212053e-14,
+          "max_rel": 2.159575951015546e-10,
+          "oracle": -9.971955030555109e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0001070342142555451
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -2.4929887582166484e-05,
+          "max_abs": 5.778712876053013e-15,
+          "max_rel": 2.1595759510155465e-10,
+          "oracle": -2.492988757638777e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.675855356388627e-05
+        }
+      },
+      "pass": true,
+      "regime": "unstable_daytime",
+      "scalars": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "jax": 8.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 8.0,
+          "pass": true,
+          "rel_tolerance": 0.0,
+          "scale": 8.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 2112.2408829250608,
+          "max_abs": 7.73070496506989e-12,
+          "max_rel": 3.659954235126976e-15,
+          "oracle": 2112.240882925053,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2112.240882925053
+        }
+      }
+    },
+    {
+      "case": 2,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -1.4234527121100522e-06,
+          "max_abs": 3.7742729338467555e-16,
+          "max_rel": 2.651491618048003e-10,
+          "oracle": -1.423452711732625e-06,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1.423452711732625e-06
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.001910052370469967,
+          "max_abs": 1.2185109692086638e-13,
+          "max_rel": 6.379463662722063e-11,
+          "oracle": 0.001910052370591818,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.001910052370591818
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.00024620608049076657,
+          "max_abs": 5.222488023634564e-14,
+          "max_rel": 2.1211856402296322e-10,
+          "oracle": 0.0002462060804385417,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0002462060804385417
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 6.155152012269164e-05,
+          "max_abs": 1.305622005908641e-14,
+          "max_rel": 2.1211856402296322e-10,
+          "oracle": 6.155152010963542e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 6.155152010963542e-05
+        }
+      },
+      "pass": true,
+      "regime": "strong_unstable",
+      "scalars": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "jax": 9.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 9.0,
+          "pass": true,
+          "rel_tolerance": 0.0,
+          "scale": 9.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 2716.0257880767263,
+          "max_abs": 1.2732925824820995e-11,
+          "max_rel": 4.688072506792133e-15,
+          "oracle": 2716.025788076739,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2716.025788076739
+        }
+      }
+    },
+    {
+      "case": 3,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 1.6118840544431304e-09,
+          "max_abs": 3.6385607194676305e-21,
+          "max_rel": 2.1838012754737984e-13,
+          "oracle": 1.611884054446769e-09,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1.666159261070221e-08
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -1.11756417956659e-06,
+          "max_abs": 6.706110191760433e-16,
+          "max_rel": 3.212171005789245e-12,
+          "oracle": -1.117564178895979e-06,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0002087718922708074
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -0.0002648721670480469,
+          "max_abs": 6.222420582263632e-14,
+          "max_rel": 2.3492164741479564e-10,
+          "oracle": -0.0002648721669858227,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0002648721669858227
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -6.621804176201173e-05,
+          "max_abs": 1.5556065008186237e-14,
+          "max_rel": 2.349218520799715e-10,
+          "oracle": -6.621804174645567e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 6.621804174645567e-05
+        }
+      },
+      "pass": true,
+      "regime": "stable_nocturnal",
+      "scalars": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "jax": 1.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 1.0,
+          "pass": true,
+          "rel_tolerance": 0.0,
+          "scale": 1.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 192.13086745257624,
+          "max_abs": 2.842170943040401e-14,
+          "max_rel": 1.479289080783407e-16,
+          "oracle": 192.1308674525762,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 192.1308674525762
+        }
+      }
+    },
+    {
+      "case": 4,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 6.405943439336379e-08,
+          "max_abs": 4.420585542381388e-19,
+          "max_rel": 6.900756436914204e-12,
+          "oracle": 6.405943439380584e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 6.405943439380584e-08
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -4.134173849808395e-06,
+          "max_abs": 9.545705561718118e-16,
+          "max_rel": 2.3618056622719922e-11,
+          "oracle": -4.134173848853825e-06,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 4.041698144010465e-05
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -9.789476325858803e-05,
+          "max_abs": 2.426947260780049e-14,
+          "max_rel": 2.479139006619758e-10,
+          "oracle": -9.789476323431855e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 9.789476323431855e-05
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -2.4473690814647007e-05,
+          "max_abs": 6.067368151950123e-15,
+          "max_rel": 2.479139006619758e-10,
+          "oracle": -2.447369080857964e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.447369080857964e-05
+        }
+      },
+      "pass": true,
+      "regime": "stable_marine",
+      "scalars": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "jax": 2.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 2.0,
+          "pass": true,
+          "rel_tolerance": 0.0,
+          "scale": 2.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 241.9738657587182,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 241.9738657587182,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 241.9738657587182
+        }
+      }
+    },
+    {
+      "case": 5,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -2.880592804951115e-07,
+          "max_abs": 5.838148119170663e-17,
+          "max_rel": 2.0267175944893633e-10,
+          "oracle": -2.8805928043673e-07,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.8805928043673e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 7.650504335495853e-05,
+          "max_abs": 1.5208009005764078e-14,
+          "max_rel": 1.9878439828113e-10,
+          "oracle": 7.650504333975052e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 7.650504333975052e-05
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -8.4588890187239e-05,
+          "max_abs": 2.1708559971335417e-14,
+          "max_rel": 2.566360656683678e-10,
+          "oracle": -8.458889016553044e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 8.458889016553044e-05
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -2.114722254680975e-05,
+          "max_abs": 5.427139992833854e-15,
+          "max_rel": 2.566360656683678e-10,
+          "oracle": -2.114722254138261e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.114722254138261e-05
+        }
+      },
+      "pass": true,
+      "regime": "neutral",
+      "scalars": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "jax": 4.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 4.0,
+          "pass": true,
+          "rel_tolerance": 0.0,
+          "scale": 4.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 788.0482422838194,
+          "max_abs": 2.580691216280684e-11,
+          "max_rel": 3.2747883667649255e-14,
+          "oracle": 788.0482422838452,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 788.0482422838452
+        }
+      }
+    },
+    {
+      "case": 6,
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 0.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 0.0,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -2.730941326571272e-07,
+          "max_abs": 5.804187391941686e-17,
+          "max_rel": 2.125343132312e-10,
+          "oracle": -2.730941325990853e-07,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 2.730941325990853e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": 6.497448980858461e-08,
+          "max_abs": 1.3546895948686561e-14,
+          "max_rel": 1.2320768669265344e-10,
+          "oracle": 6.497450335548056e-08,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0001099517109064781
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -0.00012027561048377026,
+          "max_abs": 3.092335686561559e-14,
+          "max_rel": 2.571041356529955e-10,
+          "oracle": -0.0001202756104528469,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 0.0001202756104528469
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-12,
+          "jax": -3.0068902620942566e-05,
+          "max_abs": 7.730856157062843e-15,
+          "max_rel": 2.571046990476483e-10,
+          "oracle": -3.006890261321171e-05,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 3.006890261321171e-05
+        }
+      },
+      "pass": true,
+      "regime": "low_ust_edge",
+      "scalars": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "jax": 4.0,
+          "max_abs": 0.0,
+          "max_rel": 0.0,
+          "oracle": 4.0,
+          "pass": true,
+          "rel_tolerance": 0.0,
+          "scale": 4.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-06,
+          "jax": 880.7319582727368,
+          "max_abs": 6.098866833781358e-08,
+          "max_rel": 6.924770670658899e-11,
+          "oracle": 880.7319583337255,
+          "pass": true,
+          "rel_tolerance": 1e-09,
+          "scale": 880.7319583337255
+        }
+      }
+    }
+  ],
+  "exercised_through": "jax.jit over the full 6-case batch (genuine jit/vmap path)",
+  "git_head": "61a883c5d7e84c0afc01eaea2f9b7c3f7513cefe",
+  "jax_platform": "cpu",
+  "jax_precision": "fp64",
+  "operational_kernel": "gpuwrf.physics.bl_gfs.gfs_columns (jit/vmap-traceable)",
+  "oracle": {
+    "build_manifest": [
+      "mode=fp64",
+      "full_wrf_exe=false",
+      "wrf_sources=/home/enric/src/wrf_pristine/WRF/phys/{module_gfs_machine.F,module_gfs_physcons.F,module_bl_gfs.F}",
+      "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
+      "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -DNMM_CORE=0 -DHWRF=0 -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
+    ],
+    "full_wrf_exe": false,
+    "savepoints": "proofs/v017/savepoints_fp64/gfs",
+    "self_compare": false,
+    "source_checksums_sha256": [
+      "300ee4f75663e89d34c8a9b8733cc07a5dd48c3d973da019d31cb76524babe25  module_gfs_machine.F",
+      "2b8ef99663ba62748b57c7002f5e5b8c9338f2a825c1d32c113bd4e3bff2eb52  module_gfs_physcons.F",
+      "a3898642ee386d60a74af2ef45867e6b5f7df518eef9543ae91586d00372b71c  module_bl_gfs.F"
+    ],
+    "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF phys/module_bl_gfs.F (BL_GFS -> MONINP -> TRIDI2/TRIDIN/TRIDIT)",
+    "wrf_sources": [
+      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_gfs.F",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F",
+      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F"
+    ]
+  },
+  "overall_pass": true,
+  "predeclared_tolerances": {
+    "pblh_m": {
+      "abs": 1e-06,
+      "rel": 1e-09
+    },
+    "relative_floor": 1e-30,
+    "tendencies": {
+      "abs": 5e-12,
+      "rel": 1e-09
+    }
+  },
+  "regimes_covered": [
+    "unstable_daytime",
+    "strong_unstable",
+    "stable_nocturnal",
+    "stable_marine",
+    "neutral",
+    "low_ust_edge"
+  ],
+  "schema": "gpuwrf.v017.gfs_savepoint_parity.v1",
+  "scheme": "GFS PBL (bl_pbl_physics=3)",
+  "verdict": "PASS"
+}

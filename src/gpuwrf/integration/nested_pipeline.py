@@ -54,6 +54,7 @@ from gpuwrf.runtime.domain_tree import (
 )
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
+    _commit_to_operational_device,
     _initial_carry_for_run,
     noahmp_initial_rad,
 )
@@ -326,7 +327,7 @@ def _load_domains(
     Also returns the per-domain INITIAL ``OperationalCarry`` dict.  The carries are
     built here (with the same ``_initial_carry_for_run`` the domain-tree cold start
     uses, so the non-Noah-MP path is bit-identical) because the Noah-MP land carry
-    must be seeded BEFORE the first ``_advance_chunk`` scan: the carry pytree
+    must be seeded BEFORE the first ``_advance_chunk`` loop: the carry pytree
     structure is frozen across scan iterations, so a ``None -> NoahMPLandState``
     promotion inside the run is impossible by construction.
     """
@@ -466,6 +467,19 @@ def _load_domains(
                 noahmp_land=noahmp_land,
                 noahmp_rad=noahmp_initial_rad(carry.state, namelist, land_state=noahmp_land),
             )
+        # v0.17 nested compile-CHURN fix.  `_advance_chunk` RETURNS device-committed
+        # leaves; if the FIRST nested advance for a domain receives this HOST/
+        # uncommitted seed while the SECOND receives the prior chunk's COMMITTED
+        # output, JAX keys them as different shardings and recompiles an otherwise
+        # identical executable -- TWICE per domain (~18-20 cold compiles for the
+        # all-7, every ~4-5 min, GPU idle, 0 forecast output until they all finish).
+        # Committing the seed ONCE here makes the first advance reuse the committed-
+        # carry cache key -> ~9 compiles (one per domain).  This mirrors the
+        # single-domain segmented/diagnostics entries (`run_forecast_operational_
+        # segmented`/`..._with_m9_diagnostics`) which already seed via
+        # `_committed_initial_carry_for_run`.  Pure device placement
+        # (`jax.device_put`); leaf VALUES are bit-identical, so wrfout is unchanged.
+        carry = _commit_to_operational_device(carry)
         initial_carries[name] = carry
         bundles[name] = DomainBundle(
             name=name, state=state, namelist=namelist, grid=case.grid, metrics=case.metrics
@@ -665,6 +679,44 @@ def _finite_stats_host(state: Any) -> dict[str, Any]:
     return finite_summary(state)
 
 
+def _nested_sync_mode_from_env() -> tuple[bool, int | None]:
+    """Resolve the nested host-sync granularity (``GPUWRF_NESTED_SYNC_MODE``).
+
+    Returns ``(block_between, root_sync_cadence)`` for
+    :func:`run_operational_domain_tree`.  The v0.17 GPU-idle fix makes the
+    asynchronous per-root-step sync the DEFAULT: the legacy path drained the GPU
+    queue after every single domain advance (~5,000 blocks/forecast-hour for the
+    all-7 geometry), idling the GPU between host-built boundary packages.  Syncing
+    once per root step instead keeps the queue full across each root-step cascade
+    while bounding how far the host races ahead (peak VRAM).  ``block_until_ready``
+    is purely a host wait -- it changes NO dispatched op -- so every mode produces
+    byte-identical wrfout; only utilization / wallclock / peak-VRAM differ.
+
+    Modes:
+      * unset / ``root`` / ``root:K``  -> async, host sync every K root steps
+        (K>=1, default 1).  The release default.
+      * ``advance``                    -> legacy per-advance block (pre-v0.17).
+        Used only to reproduce the slow baseline for A/B measurement.
+      * ``segment``                    -> no intra-segment host sync; rely on the
+        output/segment boundary block (maximum overlap, highest peak VRAM).
+    """
+    raw = os.environ.get("GPUWRF_NESTED_SYNC_MODE", "").strip().lower()
+    if raw in ("", "root"):
+        return False, 1
+    if raw == "advance":
+        return True, None
+    if raw == "segment":
+        return False, None
+    if raw.startswith("root:"):
+        try:
+            cadence = max(1, int(raw.split(":", 1)[1]))
+        except ValueError:
+            cadence = 1
+        return False, cadence
+    # Unknown token -> safe async default rather than silently reverting to slow.
+    return False, 1
+
+
 def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     """Run a standalone live-nested forecast and write per-domain wrfout.
 
@@ -752,6 +804,11 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     own_steps: dict[str, int] = {name: 0 for name in names}
     events: list[Any] = []
     final_states: dict[str, Any] = {}
+    # Host-sync granularity for the live nest (v0.17 GPU-idle fix).  Default =
+    # async per-root-step sync (keeps the GPU queue full across nested cascades);
+    # GPUWRF_NESTED_SYNC_MODE=advance reproduces the legacy per-advance baseline.
+    # The per-segment block below is ALWAYS kept (peak-VRAM bound between hours).
+    nested_block_between, nested_root_sync_cadence = _nested_sync_mode_from_env()
     start = 0
     while start < root_steps:
         seg = min(root_seg_steps, root_steps - start)
@@ -761,7 +818,8 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             feedback_enabled=feedback_enabled,
             output=writer,
             output_cadence_steps=output_cadence,
-            block_between=True,
+            block_between=nested_block_between,
+            root_sync_cadence=nested_root_sync_cadence,
             carries=carries,
             initial_own_steps=own_steps,
         )

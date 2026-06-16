@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "query": "Research whether GT4Py/DaCe should be in M2.",
+      "required_files": ["ARCHITECTURE_PRINCIPLES.md"],
+      "expected_behavior": "Finds current primary sources and recommends a bakeoff inclusion or exclusion.",
+      "failure_conditions": "Replaces bakeoff with citation-only decision."
+    },
+    {
+      "query": "Research WRF license and trademark.",
+      "required_files": ["LICENSE_NOTES.md"],
+      "expected_behavior": "Uses official sources and flags legal review before release.",
+      "failure_conditions": "Gives legal advice as final."
+    },
+    {
+      "query": "Research PyCECT and probtest.",
+      "required_files": ["VALIDATION_STRATEGY.md"],
+      "expected_behavior": "Compares applicability to regional NWP and identifies prototype tasks.",
+      "failure_conditions": "Suggests bitwise equality as default."
+    }
+  ]
+}

@@ -137,6 +137,11 @@ WRF_STANDARD_RESTART_VARIABLES: tuple[str, ...] = (
     "QNCCN",
     "QNWFA",
     "QNIFA",
+    # v0.17 ADR-032 graupel/hail substrate.
+    "QHAIL",
+    "QNHAIL",
+    "QVGRAUPEL",
+    "QVHAIL",
     "QKE",
     "UST",
     "TSK",
@@ -148,6 +153,8 @@ WRF_STANDARD_RESTART_VARIABLES: tuple[str, ...] = (
     "RAINNC",
     "SNOWNC",
     "GRAUPELNC",
+    # v0.17 hail microphysics surface accumulator (WSM7/WDM7).
+    "HAILNC",
 )
 
 # WRF-named restart fields written when the matching optional carry is present.
@@ -341,6 +348,11 @@ STANDARD_RESTART_FIELDS: tuple[StandardRestartField, ...] = (
     # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers.
     StandardRestartField(STANDARD_FIELD_SPECS["QNWFA"], lambda state: state.nwfa),
     StandardRestartField(STANDARD_FIELD_SPECS["QNIFA"], lambda state: state.nifa),
+    # v0.17 ADR-032 graupel/hail substrate prognostics.
+    StandardRestartField(STANDARD_FIELD_SPECS["QHAIL"], lambda state: state.qh),
+    StandardRestartField(STANDARD_FIELD_SPECS["QNHAIL"], lambda state: state.Nh),
+    StandardRestartField(STANDARD_FIELD_SPECS["QVGRAUPEL"], lambda state: state.qvolg),
+    StandardRestartField(STANDARD_FIELD_SPECS["QVHAIL"], lambda state: state.qvolh),
     StandardRestartField(STANDARD_FIELD_SPECS["QKE"], lambda state: state.qke),
     StandardRestartField(STANDARD_FIELD_SPECS["UST"], lambda state: state.ustar),
     StandardRestartField(STANDARD_FIELD_SPECS["TSK"], lambda state: state.t_skin),
@@ -352,6 +364,8 @@ STANDARD_RESTART_FIELDS: tuple[StandardRestartField, ...] = (
     StandardRestartField(STANDARD_FIELD_SPECS["RAINNC"], lambda state: state.rain_acc),
     StandardRestartField(STANDARD_FIELD_SPECS["SNOWNC"], lambda state: jnp.asarray(state.snow_acc) + jnp.asarray(state.ice_acc)),
     StandardRestartField(STANDARD_FIELD_SPECS["GRAUPELNC"], lambda state: state.graupel_acc),
+    # v0.17 hail microphysics: WRF HAILNC (accumulated grid-scale hail, mm).
+    StandardRestartField(STANDARD_FIELD_SPECS["HAILNC"], lambda state: state.hail_acc),
 )
 
 
@@ -409,6 +423,13 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     # v0.16 aerosol-aware Thompson (mp=28) QNWFA/QNIFA prognostics.
     "nwfa": XYZ,
     "nifa": XYZ,
+    # v0.17 ADR-032 graupel/hail substrate (QHAIL/QNHAIL/QVGRAUPEL/QVHAIL).
+    "qh": XYZ,
+    "Nh": XYZ,
+    "qvolg": XYZ,
+    "qvolh": XYZ,
+    # v0.17 hail surface-precip accumulator (HAILNC).
+    "hail_acc": XY,
     "u_bdy": ("Time", "gpuwrf_u_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "v_bdy": ("Time", "gpuwrf_v_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
     "theta_bdy": ("Time", "gpuwrf_theta_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
@@ -1405,13 +1426,16 @@ def _units_for_leaf(leaf: str) -> str:
         return "m s-1"
     if leaf in {"theta", "t_skin"}:
         return "K"
-    if leaf in {"qv", "qc", "qr", "qi", "qs", "qg", "soil_moisture"}:
+    if leaf in {"qv", "qc", "qr", "qi", "qs", "qg", "qh", "soil_moisture"}:
         return "kg kg-1" if leaf != "soil_moisture" else "m3 m-3"
+    if leaf in {"qvolg", "qvolh"}:
+        # v0.17 ADR-032 predicted-density particle volume.
+        return "m3 kg-1"
     if leaf in {"p", "p_total", "p_perturbation", "mu", "mu_total", "mu_perturbation"}:
         return "Pa"
     if leaf in {"ph", "ph_total", "ph_perturbation"}:
         return "m2 s-2"
-    if leaf in {"Ni", "Nr", "Ns", "Ng", "Nc", "Nn", "nwfa", "nifa"}:
+    if leaf in {"Ni", "Nr", "Ns", "Ng", "Nc", "Nn", "nwfa", "nifa", "Nh"}:
         return "kg-1"
     if leaf == "qke":
         return "m2 s-2"

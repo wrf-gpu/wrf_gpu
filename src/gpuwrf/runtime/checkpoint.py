@@ -37,7 +37,25 @@ SUPPORTED_FORMAT_VERSIONS = (1, 2, 3)
 # State leaves added after the original (v1/v2) checkpoint schema. The reader
 # backfills any of these absent from an older checkpoint with zeros, so old
 # restarts cold-start the new physics fields rather than failing closed.
-ADDITIVE_STATE_LEAVES_SINCE_V2 = ("Nc", "Nn", "rainc_acc", "nwfa", "nifa")
+# v0.6.0 added Nc/Nn/rainc_acc; v0.15 the MYNN SGS-cloud leaves; v0.17 ADR-032
+# the graupel/hail substrate qh/Nh/qvolg/qvolh. v0.16 Thompson-aero added
+# nwfa/nifa. All are append-only physics tail leaves that legitimately
+# cold-start at zero from an older checkpoint.
+ADDITIVE_STATE_LEAVES_SINCE_V2 = (
+    "Nc",
+    "Nn",
+    "rainc_acc",
+    "qsq",
+    "qc_bl",
+    "qi_bl",
+    "cldfra_bl",
+    "nwfa",
+    "nifa",
+    "qh",
+    "Nh",
+    "qvolg",
+    "qvolh",
+)
 
 # The frozen Noah-MP scope-options the land carry is valid under (tables.py mirror).
 NOAHMP_SCOPE_OPTIONS = {

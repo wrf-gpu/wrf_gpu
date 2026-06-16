@@ -143,10 +143,10 @@ def test_effective_radii_vs_fp64_oracle(cid):
 def test_physics_tendency_adapter_shape_and_keys():
     """The WSM7 adapter returns a frozen PhysicsTendency carrying the hail leaf.
 
-    WSM7 is parity-proven but fail-closed: its output carries qh/hail_acc which
-    are NOT in the operational State/accumulator contract, so validate_keys()
-    must raise -- this is the structural reason WSM7 cannot be scan-wired
-    without a State/dycore/IO change (a separate precipitating hail class).
+    v0.17 wired the qh hail State substrate (ADR-032) AND the hail_acc surface
+    accumulator, so the WSM7 tendency's qh state-replacement and hail_acc
+    accumulator increment are now BOTH valid operational contract keys:
+    validate_keys() must PASS (it raised pre-v0.17).
     """
     with open(os.path.join(SAVE_FP32, "wsm7_case_4.json")) as fh:
         d = json.load(fh)
@@ -161,31 +161,31 @@ def test_physics_tendency_adapter_shape_and_keys():
     assert isinstance(tend, PhysicsTendency)
     assert set(tend.state_replacements) == {"theta", "qv", "qc", "qr", "qi", "qs", "qg", "qh"}
     assert set(tend.accumulator_increments) == {"rain_acc", "snow_acc", "graupel_acc", "hail_acc"}
-    # The qh hail leaf is not in the operational state contract -> fail-closed.
-    with pytest.raises(ValueError):
-        tend.validate_keys()
+    # qh and hail_acc are now in the operational State/accumulator contract.
+    tend.validate_keys()
     # theta round-trips to the oracle T_OUT via pii
     theta_new = np.asarray(tend.state_replacements["theta"])[0]
     t_new = theta_new * pii[0]
     assert np.max(np.abs(t_new - _col(d, "T_OUT"))) <= TOL["t_abs"]
 
 
-def test_wsm7_fail_closed_in_namelist_validator():
-    """mp_physics=24 (WSM7) must fail-closed; defaults (8) and wired (16) pass."""
-    from gpuwrf.io.namelist_check import validate_namelist, UnsupportedSchemeError
+def test_wsm7_accepted_in_namelist_validator():
+    """v0.17 wires WSM7: mp_physics=24 must now PASS the namelist validator."""
+    from gpuwrf.io.namelist_check import validate_namelist
 
-    with pytest.raises(UnsupportedSchemeError):
-        validate_namelist({"physics": {"mp_physics": [24, 24]}})
+    # WSM7 is now an accepted, scan-wired scheme (was UnsupportedSchemeError).
+    validate_namelist({"physics": {"mp_physics": [24, 24]}})
     # defaults + already-wired schemes still pass
     validate_namelist({"physics": {"mp_physics": [8, 8]}})
     validate_namelist({"physics": {"mp_physics": [16, 16]}})
 
 
-def test_wsm7_catalog_classification_honest():
-    """The public honesty catalog must classify WSM7 (24) RECOGNIZED_FAIL_CLOSED.
+def test_wsm7_catalog_classification_implemented():
+    """The public honesty catalog must classify WSM7 (24) IMPLEMENTED in v0.17.
 
-    The reason must name BOTH the parity-proven port and the hail-leaf blocker,
-    and the catalog must remain internally consistent + default mp=8 unchanged.
+    The qh hail substrate (ADR-032) + hail_acc + the wsm7_adapter scan wiring
+    flip WSM7 from RECOGNIZED_FAIL_CLOSED to IMPLEMENTED. The catalog must stay
+    internally consistent + default mp=8 unchanged.
     """
     from gpuwrf.io.scheme_catalog import (
         SupportStatus,
@@ -194,10 +194,6 @@ def test_wsm7_catalog_classification_honest():
     )
 
     assert_catalog_consistent()
-    s = classify_scheme("mp_physics", 24)
-    assert s.status is SupportStatus.RECOGNIZED_FAIL_CLOSED
-    assert s.wrf_name is not None and "WSM7" in s.wrf_name
-    assert "module_mp_wsm7.F" in s.reason
-    assert "hail" in s.reason.lower()
+    assert classify_scheme("mp_physics", 24).status is SupportStatus.IMPLEMENTED
     # default Thompson unchanged
     assert classify_scheme("mp_physics", 8).status is SupportStatus.IMPLEMENTED

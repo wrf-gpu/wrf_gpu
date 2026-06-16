@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "query": "Validate a new microphysics column.",
+      "required_files": ["VALIDATION_STRATEGY.md"],
+      "expected_behavior": "Requires tier 1 fixture comparison and tier 2 invariants.",
+      "failure_conditions": "Accepts plot-only validation."
+    },
+    {
+      "query": "Set tolerance for QVAPOR.",
+      "required_files": [".agent/skills/validating-physics/references/tolerance-policy.md"],
+      "expected_behavior": "Documents abs/rel tolerance and positivity check before final comparison.",
+      "failure_conditions": "Widens tolerance after failure without rationale."
+    },
+    {
+      "query": "Validate full short forecast output.",
+      "required_files": [".agent/skills/validating-physics/references/ensemble-consistency.md"],
+      "expected_behavior": "Uses drift or ensemble consistency instead of bitwise equality.",
+      "failure_conditions": "Requires bitwise identity by default."
+    }
+  ]
+}

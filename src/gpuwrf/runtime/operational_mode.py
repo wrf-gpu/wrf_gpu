@@ -285,6 +285,14 @@ _PHYSICS_NON_DRY_INCREMENT_FIELDS: tuple[str, ...] = (
     # and the scan must carry those increments like every other mp species.
     "nwfa",
     "nifa",
+    # v0.17 ADR-032 graupel/hail substrate: the day a hail MP scheme is wired it
+    # returns increments for these, and the scan must carry them like every
+    # other MP species. With no hail scheme wired the increment is zero, so this
+    # is inert (no existing program changes).
+    "qh",
+    "Nh",
+    "qvolg",
+    "qvolh",
     "qke",
 )
 
@@ -2483,22 +2491,59 @@ def _augment_large_step_tendencies(
 # are qc/qr/qi/qs/qg; qv is index P_QV.
 _MOISTURE_SPECIES = ("qv", "qc", "qr", "qi", "qs", "qg")
 
+# v0.17 ADR-032 hail microphysics family (mp_physics ids). When one of these is
+# selected WRF carries the additional hail/predicted-density scalars
+# (qh/qvolg/qvolh) in the moist/scalar arrays and transports them with the SAME
+# rk_scalar_tend flux-form machinery. The selection in _advected_scalar_species
+# is STATIC (mp_physics is a jit static aux), so NON-hail programs are
+# byte-for-byte unchanged. NONE of these ids is in _SCAN_WIRED_OPTIONS yet (the
+# scheme kernels are not ported -- ADR-032 is the State substrate only), so the
+# hail branch is UNREACHABLE in every currently-runnable program; it is wired
+# and unit-tested here so the future hail-scheme worker inherits the transport.
+_HAIL_MP_FAMILY: frozenset[int] = frozenset({7, 17, 18, 19, 21, 22, 24, 26, 27, 38})
+
+# Per hail-scheme additional advected species (WRF moist/scalar members beyond
+# the six core moist species). Only the leaves a given scheme actually carries
+# are transported. Schemes not listed fall back to the core moist set.
+_HAIL_MP_ADVECTED_EXTRAS: Mapping[int, tuple[str, ...]] = {
+    7: ("qh",),            # nuwrf4icescheme   moist:...,qh
+    24: ("qh",),           # wsm7scheme        moist:...,qh
+    26: ("qh",),           # wdm7scheme        moist:...,qh
+    27: ("qh",),           # udmscheme         moist:...,qh
+    38: ("qvolg",),        # thompsongh        scalar:...,qng,qvolg (Ng untransported like mp=8/10)
+    # NSSL family (mp 17-22): base nssl_2mom carries qv..qg; the hail/volume
+    # leaves are added by the nssl sub-packages. The conservative substrate
+    # default transports the hail mass + predicted-density volumes when present.
+    17: ("qh", "qvolg", "qvolh"),
+    18: ("qh", "qvolg", "qvolh"),
+    19: ("qh", "qvolg", "qvolh"),
+    21: ("qh", "qvolg", "qvolh"),
+    22: ("qh", "qvolg", "qvolh"),
+}
+
 
 def _advected_scalar_species(namelist: "OperationalNamelist") -> tuple[str, ...]:
     """Scalar species transported by the large-step flux advection.
 
-    The six moist species always advect (WRF ``moist_variable_loop``).  For the
-    aerosol-aware Thompson (mp=28) the two prognostic aerosol numbers
-    ``nwfa``/``nifa`` advect as well — WRF carries QNWFA/QNIFA in the
-    ``scalar`` array and transports it with the SAME ``rk_scalar_tend``
-    flux-form machinery (solve_em.F ``scalar_variable_loop``).  The selection
-    is STATIC (``mp_physics`` is jit static aux), so non-28 programs are
-    byte-for-byte unchanged.  The remaining number concentrations (Ni/Nr/Nc)
-    keep the port-wide no-transport convention used by mp=8/10/14/16.
+    The six core moist species always advect (WRF ``moist_variable_loop``). For
+    aerosol-aware Thompson (mp=28), the two prognostic aerosol numbers
+    ``nwfa``/``nifa`` advect as WRF scalar-array members. For
+    the hail microphysics family (ADR-032) the scheme's additional hail /
+    predicted-density scalars advect too -- WRF carries QHAIL/QVGRAUPEL/QVHAIL
+    in the ``moist``/``scalar`` arrays and transports them with the SAME
+    ``rk_scalar_tend`` flux-form machinery (``solve_em.F`` scalar loops). The
+    selection is STATIC (``mp_physics`` is a jit static aux), so non-hail
+    programs are byte-for-byte unchanged, and because no hail scheme is
+    scan-wired yet this branch is unreachable for runnable programs. The hail
+    leaves also cold-start at zero, so even the FIRST enabling of a future hail
+    scheme cannot perturb the dynamics until that scheme produces hail.
     """
 
-    if int(namelist.mp_physics) == 28:
+    mp = int(namelist.mp_physics)
+    if mp == 28:
         return _MOISTURE_SPECIES + ("nwfa", "nifa")
+    if mp in _HAIL_MP_FAMILY:
+        return _MOISTURE_SPECIES + _HAIL_MP_ADVECTED_EXTRAS.get(mp, ())
     return _MOISTURE_SPECIES
 
 
@@ -2538,6 +2583,10 @@ def _moisture_coupled_tendencies(
         if transport_velocities is not None
         else _stage_transport_velocities(haloed, namelist)
     )
+    # Static species selection (ADR-032): core six moist species, plus the hail
+    # family's extra transported scalars when a hail scheme is selected. WSM7
+    # (mp=24, v0.17) adds ``qh`` here so resolved-wind transport advects hail like
+    # graupel; other wired schemes get exactly ``_MOISTURE_SPECIES``.
     species = _advected_scalar_species(namelist)
     fields = tuple(getattr(haloed, name) for name in species)
     # The limiter (moist_adv_opt 1/2) is the final-RK3-stage FCT; it needs the
@@ -2806,6 +2855,9 @@ def _rk_scan_step(
                     q_tendencies=q_tendencies,
                     dt_rk=float(stage.dt_rk),
                     metrics=namelist.metrics,
+                    # ADR-032: same static species as the coupled-tendency build
+                    # above (core six for every wired scheme; + qh for WSM7 mp=24
+                    # and the rest of the wired hail family).
                     species=_advected_scalar_species(namelist),
                 )
             )
@@ -3031,12 +3083,14 @@ def _noahmp_params(namelist: OperationalNamelist):
 # single fail-closed authority for option -> scheme + GPU-runnability.
 _SCAN_WIRED_OPTIONS = {
     # mp=0 passive, 8 Thompson (existing couplers); 1/2/3/4/6/10/14/16 new scan
-    # adapters; 28 aerosol-aware Thompson (v0.16 thompson_aero_adapter).
-    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28),
-    # bl=0 off, 5 MYNN (existing); 1 YSU / 7 ACM2 / 8 BouLac wired
+    # adapters; 24 WSM7 + 26 WDM7 (v0.17 hail: WSM6/WDM6 + a separate
+    # precipitating qh + hail_acc; WDM7 also keeps the WDM6 double-moment Nc/Nn);
+    # 28 aerosol-aware Thompson (v0.16 thompson_aero_adapter).
+    "mp_physics": (0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 24, 26, 28),
+    # bl=0 off, 5 MYNN (existing); 1 YSU / 3 GFS / 7 ACM2 / 8 BouLac wired
     # (v0.6.0 jax.lax.scan rewrites); 2 MYJ wired (v0.13 traceable MYJ+Janjic pair);
     # 99 MRF wired (v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F).
-    "bl_pbl_physics": (0, 1, 2, DEFAULT_BL_PBL_PHYSICS, 7, 8, 99),
+    "bl_pbl_physics": (0, 1, 2, 3, DEFAULT_BL_PBL_PHYSICS, 7, 8, 99),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired;
     # 2 Janjic Eta wired (v0.13, mandatorily paired with bl_pbl_physics=2 MYJ).
     # 3 NCEP-GFS surface layer + 91 old-MM5 surface layer wired (v0.13 Tier-3,
@@ -3147,7 +3201,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13 scan-wired "
-            "schemes (mp_physics in {0,1,2,3,4,6,8,10,14,16,28}, bl_pbl_physics in {0,1,2,5,7,8,99}, "
+            "schemes (mp_physics in {0,1,2,3,4,6,8,10,14,16,24,26,28}, bl_pbl_physics in {0,1,2,3,5,7,8,99}, "
             "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land). The following selected schemes "
@@ -4141,7 +4195,7 @@ def compute_m9_diagnostics(
     )
 
 
-@partial(jax.jit, static_argnames=("n_steps", "cadence"))
+@jax.jit
 def _advance_chunk(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -4150,32 +4204,37 @@ def _advance_chunk(
     n_steps: int,
     cadence: int,
 ) -> OperationalCarry:
-    """Advance one output interval as a SINGLE compiled scan (no diagnostics).
+    """Advance one output interval as a SINGLE compiled loop (no diagnostics).
 
     Radiation is gated by the traced ``step_index %% cadence == 0`` predicate via
     ``_physics_boundary_step``'s cond path, so this is byte-identical to the
-    production per-step cadence.  ``start_step`` is TRACED (only ``n_steps``/
-    ``cadence`` static) so equal-length intervals reuse the SAME compiled executable
-    -- one compile for the whole forecast, not one per interval.  Kept SEPARATE from
-    the diagnostics call so the dynamics scratch is freed before the large RRTMG
-    diagnostic transient is allocated (peak-memory bound, Task 2 OOM fix).
+    production per-step cadence.  ``start_step``, ``n_steps``, and the explicit
+    ``cadence`` argument are TRACED scalars, so interval-length/cadence variation at
+    the caller does not mint a new XLA cache key.  Kept SEPARATE from the diagnostics
+    call so the dynamics scratch is freed before the large RRTMG diagnostic transient
+    is allocated (peak-memory bound, Task 2 OOM fix).
     """
     run_physics = bool(namelist.run_physics)
     start_step = jnp.asarray(start_step, dtype=jnp.int32)
-    indices = start_step + jnp.arange(int(n_steps), dtype=jnp.int32)
+    n_steps = jnp.asarray(n_steps, dtype=jnp.int32)
+    cadence = jnp.asarray(cadence, dtype=jnp.int32)
 
-    def body(scan_carry: OperationalCarry, step_index):
+    def body(offset, scan_carry: OperationalCarry):
+        step_index = start_step + offset
         if run_physics:
-            run_radiation = jnp.equal(jnp.mod(step_index, int(cadence)), 0)
+            run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
         else:
             run_radiation = False
-        next_carry = _physics_boundary_step(
+        return _physics_boundary_step(
             scan_carry, namelist, step_index, run_radiation=run_radiation, debug=False
         )
-        return next_carry, None
 
-    carry, _ = jax.lax.scan(body, carry, indices)
-    return carry
+    return jax.lax.fori_loop(
+        jnp.asarray(0, dtype=jnp.int32),
+        n_steps,
+        body,
+        carry,
+    )
 
 
 @jax.jit
@@ -4252,7 +4311,11 @@ def run_forecast_operational_with_m9_diagnostics(
     for end in boundaries:
         n = end - start + 1
         carry = _advance_chunk(
-            carry, namelist, jnp.asarray(start, dtype=jnp.int32), n_steps=n, cadence=cadence
+            carry,
+            namelist,
+            jnp.asarray(start, dtype=jnp.int32),
+            n_steps=jnp.asarray(n, dtype=jnp.int32),
+            cadence=jnp.asarray(cadence, dtype=jnp.int32),
         )
         # Free the dynamics-chunk scratch BEFORE the RRTMG diagnostic transient is
         # allocated, then free the transient before the next chunk -- this is what
@@ -4364,12 +4427,12 @@ def run_forecast_operational_segmented(
     one ``jax.lax.scan`` per radiation interval, so the number of distinct XLA scan
     subcomputations -- and thus COMPILE time / peak memory -- grows with the forecast
     length (measured: +12h did not compile in 37 min).  This entry instead compiles a
-    SINGLE fixed-length inner segment (``_advance_chunk`` with a static ``n_steps``)
-    and drives it from a host ``for`` loop, carrying ``State`` across segments and
-    ``block_until_ready``-ing between them so each segment's dynamics scratch is freed
-    before the next segment allocates.  Compile happens ONCE for the full-length
-    segment (every equal-length segment reuses the same executable via the traced
-    ``start_step``); a single shorter compile covers a final partial tail segment.
+    SINGLE bounded inner segment and drives it from a host ``for`` loop, carrying
+    ``State`` across segments and ``block_until_ready``-ing between them so each
+    segment's dynamics scratch is freed before the next segment allocates.  Because
+    ``_advance_chunk`` traces ``start_step``, ``n_steps``, and the explicit
+    ``cadence``, both full-length segments and a final partial tail reuse the same
+    executable for a given carry/namelist signature.
 
     Equivalence.  Global step indices run ``1..steps`` exactly as in
     ``run_forecast_operational_single_scan`` and ``run_forecast_operational``; the
@@ -4400,13 +4463,17 @@ def run_forecast_operational_segmented(
     steps = _steps_for_hours(hours, float(namelist.dt_s))
 
     # Host loop over contiguous fixed-length segments covering global steps 1..steps.
-    # Every full segment has identical static ``n_steps`` so it reuses ONE compiled
-    # executable (``start_step`` is traced); a final partial segment compiles once.
+    # ``_advance_chunk`` traces ``n_steps`` and ``start_step``, so full segments and
+    # a final partial segment reuse one executable for this carry/namelist signature.
     start = 1
     while start <= steps:
         n = min(seg, steps - start + 1)
         carry = _advance_chunk(
-            carry, namelist, jnp.asarray(start, dtype=jnp.int32), n_steps=int(n), cadence=cadence
+            carry,
+            namelist,
+            jnp.asarray(start, dtype=jnp.int32),
+            n_steps=jnp.asarray(int(n), dtype=jnp.int32),
+            cadence=jnp.asarray(cadence, dtype=jnp.int32),
         )
         # Block so this segment's device scratch is freed before the next segment's
         # buffers are allocated -- this is what bounds peak memory to one segment's

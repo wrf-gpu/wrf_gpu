@@ -1,0 +1,51 @@
+{
+  "compute_dtype": "float32",
+  "field_pass": {
+    "column_net_heating": true,
+    "flux_down": true,
+    "flux_up": true,
+    "heating_rate": true,
+    "surface_down": true,
+    "surface_emission": true,
+    "surface_up": true,
+    "toa_down": true,
+    "toa_up": true
+  },
+  "fixture_id": "analytic-rrtmg-lw-column-v1",
+  "pass": true,
+  "per_field_max_abs_err": {
+    "column_net_heating": 0.00018310546875,
+    "flux_down": 0.0001220703125,
+    "flux_up": 0.000152587890625,
+    "heating_rate": 3.5666744224727154e-08,
+    "surface_down": 0.0001220703125,
+    "surface_emission": 0.0,
+    "surface_up": 0.000152587890625,
+    "toa_down": 0.0,
+    "toa_up": 3.0517578125e-05
+  },
+  "per_field_max_rel_err": {
+    "column_net_heating": 1.3249794849009755e-06,
+    "flux_down": 4.546848567890474e-07,
+    "flux_up": 4.078948039300664e-07,
+    "heating_rate": 0.0012187051566416984,
+    "surface_down": 2.857266740065087e-07,
+    "surface_emission": 0.0,
+    "surface_up": 3.4606753424874655e-07,
+    "toa_down": 0.0,
+    "toa_up": 1.0890179617177516e-07
+  },
+  "result_dtypes": {
+    "column_net_heating": "float32",
+    "flux_down": "float32",
+    "flux_up": "float32",
+    "heating_rate": "float32",
+    "surface_down": "float32",
+    "surface_emission": "float32",
+    "surface_up": "float32",
+    "toa_down": "float32",
+    "toa_up": "float32"
+  },
+  "scenarios_tested": 3,
+  "tolerances_met": true
+}

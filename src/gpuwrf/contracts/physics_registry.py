@@ -21,7 +21,14 @@ WRF Registry lines verified against
   (WRF Registry package ``thompsonaero``; nwfa2d/nifa2d surface emission).
 * Morrison(10): ``moist:qv..qg;scalar:qni,qns,qnr,qng`` plus cuten state.
 * WDM6(16): ``moist:qv..qg;scalar:qnn,qnc,qnr;state:re_*``.
+* Hail family (v0.17 ADR-032 substrate; schemes NOT yet implemented):
+  WSM7(24)/Goddard-4ice(7)/WDM7(26)/UDM(27) add ``moist:qh``;
+  Thompson-graupel/hail(38) adds ``scalar:qng,qvolg``; NSSL(17-22) add
+  ``moist:qh;scalar:qnh`` (nssl_hail) and ``scalar:qvolg,qvolh`` (predicted
+  density). These appear here for reference; the State leaves
+  ``qh``/``Nh``/``qvolg``/``qvolh`` exist, but the schemes stay fail-closed.
 * MYJ(2): ``state:tke_pbl,el_pbl``; requires Janjic Eta sfclay(2).
+* GFS(3): nonlocal-K PBL; no persistent PBL carry, requires revised-MM5 sfclay(1).
 * MYNN(5): ``scalar:qke_adv;state:qke,tke_pbl,sh3d,sm3d,tsq,qsq,cov,el_pbl``.
 * BouLac(8): ``state:qke`` reused as the prognostic TKE storage plus PBLH/K
   diagnostics (frozen-contract extension, 2026-06-04).
@@ -32,11 +39,13 @@ WRF Registry lines verified against
 Append-only State rule:
     Existing ``State.__slots__`` order is preserved. v0.6.0 additive dycore
     leaves are frozen as ``Nc``, ``Nn``, and ``rainc_acc``; v0.16 appends the
-    aerosol-aware Thompson (mp=28) prognostics ``nwfa``/``nifa`` AFTER them at
-    the very END of ``State.__slots__`` / ``STATE_FIELD_ORDER`` /
-    ``PRECISION_MATRIX`` (restart schema bumped deliberately). Land/PBL/cumulus
-    save-state fields stay in ``PhysicsCarry`` sibling trees, following the
-    existing Noah-MP carry pattern.
+    aerosol-aware Thompson (mp=28) prognostics ``nwfa``/``nifa`` and v0.17
+    appends the graupel/hail substrate ``qh``/``Nh``/``qvolg``/``qvolh`` AFTER
+    them at the very END of ``State.__slots__`` / ``STATE_FIELD_ORDER`` /
+    ``PRECISION_MATRIX`` (restart schema bumped deliberately). Lanes that need
+    new leaves must append them the same way. Land/PBL/cumulus save-state fields
+    stay in ``PhysicsCarry`` sibling trees, following the existing Noah-MP carry
+    pattern.
 """
 
 from __future__ import annotations
@@ -45,7 +54,10 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension+v016-thompson-aero"
+PHYSICS_REGISTRY_VERSION = (
+    "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension"
+    "+v016-thompson-aero+v017-gfs+v017-qh-hail-substrate"
+)
 
 
 @dataclass(frozen=True)
@@ -60,8 +72,8 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28)
-ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 5, 7, 8, 99)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 24, 26, 28)
+ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 8, 99)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 1, 2, 4)
@@ -95,6 +107,15 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
     14: SchemeOption("mp_physics", 14, "WDM5", "wdm5scheme", "accepted", "microphysics"),
     16: SchemeOption("mp_physics", 16, "WDM6", "wdm6scheme", "accepted", "microphysics"),
+    # v0.17: WSM6 single-moment + a separate precipitating HAIL class (qh). GPU
+    # scan-wired (coupling.scan_adapters.wsm7_adapter), savepoint-parity-proven
+    # against the unmodified WRF phys/module_mp_wsm7.F (proofs/v013).
+    24: SchemeOption("mp_physics", 24, "WSM7", "wsm7scheme", "implemented", "microphysics"),
+    # v0.17: WDM6 double-moment warm rain + a separate single-moment precipitating
+    # HAIL class (qh, no Nh). GPU scan-wired (coupling.scan_adapters.wdm7_adapter),
+    # savepoint-parity-proven vs the unmodified WRF phys/module_mp_wdm7.F
+    # (proofs/v013_wdm7).
+    26: SchemeOption("mp_physics", 26, "WDM7", "wdm7scheme", "implemented", "microphysics"),
     # v0.16: aerosol-aware Thompson (WRF Registry package thompsonaero). The
     # column kernel is WRF grid-savepoint parity-gated
     # (proofs/v016/thompson_aero_savepoint_parity.json) and wired through
@@ -112,6 +133,10 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
     # MYJ(2): savepoint-parity-proven CPU reference, NOT yet GPU-scan-wired
     # (fail-closed in the operational scan); requires Janjic Eta sfclay(2).
     2: SchemeOption("bl_pbl_physics", 2, "MYJ", "myjpblscheme", "accepted", "pbl"),
+    # GFS(3): v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F (BL_GFS ->
+    # MONINP), scan-wired into the operational PBL slot (PBL_SCAN_ADAPTERS[3]);
+    # savepoint-parity-proven against unmodified WRF at fp64.
+    3: SchemeOption("bl_pbl_physics", 3, "GFS", "gfsscheme", "implemented", "pbl"),
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
     8: SchemeOption("bl_pbl_physics", 8, "BouLac", "boulacscheme", "accepted", "pbl"),
@@ -186,7 +211,15 @@ RA_LW_SCHEMES: Mapping[int, SchemeOption] = {
 
 # Moisture species: WRF 4-D ``moist`` array members. State leaf name equals the
 # lowercase WRF moist-array member name used throughout this port.
+#
+# The CORE tuple is the v0.2.0..v0.16 six-class set and is FROZEN -- every
+# existing per-scheme path iterates it byte-for-byte. The v0.17 ADR-032 hail
+# substrate adds the hail mixing ratio ``qh`` as a SEPARATE additive group
+# (mirroring NUMBER_SPECIES_ADDITIVE) so the core set is unchanged; only the
+# hail microphysics family (mp 7/24/26/27 + NSSL hail) ever carries ``qh``.
 MOIST_SPECIES: tuple[str, ...] = ("qv", "qc", "qr", "qi", "qs", "qg")
+MOIST_SPECIES_ADDITIVE: tuple[str, ...] = ("qh",)
+MOIST_SPECIES_ALL: tuple[str, ...] = MOIST_SPECIES + MOIST_SPECIES_ADDITIVE
 
 MOIST_WRFOUT_NAME: Mapping[str, str] = {
     "qv": "QVAPOR",
@@ -195,6 +228,8 @@ MOIST_WRFOUT_NAME: Mapping[str, str] = {
     "qi": "QICE",
     "qs": "QSNOW",
     "qg": "QGRAUP",
+    # v0.17 ADR-032 hail substrate (WRF Registry moist member qh -> QHAIL).
+    "qh": "QHAIL",
 }
 
 MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
@@ -208,16 +243,20 @@ MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     10: ("qv", "qc", "qr", "qi", "qs", "qg"),
     14: ("qv", "qc", "qr", "qi", "qs"),
     16: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    # v0.17 WSM7 = WSM6 six-class + a separate precipitating hail class (qh).
+    24: ("qv", "qc", "qr", "qi", "qs", "qg", "qh"),
+    # v0.17 WDM7 = WDM6 six-class + a separate precipitating hail class (qh).
+    26: ("qv", "qc", "qr", "qi", "qs", "qg", "qh"),
     28: ("qv", "qc", "qr", "qi", "qs", "qg"),
 }
 
 
 # Number concentrations / WRF ``scalar`` array members. Existing Thompson-era
-# State leaves are preserved; WDM6 adds ``Nc`` and ``Nn`` append-only; the
-# v0.16 aerosol-aware Thompson (mp=28) appends ``nwfa``/``nifa`` AFTER them
-# (append-only; the State pytree appends them at the very END of __slots__).
+# State leaves are preserved; WDM6 adds ``Nc`` and ``Nn`` append-only, v0.16
+# aerosol-aware Thompson appends ``nwfa``/``nifa``, and v0.17 ADR-032 appends
+# ``Nh`` (WRF scalar qnh).
 NUMBER_SPECIES_EXISTING: tuple[str, ...] = ("Ni", "Nr", "Ns", "Ng")
-NUMBER_SPECIES_ADDITIVE: tuple[str, ...] = ("Nc", "Nn", "nwfa", "nifa")
+NUMBER_SPECIES_ADDITIVE: tuple[str, ...] = ("Nc", "Nn", "nwfa", "nifa", "Nh")
 NUMBER_SPECIES: tuple[str, ...] = NUMBER_SPECIES_EXISTING + NUMBER_SPECIES_ADDITIVE
 
 NUMBER_REGISTRY_MEMBER: Mapping[str, str] = {
@@ -229,6 +268,8 @@ NUMBER_REGISTRY_MEMBER: Mapping[str, str] = {
     "Nn": "qnn",
     "nwfa": "qnwfa",
     "nifa": "qnifa",
+    # v0.17 ADR-032 hail substrate (WRF scalar member qnh).
+    "Nh": "qnh",
 }
 
 NUMBER_WRFOUT_NAME: Mapping[str, str] = {
@@ -240,6 +281,25 @@ NUMBER_WRFOUT_NAME: Mapping[str, str] = {
     "Nn": "QNCCN",
     "nwfa": "QNWFA",
     "nifa": "QNIFA",
+    # v0.17 ADR-032 hail substrate.
+    "Nh": "QNHAIL",
+}
+
+
+# Predicted-density particle-volume species: WRF ``scalar`` array members that
+# are neither mixing ratios nor number concentrations. v0.17 ADR-032 adds the
+# graupel/hail volumes consumed by the predicted-density schemes
+# (Thompson-graupel/hail mp=38; NSSL nssl_graupelvol / nssl_hailvol).
+VOLUME_SPECIES: tuple[str, ...] = ("qvolg", "qvolh")
+
+VOLUME_REGISTRY_MEMBER: Mapping[str, str] = {
+    "qvolg": "qvolg",
+    "qvolh": "qvolh",
+}
+
+VOLUME_WRFOUT_NAME: Mapping[str, str] = {
+    "qvolg": "QVGRAUPEL",
+    "qvolh": "QVHAIL",
 }
 
 MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
@@ -253,6 +313,11 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     10: ("Ni", "Ns", "Nr", "Ng"),
     14: ("Nn", "Nc", "Nr"),
     16: ("Nn", "Nc", "Nr"),
+    # v0.17 WSM7 is single-moment (no prognostic number concentrations).
+    24: (),
+    # v0.17 WDM7 = WDM6 double-moment warm rain (Nn CCN, Nc, Nr); hail is
+    # single-moment (qh only, no Nh).
+    26: ("Nn", "Nc", "Nr"),
     # WRF Registry package thompsonaero: scalar:qnc,qnr,qni,qnwfa,qnifa.
     28: ("Ni", "Nr", "Nc", "nwfa", "nifa"),
 }
@@ -261,7 +326,9 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
 # Precipitation accumulators. ``rainc_acc`` is additive State because cumulus
 # precipitation is a prognostic history/restart quantity in WRF (RAINC).
 ACCUMULATORS_EXISTING: tuple[str, ...] = ("rain_acc", "snow_acc", "graupel_acc", "ice_acc")
-ACCUMULATORS_ADDITIVE: tuple[str, ...] = ("rainc_acc",)
+# v0.17 hail microphysics adds ``hail_acc`` (WRF HAILNC) append-only alongside the
+# cumulus ``rainc_acc``; carried by the hail MP family (WSM7=24, WDM7=26).
+ACCUMULATORS_ADDITIVE: tuple[str, ...] = ("rainc_acc", "hail_acc")
 ACCUMULATORS: tuple[str, ...] = ACCUMULATORS_EXISTING + ACCUMULATORS_ADDITIVE
 
 ACCUMULATOR_WRFOUT_NAME: Mapping[str, str] = {
@@ -270,6 +337,8 @@ ACCUMULATOR_WRFOUT_NAME: Mapping[str, str] = {
     "graupel_acc": "GRAUPELNC",
     "ice_acc": "SNOWNC",
     "rainc_acc": "RAINC",
+    # v0.17 hail microphysics surface accumulator.
+    "hail_acc": "HAILNC",
 }
 
 V060_EXISTING_STATE_PHYSICS_LEAVES: tuple[str, ...] = (
@@ -278,7 +347,14 @@ V060_EXISTING_STATE_PHYSICS_LEAVES: tuple[str, ...] = (
     "qke",
     *ACCUMULATORS_EXISTING,
 )
-V060_ADDITIVE_STATE_LEAVES: tuple[str, ...] = (*NUMBER_SPECIES_ADDITIVE, *ACCUMULATORS_ADDITIVE)
+# Append-only additive State leaves: the v0.6.0 Nc/Nn + rainc_acc, plus the
+# v0.17 ADR-032 hail substrate (qh moist, Nh number, qvolg/qvolh volumes).
+V060_ADDITIVE_STATE_LEAVES: tuple[str, ...] = (
+    *NUMBER_SPECIES_ADDITIVE,
+    *MOIST_SPECIES_ADDITIVE,
+    *VOLUME_SPECIES,
+    *ACCUMULATORS_ADDITIVE,
+)
 
 
 @dataclass(frozen=True)
@@ -349,14 +425,21 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
             "mass_3d",
             "State",
             tuple(f"mp{opt}" for opt, members in MP_MOIST_MEMBERS.items() if leaf in members),
-            existing_state=True,
+            existing_state=leaf in MOIST_SPECIES,
+            additive_state=leaf in MOIST_SPECIES_ADDITIVE,
             restart_required=True,
             wrfout_required=leaf in {"qv", "qc", "qr", "qi", "qs", "qg"},
             nest_forcedown=True,
             nest_feedback=True,
             lateral_bc=True,
+            notes=(
+                "v0.17 ADR-032 hail substrate; carried by the hail MP family "
+                "(mp 7/24/26/27 + NSSL hail); inert until a hail scheme is wired."
+                if leaf in MOIST_SPECIES_ADDITIVE
+                else ""
+            ),
         )
-        for leaf in MOIST_SPECIES
+        for leaf in MOIST_SPECIES_ALL
     ),
     *(
         _field(
@@ -377,6 +460,29 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
             notes="WRF have_bcs_scalar controls lateral scalar bdy; nests force/feedback active scalars.",
         )
         for leaf in NUMBER_SPECIES
+    ),
+    *(
+        _field(
+            leaf,
+            VOLUME_WRFOUT_NAME[leaf],
+            VOLUME_REGISTRY_MEMBER[leaf],
+            "scalar_volume",
+            "mass_3d",
+            "State",
+            (),
+            additive_state=True,
+            restart_required=True,
+            wrfout_required=True,
+            nest_forcedown=True,
+            nest_feedback=True,
+            lateral_bc=False,
+            notes=(
+                "v0.17 ADR-032 predicted-density particle volume; carried by "
+                "Thompson-graupel/hail (mp=38) and the NSSL predicted-density "
+                "packages; inert until a hail scheme is wired."
+            ),
+        )
+        for leaf in VOLUME_SPECIES
     ),
     *(
         _field(
@@ -518,6 +624,7 @@ PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: (),
     2: ("tke_pbl", "el_pbl"),
+    3: (),  # GFS is a nonlocal-K scheme: no prognostic PBL carry.
     5: ("qke",),
     7: (),
     8: ("qke",),
@@ -528,6 +635,7 @@ PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: ("pblh",),
     2: ("pblh", "kpbl", "mixht", "tke_pbl", "exch_h", "exch_m", "el_pbl"),
+    3: ("pblh", "kpbl"),
     5: ("pblh", "tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl"),
     7: ("pblh",),
     8: ("pblh", "tke_pbl", "dlk", "exch_h", "exch_m"),
@@ -681,7 +789,10 @@ def assert_registry_consistent() -> None:
 
     for opt, members in MP_MOIST_MEMBERS.items():
         for leaf in members:
-            assert leaf in MOIST_SPECIES, f"mp={opt} moist member {leaf!r} not in MOIST_SPECIES"
+            # v0.17: hail schemes (WSM7 mp=24, WDM7 mp=26) carry the additive qh
+            # moist member, so membership is validated against MOIST_SPECIES_ALL
+            # (core six + hail), not just the frozen core.
+            assert leaf in MOIST_SPECIES_ALL, f"mp={opt} moist member {leaf!r} not in MOIST_SPECIES_ALL"
             assert leaf in MOIST_WRFOUT_NAME, f"moist {leaf!r} missing wrfout name"
     for opt, members in MP_NUMBER_MEMBERS.items():
         for leaf in members:
@@ -690,6 +801,18 @@ def assert_registry_consistent() -> None:
             assert leaf in NUMBER_WRFOUT_NAME, f"number {leaf!r} missing wrfout name"
     for leaf in ACCUMULATORS:
         assert leaf in ACCUMULATOR_WRFOUT_NAME, f"accumulator {leaf!r} missing wrfout name"
+    # v0.17 ADR-032 hail substrate group consistency (append-only). The hail
+    # moist member qh is now exercised by the wired WSM7 (mp=24) via the
+    # per-scheme membership loop above; the volume species (qvolg/qvolh) have no
+    # wired scheme yet, so they are validated as standalone groups here.
+    for leaf in MOIST_SPECIES_ADDITIVE:
+        assert leaf in MOIST_WRFOUT_NAME, f"additive moist {leaf!r} missing wrfout name"
+        assert leaf not in MOIST_SPECIES, f"additive moist {leaf!r} must not duplicate core MOIST_SPECIES"
+    assert len(set(MOIST_SPECIES_ALL)) == len(MOIST_SPECIES_ALL), "MOIST_SPECIES_ALL has duplicates"
+    for leaf in VOLUME_SPECIES:
+        assert leaf in VOLUME_REGISTRY_MEMBER, f"volume {leaf!r} missing Registry scalar member"
+        assert leaf in VOLUME_WRFOUT_NAME, f"volume {leaf!r} missing wrfout name"
+    assert len(set(VOLUME_SPECIES)) == len(VOLUME_SPECIES), "VOLUME_SPECIES has duplicates"
 
     field_names = [spec.leaf for spec in FIELD_SPECS]
     assert len(field_names) == len(set(field_names)), "FIELD_SPECS has duplicate leaves"
@@ -722,6 +845,8 @@ __all__ = [
     "RA_SW_SCHEMES",
     "RA_LW_SCHEMES",
     "MOIST_SPECIES",
+    "MOIST_SPECIES_ADDITIVE",
+    "MOIST_SPECIES_ALL",
     "MOIST_WRFOUT_NAME",
     "MP_MOIST_MEMBERS",
     "NUMBER_SPECIES",
@@ -730,6 +855,9 @@ __all__ = [
     "NUMBER_REGISTRY_MEMBER",
     "NUMBER_WRFOUT_NAME",
     "MP_NUMBER_MEMBERS",
+    "VOLUME_SPECIES",
+    "VOLUME_REGISTRY_MEMBER",
+    "VOLUME_WRFOUT_NAME",
     "ACCUMULATORS",
     "ACCUMULATORS_EXISTING",
     "ACCUMULATORS_ADDITIVE",

@@ -1,0 +1,7 @@
+build/
+build_fp64/
+build_wdm7_*/
+*.o
+*.mod
+wdm7_oracle
+case_*.txt

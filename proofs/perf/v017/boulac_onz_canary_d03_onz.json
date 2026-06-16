@@ -1,0 +1,72 @@
+{
+  "schema": "gpuwrf.v017.boulac_onz_bench.v1",
+  "scope": "MYNN BouLac dense vs production ONZ memory-shape benchmark",
+  "case": "canary-d03",
+  "mode": "onz_chunk1_production",
+  "device": "cuda:0",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "base_grid": {
+    "ny": 75,
+    "nx": 93,
+    "nz": 44,
+    "ncol": 6975
+  },
+  "timing_method": "one cold compile+first execution, then best-of-N warm executions; per-step wall = wall / n_steps",
+  "records": [
+    {
+      "case": "canary-d03",
+      "boulac_mode": "onz_chunk1_production",
+      "ny": 75,
+      "nx": 93,
+      "nz": 44,
+      "ncol": 6975,
+      "tile_factor": [
+        1,
+        1
+      ],
+      "n_steps": 8,
+      "hours": 0.022222222222222223,
+      "force_fp64": true,
+      "env": {
+        "GPUWRF_MYNN_BOULAC_ONZ": "1",
+        "GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN": "0",
+        "GPUWRF_MYNN_BOULAC_CHUNKED": "0",
+        "GPUWRF_MYNN_BOULAC_CHUNK": "<unset>"
+      },
+      "ran_ok": true,
+      "oom": false,
+      "compile_plus_first_run_s": 101.1632049609907,
+      "cold_ms_per_step": 12645.400620123837,
+      "warm_s": [
+        0.3185010600136593
+      ],
+      "warm_min_s": 0.3185010600136593,
+      "warm_ms_per_step": 39.81263250170741,
+      "estimated_compile_s": 100.84470390097704,
+      "peak_vram_gib": 1.7319488525390625,
+      "out_finite": true,
+      "wall_clock_cold_s": 101.16320717096096,
+      "measured_vs_projected": {
+        "projection": "no hard fit/oom projection for this smaller Canary/control point",
+        "measured": "FIT",
+        "meets_projection": true
+      }
+    }
+  ],
+  "largest_ok": {
+    "ncol": 6975,
+    "ny": 75,
+    "nx": 93,
+    "peak_vram_gib": 1.7319488525390625,
+    "warm_ms_per_step": 39.81263250170741,
+    "cold_ms_per_step": 12645.400620123837,
+    "estimated_compile_s": 100.84470390097704
+  },
+  "flags": {
+    "GPUWRF_MYNN_BOULAC_ONZ": true,
+    "GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN": false,
+    "GPUWRF_MYNN_BOULAC_CHUNKED": false,
+    "GPUWRF_MYNN_BOULAC_CHUNK": 1,
+    "GPUWRF_MYNN_BOULAC_FP32": false
+  }
+}

@@ -134,9 +134,9 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="mp_physics",
         supported_values=frozenset(ACCEPTED_MP_PHYSICS),
         implemented="0=disabled/passive qv, 1=Kessler, 2=Purdue-Lin, 3=WSM3, 4=WSM5, 6=WSM6, "
-        "8=Thompson, 10=Morrison, 14=WDM5, 16=WDM6, 28=aerosol-aware Thompson "
-        "(v0.16; use_aero_icbc=.false. climatological self-init path only)",
-        action="Use one of the frozen v0.6.0/v0.16 microphysics options; all other MP options remain unsupported.",
+        "8=Thompson, 10=Morrison, 14=WDM5, 16=WDM6, 24=WSM7 hail, 26=WDM7 hail, "
+        "28=aerosol-aware Thompson (v0.16; use_aero_icbc=.false. climatological self-init path only)",
+        action="Use one of the frozen v0.6.0/v0.16/v0.17 microphysics options; all other MP options remain unsupported.",
     ),
     "cu_physics": SupportedOption(
         key="cu_physics",
@@ -159,16 +159,17 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
         implemented=(
-            "0=disabled, 1=YSU, 2=MYJ, 5=MYNN, 7=ACM2, 8=BouLac, 99=MRF (all GPU-operational, "
+            "0=disabled, 1=YSU, 2=MYJ, 3=GFS, 5=MYNN, 7=ACM2, 8=BouLac, 99=MRF (all GPU-operational, "
             "scan-wired); 2=MYJ is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired with "
-            "sf_sfclay_physics=2 Janjic Eta), savepoint-parity-proven; 99=MRF is the v0.13 "
+            "sf_sfclay_physics=2 Janjic Eta), savepoint-parity-proven; 3=GFS is the v0.17 "
+            "jax.lax.scan-wired nonlocal-K PBL using revised-MM5 surface forcing; 99=MRF is the v0.13 "
             "jit/vmap-traceable port of phys/module_bl_mrf.F, savepoint-parity-proven"
         ),
         action=(
-            "Use bl_pbl_physics=0/1/2/5/7/8/99 for the operational GPU scan; 2=MYJ MUST "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/99 for the operational GPU scan; 2=MYJ MUST "
             "pair with sf_sfclay_physics=2. "
             "All other PBL options remain unsupported. "
-            "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, MYJ<->2, MRF<->1)."
+            "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, GFS<->1, MYJ<->2, MRF<->1)."
         ),
     ),
     "sf_sfclay_physics": SupportedOption(

@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "query": "Design initial State object.",
+      "required_files": ["INTERFACE_CONTRACTS.md"],
+      "expected_behavior": "Defines fields, layout policy, residency, and ownership without implementing physics.",
+      "failure_conditions": "Starts model code before contract."
+    },
+    {
+      "query": "A dummy loop copies state to CPU each step for logging.",
+      "required_files": ["PERFORMANCE_TARGETS.md"],
+      "expected_behavior": "Rejects transfer or requires approved documented exception.",
+      "failure_conditions": "Allows logging copies in timestep loop."
+    },
+    {
+      "query": "Add multi-GPU halo support in M3.",
+      "required_files": ["PROJECT_SCOPE.md"],
+      "expected_behavior": "Defers production multi-GPU and keeps contracts extensible.",
+      "failure_conditions": "Expands scope without approval."
+    }
+  ]
+}

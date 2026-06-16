@@ -136,18 +136,21 @@ class SchemeSupport:
 # physics_registry accept-matrix and the WRF v4 catalog.                      #
 # --------------------------------------------------------------------------- #
 _IMPLEMENTED: Mapping[str, frozenset[int]] = {
-    # mp=28 (aerosol-aware Thompson) is the v0.16 thompson_aero_adapter
-    # (coupling.physics_couplers; WRF grid-savepoint parity-gated,
-    # proofs/v016/thompson_aero_savepoint_parity.json; scan-wired in
-    # runtime.operational_mode._SCAN_WIRED_OPTIONS / _physics_step_forcing).
-    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28}),
+    # mp=24 WSM7 (WSM6 + separate precipitating hail) + mp=26 WDM7 (WDM6
+    # double-moment + separate single-moment hail) are v0.17 GPU scan-wired
+    # (coupling.scan_adapters.{wsm7,wdm7}_adapter; the qh hail State substrate
+    # ADR-032 carries them end-to-end), savepoint-parity-proven against the
+    # unmodified phys/module_mp_wsm7.F (proofs/v013) and module_mp_wdm7.F
+    # (proofs/v013_wdm7), 6/6 PASS each.
+    # mp=28 (aerosol-aware Thompson) is the v0.16 thompson_aero_adapter.
+    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 24, 26, 28}),
     "cu_physics": frozenset({0, 1, 2, 3, 6}),
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
     # bl=99 MRF is the v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F
     # (savepoint-parity gated, proofs/v013/mrf_oracle.py); consumes the revised-MM5
     # surface layer (sf_sfclay=1), no new surface partner needed.
-    "bl_pbl_physics": frozenset({0, 1, 2, 5, 7, 8, 99}),
+    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 99}),
     # sf_sfclay 3 (NCEP-GFS) + 91 (old-MM5) are v0.13 Tier-3 scan-wired surface
     # layers (coupling.scan_adapters.{gfs_sfclay_adapter,sfclay_old_mm5_adapter};
     # fp64 pristine-WRF oracle-validated; B2 kinematic flux handles).
@@ -253,12 +256,13 @@ def _label(key: str) -> str:
 
 # Per-key fallback alternative text used for RECOGNIZED_FAIL_CLOSED schemes.
 _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
-    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/14/16/28 (8=Thompson is the "
-    "operational default; 28=aerosol-aware Thompson).",
+    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/14/16/24/26/28 "
+    "(8=Thompson is the operational default; 24=WSM7 / 26=WDM7 add a "
+    "precipitating hail class; 28=aerosol-aware Thompson).",
     "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch, 3=Grell-"
     "Freitas, 6=Tiedtke requires active flux-form moisture advection for RQVFTEN).",
-    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/5/7/8/99 (5=MYNN, 1=YSU, 2=MYJ "
-    "[pair with sf_sfclay_physics=2], 7=ACM2, 8=BouLac, 99=MRF).",
+    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/99 (5=MYNN, 1=YSU, 2=MYJ "
+    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 99=MRF).",
     "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/3/5/7/91 (5=MYNN-SL, "
     "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 3=NCEP-GFS, "
     "7=Pleim-Xiu, 91=old-MM5).",
@@ -300,25 +304,11 @@ _DYNAMICS_IMPLEMENTED: Mapping[str, frozenset[int]] = {
 # does not implement; the operational horizontal-mixing path is the 2-D
 # Smagorinsky (diff_opt=1/km_opt=4) or constant-K (diff_opt=2/km_opt=1).
 _DYNAMICS_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
-    # WSM7 (mp=24): the column microphysics is PORTED and savepoint-parity-proven
-    # against the unmodified pristine WRF Fortran scheme (phys/module_mp_wsm7.F),
-    # fp64 JAX vs fp32/fp64 oracle (gpuwrf.physics.microphysics_wsm7.wsm7_run;
-    # proofs/v013/run_wsm7_parity.py, 6/6 columns PASS). It is NOT operationally
-    # selectable because WSM7 carries a SEPARATE precipitating HAIL class (qh)
-    # that is not in the operational moist-state pytree (MOIST_SPECIES has no
-    # qh leaf), so the dycore does not advect it and the I/O does not carry it;
-    # wiring it operationally is a cross-cutting State/dynamics/I-O addition, not
-    # a microphysics-slot change. Fail-closed (never a silent qh-dropping run).
-    "mp_physics": {
-        24: (
-            "WSM7 (separate hail/graupel) is PORTED and savepoint-parity-proven "
-            "against the unmodified pristine WRF scheme (phys/module_mp_wsm7.F) in "
-            "fp64 (gpuwrf.physics.microphysics_wsm7; proofs/v013/run_wsm7_parity.py, "
-            "6/6 columns PASS), but it carries a separate precipitating HAIL class "
-            "(qh) that the operational moist-state pytree does not yet hold, so it "
-            "is fail-closed in the GPU scan rather than silently dropping hail."
-        ),
-    },
+    # mp=24 WSM7 was fail-closed before v0.17 (it carries a separate precipitating
+    # hail class qh the operational moist-state pytree did not hold). v0.17 added
+    # the qh hail State substrate (ADR-032) + the hail surface accumulator and
+    # scan-wired WSM7 (coupling.scan_adapters.wsm7_adapter); it is now IMPLEMENTED
+    # (see _IMPLEMENTED["mp_physics"]), so it no longer has a fail-closed reason.
     "km_opt": {
         2: "1.5-order 3-D TKE closure is not implemented (the port mixes "
         "vertically via the PBL scheme, not a prognostic 3-D TKE field).",
