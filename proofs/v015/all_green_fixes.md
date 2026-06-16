@@ -1,7 +1,7 @@
 # v0.15 IDENTITY-ALL-GREEN — root causes + fixes (branch v015-all-green)
 
 Scope: the four v0.14 bounded-accept misses, fixed WRF-faithfully against
-/home/enric/src/wrf_pristine/WRF, frozen tolerance manifest UNCHANGED
+/home/user/src/wrf_pristine/WRF, frozen tolerance manifest UNCHANGED
 (proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json).
 
 ## Miss 3 — Canary MUB/PB static nest-frame seam (Atlas max_abs 250.7 / 249.9 vs 0.2)

@@ -264,14 +264,14 @@
     "noahmp_closure_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/noahmp_step1_closure.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/noahmp_step1_closure.json",
       "sha256_16": "c39eb659c9835d72",
       "size": 20211
     },
     "rrtmg_rthraten_closure_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/rrtmg_rthraten_closure.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/rrtmg_rthraten_closure.json",
       "sha256_16": "9a3b360d4ec15b4f",
       "size": 14707
     },
@@ -312,7 +312,7 @@
       "rmse_Wm2": 1.4514370602096323
     },
     "oracle_kind": "pristine-CPU-WRF RRTMG clear-sky wrfout (...C) vs JAX clear-sky on IDENTICAL profiles; all-sky JAX-vs-WRF = calibration floor (NOT self-compare)",
-    "source": "/home/enric/src/wrf_gpu2/proofs/v013/clearsky_radiation.json",
+    "source": "/home/user/src/wrf_gpu2/proofs/v013/clearsky_radiation.json",
     "source_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
   },
   "recommended_fix": {
@@ -541,7 +541,7 @@
   "schema": "wrfgpu2.v014.rrtmg_step1_forcing_parity.v1",
   "source_checks": {
     "jax_rrtmg_dry_theta_input_fix": {
-      "file": "/home/enric/src/wrf_gpu2/src/gpuwrf/coupling/physics_couplers.py",
+      "file": "/home/user/src/wrf_gpu2/src/gpuwrf/coupling/physics_couplers.py",
       "meaning": "Metric-backed RRTMG input now mirrors WRF phy_prep by converting stored theta_m to dry theta before T3D temperature conversion.",
       "owner": "_rrtmg_column_inputs"
     },

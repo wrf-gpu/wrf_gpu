@@ -182,7 +182,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "91c0647df5df729a9f0d22b05a6089b82ea54c6c\n",
@@ -218,7 +218,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "f3ee90238f7b5bbb0bb4bb5575b0e5ab89aabb5fafac43d464df3736e00d74a3",
       "size_bytes": 110124
     },
@@ -234,7 +234,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_transient_adjust_base_fix.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_transient_adjust_base_fix.json",
       "sha256": "d4114807fc8796de2f6cb7c4f786ef5397b89469d97dd0fd087253459f1077f5",
       "size_bytes": 20263
     },
@@ -250,7 +250,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-live-nest-theta-qv-wiring/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-live-nest-theta-qv-wiring/sprint-contract.md",
       "sha256": "d51cf2d9b7ab8d7069564b99387df9d4401d42b3493bafa56f27a3959ee8aea5",
       "size_bytes": 4485
     },
@@ -404,10 +404,10 @@
   "no_tost": true,
   "production_src_edits": true,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_qv_wiring.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_qv_wiring.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-live-nest-theta-qv-wiring.md",
-    "script": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_qv_wiring.py"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_qv_wiring.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_qv_wiring.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-live-nest-theta-qv-wiring.md",
+    "script": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_qv_wiring.py"
   },
   "schema": "wrfgpu2.v014.step1_live_nest_theta_qv_wiring.v1",
   "source_fix": {

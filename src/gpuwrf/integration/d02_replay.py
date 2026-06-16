@@ -258,8 +258,8 @@ class _WRFInitLibm32:
 
 _WRF_INIT_LIBM32 = _WRFInitLibm32()
 DEFAULT_REPLAY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
-DEFAULT_OUTPUT_FIELD_PATH = Path("/home/enric/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz")
-DEFAULT_TRACE_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/enric/.cache/gpuwrf_tmp"))
+DEFAULT_OUTPUT_FIELD_PATH = Path("/home/user/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz")
+DEFAULT_TRACE_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/user/.cache/gpuwrf_tmp"))
 EXPECTED_L2_D02_MASS_SHAPE_YX = (66, 159)
 
 

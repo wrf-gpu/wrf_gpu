@@ -339,84 +339,84 @@
     "building_wrf_oracles_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
     "debug_method_critic": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-debug-method-critic.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-debug-method-critic.md",
       "sha256": "719d3f86198a4cc657713d1149c92c86500ec6ed22d936c60f4b3d6d1b80e3c7",
       "size_bytes": 12171
     },
     "dynamic_field_attribution_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
       "sha256": "a8979ebd844d6aa6a05319bbfdaf548e119f2a8f0165c0ceed56c0854a84c020",
       "size_bytes": 1798878
     },
     "jax_h10_prestep_carry_py": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.py",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.py",
       "sha256": "b88e1aefc87ec7a479d7d85cfc8fbd5c1054e741d74aa65fe31af3a5502d9fea",
       "size_bytes": 38406
     },
     "jax_pre_halo_capture_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
       "sha256": "fc480540f075cb894d2c3bae181e332eabf510302057a00473406040ffbd6a69",
       "size_bytes": 24406
     },
     "live_nest_base_source_fix_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/live_nest_base_source_fix.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/live_nest_base_source_fix.json",
       "sha256": "0add2cbe0075394b6dfc7f3537762e78722f3b772180b07b5192683e941eae93",
       "size_bytes": 69804
     },
     "same_state_tendency_inventory_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_tendency_inventory.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_tendency_inventory.json",
       "sha256": "78bc434738536eb62adc3b27020a5a8e8c943c96333e254302a48861f7cd62a2",
       "size_bytes": 11251
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-state-momentum-mass/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-state-momentum-mass/sprint-contract.md",
       "sha256": "6de9472d99cebc88f342f669158e62267096c83ad06a6d27741e5b99e8cd7dcb",
       "size_bytes": 3097
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_dynamic_term_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
       "sha256": "357e986b782856d4d5390a442aeaece99aeda8d4f3446b33b6a096cccba237fe",
       "size_bytes": 33285
     },
     "wrf_post_rk_refresh_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
       "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
       "size_bytes": 34079
     },
     "wrf_post_rk_refresh_md": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
       "sha256": "28a831c5c1d3c74f85e5259c7fcfdf14f78e473b92469006cc84c3e3f7358eab",
       "size_bytes": 3217
     }
@@ -428,9 +428,9 @@
   "no_tost": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-same-state-momentum-mass.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-same-state-momentum-mass.md"
   },
   "schema": "wrfgpu2.v014.same_state_momentum_mass.v1",
   "target_fields": [

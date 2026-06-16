@@ -18,7 +18,7 @@
 # the conda env `wrfbuild` (gfortran 14.x).
 #
 # Provenance: module_mp_wdm5.F, module_mp_radar.F, module_model_constants.F and
-# libmassv.F are copied VERBATIM (unmodified) from /home/enric/src/wrf_pristine.
+# libmassv.F are copied VERBATIM (unmodified) from /home/user/src/wrf_pristine.
 # The only project-authored Fortran is wdm5_oracle_driver.f90 (column builder +
 # dump; never touches scheme physics) and morrison_stub_modules.f90 (a no-op
 # module_wrf_error + global wrf_debug/wrf_error_fatal, reused from the v0.6.0
@@ -26,12 +26,12 @@
 set -o pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF="/home/enric/src/wrf_pristine/WRF"
+WRF="/home/user/src/wrf_pristine/WRF"
 WRF_PHYS="${WRF}/phys"
 WRF_SHARE="${WRF}/share"
 WRF_FRAME="${WRF}/frame"
 
-source /home/enric/miniconda3/etc/profile.d/conda.sh
+source /home/user/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -e
 export OMP_NUM_THREADS=2

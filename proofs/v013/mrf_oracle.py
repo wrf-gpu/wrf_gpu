@@ -165,7 +165,7 @@ def build_report() -> dict:
             "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF "
                     "phys/module_bl_mrf.F (MRF -> MRF2D -> TRIDI2)",
             "savepoints": str(SP.relative_to(ROOT)),
-            "wrf_sources": ["/home/enric/src/wrf_pristine/WRF/phys/module_bl_mrf.F"],
+            "wrf_sources": ["/home/user/src/wrf_pristine/WRF/phys/module_bl_mrf.F"],
             "full_wrf_exe": False,
             "self_compare": False,
             "source_checksums_sha256": _read_lines(SP / "mrf_wrf_source_checksums.txt"),

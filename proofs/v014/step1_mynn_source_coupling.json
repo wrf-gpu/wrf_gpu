@@ -175,10 +175,10 @@
   },
   "paths": {
     "mynn_hook_root": "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth_mynn_pinned_onerun",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md",
     "wrf_patch_archive": {
       "exists": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_mynn_source_coupling_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_mynn_source_coupling_wrf_patch.diff",
       "size_bytes": 40900
     }
   },

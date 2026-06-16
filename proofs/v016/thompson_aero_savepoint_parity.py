@@ -48,7 +48,7 @@ from gpuwrf.physics.thompson_column import density_from_pressure_temperature
 
 ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero")
 WRF_PRISTINE_ROOT = Path(
-    os.environ.get("WRF_PRISTINE_ROOT", "/home/enric/src/wrf_pristine/WRF")
+    os.environ.get("WRF_PRISTINE_ROOT", "/home/user/src/wrf_pristine/WRF")
 )
 PRISTINE_SRC = WRF_PRISTINE_ROOT / "phys/module_mp_thompson.F"
 DEFAULT_OUT = Path(__file__).resolve().parent / "thompson_aero_savepoint_parity.json"

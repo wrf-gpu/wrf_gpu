@@ -2306,11 +2306,11 @@
     "contract_fresh_gpu_dir": "/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
     "contract_run_root_input_dir": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z",
     "discovery": {
-      "cpu_wrfinput": "/home/enric/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json: inputs.wrfinput",
-      "cpu_wrfout_h0": "/home/enric/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json: inputs.cpu_h0",
-      "cpu_wrfout_h1": "/home/enric/src/wrf_gpu2/proofs/v014/post_static_writer_grid_compare.json: pairing.pairs[lead_h=1].cpu_file",
+      "cpu_wrfinput": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json: inputs.wrfinput",
+      "cpu_wrfout_h0": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json: inputs.cpu_h0",
+      "cpu_wrfout_h1": "/home/user/src/wrf_gpu2/proofs/v014/post_static_writer_grid_compare.json: pairing.pairs[lead_h=1].cpu_file",
       "gpu_native_wrfinput": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
-      "gpu_wrfout_h1": "/home/enric/src/wrf_gpu2/proofs/v014/post_static_writer_grid_compare.json: pairing.pairs[lead_h=1].gpu_file"
+      "gpu_wrfout_h1": "/home/user/src/wrf_gpu2/proofs/v014/post_static_writer_grid_compare.json: pairing.pairs[lead_h=1].gpu_file"
     },
     "domain": "d02",
     "field_metadata": {
@@ -2810,8 +2810,8 @@
       }
     },
     "metadata_sources": {
-      "post_static_writer_grid_compare_json": "/home/enric/src/wrf_gpu2/proofs/v014/post_static_writer_grid_compare.json",
-      "static_metric_base_parity_json": "/home/enric/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json"
+      "post_static_writer_grid_compare_json": "/home/user/src/wrf_gpu2/proofs/v014/post_static_writer_grid_compare.json",
+      "static_metric_base_parity_json": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json"
     },
     "netcdf_attrs": {
       "cpu_wrfinput": {

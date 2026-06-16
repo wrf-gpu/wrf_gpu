@@ -14,9 +14,9 @@ WRF_SFCLAY_OBJ="${WRF_ROOT}/phys/module_sf_sfclay.o"
 mkdir -p "${SCRATCH}"
 : > "${LOG}"
 
-if [[ -f /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh ]]; then
+if [[ -f /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh ]]; then
   # shellcheck disable=SC1091
-  source /home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh >>"${LOG}" 2>&1 || true
+  source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh >>"${LOG}" 2>&1 || true
 fi
 
 FC="${FC:-$(command -v nvfortran || true)}"

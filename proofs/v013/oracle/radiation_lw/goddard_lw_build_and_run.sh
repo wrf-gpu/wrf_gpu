@@ -26,14 +26,14 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF_PHYS="/home/enric/src/wrf_pristine/WRF/phys"
+WRF_PHYS="/home/user/src/wrf_pristine/WRF/phys"
 WRF_GODDARD="${WRF_PHYS}/module_ra_goddard.F"
 WRF_CHECKERR="${WRF_PHYS}/module_checkerror.F"
 OUT_SAVE="${HERE}/../../savepoints/radiation_lw"
 SRC="${HERE}/module_ra_goddard.F"
 
 set +u
-source /home/enric/miniconda3/etc/profile.d/conda.sh
+source /home/user/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -u
 export OMP_NUM_THREADS=2

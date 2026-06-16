@@ -200,9 +200,9 @@ def test_v060_sfclay_revised_mm5_savepoint_parity_report() -> None:
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_sf_sfclayrev.F and sf_sfclayrev.F90",
             "wrf_sources": [
-                "/home/enric/src/wrf_pristine/WRF/phys/module_sf_sfclayrev.F",
-                "/home/enric/src/wrf_pristine/WRF/phys/physics_mmm/sf_sfclayrev.F90",
-                "/home/enric/src/wrf_pristine/WRF/phys/ccpp_kind_types.f90",
+                "/home/user/src/wrf_pristine/WRF/phys/module_sf_sfclayrev.F",
+                "/home/user/src/wrf_pristine/WRF/phys/physics_mmm/sf_sfclayrev.F90",
+                "/home/user/src/wrf_pristine/WRF/phys/ccpp_kind_types.f90",
             ],
             "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
             "full_wrf_exe": False,

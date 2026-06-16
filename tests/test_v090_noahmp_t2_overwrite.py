@@ -24,7 +24,7 @@ from gpuwrf.coupling.noahmp_surface_hook import overlay_noahmp_land_diagnostics
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
 
-TABLE_DIR = Path("/home/enric/src/wrf_pristine/WRF/run")
+TABLE_DIR = Path("/home/user/src/wrf_pristine/WRF/run")
 HAVE_TABLES = (TABLE_DIR / "MPTABLE.TBL").exists()
 P0_PA = 1.0e5
 R_D_OVER_CP = 287.0 / 1004.0

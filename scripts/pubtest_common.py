@@ -19,9 +19,9 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 SPRINT_DIR = ROOT / ".agent" / "sprints" / "2026-05-27-testing-plan-execution-redo"
-WRF_SOURCE = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF")
-WRF_ENV = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
-STABLE_WRF_EXE = Path("/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe")
+WRF_SOURCE = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF")
+WRF_ENV = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
+STABLE_WRF_EXE = Path("/home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe")
 CANARY_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
 
 HIGH_TEST_FILES = {

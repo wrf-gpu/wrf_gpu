@@ -23,7 +23,7 @@ TERM_DIR = SCRATCH / "term_output"
 MARKER_DIR = SCRATCH / "marker_output"
 RUN_DIR = SCRATCH / "run_case3"
 WRF_COPY = SCRATCH / "WRF"
-PRISTINE = Path("/home/enric/src/wrf_pristine/WRF")
+PRISTINE = Path("/home/user/src/wrf_pristine/WRF")
 
 CPU_H10 = Path(
     "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
@@ -471,9 +471,9 @@ def main() -> None:
             "mkdir -p /mnt/data/wrf_gpu2/v014_dynamic_terms && rsync -a /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/ /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/ && rsync -a /mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/ /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/ && cp /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms",
             "diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F > /mnt/data/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff",
             "find /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3 -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name 'wrf_stdout.log' -o -name 'marker_run_post_thphy_28rank_stdout.log' \\) -delete",
-            "timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log 2>&1",
+            "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log 2>&1",
             "ln -sf /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/main/wrf.exe /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/wrf.exe",
-            "timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_DYNAMIC_TERMS=1 WRFGPU2_DYNAMIC_TERMS_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output WRFGPU2_DYNAMIC_TERMS_GRID=2 WRFGPU2_DYNAMIC_TERMS_START_STEP=6000 WRFGPU2_DYNAMIC_TERMS_END_STEP=6000 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log 2>&1",
+            "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_DYNAMIC_TERMS=1 WRFGPU2_DYNAMIC_TERMS_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output WRFGPU2_DYNAMIC_TERMS_GRID=2 WRFGPU2_DYNAMIC_TERMS_START_STEP=6000 WRFGPU2_DYNAMIC_TERMS_END_STEP=6000 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log 2>&1",
             "cp /mnt/data/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff proofs/v014/wrf_dynamic_term_localization_patch.diff",
             "python -m py_compile proofs/v014/wrf_dynamic_term_localization.py",
             "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/wrf_dynamic_term_localization.py",

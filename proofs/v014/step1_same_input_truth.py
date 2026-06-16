@@ -63,8 +63,8 @@ ACCEPTED_TRUTH = (
     Path("/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth")
     / "same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
 )
-WRF_ENV_BIN = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin")
-WRF_ENV_LIB = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/lib")
+WRF_ENV_BIN = Path("/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin")
+WRF_ENV_LIB = Path("/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/lib")
 
 TARGET_STEP = 1
 TARGET_DOMAIN = 2

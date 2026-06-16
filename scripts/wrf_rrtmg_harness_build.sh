@@ -14,7 +14,7 @@ LOG="${SCRATCH}/wrf_rrtmg_harness_build.log"
 RUNTIME="${SCRATCH}/rrtmg_runtime"
 WRF_ROOT="${WRF_ROOT:-/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF}"
 WRF_BUILD="${WRF_BUILD:-${WRF_ROOT}/_build_gen2_dmpar}"
-WRF_ENV="${WRF_ENV:-/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build}"
+WRF_ENV="${WRF_ENV:-/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build}"
 MOD_DIR="${WRF_MOD_DIR:-${WRF_ROOT}/install_gen2_dmpar/modules}"
 SW_OBJ="${WRF_BUILD}/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o"
 LW_OBJ="${WRF_BUILD}/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o"
@@ -27,8 +27,8 @@ LW_DATA="${WRF_ROOT}/install_gen2_dmpar/run/RRTMG_LW_DATA"
 # and is a genuine (non-JAX) WRF Fortran oracle. It only lacks the WRF framework
 # error handler wrf_error_fatal3, which we satisfy with a tiny local stub.
 # All three are overridable for a different local WRF build.
-PRISTINE_PHYS="${WRF_PRISTINE_PHYS:-/home/enric/src/wrf_pristine/WRF/phys}"
-PRISTINE_RUN="${WRF_PRISTINE_RUN:-/home/enric/src/wrf_pristine/WRF/run}"
+PRISTINE_PHYS="${WRF_PRISTINE_PHYS:-/home/user/src/wrf_pristine/WRF/phys}"
+PRISTINE_RUN="${WRF_PRISTINE_RUN:-/home/user/src/wrf_pristine/WRF/run}"
 PRISTINE_FC="${WRF_PRISTINE_FC:-gfortran}"
 USE_PRISTINE=0
 if [[ ! -f "${SW_OBJ}" || ! -f "${LW_OBJ}" ]] \

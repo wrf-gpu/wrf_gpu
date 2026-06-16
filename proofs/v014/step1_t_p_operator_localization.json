@@ -1021,7 +1021,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "7cad8577 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 add mythos memory lane contract\n",
@@ -1042,7 +1042,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-t-p-operator-localization/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-t-p-operator-localization/sprint-contract.md",
       "sha256": "9d103b93cf54a59adf848289b630c44ce73d9f9dca1cfac50aa44b75c8cdc701",
       "size_bytes": 7567
     },
@@ -1058,7 +1058,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization_wrf_patch.diff",
       "sha256": "dd9f2a52eb4573557f98a538007e3df6dd3f326593f34ace6da06f8121e4430c",
       "size_bytes": 16605
     },
@@ -1106,10 +1106,10 @@
   "one_cell_proof": false,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-t-p-operator-localization.md",
-    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization_wrf_patch.diff",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-t-p-operator-localization.md",
+    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_t_p_operator_localization_wrf_patch.diff",
     "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth"
   },
   "schema": "wrfgpu2.v014.step1_t_p_operator_localization.v1",

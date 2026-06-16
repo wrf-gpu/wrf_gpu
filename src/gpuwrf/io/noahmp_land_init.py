@@ -33,7 +33,7 @@ from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
 
 
 # Standard WRF MPTABLE / Noah-MP table directory (pristine WRF run/).
-DEFAULT_TABLE_DIR = Path("/home/enric/src/wrf_pristine/WRF/run")
+DEFAULT_TABLE_DIR = Path("/home/user/src/wrf_pristine/WRF/run")
 
 
 def _i32(field) -> jnp.ndarray:

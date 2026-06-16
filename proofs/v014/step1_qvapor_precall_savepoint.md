@@ -8,7 +8,7 @@ Verdict: `STEP1_QVAPOR_PRECALL_SAVEPOINT_READY`.
 - Production `src/gpuwrf` source changed: `False`.
 - New raw WRF truth root: `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/wrf_truth`.
 - Filtered pre-call-only truth root for the next proof: `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only`.
-- WRF patch diff artifact: `/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint_wrf_patch.diff`.
+- WRF patch diff artifact: `/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint_wrf_patch.diff`.
 - File counts: `{'accepted_precall_files': 28, 'new_precall_files': 28, 'new_raw_all_hook_files': 168, 'filtered_precall_files': 28}`.
 - Mass shape z/y/x: `[44, 66, 159]`.
 - WPH shape z/y/x: `[45, 66, 159]`.

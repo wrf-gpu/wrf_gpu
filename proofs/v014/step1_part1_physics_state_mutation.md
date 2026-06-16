@@ -6,7 +6,7 @@ Verdict: `STEP1_PART1_INPUT_ALREADY_DIVERGED_T_STATE`.
 
 - CPU backend: `cpu`.
 - WRF internal truth root: `/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth`.
-- Scratch WRF patch: `/home/enric/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff`.
+- Scratch WRF patch: `/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff`.
 - Fastest rigorous method: `RIGHT_TOOL_FASTEST_WALL_CLOCK_SAVEPOINT_COMPARATOR`.
 - `part1_entry_before_init_zero_tendency` `T_STATE` vs JAX live-nest step-entry state: max_abs `5.490173101425171`, rmse `1.9175184863907806`.
 - Largest WRF internal `T_STATE` delta from part1 entry occurs at `after_init_zero_tendency`: max_abs `0.0`.

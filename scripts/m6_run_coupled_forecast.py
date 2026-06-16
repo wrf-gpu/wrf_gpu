@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
-TMP_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/enric/.cache/gpuwrf_tmp"))
+TMP_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/user/.cache/gpuwrf_tmp"))
 TMP_ROOT.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("TMPDIR", str(TMP_ROOT))
 
@@ -491,7 +491,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", required=True)
     parser.add_argument("--run-dir", default=str(DEFAULT_RUN_DIR))
     parser.add_argument("--boundary", default=str(DEFAULT_BOUNDARY))
-    parser.add_argument("--output-dir", default="/home/enric/.cache/gpuwrf_outputs/m6/coupled_driver")
+    parser.add_argument("--output-dir", default="/home/user/.cache/gpuwrf_outputs/m6/coupled_driver")
     parser.add_argument("--dt-s", type=float, default=DEFAULT_DT_S)
     parser.add_argument("--n-acoustic", type=int, default=2)
     parser.add_argument("--radiation-cadence-steps", type=int, default=DEFAULT_RADIATION_CADENCE_STEPS)

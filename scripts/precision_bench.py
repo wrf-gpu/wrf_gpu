@@ -26,8 +26,8 @@ if str(SRC) not in sys.path:
 
 ARTIFACT_DIR = ROOT / "artifacts" / "precision-bench"
 SCRATCH_DIR = ROOT / "data" / "scratch" / "precision-bench"
-GEN2_ENV = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
-GEN2_WRF = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF")
+GEN2_ENV = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
+GEN2_WRF = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF")
 
 KERNELS = ("m2_column", "m4_dycore", "m5_thompson")
 GPU_PRECISIONS = {

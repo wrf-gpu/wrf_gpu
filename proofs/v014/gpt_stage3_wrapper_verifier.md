@@ -3,7 +3,7 @@
 Date: 2026-06-11
 Verifier: GPT-5.5 xhigh
 Reviewed Fable commit: `a5f282521090c4b1e3d1d4618295db09d49cdc17`
-Fable worktree: `/home/enric/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix`
+Fable worktree: `/home/user/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix`
 
 ## Verdict
 
@@ -123,16 +123,16 @@ git -C .claude/worktrees/v014-hpg-native-face-fix show --format= --no-renames a5
 git -C .claude/worktrees/v014-hpg-native-face-fix show --format= --no-renames a5f282521090c4b1e3d1d4618295db09d49cdc17 -- src/gpuwrf/integration/daily_pipeline.py
 git -C .claude/worktrees/v014-hpg-native-face-fix show --format= --no-renames a5f282521090c4b1e3d1d4618295db09d49cdc17 -- tests/test_v014_specified_bdy_cadence.py
 git -C .claude/worktrees/v014-hpg-native-face-fix show --format= --no-renames a5f282521090c4b1e3d1d4618295db09d49cdc17 -- proofs/v014/switzerland_stage3_wrapper_cadence.py
-nl -ba /home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F
-nl -ba /home/enric/src/wrf_pristine/WRF/share/module_bc.F
-nl -ba /home/enric/src/wrf_pristine/WRF/dyn_em/module_bc_em.F
-nl -ba /home/enric/src/wrf_pristine/WRF/dyn_em/module_advect_em.F
-nl -ba /home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F
+nl -ba /home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F
+nl -ba /home/user/src/wrf_pristine/WRF/share/module_bc.F
+nl -ba /home/user/src/wrf_pristine/WRF/dyn_em/module_bc_em.F
+nl -ba /home/user/src/wrf_pristine/WRF/dyn_em/module_advect_em.F
+nl -ba /home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F
 pytest -q tests/test_v014_specified_bdy_cadence.py
 git diff --check a5f282521090c4b1e3d1d4618295db09d49cdc17^ a5f282521090c4b1e3d1d4618295db09d49cdc17
-python -m json.tool /home/enric/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix/proofs/v014/switzerland_stage3_wrapper_cadence.json >/tmp/gpt_stage3_wrapper_verifier_stage3_json.validated
-python -m json.tool /home/enric/src/wrf_gpu2/proofs/v014/switzerland_acoustic_continuation.json >/tmp/gpt_stage3_wrapper_verifier_continuation_json.validated
-python -m json.tool /home/enric/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix/proofs/v014/switzerland_acoustic_substep_blocker.json >/tmp/gpt_stage3_wrapper_verifier_blocker_json.validated
+python -m json.tool /home/user/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix/proofs/v014/switzerland_stage3_wrapper_cadence.json >/tmp/gpt_stage3_wrapper_verifier_stage3_json.validated
+python -m json.tool /home/user/src/wrf_gpu2/proofs/v014/switzerland_acoustic_continuation.json >/tmp/gpt_stage3_wrapper_verifier_continuation_json.validated
+python -m json.tool /home/user/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix/proofs/v014/switzerland_acoustic_substep_blocker.json >/tmp/gpt_stage3_wrapper_verifier_blocker_json.validated
 ```
 
 Additional `rg`, `nl`, and Python read-only summary commands were used to inspect flag reachability, source line references, gate values, and `phi_p_hydrostatic_pair` values. No GPU command was run.
@@ -145,7 +145,7 @@ Additional `rg`, `nl`, and Python read-only summary commands were used to inspec
 - `proofs/v014/switzerland_acoustic_continuation.json`
 - `.claude/worktrees/v014-hpg-native-face-fix/proofs/v014/switzerland_acoustic_substep_blocker.json`
 - `.claude/worktrees/v014-hpg-native-face-fix/tests/test_v014_specified_bdy_cadence.py`
-- WRF pristine source under `/home/enric/src/wrf_pristine/WRF/dyn_em` and `/home/enric/src/wrf_pristine/WRF/share`
+- WRF pristine source under `/home/user/src/wrf_pristine/WRF/dyn_em` and `/home/user/src/wrf_pristine/WRF/share`
 
 ## Manager Next Actions
 

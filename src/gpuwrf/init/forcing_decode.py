@@ -223,10 +223,10 @@ def surface_assembly_recipe(policy: SurfaceSpechumdPolicy = "wps_fill") -> dict[
                 "METGRID.TBL.ARW fills level 200100 with const(-1) for SPECHUMD."
             ),
             "source_refs": [
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:691",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:695",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1144",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
             ],
         }
     elif policy == "dewpoint":
@@ -238,10 +238,10 @@ def surface_assembly_recipe(policy: SurfaceSpechumdPolicy = "wps_fill") -> dict[
                 "q = 0.622 * e / (p - (1 - 0.622) * e)"
             ),
             "source_refs": [
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1167",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:7415",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:7421",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1167",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:7415",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:7421",
             ],
         }
     else:
@@ -256,17 +256,17 @@ def surface_assembly_recipe(policy: SurfaceSpechumdPolicy = "wps_fill") -> dict[
         "SPECHUMD[0]": spechumd_surface,
         "isobaric_order": "indices 1..13 = 100000..5000 Pa",
         "wps_level_refs": [
-            "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
-            "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
-            "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
-            "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172",
+            "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:755",
+            "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rd_grib2.F:792",
+            "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1070",
+            "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/src/process_domain_module.F:1172",
         ],
         "soil_order": {
             "ST[0]/SM[0]": "010040, met_em SOIL_LAYERS[0] = 40 cm",
             "ST[1]/SM[1]": "000010, met_em SOIL_LAYERS[1] = 10 cm",
             "source_refs": [
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:2",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/metgrid/METGRID.TBL.ARW:29",
             ],
         },
     }
@@ -404,8 +404,8 @@ def build_forcing_decode_report(
         "dewpoint_specific_humidity_subcheck": {
             "formula": "q = eps*e/(p-(1-eps)*e), e=611.2*exp(17.67*(Td-273.15)/(Td-29.65))",
             "source_refs": [
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
-                "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1167",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1163",
+                "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/dyn_em/module_initialize_real.F:1167",
             ],
             "min": float(np.min(dewpoint_surface_q)),
             "max": float(np.max(dewpoint_surface_q)),
@@ -595,8 +595,8 @@ def _field_provenance(
                 "message": message,
                 "recipe": "ECMWF fractional LANDSEA > 0.5 -> 1, else 0",
                 "source_refs": [
-                    "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:869",
-                    "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:978",
+                    "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:869",
+                    "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WPS/ungrib/src/rrpr.F:978",
                 ],
             }
         return {**base, "source": "aifs_grib", "message": message}

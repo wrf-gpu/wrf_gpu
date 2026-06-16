@@ -32,6 +32,6 @@ The remaining blocker is later than `sfclay_mynn` output algebra: MYNN/PBL sourc
 
 ## Files
 
-- JSON proof: `/home/enric/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra.json`
-- WRF hook patch archive: `/home/enric/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff`
-- Review: `/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md`
+- JSON proof: `/home/user/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra.json`
+- WRF hook patch archive: `/home/user/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff`
+- Review: `/home/user/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md`

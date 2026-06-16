@@ -154,7 +154,7 @@ def test_v060_kf_savepoint_parity_report() -> None:
         "verdict": "PASS" if all(case["pass"] for case in cases) else "FAIL",
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_cu_kfeta.F",
-            "wrf_source": "/home/enric/src/wrf_pristine/WRF/phys/module_cu_kfeta.F",
+            "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_kfeta.F",
             "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/kf_build_and_run.sh",
             "full_wrf_exe_run": False,
             "note": "M20/current repo search did not expose a cumulus savepoint factory. This is a real WRF-module oracle, not a JAX self-compare, but not a full coupled wrf.exe case.",

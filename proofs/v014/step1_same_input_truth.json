@@ -1085,7 +1085,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "3b0fb624 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 same-input truth sprint\n",
@@ -1097,7 +1097,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
@@ -1105,7 +1105,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
       "sha256": "4b15ebdd78a2675bed449ea1a3498212b2536efa51e384944a10eaf776a48702",
       "size_bytes": 11998
     },
@@ -1113,7 +1113,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
@@ -1129,7 +1129,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_contract_builder.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.json",
       "sha256": "7358c6318d4620d8cf9ff59ac025d65701e8b8d06d4e37b6a96cc7262d05875a",
       "size_bytes": 53998
     },
@@ -1137,7 +1137,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_contract_builder.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.md",
       "sha256": "25dc6af076230ef22486bf420419dba0fb2a4be152d0cd7a3b9a0a400e198473",
       "size_bytes": 871
     },
@@ -1145,7 +1145,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_contract_builder.py",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.py",
       "sha256": "a54992edf44f1fbf1e3f0365808e0e66ff289008a2b64d7a54be36eaa063a2b8",
       "size_bytes": 48231
     },
@@ -1153,7 +1153,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.py",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.py",
       "sha256": "0059207c996099fdfbfb76cd1c66bfffe7e2075d34b8d1478ef56f8cf7f7f3f6",
       "size_bytes": 29008
     },
@@ -1161,7 +1161,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-same-input-truth/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-same-input-truth/sprint-contract.md",
       "sha256": "40d40833406bbdbf44b8c5980331821a22f6c36e8f02a5a941427f352035bf9b",
       "size_bytes": 7389
     },
@@ -1169,7 +1169,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization_patch.diff",
       "sha256": "fe5e0666961e4b0f106d6427b1dbdcbbc2edb78990e7b4943f7f36a299e60091",
       "size_bytes": 17755
     },
@@ -1193,10 +1193,10 @@
   "production_src_edits": false,
   "proof_objects": {
     "accepted_truth_npz": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_same_input_truth.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_same_input_truth.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-same-input-truth.md",
-    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-same-input-truth.md",
+    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff"
   },
   "schema": "wrfgpu2.v014.step1_same_input_truth.v1",
   "target": {
@@ -1957,7 +1957,7 @@
       },
       {
         "command": [
-          "/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+          "/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
           "--oversubscribe",
           "-np",
           "28",
@@ -2013,7 +2013,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff",
       "sha256": "b9eb27c6a1dd921ea79a5a5adebe133264b7cf1914ef6dbb8232bf640805e6b9",
       "size_bytes": 8919
     }

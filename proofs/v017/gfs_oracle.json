@@ -484,7 +484,7 @@
     "build_manifest": [
       "mode=fp64",
       "full_wrf_exe=false",
-      "wrf_sources=/home/enric/src/wrf_pristine/WRF/phys/{module_gfs_machine.F,module_gfs_physcons.F,module_bl_gfs.F}",
+      "wrf_sources=/home/user/src/wrf_pristine/WRF/phys/{module_gfs_machine.F,module_gfs_physcons.F,module_bl_gfs.F}",
       "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
       "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -DNMM_CORE=0 -DHWRF=0 -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
     ],
@@ -498,9 +498,9 @@
     ],
     "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF phys/module_bl_gfs.F (BL_GFS -> MONINP -> TRIDI2/TRIDIN/TRIDIT)",
     "wrf_sources": [
-      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_gfs.F",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F",
-      "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F"
+      "/home/user/src/wrf_pristine/WRF/phys/module_bl_gfs.F",
+      "/home/user/src/wrf_pristine/WRF/phys/module_gfs_machine.F",
+      "/home/user/src/wrf_pristine/WRF/phys/module_gfs_physcons.F"
     ]
   },
   "overall_pass": true,

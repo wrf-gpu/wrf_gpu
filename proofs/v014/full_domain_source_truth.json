@@ -83,7 +83,7 @@
     "source_save_boundary_hook_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.json",
       "sha256": "0e69931e482d7f1c2987cda795c884ff51372c83d5d46cb3232f4bcdb4d755f2",
       "size_bytes": 6005415
     },
@@ -106,9 +106,9 @@
   "post_rk_truth_full_domain": false,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/full_domain_source_truth.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/full_domain_source_truth.md",
-    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/full_domain_source_truth_wrf_patch.diff"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/full_domain_source_truth.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/full_domain_source_truth.md",
+    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/full_domain_source_truth_wrf_patch.diff"
   },
   "schema": "wrfgpu2.v014.full_domain_source_truth.v1",
   "source_full_domain": false,

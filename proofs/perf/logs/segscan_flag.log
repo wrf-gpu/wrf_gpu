@@ -1,4 +1,4 @@
-+ cd /home/enric/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
++ cd /home/user/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
 + export PYTHONPATH=src
 + PYTHONPATH=src
 + export OMP_NUM_THREADS=4

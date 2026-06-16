@@ -168,28 +168,28 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "managing_sprints_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
       "sha256": "7f6186ecf4f6c972464ba3f5c28c0554b0e595728764dc86ffbd6529d28c3350",
       "size_bytes": 6556
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-input-single-rk-parity/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-input-single-rk-parity/sprint-contract.md",
       "sha256": "c580913457f2af183e0b613facc2dc631e7d1647a5843b8612b3ca6b06f9fec3",
       "size_bytes": 5134
     },
@@ -197,35 +197,35 @@
       "grid_after_live_nest_base_json": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/proofs/v014/grid_after_live_nest_base.json",
+        "path": "/home/user/src/wrf_gpu2/proofs/v014/grid_after_live_nest_base.json",
         "sha256": "da0fce3d2d9c5edef2fd84348b845315a9b2e95762342336f537e222046eea59",
         "size_bytes": 1659506
       },
       "opus_critic_json": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/proofs/v014/dynamic_root_cause_opus_critic.json",
+        "path": "/home/user/src/wrf_gpu2/proofs/v014/dynamic_root_cause_opus_critic.json",
         "sha256": "aa7b782c73e7952bd24f566cee134348a81265e349fe657f18a3e8278edab7be",
         "size_bytes": 4470
       },
       "pre_rk_input_boundary_json": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+        "path": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
         "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
         "size_bytes": 43617
       },
       "same_state_momentum_mass_json": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.json",
+        "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.json",
         "sha256": "b979a7e48d59cd0f772927421eedd7babc74a4924d435764ccd7e7f9a2a3d08a",
         "size_bytes": 17805
       },
       "wrf_post_rk_refresh_json": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+        "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
         "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
         "size_bytes": 34079
       }
@@ -370,9 +370,9 @@
   },
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-same-input-single-rk-parity.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-same-input-single-rk-parity.md"
   },
   "schema": "wrfgpu2.v014.same_input_single_rk_parity.v1",
   "source_contract": {
@@ -514,35 +514,35 @@
       "operational_mode_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
         "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
         "size_bytes": 175388
       },
       "rk3_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/rk3.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/dynamics/rk3.py",
         "sha256": "c17fb525fecbec3fabf9a4a91bfc8b3a19774e7168ee3c149d08bb383d28f9f2",
         "size_bytes": 3190
       },
       "rk_addtend_dry_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
         "sha256": "2152716c17ffd78d5521e4674b280b18751c03f7440e74385122d6ade74453e7",
         "size_bytes": 24911
       },
       "state_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
         "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
         "size_bytes": 25734
       },
       "step_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/step.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/dynamics/step.py",
         "sha256": "7a31f18e6951f9a91df05dba07cbae3d0c9bbe163b18ea050eb83912d9a00725",
         "size_bytes": 1582
       }

@@ -18,7 +18,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 WRF_ROOT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF")
-ENV_SCRIPT = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
+ENV_SCRIPT = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
 WRF_SOURCE_CANDIDATES = (
     ROOT.parent
     / "wrf_gpu"
@@ -26,7 +26,7 @@ WRF_SOURCE_CANDIDATES = (
     / "post13_thompson_first_divergence_20260508T224837Z"
     / "source_snapshots_pre"
     / "module_mp_thompson.F.pre",
-    Path("/home/enric/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"),
+    Path("/home/user/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"),
 )
 SCRATCH = ROOT / "data" / "scratch" / "thompson_tables"
 DEFAULT_OUTPUT = ROOT / "data" / "fixtures" / "thompson-tables-v1.npz"

@@ -1170,7 +1170,7 @@ def main() -> int:
                 "apply_patch work_clean_20260609_194715/WRF/dyn_em/start_em.F",
                 "diff -u backup/start_em.F.before_start_domain_perturb_subsurface WRF/dyn_em/start_em.F > proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
                 "./compile em_real (failed: /bin/csh missing, exit 126)",
-                "PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH /home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/tcsh ./compile em_real (first env-missing check failed in log, then rerun with PATH/NETCDF/PNETCDF)",
+                "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH /home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/tcsh ./compile em_real (first env-missing check failed in log, then rerun with PATH/NETCDF/PNETCDF)",
                 "PATH=wrf-build/bin:$PATH NETCDF=wrf-build PNETCDF=wrf-build tcsh ./compile em_real",
                 "mpirun -np 28 ./wrf.exe (failed: insufficient slots)",
                 "mpirun --map-by :OVERSUBSCRIBE -np 28 ./wrf.exe",

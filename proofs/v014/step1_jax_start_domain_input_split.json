@@ -31,7 +31,7 @@
         "--abbrev-ref",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
@@ -43,7 +43,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "49a9f8e322d5200cd02903745d453ba0fd1c90e0\n",
@@ -57,7 +57,7 @@
         "--oneline",
         "--decorate"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "49a9f8e3 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open jax start domain input split sprint\n",
@@ -76,7 +76,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "f3ee90238f7b5bbb0bb4bb5575b0e5ab89aabb5fafac43d464df3736e00d74a3",
       "size_bytes": 110124
     },
@@ -84,7 +84,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "a241cea07e51a61489629be391da0071d9bfbde382397f7326746aff8d8bded2",
       "size_bytes": 78614
     },
@@ -92,7 +92,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.json",
       "sha256": "e75dfd2904b9bc00d40b4ad9d4c96d92c19951d4d8b1504e2c4fd9ea62561f5c",
       "size_bytes": 150646
     },
@@ -100,7 +100,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.md",
       "sha256": "8f7578149da326eb7953a20ec143e2bc30644fae19f32e632846502e740d4ab9",
       "size_bytes": 4157
     },
@@ -108,7 +108,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-jax-start-domain-input-split/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-jax-start-domain-input-split/sprint-contract.md",
       "sha256": "1d1b7be84f8d717f507dd9ecc7457db5d5fa948e8a5a0ba7ee722529863d350a",
       "size_bytes": 6234
     },
@@ -2210,7 +2210,7 @@
     "source_constant_hits": {
       "d02_replay_cp": {
         "line": 164,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
         "text": "_EOS_CP_D = 1004.0"
       },
       "wrf_cp": {
@@ -5281,9 +5281,9 @@
     }
   },
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-jax-start-domain-input-split.md",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-jax-start-domain-input-split.md",
     "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth"
   },
   "schema": "wrfgpu2.v014.step1_jax_start_domain_input_split.v1",

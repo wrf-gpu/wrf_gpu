@@ -1,7 +1,7 @@
 {
   "audit": "moist_theta_physics_consumer_audit",
   "date": "2026-06-10",
-  "repo": "/home/enric/src/wrf_gpu2",
+  "repo": "/home/user/src/wrf_gpu2",
   "sprint_contract": ".agent/sprints/2026-06-10-v014-gpt-moist-theta-physics-consumer-audit/sprint-contract.md",
   "mode": "read_only_compatibility_audit",
   "verdict": "MULTIPLE_RUNTIME_PHYSICS_CONSUMERS_REQUIRE_DRY_DECOUPLING",

@@ -969,7 +969,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "9b4cb3a9 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open theta same qvapor sprint\n",
@@ -981,7 +981,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
       "sha256": "8dae3298e9781ba5d3b8d71e6a9b96af38f5bc50ad374082cbaf830baf6bcae9",
       "size_bytes": 5283
     },
@@ -989,7 +989,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.json",
       "sha256": "ec4c7a47e52f63b5c727426cc01610c761b3fad3467756ce653c7832c91ab0a3",
       "size_bytes": 35811
     },
@@ -997,7 +997,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.py",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.py",
       "sha256": "04efd98420b48ba76ad7fd5267883284d918d4600555fd09c152072b13d9f0bd",
       "size_bytes": 35565
     },
@@ -1005,7 +1005,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
       "sha256": "8dae3298e9781ba5d3b8d71e6a9b96af38f5bc50ad374082cbaf830baf6bcae9",
       "size_bytes": 5283
     },
@@ -1037,7 +1037,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-theta-same-qvapor/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-theta-same-qvapor/sprint-contract.md",
       "sha256": "d1ead6c7cf8b80b36cf6a46efcc41f6c20b78169524c143d56842b7817f4b3ca",
       "size_bytes": 4399
     },
@@ -1067,9 +1067,9 @@
   "no_wrf_run": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-theta-same-qvapor.md",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-theta-same-qvapor.md",
     "same_boundary_qvapor_root_reused": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only"
   },
   "qvapor_source_rule": {
@@ -1720,7 +1720,7 @@
         "lines 852-855 and 869-879 branch on use_theta_m; use_theta_m=1 treats th as moist theta"
       ],
       "lines": "812-890",
-      "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F"
+      "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F"
     },
     "mediation_integrate_live_nest_call": {
       "evidence": [
@@ -1729,7 +1729,7 @@
         "lines 754-762 call adjust_tempqv(nest%mub, nest%mub_save, nest%c3h, nest%c4h, nest%znw, nest%p_top, nest%t_2, nest%p, QVAPOR, use_theta_m, ...)"
       ],
       "lines": "726-762",
-      "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F"
+      "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F"
     },
     "theta_m_conversion": {
       "evidence": [
@@ -1737,7 +1737,7 @@
         "lines 4923-4928 apply grid%t_2 = (grid%t_2 + T0) * (1 + R_v/R_d * QVAPOR) - T0 when use_theta_m=1"
       ],
       "lines": "4918-4928",
-      "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F"
+      "path": "/home/user/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F"
     }
   }
 }

@@ -84,7 +84,7 @@ scripts/run_gpu_lowprio.sh --cores 0-23 \
   GPUWRF_RRTMG_LW_COLUMN_TILING=true \
   GPUWRF_RRTMG_SW_COLUMN_TILE_COLS=16384 \
   GPUWRF_RRTMG_LW_COLUMN_TILE_COLS=16384 \
-  PYTHON=/home/enric/miniconda3/bin/python \
+  PYTHON=/home/user/miniconda3/bin/python \
   bash scripts/equivalence_switzerland.sh \
   | tee "$OUT/equivalence_switzerland.stdout.log"
 ```

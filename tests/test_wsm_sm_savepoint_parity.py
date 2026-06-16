@@ -1,7 +1,7 @@
 """WSM3/WSM5 JAX ports vs pristine-WRF savepoint parity gates.
 
 References are generated from UNMODIFIED pristine WRF
-``/home/enric/src/wrf_pristine/WRF`` by
+``/home/user/src/wrf_pristine/WRF`` by
 ``proofs/v060/oracle/build_wsm_sm_oracles.sh``. This is not a JAX self-compare.
 """
 
@@ -83,7 +83,7 @@ def test_wsm_sm_generated_report_declares_pristine_oracle_pass(scheme_name: str)
     assert report["schema"] == f"gpuwrf.v060.{scheme_name}_savepoint_parity.v1"
     assert report["overall_pass"] is True
     assert report["oracle"]["no_self_compare"] is True
-    assert report["oracle"]["wrf_source"] == "/home/enric/src/wrf_pristine/WRF"
+    assert report["oracle"]["wrf_source"] == "/home/user/src/wrf_pristine/WRF"
     assert report["predeclared_tolerances"] == runner.PREDECLARED_TOL
 
 

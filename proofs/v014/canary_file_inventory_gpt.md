@@ -19,7 +19,7 @@ The best v0.14 Canary field-validation truth is already present: `/mnt/data/cana
 | 5 | `/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank` | nightly / case bank | d02,d03,d04,d05 point shadows | 54 case manifests; 29 `completed_teacher_shadow_only`; 156 parquet point artifacts | dense completed window 2026-04-29_18 through 2026-05-30_18 | None | per-case `manifest.yaml` and `*point_shadows.manifest.yaml` | Case selection and station/point evidence, not full-field truth |
 | 6 | `/mnt/data/canairy_meteo/runs/wrf_l3` | retained L3 CPU runs | d01-d05 | two complete 24h cases: 25 frames/domain; d03=50 total across complete cases | 2026-05-09 and 2026-05-21 cases, 24h | No; `restart = .false.` | READMEs/logs and case-bank manifests | Secondary d03/Tenerife 24h evidence, not 72h gate |
 | 7 | `/mnt/data/canairy_meteo/runs/surface_geo_v2_1` | research L3 runs | d01,d02,d03 | three 24h-ish d03 roots, 25 frames/domain each | 2026-05-13_18 through 2026-05-14_18 | No | surface_geo manifests/summaries plus READMEs/logs | Research/regression evidence only |
-| 8 | `/home/enric/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout` | GPU/JAX proof output | d02 | historical d02 outputs: case1 72, case2 34, case3/4 24 each | mixed May 2026 lead windows | No | proof tree only | Historical provenance, not CPU truth |
+| 8 | `/home/user/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout` | GPU/JAX proof output | d02 | historical d02 outputs: case1 72, case2 34, case3/4 24 each | mixed May 2026 lead windows | No | proof tree only | Historical provenance, not CPU truth |
 | 9 | `/mnt/data/canairy_meteo/gate_gwd_nested_v013b/out` and `/mnt/data/canairy_meteo/gate_revalidate_gwd8/out` | GPU/JAX gate outputs | d01,d02,d03 | 24 frames/domain in each output root | 2026-05-31_19 through 2026-06-01_18 | No | no local manifest found in output root | Prior nested 24h GPU evidence only |
 
 ## Nightly Runs
@@ -27,7 +27,7 @@ The best v0.14 Canary field-validation truth is already present: `/mnt/data/cana
 Exact roots:
 
 - `/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank`
-- `/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank`
+- `/home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank`
 
 These resolve to the same sampled device/inode for files such as `20260501_18z/manifest.yaml`; treat them as the same case-bank storage, not independent copies. The bank currently has 54 case manifest directories with statuses: 29 `completed_teacher_shadow_only`, 16 `failed`, 8 `running`, and 1 `preflight_ready_full_wrf_not_started`.
 
@@ -36,7 +36,7 @@ What it contains:
 - Per-case `manifest.yaml`.
 - `l2_d02_point_shadows.{csv,parquet}` and manifest sidecars.
 - `l3_d03_point_shadows`, `l3_d03_tnf_point_shadows`, `l3_d04_gc_point_shadows`, `l3_d05_lp_point_shadows` artifacts for completed cases.
-- Manifest links to WRF workdirs under `Gen2/runs/wrf_l2/...` and `Gen2/runs/wrf_l3/...`; `/home/enric/src/canairy_meteo/Gen2/runs` is a symlink to `/mnt/data/canairy_meteo/runs`.
+- Manifest links to WRF workdirs under `Gen2/runs/wrf_l2/...` and `Gen2/runs/wrf_l3/...`; `/home/user/src/canairy_meteo/Gen2/runs` is a symlink to `/mnt/data/canairy_meteo/runs`.
 
 What is missing:
 
@@ -60,9 +60,9 @@ Evidence:
 
 Checkpoint-like locations found:
 
-- `/home/enric/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs`: durable GPU/JAX pipeline proof directories for 3 cases, not 15. One case includes `restart_in_pipeline.json`, but this is runner/pipeline resume proof state, not WRF `wrfrst`.
-- `/home/enric/src/wrf_gpu2/proofs/v013/savepoints*` and `/home/enric/src/wrf_gpu2/proofs/v060/*savepoint*`: per-scheme savepoint parity artifacts, not Canary field run sets.
-- `/home/enric/src/wrf_gpu2/proofs/v014/*savepoint*`: v0.14 proof manifests and scripts for same-state/source debugging, not a full run corpus.
+- `/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs`: durable GPU/JAX pipeline proof directories for 3 cases, not 15. One case includes `restart_in_pipeline.json`, but this is runner/pipeline resume proof state, not WRF `wrfrst`.
+- `/home/user/src/wrf_gpu2/proofs/v013/savepoints*` and `/home/user/src/wrf_gpu2/proofs/v060/*savepoint*`: per-scheme savepoint parity artifacts, not Canary field run sets.
+- `/home/user/src/wrf_gpu2/proofs/v014/*savepoint*`: v0.14 proof manifests and scripts for same-state/source debugging, not a full run corpus.
 - `/mnt/data/wrf_gpu2/v014_same_state_wrf`, `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint`, and `/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook`: referenced by v0.14 proof files, outside the requested roots, and single-step/debug instrumentation rather than restartable 72h truth.
 
 ## Best v0.14 Gate Choices
@@ -82,7 +82,7 @@ Do not use d03 as the v0.14 mandatory 72h gate unless a new CPU-WRF truth campai
 | Uncertainty | Fastest Command To Resolve |
 |---|---|
 | If Enric meant a checkpointed 15-case corpus outside the three requested roots, it was not found as a primary-root artifact. | `find /mnt/data -path '*/artifacts/envs/*' -prune -o -type f \( -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' -o -iname '*checkpoint*' -o -iname '*savepoint*' \) -printf '%p\n' \| sed -n '1,240p'` |
-| Whether any deleted/thinned nightly full wrfout can be reconstructed without rerunning WRF. | `rg -n "safe_output_dir|delete|thin_gridded|teacher_shadow_only|wrfout" /home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /home/enric/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md` |
+| Whether any deleted/thinned nightly full wrfout can be reconstructed without rerunning WRF. | `rg -n "safe_output_dir|delete|thin_gridded|teacher_shadow_only|wrfout" /home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /home/user/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md` |
 | Whether a d03 72h truth exists under a validation root outside the requested canairy roots. | `find /mnt/data/wrf_gpu_validation /mnt/data -maxdepth 5 -type f -name 'wrfout_d03_*' -printf '%h\n' \| sort \| uniq -c \| sort -nr \| sed -n '1,120p'` |
 
 ## Commands Run
@@ -102,18 +102,18 @@ sed -n '1,240p' .agent/decisions/V0140-VALIDATION-PLAN.md
 sed -n '1,220p' .agent/skills/validating-physics/SKILL.md
 sed -n '1,260p' proofs/v014/canary_cpu_truth_inventory.md 2>/dev/null || true
 find proofs/v014 -maxdepth 2 -type f | sort | sed -n '1,240p'
-find /home/enric/src/canairy_meteo -maxdepth 3 \( -iname 'README*' -o -iname '*.md' -o -iname '*manifest*' -o -iname '*runinfo*' -o -iname '*inventory*' \) -print 2>/dev/null | sort | sed -n '1,240p'
+find /home/user/src/canairy_meteo -maxdepth 3 \( -iname 'README*' -o -iname '*.md' -o -iname '*manifest*' -o -iname '*runinfo*' -o -iname '*inventory*' \) -print 2>/dev/null | sort | sed -n '1,240p'
 find /mnt/data/canairy_meteo -maxdepth 5 \( -iname 'README*' -o -iname '*.md' -o -iname '*manifest*' -o -iname '*runinfo*' -o -iname '*inventory*' \) -print 2>/dev/null | sort | sed -n '1,240p'
 python - <<'PY'
-# walked /home/enric/src/wrf_gpu2, /home/enric/src/canairy_meteo, /mnt/data/canairy_meteo;
+# walked /home/user/src/wrf_gpu2, /home/user/src/canairy_meteo, /mnt/data/canairy_meteo;
 # grouped WRF files by parent dir and summarized wrfout/wrfrst/wrfinput/wrfbdy/time ranges.
 PY
-find /home/enric/src/wrf_gpu2 /home/enric/src/canairy_meteo /mnt/data/canairy_meteo \( -path '*/.git/*' -o -path '*/__pycache__/*' -o -path '*/.pytest_cache/*' -o -path '*/artifacts/envs/*' -o -path '*/node_modules/*' \) -prune -o -type f \( -name 'wrfrst_d01_*' -o -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' \) -printf '%h/%f\n' 2>/dev/null | sed -E 's#/wrfrst_d0[123]_[0-9:_-]+$##' | sort | uniq -c | sort -nr | sed -n '1,240p'
-find /home/enric/src/wrf_gpu2 /home/enric/src/canairy_meteo /mnt/data/canairy_meteo \( -path '*/.git/*' -o -path '*/__pycache__/*' -o -path '*/.pytest_cache/*' -o -path '*/artifacts/envs/*' -o -path '*/node_modules/*' \) -prune -o -type f \( -iname '*checkpoint*' -o -iname '*savepoint*' -o -iname '*restart*' \) -printf '%h/%f\n' 2>/dev/null | sed -E 's#/[^/]*(checkpoint|savepoint|restart)[^/]*$##I' | sort | uniq -c | sort -nr | sed -n '1,240p'
-find /mnt/data/canairy_meteo/runs /home/enric/src/canairy_meteo /home/enric/src/wrf_gpu2/proofs -type f \( -name 'wrfout_d01_*' -o -name 'wrfout_d02_*' -o -name 'wrfout_d03_*' \) -printf '%h/%f\n' 2>/dev/null | sed -E 's#/wrfout_d0[123]_[0-9:_-]+$##' | sort | uniq -c | sort -nr | sed -n '1,180p'
-find /home/enric/src/wrf_gpu2/proofs/v014 -maxdepth 2 -type f \( -iname '*checkpoint*' -o -iname '*savepoint*' -o -iname '*restart*' -o -iname '*wrfrst*' \) -printf '%p\n' | sort
-find /home/enric/src/wrf_gpu2/proofs/v060 -maxdepth 2 -type f \( -iname '*checkpoint*' -o -iname '*savepoint*' -o -iname '*restart*' -o -iname '*wrfrst*' \) -printf '%p\n' | sort | sed -n '1,120p'
-find /home/enric/src/wrf_gpu2/.claude/worktrees/v0110-restart -maxdepth 6 -type f \( -iname '*wrfrst*' -o -iname '*restart*' -o -iname '*checkpoint*' -o -iname '*savepoint*' \) -printf '%p\n' | sort | sed -n '1,160p'
+find /home/user/src/wrf_gpu2 /home/user/src/canairy_meteo /mnt/data/canairy_meteo \( -path '*/.git/*' -o -path '*/__pycache__/*' -o -path '*/.pytest_cache/*' -o -path '*/artifacts/envs/*' -o -path '*/node_modules/*' \) -prune -o -type f \( -name 'wrfrst_d01_*' -o -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' \) -printf '%h/%f\n' 2>/dev/null | sed -E 's#/wrfrst_d0[123]_[0-9:_-]+$##' | sort | uniq -c | sort -nr | sed -n '1,240p'
+find /home/user/src/wrf_gpu2 /home/user/src/canairy_meteo /mnt/data/canairy_meteo \( -path '*/.git/*' -o -path '*/__pycache__/*' -o -path '*/.pytest_cache/*' -o -path '*/artifacts/envs/*' -o -path '*/node_modules/*' \) -prune -o -type f \( -iname '*checkpoint*' -o -iname '*savepoint*' -o -iname '*restart*' \) -printf '%h/%f\n' 2>/dev/null | sed -E 's#/[^/]*(checkpoint|savepoint|restart)[^/]*$##I' | sort | uniq -c | sort -nr | sed -n '1,240p'
+find /mnt/data/canairy_meteo/runs /home/user/src/canairy_meteo /home/user/src/wrf_gpu2/proofs -type f \( -name 'wrfout_d01_*' -o -name 'wrfout_d02_*' -o -name 'wrfout_d03_*' \) -printf '%h/%f\n' 2>/dev/null | sed -E 's#/wrfout_d0[123]_[0-9:_-]+$##' | sort | uniq -c | sort -nr | sed -n '1,180p'
+find /home/user/src/wrf_gpu2/proofs/v014 -maxdepth 2 -type f \( -iname '*checkpoint*' -o -iname '*savepoint*' -o -iname '*restart*' -o -iname '*wrfrst*' \) -printf '%p\n' | sort
+find /home/user/src/wrf_gpu2/proofs/v060 -maxdepth 2 -type f \( -iname '*checkpoint*' -o -iname '*savepoint*' -o -iname '*restart*' -o -iname '*wrfrst*' \) -printf '%p\n' | sort | sed -n '1,120p'
+find /home/user/src/wrf_gpu2/.claude/worktrees/v0110-restart -maxdepth 6 -type f \( -iname '*wrfrst*' -o -iname '*restart*' -o -iname '*checkpoint*' -o -iname '*savepoint*' \) -printf '%p\n' | sort | sed -n '1,160p'
 rg -n "checkpoint|savepoint|restart|wrfrst|repeated|n=15|15" proofs/v014 .agent/decisions .agent/reviews .agent/memory/pending -g '*.md' -g '*.json' | sed -n '1,240p'
 sed -n '1,220p' proofs/v014/wrf_same_state_marker_savepoint.md 2>/dev/null || true
 sed -n '1,220p' proofs/v014/step1_qvapor_precall_savepoint.md 2>/dev/null || true
@@ -128,8 +128,8 @@ find /mnt/data/canairy_meteo -maxdepth 5 -type f \( -iname '*case_*.json' -o -in
 find /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank -maxdepth 4 -type f \( -name 'wrfout_d01_*' -o -name 'wrfout_d02_*' -o -name 'wrfout_d03_*' -o -name 'wrfinput_d01' -o -name 'wrfinput_d02' -o -name 'wrfinput_d03' -o -name 'wrfbdy_d01' -o -name 'namelist.input' -o -name 'manifest.yaml' -o -name '*point_shadows.manifest.yaml' \) -printf '%h/%f\n' 2>/dev/null | sed -E 's#/(wrfout_d0[123]_[0-9:_-]+|wrfinput_d0[123]|wrfbdy_d01|namelist.input|manifest.yaml|[^/]*point_shadows.manifest.yaml)$##' | sort | uniq -c | sort -nr | sed -n '1,240p'
 find /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank -maxdepth 3 -type d | sort | sed -n '1,180p'
 find /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank -maxdepth 5 -type f \( -name 'wrfout_d02_*' -o -name 'wrfout_d03_*' -o -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' \) -printf '%p\n' 2>/dev/null | sed -n '1,240p'
-for f in /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260501_18z/manifest.yaml /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260521_18z/manifest.yaml /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260521_18z_l2rerun/manifest.yaml /home/enric/src/canairy_meteo/Gen2/manifests/phase15d_wrf_evidence_bank_inventory_v1.yaml /home/enric/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md; do echo '###' $f; sed -n '1,160p' "$f" 2>/dev/null || true; done
-stat -c '%N %F' /home/enric/src/canairy_meteo/Gen2 /home/enric/src/canairy_meteo/Gen2/runs /home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /mnt/data/canairy_meteo/runs /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank 2>/dev/null
+for f in /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260501_18z/manifest.yaml /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260521_18z/manifest.yaml /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260521_18z_l2rerun/manifest.yaml /home/user/src/canairy_meteo/Gen2/manifests/phase15d_wrf_evidence_bank_inventory_v1.yaml /home/user/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md; do echo '###' $f; sed -n '1,160p' "$f" 2>/dev/null || true; done
+stat -c '%N %F' /home/user/src/canairy_meteo/Gen2 /home/user/src/canairy_meteo/Gen2/runs /home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /mnt/data/canairy_meteo/runs /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank 2>/dev/null
 find /mnt/data/canairy_meteo/runs -maxdepth 3 -type f -name 'manifest.json' -o -name 'runinfo*' -o -name '*.runinfo' -o -name '*.log' -o -name 'README*' -o -name '*.md' 2>/dev/null | sort | sed -n '1,240p'
 python - <<'PY'
 # summarized key candidate roots under wrf_l2, wrf_l2_backfill_output, wrf_l3, case_bank, and GPU proof dirs.
@@ -149,13 +149,13 @@ rg -n "run_hours|max_dom|restart|history_interval|restart_interval|frames_per_ou
 python - <<'PY'
 # used netCDF4 to inspect representative wrfinput/wrfbdy/wrfout headers for d02/d03 dimensions, attrs, and Times.
 PY
-find /mnt/data/canairy_meteo/runs/wrf_l2 /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output /mnt/data/canairy_meteo/runs/wrf_l3 /mnt/data/canairy_meteo/runs/surface_geo_v2_1 /mnt/data/canairy_meteo/runs/terrain_sweep /mnt/data/canairy_meteo/runs/phys_sweep /home/enric/src/wrf_gpu2/proofs /mnt/data/canairy_meteo -type f \( -name 'wrfrst_d01_*' -o -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' \) -printf '%p\n' 2>/dev/null | sed -n '1,240p'
-find /home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank/20260501_18z -maxdepth 1 -type f -printf '%f %s\n' | sort
+find /mnt/data/canairy_meteo/runs/wrf_l2 /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output /mnt/data/canairy_meteo/runs/wrf_l3 /mnt/data/canairy_meteo/runs/surface_geo_v2_1 /mnt/data/canairy_meteo/runs/terrain_sweep /mnt/data/canairy_meteo/runs/phys_sweep /home/user/src/wrf_gpu2/proofs /mnt/data/canairy_meteo -type f \( -name 'wrfrst_d01_*' -o -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' \) -printf '%p\n' 2>/dev/null | sed -n '1,240p'
+find /home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank/20260501_18z -maxdepth 1 -type f -printf '%f %s\n' | sort
 find /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260501_18z -maxdepth 1 -type f -printf '%f %s\n' | sort
 python - <<'PY'
 # counted case-bank manifest statuses and point artifact totals under /home and /mnt roots.
 PY
-stat -c '%n dev=%d inode=%i size=%s' /home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank/20260501_18z/manifest.yaml /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260501_18z/manifest.yaml 2>/dev/null
+stat -c '%n dev=%d inode=%i size=%s' /home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank/20260501_18z/manifest.yaml /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/20260501_18z/manifest.yaml 2>/dev/null
 ```
 
 Validation command:

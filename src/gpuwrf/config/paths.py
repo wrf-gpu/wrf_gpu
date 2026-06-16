@@ -2,7 +2,7 @@
 
 Historically the runnable path hardcoded a single workstation layout rooted at
 ``/mnt/data/canairy_meteo`` (the Canary Gen2 / CPU-WRF backfill corpus) and a few
-``/home/enric`` build paths. That makes a clean clone un-runnable: a naive agent
+``/home/user`` build paths. That makes a clean clone un-runnable: a naive agent
 following ``README.md`` only has no such directories.
 
 This module centralizes every such location behind a small set of environment

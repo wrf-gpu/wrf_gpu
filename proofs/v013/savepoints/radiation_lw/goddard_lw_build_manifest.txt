@@ -1,7 +1,7 @@
 build_mode=fp64
 fflags=-O2 -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 -fdefault-double-8 -DRWORDSIZE=8 -DNO_IEEE_MODULE -ffpe-summary=none -fallow-argument-mismatch -std=legacy
 gfortran=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
-wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_ra_goddard.F
+wrf_source=/home/user/src/wrf_pristine/WRF/phys/module_ra_goddard.F
 pristine_sha256=0917531726cbed5a128e05c45e70ee292c209dbcd1ae2bad17db6e46b8d3a5ad
 shim_sha256=3ac45be9276f7fa7698d90c39d5afe3aaac3cf66336646e0b55479741230d031
 shim=single-line visibility-only (public :: lwrad), no physics change

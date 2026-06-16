@@ -18652,7 +18652,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "c1e1d275 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 part1 physics-state mutation sprint\n",
@@ -18672,7 +18672,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-part1-physics-state-mutation/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-part1-physics-state-mutation/sprint-contract.md",
       "sha256": "458142d33fbb8a0d4eacd14987b948e441e8a747532bb2c690575dba565e172f",
       "size_bytes": 7705
     },
@@ -18688,7 +18688,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
       "sha256": "d9c4a3dcddcba2a3aa2aeaffdff77d4317f1582ed672f733cbebd0a1cdb12c70",
       "size_bytes": 9378
     },
@@ -18750,10 +18750,10 @@
   "no_tost": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-part1-physics-state-mutation.md",
-    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-part1-physics-state-mutation.md",
+    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
     "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth"
   },
   "required_ancestor_c18795af": {

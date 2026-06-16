@@ -34,7 +34,7 @@
         "--abbrev-ref",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
@@ -46,7 +46,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "d31f33d5a94f0f57d5871f47dc11204be5d31d21\n",
@@ -60,7 +60,7 @@
         "--oneline",
         "--decorate"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "d31f33d5 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open first rk part1 p state split\n",
@@ -87,7 +87,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "4e46e7a66412cf805395599c8902adff27d42b62f60fce5e34184a607fbd62f1",
       "size_bytes": 71764
     },
@@ -95,7 +95,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.json",
       "sha256": "6cd9fc88b84c3aeb9b21bcc71c24be7efc7ba241169ea39da1425d82b8081b71",
       "size_bytes": 818545
     },
@@ -103,7 +103,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.md",
       "sha256": "3b14ccbdabf4e5098e80144a402609e67d05ed8cd2603659f80c589fd3bb1a4d",
       "size_bytes": 2653
     },
@@ -111,7 +111,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-first-rk-part1-p-state-split/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-first-rk-part1-p-state-split/sprint-contract.md",
       "sha256": "a362c87319509c296844cbe6f4be9325386efa1a0d2741ae5c7c6c8764e1a64b",
       "size_bytes": 7928
     },
@@ -158,7 +158,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.md",
       "sha256": "3b14ccbdabf4e5098e80144a402609e67d05ed8cd2603659f80c589fd3bb1a4d",
       "size_bytes": 2653
     },
@@ -166,11 +166,11 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.json",
       "sha256": "6cd9fc88b84c3aeb9b21bcc71c24be7efc7ba241169ea39da1425d82b8081b71",
       "size_bytes": 818545
     },
-    "source": "/home/enric/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.json",
+    "source": "/home/user/src/wrf_gpu2/proofs/v014/step1_p_ph_mu_boundary_localization.json",
     "top_residuals": [
       {
         "field": "P",
@@ -15516,9 +15516,9 @@
     }
   },
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-first-rk-part1-p-state-split.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-first-rk-part1-p-state-split.md"
   },
   "schema": "wrfgpu2.v014.step1_first_rk_part1_p_state_split.v1",
   "tooling_verdict": "YES_FASTEST_RIGOROUS_WALL_CLOCK_REUSED_CPU_WRF_SAVEPOINTS_PLUS_CURRENT_CPU_JAX_STAGE_CAPTURE",

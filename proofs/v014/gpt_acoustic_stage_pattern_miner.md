@@ -2,7 +2,7 @@
 
 Date: 2026-06-11
 Worker: GPT-5.5 xhigh Runner C
-Worktree: `/home/enric/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix`
+Worktree: `/home/user/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix`
 
 ## Verdict
 
@@ -16,7 +16,7 @@ The remaining Switzerland h36->h37 acoustic blocker is most likely an interior p
 - Hourly output root: `/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable`
 - CPU truth root: `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
 
-No source files were edited. No GPU work, Fable interaction, Hermes, Telegram, or `/home/enric/src/canairy_waves` access was performed.
+No source files were edited. No GPU work, Fable interaction, Hermes, Telegram, or `/home/user/src/canairy_waves` access was performed.
 
 ## Evidence Basis
 
@@ -87,9 +87,9 @@ The h37/h38 net output mismatch is interior-heavy for mass and surface pressure,
 
 - `sed -n '1,240p' PROJECT_CONSTITUTION.md`
 - `sed -n '1,260p' AGENTS.md`
-- `sed -n '1,260p' /home/enric/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-gpt-acoustic-stage-mismatch-analysis/sprint-contract.md`
-- `sed -n '1,260p' /home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md`
-- `sed -n '1,260p' /home/enric/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-switzerland-acoustic-substep-continuation/manager-handoff.md`
+- `sed -n '1,260p' /home/user/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-gpt-acoustic-stage-mismatch-analysis/sprint-contract.md`
+- `sed -n '1,260p' /home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md`
+- `sed -n '1,260p' /home/user/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-switzerland-acoustic-substep-continuation/manager-handoff.md`
 - `sed -n '1,260p' .agent/reviews/2026-06-11-v014-gpt-acoustic-substep-verifier.md`
 - `find proofs/v014 -maxdepth 2 -type f | sort`
 - `python -m json.tool proofs/v014/switzerland_acoustic_substep_blocker.json`

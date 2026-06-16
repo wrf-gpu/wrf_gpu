@@ -74,7 +74,7 @@ CHECKPOINT = Path(
 )
 
 DMPAR_WRF = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF")
-PRISTINE_WRF = Path("/home/enric/src/wrf_pristine/WRF")
+PRISTINE_WRF = Path("/home/user/src/wrf_pristine/WRF")
 SCRATCH_WRF = SCRATCH / "WRF"
 SCRATCH_RUN_DIR = SCRATCH / "run_case3"
 COMPILE_LOG = SCRATCH / "compile_pre_rk_input_boundary_dmpar.log"
@@ -553,13 +553,13 @@ def proof_inputs() -> dict[str, Any]:
 
 def wrf_commands() -> dict[str, Any]:
     env_prefix = (
-        "PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
-        "NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
-        "PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+        "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+        "NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+        "PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
         "WRFIO_NCD_LARGE_FILE_SUPPORT=1"
     )
     run_env = (
-        "PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+        "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
         "CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 "
         f"WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT={WRF_OUTPUT_DIR} "
         "WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 "
@@ -917,7 +917,7 @@ def main() -> int:
             + [
                 (
                     f"cd {SCRATCH_RUN_DIR} && timeout 20 env "
-                    "PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+                    "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
                     "CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 "
                     f"WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT={WRF_OUTPUT_DIR} "
                     "WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 "

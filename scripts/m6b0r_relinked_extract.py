@@ -31,7 +31,7 @@ GOLDEN_MANIFEST = (
     / ".agent/sprints/2026-05-24-m6b0r-real-fortran-emission/savepoints/golden/manifest.json"
 )
 SOURCE_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
-ENV_SCRIPT = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
+ENV_SCRIPT = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
 
 
 def _sha256(path: Path) -> str:

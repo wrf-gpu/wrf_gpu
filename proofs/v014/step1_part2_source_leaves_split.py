@@ -1151,9 +1151,9 @@ def build_proof() -> dict[str, Any]:
             "wrf_fixture_commands": {
                 "compile": (
                     "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF && "
-                    "timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
-                    "NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
-                    "PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+                    "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+                    "NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+                    "PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
                     "WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real"
                 ),
                 "run": (

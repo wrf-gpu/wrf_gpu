@@ -7,7 +7,7 @@ These pytrees are SIBLINGS of ``contracts.state.State`` (like ``BaseState`` /
 widened (ADR §2.3). Land state advances at the physics (long) timestep only, is
 2-D / soil / snow, and is threaded alongside ``State`` by the operational driver.
 
-Fixed dimensions (verified against ``/home/enric/src/wrf_pristine`` Noah-MP):
+Fixed dimensions (verified against ``/home/user/src/wrf_pristine`` Noah-MP):
 - ``NSOIL = 4``  soil layers (module_sf_noahmpdrv.F:689-691).
 - ``NSNOW = 3``  snow layers, ISNOW in {-2,-1,0} (module_sf_noahmpdrv.F:628).
 

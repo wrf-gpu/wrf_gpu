@@ -501,7 +501,7 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
@@ -515,63 +515,63 @@
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "9a0efb53ed28e0fc135dde57cd76d46aacbb705fadf6e8035dfe0e6862c5f9e8",
       "size_bytes": 29308
     },
     "jax_h10_prestep_carry_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
       "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
       "size_bytes": 35739
     },
     "jax_h10_prestep_carry_producer_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
       "sha256": "59eb1f936d51874825aeae1de531ba7d13ac674a5e5cbef1fe859f8f1e511bbb",
       "size_bytes": 24206
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "same_state_savepoint_request_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
       "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
       "size_bytes": 269809
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-t-history-source-attribution/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-t-history-source-attribution/sprint-contract.md",
       "sha256": "eb923be6ee2c3bcd0429f21c95ec3b9719665fd99f90cc6386e812ab52b6ef6d",
       "size_bytes": 3959
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_post_rk_refresh_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
       "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
       "size_bytes": 34079
     },
     "wrf_same_state_marker_savepoint_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json",
       "sha256": "4bb28da001ebabe53ce57ce8ff11ca2a5a8ab160eef2493cb45f233f4586935c",
       "size_bytes": 18006
     }
@@ -1737,9 +1737,9 @@
   "next_decision": "Open a theta-evolution localization sprint; do not spend the next sprint on JAX-vs-WRF history source remapping for `T`.",
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-t-history-source-attribution.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-t-history-source-attribution.md"
   },
   "schema": "wrfgpu2.v014.jax_t_history_source_attribution.v1",
   "switzerland_validation_run": false,

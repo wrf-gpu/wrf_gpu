@@ -11402,10 +11402,10 @@
     "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
     "domain": "d02",
     "gpu_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
-    "grid_comparator_json": "/home/enric/src/wrf_gpu2/proofs/v014/grid_comparison_framework_smoke.json",
-    "same_state_inventory_json": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_tendency_inventory.json",
-    "static_parity_json": "/home/enric/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
-    "wind_mass_probe_json": "/home/enric/src/wrf_gpu2/proofs/v014/wind_mass_divergence_probe.json"
+    "grid_comparator_json": "/home/user/src/wrf_gpu2/proofs/v014/grid_comparison_framework_smoke.json",
+    "same_state_inventory_json": "/home/user/src/wrf_gpu2/proofs/v014/same_state_tendency_inventory.json",
+    "static_parity_json": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
+    "wind_mass_probe_json": "/home/user/src/wrf_gpu2/proofs/v014/wind_mass_divergence_probe.json"
   },
   "lead_analysis": {
     "by_lead": {

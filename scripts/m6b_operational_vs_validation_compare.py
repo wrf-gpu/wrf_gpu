@@ -62,8 +62,8 @@ SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-operational-composition-b
 RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_ID = "20260523_18z_l3_24h_20260524T004313Z"
 THRESHOLD = 1.0e-10
-WRF_SOLVE = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
-WRF_SMALL = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
+WRF_SOLVE = "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
+WRF_SMALL = "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

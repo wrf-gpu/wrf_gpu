@@ -59,7 +59,7 @@ from gpuwrf.physics.noahmp.types import NoahMPForcing, NoahMPPhenology
 NMONTH: int = 12  # monthly LAI/SAI table length (module_sf_noahmplsm.F)
 
 # --- MODIS (MODIFIED_IGBP_MODIS_NOAH, NVEG=20) category sentinels --------------
-# Verbatim from /home/enric/src/wrf_pristine/WRF/run/MPTABLE.TBL
+# Verbatim from /home/user/src/wrf_pristine/WRF/run/MPTABLE.TBL
 # &noahmp_modis_parameters (1-based VEGTYP indices).
 ISURBAN_MODIS: int = 13
 ISWATER_MODIS: int = 17

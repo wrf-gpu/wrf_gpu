@@ -165,7 +165,7 @@
     "blocked": null,
     "command_result": {
       "command": [
-        "/home/enric/miniconda3/bin/python",
+        "/home/user/miniconda3/bin/python",
         "proofs/v014/jax_h10_prestep_carry.py"
       ],
       "cwd": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
@@ -462,70 +462,70 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "building_wrf_oracles_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "9a0efb53ed28e0fc135dde57cd76d46aacbb705fadf6e8035dfe0e6862c5f9e8",
       "size_bytes": 29308
     },
     "jax_h10_prestep_carry_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
       "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
       "size_bytes": 35739
     },
     "jax_pre_halo_capture_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
       "sha256": "fc480540f075cb894d2c3bae181e332eabf510302057a00473406040ffbd6a69",
       "size_bytes": 24406
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "same_state_savepoint_request_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
       "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
       "size_bytes": 269809
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-producer/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-producer/sprint-contract.md",
       "sha256": "0da197e2aa5897c6278470498d62757c935d9afd35d407caa4a4f4cef7f31fb1",
       "size_bytes": 3789
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_post_rk_refresh_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
       "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
       "size_bytes": 34079
     }
@@ -558,9 +558,9 @@
     "checkpoint": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
     "checkpoint_provenance": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
     "comparison_tree": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-producer.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-producer.md"
   },
   "schema": "wrfgpu2.v014.jax_h10_prestep_carry_producer.v1",
   "switzerland_validation_run": false,

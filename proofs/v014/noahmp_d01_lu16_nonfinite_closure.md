@@ -63,7 +63,7 @@ id IS the row index into the 1-based table, identical to
 | 200-step CPU repro on real wrfinput_d01 (post-fix) | finite everywhere; sand TG cools 297.2→296.7 K over 1 h (18z evening), HFX small negative — physical |
 | `tests/test_v014_noahmp_water_soil_category.py` (3 tests: gather-row identity vs driver gather; one-step WATER on the exact failing dry-sand config; all-category finite sweep) | **pass post-fix; all 3 fail pre-fix** |
 | S4 water savepoint gate `proofs/noahmp/water_savepoint_gate.py` (real-WRF oracle) | conservation 11/11 PASS, finite, parity-constrained 8/11 — unchanged verdict vs pre-fix (savepoint columns move soil water ~1e-6/step → too parameter-insensitive to see the shift; that is HOW the bug survived) |
-| Noah-MP test set (coupler, nested pipeline, surface hook, energy canopy, checkpoint, sh2o init, phenology, new water tests) | 47 pass + 8 energy savepoint pass (needs `WRF_PRISTINE_ROOT=/home/enric/src/wrf_pristine/WRF` inside worktrees; path default is worktree-relative — pre-existing, not physics) |
+| Noah-MP test set (coupler, nested pipeline, surface hook, energy canopy, checkpoint, sh2o init, phenology, new water tests) | 47 pass + 8 energy savepoint pass (needs `WRF_PRISTINE_ROOT=/home/user/src/wrf_pristine/WRF` inside worktrees; path default is worktree-relative — pre-existing, not physics) |
 
 ## GPU confirmation
 

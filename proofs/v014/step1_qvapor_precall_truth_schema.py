@@ -37,9 +37,9 @@ SAME_INPUT_NPZ = Path(
 SAME_INPUT_RAW_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth")
 MNT_ROOT = Path("/mnt/data/wrf_gpu2")
 
-PRISTINE_MEDIATION = Path("/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F")
-PRISTINE_NEST_INIT = Path("/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F")
-PRISTINE_SOLVE = Path("/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F")
+PRISTINE_MEDIATION = Path("/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F")
+PRISTINE_NEST_INIT = Path("/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F")
+PRISTINE_SOLVE = Path("/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F")
 INSTRUMENTED_SOLVE = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F")
 
 

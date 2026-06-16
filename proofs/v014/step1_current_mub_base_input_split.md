@@ -61,10 +61,10 @@ commands run:
 - `git diff -- src/gpuwrf`
 
 proof objects produced:
-- `/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json`
-- `/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.md`
-- `/home/enric/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff`
-- `/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-current-mub-base-input-split.md`
+- `/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json`
+- `/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.md`
+- `/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff`
+- `/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-current-mub-base-input-split.md`
 
 unresolved risks:
 - Fresh WRF terrain/PHB target emission could not be run because /mnt/data scratch writes are read-only in this sandbox.

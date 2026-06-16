@@ -5,7 +5,7 @@
 # each GPU forecast. Designed to be invoked WRAPPED in scripts/with_gpu_lock.sh.
 set -uo pipefail   # not -e: we want to attempt both cases + postprocess even if one GPU step is imperfect
 
-ROOT=/home/enric/src/wrf_gpu2/.wt-rc
+ROOT=/home/user/src/wrf_gpu2/.wt-rc
 cd "$ROOT"
 
 echo "################# SWITZERLAND ##################"

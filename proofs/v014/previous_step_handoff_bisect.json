@@ -32,13 +32,13 @@
   "cpu_preflight": {
     "command_result": {
       "command": [
-        "/home/enric/miniconda3/bin/python",
+        "/home/user/miniconda3/bin/python",
         "-c",
         "\nimport os\nimport time\nfrom pathlib import Path\nos.environ.setdefault(\"JAX_ENABLE_X64\", \"true\")\nfrom gpuwrf.integration.nested_pipeline import NestedPipelineConfig, _load_domains, domain_names_for\nRUN_ID = \"20260501_18z_l2_72h_20260519T173026Z\"\nroots = [Path(\"/tmp/v0120_merged_run_root\"), Path(\"/mnt/data/canairy_meteo/runs/wrf_l2\")]\nrun_dir = next((root / RUN_ID for root in roots if (root / RUN_ID / \"wrfinput_d01\").exists()), None)\nif run_dir is None:\n    raise FileNotFoundError(\"missing native L2 run directory\")\nconfig = NestedPipelineConfig(\n    input_dir=run_dir,\n    output_dir=Path(\"/tmp/wrf_gpu2_v014_previous_step_cpu_preflight_unused\"),\n    proof_dir=Path(\"/tmp/wrf_gpu2_v014_previous_step_cpu_preflight_setup\"),\n    hours=10,\n    max_dom=2,\n    feedback=False,\n)\nt0 = time.perf_counter()\n_load_domains(config, domain_names_for(2))\nprint({\"status\": \"CPU_LOAD_OK\", \"wall_s\": time.perf_counter() - t0, \"run_dir\": str(run_dir)})\n"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 1,
-      "stderr_tail": "mi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 07:36:51.345516 1110304 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-scatter is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nTraceback (most recent call last):\n  File \"<string>\", line 21, in <module>\n    _load_domains(config, domain_names_for(2))\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py\", line 248, in _load_domains\n    root_case = build_replay_case(run_dir, domain=names[0], standalone=True)\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1125, in build_replay_case\n    state = State.zeros(grid)\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
+      "stderr_tail": "mi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 07:36:51.345516 1110304 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-scatter is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nTraceback (most recent call last):\n  File \"<string>\", line 21, in <module>\n    _load_domains(config, domain_names_for(2))\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py\", line 248, in _load_domains\n    root_case = build_replay_case(run_dir, domain=names[0], standalone=True)\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1125, in build_replay_case\n    state = State.zeros(grid)\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
       "stdout_tail": "",
       "wall_s": 2.548343964997912
     },
@@ -223,14 +223,14 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "building_wrf_oracles_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
@@ -251,84 +251,84 @@
     "domain_tree_module": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/domain_tree.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/domain_tree.py",
       "sha256": "c5460f4418d9b0d05a84efca096294a549aed080b19733b4f86dc88c31f9eee3",
       "size_bytes": 17156
     },
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "2834bede8b065068285f66526a5f99b5f86b0ea8f96e43dcf087f7a68d8da99b",
       "size_bytes": 36555
     },
     "operational_mode_module": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
       "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
       "size_bytes": 175388
     },
     "pre_rk_input_boundary_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
       "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
       "size_bytes": 43617
     },
     "prestep_carry_source_trace_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.json",
       "sha256": "566a4cf91f17be424fa5b2d1e5b0b4f9b296790c68e69be96f69958333f84bbc",
       "size_bytes": 55104
     },
     "prestep_carry_source_trace_md": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.md",
       "sha256": "ce2e3b49eb6a4463472d806567e1e84b058e2ecc753adb736c36ac060bafc5af",
       "size_bytes": 1666
     },
     "producer_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
       "sha256": "59eb1f936d51874825aeae1de531ba7d13ac674a5e5cbef1fe859f8f1e511bbb",
       "size_bytes": 24206
     },
     "producer_script": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.py",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.py",
       "sha256": "134dbba08d1802cdf928846f14db24557fe21af7b3f76e755d9f164396ed3271",
       "size_bytes": 34212
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-previous-step-handoff-bisect/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-previous-step-handoff-bisect/sprint-contract.md",
       "sha256": "14a159583c473f860ca6788538f79951e700e9af1ba6a5c655c0124f44745e33",
       "size_bytes": 5138
     },
     "state_module": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
       "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
       "size_bytes": 25734
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     }
@@ -826,9 +826,9 @@
   "production_src_edits": false,
   "proof_objects": {
     "compact_replay_artifact": "/mnt/data/wrf_gpu2/v014_previous_step_handoff_bisect/previous_step_handoff_bisect.live_replay_compact.json",
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/previous_step_handoff_bisect.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/previous_step_handoff_bisect.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-previous-step-handoff-bisect.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/previous_step_handoff_bisect.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/previous_step_handoff_bisect.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-previous-step-handoff-bisect.md"
   },
   "schema": "wrfgpu2.v014.previous_step_handoff_bisect.v1",
   "snapshots": {
@@ -6097,7 +6097,7 @@
         "owned_tile_overlap_only"
       ]
     },
-    "source_json": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+    "source_json": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
     "source_verdict": "PRE_RK_INPUT_JAX_PRESTEP_MISMATCH_CONFIRMED",
     "unique_counts": {
       "MASS_K1": 289

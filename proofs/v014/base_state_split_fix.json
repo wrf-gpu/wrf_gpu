@@ -335,7 +335,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
@@ -343,7 +343,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_writer_attribution.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/base_state_writer_attribution.json",
       "sha256": "9cc58cc1146d3d56bb291af6b16287dcb70580e4aea76fee550904a1df155594",
       "size_bytes": 80754
     },
@@ -351,7 +351,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
@@ -383,7 +383,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "cef435fd9d78851944955810263d95c72efe1861a9611403f46f20de0c1a7655",
       "size_bytes": 88775
     },
@@ -391,7 +391,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
       "sha256": "6e1ccc24a64aced0f1eeaee5375e62c10218c8f03d92a3eb61cb8e32ae5119a7",
       "size_bytes": 413156
     },
@@ -415,7 +415,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
       "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
       "size_bytes": 43617
     },
@@ -423,7 +423,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
@@ -431,7 +431,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-base-state-split-fix/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-base-state-split-fix/sprint-contract.md",
       "sha256": "12e1c41ff9e024cce36520a1320637203cbfed6fe9a56506e9e1a1af885e2cfe",
       "size_bytes": 4215
     },
@@ -439,7 +439,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
       "sha256": "f66883d32749a0d9fc9c6ea386307a14db4b0bf5810c7f928c06b0f2f3092bb7",
       "size_bytes": 272492
     },
@@ -447,7 +447,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     }
@@ -607,10 +607,10 @@
   },
   "next_decision": "Instrument or port WRF live-nest initialization: capture/reproduce med_interp_domain parent-interpolated HGT/MUB/PHB, blend_terrain, and start_domain_em base recomputation before changing build_replay_case.",
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-base-state-split-fix.md",
-    "script": "/home/enric/src/wrf_gpu2/proofs/v014/base_state_split_fix.py"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-base-state-split-fix.md",
+    "script": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.py"
   },
   "schema": "wrfgpu2.v014.base_state_split_fix.v1",
   "scope_impact": {

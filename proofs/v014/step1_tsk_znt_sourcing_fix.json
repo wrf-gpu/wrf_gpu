@@ -58,7 +58,7 @@
     }
   },
   "created_utc": "2026-06-10T04:01:45.823562+00:00",
-  "host": "enric-battlestation",
+  "host": "user-workstation",
   "later_handoff_metrics": {
     "mynn_driver_in_tsk_vs_sfclay_in_tsk": {
       "bias": 0.07544341686227696,
@@ -322,7 +322,7 @@
         "diff",
         "--no-index",
         "--",
-        "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F",
+        "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F",
         "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F"
       ],
       [
@@ -335,7 +335,7 @@
       ]
     ],
     "exists": true,
-    "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff",
+    "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff",
     "size_bytes": 28195
   }
 }
