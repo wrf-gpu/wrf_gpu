@@ -10,15 +10,22 @@ history file.
 It is **not** a port of legacy WRF Fortran. It is a clean JAX rewrite that
 targets the GPU memory hierarchy from day one and validates against WRF as an
 **oracle** — proving cell-for-cell identity to CPU-WRF v4 rather than inheriting
-WRF's architecture. The operational target was **Canary Islands daily
-forecasting** (3 km then 1 km) on a single-workstation RTX 5090 but it's stregth is on the opposite spectum: Large grids, big fp64 native GPU systems or GPU clusters like B200, GB300 ect.
+WRF's architecture. The original operational target is **Canary Islands daily
+forecasting** (3 km then 1 km) on a single-workstation RTX 5090 — but its real
+strength is at the **opposite end of the spectrum: large grids, big fp64-native
+GPU systems, and GPU clusters** (B200 / GB300 / NVL72-class).
 
 ### What it is good for
 
 - **Running real regional ARW forecasts on a GPU** from a standard WRF namelist —
   single-domain or live-nested (d01→d02→d03, down to the 1 km nest), with native
   init, restart, and a WRF-compatible `wrfout`.
-- **High energy efficency, modern high perormance system compatablity** Small and large scale GPU systems are inherently more energy efficient per unit compute then CPU after a cirtain parallelity is reached. For "serious" applications this re-write should allow to run with >3x energy efficency, scale well with gpu size and fit into the trend of ever faster and cheaper GPU compute both per unit kWh and per unit money. 
+- **Energy efficiency + modern-HPC fit (PROJECTED).** Past a certain level of
+  parallelism, GPUs are inherently more energy-efficient per unit compute than
+  CPUs. For serious/large workloads this rewrite is **projected** to run at
+  **>3× the energy efficiency** of the CPU stack, to scale with GPU size, and to
+  ride the trend of ever-faster, cheaper GPU compute — per kWh and per dollar.
+  *(Projected from the device-bound kernel + architecture; not yet benchmarked at scale.)*
 - **Capability the CPU stack cannot reach on one box.** **MEASURED:** a **1 km
   single domain fits one RTX 5090 bit-identically**, and the **all-7-island 1 km
   nested case runs end-to-end on one card**. **PROJECTED:** large single grids and
@@ -39,11 +46,11 @@ forecasting** (3 km then 1 km) on a single-workstation RTX 5090 but it's stregth
   (see [Honest boundaries](#honest-boundaries--what-is-not-claimed)).
 - **Not a single-card speedup story.** On tiny-nest geometries the GPU is
   launch/occupancy-bound and runs at ~parity with same-box CPU-WRF; an opt-in
-  fast-mode reaches ~1.3-1.4×. The value is **capability** (1 km + scale) and energy efficiency, not raw
-  single-card speed (see [Performance](#performance--honest)).
+  fast-mode reaches ~1.3×. The value is **capability** (1 km + scale) and
+  **energy efficiency**, not raw single-card speed (see [Performance](#performance--honest)).
 - **Not** DFI / FDDA / spectral-nudging / WRF-Chem / WRF-Fire / urban / lake.
 
-The ongoing v0.18 work will close most missing schemata gaps and is planned to be a feature-complete version compared to WRF v4. 
+The ongoing **v0.18** work closes most remaining scheme gaps and targets feature-completeness vs WRF v4.
 
 > ### ⏱ First run is slow on purpose, then fast
 > The first forecast **JIT-compiles the GPU kernels** — a **~8–12 min one-time cold
@@ -51,8 +58,8 @@ The ongoing v0.18 work will close most missing schemata gaps and is planned to b
 > **persistent on-disk JIT cache** (on by default) makes **every later run a fast
 > cache read** (`cold ~147 s → cache-hit ~29 s` on the d01 hour-1 wrapper); the
 > cached executable is **bit-identical** to the cold one. The opt-in fused
-> fast-mode (`GPUWRF_NESTED_FUSE=1`, below) carries a separate **one-time
-> compile** — also cached after the first run.
+> fast-mode (`GPUWRF_NESTED_FUSE=1`, below) carries a separate, larger **one-time
+> compile (~38 min on the n=1 test system)** — also cached after the first run.
 
 ---
 
@@ -73,7 +80,10 @@ drawn red, never painted green**: precipitation `RAINNC` (Switzerland) or moistu
 `QVAPOR` (Canary) — pre-existing, physical, sub-2× of a tight bound, not an
 identity failure. (See the honest framing below the plots.)
 
-**The RAINNC and QVAPOR failure are fixable 0.18 targets** and are accumulated variables that in the origial puropose of the project do not chance the creator's required forcast skill, hence were accepted to this version. 
+**RAINNC and QVAPOR are fixable v0.18 targets.** RAINNC is an *accumulated*
+precipitation diagnostic and QVAPOR a tight moisture margin; neither changes the
+forecast skill this project targets, so both were accepted as bounded for this
+release and are slated to close in v0.18.
 
 **Three regions are proven on retained v0.17 data:**
 
