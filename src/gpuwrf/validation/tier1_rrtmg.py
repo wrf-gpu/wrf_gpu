@@ -60,45 +60,49 @@ def _arrays(path: Path) -> dict[str, np.ndarray]:
         return {name: np.asarray(loaded[name], dtype=np.float64) for name in loaded.files}
 
 
-def load_sw_fixture_state(sample: Path = SW_SAMPLE) -> tuple[RRTMGSWColumnState, dict[str, np.ndarray]]:
+def _dtype_name(dtype) -> str:
+    return str(np.dtype(dtype))
+
+
+def load_sw_fixture_state(sample: Path = SW_SAMPLE, *, dtype=jnp.float64) -> tuple[RRTMGSWColumnState, dict[str, np.ndarray]]:
     """Builds the JAX SW state and NumPy expected outputs."""
 
     arrays = _arrays(sample)
     state = RRTMGSWColumnState(
-        T=jnp.asarray(arrays["input_T"], dtype=jnp.float64),
-        p=jnp.asarray(arrays["input_p"], dtype=jnp.float64),
-        qv=jnp.asarray(arrays["input_qv"], dtype=jnp.float64),
-        qc=jnp.asarray(arrays["input_qc"], dtype=jnp.float64),
-        qi=jnp.asarray(arrays["input_qi"], dtype=jnp.float64),
-        qs=jnp.asarray(arrays["input_qs"], dtype=jnp.float64),
-        qg=jnp.asarray(arrays["input_qg"], dtype=jnp.float64),
-        cloud_fraction=jnp.asarray(arrays["input_cloud_fraction"], dtype=jnp.float64),
-        surface_albedo=jnp.asarray(arrays["input_surface_albedo"], dtype=jnp.float64),
-        coszen=jnp.asarray(arrays["input_coszen"], dtype=jnp.float64),
-        dz=jnp.asarray(arrays["input_dz"], dtype=jnp.float64),
-        rho=jnp.asarray(arrays["input_rho"], dtype=jnp.float64),
+        T=jnp.asarray(arrays["input_T"], dtype=dtype),
+        p=jnp.asarray(arrays["input_p"], dtype=dtype),
+        qv=jnp.asarray(arrays["input_qv"], dtype=dtype),
+        qc=jnp.asarray(arrays["input_qc"], dtype=dtype),
+        qi=jnp.asarray(arrays["input_qi"], dtype=dtype),
+        qs=jnp.asarray(arrays["input_qs"], dtype=dtype),
+        qg=jnp.asarray(arrays["input_qg"], dtype=dtype),
+        cloud_fraction=jnp.asarray(arrays["input_cloud_fraction"], dtype=dtype),
+        surface_albedo=jnp.asarray(arrays["input_surface_albedo"], dtype=dtype),
+        coszen=jnp.asarray(arrays["input_coszen"], dtype=dtype),
+        dz=jnp.asarray(arrays["input_dz"], dtype=dtype),
+        rho=jnp.asarray(arrays["input_rho"], dtype=dtype),
     )
     expected = {field: arrays[f"output_{field}"] for field in OUTPUT_FIELDS + SW_EXTRA_FIELDS}
     return state, expected
 
 
-def load_lw_fixture_state(sample: Path = LW_SAMPLE) -> tuple[RRTMGLWColumnState, dict[str, np.ndarray]]:
+def load_lw_fixture_state(sample: Path = LW_SAMPLE, *, dtype=jnp.float64) -> tuple[RRTMGLWColumnState, dict[str, np.ndarray]]:
     """Builds the JAX LW state and NumPy expected outputs."""
 
     arrays = _arrays(sample)
     state = RRTMGLWColumnState(
-        T=jnp.asarray(arrays["input_T"], dtype=jnp.float64),
-        p=jnp.asarray(arrays["input_p"], dtype=jnp.float64),
-        qv=jnp.asarray(arrays["input_qv"], dtype=jnp.float64),
-        qc=jnp.asarray(arrays["input_qc"], dtype=jnp.float64),
-        qi=jnp.asarray(arrays["input_qi"], dtype=jnp.float64),
-        qs=jnp.asarray(arrays["input_qs"], dtype=jnp.float64),
-        qg=jnp.asarray(arrays["input_qg"], dtype=jnp.float64),
-        cloud_fraction=jnp.asarray(arrays["input_cloud_fraction"], dtype=jnp.float64),
-        surface_temperature=jnp.asarray(arrays["input_surface_temperature"], dtype=jnp.float64),
-        surface_emissivity=jnp.asarray(arrays["input_surface_emissivity"], dtype=jnp.float64),
-        dz=jnp.asarray(arrays["input_dz"], dtype=jnp.float64),
-        rho=jnp.asarray(arrays["input_rho"], dtype=jnp.float64),
+        T=jnp.asarray(arrays["input_T"], dtype=dtype),
+        p=jnp.asarray(arrays["input_p"], dtype=dtype),
+        qv=jnp.asarray(arrays["input_qv"], dtype=dtype),
+        qc=jnp.asarray(arrays["input_qc"], dtype=dtype),
+        qi=jnp.asarray(arrays["input_qi"], dtype=dtype),
+        qs=jnp.asarray(arrays["input_qs"], dtype=dtype),
+        qg=jnp.asarray(arrays["input_qg"], dtype=dtype),
+        cloud_fraction=jnp.asarray(arrays["input_cloud_fraction"], dtype=dtype),
+        surface_temperature=jnp.asarray(arrays["input_surface_temperature"], dtype=dtype),
+        surface_emissivity=jnp.asarray(arrays["input_surface_emissivity"], dtype=dtype),
+        dz=jnp.asarray(arrays["input_dz"], dtype=dtype),
+        rho=jnp.asarray(arrays["input_rho"], dtype=dtype),
     )
     expected = {field: arrays[f"output_{field}"] for field in OUTPUT_FIELDS + LW_EXTRA_FIELDS}
     return state, expected
@@ -131,23 +135,27 @@ def _compare(candidate: Any, expected: dict[str, np.ndarray], tolerances: dict[s
     }
 
 
-def run_tier1_sw(out: Path = SW_ARTIFACT) -> dict[str, Any]:
+def run_tier1_sw(out: Path = SW_ARTIFACT, *, dtype=jnp.float64) -> dict[str, Any]:
     """Writes the required RRTMG-SW tier-1 parity proof JSON."""
 
-    state, expected = load_sw_fixture_state()
+    state, expected = load_sw_fixture_state(dtype=dtype)
     result = solve_rrtmg_sw_column(state, debug=False)
     record = _compare(result, expected, _tolerance_map(_load_manifest(SW_MANIFEST)), OUTPUT_FIELDS + SW_EXTRA_FIELDS, SW_FIXTURE_ID)
+    record["compute_dtype"] = _dtype_name(dtype)
+    record["result_dtypes"] = {field: str(getattr(result, field).dtype) for field in OUTPUT_FIELDS + SW_EXTRA_FIELDS}
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return record
 
 
-def run_tier1_lw(out: Path = LW_ARTIFACT) -> dict[str, Any]:
+def run_tier1_lw(out: Path = LW_ARTIFACT, *, dtype=jnp.float64) -> dict[str, Any]:
     """Writes the required RRTMG-LW tier-1 parity proof JSON."""
 
-    state, expected = load_lw_fixture_state()
+    state, expected = load_lw_fixture_state(dtype=dtype)
     result = solve_rrtmg_lw_column(state, debug=False)
     record = _compare(result, expected, _tolerance_map(_load_manifest(LW_MANIFEST)), OUTPUT_FIELDS + LW_EXTRA_FIELDS, LW_FIXTURE_ID)
+    record["compute_dtype"] = _dtype_name(dtype)
+    record["result_dtypes"] = {field: str(getattr(result, field).dtype) for field in OUTPUT_FIELDS + LW_EXTRA_FIELDS}
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return record

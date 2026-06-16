@@ -112,10 +112,24 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "cldfra_bl": mass_3d,
         # v0.16 additive aerosol-aware Thompson (mp=28) leaves (append-only):
         # water-/ice-friendly aerosol number concentrations on mass points.
-        # Ordered AFTER the v0.15 MYNN leaves so they remain at the very END of
-        # the leaf order (pytree-position stability for every prior leaf).
         "nwfa": mass_3d,
         "nifa": mass_3d,
+        # v0.17 ADR-032 additive graupel/hail (qh) substrate leaves
+        # (append-only): hail mixing ratio (qh, WRF moist QHAIL), hail number
+        # (Nh, WRF scalar QNHAIL), and the predicted-density particle volumes
+        # qvolg (WRF QVGRAUPEL) / qvolh (WRF QVHAIL). All mass-3d, FP32-gated.
+        # Ordered AFTER the v0.16 Thompson-aero leaves so they remain at the very END of
+        # the leaf order (pytree-position stability for every prior leaf).
+        "qh": mass_3d,
+        "Nh": mass_3d,
+        "qvolg": mass_3d,
+        "qvolh": mass_3d,
+        # v0.17 hail microphysics surface-precip accumulator (append-only, after
+        # the ADR-032 hail substrate so every prior leaf keeps its position): the
+        # accumulated grid-scale hail (WRF HAILNC, mm). Counterpart to the
+        # rain/snow/graupel/ice accumulators; carried by the hail MP family
+        # (WSM7=24, WDM7=26); inert (zero) until a hail scheme is wired.
+        "hail_acc": surface_2d,
     }
 
 
@@ -392,6 +406,10 @@ class State:
     - `mu`/`mu_total`: Pa column dry mass on mass points; `mu_perturbation`
       is the perturbation dry-column mass relative to `BaseState.mub`.
     - `Ni/Nr/Ns/Ng`: m^-3 number concentrations on mass points.
+    - `qh`: kg kg^-1 hail mixing ratio; `Nh`: kg^-1 hail number;
+      `qvolg/qvolh`: m^3 kg^-1 predicted-density graupel/hail particle volume
+      on mass points (ADR-032 hail substrate; inert/zero unless a hail MP
+      scheme is selected).
     - `qke`: m2 s^-2 MYNN turbulent kinetic energy on mass points.
     - `ustar`: m s^-1, `theta_flux`: K m s^-1, `qv_flux`: kg kg^-1 m s^-1,
       `tau_u/tau_v`: m2 s^-2, `rhosfc`: kg m^-3, `fltv`: K m s^-1,
@@ -480,11 +498,28 @@ class State:
         # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
         # WRF QNWFA/QNIFA water-/ice-friendly aerosol number concentrations
         # (kg^-1). Appended at the VERY END (after the v0.6.0 + v0.15 additions)
-        # so every existing leaf keeps its pytree position; ``__init__`` gives
-        # them ``None`` defaults (-> zeros) so pre-v0.16 ``cls(*children)``
-        # flattens with the old leaf count still reconstruct.
         "nwfa",
         "nifa",
+        # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves (append-only;
+        # same reconstruction contract as the blocks above) ---
+        # qh   = hail mixing ratio (kg kg^-1; WRF moist QHAIL)
+        # Nh   = hail number concentration (kg^-1; WRF scalar QNHAIL)
+        # qvolg = graupel particle volume (m^3 kg^-1; WRF scalar QVGRAUPEL)
+        # qvolh = hail particle volume (m^3 kg^-1; WRF scalar QVHAIL)
+        # Appended at the VERY END so every existing leaf keeps its pytree
+        # position; ``__init__`` gives them ``None`` defaults (-> zeros) so a
+        # pre-v0.17 ``cls(*children)`` flatten with the old leaf count still
+        # reconstructs. They are INERT (zero) unless a hail MP scheme is wired.
+        "qh",
+        "Nh",
+        "qvolg",
+        "qvolh",
+        # v0.17 hail surface-precip accumulator (append-only, AFTER the ADR-032
+        # hail substrate). hail_acc = accumulated grid-scale hail (mm; WRF
+        # HAILNC). ``__init__`` gives it a ``None`` default (-> zeros, templated
+        # on rain_acc) so a pre-hail-acc ``cls(*children)`` flatten still
+        # reconstructs. Inert (zero) unless a hail MP scheme is wired.
+        "hail_acc",
     )
 
     def __init__(
@@ -554,6 +589,13 @@ class State:
         # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
         nwfa: jax.Array | None = None,
         nifa: jax.Array | None = None,
+        # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves (append-only) ---
+        qh: jax.Array | None = None,
+        Nh: jax.Array | None = None,
+        qvolg: jax.Array | None = None,
+        qvolh: jax.Array | None = None,
+        # v0.17 hail surface-precip accumulator (append-only).
+        hail_acc: jax.Array | None = None,
     ) -> None:
         self.u = u
         self.v = v
@@ -670,6 +712,41 @@ class State:
             jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("nifa"))
             if nifa is None
             else _as_dtype(nifa, DEFAULT_DTYPES.dtype_for("nifa"))
+        )
+        # v0.17 ADR-032 graupel/hail substrate leaves. Same ``None`` -> zeros
+        # pattern as the qc/Nc hydrometeor block above (all templated on qc,
+        # mass-3d) so existing call sites and pre-v0.17 pytree flattens (old
+        # leaf count) still construct; the cast keeps the ADR-007 precision
+        # matrix (all four FP32-gated, same class as qg/Ng) consistent. They
+        # cold-start at zero and stay inert until a hail MP scheme is wired.
+        self.qh = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qh"))
+            if qh is None
+            else _as_dtype(qh, DEFAULT_DTYPES.dtype_for("qh"))
+        )
+        self.Nh = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("Nh"))
+            if Nh is None
+            else _as_dtype(Nh, DEFAULT_DTYPES.dtype_for("Nh"))
+        )
+        self.qvolg = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qvolg"))
+            if qvolg is None
+            else _as_dtype(qvolg, DEFAULT_DTYPES.dtype_for("qvolg"))
+        )
+        self.qvolh = (
+            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qvolh"))
+            if qvolh is None
+            else _as_dtype(qvolh, DEFAULT_DTYPES.dtype_for("qvolh"))
+        )
+        # v0.17 hail surface-precip accumulator. Same ``None`` -> zeros pattern as
+        # rainc_acc above (2-D, templated on rain_acc, FP64 like every other
+        # accumulator). Cold-starts at zero and stays inert until a hail MP
+        # scheme is wired.
+        self.hail_acc = (
+            jnp.zeros_like(rain_acc, dtype=DEFAULT_DTYPES.dtype_for("hail_acc"))
+            if hail_acc is None
+            else _as_dtype(hail_acc, DEFAULT_DTYPES.dtype_for("hail_acc"))
         )
 
     @classmethod

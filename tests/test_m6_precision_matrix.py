@@ -58,6 +58,12 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         # (FP32_GATED, same class as Nc/Nn).
         "nwfa",
         "nifa",
+        # v0.17 ADR-032 graupel/hail substrate (FP32_GATED, same class as the
+        # qg/Ng hydrometeor + number species they extend).
+        "qh",
+        "Nh",
+        "qvolg",
+        "qvolh",
     }
     integer_static = {"lu_index"}
     locked = set(State.__slots__) - gated - integer_static

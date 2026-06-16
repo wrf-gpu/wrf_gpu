@@ -48,6 +48,8 @@ from typing import Callable
 import jax
 import jax.numpy as jnp
 
+import os
+
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.state import State
 from gpuwrf.nesting.interp import (
@@ -56,7 +58,27 @@ from gpuwrf.nesting.interp import (
     build_sint_weights,
     interp_bilinear,
     interp_sint_linear,
+    slice_weights_cols,
+    slice_weights_rows,
 )
+
+
+def _edge_only_enabled() -> bool:
+    """Whether the edge-only (ring-only) boundary gather is active.
+
+    Default ON: the edge-only path is a precision-safe restriction of the
+    full-grid gather (proven bit-identical on CPU; see
+    ``tests/test_v017_edge_only_boundary.py``).  Set
+    ``GPUWRF_EDGE_ONLY_BOUNDARY=0`` to fall back to the full-grid->slice
+    reference path (e.g. for an A/B bit-compare).
+    """
+
+    return os.environ.get("GPUWRF_EDGE_ONLY_BOUNDARY", "1").strip().lower() not in (
+        "0",
+        "false",
+        "off",
+        "no",
+    )
 
 
 # WRF ``share/module_bc.F`` side order is W/E/S/N; the State leaf side axis uses
@@ -199,6 +221,125 @@ def _child_ring_2d(parent_field, weights, registration, width, side_len) -> jax.
 
 
 # ---------------------------------------------------------------------------
+# Edge-only (ring-only) gather.
+#
+# Instead of interpolating the FULL child grid (``_interp``) and then slicing the
+# width-N W/E/S/N strips (``field_sides_3d``/``_2d``), gather ONLY the ring cells:
+# subset the precomputed parent->child weights to the ring rows/cols and re-run the
+# IDENTICAL per-cell bilinear gather (:func:`interp._gather`).  Because that gather
+# is independent per output cell, the strip values are bit-for-bit the same as the
+# full-grid->slice path -- only the wasted interior interp work is removed.  The
+# strip ASSEMBLY (move-to-strip-axis, edge flips, tangential/width padding) is the
+# SAME as ``field_sides_3d``/``_2d`` so the produced
+# ``(side, bdy_width, z, side_len)`` leaf is identical.
+# ---------------------------------------------------------------------------
+
+
+def _pad_strip_3d(strip: jax.Array, width: int, side_len: int) -> jax.Array:
+    """``(bw, z, tan) -> (width, z, side_len)`` -- the ``field_sides_3d`` pad."""
+
+    bw, _zz, tan = strip.shape
+    pad_w = int(width) - bw
+    pad_t = int(side_len) - tan
+    if pad_w > 0 or pad_t > 0:
+        strip = jnp.pad(strip, ((0, max(pad_w, 0)), (0, 0), (0, max(pad_t, 0))))
+    return strip
+
+
+def _pad_strip_2d(strip: jax.Array, width: int, side_len: int) -> jax.Array:
+    """``(bw, tan) -> (width, 1, side_len)`` -- the ``field_sides_2d`` pad."""
+
+    bw, tan = strip.shape
+    pad_w = int(width) - bw
+    pad_t = int(side_len) - tan
+    if pad_w > 0 or pad_t > 0:
+        strip = jnp.pad(strip, ((0, max(pad_w, 0)), (0, max(pad_t, 0))))
+    return strip[:, None, :]
+
+
+def field_sides_3d_edgeonly(
+    parent_field, weights: InterpWeights, registration, width, side_len
+) -> jax.Array:
+    """Edge-only equivalent of ``field_sides_3d(_interp(parent_field, weights))``.
+
+    Gathers ONLY the four width-``width`` ring strips (W/E column strips, S/N row
+    strips) directly from the parent via subset weights, then assembles them into
+    the SAME ``(side, bdy_width, z, side_len)`` layout ``field_sides_3d`` produces.
+    Bit-identical to the full-grid->slice path; computes ~ring/area as much interp.
+    """
+
+    cny = int(weights.child_ny)
+    cnx = int(weights.child_nx)
+    xw = min(int(width), cnx)
+    yw = min(int(width), cny)
+
+    # W: child columns 0..xw-1, all rows -> (z, cny, xw) -> moveaxis -> (xw, z, cny)
+    w_full = _interp(parent_field, slice_weights_cols(weights, 0, xw), registration)
+    w = jnp.moveaxis(w_full, 2, 0)
+    # E: child columns cnx-xw..cnx-1, all rows, flipped so index 0 = east edge.
+    e_full = _interp(parent_field, slice_weights_cols(weights, cnx - xw, cnx), registration)
+    e = jnp.moveaxis(e_full[:, :, ::-1], 2, 0)
+    # S: child rows 0..yw-1, all cols -> (z, yw, cnx) -> moveaxis -> (yw, z, cnx)
+    s_full = _interp(parent_field, slice_weights_rows(weights, 0, yw), registration)
+    s = jnp.moveaxis(s_full, 1, 0)
+    # N: child rows cny-yw..cny-1, all cols, flipped so index 0 = north edge.
+    n_full = _interp(parent_field, slice_weights_rows(weights, cny - yw, cny), registration)
+    n = jnp.moveaxis(n_full[:, ::-1, :], 1, 0)
+
+    return jnp.stack(
+        [
+            _pad_strip_3d(w, width, side_len),
+            _pad_strip_3d(e, width, side_len),
+            _pad_strip_3d(s, width, side_len),
+            _pad_strip_3d(n, width, side_len),
+        ],
+        axis=0,
+    )
+
+
+def field_sides_2d_edgeonly(
+    parent_field, weights: InterpWeights, registration, width, side_len
+) -> jax.Array:
+    """Edge-only equivalent of ``field_sides_2d(_interp(parent_field, weights))``.
+
+    2-D analogue of :func:`field_sides_3d_edgeonly`; produces the SAME
+    ``(side, bdy_width, 1, side_len)`` layout as ``field_sides_2d``.
+    """
+
+    cny = int(weights.child_ny)
+    cnx = int(weights.child_nx)
+    xw = min(int(width), cnx)
+    yw = min(int(width), cny)
+
+    w_full = _interp(parent_field, slice_weights_cols(weights, 0, xw), registration)
+    w = jnp.moveaxis(w_full, 1, 0)                          # (xw, cny)
+    e_full = _interp(parent_field, slice_weights_cols(weights, cnx - xw, cnx), registration)
+    e = jnp.moveaxis(e_full[:, ::-1], 1, 0)                 # (xw, cny) flipped
+    s_full = _interp(parent_field, slice_weights_rows(weights, 0, yw), registration)
+    s = s_full                                              # (yw, cnx)
+    n_full = _interp(parent_field, slice_weights_rows(weights, cny - yw, cny), registration)
+    n = n_full[::-1, :]                                     # (yw, cnx) flipped
+
+    return jnp.stack(
+        [
+            _pad_strip_2d(w, width, side_len),
+            _pad_strip_2d(e, width, side_len),
+            _pad_strip_2d(s, width, side_len),
+            _pad_strip_2d(n, width, side_len),
+        ],
+        axis=0,
+    )
+
+
+def _child_ring_3d_edgeonly(parent_field, weights, registration, width, side_len) -> jax.Array:
+    return field_sides_3d_edgeonly(parent_field, weights, registration, width, side_len)
+
+
+def _child_ring_2d_edgeonly(parent_field, weights, registration, width, side_len) -> jax.Array:
+    return field_sides_2d_edgeonly(parent_field, weights, registration, width, side_len)
+
+
+# ---------------------------------------------------------------------------
 # Boundary-VALUE construction: build the full child *_bdy package from a parent.
 # ---------------------------------------------------------------------------
 
@@ -253,14 +394,27 @@ def build_child_boundary_package(
         new = _fit(new_strips, zt, st, ref.dtype)
         return jnp.stack([old, new], axis=0)
 
-    theta_new = _child_ring_3d(parent_state.theta, weights.mass, reg, w, side_len)
-    qv_new = _child_ring_3d(parent_state.qv, weights.mass, reg, w, side_len)
-    w_new = _child_ring_3d(parent_state.w, weights.mass, reg, w, side_len)
-    p_new = _child_ring_3d(parent_state.p_perturbation, weights.mass, reg, w, side_len)
-    ph_new = _child_ring_3d(parent_state.ph_perturbation, weights.mass, reg, w, side_len)
-    u_new = _child_ring_3d(parent_state.u, weights.u, reg, w, side_len)
-    v_new = _child_ring_3d(parent_state.v, weights.v, reg, w, side_len)
-    mu_new = _child_ring_2d(parent_state.mu_perturbation, weights.mass, reg, w, side_len)
+    # Edge-only (ring-only) gather is DEFAULT-ON: it is a precision-safe restriction
+    # of the full-grid gather (bit-identical, proven on CPU) that interpolates only
+    # the width-N ring instead of the whole child grid -- killing the ~area/ring
+    # wasted interior interp work.  The full-grid->slice path is kept as the
+    # reference/fallback (``GPUWRF_EDGE_ONLY_BOUNDARY=0``) and as the A/B target the
+    # parent bit-compares on GPU.
+    if _edge_only_enabled():
+        ring3d = _child_ring_3d_edgeonly
+        ring2d = _child_ring_2d_edgeonly
+    else:
+        ring3d = _child_ring_3d
+        ring2d = _child_ring_2d
+
+    theta_new = ring3d(parent_state.theta, weights.mass, reg, w, side_len)
+    qv_new = ring3d(parent_state.qv, weights.mass, reg, w, side_len)
+    w_new = ring3d(parent_state.w, weights.mass, reg, w, side_len)
+    p_new = ring3d(parent_state.p_perturbation, weights.mass, reg, w, side_len)
+    ph_new = ring3d(parent_state.ph_perturbation, weights.mass, reg, w, side_len)
+    u_new = ring3d(parent_state.u, weights.u, reg, w, side_len)
+    v_new = ring3d(parent_state.v, weights.v, reg, w, side_len)
+    mu_new = ring2d(parent_state.mu_perturbation, weights.mass, reg, w, side_len)
 
     child_phb = child_state.ph_total - child_state.ph_perturbation
     child_pb = child_state.p_total - child_state.p_perturbation
@@ -321,4 +475,6 @@ __all__ = [
     "interp_parent_field_to_child",
     "field_sides_3d",
     "field_sides_2d",
+    "field_sides_3d_edgeonly",
+    "field_sides_2d_edgeonly",
 ]

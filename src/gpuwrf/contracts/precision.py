@@ -129,6 +129,17 @@ STATE_FIELD_ORDER = (
     # QNWFA/QNIFA water-/ice-friendly aerosol number concentrations (kg^-1).
     "nwfa",
     "nifa",
+    # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves (append-only) ---
+    # Appended at the VERY END so every existing leaf keeps its pytree
+    # position. qh=hail mixing ratio (QHAIL), Nh=hail number (QNHAIL),
+    # qvolg/qvolh=predicted-density graupel/hail particle volume
+    # (QVGRAUPEL/QVHAIL).
+    "qh",
+    "Nh",
+    "qvolg",
+    "qvolh",
+    # --- v0.17 hail surface-precip accumulator (append-only) ---
+    "hail_acc",
 )
 
 
@@ -238,6 +249,20 @@ PRECISION_MATRIX = {
     # precision class (FP32 gated, same as Nc/Nn).
     "nwfa": (FP32_GATED, True),
     "nifa": (FP32_GATED, True),
+    # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves ---
+    # Hail mixing ratio / number / particle-volume follow the existing
+    # hydrometeor + number-species precision class (FP32 gated, same as
+    # qg/Ng/Nc). Bounded, non-conservation-critical scalar fields; they
+    # downcast with the rest of the moisture family in a future fp32 run and
+    # stay fp64 in the FP64-default operational mode.
+    "qh": (FP32_GATED, True),
+    "Nh": (FP32_GATED, True),
+    "qvolg": (FP32_GATED, True),
+    "qvolh": (FP32_GATED, True),
+    # Hail surface-precip accumulator: FP64-locked like every other precip
+    # accumulator (rain/snow/graupel/ice), never gated -- accumulation fields
+    # remain FP64 (ADR-007).
+    "hail_acc": (FP64, False),
 }
 
 

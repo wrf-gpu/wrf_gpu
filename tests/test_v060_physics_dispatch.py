@@ -71,9 +71,10 @@ def test_every_accepted_option_routes() -> None:
 
 @pytest.mark.parametrize(
     "fam,opt",
-    # surface_layer=3 (GFS) / land_surface=1 (slab) became accepted in v0.13
-    # Tier-3; remaining out-of-matrix: surface_layer=4 (QNSE), land_surface=3 (RUC).
-    [("microphysics", 5), ("pbl", 3), ("surface_layer", 4), ("cumulus", 5), ("land_surface", 3)],
+    # pbl=3 (GFS) is operational in v0.17 RC. surface_layer=3 (GFS) /
+    # land_surface=1 (slab) became accepted in v0.13 Tier-3; remaining
+    # out-of-matrix: pbl=4 (QNSE), surface_layer=4 (QNSE), land_surface=3 (RUC).
+    [("microphysics", 5), ("pbl", 4), ("surface_layer", 4), ("cumulus", 5), ("land_surface", 3)],
 )
 def test_fail_closed_on_out_of_matrix(fam: str, opt: int) -> None:
     with pytest.raises(UnsupportedSchemeSelection):

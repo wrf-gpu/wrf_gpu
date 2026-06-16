@@ -1,0 +1,34 @@
+{
+  "adr": "ADR-032",
+  "scheme": "mp_physics=8 (Thompson, wired)",
+  "method": "smoke-validated _physics_step_forcing coupling path",
+  "n_state_leaves": 64,
+  "hail_leaves": [
+    "qh",
+    "Nh",
+    "qvolg",
+    "qvolh"
+  ],
+  "scheme_actually_ran": true,
+  "P1_hail_stays_zero": {
+    "pass": true,
+    "max_abs": {
+      "qh": 0.0,
+      "Nh": 0.0,
+      "qvolg": 0.0,
+      "qvolh": 0.0
+    }
+  },
+  "P2_nonzero_hail_no_feedback": {
+    "pass": true,
+    "all_non_hail_finite": true,
+    "worst_leaf": "u",
+    "worst_leaf_max_abs_diff": 0.0,
+    "n_non_hail_leaves_checked": 60
+  },
+  "P3_restart_roundtrip_bitwise": {
+    "pass": true,
+    "detail": "bitwise all 64 leaves"
+  },
+  "verdict": "PASS"
+}

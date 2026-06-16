@@ -322,7 +322,7 @@ def test_microphysics_operational_runs_and_mutates(mp: int) -> None:
 #    mp/cumulus/radiation disabled so the u/v change is attributable to the PBL.
 #    bl=2 (MYJ) is mandatorily paired with sf=2 (Janjic Eta); covered as a pair.
 # ============================================================================
-_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 5: 5, 7: 1, 8: 1, 99: 1}
+_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 3: 1, 5: 5, 7: 1, 8: 1, 99: 1}
 _PBL_TKE_SCHEMES = {2, 5, 8}  # also carry a prognostic TKE (qke) update
 
 

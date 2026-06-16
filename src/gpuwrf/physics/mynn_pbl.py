@@ -95,10 +95,12 @@ def _env_int(name: str, default: int) -> int:
 # proofs/v013/rrtmg_column_tile.json).  The default BouLac free-atmosphere
 # length (`_boulac_length_dense`) materialises dense ``(B, nz, nz)`` PE matrices:
 # at 641x321x50 fp64 ONE such matrix is ~3.8 GiB and several are live at once, so
-# a whole-domain batch dominates the non-radiation physics peak.  (The O(nz)
-# `_boulac_length_onz` drops these but is default-OFF on an XLA compile
-# pathology; see `_MYNN_BOULAC_ONZ`.)  Every MYNN op is per-column (reductions
-# run over the level axis; the EDMF plume sum runs inside a per-column vmap).
+# a whole-domain batch dominates the non-radiation physics peak.  The v0.17
+# `GPUWRF_MYNN_BOULAC_ONZ` opt-in avoids the full matrix with the production
+# source-chunked schedule; the legacy pure scan remains diagnostic-only because
+# of its XLA compile/command-buffer pathology.  Every MYNN op is per-column
+# (reductions run over the level axis; the EDMF plume sum runs inside a
+# per-column vmap).
 # Tile-vs-untiled is
 # proven bit-identical on GPU including ragged tiles at the production tile
 # width; on the CPU backend the implicit tridiagonal solves can differ by
@@ -134,24 +136,24 @@ _MYNN_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_MYNN_COLUMN_TILE_COLS", 16384))
 # one-time compile cost is acceptable (it is a validated, field-gate-passing win).
 _MYNN_BOULAC_FP32 = _env_bool("GPUWRF_MYNN_BOULAC_FP32", False)
 
-# v0.15 BouLac O(nz) memory lever (default OFF -- BLOCKED by an XLA pathology).
-# The production `_boulac_length` materialises dense (B, nz, nz) PE-accumulation
-# matrices to find the parcel up/down length scale; `_boulac_length_onz` is a
-# WRF-faithful O(nz)-memory reformulation (the inner izz parcel search runs as a
-# straight-line unrolled loop over the search axis, carrying only O(B, nz)
-# accumulators).  It is PROVEN correct (proofs/perf/v015/boulac_nz_oracle.json:
-# max_rel 2.4e-16 vs a loop-for-loop WRF NumPy transcription across 8
-# stratification regimes) and PROVEN faster + lighter IN ISOLATION
-# (proofs/perf/v015/boulac_nz_perf_ab.json: 1.30x / -387 MB on the d01 16384x44
-# step, step-output theta identical to 1.9e-16).  BUT when fused into the FULL
-# operational forecast jit it triggers the SAME XLA "Very slow compile" pathology
-# as GPUWRF_MYNN_BOULAC_FP32 (>7 min, no completion; reproduced for both a
-# lax.scan and a Python-unrolled form, BFC + cuda_async, autotune on/off): the
-# data-dependent O(nz) search defeats the fusion that the pure-cumsum dense form
-# enjoys.  So the dense form stays the DEFAULT (it compiles in ~80 s and is the
-# v0.14-frozen-gate-passing path).  Set GPUWRF_MYNN_BOULAC_ONZ=1 to opt in once
-# the XLA compile pathology is resolved (Fable escalation: fusion-boundary work).
+# v0.17 BouLac O(nz)-working-set memory lever (default OFF, production opt-in).
+# The default `_boulac_length` path is deliberately unchanged unless this flag is
+# set.  With GPUWRF_MYNN_BOULAC_ONZ=1 the dispatcher selects the production
+# source-chunked BouLac schedule with chunk=1: it keeps the dense path's
+# cumsum/where/reduce arithmetic but processes one SOURCE level at a time, so no
+# full (B, nz, nz) PE matrix is live.  That is a memory-shape rewrite, not a
+# precision change, and is bit-identical to the whole-domain dense result when
+# GPUWRF_MYNN_BOULAC_FP32 is off.
+#
+# The original v0.15 pure scan implementation (`_boulac_length_onz`) remains in
+# this file because it is WRF-faithful and useful for oracle/pathology probes,
+# but it is NOT the production implementation: inside the full operational jit
+# its deep data-dependent chain fuses into huge ptxas-spilling kernels and at
+# 147k columns OOMs while instantiating CUDA command buffers.  Set
+# GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN=1 together with GPUWRF_MYNN_BOULAC_ONZ=1
+# only to reproduce that rejected path.
 _MYNN_BOULAC_ONZ = _env_bool("GPUWRF_MYNN_BOULAC_ONZ", False)
+_MYNN_BOULAC_ONZ_LEGACY_SCAN = _env_bool("GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN", False)
 
 # v0.16 BouLac SOURCE-CHUNKED dense lever (default OFF; the 1km-UNLOCK path).
 # The dense parcel search materialises (B, nz, nz) PE matrices; at 1km
@@ -1018,20 +1020,33 @@ def _boulac_length_chunked(zw, dz, qtke, theta, chunk=None):
     return lb1, lb2
 
 
+def _boulac_length_onz_production(zw, dz, qtke, theta):
+    """Production ``GPUWRF_MYNN_BOULAC_ONZ`` path.
+
+    Uses the bit-identical source-chunked dense schedule with ``chunk=1``.  The
+    legacy pure scan `_boulac_length_onz` is still available for diagnostics via
+    ``GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN=1``, but it is not shippable in the full
+    forecast jit because of the documented XLA/ptxas pathology.
+    """
+
+    return _boulac_length_chunked(zw, dz, qtke, theta, chunk=1)
+
+
 def _boulac_length(zw, dz, qtke, theta):
     """Dispatch the BouLac length scale: dense (default), chunked, or O(nz).
 
-    All three forms produce the same WRF lengths (oracle: identical to ~machine
-    eps; proofs/perf/v015/boulac_nz_oracle.json + boulac_nz_perf_ab.json).  The
-    dense form is the historical DEFAULT (fast compile, but (B,nz,nz) memory OOMs
-    at 1km).  ``GPUWRF_MYNN_BOULAC_CHUNKED=1`` -> source-chunked dense (same
-    fusion-friendly kernel, ~nz/chunk less memory; the 1km-unlock path).
-    ``GPUWRF_MYNN_BOULAC_ONZ=1`` -> pure O(nz) (lightest, but trips an XLA
-    slow-compile pathology -- see ``_MYNN_BOULAC_ONZ``).
+    The dense form is the default and stays untouched.  ``GPUWRF_MYNN_BOULAC_ONZ``
+    is the v0.17 production O(nz)-working-set path: source-chunked dense with
+    chunk=1, bit-identical to dense in fp64 and measured to fit the 147k-column
+    1km case.  ``GPUWRF_MYNN_BOULAC_CHUNKED=1`` keeps the older tunable chunked
+    path.  ``GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN=1`` re-enables the rejected pure
+    scan implementation for pathology characterization only.
     """
 
     if _MYNN_BOULAC_ONZ:
-        return _boulac_length_onz(zw, dz, qtke, theta)
+        if _MYNN_BOULAC_ONZ_LEGACY_SCAN:
+            return _boulac_length_onz(zw, dz, qtke, theta)
+        return _boulac_length_onz_production(zw, dz, qtke, theta)
     if _MYNN_BOULAC_CHUNKED:
         return _boulac_length_chunked(zw, dz, qtke, theta)
     return _boulac_length_dense(zw, dz, qtke, theta)

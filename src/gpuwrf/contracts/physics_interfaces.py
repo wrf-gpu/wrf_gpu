@@ -34,9 +34,10 @@ from .physics_registry import (
     CUMULUS_CARRY_MEMBERS,
     CUMULUS_TENDENCY_MEMBERS,
     LAND_CARRY_MEMBERS,
-    MOIST_SPECIES,
+    MOIST_SPECIES_ALL,
     NOAH_CLASSIC_NUM_SOIL_LAYERS,
     NUMBER_SPECIES,
+    VOLUME_SPECIES,
     PBL_CARRY_MEMBERS,
     PHYSICS_REGISTRY_VERSION,
     assert_registry_consistent,
@@ -71,7 +72,12 @@ STATE_TENDENCY_KEYS: tuple[str, ...] = (
     "v",
     "w",
     "theta",
-    *MOIST_SPECIES,
+    # MOIST_SPECIES_ALL = the v0.2.0..v0.16 six-class core PLUS the v0.17 hail
+    # class qh; VOLUME_SPECIES (qvolg/qvolh) are the predicted-density volumes.
+    # A hail microphysics scheme (WSM7/WDM7) replaces qh (and a future
+    # predicted-density scheme the volumes) in its PhysicsTendency.
+    *MOIST_SPECIES_ALL,
+    *VOLUME_SPECIES,
     *NUMBER_SPECIES,
     "qke",
     "ustar",
@@ -180,7 +186,15 @@ class PhysicsStepSpec:
     variant: str = ""
 
 
-def _mp_spec(option: int, name: str, owner: str, oracle: str, *, diagnostics: tuple[str, ...] = ()) -> PhysicsStepSpec:
+def _mp_spec(
+    option: int,
+    name: str,
+    owner: str,
+    oracle: str,
+    *,
+    diagnostics: tuple[str, ...] = (),
+    accumulators: tuple[str, ...] = ("rain_acc", "snow_acc", "graupel_acc", "ice_acc"),
+) -> PhysicsStepSpec:
     leaves = state_leaves_for_mp(option)
     return PhysicsStepSpec(
         family="microphysics",
@@ -191,7 +205,7 @@ def _mp_spec(option: int, name: str, owner: str, oracle: str, *, diagnostics: tu
         oracle=oracle,
         reads_state=("theta", "p", "pb", "ph", "mu", *leaves),
         writes_state=("theta", *leaves),
-        returns_accumulators=("rain_acc", "snow_acc", "graupel_acc", "ice_acc"),
+        returns_accumulators=accumulators,
         diagnostics=diagnostics,
     )
 
@@ -258,6 +272,31 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "M20 physics-oracle factory savepoint at module_microphysics_driver.F:wdm6",
         diagnostics=("re_cloud", "re_ice", "re_snow"),
     ),
+    # v0.17 WSM7 = WSM6 + a separate precipitating hail class (qh leaf + hail_acc
+    # surface accumulator). Savepoint-parity-proven against the unmodified
+    # phys/module_mp_wsm7.F (proofs/v013/run_wsm7_parity.py, 6/6 PASS).
+    _mp_spec(
+        24,
+        "WSM7",
+        "src/gpuwrf/physics/microphysics_wsm7.py",
+        "v0.17 WSM7 pristine-WRF single-column savepoint parity gate at "
+        "module_mp_wsm7.F (proofs/v013/run_wsm7_parity.py/.json)",
+        diagnostics=("re_cloud", "re_ice", "re_snow"),
+        accumulators=("rain_acc", "snow_acc", "graupel_acc", "ice_acc", "hail_acc"),
+    ),
+    # v0.17 WDM7 = WDM6 double-moment warm rain (Nc/Nr/Nn) + a separate
+    # single-moment precipitating hail class (qh + hail_acc; no Nh).
+    # Savepoint-parity-proven against the unmodified phys/module_mp_wdm7.F
+    # (proofs/v013_wdm7/run_wdm7_parity.py, 6/6 PASS).
+    _mp_spec(
+        26,
+        "WDM7",
+        "src/gpuwrf/physics/microphysics_wdm7.py",
+        "v0.17 WDM7 pristine-WRF single-column savepoint parity gate at "
+        "module_mp_wdm7.F (proofs/v013_wdm7/run_wdm7_parity.py/.json)",
+        diagnostics=("re_cloud", "re_ice", "re_snow"),
+        accumulators=("rain_acc", "snow_acc", "graupel_acc", "ice_acc", "hail_acc"),
+    ),
     _mp_spec(
         28,
         "Thompson aerosol-aware",
@@ -294,6 +333,23 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "physics.myj_adapters.myj_pbl_adapter; host-NumPy reference in pbl_myj.py). "
         "Mandatory pair with sf_sfclay_physics=2; the TKE carry rides State.qke (q^2 "
         "convention). Pairing enforced by namelist_check and dispatcher resolution.",
+    ),
+    PhysicsStepSpec(
+        family="pbl",
+        option=3,
+        name="GFS",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/bl_gfs.py",
+        oracle="v0.17 operational savepoint parity vs unmodified WRF module_bl_gfs.F "
+        "(BL_GFS -> MONINP -> TRIDI2/TRIDIN/TRIDIT; proofs/v017/gfs_oracle.py/.json, "
+        "fp64 kind_phys-native ~1e-13, 6 regimes, NOT a self-compare)",
+        reads_state=("u", "v", "theta", "qv", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv"),
+        diagnostics=("pblh", "kpbl"),
+        notes="v0.17 OPERATIONAL (jit/vmap-traceable bl_gfs.gfs_columns, scan-wired via "
+        "coupling.scan_adapters.gfs_pbl_adapter -> PBL_SCAN_ADAPTERS[3]). GFS "
+        "nonlocal-K PBL re-derives revised-MM5 surface forcing (sf_sfclay=1) and "
+        "does not carry prognostic PBL state.",
     ),
     PhysicsStepSpec(
         family="pbl",

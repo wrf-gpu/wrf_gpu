@@ -100,7 +100,7 @@ DEFAULT_SF_SURFACE_PHYSICS = 4  # Noah-MP
 # WRF's isfc==1 requirement for YSU/MRF (sf in {1,91}); we further restrict to {1}
 # because only the revised-MM5 forcing path is wired into these adapters (the old-MM5
 # sf=91 forcing is NOT separately threaded into the PBL re-derivation).
-_PBL_REQUIRES_REVISED_MM5_SFCLAY: frozenset[int] = frozenset({1, 7, 8, 99})
+_PBL_REQUIRES_REVISED_MM5_SFCLAY: frozenset[int] = frozenset({1, 3, 7, 8, 99})
 _REVISED_MM5_SFCLAY_OPTION = 1
 
 
@@ -159,6 +159,10 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     10: _mp_entry(10, "gpuwrf.physics.microphysics_morrison", "morrison_tendency", gpu=True),
     14: _mp_entry(14, "gpuwrf.physics.microphysics_wdm5", "wdm5_physics_tendency", gpu=True),
     16: _mp_entry(16, "gpuwrf.physics.microphysics_wdm6", "wdm6_physics_tendency", gpu=True),
+    # v0.17 WSM7 = WSM6 + separate precipitating hail (qh + hail_acc).
+    24: _mp_entry(24, "gpuwrf.physics.microphysics_wsm7", "wsm7_physics_tendency", gpu=True),
+    # v0.17 WDM7 = WDM6 double-moment + separate single-moment hail (qh + hail_acc).
+    26: _mp_entry(26, "gpuwrf.physics.microphysics_wdm7", "wdm7_physics_tendency", gpu=True),
     # mp=28 aerosol-aware Thompson (v0.16): wired through the State adapter in
     # coupling.physics_couplers (mirrors mp=8), advancing the moist species +
     # Ni/Nr/Ns/Ng + the aerosol-aware prognostics Nc/nwfa/nifa and applying the
@@ -185,6 +189,12 @@ _PBL_ENTRIES: dict[int, SchemeEntry] = {
                    writes_state=("u", "v", "theta", "qv"),
                    carry_members=("tke_pbl", "el_pbl"),
                    notes="MUST pair with sf_sfclay_physics=2 (Janjic Eta surface layer)."),
+    # GFS(3): v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F, scan-wired as a
+    # State->State adapter (coupling.scan_adapters.gfs_pbl_adapter). Nonlocal-K, no
+    # prognostic PBL carry; consumes the revised-MM5 surface forcing (sf_sfclay=1).
+    3: SchemeEntry("pbl", 3, PBL_SCHEMES[3].name, "gpuwrf.coupling.scan_adapters", "gfs_pbl_adapter",
+                   "state_adapter", True,
+                   reads_state=("u", "v", "theta", "qv"), writes_state=("u", "v", "theta", "qv")),
     5: SchemeEntry("pbl", 5, PBL_SCHEMES[5].name, "gpuwrf.coupling.physics_couplers", "mynn_adapter",
                    "state_adapter", True,
                    reads_state=("u", "v", "theta", "qv", "qke"),
@@ -475,7 +485,7 @@ def resolve_physics_suite(config: Any) -> PhysicsSuite:
     ):
         raise UnsupportedSchemeSelection(
             f"surface-layer/PBL pairing violation: bl_pbl_physics={pbl_opt} "
-            f"(YSU/ACM2/BouLac/MRF) re-derives its surface-layer forcing via the "
+            f"(YSU/GFS/ACM2/BouLac/MRF) re-derives its surface-layer forcing via the "
             f"revised-MM5 surface layer, so it is faithful ONLY with "
             f"sf_sfclay_physics=1 (revised-MM5); selected sf_sfclay_physics="
             f"{sfclay_opt}. Running this pairing would SILENTLY substitute revised-MM5 "

@@ -27,10 +27,11 @@ from gpuwrf.io.wrfout_writer import MICROPHYSICS_EXTRA_VARIABLES, WRFOUT_VARIABL
 def test_registry_self_check_and_state_append_order() -> None:
     assert_registry_consistent()
     # v0.16 appends the aerosol-aware Thompson (mp=28) nwfa/nifa leaves to the
-    # additive set (append-only AFTER Nc/Nn; the State pytree appends them at
-    # the very END of __slots__, after rainc_acc -- see contracts/state.py).
-    assert physics_state_append_order() == ("Nc", "Nn", "nwfa", "nifa", "rainc_acc")
-    assert V060_ADDITIVE_STATE_LEAVES == ("Nc", "Nn", "nwfa", "nifa", "rainc_acc")
+    # additive set, then v0.17 ADR-032 adds the graupel/hail substrate
+    # (Nh number, qh moist, qvolg/qvolh volumes), and WSM7 appends hail_acc.
+    expected = ("Nc", "Nn", "nwfa", "nifa", "Nh", "qh", "qvolg", "qvolh", "rainc_acc", "hail_acc")
+    assert physics_state_append_order() == expected
+    assert V060_ADDITIVE_STATE_LEAVES == expected
 
 
 def test_nest_field_list_is_registry_driven_for_two_moment_schemes() -> None:
@@ -50,6 +51,8 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
     # WDM5 (mp=14): 5-class moist (no graupel) + the WDM6 Nn/Nc/Nr number leaves.
     assert state_leaves_for_mp(14) == ("qv", "qc", "qr", "qi", "qs", "Nn", "Nc", "Nr")
     assert state_leaves_for_mp(16) == ("qv", "qc", "qr", "qi", "qs", "qg", "Nn", "Nc", "Nr")
+    assert state_leaves_for_mp(24) == ("qv", "qc", "qr", "qi", "qs", "qg", "qh")
+    assert state_leaves_for_mp(26) == ("qv", "qc", "qr", "qi", "qs", "qg", "qh", "Nn", "Nc", "Nr")
     # v0.16 aerosol-aware Thompson (mp=28): Registry thompsonaero scalars.
     assert state_leaves_for_mp(28) == ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Nc", "nwfa", "nifa")
     assert NUMBER_WRFOUT_NAME["Nn"] == "QNCCN"
@@ -63,15 +66,9 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # 31 single-option specs (9 microphysics incl. Purdue-Lin + WSM3/WSM5 + v0.13
-    # Tier-3 WDM5(14) + 6 PBL incl. BouLac + MRF(99) + 6 surface-layer incl. v0.13
-    # Tier-3 GFS(3) + old-MM5(91) + 7 cumulus incl. BMJ cu=2 + v0.13 Tier-3
-    # reference-only Grell-3D cu=5 + KSAS cu=14 + 3 land-surface incl. v0.13 Tier-3
-    # slab(1)) + 6 radiation variants (RRTMG LW/SW under option 4, classic RRTM LW +
-    # Dudhia SW under option 1, v0.13 Tier-3 GSFC/Chou-Suarez SW under option 2, v0.13
-    # Tier-3 reference-only GSFC/Goddard NUWRF LW under option 5).
-    # +1 in v0.16: aerosol-aware Thompson microphysics (mp=28).
-    assert len(SCHEME_STEP_SPECS) == 38
+    # v0.17 RC adds GFS PBL plus WSM7/WDM7 hail microphysics on top of the v0.16
+    # interface set.
+    assert len(SCHEME_STEP_SPECS) == 41
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("pbl", 2).writes_carry == ("tke_pbl", "el_pbl")
     assert scheme_step_spec("surface_layer", 2).owner_module.endswith("sfclay_janjic.py")
@@ -116,7 +113,7 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
             "physics": {
                 "mp_physics": [1, 2, 3, 4, 6, 8, 10, 16],
                 "cu_physics": [0, 1, 2, 3, 5, 6, 14, 16],
-                "bl_pbl_physics": [0, 1, 2, 5, 7],
+                "bl_pbl_physics": [0, 1, 2, 3, 5, 7],
                 "sf_sfclay_physics": [0, 1, 2, 5, 7],
                 "sf_surface_physics": [0, 2, 4],
                 "ra_sw_physics": [0, 1, 4],

@@ -7,6 +7,33 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.17.0] — Performance release (live-nested host-orchestration, honest ceiling)
+
+> **Closes the live-nested GPU host-orchestration holes; default config stays
+> bitwise-identical to v0.16.** Full notes:
+> [`RELEASE_NOTES_v0.17.0.md`](RELEASE_NOTES_v0.17.0.md).
+
+- **Default-ON, bit-identical** (the v0.16 identity gates transfer unchanged):
+  - **Nested compile-CHURN fix** — the all-7 island nest (`--max-dom 9`) never
+    reached a warm forecast on a cold cache (recompiled ~2×/domain, 0 output >65
+    min); committing the seed carry once → ~9 compiles, **the all-7 now forecasts**.
+  - **`block_between` → root-async sync** (`GPUWRF_NESTED_SYNC_MODE=root`) — drops
+    ~5,000 per-advance `block_until_ready`/forecast-hour; WRF parent→child ordering
+    preserved by JAX dataflow. CPU schedule-equivalence test.
+  - **Edge-only (ring-only) boundary interp** (`GPUWRF_EDGE_ONLY_BOUNDARY`, default
+    on) — gathers only the width-5 ring; bit-identical (23 CPU gates incl. jit).
+- **OPT-IN fast-mode `GPUWRF_NESTED_FUSE=1`** — fused d02-substep cascade; canary
+  all-7 util **56→96 %**, **~1.27× (fused) / ~1.30× (fused+edge-only) vs 12-rank
+  CPU**. Tolerance-PASS vs CPU but **NOT bitwise** (chaotic FMA decorrelation,
+  P 1.3→20 over 2 h) + ~38 min one-time fused compile (cached). 24h/72h-tolerance
+  is the operator's gate.
+- **Honest ceiling (nsys + GPT-cross-confirmed):** after the host fix the all-7 is
+  **GPU-compute-bound (~674 s/hr)** — many ~1.5 µs kernels on under-filled tiny
+  nests = launch/occupancy limit; **fp32 cannot move it; ≥2×/3× NOT single-card
+  reachable** for this tiny-nest geometry. **Headline = capability (1 km fits one
+  card bit-identical + large grids + cluster), not single-card speedup on tiny
+  nests.** fp32-physics islands (~1.5–1.6×) deferred → v0.18.
+
 ## [0.16.0] — Stability release (+aerosol "+1", 1 km-unlock)
 
 > **Coupled stability across the whole implemented physics menu.** Every

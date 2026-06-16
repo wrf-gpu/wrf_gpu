@@ -104,6 +104,13 @@ MICROPHYSICS_EXTRA_VARIABLES: tuple[str, ...] = (
     # (State nwfa/nifa); emitted only when the source leaves are present.
     "QNWFA",
     "QNIFA",
+    # v0.17 ADR-032 graupel/hail substrate (State qh/Nh/qvolg/qvolh); emitted
+    # only when the source leaves carry hail (optional-extra; a non-hail run
+    # never gets a fabricated hail field).
+    "QHAIL",
+    "QNHAIL",
+    "QVGRAUPEL",
+    "QVHAIL",
     "QKE",
 )
 
@@ -624,6 +631,12 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         "  kg-1",
         coordinates="XLONG XLAT XTIME",
     ),
+    # v0.17 ADR-032 graupel/hail substrate (WRF Registry hail-family
+    # qh/qnh/qvolg/qvolh names/descriptions/units).
+    "QHAIL": _spec("QHAIL", XYZ, "XYZ", "Hail mixing ratio", "kg kg-1", coordinates="XLONG XLAT XTIME"),
+    "QNHAIL": _spec("QNHAIL", XYZ, "XYZ", "Hail Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
+    "QVGRAUPEL": _spec("QVGRAUPEL", XYZ, "XYZ", "Graupel Particle Volume", "m(3) kg(-1)", coordinates="XLONG XLAT XTIME"),
+    "QVHAIL": _spec("QVHAIL", XYZ, "XYZ", "Hail Particle Volume", "m(3) kg(-1)", coordinates="XLONG XLAT XTIME"),
     "QKE": _spec("QKE", XYZ, "XYZ", "twice TKE from MYNN", "m2 s-2", coordinates="XLONG XLAT XTIME"),
     # --- P0-5a (b) grid-static coordinate / map-factor / Coriolis fields ---
     "ZNU": _spec("ZNU", Z_HALF, "Z  ", "eta values on half (mass) levels", ""),
@@ -728,6 +741,11 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
     ),
     "GRAUPELNC": _spec(
         "GRAUPELNC", XY, "XY ", "ACCUMULATED TOTAL GRID SCALE GRAUPEL", "mm",
+        coordinates="XLONG XLAT XTIME",
+    ),
+    # v0.17 hail microphysics (WSM7/WDM7): accumulated grid-scale hail.
+    "HAILNC": _spec(
+        "HAILNC", XY, "XY ", "ACCUMULATED TOTAL GRID SCALE HAIL", "mm",
         coordinates="XLONG XLAT XTIME",
     ),
     # --- P0-5a (d) surface energy/moisture-budget fluxes + 2-m theta ---
@@ -1459,6 +1477,13 @@ def _build_output_fields(
         ("QNCCN", ("QNCCN", "Nn", "qnn", "qccn")),
         ("QNWFA", ("QNWFA", "nwfa", "qnwfa")),
         ("QNIFA", ("QNIFA", "nifa", "qnifa")),
+        # v0.17 ADR-032 graupel/hail substrate (optional; zero/absent in a
+        # non-hail run, so a reduced/non-hail state never gets a fabricated
+        # hail field).
+        ("QHAIL", ("QHAIL", "qh", "qhail")),
+        ("QNHAIL", ("QNHAIL", "Nh", "qnh", "qnhail")),
+        ("QVGRAUPEL", ("QVGRAUPEL", "qvolg")),
+        ("QVHAIL", ("QVHAIL", "qvolh")),
         ("QKE", ("QKE", "qke")),
     ):
         value = _optional_field_array(state, state_names, shape_xyz)
@@ -1480,6 +1505,9 @@ def _build_output_fields(
     snow_acc = _optional_field_array(state, ("snow_acc", "SNOWNC"), shape_xy)
     ice_acc = _optional_field_array(state, ("ice_acc",), shape_xy)
     graupel_acc = _optional_field_array(state, ("graupel_acc", "GRAUPELNC"), shape_xy)
+    # v0.17 hail (WSM7/WDM7): HAILNC is a distinct accumulated channel folded into
+    # the RAINNC all-phase total, mirroring graupel. Zero/absent in a non-hail run.
+    hail_acc = _optional_field_array(state, ("hail_acc", "HAILNC"), shape_xy)
     if snow_acc is not None or ice_acc is not None:
         snowice = (snow_acc if snow_acc is not None else 0.0) + (
             ice_acc if ice_acc is not None else 0.0
@@ -1487,10 +1515,12 @@ def _build_output_fields(
         fields["SNOWNC"] = _coerce_array("SNOWNC", snowice, shape_xy)
     if graupel_acc is not None:
         fields["GRAUPELNC"] = graupel_acc
+    if hail_acc is not None:
+        fields["HAILNC"] = hail_acc
     # WRF RAINNC is the all-phase total; overwrite the rain-only default written
     # above (RAINNC: rain_acc) when any frozen channel is present so SNOWNC never
     # exceeds RAINNC and the domain precip total matches CPU-WRF.
-    if any(a is not None for a in (snow_acc, graupel_acc, ice_acc)):
+    if any(a is not None for a in (snow_acc, graupel_acc, ice_acc, hail_acc)):
         def _zero_xy(a: np.ndarray | None) -> np.ndarray:
             return np.asarray(a, dtype=np.float64) if a is not None else np.zeros(shape_xy, dtype=np.float64)
 
@@ -1499,6 +1529,7 @@ def _build_output_fields(
             + _zero_xy(snow_acc)
             + _zero_xy(graupel_acc)
             + _zero_xy(ice_acc)
+            + _zero_xy(hail_acc)
         )
         fields["RAINNC"] = _coerce_array("RAINNC", rainnc_total, shape_xy)
 

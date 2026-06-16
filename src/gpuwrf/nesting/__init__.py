@@ -35,6 +35,8 @@ from gpuwrf.nesting.boundary_construction import (
     interp_parent_field_to_child,
     field_sides_3d,
     field_sides_2d,
+    field_sides_3d_edgeonly,
+    field_sides_2d_edgeonly,
 )
 from gpuwrf.nesting.scheduler import (
     NestEdge,
@@ -59,6 +61,8 @@ __all__ = [
     "interp_parent_field_to_child",
     "field_sides_3d",
     "field_sides_2d",
+    "field_sides_3d_edgeonly",
+    "field_sides_2d_edgeonly",
     "NestEdge",
     "NestTower",
     "expected_substep_counts",

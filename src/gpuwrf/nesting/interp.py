@@ -295,6 +295,71 @@ def interp_sint_linear(field: jax.Array, weights: InterpWeights) -> jax.Array:
 
 
 # ---------------------------------------------------------------------------
+# Edge-only (ring-only) weight subsetting.
+#
+# The per-output-cell bilinear gather (:func:`_gather`) is INDEPENDENT per output
+# cell: output ``[z, j, i]`` reads only ``(y0[j], y1[j], wy[j])`` and
+# ``(x0[i], x1[i], wx[i])`` and combines them with the SAME ``(1-w)*a + w*b``
+# arithmetic regardless of how many other output cells are produced.  So
+# subsetting the precomputed weights to the child ROWS / COLS of a boundary ring
+# strip and re-running the identical :func:`_gather` yields EXACTLY the same values
+# the full-grid gather produces for those cells -- bit-for-bit, because no
+# individual cell's arithmetic changes (only which cells are emitted).  This lets
+# the boundary forcing interpolate ONLY the width-N ring instead of the whole
+# child grid, killing the wasted interior interp work, with zero precision change.
+#
+# These slices are device-array slices of the (device-resident) weight arrays; no
+# host transfer is introduced.  Per-edge static geometry: ``start``/``stop`` are
+# Python ints fixed by the nest geometry, so the produced child extent is static.
+# ---------------------------------------------------------------------------
+
+
+def slice_weights_rows(weights: InterpWeights, start: int, stop: int) -> InterpWeights:
+    """Subset ``weights`` to child ROWS ``[start:stop]`` (full child columns).
+
+    :func:`_gather` on the result emits ``(z, stop-start, child_nx)`` -- the same
+    cells the full gather produces for those rows, bit-identically (the x-pass and
+    every per-cell op are unchanged; only ``y0/y1/wy`` are sliced).  Used for the
+    S (rows ``0..w-1``) and N (rows ``ny-w..ny-1``) boundary row strips.
+    """
+
+    s, e = int(start), int(stop)
+    return InterpWeights(
+        y0=weights.y0[s:e],
+        y1=weights.y1[s:e],
+        x0=weights.x0,
+        x1=weights.x1,
+        wy=weights.wy[s:e],
+        wx=weights.wx,
+        child_ny=e - s,
+        child_nx=int(weights.child_nx),
+    )
+
+
+def slice_weights_cols(weights: InterpWeights, start: int, stop: int) -> InterpWeights:
+    """Subset ``weights`` to child COLS ``[start:stop]`` (full child rows).
+
+    :func:`_gather` on the result emits ``(z, child_ny, stop-start)`` -- the same
+    cells the full gather produces for those columns, bit-identically (the y-pass
+    runs over the full parent width exactly as in the full path, then the x-take
+    selects only these columns; only ``x0/x1/wx`` are sliced).  Used for the W
+    (cols ``0..w-1``) and E (cols ``nx-w..nx-1``) boundary column strips.
+    """
+
+    s, e = int(start), int(stop)
+    return InterpWeights(
+        y0=weights.y0,
+        y1=weights.y1,
+        x0=weights.x0[s:e],
+        x1=weights.x1[s:e],
+        wy=weights.wy,
+        wx=weights.wx[s:e],
+        child_ny=int(weights.child_ny),
+        child_nx=e - s,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Host reference for the FULL WRF monotone TR4 ``sint`` kernel (fidelity proof
 # only -- not on the device hot path).  Faithful transcription of share/sint.F.
 # ---------------------------------------------------------------------------
@@ -456,6 +521,8 @@ __all__ = [
     "build_sint_weights",
     "interp_bilinear",
     "interp_sint_linear",
+    "slice_weights_rows",
+    "slice_weights_cols",
     "sint_block_reference",
     "sint_to_child_reference",
 ]

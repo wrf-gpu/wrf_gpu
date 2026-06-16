@@ -102,15 +102,16 @@ def test_nest_field_list_carries_aerosol_numbers_for_mp28() -> None:
 # ============================================================================
 # 2. State: append-only pytree extension.
 # ============================================================================
-def test_state_field_order_appends_nwfa_nifa_at_end() -> None:
-    assert STATE_FIELD_ORDER[-2:] == ("nwfa", "nifa")
-    assert State.__slots__[-2:] == ("nwfa", "nifa")
-    # The pre-v0.16 prefix is untouched (append-only): nwfa/nifa sit at the very
-    # END, AFTER the v0.6.0 (Nc/Nn/rainc_acc) and v0.15 MYNN SGS-cloud
-    # (qsq/qc_bl/qi_bl/cldfra_bl) leaves on the consolidated v0.16 release line.
-    assert State.__slots__[-9:] == (
+def test_state_field_order_preserves_v016_aerosol_then_appends_v017_hail_tail() -> None:
+    assert STATE_FIELD_ORDER[-7:] == ("nwfa", "nifa", "qh", "Nh", "qvolg", "qvolh", "hail_acc")
+    assert State.__slots__[-7:] == ("nwfa", "nifa", "qh", "Nh", "qvolg", "qvolh", "hail_acc")
+    # The pre-v0.16 prefix is untouched (append-only): nwfa/nifa still sit AFTER
+    # the v0.6.0 (Nc/Nn/rainc_acc) and v0.15 MYNN SGS-cloud
+    # (qsq/qc_bl/qi_bl/cldfra_bl) leaves; v0.17 only appends the hail tail after
+    # the v0.16 aerosol leaves.
+    assert State.__slots__[-14:] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
-        "nwfa", "nifa",
+        "nwfa", "nifa", "qh", "Nh", "qvolg", "qvolh", "hail_acc",
     )
     assert PRECISION_MATRIX["nwfa"] == (FP32_GATED, True)
     assert PRECISION_MATRIX["nifa"] == (FP32_GATED, True)
@@ -139,11 +140,17 @@ def test_state_pytree_round_trip_preserves_leaf_count_and_order() -> None:
     state = _tiny_state()
     leaves, treedef = jax.tree_util.tree_flatten(state)
     # Consolidated v0.16 release schema: 53 original + v0.6.0 (3) + v0.15 MYNN
-    # (4) + v0.16 aerosol (nwfa/nifa, 2) = 62 leaves.
-    assert len(leaves) == len(State.__slots__) == 62
-    # tree_flatten emits leaves in __slots__ order; the v0.16 leaves are LAST.
-    assert leaves[-2] is state.nwfa
-    assert leaves[-1] is state.nifa
+    # (4) + v0.16 aerosol (nwfa/nifa, 2) + v0.17 hail tail (5) = 67 leaves.
+    assert len(leaves) == len(State.__slots__) == 67
+    # tree_flatten emits leaves in __slots__ order; v0.16 leaves are preserved
+    # immediately before the v0.17 hail tail.
+    assert leaves[-7] is state.nwfa
+    assert leaves[-6] is state.nifa
+    assert leaves[-5] is state.qh
+    assert leaves[-4] is state.Nh
+    assert leaves[-3] is state.qvolg
+    assert leaves[-2] is state.qvolh
+    assert leaves[-1] is state.hail_acc
     rebuilt = jax.tree_util.tree_unflatten(treedef, leaves)
     for name in State.__slots__:
         assert getattr(rebuilt, name) is getattr(state, name), name

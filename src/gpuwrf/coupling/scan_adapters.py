@@ -86,9 +86,11 @@ from gpuwrf.physics.microphysics_lin import lin_physics_tendency
 from gpuwrf.physics.microphysics_morrison import morrison_tendency
 from gpuwrf.physics.microphysics_wdm5 import wdm5_physics_tendency
 from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
+from gpuwrf.physics.microphysics_wdm7 import wdm7_physics_tendency
 from gpuwrf.physics.microphysics_wsm3 import wsm3_physics_tendency
 from gpuwrf.physics.microphysics_wsm5 import wsm5_physics_tendency
 from gpuwrf.physics.microphysics_wsm6 import wsm6_physics_tendency
+from gpuwrf.physics.microphysics_wsm7 import wsm7_physics_tendency
 from gpuwrf.physics.cumulus_bmj import initial_bmj_cldefi, step_bmj_column
 from gpuwrf.physics.cumulus_kf import step_kf_column
 from gpuwrf.physics.cumulus_tiedtke_jax import tiedtke_column_jax
@@ -96,6 +98,7 @@ from gpuwrf.physics._gf_jax import gfdrv_batched
 from gpuwrf.physics.pbl_acm2 import acm2_columns
 from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
 from gpuwrf.physics.pbl_ysu import ysu_columns
+from gpuwrf.physics.bl_gfs import gfs_columns
 from gpuwrf.physics.bl_mrf import mrf_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
@@ -213,6 +216,33 @@ def wsm6_adapter(state: State, dt: float, grid=None) -> State:
     tend = wsm6_physics_tendency(
         mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
         mp(state.qi), mp(state.qs), mp(state.qg),
+        mp(pii), mp(rho), mp(state.p), mp(dz), float(dt),
+    )
+    tend.validate_keys()
+    return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
+
+
+def wsm7_adapter(state: State, dt: float, grid=None) -> State:
+    """mp=24 WSM7 single-moment 7-class microphysics scan adapter.
+
+    WSM7 = WSM6 (rain/snow/graupel) plus a SEPARATE precipitating hail class. It
+    consumes/produces the ADR-032 hail mixing-ratio leaf ``qh`` and accumulates
+    grid-scale hail into the v0.17 ``hail_acc`` surface accumulator (WRF HAILNC).
+    Identical shape/Exner/dz prep to ``wsm6_adapter`` with ``qh`` threaded; the
+    generic ``_apply_mp_replacements`` writes back qh (state replacement) and
+    hail_acc (accumulator increment) -- both are real State leaves in v0.17.
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
+    rho = _rho_from_state(state)
+    pii = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    tend = wsm7_physics_tendency(
+        mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
+        mp(state.qi), mp(state.qs), mp(state.qg), mp(state.qh),
         mp(pii), mp(rho), mp(state.p), mp(dz), float(dt),
     )
     tend.validate_keys()
@@ -340,6 +370,43 @@ def wdm6_adapter(state: State, dt: float, grid=None) -> State:
     next_state = _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
     # Nn is returned in diagnostics (the kernel predates the additive leaf); thread
     # it into the State leaf so the CCN prognostic evolves.
+    nn = tend.diagnostics.get("Nn")
+    if nn is not None:
+        nn3d = jnp.moveaxis(jnp.asarray(nn).reshape(ny, nx, nz), -1, 0)
+        next_state = next_state.replace(Nn=nn3d.astype(_output_dtype(state, "Nn")))
+    return next_state
+
+
+def wdm7_adapter(state: State, dt: float, grid=None) -> State:
+    """mp=26 WDM7 double-moment warm-rain + single-moment hail scan adapter.
+
+    WDM7 = WDM6 (double-moment cloud/rain number Nc/Nr + CCN Nn) plus a SEPARATE
+    single-moment precipitating hail class ``qh`` (no hail number). Identical
+    prep to ``wdm6_adapter`` (slmsk land/sea mask, Exner, dz) with ``qh`` threaded
+    and the ``hail_acc`` surface accumulator (WRF HAILNC) advanced by the generic
+    ``_apply_mp_replacements``. As in WDM6, the kernel returns ``Nn`` as a
+    diagnostic; this adapter materializes it into the State leaf so CCN evolves.
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
+    rho = _rho_from_state(state)
+    pii = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    # WDM7 kernel uses slmsk=1 land / 2 water (it tests slmsk==2.0 for the water
+    # qc0 autoconversion threshold, matching proofs/v013_wdm7 SLMSK); derive it
+    # from xland (1 land / 2 water).
+    slmsk = jnp.where(jnp.asarray(state.xland) < 1.5, 1.0, 2.0).reshape(ny * nx)
+    tend = wdm7_physics_tendency(
+        mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
+        mp(state.qi), mp(state.qs), mp(state.qg), mp(state.qh),
+        mp(state.Nn), mp(state.Nc), mp(state.Nr),
+        mp(pii), mp(rho), mp(state.p), mp(dz), float(dt), slmsk,
+    )
+    tend.validate_keys()
+    next_state = _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
     nn = tend.diagnostics.get("Nn")
     if nn is not None:
         nn3d = jnp.moveaxis(jnp.asarray(nn).reshape(ny, nx, nz), -1, 0)
@@ -1154,6 +1221,32 @@ def mrf_pbl_adapter(state: State, dt: float, grid=None) -> State:
     return _apply_pbl_increment(state, dt, tend, ny=f["ny"], nx=f["nx"], nz=f["nz"])
 
 
+def gfs_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=3 GFS PBL ``State -> State`` scan adapter (jit/vmap-traceable kernel).
+
+    GFS consumes the same revised-MM5 surface-layer forcing as YSU/MRF plus the
+    ``gz1oz0 = ln(za_1/znt)`` log ratio. The kernel emits WRF-named tendency
+    rates; map them to the shared PBL increment contract.
+    """
+
+    del grid
+    f = _pbl_surface_forcing(state, None)
+    znt = f["znt"]
+    za1 = 0.5 * f["dz_cols"][:, 0]
+    gz1oz0 = jnp.log(jnp.maximum(za1, znt) / znt)
+    out = gfs_columns(
+        f["u_cols"], f["v_cols"], f["T_cols"], f["qv_cols"],
+        jnp.zeros_like(f["qv_cols"]),
+        f["p_cols"], f["pii_cols"], f["dz_cols"], f["z_cols"],
+        psfc=f["p_cols"][:, 0], ust=f["ust"], hfx=f["hfx"], qfx=f["qfx"],
+        tsk=f["tsk"], gz1oz0=gz1oz0, psim=f["psim"], psih=f["psih"],
+        wspd=f["wspd"], br=f["br"], dt=float(dt),
+    )
+    tend = {"u": out["rublten"], "v": out["rvblten"],
+            "theta": out["rthblten"], "qv": out["rqvblten"]}
+    return _apply_pbl_increment(state, dt, tend, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+
 # --- dispatch tables ----------------------------------------------------------
 
 # Microphysics options whose State->State scan adapter is threaded into the GPU
@@ -1168,6 +1261,10 @@ MP_SCAN_ADAPTERS = {
     10: morrison_adapter,
     14: wdm5_adapter,
     16: wdm6_adapter,
+    # v0.17 WSM7 = WSM6 + separate precipitating hail (qh + hail_acc).
+    24: wsm7_adapter,
+    # v0.17 WDM7 = WDM6 double-moment + separate single-moment hail.
+    26: wdm7_adapter,
 }
 
 # Surface-layer options whose adapter is threaded (sf_sfclay=5 MYNN-sfclay is the
@@ -1207,6 +1304,7 @@ CU_STATELESS_SCAN_ADAPTERS = {
 # port of phys/module_bl_mrf.F (savepoint-parity gated, proofs/v013/mrf_oracle.py).
 PBL_SCAN_ADAPTERS = {
     1: ysu_pbl_adapter,
+    3: gfs_pbl_adapter,
     7: acm2_pbl_adapter,
     8: boulac_pbl_adapter,
     99: mrf_pbl_adapter,
@@ -1231,6 +1329,7 @@ __all__ = [
     "gf_adapter",
     "bmj_adapter",
     "ysu_pbl_adapter",
+    "gfs_pbl_adapter",
     "acm2_pbl_adapter",
     "boulac_pbl_adapter",
     "initial_kf_carry",

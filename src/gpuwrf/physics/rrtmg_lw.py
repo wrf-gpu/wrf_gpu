@@ -1084,10 +1084,11 @@ def _pressure_layer_mass(p):
 def _nearest_pressure_coefficients(state_p, tables: RRTMGTableBundle):
     """Selects WRF reference-pressure absorption coefficients per layer."""
 
-    ref_log = jnp.log(tables.lw_reference_pressure_pa)
+    dtype = state_p.dtype
+    ref_log = jnp.log(tables.lw_reference_pressure_pa.astype(dtype))
     layer_log = jnp.log(jnp.maximum(state_p, 1.0))
     idx = jnp.argmin(jnp.abs(layer_log[..., None] - ref_log), axis=-1)
-    gathered = jnp.take(tables.lw_absorption_coefficients, idx, axis=1)
+    gathered = jnp.take(tables.lw_absorption_coefficients.astype(dtype), idx, axis=1)
     return jnp.moveaxis(gathered, 0, -2)
 
 
@@ -1141,9 +1142,10 @@ def _lw_o3_profile_vmr(pressure_interfaces_pa):
 def _lw_diffusivity(pwvcm):
     """Returns RRTMG LW band diffusivity secants."""
 
-    a0 = jnp.asarray(LW_DIFFUSIVITY_A0, dtype=jnp.float64)
-    a1 = jnp.asarray(LW_DIFFUSIVITY_A1, dtype=jnp.float64)
-    a2 = jnp.asarray(LW_DIFFUSIVITY_A2, dtype=jnp.float64)
+    dtype = pwvcm.dtype
+    a0 = jnp.asarray(LW_DIFFUSIVITY_A0, dtype=dtype)
+    a1 = jnp.asarray(LW_DIFFUSIVITY_A1, dtype=dtype)
+    a2 = jnp.asarray(LW_DIFFUSIVITY_A2, dtype=dtype)
     secdiff = a0 + a1 * jnp.exp(a2 * pwvcm[..., None])
     variable = jnp.asarray([False, True, True, False, True, True, True, True, True, False, False, False, False, False, False, False])
     return jnp.where(variable, jnp.clip(secdiff, 1.50, 1.80), 1.66)
@@ -1152,11 +1154,13 @@ def _lw_diffusivity(pwvcm):
 def _interp_lw_planck(values, tables: RRTMGTableBundle):
     """Interpolates WRF `totplnk` integrated Planck tables for all LW bands."""
 
+    dtype = values.dtype
     bounded = jnp.clip(values, 160.0, 340.0)
     ind = jnp.clip((bounded - 159.0).astype(jnp.int32), 1, 180)
-    frac = bounded - 159.0 - ind.astype(jnp.float64)
-    low = jnp.take(tables.lw_totplnk, ind - 1, axis=0)
-    high = jnp.take(tables.lw_totplnk, ind, axis=0)
+    frac = bounded - 159.0 - ind.astype(dtype)
+    planck = tables.lw_totplnk.astype(dtype)
+    low = jnp.take(planck, ind - 1, axis=0)
+    high = jnp.take(planck, ind, axis=0)
     return low + frac[..., None] * (high - low)
 
 
@@ -1172,7 +1176,15 @@ def _lw_planck_state(t_layer, t_level, t_surface, emissivity, tables: RRTMGTable
 def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle) -> _LWSetCoefState:
     """Ports WRF LW `setcoef` gas-column and interpolation state."""
 
-    nt = _native_lw_tables()
+    dtype = jnp.result_type(qv.dtype, p_pa.dtype, t_k.dtype, pressure_interfaces_pa.dtype, jnp.float32)
+    qv = qv.astype(dtype)
+    p_pa = p_pa.astype(dtype)
+    t_k = t_k.astype(dtype)
+    pressure_interfaces_pa = pressure_interfaces_pa.astype(dtype)
+    tiny = _lw_compute_tiny(dtype)
+    preflog = tables.lw_preflog.astype(dtype)
+    tref = tables.lw_tref.astype(dtype)
+    nt = _lw_native_tables_as_dtype(_native_lw_tables(), dtype)
     h2ovmr = jnp.maximum(qv, 1.0e-12) * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
     amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
     pavel = jnp.maximum(p_pa * 0.01, 1.0e-12)
@@ -1185,17 +1197,17 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     jp = _trunc_int(36.0 - 5.0 * (plog + 0.04))
     jp = jnp.clip(jp, 1, 58)
     jp1 = jp + 1
-    fp = 5.0 * (jnp.take(tables.lw_preflog, jp - 1, axis=0) - plog)
-    tref0 = jnp.take(tables.lw_tref, jp - 1, axis=0)
-    tref1 = jnp.take(tables.lw_tref, jp1 - 1, axis=0)
+    fp = 5.0 * (jnp.take(preflog, jp - 1, axis=0) - plog)
+    tref0 = jnp.take(tref, jp - 1, axis=0)
+    tref1 = jnp.take(tref, jp1 - 1, axis=0)
     jt = jnp.clip(_trunc_int(3.0 + (t_k - tref0) / 15.0), 1, 4)
     jt1 = jnp.clip(_trunc_int(3.0 + (t_k - tref1) / 15.0), 1, 4)
-    ft = ((t_k - tref0) / 15.0) - (jt - 3).astype(jnp.float64)
-    ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(jnp.float64)
+    ft = ((t_k - tref0) / 15.0) - (jt - 3).astype(dtype)
+    ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(dtype)
 
     wkl_h2o = coldry * h2ovmr
     wbroad = coldry * jnp.maximum(0.0, 1.0 - (CO2_VMR + o3_vmr + N2O_VMR + CH4_VMR + O2_VMR))
-    water = wkl_h2o / jnp.maximum(coldry, 1.0e-300)
+    water = wkl_h2o / jnp.maximum(coldry, tiny)
     scalefac = pavel * (296.0 / 1013.0) / t_k
     lower = plog > 4.56
 
@@ -1204,18 +1216,18 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     upper_for_factor = (t_k - 188.0) / 36.0
     indfor_lower = jnp.minimum(2, jnp.maximum(1, _trunc_int(lower_for_factor)))
     indfor = jnp.where(lower, indfor_lower, 3)
-    forfrac = jnp.where(lower, lower_for_factor - indfor.astype(jnp.float64), upper_for_factor - 1.0)
+    forfrac = jnp.where(lower, lower_for_factor - indfor.astype(dtype), upper_for_factor - 1.0)
 
     selffac = water * forfac
     self_factor = (t_k - 188.0) / 7.2
     indself = jnp.minimum(9, jnp.maximum(1, _trunc_int(self_factor) - 7))
-    selffrac = self_factor - (indself + 7).astype(jnp.float64)
+    selffrac = self_factor - (indself + 7).astype(dtype)
 
     scaleminor = pavel / t_k
-    scaleminorn2 = scaleminor * (wbroad / jnp.maximum(coldry + wkl_h2o, 1.0e-300))
+    scaleminorn2 = scaleminor * (wbroad / jnp.maximum(coldry + wkl_h2o, tiny))
     minor_factor = (t_k - 180.8) / 7.2
     indminor = jnp.minimum(18, jnp.maximum(1, _trunc_int(minor_factor)))
-    minorfrac = minor_factor - indminor.astype(jnp.float64)
+    minorfrac = minor_factor - indminor.astype(dtype)
 
     chi = nt.chi_mls
     j0 = jp - 1
@@ -1232,7 +1244,7 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     colch4 = 1.0e-20 * coldry * CH4_VMR
     colo2 = 1.0e-20 * coldry * O2_VMR
     colbrd = 1.0e-20 * wbroad
-    wx = coldry[..., None] * jnp.asarray(_CFC_VMR, dtype=jnp.float64) * 1.0e-20
+    wx = coldry[..., None] * jnp.asarray(_CFC_VMR, dtype=dtype) * 1.0e-20
 
     compfp = 1.0 - fp
     fac10 = compfp * ft
@@ -1325,8 +1337,10 @@ def _foreign_lw(band: int, coef: _LWSetCoefState, nt: _LWNTableBundle):
 def _binary_params(spec_a, spec_b, ratio, multiplier):
     """Builds WRF binary-species interpolation coordinates."""
 
+    dtype = spec_a.dtype
+    tiny = _lw_compute_tiny(dtype)
     speccomb = spec_a + ratio * spec_b
-    specparm = jnp.minimum(spec_a / jnp.maximum(speccomb, 1.0e-300), _ONEMINUS)
+    specparm = jnp.minimum(spec_a / jnp.maximum(speccomb, tiny), _ONEMINUS)
     specmult = multiplier * specparm
     js = 1 + _trunc_int(specmult)
     fs = jnp.mod(specmult, 1.0)
@@ -1344,6 +1358,25 @@ def _lw_coef_as_dtype(coef: _LWSetCoefState, dtype) -> _LWSetCoefState:
             for value in coef
         )
     )
+
+
+def _lw_native_tables_as_dtype(nt: _LWNTableBundle, dtype) -> _LWNTableBundle:
+    """Casts floating native LW table leaves while preserving integer metadata."""
+
+    return _LWNTableBundle(
+        *(
+            value.astype(dtype)
+            if hasattr(value, "dtype") and jnp.issubdtype(value.dtype, jnp.floating)
+            else value
+            for value in nt
+        )
+    )
+
+
+def _lw_compute_tiny(dtype):
+    """Returns a positive denominator floor representable in the compute dtype."""
+
+    return jnp.asarray(1.0e-30 if jnp.dtype(dtype) == jnp.dtype(jnp.float32) else 1.0e-300, dtype=dtype)
 
 
 def _binary_lower_component(table, idx_1b, specparm, fs, fac0, fac1):
@@ -1450,7 +1483,8 @@ def _minor_ratio(table, js, fs, coef: _LWSetCoefState):
 def _adj_minor_column(column, coef: _LWSetCoefState, chi_ref, threshold, base, exponent):
     """WRF empirical column adjustment used for abundant nominal minor species."""
 
-    ratio = 1.0e20 * (column / jnp.maximum(coef.coldry, 1.0e-300)) / chi_ref
+    tiny = _lw_compute_tiny(column.dtype)
+    ratio = 1.0e20 * (column / jnp.maximum(coef.coldry, tiny)) / chi_ref
     adjusted = (base + (ratio - base) ** exponent) * chi_ref * coef.coldry * 1.0e-20
     return jnp.where(ratio > threshold, adjusted, column)
 
@@ -1515,9 +1549,10 @@ def _binary_band(
 def _lw_fallback_taumol(qv, p_pa, pressure_interfaces_pa, tables: RRTMGTableBundle):
     """Nearest-pressure LW gas fallback retained for rejected branches."""
 
+    dtype = qv.dtype
     gas_column, _ = _rrtmg_column_amounts(qv, pressure_interfaces_pa)
-    gas_coeff = _nearest_pressure_coefficients(p_pa, tables)
-    mask = tables.lw_gpoint_mask
+    gas_coeff = _nearest_pressure_coefficients(p_pa, tables).astype(dtype)
+    mask = tables.lw_gpoint_mask.astype(dtype)
     taug = gas_column[..., None, None] * jnp.maximum(gas_coeff, 0.0) * mask
     band_g_count = jnp.maximum(jnp.sum(mask, axis=-1), 1.0)
     fracs = jnp.broadcast_to(mask / band_g_count[:, None], taug.shape)
@@ -1536,6 +1571,9 @@ def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
     `(tau, frac)`; byte-identical to the per-band slice of `_lw_taumol`.
     """
 
+    out_dtype = coef.pavel.dtype
+    nt = _lw_native_tables_as_dtype(nt, out_dtype)
+    tiny = _lw_compute_tiny(out_dtype)
     chi = nt.chi_mls
 
     def chi_ratio(a_1b, b_1b, level_1b):
@@ -1608,7 +1646,7 @@ def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
             chi_ratio(1, 2, 11),
             chi_ratio(3, 2, 13),
         )
-        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.88, 0.943, 1.0, 1.0], dtype=jnp.float64)
+        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.88, 0.943, 1.0, 1.0], dtype=out_dtype)
         low_tau = jnp.where(coef.lower_mask[..., None], low, 0.0)
         high_tau = jnp.where(coef.lower_mask[..., None], 0.0, low * high_factor)
         tau = low_tau + high_tau
@@ -1656,10 +1694,10 @@ def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
 
         adjcolco2_u = _adj_minor_column(c.colco2, c, chi_layer(2).astype(jnp.float32), 3.0, 2.0, 0.79)
         high = c.colo3[..., None] * _interp_four_rows_lw(absb_r4, upper_idx0, upper_idx1, nspb, c) + adjcolco2_u[..., None] * _minor2(nt.kb_mco2[band].astype(jnp.float32), c)
-        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.855, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=jnp.float64)
+        high_factor = jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 0.92, 0.88, 1.07, 1.10, 0.99, 0.855, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=jnp.float32)
         high = high * high_factor.astype(jnp.float32)
-        tau = jnp.where(c.lower_mask[..., None], low, high).astype(jnp.float64)
-        frac = jnp.where(c.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band].astype(jnp.float32), c)).astype(jnp.float64)
+        tau = jnp.where(c.lower_mask[..., None], low, high).astype(out_dtype)
+        frac = jnp.where(c.lower_mask[..., None], frac_low, _frac_const(nt.fracrefb[band].astype(jnp.float32), c)).astype(out_dtype)
     elif band == 7:
         adjcolco2 = _adj_minor_column(coef.colco2, coef, chi_layer(2), 3.0, 2.0, 0.65)
         low = (
@@ -1722,7 +1760,7 @@ def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
         speccomb1, specparm1, js1, fs1 = _binary_params(coef.colh2o, coef.coln2o, coef.rat_h2on2o_1, 8.0)
         major = _major_binary_lower(absa, lower_idx0 + js - 1, lower_idx1 + js1 - 1, speccomb, specparm, fs, speccomb1, specparm1, fs1, coef)
         _, _, jmco2, fmco2 = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 1), 8.0)
-        ratco2 = 1.0e20 * (coef.colco2 / jnp.maximum(coef.coldry, 1.0e-300)) / 3.55e-4
+        ratco2 = 1.0e20 * (coef.colco2 / jnp.maximum(coef.coldry, tiny)) / 3.55e-4
         adjcolco2 = jnp.where(ratco2 > 3.0, (2.0 + (ratco2 - 2.0) ** 0.68) * 3.55e-4 * coef.coldry * 1.0e-20, coef.colco2)
         _, _, jmco, fmco = _binary_params(coef.colh2o, coef.coln2o, chi_ratio(1, 4, 3), 8.0)
         low = (
@@ -1769,7 +1807,8 @@ def _lw_taumol_band(band, coef: _LWSetCoefState, nt, tables: RRTMGTableBundle):
         tau = jnp.where(coef.lower_mask[..., None], tau, high)
         frac = jnp.where(coef.lower_mask[..., None], frac, _frac_const(nt.fracrefb[band], coef))
 
-    return tau * tables.lw_gpoint_mask[band], frac * tables.lw_gpoint_mask[band]
+    mask = tables.lw_gpoint_mask[band].astype(out_dtype)
+    return tau.astype(out_dtype) * mask, frac.astype(out_dtype) * mask
 
 
 def _lw_taumol(coef: _LWSetCoefState, tables: RRTMGTableBundle):
@@ -1805,16 +1844,18 @@ def _lw_taumol_fused(coef: _LWSetCoefState, tables: RRTMGTableBundle):
 def _lw_tfn_factor(odepth):
     """WRF `tfn_tbl` source correction from `rrtmg_lw.F:3403-3409,8054-8070`."""
 
+    dtype = odepth.dtype
+    tiny = _lw_compute_tiny(dtype)
     tau = jnp.maximum(odepth, 0.0)
     tblind = tau / (LW_BPADE + tau)
     idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
-    tfn = idx.astype(jnp.float64) / float(LW_NTBL)
-    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
+    tfn = idx.astype(dtype) / float(LW_NTBL)
+    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, tiny))
     exp_tbl = jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS)
     table_factor = jnp.where(
         tau_tbl < 0.06,
         tau_tbl / 6.0,
-        1.0 - 2.0 * ((1.0 / jnp.maximum(tau_tbl, 1.0e-300)) - (exp_tbl / jnp.maximum(1.0 - exp_tbl, 1.0e-300))),
+        1.0 - 2.0 * ((1.0 / jnp.maximum(tau_tbl, tiny)) - (exp_tbl / jnp.maximum(1.0 - exp_tbl, tiny))),
     )
     return jnp.where(tau <= 0.06, tau / 6.0, table_factor)
 
@@ -1867,12 +1908,12 @@ def _lw_global_to_band(values: jnp.ndarray) -> jnp.ndarray:
     return jnp.stack(pieces, axis=-2)
 
 
-def _kiss_uint_to_float(value):
+def _kiss_uint_to_float(value, dtype=jnp.float64):
     signed = lax.bitcast_convert_type(value, jnp.int32)
-    return signed.astype(jnp.float64) * 2.328306e-10 + 0.5
+    return signed.astype(dtype) * jnp.asarray(2.328306e-10, dtype=dtype) + jnp.asarray(0.5, dtype=dtype)
 
 
-def _kiss_step(seed1, seed2, seed3, seed4):
+def _kiss_step(seed1, seed2, seed3, seed4, dtype=jnp.float64):
     """WRF MCICA KISS generator step; mirrors module_ra_rrtmg_lw.F:2688-2706."""
 
     mask16 = jnp.asarray(65535, dtype=jnp.uint32)
@@ -1887,7 +1928,7 @@ def _kiss_step(seed1, seed2, seed3, seed4):
     seed3 = jnp.asarray(18000, dtype=jnp.uint32) * jnp.bitwise_and(seed3, mask16) + jnp.right_shift(seed3, jnp.asarray(16, dtype=jnp.uint32))
     seed4 = jnp.asarray(30903, dtype=jnp.uint32) * jnp.bitwise_and(seed4, mask16) + jnp.right_shift(seed4, jnp.asarray(16, dtype=jnp.uint32))
     kiss = seed1 + seed2 + jnp.left_shift(seed3, jnp.asarray(16, dtype=jnp.uint32)) + seed4
-    return seed1, seed2, seed3, seed4, _kiss_uint_to_float(kiss)
+    return seed1, seed2, seed3, seed4, _kiss_uint_to_float(kiss, dtype)
 
 
 def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction):
@@ -1897,6 +1938,7 @@ def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction):
     ports only the random-overlap KISS path from module_ra_rrtmg_lw.F:2402-2438.
     """
 
+    dtype = cloud_fraction.dtype
     p_seed = p_layer_pa.astype(jnp.float32) * jnp.float32(0.01)
     p_seed = p_seed * jnp.float32(100.0)
     frac = p_seed[..., :4] - jnp.floor(p_seed[..., :4])
@@ -1904,7 +1946,7 @@ def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction):
     carry = tuple(seeds)
 
     def scan_step(carry, _):
-        seed1, seed2, seed3, seed4, random_value = _kiss_step(*carry)
+        seed1, seed2, seed3, seed4, random_value = _kiss_step(*carry, dtype=dtype)
         return (seed1, seed2, seed3, seed4), random_value
 
     carry, _ = lax.scan(scan_step, carry, xs=None, length=150)
@@ -1914,7 +1956,7 @@ def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction):
     leading = len(p_layer_pa.shape) - 1
     cdf = jnp.transpose(cdf, tuple(range(2, 2 + leading)) + (1, 0))
     cldf = jnp.where(cloud_fraction < 1.0e-20, 0.0, cloud_fraction)
-    return (cdf >= (1.0 - cldf[..., :, None])).astype(jnp.float64)
+    return (cdf >= (1.0 - cldf[..., :, None])).astype(dtype)
 
 
 def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
@@ -1949,10 +1991,12 @@ def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
 def _lw_lookup_terms(tau):
     """Returns WRF lookup-table tau/exp/tfn values for `rtrnmc`."""
 
+    dtype = tau.dtype
+    tiny = _lw_compute_tiny(dtype)
     tblind = tau / (LW_BPADE + tau)
     idx = jnp.clip((LW_TBLINT * tblind + 0.5).astype(jnp.int32), 0, LW_NTBL)
-    tfn = idx.astype(jnp.float64) / float(LW_NTBL)
-    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, 1.0e-300))
+    tfn = idx.astype(dtype) / float(LW_NTBL)
+    tau_tbl = jnp.where(idx == LW_NTBL, 1.0e10, LW_BPADE * tfn / jnp.maximum(1.0 - tfn, tiny))
     tau_tbl = jnp.where(idx == 0, 0.0, tau_tbl)
     exp_tbl = jnp.where(idx == LW_NTBL, LW_EXP_EPS, jnp.maximum(jnp.exp(-tau_tbl), LW_EXP_EPS))
     tfn_tbl = jnp.where(
@@ -1961,7 +2005,7 @@ def _lw_lookup_terms(tau):
         jnp.where(
             tau_tbl < 0.06,
             tau_tbl / 6.0,
-            1.0 - 2.0 * ((1.0 / jnp.maximum(tau_tbl, 1.0e-300)) - (exp_tbl / jnp.maximum(1.0 - exp_tbl, 1.0e-300))),
+            1.0 - 2.0 * ((1.0 / jnp.maximum(tau_tbl, tiny)) - (exp_tbl / jnp.maximum(1.0 - exp_tbl, tiny))),
         ),
     )
     return tau_tbl, exp_tbl, tfn_tbl
@@ -2306,11 +2350,12 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
     plankbnd = intermediate_base.plankbnd
     nlay = int(tau.shape[-3])
     cloud_layer = jnp.any(cldfmc > 0.5, axis=(-1, -2))
-    scale_band = tables.lw_delwave * (jnp.pi * 1.0e4)
+    out_dtype = tau.dtype
+    scale_band = tables.lw_delwave.astype(out_dtype) * jnp.asarray(jnp.pi * 1.0e4, dtype=out_dtype)
     zfd_bands = []
     zfu_bands = []
     tfn_bands = []
-    # fp64 band-summed flux accumulators (flux_only path).  Shape
+    # Active-dtype band-summed flux accumulators (flux_only path).  Shape
     # `(..., nlay+1)`; lazily initialised on the first tile from the per-band
     # `(..., nlay+1, 16)` buffers reduced over the g-point axis.  A tile of
     # `_LW_GPOINT_CHUNK_BANDS` bands is flushed into the fp64 accumulator before
@@ -2332,7 +2377,8 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
     def _flush_tile(down_acc, up_acc, dtile, utile):
         if not dtile:
             return down_acc, up_acc
-        # Reduce each band over g-points, sum the tile's bands, accumulate fp64.
+        # Reduce each band over g-points, sum the tile's bands, accumulate in
+        # the active physics dtype.
         dsum = sum(jnp.sum(z, axis=-1) for z in dtile)
         usum = sum(jnp.sum(z, axis=-1) for z in utile)
         down_acc = dsum if down_acc is None else down_acc + dsum
@@ -2340,7 +2386,7 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
         return down_acc, up_acc
 
     for band in range(16):
-        valid = tables.lw_gpoint_mask[band]
+        valid = tables.lw_gpoint_mask[band].astype(out_dtype)
         tau_b = tau[..., :, band, :]
         frac_b = fracs[..., :, band, :]
         cldf_b = cldfmc[..., :, band, :]
@@ -2357,10 +2403,10 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
 
         if flux_only:
             # Collect this band into the current tile; flush (g-point-reduce +
-            # fp64 band-accumulate) once the tile is full.  Only one tile's
+            # dtype-native band-accumulate) once the tile is full.  Only one tile's
             # buffers are live; the full 16-band stack is never built.  Summing
-            # disjoint per-band contributions in fp64 is order-independent to
-            # fp64 precision and reproduces `sum(zfd_all, axis=(-1, -2))`.
+            # disjoint per-band contributions reproduces `sum(zfd_all,
+            # axis=(-1, -2))` in the active physics dtype.
             zfd_tile.append(zfd)
             zfu_tile.append(zfu)
             if with_clear_sky:
@@ -2379,7 +2425,8 @@ def _lw_rtrnmc_outputs(state, intermediate_base, cldfmc, taucmc, transfer_tau, t
             zfu_bands.append(zfu)
             tfn_bands.append(tfn_layers)
 
-    plansum = jnp.sum(fracs * tables.lw_gpoint_mask.reshape((1,) * (fracs.ndim - 2) + (16, 16)), axis=-1) * planklay
+    plansum_mask = tables.lw_gpoint_mask.astype(out_dtype).reshape((1,) * (fracs.ndim - 2) + (16, 16))
+    plansum = jnp.sum(fracs * plansum_mask, axis=-1) * planklay
     if flux_only:
         flux_down_acc, flux_up_acc = _flush_tile(flux_down_acc, flux_up_acc, zfd_tile, zfu_tile)
         # `tfn`/per-g-point outputs are oracle-only; the production path consumes
@@ -2419,7 +2466,8 @@ def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, buil
     layer_mass = _pressure_layer_mass(state.p)
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
     _, pwvcm = _rrtmg_column_amounts(qv_ext, pressure_interfaces)
-    mask = tables.lw_gpoint_mask
+    out_dtype = state.p.dtype
+    mask = tables.lw_gpoint_mask.astype(out_dtype)
 
     secdiff = _lw_diffusivity(pwvcm)
     coef = _lw_setcoef(qv_ext, p_ext, t_ext, pressure_interfaces, tables)
@@ -2498,12 +2546,12 @@ def _lw_solver_fluxes_chunked(
     Identical numerics to `_lw_solver_fluxes` (the per-band rtrnmc solve is the
     shared `_lw_rtrnmc_band_fluxes`; the per-band taumol is the shared
     `_lw_taumol_band`), but the full `(..., nlay, 16, 16)` `tau`/`fracs` stack is
-    never built: a `lax.scan` over the 16 bands carries only the fp64
+    never built: a `lax.scan` over the 16 bands carries only the dtype-native
     band-summed down/up (and optional clear-sky down/up) interface fluxes, and
     each band's `(..., nlay, 16)` taumol + rtrnmc temporaries are freed by the
     scan carry barrier before the next band.  Disjoint per-band g-point sums are
-    accumulated in fp64, so the result is bit-identical to the upfront-stack path
-    (proofs/v013).
+    accumulated in the active physics dtype, so the fp64 default path remains
+    bit-identical to the upfront-stack path (proofs/v013).
     """
 
     state, coef, secdiff, planklay, planklev, plankbnd, cldfmc, taucmc, original_layers, layer_mass = _lw_solver_base(
@@ -2511,7 +2559,8 @@ def _lw_solver_fluxes_chunked(
     )
     nt = _native_lw_tables()
     cloud_layer = jnp.any(cldfmc > 0.5, axis=(-1, -2))
-    scale_band = tables.lw_delwave * (jnp.pi * 1.0e4)
+    out_dtype = state.p.dtype
+    scale_band = tables.lw_delwave.astype(out_dtype) * jnp.asarray(jnp.pi * 1.0e4, dtype=out_dtype)
     nlay = int(planklay.shape[-2])
 
     # Per-band taumol resolved by `lax.switch` over the traced band index: the
@@ -2522,7 +2571,7 @@ def _lw_solver_fluxes_chunked(
     ]
 
     flux_shape = planklay.shape[:-2] + (nlay + 1,)
-    zero_flux = jnp.zeros(flux_shape, dtype=jnp.float64)
+    zero_flux = jnp.zeros(flux_shape, dtype=out_dtype)
     n_acc = 4 if with_clear_sky else 2
     init = tuple(zero_flux for _ in range(n_acc))
 
@@ -2532,7 +2581,7 @@ def _lw_solver_fluxes_chunked(
         taucmc_b = jnp.take(taucmc, band, axis=-2)
         sec_raw = jnp.take(secdiff, band, axis=-1)
         scale = scale_band[band]
-        valid = tables.lw_gpoint_mask[band]
+        valid = tables.lw_gpoint_mask[band].astype(out_dtype)
         plank_b = jnp.take(planklay, band, axis=-1)
         planklev_b = jnp.take(planklev, band, axis=-1)
         plankbnd_b = jnp.take(plankbnd, band, axis=-1)
@@ -2540,8 +2589,8 @@ def _lw_solver_fluxes_chunked(
             state, tau_b, frac_b, cldf_b, taucmc_b, sec_raw, scale, valid,
             plank_b, planklev_b, plankbnd_b, cloud_layer, with_clear_sky,
         )
-        # Reduce this band over g-points (fp64) and add to the running fp64
-        # band-sum — same disjoint-band fp64 accumulation as `_flush_tile`.
+        # Reduce this band over g-points and add to the running dtype-native
+        # band-sum — same disjoint-band accumulation as `_flush_tile`.
         down_part = jnp.sum(zfd, axis=-1)
         up_part = jnp.sum(zfu, axis=-1)
         if with_clear_sky:
@@ -2641,7 +2690,7 @@ def _longwave_column_tiled_impl(
     n_tiles = (ncol + tile_cols - 1) // tile_cols
     padded_ncol = n_tiles * tile_cols
     nlayers = state.p.shape[-1]
-    out_dtype = jnp.result_type(state.p.dtype, jnp.float64)
+    out_dtype = jnp.result_type(state.p.dtype, jnp.float32)
 
     flat_state = _flatten_lw_state(state, leading_shape, ncol)
     padded_state = _pad_lw_state(flat_state, ncol, padded_ncol)

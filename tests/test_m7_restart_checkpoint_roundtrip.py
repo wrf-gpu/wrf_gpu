@@ -62,12 +62,14 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
     # v0.6.0 S0 appended 3 additive physics leaves (Nc, Nn, rainc_acc), v0.15
     # appended 4 MYNN SGS-cloud leaves (qsq, qc_bl, qi_bl, cldfra_bl), and v0.16
     # appended the aerosol-aware Thompson (mp=28) nwfa/nifa leaves at the very
-    # END (append-only) to the original 53-leaf schema. The guard tracks the
-    # authoritative consolidated count (53 + 3 + 4 + 2 = 62).
-    assert len(State.__slots__) == 62
-    assert State.__slots__[-9:] == (
+    # END, then v0.17 ADR-032 appended the graupel/hail substrate
+    # (qh, Nh, qvolg, qvolh) and WSM7 appended hail_acc. The guard tracks the
+    # authoritative consolidated count (53 + 3 + 4 + 2 + 4 + 1 = 67).
+    assert len(State.__slots__) == 67
+    assert State.__slots__[-14:] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
         "nwfa", "nifa",
+        "qh", "Nh", "qvolg", "qvolh", "hail_acc",
     )
     assert restored_grid == grid
     assert restored_namelist.grid == restored_grid

@@ -1,0 +1,6 @@
+build_fp32/
+build_fp64/
+*.o
+*.mod
+gfs_oracle
+case_*.txt
