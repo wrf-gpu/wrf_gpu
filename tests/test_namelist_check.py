@@ -459,7 +459,7 @@ def test_real_wrf_namelist_input_is_consumable() -> None:
     from pathlib import Path
 
     oracle = Path(
-        "/home/enric/src/wrf_pristine/WRF/test/em_real/oracle_run/namelist.input"
+        "/home/user/src/wrf_pristine/WRF/test/em_real/oracle_run/namelist.input"
     )
     if oracle.is_file():
         from gpuwrf.io.namelist_check import _parse_wrf_namelist

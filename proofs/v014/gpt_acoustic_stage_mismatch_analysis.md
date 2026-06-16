@@ -50,7 +50,7 @@ Pair that with WRF savepoint emitters around `calc_ww_cp`, `rhs_ph`, and `pg_buo
 
 - objective: read-only analysis of remaining Switzerland/Gotthard h36->h37 p/ph acoustic-stage mismatch.
 - files changed: `proofs/v014/gpt_acoustic_stage_mismatch_analysis.md`.
-- commands run: read project rules/contract/local skills; inspected verifier/handoff, candidate diff, stage proof script/JSON; ran CPU-only JSON summarizers and source greps/sed/nl reads. No GPU work, no Fable interaction, no ask-hermes, no `/home/enric/src/canairy_waves`.
+- commands run: read project rules/contract/local skills; inspected verifier/handoff, candidate diff, stage proof script/JSON; ran CPU-only JSON summarizers and source greps/sed/nl reads. No GPU work, no Fable interaction, no ask-hermes, no `/home/user/src/canairy_waves`.
 - proof objects used: `proofs/v014/switzerland_acoustic_substep_blocker.json`, `proofs/v014/switzerland_acoustic_substep_blocker.py`, `proofs/v014/switzerland_hpg_native_face_fix.{py,json}`, `.agent/reviews/2026-06-11-v014-gpt-acoustic-substep-verifier.md`.
 - unresolved risks: no direct WRF/JAX `rhs_ph`, `ww`, or first-substep `advance_w` term parity exists yet; the ranking is evidence-weighted but not a term-level proof.
 - next decision needed: authorize Fable to add narrow WRF/JAX diagnostic captures for `ww/ph_tend/rw_tend` before changing production dycore code.

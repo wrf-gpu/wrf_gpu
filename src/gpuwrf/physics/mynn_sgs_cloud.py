@@ -25,7 +25,7 @@ Scope notes (operational-config dead code intentionally omitted, with anchors):
 * SPP stochastic perturbations off (``spp_pbl=0``): ``qw_pert = qw``.
 
 WRF file:line anchors are cited inline against
-/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F.
+/home/user/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F.
 """
 
 from __future__ import annotations

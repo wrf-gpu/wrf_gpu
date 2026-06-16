@@ -569,308 +569,308 @@ Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.00224328
 Finished XLA compilation of jit(convert_element_type) in 0.021280766 sec
 recompile_diag device=cuda:0 run_id=20260521_18z_l2_72h_20260522T133443Z domain=d02 chunks=3 steps=180 cadence=180
 BEGIN_CHUNK 1 start_step=1
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/proofs/v0110/recompile_diag.py:195:16 (main):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/proofs/v0110/recompile_diag.py:195:16 (main):
   never seen function:
-    _advance_chunk id=134729774402272 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2490
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2523:15 (_advance_chunk):
+    _advance_chunk id=134729774402272 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2490
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2523:15 (_advance_chunk):
   never seen function:
-    body id=134722186969952 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2513
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/rk_addtend_dry.py:193:15 (large_step_horizontal_pgf):
+    body id=134722186969952 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2513
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/rk_addtend_dry.py:193:15 (large_step_horizontal_pgf):
   never seen function:
-    moisture_coupling_factors id=134729904650208 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:214
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/small_step_prep.py:232:22 (small_step_prep_wrf):
+    moisture_coupling_factors id=134729904650208 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:214
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/small_step_prep.py:232:22 (small_step_prep_wrf):
   never seen function:
-    diagnose_pressure_al_alt id=134729904650688 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:231
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1009:51 (_acoustic_core_state_from_prep):
-  for diagnose_pressure_al_alt defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:231
+    diagnose_pressure_al_alt id=134729904650688 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:231
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1009:51 (_acoustic_core_state_from_prep):
+  for diagnose_pressure_al_alt defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/acoustic_wrf.py:231
   all previously seen cache keys differ. For the closest previous key:
   different input pytree:
   * at input path [0][1], now <class 'gpuwrf.contracts.state.BaseState'> and before <class 'NoneType'>, so their Python types differ
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
   never seen function:
-    body id=134721196546048 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
+    body id=134721196546048 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
   never seen function:
-    _fwd id=134721184913408 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
+    _fwd id=134721184913408 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
   never seen function:
-    _back id=134721184915808 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
+    _back id=134721184915808 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
   never seen function:
-    body id=134720842717024 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
+    body id=134720842717024 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
   never seen function:
-    _fwd id=134720832325568 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
+    _fwd id=134720832325568 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
   never seen function:
-    _back id=134720832327808 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
+    _back id=134720832327808 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1402:22 (_acoustic_scan):
   never seen function:
-    body id=134720824508480 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
+    body id=134720824508480 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:1392
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:378:18 (advance_w_wrf):
   never seen function:
-    _fwd id=134720813871040 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
+    _fwd id=134720813871040 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:373
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:393:26 (advance_w_wrf):
   never seen function:
-    _back id=134720813873280 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
+    _back id=134720813873280 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/dynamics/core/advance_w.py:385
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:779:18 (thompson_adapter):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:779:18 (thompson_adapter):
   never seen function:
-    step_thompson_column_with_precip id=134743598696064 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1444
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+    step_thompson_column_with_precip id=134743598696064 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1444
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
   never seen function:
-    body id=134720818596096 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+    body id=134720818596096 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
   never seen function:
-    body id=134720818602976 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+    body id=134720818602976 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
   never seen function:
-    body id=134720818603296 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+    body id=134720818603296 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
   never seen function:
-    body id=134720818608416 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+    body id=134720818608416 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
   never seen function:
-    body id=134720812246304 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+    body id=134720812246304 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
   never seen function:
-    body id=134720812249984 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+    body id=134720812249984 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1080:20 (_fill_down):
   never seen function:
-    body id=134720812304960 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
+    body id=134720812304960 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1073
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
   never seen function:
-    body id=134720812315680 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+    body id=134720812315680 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
   never seen function:
-    body id=134720812317440 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+    body id=134720812317440 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
   never seen function:
-    body id=134720812316800 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+    body id=134720812316800 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1209:31 (_sed_one_species):
   never seen function:
-    body id=134720812515392 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
+    body id=134720812515392 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/thompson_column.py:1176
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:300:26 (_zolrib):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:300:26 (_zolrib):
   never seen function:
-    body id=134720823797984 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:290
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:998:12 (mynn_adapter):
+    body id=134720823797984 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:290
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:998:12 (mynn_adapter):
   never seen function:
-    step_mynn_pbl_column id=134743598705504 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_pbl.py:1111
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:318:38 (_single_column_dmp_mf.<locals>.plume_scan):
+    step_mynn_pbl_column id=134743598705504 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_pbl.py:1111
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:318:38 (_single_column_dmp_mf.<locals>.plume_scan):
   never seen function:
-    step id=134720807493664 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:259
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:118:9 (_condensation_edmf):
+    step id=134720807493664 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:259
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:118:9 (_condensation_edmf):
   never seen function:
-    body id=134720805713088 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:113
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2275:28 (_physics_boundary_step_with_limiter_diagnostics):
+    body id=134720805713088 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_edmf.py:113
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2275:28 (_physics_boundary_step_with_limiter_diagnostics):
   never seen function:
-    _refresh_rthraten id=134720810138208 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2257
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1200:9 (rrtmg_theta_tendency):
+    _refresh_rthraten id=134720810138208 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2257
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1200:9 (rrtmg_theta_tendency):
   never seen function:
-    solve_rrtmg_sw_column id=134741650385120 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1656
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:916:32 (_sw_taumol_fused):
+    solve_rrtmg_sw_column id=134741650385120 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1656
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:916:32 (_sw_taumol_fused):
   never seen function:
-    keep_band id=134720799218784 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:913
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1081:18 (_mcica_random_overlap_mask):
+    keep_band id=134720799218784 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:913
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1081:18 (_mcica_random_overlap_mask):
   never seen function:
-    advance id=134720798304800 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1076
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1201:9 (rrtmg_theta_tendency):
+    advance id=134720798304800 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_sw.py:1076
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1201:9 (rrtmg_theta_tendency):
   never seen function:
-    solve_rrtmg_lw_column id=134741650524256 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:2020
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1525:33 (_lw_taumol_fused):
+    solve_rrtmg_lw_column id=134741650524256 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:2020
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1525:33 (_lw_taumol_fused):
   never seen function:
-    keep_band id=134720807230400 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1522
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1634:15 (_lw_mcica_random_cloud_mask):
+    keep_band id=134720807230400 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1522
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1634:15 (_lw_mcica_random_cloud_mask):
   never seen function:
-    scan_step id=134720785142848 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1630
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+    scan_step id=134720785142848 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1630
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720784118176 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+    down_body id=134720784118176 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720784352416 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+    up_body id=134720784352416 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720784366336 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720784366336 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720782649600 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720782649600 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720782663200 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720782663200 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720782815360 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720782815360 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720782826240 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720782826240 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720781521184 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720781521184 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720781828160 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720781828160 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720781832800 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720781832800 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720781992320 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720781992320 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720781996960 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720781996960 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720782304096 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720782304096 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720782308896 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720782308896 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720780616704 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720780616704 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720780621344 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720780621344 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720781157696 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720781157696 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720781162656 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720781162656 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720779388544 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720779388544 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720779393184 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720779393184 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720780060608 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720780060608 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720780065248 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720780065248 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720778340608 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720778340608 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720778345248 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720778345248 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720778537536 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720778537536 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720778542496 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720778542496 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720778816704 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720778816704 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720778821344 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720778821344 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720777243840 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720777243840 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720777248480 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720777248480 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1872:38 (_lw_rtrnmc_outputs):
   never seen function:
-    down_body id=134720777866752 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
+    down_body id=134720777866752 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1845
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1907:22 (_lw_rtrnmc_outputs):
   never seen function:
-    up_body id=134720777871392 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
+    up_body id=134720777871392 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/rrtmg_lw.py:1893
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2275:28 (_physics_boundary_step_with_limiter_diagnostics):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2275:28 (_physics_boundary_step_with_limiter_diagnostics):
   never seen function:
-    <lambda> id=134720810137728 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2276
+    <lambda> id=134720810137728 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2276
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
 Finished tracing _advance_chunk for jit in 3.243666410 sec
@@ -882,17 +882,17 @@ BEGIN_CHUNK 2 start_step=181
 END_CHUNK 2 wall_s=11.822971 per_step_ms=65.683
 BEGIN_CHUNK 3 start_step=361
 END_CHUNK 3 wall_s=11.845452 per_step_ms=65.808
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/proofs/v0110/recompile_diag.py:220:11 (main):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/proofs/v0110/recompile_diag.py:220:11 (main):
   never seen function:
-    _m9_snapshot id=134729774402912 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2527
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:300:26 (_zolrib):
+    _m9_snapshot id=134729774402912 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/runtime/operational_mode.py:2527
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:300:26 (_zolrib):
   never seen function:
-    body id=134721518323008 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:290
+    body id=134721518323008 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/surface_layer.py:290
   but seen another function defined on the same line; maybe the function is
   being re-defined repeatedly, preventing caching?
-TRACING CACHE MISS at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1080:17 (surface_layer_diagnostics):
+TRACING CACHE MISS at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/coupling/physics_couplers.py:1080:17 (surface_layer_diagnostics):
   never seen function:
-    step_mynn_pbl_column_with_pblh id=134743598706144 defined at /home/enric/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_pbl.py:1127
+    step_mynn_pbl_column_with_pblh id=134743598706144 defined at /home/user/src/wrf_gpu2/.claude/worktrees/recompile-diag/src/gpuwrf/physics/mynn_pbl.py:1127
 Finished tracing _m9_snapshot for jit in 0.145311117 sec
 Compiling jit(_m9_snapshot) with global shapes and types (ShapedArray(float64[44,66,160]), ShapedArray(float64[44,67,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[45,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[44,66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(float64[66,159]), ShapedArray(int32[66,159]), ShapedArray(float64[])). Argument mapping: (SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), SingleDeviceSharding(device=CudaDevice(id=0), memory_kind=device), UnspecifiedValue).
 Finished jaxpr to MLIR module conversion jit(_m9_snapshot) in 0.588012218 sec

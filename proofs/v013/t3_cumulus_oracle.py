@@ -56,7 +56,7 @@ SAVE = ROOT / "proofs" / "v013" / "savepoints" / "cumulus"
 REPORT = ROOT / "proofs" / "v013" / "t3_cumulus_oracle.json"
 SOURCE_CHECKSUM_REPORT = ROOT / "proofs" / "v013" / "t3_cumulus_source_checksums.json"
 CASES = (1, 2, 3, 4, 5)
-WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", "/home/enric/src/wrf_pristine/WRF"))
+WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", "/home/user/src/wrf_pristine/WRF"))
 
 # WRF cu_physics codes for this Tier-3 batch (the three named reference-only
 # schemes); savepoint filename stem per scheme.

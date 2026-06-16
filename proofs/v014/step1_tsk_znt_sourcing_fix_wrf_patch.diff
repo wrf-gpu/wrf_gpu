@@ -1,6 +1,6 @@
-diff --git a/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
+diff --git a/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
 index 24e0d252..ec3b16a2 100644
---- a/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F
+--- a/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F
 +++ b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
 @@ -382,6 +382,7 @@ CONTAINS
     USE module_sf_noah_seaice_drv

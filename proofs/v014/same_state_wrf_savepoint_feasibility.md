@@ -7,7 +7,7 @@ Mode: CPU-only inspection. No GPU, no WRF source edits, no repo `src/` edits, no
 
 The fastest reliable path is to use a disposable instrumented copy of:
 
-`/home/enric/src/wrf_pristine/WRF`
+`/home/user/src/wrf_pristine/WRF`
 
 This tree has WRF v4.7.1 source plus built CPU executables. The implementation sprint should not patch it in place. It should copy/worktree it under a scratch output root, add an env-gated Fortran emitter, run Case 3 from `2026-05-01_18:00:00` to h10, and dump selected d02 cell patches around existing dycore routine boundaries.
 
@@ -33,13 +33,13 @@ The selected first target is h10, valid `2026-05-02T04:00:00Z`. The 24 selected 
 
 | Path | Role | Build status | Notes |
 | --- | --- | --- | --- |
-| `/home/enric/src/wrf_pristine/WRF` | Fastest buildable candidate | Built | Git head `f52c197ed39d12e087d02c50f412d90d418f6186`, `v4.7.1-dirty`; `main/wrf.exe` and `main/real.exe` present. GNU/gfortran serial build linked against `/home/enric/miniconda3/envs/wrfbuild`. Use only through a disposable copy. |
-| `/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF` | Historical source path from Case 3 `rsl.error.0000` | Not built | Exists and matches original run provenance path, but no `configure.wrf` or `main/wrf.exe` was found. Use for provenance/source comparison. |
-| `/home/enric/src/wrf_ideal_f7i/WRF` | Source reference only | Not built | No executable. Not useful for fastest h10 savepoint generation. |
-| `/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF` | Old patch path | Missing | Stale. |
-| `/home/enric/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe` | Old executable path | Missing | Stale. |
+| `/home/user/src/wrf_pristine/WRF` | Fastest buildable candidate | Built | Git head `f52c197ed39d12e087d02c50f412d90d418f6186`, `v4.7.1-dirty`; `main/wrf.exe` and `main/real.exe` present. GNU/gfortran serial build linked against `/home/user/miniconda3/envs/wrfbuild`. Use only through a disposable copy. |
+| `/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF` | Historical source path from Case 3 `rsl.error.0000` | Not built | Exists and matches original run provenance path, but no `configure.wrf` or `main/wrf.exe` was found. Use for provenance/source comparison. |
+| `/home/user/src/wrf_ideal_f7i/WRF` | Source reference only | Not built | No executable. Not useful for fastest h10 savepoint generation. |
+| `/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF` | Old patch path | Missing | Stale. |
+| `/home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe` | Old executable path | Missing | Stale. |
 
-Important caveat: `/home/enric/src/wrf_pristine/WRF` is dirty and already contains unrelated oracle/probe edits, including old hardcoded idealized dumps in `dyn_em/solve_em.F` and `phys/module_wrfgpu2_oracle.F`. The next sprint should copy it, record the base diff, and apply a new V0.14 patch in that copy only.
+Important caveat: `/home/user/src/wrf_pristine/WRF` is dirty and already contains unrelated oracle/probe edits, including old hardcoded idealized dumps in `dyn_em/solve_em.F` and `phys/module_wrfgpu2_oracle.F`. The next sprint should copy it, record the base diff, and apply a new V0.14 patch in that copy only.
 
 ## Existing Scripts And Tests
 
@@ -48,7 +48,7 @@ Reusable patterns:
 - `src/gpuwrf/validation/savepoint_io.py`: HDF5 savepoint metadata and payload hashing pattern.
 - `src/gpuwrf/validation/savepoint_schema.py`: schema-validation pattern, but current `VALID_OPERATORS` is too narrow for V0.14 term groups.
 - `scripts/m6b0r_jax_vs_wrf_compare.py`: comparison/report pattern only.
-- `/home/enric/src/wrf_pristine/WRF/phys/module_wrfgpu2_oracle.F`: useful raw-binary plus sidecar Fortran emission pattern.
+- `/home/user/src/wrf_pristine/WRF/phys/module_wrfgpu2_oracle.F`: useful raw-binary plus sidecar Fortran emission pattern.
 
 Not sufficient as source truth:
 
@@ -63,7 +63,7 @@ Start at routine-boundary snapshots in `solve_em.F`; only split into inner routi
 
 Primary orchestration hooks:
 
-- `/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F::solve_em`, line 3.
+- `/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F::solve_em`, line 3.
 - `rk_tendency` call, line 882.
 - `rk_addtend_dry` call, line 968.
 - `small_step_prep` call, line 1090.
@@ -150,7 +150,7 @@ From Case 3 `rsl.error.0000`:
 - Median d02 compute per forecast hour: 80.466 s
 - Estimated h10 d02 compute: 804.66 s
 
-The original run used 28 MPI tasks. The currently built `/home/enric/src/wrf_pristine/WRF/main/wrf.exe` appears serial, so a serial h10 run may be materially slower. A dmpar rebuild in the disposable copy is the better fidelity/performance option if the next sprint can spend build time.
+The original run used 28 MPI tasks. The currently built `/home/user/src/wrf_pristine/WRF/main/wrf.exe` appears serial, so a serial h10 run may be materially slower. A dmpar rebuild in the disposable copy is the better fidelity/performance option if the next sprint can spend build time.
 
 ## Risks
 
@@ -174,7 +174,7 @@ Constraints:
 - CPU only.
 - No GPU performance claims.
 - No edits to repo `src` unless a separate schema-extension contract is approved.
-- Do not patch `/home/enric/src/wrf_pristine/WRF` in place.
+- Do not patch `/home/user/src/wrf_pristine/WRF` in place.
 - All truth must come from instrumented WRF source execution, not wrfout interpolation or Python recomputation.
 
 Acceptance gates:

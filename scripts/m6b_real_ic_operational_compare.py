@@ -70,8 +70,8 @@ RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
 DEFAULT_IC_TIME = "2026-05-21_18:00:00"
 THRESHOLD = 1.0e-10
-WRF_SOLVE = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
-WRF_SMALL = "/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
+WRF_SOLVE = "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
+WRF_SMALL = "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
 MARKER = "GPUWRF_M6B_RK1_ACOUSTIC_LOOP_ENTER substeps=1"
 
 

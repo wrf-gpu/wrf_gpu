@@ -29,7 +29,7 @@ import numpy as np
 # verified to equal the JSON values at authoring time) so the script is robust
 # to a worktree being pruned later.
 # ---------------------------------------------------------------------------
-ROOT = Path("/home/enric/src/wrf_gpu2")
+ROOT = Path("/home/user/src/wrf_gpu2")
 OUT = Path(__file__).resolve().parent / "plots"
 OUT.mkdir(parents=True, exist_ok=True)
 

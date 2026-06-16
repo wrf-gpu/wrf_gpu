@@ -9,7 +9,7 @@
 # already small). Holds the shared GPU lock for the whole run. CPU postprocess after.
 set -euo pipefail
 
-ROOT=/home/enric/src/wrf_gpu2/.wt-rc
+ROOT=/home/user/src/wrf_gpu2/.wt-rc
 RR=/mnt/data/wrf_gpu_validation/v017_switzerland_d01_72h_identity_fast_$(date -u +%Y%m%dT%H%M%SZ)
 INPUT=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
 mkdir -p "$RR/gpu_output" "$RR/scratch" "$RR/proofs"

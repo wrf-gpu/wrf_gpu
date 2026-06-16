@@ -8,7 +8,7 @@
 # Each config is a SEPARATE python process => cold compile each time (no warm cache leakage).
 set -euo pipefail
 
-ROOT=/home/enric/src/wrf_gpu2/.wt-rc
+ROOT=/home/user/src/wrf_gpu2/.wt-rc
 OUT=/mnt/data/wrf_gpu_validation/v017_compile_flag_test_$(date -u +%Y%m%dT%H%M%SZ)
 INPUT=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
 mkdir -p "$OUT"

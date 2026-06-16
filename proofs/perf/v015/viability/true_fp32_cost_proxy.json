@@ -148,7 +148,7 @@
       "oom": true,
       "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 19.65GiB.",
       "peak_vram_gib": 16.79784870147705,
-      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/true_fp32_cost_proxy.py\", line 100, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree)\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 19.65GiB.\n"
+      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/user/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/true_fp32_cost_proxy.py\", line 100, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree)\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 19.65GiB.\n"
     }
   ],
   "largest_true_fp32_grid": {

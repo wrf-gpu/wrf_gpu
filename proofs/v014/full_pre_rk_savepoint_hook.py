@@ -355,13 +355,13 @@ def assess_sufficiency(surface: Mapping[str, Any]) -> dict[str, Any]:
 
 def commands() -> dict[str, Any]:
     build_env = (
-        "PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
-        "NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
-        "PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+        "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+        "NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+        "PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
         "WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu"
     )
     run_env = (
-        "PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+        "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
         "CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 "
         f"WRFGPU2_FULL_PRE_RK=1 WRFGPU2_FULL_PRE_RK_ROOT={OUTPUT_DIR} "
         "WRFGPU2_FULL_PRE_RK_GRID=2 WRFGPU2_FULL_PRE_RK_START_STEP=6000 "

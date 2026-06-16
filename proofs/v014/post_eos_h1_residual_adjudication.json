@@ -5119,8 +5119,8 @@
     "cpu_h1": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
     "gpu_h1": "/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_20260610T134205Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
     "post_eos_compare_json": "/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_20260610T134205Z/short_field_h1_grid_compare.json",
-    "pre_eos_compare_json": "/home/enric/src/wrf_gpu2/proofs/v014/short_field_falsifier_h1_grid_compare.json",
-    "tolerance_manifest": "/home/enric/src/wrf_gpu2/proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json"
+    "pre_eos_compare_json": "/home/user/src/wrf_gpu2/proofs/v014/short_field_falsifier_h1_grid_compare.json",
+    "tolerance_manifest": "/home/user/src/wrf_gpu2/proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json"
   },
   "manifest_failures_at_h1": [
     {

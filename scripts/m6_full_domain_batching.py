@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
-TMP_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/enric/.cache/gpuwrf_tmp"))
+TMP_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/user/.cache/gpuwrf_tmp"))
 TMP_ROOT.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("TMPDIR", str(TMP_ROOT))
 
@@ -74,7 +74,7 @@ config.update("jax_enable_x64", True)
 
 PERF_DIR = ROOT / "artifacts" / "m6" / "performance"
 DEFAULT_OUTPUT = PERF_DIR / "full_domain_batching_verdict.json"
-DEFAULT_FORECAST_OUTPUT_DIR = Path("/home/enric/.cache/gpuwrf_outputs/m6/full_domain_batching")
+DEFAULT_FORECAST_OUTPUT_DIR = Path("/home/user/.cache/gpuwrf_outputs/m6/full_domain_batching")
 DEFAULT_BISECTION_OUTPUT_DIR = PERF_DIR / "empirical_bisection"
 BINDING_CPU_DENOMINATOR = ROOT / "artifacts" / "m6" / "cpu_denominator.json"
 CPU_DENOMINATOR_V2 = ROOT / "artifacts" / "m6" / "cpu_denominator_v2.json"

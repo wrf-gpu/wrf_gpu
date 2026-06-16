@@ -1,7 +1,7 @@
 """JAX port of the WRF MYNN-EDMF Dynamic Multi-Plume (DMP) mass-flux scheme.
 
 Faithful transcription of `phys/module_bl_mynnedmf.F90:DMP_mf` (WRF v4 pristine,
-`/home/enric/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F`) restricted to the
+`/home/user/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F`) restricted to the
 operational d03 configuration:
 
   bl_mynn_edmf      = 1   (mass-flux ON)

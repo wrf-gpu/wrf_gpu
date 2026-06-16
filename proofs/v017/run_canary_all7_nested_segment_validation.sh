@@ -3,7 +3,7 @@
 # Do not run from code-only worker lanes.
 set -euo pipefail
 
-ROOT="${ROOT:-/home/enric/src/wrf_gpu2/.wt-nested-seg}"
+ROOT="${ROOT:-/home/user/src/wrf_gpu2/.wt-nested-seg}"
 INPUT_DIR="${INPUT_DIR:-/mnt/data/wrf_downscale/canary_all7/run}"
 HOURS="${HOURS:-1}"
 MAX_DOM="${MAX_DOM:-9}"

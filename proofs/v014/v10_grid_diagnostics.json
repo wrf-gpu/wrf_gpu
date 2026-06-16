@@ -1,5 +1,5 @@
 {
-  "case_dir": "/home/enric/src/wrf_gpu2/proofs/v0120/powered_tost_n15",
+  "case_dir": "/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15",
   "cases": [
     {
       "cell_level": {

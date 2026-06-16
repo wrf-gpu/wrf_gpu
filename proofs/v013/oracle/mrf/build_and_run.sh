@@ -8,12 +8,12 @@
 set -o pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF="/home/enric/src/wrf_pristine/WRF"
+WRF="/home/user/src/wrf_pristine/WRF"
 WRF_PHYS="${WRF}/phys"
 SAVE_FP32="${HERE}/../../savepoints/mrf"
 SAVE_FP64="${HERE}/../../savepoints_fp64/mrf"
 
-source /home/enric/miniconda3/etc/profile.d/conda.sh
+source /home/user/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 export OMP_NUM_THREADS=2
 set -e

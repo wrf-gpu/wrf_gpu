@@ -3,13 +3,13 @@ os.environ.setdefault("JAX_ENABLE_X64","true")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE","false")
 os.environ.setdefault("OMP_NUM_THREADS","4")
 pass
-sys.path.insert(0,"/home/enric/src/wrf_gpu2/src")
+sys.path.insert(0,"/home/user/src/wrf_gpu2/src")
 import numpy as np
 from gpuwrf.integration.daily_pipeline import DailyPipelineConfig, resolve_run_dir
 from pathlib import Path
 # Build the d03 case (IC only, no stepping) and inspect state.p[0] vs corpus
 sys.argv=["x"]
-sys.path.insert(0,"/home/enric/src/wrf_gpu2/scripts"); from d03_replay import build_l3_d03_daily_case
+sys.path.insert(0,"/home/user/src/wrf_gpu2/scripts"); from d03_replay import build_l3_d03_daily_case
 cfg=DailyPipelineConfig(run_id="20260521_18z_l3_24h_20260522T133443Z",hours=24,
     output_dir=Path("/tmp/icp"),proof_dir=Path("/tmp/icp"),
     run_root=Path("/mnt/data/canairy_meteo/runs/wrf_l3"),score=False,domain="d03",

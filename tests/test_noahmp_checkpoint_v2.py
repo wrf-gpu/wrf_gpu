@@ -31,7 +31,7 @@ from gpuwrf.runtime.checkpoint import (
 )
 from gpuwrf.runtime.operational_mode import OperationalNamelist
 
-TABLE_DIR = Path("/home/enric/src/wrf_pristine/WRF/run")
+TABLE_DIR = Path("/home/user/src/wrf_pristine/WRF/run")
 HAVE_TABLES = (TABLE_DIR / "MPTABLE.TBL").exists()
 
 

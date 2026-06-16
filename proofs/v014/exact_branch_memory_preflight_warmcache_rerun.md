@@ -12,7 +12,7 @@
 
 ## GPU Run
 
-- Command: `/home/enric/miniconda3/bin/python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --output-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T222217Z/nested_1h_out --scratch-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T222217Z/scratch --proof-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T222217Z/proofs --max-dom 3 --hours 1`
+- Command: `/home/user/miniconda3/bin/python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --output-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T222217Z/nested_1h_out --scratch-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T222217Z/scratch --proof-dir /mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T222217Z/proofs --max-dom 3 --hours 1`
 - Output path: `/mnt/data/wrf_gpu_validation/v014_exact_branch_memory_preflight_20260609T222217Z/nested_1h_out`
 - Duration: `378.366` s
 - Return code: `0`

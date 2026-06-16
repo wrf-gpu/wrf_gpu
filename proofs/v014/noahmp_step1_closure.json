@@ -148,7 +148,7 @@
     "n_land_cells": 768,
     "run_dir": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3",
     "source": "warm-start from corpus wrfinput",
-    "table_dir": "/home/enric/src/wrf_pristine/WRF/run",
+    "table_dir": "/home/user/src/wrf_pristine/WRF/run",
     "wrfinput_file": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02"
   },
   "noahmp_land_tile_energy_closure": "proofs/v014/noahmp_land_tile_energy_closure.{py,json,md} -- energy solve exonerated; moist-theta decoupling fix; RRTMG radiation lane isolated.",

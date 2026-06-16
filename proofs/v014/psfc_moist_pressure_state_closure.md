@@ -20,8 +20,8 @@ WRF path; expected post-fix h1 `PSFC` RMSE is **57.8 Pa** (gate: <= 120 Pa).
 
 ## 1. WRF source anchoring (exact runtime PSFC path)
 
-Pristine WRFv4 tree `/home/enric/src/wrf_pristine/WRF` (the contract's
-`/home/enric/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF` does not exist
+Pristine WRFv4 tree `/home/user/src/wrf_pristine/WRF` (the contract's
+`/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF` does not exist
 on this box):
 
 1. `phys/module_surface_driver.F:1988` — `PSFC(I,J) = p8w(I,kts,J)`.

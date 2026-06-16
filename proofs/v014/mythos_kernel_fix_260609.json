@@ -47,13 +47,13 @@
     },
     "d02_replay": {
       "exists": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "f9996886da6954b17426b5e4cdb12935da56f2720ffbb24abfdaef2abe2e97b7",
       "size_bytes": 125534
     },
     "interp": {
       "exists": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/nesting/interp.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/nesting/interp.py",
       "sha256": "dfe49114946609f1053c9522d56357314cefe29d180ee9fbbed0b9d05bb73f91",
       "size_bytes": 18277
     },
@@ -1394,9 +1394,9 @@
     }
   },
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-mythos-kernel-fix.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-mythos-kernel-fix.md"
   },
   "schema": "wrfgpu2.v014.mythos_kernel_fix_260609.v1",
   "verdict": "MYTHOS_KERNEL_FIX_START_DOMAIN_P_MU_W_CLOSED_FP32_LIBM_SINT_BLEND_BIT_EXACT"

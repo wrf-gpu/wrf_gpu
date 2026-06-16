@@ -28,7 +28,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[3]
-WRF_ROOT = Path("/home/enric/src/wrf_pristine/WRF")
+WRF_ROOT = Path("/home/user/src/wrf_pristine/WRF")
 RRTM_SOURCE = WRF_ROOT / "phys" / "module_ra_rrtm.F"
 RRTM_DATA_DBL = WRF_ROOT / "run" / "RRTM_DATA_DBL"
 RRTM_DATA = WRF_ROOT / "run" / "RRTM_DATA"

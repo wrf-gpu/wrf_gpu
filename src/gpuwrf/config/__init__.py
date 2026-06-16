@@ -2,7 +2,7 @@
 
 Currently exposes :mod:`gpuwrf.config.paths`, the single source of truth for
 environment-overridable filesystem locations so that nothing in the runnable
-path hardcodes a private workstation directory (``/mnt/data`` / ``/home/enric``).
+path hardcodes a private workstation directory (``/mnt/data`` / ``/home/user``).
 """
 
 from gpuwrf.config import paths

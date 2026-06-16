@@ -24,7 +24,7 @@ if hasattr(os, "sched_setaffinity"):
     except OSError:
         pass
 
-ROOT = Path("/home/enric/src/wrf_gpu2")
+ROOT = Path("/home/user/src/wrf_gpu2")
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 

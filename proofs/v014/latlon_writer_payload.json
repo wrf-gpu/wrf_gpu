@@ -769,8 +769,8 @@
   "model_numerics_note": "No dycore, physics, State, GridSpec, or OperationalNamelist runtime arrays are changed; this is a host-only wrfout payload selection.",
   "outputs": {
     "fallback_wrfout_without_latlon_payload": "/tmp/v014_latlon_writer_payload/wrfout_d02_2026-05-01_19:00:00.fallback",
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/latlon_writer_payload.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/latlon_writer_payload.md",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/latlon_writer_payload.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/latlon_writer_payload.md",
     "real_latlon_wrfout_with_payload": "/tmp/v014_latlon_writer_payload/wrfout_d02_2026-05-01_19:00:00.real_latlon"
   },
   "remaining_static_base_exclusions": [

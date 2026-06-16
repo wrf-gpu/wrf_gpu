@@ -14,7 +14,7 @@ MODE="${1:?need MODE}"
 HOURS="${2:?need HOURS}"
 RR="${3:?need RR}"
 
-ROOT=/home/enric/src/wrf_gpu2/.wt-opus-hostgap
+ROOT=/home/user/src/wrf_gpu2/.wt-opus-hostgap
 INPUT=/mnt/data/wrf_downscale/canary_all7/run
 mkdir -p "$RR/gpu_output" "$RR/proofs" "$RR/scratch"
 LOG="$RR/run.log"

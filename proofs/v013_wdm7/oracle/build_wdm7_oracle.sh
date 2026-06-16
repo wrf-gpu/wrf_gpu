@@ -19,7 +19,7 @@
 #        subroutine args and corrupts the fall-speed/precip (RAIN denormal).
 #
 # Provenance: module_mp_wdm7.F, phys/module_mp_radar.F, and frame/libmassv.F are
-# copied VERBATIM (unmodified) from /home/enric/src/wrf_pristine/WRF. The only
+# copied VERBATIM (unmodified) from /home/user/src/wrf_pristine/WRF. The only
 # project-authored Fortran is:
 #   * wdm7_oracle_driver.f90          -- the column builder + dump (never touches
 #                                        scheme physics)
@@ -36,12 +36,12 @@ set -o pipefail   # NOT -e/-u: conda activate/deactivate hooks reference unset
                   # vars and emit benign warnings that would otherwise abort.
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF="/home/enric/src/wrf_pristine/WRF"
+WRF="/home/user/src/wrf_pristine/WRF"
 WRF_PHYS="${WRF}/phys"
 WRF_FRAME="${WRF}/frame"
 OUT_SAVE="${HERE}/../savepoints_wdm7"
 
-source /home/enric/miniconda3/etc/profile.d/conda.sh
+source /home/user/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 export OMP_NUM_THREADS=2
 BLDDIR="${HERE}/build"

@@ -179,8 +179,8 @@ def test_v060_ysu_savepoint_parity_report() -> None:
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_bl_ysu.F and bl_ysu.F90",
             "wrf_sources": [
-                "/home/enric/src/wrf_pristine/WRF/phys/module_bl_ysu.F",
-                "/home/enric/src/wrf_pristine/WRF/phys/physics_mmm/bl_ysu.F90",
+                "/home/user/src/wrf_pristine/WRF/phys/module_bl_ysu.F",
+                "/home/user/src/wrf_pristine/WRF/phys/physics_mmm/bl_ysu.F90",
             ],
             "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
             "full_wrf_exe": False,

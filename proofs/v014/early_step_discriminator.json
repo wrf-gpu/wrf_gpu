@@ -169,7 +169,7 @@
   },
   "commands": {
     "loader_probe": [
-      "/home/enric/miniconda3/bin/python",
+      "/home/user/miniconda3/bin/python",
       "-c",
       "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
     ],
@@ -187,16 +187,16 @@
   },
   "cpu_loader_probe": {
     "command": [
-      "/home/enric/miniconda3/bin/python",
+      "/home/user/miniconda3/bin/python",
       "-c",
       "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "gpu_only_state_zero_observed": true,
     "probe_purpose": "Can the existing real-case wrfinput replay loader construct a d02 State/Tendencies under JAX_PLATFORMS=cpu without production source edits?",
     "returncode": 1,
     "status": "BLOCKED_GPU_ONLY_STATE_ZERO",
-    "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 2, in <module>\n    build_replay_case(\n    ~~~~~~~~~~~~~~~~~^\n        '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        domain='d02',\n        ^^^^^^^^^^^^^\n        load_lateral_boundaries=False,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1357, in build_replay_case\n    state = State.zeros(grid)\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 2, in <module>\n    build_replay_case(\n    ~~~~~~~~~~~~~~~~~^\n        '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        domain='d02',\n        ^^^^^^^^^^^^^\n        load_lateral_boundaries=False,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1357, in build_replay_case\n    state = State.zeros(grid)\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
     "stdout_tail": "",
     "strict_cpu_realcase_loader_available": false,
     "wall_s": 2.9292168149986537
@@ -530,14 +530,14 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "managing_sprints_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
       "sha256": "bf9bfd3ab37fc1af814c7b816cf5cc563a86334ab64d57e9a93e824ca90a3f88",
       "size_bytes": 10774
     },
@@ -551,14 +551,14 @@
     "plan": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-EARLY-STEP-DISCRIMINATOR-PLAN.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-EARLY-STEP-DISCRIMINATOR-PLAN.md",
       "sha256": "5f4861c1bb84c901744fae3fcb3f333a54c73e8dd274a700de934844dbdabd71",
       "size_bytes": 3284
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
@@ -570,21 +570,21 @@
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-early-step-discriminator/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-early-step-discriminator/sprint-contract.md",
       "sha256": "a135336780c94ee4ab6815fc0434744c1e659e00637d546e120527dc51966647",
       "size_bytes": 5190
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_oracle_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
@@ -675,8 +675,8 @@
   "one_cell_proof": false,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/early_step_discriminator.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/early_step_discriminator.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/early_step_discriminator.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/early_step_discriminator.md"
   },
   "required_fields": {
     "active_moisture_candidates": [
@@ -748,7 +748,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
         "sha256": "360eced25ef4db037913a7936ac2b2a638a568f51cf88dcdbfe39383f5b91d8c",
         "size_bytes": 98563
       }
@@ -770,7 +770,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
         "sha256": "e6d5535f19de70d38f8e6a65a775bb4da3a80409f663deb40a6a5a89363de2bf",
         "size_bytes": 26757
       }
@@ -803,7 +803,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
         "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
         "size_bytes": 175388
       }
@@ -825,7 +825,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
         "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
         "size_bytes": 8390
       }
@@ -880,7 +880,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
         "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
         "size_bytes": 25734
       }

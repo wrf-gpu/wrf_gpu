@@ -31,7 +31,7 @@
         "--abbrev-ref",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
@@ -43,7 +43,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "6ced5a8e293a938504c4bf5e64c1018140f29702\n",
@@ -57,7 +57,7 @@
         "--oneline",
         "--decorate"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "6ced5a8e (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 close jax start-domain input split\n",
@@ -76,7 +76,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "f3ee90238f7b5bbb0bb4bb5575b0e5ab89aabb5fafac43d464df3736e00d74a3",
       "size_bytes": 110124
     },
@@ -84,7 +84,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "5c48f3bcc79a17868d786d7f8f4d5c19837b0e66f546188d33e2fa143e34b65b",
       "size_bytes": 80627
     },
@@ -92,7 +92,7 @@
       "exists": false,
       "is_dir": false,
       "is_file": false,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_base_state_boundary_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_base_state_boundary_wrf_patch.diff",
       "sha256": null,
       "size_bytes": null
     },
@@ -100,7 +100,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.json",
       "sha256": "3295e1b7e1f5af6617b4d25d185d562d8194a80b82a31923cb5a431a47b58db8",
       "size_bytes": 144770
     },
@@ -108,7 +108,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_start_domain_input_split.md",
       "sha256": "66ed192b5b2e36f98956ba97eacec937476c85f52854436cd26417804c04c5a4",
       "size_bytes": 3916
     },
@@ -116,7 +116,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-base-state-boundary/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-base-state-boundary/sprint-contract.md",
       "sha256": "eefae3b77974ebdb5211843a1714a42e655c6869065f878623e29fca012da9d4",
       "size_bytes": 5791
     },
@@ -3317,9 +3317,9 @@
     }
   },
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_base_state_boundary.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_base_state_boundary.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-base-state-boundary.md",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_base_state_boundary.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_base_state_boundary.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-base-state-boundary.md",
     "wrf_truth_root_reused": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth"
   },
   "schema": "wrfgpu2.v014.step1_base_state_boundary.v1",

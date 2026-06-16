@@ -9,7 +9,7 @@
 # (used only to separate fp32-roundoff from algorithm divergence).
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GF="${GF:-/home/enric/miniconda3/envs/wrfbuild/bin/gfortran}"
+GF="${GF:-/home/user/miniconda3/envs/wrfbuild/bin/gfortran}"
 cd "$HERE"
 FLAGS="-ffree-line-length-none -O2"
 OUT=mynn_oracle

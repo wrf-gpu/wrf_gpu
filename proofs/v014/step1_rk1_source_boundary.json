@@ -94,7 +94,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "dad4c76a (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 rk1 source boundary sprint\n",
@@ -115,7 +115,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-rk1-source-boundary/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-rk1-source-boundary/sprint-contract.md",
       "sha256": "79ae4cbf80775ff9a8867a0300403a10df099b6442e68d3fa9725bafd01789a5",
       "size_bytes": 7287
     },
@@ -131,7 +131,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary_wrf_patch.diff",
       "sha256": "dd3b00d746eb9cd0984642ce8f8ef89355fda4c82ac0dab68eb9c9bce0544511",
       "size_bytes": 14932
     },
@@ -179,10 +179,10 @@
   "one_cell_proof": false,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-rk1-source-boundary.md",
-    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary_wrf_patch.diff",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-rk1-source-boundary.md",
+    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_rk1_source_boundary_wrf_patch.diff",
     "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth"
   },
   "schema": "wrfgpu2.v014.step1_rk1_source_boundary.v1",

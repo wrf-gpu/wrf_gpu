@@ -26,7 +26,7 @@ def _resolve_wrf_root() -> Path:
     failure mode this guards. Precedence:
       1. ``$GPUWRF_WRF_SRC`` (explicit override),
       2. the historical workstation artifacts path (kept for the original layout),
-      3. the pristine WRF build (``/home/enric/src/wrf_pristine/WRF``; project memory
+      3. the pristine WRF build (``/home/user/src/wrf_pristine/WRF``; project memory
          "WRF ground truth BUILT 2026-05-29"),
       4. a checkout-relative ``external/WRF``.
     Returns the first that has ``phys/module_ra_rrtmg_lw.F``; falls back to the
@@ -40,7 +40,7 @@ def _resolve_wrf_root() -> Path:
     candidates.extend(
         [
             Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF"),
-            Path("/home/enric/src/wrf_pristine/WRF"),
+            Path("/home/user/src/wrf_pristine/WRF"),
             ROOT / "external" / "WRF",
         ]
     )

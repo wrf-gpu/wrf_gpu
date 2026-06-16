@@ -927,7 +927,7 @@ def implementation_ready_wrf_recipe() -> dict[str, Any]:
         "source_candidates": [
             "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
             "/mnt/data/wrf_gpu2/v014_source_save_boundary/WRF",
-            "/home/enric/src/wrf_pristine/WRF",
+            "/home/user/src/wrf_pristine/WRF",
         ],
         "scratch_root_for_next_run": str(SCRATCH / "wrf_step1_truth_run"),
         "required_hook_boundary": "dyn_em/solve_em.F::solve_em, after after_all_rk_steps and before RK halos, domain grid%id==2, grid%itimestep==1",

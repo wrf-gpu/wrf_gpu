@@ -3,7 +3,7 @@
 Faithful, fully vectorized transcription of the genuine WRF MYNN surface-layer
 scheme as implemented in:
 
-  /home/enric/src/wrf_pristine/WRF/phys/module_sf_mynn.F
+  /home/user/src/wrf_pristine/WRF/phys/module_sf_mynn.F
 
 This is the surface layer paired with the MYNN PBL (the Canary DEFAULT
 ``sf_sfclay_physics=5``), routed here via

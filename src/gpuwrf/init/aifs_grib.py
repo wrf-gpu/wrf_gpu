@@ -16,7 +16,7 @@ from typing import Iterable
 import numpy as np
 
 
-DEFAULT_AIFS_VTABLE = Path("/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE")
+DEFAULT_AIFS_VTABLE = Path("/home/user/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE")
 
 ISOBARIC_LEVELS_PA = (
     100000.0,

@@ -3,7 +3,7 @@
     "cpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
     "h36_baseline_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output",
     "h36_fixed_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hydro_pgf_edgefix_gpt",
-    "previous_proof": "/home/enric/src/wrf_gpu2/.codex/worktrees/v014-switzerland-hydro-pgf-subterms/proofs/v014/switzerland_strongflow_dynamics.json"
+    "previous_proof": "/home/user/src/wrf_gpu2/.codex/worktrees/v014-switzerland-hydro-pgf-subterms/proofs/v014/switzerland_strongflow_dynamics.json"
   },
   "baseline_from_previous": {
     "hydro_first_three_terms_contribution_pa_per_cell_per_h": -31.645774891774636,
@@ -8434,7 +8434,7 @@
     },
     "wrf_loop_bound_mismatch_probe": {
       "meaning": "full_wrf_specified_edge_skip zeros only the outer normal faces skipped by WRF when specified/nested",
-      "wrf_source": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407"
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407"
     }
   },
   "subterm_attribution_5min": {
@@ -8484,10 +8484,10 @@
     "valid_window": "h36->h37 storm-state reinit"
   },
   "wrf_source_anchors": {
-    "hydro_u_terms": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
-    "hydro_v_terms": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
-    "large_step_hpg_call": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
-    "large_step_hpg_loop_bounds": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
-    "rk_step_prep_call": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682"
+    "hydro_u_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
+    "hydro_v_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
+    "large_step_hpg_call": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
+    "large_step_hpg_loop_bounds": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
+    "rk_step_prep_call": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682"
   }
 }

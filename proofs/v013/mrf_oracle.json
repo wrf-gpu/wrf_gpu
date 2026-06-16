@@ -424,7 +424,7 @@
     "build_manifest": [
       "mode=fp64",
       "full_wrf_exe=false",
-      "wrf_source=/home/enric/src/wrf_pristine/WRF/phys/module_bl_mrf.F",
+      "wrf_source=/home/user/src/wrf_pristine/WRF/phys/module_bl_mrf.F",
       "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
       "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
     ],
@@ -436,7 +436,7 @@
     ],
     "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF phys/module_bl_mrf.F (MRF -> MRF2D -> TRIDI2)",
     "wrf_sources": [
-      "/home/enric/src/wrf_pristine/WRF/phys/module_bl_mrf.F"
+      "/home/user/src/wrf_pristine/WRF/phys/module_bl_mrf.F"
     ]
   },
   "overall_pass": true,

@@ -20,7 +20,7 @@ import numpy as np
 _ROOT = Path(__file__).resolve().parents[1]
 _METRIC = _ROOT / "proofs" / "perf" / "v015" / "fp32_oracles" / "divergence_growth_metric.py"
 if not _METRIC.is_file():  # shared-checkout fallback
-    _METRIC = Path("/home/enric/src/wrf_gpu2") / "proofs" / "perf" / "v015" / "fp32_oracles" / "divergence_growth_metric.py"
+    _METRIC = Path("/home/user/src/wrf_gpu2") / "proofs" / "perf" / "v015" / "fp32_oracles" / "divergence_growth_metric.py"
 
 _spec = importlib.util.spec_from_file_location("divergence_growth_metric", _METRIC)
 dgm = importlib.util.module_from_spec(_spec)

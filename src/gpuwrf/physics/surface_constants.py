@@ -1,7 +1,7 @@
 """Constants for the WRF revised surface layer (``module_sf_sfclayrev.F``).
 
 All values are cited to the WRF source on this workstation:
-``/home/enric/src/wrf_pristine/WRF/phys/physics_mmm/sf_sfclayrev.F90`` (the CCPP
+``/home/user/src/wrf_pristine/WRF/phys/physics_mmm/sf_sfclayrev.F90`` (the CCPP
 ``sf_sfclayrev_run`` core that ``module_sf_sfclayrev.F`` delegates to) and the
 namelist/registry constants WRF passes into ``sfclayrev`` from
 ``module_physics_init`` / ``module_model_constants``.

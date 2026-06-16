@@ -21,24 +21,24 @@
       "mkdir -p /tmp/wrf_gpu2_v014_pre_rk_input_boundary",
       "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/ /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF/",
       "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/ /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && patch -p1 < /home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff || true  # hunk 2 applies; hunk 1 is declarations-only against pristine",
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && patch -p1 < /home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff || true  # hunk 2 applies; hunk 1 is declarations-only against pristine",
       "insert wrfgpu2_prerk_* declarations next to existing wrfgpu2_marker_* declarations in scratch dyn_em/solve_em.F",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/compile_pre_rk_input_boundary_dmpar.log 2>&1",
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/compile_pre_rk_input_boundary_dmpar.log 2>&1",
       "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && find . -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name '*stdout.log' \\) -delete",
       "ln -sf /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF/main/wrf.exe /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/wrf.exe",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_28rank_stdout.log 2>&1"
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_28rank_stdout.log 2>&1"
     ],
     "wrf_commands_run": [
       "mkdir -p /tmp/wrf_gpu2_v014_pre_rk_input_boundary",
       "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/ /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF/",
       "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/ /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && patch -p1 < /home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff || true  # hunk 2 applies; hunk 1 is declarations-only against pristine",
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && patch -p1 < /home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff || true  # hunk 2 applies; hunk 1 is declarations-only against pristine",
       "insert wrfgpu2_prerk_* declarations next to existing wrfgpu2_marker_* declarations in scratch dyn_em/solve_em.F",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/compile_pre_rk_input_boundary_dmpar.log 2>&1",
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/compile_pre_rk_input_boundary_dmpar.log 2>&1",
       "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && find . -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name '*stdout.log' \\) -delete",
       "ln -sf /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF/main/wrf.exe /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/wrf.exe",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_28rank_stdout.log 2>&1",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 20 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 ./wrf.exe 2>&1 | tee /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_singleton_stdout.log"
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_28rank_stdout.log 2>&1",
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 20 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 ./wrf.exe 2>&1 | tee /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_singleton_stdout.log"
     ],
     "wrf_commands_run_note": "The disposable WRF copy, patch application, compile, mpirun attempt, and singleton diagnostic were run manually in this sprint. The exact reproducible command sequence is recorded under wrf_commands_required_if_blocked."
   },
@@ -415,14 +415,14 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "building_wrf_oracles_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
@@ -436,91 +436,91 @@
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "17f73a89af403132f6dd2e0449b270e619945da94d2d52a6088cc78f9dbe75c4",
       "size_bytes": 32658
     },
     "jax_h10_prestep_carry_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
       "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
       "size_bytes": 35739
     },
     "jax_h10_prestep_carry_producer_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
       "sha256": "59eb1f936d51874825aeae1de531ba7d13ac674a5e5cbef1fe859f8f1e511bbb",
       "size_bytes": 24206
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "same_state_savepoint_request_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
       "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
       "size_bytes": 269809
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-pre-rk-input-boundary/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-pre-rk-input-boundary/sprint-contract.md",
       "sha256": "678838f36ca253dab69b645656d689d2f17ad84a5b42f0f8b196c849cf54912f",
       "size_bytes": 4629
     },
     "theta_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/jax_theta_evolution_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_theta_evolution_localization.json",
       "sha256": "d1a77beb4b7ac1bbe16e240c05c32595c619601ac2a6026b6e0d132c54e0f44e",
       "size_bytes": 767749
     },
     "tolerance_policy": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/references/tolerance-policy.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/references/tolerance-policy.md",
       "sha256": "7cf0809b26aea3df96395a169137ad4df343932d05887dd5d258ab6e8bf2929b",
       "size_bytes": 277
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_dynamic_term_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
       "sha256": "357e986b782856d4d5390a442aeaece99aeda8d4f3446b33b6a096cccba237fe",
       "size_bytes": 33285
     },
     "wrf_patch_diff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff",
       "sha256": "b457246efed175491e5a6e8df808d2de0da2059cd344a539504b28e4d8d43465",
       "size_bytes": 6570
     },
     "wrf_post_rk_refresh_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
       "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
       "size_bytes": 34079
     },
     "wrf_same_state_marker_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json",
       "sha256": "4bb28da001ebabe53ce57ce8ff11ca2a5a8ab160eef2493cb45f233f4586935c",
       "size_bytes": 18006
     }
@@ -547,10 +547,10 @@
   "next_decision": "Trace the JAX checkpoint/prestep carry producer and previous-step WRF/JAX update path.",
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-pre-rk-input-boundary.md",
-    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-pre-rk-input-boundary.md",
+    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff"
   },
   "schema": "wrfgpu2.v014.pre_rk_input_boundary.v1",
   "switzerland_validation_run": false,
@@ -584,12 +584,12 @@
       "mkdir -p /tmp/wrf_gpu2_v014_pre_rk_input_boundary",
       "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/ /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF/",
       "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/ /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && patch -p1 < /home/enric/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff || true  # hunk 2 applies; hunk 1 is declarations-only against pristine",
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && patch -p1 < /home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary_wrf_patch.diff || true  # hunk 2 applies; hunk 1 is declarations-only against pristine",
       "insert wrfgpu2_prerk_* declarations next to existing wrfgpu2_marker_* declarations in scratch dyn_em/solve_em.F",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/compile_pre_rk_input_boundary_dmpar.log 2>&1",
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/compile_pre_rk_input_boundary_dmpar.log 2>&1",
       "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && find . -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name '*stdout.log' \\) -delete",
       "ln -sf /tmp/wrf_gpu2_v014_pre_rk_input_boundary/WRF/main/wrf.exe /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/wrf.exe",
-      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 3600 env PATH=/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_28rank_stdout.log 2>&1"
+      "cd /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3 && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_PRE_RK_INPUT=1 WRFGPU2_PRE_RK_INPUT_ROOT=/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output WRFGPU2_PRE_RK_INPUT_GRID=2 WRFGPU2_PRE_RK_INPUT_START_STEP=6000 WRFGPU2_PRE_RK_INPUT_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /tmp/wrf_gpu2_v014_pre_rk_input_boundary/run_case3/pre_rk_input_boundary_28rank_stdout.log 2>&1"
     ],
     "run": {
       "compile_log": {
@@ -599,7 +599,7 @@
         "sha256": "4ba268744e03992063256d4200cdf42ec56a3e7138bda8c2a24de76bffa7b045",
         "size_bytes": 70577
       },
-      "compile_log_tail": "             ln -sf ../../run/CLM_ALB_ICE_DRC_DATA . ;              \\\n             ln -sf ../../run/CLM_ASM_ICE_DFS_DATA . ;              \\\n             ln -sf ../../run/CLM_ASM_ICE_DRC_DATA . ;              \\\n             ln -sf ../../run/CLM_DRDSDT0_DATA . ;                  \\\n             ln -sf ../../run/CLM_EXT_ICE_DFS_DATA . ;              \\\n             ln -sf ../../run/CLM_EXT_ICE_DRC_DATA . ;              \\\n             ln -sf ../../run/CLM_KAPPA_DATA . ;                    \\\n             ln -sf ../../run/CLM_TAU_DATA . ;                      \\\n             ln -sf ../../run/ozone.formatted . ;                   \\\n             ln -sf ../../run/ozone_lat.formatted . ;               \\\n             ln -sf ../../run/ozone_plev.formatted . ;              \\\n             ln -sf ../../run/aerosol.formatted . ;                 \\\n             ln -sf ../../run/aerosol_lat.formatted . ;             \\\n             ln -sf ../../run/aerosol_lon.formatted . ;             \\\n             ln -sf ../../run/aerosol_plev.formatted . ;            \\\n             ln -sf ../../run/eclipse_besselian_elements.dat . ;    \\\n             ln -sf ../../run/capacity.asc . ;                      \\\n             ln -sf ../../run/coeff_p.asc . ;                       \\\n             ln -sf ../../run/coeff_q.asc . ;                       \\\n             ln -sf ../../run/constants.asc . ;                     \\\n             ln -sf ../../run/masses.asc . ;                        \\\n             ln -sf ../../run/termvels.asc . ;                      \\\n             ln -sf ../../run/kernels.asc_s_0_03_0_9 . ;            \\\n             ln -sf ../../run/kernels_z.asc . ;                     \\\n             ln -sf ../../run/bulkdens.asc_s_0_03_0_9 . ;           \\\n             ln -sf ../../run/bulkradii.asc_s_0_03_0_9 . ;          \\\n             ln -sf ../../run/CCN_ACTIVATE.BIN . ;                  \\\n             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_2momI . ;   \\\n             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_3momI . ;   \\\n             ln -sf ../../run/p3_lookupTable_2.dat-v5.3 . ;         \\\n             ln -sf ../../run/HLC.TBL . ;                           \\\n             ln -sf ../../run/wind-turbine-1.tbl . ;                \\\n             ln -sf ../../run/ishmael-gamma-tab.bin . ;             \\\n             ln -sf ../../run/ishmael-qi-qc.bin . ;                 \\\n             ln -sf ../../run/ishmael-qi-qr.bin . ;                 \\\n             ln -sf ../../run/BROADBAND_CLOUD_GODDARD.bin . ;       \\\n             ln -sf ../../run/STOCHPERT.TBL . ;                     \\\n             if [ -n \"\" ] ; then                       \\\n                ln -sf ../../run/ETAMPNEW_DATA_DBL ETAMPNEW_DATA ;  \\\n                ln -sf ../../run/ETAMPNEW_DATA.expanded_rain_DBL ETAMPNEW_DATA.expanded_rain ;   \\\n                ln -sf ../../run/RRTM_DATA_DBL RRTM_DATA ;          \\\n                ln -sf ../../run/RRTMG_LW_DATA_DBL RRTMG_LW_DATA ;  \\\n                ln -sf ../../run/RRTMG_SW_DATA_DBL RRTMG_SW_DATA ;  \\\n             fi )\n( cd test/em_real ; if test -d ../../run/SBM_input_33 ; then\t\t\t\t\\\n             ln -sf ../../run/SBM_input_33 . ;\t\t\t\t\t\t\\\n             ln -sf ../../run/scattering_tables_2layer_high_quad_1dT_1%fw_110 . ;\t\\\n             fi )\n( cd test/em_real ; /bin/rm -f GENPARM.TBL ; ln -s ../../run/GENPARM.TBL . )\n( cd test/em_real ; /bin/rm -f LANDUSE.TBL ; ln -s ../../run/LANDUSE.TBL . )\n( cd test/em_real ; /bin/rm -f SOILPARM.TBL ; ln -s ../../run/SOILPARM.TBL . )\n( cd test/em_real ; /bin/rm -f URBPARM.TBL ; ln -s ../../run/URBPARM.TBL . )\n( cd test/em_real ; /bin/rm -f URBPARM_LCZ.TBL ; ln -s ../../run/URBPARM_LCZ.TBL . )\n( cd test/em_real ; /bin/rm -f VEGPARM.TBL ; ln -s ../../run/VEGPARM.TBL . )\n( cd test/em_real ; /bin/rm -f MPTABLE.TBL ; ln -s ../../run/MPTABLE.TBL . )\n( cd test/em_real ; /bin/rm -f tr49t67 ; ln -s ../../run/tr49t67 . )\n( cd test/em_real ; /bin/rm -f tr49t85 ; ln -s ../../run/tr49t85 . )\n( cd test/em_real ; /bin/rm -f tr67t85 ; ln -s ../../run/tr67t85 . )\n( cd test/em_real ; /bin/rm -f gribmap.txt ; ln -s ../../run/gribmap.txt . )\n( cd test/em_real ; /bin/rm -f grib2map.tbl ; ln -s ../../run/grib2map.tbl . )\n( cd run ; /bin/rm -f real.exe ; ln -s ../main/real.exe . )\n( cd run ; /bin/rm -f tc.exe ; ln -s ../main/tc.exe . )\n( cd run ; /bin/rm -f ndown.exe ; ln -s ../main/ndown.exe . )\n( cd run ; if test -f namelist.input ; then \\\n\t/bin/cp -f namelist.input namelist.input.backup.`date +%Y-%m-%d_%H_%M_%S` ; fi ; \\\n\t/bin/rm -f namelist.input ; cp ../test/em_real/namelist.input . )\n \n==========================================================================\nbuild started:   Tue Jun  9 06:37:27 WEST 2026\nbuild completed: Tue Jun 9 06:39:31 WEST 2026\n \n--->                  Executables successfully built                  <---\n \n-rwxrwxr-x 1 enric enric 43533144 Jun  9 06:39 main/ndown.exe\n-rwxrwxr-x 1 enric enric 39953592 Jun  9 06:39 main/real.exe\n-rwxrwxr-x 1 enric enric 39093608 Jun  9 06:39 main/tc.exe\n-rwxrwxr-x 1 enric enric 54502680 Jun  9 06:39 main/wrf.exe\n \n==========================================================================\n ",
+      "compile_log_tail": "             ln -sf ../../run/CLM_ALB_ICE_DRC_DATA . ;              \\\n             ln -sf ../../run/CLM_ASM_ICE_DFS_DATA . ;              \\\n             ln -sf ../../run/CLM_ASM_ICE_DRC_DATA . ;              \\\n             ln -sf ../../run/CLM_DRDSDT0_DATA . ;                  \\\n             ln -sf ../../run/CLM_EXT_ICE_DFS_DATA . ;              \\\n             ln -sf ../../run/CLM_EXT_ICE_DRC_DATA . ;              \\\n             ln -sf ../../run/CLM_KAPPA_DATA . ;                    \\\n             ln -sf ../../run/CLM_TAU_DATA . ;                      \\\n             ln -sf ../../run/ozone.formatted . ;                   \\\n             ln -sf ../../run/ozone_lat.formatted . ;               \\\n             ln -sf ../../run/ozone_plev.formatted . ;              \\\n             ln -sf ../../run/aerosol.formatted . ;                 \\\n             ln -sf ../../run/aerosol_lat.formatted . ;             \\\n             ln -sf ../../run/aerosol_lon.formatted . ;             \\\n             ln -sf ../../run/aerosol_plev.formatted . ;            \\\n             ln -sf ../../run/eclipse_besselian_elements.dat . ;    \\\n             ln -sf ../../run/capacity.asc . ;                      \\\n             ln -sf ../../run/coeff_p.asc . ;                       \\\n             ln -sf ../../run/coeff_q.asc . ;                       \\\n             ln -sf ../../run/constants.asc . ;                     \\\n             ln -sf ../../run/masses.asc . ;                        \\\n             ln -sf ../../run/termvels.asc . ;                      \\\n             ln -sf ../../run/kernels.asc_s_0_03_0_9 . ;            \\\n             ln -sf ../../run/kernels_z.asc . ;                     \\\n             ln -sf ../../run/bulkdens.asc_s_0_03_0_9 . ;           \\\n             ln -sf ../../run/bulkradii.asc_s_0_03_0_9 . ;          \\\n             ln -sf ../../run/CCN_ACTIVATE.BIN . ;                  \\\n             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_2momI . ;   \\\n             ln -sf ../../run/p3_lookupTable_1.dat-v5.4_3momI . ;   \\\n             ln -sf ../../run/p3_lookupTable_2.dat-v5.3 . ;         \\\n             ln -sf ../../run/HLC.TBL . ;                           \\\n             ln -sf ../../run/wind-turbine-1.tbl . ;                \\\n             ln -sf ../../run/ishmael-gamma-tab.bin . ;             \\\n             ln -sf ../../run/ishmael-qi-qc.bin . ;                 \\\n             ln -sf ../../run/ishmael-qi-qr.bin . ;                 \\\n             ln -sf ../../run/BROADBAND_CLOUD_GODDARD.bin . ;       \\\n             ln -sf ../../run/STOCHPERT.TBL . ;                     \\\n             if [ -n \"\" ] ; then                       \\\n                ln -sf ../../run/ETAMPNEW_DATA_DBL ETAMPNEW_DATA ;  \\\n                ln -sf ../../run/ETAMPNEW_DATA.expanded_rain_DBL ETAMPNEW_DATA.expanded_rain ;   \\\n                ln -sf ../../run/RRTM_DATA_DBL RRTM_DATA ;          \\\n                ln -sf ../../run/RRTMG_LW_DATA_DBL RRTMG_LW_DATA ;  \\\n                ln -sf ../../run/RRTMG_SW_DATA_DBL RRTMG_SW_DATA ;  \\\n             fi )\n( cd test/em_real ; if test -d ../../run/SBM_input_33 ; then\t\t\t\t\\\n             ln -sf ../../run/SBM_input_33 . ;\t\t\t\t\t\t\\\n             ln -sf ../../run/scattering_tables_2layer_high_quad_1dT_1%fw_110 . ;\t\\\n             fi )\n( cd test/em_real ; /bin/rm -f GENPARM.TBL ; ln -s ../../run/GENPARM.TBL . )\n( cd test/em_real ; /bin/rm -f LANDUSE.TBL ; ln -s ../../run/LANDUSE.TBL . )\n( cd test/em_real ; /bin/rm -f SOILPARM.TBL ; ln -s ../../run/SOILPARM.TBL . )\n( cd test/em_real ; /bin/rm -f URBPARM.TBL ; ln -s ../../run/URBPARM.TBL . )\n( cd test/em_real ; /bin/rm -f URBPARM_LCZ.TBL ; ln -s ../../run/URBPARM_LCZ.TBL . )\n( cd test/em_real ; /bin/rm -f VEGPARM.TBL ; ln -s ../../run/VEGPARM.TBL . )\n( cd test/em_real ; /bin/rm -f MPTABLE.TBL ; ln -s ../../run/MPTABLE.TBL . )\n( cd test/em_real ; /bin/rm -f tr49t67 ; ln -s ../../run/tr49t67 . )\n( cd test/em_real ; /bin/rm -f tr49t85 ; ln -s ../../run/tr49t85 . )\n( cd test/em_real ; /bin/rm -f tr67t85 ; ln -s ../../run/tr67t85 . )\n( cd test/em_real ; /bin/rm -f gribmap.txt ; ln -s ../../run/gribmap.txt . )\n( cd test/em_real ; /bin/rm -f grib2map.tbl ; ln -s ../../run/grib2map.tbl . )\n( cd run ; /bin/rm -f real.exe ; ln -s ../main/real.exe . )\n( cd run ; /bin/rm -f tc.exe ; ln -s ../main/tc.exe . )\n( cd run ; /bin/rm -f ndown.exe ; ln -s ../main/ndown.exe . )\n( cd run ; if test -f namelist.input ; then \\\n\t/bin/cp -f namelist.input namelist.input.backup.`date +%Y-%m-%d_%H_%M_%S` ; fi ; \\\n\t/bin/rm -f namelist.input ; cp ../test/em_real/namelist.input . )\n \n==========================================================================\nbuild started:   Tue Jun  9 06:37:27 WEST 2026\nbuild completed: Tue Jun 9 06:39:31 WEST 2026\n \n--->                  Executables successfully built                  <---\n \n-rwxrwxr-x 1 user user 43533144 Jun  9 06:39 main/ndown.exe\n-rwxrwxr-x 1 user user 39953592 Jun  9 06:39 main/real.exe\n-rwxrwxr-x 1 user user 39093608 Jun  9 06:39 main/tc.exe\n-rwxrwxr-x 1 user user 54502680 Jun  9 06:39 main/wrf.exe\n \n==========================================================================\n ",
       "executable": {
         "exists": true,
         "is_file": true,

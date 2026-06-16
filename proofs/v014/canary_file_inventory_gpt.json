@@ -1,13 +1,13 @@
 {
   "verdict": "The strongest v0.14 Canary field-validation truth already on disk is the L2 d02 72h CPU-WRF backfill corpus under /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output: 15 complete cases, each with 73 hourly d01 and d02 wrfout frames and WRF rc=0 provenance in paired .cpu_wrf_backfill manifests. The nightly/case-bank corpus is real but is a teacher-shadow/point-artifact bank, not full wrfout or restart coverage. I found no complete Canary/Tenerife WRF restart/checkpoint corpus under the requested roots: canonical wrfrst_d0* files are absent from the retained run roots, representative namelists have restart=.false., and the v014 savepoint material is single-step debug instrumentation outside the requested roots, not restartable 72h field truth.",
   "roots_searched": [
-    "/home/enric/src/wrf_gpu2",
-    "/home/enric/src/canairy_meteo",
+    "/home/user/src/wrf_gpu2",
+    "/home/user/src/canairy_meteo",
     "/mnt/data/canairy_meteo"
   ],
   "path_notes": [
-    "/home/enric/src/canairy_meteo/Gen2/runs is a symlink to /mnt/data/canairy_meteo/runs.",
-    "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank and /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank resolve to the same device/inode for sampled files."
+    "/home/user/src/canairy_meteo/Gen2/runs is a symlink to /mnt/data/canairy_meteo/runs.",
+    "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank and /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank resolve to the same device/inode for sampled files."
   ],
   "candidate_run_sets": [
     {
@@ -248,8 +248,8 @@
         "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/*/*point_shadows.manifest.yaml"
       ],
       "readme_files": [
-        "/home/enric/src/canairy_meteo/Gen2/manifests/phase15d_wrf_evidence_bank_inventory_v1.yaml",
-        "/home/enric/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md"
+        "/home/user/src/canairy_meteo/Gen2/manifests/phase15d_wrf_evidence_bank_inventory_v1.yaml",
+        "/home/user/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md"
       ],
       "recommended_use": "Use for station/point-shadow and case-selection evidence, not as full-field v0.14 parity truth; it lacks retained full wrfout and restart files."
     },
@@ -361,7 +361,7 @@
       "recommended_use": "Research/regression d03 24h evidence only; duplicate/broken variants exist and it is not the v0.14 field gate."
     },
     {
-      "root": "/home/enric/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout",
+      "root": "/home/user/src/wrf_gpu2/proofs/m20/tost_run/gpu_wrfout",
       "kind": "gpu",
       "domains": [
         "d02"
@@ -458,7 +458,7 @@
       "evidence": "Representative L3 namelists have restart=.false.; the canonical wrfrst search found no d02/d03 restart files under retained run roots."
     },
     {
-      "root": "/home/enric/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs",
+      "root": "/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs",
       "kind": "gpu",
       "case_count": 3,
       "wrfrst_counts": {
@@ -480,7 +480,7 @@
   "nightly_sets": [
     {
       "root": "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank",
-      "also_reachable_as": "/home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank",
+      "also_reachable_as": "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank",
       "kind": "nightly",
       "case_manifest_count": 54,
       "completed_teacher_shadow_only_count": 29,
@@ -512,7 +512,7 @@
     },
     {
       "uncertainty": "Whether any deleted/thinned nightly full wrfout can be reconstructed without rerunning WRF.",
-      "fastest_command": "rg -n \"safe_output_dir|delete|thin_gridded|teacher_shadow_only|wrfout\" /home/enric/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /home/enric/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md"
+      "fastest_command": "rg -n \"safe_output_dir|delete|thin_gridded|teacher_shadow_only|wrfout\" /home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /home/user/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md"
     },
     {
       "uncertainty": "Whether a d03 72h truth campaign already exists under a validation root outside the requested canairy roots.",

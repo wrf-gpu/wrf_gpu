@@ -7,7 +7,7 @@ physics menu so that scheme lanes, wrfout, restart, and nesting consume one
 field list instead of re-creating Thompson-era assumptions locally.
 
 WRF Registry lines verified against
-``/home/enric/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON`` on
+``/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON`` on
 2026-06-02:
 
 * Kessler(1): ``moist:qv,qc,qr``.

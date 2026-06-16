@@ -507,7 +507,7 @@ def test_author_disclosure_present(paper_text: str) -> None:
     # The AI use disclosure is a load-bearing publication-ethics statement.
     text_l = paper_text.lower()
     assert "ai system" in text_l, "missing AI system disclosure"
-    assert "enric r.g." in text_l, "missing human corresponding-author identification"
+    assert "user r.g." in text_l, "missing human corresponding-author identification"
     assert (
         "ai use disclosure" in text_l
         or "ai-use disclosure" in text_l

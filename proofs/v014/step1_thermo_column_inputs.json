@@ -114,7 +114,7 @@
       "rmse": 1.6240307915374732
     }
   },
-  "host": "enric-battlestation",
+  "host": "user-workstation",
   "legacy_mismatch_metrics": {
     "legacy_standard_g_dz_vs_wrf_dz8w": {
       "bias": 0.017457734172978197,
@@ -154,7 +154,7 @@
   "paths": {
     "surface_oracle": "/tmp/wrf_gpu2_step1_tsk_znt_sourcing_fix/wrf_truth_surface/surface_mynn",
     "wrf_hook_changed_this_sprint": false,
-    "wrf_patch_source": "/home/enric/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff"
+    "wrf_patch_source": "/home/user/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff"
   },
   "ranked_findings": [
     {

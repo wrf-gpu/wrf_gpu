@@ -34,7 +34,7 @@
         "--abbrev-ref",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
@@ -46,7 +46,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "86fd69011cf9301c2f2b895c5efaa9780f5db09f\n",
@@ -60,7 +60,7 @@
         "--oneline",
         "--decorate"
       ],
-      "cwd": "/home/enric/src/wrf_gpu2",
+      "cwd": "/home/user/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "86fd6901 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open live nest perturb state sprint\n",
@@ -87,7 +87,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "316242310ca56012428b471ac67eb67d8c6f7362a983a025910cfd5c46f41132",
       "size_bytes": 73081
     },
@@ -95,7 +95,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
       "sha256": "52fc4a636185408c45f5ca9c265e28404661d2123eeda3ec823f2ee6612054ff",
       "size_bytes": 444932
     },
@@ -103,7 +103,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
       "sha256": "6ea827fdf3ca833e28a0822bc700e2fe6f58af3c64d6159e49f6af1cf905fe65",
       "size_bytes": 2227
     },
@@ -111,7 +111,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-live-nest-perturb-state-init/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-live-nest-perturb-state-init/sprint-contract.md",
       "sha256": "0d171e6c5e58132d34ac6025024b53f65d04f048486fb07b656fee717a9df285",
       "size_bytes": 6662
     },
@@ -143,7 +143,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.md",
       "sha256": "6ea827fdf3ca833e28a0822bc700e2fe6f58af3c64d6159e49f6af1cf905fe65",
       "size_bytes": 2227
     },
@@ -151,11 +151,11 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
       "sha256": "52fc4a636185408c45f5ca9c265e28404661d2123eeda3ec823f2ee6612054ff",
       "size_bytes": 444932
     },
-    "source": "/home/enric/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
+    "source": "/home/user/src/wrf_gpu2/proofs/v014/step1_first_rk_part1_p_state_split.json",
     "stage_residuals_max_abs": {
       "haloed_step_entry_state": {
         "MU_STATE": 13.256103515625,
@@ -2967,9 +2967,9 @@
     }
   },
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-live-nest-perturb-state-init.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-live-nest-perturb-state-init.md"
   },
   "schema": "wrfgpu2.v014.step1_live_nest_perturb_state_init.v1",
   "tooling_verdict": "YES_FASTEST_RIGOROUS_WALL_CLOCK_CPU_ONLY_SAVEPOINT_REUSE_PLUS_FORMULA_FALSIFIERS",

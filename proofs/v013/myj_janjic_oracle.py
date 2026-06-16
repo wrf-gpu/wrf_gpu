@@ -274,9 +274,9 @@ def build_report() -> dict:
                     "module_bl_myjpbl.F + module_sf_myjsfc.F (reuses the v0.6.0 fp64 savepoints)",
             "savepoints": str(SP.relative_to(ROOT)),
             "wrf_sources": [
-                "/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
-                "/home/enric/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
-                "/home/enric/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F",
+                "/home/user/src/wrf_pristine/WRF/share/module_model_constants.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F",
             ],
             "full_wrf_exe": False,
             "self_compare": False,

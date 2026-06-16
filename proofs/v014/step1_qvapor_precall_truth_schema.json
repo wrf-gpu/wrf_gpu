@@ -105,10 +105,10 @@
   },
   "gpu_used": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_truth_schema.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_truth_schema.md",
-    "proposed_wrf_savepoint": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-qvapor-precall-truth-schema/artifacts/proposed_wrf_savepoint.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-qvapor-precall-truth-schema.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_truth_schema.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_truth_schema.md",
+    "proposed_wrf_savepoint": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-qvapor-precall-truth-schema/artifacts/proposed_wrf_savepoint.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-qvapor-precall-truth-schema.md"
   },
   "proposed_wrf_savepoint": {
     "acceptance_checks": [
@@ -205,61 +205,61 @@
       {
         "exists": true,
         "line": 812,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "SUBROUTINE adjust_tempqv ( mub, save_mub, c3, c4, znw, p_top, &"
       },
       {
         "exists": true,
         "line": 813,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "                           th, pp, qv,  &"
       },
       {
         "exists": true,
         "line": 836,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "   REAL , DIMENSION(ims:ime,kms:kme,jms:jme) , INTENT(INOUT) :: th, pp, qv"
       },
       {
         "exists": true,
         "line": 846,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "! p_old = full pressure before terrain blending; also compute initial RH"
       },
       {
         "exists": true,
         "line": 852,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "            IF ( use_theta_m .EQ. 1 ) THEN"
       },
       {
         "exists": true,
         "line": 853,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "               tc = (th(i,k,j)+300.)*(p_old(i,k,j)/1.e5)**(2./7.)/(1.+R_v/R_d*qv(i,k,j)) - 273.15"
       },
       {
         "exists": true,
         "line": 869,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "            IF ( use_theta_m .EQ. 1 ) THEN"
       },
       {
         "exists": true,
         "line": 870,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "               thloc = (th(i,k,j)+300.)/(1.+R_v/R_d*qv(i,k,j))"
       },
       {
         "exists": true,
         "line": 877,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "               th(i,k,j) = (thloc+dth)*(1.+R_v/R_d*qv(i,k,j))-300."
       },
       {
         "exists": true,
         "line": 884,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
         "text": "            qv(i,k,j) = 0.622*e/(p_new(i,k,j)-e)"
       }
     ],
@@ -267,13 +267,13 @@
       {
         "exists": true,
         "line": 806,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F",
         "text": "       IF (coupler_on) CALL cpl_settime( curr_secs2 )"
       },
       {
         "exists": true,
         "line": 808,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F",
         "text": "       CALL first_rk_step_part1 (    grid, config_flags         &"
       }
     ],
@@ -281,49 +281,49 @@
       {
         "exists": true,
         "line": 678,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "     CALL med_interp_domain( parent, nest )"
       },
       {
         "exists": true,
         "line": 716,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "          CALL med_initialdata_input_ptr( nest , nest_config_flags )"
       },
       {
         "exists": true,
         "line": 737,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "! blend parent and nest fields: terrain, mub, and phb.  The ht, mub and phb are used in start_domain."
       },
       {
         "exists": true,
         "line": 756,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "       CALL adjust_tempqv ( nest%mub , nest%mub_save , &"
       },
       {
         "exists": true,
         "line": 757,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "                            nest%c3h , nest%c4h , nest%znw , nest%p_top , &"
       },
       {
         "exists": true,
         "line": 758,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "                            nest%t_2 , nest%p , nest%moist(ims,kms,jms,P_QV) , &"
       },
       {
         "exists": true,
         "line": 759,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "                            nest_config_flags%use_theta_m, &"
       },
       {
         "exists": true,
         "line": 762,
-        "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+        "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
         "text": "                            ips , ipe , jps , jpe , kps , kpe )"
       }
     ],
@@ -331,25 +331,25 @@
       {
         "exists": true,
         "line": 515,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F",
         "text": "       !  If the user has requested to optionally select the moist theta (use_theta_m==1)"
       },
       {
         "exists": true,
         "line": 516,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F",
         "text": "       !  switch, the first setting of the \"old\" value of theta_m uses the \"old\""
       },
       {
         "exists": true,
         "line": 517,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F",
         "text": "       !  value of Qv.  The moist_old variable does not exist until after the advection"
       },
       {
         "exists": true,
         "line": 521,
-        "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F",
+        "path": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F",
         "text": "       CALL initialize_moist_old ( moist_old(:,:,:,P_Qv),              &"
       }
     ]

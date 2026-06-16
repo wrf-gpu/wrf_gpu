@@ -6,7 +6,7 @@ Verdict: `STEP1_ADJUST_TEMPQV_INTERMEDIATE_PRESSURE_INPUT_MISMATCH`.
 
 - CPU-only proof; GPU used: `False`.
 - Required ancestor `c3620d09` present: `True`.
-- Disposable WRF hook patch: `/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`.
+- Disposable WRF hook patch: `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`.
 - Rebuilt executable: `/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe`; hook string present: `True`.
 - WRF run return code: `0`.
 - WRF run log: `/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_mpirun_np28_manager.log`.
@@ -45,10 +45,10 @@ files changed:
 - `.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md`
 
 proof objects produced:
-- `/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json`
-- `/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.md`
-- `/home/enric/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`
-- `/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md`
+- `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json`
+- `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.md`
+- `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`
+- `/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md`
 
 unresolved risks:
 - Only one target cell was emitted; broader savepoint may still be needed for neighborhood effects.

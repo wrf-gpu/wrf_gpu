@@ -232,8 +232,8 @@ def test_v060_janjic_sfclay_savepoint_parity_report() -> None:
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_sf_myjsfc.F",
             "wrf_sources": [
-                "/home/enric/src/wrf_pristine/WRF/share/module_model_constants.F",
-                "/home/enric/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
+                "/home/user/src/wrf_pristine/WRF/share/module_model_constants.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
             ],
             "generation_command": "taskset -c 0-3 env CUDA_VISIBLE_DEVICES= bash proofs/v060/oracle/myjsfc_build_and_run.sh",
             "full_wrf_exe": False,

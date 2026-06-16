@@ -3,7 +3,7 @@
   "schema_version": 1,
   "generated_utc": "2026-06-07T07:52:49.613660+00:00",
   "code_commit": "5045961eb8542b05d68d4914c9c5d61a0b60949c",
-  "worktree": "/home/enric/src/wrf_gpu2/.claude/worktrees/v0120-tostprep",
+  "worktree": "/home/user/src/wrf_gpu2/.claude/worktrees/v0120-tostprep",
   "n_cases": 15,
   "adr": "ADR-029",
   "margins": {

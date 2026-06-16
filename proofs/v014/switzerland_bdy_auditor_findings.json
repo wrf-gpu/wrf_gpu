@@ -47,10 +47,10 @@
     "H4_mapfactor_metric_in_normal_mass_flux": "CONSISTENT, not the isolated root: the same msfuy/msfvx and (c1*muf+c2) coupling appear in both the budget kernel and the leaf uncouple; the error is the MASS (IC vs live), not the map factor."
   },
   "wrf_source_refs": {
-    "lbc_fcx_gcx_weights": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_bc_em.F:1318-1319 (fcx=0.1/dt*linear, gcx=1/dt/50*linear)",
-    "advance_uv_spec_zone_exclusion": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F:735-741 (i_start=max(its,ids+spec_zone), i_endu=min(ite,ide-spec_zone))",
-    "rk_addtend_dry_spec_trim": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F:1671-1675",
-    "wrfbdy_coupling": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F::couple ; share/module_bc.F stuff_bdy"
+    "lbc_fcx_gcx_weights": "/home/user/src/wrf_pristine/WRF/dyn_em/module_bc_em.F:1318-1319 (fcx=0.1/dt*linear, gcx=1/dt/50*linear)",
+    "advance_uv_spec_zone_exclusion": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F:735-741 (i_start=max(its,ids+spec_zone), i_endu=min(ite,ide-spec_zone))",
+    "rk_addtend_dry_spec_trim": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F:1671-1675",
+    "wrfbdy_coupling": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F::couple ; share/module_bc.F stuff_bdy"
   },
   "gpu_code_refs": {
     "static_IC_mass_uncouple_ROOT": "src/gpuwrf/integration/d02_replay.py:1713,1645-1646,1717-1724 (mass_strips from IC mu_total, frozen)",

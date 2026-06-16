@@ -21,7 +21,7 @@ Options:
     --dry-run       Prepare merged root + print plan; no GPU forecasts, no scoring
 
 Root fix: ROOT is resolved from __file__ so this script always imports
-gpuwrf from THIS worktree's src/, not from /home/enric/src/wrf_gpu2.
+gpuwrf from THIS worktree's src/, not from /home/user/src/wrf_gpu2.
 """
 from __future__ import annotations
 

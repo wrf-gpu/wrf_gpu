@@ -7555,7 +7555,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "3bf433b2 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 pre-part1 handoff sprint\n",
@@ -7583,7 +7583,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-pre-part1-handoff/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-pre-part1-handoff/sprint-contract.md",
       "sha256": "9aee323e1da784fb94424c5cea82beee61e36a2e2a93f5b368ff7f65edb42118",
       "size_bytes": 7327
     },
@@ -7599,7 +7599,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
       "sha256": "b6adaa9d9f5b57c94fb84fe67931e36986a43ab0019e93ffd6b692b4170fdb87",
       "size_bytes": 8899
     },
@@ -8369,10 +8369,10 @@
   "no_tost": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.md",
-    "review": "/home/enric/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-pre-part1-handoff.md",
-    "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.md",
+    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-pre-part1-handoff.md",
+    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
     "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth"
   },
   "required_ancestor_588686d6": {

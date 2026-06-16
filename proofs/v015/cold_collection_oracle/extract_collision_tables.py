@@ -32,7 +32,7 @@ NBC = 100  # cloud-droplet bins for qcfz (module_mp_thompson.F:630 tpi_qcfz(ntb_
 NTB_TC = 45
 NTB_IN = 55
 
-DAT_DIR = Path("/home/enric/src/wrf_pristine/WRF/test/em_real/oracle_run")
+DAT_DIR = Path("/home/user/src/wrf_pristine/WRF/test/em_real/oracle_run")
 OUT = Path(__file__).resolve().parents[3] / "data" / "fixtures" / "thompson-cold-collection-v1.npz"
 
 

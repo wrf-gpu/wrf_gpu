@@ -696,10 +696,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "schema": "v014_switzerland_hpg_native_face_fix",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "wrf_source_anchors": {
-            "registry_hypsometric_default": "/home/enric/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON:2285 (default 2)",
-            "calc_p_rho_phi_hypso2": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1043-1062",
-            "calc_p_rho_phi_hypso1": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1027-1030",
-            "horizontal_pgf_terms": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2316,2385-2392",
+            "registry_hypsometric_default": "/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON:2285 (default 2)",
+            "calc_p_rho_phi_hypso2": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1043-1062",
+            "calc_p_rho_phi_hypso1": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1027-1030",
+            "horizontal_pgf_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2316,2385-2392",
             "gen2_hpg_identical_to_pristine": "diff of horizontal_pressure_gradient gen2 vs pristine 4.7.1: byte-identical",
         },
         "jax_fix_anchors": {

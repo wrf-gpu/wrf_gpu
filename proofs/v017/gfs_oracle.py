@@ -166,9 +166,9 @@ def build_report() -> dict:
                     "phys/module_bl_gfs.F (BL_GFS -> MONINP -> TRIDI2/TRIDIN/TRIDIT)",
             "savepoints": str(SP.relative_to(ROOT)),
             "wrf_sources": [
-                "/home/enric/src/wrf_pristine/WRF/phys/module_bl_gfs.F",
-                "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_machine.F",
-                "/home/enric/src/wrf_pristine/WRF/phys/module_gfs_physcons.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_bl_gfs.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_gfs_machine.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_gfs_physcons.F",
             ],
             "full_wrf_exe": False,
             "self_compare": False,

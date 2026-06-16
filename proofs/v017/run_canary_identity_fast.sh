@@ -8,7 +8,7 @@
 # vs CPU-WRF d02 truth with the FROZEN tolerance manifest.
 set -euo pipefail
 
-ROOT=/home/enric/src/wrf_gpu2/.wt-rc
+ROOT=/home/user/src/wrf_gpu2/.wt-rc
 RUN_ID=20260501_18z_l2_72h_20260519T173026Z
 RR=/mnt/data/wrf_gpu_validation/v017_canary_d02_72h_identity_fast_$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "$RR/gpu_output" "$RR/proofs"

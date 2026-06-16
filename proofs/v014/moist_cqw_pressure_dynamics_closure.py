@@ -14,7 +14,7 @@ the MOIST column.  Prior proof
   P+PB(k0) vs own column, h1: CPU MOIST -13.5 Pa ; GPU MOIST -202.7 Pa ;
   GPU DRY -8.2 Pa.
 
-WRF SOURCE ANCHORING (pristine tree /home/enric/src/wrf_pristine/WRF)
+WRF SOURCE ANCHORING (pristine tree /home/user/src/wrf_pristine/WRF)
   - calc_cq        module_big_step_utilities_em.F:856-870
       cqw(i,k,j) = 0.5*qtot,  qtot = sum_species( q(k)+q(k-1) )   (w-faces)
   - pg_buoy_w      module_big_step_utilities_em.F:2474-2497

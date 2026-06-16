@@ -305,11 +305,11 @@ def analyze() -> dict[str, Any]:
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "target": previous.get("target", {}),
         "wrf_source_anchors": {
-            "large_step_hpg_loop_bounds": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
-            "hydro_v_terms": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
-            "hydro_u_terms": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
-            "rk_step_prep_call": "/home/enric/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682",
-            "large_step_hpg_call": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
+            "large_step_hpg_loop_bounds": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
+            "hydro_v_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
+            "hydro_u_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
+            "rk_step_prep_call": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682",
+            "large_step_hpg_call": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
         },
         "artifacts": {
             "cpu": str(CPU),
@@ -619,7 +619,7 @@ def run_step_probe(args: argparse.Namespace) -> dict[str, Any]:
         },
         "wrf_loop_bound_mismatch_probe": {
             "meaning": "full_wrf_specified_edge_skip zeros only the outer normal faces skipped by WRF when specified/nested",
-            "wrf_source": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
+            "wrf_source": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
         },
         "variants": {},
         "environment": {

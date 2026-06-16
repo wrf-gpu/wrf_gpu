@@ -140,7 +140,7 @@
       "oom": true,
       "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 11.12GiB.",
       "peak_vram_gib": 10.542046308517456,
-      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/fp32_fp64_ladder.py\", line 76, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 11.12GiB.\n"
+      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/user/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/fp32_fp64_ladder.py\", line 76, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 11.12GiB.\n"
     },
     {
       "precision": "fp32",
@@ -183,7 +183,7 @@
       "oom": true,
       "error": "JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.75GiB.",
       "peak_vram_gib": 13.474049806594849,
-      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/enric/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/fp32_fp64_ladder.py\", line 76, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.75GiB.\n"
+      "_tb": "    return treedef.unflatten(f(*xs) for xs in zip(*all_leaves))\n                             ~^^^^^\n  File \"/home/user/src/wrf_gpu2/.claude/worktrees/agent-aeff1ce850bca4a9b/proofs/perf/v015/viability/fp32_fp64_ladder.py\", line 76, in <lambda>\n    lambda x: x.block_until_ready() if hasattr(x, \"block_until_ready\") else x, tree\n              ~~~~~~~~~~~~~~~~~~~^^\njax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 18.75GiB.\n"
     }
   ],
   "fp32_vs_fp64_ratios": [

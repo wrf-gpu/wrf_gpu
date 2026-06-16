@@ -19,7 +19,7 @@ set -u
 # Resolve the directory holding this script + the namelist template BEFORE any cd.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
-PRISTINE=/home/enric/src/wrf_pristine/WRF
+PRISTINE=/home/user/src/wrf_pristine/WRF
 SRC=/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z
 RUN="$PRISTINE/test/em_real/oracle_run_v090"
 ORACLE_ROOT=/mnt/data/wrf_gpu2/physics_oracle_v090
@@ -61,7 +61,7 @@ export WRFGPU2_ORACLE_GRID=1
 export WRFGPU2_ORACLE_STEP="$STEP"
 export WRFGPU2_ORACLE_ROOT="$ORACLE_ROOT"
 
-export LD_LIBRARY_PATH=/home/enric/miniconda3/envs/wrfbuild/lib:${LD_LIBRARY_PATH:-}
+export LD_LIBRARY_PATH=/home/user/miniconda3/envs/wrfbuild/lib:${LD_LIBRARY_PATH:-}
 ulimit -s unlimited 2>/dev/null || true
 export OMP_NUM_THREADS=1
 

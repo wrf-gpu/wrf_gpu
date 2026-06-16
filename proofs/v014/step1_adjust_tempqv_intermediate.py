@@ -44,7 +44,7 @@ RUN_DIR = SCRATCH / "run"
 WRF_TRUTH = SCRATCH / "wrf_truth"
 LOG_DIR = SCRATCH / "logs"
 WRF_EXE = WRF_TREE / "main/wrf.exe"
-WRF_BUILD_ENV = Path("/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build")
+WRF_BUILD_ENV = Path("/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build")
 
 TARGET_ZERO = {"k": 1, "y": 9, "x": 17}
 TARGET_FORTRAN = {"i": 18, "j": 10, "k": 2}
@@ -60,7 +60,7 @@ RUN_COMMAND = (
     "WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J=10 "
     "WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K=2 "
     "WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT=/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth "
-    "/home/enric/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe"
+    "/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe"
 )
 
 
@@ -528,7 +528,7 @@ def main() -> int:
         "wrf_build": {
             "compile_command": (
                 "cd /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && "
-                "/home/enric/miniconda3/bin/tcsh ./compile em_real"
+                "/home/user/miniconda3/bin/tcsh ./compile em_real"
             ),
             "compile_log": str(compile_log),
             "compile_log_info": path_info(compile_log),
@@ -546,7 +546,7 @@ def main() -> int:
                 "git rev-parse HEAD",
                 "git merge-base --is-ancestor c3620d09 HEAD",
                 "diff -u disposable WRF backups vs patched files > proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
-                "cd /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && /home/enric/miniconda3/bin/tcsh ./compile em_real",
+                "cd /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && /home/user/miniconda3/bin/tcsh ./compile em_real",
                 RUN_COMMAND,
             ],
             "required_validation": [

@@ -17,7 +17,7 @@ keep the implicit W solver well-conditioned. It is gated behind
 `GPUWRF_MOIST_CQW` (default OFF) so the shipped v0.12.0 behaviour is unchanged
 until the manager runs the single short GPU h1/h4 stability/parity gate.
 
-## 1. WRF source anchoring (pristine tree `/home/enric/src/wrf_pristine/WRF`)
+## 1. WRF source anchoring (pristine tree `/home/user/src/wrf_pristine/WRF`)
 
 - `calc_cq` `dyn_em/module_big_step_utilities_em.F:856-870` — w-face moist load
   `cqw(i,k,j) = 0.5*qtot`, `qtot = Σ_species( q(k)+q(k-1) )` over the full moist

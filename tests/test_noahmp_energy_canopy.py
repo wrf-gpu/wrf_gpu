@@ -275,7 +275,7 @@ from pathlib import Path  # noqa: E402
 
 _PROOFS = Path(__file__).resolve().parent.parent / "proofs" / "noahmp"
 _HAVE_GATE = (_PROOFS / "savepoints_energy.json").exists() and Path(
-    "/home/enric/src/wrf_pristine/WRF/run/MPTABLE.TBL"
+    "/home/user/src/wrf_pristine/WRF/run/MPTABLE.TBL"
 ).exists()
 
 

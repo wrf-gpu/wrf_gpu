@@ -173,7 +173,7 @@ status=launched
 EOF
 nohup setsid bash -lc '
   set +e
-  cd /home/enric/src/wrf_gpu2
+  cd /home/user/src/wrf_gpu2
   RUN_ROOT="'"$RUN_ROOT"'"
   scripts/run_gpu_lowprio.sh --cores 0-23 \
     --resource-log-dir "$RUN_ROOT/resources" \
@@ -238,7 +238,7 @@ status=launched
 EOF
 nohup setsid bash -lc '
   set +e
-  cd /home/enric/src/wrf_gpu2
+  cd /home/user/src/wrf_gpu2
   RUN_ROOT="'"$RUN_ROOT"'"
   RUN_ID="'"$RUN_ID"'"
   CPU_DIR=/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/$RUN_ID
@@ -362,7 +362,7 @@ status=launched
 EOF
 nohup setsid bash -lc '
   set +e
-  cd /home/enric/src/wrf_gpu2
+  cd /home/user/src/wrf_gpu2
   RUN_ROOT="'"$RUN_ROOT"'"
   CPU_DIR="'"$CPU_DIR"'"
   GPU_OUT="$RUN_ROOT/gpu_output"

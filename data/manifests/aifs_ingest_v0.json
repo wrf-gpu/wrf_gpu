@@ -101,7 +101,7 @@
     "pressure_level_fields": ["u", "v", "t", "q", "z"],
     "surface_fields": ["10u", "10v", "2t", "2d", "sp", "msl", "skt", "lsm", "z"],
     "soil_fields": ["vsw", "sot"],
-    "wps_vtable": "/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE"
+    "wps_vtable": "/home/user/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE"
   },
   "completeness_gate": {
     "status_if_missing": "AIFS_LATE_OR_INCOMPLETE",
@@ -130,8 +130,8 @@
     "wps_binary_reference": "/mnt/data/canairy_meteo/artifacts/wrf_src/WPS",
     "geog_root": "/mnt/data/canairy_meteo/artifacts/wps_geog/WPS_GEOG_LOW_RES",
     "gen2_scripts": [
-      "/home/enric/src/canairy_meteo/Gen2/scripts/prepare_aifs_pure_forcing.py",
-      "/home/enric/src/canairy_meteo/Gen2/scripts/poll_live_18z_cycle_v1.py"
+      "/home/user/src/canairy_meteo/Gen2/scripts/prepare_aifs_pure_forcing.py",
+      "/home/user/src/canairy_meteo/Gen2/scripts/poll_live_18z_cycle_v1.py"
     ]
   },
   "artifact_paths": [
@@ -140,7 +140,7 @@
     "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_000.grib2",
     "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/ungrib/step_024.grib2",
     "/mnt/data/canairy_meteo/runs/wps_cases/20260520_18z_72h/l3/met_em.d02.2026-05-20_18:00:00.nc",
-    "/home/enric/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE",
+    "/home/user/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE",
     "/mnt/data/canairy_meteo/data/state/live_18z_state.json"
   ],
   "notes": [

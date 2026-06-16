@@ -1079,7 +1079,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/enric/src/wrf_gpu2",
+    "cwd": "/home/user/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "e29f401c (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) manager require fastest debug method review\n",
@@ -1092,7 +1092,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/AGENTS.md",
+      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
@@ -1100,7 +1100,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
       "sha256": "4b15ebdd78a2675bed449ea1a3498212b2536efa51e384944a10eaf776a48702",
       "size_bytes": 11998
     },
@@ -1116,7 +1116,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
@@ -1140,7 +1140,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-input-contract-builder/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-same-input-contract-builder/sprint-contract.md",
       "sha256": "b4bbbe2a4b1d39212d9d2457b7d6f97cc6098631cc154c4ddd0093c23e34bfc1",
       "size_bytes": 5503
     },
@@ -1177,8 +1177,8 @@
   "next_decision": "Run the disposable CPU-WRF step-1 full-domain post-RK/pre-halo truth hook and rerun this builder.",
   "one_cell_proof": false,
   "proof_objects": {
-    "json": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_contract_builder.json",
-    "markdown": "/home/enric/src/wrf_gpu2/proofs/v014/same_input_contract_builder.md"
+    "json": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.json",
+    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.md"
   },
   "schema": "wrfgpu2.v014.same_input_contract_builder.v1",
   "source_locations": {
@@ -1186,7 +1186,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/nesting/boundary_construction.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/nesting/boundary_construction.py",
       "sha256": "3111e53b4691a4f05a5accaa859813da15adfb65f1bbd4d90882192c99594887",
       "size_bytes": 13913
     },
@@ -1194,7 +1194,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "360eced25ef4db037913a7936ac2b2a638a568f51cf88dcdbfe39383f5b91d8c",
       "size_bytes": 98563
     },
@@ -1202,7 +1202,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/domain_tree.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/domain_tree.py",
       "sha256": "c5460f4418d9b0d05a84efca096294a549aed080b19733b4f86dc88c31f9eee3",
       "size_bytes": 17156
     },
@@ -1210,7 +1210,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/dynamics/metrics.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/dynamics/metrics.py",
       "sha256": "ff93b50d3a9984b8a4aaaea7102bfa28c6df0cc1721b2db55c37223d268f295b",
       "size_bytes": 6794
     },
@@ -1218,7 +1218,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
       "sha256": "e6d5535f19de70d38f8e6a65a775bb4da3a80409f663deb40a6a5a89363de2bf",
       "size_bytes": 26757
     },
@@ -1226,7 +1226,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
       "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
       "size_bytes": 175388
     },
@@ -1234,7 +1234,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
       "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
       "size_bytes": 8390
     },
@@ -1242,7 +1242,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
       "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
       "size_bytes": 25734
     }
@@ -1293,7 +1293,7 @@
     "source_candidates": [
       "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
       "/mnt/data/wrf_gpu2/v014_source_save_boundary/WRF",
-      "/home/enric/src/wrf_pristine/WRF"
+      "/home/user/src/wrf_pristine/WRF"
     ],
     "status": "PATCH_NOT_APPLIED_IN_THIS_SPRINT"
   },

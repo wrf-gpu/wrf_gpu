@@ -984,7 +984,7 @@ def classify(comparisons: Mapping[str, Any]) -> tuple[str, list[str], str]:
 def source_evidence() -> dict[str, Any]:
     return {
         "mediation_integrate_live_nest_call": {
-            "path": "/home/enric/src/wrf_pristine/WRF/share/mediation_integrate.F",
+            "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
             "lines": "726-762",
             "evidence": [
                 "lines 726-735 save elevation and mub for temp and qv adjustment; nest%mub_save receives nest%mub",
@@ -993,7 +993,7 @@ def source_evidence() -> dict[str, Any]:
             ],
         },
         "adjust_tempqv": {
-            "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+            "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
             "lines": "812-890",
             "evidence": [
                 "lines 846-859 compute p_old and relative humidity from save_mub, pp, th, and qv",
@@ -1002,7 +1002,7 @@ def source_evidence() -> dict[str, Any]:
             ],
         },
         "theta_m_conversion": {
-            "path": "/home/enric/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F",
+            "path": "/home/user/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F",
             "lines": "4918-4928",
             "evidence": [
                 "lines 4918-4920 state dry potential temperature is turned into moist potential temperature before halo communications",

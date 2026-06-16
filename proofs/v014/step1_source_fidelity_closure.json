@@ -512,7 +512,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "dcc616f06dabd332d4bda87e9b659e9191f655be4dba921889801cb6be1e8a31",
       "size_bytes": 117140
     },
@@ -520,7 +520,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_dry_source_leaf_fix.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_dry_source_leaf_fix.md",
       "sha256": "9317ceca9330db1c35f4d7b8173100166f5094a739e9f9eef38c3bd74069b260",
       "size_bytes": 1618
     },
@@ -528,7 +528,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split.md",
+      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split.md",
       "sha256": "43f2c7d181b041d99dc058dc7e9d867ba5880c75874032ed6cda9345de768ed1",
       "size_bytes": 2013
     },
@@ -536,7 +536,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/enric/src/wrf_gpu2/.agent/sprints/2026-06-10-v014-step1-source-fidelity-closure/sprint-contract.md",
+      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-10-v014-step1-source-fidelity-closure/sprint-contract.md",
       "sha256": "734f99e42defa2877a54849a351e33138aaff97dbdea6954d9873ca613d914d1",
       "size_bytes": 5118
     },

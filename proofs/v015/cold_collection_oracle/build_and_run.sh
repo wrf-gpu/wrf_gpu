@@ -9,11 +9,11 @@
 # No GPU. Prereq: pristine WRF built with the oracle instrumentation + Thompson
 # lookup tables (qr_acr_qsV2.dat, qr_acr_qg_V4.dat, freezeH2O.dat) available.
 set -e
-source /home/enric/miniconda3/etc/profile.d/conda.sh
+source /home/user/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild 2>/dev/null || true
 
-WRF=/home/enric/src/wrf_pristine/WRF
-HERE=/home/enric/src/wrf_pristine/coldmix_oracle   # build dir (outside git)
+WRF=/home/user/src/wrf_pristine/WRF
+HERE=/home/user/src/wrf_pristine/coldmix_oracle   # build dir (outside git)
 SRC="$(dirname "$0")/coldmix_column_oracle.F"
 mkdir -p "$HERE"; cp "$SRC" "$HERE/"; cd "$HERE"
 

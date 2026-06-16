@@ -158,5 +158,5 @@
     "sandboxed_mpirun_failure_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_stdout.log",
     "sandboxed_singleton_failure_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_singleton_stdout.log"
   },
-  "wrf_patch_diff": "/home/enric/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint_wrf_patch.diff"
+  "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint_wrf_patch.diff"
 }
