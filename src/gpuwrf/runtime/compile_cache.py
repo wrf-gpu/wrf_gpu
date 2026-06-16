@@ -26,7 +26,7 @@ Cache directory precedence (first match wins):
 2. ``JAX_COMPILATION_CACHE_DIR`` -- the standard upstream JAX env var. If the
    operator already exported one we respect it and do not override.
 3. ``GPUWRF_JAX_CACHE_DIR`` -- explicit project override (kept for back-compat
-   with the v0.2.0 perf proofs and Enric's ``/mnt/data`` workstation layout).
+   with the v0.2.0 perf proofs and the user's ``/mnt/data`` workstation layout).
 4. ``GPUWRF_CACHE`` -- project cache root; the JIT cache lives at
    ``$GPUWRF_CACHE/jit``.
 5. Default: ``$XDG_CACHE_HOME/gpuwrf/jit`` if ``XDG_CACHE_HOME`` is set, else

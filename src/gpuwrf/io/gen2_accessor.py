@@ -26,7 +26,7 @@ from gpuwrf.contracts.grid import BCMetadata, GridSpec, Projection, TerrainProve
 
 # Path indirection (see gpuwrf.config.paths): the read-only Gen2 corpus root and
 # its default L3 run dir are environment-overridable so a clean clone is runnable
-# without /mnt/data. On Enric's workstation set GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo
+# without /mnt/data. On the user's workstation set GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo
 # to keep the original layout (and write-protection) working unchanged.
 GEN2_READ_ONLY_ROOT = paths.canairy_root()
 DEFAULT_M6_GEN2_RUN_DIR = (

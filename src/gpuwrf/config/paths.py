@@ -17,7 +17,7 @@ Environment variables
 ----------------------
 ``GPUWRF_CANAIRY_ROOT``
     Root of the Canary Gen2 / CPU-WRF corpus. Default: ``<repo>/data/canairy_meteo``
-    in an editable checkout. On Enric's workstation set it to
+    in an editable checkout. On the user's workstation set it to
     ``/mnt/data/canairy_meteo`` to keep the original layout working.
 ``GPUWRF_RUN_ROOT``
     Override the L3 run root directly. Default: ``<canairy_root>/runs/wrf_l3``.
