@@ -81,7 +81,7 @@ Do not use d03 as the v0.14 mandatory 72h gate unless a new CPU-WRF truth campai
 
 | Uncertainty | Fastest Command To Resolve |
 |---|---|
-| If Enric meant a checkpointed 15-case corpus outside the three requested roots, it was not found as a primary-root artifact. | `find /mnt/data -path '*/artifacts/envs/*' -prune -o -type f \( -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' -o -iname '*checkpoint*' -o -iname '*savepoint*' \) -printf '%p\n' \| sed -n '1,240p'` |
+| If the user meant a checkpointed 15-case corpus outside the three requested roots, it was not found as a primary-root artifact. | `find /mnt/data -path '*/artifacts/envs/*' -prune -o -type f \( -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' -o -iname '*checkpoint*' -o -iname '*savepoint*' \) -printf '%p\n' \| sed -n '1,240p'` |
 | Whether any deleted/thinned nightly full wrfout can be reconstructed without rerunning WRF. | `rg -n "safe_output_dir|delete|thin_gridded|teacher_shadow_only|wrfout" /home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank /home/user/src/canairy_meteo/Gen2/reports/disk_retention_recon_20260522_v1.md` |
 | Whether a d03 72h truth exists under a validation root outside the requested canairy roots. | `find /mnt/data/wrf_gpu_validation /mnt/data -maxdepth 5 -type f -name 'wrfout_d03_*' -printf '%h\n' \| sort \| uniq -c \| sort -nr \| sed -n '1,120p'` |
 

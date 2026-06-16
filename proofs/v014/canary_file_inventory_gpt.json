@@ -507,7 +507,7 @@
   ],
   "open_uncertainties": [
     {
-      "uncertainty": "If Enric meant a checkpointed 15-case corpus outside the three requested roots, it was not searched as a primary root.",
+      "uncertainty": "If the user meant a checkpointed 15-case corpus outside the three requested roots, it was not searched as a primary root.",
       "fastest_command": "find /mnt/data -path '*/artifacts/envs/*' -prune -o -type f \\( -name 'wrfrst_d02_*' -o -name 'wrfrst_d03_*' -o -iname '*checkpoint*' -o -iname '*savepoint*' \\) -printf '%p\\n' | sed -n '1,240p'"
     },
     {

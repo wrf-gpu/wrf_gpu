@@ -20,7 +20,7 @@ from gpuwrf.runtime.compile_cache import (
 
 __all__ = ["CACHE_STATUS", "configure_jax_compilation_cache", "DEFAULT_CACHE_DIR"]
 
-# Historical default (Enric's workstation NVMe). No longer the out-of-box
+# Historical default (the user's workstation NVMe). No longer the out-of-box
 # default -- the portable per-user dir is now preferred -- but exported for any
 # caller that referenced the constant.  To get the old behaviour explicitly,
 # export ``GPUWRF_JAX_CACHE_DIR=/mnt/data/gpuwrf_jax_cache``.
