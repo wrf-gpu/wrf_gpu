@@ -179,8 +179,9 @@ Full walk-through (prerequisites, troubleshooting, output): **[docs/quickstart.m
 > | `GPUWRF_WRF_ROOT` | Noah-MP, RRTM/RRTMG | Root of a pristine WRF v4 source/run tree — provides the RRTM/RRTMG `.F` sources and the `run/` tables (including `run/CCN_ACTIVATE.BIN` for Thompson aerosol). |
 > | `GPUWRF_CANAIRY_ROOT` | the validation cases | The `met_em` / run corpus root for the validation cases (run inputs + CPU-WRF reference). |
 >
-> Optional (performance / scratch, all defaulted): `JAX_COMPILATION_CACHE_DIR`
-> (persistent JIT cache location), `GPUWRF_TMPDIR` (scratch root, default
+> Optional (performance / scratch, all defaulted): `GPUWRF_JAX_CACHE_DIR` — the
+> persistent JIT-cache location (the standard JAX `JAX_COMPILATION_CACHE_DIR` is
+> also honored as an alias) — and `GPUWRF_TMPDIR` (scratch root, default
 > `~/.cache/gpuwrf`).
 >
 > Without `GPUWRF_WRF_ROOT` set, the table-loading schemes (Noah-MP, RRTM/RRTMG)
@@ -196,18 +197,27 @@ pip install --upgrade "jax[cuda13]"
 pip install -e .
 python -c "import jax; print(jax.devices())"     # should list a cuda device
 
-# 2. Run a standalone forecast from a real-data case
-#    (wrfinput_* + wrfbdy_d01 + met_em, no CPU wrfout needed)
+# 2. Run the BUNDLED Switzerland 3 km case — real GFS-initialized inputs that ship
+#    in the repo at examples/switzerland_d01 (wrfinput_d01 + wrfbdy_d01 +
+#    namelist.input; native-init, no CPU wrfout needed). Its physics (RRTMG
+#    radiation + Noah-MP) read WRF tables, so point GPUWRF_WRF_ROOT at your pristine
+#    WRF v4 tree first (see the prerequisite box above):
+export GPUWRF_WRF_ROOT=/path/to/your/WRF        # your pristine WRF v4 source/run tree
 python -m gpuwrf.cli run \
-    --input-dir   my_case \
-    --output-dir  runs/my_forecast \
-    --domain      d02 \
-    --hours       24 \
-    --scratch-dir /fast/nvme/gpuwrf_scratch
+    --input-dir   examples/switzerland_d01 \
+    --output-dir  runs/switzerland_d01 \
+    --domain      d01 \
+    --hours       1 \
+    --scratch-dir /tmp/gpuwrf_scratch           # any real (non-tmpfs) fast disk
 
 # 3. Read the WRF-compatible history file
-ncdump -h runs/my_forecast/wrfout_d02_*
+ncdump -h runs/switzerland_d01/wrfout_d01_*
 ```
+
+> The bundled `examples/switzerland_d01` inputs are derived from public-domain
+> NCEP **GFS** analysis (2023-01-15 00Z, 42×42 @ 3 km, 44 levels) via WPS/`real.exe`
+> — freely redistributable. They need **only** `GPUWRF_WRF_ROOT`;
+> `GPUWRF_CANAIRY_ROOT` is for the larger Canary validation corpus, not this case.
 
 `run` **auto-detects** the input directory: a case with a CPU-WRF `wrfout` →
 replay mode; a case with only `real.exe` outputs → **standalone native-init mode**
@@ -225,8 +235,10 @@ python -m gpuwrf.cli run --input-dir my_case --output-dir runs/nested \
     --max-dom 3 --hours 24 --scratch-dir /fast/nvme/gpuwrf_scratch
 ```
 
-> Remember the **one-time cold compile** (~8–12 min, no output) on the first run;
-> later runs read the persistent JIT cache. See the box at the top.
+> Remember the **one-time cold compile** (no output) on the first run; later runs
+> read the persistent JIT cache. Compile time **scales with domain size**: the
+> bundled single-domain d01 case compiles in roughly **½–2 min**, while a large
+> nested case can take **~8–12 min**. See the box at the top.
 
 ### Run JUST the current version without the full repo (VERIFIED)
 
@@ -605,6 +617,8 @@ tier.
 | When you want to… | Read |
 |---|---|
 | Install and run your first forecast | [`docs/quickstart.md`](docs/quickstart.md) |
+| Run the bundled real-data case (no download) | [`examples/switzerland_d01/`](examples/switzerland_d01/) |
+| Compare the GPU port to CPU-WRF yourself | [`docs/equivalence-switzerland.md`](docs/equivalence-switzerland.md) |
 | Run JUST the current version without the full repo | [Run JUST the current version](#run-just-the-current-version-without-the-full-repo-verified) above (`proofs/v018/quickstart_minimal_source_verified.txt`) |
 | Size a machine (VRAM / compile / scratch / energy) | [`docs/resource-profile.md`](docs/resource-profile.md) |
 | Know which namelist options run vs fail-closed | [`docs/namelist-compatibility.md`](docs/namelist-compatibility.md) |

@@ -7,6 +7,30 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.18.1] — Quickstart usability patch
+
+Documentation/usability patch over 0.18.0 (no model-code change; default numerics
+unchanged). A naive-user acceptance test of the public quickstart found the
+advertised Switzerland case was not runnable from a fresh clone. This release:
+
+- **Ships a bundled real-data example** at `examples/switzerland_d01/` (GFS-
+  initialized, public domain, ~13 MB) so a fresh clone runs an end-to-end GPU
+  forecast with no external download.
+- **Rewrites the Quickstart** (`README.md`, `docs/quickstart.md`) to use the
+  bundled case with a concrete, copy-pasteable command (`--input-dir
+  examples/switzerland_d01 --domain d01`), the required `GPUWRF_WRF_ROOT`,
+  calibrated cold-compile guidance, and a unified JIT-cache env-var name.
+- **Refreshes `docs/equivalence-switzerland.md`** (stale v0.13.0 status → v0.18)
+  and links the example + equivalence test from the README.
+
+## [0.15.0] – [0.18.0]
+
+Per-release history for 0.15 → 0.18 is maintained in the README **"Release line"**
+table and the per-version proof archives (`proofs/v01{5,6,7,8}/`); standalone
+`RELEASE_NOTES_*` files cover releases up to 0.15.0. 0.18.0 is the
+**feature-complete** release — every WRF v4 scheme classified and tested,
+experimental K2 multi-GPU, perf-neutral vs 0.17.
+
 ## [0.14.0] — Memory + WRF-identity release
 
 > **Both 72 h field-parity gates closed on the final code.** Switzerland d01 and

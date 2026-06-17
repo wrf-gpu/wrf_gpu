@@ -45,8 +45,13 @@ python -c "import jax; print(jax.devices())"
 
 ## 2. Get a case
 
-A standalone case directory contains the `real.exe`/metgrid outputs and a WRF
-namelist:
+**Fastest path — use the bundled example.** The repo ships a small, self-contained
+real-data case at [`examples/switzerland_d01/`](../examples/switzerland_d01/)
+(Switzerland 3 km, GFS-initialized, public domain). No download needed — skip to
+section 3 and use `--input-dir examples/switzerland_d01 --domain d01`.
+
+To run **your own** case instead: a standalone case directory contains the
+`real.exe`/metgrid outputs and a WRF namelist:
 
 ```
 my_case/
@@ -68,14 +73,21 @@ TKE / full-Smagorinsky closures, `km_opt=2/3/5`, fail closed — switch to
 
 ## 3. Run a standalone forecast
 
+Using the bundled Switzerland case (it selects RRTMG + Noah-MP, which read WRF
+tables, so set `GPUWRF_WRF_ROOT` to your pristine WRF v4 tree first):
+
 ```bash
+export GPUWRF_WRF_ROOT=/path/to/your/WRF        # your pristine WRF v4 source/run tree
 python -m gpuwrf.cli run \
-    --input-dir   my_case \
-    --output-dir  runs/my_forecast \
-    --domain      d02 \
-    --hours       24 \
-    --scratch-dir /fast/nvme/gpuwrf_scratch
+    --input-dir   examples/switzerland_d01 \
+    --output-dir  runs/switzerland_d01 \
+    --domain      d01 \
+    --hours       1 \
+    --scratch-dir /tmp/gpuwrf_scratch           # any real (non-tmpfs) fast disk
 ```
+
+For your own multi-domain case, point `--input-dir` at it and pick the
+`--domain`/`--hours` you need (raise `--hours`; the bundled namelist covers 24 h).
 
 `run` auto-detects the input directory:
 
@@ -88,11 +100,14 @@ python -m gpuwrf.cli run \
 What to expect on the **first** run:
 
 1. A fail-closed namelist check (instant, no GPU).
-2. **A ~5-minute cold JIT compile with no output** — this is XLA compiling, not a
-   hang. The **persistent on-disk JIT cache (on by default)** turns every later
-   run into a **~10 s cache read** of the bit-identical executable.
-3. Integration: ≈ 15–17 s of wall-clock per forecast-hour on the reference GPU
-   (d02 peak **VRAM ≈ 24.6 GiB**; the smaller d01 9 km case ≈ 4.7 GiB).
+2. **A cold JIT compile with no output** — this is XLA compiling, not a hang. It
+   **scales with domain size**: ~½–2 min for the bundled single-domain d01 case,
+   up to ~8–12 min for a large nested case. The **persistent on-disk JIT cache (on
+   by default)** turns every later run into a **~10 s cache read** of the
+   bit-identical executable.
+3. Integration on the reference GPU: the bundled d01 3 km case runs a forecast
+   hour in a few seconds at a small VRAM footprint; a 72 h nested d02 case peaks
+   **VRAM ≈ 24.6 GiB** (the d01 9 km case ≈ 4.7 GiB).
 4. A `wrfout` history file (and a run payload JSON) under `--output-dir`.
 
 See [resource-profile.md](resource-profile.md) for the compile-cache override
