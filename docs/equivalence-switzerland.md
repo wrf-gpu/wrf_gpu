@@ -14,13 +14,14 @@ conditions. It converts "the port generalizes" from an assertion into something
 - CPU reference producer (maintainer): [`scripts/run_switzerland_cpu_reference.sh`](../scripts/run_switzerland_cpu_reference.sh)
 - Proof object when the suite is run: `proofs/v0120/equivalence_switzerland.json`
 
-> **Current release status (v0.13.0):** this suite is documented and the case
-> generation / CPU-reference assets exist, but it is **not** a v0.13.0
-> validation pass. The large 128²/150² Switzerland GPU attempt in v0.12.0
-> ended as an honest fp64 single-GPU OOM/grid-ceiling characterization
-> (`proofs/v0120/switzerland_128_gpu_result.json`). Re-running Switzerland
-> after the v0.13 RRTMG memory fix is scheduled in the v0.14 B7 validation
-> campaign.
+> **Current release status (v0.18.0):** Switzerland d01 3 km is a **passing v0.18
+> identity case** — the front-page GPU↔CPU-WRF cell-for-cell dashboard is a 72 h
+> Switzerland d01 run scoring **9/10 fields within the frozen tolerance** (RAINNC
+> the one bounded, derived-precip miss; see the main README). The **case inputs now
+> ship in the repo** at [`examples/switzerland_d01/`](../examples/switzerland_d01/),
+> so the GPU forecast below runs out of the box; only the CPU-WRF *reference* for
+> the side-by-side comparison is user-supplied (a full hourly set is large — see
+> *CPU reference* below for the compact-set / bring-your-own options).
 
 ## The case (robust "it works" default)
 
