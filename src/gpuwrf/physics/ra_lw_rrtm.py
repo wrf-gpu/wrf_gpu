@@ -26,9 +26,15 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from gpuwrf.config.paths import wrf_root
+
 
 ROOT = Path(__file__).resolve().parents[3]
-WRF_ROOT = Path("/home/user/src/wrf_pristine/WRF")
+# Pristine WRF tree holding the unmodified RRTM source + lookup data.
+# Env-overridable via GPUWRF_WRF_ROOT (config.paths.wrf_root). These module-level
+# names are convenience snapshots; _load_tables() re-reads wrf_root() at call time
+# so a late os.environ set still wins.
+WRF_ROOT = wrf_root()
 RRTM_SOURCE = WRF_ROOT / "phys" / "module_ra_rrtm.F"
 RRTM_DATA_DBL = WRF_ROOT / "run" / "RRTM_DATA_DBL"
 RRTM_DATA = WRF_ROOT / "run" / "RRTM_DATA"
@@ -313,8 +319,13 @@ def _minor_vec(text: str, name: str, band: int, shape: tuple[int, ...] = (16,)) 
 
 @lru_cache(maxsize=1)
 def _load_tables() -> _RRTMTables:
-    source_text = _strip_comments(RRTM_SOURCE.read_text(encoding="utf-8", errors="replace"))
-    data_path = RRTM_DATA_DBL if RRTM_DATA_DBL.exists() else RRTM_DATA
+    # Re-resolve under wrf_root() so GPUWRF_WRF_ROOT set after import still wins.
+    root = wrf_root()
+    rrtm_source = root / "phys" / "module_ra_rrtm.F"
+    rrtm_data_dbl = root / "run" / "RRTM_DATA_DBL"
+    rrtm_data = root / "run" / "RRTM_DATA"
+    source_text = _strip_comments(rrtm_source.read_text(encoding="utf-8", errors="replace"))
+    data_path = rrtm_data_dbl if rrtm_data_dbl.exists() else rrtm_data
     parsed = _parse_records(data_path)
 
     absa: list[np.ndarray] = []

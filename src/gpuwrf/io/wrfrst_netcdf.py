@@ -20,7 +20,7 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from gpuwrf.contracts.state import State
+from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State
 from gpuwrf.io.wrfout_writer import (
     DATE_STR_LEN,
     MAPFAC_U_XY,
@@ -92,6 +92,25 @@ SOIL_TRAILING = ("Time", "south_north", "west_east", "soil_layers_stag")
 
 STATE_FIELD_ORDER: tuple[str, ...] = tuple(State.__slots__)
 
+
+def _validate_state_field_order(field_order: tuple[str, ...]) -> None:
+    if any(field not in STATE_FIELD_ORDER for field in field_order):
+        raise ValueError("wrfrst State field order contains unknown leaves")
+    if field_order != tuple(field for field in STATE_FIELD_ORDER if field in field_order):
+        raise ValueError("wrfrst State field order does not match current State.__slots__")
+    missing = tuple(field for field in STATE_FIELD_ORDER if field not in field_order)
+    if any(field not in CONDITIONAL_STATE_LEAVES for field in missing):
+        raise ValueError(
+            "wrfrst State field order is missing non-conditional leaves: "
+            f"{[field for field in missing if field not in CONDITIONAL_STATE_LEAVES]}"
+        )
+
+
+def _state_field_order_from_dataset(dataset: Dataset) -> tuple[str, ...]:
+    field_order = tuple(json.loads(str(getattr(dataset, "GPUWRF_STATE_FIELD_ORDER", "[]"))))
+    _validate_state_field_order(field_order)
+    return field_order
+
 WRF_STANDARD_RESTART_VARIABLES: tuple[str, ...] = (
     "XTIME",
     "ITIMESTEP",
@@ -135,13 +154,14 @@ WRF_STANDARD_RESTART_VARIABLES: tuple[str, ...] = (
     "QNGRAUPEL",
     "QNCLOUD",
     "QNCCN",
-    "QNWFA",
-    "QNIFA",
     # v0.17 ADR-032 graupel/hail substrate.
     "QHAIL",
     "QNHAIL",
     "QVGRAUPEL",
     "QVHAIL",
+    # v0.16 aerosol-aware Thompson (mp=28).
+    "QNWFA",
+    "QNIFA",
     "QKE",
     "UST",
     "TSK",
@@ -156,6 +176,29 @@ WRF_STANDARD_RESTART_VARIABLES: tuple[str, ...] = (
     # v0.17 hail microphysics surface accumulator (WSM7/WDM7).
     "HAILNC",
 )
+
+_ALWAYS_WRITTEN_STANDARD_RESTART_VARIABLES: frozenset[str] = frozenset((
+    "XTIME",
+    "ITIMESTEP",
+    "XLAT",
+    "XLONG",
+    "XLAT_U",
+    "XLONG_U",
+    "XLAT_V",
+    "XLONG_V",
+    "HGT",
+    "LANDMASK",
+    "ZNU",
+    "ZNW",
+    "P_TOP",
+    "MAPFAC_M",
+    "MAPFAC_U",
+    "MAPFAC_V",
+    "F",
+    "E",
+    "SINALPHA",
+    "COSALPHA",
+))
 
 # WRF-named restart fields written when the matching optional carry is present.
 NOAHMP_WRF_RESTART_VARIABLES: tuple[str, ...] = (
@@ -345,14 +388,14 @@ STANDARD_RESTART_FIELDS: tuple[StandardRestartField, ...] = (
     StandardRestartField(STANDARD_FIELD_SPECS["QNGRAUPEL"], lambda state: state.Ng),
     StandardRestartField(STANDARD_FIELD_SPECS["QNCLOUD"], lambda state: state.Nc),
     StandardRestartField(STANDARD_FIELD_SPECS["QNCCN"], lambda state: state.Nn),
-    # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers.
-    StandardRestartField(STANDARD_FIELD_SPECS["QNWFA"], lambda state: state.nwfa),
-    StandardRestartField(STANDARD_FIELD_SPECS["QNIFA"], lambda state: state.nifa),
     # v0.17 ADR-032 graupel/hail substrate prognostics.
     StandardRestartField(STANDARD_FIELD_SPECS["QHAIL"], lambda state: state.qh),
     StandardRestartField(STANDARD_FIELD_SPECS["QNHAIL"], lambda state: state.Nh),
     StandardRestartField(STANDARD_FIELD_SPECS["QVGRAUPEL"], lambda state: state.qvolg),
     StandardRestartField(STANDARD_FIELD_SPECS["QVHAIL"], lambda state: state.qvolh),
+    # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers.
+    StandardRestartField(STANDARD_FIELD_SPECS["QNWFA"], lambda state: state.nwfa),
+    StandardRestartField(STANDARD_FIELD_SPECS["QNIFA"], lambda state: state.nifa),
     StandardRestartField(STANDARD_FIELD_SPECS["QKE"], lambda state: state.qke),
     StandardRestartField(STANDARD_FIELD_SPECS["UST"], lambda state: state.ustar),
     StandardRestartField(STANDARD_FIELD_SPECS["TSK"], lambda state: state.t_skin),
@@ -420,14 +463,14 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     "qc_bl": XYZ,
     "qi_bl": XYZ,
     "cldfra_bl": XYZ,
-    # v0.16 aerosol-aware Thompson (mp=28) QNWFA/QNIFA prognostics.
-    "nwfa": XYZ,
-    "nifa": XYZ,
     # v0.17 ADR-032 graupel/hail substrate (QHAIL/QNHAIL/QVGRAUPEL/QVHAIL).
     "qh": XYZ,
     "Nh": XYZ,
     "qvolg": XYZ,
     "qvolh": XYZ,
+    # v0.16 aerosol-aware Thompson (mp=28) QNWFA/QNIFA prognostics.
+    "nwfa": XYZ,
+    "nifa": XYZ,
     # v0.17 hail surface-precip accumulator (HAILNC).
     "hail_acc": XY,
     "u_bdy": ("Time", "gpuwrf_u_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
@@ -583,9 +626,10 @@ def read_wrfrst_state(path: str | Path) -> tuple[State, dict[str, Any]]:
     target = Path(path)
     with Dataset(target, "r") as dataset:
         _validate_common_schema(dataset, require_carry=False)
+        field_order = _state_field_order_from_dataset(dataset)
         expected_shapes = _expected_state_shapes_from_dataset(dataset)
         fields: dict[str, Any] = {}
-        for leaf in STATE_FIELD_ORDER:
+        for leaf in field_order:
             var_name = state_extension_name(leaf)
             fields[leaf] = jnp.asarray(_read_exact_variable(dataset, var_name, expected_shapes[leaf]))
         metadata = _read_metadata(dataset)
@@ -598,9 +642,10 @@ def read_wrfrst_carry(path: str | Path) -> tuple[OperationalCarry, dict[str, Any
     target = Path(path)
     with Dataset(target, "r") as dataset:
         _validate_common_schema(dataset, require_carry=True)
+        field_order = _state_field_order_from_dataset(dataset)
         expected_shapes = _expected_state_shapes_from_dataset(dataset)
         fields: dict[str, Any] = {}
-        for leaf in STATE_FIELD_ORDER:
+        for leaf in field_order:
             fields[leaf] = jnp.asarray(_read_exact_variable(dataset, state_extension_name(leaf), expected_shapes[leaf]))
         state = State(**fields)
         carry_fields: dict[str, Any] = {"state": state}
@@ -714,13 +759,16 @@ def _write_wrfrst(
                 _write_restart_variable(dataset, STANDARD_FIELD_SPECS[name], coordinate_fields[name], dimensions)
 
         for field in STANDARD_RESTART_FIELDS:
-            _write_restart_variable(dataset, field.spec, field.value(state), dimensions)
+            value = field.value(state)
+            if value is None:
+                continue
+            _write_restart_variable(dataset, field.spec, value, dimensions)
 
         if carry is not None and carry.noahmp_land is not None:
             _write_noahmp_wrf_restart_variables(dataset, carry.noahmp_land, dimensions)
         _write_stochastic_seed_variables(dataset, seed_arrays, dimensions)
 
-        for leaf in STATE_FIELD_ORDER:
+        for leaf in state.active_field_names():
             _write_exact_state_variable(dataset, leaf, getattr(state, leaf), dimensions)
 
         if carry is not None:
@@ -779,12 +827,22 @@ def _write_restart_global_attrs(
     step_index: int,
     stochastic_seed_arrays: Mapping[str, np.ndarray],
 ) -> None:
+    active_state_order = state.active_field_names()
+    active_standard_variables = [
+        name for name in WRF_STANDARD_RESTART_VARIABLES
+        if name in _ALWAYS_WRITTEN_STANDARD_RESTART_VARIABLES
+    ]
+    active_standard_variables.extend(
+        field.spec.name
+        for field in STANDARD_RESTART_FIELDS
+        if field.value(state) is not None
+    )
     dataset.TITLE = "OUTPUT FROM GPUWRF WRF-COMPATIBLE NETCDF RESTART"
     dataset.RESTART_STATUS = "RESTART"
     dataset.GPUWRF_WRFRST_SCHEMA_VERSION = SCHEMA_VERSION
-    dataset.GPUWRF_STATE_FIELD_ORDER = json.dumps(list(STATE_FIELD_ORDER), separators=(",", ":"))
-    dataset.GPUWRF_STATE_FIELD_COUNT = np.int32(len(STATE_FIELD_ORDER))
-    dataset.GPUWRF_STANDARD_RESTART_VARIABLES = json.dumps(list(WRF_STANDARD_RESTART_VARIABLES), separators=(",", ":"))
+    dataset.GPUWRF_STATE_FIELD_ORDER = json.dumps(list(active_state_order), separators=(",", ":"))
+    dataset.GPUWRF_STATE_FIELD_COUNT = np.int32(len(active_state_order))
+    dataset.GPUWRF_STANDARD_RESTART_VARIABLES = json.dumps(active_standard_variables, separators=(",", ":"))
     dataset.GPUWRF_OPTIONAL_WRF_RESTART_VARIABLES = json.dumps(list(OPTIONAL_WRF_RESTART_VARIABLES), separators=(",", ":"))
     dataset.GPUWRF_STOCHASTIC_SEED_VARIABLE_ORDER = json.dumps(
         list(stochastic_seed_arrays),
@@ -813,7 +871,7 @@ def _write_restart_global_attrs(
     dataset.setncattr(
         "GPUWRF_STATE_LEAF_DTYPES",
         json.dumps(
-            {leaf: str(np.asarray(getattr(state, leaf)).dtype) for leaf in STATE_FIELD_ORDER},
+            {leaf: str(np.asarray(getattr(state, leaf)).dtype) for leaf in active_state_order},
             sort_keys=True,
             separators=(",", ":"),
         ),
@@ -1435,7 +1493,7 @@ def _units_for_leaf(leaf: str) -> str:
         return "Pa"
     if leaf in {"ph", "ph_total", "ph_perturbation"}:
         return "m2 s-2"
-    if leaf in {"Ni", "Nr", "Ns", "Ng", "Nc", "Nn", "nwfa", "nifa", "Nh"}:
+    if leaf in {"Ni", "Nr", "Ns", "Ng", "Nc", "Nn", "Nh", "nwfa", "nifa"}:
         return "kg-1"
     if leaf == "qke":
         return "m2 s-2"
@@ -1455,7 +1513,7 @@ def _units_for_leaf(leaf: str) -> str:
         return "m2 s-2"
     if leaf == "rhosfc":
         return "kg m-3"
-    if leaf in {"rain_acc", "snow_acc", "graupel_acc", "ice_acc", "rainc_acc"}:
+    if leaf in {"rain_acc", "snow_acc", "graupel_acc", "ice_acc", "rainc_acc", "hail_acc"}:
         return "mm"
     if leaf.endswith("_bdy"):
         return "WRF lateral boundary tendency/history units"
@@ -1480,23 +1538,30 @@ def _validate_common_schema(dataset: Dataset, *, require_carry: bool) -> None:
     schema = str(getattr(dataset, "GPUWRF_WRFRST_SCHEMA_VERSION", ""))
     if schema != SCHEMA_VERSION:
         raise ValueError(f"unsupported wrfrst schema {schema!r}; expected {SCHEMA_VERSION!r}")
-    field_order = json.loads(str(getattr(dataset, "GPUWRF_STATE_FIELD_ORDER", "[]")))
-    if tuple(field_order) != STATE_FIELD_ORDER:
-        raise ValueError("wrfrst State field order does not match current State.__slots__")
+    field_order = _state_field_order_from_dataset(dataset)
+    standard_manifest = json.loads(str(getattr(dataset, "GPUWRF_STANDARD_RESTART_VARIABLES", "[]")))
     missing_standard = [
-        name for name in WRF_STANDARD_RESTART_VARIABLES
+        name for name in standard_manifest
         if name != "Times" and name not in dataset.variables
     ]
     if missing_standard:
         raise ValueError(f"wrfrst missing WRF-standard restart variables: {missing_standard}")
-    missing_state = [state_extension_name(leaf) for leaf in STATE_FIELD_ORDER if state_extension_name(leaf) not in dataset.variables]
+    missing_state = [
+        state_extension_name(leaf)
+        for leaf in field_order
+        if state_extension_name(leaf) not in dataset.variables
+    ]
     if missing_state:
         raise ValueError(f"wrfrst missing exact gpuwrf State variables: {missing_state}")
     carry_present = int(getattr(dataset, "GPUWRF_CARRY_PRESENT", 0))
     if require_carry and carry_present != 1:
         raise ValueError("wrfrst does not contain exact gpuwrf carry variables")
     if require_carry:
-        missing_carry = [carry_extension_name(name) for name in CARRY_ARRAY_FIELDS if carry_extension_name(name) not in dataset.variables]
+        missing_carry = [
+            carry_extension_name(name)
+            for name in CARRY_ARRAY_FIELDS
+            if carry_extension_name(name) not in dataset.variables
+        ]
         if missing_carry:
             raise ValueError(f"wrfrst missing exact gpuwrf carry variables: {missing_carry}")
     for name in _stochastic_seed_manifest(dataset):
@@ -1525,9 +1590,10 @@ def _validate_common_schema(dataset: Dataset, *, require_carry: bool) -> None:
 
 def _expected_state_shapes_from_dataset(dataset: Dataset) -> dict[str, tuple[int, ...]]:
     dimensions = _dataset_dimension_sizes(dataset)
+    field_order = _state_field_order_from_dataset(dataset)
     return {
         leaf: _shape_for_dimensions(STATE_EXACT_DIMENSIONS[leaf], dimensions)
-        for leaf in STATE_FIELD_ORDER
+        for leaf in field_order
     }
 
 

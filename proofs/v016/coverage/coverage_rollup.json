@@ -1,19 +1,23 @@
 {
   "schema": "V016CoverageRollup",
-  "l2_target_count": 25,
+  "l2_target_count": 32,
   "tested_green": [
     "cu2",
     "cu3",
     "cu6",
     "lw1",
+    "lw31",
     "mp1",
     "mp10",
+    "mp13",
     "mp14",
     "mp16",
     "mp2",
+    "mp28",
     "mp3",
     "mp4",
     "mp6",
+    "mp97",
     "pbl1",
     "pbl2",
     "pbl7",
@@ -32,12 +36,16 @@
   "scoped_carry": [
     "lsm2"
   ],
-  "pending": [],
-  "n_green": 24,
+  "pending": [
+    "mp24",
+    "mp26",
+    "pbl3"
+  ],
+  "n_green": 28,
   "n_review": 0,
   "n_fail": 0,
   "n_carry": 1,
-  "n_pending": 0,
+  "n_pending": 3,
   "gate_details": {
     "pbl1": {
       "verdict": "PASS",
@@ -98,7 +106,7 @@
     "mp1": {
       "verdict": "PASS",
       "all_finite": true,
-      "peak_vram_gib": 6.988,
+      "peak_vram_gib": 6.742,
       "worst_dyn_over_limit": 0.09204847637650797,
       "file": "mp1_gate.json"
     },
@@ -137,6 +145,13 @@
       "worst_dyn_over_limit": 0.0512701438805459,
       "file": "mp10_gate.json"
     },
+    "mp13": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.317,
+      "worst_dyn_over_limit": 0.07351725041624046,
+      "file": "mp13_gate.json"
+    },
     "mp14": {
       "verdict": "PASS",
       "all_finite": true,
@@ -151,12 +166,33 @@
       "worst_dyn_over_limit": 0.11338316523816155,
       "file": "mp16_gate.json"
     },
+    "mp28": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.339,
+      "worst_dyn_over_limit": 0.03349020418075348,
+      "file": "mp28_gate.json"
+    },
+    "mp97": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 7.081,
+      "worst_dyn_over_limit": 0.0947988112235479,
+      "file": "mp97_gate.json"
+    },
     "lw1": {
       "verdict": "PASS",
       "all_finite": true,
       "peak_vram_gib": 13.756,
       "worst_dyn_over_limit": 0.01467531166853431,
       "file": "lw1_gate.json"
+    },
+    "lw31": {
+      "verdict": "PASS",
+      "all_finite": true,
+      "peak_vram_gib": 3.487,
+      "worst_dyn_over_limit": 0.02560406193760815,
+      "file": "lw31_gate.json"
     },
     "sw1": {
       "verdict": "PASS",
@@ -215,5 +251,5 @@
       "file": "lsm2_gate.json"
     }
   },
-  "overall": "ALL_GREEN_OR_CARRIED"
+  "overall": "IN_PROGRESS"
 }

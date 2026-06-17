@@ -32,8 +32,40 @@ def _zeros(shape: tuple[int, ...], field: str, device: jax.Device) -> jax.Array:
     return jax.device_put(jnp.zeros(shape, dtype=DEFAULT_DTYPES.dtype_for(field)), device)
 
 
-def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
-    """Returns the frozen SoA field-shape contract for the coupled M6 state."""
+HAIL_MP_PHYSICS_OPTIONS: frozenset[int] = frozenset({7, 17, 18, 19, 21, 22, 24, 26, 27, 38})
+HAIL_CONDITIONAL_LEAVES: tuple[str, ...] = ("qh", "Nh", "qvolg", "qvolh", "hail_acc")
+AEROSOL_CONDITIONAL_LEAVES: tuple[str, ...] = ("nwfa", "nifa")
+CONDITIONAL_STATE_LEAVES: tuple[str, ...] = ("qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc")
+
+
+def conditional_state_leaves_for_mp(
+    mp_physics: int | None = 8,
+    *,
+    include_all_conditional: bool = False,
+) -> tuple[str, ...]:
+    """Return State leaves that must exist for a static microphysics selection."""
+
+    if include_all_conditional:
+        return ("qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc")
+    mp = 8 if mp_physics is None else int(mp_physics)
+    if mp in HAIL_MP_PHYSICS_OPTIONS:
+        return HAIL_CONDITIONAL_LEAVES
+    if mp == 28:
+        return AEROSOL_CONDITIONAL_LEAVES
+    return ()
+
+
+def is_conditional_state_leaf(name: str) -> bool:
+    return name in CONDITIONAL_STATE_LEAVES
+
+
+def _state_field_shapes(
+    grid: GridSpec,
+    *,
+    mp_physics: int | None = 8,
+    include_all_conditional: bool = False,
+) -> dict[str, tuple[int, ...]]:
+    """Returns the SoA field-shape contract for one static physics selection."""
 
     nz, ny, nx = grid.nz, grid.ny, grid.nx
     mass_3d = (nz, ny, nx)
@@ -43,7 +75,7 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
     boundary_mass = (1, 4, boundary_width, nz, boundary_side)
     boundary_face = (1, 4, boundary_width, nz + 1, boundary_side)
     boundary_surface = (1, 4, boundary_width, 1, boundary_side)
-    return {
+    shapes = {
         "u": (nz, ny, nx + 1),
         "v": (nz, ny + 1, nx),
         "w": (nz + 1, ny, nx),
@@ -110,27 +142,32 @@ def _state_field_shapes(grid: GridSpec) -> dict[str, tuple[int, ...]]:
         "qc_bl": mass_3d,
         "qi_bl": mass_3d,
         "cldfra_bl": mass_3d,
-        # v0.16 additive aerosol-aware Thompson (mp=28) leaves (append-only):
-        # water-/ice-friendly aerosol number concentrations on mass points.
-        "nwfa": mass_3d,
-        "nifa": mass_3d,
-        # v0.17 ADR-032 additive graupel/hail (qh) substrate leaves
-        # (append-only): hail mixing ratio (qh, WRF moist QHAIL), hail number
-        # (Nh, WRF scalar QNHAIL), and the predicted-density particle volumes
-        # qvolg (WRF QVGRAUPEL) / qvolh (WRF QVHAIL). All mass-3d, FP32-gated.
-        # Ordered AFTER the v0.16 Thompson-aero leaves so they remain at the very END of
-        # the leaf order (pytree-position stability for every prior leaf).
-        "qh": mass_3d,
-        "Nh": mass_3d,
-        "qvolg": mass_3d,
-        "qvolh": mass_3d,
-        # v0.17 hail microphysics surface-precip accumulator (append-only, after
-        # the ADR-032 hail substrate so every prior leaf keeps its position): the
-        # accumulated grid-scale hail (WRF HAILNC, mm). Counterpart to the
-        # rain/snow/graupel/ice accumulators; carried by the hail MP family
-        # (WSM7=24, WDM7=26); inert (zero) until a hail scheme is wired.
-        "hail_acc": surface_2d,
     }
+    active = set(
+        conditional_state_leaves_for_mp(
+            mp_physics,
+            include_all_conditional=include_all_conditional,
+        )
+    )
+    if active & set(HAIL_CONDITIONAL_LEAVES):
+        # v0.17 ADR-032 graupel/hail substrate, allocated only for hail-family
+        # static microphysics selections.
+        shapes.update({
+            "qh": mass_3d,
+            "Nh": mass_3d,
+            "qvolg": mass_3d,
+            "qvolh": mass_3d,
+        })
+    if active & set(AEROSOL_CONDITIONAL_LEAVES):
+        # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers.
+        shapes.update({
+            "nwfa": mass_3d,
+            "nifa": mass_3d,
+        })
+    if "hail_acc" in active:
+        # v0.17 hail microphysics surface-precip accumulator.
+        shapes["hail_acc"] = surface_2d
+    return shapes
 
 
 def _leaf_nbytes(leaves: Iterable[jax.Array]) -> int:
@@ -495,11 +532,6 @@ class State:
         "qc_bl",
         "qi_bl",
         "cldfra_bl",
-        # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
-        # WRF QNWFA/QNIFA water-/ice-friendly aerosol number concentrations
-        # (kg^-1). Appended at the VERY END (after the v0.6.0 + v0.15 additions)
-        "nwfa",
-        "nifa",
         # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves (append-only;
         # same reconstruction contract as the blocks above) ---
         # qh   = hail mixing ratio (kg kg^-1; WRF moist QHAIL)
@@ -507,18 +539,22 @@ class State:
         # qvolg = graupel particle volume (m^3 kg^-1; WRF scalar QVGRAUPEL)
         # qvolh = hail particle volume (m^3 kg^-1; WRF scalar QVHAIL)
         # Appended at the VERY END so every existing leaf keeps its pytree
-        # position; ``__init__`` gives them ``None`` defaults (-> zeros) so a
-        # pre-v0.17 ``cls(*children)`` flatten with the old leaf count still
-        # reconstructs. They are INERT (zero) unless a hail MP scheme is wired.
+        # position. They stay ``None`` unless a hail MP scheme is selected, so
+        # the default mp=8 path does not allocate their arrays.
         "qh",
         "Nh",
         "qvolg",
         "qvolh",
-        # v0.17 hail surface-precip accumulator (append-only, AFTER the ADR-032
-        # hail substrate). hail_acc = accumulated grid-scale hail (mm; WRF
-        # HAILNC). ``__init__`` gives it a ``None`` default (-> zeros, templated
-        # on rain_acc) so a pre-hail-acc ``cls(*children)`` flatten still
-        # reconstructs. Inert (zero) unless a hail MP scheme is wired.
+        # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
+        # WRF QNWFA/QNIFA water-/ice-friendly aerosol number concentrations
+        # (kg^-1). Appended after the v0.6.0 + v0.15 + v0.17 ADR-032 hail
+        # additions so every existing leaf keeps its pytree position. They stay
+        # ``None`` unless aerosol-aware Thompson (mp=28) is selected.
+        "nwfa",
+        "nifa",
+        # v0.17 hail surface-precip accumulator (append-only, at the VERY END).
+        # hail_acc = accumulated grid-scale hail (mm; WRF HAILNC). It stays
+        # ``None`` unless a hail MP scheme is selected.
         "hail_acc",
     )
 
@@ -586,15 +622,15 @@ class State:
         qc_bl: jax.Array | None = None,
         qi_bl: jax.Array | None = None,
         cldfra_bl: jax.Array | None = None,
-        # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
-        nwfa: jax.Array | None = None,
-        nifa: jax.Array | None = None,
         # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves (append-only) ---
         qh: jax.Array | None = None,
         Nh: jax.Array | None = None,
         qvolg: jax.Array | None = None,
         qvolh: jax.Array | None = None,
-        # v0.17 hail surface-precip accumulator (append-only).
+        # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
+        nwfa: jax.Array | None = None,
+        nifa: jax.Array | None = None,
+        # v0.17 hail surface-precip accumulator (append-only, at the very END).
         hail_acc: jax.Array | None = None,
     ) -> None:
         self.u = u
@@ -698,70 +734,67 @@ class State:
             if cldfra_bl is None
             else _as_dtype(cldfra_bl, DEFAULT_DTYPES.dtype_for("cldfra_bl"))
         )
-        # v0.16 additive aerosol-aware Thompson (mp=28) leaves. Same ``None`` ->
-        # zeros pattern as Nc/Nn above (templated on qc, mass-3d) so existing
-        # call sites and pre-v0.16 pytree flattens (old leaf count) still
-        # construct; the cast keeps the ADR-007 precision matrix (FP32-gated)
-        # consistent.
-        self.nwfa = (
-            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("nwfa"))
-            if nwfa is None
-            else _as_dtype(nwfa, DEFAULT_DTYPES.dtype_for("nwfa"))
-        )
-        self.nifa = (
-            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("nifa"))
-            if nifa is None
-            else _as_dtype(nifa, DEFAULT_DTYPES.dtype_for("nifa"))
-        )
-        # v0.17 ADR-032 graupel/hail substrate leaves. Same ``None`` -> zeros
-        # pattern as the qc/Nc hydrometeor block above (all templated on qc,
-        # mass-3d) so existing call sites and pre-v0.17 pytree flattens (old
-        # leaf count) still construct; the cast keeps the ADR-007 precision
-        # matrix (all four FP32-gated, same class as qg/Ng) consistent. They
-        # cold-start at zero and stay inert until a hail MP scheme is wired.
-        self.qh = (
-            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qh"))
-            if qh is None
-            else _as_dtype(qh, DEFAULT_DTYPES.dtype_for("qh"))
-        )
-        self.Nh = (
-            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("Nh"))
-            if Nh is None
-            else _as_dtype(Nh, DEFAULT_DTYPES.dtype_for("Nh"))
-        )
-        self.qvolg = (
-            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qvolg"))
-            if qvolg is None
-            else _as_dtype(qvolg, DEFAULT_DTYPES.dtype_for("qvolg"))
-        )
-        self.qvolh = (
-            jnp.zeros_like(qc, dtype=DEFAULT_DTYPES.dtype_for("qvolh"))
-            if qvolh is None
-            else _as_dtype(qvolh, DEFAULT_DTYPES.dtype_for("qvolh"))
-        )
-        # v0.17 hail surface-precip accumulator. Same ``None`` -> zeros pattern as
-        # rainc_acc above (2-D, templated on rain_acc, FP64 like every other
-        # accumulator). Cold-starts at zero and stays inert until a hail MP
-        # scheme is wired.
-        self.hail_acc = (
-            jnp.zeros_like(rain_acc, dtype=DEFAULT_DTYPES.dtype_for("hail_acc"))
-            if hail_acc is None
-            else _as_dtype(hail_acc, DEFAULT_DTYPES.dtype_for("hail_acc"))
-        )
+        # v0.17/v0.16 conditional additive leaves. ``None`` means the selected
+        # static microphysics scheme does not carry the leaf, so no array is
+        # allocated and JAX omits it from the pytree leaves. Enabling a hail or
+        # aerosol scheme must pass/ensure concrete arrays before the scan starts.
+        self.qh = None if qh is None else _as_dtype(qh, DEFAULT_DTYPES.dtype_for("qh"))
+        self.Nh = None if Nh is None else _as_dtype(Nh, DEFAULT_DTYPES.dtype_for("Nh"))
+        self.qvolg = None if qvolg is None else _as_dtype(qvolg, DEFAULT_DTYPES.dtype_for("qvolg"))
+        self.qvolh = None if qvolh is None else _as_dtype(qvolh, DEFAULT_DTYPES.dtype_for("qvolh"))
+        self.nwfa = None if nwfa is None else _as_dtype(nwfa, DEFAULT_DTYPES.dtype_for("nwfa"))
+        self.nifa = None if nifa is None else _as_dtype(nifa, DEFAULT_DTYPES.dtype_for("nifa"))
+        self.hail_acc = None if hail_acc is None else _as_dtype(hail_acc, DEFAULT_DTYPES.dtype_for("hail_acc"))
 
     @classmethod
-    def zeros(cls, grid: GridSpec) -> "State":
-        """Allocates the full M6 SoA state once on the first visible GPU."""
+    def zeros(cls, grid: GridSpec, *, mp_physics: int | None = 8) -> "State":
+        """Allocates the State leaves required by one static microphysics option."""
 
         device = _gpu_device()
-        return cls(**{field: _zeros(shape, field, device) for field, shape in _state_field_shapes(grid).items()})
+        return cls(**{
+            field: _zeros(shape, field, device)
+            for field, shape in _state_field_shapes(grid, mp_physics=mp_physics).items()
+        })
 
     @classmethod
-    def from_init(cls, grid: GridSpec, ic: Path) -> "State":
+    def from_init(cls, grid: GridSpec, ic: Path, *, mp_physics: int | None = 8) -> "State":
         """Keeps the future IC-loading call shape while M3 only supports zero init."""
 
         del ic
-        return cls.zeros(grid)
+        return cls.zeros(grid, mp_physics=mp_physics)
+
+    def active_field_names(self) -> tuple[str, ...]:
+        """Return slot names that currently carry arrays in pytree order."""
+
+        return tuple(name for name in self.__slots__ if getattr(self, name) is not None)
+
+    def ensure_conditional_leaves(
+        self,
+        *,
+        mp_physics: int | None = 8,
+        include_all_conditional: bool = False,
+    ) -> "State":
+        """Materialize static-scheme conditional leaves once before a timestep scan."""
+
+        active = conditional_state_leaves_for_mp(
+            mp_physics, include_all_conditional=include_all_conditional
+        )
+        updates: dict[str, jax.Array] = {}
+        if "qh" in active and self.qh is None:
+            updates["qh"] = jnp.zeros_like(self.qc, dtype=DEFAULT_DTYPES.dtype_for("qh"))
+        if "Nh" in active and self.Nh is None:
+            updates["Nh"] = jnp.zeros_like(self.qc, dtype=DEFAULT_DTYPES.dtype_for("Nh"))
+        if "qvolg" in active and self.qvolg is None:
+            updates["qvolg"] = jnp.zeros_like(self.qc, dtype=DEFAULT_DTYPES.dtype_for("qvolg"))
+        if "qvolh" in active and self.qvolh is None:
+            updates["qvolh"] = jnp.zeros_like(self.qc, dtype=DEFAULT_DTYPES.dtype_for("qvolh"))
+        if "nwfa" in active and self.nwfa is None:
+            updates["nwfa"] = jnp.zeros_like(self.qc, dtype=DEFAULT_DTYPES.dtype_for("nwfa"))
+        if "nifa" in active and self.nifa is None:
+            updates["nifa"] = jnp.zeros_like(self.qc, dtype=DEFAULT_DTYPES.dtype_for("nifa"))
+        if "hail_acc" in active and self.hail_acc is None:
+            updates["hail_acc"] = jnp.zeros_like(self.rain_acc, dtype=DEFAULT_DTYPES.dtype_for("hail_acc"))
+        return self if not updates else self.replace(**updates)
 
     def replace(self, *, _cast: bool = True, **updates) -> "State":
         """Returns an updated pytree with explicit field names for JAX functional steps.
@@ -783,8 +816,10 @@ class State:
         values = {name: getattr(self, name) for name in self.__slots__}
         for name, value in updates.items():
             current = values[name]
-            if _cast and hasattr(current, "dtype") and hasattr(value, "astype"):
+            if _cast and current is not None and hasattr(current, "dtype") and hasattr(value, "astype"):
                 value = value.astype(current.dtype)
+            elif _cast and current is None and value is not None and hasattr(value, "astype"):
+                value = value.astype(DEFAULT_DTYPES.dtype_for(name))
             values[name] = value
 
         def sync_total_legacy_perturbation(total: str, legacy: str, perturbation: str) -> None:
@@ -804,7 +839,10 @@ class State:
         sync_total_legacy_perturbation("p_total", "p", "p_perturbation")
         sync_total_legacy_perturbation("ph_total", "ph", "ph_perturbation")
         sync_total_legacy_perturbation("mu_total", "mu", "mu_perturbation")
-        return type(self)(**values)
+        obj = object.__new__(type(self))
+        for name in self.__slots__:
+            object.__setattr__(obj, name, values[name])
+        return obj
 
     def bytes(self) -> int:
         """Reports persistent state bytes for the spacetime budget."""
@@ -847,6 +885,8 @@ class State:
 
         del aux
         obj = object.__new__(cls)
+        for name in cls.__slots__:
+            object.__setattr__(obj, name, None)
         for name, value in zip(cls.__slots__, children):
             object.__setattr__(obj, name, value)
         return obj

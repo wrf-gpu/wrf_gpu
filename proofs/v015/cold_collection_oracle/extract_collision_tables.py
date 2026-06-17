@@ -31,6 +31,7 @@ NTB_C = 37
 NBC = 100  # cloud-droplet bins for qcfz (module_mp_thompson.F:630 tpi_qcfz(ntb_c,nbc,45,ntb_IN))
 NTB_TC = 45
 NTB_IN = 55
+IDX_BG1 = 5  # WRF mp8 fixed graupel-density index, even with dimNRHG=1.
 
 DAT_DIR = Path("/home/user/src/wrf_pristine/WRF/test/em_real/oracle_run")
 OUT = Path(__file__).resolve().parents[3] / "data" / "fixtures" / "thompson-cold-collection-v1.npz"
@@ -51,6 +52,30 @@ def read_records(path: Path) -> list[np.ndarray]:
     return recs
 
 
+def extract_qg_mp8_plane(rec: np.ndarray) -> np.ndarray:
+    """Return the effective mp8 qr_acr_qg table read by WRF.
+
+    In non-hail Thompson mp8, WRF allocates ``qr_acr_qg`` with ``dimNRHG=1`` but
+    later indexes it with ``idx_bg1=5`` (module_mp_thompson.F:2527-2532).  With
+    bounds checking off this is a deterministic column-major offset into the
+    following rain-intercept planes.  Store that effective 4-D view so the JAX
+    runtime remains a normal ``(g1,g,r1,r)`` gather while matching pristine WRF.
+    """
+
+    eff = np.zeros(NTB_G1 * NTB_G * NTB_R1 * NTB_R, dtype=np.float64)
+    for m in range(NTB_R):
+        for k in range(NTB_R1):
+            for j in range(NTB_G):
+                for i in range(NTB_G1):
+                    out_off = i + NTB_G1 * (j + NTB_G * (k + NTB_R1 * m))
+                    src_off = i + NTB_G1 * (
+                        j + NTB_G * ((IDX_BG1 - 1) + k + NTB_R1 * m)
+                    )
+                    if src_off < rec.size:
+                        eff[out_off] = rec[src_off]
+    return eff.reshape((NTB_G1, NTB_G, NTB_R1, NTB_R), order="F")
+
+
 def main():
     qs = read_records(DAT_DIR / "qr_acr_qsV2.dat")
     qg = read_records(DAT_DIR / "qr_acr_qg_V4.dat")
@@ -65,9 +90,12 @@ def main():
 
     # The cold (twet<T_0) rcs/rcg lane reads all 12 qr_acr_qs records and 4 of
     # the 5 qr_acr_qg records.  ``tcg_racg`` is only used by the WARM rcg branch
-    # (rain melting graupel below the melting line) and the Bigg rain-freezing
-    # tables (freezeH2O qrfz) are ALREADY in thompson-tables-v1.npz and consumed
-    # by the existing freeze block -- so neither is duplicated here.
+    # (rain melting graupel below the melting line), while the full Bigg
+    # rain-freezing qrfz tables are already in thompson-tables-v1.npz and
+    # consumed by the existing freeze block.  The default-IN/default-cloud-number
+    # qcfz cloud-water-freezing planes are tiny, WRF-active in v0.18, and live
+    # in the same freezeH2O.dat source, so keep those reduced planes here with
+    # the cold lane.
     KEEP = set(qs_names) | {"tmr_racg", "tcr_gacr", "tnr_racg", "tnr_gacr"}
 
     out = {}
@@ -80,13 +108,24 @@ def main():
         arr = rec.reshape((NTB_S, NTB_T, NTB_R1, NTB_R), order="F")
         out[name] = np.ascontiguousarray(arr)
 
-    # qr_acr_qg: Fortran (ntb_g1, ntb_g, dimNRHG=1, ntb_r1, ntb_r). dimNRHG=1
-    # for mp8 (the only density plane idx_bg=5 / idx_bg1). Squeeze that axis.
+    # qr_acr_qg: Fortran allocation is (ntb_g1, ntb_g, dimNRHG=1, ntb_r1, ntb_r),
+    # but mp8 reads it with idx_bg1=5.  Extract the effective out-of-bounds plane
+    # exactly as pristine WRF reads it, then store C-order (g1,g,r1,r).
     for name, rec in zip(qg_names, qg):
         if name not in KEEP:
             continue
-        arr = rec.reshape((NTB_G1, NTB_G, 1, NTB_R1, NTB_R), order="F")[:, :, 0, :, :]
+        arr = extract_qg_mp8_plane(rec)
         out[name] = np.ascontiguousarray(arr)  # (ntb_g1, ntb_g, ntb_r1, ntb_r)
+
+    fz = read_records(DAT_DIR / "freezeH2O.dat")
+    assert len(fz) == 6, len(fz)
+    default_in_index = 27  # WRF default 1 L^-1 IN -> idx_IN=28, stored 0-based.
+    default_nc_index = 58  # WRF non-aerosol Nt_c=100e6 m^-3 -> idx_n=59, 0-based.
+    for name, rec in zip(("tpi_qrfz", "tni_qrfz", "tpg_qrfz", "tnr_qrfz", "tpi_qcfz", "tni_qcfz"), fz):
+        if name not in {"tpi_qcfz", "tni_qcfz"}:
+            continue
+        arr = rec.reshape((NTB_C, NBC, NTB_TC, NTB_IN), order="F")
+        out[name] = np.ascontiguousarray(arr[:, default_nc_index, :, default_in_index])
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(OUT, **out)

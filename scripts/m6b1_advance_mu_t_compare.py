@@ -429,8 +429,12 @@ def synthetic_dryrun() -> dict[str, object]:
         "sanitizer_mode": "off",
     }
     text = json.dumps(payload, indent=2, sort_keys=True)
-    (SPRINT / "proof_synthetic_dryrun_m6b1.json").write_text(text + "\n")
-    (SPRINT / "proof_synthetic_dryrun_m6b1.txt").write_text(text + "\n")
+    # The committed canonical proofs are regenerated ONLY on explicit request
+    # (GPUWRF_WRITE_PROOFS=1). The test driver asserts on the returned payload, so
+    # the default run must not re-dirty the tracked proofs with tolerance noise.
+    if os.environ.get("GPUWRF_WRITE_PROOFS", "").strip().lower() in {"1", "true", "yes", "on"}:
+        (SPRINT / "proof_synthetic_dryrun_m6b1.json").write_text(text + "\n")
+        (SPRINT / "proof_synthetic_dryrun_m6b1.txt").write_text(text + "\n")
     return payload
 
 

@@ -67,7 +67,7 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
     assert "physics.mp_physics domain 2=5" in message
     assert "Ferrier" in message
     assert "NOT YET IMPLEMENTED" in message
-    assert "Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 24, 26, 28" in message
+    assert "Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16" in message
     assert "physics.cu_physics domain 1=7" in message
     assert "Zhang-McFarlane" in message
     assert "1=Kain-Fritsch" in message
@@ -75,17 +75,29 @@ def test_unsupported_selected_option_raises_actionable_error() -> None:
 
 
 def test_registry_records_supported_active_suite() -> None:
-    # v0.16 adds mp=28; v0.17 RC adds the green WSM7/WDM7 hail schemes.
-    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 24, 26, 28})
-    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 7, 8, 99})
+    # v0.16 adds mp=28 (aerosol-aware Thompson); v0.18 harvests mp=13 (SBU-YLin),
+    # mp=24 (WSM7) + mp=26 (WDM7) hail, and mp=97 (Goddard GCE).
+    assert SUPPORTED_OPTIONS["mp_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97})
+    # bl=3 GFS, bl=11 Shin-Hong, and bl=12 GBM are operational
+    # (savepoint/reference-parity proven, scan-wired). bl=4/10/16/17 are v0.18
+    # reference-only with real pristine-WRF module oracles.
+    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 16, 17, 99})
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 7, 91})
-    assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 1, 2, 4})
-    assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 6, 14, 16})
-    assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 1, 2, 4})
+    assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 7, 8})
+    assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 5, 6, 14, 16, 93, 94, 95, 96, 99})
+    # v0.18 RA tail adds ra_lw/sw=3 (CAM) and 7 (FLG/UCLA) as real-WRF exact-driver
+    # reference-only oracles alongside ra_sw=5 (new Goddard) and ra_lw/sw=99
+    # (GFDL-Eta). ra_lw/sw=14 (RRTMG-K) and 24 (fast RRTMG) are NOT accepted --
+    # they are compiled-out of standard WRF (see test_v018_ra_tail_oracle.py).
+    assert SUPPORTED_OPTIONS["ra_sw_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 5, 7, 99})
     # ra_lw=5 (GSFC/Goddard NUWRF LW) is v0.13 Tier-3 reference-only: namelist-
     # accepted (selectable for a single-column reference comparison) but
     # fail-closed in the operational scan (proofs/v013/t3_gsfc_lw_oracle.py).
-    assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 4, 5})
+    # v0.17/v0.18 also accept ra_lw/sw=3/7/99 and ra_sw=5 as reference-only selections.
+    # ra_lw=31 (Held-Suarez idealized radiation) is a v0.18-harvested operationally
+    # scan-wired no-kernel-change endpoint (savepoint-parity-proven against the
+    # unmodified phys/module_ra_hs.F at fp64).
+    assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 3, 4, 5, 7, 31, 99})
 
 
 def test_myj_janjic_pairing_is_enforced() -> None:
@@ -170,24 +182,29 @@ def test_implemented_scheme_passes() -> None:
         # recognized-but-unimplemented Thompson-family example.
         ("mp_physics", 29, "Thompson"),
         ("mp_physics", 50, "P3"),
-        ("bl_pbl_physics", 4, "QNSE"),
+        # bl=4/10/16/17 are now reference-only with real pristine-WRF module
+        # oracles; bl=9 CAM-UW remains a named CAM-family fail-closed option.
+        ("bl_pbl_physics", 9, "UW"),
         ("cu_physics", 7, "Zhang-McFarlane"),
-        ("sf_surface_physics", 3, "RUC"),
+        # sf_surface=3 (RUC) + 8 (SSiB) are now v0.17 Tier-3 REFERENCE-ONLY
+        # (namelist-accepted for a single-column reference comparison, fail-closed
+        # in the operational scan), so they are no longer "recognized-but-
+        # unimplemented" fail-at-namelist examples -- see the reference-only test in
+        # tests/test_scheme_catalog_fail_closed.py. sf_surface=5 (CLM4) remains
+        # recognized-but-unimplemented.
         ("sf_surface_physics", 5, "CLM4"),
         # sf_sfclay=3 (GFS) + 91 (old-MM5) are now v0.13 Tier-3 implemented; the
         # remaining unimplemented surface-layer option is QNSE (4).
         ("sf_sfclay_physics", 4, "QNSE"),
-        # ra_lw=5 (GSFC/Goddard NUWRF LW) is now v0.13 Tier-3 REFERENCE-ONLY
-        # (namelist-accepted for a single-column reference comparison, fail-closed
-        # in the operational scan), so it is no longer a "recognized-but-
-        # unimplemented" fail-at-namelist example -- see the reference-only test in
-        # tests/test_scheme_catalog_fail_closed.py. ra_lw=3 (CAM LW) remains
-        # recognized-but-unimplemented.
-        ("ra_lw_physics", 3, "CAM"),
-        # ra_sw=2 (GSFC/Chou-Suarez) is now operationally scan-wired (v0.13 Tier3),
-        # so it is no longer a "recognized-but-unimplemented" example. ra_sw=3
-        # (CAM) remains recognized-but-unimplemented (no GPU radiation-slot adapter).
-        ("ra_sw_physics", 3, "CAM"),
+        # ra_lw=5 (GSFC/Goddard NUWRF LW) is v0.13 Tier-3 REFERENCE-ONLY and ra_lw/sw=3
+        # (CAM), 7 (FLG/UCLA), 99 (GFDL-Eta) are v0.18 RA-tail REFERENCE-ONLY (real-WRF
+        # exact-driver oracles staged in proofs/v018/savepoints/ra_tail_wrf;
+        # namelist-accepted for reference comparison, fail-closed in the operational
+        # scan) -- so none of them is a "recognized-but-unimplemented" fail-at-namelist
+        # example any more. See the reference-only tests in
+        # tests/test_scheme_catalog_fail_closed.py and tests/test_v018_ra_tail_oracle.py.
+        # ra_lw/sw=14 (RRTMG-K) and 24 (fast RRTMG) are class-(c) compiled-out of
+        # standard WRF -- covered as fail-closed in tests/test_v018_ra_tail_oracle.py.
     ],
 )
 def test_recognized_but_unimplemented_scheme_names_the_status(
@@ -244,18 +261,28 @@ def test_reference_failclosed_schemes_keep_specific_messages() -> None:
     downstream runtime concern, kept accurate in the SUPPORTED_OPTIONS text).
     """
 
-    # cu=3 Grell-Freitas, cu=16 New Tiedtke: accepted (reference).
+    # cu=3 Grell-Freitas is operational; cu=5/16/93/99 are accepted (reference).
     validate_supported_namelist({"physics": {"cu_physics": [3]}})
-    validate_supported_namelist({"physics": {"cu_physics": [16]}})
+    validate_supported_namelist({"physics": {"cu_physics": [4, 5, 16, 93, 94, 95, 96, 99]}})
     # ra_lw=1 classic RRTM, ra_sw=1 Dudhia: accepted (isolated savepoint).
     validate_supported_namelist({"physics": {"ra_lw_physics": [1], "ra_sw_physics": [1]}})
     # MYJ(2)+Janjic(2) reference pair: accepted.
     validate_supported_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+    # v0.18 PBL reference endpoints: accepted for single-column module-oracle work.
+    validate_supported_namelist({"physics": {"bl_pbl_physics": [4, 10, 16, 17]}})
 
     # And the supported-option notes still carry the reference/fail-closed text.
     assert "Grell-Freitas" in SUPPORTED_OPTIONS["cu_physics"].implemented
+    assert "SAS family" in SUPPORTED_OPTIONS["cu_physics"].implemented
     assert "New Tiedtke" in SUPPORTED_OPTIONS["cu_physics"].implemented
+    assert "Grell-Devenyi" in SUPPORTED_OPTIONS["cu_physics"].implemented
+    assert "previous Kain-Fritsch" in SUPPORTED_OPTIONS["cu_physics"].implemented
     assert "MYJ" in SUPPORTED_OPTIONS["bl_pbl_physics"].implemented
+    assert "QNSE" in SUPPORTED_OPTIONS["bl_pbl_physics"].implemented
+    assert "TEMF" in SUPPORTED_OPTIONS["bl_pbl_physics"].implemented
+    assert "EEPS" in SUPPORTED_OPTIONS["bl_pbl_physics"].implemented
+    assert "KEPS" in SUPPORTED_OPTIONS["bl_pbl_physics"].implemented
+    assert "CAM-UW" in SUPPORTED_OPTIONS["bl_pbl_physics"].implemented
     assert "Janjic Eta" in SUPPORTED_OPTIONS["sf_sfclay_physics"].implemented
     assert "RRTM longwave" in SUPPORTED_OPTIONS["ra_lw_physics"].implemented
     assert "Dudhia shortwave" in SUPPORTED_OPTIONS["ra_sw_physics"].implemented
@@ -293,7 +320,7 @@ def test_fortran_repeat_count_syntax_is_expanded() -> None:
 # --------------------------------------------------------------------------- #
 # Operational-strict validation (validate_operational_namelist).              #
 # The OPERATIONAL run path must additionally REJECT reference-only schemes     #
-# (parity-proven but not wired into the operational GPU scan) so that          #
+# (oracle-backed but not wired into the operational GPU scan) so that          #
 # ``gpuwrf run`` can never silently substitute a different scheme.             #
 # --------------------------------------------------------------------------- #
 
@@ -324,14 +351,20 @@ def test_operational_validator_passes_implemented_suite() -> None:
         # operationally scan-wired (see test_operational_validator_accepts_wired_*
         # below); they are no longer reference-only rejections.
         ("cu_physics", 16, "New Tiedtke", "cu_physics=6"),
+        ("cu_physics", 4, "Scale-aware GFS SAS", "cu_physics=1/2/3/6"),
+        ("cu_physics", 93, "Grell-Devenyi", "cu_physics=3"),
+        ("cu_physics", 99, "previous Kain-Fritsch", "cu_physics=1"),
+        ("bl_pbl_physics", 4, "QNSE", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
+        ("bl_pbl_physics", 10, "TEMF", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
+        ("bl_pbl_physics", 16, "epsilon", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
+        ("bl_pbl_physics", 17, "TPE", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
     ],
 )
 def test_operational_validator_rejects_reference_only_scheme(
     key: str, value: int, scheme_substring: str, alt_substring: str
 ) -> None:
-    """cu=16 (New-Tiedtke) is parity-proven but NOT operationally wired -> the
-    operational run path fails closed, naming the scheme it would silently run
-    instead and the alternative."""
+    """Reference-only schemes (cumulus + v0.17 radiation longtail) fail closed on
+    the operational run path with the supported alternative."""
 
     with pytest.raises(NotOperationallyWiredError) as excinfo:
         validate_operational_namelist({"physics": {key: [value]}})
@@ -363,6 +396,35 @@ def test_operational_validator_accepts_wired_dudhia_sw() -> None:
     validate_operational_namelist(
         {"physics": {"ra_sw_physics": [1], "ra_lw_physics": [4]}}
     )
+
+
+@pytest.mark.parametrize(
+    "key, value, scheme_substring",
+    [
+        ("ra_sw_physics", 3, "CAM"),
+        ("ra_sw_physics", 5, "Goddard"),
+        ("ra_sw_physics", 7, "FLG"),
+        ("ra_sw_physics", 99, "GFDL"),
+        ("ra_lw_physics", 3, "CAM"),
+        ("ra_lw_physics", 5, "Goddard"),
+        ("ra_lw_physics", 7, "FLG"),
+        ("ra_lw_physics", 99, "GFDL"),
+    ],
+)
+def test_operational_validator_rejects_reference_only_radiation(
+    key: str, value: int, scheme_substring: str
+) -> None:
+    """v0.17/v0.18 radiation-longtail selections (CAM/Goddard/FLG/GFDL-Eta) are
+    accepted for reference work but not operationally wired until real Fortran
+    parity and faithful JAX kernels exist."""
+
+    validate_namelist({"physics": {key: [value]}})
+    with pytest.raises(NotOperationallyWiredError) as excinfo:
+        validate_operational_namelist({"physics": {key: [value]}})
+    sel = _selection_for(excinfo, key)
+    assert sel.outcome == "reference_only_not_operational"
+    assert sel.value == value
+    assert scheme_substring in (sel.wrf_scheme or "")
 
 
 def test_operational_validator_accepts_wired_rrtm_lw() -> None:
@@ -441,6 +503,7 @@ def test_validate_namelist_still_accepts_reference_only_schemes() -> None:
         {"physics": {"ra_lw_physics": [1], "ra_sw_physics": [1], "cu_physics": [16]}}
     )
     validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+    validate_namelist({"physics": {"bl_pbl_physics": [4, 10, 16, 17]}})
 
 
 def test_not_operationally_wired_is_an_unsupported_scheme_error() -> None:

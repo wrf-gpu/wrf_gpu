@@ -1,0 +1,28 @@
+# v0.18 Minimal-Source Quickstart — VERIFIED end-to-end (CPU import + CLI)
+Date (UTC): 2026-06-17T03:13:26Z
+Host: Linux 7.0.0-22-generic x86_64
+Method: fresh '--depth 1 --no-checkout' clone + cone sparse-checkout of {src, data/fixtures} only
+        (root files come free in cone mode; pyproject.toml/README.md/LICENSE_NOTES.md present)
+
+## working-tree footprint (source-only, no proofs/.agent/tests history)
+964M	.
+  of which data/fixtures (vendored Thompson/RRTMG tables, required at import):
+147M	data/fixtures
+
+## sparse-checkout set
+data/fixtures
+src
+
+## pip install -e . (CPU jax) — succeeded; wheel built:
+  gpuwrf editable wheel built + installed OK (jax 0.10.1, jaxlib, netCDF4, xarray, ...)
+
+## import + jax devices (CPU fallback, no CUDA jaxlib in this verify):
+  jax 0.10.1 [CpuDevice(id=0)]
+  import gpuwrf OK; gpuwrf.__version__ = 0.14.0
+
+## CLI entrypoint resolves (python -m gpuwrf.cli run --help) rc:
+  rc=0 (CLI help renders)
+
+NOTE: gpuwrf.__version__ shows the committed value in THIS detached test clone
+      (pre version-bump); the worktree bumps pyproject + __init__ to 0.18.0.
+NOTE: GPU execution needs the CUDA jaxlib: pip install 'jax[cuda13]' (or the 'cuda' extra).

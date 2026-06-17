@@ -1,4 +1,6 @@
-# Known Issues — v0.15.0
+# Known Issues — Deep History (through the v0.15.0 release gate)
+
+> For the **current v0.18 known issues**, see [`../KNOWN_ISSUES.md`](../KNOWN_ISSUES.md). This file is the deep per-issue archive (KI-1…KI-11, including resolved items).
 
 Honest, code-grounded list of the open issues. Each entry states the symptom, what was ruled
 out, the current best understanding, the workaround, and the tracked follow-up. No spin. This

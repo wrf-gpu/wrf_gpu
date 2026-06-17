@@ -1,0 +1,67 @@
+{
+  "all_finite": true,
+  "backend": "gpu",
+  "candidate": "gpuwrf.physics.bl_shinhong.shinhong_columns",
+  "devices": [
+    "cuda:0"
+  ],
+  "finite": {
+    "delta": true,
+    "el_pbl": true,
+    "exch_h": true,
+    "kpbl": true,
+    "pblh": true,
+    "qv": true,
+    "theta": true,
+    "tke": true,
+    "u": true,
+    "v": true,
+    "wstar": true
+  },
+  "savepoint": "proofs/v090/savepoints/shinhong_case_1.json",
+  "schema": "gpuwrf.v018.shinhong_pbl11_gpu_smoke",
+  "scheme": "Shin-Hong scale-aware PBL (bl_pbl_physics=11)",
+  "shapes": {
+    "delta": [
+      1
+    ],
+    "el_pbl": [
+      1,
+      32
+    ],
+    "exch_h": [
+      1,
+      32
+    ],
+    "kpbl": [
+      1
+    ],
+    "pblh": [
+      1
+    ],
+    "qv": [
+      1,
+      32
+    ],
+    "theta": [
+      1,
+      32
+    ],
+    "tke": [
+      1,
+      32
+    ],
+    "u": [
+      1,
+      32
+    ],
+    "v": [
+      1,
+      32
+    ],
+    "wstar": [
+      1
+    ]
+  },
+  "verdict": "PASS"
+}

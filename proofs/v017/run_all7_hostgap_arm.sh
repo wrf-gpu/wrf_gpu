@@ -50,8 +50,6 @@ env PYTHONPATH="$ROOT/src" \
     GPUWRF_MYNN_BOULAC_ONZ=1 \
     GPUWRF_SCRATCH="$RR/scratch" \
     GPUWRF_NESTED_SYNC_MODE="$MODE" \
-    GPUWRF_HOST_LEDGER=1 \
-    GPUWRF_HOST_LEDGER_FILE="$RR/host_ledger.log" \
     nice -n 5 taskset -c 0-3 \
     python -m gpuwrf run \
       --input-dir "$INPUT" \

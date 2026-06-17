@@ -27,12 +27,13 @@ must not blur:
 * **OPERATIONAL** (`implemented`) — the scheme is **wired into the operational
   GPU forecast scan** and runs end-to-end under `gpuwrf run`. This is the only
   status that runs an actual forecast.
-* **REFERENCE-ONLY** (`reference_only`) — the scheme has a **parity-proven
-  single-column oracle** (savepoint / isolated / analytic), and is *accepted by
-  the namelist validator* so you can run a reference / single-column comparison
-  — but it is **NOT wired into the operational scan**. `gpuwrf run`
-  **refuses it loudly** (it would otherwise silently substitute a different
-  scheme). A REFERENCE-ONLY scheme is **never** part of an operational forecast.
+* **REFERENCE-ONLY** (`reference_only`) — the scheme has an **oracle-backed
+  reference path** (GREEN parity where claimed, or an explicitly measured RED
+  gap), and is *accepted by the namelist validator* so you can run a reference /
+  single-column comparison — but it is **NOT wired into the operational scan**.
+  `gpuwrf run` **refuses it loudly** (it would otherwise silently substitute a
+  different scheme). A REFERENCE-ONLY scheme is **never** part of an operational
+  forecast.
 
 The tables below tag every option `[OPERATIONAL]` or `[REFERENCE-ONLY]`. The
 classification is derived directly from `scheme_catalog._IMPLEMENTED` (which
@@ -59,24 +60,32 @@ one status:
 
 2. **`reference_only` (REFERENCE-ONLY) -> accepted at the validation layer,
    REFUSED by the operational `gpuwrf run` path.** A recognized WRF scheme with
-   a parity-proven (savepoint / isolated / analytic-oracle) adapter that is *not
-   yet* threaded into the operational GPU scan. The base namelist validator
-   (`validate_namelist`) accepts it so you can run a single-column / reference
-   comparison against it. But the **operational forecast** (`gpuwrf run`, via
-   `validate_operational_namelist`) **refuses it loudly, before any JAX import**,
-   with a named reason — because the operational scan cannot actually select it
-   and would otherwise *silently run a different scheme* than you requested.
-   Refusing is the honest behavior: never a silent wrong-scheme result. Today
-   the `reference_only` schemes are Grell-3D ensemble (`cu_physics=5`), KIM SAS
-   (`cu_physics=14`), New Tiedtke (`cu_physics=16`), thermal-diffusion slab LSM
-   (`sf_surface_physics=1`), and GSFC/Goddard NUWRF longwave (`ra_lw_physics=5`).
+   an oracle-backed reference path (GREEN parity where claimed, or an
+   explicitly measured RED gap) that is *not yet* threaded into the operational
+   GPU scan. The base namelist validator (`validate_namelist`) accepts it so you
+   can run a single-column / reference comparison against it. But the
+   **operational forecast** (`gpuwrf run`, via `validate_operational_namelist`)
+   **refuses it loudly, before any JAX import**, with a named reason — because
+   the operational scan cannot actually select it and would otherwise *silently
+   run a different scheme* than you requested (or route through a missing
+   kernel). Refusing is the honest behavior: never a silent wrong-scheme result.
+   Today (v0.17 wave-1) the `reference_only` schemes are:
+   SAS family (`cu_physics=4/94/95/96`, RED vs pristine-WRF oracles),
+   Grell-3D ensemble (`cu_physics=5`), KIM SAS (`cu_physics=14`), New Tiedtke
+   (`cu_physics=16`), Grell-Devenyi ensemble (`cu_physics=93`), previous
+   Kain-Fritsch (`cu_physics=99`), RUC (`sf_surface_physics=3`) and SSiB
+   (`sf_surface_physics=8`) land-surface, Shin-Hong (`bl_pbl_physics=11`) and
+   GBM (`bl_pbl_physics=12`) PBL, GSFC/Goddard NUWRF longwave
+   (`ra_lw_physics=5`), new Goddard shortwave (`ra_sw_physics=5`), and GFDL-Eta
+   radiation (`ra_lw_physics=99` / `ra_sw_physics=99`).
+
    Example (`gpuwrf run` with `ra_lw_physics=5`):
 
    ```
-   physics.ra_lw_physics=5 (GSFC/Goddard NUWRF longwave): parity-proven WRF v4
-   longwave-radiation scheme, but NOT operationally wired into the GPU forecast
-   scan. Running it would SILENTLY use a DIFFERENT scheme than requested (the
-   operational longwave-radiation path runs the implemented scheme instead) --
+   physics.ra_lw_physics=5 (GSFC/Goddard NUWRF longwave): WRF v4
+   longwave-radiation scheme accepted only for reference/oracle work, but NOT
+   operationally wired into the GPU forecast scan. Running it would SILENTLY
+   use a DIFFERENT scheme than requested or route through a missing kernel --
    refusing rather than producing a silent wrong-scheme run.
    Operationally-wired ra_lw_physics values: 0, 1, 4. Action: Use
    ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).
@@ -94,16 +103,13 @@ one status:
    option the port does not implement. Example:
 
    ```
-   physics.mp_physics=40 (Morrison 2-moment w/ CESM-NCSU RCP4.5 aerosol):
+   physics.mp_physics=28 (aerosol-aware Thompson (water/ice-friendly)):
    recognized WRF v4 microphysics scheme, NOT YET IMPLEMENTED in the GPU port.
-   Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 28. ...
+   Supported mp_physics values: 0, 1, 2, 3, 4, 6, 8, 10, 14, 16. ...
    ```
 
-   (Aerosol-*aware* Thompson `mp_physics=28` is now IMPLEMENTED/operational as of
-   v0.16 — see the microphysics table below; `mp=40` Morrison-aerosol and the
-   NSSL schemes remain fail-closed. A value that is not a WRF option at all —
-   e.g. `mp_physics=99` — fails closed with a `not a recognized WRF v4 ...`
-   message.)
+   (A value that is not a WRF option at all — e.g. `mp_physics=99` — fails closed
+   with a `not a recognized WRF v4 ...` message.)
 
 5. **`out_of_scope` -> fail closed, named scope decision.** A WRF capability the
    port deliberately does not port (see the out-of-scope list below). Example:
@@ -160,7 +166,6 @@ accepted for a single-column / reference comparison but **refused operationally*
 | 10 | Morrison two-moment | OPERATIONAL | +qni/qns/qnr/qng; savepoint-parity |
 | 14 | WDM5 | OPERATIONAL | double-moment 5-class (WDM warm-rain + WSM5 ice, no graupel/hail); reuses WDM6 Nn/Nc/Nr leaves; 6/6 pristine-WRF fp64 oracle |
 | 16 | WDM6 | OPERATIONAL | +qnn/qnc/qnr (additive State leaves Nc/Nn); savepoint-parity |
-| 28 | aerosol-aware Thompson (water/ice-friendly) | OPERATIONAL | **v0.16 "+1"**; +QNWFA/QNIFA aerosol prognostics (append-only State leaves); climatological self-init only (`use_aero_icbc=.false.`, `wif_input_opt=1`; non-self-init aerosol IC/BC fails closed). **L1 WRF-module oracle PASS** (5187-col, GPU, vs unmodified `module_mp_thompson.F:mp_gt_driver`); the coupled short-real-grid field-gate is a documented **carry** (GPU-time only, separately validated +1, not inside the 25-target L2 sweep) |
 
 WSM7 (`mp=24`) and WDM7 are NOT listed: WSM7's column kernel is ported and
 fp64 savepoint-parity-proven (`physics.microphysics_wsm7`), but it carries a
@@ -176,10 +181,14 @@ dropping hail. Wiring it needs a cross-cutting State/dynamics/I-O `qh` leaf.
 | 1  | Kain-Fritsch | OPERATIONAL | scan-wired; carries NCA/W0AVG; savepoint-parity |
 | 2  | Betts-Miller-Janjic | OPERATIONAL | adjustment scheme; carries CLDEFI; fp64 savepoint-parity |
 | 3  | Grell-Freitas | OPERATIONAL | v0.9.0 GPU-batched jit/vmap scale-aware adapter; savepoint-parity |
+| 4  | Scale-aware GFS SAS | REFERENCE-ONLY | v0.17 fp64 pristine-WRF savepoints staged; shared JAX endpoint RED vs oracle; not operationally scan-wired |
 | 5  | Grell-3D ensemble | REFERENCE-ONLY | fp64 single-column oracle staged; JAX kernel is a v0.13 carry-over |
 | 6  | Tiedtke | OPERATIONAL | GPU-batched (`cumulus_tiedtke_jax`); savepoint-parity; requires active flux-form moisture advection (`use_flux_advection=True`, `moist_adv_opt=1/2`) so WRF `RQVFTEN` is available |
 | 14 | KIM Simplified Arakawa-Schubert | REFERENCE-ONLY | fp64 single-column oracle staged; JAX kernel is a v0.13 carry-over |
 | 16 | New Tiedtke | REFERENCE-ONLY | shares Tiedtke kernel but NOT separately source-gated; fail-closed |
+| 94 | 2015 GFS SAS / HWRF | REFERENCE-ONLY | v0.17 fp64 pristine-WRF savepoints staged; shared JAX endpoint RED vs oracle; not operationally scan-wired |
+| 95 | Previous GFS SAS / HWRF OSAS | REFERENCE-ONLY | v0.17 fp64 pristine-WRF savepoints staged; shared JAX endpoint RED vs oracle; not operationally scan-wired |
+| 96 | Previous new GFS SAS / YSU NSAS | REFERENCE-ONLY | v0.17 fp64 pristine-WRF savepoints staged; shared JAX endpoint RED vs oracle; not operationally scan-wired |
 
 ### PBL — `bl_pbl_physics`
 
@@ -222,6 +231,8 @@ dropping hail. Wiring it needs a cross-cutting State/dynamics/I-O `qh` leaf.
 | 1  | Dudhia shortwave | OPERATIONAL | Stephens-1984 broadband; held-rate RTHRATEN; scan-wired with RRTMG/RRTM LW |
 | 2  | GSFC (Chou-Suarez) shortwave | OPERATIONAL | v0.13 Tier-3; fp64 pristine-WRF oracle (~1e-12); held-rate RTHRATEN |
 | 4  | RRTMG shortwave | OPERATIONAL | **default**; operational radiation slot runs RRTMG SW+LW |
+| 5  | Goddard shortwave (new) | REFERENCE-ONLY | v0.17 RED; WRF source and `BROADBAND_CLOUD_GODDARD.bin` located, but no full `goddardrad('sw')` oracle or JAX kernel yet |
+| 99 | GFDL (Eta) shortwave | REFERENCE-ONLY | v0.17 RED; ETARA source/tables located, but no standalone ETARA oracle or JAX kernel yet |
 
 ### Longwave radiation — `ra_lw_physics`
 
@@ -231,23 +242,24 @@ dropping hail. Wiring it needs a cross-cutting State/dynamics/I-O `qh` leaf.
 | 1  | classic RRTM longwave | OPERATIONAL | AER 16-band; JAX-traceable `ra_lw_rrtm_jax`; held-rate RTHRATEN |
 | 4  | RRTMG longwave | OPERATIONAL | **default** |
 | 5  | GSFC/Goddard NUWRF longwave | REFERENCE-ONLY | fp64 single-column oracle staged (`module_ra_goddard.F:lwrad`); JAX kernel a v0.13 carry-over (~12.5k-LOC NUWRF SW+LW module, ~11.8k LW coefficients) |
+| 99 | GFDL (Eta) longwave | REFERENCE-ONLY | v0.17 RED; ETARA source/tables located, but no standalone ETARA oracle or JAX kernel yet |
 
 SW and LW are selected and dispatched **independently**. Whatever SW scheme is
 chosen is composed with the chosen LW scheme as the held-rate RTHRATEN θ
 tendency. The surface SWDOWN / GSW / GLW **history diagnostics** remain
 RRTMG-derived regardless of which SW/LW θ-tendency scheme is active.
 
-### Status counts (derived, v0.16)
+### Status counts (derived, v0.17)
 
 | Parameter            | OPERATIONAL | REFERENCE-ONLY |
 |----------------------|-------------|----------------|
-| `mp_physics`         | 11 | 0 |
-| `cu_physics`         | 5 | 3 |
+| `mp_physics`         | 10 | 0 |
+| `cu_physics`         | 5 | 7 |
 | `bl_pbl_physics`     | 7 | 0 |
 | `sf_sfclay_physics`  | 7 | 0 |
 | `sf_surface_physics` | 3 | 1 |
-| `ra_sw_physics`      | 4 | 0 |
-| `ra_lw_physics`      | 3 | 1 |
+| `ra_sw_physics`      | 4 | 2 |
+| `ra_lw_physics`      | 3 | 2 |
 
 (Counts include the `0`/disabled option, which is operationally wired.)
 
@@ -326,8 +338,11 @@ To run an existing real-data WRF `namelist.input` on the port today:
   (the operational default is `mp_physics=8` Thompson, `bl_pbl_physics=5` MYNN,
   `sf_sfclay_physics=5` MYNN-SL, `cu_physics=0` no-cumulus, `sf_surface_physics=4`
   Noah-MP + `use_noahmp`, `ra_lw_physics=4` / `ra_sw_physics=4` RRTMG). A
-  **`[REFERENCE-ONLY]`** scheme (Grell-3D `cu=5`, KSAS `cu=14`, New-Tiedtke
-  `cu=16`, slab LSM `sf_surface=1`, GSFC/Goddard LW `ra_lw=5`) is **rejected by
+  **`[REFERENCE-ONLY]`** scheme (SAS `cu=4/94/95/96`, Grell-3D `cu=5`, KSAS
+  `cu=14`, New-Tiedtke `cu=16`, Grell-Devenyi `cu=93`, previous-KF `cu=99`,
+  RUC `sf_surface=3`, SSiB `sf_surface=8`, Shin-Hong `bl=11`, GBM `bl=12`,
+  GSFC/Goddard LW `ra_lw=5`, Goddard SW `ra_sw=5`, GFDL-Eta `ra_lw=99` /
+  `ra_sw=99`) is **rejected by
   `gpuwrf run`** — it is for reference comparisons only; the error names the
   operational swap.
 * Turbulence/diffusion: WRF's recommended real-data defaults `diff_opt=1`,
@@ -389,10 +404,10 @@ To run an existing real-data WRF `namelist.input` on the port today:
   `resolve_physics_suite()` (fail-closed `(family, option) -> scheme` routing,
   MYJ-pairing enforcement) and `dispatch_matrix()` (one row per routable option,
   each carrying `gpu_runnable`). Some reference-only options carry a routable row
-  flagged `gpu_runnable=False` (New-Tiedtke `cu=16`, slab `sf_surface=1`); others
-  have no routable entry at all (Grell-3D `cu=5`, KSAS `cu=14`). Either way the
-  authoritative OPERATIONAL discriminator is `scheme_catalog._IMPLEMENTED`, not
-  dispatch-matrix presence.
+  flagged `gpu_runnable=False` (SAS `cu=4/94/95/96`, New-Tiedtke `cu=16`, slab
+  `sf_surface=1`); others have no routable entry at all (Grell-3D `cu=5`, KSAS
+  `cu=14`). Either way the authoritative OPERATIONAL discriminator is
+  `scheme_catalog._IMPLEMENTED`, not dispatch-matrix presence.
 * `src/gpuwrf/contracts/physics_registry.py` — the authoritative
   accepted matrix (`ACCEPTED_*`) and the per-scheme field/carry registry.
 * `src/gpuwrf/contracts/physics_interfaces.py` — the frozen per-scheme

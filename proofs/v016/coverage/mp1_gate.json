@@ -12,10 +12,10 @@
   "first_nonfinite_hour": null,
   "bounds_violations": [],
   "per_hour_wall_s": [
-    412.998
+    67.459
   ],
-  "steady_ms_per_step": 2064.99,
-  "peak_vram_gib": 6.988,
+  "steady_ms_per_step": 337.3,
+  "peak_vram_gib": 6.742,
   "field_deltas_vs_baseline": {
     "family_perturbs_dynamics": false,
     "gated_fields": {

@@ -212,10 +212,14 @@ def test_v060_acm2_savepoint_parity_report() -> None:
         "regimes_covered": [case["regime"] for case in cases],
         "cases": cases,
     }
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with REPORT_PATH.open("w") as fh:
-        json.dump(report, fh, indent=2, sort_keys=True)
-        fh.write("\n")
+    # Regenerate the committed canonical report ONLY on explicit request
+    # (GPUWRF_WRITE_PROOFS=1); the verdict assertion below is the correctness
+    # signal, so the default suite run does not re-dirty the proof with fp noise.
+    if os.environ.get("GPUWRF_WRITE_PROOFS", "").strip().lower() in {"1", "true", "yes", "on"}:
+        REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with REPORT_PATH.open("w") as fh:
+            json.dump(report, fh, indent=2, sort_keys=True)
+            fh.write("\n")
     assert report["verdict"] == "PASS"
 
 

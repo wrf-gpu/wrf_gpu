@@ -9,7 +9,11 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_regression_suite_smoke_schema() -> None:
+def test_regression_suite_smoke_schema(tmp_path) -> None:
+    # Route the SMOKE proofs to a pytest tmp dir, not the committed
+    # proofs/regression tree: the schema assertions below are the correctness
+    # signal, and the default suite run must not re-dirty the canonical
+    # *_SMOKE.json proofs with per-run timing/path fields.
     result = subprocess.run(
         [
             "taskset",
@@ -18,6 +22,8 @@ def test_regression_suite_smoke_schema() -> None:
             sys.executable,
             "scripts/run_regression_suite.py",
             "--smoke",
+            "--proof-dir",
+            str(tmp_path),
         ],
         cwd=ROOT,
         capture_output=True,

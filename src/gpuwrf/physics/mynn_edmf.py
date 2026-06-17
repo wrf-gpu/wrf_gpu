@@ -219,9 +219,6 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     accepted-and-ignored rather than dropped.
     """
     del tk, qke, exner, ust, flqv, dt  # WRF-interface args unused in this config
-    dtype = th.dtype
-    dx = jnp.asarray(dx, dtype=dtype)
-    psig_shcu = jnp.asarray(psig_shcu, dtype=dtype)
     nz = th.shape[-1]
     is_water = (xland - 1.5) >= 0.0
     qv1 = sqv  # WRF names: qv1==sqv, qt1==sqw, qc1==sqc inside DMP_mf
@@ -284,7 +281,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     ip = jnp.arange(NUP)
     l_arr = minwidth + dl * ip  # plume diameters
     cn = jnp.sum(l_arr ** DNEGGERS * (l_arr * l_arr) / (dx * dx) * dl)
-    C = ATOT / jnp.maximum(cn, jnp.asarray(1e-30, dtype=dtype))
+    C = ATOT / jnp.maximum(cn, 1e-30)
 
     # ---- area fraction acfac (lines 5992-6008, land) ----
     acfac_land = 0.5 * jnp.tanh((fltv2 - 0.020) / 0.05) + 0.5
@@ -310,7 +307,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     wmax_s = jnp.minimum(sigmaw * PWMAX, 0.5)
 
     # surface updraft properties at interface 1 (between k=0 & 1) (lines 6079-6104)
-    ipf = (ip + 1).astype(dtype)
+    ipf = (ip + 1).astype(jnp.float64)
     upw0 = wmin_s + ipf / NUP * (wmax_s - wmin_s)  # length NUP
     # interface-averaged env values between level 0 and 1
     a01 = dz[1] / (dz[0] + dz[1])
@@ -327,7 +324,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     upqt0 = qt01 + exc_moist
     upu0 = jnp.full((NUP,), u01)
     upv0 = jnp.full((NUP,), v01)
-    upqc0 = jnp.zeros((NUP,), dtype=dtype)
+    upqc0 = jnp.zeros((NUP,))
 
     # rhoz on interfaces (lines 6120-6123): rhoz(k)=(rho(k)*dz(k+1)+rho(k+1)*dz(k))/(dz(k+1)+dz(k))
     rhoz_mid = (rho[:-1] * dz[1:] + rho[1:] * dz[:-1]) / (dz[1:] + dz[:-1])  # len nz-1, idx k -> interface above level k
@@ -339,7 +336,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     # Outputs accumulated on interfaces: UPA(k), UPW(k), UPQT(k), UPQC(k), UPTHL(k), UPTHV(k)
     # for k in 1..nz-2 (the surface interface k=0 carries upw0 etc.)
 
-    l_per_plume = minwidth + dl * ip.astype(dtype)  # length NUP
+    l_per_plume = minwidth + dl * ip.astype(jnp.float64)  # length NUP
 
     def plume_scan(l, a0, w0, thl0, qt0, qc0, u0, v0):
         # carry: w_prev, thl_prev, qt_prev, qc_prev, u_prev, v_prev, area_prev, alive
@@ -428,7 +425,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     # append a zero top level -> full UP arrays length nz (index = WRF level K).
     def full_up(surf, scan):
         return jnp.concatenate(
-            [surf[:, None], scan, jnp.zeros((NUP, 1), dtype=dtype)], axis=1)  # (NUP, nz)
+            [surf[:, None], scan, jnp.zeros((NUP, 1))], axis=1)  # (NUP, nz)
     UPA = full_up(upa0, jnp.broadcast_to(upa0[:, None], (NUP, nz - 2)) * (EW_s > 0))
     # WRF: UPA(K)=UPA(K-1) while alive, else plume stops -> area persists on live
     # levels. Reconstruct area as upa0 on live (EW_s>0) scanned levels, 0 above.
@@ -442,7 +439,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     # ---- assemble s_aw* (lines 6363-6382): s_aw1(k+1) += rhoz(k)*UPA(K)*UPW(K)*Psig_w
     # for K=kts..kte-1 (0-based 0..nz-2). rhoz_dmp(K) is the interface ABOVE level K.
     rhoz_dmp = jnp.concatenate([rhoz_mid, rho[-1:]])  # length nz; [K]=interface above level K
-    Kmask = (jnp.arange(nz) <= nz - 2).astype(dtype)[None, :]  # K=0..nz-2
+    Kmask = (jnp.arange(nz) <= nz - 2).astype(jnp.float64)[None, :]  # K=0..nz-2
     upa_w = UPA * UPW  # (NUP, nz)
     wgt = rhoz_dmp[None, :] * upa_w * Kmask
     s_aw_inner = jnp.sum(wgt, axis=0) * psig_w          # length nz; index K
@@ -481,7 +478,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     s_awv = s_awv * adjustment
 
     # zero everything if not active
-    zero1 = jnp.zeros((nz + 1,), dtype=dtype)
+    zero1 = jnp.zeros((nz + 1,))
     s_aw = jnp.where(active, s_aw, zero1)
     s_awqv = jnp.where(active, s_awqv, zero1)
     s_awqt = jnp.where(active, s_awqt, zero1)
@@ -501,7 +498,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     # edmf_a is multiplied by Psig_w. Consumed by the DMP shallow-cu
     # cldfra/qc_bl overwrite (mynn_sgs_cloud.dmp_shallow_cu_overwrite).
     upa_sum = jnp.sum(UPA, axis=0)                      # length nz, pre-Psig
-    safe = jnp.maximum(upa_sum, jnp.asarray(1e-30, dtype=dtype))
+    safe = jnp.maximum(upa_sum, 1e-30)
     has_a = upa_sum > 0.0
     edmf_qc_inner = jnp.where(has_a, jnp.sum(UPA * UPQC, axis=0) / safe, 0.0)
     edmf_qt_inner = jnp.where(has_a, jnp.sum(UPA * UPQT, axis=0) / safe, 0.0)
@@ -523,7 +520,7 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
         "edmf_qt": edmf_qt_inner,
         "edmf_thl": edmf_thl_inner,
         "maxmf": maxmf,
-        "active": active.astype(dtype),
+        "active": active.astype(jnp.float64),
         "psig_w": psig_w,
     }
 
@@ -538,7 +535,7 @@ def dmp_mf_columns(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     solver arrays (plus diagnostics). dx scalar."""
     B = th.shape[0]
     if psig_shcu is None:
-        psig_shcu = jnp.ones((B,), dtype=th.dtype)
+        psig_shcu = jnp.ones((B,))
 
     return jax.vmap(
         lambda *a: _single_column_dmp_mf(*a[:-1], dx=dx, dt=dt, psig_shcu=a[-1])

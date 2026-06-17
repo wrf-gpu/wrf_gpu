@@ -27,13 +27,16 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
+from gpuwrf.config.paths import wrf_run_dir
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
 
 
 # Standard WRF MPTABLE / Noah-MP table directory (pristine WRF run/).
-DEFAULT_TABLE_DIR = Path("/home/user/src/wrf_pristine/WRF/run")
+# Env-overridable via GPUWRF_WRF_ROOT (config.paths.wrf_run_dir); the explicit
+# ``table_dir=`` argument to build_noahmp_land_state still takes precedence.
+DEFAULT_TABLE_DIR = wrf_run_dir()
 
 
 def _i32(field) -> jnp.ndarray:
@@ -68,7 +71,9 @@ def build_noahmp_land_state(
 
     run = Gen2Run(Path(run_dir))
     present = set(run.wrfinput_variables(domain))
-    tdir = Path(table_dir) if table_dir is not None else DEFAULT_TABLE_DIR
+    # Precedence: explicit arg > GPUWRF_WRF_ROOT env (re-read here so a late
+    # os.environ set still wins) > checkout-relative default.
+    tdir = Path(table_dir) if table_dir is not None else wrf_run_dir()
 
     def L(name):
         return run.load_wrfinput(domain, name, lazy=False)

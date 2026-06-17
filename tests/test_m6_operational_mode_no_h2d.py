@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _operational_source_guard import strip_preflight_mu_total_check  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,9 +17,15 @@ def test_operational_source_has_no_host_transfer_or_sanitizer_calls():
     # d47fe0f moved M9 diagnostics into the output-cadence-only `_m9_snapshot`
     # helper. Keep rejecting any other old snapshot path.
     source_without_m9_snapshot = source.replace("_m9_snapshot(", "")
+    # v0.18 added `_assert_nonzero_initial_mu_total`: a verified ONE-TIME,
+    # pre-loop fail-loud check that pulls mu_total to the host once per forecast
+    # (never inside the compiled scan/_advance_chunk). Strip just that helper so
+    # this stays a loop-precise no-host-transfer guard; every other host transfer
+    # still fails. The no-h2d-in-the-step-loop guarantee is unchanged.
+    guarded = strip_preflight_mu_total_check(source)
     forbidden = ("device_get", "host_callback", "pure_callback", "io_callback", "sanitize_state")
     for token in forbidden:
-        assert token not in source
+        assert token not in guarded
     assert "snapshot(" not in source_without_m9_snapshot
 
 

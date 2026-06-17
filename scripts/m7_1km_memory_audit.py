@@ -297,7 +297,13 @@ def _grid_namespace(nz: int, ny: int, nx: int) -> SimpleNamespace:
 
 
 def field_shapes_for(nz: int, ny: int, nx: int) -> dict[str, tuple[int, ...]]:
-    return _state_field_shapes(_grid_namespace(nz, ny, nx))
+    # The 1 km worst-case memory model must size EVERY leaf in the State contract,
+    # including the conditional hail (qh/Nh/qvolg/qvolh/hail_acc) and aerosol
+    # (nwfa/nifa) leaves added in v0.16/v0.17. STATE_FIELD_ORDER and
+    # State.__slots__ carry all 67; request include_all_conditional=True so the
+    # shape map reconciles against the full contract (default args return only the
+    # 60 always-present leaves and tripped the contract-mismatch guard below).
+    return _state_field_shapes(_grid_namespace(nz, ny, nx), include_all_conditional=True)
 
 
 def dtype_record(field: str) -> dict[str, Any]:

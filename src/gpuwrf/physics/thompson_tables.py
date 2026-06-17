@@ -142,10 +142,14 @@ COLD_TABLE_NAMES = (
     "tcs_racs1", "tmr_racs1", "tcs_racs2", "tmr_racs2",
     "tcr_sacr1", "tms_sacr1", "tcr_sacr2", "tms_sacr2",
     "tnr_racs1", "tnr_racs2", "tnr_sacr1", "tnr_sacr2",
-    # qr_acr_qg (mp8 single density plane squeezed): (ntb_g1, ntb_g, ntb_r1, ntb_r)
-    # cold-branch subset only (tcg_racg is warm-rcg only; Bigg rain-freezing
-    # qrfz tables are already in thompson-tables-v1.npz).
+    # qr_acr_qg (mp8 effective idx_bg1=5 read from WRF's dimNRHG=1 allocation):
+    # (ntb_g1, ntb_g, ntb_r1, ntb_r). Cold-branch subset only (tcg_racg is
+    # warm-rcg only; Bigg rain-freezing qrfz tables are already in
+    # thompson-tables-v1.npz).
     "tmr_racg", "tcr_gacr", "tnr_racg", "tnr_gacr",
+    # freezeH2O cloud-water-freezing planes for non-aerosol mp8:
+    # (ntb_c, ntb_tc), with default idx_n(Nt_c=100e6 m^-3) and idx_IN.
+    "tpi_qcfz", "tni_qcfz",
 )
 
 
@@ -168,6 +172,8 @@ class ColdCollectionTables(NamedTuple):
     tcr_gacr: jnp.ndarray
     tnr_racg: jnp.ndarray
     tnr_gacr: jnp.ndarray
+    tpi_qcfz: jnp.ndarray
+    tni_qcfz: jnp.ndarray
 
 
 def cold_tables_available(path: Path = COLD_TABLE_ASSET) -> bool:
@@ -200,6 +206,8 @@ TABLE_SOURCE_LINES = {
     "tpg_qrfz": "module_mp_thompson.F.pre:4664-4855",
     "tni_qrfz": "module_mp_thompson.F.pre:4664-4855",
     "tnr_qrfz": "module_mp_thompson.F.pre:4664-4855",
+    "tpi_qcfz": "module_mp_thompson.F.pre:4664-4855",
+    "tni_qcfz": "module_mp_thompson.F.pre:4664-4855",
     "snow_moments": "module_mp_thompson.F.pre:2093-2191",
     "graupel_moments": "module_mp_thompson.F.pre:760-770",
 }

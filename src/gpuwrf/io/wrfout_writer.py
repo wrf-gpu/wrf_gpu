@@ -100,10 +100,6 @@ MICROPHYSICS_EXTRA_VARIABLES: tuple[str, ...] = (
     "QNGRAUPEL",
     "QNCLOUD",
     "QNCCN",
-    # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers
-    # (State nwfa/nifa); emitted only when the source leaves are present.
-    "QNWFA",
-    "QNIFA",
     # v0.17 ADR-032 graupel/hail substrate (State qh/Nh/qvolg/qvolh); emitted
     # only when the source leaves carry hail (optional-extra; a non-hail run
     # never gets a fabricated hail field).
@@ -111,6 +107,10 @@ MICROPHYSICS_EXTRA_VARIABLES: tuple[str, ...] = (
     "QNHAIL",
     "QVGRAUPEL",
     "QVHAIL",
+    # v0.16 aerosol-aware Thompson (mp=28) prognostic aerosol numbers
+    # (State nwfa/nifa); emitted only when the source leaves are present.
+    "QNWFA",
+    "QNIFA",
     "QKE",
 )
 
@@ -613,6 +613,12 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         coordinates="XLONG XLAT XTIME",
     ),
     "QNCCN": _spec("QNCCN", XYZ, "XYZ", "CCN Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
+    # v0.17 ADR-032 graupel/hail substrate (WRF Registry hail-family
+    # qh/qnh/qvolg/qvolh names/descriptions/units).
+    "QHAIL": _spec("QHAIL", XYZ, "XYZ", "Hail mixing ratio", "kg kg-1", coordinates="XLONG XLAT XTIME"),
+    "QNHAIL": _spec("QNHAIL", XYZ, "XYZ", "Hail Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
+    "QVGRAUPEL": _spec("QVGRAUPEL", XYZ, "XYZ", "Graupel Particle Volume", "m(3) kg(-1)", coordinates="XLONG XLAT XTIME"),
+    "QVHAIL": _spec("QVHAIL", XYZ, "XYZ", "Hail Particle Volume", "m(3) kg(-1)", coordinates="XLONG XLAT XTIME"),
     # v0.16 aerosol-aware Thompson (mp=28) aerosol numbers (WRF Registry
     # thompsonaero qnwfa/qnifa names/descriptions).
     "QNWFA": _spec(
@@ -631,12 +637,6 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
         "  kg-1",
         coordinates="XLONG XLAT XTIME",
     ),
-    # v0.17 ADR-032 graupel/hail substrate (WRF Registry hail-family
-    # qh/qnh/qvolg/qvolh names/descriptions/units).
-    "QHAIL": _spec("QHAIL", XYZ, "XYZ", "Hail mixing ratio", "kg kg-1", coordinates="XLONG XLAT XTIME"),
-    "QNHAIL": _spec("QNHAIL", XYZ, "XYZ", "Hail Number concentration", "  kg(-1)", coordinates="XLONG XLAT XTIME"),
-    "QVGRAUPEL": _spec("QVGRAUPEL", XYZ, "XYZ", "Graupel Particle Volume", "m(3) kg(-1)", coordinates="XLONG XLAT XTIME"),
-    "QVHAIL": _spec("QVHAIL", XYZ, "XYZ", "Hail Particle Volume", "m(3) kg(-1)", coordinates="XLONG XLAT XTIME"),
     "QKE": _spec("QKE", XYZ, "XYZ", "twice TKE from MYNN", "m2 s-2", coordinates="XLONG XLAT XTIME"),
     # --- P0-5a (b) grid-static coordinate / map-factor / Coriolis fields ---
     "ZNU": _spec("ZNU", Z_HALF, "Z  ", "eta values on half (mass) levels", ""),
@@ -1475,8 +1475,6 @@ def _build_output_fields(
         ("QNGRAUPEL", ("QNGRAUPEL", "Ng", "qngraupel")),
         ("QNCLOUD", ("QNCLOUD", "Nc", "qnc", "qnc_cloud")),
         ("QNCCN", ("QNCCN", "Nn", "qnn", "qccn")),
-        ("QNWFA", ("QNWFA", "nwfa", "qnwfa")),
-        ("QNIFA", ("QNIFA", "nifa", "qnifa")),
         # v0.17 ADR-032 graupel/hail substrate (optional; zero/absent in a
         # non-hail run, so a reduced/non-hail state never gets a fabricated
         # hail field).
@@ -1484,6 +1482,9 @@ def _build_output_fields(
         ("QNHAIL", ("QNHAIL", "Nh", "qnh", "qnhail")),
         ("QVGRAUPEL", ("QVGRAUPEL", "qvolg")),
         ("QVHAIL", ("QVHAIL", "qvolh")),
+        # v0.16 aerosol-aware Thompson (mp=28) aerosol numbers (optional).
+        ("QNWFA", ("QNWFA", "nwfa", "qnwfa")),
+        ("QNIFA", ("QNIFA", "nifa", "qnifa")),
         ("QKE", ("QKE", "qke")),
     ):
         value = _optional_field_array(state, state_names, shape_xyz)

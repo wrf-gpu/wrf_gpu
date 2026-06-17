@@ -37,20 +37,25 @@ def _gpu_available() -> bool:
         return False
 
 
-def _archive(result, name: str) -> Path:
-    CLOSE_GATE_PROOF_DIR.mkdir(parents=True, exist_ok=True)
-    dst = CLOSE_GATE_PROOF_DIR / f"{name}_verdict.json"
+def _archive(result, name: str, proof_dir: Path) -> Path:
+    # Archive under a caller-supplied (pytest tmp) dir, NOT the committed
+    # proofs/sprintU/close_gate tree. The PASS verdict below is the close-gate
+    # signal; rerunning the gate must not re-dirty the canonical committed proofs
+    # with fp/plot-byte regeneration noise (the worktree must stay clean on a GPU
+    # suite run). The committed close-gate proofs remain the canonical record.
+    proof_dir.mkdir(parents=True, exist_ok=True)
+    dst = proof_dir / f"{name}_verdict.json"
     shutil.copyfile(result.proof_json, dst)
     return dst
 
 
 @pytest.mark.close_gate
-def test_warm_bubble_close_gate_passes() -> None:
+def test_warm_bubble_close_gate_passes(tmp_path) -> None:
     if not _gpu_available():
         pytest.skip("close gate requires a visible JAX GPU backend")
-    result = run_warm_bubble_case(proof_dir=CLOSE_GATE_PROOF_DIR / "f2", require_gpu=True)
+    result = run_warm_bubble_case(proof_dir=tmp_path / "f2", require_gpu=True)
     assert result.status == "RAN_TO_COMPLETION", result.status
-    archived = _archive(result, "warm_bubble")
+    archived = _archive(result, "warm_bubble", tmp_path)
     payload = json.loads(archived.read_text())
     # CLOSE GATE: must be PASS, not merely runnable.
     assert result.verdict == "PASS", (
@@ -61,12 +66,12 @@ def test_warm_bubble_close_gate_passes() -> None:
 
 
 @pytest.mark.close_gate
-def test_density_current_close_gate_passes() -> None:
+def test_density_current_close_gate_passes(tmp_path) -> None:
     if not _gpu_available():
         pytest.skip("close gate requires a visible JAX GPU backend")
-    result = run_density_current_case(proof_dir=CLOSE_GATE_PROOF_DIR / "f2", require_gpu=True)
+    result = run_density_current_case(proof_dir=tmp_path / "f2", require_gpu=True)
     assert result.status == "RAN_TO_COMPLETION", result.status
-    archived = _archive(result, "density_current")
+    archived = _archive(result, "density_current", tmp_path)
     payload = json.loads(archived.read_text())
     # CLOSE GATE: must be PASS, not merely runnable.
     assert result.verdict == "PASS", (

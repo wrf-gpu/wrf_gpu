@@ -595,7 +595,7 @@ def _snow_graupel_scavenging(
     pna_sca = jnp.where(snow_active, jnp.minimum(nwfa_m3 * odts, rhof * T1_QS_QC * ef_sa_w * nwfa_m3 * smoe), 0.0)
     pnd_scd = jnp.where(snow_active, jnp.minimum(nifa_m3 * odts, rhof * T1_QS_QC * ef_sa_i * nifa_m3 * smoe), 0.0)
 
-    rg, _ng, _lamg, ilamg, n0_g, _act_g = _graupel_distribution(state.qg, state.rho)
+    rg, _ng, _lamg, ilamg, n0_g, _act_g = _graupel_distribution(state.qg, state.Ng, state.rho)
     graupel_active = rg > R_G_FIRST
     xdg = (3.0 + MU_G + 1.0) * ilamg
     geom_g = rhof * T1_QG_QC_OLD * n0_g * ilamg**CGE9_OLD
@@ -747,7 +747,7 @@ def _ice_sources_aero(
     del_qvs = jnp.maximum(0.0, qvs0 - state.qv)
     twet = state.T
     rs, _xds, smo0, smo1, smof, _c_snow, active_snow = _snow_moments(state.qs, state.rho, tempc, tables)
-    rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.rho)
+    rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.Ng, state.rho)
 
     prr_sml_rate = (tempc * tcond - 2.5e6 * diffu * del_qvs) * (T1_MELT_QS * smo1 + T2_MELT_QS * rhof2 * vsc2 * smof)
     prr_sml_rate = jnp.minimum(rs * odts, jnp.maximum(0.0, prr_sml_rate)) / state.rho
@@ -776,7 +776,7 @@ def _ice_sources_aero(
     t1_subl, rvs = _sublimation_prefactor(state, ssati, diffu, tcond)
     ri, ni, _lami, ilami, xdi, xmi, active_ice = _ice_distribution_local(state.qi, state.Ni, state.rho)
     rs, _xds, _smo0, smo1, smof, c_snow, active_snow = _snow_moments(state.qs, state.rho, state.T - 273.15, tables)
-    rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.rho)
+    rg, ng, _lamg, ilamg, n0_g, active_graupel = _graupel_distribution(state.qg, state.Ng, state.rho)
 
     idx_i = jnp.where(ri > R_I_FIRST, _lookup_digit_index(ri, -10, N_I_TABLE), 0)
     idx_i1 = jnp.where(ni > NT_I_FIRST, _lookup_digit_index(ni, 0, N_I1_TABLE), 0)

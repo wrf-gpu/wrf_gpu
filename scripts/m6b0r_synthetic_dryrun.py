@@ -126,7 +126,12 @@ def main() -> int:
         ]
     )
     text = json.dumps(payload, indent=2, sort_keys=True)
-    (SPRINT / "proof_synthetic_dryrun.json").write_text(text + "\n")
+    # The committed canonical proof is regenerated ONLY on explicit request
+    # (GPUWRF_WRITE_PROOFS=1). The test driver (tests/test_m6b0r_savepoint_hdf5.py)
+    # asserts on the printed stdout payload, so the default run must not re-dirty
+    # the tracked proof with path/schema-version noise.
+    if os.environ.get("GPUWRF_WRITE_PROOFS", "").strip().lower() in {"1", "true", "yes", "on"}:
+        (SPRINT / "proof_synthetic_dryrun.json").write_text(text + "\n")
     print(text)
     return 0 if payload["passed"] else 2
 

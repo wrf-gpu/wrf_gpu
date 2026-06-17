@@ -38,9 +38,10 @@ SUPPORTED_FORMAT_VERSIONS = (1, 2, 3)
 # backfills any of these absent from an older checkpoint with zeros, so old
 # restarts cold-start the new physics fields rather than failing closed.
 # v0.6.0 added Nc/Nn/rainc_acc; v0.15 the MYNN SGS-cloud leaves; v0.17 ADR-032
-# the graupel/hail substrate qh/Nh/qvolg/qvolh. v0.16 Thompson-aero added
-# nwfa/nifa. All are append-only physics tail leaves that legitimately
-# cold-start at zero from an older checkpoint.
+# the graupel/hail substrate qh/Nh/qvolg/qvolh; v0.16 the aerosol-aware Thompson
+# leaves nwfa/nifa; v0.17 hail microphysics the hail_acc surface accumulator --
+# all are append-only physics tail leaves that legitimately cold-start at zero
+# from an older checkpoint.
 ADDITIVE_STATE_LEAVES_SINCE_V2 = (
     "Nc",
     "Nn",
@@ -49,12 +50,13 @@ ADDITIVE_STATE_LEAVES_SINCE_V2 = (
     "qc_bl",
     "qi_bl",
     "cldfra_bl",
-    "nwfa",
-    "nifa",
     "qh",
     "Nh",
     "qvolg",
     "qvolh",
+    "nwfa",
+    "nifa",
+    "hail_acc",
 )
 
 # The frozen Noah-MP scope-options the land carry is valid under (tables.py mirror).
@@ -92,7 +94,21 @@ def _restore_namelist(namelist: Any, grid: Any) -> Any:
 
 
 def _state_to_host_fields(state: State) -> dict[str, np.ndarray]:
-    return {field: np.asarray(getattr(state, field)) for field in State.__slots__}
+    return {field: np.asarray(getattr(state, field)) for field in state.active_field_names()}
+
+
+def _validate_state_field_order(recorded: tuple[str, ...]) -> None:
+    expected = tuple(State.__slots__)
+    if any(field not in expected for field in recorded):
+        raise ValueError("checkpoint State field order contains unknown leaves")
+    if recorded != tuple(field for field in expected if field in recorded):
+        raise ValueError("checkpoint State field order does not match current State schema")
+    missing = tuple(field for field in expected if field not in recorded)
+    if any(leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2 for leaf in missing):
+        raise ValueError(
+            "checkpoint State field order is missing non-additive leaves: "
+            f"{[leaf for leaf in missing if leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2]}"
+        )
 
 
 def _land_field_order() -> tuple[str, ...]:
@@ -133,8 +149,8 @@ def write_checkpoint(
         "format": "gpuwrf-runtime-checkpoint",
         "format_version": FORMAT_VERSION,
         "state_type": "gpuwrf.contracts.state.State",
-        "state_field_order": list(State.__slots__),
-        "state_field_count": len(State.__slots__),
+        "state_field_order": list(state.active_field_names()),
+        "state_field_count": len(state.active_field_names()),
         "state_fields": _state_to_host_fields(state),
         "namelist": _hostify_namelist(namelist, host_grid),
         "grid": host_grid,
@@ -174,21 +190,8 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
             f"supported {SUPPORTED_FORMAT_VERSIONS}"
         )
 
-    expected = tuple(State.__slots__)
     recorded = tuple(payload.get("state_field_order", ()))
-    # Append-only schema rule (v0.6.0 S0): the recorded order must be either the
-    # current full order, or a PREFIX of it whose only missing tail leaves are the
-    # append-only additive leaves (Nc/Nn/rainc_acc). Any other divergence (a
-    # reordered or unknown leaf, or a missing non-additive leaf) still fails closed.
-    if recorded != expected:
-        if recorded != expected[: len(recorded)]:
-            raise ValueError("checkpoint State field order does not match current State schema")
-        missing_tail = expected[len(recorded):]
-        if any(leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2 for leaf in missing_tail):
-            raise ValueError(
-                "checkpoint State field order is missing non-additive leaves: "
-                f"{[leaf for leaf in missing_tail if leaf not in ADDITIVE_STATE_LEAVES_SINCE_V2]}"
-            )
+    _validate_state_field_order(recorded)
     fields = payload.get("state_fields")
     if not isinstance(fields, dict) or set(fields) != set(recorded):
         raise ValueError("checkpoint State fields do not match the recorded field order")

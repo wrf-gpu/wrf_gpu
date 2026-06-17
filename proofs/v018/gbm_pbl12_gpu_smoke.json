@@ -1,0 +1,83 @@
+{
+  "all_finite": true,
+  "backend": "gpu",
+  "candidate": "gpuwrf.physics.bl_gbm.gbm_columns",
+  "devices": [
+    "cuda:0"
+  ],
+  "finite": {
+    "el_pbl": true,
+    "kethl": true,
+    "kpbl": true,
+    "kth": true,
+    "kzm": true,
+    "pblh": true,
+    "qc": true,
+    "qke": true,
+    "qv": true,
+    "theta": true,
+    "tke": true,
+    "u": true,
+    "ust": true,
+    "v": true
+  },
+  "savepoint": "proofs/v017/savepoints_fp64/gbm/gbm_case_1.json",
+  "schema": "gpuwrf.v018.gbm_pbl12_gpu_smoke",
+  "scheme": "GBM moist TKE PBL (bl_pbl_physics=12)",
+  "shapes": {
+    "el_pbl": [
+      1,
+      32
+    ],
+    "kethl": [
+      1,
+      32
+    ],
+    "kpbl": [
+      1
+    ],
+    "kth": [
+      1,
+      32
+    ],
+    "kzm": [
+      1,
+      32
+    ],
+    "pblh": [
+      1
+    ],
+    "qc": [
+      1,
+      32
+    ],
+    "qke": [
+      1,
+      32
+    ],
+    "qv": [
+      1,
+      32
+    ],
+    "theta": [
+      1,
+      32
+    ],
+    "tke": [
+      1,
+      32
+    ],
+    "u": [
+      1,
+      32
+    ],
+    "ust": [
+      1
+    ],
+    "v": [
+      1,
+      32
+    ]
+  },
+  "verdict": "PASS"
+}

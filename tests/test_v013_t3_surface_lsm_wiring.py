@@ -6,8 +6,9 @@ claimed, and that the default suite is byte-unchanged:
 * sf_sfclay_physics=91 (old-MM5) + =3 (NCEP-GFS) RESOLVE through the operational
   scan (in SFCLAY_SCAN_ADAPTERS, accepted by _resolve_operational_suite) and run
   a surface-layer step producing finite B2 flux handles;
-* sf_surface_physics=1 (slab LSM) FAILS CLOSED in the operational scan
-  (reference-only: validated kernel/oracle, no LSM hook yet);
+* sf_surface_physics=1 (slab LSM) is v0.17 operationally scan-wired: it RESOLVES
+  when an explicit slab_static bundle is supplied, and FAILS CLOSED (with a named
+  reason) when it is absent -- never a silent unvalidated land state;
 * sf_surface_physics=3 (RUC LSM) is rejected (out of the accept matrix);
 * the default namelist (sf_sfclay=5 MYNN) is unchanged.
 """
@@ -53,12 +54,14 @@ def test_scheme_catalog_classifications() -> None:
     assert_catalog_consistent()
     assert classify_scheme("sf_sfclay_physics", 91).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_sfclay_physics", 3).status is SupportStatus.IMPLEMENTED
-    assert classify_scheme("sf_surface_physics", 1).status is SupportStatus.REFERENCE_ONLY
-    # RUC (3) stays fail-closed (intractable for this batch).
-    assert (
-        classify_scheme("sf_surface_physics", 3).status
-        is SupportStatus.RECOGNIZED_FAIL_CLOSED
-    )
+    # slab (1) was bumped to IMPLEMENTED (v0.17 operationally scan-wired).
+    assert classify_scheme("sf_surface_physics", 1).status is SupportStatus.IMPLEMENTED
+    # RUC (3) + SSiB (8) became v0.17 Tier-3 REFERENCE_ONLY: a fp64 pristine-WRF
+    # single-column oracle is staged (proofs/v017/oracle/{ruclsm,ssib}), but the
+    # faithful JAX column kernel is a carry-over, so each is namelist-accepted for a
+    # single-column reference comparison and fail-closes in the operational scan.
+    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("sf_surface_physics", 8).status is SupportStatus.REFERENCE_ONLY
 
 
 def test_registry_consistent_with_new_schemes() -> None:
@@ -84,6 +87,7 @@ def _namelist(**overrides) -> OperationalNamelist:
         sf_surface_physics=None, use_noahmp=False,
         ra_sw_physics=4, ra_lw_physics=4,
         noahclassic_static=None, noahclassic_land=None, noahclassic_rad=None,
+        slab_static=None, slab_land=None, slab_rad=None,
     )
     defaults.update(overrides)
     for k, v in defaults.items():
@@ -97,10 +101,20 @@ def test_old_mm5_and_gfs_sfclay_resolve_wired() -> None:
     _resolve_operational_suite(_namelist(sf_sfclay_physics=3))
 
 
-def test_slab_lsm_fails_closed_reference_only() -> None:
+def test_slab_lsm_fails_closed_without_static() -> None:
+    # slab=1 is scan-wired but requires an explicit slab_static; absent -> named fail-closed.
     with pytest.raises(UnsupportedSchemeSelection) as exc:
         _resolve_operational_suite(_namelist(sf_surface_physics=1))
     assert "sf_surface_physics=1" in str(exc.value)
+
+
+def test_slab_lsm_resolves_with_static() -> None:
+    # slab=1 WITH an explicit slab_static bundle resolves through the operational scan.
+    suite = _resolve_operational_suite(
+        _namelist(sf_surface_physics=1, slab_static=object())
+    )
+    assert suite.land_surface.option == 1
+    assert suite.land_surface.gpu_runnable
 
 
 def test_ruc_lsm_rejected_out_of_matrix() -> None:

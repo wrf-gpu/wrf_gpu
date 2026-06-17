@@ -32,6 +32,7 @@ Usage (GPU; wrap with scripts/with_gpu_lock.sh):
   #   --family pbl --option 2     -> also sets sf_sfclay=2 (MYJ<->Janjic)
   #   --family sfclay --option 2  -> also sets bl_pbl=2
   #   --family cu --option 6      -> ensures moist_adv_opt>=1 (Tiedtke RQVFTEN)
+  #   --family lw --option 31     -> also sets ra_sw=0 (Held-Suarez combined rad)
 
 The baseline state dump is cached (proofs/v016/coverage/_baseline_<hours>h_state.npz)
 so a family worker pays the baseline cost once.  Pass --refresh-baseline to rebuild.
@@ -131,12 +132,12 @@ def _peak_vram_gib() -> float | None:
 
 # WRF-faithful PBL<->surface-layer pairing (the fail-closed authority is
 # coupling.physics_dispatch.resolve_physics_suite):
-#   * bl in {1 YSU, 7 ACM2, 8 BouLac, 99 MRF} re-derive their surface forcing via
+#   * bl in {1 YSU, 7 ACM2, 8 BouLac, 11 Shin-Hong, 12 GBM, 99 MRF} re-derive their surface forcing via
 #     the revised-MM5 surface layer -> REQUIRE sf_sfclay=1.
 #   * bl=2 MYJ <-> sf_sfclay=2 Janjic Eta (mandatory both-or-neither).
 #   * bl=5 MYNN consumes the selected surface-layer's State flux handles, so it
 #     pairs with any sf_sfclay EXCEPT the MYJ-only sf_sfclay=2.
-PBL_REQUIRES_MM5_SFCLAY = frozenset({1, 7, 8, 99})
+PBL_REQUIRES_MM5_SFCLAY = frozenset({1, 7, 8, 11, 12, 99})
 
 
 def _overrides_for(family: str, option: int) -> dict:
@@ -172,10 +173,66 @@ def _overrides_for(family: str, option: int) -> dict:
         # modified-Tiedtke requires the scan to diagnose WRF RQVFTEN moisture
         # convergence -> use_flux_advection (already on) + moist_adv_opt>=1.
         ov["moist_adv_opt"] = 2
+    if family == "lw" and opt == 31:
+        # Held-Suarez is a combined LW+SW idealized radiation path; WRF makes no
+        # separate shortwave call for it, and the operational resolver fail-closes
+        # any ra_lw=31 run that leaves the baseline RRTMG SW enabled.
+        ov["ra_sw_physics"] = 0
     return ov
 
 
-def _run(tag: str, overrides: dict, hours: int, mp_for_coldstart: int | None) -> dict:
+def _lsm_static_overrides(option: int, run_dir: Path) -> dict:
+    """Build the explicit WRF-derived land bundle the operational scan requires.
+
+    The slab (1) / Pleim-Xiu (7) hooks fail closed without an explicit static
+    bundle; Noah-MP (4) needs its prognostic land carry + static/params seeded (the
+    production pipelines do this; the generic single-domain path does not). For the
+    L2 coverage sweep we build that bundle from the SAME real wrfinput the case was
+    built from:
+      * slab/PX (``gpuwrf.io.lsm_static_extract``: THC/EMISS via LANDUSE.TBL, the
+        Noilhan-Mahfouf ISBA constants via SOILPROP, RSTMIN via VEGPARM.TBL);
+      * Noah-MP (``gpuwrf.io.noahmp_land_init.build_noahmp_land_state`` +
+        ``build_noahmp_params``: the prognostic Noah-MP land state warm-started from
+        the wrfinput plus the frozen energy/rad parameter bundles).
+    Every value is WRF's own derivation, cited to pristine source.
+    """
+    from gpuwrf.io.gen2_accessor import Gen2Run
+    from gpuwrf.io.lsm_static_extract import (
+        extract_pleim_xiu_static,
+        extract_slab_static,
+    )
+
+    run = Gen2Run(run_dir)
+    if int(option) == 1:
+        return {"slab_static": extract_slab_static(run, "d01")}
+    if int(option) == 7:
+        return {"px_static": extract_pleim_xiu_static(run, "d01")}
+    if int(option) == 4:
+        from gpuwrf.io.noahmp_land_init import (
+            build_noahmp_land_state,
+            build_noahmp_params,
+        )
+
+        noahmp_land, static, _meta = build_noahmp_land_state(run_dir, "d01")
+        energy_params, rad_params, nroot = build_noahmp_params(static)
+        return {
+            "noahmp_static": static,
+            "noahmp_energy_params": energy_params,
+            "noahmp_rad_params": rad_params,
+            "noahmp_nroot": nroot,
+            "noahmp_land": noahmp_land,
+        }
+    return {}
+
+
+def _run(
+    tag: str,
+    overrides: dict,
+    hours: int,
+    mp_for_coldstart: int | None,
+    *,
+    lsm_option: int | None = None,
+) -> dict:
     """Run the coupled forecast for `hours` and dump every numeric state leaf."""
     config = dp.DailyPipelineConfig(
         run_id="run_h36", hours=hours,
@@ -183,7 +240,12 @@ def _run(tag: str, overrides: dict, hours: int, mp_for_coldstart: int | None) ->
         proof_dir=Path(f"/tmp/v016_cov/{tag}/proofs"),
         run_root=PROBE, domain="d01",
     )
-    case, _run_dir = dp._build_real_case(config)
+    case, run_dir = dp._build_real_case(config)
+    # Land-surface slab(1)/PX(7) need an explicit WRF-derived static bundle on the
+    # namelist or the operational scan fails closed; extract it from the case's own
+    # wrfinput (the same run_dir _build_real_case resolved).
+    if lsm_option in (1, 4, 7):
+        overrides = {**overrides, **_lsm_static_overrides(lsm_option, run_dir)}
     namelist = dataclasses.replace(case.namelist, **overrides)
     state = case.state
     if mp_for_coldstart == 28:
@@ -228,7 +290,10 @@ def _run(tag: str, overrides: dict, hours: int, mp_for_coldstart: int | None) ->
     np.savez_compressed(COVERAGE / f"_{tag}_state.npz", **leaves)
     return {
         "tag": tag,
-        "namelist_overrides": {k: (int(v) if isinstance(v, bool) else v) for k, v in overrides.items()},
+        "namelist_overrides": {
+            k: (int(v) if isinstance(v, bool) else (f"<{type(v).__name__}>" if k in ("slab_static", "px_static", "noahmp_land", "noahmp_static", "noahmp_energy_params", "noahmp_rad_params") else v))
+            for k, v in overrides.items()
+        },
         "per_hour_wall_s": walls,
         "all_finite": bool(summary["all_finite"]),
         "first_nonfinite_hour": nonfinite_at,
@@ -332,7 +397,8 @@ def main() -> int:
 
     tag = f"{args.family}{args.option}_{args.hours}h"
     mp_cold = args.option if (args.family == "mp" and args.option == 28) else None
-    cand = _run(tag, _overrides_for(args.family, args.option), args.hours, mp_cold)
+    lsm_opt = args.option if (args.family == "lsm" and args.option in (1, 4, 7)) else None
+    cand = _run(tag, _overrides_for(args.family, args.option), args.hours, mp_cold, lsm_option=lsm_opt)
 
     bounds = _bounds_violations(cand["_summary"])
     deltas = _score_deltas(str(base_npz), cand["_state_npz"], args.family)

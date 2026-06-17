@@ -1,0 +1,12 @@
+ra_sw=0 ra_lw=0 finite_all=True all_nan=False nan_count=0/72 min=0.000000e+00 max=0.000000e+00 absmax=0.000000e+00
+ra_sw=0 ra_lw=1 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=0 ra_lw=4 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=1 ra_lw=0 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=1 ra_lw=1 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=1 ra_lw=4 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=2 ra_lw=0 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=2 ra_lw=1 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=2 ra_lw=4 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=4 ra_lw=0 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=4 ra_lw=1 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan
+ra_sw=4 ra_lw=4 finite_all=False all_nan=True nan_count=72/72 min=nan max=nan absmax=nan

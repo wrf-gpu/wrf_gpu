@@ -15,10 +15,6 @@ single-domain entry, so the WRF scratch carry persists across nested substeps.
 
 from __future__ import annotations
 
-import functools
-import os
-import weakref
-
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace as dataclass_replace
 from typing import Any
@@ -52,16 +48,6 @@ AdvanceFn = Callable[[str, Any, int, int], Any]
 ForceFn = Callable[["DomainEdge", Any, Any], Any]
 FeedbackFn = Callable[["DomainEdge", Any, Any], Any]
 OutputFn = Callable[[str, int, Any], Any]
-
-# A fused substep-cascade closure: given the parent carry, the tuple of child
-# carries (in hierarchy.children order), the parent global start step, and the
-# tuple of child global start steps, it returns ``(parent_carry', child_carries')``
-# for ONE parent substep (parent advances 1 step; each child is forced then
-# advanced ``parent_grid_ratio`` steps).  ``run_domain_tree_callbacks`` issues it
-# as a single device dispatch in place of the eager per-domain calls.
-FusedSubstepFn = Callable[[Any, tuple[Any, ...], int, tuple[int, ...]], tuple[Any, tuple[Any, ...]]]
-# Resolve the fused cascade for a parent name, or ``None`` to fall back to eager.
-FusedCascadeLookup = Callable[[str], "FusedSubstepFn | None"]
 
 
 @dataclass(frozen=True)
@@ -248,7 +234,6 @@ def run_domain_tree_callbacks(
     block_between: bool = True,
     root_sync_cadence: int | None = None,
     edge_lookup: Callable[[DomainNest], DomainEdge] | None = None,
-    fused_cascade: "FusedCascadeLookup | None" = None,
     initial_own_steps: dict[str, int] | None = None,
 ) -> DomainTreeResult:
     """Generic WRF-recursive domain-tree runner.
@@ -279,37 +264,6 @@ def run_domain_tree_callbacks(
                 own_steps[name] = int(value)
     output_cadence_steps = dict(output_cadence_steps or {})
 
-    # ---- Host wallclock ledger (v0.17 perf localization; GPUWRF_HOST_LEDGER) ---
-    # Times the host-side cost of each phase to localize where forecast-hour
-    # wallclock is lost: `advance` = async _advance_chunk dispatch, `force` = EAGER
-    # boundary-package dispatch, `sync` = block_until_ready GPU-wait (the GPU-bound
-    # residue not overlapped by host work), `output` = wrfout materialize+write.
-    # Pure host instrumentation -- does NOT touch any jit / HLO / cache key.
-    import os as _os
-    import time as _time
-
-    _ledger_on = bool(_os.environ.get("GPUWRF_HOST_LEDGER"))
-    _ledger = {"advance": 0.0, "force": 0.0, "sync": 0.0, "output": 0.0, "n_adv": 0, "n_force": 0}
-    if _ledger_on:
-        _raw_advance = advance
-
-        def advance(name, carry, start_step, n_steps, _ra=_raw_advance):  # type: ignore[misc]
-            _t = _time.perf_counter()
-            _r = _ra(name, carry, start_step, n_steps)
-            _ledger["advance"] += _time.perf_counter() - _t
-            _ledger["n_adv"] += 1
-            return _r
-
-        if force is not None:
-            _raw_force = force
-
-            def force(edge, parent, child, _rf=_raw_force):  # type: ignore[misc]
-                _t = _time.perf_counter()
-                _r = _rf(edge, parent, child)
-                _ledger["force"] += _time.perf_counter() - _t
-                _ledger["n_force"] += 1
-                return _r
-
     def maybe_output(name: str) -> None:
         cadence = int(output_cadence_steps.get(name, 0))
         if output is None or cadence <= 0 or own_steps[name] % cadence != 0:
@@ -323,10 +277,7 @@ def run_domain_tree_callbacks(
             if getattr(output, "wants_carry", False)
             else _state_from_carry(out[name])
         )
-        _t = _time.perf_counter()
         value = output(name, own_steps[name], payload)
-        if _ledger_on:
-            _ledger["output"] += _time.perf_counter() - _t
         outputs.append(value)
         events.append(("output", name, own_steps[name]))
 
@@ -358,10 +309,7 @@ def run_domain_tree_callbacks(
             if hasattr(_state_from_carry(carry), "theta")
         ]
         if leaves:
-            _t = _time.perf_counter()
             jax.block_until_ready(leaves)
-            if _ledger_on:
-                _ledger["sync"] += _time.perf_counter() - _t
 
     def integrate(name: str, n_steps: int, *, reset_clock: bool, depth: int = 0) -> None:
         del reset_clock  # step clocks are per-domain global clocks, not subcycle-local
@@ -376,60 +324,6 @@ def run_domain_tree_callbacks(
             maybe_output(name)
             if depth == 0 and root_cadence:
                 _sync_all_domains()
-            return
-
-        # ---- Fused substep-cascade fast path (v0.17 GPUWRF_NESTED_FUSE) -------
-        # When ``fused_cascade`` returns a compiled cascade for ``name`` the inner
-        # per-substep body -- advance(parent,1) + per-child {force, advance(child,
-        # ratio)} -- is issued as ONE device program instead of (1 + n_children *
-        # 2) eager dispatches, cutting host dispatch on the host-bound all-7 nest
-        # (~47 -> ~5 root-step dispatches).  The HOST BOOKKEEPING below is a
-        # line-for-line mirror of the eager branch (same events/own_steps/
-        # maybe_output order, same per-advance/root sync points), so the scheduler
-        # identity is preserved; only the device call sites are fused.  The lookup
-        # returns ``None`` (fail-closed to eager) unless every child of ``name`` is
-        # a leaf with feedback OFF for this substep -- the only shape that maps to
-        # the unrolled fused program -- so an unfusable subtree silently uses the
-        # eager path.
-        cascade = fused_cascade(name) if fused_cascade is not None else None
-        if cascade is not None:
-            child_specs = tuple(children)
-            for local in range(1, int(n_steps) + 1):
-                parent_start = own_steps[name] + 1
-                child_starts = tuple(own_steps[spec.child] + 1 for spec in child_specs)
-                # ONE fused device program: parent advance + all child forces +
-                # all child subcycles, unrolled per child (ragged child shapes).
-                new_parent, new_children = cascade(
-                    out[name],
-                    tuple(out[spec.child] for spec in child_specs),
-                    int(parent_start),
-                    tuple(int(s) for s in child_starts),
-                )
-                # --- host bookkeeping: identical event/own_steps/output order ---
-                out[name] = new_parent
-                own_steps[name] += 1
-                events.append(("advance", name, parent_start, 1, own_steps[name]))
-                # The eager branch emits the parent-advance sync, then ALL forces,
-                # then each child's advance(+output).  Replay that exact order.
-                for spec in child_specs:
-                    events.append(("force", spec.parent, spec.child, own_steps[spec.parent]))
-                for spec, child_carry, child_start in zip(child_specs, new_children, child_starts):
-                    out[spec.child] = child_carry
-                    own_steps[spec.child] += int(spec.parent_grid_ratio)
-                    events.append(
-                        ("advance", spec.child, child_start, int(spec.parent_grid_ratio), own_steps[spec.child])
-                    )
-                    maybe_output(spec.child)
-                maybe_output(name)
-                # A fused substep is ONE device program, so the eager per-advance
-                # block cannot be issued between its sub-ops; if the caller asked
-                # for per-advance blocking (``advance`` sync mode) we instead block
-                # once per fused substep -- the same queue-depth/VRAM bound at the
-                # fused granularity (host wait only, results unchanged).
-                if per_advance_block:
-                    _sync_all_domains()
-                if depth == 0 and root_cadence and (local % root_cadence == 0 or local == int(n_steps)):
-                    _sync_all_domains()
             return
 
         for local in range(1, int(n_steps) + 1):
@@ -455,17 +349,6 @@ def run_domain_tree_callbacks(
                 _sync_all_domains()
 
     integrate(root_name, int(root_steps), reset_clock=False)
-    if _ledger_on:
-        _path = _os.environ.get("GPUWRF_HOST_LEDGER_FILE", "/tmp/gpuwrf_host_ledger.log")
-        _tot = _ledger["advance"] + _ledger["force"] + _ledger["sync"] + _ledger["output"]
-        with open(_path, "a") as _fh:
-            _fh.write(
-                f"segment root_steps={int(root_steps)} host_s: "
-                f"advance={_ledger['advance']:.2f}(n={_ledger['n_adv']}) "
-                f"force={_ledger['force']:.2f}(n={_ledger['n_force']}) "
-                f"sync={_ledger['sync']:.2f} output={_ledger['output']:.2f} "
-                f"sum={_tot:.2f}\n"
-            )
     states = {name: _state_from_carry(carry) for name, carry in out.items()}
     return DomainTreeResult(
         carries=out,
@@ -486,254 +369,23 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
             carry,
             namelist,
             jnp.asarray(int(start_step), dtype=jnp.int32),
-            n_steps=jnp.asarray(int(n_steps), dtype=jnp.int32),
-            cadence=jnp.asarray(cadence, dtype=jnp.int32),
+            n_steps=int(n_steps),
+            cadence=cadence,
         )
 
     return advance
 
 
-@functools.lru_cache(maxsize=None)
-def _jitted_boundary_builder(bdy_width: int):
-    """One compiled boundary-package builder per bdy_width (edge geometry is in the
-    weights pytree, so XLA keys per (child shape, parent shape) automatically)."""
-    return jax.jit(functools.partial(build_child_boundary_package, bdy_width=int(bdy_width)))
-
-
-_JIT_BOUNDARY: bool | None = None
-
-
 def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: OperationalCarry) -> OperationalCarry:
-    # v0.17 perf (GPUWRF_JIT_BOUNDARY): the eager boundary build dispatches many
-    # small ops per edge (4,400/forecast-hour); compiling it to ONE XLA program
-    # cuts host dispatch for the host-bound all-7 nest.  Default OFF (eager) because
-    # fusing the interp may FMA-contract `(1-w)*a + w*b` -> NOT necessarily bitwise
-    # vs the eager baseline; bit-identity is verified empirically before adopting.
-    global _JIT_BOUNDARY
-    if _JIT_BOUNDARY is None:
-        _JIT_BOUNDARY = bool(os.environ.get("GPUWRF_JIT_BOUNDARY"))
     child_state = child.state
     bdy_width = int(child_state.u_bdy.shape[2])
-    if _JIT_BOUNDARY:
-        forced_state = _jitted_boundary_builder(bdy_width)(child_state, parent.state, edge.weights)
-    else:
-        forced_state = build_child_boundary_package(
-            child_state,
-            parent.state,
-            edge.weights,
-            bdy_width=bdy_width,
-        )
+    forced_state = build_child_boundary_package(
+        child_state,
+        parent.state,
+        edge.weights,
+        bdy_width=bdy_width,
+    )
     return child.replace(state=forced_state)
-
-
-# ---------------------------------------------------------------------------
-# Fused substep cascade (v0.17 GPUWRF_NESTED_FUSE) -- one d02-substep program.
-# ---------------------------------------------------------------------------
-#
-# The all-7 canary nest (d01 9km -> d02 3km -> SEVEN 1km leaves d03..d09) is
-# HOST-DISPATCH bound: the host issues ~47 device dispatches per root step (25
-# ``_advance_chunk`` + 22 eager ``build_child_boundary_package``) on tiny grids,
-# draining the GPU queue between launches (GPU util ~57%, ~33% idle).  This
-# builder compiles ONE d02-SUBSTEP -- the d02 advance plus, for each of the seven
-# children, {force child from the just-advanced d02 state, advance the child
-# ``parent_grid_ratio`` steps} -- into a SINGLE ``jax.jit`` program.  There are
-# three d02 substeps per root step, so the host issues 3 fused dispatches instead
-# of 3*(1 + 7 + 7) = 45, cutting per-root-step dispatch ~47 -> ~5.
-#
-# The seven children have DIFFERENT shapes, so the program UNROLLS them: a Python
-# loop emits distinct XLA ops per child (NO vmap/scan over ragged shapes).  The
-# per-child namelist / edge weights / bdy_width / ratio / radiation cadence are
-# captured statically in the closure (device-resident pytree constants baked into
-# the trace); only ``parent_start`` and the per-child ``child_start`` global step
-# indices are TRACED int32 scalars (so cadence/step variation never re-keys the
-# executable -- it compiles ONCE for the all-7 d02 subtree).
-#
-# BIT-IDENTITY (the parent runs the GPU bitcompare).  The fused program runs the
-# SAME ``build_child_boundary_package`` and ``_advance_chunk`` as the eager path,
-# in the SAME parent-before-each-child order, so the dispatched math is identical.
-# It may NOT be bitwise-identical to the eager baseline because XLA, now free to
-# fuse across the former Python dispatch boundaries, may FMA-CONTRACT the boundary
-# interpolation ``(1 - w) * a + w * b`` (``nesting/interp._gather``) into fused
-# multiply-add, perturbing boundary cells by <= ~1 ULP.  That is the only expected
-# divergence (the operational gate is tolerance-vs-CPU, not bitwise-vs-prior-GPU).
-# OOM: the fused unit is ONE d02 substep (the seven 1km leaves + d02 advance
-# scratch), NOT the whole hour, so it holds at most one substep cascade's
-# intermediates live -- the same granularity the per-root-step sync already bounds.
-
-
-def _build_fused_cascade_program(
-    *,
-    parent_namelist: OperationalNamelist,
-    parent_cadence: int,
-    child_namelists: tuple[OperationalNamelist, ...],
-    child_weights: tuple[NestForceWeights, ...],
-    child_bdy_widths: tuple[int, ...],
-    child_ratios: tuple[int, ...],
-    child_cadences: tuple[int, ...],
-) -> FusedSubstepFn:
-    """Build the jitted fused d02-substep cascade closure for one subtree.
-
-    The per-domain namelists / edge weights / bdy_width / ratio / radiation cadence
-    are CLOSED OVER (static, device-resident pytree constants baked into the trace).
-    ``jax.jit`` keys on the parent/child carry shapes+dtypes, so the closure compiles
-    ONCE for the all-7 d02 subtree and is reused across forecast segments (the
-    caller caches the closure object per tree so JAX never re-traces it).
-    """
-
-    parent_cad = int(parent_cadence)
-    n_children = len(child_namelists)
-
-    @jax.jit
-    def fused(parent_carry, child_carries, parent_start, child_starts):
-        # 1) advance the parent ONE of its own timesteps (traced start step).
-        parent_new = _advance_chunk(
-            parent_carry,
-            parent_namelist,
-            jnp.asarray(parent_start, dtype=jnp.int32),
-            n_steps=jnp.asarray(1, dtype=jnp.int32),
-            cadence=jnp.asarray(parent_cad, dtype=jnp.int32),
-        )
-        # 2) UNROLL the children: force each from the just-advanced parent state,
-        #    then advance it ``parent_grid_ratio`` steps.  Distinct XLA ops per
-        #    child -> ragged child shapes are fine.  Order = hierarchy.children.
-        new_children = []
-        for idx in range(n_children):
-            child_carry = child_carries[idx]
-            namelist = child_namelists[idx]
-            weights = child_weights[idx]
-            bdy_width = int(child_bdy_widths[idx])
-            ratio = int(child_ratios[idx])
-            cad = int(child_cadences[idx])
-            forced_state = build_child_boundary_package(
-                child_carry.state, parent_new.state, weights, bdy_width=bdy_width
-            )
-            child_forced = child_carry.replace(state=forced_state)
-            child_new = _advance_chunk(
-                child_forced,
-                namelist,
-                jnp.asarray(child_starts[idx], dtype=jnp.int32),
-                n_steps=jnp.asarray(ratio, dtype=jnp.int32),
-                cadence=jnp.asarray(cad, dtype=jnp.int32),
-            )
-            new_children.append(child_new)
-        return parent_new, tuple(new_children)
-
-    return fused
-
-
-# Module-level cache of built fused cascade closures, keyed by (id(tree),
-# parent_name).  The operational ``DomainTree`` is built ONCE per run and lives for
-# the whole forecast (the segmented host loop reuses it), so this guarantees the
-# SAME ``fused`` closure object is reused across all output segments -> JAX traces
-# and XLA-compiles it ONCE (HARD gate: "compiles once for the all-7 d02 subtree").
-# Persist the compiled cascade across the segmented host loop's per-segment
-# factories (the DomainTree is the SAME object across segments).  DomainTree is an
-# unhashable frozen dataclass (it holds a dict), so it cannot key a
-# WeakKeyDictionary; instead key by id(tree) but store a weakref to the tree and
-# (a) VALIDATE identity on lookup (entry[0]() is tree) so a reused id can never
-# return a stale closure, and (b) EVICT the entry when the tree is gc'd (weakref
-# callback) so it does not leak across forecast executions.  [GPT review fix]
-_FUSED_PROGRAM_CACHE: dict[int, "tuple[weakref.ref[Any], dict[str, FusedSubstepFn]]"] = {}
-
-
-def _fusable_parent(tree: DomainTree, name: str) -> tuple[DomainEdge, ...] | None:
-    """Return the child edges if ``name`` is a fusable substep parent, else None.
-
-    Fusable == every child of ``name`` is a LEAF (no grandchildren) and no child
-    edge requests feedback (the fused program does parent-advance + force + child-
-    subcycle only; two-way feedback would add a parent-write the host bookkeeping
-    mirror does not model).  This fail-closes the all-7 d02 subtree IN and any
-    deeper/feedback subtree OUT -> eager.
-    """
-
-    # Never fuse the ROOT's cascade (GPT review): this lever is the d02 SUBSTEP unit
-    # (a non-root parent advanced one of its own steps per parent loop iteration),
-    # NOT the root step.  Excluding the root fail-closes the 2-domain-tree case where
-    # the root's single-leaf child would otherwise make the root fusable.
-    if name == tree.hierarchy.roots()[0]:
-        return None
-    children = tree.hierarchy.children(name)
-    if not children:
-        return None
-    edges = []
-    for spec in children:
-        if tree.hierarchy.children(spec.child):  # grandchild -> not a flat substep
-            return None
-        if bool(spec.feedback) or bool(tree.feedback_enabled):
-            return None
-        edge = next((e for e in tree.children(name) if e.child == spec.child), None)
-        if edge is None or edge.weights is None:
-            return None
-        edges.append(edge)
-    return tuple(edges)
-
-
-def _operational_fused_cascade_factory(tree: DomainTree) -> FusedCascadeLookup:
-    """Build the per-parent fused-cascade lookup for ``GPUWRF_NESTED_FUSE``.
-
-    Returns a callable ``lookup(parent_name) -> FusedSubstepFn | None``.  ``None``
-    (fail-closed to eager) unless ``GPUWRF_NESTED_FUSE`` is truthy AND the subtree
-    is the flat parent->{leaf children} pattern (``_fusable_parent``).  The fused
-    closure is built/cached ONCE per fusable parent.
-    """
-
-    # Explicit fail-closed parse: "0"/"false"/"off"/"no"/"" -> DISABLED (GPT review:
-    # bool(os.environ.get(...)) treated "0" as truthy, silently enabling the
-    # non-bitwise fused path when the operator meant to disable it).
-    enabled = os.environ.get("GPUWRF_NESTED_FUSE", "").strip().lower() in ("1", "true", "on", "yes")
-    cache: dict[str, FusedSubstepFn | None] = {}
-
-    def lookup(parent_name: str) -> "FusedSubstepFn | None":
-        if not enabled:
-            return None
-        if parent_name in cache:
-            return cache[parent_name]
-        edges = _fusable_parent(tree, parent_name)
-        if edges is None:
-            cache[parent_name] = None
-            return None
-        key = id(tree)
-        entry = _FUSED_PROGRAM_CACHE.get(key)
-        if entry is not None and entry[0]() is tree:
-            tree_programs = entry[1]
-        else:
-            tree_programs = {}
-            _FUSED_PROGRAM_CACHE[key] = (
-                weakref.ref(tree, lambda _r, _k=key: _FUSED_PROGRAM_CACHE.pop(_k, None)),
-                tree_programs,
-            )
-        program = tree_programs.get(str(parent_name))
-        if program is None:
-            parent_namelist = tree.domains[parent_name].namelist
-            parent_cad = int(parent_namelist.radiation_cadence_steps)
-            if parent_cad <= 0:
-                raise ValueError(f"{parent_name}: radiation_cadence_steps must be positive")
-            child_namelists = tuple(tree.domains[e.child].namelist for e in edges)
-            child_weights = tuple(e.weights for e in edges)
-            child_ratios = tuple(int(e.parent_grid_ratio) for e in edges)
-            # ``bdy_width`` is a static, per-child geometry; read it off the child
-            # boundary leaf exactly as the eager ``_operational_force`` does.
-            child_bdy_widths = tuple(
-                int(tree.domains[e.child].state.u_bdy.shape[2]) for e in edges
-            )
-            child_cadences = tuple(int(nl.radiation_cadence_steps) for nl in child_namelists)
-            for cad in child_cadences:
-                if cad <= 0:
-                    raise ValueError("child radiation_cadence_steps must be positive")
-            program = _build_fused_cascade_program(
-                parent_namelist=parent_namelist,
-                parent_cadence=parent_cad,
-                child_namelists=child_namelists,
-                child_weights=child_weights,
-                child_bdy_widths=child_bdy_widths,
-                child_ratios=child_ratios,
-                child_cadences=child_cadences,
-            )
-            tree_programs[str(parent_name)] = program
-        cache[parent_name] = program
-        return program
-
-    return lookup
 
 
 def _operational_feedback(edge: DomainEdge, parent: OperationalCarry, child: OperationalCarry) -> OperationalCarry:
@@ -801,19 +453,6 @@ def run_operational_domain_tree(
     def lookup(spec: DomainNest) -> DomainEdge:
         return edge_by_pair[(spec.parent, spec.child)]
 
-    # Fused d02-substep cascade (v0.17 GPUWRF_NESTED_FUSE).  Built only when the
-    # env flag is set AND feedback is OFF (the fused program models parent advance
-    # + force + child subcycle, not the two-way parent-write); otherwise the lookup
-    # returns ``None`` and the runner uses the eager path -> byte-identical to the
-    # pre-fuse behaviour when the flag is unset.  ``_fusable_parent`` additionally
-    # fails closed if the subtree is not the flat parent->{leaf children} pattern.
-    effective_feedback = (
-        tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled)
-    )
-    fused_cascade = (
-        None if effective_feedback else _operational_fused_cascade_factory(tree)
-    )
-
     return run_domain_tree_callbacks(
         tree.hierarchy,
         carries,
@@ -822,13 +461,12 @@ def run_operational_domain_tree(
         force=_operational_force,
         feedback=_operational_feedback,
         root=root,
-        feedback_enabled=effective_feedback,
+        feedback_enabled=tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled),
         output=output,
         output_cadence_steps=output_cadence_steps,
         block_between=block_between,
         root_sync_cadence=root_sync_cadence,
         edge_lookup=lookup,
-        fused_cascade=fused_cascade,
         initial_own_steps=initial_own_steps,
     )
 

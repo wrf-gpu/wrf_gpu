@@ -575,16 +575,20 @@ def apply_state_feedback(
         "mu_total": mu_val,
         "mu": mu_val,
     }
-    # v0.17 ADR-032 graupel/hail substrate (qh/Nh/qvolg/qvolh) joins the
-    # two-moment scalar feedback loop. The hasattr guard makes it a no-op for any
-    # state that does not carry hail, and for a non-hail run the leaves are zero
+    # v0.17 ADR-032 graupel/hail substrate (qh/Nh/qvolg/qvolh) and v0.16
+    # aerosol-aware Thompson (nwfa/nifa) join the two-moment scalar feedback
+    # loop. The hasattr guard makes each a no-op for any state that does not
+    # carry the leaf, and for a run without them the leaves are zero
     # (_fb(0,0,...) == 0), so the nest feedback is byte-unchanged.
     for name in (
         "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Ns", "Ng", "qke", "Nc", "Nn",
-        "nwfa", "nifa", "qh", "Nh", "qvolg", "qvolh",
+        "qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa",
     ):
         if hasattr(parent, name) and hasattr(child, name):
-            updates[name] = _fb(getattr(parent, name), getattr(child, name), mass, mass_sm)
+            parent_value = getattr(parent, name)
+            child_value = getattr(child, name)
+            if parent_value is not None and child_value is not None:
+                updates[name] = _fb(parent_value, child_value, mass, mass_sm)
     return parent.replace(_cast=False, **updates)
 
 

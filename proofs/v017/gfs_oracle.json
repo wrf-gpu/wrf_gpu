@@ -476,7 +476,7 @@
     }
   ],
   "exercised_through": "jax.jit over the full 6-case batch (genuine jit/vmap path)",
-  "git_head": "61a883c5d7e84c0afc01eaea2f9b7c3f7513cefe",
+  "git_head": "cf1b5029717dd63a60eb4d55b2455f10d92d2c4e",
   "jax_platform": "cpu",
   "jax_precision": "fp64",
   "operational_kernel": "gpuwrf.physics.bl_gfs.gfs_columns (jit/vmap-traceable)",

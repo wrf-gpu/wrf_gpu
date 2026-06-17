@@ -15,8 +15,12 @@ from typing import Iterable
 
 import numpy as np
 
+from gpuwrf.config.paths import aifs_vtable_path
 
-DEFAULT_AIFS_VTABLE = Path("/home/user/src/canairy_meteo/Gen2/configs/Vtable.AIFS_PURE")
+
+# Env-overridable via GPUWRF_AIFS_VTABLE (config.paths.aifs_vtable_path); an
+# explicit vtable_path= argument to the reader still takes precedence.
+DEFAULT_AIFS_VTABLE = aifs_vtable_path()
 
 ISOBARIC_LEVELS_PA = (
     100000.0,

@@ -27,6 +27,7 @@ from gpuwrf.physics.thompson_column import (
     step_thompson_column,
     step_thompson_column_with_precip,
 )
+from gpuwrf.validation.proof_write import should_write_proof as _should_write_proof
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -129,8 +130,9 @@ def run_tier1(out: Path = ARTIFACT) -> dict[str, Any]:
     manifest = _load_manifest()
     state, dt, expected = load_fixture_state()
     record = compare_against_fixture(state, dt, expected, _tolerance_map(manifest))
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if _should_write_proof(out, ARTIFACT):
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return record
 
 

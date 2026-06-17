@@ -1,0 +1,94 @@
+{
+  "family": "radiation",
+  "full_ship_gate": true,
+  "operational_pre_v018": {
+    "note": "class (a): scan-wired, savepoint-parity-proven, unchanged this sprint",
+    "ra_lw_physics": [
+      1,
+      4,
+      31
+    ],
+    "ra_sw_physics": [
+      1,
+      2,
+      4
+    ]
+  },
+  "oracle_raw_hash_manifest": "proofs/v018/savepoints/ra_tail_wrf/raw_hash_manifest.txt",
+  "oracle_source_checksums": "proofs/v018/savepoints/ra_tail_wrf/wrf_source_checksums.txt",
+  "schema": "wrf-v018-ra-family-status-v1",
+  "schemes": [
+    {
+      "bar_met": true,
+      "class": "b_reference_only_real_oracle_fail_closed",
+      "classified_reference_only": true,
+      "lw_fired": true,
+      "operationally_fail_closed": true,
+      "oracle_exists": true,
+      "oracle_nontrivial": true,
+      "oracle_path": "proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json",
+      "scheme": 3,
+      "sw_fired": true,
+      "wrf_module": "phys/module_ra_cam.F:CAMRAD"
+    },
+    {
+      "bar_met": true,
+      "class": "b_reference_only_real_oracle_fail_closed",
+      "classified_reference_only": true,
+      "lw_fired": true,
+      "operationally_fail_closed": true,
+      "oracle_exists": true,
+      "oracle_nontrivial": true,
+      "oracle_path": "proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json",
+      "scheme": 5,
+      "sw_fired": true,
+      "wrf_module": "phys/module_ra_goddard.F:goddardrad"
+    },
+    {
+      "bar_met": true,
+      "class": "b_reference_only_real_oracle_fail_closed",
+      "classified_reference_only": true,
+      "lw_fired": true,
+      "operationally_fail_closed": true,
+      "oracle_exists": true,
+      "oracle_nontrivial": true,
+      "oracle_path": "proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json",
+      "scheme": 7,
+      "sw_fired": true,
+      "wrf_module": "phys/module_ra_flg.F:RAD_FLG"
+    },
+    {
+      "bar_met": true,
+      "class": "b_reference_only_real_oracle_fail_closed",
+      "classified_reference_only": true,
+      "lw_fired": true,
+      "operationally_fail_closed": true,
+      "oracle_exists": true,
+      "oracle_nontrivial": true,
+      "oracle_path": "proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json",
+      "scheme": 99,
+      "sw_fired": true,
+      "wrf_module": "phys/module_ra_gfdleta.F:ETARA"
+    },
+    {
+      "bar_met": true,
+      "class": "c_compiled_out_of_standard_wrf",
+      "namelist_fail_closed": true,
+      "oracle_path": null,
+      "scheme": 14,
+      "source_citation": "configure.wrf BUILD_RRTMK=0; radiation_driver default abort",
+      "source_cited_in_reason": true,
+      "wrf_module": "phys/module_ra_rrtmg_{lwk,swk}.F (BUILD_RRTMK=0 dummy stub)"
+    },
+    {
+      "bar_met": true,
+      "class": "c_compiled_out_of_standard_wrf",
+      "namelist_fail_closed": true,
+      "oracle_path": null,
+      "scheme": 24,
+      "source_citation": "configure.wrf BUILD_RRTMG_FAST=0; radiation_driver default abort",
+      "source_cited_in_reason": true,
+      "wrf_module": "phys/module_ra_rrtmg_{lwf,swf}.F (BUILD_RRTMG_FAST=0 dummy stub)"
+    }
+  ]
+}

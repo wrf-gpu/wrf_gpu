@@ -100,7 +100,18 @@ def test_v2_warmed_capture_inter_kernel_d2h_is_zero():
 def test_v2_warmed_recapture_does_not_touch_operational_sources():
     """Constitutional non-goal: this sprint may not edit operational sources."""
 
-    operational = (ROOT / "src" / "gpuwrf" / "runtime" / "operational_mode.py").read_text(encoding="utf-8")
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _operational_source_guard import strip_preflight_mu_total_check
+
+    # v0.18 (a later integration sprint, not this recapture sprint) added the
+    # verified ONE-TIME, pre-loop `_assert_nonzero_initial_mu_total` host pull to
+    # operational_mode.py. Strip just that helper so this stays a loop-precise
+    # no-host-transfer guard; every other host transfer still fails the check.
+    operational = strip_preflight_mu_total_check(
+        (ROOT / "src" / "gpuwrf" / "runtime" / "operational_mode.py").read_text(encoding="utf-8")
+    )
     state = (ROOT / "src" / "gpuwrf" / "runtime" / "operational_state.py").read_text(encoding="utf-8")
     for source in (operational, state):
         for token in (

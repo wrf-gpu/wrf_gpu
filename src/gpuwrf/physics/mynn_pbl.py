@@ -95,12 +95,10 @@ def _env_int(name: str, default: int) -> int:
 # proofs/v013/rrtmg_column_tile.json).  The default BouLac free-atmosphere
 # length (`_boulac_length_dense`) materialises dense ``(B, nz, nz)`` PE matrices:
 # at 641x321x50 fp64 ONE such matrix is ~3.8 GiB and several are live at once, so
-# a whole-domain batch dominates the non-radiation physics peak.  The v0.17
-# `GPUWRF_MYNN_BOULAC_ONZ` opt-in avoids the full matrix with the production
-# source-chunked schedule; the legacy pure scan remains diagnostic-only because
-# of its XLA compile/command-buffer pathology.  Every MYNN op is per-column
-# (reductions run over the level axis; the EDMF plume sum runs inside a
-# per-column vmap).
+# a whole-domain batch dominates the non-radiation physics peak.  (The O(nz)
+# `_boulac_length_onz` drops these but is default-OFF on an XLA compile
+# pathology; see `_MYNN_BOULAC_ONZ`.)  Every MYNN op is per-column (reductions
+# run over the level axis; the EDMF plume sum runs inside a per-column vmap).
 # Tile-vs-untiled is
 # proven bit-identical on GPU including ragged tiles at the production tile
 # width; on the CPU backend the implicit tridiagonal solves can differ by
@@ -136,53 +134,24 @@ _MYNN_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_MYNN_COLUMN_TILE_COLS", 16384))
 # one-time compile cost is acceptable (it is a validated, field-gate-passing win).
 _MYNN_BOULAC_FP32 = _env_bool("GPUWRF_MYNN_BOULAC_FP32", False)
 
-# v0.17 BouLac O(nz)-working-set memory lever (default OFF, production opt-in).
-# The default `_boulac_length` path is deliberately unchanged unless this flag is
-# set.  With GPUWRF_MYNN_BOULAC_ONZ=1 the dispatcher selects the production
-# source-chunked BouLac schedule with chunk=1: it keeps the dense path's
-# cumsum/where/reduce arithmetic but processes one SOURCE level at a time, so no
-# full (B, nz, nz) PE matrix is live.  That is a memory-shape rewrite, not a
-# precision change, and is bit-identical to the whole-domain dense result when
-# GPUWRF_MYNN_BOULAC_FP32 is off.
-#
-# The original v0.15 pure scan implementation (`_boulac_length_onz`) remains in
-# this file because it is WRF-faithful and useful for oracle/pathology probes,
-# but it is NOT the production implementation: inside the full operational jit
-# its deep data-dependent chain fuses into huge ptxas-spilling kernels and at
-# 147k columns OOMs while instantiating CUDA command buffers.  Set
-# GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN=1 together with GPUWRF_MYNN_BOULAC_ONZ=1
-# only to reproduce that rejected path.
+# v0.15 BouLac O(nz) memory lever (default OFF -- BLOCKED by an XLA pathology).
+# The production `_boulac_length` materialises dense (B, nz, nz) PE-accumulation
+# matrices to find the parcel up/down length scale; `_boulac_length_onz` is a
+# WRF-faithful O(nz)-memory reformulation (the inner izz parcel search runs as a
+# straight-line unrolled loop over the search axis, carrying only O(B, nz)
+# accumulators).  It is PROVEN correct (proofs/perf/v015/boulac_nz_oracle.json:
+# max_rel 2.4e-16 vs a loop-for-loop WRF NumPy transcription across 8
+# stratification regimes) and PROVEN faster + lighter IN ISOLATION
+# (proofs/perf/v015/boulac_nz_perf_ab.json: 1.30x / -387 MB on the d01 16384x44
+# step, step-output theta identical to 1.9e-16).  BUT when fused into the FULL
+# operational forecast jit it triggers the SAME XLA "Very slow compile" pathology
+# as GPUWRF_MYNN_BOULAC_FP32 (>7 min, no completion; reproduced for both a
+# lax.scan and a Python-unrolled form, BFC + cuda_async, autotune on/off): the
+# data-dependent O(nz) search defeats the fusion that the pure-cumsum dense form
+# enjoys.  So the dense form stays the DEFAULT (it compiles in ~80 s and is the
+# v0.14-frozen-gate-passing path).  Set GPUWRF_MYNN_BOULAC_ONZ=1 to opt in once
+# the XLA compile pathology is resolved (Fable escalation: fusion-boundary work).
 _MYNN_BOULAC_ONZ = _env_bool("GPUWRF_MYNN_BOULAC_ONZ", False)
-_MYNN_BOULAC_ONZ_LEGACY_SCAN = _env_bool("GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN", False)
-
-# v0.16 BouLac SOURCE-CHUNKED dense lever (default OFF; the 1km-UNLOCK path).
-# The dense parcel search materialises (B, nz, nz) PE matrices; at 1km
-# (147456x44x44 fp64 ~ 21 GiB) XLA coalesces a ~18.8 GiB scratch buffer that OOMs
-# the GPU (MEASURED: dense FAILs at 147k trying to allocate 18.80 GiB).  The pure
-# O(nz) `_boulac_length_onz` removes the matrices but defeats XLA fusion (deep
-# data-dependent sequential scan -> "Very slow compile").  The CHUNKED form
-# (`_boulac_length_chunked`) keeps the dense form's fusion-friendly
-# cumsum/where/reduce kernel but slices the SOURCE-level axis into chunks of
-# `GPUWRF_MYNN_BOULAC_CHUNK`: each chunk materialises only (B, chunk, nz) and the
-# chunks are concatenated, so the coalesced BouLac scratch shrinks by ~nz/chunk
-# while the outer loop is a SHORT shallow structural unroll (ceil(nz/chunk)
-# fusion-friendly dense blocks), NOT the deep 86-iteration data-dependent chain
-# that trips the compile pathology.  Numerically BIT-IDENTICAL to the dense form
-# (oracle proofs/perf/v016/boulac_chunked_oracle.json: max_abs==0.0 vs whole-
-# domain dense for every chunk size; only the source axis is partitioned, cumsums
-# run over the FULL target axis inside every chunk).
-#
-# MEASURED 1km (147456-col fp64) threshold (proofs/perf/v016/boulac_chunk*_147k.json):
-#   dense / chunk=4 / chunk=2 -> OOM (18.80 / 15.98 / 15.70 GiB single alloc);
-#   chunk=1 -> RUNS, peak 18.25 GiB, finite.
-# So DEFAULT=1 (the proven-fitting value) when CHUNKED is engaged: each block is
-# (B,1,nz) so XLA never coalesces a multi-GiB BouLac buffer.  The cost is a longer
-# compile (nz blocks: ~150 s at 147k vs ~60 s dense; NO slow-compile pathology)
-# and the per-step cost is unchanged.  Raise GPUWRF_MYNN_BOULAC_CHUNK for smaller
-# grids where the BouLac matrix is not the binding allocation and a shorter
-# compile is preferred (chunk>=nz or <=0 == the whole-domain dense form).
-_MYNN_BOULAC_CHUNK = _env_int("GPUWRF_MYNN_BOULAC_CHUNK", 1)
-_MYNN_BOULAC_CHUNKED = _env_bool("GPUWRF_MYNN_BOULAC_CHUNKED", False)
 
 # v0.15 IDENTITY fix (default ON): the WRF MYNN-EDMF subgrid-cloud chain --
 # mym_condensation CASE(2) (bl_mynn_cloudpdf=2, the WRF Registry default the
@@ -864,191 +833,19 @@ def _boulac_length_dense(zw, dz, qtke, theta):
     return lb1, lb2
 
 
-def _boulac_dlu_dld_chunk(
-    s0, s1, *, beta, nz, theta, dz, qtke, zw, zw_top,
-    theta_jp1_row, theta_jm1_row, dz_jm1_row, j_idx,
-):
-    """Dense BouLac up/down search for the SOURCE rows ``[s0:s1]`` only.
-
-    Materialises (B, s1-s0, nz) intermediates (vs (B, nz, nz) for the whole
-    domain): the SOURCE axis is sliced, the TARGET axis (the inner cumsum search)
-    stays full-width so no crossing information is lost.  The arithmetic is the
-    VERBATIM dense-form arithmetic (``_boulac_length_dense``); this is a memory
-    partition, not a numerics change.  Returns ``(dlu_chunk, dld_chunk)`` of shape
-    ``(..., s1-s0)``.
-    """
-
-    src = j_idx[s0:s1][:, None]                       # (chunk, 1) source levels
-    tgt = j_idx[None, :]                               # (1, nz) target levels
-
-    theta_i = theta[..., s0:s1, None]                  # theta(iz) for chunk rows
-    qtke_i = qtke[..., s0:s1, None]
-    theta_j = theta[..., None, :]                       # theta(izz) full target
-    dz_j = dz[..., None, :]
-    theta_jp1 = theta_jp1_row[..., None, :]
-    theta_jm1 = theta_jm1_row[..., None, :]
-    dz_jm1 = dz_jm1_row[..., None, :]
-
-    # ---------------- UPWARD search (dlu) ----------------
-    up_incr = (beta * (theta_jp1 + theta_j) * dz_j * 0.5
-               - beta * theta_i * dz_j)
-    up_valid = (tgt >= src) & (tgt <= nz - 2)
-    up_incr = jnp.where(up_valid, up_incr, 0.0)
-    zup = jnp.cumsum(up_incr, axis=-1)
-    zup_inf = jnp.concatenate((jnp.zeros_like(zup[..., :1]), zup[..., :-1]), axis=-1)
-    zzz_up = jnp.cumsum(jnp.where(up_valid, dz_j, 0.0), axis=-1)
-
-    bbb_up = jnp.where(jnp.abs(theta_jp1 - theta_j) > 0.0,
-                       (theta_jp1 - theta_j) / dz_j, 0.0)
-    rad_up = jnp.maximum((beta * (theta_j - theta_i)) ** 2
-                         + 2.0 * bbb_up * beta * (qtke_i - zup_inf), 0.0)
-    tl_up_b = jnp.where(bbb_up != 0.0,
-                        (-beta * (theta_j - theta_i) + jnp.sqrt(rad_up))
-                        / jnp.where(bbb_up != 0.0, bbb_up * beta, 1.0),
-                        0.0)
-    tl_up_lin = jnp.where(theta_j != theta_i,
-                          (qtke_i - zup_inf) / (beta * jnp.where(theta_j != theta_i, theta_j - theta_i, 1.0)),
-                          0.0)
-    tl_up = jnp.where(bbb_up != 0.0, tl_up_b, tl_up_lin)
-    dlu_cand = zzz_up - dz_j + tl_up
-    up_cross = up_valid & (qtke_i < zup) & (qtke_i >= zup_inf)
-    up_first = up_cross & (jnp.cumsum(up_cross.astype(jnp.int32), axis=-1) == 1)
-    dlu_default = zw_top[..., None] - zw[..., s0:s1, None] - dz[..., s0:s1, None] * 0.5
-    dlu = jnp.where(jnp.any(up_first, axis=-1, keepdims=True),
-                    jnp.sum(jnp.where(up_first, dlu_cand, 0.0), axis=-1, keepdims=True),
-                    dlu_default)[..., 0]
-    dlu = jnp.where(src[:, 0] < nz - 1, dlu, dlu_default[..., 0])
-
-    # ---------------- DOWNWARD search (dld) ----------------
-    do_incr = (beta * theta_i * dz_jm1
-               - beta * (theta_jm1 + theta_j) * dz_jm1 * 0.5)
-    do_valid = (tgt <= src) & (tgt >= 1)
-    do_incr = jnp.where(do_valid, do_incr, 0.0)
-    zdo = jnp.cumsum(do_incr[..., ::-1], axis=-1)[..., ::-1]
-    zdo_sup = jnp.concatenate((zdo[..., 1:], jnp.zeros_like(zdo[..., :1])), axis=-1)
-    zzz_do = jnp.cumsum(jnp.where(do_valid, dz_jm1, 0.0)[..., ::-1], axis=-1)[..., ::-1]
-
-    bbb_do = jnp.where(jnp.abs(theta_j - theta_jm1) > 0.0,
-                       (theta_j - theta_jm1) / dz_jm1, 0.0)
-    rad_do = jnp.maximum((beta * (theta_j - theta_i)) ** 2
-                         + 2.0 * bbb_do * beta * (qtke_i - zdo_sup), 0.0)
-    tl_do_b = jnp.where(bbb_do != 0.0,
-                        (beta * (theta_j - theta_i) + jnp.sqrt(rad_do))
-                        / jnp.where(bbb_do != 0.0, bbb_do * beta, 1.0),
-                        0.0)
-    tl_do_lin = jnp.where(theta_j != theta_i,
-                          (qtke_i - zdo_sup) / (beta * jnp.where(theta_j != theta_i, theta_j - theta_i, 1.0)),
-                          0.0)
-    tl_do = jnp.where(bbb_do != 0.0, tl_do_b, tl_do_lin)
-    dld_cand = zzz_do - dz_jm1 + tl_do
-    do_cross = do_valid & (qtke_i < zdo) & (qtke_i >= zdo_sup)
-    do_first = do_cross & (jnp.cumsum(do_cross[..., ::-1].astype(jnp.int32), axis=-1)[..., ::-1] == 1)
-    dld_default = zw[..., s0:s1, None]
-    dld = jnp.where(jnp.any(do_first, axis=-1, keepdims=True),
-                    jnp.sum(jnp.where(do_first, dld_cand, 0.0), axis=-1, keepdims=True),
-                    dld_default)[..., 0]
-    dld = jnp.where(src[:, 0] > 0, dld, dld_default[..., 0])
-    return dlu, dld
-
-
-def _boulac_length_chunked(zw, dz, qtke, theta, chunk=None):
-    """Source-chunked dense BouLac length (``GPUWRF_MYNN_BOULAC_CHUNKED=1``).
-
-    Numerically IDENTICAL to :func:`_boulac_length_dense` (same arithmetic), but
-    the dense (B, nz, nz) parcel-search matrices are never materialised whole:
-    the SOURCE-level axis is processed in contiguous chunks of
-    ``GPUWRF_MYNN_BOULAC_CHUNK`` (default 1 -- the MEASURED value that fits 1km
-    fp64; ``_MYNN_BOULAC_CHUNK``), so each block materialises only
-    (B, chunk, nz).  Peak BouLac memory drops by ~nz/chunk.  The outer loop is a
-    SHORT shallow structural unroll over ceil(nz/chunk) fusion-friendly dense
-    blocks (each a pure cumsum/where/reduce graph that XLA fuses well) -- NOT the
-    deep data-dependent sequential chain of ``_boulac_length_onz`` that trips the
-    XLA "Very slow compile" pathology.  This is the 1km-UNLOCK path (the dense
-    (B,nz,nz) matrix is the ~18.8 GiB single allocation that OOMs at 147k cols).
-    """
-
-    _out_dtype = jnp.result_type(zw, dz, qtke, theta)
-    if _MYNN_BOULAC_FP32 and _out_dtype == jnp.float64:
-        zw = zw.astype(jnp.float32)
-        dz = dz.astype(jnp.float32)
-        qtke = qtke.astype(jnp.float32)
-        theta = theta.astype(jnp.float32)
-
-    beta = GTR
-    nz = dz.shape[-1]
-    zwf = _edge_heights(dz)                 # (..., nz+1); zwf[...,0]=0
-    zw_top = zwf[..., -1:]                   # zw(kte+1)
-    zw_kp1 = zwf[..., 1:]                     # zw(k+1), length nz
-
-    j_idx = jnp.arange(nz)
-    # target-shifted rows, length nz (full target axis, shared by all chunks).
-    theta_jp1_row = jnp.concatenate((theta[..., 1:], theta[..., -1:]), axis=-1)
-    theta_jm1_row = jnp.concatenate((theta[..., :1], theta[..., :-1]), axis=-1)
-    dz_jm1_row = jnp.concatenate((dz[..., :1], dz[..., :-1]), axis=-1)
-
-    chunk = _MYNN_BOULAC_CHUNK if chunk is None else chunk
-    if chunk <= 0 or chunk >= nz:
-        # Fall back to a single whole-domain block (== the dense form).
-        chunk = nz
-
-    dlu_parts = []
-    dld_parts = []
-    for s0 in range(0, nz, chunk):
-        s1 = min(s0 + chunk, nz)
-        dlu_c, dld_c = _boulac_dlu_dld_chunk(
-            s0, s1, beta=beta, nz=nz, theta=theta, dz=dz, qtke=qtke,
-            zw=zw, zw_top=zw_top, theta_jp1_row=theta_jp1_row,
-            theta_jm1_row=theta_jm1_row, dz_jm1_row=dz_jm1_row, j_idx=j_idx,
-        )
-        dlu_parts.append(dlu_c)
-        dld_parts.append(dld_c)
-    dlu = jnp.concatenate(dlu_parts, axis=-1) if len(dlu_parts) > 1 else dlu_parts[0]
-    dld = jnp.concatenate(dld_parts, axis=-1) if len(dld_parts) > 1 else dld_parts[0]
-
-    # Shared post-processing (verbatim dense form).
-    dld = jnp.minimum(dld, zw_kp1)
-    dlu = jnp.maximum(0.1, dlu / (1.0 + dlu / NL_BOULAC_LMAX))
-    dld = jnp.maximum(0.1, dld / (1.0 + dld / NL_BOULAC_LMAX))
-
-    lb1 = jnp.minimum(dlu, dld)
-    lb2 = jnp.sqrt(dlu * dld)
-    lb1 = jnp.concatenate((lb1[..., :-1], lb1[..., -2:-1]), axis=-1)
-    lb2 = jnp.concatenate((lb2[..., :-1], lb2[..., -2:-1]), axis=-1)
-    if _MYNN_BOULAC_FP32 and _out_dtype == jnp.float64:
-        lb1 = lb1.astype(_out_dtype)
-        lb2 = lb2.astype(_out_dtype)
-    return lb1, lb2
-
-
-def _boulac_length_onz_production(zw, dz, qtke, theta):
-    """Production ``GPUWRF_MYNN_BOULAC_ONZ`` path.
-
-    Uses the bit-identical source-chunked dense schedule with ``chunk=1``.  The
-    legacy pure scan `_boulac_length_onz` is still available for diagnostics via
-    ``GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN=1``, but it is not shippable in the full
-    forecast jit because of the documented XLA/ptxas pathology.
-    """
-
-    return _boulac_length_chunked(zw, dz, qtke, theta, chunk=1)
-
-
 def _boulac_length(zw, dz, qtke, theta):
-    """Dispatch the BouLac length scale: dense (default), chunked, or O(nz).
+    """Dispatch the BouLac length scale: dense (default) or O(nz) (opt-in).
 
-    The dense form is the default and stays untouched.  ``GPUWRF_MYNN_BOULAC_ONZ``
-    is the v0.17 production O(nz)-working-set path: source-chunked dense with
-    chunk=1, bit-identical to dense in fp64 and measured to fit the 147k-column
-    1km case.  ``GPUWRF_MYNN_BOULAC_CHUNKED=1`` keeps the older tunable chunked
-    path.  ``GPUWRF_MYNN_BOULAC_ONZ_LEGACY_SCAN=1`` re-enables the rejected pure
-    scan implementation for pathology characterization only.
+    Both forms produce the same WRF lengths (oracle: identical to ~machine eps;
+    proofs/perf/v015/boulac_nz_oracle.json + boulac_nz_perf_ab.json).  The dense
+    form is the DEFAULT: it compiles fast in the full operational forecast jit.
+    The O(nz) form (``GPUWRF_MYNN_BOULAC_ONZ=1``) is correct and lighter but is
+    BLOCKED on an XLA slow-compile pathology in that jit -- see
+    ``_MYNN_BOULAC_ONZ``.
     """
 
     if _MYNN_BOULAC_ONZ:
-        if _MYNN_BOULAC_ONZ_LEGACY_SCAN:
-            return _boulac_length_onz(zw, dz, qtke, theta)
-        return _boulac_length_onz_production(zw, dz, qtke, theta)
-    if _MYNN_BOULAC_CHUNKED:
-        return _boulac_length_chunked(zw, dz, qtke, theta)
+        return _boulac_length_onz(zw, dz, qtke, theta)
     return _boulac_length_dense(zw, dz, qtke, theta)
 
 

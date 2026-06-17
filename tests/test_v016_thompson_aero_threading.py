@@ -20,8 +20,14 @@ import numpy as np
 import pytest
 
 from gpuwrf.contracts import physics_registry as registry
-from gpuwrf.contracts.precision import FP32_GATED, PRECISION_MATRIX, STATE_FIELD_ORDER
-from gpuwrf.contracts.state import State, _state_field_shapes
+from gpuwrf.contracts.precision import DEFAULT_DTYPES, FP32_GATED, PRECISION_MATRIX, STATE_FIELD_ORDER
+from gpuwrf.contracts.state import (
+    AEROSOL_CONDITIONAL_LEAVES,
+    CONDITIONAL_STATE_LEAVES,
+    HAIL_CONDITIONAL_LEAVES,
+    State,
+    _state_field_shapes,
+)
 
 
 P0_PA, R_D, C_P, GRAVITY = 1.0e5, 287.0, 1004.0, 9.80665
@@ -39,7 +45,7 @@ def _tiny_state(nz: int = 24, ny: int = 4, nx: int = 4, seed: int = 3) -> State:
 
     rng = np.random.default_rng(seed)
     grid = _GridShim(nz, ny, nx)
-    fields = {n: jnp.zeros(s, dtype=jnp.float64) for n, s in _state_field_shapes(grid).items()}
+    fields = {n: jnp.zeros(s, dtype=jnp.float64) for n, s in _state_field_shapes(grid, mp_physics=28).items()}
     z_iface = np.arange(nz + 1) * 300.0
     z_mid = 0.5 * (z_iface[:-1] + z_iface[1:])
     theta_col = 300.0 + 0.004 * z_mid
@@ -102,24 +108,36 @@ def test_nest_field_list_carries_aerosol_numbers_for_mp28() -> None:
 # ============================================================================
 # 2. State: append-only pytree extension.
 # ============================================================================
-def test_state_field_order_preserves_v016_aerosol_then_appends_v017_hail_tail() -> None:
-    assert STATE_FIELD_ORDER[-7:] == ("nwfa", "nifa", "qh", "Nh", "qvolg", "qvolh", "hail_acc")
-    assert State.__slots__[-7:] == ("nwfa", "nifa", "qh", "Nh", "qvolg", "qvolh", "hail_acc")
-    # The pre-v0.16 prefix is untouched (append-only): nwfa/nifa still sit AFTER
-    # the v0.6.0 (Nc/Nn/rainc_acc) and v0.15 MYNN SGS-cloud
-    # (qsq/qc_bl/qi_bl/cldfra_bl) leaves; v0.17 only appends the hail tail after
-    # the v0.16 aerosol leaves.
+def test_state_field_order_appends_nwfa_nifa_at_end() -> None:
+    # v0.18 trunk canonical append-only tail (set-UNION of the v0.6.0/v0.15/v0.16
+    # /v0.17 additive lanes): the v0.17 ADR-032 hail substrate (qh/Nh/qvolg/qvolh),
+    # then the v0.16 aerosol-aware Thompson leaves (nwfa/nifa), then the v0.17 hail
+    # surface accumulator (hail_acc). nwfa/nifa sit at positions -3/-2 (before the
+    # final hail_acc accumulator), still after the v0.6.0 + v0.15 prefix.
+    assert STATE_FIELD_ORDER[-3:-1] == ("nwfa", "nifa")
+    assert State.__slots__[-3:-1] == ("nwfa", "nifa")
     assert State.__slots__[-14:] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
-        "nwfa", "nifa", "qh", "Nh", "qvolg", "qvolh", "hail_acc",
+        "qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc",
     )
     assert PRECISION_MATRIX["nwfa"] == (FP32_GATED, True)
     assert PRECISION_MATRIX["nifa"] == (FP32_GATED, True)
 
 
 def test_state_constructs_with_and_without_aerosol_kwargs() -> None:
-    state = _tiny_state()
-    # Default: zeros templated on qc, fp32-gated dtype.
+    grid = _GridShim(24, 4, 4)
+    base_fields = {
+        n: jnp.zeros(s, dtype=DEFAULT_DTYPES.dtype_for(n))
+        for n, s in _state_field_shapes(grid, mp_physics=8).items()
+    }
+    default_state = State(**base_fields)
+    for leaf in CONDITIONAL_STATE_LEAVES:
+        assert getattr(default_state, leaf) is None, leaf
+
+    state = default_state.ensure_conditional_leaves(mp_physics=28)
+    for leaf in HAIL_CONDITIONAL_LEAVES:
+        assert getattr(state, leaf) is None, leaf
+    # mp=28: aerosol leaves materialize as zeros templated on qc, fp32-gated.
     assert state.nwfa.shape == state.qc.shape
     assert state.nifa.shape == state.qc.shape
     assert state.nwfa.dtype == jnp.float32
@@ -139,18 +157,12 @@ def test_state_constructs_with_and_without_aerosol_kwargs() -> None:
 def test_state_pytree_round_trip_preserves_leaf_count_and_order() -> None:
     state = _tiny_state()
     leaves, treedef = jax.tree_util.tree_flatten(state)
-    # Consolidated v0.16 release schema: 53 original + v0.6.0 (3) + v0.15 MYNN
-    # (4) + v0.16 aerosol (nwfa/nifa, 2) + v0.17 hail tail (5) = 67 leaves.
-    assert len(leaves) == len(State.__slots__) == 67
-    # tree_flatten emits leaves in __slots__ order; v0.16 leaves are preserved
-    # immediately before the v0.17 hail tail.
-    assert leaves[-7] is state.nwfa
-    assert leaves[-6] is state.nifa
-    assert leaves[-5] is state.qh
-    assert leaves[-4] is state.Nh
-    assert leaves[-3] is state.qvolg
-    assert leaves[-2] is state.qvolh
-    assert leaves[-1] is state.hail_acc
+    # mp=28 carries the 60-leaf base plus nwfa/nifa only; hail leaves remain None
+    # and are not JAX pytree leaves.
+    assert len(leaves) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) + len(AEROSOL_CONDITIONAL_LEAVES) == 62
+    assert state.active_field_names()[-2:] == AEROSOL_CONDITIONAL_LEAVES
+    assert leaves[-2] is state.nwfa
+    assert leaves[-1] is state.nifa
     rebuilt = jax.tree_util.tree_unflatten(treedef, leaves)
     for name in State.__slots__:
         assert getattr(rebuilt, name) is getattr(state, name), name
@@ -234,7 +246,20 @@ def test_coldstart_matches_frozen_numpy_climatology() -> None:
 
     # A state that already carries aerosol is left untouched (restart path).
     again = thompson_aero_coldstart_init(seeded, None)
-    assert again is seeded
+    np.testing.assert_array_equal(np.asarray(again.nwfa), np.asarray(seeded.nwfa))
+    np.testing.assert_array_equal(np.asarray(again.nifa), np.asarray(seeded.nifa))
+
+
+def test_coldstart_is_jittable_and_preserves_seeded_aerosols() -> None:
+    from gpuwrf.coupling.physics_couplers import thompson_aero_coldstart_init
+
+    state = _tiny_state()
+    seeded = jax.jit(lambda s: thompson_aero_coldstart_init(s, None))(state)
+    assert float(jnp.max(seeded.nwfa)) > 0.0
+
+    again = jax.jit(lambda s: thompson_aero_coldstart_init(s, None))(seeded)
+    np.testing.assert_array_equal(np.asarray(again.nwfa), np.asarray(seeded.nwfa))
+    np.testing.assert_array_equal(np.asarray(again.nifa), np.asarray(seeded.nifa))
 
 
 # ============================================================================

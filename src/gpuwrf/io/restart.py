@@ -44,7 +44,7 @@ import jax
 from jax import config
 import numpy as np
 
-from gpuwrf.contracts.state import State
+from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State
 from gpuwrf.runtime.operational_state import OperationalCarry
 
 try:  # Noah-MP land/static live in the v0.2.0 land package; optional so a
@@ -113,7 +113,21 @@ def _restore_namelist(namelist: Any, grid: Any) -> Any:
 
 
 def _state_fields(state: State) -> dict[str, np.ndarray]:
-    return {name: _hostify(getattr(state, name)) for name in State.__slots__}
+    return {name: _hostify(getattr(state, name)) for name in state.active_field_names()}
+
+
+def _validate_state_field_order(recorded: tuple[str, ...]) -> None:
+    expected = tuple(State.__slots__)
+    if any(field not in expected for field in recorded):
+        raise ValueError("restart State field order contains unknown leaves")
+    if recorded != tuple(field for field in expected if field in recorded):
+        raise ValueError("restart State field order does not match current State schema")
+    missing = tuple(field for field in expected if field not in recorded)
+    if any(field not in CONDITIONAL_STATE_LEAVES for field in missing):
+        raise ValueError(
+            "restart State fields are missing non-conditional leaves: "
+            f"{[field for field in missing if field not in CONDITIONAL_STATE_LEAVES]}"
+        )
 
 
 def _land_fields(land: Any) -> dict[str, np.ndarray]:
@@ -126,7 +140,7 @@ def _carry_to_payload(carry: OperationalCarry) -> dict[str, Any]:
     """Explicit field-named, host-numpy serialization of the FULL carry."""
 
     payload: dict[str, Any] = {
-        "state_field_order": list(State.__slots__),
+        "state_field_order": list(carry.state.active_field_names()),
         "state_fields": _state_fields(carry.state),
         "scratch_field_order": list(_CARRY_SCRATCH_FIELDS),
         "scratch_fields": {name: _hostify(getattr(carry, name)) for name in _CARRY_SCRATCH_FIELDS},
@@ -217,9 +231,9 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
     carry = payload["carry"]
     # Fail-closed schema checks (exact field-order + field-set match), so a State /
     # scratch / land schema drift raises instead of mis-reconstructing the carry.
-    if tuple(carry.get("state_field_order", ())) != tuple(State.__slots__):
-        raise ValueError("restart State field order does not match current State schema")
-    if set(carry.get("state_fields", {})) != set(State.__slots__):
+    recorded_state_order = tuple(carry.get("state_field_order", ()))
+    _validate_state_field_order(recorded_state_order)
+    if set(carry.get("state_fields", {})) != set(recorded_state_order):
         raise ValueError("restart State fields do not match current State schema")
     if tuple(carry.get("scratch_field_order", ())) != _CARRY_SCRATCH_FIELDS:
         raise ValueError("restart carry-scratch field order does not match current schema")
@@ -238,7 +252,10 @@ def _read_payload(path: str | Path) -> dict[str, Any]:
 
 def _restore_carry(carry_payload: dict[str, Any]) -> OperationalCarry:
     state = State(
-        **{name: jax.device_put(carry_payload["state_fields"][name]) for name in State.__slots__}
+        **{
+            name: jax.device_put(carry_payload["state_fields"][name])
+            for name in carry_payload["state_field_order"]
+        }
     )
     scratch = {
         name: jax.device_put(carry_payload["scratch_fields"][name])

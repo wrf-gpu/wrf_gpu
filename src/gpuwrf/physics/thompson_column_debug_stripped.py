@@ -14,14 +14,17 @@ from gpuwrf.physics.thompson_column import (
     ThompsonColumnState,
     _cast_state,
     _clip_species,
-    _cold_collection,
+    _apply_cold_collection_rates,
+    _cold_collection_rates,
     _cold_collection_enabled,
     _finish,
     _ice_sources_with_process_flags,
     _instant_melt_freeze,
     _rain_evaporation,
+    _reset_mp8_graupel_number,
     _restore_state,
     _saturation_adjustment_with_condensation,
+    _zero_cold_collection_rates,
     _warm_rain_collection,
     _work_dtype,
 )
@@ -43,10 +46,18 @@ def _step_thompson_column_stripped_impl(state: ThompsonColumnState, dt: float) -
     storage = {name: jnp.asarray(getattr(state, name)).dtype for name in ThompsonColumnState.__slots__}
     state = _cast_state(state, work)
     state = _clip_species(state)
+    state = _reset_mp8_graupel_number(state)
     state = _warm_rain_collection(state, dt)
-    state, graupel_melt, _vts_boost = _ice_sources_with_process_flags(state, dt)
+    cold_rates = (
+        _cold_collection_rates(state, dt, COLD_COLLECTION_TABLES)
+        if _cold_collection_enabled()
+        else _zero_cold_collection_rates(state)
+    )
+    state, graupel_melt, _vts_boost, cold_rates = _ice_sources_with_process_flags(
+        state, dt, cold_collection_rates=cold_rates
+    )
     if _cold_collection_enabled():
-        state = _cold_collection(state, dt, COLD_COLLECTION_TABLES)
+        state = _apply_cold_collection_rates(state, dt, cold_rates)
     state, cloud_condensed = _saturation_adjustment_with_condensation(state, dt)
     state = _rain_evaporation(state, dt, skip_evaporation=cloud_condensed, graupel_melt=graupel_melt)
     state = _instant_melt_freeze(state, dt)

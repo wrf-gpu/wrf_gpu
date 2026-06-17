@@ -1,0 +1,62 @@
+# v0.18 RA tail raw hash manifest
+
+Scope: RA 3/5/7/99 exact-driver real-WRF oracle provenance.
+Path taken: no clean full-wrf.exe rebuild. The available wrf.exe is
+physics-pristine and WRFGPU2_ORACLE-instrumented; the instrumentation is
+documented here and audited as numerically-inert dump-only.
+
+WRF root: /home/user/src/wrf_pristine/WRF
+WRF git HEAD: f52c197ed39d12e087d02c50f412d90d418f6186
+wrf.exe: 52f914cb38e0899d8a1da54bd52f3e08d81ba0f6a7015d3159e48393f5226bd6  main/wrf.exe
+wrf.exe embedded provenance in each raw log: git commit f52c197ed39d12e087d02c50f412d90d418f6186 1 file changed, 38 insertions(+)
+wrf.exe strings audit: contains WRFGPU2_ORACLE / module_wrfgpu2_oracle symbols.
+
+Audit verdict:
+- The exact RA physics modules used for RA 3/5/7/99 are upstream-identical to WRF HEAD.
+- git diff --quiet for phys/module_ra_cam.F phys/module_ra_goddard.F phys/module_ra_flg.F phys/module_ra_gfdleta.F phys/module_ra_rrtmg_lwk.F phys/module_ra_rrtmg_swk.F phys/module_ra_rrtmg_lwf.F phys/module_ra_rrtmg_swf.F returned exit 0.
+- phys/module_radiation_driver.F has WRFGPU2_ORACLE hooks, but the +125-line diff is dump-only: a USE module_wrfgpu2_oracle line plus guarded oracle_open_scheme/oracle_dump2d/oracle_dump3d/oracle_close_scheme calls. The existing RRTMG call argument lists are not edited, and there are no assignments to physics state arrays in the added blocks.
+- phys/module_wrfgpu2_oracle.F declares dumped arrays INTENT(IN), copies values into local REAL(KIND=8) buffers, and writes sidecar/stream files. It is gated by WRFGPU2_ORACLE / WRFGPU2_ORACLE_GRID / WRFGPU2_ORACLE_STEP / WRFGPU2_ORACLE_ROOT.
+- RA 3/5/7/99 savepoints are extracted from wrfout files produced by the real WRF radiation_driver dispatch to upstream-identical CAMRAD/goddardrad/RAD_FLG/ETARA modules. They are not JAX self-compares.
+
+Upstream-identical RA module checksums (current file hash equals HEAD file hash):
+b0484d38338d9c7925d8011889f5a57280870febe451cfdce843b1e9ae669e32  phys/module_ra_cam.F
+0917531726cbed5a128e05c45e70ee292c209dbcd1ae2bad17db6e46b8d3a5ad  phys/module_ra_goddard.F
+c4977cdf2ddf3f2279c9be7e1fc659ef23bbb37376e5cf11f9a98a73d33b0266  phys/module_ra_flg.F
+b6b2e9e006eff0b61f637a30e31a70f21b3c2bd8275182acb3c49aaf3fac0b4a  phys/module_ra_gfdleta.F
+088cb30e7b113ac97e300592ed15159b183421029c453ab61974fdb6c9ff007f  phys/module_ra_rrtmg_lwk.F
+30f9eb5f03f5208517b91851ddc7ee205733c56e462b82779126c7a7bd3b59eb  phys/module_ra_rrtmg_swk.F
+5088bb2bc46a2491a3fc32ffe6ee53f94714594f0fe483245e6d18ee5211a2a0  phys/module_ra_rrtmg_lwf.F
+1342819760116987125de50ca058baa7e7f7eea1a38a18ab67b1df726ff94f5c  phys/module_ra_rrtmg_swf.F
+c1bd80d6d4db6c703a7af29479c75e8e6d2d9acda79c6fb928585c858f4c8aba  configure.wrf
+
+Radiation driver and instrumentation hashes:
+779875651512709c47d50ef6c1e1216ad94726f1996c5e45a0db8eb800733ffa  HEAD:phys/module_radiation_driver.F
+4f0177189eb616c9220fe2022186dd6cc310666ca29977557dfe53d4409d733b  current:phys/module_radiation_driver.F
+f59e90236cf5f527beff8d01ac626a5c027fad6a4932b8ab036401d90190cb49  git diff -- phys/module_radiation_driver.F
+041eae098223943d58ad6a1dc54df201792f8f708a5d87c538cd91e4c34f2c7f  phys/module_wrfgpu2_oracle.F
+
+Tracked WRF tree local modifications documented at audit time:
+04131764c0258ed2474f8cfc7e789d3b7b471d7b73466fae8b770f71f05e108c  git diff -- dyn_em/solve_em.F phys/Makefile phys/module_microphysics_driver.F phys/module_pbl_driver.F phys/module_radiation_driver.F phys/module_surface_driver.F test/em_grav2d_x/input_sounding
+84/0    dyn_em/solve_em.F
+8/0     phys/Makefile
+197/2   phys/module_microphysics_driver.F
+96/0    phys/module_pbl_driver.F
+125/0   phys/module_radiation_driver.F
+102/0   phys/module_surface_driver.F
+223/12  test/em_grav2d_x/input_sounding
+
+Raw WRF run logs and wrfout hashes (run/ is intentionally gitignored; this manifest commits their hashes):
+0ba67ef1cfe30757a87d06e5f75431517f459c82cafeb789c7d580e6cbbadbc4  proofs/v018/oracle/ra_tail_wrf/run/ra3/wrf_stdout.log
+6966bc8c1a5424aa12fc938f746c84e3372e9621cd8fd99b9673715005d7cffc  proofs/v018/oracle/ra_tail_wrf/run/ra3/wrfout_d01_2026-04-28_18:00:00
+6461d4dab158a79cd4a55ef000d31ffa81e340cc842c9637765304feeca3e630  proofs/v018/oracle/ra_tail_wrf/run/ra5/wrf_stdout.log
+2a9a9b1b1cf0c8dc16c738cb9669cb578708bf89758927a83a1ffa10103a5981  proofs/v018/oracle/ra_tail_wrf/run/ra5/wrfout_d01_2026-04-28_18:00:00
+ea51a7ed455f71578f7bda06a06b8bfe06b292dd120edc453806b27b1c67ca57  proofs/v018/oracle/ra_tail_wrf/run/ra7/wrf_stdout.log
+cd47befd165ad170f3aaf72c1d00936a0afe172fef2ec8104675bd37fb89e65c  proofs/v018/oracle/ra_tail_wrf/run/ra7/wrfout_d01_2026-04-28_18:00:00
+eec0c49fa74a0c87a5245abc80a94834ef86a7afebab0880bc1d0de5f8ca7c06  proofs/v018/oracle/ra_tail_wrf/run/ra99/wrf_stdout.log
+ad5d993d3de770194688f10ff03b662ad23a78aac5e51d9556137c159de22ff1  proofs/v018/oracle/ra_tail_wrf/run/ra99/wrfout_d01_2026-04-28_18:00:00
+
+Committed compact savepoint hashes regenerated from the raw wrfout files:
+70b77591d3d5c19bce1ad19f53fe453b1d8500a145318ce6236aab5770c3209c  proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json
+bcd942d0269a401173036be4a75faba39d59fdd690b0b3d5116fef547ce9ed57  proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json
+90447df1322db8230433cdf1a3b449067418617594b7622fe228f168c6a87323  proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json
+3ba6d21e9eb7fac7ed8b94379539f671d838db1bcd4faf08c80b840ee4354046  proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json

@@ -19,6 +19,7 @@ from jax import config
 import jax.numpy as jnp
 import numpy as np
 
+from gpuwrf.config.paths import tmp_root, wrf_l3_root
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.contracts.state import BaseState, State, Tendencies
@@ -257,9 +258,12 @@ class _WRFInitLibm32:
 
 
 _WRF_INIT_LIBM32 = _WRFInitLibm32()
-DEFAULT_REPLAY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
-DEFAULT_OUTPUT_FIELD_PATH = Path("/home/user/.cache/gpuwrf_outputs/m6x_d02_replay/proof_d02_replay_fields.npz")
-DEFAULT_TRACE_ROOT = Path(os.environ.get("GPUWRF_TMPDIR", "/home/user/.cache/gpuwrf_tmp"))
+# Replay scratch/output defaults; env-overridable via config.paths
+# (GPUWRF_RUN_ROOT / GPUWRF_TMPDIR) with no hardcoded /home/<name> path so a
+# clean clone writes its scratch under ~/.cache/gpuwrf.
+DEFAULT_REPLAY_RUN_DIR = wrf_l3_root() / "20260521_18z_l3_24h_20260522T133443Z"
+DEFAULT_OUTPUT_FIELD_PATH = tmp_root() / "outputs" / "m6x_d02_replay" / "proof_d02_replay_fields.npz"
+DEFAULT_TRACE_ROOT = tmp_root() / "tmp"
 EXPECTED_L2_D02_MASS_SHAPE_YX = (66, 159)
 
 

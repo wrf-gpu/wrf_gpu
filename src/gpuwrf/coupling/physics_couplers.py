@@ -8,7 +8,6 @@ MYNN, and RRTMG kernels are column-batched in that convention.
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
-import os
 from typing import NamedTuple
 
 import jax
@@ -38,6 +37,10 @@ from gpuwrf.physics.ra_sw_gsfc import (
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
 from gpuwrf.physics.ra_lw_rrtm import RRTMLWColumnState
 from gpuwrf.physics.ra_lw_rrtm_jax import solve_rrtm_lw_column_jax
+from gpuwrf.physics.ra_lw_hs import (
+    HeldSuarezColumnState,
+    solve_held_suarez_column,
+)
 from gpuwrf.physics.rrtmg_sw import (
     RRTMGSWColumnState,
     RRTMGSWTopographyState,
@@ -67,32 +70,6 @@ WRF_PHYSICS_G_M_S2 = 9.81
 WRF_RV_OVER_RD = 461.6 / 287.0
 DEG_TO_RAD = 3.141592653589793 / 180.0
 MINUTES_PER_DAY = 1440.0
-
-
-def _env_bool(name: str, default: bool) -> bool:
-    value = os.environ.get(name)
-    if value is None:
-        return default
-    return value.strip().lower() not in {"0", "false", "no", "off"}
-
-
-def _fp32_physics_enabled() -> bool:
-    """True when the opt-in fp32 radiation/MYNN compute island is enabled."""
-
-    return _env_bool("GPUWRF_FP32_PHYSICS", False)
-
-
-def _cast_floating_tree(tree, dtype):
-    """Cast floating leaves of a physics input pytree at the scheme seam."""
-
-    return jax.tree_util.tree_map(
-        lambda leaf: (
-            leaf.astype(dtype)
-            if hasattr(leaf, "dtype") and jnp.issubdtype(leaf.dtype, jnp.floating)
-            else leaf
-        ),
-        tree,
-    )
 
 # RRTMG-SW built-in solar constant (W/m^2). WRF `module_ra_rrtmg_sw.F:115`
 # `rrsw_scon = 1.36822e3`; the per-band solar source `sfluxzen` integrates to
@@ -1120,14 +1097,6 @@ def _rrtmg_column_inputs(
         dz,
         rho,
     )
-    if _fp32_physics_enabled():
-        sw_state = _cast_floating_tree(sw_state, jnp.float32)
-        lw_state = _cast_floating_tree(lw_state, jnp.float32)
-        surface_albedo = surface_albedo.astype(jnp.float32)
-        surface_emissivity = surface_emissivity.astype(jnp.float32)
-        geometry = _cast_floating_tree(geometry, jnp.float32)
-        if topography is not None:
-            topography = _cast_floating_tree(topography, jnp.float32)
     return sw_state, lw_state, surface_albedo, surface_emissivity, geometry, topography
 
 
@@ -1173,11 +1142,18 @@ def _surface_dz_from_state(state: State):
     return _to_columns(dz)
 
 
+def _total_or_legacy_field(state: State, total_name: str, legacy_name: str, dtype):
+    """Read authoritative c2 total fields; legacy aliases are synced at State init."""
+
+    del legacy_name
+    return jnp.asarray(getattr(state, total_name), dtype=dtype)
+
+
 def _wrf_hydrostatic_pressure_from_state(state: State, metrics):
     """Reconstruct WRF `phy_prep` `p_hyd`/`psfc` for surface physics."""
 
     dtype = jnp.float32
-    mut = jnp.asarray(state.mu_total, dtype=dtype)
+    mut = _total_or_legacy_field(state, "mu_total", "mu", dtype)
     c1h = jnp.asarray(metrics.c1h, dtype=dtype)
     c2h = jnp.asarray(metrics.c2h, dtype=dtype)
     dnw = jnp.asarray(metrics.dnw, dtype=dtype)
@@ -1212,8 +1188,8 @@ def _wrf_phy_prep_rho_from_state(state: State, metrics):
     """
 
     dtype = jnp.float32
-    mut = jnp.asarray(state.mu_total, dtype=dtype)
-    ph_total = jnp.asarray(state.ph_total, dtype=dtype)
+    mut = _total_or_legacy_field(state, "mu_total", "mu", dtype)
+    ph_total = _total_or_legacy_field(state, "ph_total", "ph", dtype)
     qv = jnp.asarray(state.qv, dtype=dtype)
     c3h = jnp.asarray(metrics.c3h, dtype=dtype)
     c4h = jnp.asarray(metrics.c4h, dtype=dtype)
@@ -1366,6 +1342,43 @@ def thompson_adapter_with_tendencies(state: State, dt: float) -> tuple[State, Th
 
 
 # ------------------------------------------------------------------------------
+# v0.17 ADR-032 graupel/hail microphysics family -- fail-closed adapter slot
+# ------------------------------------------------------------------------------
+
+# The hail microphysics family this State substrate unblocks (mp_physics ids).
+HAIL_MP_FAMILY: frozenset[int] = frozenset({7, 17, 18, 19, 21, 22, 24, 26, 27, 38})
+
+
+def hail_mp_adapter(state: State, dt: float, *, mp_physics: int, grid: GridSpec | None = None) -> State:
+    """Single fail-closed slot for the hail-heavy microphysics family (ADR-032).
+
+    The State substrate (``qh``/``Nh``/``qvolg``/``qvolh``) is wired end-to-end
+    -- precision matrix, registry, wrfout/wrfrst I/O, restart roundtrip,
+    flux-form advection, scan increment carry and nest feedback -- but the
+    SCHEME KERNELS (WSM7=24, WDM7=26, UDM=27, Goddard-4ice/NUWRF=7, NSSL=17-22,
+    Thompson-graupel/hail=38) are NOT yet ported. This adapter is the single
+    place a future worker drops the real column kernel; until then it fails
+    closed loudly. It is NEVER reached by the operational scan, because none of
+    ``HAIL_MP_FAMILY`` is in ``runtime.operational_mode._SCAN_WIRED_OPTIONS``
+    nor in ``contracts.physics_registry.ACCEPTED_MP_PHYSICS`` -- so a hail mp id
+    fails closed in the namelist validator / dispatcher long before any scan
+    step, and this stub cannot silently produce a wrong result.
+    """
+
+    del state, dt, grid
+    raise NotImplementedError(
+        f"hail microphysics family (mp_physics={int(mp_physics)}) has its prognostic "
+        "State substrate wired (ADR-032: qh/Nh/qvolg/qvolh leaves, I/O, restart, "
+        "advection, feedback), but the scheme column kernel is not yet ported. "
+        "Supported microphysics remain the v0.6.0 set (mp_physics in "
+        "{0,1,2,3,4,6,8,10,14,16}); WSM7/WDM7/UDM/Goddard-4ice/NSSL/"
+        "Thompson-graupel-hail will be enabled by a future worker that replaces "
+        "this adapter body and adds the id to ACCEPTED_MP_PHYSICS / "
+        "_SCAN_WIRED_OPTIONS / scheme_catalog._IMPLEMENTED."
+    )
+
+
+# ------------------------------------------------------------------------------
 # v0.16 aerosol-aware Thompson (mp_physics=28) coupling
 # ------------------------------------------------------------------------------
 
@@ -1479,19 +1492,22 @@ def thompson_aero_coldstart_init(state: State, grid: GridSpec | None = None) -> 
 
     WRF ``thompson_init`` (use_aero_icbc=.false. equivalent) self-initializes
     QNWFA/QNIFA from boundary-layer-following exponential climatologies when
-    the inputs carry no aerosol state. INIT-TIME ONLY construction (called from
-    the model build/init path, like the MYNN qke cold start) -- never inside
-    the timestep loop, so the host-side ``jnp.max`` check below is allowed.
-    A state that already carries a real (restart/forced) nwfa field is left
-    untouched, mirroring WRF's is_aerosol_aware input check.
+    the inputs carry no aerosol state. The implementation is pure JAX so it can
+    be staged by the operational forecast JIT without a host scalar transfer.
+    A state that already carries a real (restart/forced) nwfa field is
+    preserved, mirroring WRF's is_aerosol_aware input check.
     """
 
-    if float(jnp.max(jnp.abs(jnp.asarray(state.nwfa)))) > 0.0:
-        return state
+    state = state.ensure_conditional_leaves(mp_physics=28)
+    existing_nwfa = jnp.asarray(state.nwfa)
+    existing_nifa = jnp.asarray(state.nifa)
     nwfa_cols, nifa_cols = _climatological_aerosol_profile_columns(state, grid)
+    seeded_nwfa = _from_columns(nwfa_cols).astype(_output_dtype(state, "nwfa"))
+    seeded_nifa = _from_columns(nifa_cols).astype(_output_dtype(state, "nifa"))
+    has_aerosol_input = jnp.max(jnp.abs(existing_nwfa)) > 0.0
     return state.replace(
-        nwfa=_from_columns(nwfa_cols).astype(_output_dtype(state, "nwfa")),
-        nifa=_from_columns(nifa_cols).astype(_output_dtype(state, "nifa")),
+        nwfa=jnp.where(has_aerosol_input, existing_nwfa, seeded_nwfa).astype(_output_dtype(state, "nwfa")),
+        nifa=jnp.where(has_aerosol_input, existing_nifa, seeded_nifa).astype(_output_dtype(state, "nifa")),
     )
 
 
@@ -1540,6 +1556,7 @@ def thompson_aero_adapter(state: State, dt: float, grid: GridSpec | None = None,
     inline in jnp -- no host transfer inside the timestep loop.
     """
 
+    state = state.ensure_conditional_leaves(mp_physics=28)
     column = _thompson_aero_column_from_state(state, grid)
     out, precip = step_thompson_aero_column_with_precip(column, float(dt), debug=False)
     nwfa2d, nifa2d = _aerosol_surface_emission_columns(state, grid)
@@ -1548,42 +1565,6 @@ def thompson_aero_adapter(state: State, dt: float, grid: GridSpec | None = None,
     if return_tendencies:
         return next_state, _thompson_tendency_side_channel(state, out, dt)
     return next_state
-
-
-# v0.17 ADR-032 graupel/hail microphysics family -- fail-closed adapter slot
-# ------------------------------------------------------------------------------
-
-# The hail microphysics family this State substrate unblocks (mp_physics ids).
-HAIL_MP_FAMILY: frozenset[int] = frozenset({7, 17, 18, 19, 21, 22, 24, 26, 27, 38})
-
-
-def hail_mp_adapter(state: State, dt: float, *, mp_physics: int, grid: GridSpec | None = None) -> State:
-    """Single fail-closed slot for the hail-heavy microphysics family (ADR-032).
-
-    The State substrate (``qh``/``Nh``/``qvolg``/``qvolh``) is wired end-to-end
-    -- precision matrix, registry, wrfout/wrfrst I/O, restart roundtrip,
-    flux-form advection, scan increment carry and nest feedback -- but the
-    SCHEME KERNELS (WSM7=24, WDM7=26, UDM=27, Goddard-4ice/NUWRF=7, NSSL=17-22,
-    Thompson-graupel/hail=38) are NOT yet ported. This adapter is the single
-    place a future worker drops the real column kernel; until then it fails
-    closed loudly. It is NEVER reached by the operational scan, because none of
-    ``HAIL_MP_FAMILY`` is in ``runtime.operational_mode._SCAN_WIRED_OPTIONS``
-    nor in ``contracts.physics_registry.ACCEPTED_MP_PHYSICS`` -- so a hail mp id
-    fails closed in the namelist validator / dispatcher long before any scan
-    step, and this stub cannot silently produce a wrong result.
-    """
-
-    del state, dt, grid
-    raise NotImplementedError(
-        f"hail microphysics family (mp_physics={int(mp_physics)}) has its prognostic "
-        "State substrate wired (ADR-032: qh/Nh/qvolg/qvolh leaves, I/O, restart, "
-        "advection, feedback), but the scheme column kernel is not yet ported. "
-        "Supported microphysics remain the v0.6.0 set (mp_physics in "
-        "{0,1,2,3,4,6,8,10,14,16}); WSM7/WDM7/UDM/Goddard-4ice/NSSL/"
-        "Thompson-graupel-hail will be enabled by a future worker that replaces "
-        "this adapter body and adds the id to ACCEPTED_MP_PHYSICS / "
-        "_SCAN_WIRED_OPTIONS / scheme_catalog._IMPLEMENTED."
-    )
 
 
 def _surface_fluxes_from_state(state: State) -> SurfaceFluxes:
@@ -1710,11 +1691,7 @@ def _add_a2c_v_increment(v_face: jax.Array, dv_mass: jax.Array) -> jax.Array:
 
 
 def _state_from_mynn_output(
-    state: State,
-    out: MynnPBLColumnState,
-    *,
-    theta_output_is_dry: bool = False,
-    input_column: MynnPBLColumnState | None = None,
+    state: State, out: MynnPBLColumnState, *, theta_output_is_dry: bool = False
 ) -> State:
     """Reassemble State from MYNN column output, WRF-faithful incremental coupling.
 
@@ -1745,53 +1722,25 @@ def _state_from_mynn_output(
 
     # MYNN reads the input winds via _u_mass/_v_mass; the increment it produced is
     # the difference between its output mass winds and that SAME input mass wind.
-    # In the fp32-physics island, subtract the fp32 column input, not the fp64
-    # state, so the seam applies the scheme tendency without injecting a full-field
-    # fp32 round trip into the dycore carry.
-    input_u = _u_mass(state) if input_column is None else _from_columns(input_column.u)
-    input_v = _v_mass(state) if input_column is None else _from_columns(input_column.v)
-    du_mass = _from_columns(out.u) - input_u
-    dv_mass = _from_columns(out.v) - input_v
+    du_mass = _from_columns(out.u) - _u_mass(state)
+    dv_mass = _from_columns(out.v) - _v_mass(state)
     u_new = _add_a2c_u_increment(state.u, du_mass).astype(_output_dtype(state, "u"))
     v_new = _add_a2c_v_increment(state.v, dv_mass).astype(_output_dtype(state, "v"))
-    out_qv = _from_columns(out.qv)
-    if input_column is None:
-        qv_new = out_qv
-    else:
-        qv_new = jnp.asarray(state.qv) + (out_qv - _from_columns(input_column.qv))
+    qv_new = _from_columns(out.qv).astype(_output_dtype(state, "qv"))
     theta_new = _from_columns(out.theta)
     if theta_output_is_dry:
-        if input_column is None:
-            theta_new = theta_new * (1.0 + WRF_RV_OVER_RD * jnp.asarray(qv_new, jnp.float64))
-        else:
-            theta_input = _from_columns(input_column.theta) * (
-                1.0 + WRF_RV_OVER_RD * _from_columns(input_column.qv)
-            )
-            theta_output = theta_new * (1.0 + WRF_RV_OVER_RD * out_qv)
-            theta_new = jnp.asarray(state.theta) + (theta_output - theta_input)
-    elif input_column is not None:
-        theta_new = jnp.asarray(state.theta) + (theta_new - _from_columns(input_column.theta))
-    if input_column is None:
-        qke_new = 2.0 * _from_columns(out.tke)
-        qsq_new = _from_columns(out.qsq)
-    else:
-        qke_new = jnp.asarray(state.qke) + 2.0 * (
-            _from_columns(out.tke) - _from_columns(input_column.tke)
-        )
-        qsq_new = jnp.asarray(state.qsq) + (
-            _from_columns(out.qsq) - _from_columns(input_column.qsq)
-        )
+        theta_new = theta_new * (1.0 + WRF_RV_OVER_RD * jnp.asarray(qv_new, jnp.float64))
     return state.replace(
         u=u_new,
         v=v_new,
         theta=theta_new.astype(_output_dtype(state, "theta")),
-        qv=qv_new.astype(_output_dtype(state, "qv")),
-        qke=qke_new.astype(_output_dtype(state, "qke")),
+        qv=qv_new,
+        qke=(2.0 * _from_columns(out.tke)).astype(_output_dtype(state, "qke")),
         # v0.15 MYNN SGS-cloud chain: persist the closure-2.6 prognostic
         # total-water variance and the mym_condensation/DMP subgrid cloud the
         # icloud_bl radiation merge consumes. With the chain disabled these are
         # zeros-in/zeros-out (no behavior change).
-        qsq=qsq_new.astype(_output_dtype(state, "qsq")),
+        qsq=_from_columns(out.qsq).astype(_output_dtype(state, "qsq")),
         qc_bl=_from_columns(out.qc_bl).astype(_output_dtype(state, "qc_bl")),
         qi_bl=_from_columns(out.qi_bl).astype(_output_dtype(state, "qi_bl")),
         cldfra_bl=_from_columns(out.cldfra_bl).astype(_output_dtype(state, "cldfra_bl")),
@@ -1867,11 +1816,6 @@ def mynn_adapter(
     state = _mynn_state_with_first_call_qke(state, grid, first_timestep)
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    input_column = None
-    if _fp32_physics_enabled():
-        column = _cast_floating_tree(column, jnp.float32)
-        surface = _cast_floating_tree(surface, jnp.float32)
-        input_column = column
     ny, nx = column.theta.shape[0], column.theta.shape[1]
     column_b = _flatten_columns_to_batch(column, ny, nx)
     surface_b = _flatten_columns_to_batch(surface, ny, nx)
@@ -1880,10 +1824,7 @@ def mynn_adapter(
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
     return _state_from_mynn_output(
-        state,
-        out,
-        theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid),
-        input_column=input_column,
+        state, out, theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid)
     )
 
 
@@ -1968,11 +1909,6 @@ def mynn_adapter_with_source_leaves(
     state = _mynn_state_with_first_call_qke(state, grid, first_timestep)
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    input_column = None
-    if _fp32_physics_enabled():
-        column = _cast_floating_tree(column, jnp.float32)
-        surface = _cast_floating_tree(surface, jnp.float32)
-        input_column = column
     ny, nx = column.theta.shape[0], column.theta.shape[1]
     column_b = _flatten_columns_to_batch(column, ny, nx)
     surface_b = _flatten_columns_to_batch(surface, ny, nx)
@@ -1980,31 +1916,27 @@ def mynn_adapter_with_source_leaves(
         column_b, dt, debug=False, surface=surface_b, edmf=_MYNN_EDMF, dx=_mynn_dx(grid)
     )
     out = _unflatten_batch_to_columns(out_b, ny, nx)
-    source_column = input_column if input_column is not None else column
     theta_after = _from_columns(out.theta)
-    theta_before = _from_columns(source_column.theta)
+    theta_before = _from_columns(column.theta)
     qv_after = _from_columns(out.qv)
     rthblten = ((theta_after - theta_before) / float(dt)).astype(
         _output_dtype(state, "theta")
     )
-    rqvblten = ((qv_after - _from_columns(source_column.qv)) / float(dt)).astype(
+    rqvblten = ((qv_after - jnp.asarray(state.qv, jnp.float64)) / float(dt)).astype(
         _output_dtype(state, "qv")
     )
     # Raw WRF A-grid momentum sources: the SAME mass-point increments
     # _state_from_mynn_output A2C-couples into the C-grid winds, divided by dt
     # (WRF MYNN driver RUBLTEN/RVBLTEN semantics).
-    rublten = ((_from_columns(out.u) - _from_columns(source_column.u)) / float(dt)).astype(
+    rublten = ((_from_columns(out.u) - _u_mass(state)) / float(dt)).astype(
         _output_dtype(state, "u")
     )
-    rvblten = ((_from_columns(out.v) - _from_columns(source_column.v)) / float(dt)).astype(
+    rvblten = ((_from_columns(out.v) - _v_mass(state)) / float(dt)).astype(
         _output_dtype(state, "v")
     )
     return MynnPBLSourceLeaves(
         state=_state_from_mynn_output(
-            state,
-            out,
-            theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid),
-            input_column=input_column,
+            state, out, theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid)
         ),
         rthblten=rthblten,
         rqvblten=rqvblten,
@@ -2020,11 +1952,6 @@ def mynn_adapter_with_diagnostics(
 
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    input_column = None
-    if _fp32_physics_enabled():
-        column = _cast_floating_tree(column, jnp.float32)
-        surface = _cast_floating_tree(surface, jnp.float32)
-        input_column = column
     ny, nx = column.theta.shape[0], column.theta.shape[1]
     column_b = _flatten_columns_to_batch(column, ny, nx)
     surface_b = _flatten_columns_to_batch(surface, ny, nx)
@@ -2035,10 +1962,7 @@ def mynn_adapter_with_diagnostics(
     pblh = pblh_b.reshape((ny, nx) + pblh_b.shape[1:])
     return (
         _state_from_mynn_output(
-            state,
-            out,
-            theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid),
-            input_column=input_column,
+            state, out, theta_output_is_dry=_mynn_column_uses_wrf_phy_prep(grid)
         ),
         pblh,
     )
@@ -2127,9 +2051,6 @@ def surface_layer_diagnostics(state: State, grid: GridSpec | None = None) -> Sur
     diag = surface_layer_with_diagnostics(_surface_column_view(state, grid))
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
-    if _fp32_physics_enabled():
-        column = _cast_floating_tree(column, jnp.float32)
-        surface = _cast_floating_tree(surface, jnp.float32)
     _out, pblh = step_mynn_pbl_column_with_pblh(column, 1.0, debug=False, surface=surface)
     return SurfaceMynnDiagnostics(
         hfx=diag.hfx,
@@ -2785,6 +2706,78 @@ def rrtm_lw_theta_tendency(
 
 
 # --------------------------------------------------------------------------- #
+# Held-Suarez idealized radiation (``ra_lw_physics=31``) HELD-RATE theta         #
+# tendency coupler. COMBINED LW+SW: HSRAD supplies the entire radiative          #
+# tendency (WRF makes no separate SW call for this scheme), so the dispatch      #
+# requires ra_sw_physics=0 and uses this coupler as the sole radiation source.   #
+# --------------------------------------------------------------------------- #
+def held_suarez_theta_tendency(
+    state: State,
+    grid: GridSpec | None = None,
+    *,
+    time_utc=None,
+    lead_seconds=0.0,
+    radiation_static: RRTMGRadiationStatic | None = None,
+    land_state=None,
+) -> "jnp.ndarray":
+    """Return the Held-Suarez (``ra_lw_physics=31``) radiative ``RTHRATEN`` (K/s).
+
+    Combined idealized LW+SW HELD-RATE primitive (``module_ra_hs.F:HSRAD``): a
+    Newtonian relaxation of temperature toward an analytic radiative-equilibrium
+    profile. WRF accumulates ``RTHRATEN += t_tend/pi`` where ``t_tend`` is the
+    per-layer kinetic-temperature relaxation rate (K/s); this coupler runs the
+    column kernel and divides the returned ``dT/dt`` by the Exner factor, exactly
+    as the Dudhia/GSFC/RRTM held-rate couplers do.
+
+    Unlike the band-model radiation schemes, Held-Suarez consumes NO solar
+    geometry, moisture, cloud, albedo, or ozone -- only layer ``T``, layer
+    pressure, the surface interface pressure (``p8w(i,1,j)``) and the column
+    latitude (preferring the authoritative ``radiation_static.xlat_deg`` when a
+    per-run static bundle is supplied, else the GridSpec lat approximation).
+    ``time_utc``/``lead_seconds`` are unused (the forcing is time-independent).
+
+    This is a COMBINED LW+SW scheme; the radiation dispatch fail-closes any SW
+    selection when ``ra_lw_physics=31`` (HSRAD is the only radiative call), so
+    there is no second SW contribution to add. The returned 3-D field is on the
+    ``(nz, ny, nx)`` mass grid and matches the state's theta dtype (fp64 under
+    ``force_fp64``).
+    """
+
+    del time_utc, lead_seconds  # Held-Suarez forcing is time-independent.
+    nz, ny, nx = state.theta.shape
+    ncol = ny * nx
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ncol, nz)
+
+    T = _temperature_from_theta(state.theta, state.p)
+    # Surface interface pressure p8w(i,1,j): index 0 of the reconstructed columns.
+    p8w_cols = _interface_pressure_from_state(state).reshape(ncol, nz + 1)
+    psfc = p8w_cols[:, 0]
+
+    surface_shape = state.t_skin.shape
+    static = _radiation_static_for_grid(surface_shape, grid, radiation_static, state.t_skin.dtype)
+    if static is None:
+        lat, _lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
+    else:
+        lat = static.xlat_deg
+    lat_deg = jnp.asarray(lat).reshape(ncol)
+
+    column = HeldSuarezColumnState(
+        T=_cols(T),
+        p=_cols(state.p),
+        psfc=psfc,
+        lat_deg=lat_deg,
+    )
+    out = solve_held_suarez_column(column)
+    # (ncol, nz) dT/dt -> (nz, ny, nx); theta tendency = rate / Exner.
+    heating_rate_T = jnp.moveaxis(out.heating_rate.reshape(ny, nx, nz), -1, 0)
+    exner = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    rthraten = heating_rate_T / jnp.maximum(exner, 1.0e-12)
+    return rthraten.astype(_output_dtype(state, "theta"))
+
+
+# --------------------------------------------------------------------------- #
 # Orographic gravity-wave drag (GWDO, ``gwd_opt=1``) adapter.
 # --------------------------------------------------------------------------- #
 def build_gwdo_statics_from_wrf_fields(
@@ -2946,12 +2939,14 @@ __all__ = [
     "rrtmg_sw_theta_tendency",
     "rrtm_lw_theta_tendency",
     "dudhia_sw_theta_tendency",
+    "gsfc_sw_theta_tendency",
+    "held_suarez_theta_tendency",
     "surface_adapter",
     "surface_layer_diagnostics",
     "thompson_adapter",
     "thompson_adapter_with_tendencies",
-    "thompson_aero_adapter",
-    "thompson_aero_coldstart_init",
     "HAIL_MP_FAMILY",
     "hail_mp_adapter",
+    "thompson_aero_adapter",
+    "thompson_aero_coldstart_init",
 ]

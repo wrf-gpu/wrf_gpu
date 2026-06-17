@@ -1,0 +1,131 @@
+{
+  "family": "sf_surface_physics (land-surface / LSM)",
+  "version": "v0.18",
+  "branch": "worker/opus/v018-lsm",
+  "base": "worker/opus/v018-trunk",
+  "generated": "2026-06-16",
+  "oracle_provenance": "LSM oracle claims are module-pristine single-column/real-module checksummed or operational gates; documented-boundary schemes do not claim a real oracle. No clean uninstrumented wrf.exe claim is made.",
+  "wrf_v4_options_enumerated": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+  "bar": "every scheme EXACTLY ONE of: (a) operational+real-oracle-GREEN, (b) reference-only WITH real pristine-WRF oracle wired fail-closed, (c) documented-boundary-fail-closed (architecture-scale, real test) / proven-irrelevant",
+  "schemes": {
+    "0": {
+      "name": "no LSM (nolsmscheme)",
+      "endpoint_class": "operational",
+      "oracle_path": null,
+      "fail_closed": false,
+      "full_ship_gate": true,
+      "note": "trivial bulk surface path; sf=0 disabled."
+    },
+    "1": {
+      "name": "5-layer thermal-diffusion SLAB (slabscheme)",
+      "endpoint_class": "operational",
+      "oracle_path": "proofs/v013/savepoints/surface_lsm/fp64/slab_case_*.json",
+      "oracle_kind": "fp64 pristine-WRF SLAB1D single-column",
+      "worst_error": "2.328e-10 vs ABS_TOL 5e-9",
+      "fail_closed": false,
+      "full_ship_gate": true,
+      "l2_statics_closed": true,
+      "note": "operational + fp64 oracle GREEN. v0.18 closed the L2 handoff: real-case SlabStaticBundle extraction (THC=THERIN/100, EMISS=SFEM by LU_INDEX/season; fixed WRF 5-layer ZS/DZS) -> generic coupled L2 sweep now runs sf=1. Required fixing the held-radiation None-unpack + the 4-vs-5 soil-layer mismatch."
+    },
+    "2": {
+      "name": "Noah classic (lsmscheme)",
+      "endpoint_class": "operational",
+      "oracle_path": "tests/v060/test_noahclassic_parity.py (real module_sf_noahlsm.o SFLX)",
+      "oracle_kind": "real pristine-WRF SFLX",
+      "fail_closed": false,
+      "full_ship_gate": true,
+      "note": "operational + real SFLX oracle GREEN."
+    },
+    "3": {
+      "name": "RUC multi-layer soil/snow (ruclsmscheme)",
+      "endpoint_class": "reference-only-with-real-oracle",
+      "oracle_path": "proofs/v017/savepoints/ruclsm/fp64/ruclsm_fp64.json",
+      "oracle_kind": "fp64 pristine-WRF LSMRUC->SOILVEGIN->SFCTMP single-column",
+      "oracle_real": "sha256 of recorded checksum matches pristine phys/module_sf_ruclsm.F",
+      "fail_closed": true,
+      "fail_closed_layers": ["kernel raises NotImplementedError", "operational scan rejects with named reason", "catalog REFERENCE_ONLY"],
+      "faithful_port_tractable": false,
+      "faithful_port_reason": "~7.5k-LOC coupled multi-layer soil/snow + implicit tridiagonal solve + multi-layer snow; a faithful in-session port becomes a happy-path/self-compare",
+      "full_ship_gate": true
+    },
+    "4": {
+      "name": "Noah-MP (noahmpscheme)",
+      "endpoint_class": "operational",
+      "oracle_path": "proofs/noamp energy_savepoint_gate (real NOAHMP_SFLX, 11 Canary d03 columns)",
+      "oracle_kind": "real pristine-WRF NOAHMP_SFLX",
+      "fail_closed": false,
+      "full_ship_gate": true,
+      "coupled_gate": "PASS (proofs/v016/coverage/lsm4_gate.json) after fixing the generic-path noahmp_rad seeding gap",
+      "note": "operational + real energy oracle GREEN (needs WRF_PRISTINE_ROOT override; default-path robustness noted). Generic single-domain coupled gate now PASS."
+    },
+    "5": {
+      "name": "CLM4 (clmscheme)",
+      "endpoint_class": "documented-boundary-fail-closed",
+      "oracle_path": null,
+      "boundary_test": "tests/test_v018_lsm_architecture_boundary.py",
+      "fail_closed": true,
+      "fail_closed_layers": ["catalog RECOGNIZED_FAIL_CLOSED with specific architecture reason", "namelist rejects naming CLM4 + v1.0 CAM/CLM/CTSM boundary", "operational dispatcher out-of-matrix"],
+      "rationale": "phys/module_sf_clm.F ~61.5k LOC, global clmtype PFT/column/landunit subgrid hierarchy from an external CLM surface dataset + netCDF MEGAN/SNICAR; faithful single-column oracle is itself architecture-scale (multi-session). Manager-approved v1.0 CAM/CLM/CTSM-family ADR boundary; carried OPEN, NOT a fake green, NOT a happy-path stub.",
+      "full_ship_gate": true
+    },
+    "6": {
+      "name": "CTSM (ctsmscheme)",
+      "endpoint_class": "documented-boundary-fail-closed",
+      "oracle_path": null,
+      "boundary_test": "tests/test_v018_lsm_architecture_boundary.py",
+      "fail_closed": true,
+      "rationale": "phys/module_sf_ctsm.F compiled only under -DWRF_USE_CTSM; runs the FULL external CESM/CTSM land model via the LILAC coupler (empty WRF-side Registry state -> NO in-core prognostic land state). No in-core WRF physics to oracle without the external coupled-model build. v1.0 CAM/CLM/CTSM boundary; documented fail-closed.",
+      "full_ship_gate": true
+    },
+    "7": {
+      "name": "Pleim-Xiu 2-layer ISBA (pxlsmscheme)",
+      "endpoint_class": "operational",
+      "oracle_path": "proofs/v017/savepoints/pxlsm/fp64/pxlsm_case_*.json",
+      "oracle_kind": "fp64 pristine-WRF SURFPX+QFLUX single-column",
+      "worst_error": "4.37e-11 vs tol 1e-9",
+      "fail_closed": false,
+      "full_ship_gate": true,
+      "l2_statics_closed": true,
+      "note": "operational + fp64 oracle GREEN. v0.18 closed the L2 handoff: real-case PleimXiuStaticBundle extraction (Noilhan-Mahfouf SOILPROP ISBA constants bit-match the pxlsm oracle to ~1e-16; WRF PX ds1/ds2=0.01/0.99; RSTMIN/EMISS/ZNT by LU_INDEX) -> generic coupled L2 sweep now runs sf=7."
+    },
+    "8": {
+      "name": "SSiB biophysical canopy/soil/snow (ssibscheme)",
+      "endpoint_class": "reference-only-with-real-oracle",
+      "oracle_path": "proofs/v017/savepoints/ssib/fp64/ssib_case_*.json",
+      "oracle_kind": "fp64 pristine-WRF SSIB single-column (5 regimes)",
+      "oracle_real": "sha256 of recorded checksum matches pristine phys/module_sf_ssib.F",
+      "fail_closed": true,
+      "fail_closed_layers": ["kernel raises NotImplementedError", "operational scan rejects with named reason", "catalog REFERENCE_ONLY"],
+      "faithful_port_tractable": false,
+      "faithful_port_reason": "~6.6k-LOC coupled SiB biophysical canopy/soil/snow solver; faithful in-session port becomes a happy-path/self-compare",
+      "full_ship_gate": true
+    }
+  },
+  "l2_statics_handoff": {
+    "owner": "this worker (handed off by PBL/schemes worker)",
+    "status": "CLOSED",
+    "deliverable": "src/gpuwrf/io/lsm_static_extract.py (extract_slab_static + extract_pleim_xiu_static)",
+    "harness_wired": "proofs/v016/coupled_coverage_gate.py --family lsm --option 1|7",
+    "falsifiable_validation": "SOILPROP ISBA constants bit-match the pxlsm fp64 oracle (worst rtol ~1.9e-16 across all 11 constants)",
+    "bugs_fixed_to_run_operationally": [
+      "operational_mode.py slab/PX held-radiation passed held_rad=None -> 3-tuple unpack crash on non-radiation-cadence steps (now passes a concrete (gsw,glw,cosz) 3-tuple like Noah-classic)",
+      "extraction inherited the wrfinput Noah 4-layer ZS/DZS -> slab needs its fixed 5-layer geometry; PX needs ds1/ds2=0.01/0.99 (both corrected, regression-tested)",
+      "slab_surface_hook FLHC=HFX/(THG-THX) reconstruction is ill-posed near neutral (DTheta->0 => FLHC->inf) -> TSK runaway -> dynamics blow-up; WRF-faithful fix caps FLHC at WRF's exact PSIT>=2 ceiling (module_sf_sfclay.F:706 'PREVENT LARGE FLHC IN SOIL MODEL'). FLQC capped at WRF's water-branch PSIQ>=2 ceiling (:731) as an HONEST conservative guard (land PSIQ is NOT floored). PX verified NO such defect (clipped RMOL, resistance-form HFX).",
+      "sf=4 Noah-MP generic single-domain gate crashed _NoahMPRadiation(*None): _initial_carry_for_run never seeded noahmp_rad on the non-post-replace path (GPT-critic find). Fixed via append-only noahmp_land namelist field (registered in OperationalNamelist pytree flatten/unflatten) seeded by _initial_carry_for_run; gate builds the full Noah-MP bundle. Non-breaking (pipelines still post-replace when noahmp_land=None)."
+    ],
+    "coupled_gate": {
+      "sf1_slab": "PASS (proofs/v016/coverage/lsm1_gate.json: all_finite, 0 bounds violations, no hard fails, dyn RMSE 16.5% of v0.14 tolerance)",
+      "sf4_noahmp": "PASS (proofs/v016/coverage/lsm4_gate.json: all_finite, 0 bounds violations, no hard fails, dyn RMSE 23.3% of tolerance; full Noah-MP bundle seeded)",
+      "sf7_pleim_xiu": "PASS (proofs/v016/coverage/lsm7_gate.json: all_finite, 0 bounds violations, dyn RMSE 18% of tolerance)",
+      "note": "GPT critic (proofs/v018/lsm_critic_gpt.md) FIX-then-ACCEPT: FLHC fix confirmed WRF-faithful; 2 must-fixes (sf=4 gate crash + FLQC overclaim) both resolved + green. FLHC blow-up was the 2nd pre-existing coupling bug a v0.18 family worker surfaced (after RA RTHRATEN-NaN); the critic sweep surfaced the sf=4 gap."
+    }
+  },
+  "family_full_ship_gate": true,
+  "tests": [
+    "tests/test_v018_lsm_architecture_boundary.py (9)",
+    "tests/test_v018_lsm_static_extract.py (10)",
+    "tests/test_v013_t3_surface_lsm_wiring.py (10)",
+    "tests/test_scheme_catalog_fail_closed.py (21)"
+  ],
+  "gpu_smoke": "deferred behind scripts/with_gpu_lock.sh; Tier-A operational LSMs (1/2/4/7) GPU-smoke passed on their source branches (re-run confirmatory)"
+}

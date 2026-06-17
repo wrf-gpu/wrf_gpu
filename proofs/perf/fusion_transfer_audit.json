@@ -26,8 +26,8 @@
     "device_to_host_bytes_post_init": 3693888,
     "trace_dir": "/tmp/claude-1000/perf_trace_2gxf3iap",
     "transfer_event_files": [
-      "/tmp/claude-1000/perf_trace_2gxf3iap/plugins/profile/2026_06_01_06_41_04/user-workstation.trace.json.gz",
-      "/tmp/claude-1000/perf_trace_2gxf3iap/plugins/profile/2026_06_01_06_41_04/user-workstation.xplane.pb"
+      "/tmp/claude-1000/perf_trace_2gxf3iap/plugins/profile/2026_06_01_06_41_04/user-battlestation.trace.json.gz",
+      "/tmp/claude-1000/perf_trace_2gxf3iap/plugins/profile/2026_06_01_06_41_04/user-battlestation.xplane.pb"
     ],
     "d2h_inter_kernel_verdict": "3693888 D2H bytes detected -- investigate"
   },

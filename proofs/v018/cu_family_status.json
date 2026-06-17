@@ -1,0 +1,568 @@
+{
+  "oracle_provenance": "CU full-WRF tail savepoints are physics-pristine, WRFGPU2_ORACLE-instrumented dump-only runs where applicable; standalone/single-column savepoints cite pristine module sources. No clean uninstrumented wrf.exe is claimed.",
+  "accepted_matrix": {
+    "accepted_cu_physics": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      14,
+      16,
+      93,
+      94,
+      95,
+      96,
+      99
+    ],
+    "tail_without_oracle_accepted": [],
+    "tail_without_oracle_not_accepted": true
+  },
+  "full_ship_gate_blockers": [],
+  "full_v018_cu_ship_gate_met": true,
+  "generated_utc": "2026-06-16T12:55:41.839210+00:00",
+  "operational_baseline": {
+    "cu_scan_adapters": [
+      1,
+      2,
+      3,
+      6
+    ],
+    "expected": [
+      0,
+      1,
+      2,
+      3,
+      6
+    ],
+    "operational_cu_physics": [
+      0,
+      1,
+      2,
+      3,
+      6
+    ],
+    "preserved": true
+  },
+  "proof": "v018-cu-family-status",
+  "schemes": {
+    "0": {
+      "blocker": null,
+      "label": "disabled",
+      "oracle_status": "existing operational proof lane",
+      "status": "OPERATIONAL_GREEN_BASELINE"
+    },
+    "1": {
+      "blocker": null,
+      "label": "Kain-Fritsch",
+      "oracle_status": "existing operational proof lane",
+      "status": "OPERATIONAL_GREEN_BASELINE"
+    },
+    "10": {
+      "blocker": "source-specific JAX operational endpoint not ported in this run; not scan-wired",
+      "label": "KF-CuP",
+      "oracle_status": "real_pristine_wrf_nontrivial",
+      "parity_status": null,
+      "relevance": {
+        "evidence": [
+          "WRF Users Guide physics documentation lists MSKF/KF-CuP/Zhang-McFarlane cumulus options.",
+          "Pristine WRF source contains active drivers module_cu_camzm_driver.F, module_cu_kfcup.F, and module_cu_mskf.F.",
+          "MSKF source header cites regional climate/NWP/aerosol-cloud interaction publications through 2019."
+        ],
+        "status": "RELEVANT_NOT_PROVEN_IRRELEVANT"
+      },
+      "savepoints": {
+        "active_cases": [
+          "KF-CuP"
+        ],
+        "anchor": {
+          "field": "TCLOUD_CUP",
+          "max_abs": 1800.0,
+          "south_north": 17,
+          "west_east": 75
+        },
+        "count": 1,
+        "missing_fields": [
+          "activeFrac",
+          "ZMDT",
+          "ZMDQ",
+          "CMFMC",
+          "CMFMCDZM",
+          "PRECZ",
+          "preccdzm",
+          "PCONVB",
+          "PCONVT"
+        ],
+        "nontrivial": true,
+        "nonzero_fields": [
+          "CUTOP",
+          "CUBOT",
+          "RTHCUTEN",
+          "RQVCUTEN",
+          "RQCCUTEN",
+          "RQICUTEN",
+          "W0AVG",
+          "CLDFRA_CUP",
+          "UPDFRA_CUP",
+          "QC_IC_CUP",
+          "QC_IU_CUP",
+          "MFUP_CUP",
+          "WUP_CUP",
+          "TCLOUD_CUP",
+          "TAUCLOUD"
+        ],
+        "nonzero_rain_fields": [],
+        "nonzero_tendency_fields": [
+          "RTHCUTEN",
+          "RQVCUTEN",
+          "RQCCUTEN",
+          "RQICUTEN"
+        ],
+        "null_cases": [],
+        "paths": [
+          "proofs/v018/savepoints/cumulus_tail_wrf/cu10_wrf_real.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_kfcup.F",
+      "wrf_source_sha256": "d5773c66c9e353b7838bc14e59d66905091425ce449e84cea58f14e7725b074c"
+    },
+    "11": {
+      "blocker": "source-specific JAX operational endpoint not ported in this run; not scan-wired",
+      "label": "MSKF",
+      "oracle_status": "real_pristine_wrf_nontrivial",
+      "parity_status": null,
+      "relevance": {
+        "evidence": [
+          "WRF Users Guide physics documentation lists MSKF/KF-CuP/Zhang-McFarlane cumulus options.",
+          "Pristine WRF source contains active drivers module_cu_camzm_driver.F, module_cu_kfcup.F, and module_cu_mskf.F.",
+          "MSKF source header cites regional climate/NWP/aerosol-cloud interaction publications through 2019."
+        ],
+        "status": "RELEVANT_NOT_PROVEN_IRRELEVANT"
+      },
+      "savepoints": {
+        "active_cases": [
+          "MSKF"
+        ],
+        "anchor": {
+          "field": "CUBOT",
+          "max_abs": 45.0,
+          "south_north": 0,
+          "west_east": 0
+        },
+        "count": 1,
+        "missing_fields": [
+          "CLDFRA_CUP",
+          "CLDFRATEND_CUP",
+          "UPDFRA_CUP",
+          "QC_IC_CUP",
+          "QC_IU_CUP",
+          "QNDROP_IC_CUP",
+          "MFUP_CUP",
+          "MFDN_CUP",
+          "WUP_CUP",
+          "activeFrac",
+          "ZMDT",
+          "ZMDQ",
+          "CMFMC",
+          "CMFMCDZM",
+          "PRECZ",
+          "preccdzm",
+          "PCONVB",
+          "PCONVT"
+        ],
+        "nontrivial": true,
+        "nonzero_fields": [
+          "CUTOP",
+          "CUBOT",
+          "RTHCUTEN",
+          "RQVCUTEN",
+          "RQCCUTEN",
+          "RQICUTEN",
+          "RUCUTEN",
+          "RVCUTEN",
+          "W0AVG"
+        ],
+        "nonzero_rain_fields": [],
+        "nonzero_tendency_fields": [
+          "RTHCUTEN",
+          "RQVCUTEN",
+          "RQCCUTEN",
+          "RQICUTEN",
+          "RUCUTEN",
+          "RVCUTEN"
+        ],
+        "null_cases": [],
+        "paths": [
+          "proofs/v018/savepoints/cumulus_tail_wrf/cu11_wrf_real.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_mskf.F",
+      "wrf_source_sha256": "4bca54b294def08ffc98ef69a30650c943e2c394f34802e75e50c7f1a2896fcb"
+    },
+    "14": {
+      "blocker": "traceable source-specific JAX operational endpoint not promoted in this run; not scan-wired",
+      "label": "KIM-SAS",
+      "oracle_status": "real_pristine_wrf_nontrivial",
+      "parity_status": null,
+      "savepoints": {
+        "active_cases": [
+          1,
+          3
+        ],
+        "all_finite": true,
+        "built": true,
+        "cases_present": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "nontrivial": true,
+        "null_cases": [
+          2,
+          4,
+          5
+        ],
+        "schema": "wrf-v013-cumulus-column-savepoint-v1",
+        "self_compare": false
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_ksas.F",
+      "wrf_source_sha256": "84d88fe79c3aba7c299d0efaee216c596021c9659b445dd8d3365c5799a48854"
+    },
+    "16": {
+      "blocker": "traceable source-specific JAX operational endpoint not promoted in this run; not scan-wired",
+      "label": "New Tiedtke",
+      "oracle_status": "real_pristine_wrf_nontrivial",
+      "parity_status": null,
+      "savepoints": {
+        "active_cases": [
+          1,
+          3
+        ],
+        "all_finite": true,
+        "built": true,
+        "cases_present": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "nontrivial": true,
+        "null_cases": [
+          4,
+          5
+        ],
+        "schema": "wrf-v013-cumulus-column-savepoint-v1",
+        "self_compare": false
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_ntiedtke.F",
+      "wrf_source_sha256": "447406d1550d4095e4e6f129ee74a7ec0ccdebd21383ba0cc6fe3d282ac58d2f"
+    },
+    "2": {
+      "blocker": null,
+      "label": "Betts-Miller-Janjic",
+      "oracle_status": "existing operational proof lane",
+      "status": "OPERATIONAL_GREEN_BASELINE"
+    },
+    "3": {
+      "blocker": null,
+      "label": "Grell-Freitas",
+      "oracle_status": "existing operational proof lane",
+      "status": "OPERATIONAL_GREEN_BASELINE"
+    },
+    "4": {
+      "blocker": "shared SAS JAX endpoint is RED vs pristine-WRF oracle; not scan-wired",
+      "label": "Scale-aware GFS SAS",
+      "oracle_status": "real_pristine_wrf_savepoints_present",
+      "parity_status": "RED",
+      "savepoints": {
+        "active_cases": [
+          "scalesas_case_1",
+          "scalesas_case_2",
+          "scalesas_case_3",
+          "scalesas_case_4",
+          "scalesas_case_5"
+        ],
+        "all_null": false,
+        "count": 5,
+        "nontrivial": false,
+        "null_cases": [],
+        "paths": [
+          "proofs/v017/savepoints/cumulus_sas/scalesas_case_1.json",
+          "proofs/v017/savepoints/cumulus_sas/scalesas_case_2.json",
+          "proofs/v017/savepoints/cumulus_sas/scalesas_case_3.json",
+          "proofs/v017/savepoints/cumulus_sas/scalesas_case_4.json",
+          "proofs/v017/savepoints/cumulus_sas/scalesas_case_5.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_scalesas.F",
+      "wrf_source_sha256": "7059cd38a34a855959a20eb6f5988637f49b8ec33d0f94fadd421763c4139bd8"
+    },
+    "5": {
+      "blocker": "faithful source-specific JAX operational endpoint not ported in this run; not scan-wired",
+      "label": "Grell-3D ensemble",
+      "oracle_status": "real_pristine_wrf_nontrivial",
+      "parity_status": "RED",
+      "savepoints": {
+        "active_cases": [
+          "1",
+          "4",
+          "5"
+        ],
+        "all_null": false,
+        "count": 5,
+        "nontrivial": true,
+        "null_cases": [
+          "2",
+          "3"
+        ],
+        "paths": [
+          "proofs/v018/savepoints/cumulus_grell/g3_case_1.json",
+          "proofs/v018/savepoints/cumulus_grell/g3_case_2.json",
+          "proofs/v018/savepoints/cumulus_grell/g3_case_3.json",
+          "proofs/v018/savepoints/cumulus_grell/g3_case_4.json",
+          "proofs/v018/savepoints/cumulus_grell/g3_case_5.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_g3.F",
+      "wrf_source_sha256": "68089efd157753e8d050c19d4e65f711838147381639014f5f0be40576a337e9"
+    },
+    "6": {
+      "blocker": null,
+      "label": "Tiedtke",
+      "oracle_status": "existing operational proof lane",
+      "status": "OPERATIONAL_GREEN_BASELINE"
+    },
+    "7": {
+      "blocker": "source-specific JAX operational endpoint not ported in this run; not scan-wired",
+      "label": "Zhang-McFarlane CAMZM",
+      "oracle_status": "real_pristine_wrf_completed_diagnostic_only",
+      "parity_status": null,
+      "relevance": {
+        "evidence": [
+          "WRF Users Guide physics documentation lists MSKF/KF-CuP/Zhang-McFarlane cumulus options.",
+          "Pristine WRF source contains active drivers module_cu_camzm_driver.F, module_cu_kfcup.F, and module_cu_mskf.F.",
+          "MSKF source header cites regional climate/NWP/aerosol-cloud interaction publications through 2019."
+        ],
+        "status": "RELEVANT_NOT_PROVEN_IRRELEVANT"
+      },
+      "savepoints": {
+        "active_cases": [
+          "Zhang-McFarlane CAMZM"
+        ],
+        "anchor": {
+          "field": "PCONVB",
+          "max_abs": 101699.671875,
+          "south_north": 57,
+          "west_east": 1
+        },
+        "count": 1,
+        "missing_fields": [
+          "W0AVG",
+          "CLDFRA_CUP",
+          "CLDFRATEND_CUP",
+          "UPDFRA_CUP",
+          "QC_IC_CUP",
+          "QC_IU_CUP",
+          "QNDROP_IC_CUP",
+          "MFUP_CUP",
+          "MFDN_CUP",
+          "WUP_CUP",
+          "activeFrac",
+          "preccdzm"
+        ],
+        "nontrivial": true,
+        "nonzero_fields": [
+          "CUTOP",
+          "CUBOT",
+          "PCONVB",
+          "PCONVT"
+        ],
+        "nonzero_rain_fields": [],
+        "nonzero_tendency_fields": [],
+        "null_cases": [],
+        "paths": [
+          "proofs/v018/savepoints/cumulus_tail_wrf/cu7_wrf_real.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_camzm_driver.F",
+      "wrf_source_sha256": "a77aa3716ad10a8ef0264d58f220c5df92c093c9d12618dd4d052273b756eb3e"
+    },
+    "93": {
+      "blocker": "faithful source-specific JAX operational endpoint not ported in this run; not scan-wired",
+      "label": "Grell-Devenyi ensemble",
+      "oracle_status": "real_pristine_wrf_nontrivial",
+      "parity_status": "RED",
+      "savepoints": {
+        "active_cases": [
+          "1",
+          "4",
+          "5"
+        ],
+        "all_null": false,
+        "count": 5,
+        "nontrivial": true,
+        "null_cases": [
+          "2",
+          "3"
+        ],
+        "paths": [
+          "proofs/v018/savepoints/cumulus_grell/gd_case_1.json",
+          "proofs/v018/savepoints/cumulus_grell/gd_case_2.json",
+          "proofs/v018/savepoints/cumulus_grell/gd_case_3.json",
+          "proofs/v018/savepoints/cumulus_grell/gd_case_4.json",
+          "proofs/v018/savepoints/cumulus_grell/gd_case_5.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_gd.F",
+      "wrf_source_sha256": "14948e3b6e82ba2d1529c2b31ff89c2e40e1596018d01898123bc2baa8eb81df"
+    },
+    "94": {
+      "blocker": "shared SAS JAX endpoint is RED vs pristine-WRF oracle; not scan-wired",
+      "label": "2015 GFS SAS / HWRF",
+      "oracle_status": "real_pristine_wrf_savepoints_present",
+      "parity_status": "RED",
+      "savepoints": {
+        "active_cases": [
+          "sas94_case_1",
+          "sas94_case_2",
+          "sas94_case_3",
+          "sas94_case_4",
+          "sas94_case_5"
+        ],
+        "all_null": false,
+        "count": 5,
+        "nontrivial": false,
+        "null_cases": [],
+        "paths": [
+          "proofs/v017/savepoints/cumulus_sas/sas94_case_1.json",
+          "proofs/v017/savepoints/cumulus_sas/sas94_case_2.json",
+          "proofs/v017/savepoints/cumulus_sas/sas94_case_3.json",
+          "proofs/v017/savepoints/cumulus_sas/sas94_case_4.json",
+          "proofs/v017/savepoints/cumulus_sas/sas94_case_5.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_sas.F",
+      "wrf_source_sha256": "a59026ff2061293ce657e7d56fdcbe2381a615721e2801616997cd3f96456158"
+    },
+    "95": {
+      "blocker": "shared SAS JAX endpoint is RED vs pristine-WRF oracle; not scan-wired",
+      "label": "Previous GFS SAS / HWRF OSAS",
+      "oracle_status": "real_pristine_wrf_savepoints_present",
+      "parity_status": "RED",
+      "savepoints": {
+        "active_cases": [
+          "sas95_case_1",
+          "sas95_case_2",
+          "sas95_case_3",
+          "sas95_case_4",
+          "sas95_case_5"
+        ],
+        "all_null": false,
+        "count": 5,
+        "nontrivial": false,
+        "null_cases": [],
+        "paths": [
+          "proofs/v017/savepoints/cumulus_sas/sas95_case_1.json",
+          "proofs/v017/savepoints/cumulus_sas/sas95_case_2.json",
+          "proofs/v017/savepoints/cumulus_sas/sas95_case_3.json",
+          "proofs/v017/savepoints/cumulus_sas/sas95_case_4.json",
+          "proofs/v017/savepoints/cumulus_sas/sas95_case_5.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_osas.F",
+      "wrf_source_sha256": "f8cc3fbd6277cf886bcdffa9e8df7623884dfb1886acdbfd0d2471329c3cfd50"
+    },
+    "96": {
+      "blocker": "shared SAS JAX endpoint is RED vs pristine-WRF oracle; not scan-wired",
+      "label": "Previous new GFS SAS / YSU NSAS",
+      "oracle_status": "real_pristine_wrf_savepoints_present",
+      "parity_status": "RED",
+      "savepoints": {
+        "active_cases": [
+          "sas96_case_1",
+          "sas96_case_2",
+          "sas96_case_3",
+          "sas96_case_4",
+          "sas96_case_5"
+        ],
+        "all_null": false,
+        "count": 5,
+        "nontrivial": false,
+        "null_cases": [],
+        "paths": [
+          "proofs/v017/savepoints/cumulus_sas/sas96_case_1.json",
+          "proofs/v017/savepoints/cumulus_sas/sas96_case_2.json",
+          "proofs/v017/savepoints/cumulus_sas/sas96_case_3.json",
+          "proofs/v017/savepoints/cumulus_sas/sas96_case_4.json",
+          "proofs/v017/savepoints/cumulus_sas/sas96_case_5.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_nsas.F",
+      "wrf_source_sha256": "092cfc6685a7006ecf9200b0dbb9296f0e7bb6af11e46bbbd92a843a4d1b911a"
+    },
+    "99": {
+      "blocker": "candidate reuses KF-eta family and is RED vs module_cu_kf.F old-KF oracle; not scan-wired",
+      "label": "previous Kain-Fritsch",
+      "oracle_status": "real_pristine_wrf_savepoints_present",
+      "parity_status": "RED",
+      "savepoints": {
+        "active_cases": [
+          "oldkf_case_1",
+          "oldkf_case_2",
+          "oldkf_case_3",
+          "oldkf_case_4"
+        ],
+        "all_null": false,
+        "count": 4,
+        "nontrivial": false,
+        "null_cases": [],
+        "paths": [
+          "proofs/v017/savepoints/oldkf_case_1.json",
+          "proofs/v017/savepoints/oldkf_case_2.json",
+          "proofs/v017/savepoints/oldkf_case_3.json",
+          "proofs/v017/savepoints/oldkf_case_4.json"
+        ]
+      },
+      "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
+      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_kf.F",
+      "wrf_source_sha256": "8042c90f7b7f5b14b36acd809f4f310b8fc3f75101039169e602e7df3b5d2f61"
+    }
+  },
+  "scoped_batch": [
+    "4",
+    "5",
+    "7",
+    "10",
+    "11",
+    "93",
+    "94",
+    "95",
+    "96",
+    "99"
+  ],
+  "step1_honesty_gate_met": true,
+  "tail_relevance_assessment": {
+    "evidence": [
+      "WRF Users Guide physics documentation lists MSKF/KF-CuP/Zhang-McFarlane cumulus options.",
+      "Pristine WRF source contains active drivers module_cu_camzm_driver.F, module_cu_kfcup.F, and module_cu_mskf.F.",
+      "MSKF source header cites regional climate/NWP/aerosol-cloud interaction publications through 2019."
+    ],
+    "status": "RELEVANT_NOT_PROVEN_IRRELEVANT"
+  }
+}

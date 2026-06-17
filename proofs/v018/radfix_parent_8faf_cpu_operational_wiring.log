@@ -1,0 +1,49 @@
+..F..F.....F..FF..                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_dispatch_routes_ra_lw1_to_rrtm_and_differs_from_rrtmg __________
+tests/test_rrtm_lw_operational_wiring.py:150: in test_dispatch_routes_ra_lw1_to_rrtm_and_differs_from_rrtmg
+    assert np.all(np.isfinite(rth_rrtmg))
+E   AssertionError: assert np.False_
+E    +  where np.False_ = <function all at 0x7fd8975789b0>(array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]))
+E    +    where <function all at 0x7fd8975789b0> = np.all
+E    +    and   array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]) = <ufunc 'isfinite'>(array([[[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, na...nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]]]))
+E    +      where <ufunc 'isfinite'> = np.isfinite
+_________________ test_default_ra4_ra4_matches_combined_rrtmg __________________
+tests/test_rrtm_lw_operational_wiring.py:195: in test_default_ra4_ra4_matches_combined_rrtmg
+    assert np.all(np.isfinite(rth_step))
+E   AssertionError: assert np.False_
+E    +  where np.False_ = <function all at 0x7fd8975789b0>(array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]))
+E    +    where <function all at 0x7fd8975789b0> = np.all
+E    +    and   array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]) = <ufunc 'isfinite'>(array([[[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, na...nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]]]))
+E    +      where <ufunc 'isfinite'> = np.isfinite
+____________________ test_sw_and_lw_selected_independently _____________________
+tests/test_rrtm_lw_operational_wiring.py:253: in test_sw_and_lw_selected_independently
+    assert np.all(np.isfinite(rth))
+E   AssertionError: assert np.False_
+E    +  where np.False_ = <function all at 0x7fd8975789b0>(array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]))
+E    +    where <function all at 0x7fd8975789b0> = np.all
+E    +    and   array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]) = <ufunc 'isfinite'>(array([[[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, na...nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]]]))
+E    +      where <ufunc 'isfinite'> = np.isfinite
+_________ test_dispatch_routes_ra_sw1_to_dudhia_and_differs_from_rrtmg _________
+tests/test_cdudhia_sw_operational_wiring.py:150: in test_dispatch_routes_ra_sw1_to_dudhia_and_differs_from_rrtmg
+    assert np.all(np.isfinite(rth_rrtmg))
+E   AssertionError: assert np.False_
+E    +  where np.False_ = <function all at 0x7fd8975789b0>(array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]))
+E    +    where <function all at 0x7fd8975789b0> = np.all
+E    +    and   array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]) = <ufunc 'isfinite'>(array([[[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, na...nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]]]))
+E    +      where <ufunc 'isfinite'> = np.isfinite
+_____________ test_ra_sw1_rthraten_equals_dudhia_sw_plus_rrtmg_lw ______________
+tests/test_cdudhia_sw_operational_wiring.py:181: in test_ra_sw1_rthraten_equals_dudhia_sw_plus_rrtmg_lw
+    assert np.all(np.isfinite(rth_step))
+E   AssertionError: assert np.False_
+E    +  where np.False_ = <function all at 0x7fd8975789b0>(array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]))
+E    +    where <function all at 0x7fd8975789b0> = np.all
+E    +    and   array([[[False, False, False],\n        [False, False, False],\n        [False, False, False]],\n\n       [[False, False, ...[False, False, False]],\n\n       [[False, False, False],\n        [False, False, False],\n        [False, False, False]]]) = <ufunc 'isfinite'>(array([[[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, na...nan, nan, nan],\n        [nan, nan, nan]],\n\n       [[nan, nan, nan],\n        [nan, nan, nan],\n        [nan, nan, nan]]]))
+E    +      where <ufunc 'isfinite'> = np.isfinite
+=========================== short test summary info ============================
+FAILED tests/test_rrtm_lw_operational_wiring.py::test_dispatch_routes_ra_lw1_to_rrtm_and_differs_from_rrtmg
+FAILED tests/test_rrtm_lw_operational_wiring.py::test_default_ra4_ra4_matches_combined_rrtmg
+FAILED tests/test_rrtm_lw_operational_wiring.py::test_sw_and_lw_selected_independently
+FAILED tests/test_cdudhia_sw_operational_wiring.py::test_dispatch_routes_ra_sw1_to_dudhia_and_differs_from_rrtmg
+FAILED tests/test_cdudhia_sw_operational_wiring.py::test_ra_sw1_rthraten_equals_dudhia_sw_plus_rrtmg_lw
+5 failed, 13 passed in 39.11s

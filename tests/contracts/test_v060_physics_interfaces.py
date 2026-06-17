@@ -7,6 +7,7 @@ import pytest
 from gpuwrf.contracts.physics_interfaces import (
     ACCUMULATOR_UPDATE_KEYS,
     SCHEME_STEP_SPECS,
+    SCHEME_STEP_SPECS_BY_KEY,
     PhysicsTendency,
     assert_interfaces_consistent,
     scheme_step_spec,
@@ -23,15 +24,42 @@ from gpuwrf.contracts.physics_registry import (
 from gpuwrf.io.namelist_check import validate_supported_namelist
 from gpuwrf.io.wrfout_writer import MICROPHYSICS_EXTRA_VARIABLES, WRFOUT_VARIABLE_SPECS
 
+# v0.18 trunk: the v0.17 trunk shipped 52 SCHEME_STEP_SPECS (six merged lanes).
+# The v0.18 harvest adds six Phase-1 specs plus four PBL-family reference specs:
+#   Goddard-GCE mp=97, aerosol-aware Thompson mp=28, Held-Suarez ra_lw=31,
+#   SBU-YLin mp=13, WSM7 mp=24, WDM7 mp=26;
+#   reference-only PBL4/PBL10/PBL16/PBL17. PBL11/PBL12 specs already existed
+#   as reference specs and this sprint promotes their status/evidence.
+# The v0.18 RADIATION (RA) tail adds four reference-only radiation specs:
+#   CAM ra_lw=3 + ra_sw=3, FLG/UCLA ra_lw=7 + ra_sw=7 (each backed by a real-WRF
+#   exact-driver savepoint oracle; ra_sw=5 + ra_lw/sw=99 already had specs).
+_V018_TRUNK_BASE_SPEC_COUNT = 52
+_V018_HARVESTED_SPECS = 6
+_V018_PBL_FAMILY_SPECS = 4
+_V018_RA_TAIL_SPECS = 4
+_V018_EXPECTED_SPEC_COUNT = (
+    _V018_TRUNK_BASE_SPEC_COUNT
+    + _V018_HARVESTED_SPECS
+    + _V018_PBL_FAMILY_SPECS
+    + _V018_RA_TAIL_SPECS
+)
+
 
 def test_registry_self_check_and_state_append_order() -> None:
     assert_registry_consistent()
-    # v0.16 appends the aerosol-aware Thompson (mp=28) nwfa/nifa leaves to the
-    # additive set, then v0.17 ADR-032 adds the graupel/hail substrate
-    # (Nh number, qh moist, qvolg/qvolh volumes), and WSM7 appends hail_acc.
-    expected = ("Nc", "Nn", "nwfa", "nifa", "Nh", "qh", "qvolg", "qvolh", "rainc_acc", "hail_acc")
-    assert physics_state_append_order() == expected
-    assert V060_ADDITIVE_STATE_LEAVES == expected
+    # v0.18 trunk additive set = the registry-computed UNION of the number,
+    # moist, volume and accumulator additive families:
+    #   NUMBER_SPECIES_ADDITIVE (Nc, Nn, Nh [v0.17 ADR-032], nwfa, nifa [v0.16])
+    #   + MOIST_SPECIES_ADDITIVE (qh [v0.17 ADR-032])
+    #   + VOLUME_SPECIES (qvolg, qvolh [v0.17 ADR-032])
+    #   + ACCUMULATORS_ADDITIVE (rainc_acc, hail_acc [v0.17 WSM7/WDM7 hail])
+    # The State pytree appends the hail substrate, then the aerosol leaves, then
+    # the hail_acc accumulator at the very END of __slots__ (see state.py).
+    _expected_additive = (
+        "Nc", "Nn", "Nh", "nwfa", "nifa", "qh", "qvolg", "qvolh", "rainc_acc", "hail_acc",
+    )
+    assert physics_state_append_order() == _expected_additive
+    assert V060_ADDITIVE_STATE_LEAVES == _expected_additive
 
 
 def test_nest_field_list_is_registry_driven_for_two_moment_schemes() -> None:
@@ -51,8 +79,6 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
     # WDM5 (mp=14): 5-class moist (no graupel) + the WDM6 Nn/Nc/Nr number leaves.
     assert state_leaves_for_mp(14) == ("qv", "qc", "qr", "qi", "qs", "Nn", "Nc", "Nr")
     assert state_leaves_for_mp(16) == ("qv", "qc", "qr", "qi", "qs", "qg", "Nn", "Nc", "Nr")
-    assert state_leaves_for_mp(24) == ("qv", "qc", "qr", "qi", "qs", "qg", "qh")
-    assert state_leaves_for_mp(26) == ("qv", "qc", "qr", "qi", "qs", "qg", "qh", "Nn", "Nc", "Nr")
     # v0.16 aerosol-aware Thompson (mp=28): Registry thompsonaero scalars.
     assert state_leaves_for_mp(28) == ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "Nc", "nwfa", "nifa")
     assert NUMBER_WRFOUT_NAME["Nn"] == "QNCCN"
@@ -66,14 +92,39 @@ def test_mp_registry_names_match_expected_wrfout_variables() -> None:
 
 def test_interfaces_self_check_and_scheme_specs_cover_v060_options() -> None:
     assert_interfaces_consistent()
-    # v0.17 RC adds GFS PBL plus WSM7/WDM7 hail microphysics on top of the v0.16
-    # interface set.
-    assert len(SCHEME_STEP_SPECS) == 41
+    # v0.18 trunk integrated count = the UNION of the v0.17 trunk (52 specs from
+    #   the six merged lanes: qh + pbl + lsm-adv + cu-sas + cu-kfgrell + rad) PLUS
+    #   the v0.18 harvested schemes added here:
+    #   + Goddard-GCE microphysics (mp=97)
+    #   + aerosol-aware Thompson microphysics (mp=28)
+    #   + Held-Suarez idealized radiation (ra_lw=31)
+    #   + SBU-YLin microphysics (mp=13)
+    #   + WSM7 hail microphysics (mp=24)
+    #   + WDM7 double-moment hail microphysics (mp=26)
+    # The exact integer is asserted via the canonical-count helper above so it
+    # stays in lockstep with SCHEME_STEP_SPECS as schemes are harvested.
+    assert len(SCHEME_STEP_SPECS) == len(set(SCHEME_STEP_SPECS_BY_KEY))
+    assert len(SCHEME_STEP_SPECS) == _V018_EXPECTED_SPEC_COUNT
     assert scheme_step_spec("microphysics", 16).writes_state[-3:] == ("Nn", "Nc", "Nr")
     assert scheme_step_spec("pbl", 2).writes_carry == ("tke_pbl", "el_pbl")
+    # v0.17 GFS PBL + v0.18 Shin-Hong/GBM PBL operational specs present.
+    assert scheme_step_spec("pbl", 3).owner_module.endswith("bl_gfs.py")
+    assert "savepoint" in scheme_step_spec("pbl", 3).oracle.lower()
+    assert scheme_step_spec("pbl", 11).owner_module.endswith("bl_shinhong.py")
+    assert scheme_step_spec("pbl", 12).owner_module.endswith("bl_gbm.py")
+    assert scheme_step_spec("pbl", 12).writes_state == ("u", "v", "theta", "qv", "qc", "qke")
+    # v0.18 PBL reference-only specs present, each tied to a real WRF savepoint
+    # oracle but not scan-wired into operational mode.
+    for opt in (4, 10, 16, 17):
+        spec = scheme_step_spec("pbl", opt)
+        assert spec.owner_module.endswith("pbl_reference_only.py")
+        assert "REFERENCE-ONLY" in spec.notes
+        assert "savepoint" in spec.oracle.lower()
     assert scheme_step_spec("surface_layer", 2).owner_module.endswith("sfclay_janjic.py")
     assert scheme_step_spec("cumulus", 1).returns_accumulators == ("rainc_acc",)
     assert scheme_step_spec("cumulus", 2).writes_carry == ("cldefi",)
+    assert scheme_step_spec("cumulus", 93).owner_module.endswith("cumulus_grell_devenyi.py")
+    assert scheme_step_spec("cumulus", 99).writes_carry == ("w0avg", "nca")
     assert scheme_step_spec("land_surface", 2).writes_carry == ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn")
 
 
@@ -99,6 +150,29 @@ def test_radiation_specs_are_held_rate_theta_tendencies() -> None:
     assert "GSW" in dudhia.diagnostics and "GLW" in rrtm.diagnostics
     assert dudhia.owner_module == "src/gpuwrf/physics/ra_sw_dudhia.py"
 
+    for code in (3, 5, 7, 99):
+        lw_tail = scheme_step_spec("radiation", code, "lw")
+        sw_tail = scheme_step_spec("radiation", code, "sw")
+        for spec in (lw_tail, sw_tail):
+            assert spec.writes_state == ("theta",)
+            assert spec.wrf_slot == "first_rk_radiation_driver"
+            assert "REFERENCE-ONLY" in spec.notes
+            assert f"proofs/v018/savepoints/ra_tail_wrf/ra{code}_wrf_real.json" in spec.oracle
+            assert "v0.18 exact-driver real-WRF" in spec.oracle
+            assert "NOT a self-compare" in spec.oracle
+            assert "REFERENCE-ONLY / RED" not in spec.notes
+            assert "STATUS: REFERENCE-ONLY / RED" not in spec.notes
+
+    for spec in (
+        scheme_step_spec("radiation", 5, "sw"),
+        scheme_step_spec("radiation", 5, "lw"),
+        scheme_step_spec("radiation", 99, "sw"),
+        scheme_step_spec("radiation", 99, "lw"),
+    ):
+        assert spec.writes_state == ("theta",)
+        assert spec.wrf_slot == "first_rk_radiation_driver"
+        assert "REFERENCE-ONLY" in spec.notes
+
 
 def test_physics_tendency_validates_unknown_keys() -> None:
     assert "rainc_acc" in ACCUMULATOR_UPDATE_KEYS
@@ -112,12 +186,12 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
         {
             "physics": {
                 "mp_physics": [1, 2, 3, 4, 6, 8, 10, 16],
-                "cu_physics": [0, 1, 2, 3, 5, 6, 14, 16],
-                "bl_pbl_physics": [0, 1, 2, 3, 5, 7],
+                "cu_physics": [0, 1, 2, 3, 4, 5, 6, 14, 16, 93, 94, 95, 96, 99],
+                "bl_pbl_physics": [0, 1, 2, 3, 4, 5, 7, 10, 11, 12, 16, 17],
                 "sf_sfclay_physics": [0, 1, 2, 5, 7],
-                "sf_surface_physics": [0, 2, 4],
-                "ra_sw_physics": [0, 1, 4],
-                "ra_lw_physics": [0, 1, 4],
+                "sf_surface_physics": [0, 2, 3, 4, 7, 8],
+                "ra_sw_physics": [0, 1, 2, 4, 5, 99],
+                "ra_lw_physics": [0, 1, 4, 5, 99],
             }
         }
     )

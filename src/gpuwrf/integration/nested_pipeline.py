@@ -327,7 +327,7 @@ def _load_domains(
     Also returns the per-domain INITIAL ``OperationalCarry`` dict.  The carries are
     built here (with the same ``_initial_carry_for_run`` the domain-tree cold start
     uses, so the non-Noah-MP path is bit-identical) because the Noah-MP land carry
-    must be seeded BEFORE the first ``_advance_chunk`` loop: the carry pytree
+    must be seeded BEFORE the first ``_advance_chunk`` scan: the carry pytree
     structure is frozen across scan iterations, so a ``None -> NoahMPLandState``
     promotion inside the run is impossible by construction.
     """

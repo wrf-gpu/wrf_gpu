@@ -29,7 +29,7 @@ def test_state_zeros_allocates_gpu_shapes_and_dtype():
     assert state.mu.shape == (grid.ny, grid.nx)
     assert state.mu_total.shape == (grid.ny, grid.nx)
     assert state.mu_perturbation.shape == (grid.ny, grid.nx)
-    for field in State.__slots__:
+    for field in state.active_field_names():
         assert getattr(state, field).dtype == DEFAULT_DTYPES.dtype_for(field)
     assert all(_platform(leaf) == "gpu" for leaf in jax.tree_util.tree_leaves(state))
 

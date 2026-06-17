@@ -123,12 +123,6 @@ STATE_FIELD_ORDER = (
     "qc_bl",
     "qi_bl",
     "cldfra_bl",
-    # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves (append-only) ---
-    # Appended at the VERY END (after the v0.6.0 + v0.15 additions) so every
-    # existing leaf keeps its pytree position. nwfa/nifa are the WRF
-    # QNWFA/QNIFA water-/ice-friendly aerosol number concentrations (kg^-1).
-    "nwfa",
-    "nifa",
     # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves (append-only) ---
     # Appended at the VERY END so every existing leaf keeps its pytree
     # position. qh=hail mixing ratio (QHAIL), Nh=hail number (QNHAIL),
@@ -138,7 +132,13 @@ STATE_FIELD_ORDER = (
     "Nh",
     "qvolg",
     "qvolh",
-    # --- v0.17 hail surface-precip accumulator (append-only) ---
+    # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves (append-only) ---
+    # Appended after the v0.6.0 + v0.15 + v0.17 ADR-032 hail additions so every
+    # existing leaf keeps its pytree position. nwfa/nifa are the WRF QNWFA/QNIFA
+    # water-/ice-friendly aerosol number concentrations (kg^-1).
+    "nwfa",
+    "nifa",
+    # --- v0.17 hail surface-precip accumulator (append-only, at the VERY END) ---
     "hail_acc",
 )
 
@@ -244,11 +244,6 @@ PRECISION_MATRIX = {
     "qc_bl": (FP32_GATED, True),
     "qi_bl": (FP32_GATED, True),
     "cldfra_bl": (FP32_GATED, True),
-    # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
-    # nwfa/nifa follow the existing hydrometeor/aerosol number-species
-    # precision class (FP32 gated, same as Nc/Nn).
-    "nwfa": (FP32_GATED, True),
-    "nifa": (FP32_GATED, True),
     # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves ---
     # Hail mixing ratio / number / particle-volume follow the existing
     # hydrometeor + number-species precision class (FP32 gated, same as
@@ -259,6 +254,11 @@ PRECISION_MATRIX = {
     "Nh": (FP32_GATED, True),
     "qvolg": (FP32_GATED, True),
     "qvolh": (FP32_GATED, True),
+    # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
+    # nwfa/nifa follow the existing hydrometeor/aerosol number-species
+    # precision class (FP32 gated, same as Nc/Nn).
+    "nwfa": (FP32_GATED, True),
+    "nifa": (FP32_GATED, True),
     # Hail surface-precip accumulator: FP64-locked like every other precip
     # accumulator (rain/snow/graupel/ice), never gated -- accumulation fields
     # remain FP64 (ADR-007).

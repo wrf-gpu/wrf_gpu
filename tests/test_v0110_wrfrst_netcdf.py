@@ -16,9 +16,7 @@ from gpuwrf.io.wrfout_writer import write_wrfout_netcdf
 from gpuwrf.io.wrfrst_netcdf import (
     CARRY_ARRAY_FIELDS,
     SCHEMA_VERSION,
-    STATE_FIELD_ORDER,
     STOCHASTIC_SEED_RESTART_VARIABLES,
-    WRF_STANDARD_RESTART_VARIABLES,
     carry_extension_name,
     cumulus_extension_name,
     inspect_wrfrst_schema,
@@ -45,11 +43,11 @@ def _pattern(shape: tuple[int, ...], dtype, offset: int):
     return jnp.asarray(values, dtype=dtype)
 
 
-def _state(grid: GridSpec) -> State:
+def _state(grid: GridSpec, *, mp_physics: int = 8) -> State:
     return State(
         **{
             field: _pattern(shape, DEFAULT_DTYPES.dtype_for(field), index)
-            for index, (field, shape) in enumerate(_state_field_shapes(grid).items(), start=1)
+            for index, (field, shape) in enumerate(_state_field_shapes(grid, mp_physics=mp_physics).items(), start=1)
         }
     )
 
@@ -162,19 +160,58 @@ def test_wrfrst_state_roundtrip_bit_identical_and_wrf_schema(tmp_path: Path) -> 
 
     assert metadata["schema_version"] == SCHEMA_VERSION
     assert metadata["step_index"] == 1
-    for field in STATE_FIELD_ORDER:
+    assert metadata["state_field_order"] == list(state.active_field_names())
+    assert len(metadata["state_field_order"]) == 60
+    for field in state.active_field_names():
         assert _equal(getattr(state, field), getattr(restored, field)), field
 
     schema = inspect_wrfrst_schema(path)
     assert "Times" in schema["variables"]
-    for name in WRF_STANDARD_RESTART_VARIABLES:
+    for name in metadata["standard_restart_variables"]:
         assert name in schema["variables"], name
-    for field in STATE_FIELD_ORDER:
+    for field in state.active_field_names():
         assert state_extension_name(field) in schema["variables"], field
+    for name in ("QHAIL", "QNHAIL", "QVGRAUPEL", "QVHAIL", "QNWFA", "QNIFA", "HAILNC"):
+        assert name not in schema["variables"], name
+    for field in ("qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc"):
+        assert state_extension_name(field) not in schema["variables"], field
     assert schema["variables"]["U"]["stagger"] == "X"
     assert schema["variables"]["V"]["stagger"] == "Y"
     assert schema["variables"]["W"]["stagger"] == "Z"
     assert schema["variables"]["T"]["dimensions"] == ["Time", "bottom_top", "south_north", "west_east"]
+
+
+def test_wrfrst_hail_state_roundtrip_writes_hail_conditionals(tmp_path: Path) -> None:
+    grid = GridSpec.canary_3km_template()
+    state = _state(grid, mp_physics=24)
+    path = tmp_path / "wrfrst_hail"
+
+    write_wrfrst_state(
+        state,
+        grid,
+        {},
+        path,
+        valid_time="2026-06-03_00:10:00",
+        run_start="2026-06-03_00:00:00",
+        step_index=4,
+    )
+    restored, metadata = read_wrfrst_state(path)
+    schema = inspect_wrfrst_schema(path)
+
+    assert metadata["state_field_order"] == list(state.active_field_names())
+    assert len(metadata["state_field_order"]) == 65
+    for field in ("qh", "Nh", "qvolg", "qvolh", "hail_acc"):
+        assert getattr(restored, field) is not None, field
+        assert state_extension_name(field) in schema["variables"], field
+    for field in ("nwfa", "nifa"):
+        assert getattr(restored, field) is None, field
+        assert state_extension_name(field) not in schema["variables"], field
+    for name in ("QHAIL", "QNHAIL", "QVGRAUPEL", "QVHAIL", "HAILNC"):
+        assert name in schema["variables"], name
+    for name in ("QNWFA", "QNIFA"):
+        assert name not in schema["variables"], name
+    for field in state.active_field_names():
+        assert _equal(getattr(state, field), getattr(restored, field)), field
 
 
 def test_wrfrst_carry_roundtrip_includes_promoted_scratch(tmp_path: Path) -> None:
@@ -197,7 +234,8 @@ def test_wrfrst_carry_roundtrip_includes_promoted_scratch(tmp_path: Path) -> Non
 
     assert metadata["carry_present"] is True
     assert metadata["step_index"] == 2
-    for field in STATE_FIELD_ORDER:
+    assert metadata["state_field_order"] == list(carry.state.active_field_names())
+    for field in carry.state.active_field_names():
         assert _equal(getattr(carry.state, field), getattr(restored.state, field)), field
     for field in CARRY_ARRAY_FIELDS:
         assert _equal(getattr(carry, field), getattr(restored, field)), field

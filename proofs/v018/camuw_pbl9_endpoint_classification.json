@@ -1,0 +1,50 @@
+{
+  "schema": "gpuwrf.v018.pbl9_camuw_endpoint_classification.v1",
+  "scheme": "UW (CAM5) PBL",
+  "namelist_key": "bl_pbl_physics",
+  "option": 9,
+  "endpoint_class": "proven_irrelevant_to_v018_standalone_pbl_matrix",
+  "verdict": "PASS",
+  "classification": {
+    "accepted_namelist": false,
+    "operational_gpu_scan": false,
+    "reference_only_oracle": false,
+    "fail_closed_status": "recognized WRF v4 option with CAM-family architecture proof",
+    "recommended_owner": "future CAM-family vertical-diffusion sprint, if CAM physics enters the production matrix"
+  },
+  "reason": "CAM-UW is not an isolated standalone PBL column scheme in the v0.18 target matrix. The WRF source routes it through the CAM5 vertical-diffusion stack, requiring CAM cloud-number and sedimentation inputs, CAMMGMP/constituent coupling, and CAM residual-stress/cloud carry state. It is therefore fail-closed rather than accepted as an in-scope standalone PBL option.",
+  "wrf_sources": {
+    "module_bl_camuwpbl_driver.F": {
+      "path": "/home/user/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F",
+      "sha256": "253886780ae99823608f28bbcf68e1bfdc97483fe6fe2d7df24866c2f2b1e42a",
+      "evidence": [
+        "CAMUWPBL imports CAM support and diffusion modules: module_cam_support, trb_mtn_stress, eddy_diff, wv_saturation, molec_diff, constituents, diffusion_solver, and optional modal_aero_data.",
+        "CAMUWPBL signature requires qnc_curr, qni_curr, wsedl3d, cldfra_old_mp, cldfra, rthratenlw, exner, and is_CAMMGMP_used in addition to ordinary PBL column state.",
+        "CAMUWPBL writes CAM carry/diagnostics: tauresx2d, tauresy2d, tpert2d, qpert2d, wpert2d, smaw3d, turbtype3d, tke_pbl, kvm3d, and kvh3d.",
+        "The source hard-fails when CAM pcols/NCOL is not exactly one, via wrf_error_fatal('Number of CAM Columns (NCOL) in CAMUWPBL scheme must be 1')."
+      ]
+    },
+    "module_pbl_driver.F": {
+      "path": "/home/user/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
+      "sha256": "c1c083365a4e780381fce09b97231cd322913590f089ac91aa9bfc1f6be54424",
+      "evidence": [
+        "The CAMUWPBL call is guarded by presence checks for qv_curr, qc_curr, qi_curr, qnc_curr, qni_curr, rqvblten, rqcblten, rqiblten, and rqniblten.",
+        "The driver passes IS_CAMMGMP_USED and the CAM cloud-number/sedimentation fields into CAMUWPBL.",
+        "Missing CAM-UW optional arguments trigger wrf_error_fatal('Lack arguments to call CAMUWPBL pbl')."
+      ]
+    },
+    "Registry.EM_COMMON": {
+      "path": "/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON",
+      "sha256": "6f3ee02175b76487c5c6c046ff2fb4c5d41980b86c0f06eb2e09e34dacc9623a",
+      "evidence": [
+        "package camuwpblscheme bl_pbl_physics==9 state:tauresx2d,tauresy2d,tpert2d,qpert2d,wpert2d,tke_pbl,smaw3d,wsedl3d,turbtype3d",
+        "package cammgmpscheme mp_physics==11 carries CAM cloud/aerosol state including cldfra_old_mp, cldfra_mp, turbtype3d, smaw3d, wsedl3d, and tke_pbl."
+      ]
+    }
+  },
+  "v018_policy_mapping": {
+    "real_class": "proven-irrelevant with WRF-source proof",
+    "why_not_reference_only": "A standalone PBL9 module oracle would not represent the production target without also owning the CAM cloud microphysics/constituent/diffusion stack.",
+    "why_not_operational": "The v0.18 operational PBL matrix does not include CAM microphysics/radiation/constituent state required by CAM-UW; running it would be a wrong-path substitution."
+  }
+}

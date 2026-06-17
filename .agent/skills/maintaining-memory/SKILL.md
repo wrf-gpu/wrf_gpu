@@ -13,7 +13,7 @@ Compaction discards the live context; review files and in-flight reasoning are N
 
 1. **Live anchor** — the current `⚑⚑ LIVE ANCHOR` auto-memory file reflects the true present state (HEAD sha, running workers + branches, what ships next), and `MEMORY.md` points to it at the top.
 2. **Sprint ledger** — every major sprint closed this session has a row in `.agent/decisions/VERSION-SPRINT-LEDGER.md`.
-3. **Core decisions** — every theoretical limit, what-can/can't-be-optimized verdict, closed-wontfix-with-evidence, scope cut, or roadmap change made this session lives in an authoritative in-repo doc (`.agent/decisions/*`), not only in a sub-agent review or context. Expensive cross-model findings (e.g. a multi-sprint kernel-optimization investigation) get their own FINAL doc.
+3. **Core decisions** — every theoretical limit, what-can/can't-be-optimized verdict, closed-wontfix-with-evidence, scope cut, or roadmap change made this session lives in an authoritative in-repo doc (`.agent/decisions/*`), not only in a sub-agent review or context. Expensive cross-model findings (e.g. Fable kernel-optimization sprints) get their own FINAL doc.
 4. **Commit** the decision/ledger/skill changes. A decision that cost real tokens to reach (multi-sprint, cross-model) MUST be durable before compact.
 
 A decision is "captured" only when a future fresh context could reconstruct it from the repo + auto-memory alone.

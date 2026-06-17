@@ -1,0 +1,5 @@
+69e937f0f10b4964e3c6742cb852ef68df451dcdeb05ee82451c23a15bb72a57  /home/user/src/wrf_pristine/WRF/phys/module_mp_fer_hires.F
+566a18b529a403f7f56bc9f8bcd94ea5a54521626398b6771d71139c11cfcefe  /home/user/src/wrf_pristine/WRF/phys/module_mp_etanew.F
+28e60e6c83eb55889c4ab65eaa33e9fc3b557e5ab45c3dde7ee7153c2ef95a13  /home/user/src/wrf_pristine/WRF/run/ETAMPNEW_DATA.expanded_rain
+b935022ce910ff924d3845fc24061257a7f4e2be9faba995f7a8e56d7a3add86  proofs/v018/mp_oracles/ferrier_hires/oracle/ferrier_oracle_driver.f90
+b08b56c3b39f295072f63e423f151bb56baf3158be4a7158ba83afe5da03d13e  proofs/v018/mp_oracles/ferrier_hires/oracle/ferrier_wrf_stubs.f90

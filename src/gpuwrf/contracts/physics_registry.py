@@ -17,6 +17,13 @@ WRF Registry lines verified against
 * WSM5(4): ``moist:qv,qc,qr,qi,qs;state:re_cloud,re_ice,re_snow``.
 * WSM6(6): ``moist:qv,qc,qr,qi,qs,qg;state:re_cloud,re_ice,re_snow``.
 * Thompson(8): ``moist:qv,qc,qr,qi,qs,qg;scalar:qni,qnr;state:re_*``.
+* Goddard-GCE(97): ``moist:qv,qc,qr,qi,qs,qg`` (single-moment 3-ice graupel,
+  ``gsfcgcescheme``; the operational ``ihail=0``/``ice2=0``/``itaobraun=1``/
+  ``new_ice_sat=2`` call of ``phys/module_mp_gsfcgce.F:gsfcgce``). NO scalar
+  number species and NO extra prognostic state -> a no-kernel-change endpoint on
+  the existing moist substrate. (WRF v4 ``mp_physics=7`` is the SEPARATE 4-ice
+  NUWRF scheme ``nuwrf4icescheme`` with a hail class + a large diagnostic state
+  array -- NOT this, and NOT yet ported.)
 * Thompson aerosol-aware(28): ``moist:qv..qg;scalar:qnc,qnr,qni,qnwfa,qnifa``
   (WRF Registry package ``thompsonaero``; nwfa2d/nifa2d surface emission).
 * Morrison(10): ``moist:qv..qg;scalar:qni,qns,qnr,qng`` plus cuten state.
@@ -28,24 +35,35 @@ WRF Registry lines verified against
   density). These appear here for reference; the State leaves
   ``qh``/``Nh``/``qvolg``/``qvolh`` exist, but the schemes stay fail-closed.
 * MYJ(2): ``state:tke_pbl,el_pbl``; requires Janjic Eta sfclay(2).
-* GFS(3): nonlocal-K PBL; no persistent PBL carry, requires revised-MM5 sfclay(1).
 * MYNN(5): ``scalar:qke_adv;state:qke,tke_pbl,sh3d,sm3d,tsq,qsq,cov,el_pbl``.
 * BouLac(8): ``state:qke`` reused as the prognostic TKE storage plus PBLH/K
   diagnostics (frozen-contract extension, 2026-06-04).
+* QNSE(4), TEMF(10), EEPS(16), and KEPS(17): v0.18 reference-only PBL
+  endpoints with fp64 pristine-WRF oracle savepoints staged under
+  ``proofs/v018/savepoints_fp64``; accepted for isolated oracle comparison and
+  fail-closed in the operational scan until traceable JAX kernels land.
+* CAM-UW(9): CAM5 vertical-diffusion stack, not accepted in the standalone
+  v0.18 PBL matrix. It requires CAM cloud/aerosol-number and sedimentation
+  state plus CAM residual-stress carry; endpoint classification is documented
+  in ``proofs/v018/camuw_pbl9_endpoint_classification.json``.
 * Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
-* Cumulus options KF(1), BMJ(2), Grell-Freitas(3), Tiedtke(6/16) use the common
-  ``R*CUTEN`` tendency family and scheme-specific carry listed below.
+* Cumulus options KF(1), BMJ(2), Grell-Freitas(3), Tiedtke(6/16), and the
+  reference-only long tail with real WRF oracle artifacts
+  (4/5/14/93/94/95/96/99) use the common ``R*CUTEN`` tendency family where the
+  WRF driver exposes it and scheme-specific carry listed below. CU7/10/11 remain
+  oracle-needed and are not accepted by this registry.
 
 Append-only State rule:
     Existing ``State.__slots__`` order is preserved. v0.6.0 additive dycore
-    leaves are frozen as ``Nc``, ``Nn``, and ``rainc_acc``; v0.16 appends the
-    aerosol-aware Thompson (mp=28) prognostics ``nwfa``/``nifa`` and v0.17
+    leaves are frozen as ``Nc``, ``Nn``, and ``rainc_acc``; v0.17 ADR-032
     appends the graupel/hail substrate ``qh``/``Nh``/``qvolg``/``qvolh`` AFTER
-    them at the very END of ``State.__slots__`` / ``STATE_FIELD_ORDER`` /
-    ``PRECISION_MATRIX`` (restart schema bumped deliberately). Lanes that need
-    new leaves must append them the same way. Land/PBL/cumulus save-state fields
-    stay in ``PhysicsCarry`` sibling trees, following the existing Noah-MP carry
-    pattern.
+    them (and after the v0.15 MYNN leaves) at the very END of
+    ``State.__slots__`` / ``STATE_FIELD_ORDER`` / ``PRECISION_MATRIX``; v0.16
+    aerosol-aware Thompson (mp=28) then appends ``nwfa``/``nifa`` AFTER the hail
+    substrate as the new tail (restart schema bumped deliberately). Lanes that
+    need new leaves must append them the same way. Land/PBL/cumulus save-state
+    fields stay in ``PhysicsCarry`` sibling trees, following the existing
+    Noah-MP carry pattern.
 """
 
 from __future__ import annotations
@@ -54,10 +72,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-PHYSICS_REGISTRY_VERSION = (
-    "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension"
-    "+v016-thompson-aero+v017-gfs+v017-qh-hail-substrate"
-)
+PHYSICS_REGISTRY_VERSION = "v0.6.0-S0-frozen-2026-06-04-consolidation3-bmj2-extension+v017-qh-hail-substrate+v016-thompson-aero"
 
 
 @dataclass(frozen=True)
@@ -72,19 +87,31 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 24, 26, 28)
-ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 8, 99)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97)
+ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 16, 17, 99)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
-ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 6, 14, 16)
-ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 1, 2, 4)
-ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 2, 4)
+ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 14, 16, 93, 94, 95, 96, 99)
+ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 7, 8)
+# ra_sw=3/5/7/99 (CAM/Goddard-new/FLG/GFDL-Eta) are v0.18 reference-only:
+# accepted so real-WRF oracle work can select their exact WRF radiation-driver
+# path; they fail-close in the operational scan until faithful traceable JAX
+# kernels pass those real oracles.
+ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 7, 99)
 # ra_lw=5 (GSFC/Goddard NUWRF LW) is a v0.13 Tier-3 reference-only scheme: a
 # single-column fp64 pristine-WRF oracle is staged (proofs/v013/oracle/
 # radiation_lw), but its traceable JAX column kernel is a documented carry-over
 # (the combined NUWRF SW+LW module is ~12.5k LOC / ~11.8k LW coefficients), so it
 # is "accepted" (selectable for a single-column reference comparison) and
 # fail-closes in the operational scan -- NOT in _SCAN_WIRED_OPTIONS["ra_lw_physics"].
-ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 4, 5)
+# ra_lw=3/7/99 (CAM/FLG/GFDL-Eta) are v0.18 reference-only real-WRF oracle
+# endpoints; they fail-close in the operational scan until ported and parity-proven.
+# ra_lw=31 (Held-Suarez idealized radiation) is a v0.17 no-kernel-change endpoint
+# port (phys/module_ra_hs.F:HSRAD): a combined LW+SW Newtonian-relaxation forcing
+# selected through the LW slot (WRF Registry heldsuarez==31), carrying NO
+# prognostic state. Its JAX column kernel (physics.ra_lw_hs) is savepoint-parity-
+# proven against the unmodified WRF source at fp64 (proofs/v017/
+# held_suarez_lw_savepoint_parity.json) and scan-wired via held_suarez_theta_tendency.
+ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 3, 4, 5, 7, 31, 99)
 
 ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
     "mp_physics": ACCEPTED_MP_PHYSICS,
@@ -105,6 +132,7 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     6: SchemeOption("mp_physics", 6, "WSM6", "wsm6scheme", "accepted", "microphysics"),
     8: SchemeOption("mp_physics", 8, "Thompson", "thompson", "implemented", "microphysics"),
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
+    13: SchemeOption("mp_physics", 13, "SBU-YLin", "sbu_ylinscheme", "implemented", "microphysics"),
     14: SchemeOption("mp_physics", 14, "WDM5", "wdm5scheme", "accepted", "microphysics"),
     16: SchemeOption("mp_physics", 16, "WDM6", "wdm6scheme", "accepted", "microphysics"),
     # v0.17: WSM6 single-moment + a separate precipitating HAIL class (qh). GPU
@@ -121,6 +149,13 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     # (proofs/v016/thompson_aero_savepoint_parity.json) and wired through
     # coupling.physics_couplers.thompson_aero_adapter (mirrors mp=8).
     28: SchemeOption("mp_physics", 28, "Thompson aerosol-aware", "thompson_aero", "implemented", "microphysics"),
+    # Goddard GCE (97): v0.17 single-moment 3-ice graupel scheme, faithful
+    # column port of phys/module_mp_gsfcgce.F:gsfcgce (ihail=0/ice2=0/itaobraun=1/
+    # new_ice_sat=2). Uses ONLY the existing moist substrate (qv,qc,qr,qi,qs,qg)
+    # -- no new prognostic state -- and is savepoint-parity-proven against the
+    # unmodified WRF Fortran (proofs/v090/goddard_mp_r2_savepoint_parity.json,
+    # 5/5 cases, ~machine-precision vs the fp64 transparency oracle).
+    97: SchemeOption("mp_physics", 97, "Goddard GCE", "gsfcgcescheme", "implemented", "microphysics"),
 }
 
 PBL_SCHEMES: Mapping[int, SchemeOption] = {
@@ -134,12 +169,37 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
     # (fail-closed in the operational scan); requires Janjic Eta sfclay(2).
     2: SchemeOption("bl_pbl_physics", 2, "MYJ", "myjpblscheme", "accepted", "pbl"),
     # GFS(3): v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F (BL_GFS ->
-    # MONINP), scan-wired into the operational PBL slot (PBL_SCAN_ADAPTERS[3]);
-    # savepoint-parity-proven against unmodified WRF at fp64.
+    # MONINP), the NCEP-GFS Hybrid-EDMF-ancestor nonlocal-K PBL; scan-wired into
+    # the operational PBL slot (PBL_SCAN_ADAPTERS[3]); savepoint-parity-proven
+    # against the unmodified WRF source at fp64 (proofs/v017/gfs_oracle.py, ~1e-13).
     3: SchemeOption("bl_pbl_physics", 3, "GFS", "gfsscheme", "implemented", "pbl"),
+    # QNSE(4): v0.18 reference-only endpoint. A fp64 pristine-WRF single-column
+    # oracle is staged (phys/module_bl_qnsepbl.F; proofs/v018/qnse_pbl4_reference_oracle.json),
+    # but no traceable JAX column kernel is scan-wired.
+    4: SchemeOption("bl_pbl_physics", 4, "QNSE-EDMF", "qnsepblscheme", "accepted", "pbl"),
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
     8: SchemeOption("bl_pbl_physics", 8, "BouLac", "boulacscheme", "accepted", "pbl"),
+    # TEMF(10): v0.18 reference-only endpoint. A fp64 pristine-WRF single-column
+    # oracle is staged (phys/module_bl_temf.F; proofs/v018/temf_pbl10_reference_oracle.json),
+    # but no traceable JAX column kernel is scan-wired.
+    10: SchemeOption("bl_pbl_physics", 10, "TEMF", "temfpblscheme", "accepted", "pbl"),
+    # Shin-Hong(11): v0.18 scale-aware (grid-size-dependent) YSU-family PBL
+    # (phys/module_bl_shinhong.F), scan-wired via coupling.scan_adapters.
+    # Dynamics path is parity-gated against the v090 host reference; TKE/EL are
+    # non-driving diagnostics with explicit residuals vs that PARTIAL reference
+    # (TKE rel ~=0.285, EL rel ~=0.013; refine after a pristine-WRF TKE oracle).
+    11: SchemeOption("bl_pbl_physics", 11, "Shin-Hong", "shinhongscheme", "implemented", "pbl"),
+    # GBM(12): v0.18 JAX/vmap port of the Grenier-Bretherton-McCaa moist
+    # prognostic-TKE PBL (phys/module_bl_gbmpbl.F), scan-wired via
+    # coupling.scan_adapters.gbm_pbl_adapter and parity-gated against the fp64
+    # pristine-WRF oracle (proofs/v018/gbm_pbl12_jax_parity.json).
+    12: SchemeOption("bl_pbl_physics", 12, "GBM TKE", "gbmpblscheme", "implemented", "pbl"),
+    # EEPS/KEPS(16/17): v0.18 reference-only epsilon/k-epsilon endpoints. Their
+    # fp64 pristine-WRF single-column oracles are staged under proofs/v018, but no
+    # traceable JAX kernels are scan-wired.
+    16: SchemeOption("bl_pbl_physics", 16, "EEPS epsilon", "eepsscheme", "accepted", "pbl"),
+    17: SchemeOption("bl_pbl_physics", 17, "KEPS k-epsilon", "kepsscheme", "accepted", "pbl"),
     # MRF(99): v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F, scan-wired
     # into the operational PBL slot (PBL_SCAN_ADAPTERS[99]); savepoint-parity-proven
     # against the unmodified WRF source at fp64 (proofs/v013/mrf_oracle.py).
@@ -166,39 +226,79 @@ CU_SCHEMES: Mapping[int, SchemeOption] = {
     # slot (CU_SCAN_ADAPTERS[3], stateless State->State), savepoint-parity-gated
     # against unmodified module_cu_gf_*.F (proofs/v060/gf_gpubatch_savepoint_parity.json).
     3: SchemeOption("cu_physics", 3, "Grell-Freitas", "gfscheme", "implemented", "cumulus"),
-    # Grell-3D (5) is a v0.13 Tier-3 reference-only scheme: a single-column fp64
-    # pristine-WRF oracle is staged (proofs/v013/oracle/cumulus), but the
-    # traceable JAX column kernel is a documented carry-over, so it is "accepted"
-    # (selectable for a single-column reference comparison) and fail-closes in the
-    # operational scan -- NOT in CU_SCAN_ADAPTERS / _SCAN_WIRED_OPTIONS.
+    # v0.17 SAS family: pristine-WRF fp64 savepoints exist, but the shared JAX
+    # endpoint is RED vs oracle and remains reference-only / fail-closed.
+    4: SchemeOption("cu_physics", 4, "Scale-aware GFS SAS", "scalesasscheme", "accepted", "cumulus"),
+    # Grell-3D (5): v0.18 has a standalone pristine-WRF G3DRV oracle harness and
+    # savepoints (proofs/v018/oracle/cumulus_grell), but all available trial
+    # columns are null; an active trigger and faithful JAX endpoint remain
+    # blocked. Accepted only for fail-closed oracle work -- NOT in
+    # CU_SCAN_ADAPTERS / _SCAN_WIRED_OPTIONS.
     5: SchemeOption("cu_physics", 5, "Grell-3D ensemble", "g3scheme", "accepted", "cumulus"),
     6: SchemeOption("cu_physics", 6, "Tiedtke", "tiedtkescheme", "accepted", "cumulus"),
-    # KIM Simplified Arakawa-Schubert (14): v0.13 Tier-3 reference-only, same
-    # status as Grell-3D above (fp64 oracle staged, JAX kernel carry-over).
+    # KIM Simplified Arakawa-Schubert (14): v0.13 Tier-3 reference-only with a
+    # nontrivial fp64 pristine-WRF oracle staged; JAX kernel remains carry-over.
     14: SchemeOption("cu_physics", 14, "KIM Simplified Arakawa-Schubert", "ksasscheme", "accepted", "cumulus"),
     16: SchemeOption("cu_physics", 16, "New Tiedtke", "ntiedtkescheme", "accepted", "cumulus"),
+    # SAS family (94/95/96, cu-sas lane) and Grell-Devenyi(93) / previous
+    # Kain-Fritsch(99) (cu-kfgrell lane) are v0.17/v0.18 reference-only: accepted
+    # for isolated real-WRF oracle work, but NOT scan-wired until their candidate
+    # JAX endpoints pass source-specific pristine-WRF savepoint parity. GD(93)
+    # has a v0.18 standalone GRELLDRV harness/savepoints, but they are null-only.
+    93: SchemeOption("cu_physics", 93, "Grell-Devenyi ensemble", "gdscheme", "accepted", "cumulus"),
+    94: SchemeOption("cu_physics", 94, "2015 GFS SAS / HWRF", "sasscheme", "accepted", "cumulus"),
+    95: SchemeOption("cu_physics", 95, "Previous GFS SAS / HWRF OSAS", "osasscheme", "accepted", "cumulus"),
+    96: SchemeOption("cu_physics", 96, "Previous new GFS SAS / YSU NSAS", "nsasscheme", "accepted", "cumulus"),
+    99: SchemeOption("cu_physics", 99, "previous Kain-Fritsch", "kfscheme", "accepted", "cumulus"),
 }
 
 SURFACE_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("sf_surface_physics", 0, "disabled", "none", "accepted", "land_surface"),
-    # slab=1 is a v0.13 Tier-3 JAX port + fp64 oracle (physics.lsm_slab) but not
-    # yet scan-wired (needs the TSLB land carry + GSW/GLW forcing hook); accepted
-    # for a single-column reference comparison, fail-closed in the operational scan.
-    1: SchemeOption("sf_surface_physics", 1, "thermal-diffusion slab LSM", "slabscheme", "accepted", "land_surface"),
+    # slab=1 status bumped to "implemented" (v0.17 GPU-op): the fp64-oracle-validated
+    # physics.lsm_slab SLAB1D column port is operationally scan-wired via
+    # coupling.slab_surface_hook.slab_surface_step (5-layer TSLB land carry + GSW/GLW
+    # radiation forcing + explicit TMN/THC/EMISS SlabStaticBundle).
+    1: SchemeOption("sf_surface_physics", 1, "thermal-diffusion slab LSM", "slabscheme", "implemented", "land_surface"),
     2: SchemeOption("sf_surface_physics", 2, "Noah classic", "lsmscheme", "accepted", "land_surface"),
+    # ruc=3 (RUC multi-layer soil/snow LSM) is v0.17 REFERENCE-ONLY: a fp64
+    # pristine-WRF single-column oracle is staged (LSMRUC->SOILVEGIN->SFCTMP,
+    # proofs/v017/oracle/ruclsm + savepoints/ruclsm), but a faithful traceable JAX
+    # column port of the ~7.5k-LOC multi-layer soil/snow solver (SFCTMP + SOIL/
+    # SNOWSOIL + SOILTEMP/SNOWTEMP/SOILMOIST/SOILPROP/TRANSF/VILKA) is a documented
+    # carry-over, so it is "accepted" (selectable for a single-column reference
+    # comparison) and fail-closes in the operational scan.
+    3: SchemeOption("sf_surface_physics", 3, "RUC LSM", "ruclsmscheme", "accepted", "land_surface"),
     4: SchemeOption("sf_surface_physics", 4, "Noah-MP", "noahmpscheme", "implemented", "land_surface"),
+    # px=7 (Pleim-Xiu 2-layer ISBA LSM) is v0.17 GPU-operational: the fp64-oracle-
+    # validated physics.lsm_pleim_xiu SURFPX+QFLUX column port is scan-wired via
+    # coupling.pleim_xiu_surface_hook.pleim_xiu_surface_step (pairs with the PX
+    # surface layer sf_sfclay_physics=7). Carries the 2-layer ISBA land state.
+    7: SchemeOption("sf_surface_physics", 7, "Pleim-Xiu LSM", "pxlsmscheme", "implemented", "land_surface"),
+    # ssib=8 (SSiB SiB biophysical canopy/soil/snow LSM) is v0.17 REFERENCE-ONLY: a
+    # fp64 pristine-WRF single-column oracle is staged (the unmodified SSIB driver +
+    # its ~30 internal subroutines, proofs/v017/oracle/ssib + savepoints/ssib), but a
+    # faithful traceable JAX column port of the ~6.6k-LOC coupled SiB canopy/soil/
+    # 4-level-snow solver (TEMRS1/TEMRS2 + UPDAT1 + RADAB + STOMA1 + INTERC + STRES1
+    # + NEWTON) is a documented carry-over, so it is "accepted" (selectable for a
+    # single-column reference comparison) and fail-closes in the operational scan.
+    8: SchemeOption("sf_surface_physics", 8, "SSiB LSM", "ssibscheme", "accepted", "land_surface"),
 }
 
 RA_SW_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("ra_sw_physics", 0, "disabled", "none", "accepted", "radiation"),
     1: SchemeOption("ra_sw_physics", 1, "Dudhia shortwave", "swradscheme", "implemented", "radiation"),
     2: SchemeOption("ra_sw_physics", 2, "GSFC (Chou-Suarez) shortwave", "gsfcswscheme", "implemented", "radiation"),
+    3: SchemeOption("ra_sw_physics", 3, "CAM shortwave", "camscheme", "accepted", "radiation"),
     4: SchemeOption("ra_sw_physics", 4, "RRTMG shortwave", "rrtmg_swscheme", "accepted", "radiation"),
+    5: SchemeOption("ra_sw_physics", 5, "Goddard shortwave (new)", "goddard_swscheme", "accepted", "radiation"),
+    7: SchemeOption("ra_sw_physics", 7, "FLG (UCLA) shortwave", "flgscheme", "accepted", "radiation"),
+    99: SchemeOption("ra_sw_physics", 99, "GFDL (Eta) shortwave", "gfdl_swscheme", "accepted", "radiation"),
 }
 
 RA_LW_SCHEMES: Mapping[int, SchemeOption] = {
     0: SchemeOption("ra_lw_physics", 0, "disabled", "none", "accepted", "radiation"),
     1: SchemeOption("ra_lw_physics", 1, "RRTM longwave", "rrtmscheme", "implemented", "radiation"),
+    3: SchemeOption("ra_lw_physics", 3, "CAM longwave", "camscheme", "accepted", "radiation"),
     4: SchemeOption("ra_lw_physics", 4, "RRTMG longwave", "rrtmg_lwscheme", "accepted", "radiation"),
     # GSFC/Goddard NUWRF longwave (5): v0.13 Tier-3 reference-only -- a fp64
     # single-column pristine-WRF oracle (module_ra_goddard.F:lwrad) is staged
@@ -206,6 +306,15 @@ RA_LW_SCHEMES: Mapping[int, SchemeOption] = {
     # documented carry-over, so it is "accepted" (selectable for a reference
     # comparison) and fail-closes in the operational scan.
     5: SchemeOption("ra_lw_physics", 5, "GSFC/Goddard NUWRF longwave", "goddardlwscheme", "accepted", "radiation"),
+    7: SchemeOption("ra_lw_physics", 7, "FLG (UCLA) longwave", "flgscheme", "accepted", "radiation"),
+    # Held-Suarez idealized radiation (31): v0.17 GPU-op no-kernel-change endpoint
+    # port of phys/module_ra_hs.F:HSRAD (Newtonian relaxation toward an analytic
+    # equilibrium temperature; combined LW+SW selected through the LW slot, no
+    # separate SW call). Stateless State->RTHRATEN coupler (held_suarez_theta_tendency),
+    # savepoint-parity-proven against the unmodified WRF source at fp64
+    # (proofs/v017/held_suarez_lw_savepoint_parity.json) and scan-wired.
+    31: SchemeOption("ra_lw_physics", 31, "Held-Suarez idealized radiation", "heldsuarez", "implemented", "radiation"),
+    99: SchemeOption("ra_lw_physics", 99, "GFDL (Eta) longwave", "gfdl_lwscheme", "accepted", "radiation"),
 }
 
 
@@ -241,6 +350,7 @@ MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     6: ("qv", "qc", "qr", "qi", "qs", "qg"),
     8: ("qv", "qc", "qr", "qi", "qs", "qg"),
     10: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    13: ("qv", "qc", "qr", "qi", "qs"),
     14: ("qv", "qc", "qr", "qi", "qs"),
     16: ("qv", "qc", "qr", "qi", "qs", "qg"),
     # v0.17 WSM7 = WSM6 six-class + a separate precipitating hail class (qh).
@@ -248,15 +358,18 @@ MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     # v0.17 WDM7 = WDM6 six-class + a separate precipitating hail class (qh).
     26: ("qv", "qc", "qr", "qi", "qs", "qg", "qh"),
     28: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    97: ("qv", "qc", "qr", "qi", "qs", "qg"),
 }
 
 
 # Number concentrations / WRF ``scalar`` array members. Existing Thompson-era
-# State leaves are preserved; WDM6 adds ``Nc`` and ``Nn`` append-only, v0.16
-# aerosol-aware Thompson appends ``nwfa``/``nifa``, and v0.17 ADR-032 appends
-# ``Nh`` (WRF scalar qnh).
+# State leaves are preserved; WDM6 adds ``Nc`` and ``Nn`` append-only; the
+# v0.17 ADR-032 hail substrate appends ``Nh`` (WRF scalar qnh) AFTER them, then
+# v0.16 aerosol-aware Thompson (mp=28) appends ``nwfa``/``nifa`` AFTER the hail
+# substrate (append-only; the State pytree appends them at the very END of
+# __slots__ in this same order).
 NUMBER_SPECIES_EXISTING: tuple[str, ...] = ("Ni", "Nr", "Ns", "Ng")
-NUMBER_SPECIES_ADDITIVE: tuple[str, ...] = ("Nc", "Nn", "nwfa", "nifa", "Nh")
+NUMBER_SPECIES_ADDITIVE: tuple[str, ...] = ("Nc", "Nn", "Nh", "nwfa", "nifa")
 NUMBER_SPECIES: tuple[str, ...] = NUMBER_SPECIES_EXISTING + NUMBER_SPECIES_ADDITIVE
 
 NUMBER_REGISTRY_MEMBER: Mapping[str, str] = {
@@ -266,10 +379,11 @@ NUMBER_REGISTRY_MEMBER: Mapping[str, str] = {
     "Ng": "qng",
     "Nc": "qnc",
     "Nn": "qnn",
-    "nwfa": "qnwfa",
-    "nifa": "qnifa",
     # v0.17 ADR-032 hail substrate (WRF scalar member qnh).
     "Nh": "qnh",
+    # v0.16 aerosol-aware Thompson (mp=28) scalar members.
+    "nwfa": "qnwfa",
+    "nifa": "qnifa",
 }
 
 NUMBER_WRFOUT_NAME: Mapping[str, str] = {
@@ -279,10 +393,11 @@ NUMBER_WRFOUT_NAME: Mapping[str, str] = {
     "Ng": "QNGRAUPEL",
     "Nc": "QNCLOUD",
     "Nn": "QNCCN",
-    "nwfa": "QNWFA",
-    "nifa": "QNIFA",
     # v0.17 ADR-032 hail substrate.
     "Nh": "QNHAIL",
+    # v0.16 aerosol-aware Thompson (mp=28).
+    "nwfa": "QNWFA",
+    "nifa": "QNIFA",
 }
 
 
@@ -311,6 +426,7 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     6: (),
     8: ("Ni", "Nr"),
     10: ("Ni", "Ns", "Nr", "Ng"),
+    13: (),
     14: ("Nn", "Nc", "Nr"),
     16: ("Nn", "Nc", "Nr"),
     # v0.17 WSM7 is single-moment (no prognostic number concentrations).
@@ -320,6 +436,7 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     26: ("Nn", "Nc", "Nr"),
     # WRF Registry package thompsonaero: scalar:qnc,qnr,qni,qnwfa,qnifa.
     28: ("Ni", "Nr", "Nc", "nwfa", "nifa"),
+    97: (),
 }
 
 
@@ -538,7 +655,7 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
             "cumulus_tendency",
             "mass_3d",
             "PhysicsCarry",
-            ("cu1", "cu2", "cu3", "cu6", "cu16", "mp10"),
+            ("cu1", "cu2", "cu3", "cu4", "cu5", "cu6", "cu14", "cu16", "cu93", "cu94", "cu95", "cu96", "mp10"),
             notes="WRF R*CUTEN state/tendency family carried between physics driver calls.",
         )
         for leaf in (
@@ -554,11 +671,11 @@ FIELD_SPECS: tuple[RegistryFieldSpec, ...] = (
             "RQINCUTEN",
         )
     ),
-    _field("raincv", "RAINCV", "RAINCV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu2", "cu3", "cu6", "cu16")),
-    _field("rainshv", "RAINSHV", "RAINSHV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu2", "cu3", "cu6", "cu16")),
+    _field("raincv", "RAINCV", "RAINCV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu2", "cu3", "cu4", "cu5", "cu6", "cu14", "cu16", "cu93", "cu94", "cu95", "cu96")),
+    _field("rainshv", "RAINSHV", "RAINSHV", "cumulus_diagnostic", "surface_2d", "PhysicsDiagnostics", ("cu1", "cu2", "cu3", "cu4", "cu5", "cu6", "cu14", "cu16", "cu93", "cu94", "cu95", "cu96")),
     _field("cldefi", "CLDEFI", "CLDEFI", "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu2",), notes="BMJ precipitation efficiency/cloud efficiency state."),
-    _field("nca", "NCA", "NCA", "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu1",), notes="KF relaxation counter."),
-    _field("w0avg", "W0AVG", "w0avg", "cumulus_carry", "mass_3d", "PhysicsCarry", ("cu1",), notes="KF average vertical velocity."),
+    _field("nca", "NCA", "NCA", "cumulus_carry", "surface_2d", "PhysicsCarry", ("cu1", "cu99"), notes="KF relaxation counter."),
+    _field("w0avg", "W0AVG", "w0avg", "cumulus_carry", "mass_3d", "PhysicsCarry", ("cu1", "cu99"), notes="KF-family average vertical velocity."),
     *(
         _field(leaf, leaf.upper(), leaf, "cumulus_carry", "mass_3d", "PhysicsCarry", ("cu3",))
         for leaf in ("cugd_qvten", "cugd_tten", "cugd_qvtens", "cugd_ttens", "cugd_qcten")
@@ -588,12 +705,18 @@ CUMULUS_TENDENCY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     2: ("rthcuten", "rqvcuten"),
     3: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
     # Grell-3D(5) writes theta/qv/qc/qi cumulus tendencies + cumulus momentum
-    # (RU/RV CUTEN); KSAS(14) likewise. Both are reference-only (oracle dumps
-    # exactly these tendency fields, proofs/v013/oracle/cumulus).
+    # (RU/RV CUTEN); KSAS(14) and SAS-family(4/94/95/96) likewise. These
+    # reference-only oracle dumps contain exactly these tendency fields.
+    4: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
     5: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
     6: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
     14: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
     16: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
+    93: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten"),
+    94: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
+    95: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
+    96: ("rthcuten", "rqvcuten", "rqccuten", "rqicuten", "rucuten", "rvcuten"),
+    99: ("rthcuten", "rqvcuten", "rqrcuten", "rqccuten", "rqscuten", "rqicuten"),
 }
 
 CUMULUS_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
@@ -611,23 +734,59 @@ CUMULUS_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
         "kbcon_shallow",
         "ktop_shallow",
     ),
-    # 5 (Grell-3D) / 14 (KSAS) are v0.13 Tier-3 reference-only: their JAX kernel
-    # is a carry-over, so no persistent operational cumulus carry is threaded yet
-    # (empty, like New-Tiedtke 16). Promotion to operational would populate these.
+    # 4/94/95/96 (SAS family), 5 (Grell-3D), and 14 (KSAS) are
+    # reference-only: no persistent operational cumulus carry is threaded yet.
+    4: (),
     5: (),
     6: (),
     14: (),
     16: (),
+    93: (),
+    94: (),
+    95: (),
+    96: (),
+    99: ("w0avg", "nca"),
 }
 
 PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: (),
     2: ("tke_pbl", "el_pbl"),
-    3: (),  # GFS is a nonlocal-K scheme: no prognostic PBL carry.
+    3: (),  # GFS is a nonlocal-K scheme: no prognostic PBL carry (like YSU/MRF)
+    # QNSE(4) carries the EDKF mass-flux/updraft state documented by the WRF
+    # Registry. REFERENCE-ONLY: the carry list documents the state a future JAX
+    # kernel must thread; the operational scan fail-closes this option.
+    4: (
+        "tke_pbl", "el_pbl", "massflux_EDKF", "entr_EDKF", "detr_EDKF",
+        "thl_up", "thv_up", "rv_up", "rt_up", "rc_up", "u_up", "v_up",
+        "frac_up", "rc_mf",
+    ),
     5: ("qke",),
     7: (),
     8: ("qke",),
+    # TEMF(10) carries the total-energy / mass-flux diagnostic state emitted by
+    # phys/module_bl_temf.F. REFERENCE-ONLY in v0.18.
+    10: (
+        "te_temf", "kh_temf", "km_temf", "shf_temf", "qf_temf", "uw_temf",
+        "vw_temf", "wupd_temf", "mf_temf", "thup_temf", "qlup_temf",
+        "qtup_temf", "cf3d_temf", "hd_temf", "lcl_temf", "hct_temf",
+        "cfm_temf",
+    ),
+    # Shin-Hong(11) carries the prognostic mixing length + TKE diagnostic
+    # (WRF Registry: state:el_pbl,tke_pbl). The operational State adapter maps
+    # the TKE member onto the existing qke leaf.
+    11: ("tke_pbl", "el_pbl"),
+    # GBM(12) carries the TKE exchange coefficient + mixing length + TKE
+    # (WRF Registry: state:exch_tke,el_pbl,tke_pbl).
+    12: ("exch_tke", "tke_pbl", "el_pbl"),
+    # EEPS/KEPS reference-only carry from the WRF Registry. The ``*_adv`` members
+    # are Registry scalar fields and are listed here so future kernels preserve
+    # restart/nest ownership explicitly.
+    16: ("pek_pbl", "pep_pbl", "pek_adv", "pep_adv"),
+    17: (
+        "tke_pbl", "diss_pbl", "tpe_pbl", "pr_pbl", "wu_tur", "wv_tur",
+        "wt_tur", "wq_tur", "tke_adv", "diss_adv", "tpe_adv",
+    ),
     99: (),  # MRF is a nonlocal-K scheme: no prognostic PBL carry (like YSU/ACM2)
 }
 
@@ -635,10 +794,16 @@ PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
     0: (),
     1: ("pblh",),
     2: ("pblh", "kpbl", "mixht", "tke_pbl", "exch_h", "exch_m", "el_pbl"),
-    3: ("pblh", "kpbl"),
+    3: ("pblh", "kpbl"),  # GFS diagnoses PBL height (HPBL) and KPBL
+    4: ("pblh", "kpbl", "tke_pbl", "el_pbl", "exch_h", "exch_m", "massflux_EDKF"),
     5: ("pblh", "tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl"),
     7: ("pblh",),
     8: ("pblh", "tke_pbl", "dlk", "exch_h", "exch_m"),
+    10: ("pblh", "kpbl", "kh_temf", "km_temf", "te_temf", "mf_temf", "hd_temf", "hct_temf"),
+    11: ("pblh", "kpbl", "tke_pbl", "el_pbl", "exch_h"),  # Shin-Hong scale-aware
+    12: ("pblh", "kpbl", "tke_pbl", "el_pbl", "exch_tke"),  # GBM moist TKE
+    16: ("pblh", "kpbl", "pek_pbl", "pep_pbl", "exch_h", "exch_m"),
+    17: ("pblh", "kpbl", "tke_pbl", "diss_pbl", "tpe_pbl", "pr_pbl", "exch_h", "exch_m"),
     99: ("pblh", "kpbl"),  # MRF diagnoses PBL height (PBL0) and KPBL
 }
 
@@ -648,7 +813,23 @@ LAND_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     # operational LSM hook lands; physics.lsm_slab).
     1: ("tslb",),
     2: ("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn"),
+    # RUC carries the multi-layer soil/snow land state (SOILT skin temperature,
+    # TSO soil temperatures, SOILMOIS/SH2O total+liquid soil moisture, SMFR3D
+    # frozen-soil fraction + KEEPFR3DFLAG, SNOW/SNOWH snow water+depth, plus the
+    # diagnostic surface moisture QSFC/QVG/QCG/QSG). REFERENCE-ONLY: the carry
+    # member list documents the state the future JAX port must thread, but the
+    # operational scan fail-closes RUC (physics.lsm_ruc; oracle staged).
+    3: ("soilt", "tso", "soilmois", "sh2o", "smfr3d", "keepfr3dflag", "snow", "snowh", "qsfc"),
     4: ("NoahMPLandState",),
+    # Pleim-Xiu carries the 2-layer ISBA land state (TG/T2 soil temperatures,
+    # WG/W2 soil moisture, WR canopy water; physics.lsm_pleim_xiu).
+    7: ("tg", "t2", "wg", "w2", "wr"),
+    # SSiB carries the SiB biophysical land state (TC canopy temperature, TGS soil
+    # surface temperature, TD deep soil temperature, WWW1/WWW2/WWW3 3-layer soil
+    # moisture, CAPAC canopy interception/snow). REFERENCE-ONLY: the carry member
+    # list documents the state the future JAX port must thread, but the operational
+    # scan fail-closes SSiB (physics.lsm_ssib; oracle staged).
+    8: ("tc", "tgs", "td", "www1", "www2", "www3", "capac"),
 }
 
 NOAH_CLASSIC_NUM_SOIL_LAYERS = 4

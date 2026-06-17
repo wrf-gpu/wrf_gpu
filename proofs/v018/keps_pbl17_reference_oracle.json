@@ -1,0 +1,975 @@
+{
+  "all_finite": true,
+  "cases": [
+    {
+      "case": 1,
+      "extrema": {
+        "DISS_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "DISS_PBL": {
+          "max": 0.4189241048467934,
+          "min": 0.0002117471606478855
+        },
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EXCH_H": {
+          "max": 0.5598621960608756,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.2250000000000001,
+          "min": 0.0
+        },
+        "P8W": {
+          "max": 100000.0,
+          "min": 22303.87321932467
+        },
+        "PI": {
+          "max": 0.9967794566474706,
+          "min": 0.6453096035997157
+        },
+        "PR_PBL": {
+          "max": 1.0,
+          "min": 0.3037119432773889
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.01340155722874638,
+          "min": 8.35415457284161e-05
+        },
+        "RHO": {
+          "max": 1.142679568228821,
+          "min": 0.3345447067655488
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 5.044009127199341e-07,
+          "min": 0.0
+        },
+        "RTHBLTEN": {
+          "max": 0.001517043525753555,
+          "min": -1.963894609010216e-07
+        },
+        "RUBLTEN": {
+          "max": 0.0,
+          "min": -0.001428117300826385
+        },
+        "RVBLTEN": {
+          "max": 0.0,
+          "min": -0.0003570293252065963
+        },
+        "TH": {
+          "max": 348.3871994598522,
+          "min": 300.0301436286338
+        },
+        "TKE_ADV": {
+          "max": 0.05,
+          "min": 0.05
+        },
+        "TKE_PBL": {
+          "max": 25.50242991403284,
+          "min": 0.02188910697363233
+        },
+        "TPE_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "TPE_PBL": {
+          "max": 0.001427257784931627,
+          "min": 0.0005093832403390737
+        },
+        "U": {
+          "max": 21.66906648661741,
+          "min": 4.150718143169167
+        },
+        "V": {
+          "max": 5.417266621654353,
+          "min": 1.037679535792292
+        },
+        "WQ_TUR": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "WT_TUR": {
+          "max": -0.04343336388960212,
+          "min": -0.04456405058770444
+        },
+        "WU_TUR": {
+          "max": 0.02580130781064476,
+          "min": 0.02543865721199967
+        },
+        "WV_TUR": {
+          "max": 0.02552931986166094,
+          "min": 0.02543865721199967
+        }
+      },
+      "finite": {
+        "DISS_ADV": true,
+        "DISS_PBL": true,
+        "DZ": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P8W": true,
+        "PI": true,
+        "PR_PBL": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "TH": true,
+        "TKE_ADV": true,
+        "TKE_PBL": true,
+        "TPE_ADV": true,
+        "TPE_PBL": true,
+        "U": true,
+        "V": true,
+        "WQ_TUR": true,
+        "WT_TUR": true,
+        "WU_TUR": true,
+        "WV_TUR": true
+      },
+      "pblh_m": 1381.32909713023,
+      "regime": "unstable_daytime",
+      "scalar_finite": {
+        "BR": true,
+        "CASE": true,
+        "DT": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KX": true,
+        "MOL": true,
+        "PBL": true,
+        "QFX": true,
+        "TSK": true,
+        "UST": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 2,
+      "extrema": {
+        "DISS_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "DISS_PBL": {
+          "max": 1.28868035183762,
+          "min": 0.0002117471606478855
+        },
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EXCH_H": {
+          "max": 0.6673044792494419,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.2250000000000001,
+          "min": 0.0
+        },
+        "P8W": {
+          "max": 100800.0,
+          "min": 22313.77497969112
+        },
+        "PI": {
+          "max": 0.9990834959808836,
+          "min": 0.6452770314757623
+        },
+        "PR_PBL": {
+          "max": 1.0,
+          "min": 0.2925700924415866
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.01539346462741783,
+          "min": 0.0001723994439469169
+        },
+        "RHO": {
+          "max": 1.140351050996959,
+          "min": 0.3410088085899209
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 3.72221305028602e-07,
+          "min": 0.0
+        },
+        "RTHBLTEN": {
+          "max": 0.002604774912525916,
+          "min": -2.556087186652197e-07
+        },
+        "RUBLTEN": {
+          "max": 0.0,
+          "min": -0.002956128449577348
+        },
+        "RVBLTEN": {
+          "max": 0.0,
+          "min": -0.000739032112394337
+        },
+        "TH": {
+          "max": 341.7216350994307,
+          "min": 302.0200957524225
+        },
+        "TKE_ADV": {
+          "max": 0.05,
+          "min": 0.05
+        },
+        "TKE_PBL": {
+          "max": 50.0,
+          "min": 0.0219562469089357
+        },
+        "TPE_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "TPE_PBL": {
+          "max": 0.001718289156711833,
+          "min": 0.0004558953455423986
+        },
+        "U": {
+          "max": 27.55875531548988,
+          "min": 4.200957524225555
+        },
+        "V": {
+          "max": 6.889688828872471,
+          "min": 1.050239381056389
+        },
+        "WQ_TUR": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "WT_TUR": {
+          "max": -0.07311907048539423,
+          "min": -0.07433586705838977
+        },
+        "WU_TUR": {
+          "max": 0.03798256194984023,
+          "min": 0.03743267419296215
+        },
+        "WV_TUR": {
+          "max": 0.03757014613218167,
+          "min": 0.03743267419296215
+        }
+      },
+      "finite": {
+        "DISS_ADV": true,
+        "DISS_PBL": true,
+        "DZ": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P8W": true,
+        "PI": true,
+        "PR_PBL": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "TH": true,
+        "TKE_ADV": true,
+        "TKE_PBL": true,
+        "TPE_ADV": true,
+        "TPE_PBL": true,
+        "U": true,
+        "V": true,
+        "WQ_TUR": true,
+        "WT_TUR": true,
+        "WU_TUR": true,
+        "WV_TUR": true
+      },
+      "pblh_m": 1838.668578062918,
+      "regime": "strong_unstable",
+      "scalar_finite": {
+        "BR": true,
+        "CASE": true,
+        "DT": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KX": true,
+        "MOL": true,
+        "PBL": true,
+        "QFX": true,
+        "TSK": true,
+        "UST": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 3,
+      "extrema": {
+        "DISS_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "DISS_PBL": {
+          "max": 0.0003890606511276076,
+          "min": 0.0002117471606478855
+        },
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EXCH_H": {
+          "max": 0.05625000000000002,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.2250000000000001,
+          "min": 0.0
+        },
+        "P8W": {
+          "max": 100500.0,
+          "min": 22434.14510643914
+        },
+        "PI": {
+          "max": 0.9980563285733907,
+          "min": 0.6465574604867054
+        },
+        "PR_PBL": {
+          "max": 4.0,
+          "min": 1.45
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.005634792046505441,
+          "min": 1e-05
+        },
+        "RHO": {
+          "max": 1.199830270156089,
+          "min": 0.3269002405970112
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 5.285643520236647e-10,
+          "min": -1.411839856063519e-09
+        },
+        "RTHBLTEN": {
+          "max": 1.831998321222272e-06,
+          "min": -0.0002447460478028536
+        },
+        "RUBLTEN": {
+          "max": 0.0,
+          "min": -0.0002938365024392967
+        },
+        "RVBLTEN": {
+          "max": 0.0,
+          "min": -7.345912560982418e-05
+        },
+        "TH": {
+          "max": 358.2762659464697,
+          "min": 288.0047876211278
+        },
+        "TKE_ADV": {
+          "max": 0.05,
+          "min": 0.05
+        },
+        "TKE_PBL": {
+          "max": 0.2083395209288692,
+          "min": 0.02227580130015755
+        },
+        "TPE_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "TPE_PBL": {
+          "max": 0.005306650326245566,
+          "min": 0.0004956409855232035
+        },
+        "U": {
+          "max": 74.67626594646964,
+          "min": 4.602872572676665
+        },
+        "V": {
+          "max": 18.66906648661741,
+          "min": 1.150718143169166
+        },
+        "WQ_TUR": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "WT_TUR": {
+          "max": 0.009228874523449657,
+          "min": 0.008683102216402148
+        },
+        "WU_TUR": {
+          "max": 0.009518359787529396,
+          "min": 0.00834836494958105
+        },
+        "WV_TUR": {
+          "max": 0.008640863659068135,
+          "min": 0.00834836494958105
+        }
+      },
+      "finite": {
+        "DISS_ADV": true,
+        "DISS_PBL": true,
+        "DZ": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P8W": true,
+        "PI": true,
+        "PR_PBL": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "TH": true,
+        "TKE_ADV": true,
+        "TKE_PBL": true,
+        "TPE_ADV": true,
+        "TPE_PBL": true,
+        "U": true,
+        "V": true,
+        "WQ_TUR": true,
+        "WT_TUR": true,
+        "WU_TUR": true,
+        "WV_TUR": true
+      },
+      "pblh_m": 404.5905073284545,
+      "regime": "stable_nocturnal",
+      "scalar_finite": {
+        "BR": true,
+        "CASE": true,
+        "DT": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KX": true,
+        "MOL": true,
+        "PBL": true,
+        "QFX": true,
+        "TSK": true,
+        "UST": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 4,
+      "extrema": {
+        "DISS_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "DISS_PBL": {
+          "max": 0.000255826529793623,
+          "min": 0.0001451275651221346
+        },
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EXCH_H": {
+          "max": 0.05625000000000002,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.2250000000000001,
+          "min": 0.0
+        },
+        "P8W": {
+          "max": 101200.0,
+          "min": 20895.73850659358
+        },
+        "PI": {
+          "max": 1.000068395780562,
+          "min": 0.632899177341444
+        },
+        "PR_PBL": {
+          "max": 4.0,
+          "min": 1.15
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.009620915392136142,
+          "min": 0.000107749652466823
+        },
+        "RHO": {
+          "max": 1.197171702992128,
+          "min": 0.3396401336382039
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 8.149037227080912e-08,
+          "min": 0.0
+        },
+        "RTHBLTEN": {
+          "max": 3.551499621797424e-06,
+          "min": -6.034602898618384e-05
+        },
+        "RUBLTEN": {
+          "max": 0.0,
+          "min": -0.0001549052972797653
+        },
+        "RVBLTEN": {
+          "max": 0.0,
+          "min": -3.872632431994131e-05
+        },
+        "TH": {
+          "max": 326.8940085047838,
+          "min": 289.4019150484511
+        },
+        "TKE_ADV": {
+          "max": 0.05,
+          "min": 0.05
+        },
+        "TKE_PBL": {
+          "max": 0.108003206711877,
+          "min": 0.02226404532956236
+        },
+        "TPE_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "TPE_PBL": {
+          "max": 0.001242790426742353,
+          "min": 0.0004942160593642762
+        },
+        "U": {
+          "max": 15.77937765774494,
+          "min": 4.100478762112777
+        },
+        "V": {
+          "max": 3.944844414436235,
+          "min": 1.025119690528194
+        },
+        "WQ_TUR": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "WT_TUR": {
+          "max": 0.002044686846768022,
+          "min": 0.000986173262928802
+        },
+        "WU_TUR": {
+          "max": 0.005066348213436827,
+          "min": 0.004867218890378847
+        },
+        "WV_TUR": {
+          "max": 0.004917001221143342,
+          "min": 0.004867218890378847
+        }
+      },
+      "finite": {
+        "DISS_ADV": true,
+        "DISS_PBL": true,
+        "DZ": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P8W": true,
+        "PI": true,
+        "PR_PBL": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "TH": true,
+        "TKE_ADV": true,
+        "TKE_PBL": true,
+        "TPE_ADV": true,
+        "TPE_PBL": true,
+        "U": true,
+        "V": true,
+        "WQ_TUR": true,
+        "WT_TUR": true,
+        "WU_TUR": true,
+        "WV_TUR": true
+      },
+      "pblh_m": 706.5314904232466,
+      "regime": "stable_marine",
+      "scalar_finite": {
+        "BR": true,
+        "CASE": true,
+        "DT": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KX": true,
+        "MOL": true,
+        "PBL": true,
+        "QFX": true,
+        "TSK": true,
+        "UST": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 5,
+      "extrema": {
+        "DISS_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "DISS_PBL": {
+          "max": 0.001593739909021212,
+          "min": 0.0002117471606478855
+        },
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EXCH_H": {
+          "max": 0.05625000000000002,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.2250000000000001,
+          "min": 0.0
+        },
+        "P8W": {
+          "max": 100000.0,
+          "min": 21044.4919806834
+        },
+        "PI": {
+          "max": 0.99672761733275,
+          "min": 0.6342499804520825
+        },
+        "PR_PBL": {
+          "max": 4.0,
+          "min": 1.0
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.00859819599076698,
+          "min": 4.255159265914686e-05
+        },
+        "RHO": {
+          "max": 1.1610593718884,
+          "min": 0.338523515762034
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 7.018554039599917e-10,
+          "min": -1.773563128680313e-09
+        },
+        "RTHBLTEN": {
+          "max": 1.388454035122777e-06,
+          "min": -7.733012428919513e-08
+        },
+        "RUBLTEN": {
+          "max": 0.0,
+          "min": -0.0007611199702241815
+        },
+        "RVBLTEN": {
+          "max": 0.0,
+          "min": -0.0001902799925560454
+        },
+        "TH": {
+          "max": 329.7381329732348,
+          "min": 296.1004787621128
+        },
+        "TKE_ADV": {
+          "max": 0.05,
+          "min": 0.05
+        },
+        "TKE_PBL": {
+          "max": 0.5333491764123764,
+          "min": 0.02227580130015755
+        },
+        "TPE_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "TPE_PBL": {
+          "max": 0.001,
+          "min": 0.0004954439307837018
+        },
+        "U": {
+          "max": 33.44844414436236,
+          "min": 4.251196905281944
+        },
+        "V": {
+          "max": 8.362111036090589,
+          "min": 1.062799226320486
+        },
+        "WQ_TUR": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "WT_TUR": {
+          "max": -0.0001115009070884777,
+          "min": -0.0006489428033338406
+        },
+        "WU_TUR": {
+          "max": 0.01809113479499203,
+          "min": 0.01758726431218813
+        },
+        "WV_TUR": {
+          "max": 0.0177132319328891,
+          "min": 0.01758726431218813
+        }
+      },
+      "finite": {
+        "DISS_ADV": true,
+        "DISS_PBL": true,
+        "DZ": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P8W": true,
+        "PI": true,
+        "PR_PBL": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "TH": true,
+        "TKE_ADV": true,
+        "TKE_PBL": true,
+        "TPE_ADV": true,
+        "TPE_PBL": true,
+        "U": true,
+        "V": true,
+        "WQ_TUR": true,
+        "WT_TUR": true,
+        "WU_TUR": true,
+        "WV_TUR": true
+      },
+      "pblh_m": 1142.188316318157,
+      "regime": "neutral",
+      "scalar_finite": {
+        "BR": true,
+        "CASE": true,
+        "DT": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KX": true,
+        "MOL": true,
+        "PBL": true,
+        "QFX": true,
+        "TSK": true,
+        "UST": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 6,
+      "extrema": {
+        "DISS_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "DISS_PBL": {
+          "max": 0.0003143078089351517,
+          "min": 0.0002117471606478855
+        },
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EXCH_H": {
+          "max": 0.392746031061607,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.2250000000000001,
+          "min": 0.0
+        },
+        "P8W": {
+          "max": 99500.0,
+          "min": 21395.78922986037
+        },
+        "PI": {
+          "max": 0.9952834786269982,
+          "min": 0.6374753714008511
+        },
+        "PR_PBL": {
+          "max": 1.0,
+          "min": 0.3399093411262498
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.007565663176455319,
+          "min": 1.150864073983968e-05
+        },
+        "RHO": {
+          "max": 1.161504377252349,
+          "min": 0.3324851904726536
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 3.292164224377089e-08,
+          "min": 0.0
+        },
+        "RTHBLTEN": {
+          "max": 8.775301247870478e-05,
+          "min": -1.791192687505827e-07
+        },
+        "RUBLTEN": {
+          "max": 0.0,
+          "min": -1.095354633795509e-05
+        },
+        "RVBLTEN": {
+          "max": 0.0,
+          "min": -2.738386584488772e-06
+        },
+        "TH": {
+          "max": 340.0175106309798,
+          "min": 295.1004787621128
+        },
+        "TKE_ADV": {
+          "max": 0.05,
+          "min": 0.05
+        },
+        "TKE_PBL": {
+          "max": 0.2106729301063316,
+          "min": 0.02194095906977491
+        },
+        "TPE_ADV": {
+          "max": 0.001,
+          "min": 0.001
+        },
+        "TPE_PBL": {
+          "max": 0.001,
+          "min": 0.0005179123737872037
+        },
+        "U": {
+          "max": 15.77937765774494,
+          "min": 4.100478762112777
+        },
+        "V": {
+          "max": 3.944844414436235,
+          "min": 1.025119690528194
+        },
+        "WQ_TUR": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "WT_TUR": {
+          "max": -0.003340788035605485,
+          "min": -0.00485658751154029
+        },
+        "WU_TUR": {
+          "max": 0.0002397231560534046,
+          "min": 5.670059366331406e-05
+        },
+        "WV_TUR": {
+          "max": 0.0001024562342608367,
+          "min": 5.670059366331406e-05
+        }
+      },
+      "finite": {
+        "DISS_ADV": true,
+        "DISS_PBL": true,
+        "DZ": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P8W": true,
+        "PI": true,
+        "PR_PBL": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "TH": true,
+        "TKE_ADV": true,
+        "TKE_PBL": true,
+        "TPE_ADV": true,
+        "TPE_PBL": true,
+        "U": true,
+        "V": true,
+        "WQ_TUR": true,
+        "WT_TUR": true,
+        "WU_TUR": true,
+        "WV_TUR": true
+      },
+      "pblh_m": 911.5037262779174,
+      "regime": "low_ust_edge",
+      "scalar_finite": {
+        "BR": true,
+        "CASE": true,
+        "DT": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KX": true,
+        "MOL": true,
+        "PBL": true,
+        "QFX": true,
+        "TSK": true,
+        "UST": true,
+        "ZNT": true
+      }
+    }
+  ],
+  "endpoint_class": "reference_with_real_oracle",
+  "git_head": "66896f08ab06d457eb076e715fe7915e02630075",
+  "operational_kernel": null,
+  "oracle": {
+    "build_manifest": [
+      "mode=fp64",
+      "full_wrf_exe=false",
+      "wrf_sources=/home/user/src/wrf_pristine/WRF/phys/module_bl_keps.F",
+      "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
+      "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -DNMM_CORE=0 -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
+    ],
+    "full_wrf_exe": false,
+    "savepoints": "proofs/v018/savepoints_fp64/keps",
+    "self_compare": false,
+    "source_checksums_sha256": [
+      "a79058405affcd293740b15137002e788d168a5eba51586d14cee41342ffc204  module_bl_keps.F"
+    ],
+    "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF phys/module_bl_keps.F"
+  },
+  "schema": "gpuwrf.v018.keps_pbl17_reference_oracle.v1",
+  "scheme": "TKE-epsilon+TPE KEPS PBL (bl_pbl_physics=17)",
+  "verdict": "PASS"
+}

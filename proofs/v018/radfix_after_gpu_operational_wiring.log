@@ -1,0 +1,5 @@
+[with_gpu_lock] gpt-radfix waiting for GPU lock; current holder: holder=opus-lsm pid=2157319 since=2026-06-16T14:41:23Z cmd=bash /tmp/lsm_gate_run.sh
+[with_gpu_lock] gpt-radfix ACQUIRED GPU lock -> running: taskset -c 0-3 env OMP_NUM_THREADS=4 PYTHONPATH=src JAX_ENABLE_X64=true JAX_PLATFORMS=cuda CUDA_VISIBLE_DEVICES=0 XLA_PYTHON_CLIENT_PREALLOCATE=false GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache pytest -q tests/test_rrtm_lw_operational_wiring.py tests/test_cdudhia_sw_operational_wiring.py --tb=short
+..................                                                       [100%]
+18 passed in 42.34s
+[with_gpu_lock] gpt-radfix released GPU lock (rc=0)

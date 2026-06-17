@@ -71,10 +71,14 @@ def test_every_accepted_option_routes() -> None:
 
 @pytest.mark.parametrize(
     "fam,opt",
-    # pbl=3 (GFS) is operational in v0.17 RC. surface_layer=3 (GFS) /
-    # land_surface=1 (slab) became accepted in v0.13 Tier-3; remaining
-    # out-of-matrix: pbl=4 (QNSE), surface_layer=4 (QNSE), land_surface=3 (RUC).
-    [("microphysics", 5), ("pbl", 4), ("surface_layer", 4), ("cumulus", 5), ("land_surface", 3)],
+    # surface_layer=3 (GFS) / land_surface=1 (slab) became accepted in v0.13
+    # Tier-3; bl_pbl_physics=3 (GFS) became OPERATIONAL in v0.17; land_surface=3
+    # (RUC) + 7 (Pleim-Xiu) + 8 (SSiB) became accepted REFERENCE-ONLY in v0.17
+    # (registry-accepted but no dispatch entry -> scheme_entry still raises).
+    # Remaining genuinely out-of-matrix: bl_pbl_physics=4 (QNSE-EDMF),
+    # surface_layer=4 (QNSE), land_surface=5 (CLM4). (cumulus=5 Grell-3D is
+    # registry-accepted reference-only -> no dispatch entry, so it still raises.)
+    [("microphysics", 5), ("pbl", 4), ("surface_layer", 4), ("cumulus", 5), ("land_surface", 5)],
 )
 def test_fail_closed_on_out_of_matrix(fam: str, opt: int) -> None:
     with pytest.raises(UnsupportedSchemeSelection):
@@ -98,10 +102,14 @@ def test_cumulus_gpu_readiness_flags() -> None:
         suite = resolve_physics_suite({"cu_physics": cu})
         assert suite.gpu_gate_ready is True
         assert suite.cumulus.gpu_runnable is True
-    # New Tiedtke (cu=16, not separately source-gated) is fail-closed -> excluded.
-    suite16 = resolve_physics_suite({"cu_physics": 16})
-    assert suite16.gpu_gate_ready is False
-    assert suite16.cumulus.gpu_runnable is False
+    # Reference-only cumulus options (New-Tiedtke cu=16, v0.17 SAS-family
+    # 4/94/95/96, Grell-Devenyi cu=93, previous Kain-Fritsch cu=99) are accepted
+    # at dispatch but fail-closed from the GPU gate until their distinct WRF source
+    # paths pass parity.
+    for cu in (4, 16, 93, 94, 95, 96, 99):
+        suite = resolve_physics_suite({"cu_physics": cu})
+        assert suite.gpu_gate_ready is False
+        assert suite.cumulus.gpu_runnable is False
 
 
 def test_kf_is_implemented_and_scan_wired() -> None:
@@ -120,12 +128,24 @@ def test_use_noahmp_toggle_maps_land_surface() -> None:
     assert resolve_physics_suite({"use_noahmp": False}).land_surface.option == 2
 
 
-def test_reference_only_slab_lsm_is_not_gpu_gate_ready() -> None:
+def test_slab_lsm_is_operational_and_gpu_gate_ready() -> None:
+    # slab (1) was promoted to operational in v0.17 (coupling.slab_surface_hook).
     suite = resolve_physics_suite({"sf_surface_physics": 1})
     assert suite.land_surface.option == 1
-    assert suite.land_surface.gpu_runnable is False
-    assert suite.gpu_gate_ready is False
-    assert suite.non_gpu_schemes == ("sf_surface_physics=1 (thermal-diffusion slab LSM)",)
+    assert suite.land_surface.gpu_runnable is True
+    assert suite.land_surface.entrypoint == "slab_surface_step"
+    assert suite.gpu_gate_ready is True
+    assert suite.non_gpu_schemes == ()
+
+
+def test_pleim_xiu_lsm_is_operational_and_gpu_gate_ready() -> None:
+    # Pleim-Xiu (7) is operational in v0.17 (coupling.pleim_xiu_surface_hook).
+    suite = resolve_physics_suite({"sf_surface_physics": 7})
+    assert suite.land_surface.option == 7
+    assert suite.land_surface.gpu_runnable is True
+    assert suite.land_surface.entrypoint == "pleim_xiu_surface_step"
+    assert suite.gpu_gate_ready is True
+    assert suite.non_gpu_schemes == ()
 
 
 def test_all_routed_entrypoints_exist_on_module() -> None:
