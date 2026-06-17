@@ -1,5 +1,5 @@
 {
-  "git_head": "0b917ea637c607449537d8d8238a50891baad720",
+  "git_head": "61a883c5d7e84c0afc01eaea2f9b7c3f7513cefe",
   "jax_platform": "cpu",
   "jax_precision": "fp64",
   "oracle": {

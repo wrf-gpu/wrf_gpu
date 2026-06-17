@@ -895,7 +895,6 @@ _PPWIN = jnp.asarray(
 def _wrf_o3_vmr(pressure_interfaces_pa):
     """Replicates WRF `inirad/O3DATA` climatological ozone for o3input=0."""
 
-    out_dtype = pressure_interfaces_pa.dtype
     o3sum = _O3SUM.astype(jnp.float32)
     ppsum = _PPSUM.astype(jnp.float32)
     o3win = _O3WIN.astype(jnp.float32)
@@ -925,7 +924,7 @@ def _wrf_o3_vmr(pressure_interfaces_pa):
     pt1 = jnp.where(pt <= lower, zero, pt - lower)
     pt2 = jnp.where(pt <= upper, zero, pt - upper)
     o3_mmr = jnp.sum((pb2 - pb1 - pt2 + pt1) * o3ann, axis=-1) / jnp.maximum(plev[..., :-1] - plev[..., 1:], jnp.float32(1.0e-12))
-    return (o3_mmr * jnp.float32(0.603461)).astype(out_dtype)
+    return (o3_mmr * jnp.float32(0.603461)).astype(jnp.float64)
 
 
 def _extend_with_wrf_top_layer(values, top_values=None):
@@ -938,11 +937,10 @@ def _extend_with_wrf_top_layer(values, top_values=None):
 def _nearest_pressure_coefficients(state_p, tables: RRTMGTableBundle):
     """Selects WRF reference-pressure absorption coefficients per layer."""
 
-    dtype = state_p.dtype
-    ref_log = jnp.log(tables.sw_reference_pressure_pa.astype(dtype))
+    ref_log = jnp.log(tables.sw_reference_pressure_pa)
     layer_log = jnp.log(jnp.maximum(state_p, 1.0))
     idx = jnp.argmin(jnp.abs(layer_log[..., None] - ref_log), axis=-1)
-    gathered = jnp.take(tables.sw_absorption_coefficients.astype(dtype), idx, axis=1)
+    gathered = jnp.take(tables.sw_absorption_coefficients, idx, axis=1)
     return jnp.moveaxis(gathered, 0, -2)
 
 
@@ -1402,7 +1400,7 @@ def _delta_scale(tau, omega, asymmetry):
     return tau_scaled, jnp.clip(omega_scaled, 0.0, 0.999999), jnp.clip(asym_scaled, -0.999999, 0.999999)
 
 
-def _kissvec_step(seed1, seed2, seed3, seed4, dtype=jnp.float64):
+def _kissvec_step(seed1, seed2, seed3, seed4):
     """Advances WRF MCICA's KISS vector RNG for all active columns."""
 
     seed1 = seed1 * jnp.uint32(69069) + jnp.uint32(1327217885)
@@ -1418,28 +1416,28 @@ def _kissvec_step(seed1, seed2, seed3, seed4, dtype=jnp.float64):
     seed3 = jnp.uint32(18000) * jnp.bitwise_and(seed3, jnp.uint32(65535)) + jnp.right_shift(seed3, jnp.uint32(16))
     seed4 = jnp.uint32(30903) * jnp.bitwise_and(seed4, jnp.uint32(65535)) + jnp.right_shift(seed4, jnp.uint32(16))
     kiss = seed1 + seed2 + jnp.left_shift(seed3, jnp.uint32(16)) + seed4
-    signed = kiss.astype(jnp.int32).astype(dtype)
-    random = signed * jnp.asarray(2.328306e-10, dtype=dtype) + jnp.asarray(0.5, dtype=dtype)
+    signed = kiss.astype(jnp.int32).astype(jnp.float64)
+    random = signed * 2.328306e-10 + 0.5
     return seed1, seed2, seed3, seed4, random
 
 
 def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
     """Builds WRF `mcica_subcol_sw` random-overlap cloud masks for reduced SW g-points."""
 
-    dtype = cloud_fraction.dtype
     # WRF passes play in mb, then mcica_subcol_sw converts it back to Pa in
     # real*4 before deriving KISS seeds from the bottom four layer pressures.
     p_seed = (p_pa.astype(jnp.float32) * jnp.float32(0.01)).astype(jnp.float32) * jnp.float32(100.0)
+    p_seed = p_seed.astype(jnp.float64)
     frac = p_seed - jnp.floor(p_seed)
     seed = (frac[..., :4].astype(jnp.float32) * jnp.float32(1.0e9)).astype(jnp.uint32)
     seed1, seed2, seed3, seed4 = (seed[..., 0], seed[..., 1], seed[..., 2], seed[..., 3])
-    seed1, seed2, seed3, seed4, _ = _kissvec_step(seed1, seed2, seed3, seed4, dtype=dtype)
+    seed1, seed2, seed3, seed4, _ = _kissvec_step(seed1, seed2, seed3, seed4)
     nlay = p_pa.shape[-1]
     nsteps = sum(_SW_GPOINT_COUNTS) * nlay
 
     def advance(carry, _):
         s1, s2, s3, s4 = carry
-        s1, s2, s3, s4, random = _kissvec_step(s1, s2, s3, s4, dtype=dtype)
+        s1, s2, s3, s4, random = _kissvec_step(s1, s2, s3, s4)
         return (s1, s2, s3, s4), random
 
     _, cdf_flat = lax.scan(advance, (seed1, seed2, seed3, seed4), None, length=nsteps)
@@ -1447,7 +1445,7 @@ def _mcica_random_overlap_mask(p_pa, cloud_fraction, gpoint_mask):
     cdf = jnp.moveaxis(cdf, (0, 1), (-1, -2))
     cloudy_global = cdf >= (1.0 - cloud_fraction[..., :, None])
     cloudy_reduced = jnp.take(cloudy_global, _SW_GLOBAL_GPOINT_INDEX, axis=-1)
-    return cloudy_reduced.astype(dtype) * gpoint_mask.astype(dtype)
+    return cloudy_reduced.astype(jnp.float64) * gpoint_mask
 
 
 def _sw_transmittance_lookup(optical_depth):

@@ -13,14 +13,19 @@ import subprocess
 import time
 from typing import Any
 
+from gpuwrf.config.paths import mpirun_path, repo_root, wrf_exe_path, wrf_l3_root
+
 
 ROOT = Path(__file__).resolve().parents[3]
 SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6-perf-design-acceptance"
 ARTIFACTS = SPRINT / "artifacts"
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
-DEFAULT_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
-DEFAULT_WRF_EXE = Path("/home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe")
-DEFAULT_MPIRUN = Path("/mnt/data/canairy_meteo/artifacts/nvhpc/Linux_x86_64/26.3/comm_libs/hpcx/bin/mpirun")
+# CPU-WRF baseline locations; env-overridable via config.paths
+# (GPUWRF_RUN_ROOT / GPUWRF_WRF_EXE / GPUWRF_MPIRUN) with checkout-relative
+# defaults so a clean clone carries no private /home or /mnt path.
+DEFAULT_RUN_ROOT = wrf_l3_root()
+DEFAULT_WRF_EXE = wrf_exe_path() or (repo_root() / "builds" / "wrf.exe")
+DEFAULT_MPIRUN = mpirun_path() or Path("mpirun")
 CPU_CORES = "4-31"
 CPU_RANKS = 28
 

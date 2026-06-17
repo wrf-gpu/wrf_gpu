@@ -81,9 +81,11 @@ from gpuwrf.coupling.physics_couplers import (
     _v_mass,
     _w_mass,
 )
+from gpuwrf.physics.microphysics_goddard import goddard_physics_tendency
 from gpuwrf.physics.microphysics_kessler import kessler_physics_tendency
 from gpuwrf.physics.microphysics_lin import lin_physics_tendency
 from gpuwrf.physics.microphysics_morrison import morrison_tendency
+from gpuwrf.physics.microphysics_sbu_ylin import sbu_ylin_physics_tendency
 from gpuwrf.physics.microphysics_wdm5 import wdm5_physics_tendency
 from gpuwrf.physics.microphysics_wdm6 import wdm6_physics_tendency
 from gpuwrf.physics.microphysics_wdm7 import wdm7_physics_tendency
@@ -98,8 +100,10 @@ from gpuwrf.physics._gf_jax import gfdrv_batched
 from gpuwrf.physics.pbl_acm2 import acm2_columns
 from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
 from gpuwrf.physics.pbl_ysu import ysu_columns
-from gpuwrf.physics.bl_gfs import gfs_columns
 from gpuwrf.physics.bl_mrf import mrf_columns
+from gpuwrf.physics.bl_gfs import gfs_columns
+from gpuwrf.physics.bl_gbm import gbm_columns
+from gpuwrf.physics.bl_shinhong import shinhong_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
 from gpuwrf.physics.sfclay_old_mm5 import sfclay_old_mm5_columns
@@ -203,6 +207,35 @@ def lin_adapter(state: State, dt: float, grid=None) -> State:
     return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
 
 
+def sbu_ylin_adapter(state: State, dt: float, grid=None) -> State:
+    """mp=13 SBU-YLin single-moment 5-class microphysics scan adapter.
+
+    Like Purdue-Lin, SBU-YLin's adaptive semi-Lagrangian sedimentation is
+    Courant-limited on the geometric LEVEL HEIGHT ``z`` (the mass-level height
+    from ``ph/g``), so this adapter passes both the mass-level height and ``dz``,
+    plus the surface height ``ht`` (lowest interface ``ph[0]/g``). The diagnostic
+    ice-Richardson profile ``ri3d`` is returned in the tendency's diagnostics and
+    is NOT a State leaf (pure output), so ``validate_keys`` stays clean.
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
+    rho = _rho_from_state(state)
+    pii = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2  # (nz+1, ny, nx)
+    z_mass = 0.5 * (interface_z[:-1] + interface_z[1:])
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    ht = interface_z[0].reshape(ny * nx)  # surface height per column
+    tend = sbu_ylin_physics_tendency(
+        mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
+        mp(state.qi), mp(state.qs),
+        mp(pii), mp(rho), mp(state.p), mp(z_mass), mp(dz), ht, float(dt),
+    )
+    tend.validate_keys()
+    return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
+
+
 def wsm6_adapter(state: State, dt: float, grid=None) -> State:
     """mp=6 WSM6 single-moment 6-class microphysics scan adapter."""
 
@@ -222,6 +255,34 @@ def wsm6_adapter(state: State, dt: float, grid=None) -> State:
     return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
 
 
+def goddard_adapter(state: State, dt: float, grid=None) -> State:
+    """mp=97 Goddard GCE single-moment 3-ice microphysics scan adapter.
+
+    Faithful column port of WRF ``phys/module_mp_gsfcgce.F:gsfcgce`` (operational
+    ``ihail=0``/``ice2=0``/``itaobraun=1``/``new_ice_sat=2`` call). Like Lin,
+    Goddard's ``fall_flux`` sedimentation is Courant-limited on the geometric
+    LEVEL HEIGHT ``z`` (mass-level height from ``ph/g``), so this adapter passes
+    ``z_mass`` in addition to ``dz``. The kernel is theta-based and returns the 6
+    moist species + surface rain/snow/graupel precip. No new prognostic state.
+    """
+
+    del grid
+    nz, ny, nx = state.theta.shape
+    mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
+    rho = _rho_from_state(state)
+    pii = (jnp.maximum(state.p, 1.0) / P0_PA) ** R_D_OVER_CP
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2  # (nz+1, ny, nx)
+    z_mass = 0.5 * (interface_z[:-1] + interface_z[1:])
+    dz = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)
+    tend = goddard_physics_tendency(
+        mp(state.theta), mp(state.qv), mp(state.qc), mp(state.qr),
+        mp(state.qi), mp(state.qs), mp(state.qg),
+        mp(pii), mp(rho), mp(state.p), mp(z_mass), mp(dz), float(dt),
+    )
+    tend.validate_keys()
+    return _apply_mp_replacements(state, tend, ny=ny, nx=nx, nz=nz)
+
+
 def wsm7_adapter(state: State, dt: float, grid=None) -> State:
     """mp=24 WSM7 single-moment 7-class microphysics scan adapter.
 
@@ -234,6 +295,7 @@ def wsm7_adapter(state: State, dt: float, grid=None) -> State:
     """
 
     del grid
+    state = state.ensure_conditional_leaves(mp_physics=24)
     nz, ny, nx = state.theta.shape
     mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
     rho = _rho_from_state(state)
@@ -389,6 +451,7 @@ def wdm7_adapter(state: State, dt: float, grid=None) -> State:
     """
 
     del grid
+    state = state.ensure_conditional_leaves(mp_physics=26)
     nz, ny, nx = state.theta.shape
     mp = lambda f: _mp_in(f, ny, nx, nz)  # noqa: E731
     rho = _rho_from_state(state)
@@ -1224,15 +1287,18 @@ def mrf_pbl_adapter(state: State, dt: float, grid=None) -> State:
 def gfs_pbl_adapter(state: State, dt: float, grid=None) -> State:
     """bl_pbl=3 GFS PBL ``State -> State`` scan adapter (jit/vmap-traceable kernel).
 
-    GFS consumes the same revised-MM5 surface-layer forcing as YSU/MRF plus the
-    ``gz1oz0 = ln(za_1/znt)`` log ratio. The kernel emits WRF-named tendency
-    rates; map them to the shared PBL increment contract.
+    The GFS (Hong-Pan lineage) nonlocal-K PBL is the operational NCEP first-order
+    closure and an algorithmic ancestor of YSU; it consumes the SAME revised-MM5
+    surface-layer forcing the YSU/MRF adapters re-derive, plus the ``gz1oz0 =
+    ln(za_1/znt)`` surface-layer log ratio that GFS reads (with the surface stress
+    re-derived inside the kernel as ``(karman*wspd/(gz1oz0-psim))^2``). The
+    momentum increment is applied A2C-faithfully like the other PBL adapters.
     """
 
     del grid
     f = _pbl_surface_forcing(state, None)
     znt = f["znt"]
-    za1 = 0.5 * f["dz_cols"][:, 0]
+    za1 = 0.5 * f["dz_cols"][:, 0]  # ~mid-height of the lowest mass level
     gz1oz0 = jnp.log(jnp.maximum(za1, znt) / znt)
     out = gfs_columns(
         f["u_cols"], f["v_cols"], f["T_cols"], f["qv_cols"],
@@ -1242,9 +1308,100 @@ def gfs_pbl_adapter(state: State, dt: float, grid=None) -> State:
         tsk=f["tsk"], gz1oz0=gz1oz0, psim=f["psim"], psih=f["psih"],
         wspd=f["wspd"], br=f["br"], dt=float(dt),
     )
+    # The GFS kernel emits WRF-named tendency RATES (rublten/.../rthblten with the
+    # theta tendency already divided by exner, the WRF BL_GFS wrapper convention);
+    # map them to the shared (u/v/theta/qv) increment-rate contract.
     tend = {"u": out["rublten"], "v": out["rvblten"],
             "theta": out["rthblten"], "qv": out["rqvblten"]}
     return _apply_pbl_increment(state, dt, tend, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+
+def shinhong_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=11 Shin-Hong scale-aware PBL ``State -> State`` scan adapter."""
+
+    f = _pbl_surface_forcing(state, grid)
+    dx = 1000.0 if grid is None else float(grid.projection.dx_m)
+    dy = 1000.0 if grid is None else float(grid.projection.dy_m)
+    out = shinhong_columns(
+        f["u_cols"],
+        f["v_cols"],
+        f["T_cols"],
+        f["qv_cols"],
+        f["p_cols"],
+        f["p_int_cols"],
+        f["pii_cols"],
+        f["dz_cols"],
+        jnp.maximum(jnp.moveaxis(state.qke, 0, -1).reshape(f["ncol"], f["nz"]), 0.5 * 0.01),
+        psfc=f["p_cols"][:, 0],
+        znt=f["znt"],
+        ust=f["ust"],
+        hfx=f["hfx"],
+        qfx=f["qfx"],
+        wspd=f["wspd"],
+        br=f["br"],
+        psim=f["psim"],
+        psih=f["psih"],
+        dt=float(dt),
+        xland=f["xland"],
+        u10=f["u10"],
+        v10=f["v10"],
+        dx=dx,
+        dy=dy,
+    )
+    next_state = _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+    def _back3d(field2d):  # (ncol, nz) -> (nz, ny, nx)
+        return jnp.moveaxis(field2d.reshape(f["ny"], f["nx"], f["nz"]), -1, 0)
+
+    return next_state.replace(qke=_back3d(out["tke"]).astype(_output_dtype(state, "qke")))
+
+
+def gbm_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=12 GBM moist prognostic-TKE PBL ``State -> State`` scan adapter."""
+
+    del grid
+    f = _pbl_surface_forcing(state, None)
+    znt = f["znt"]
+    za1 = 0.5 * f["dz_cols"][:, 0]
+    gz1oz0 = jnp.log(jnp.maximum(za1, znt) / znt)
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(f["ncol"], f["nz"])
+
+    out = gbm_columns(
+        f["u_cols"],
+        f["v_cols"],
+        f["T_cols"],
+        f["qv_cols"],
+        _cols(state.qc),
+        f["p_cols"],
+        f["pii_cols"],
+        f["dz_cols"],
+        jnp.maximum(_cols(state.qke), 0.001),
+        psfc=f["p_cols"][:, 0],
+        znt=znt,
+        ust=f["ust"],
+        hfx=f["hfx"],
+        qfx=f["qfx"],
+        tsk=f["tsk"],
+        gz1oz0=gz1oz0,
+        wspd=f["wspd"],
+        br=f["br"],
+        psim=f["psim"],
+        psih=f["psih"],
+        dt=float(dt),
+        xland=f["xland"],
+    )
+    next_state = _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+    def _back3d(field2d):  # (ncol, nz) -> (nz, ny, nx)
+        return jnp.moveaxis(field2d.reshape(f["ny"], f["nx"], f["nz"]), -1, 0)
+
+    dt_f = float(dt)
+    return next_state.replace(
+        qc=(state.qc + dt_f * _back3d(out["qc"])).astype(_output_dtype(state, "qc")),
+        qke=_back3d(out["tke"]).astype(_output_dtype(state, "qke")),
+    )
 
 
 # --- dispatch tables ----------------------------------------------------------
@@ -1259,12 +1416,14 @@ MP_SCAN_ADAPTERS = {
     4: wsm5_adapter,
     6: wsm6_adapter,
     10: morrison_adapter,
+    13: sbu_ylin_adapter,
     14: wdm5_adapter,
     16: wdm6_adapter,
     # v0.17 WSM7 = WSM6 + separate precipitating hail (qh + hail_acc).
     24: wsm7_adapter,
     # v0.17 WDM7 = WDM6 double-moment + separate single-moment hail.
     26: wdm7_adapter,
+    97: goddard_adapter,
 }
 
 # Surface-layer options whose adapter is threaded (sf_sfclay=5 MYNN-sfclay is the
@@ -1305,6 +1464,8 @@ CU_STATELESS_SCAN_ADAPTERS = {
 PBL_SCAN_ADAPTERS = {
     1: ysu_pbl_adapter,
     3: gfs_pbl_adapter,
+    11: shinhong_pbl_adapter,
+    12: gbm_pbl_adapter,
     7: acm2_pbl_adapter,
     8: boulac_pbl_adapter,
     99: mrf_pbl_adapter,
@@ -1314,6 +1475,7 @@ PBL_SCAN_ADAPTERS = {
 __all__ = [
     "kessler_adapter",
     "lin_adapter",
+    "sbu_ylin_adapter",
     "wsm3_adapter",
     "wsm5_adapter",
     "wsm6_adapter",
@@ -1330,6 +1492,8 @@ __all__ = [
     "bmj_adapter",
     "ysu_pbl_adapter",
     "gfs_pbl_adapter",
+    "shinhong_pbl_adapter",
+    "gbm_pbl_adapter",
     "acm2_pbl_adapter",
     "boulac_pbl_adapter",
     "initial_kf_carry",

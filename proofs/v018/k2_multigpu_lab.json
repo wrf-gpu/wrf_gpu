@@ -1,0 +1,3511 @@
+{
+  "check": "k2_multigpu_lab",
+  "checks": [
+    {
+      "check": "flag_off_graph_unchanged",
+      "device_count": 3,
+      "disabled": {
+        "collective_counts": {
+          "all-gather": 0,
+          "all-reduce": 0,
+          "all-to-all": 0,
+          "collective-permute": 0,
+          "partition-id": 0,
+          "replica-id": 0
+        },
+        "collectives_present": false,
+        "hlo_sha256": "e77bfa11e87f69c8bed03101e64668c44151fdfc8d615f8b25a38d4ae5c98649",
+        "hlo_size_bytes": 27004,
+        "op_count": 161
+      },
+      "local_device_count": 3,
+      "passed": true,
+      "platform": "cpu",
+      "reference": {
+        "collective_counts": {
+          "all-gather": 0,
+          "all-reduce": 0,
+          "all-to-all": 0,
+          "collective-permute": 0,
+          "partition-id": 0,
+          "replica-id": 0
+        },
+        "collectives_present": false,
+        "hlo_sha256": "e77bfa11e87f69c8bed03101e64668c44151fdfc8d615f8b25a38d4ae5c98649",
+        "hlo_size_bytes": 27004,
+        "op_count": 161
+      },
+      "selection_identity": true,
+      "simulation_can_prove": [
+        "disabled sharding selects the exact existing default forecast function",
+        "compiled flag-off HLO op count is unchanged",
+        "compiled flag-off HLO has no collective/SPMD tokens"
+      ],
+      "simulation_cannot_prove": [
+        "real H200/NVLink performance",
+        "NCCL transport behavior",
+        "multi-node strong scaling"
+      ]
+    },
+    {
+      "check": "periodic_ppermute_halo_exchange",
+      "device_count": 3,
+      "grid": {
+        "nx": 18,
+        "ny": 8,
+        "nz": 10
+      },
+      "local_device_count": 3,
+      "passed": true,
+      "platform": "cpu",
+      "records": [
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                8,
+                8
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                8
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                9
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                9,
+                8
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                11,
+                8,
+                8
+              ]
+            }
+          },
+          "width": 1
+        },
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                8,
+                10
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                10
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                11
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                9,
+                10
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                11,
+                8,
+                10
+              ]
+            }
+          },
+          "width": 2
+        },
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                8,
+                12
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                12
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                13
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                9,
+                12
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                11,
+                8,
+                12
+              ]
+            }
+          },
+          "width": 3
+        },
+        {
+          "fields": {
+            "mu": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                8,
+                14
+              ]
+            },
+            "theta": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                14
+              ]
+            },
+            "u": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                8,
+                15
+              ]
+            },
+            "v": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                10,
+                9,
+                14
+              ]
+            },
+            "w": {
+              "equal": true,
+              "max_abs": 0.0,
+              "shape": [
+                3,
+                11,
+                8,
+                14
+              ]
+            }
+          },
+          "width": 4
+        }
+      ],
+      "simulation_can_prove": [
+        "periodic x-halo send and receive direction under ppermute",
+        "halo widths 1 through 4 on fake local devices",
+        "mass-grid and x-face staggered State leaves match global periodic slices"
+      ],
+      "simulation_cannot_prove": [
+        "real NVLink or InfiniBand latency",
+        "GPU collective overlap with dycore kernels",
+        "multi-node process launch correctness"
+      ]
+    },
+    {
+      "check": "sharded_horizontal_operators",
+      "device_count": 3,
+      "grid": {
+        "nx": 33,
+        "ny": 4,
+        "nz": 6
+      },
+      "local_device_count": 3,
+      "passed": true,
+      "platform": "cpu",
+      "records": {
+        "acoustic_x_divergence": {
+          "atol": 0.0,
+          "max_abs": 0.0,
+          "passed": true,
+          "rtol": 0.0,
+          "shape": [
+            3,
+            6,
+            4,
+            11
+          ]
+        },
+        "acoustic_x_face_pressure_dpn": {
+          "atol": 1e-12,
+          "max_abs": 1.1102230246251565e-16,
+          "passed": true,
+          "rtol": 1e-12,
+          "shape": [
+            3,
+            7,
+            4,
+            12
+          ]
+        },
+        "flux5_x": {
+          "atol": 2e-07,
+          "max_abs": 1.7881393432617188e-07,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            3,
+            6,
+            4,
+            11
+          ]
+        },
+        "sixth_order_diffusion": {
+          "atol": 2e-09,
+          "max_abs": 2.3283064365386963e-10,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            3,
+            6,
+            4,
+            11
+          ]
+        }
+      },
+      "simulation_can_prove": [
+        "halo-fed local x operators reproduce owned columns/faces of current global formulas",
+        "flux-advection and sixth-order diffusion x stencils have sufficient halo width",
+        "acoustic x divergence and x-face pressure-dpn seam handling match global edge/pair semantics"
+      ],
+      "simulation_cannot_prove": [
+        "real H200 kernel occupancy",
+        "NVLink collective overlap with operator kernels",
+        "full dycore timestep scaling on DGX"
+      ]
+    },
+    {
+      "check": "ppermute_halo_then_sharded_operators",
+      "device_count": 3,
+      "grid": {
+        "nx": 66,
+        "ny": 4,
+        "nz": 6
+      },
+      "local_device_count": 3,
+      "passed": true,
+      "platform": "cpu",
+      "records": {
+        "ppermute_acoustic_x_divergence": {
+          "atol": 0.0,
+          "max_abs": 0.0,
+          "passed": true,
+          "rtol": 0.0,
+          "shape": [
+            3,
+            6,
+            4,
+            22
+          ]
+        },
+        "ppermute_acoustic_x_face_pressure_dpn": {
+          "atol": 1e-12,
+          "max_abs": 1.6653345369377348e-16,
+          "passed": true,
+          "rtol": 1e-12,
+          "shape": [
+            3,
+            7,
+            4,
+            23
+          ]
+        },
+        "ppermute_flux5_x": {
+          "atol": 2e-07,
+          "max_abs": 2.384185791015625e-07,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            3,
+            6,
+            4,
+            22
+          ]
+        },
+        "ppermute_sixth_order_diffusion": {
+          "atol": 2e-09,
+          "max_abs": 4.656612873077393e-10,
+          "passed": true,
+          "rtol": 2e-06,
+          "shape": [
+            3,
+            6,
+            4,
+            22
+          ]
+        }
+      },
+      "simulation_can_prove": [
+        "unfilled x shards can refresh halos with lax.ppermute and reproduce selected single-domain operator outputs",
+        "single-node 8-way CPU fake mesh exercises the same pmap axis/rank/permute structure intended for 8xH200",
+        "mass-grid, x-face staggered, and acoustic edge-face seams are correct for these local operators"
+      ],
+      "simulation_cannot_prove": [
+        "real H200/NVLink bandwidth or latency",
+        "NCCL collective implementation details",
+        "whole-dycore wall-clock strong scaling",
+        "multi-node launcher and fabric behavior"
+      ]
+    },
+    {
+      "boundary_fidelity": {
+        "reason": "the periodic x-decomposition runs a periodic BC at the global physical edge, not WRF's specified/edge boundary; interior + internal shard seams ARE bit-for-bit vs the single-GPU reference",
+        "status": "NOT-FAITHFUL",
+        "valid_for": "periodic / idealized domains only, until specified-boundary decomposition lands"
+      },
+      "case_metadata": {
+        "cpu_replay_loader_shim": true,
+        "domain": "d02",
+        "grid": {
+          "dx_m": 3000.0,
+          "dy_m": 3000.0,
+          "mass_shape": [
+            44,
+            66,
+            159
+          ],
+          "wrf_staggered_extent": [
+            45,
+            67,
+            160
+          ]
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 21.422936914301616,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "run_id": "20260521_18z_l3_24h_20260522T133443Z"
+      },
+      "check": "real_d02_operational_forecast_fake_mesh",
+      "comparison": {
+        "all_fields": {
+          "Nc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float32",
+            "dtype_want": "float32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Ng": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Nh": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": null,
+            "dtype_want": null,
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [],
+            "reason": "both None",
+            "rtol": 0.0,
+            "shape": null
+          },
+          "Ni": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Nn": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float32",
+            "dtype_want": "float32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Nr": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "Ns": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "cldfra_bl": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float32",
+            "dtype_want": "float32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "fltv": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "graupel_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "hail_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": null,
+            "dtype_want": null,
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [],
+            "reason": "both None",
+            "rtol": 0.0,
+            "shape": null
+          },
+          "ice_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "lakemask": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "lu_index": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "int32",
+            "dtype_want": "int32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mavail": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mu": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.0320253684185445,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mu_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              1,
+              160
+            ]
+          },
+          "mu_perturbation": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.0320253684217278,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mu_total": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.0320253684185445,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "mub_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              1,
+              4,
+              5,
+              1,
+              160
+            ]
+          },
+          "nifa": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": null,
+            "dtype_want": null,
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [],
+            "reason": "both None",
+            "rtol": 0.0,
+            "shape": null
+          },
+          "nwfa": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": null,
+            "dtype_want": null,
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [],
+            "reason": "both None",
+            "rtol": 0.0,
+            "shape": null
+          },
+          "p": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 2.894869251467753,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "p_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "p_perturbation": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 2.8948692514686627,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "p_total": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 2.894869251467753,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "pb_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              1,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "ph": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.2353300628346915,
+            "max_abs_index": [
+              8,
+              65,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "ph_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              45,
+              160
+            ]
+          },
+          "ph_perturbation": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.23533006283452096,
+            "max_abs_index": [
+              8,
+              65,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "ph_total": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.2353300628346915,
+            "max_abs_index": [
+              8,
+              65,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "phb_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              1,
+              4,
+              5,
+              45,
+              160
+            ]
+          },
+          "qc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qc_bl": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float32",
+            "dtype_want": "float32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qg": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qh": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": null,
+            "dtype_want": null,
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [],
+            "reason": "both None",
+            "rtol": 0.0,
+            "shape": null
+          },
+          "qi": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qi_bl": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float32",
+            "dtype_want": "float32",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qke": {
+            "allclose": false,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 5.421010862427522e-20,
+            "max_abs_index": [
+              41,
+              49,
+              153
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qr": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qs": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qsq": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qv": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qv_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "qv_flux": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "qvolg": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": null,
+            "dtype_want": null,
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [],
+            "reason": "both None",
+            "rtol": 0.0,
+            "shape": null
+          },
+          "qvolh": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": null,
+            "dtype_want": null,
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [],
+            "reason": "both None",
+            "rtol": 0.0,
+            "shape": null
+          },
+          "rain_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "rainc_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "rhosfc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "roughness_m": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "snow_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "soil_moisture": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "t_skin": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "tau_u": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "tau_v": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "theta": {
+            "allclose": false,
+            "atol": 0.01,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.03551146842102071,
+            "max_abs_index": [
+              7,
+              65,
+              1
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "theta_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "theta_flux": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "u": {
+            "allclose": true,
+            "atol": 0.02,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.015713684528722238,
+            "max_abs_index": [
+              1,
+              5,
+              1
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              160
+            ]
+          },
+          "u_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "ustar": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "v": {
+            "allclose": true,
+            "atol": 0.0001,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 7.731312208125729e-05,
+            "max_abs_index": [
+              14,
+              55,
+              158
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              67,
+              159
+            ]
+          },
+          "v_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              44,
+              160
+            ]
+          },
+          "w": {
+            "allclose": true,
+            "atol": 0.004,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.003106231707939139,
+            "max_abs_index": [
+              14,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "w_bdy": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              25,
+              4,
+              5,
+              45,
+              160
+            ]
+          },
+          "xland": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          }
+        },
+        "atol": "field-specific",
+        "bit_identical": false,
+        "field_atol": {
+          "mu": 1.2,
+          "mu_perturbation": 1.2,
+          "mu_total": 1.2,
+          "p": 3.5,
+          "p_perturbation": 3.5,
+          "p_total": 3.5,
+          "ph": 0.25,
+          "ph_perturbation": 0.25,
+          "ph_total": 0.25,
+          "theta": 0.01,
+          "u": 0.02,
+          "v": 0.0001,
+          "w": 0.004
+        },
+        "key_fields": {
+          "mu": {
+            "allclose": true,
+            "atol": 1.2,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 1.0320253684185445,
+            "max_abs_index": [
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "p": {
+            "allclose": true,
+            "atol": 3.5,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 2.894869251467753,
+            "max_abs_index": [
+              0,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "ph": {
+            "allclose": true,
+            "atol": 0.25,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.2353300628346915,
+            "max_abs_index": [
+              8,
+              65,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          },
+          "qke": {
+            "allclose": false,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 5.421010862427522e-20,
+            "max_abs_index": [
+              41,
+              49,
+              153
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "qv": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "rain_acc": {
+            "allclose": true,
+            "atol": 0.0,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": true,
+            "max_abs": 0.0,
+            "max_abs_index": [
+              0,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              66,
+              159
+            ]
+          },
+          "theta": {
+            "allclose": false,
+            "atol": 0.01,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.03551146842102071,
+            "max_abs_index": [
+              7,
+              65,
+              1
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              159
+            ]
+          },
+          "u": {
+            "allclose": true,
+            "atol": 0.02,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.015713684528722238,
+            "max_abs_index": [
+              1,
+              5,
+              1
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              66,
+              160
+            ]
+          },
+          "v": {
+            "allclose": true,
+            "atol": 0.0001,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 7.731312208125729e-05,
+            "max_abs_index": [
+              14,
+              55,
+              158
+            ],
+            "rtol": 0.0,
+            "shape": [
+              44,
+              67,
+              159
+            ]
+          },
+          "w": {
+            "allclose": true,
+            "atol": 0.004,
+            "dtype_got": "float64",
+            "dtype_want": "float64",
+            "exact": false,
+            "max_abs": 0.003106231707939139,
+            "max_abs_index": [
+              14,
+              56,
+              0
+            ],
+            "rtol": 0.0,
+            "shape": [
+              45,
+              66,
+              159
+            ]
+          }
+        },
+        "rtol": 0.0,
+        "tolerance_name": "K2_OPERATIONAL_FIELD_ATOL",
+        "tolerance_policy": "Un-widened D2 tolerances (theta atol=1e-2, NOT 4e-2). The full-state allclose includes the physical-boundary ring and is therefore expected False; K2 correctness is gated on regional interior + internal shard seams, which must hold at roundoff.",
+        "within_tolerance_full_state_including_boundary": false
+      },
+      "device_count": 3,
+      "local_device_count": 3,
+      "namelist": {
+        "acoustic_substeps": 1,
+        "damp_opt": 3,
+        "diff_6th_opt": 2,
+        "dt_s": 10.0,
+        "epssm": 0.5,
+        "force_fp64": true,
+        "forecast_steps": 1,
+        "hours": 0.002777777777777778,
+        "radiation_cadence_steps": 999999,
+        "rk_order": 3,
+        "run_boundary": false,
+        "run_physics": true,
+        "run_radiation_on_step_1": false,
+        "top_lid": true,
+        "use_flux_advection": true,
+        "use_vertical_solver": true,
+        "w_damping": 1
+      },
+      "passed": true,
+      "platform": "cpu",
+      "regional_comparison": {
+        "boundary_width": 8,
+        "fields": {
+          "Nc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "Ng": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "Ni": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "Nn": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "Nr": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "Ns": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "cldfra_bl": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "fltv": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "graupel_acc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "ice_acc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "lakemask": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "lu_index": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "mavail": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "mu": {
+            "internal_shard_seams": {
+              "atol": 1.2,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 2.9103830456733704e-11,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1.2,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 1.0320253684185445,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1.2,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.65253072232008e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "mu_perturbation": {
+            "internal_shard_seams": {
+              "atol": 1.2,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.4788172342814505e-11,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1.2,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 1.0320253684217278,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1.2,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.6550318327499554e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "mu_total": {
+            "internal_shard_seams": {
+              "atol": 1.2,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 2.9103830456733704e-11,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1.2,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 1.0320253684185445,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1.2,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.65253072232008e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "p": {
+            "internal_shard_seams": {
+              "atol": 3.5,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.4924596548080444e-10,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 3.5,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 2.894869251467753,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 3.5,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 2.4883775040507317e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "p_perturbation": {
+            "internal_shard_seams": {
+              "atol": 3.5,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.4424374462105334e-10,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 3.5,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 2.8948692514686627,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 3.5,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 2.4870132619980723e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "p_total": {
+            "internal_shard_seams": {
+              "atol": 3.5,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.4924596548080444e-10,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 3.5,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 2.894869251467753,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 3.5,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 2.4883775040507317e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "ph": {
+            "internal_shard_seams": {
+              "atol": 0.25,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 2.9103830456733704e-11,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 0.25,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 0.2353300628346915,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 0.25,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.195033736526966e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "ph_perturbation": {
+            "internal_shard_seams": {
+              "atol": 0.25,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.547917680814862e-11,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 0.25,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 0.23533006283452096,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 0.25,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.195943231228739e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "ph_total": {
+            "internal_shard_seams": {
+              "atol": 0.25,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 2.9103830456733704e-11,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 0.25,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 0.2353300628346915,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 0.25,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.195033736526966e-09,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qc_bl": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qg": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qi": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qi_bl": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qke": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.421010862427522e-20,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 5.421010862427522e-20,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.421010862427522e-20,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qr": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qs": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qsq": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qv": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "qv_flux": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "rain_acc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "rainc_acc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "rhosfc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "roughness_m": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "snow_acc": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "soil_moisture": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "t_skin": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "tau_u": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "tau_v": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "theta": {
+            "internal_shard_seams": {
+              "atol": 0.01,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 1.7053025658242404e-13,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 0.01,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 0.03551146842102071,
+              "passed": false,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 0.01,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 7.617018127348274e-12,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "theta_flux": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "u": {
+            "internal_shard_seams": {
+              "atol": 0.02,
+              "cells": 2244,
+              "exact": false,
+              "gated": true,
+              "max_abs": 4.0039083160081645e-12,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 0.02,
+              "cells": 3360,
+              "exact": false,
+              "gated": false,
+              "max_abs": 0.015713684528722238,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 0.02,
+              "cells": 5500,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.340261400808231e-10,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "ustar": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "v": {
+            "internal_shard_seams": {
+              "atol": 0.0001,
+              "cells": 2144,
+              "exact": false,
+              "gated": true,
+              "max_abs": 3.954651710269541e-12,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 0.0001,
+              "cells": 3360,
+              "exact": false,
+              "gated": false,
+              "max_abs": 7.731312208125729e-05,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 0.0001,
+              "cells": 5661,
+              "exact": false,
+              "gated": true,
+              "max_abs": 4.816924636941167e-12,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "w": {
+            "internal_shard_seams": {
+              "atol": 0.004,
+              "cells": 2112,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.810560366192874e-13,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 0.004,
+              "cells": 3344,
+              "exact": false,
+              "gated": false,
+              "max_abs": 0.003106231707939139,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 0.004,
+              "cells": 5550,
+              "exact": false,
+              "gated": true,
+              "max_abs": 5.7559380872707067e-11,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          },
+          "xland": {
+            "internal_shard_seams": {
+              "atol": 1e-12,
+              "cells": 2112,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            },
+            "physical_boundary_ring": {
+              "atol": 1e-12,
+              "cells": 3344,
+              "exact": true,
+              "gated": false,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09,
+              "status": "NOT-FAITHFUL: periodic-vs-specified boundary mismatch; excluded from K2 pass gate (not a roundoff bound)"
+            },
+            "strict_interior": {
+              "atol": 1e-12,
+              "cells": 5550,
+              "exact": true,
+              "gated": true,
+              "max_abs": 0.0,
+              "passed": true,
+              "rtol": 1e-09
+            }
+          }
+        },
+        "gated_regions": [
+          "internal_shard_seams",
+          "strict_interior"
+        ],
+        "passed": true,
+        "physical_boundary_status": "NOT-FAITHFUL: the global physical x-boundary ring uses a periodic decomposition, not WRF's specified/edge boundary; it diverges from the single-GPU reference by design and is excluded from the pass gate",
+        "regions": [
+          "physical_boundary_ring",
+          "internal_shard_seams",
+          "strict_interior"
+        ],
+        "ungated_regions": [
+          "physical_boundary_ring"
+        ],
+        "x_partition_bounds": [
+          [
+            0,
+            53
+          ],
+          [
+            53,
+            106
+          ],
+          [
+            106,
+            159
+          ]
+        ]
+      },
+      "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "sharding": {
+        "axis": "x",
+        "execution_model": "pmapped local-device x shards with ppermute halo exchange",
+        "forecast_halo_width": 8,
+        "halo_width": 2,
+        "num_partitions": 3,
+        "runner": "run_forecast_operational_optional_sharding -> run_forecast_operational_sharded"
+      },
+      "simulation_can_prove": [
+        "real d02 State/metrics/tendencies can be partitioned into x shards and run through run_forecast_operational under pmap",
+        "the default single-device operational entrypoint remains the reference",
+        "fake local CPU devices exercise the full-forecast ppermute halo exchange path",
+        "strict-interior and internal shard-seam cells reproduce the single-GPU reference at roundoff"
+      ],
+      "simulation_cannot_prove": [
+        "real H200/NVLink/NCCL performance",
+        "faithful physical-boundary decomposition: the global physical x-boundary ring is NOT faithful (periodic-vs-specified BC mismatch); run_boundary=True is intentionally rejected",
+        "specified/nested lateral boundary decomposition",
+        "host/device transfer absence on real GPUs inside the full timestep loop"
+      ],
+      "timing_wall_s": {
+        "sharded_fake_mesh": 22.36878467700444,
+        "single_device_reference": 8.015963351004757,
+        "timing_note": "CPU fake-device wall time includes compile and is not a DGX performance measurement"
+      },
+      "used_devices": 3
+    }
+  ],
+  "feature": "v0.18 K2 multi-GPU/cluster experimental",
+  "feature_gate": {
+    "default": "OFF",
+    "env_enable": "GPUWRF_K2_EXPERIMENTAL=1",
+    "env_multinode": [
+      "GPUWRF_K2_MULTI_NODE",
+      "GPUWRF_K2_COORDINATOR_ADDRESS",
+      "GPUWRF_K2_PROCESS_ID",
+      "GPUWRF_K2_PROCESS_COUNT",
+      "GPUWRF_K2_LOCAL_DEVICE_IDS"
+    ],
+    "env_partitions": "GPUWRF_K2_PARTITIONS"
+  },
+  "k2_env_gate": {
+    "GPUWRF_K2_EXPERIMENTAL": "1 (enabled)",
+    "env_partitions": null,
+    "experimental_path_run": true,
+    "gate_enforced": true,
+    "note": "GPUWRF_K2_EXPERIMENTAL controls the feature: when unset the experimental sharded path is not run (default-path-only proof); when set the experimental k2-lab path runs."
+  },
+  "lab_tested_only": true,
+  "multi_node": {
+    "distributed_initialized": false,
+    "exercised_here": false,
+    "status": "single-node multi-GPU (pmap) only here. The multi-node init path (initialize_k2_distributed_from_env) is wired into main() before device enumeration and is invoked when GPUWRF_K2_MULTI_NODE=1 plus the coordinator/process env vars are set; it is UN-EXERCISED on this one-GPU lab box.",
+    "wired": true
+  },
+  "passed": true,
+  "schema_version": 1,
+  "weak_scaling_shape": {
+    "forecast_halo_width": 8,
+    "hardware_available": "one RTX 5090; fake CPU devices used for correctness",
+    "local_x_cells_per_partition": 53,
+    "local_x_storage_multiplier_including_halos": 1.3018867924528301,
+    "measured_here": [
+      "correctness of partition/halo/decomposition logic on fake local devices",
+      "CPU fake-device wall time including compile, recorded only as a lab artifact"
+    ],
+    "not_measured_here": [
+      "real multi-GPU weak scaling",
+      "NVLink/NVSwitch/NCCL latency or bandwidth",
+      "multi-node InfiniBand behavior",
+      "compute/halo overlap on real GPUs"
+    ],
+    "real_case_global_shape": {
+      "nx": 159,
+      "ny": 66,
+      "nz": 44
+    },
+    "real_cluster_harness": "Run this script with GPUWRF_K2_EXPERIMENTAL=1 (the gate), GPUWRF_K2_PARTITIONS=<device count> (or pass --devices), --run-dir <d02 replay run dir>, and for multi-node the GPUWRF_K2_MULTI_NODE / coordinator / process env vars (initialize_k2_distributed_from_env runs from main() before device enumeration).",
+    "used_fake_devices": 3
+  }
+}

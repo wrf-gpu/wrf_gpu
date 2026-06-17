@@ -64,6 +64,7 @@ C_CUBE = 0.5
 C_SQRD = 0.15
 CRG2 = 1.0
 CRG3 = 6.0
+CRG8 = math.gamma(BM_R + MU_R + BV_R + 3.0)
 CRG9 = 6.0
 CRG10 = 1.0
 CRG11 = 2.0
@@ -84,6 +85,7 @@ AV_I = 1493.9  # WRF module_mp_thompson.F:161
 CRE3 = BM_R + MU_R + 1.0  # = 4
 CRE6 = BM_R + MU_R + BV_R + 1.0  # = 5
 CRE7 = BM_R * 0.5 + MU_R + BV_R + 1.0  # = 3.5
+CRE8 = BM_R + MU_R + BV_R + 3.0  # = 7
 CRE12 = BM_R * 0.5 + MU_R + 1.0  # = 2.5
 CRG3_SED = math.gamma(CRE3)  # = 6 (== crg(3))
 CRG6 = math.gamma(CRE6)  # = 24
@@ -133,6 +135,13 @@ T1_SUBL_QG = 0.86
 T2_SUBL_QG = 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
 T1_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.86
 T2_MELT_QG = PI * 4.0 * C_CUBE / LFUS * 0.28 * SC3 * math.sqrt(AV_G_MP8) * CGG11
+
+# ---- WRF cloud-ice collection by snow/rain (module_mp_thompson.F:2710-2734) ----
+EF_SI = 0.05
+EF_RI = 0.95
+T1_QS_QI = PI * 0.25 * AV_S
+T1_QR_QI = PI * 0.25 * AV_R * CRG9
+T2_QR_QI = PI * 0.25 * AM_R * AV_R * CRG8
 
 # ---- v0.15 cold-phase riming (WRF module_mp_thompson.F:2403-2440, 2758-2776) ----
 # Snow collecting cloud water: prs_scw = rhof * t1_qs_qc * Ef_sw * rc * smoe,

@@ -52,6 +52,7 @@ from gpuwrf.contracts.physics_registry import (
     CU_SCHEMES,
     CUMULUS_CARRY_MEMBERS,
     CUMULUS_TENDENCY_MEMBERS,
+    LAND_CARRY_MEMBERS,
     MP_SCHEMES,
     PBL_SCHEMES,
     SFCLAY_SCHEMES,
@@ -78,7 +79,7 @@ DEFAULT_SF_SURFACE_PHYSICS = 4  # Noah-MP
 # writes HFX/QFX/BR/PSIM/PSIH/U10/V10/ZNT and pbl_driver reads those SAME fields
 # (dyn_em/module_first_rk_step_part1.F:594 -> :1113).
 #
-# In THIS reimplementation the YSU(1)/ACM2(7)/BouLac(8)/MRF(99) PBL scan adapters
+# In THIS reimplementation the YSU(1)/ACM2(7)/BouLac(8)/Shin-Hong(11)/GBM(12)/MRF(99) PBL scan adapters
 # (coupling.scan_adapters) re-derive the per-cell surface forcing they consume via
 # the REVISED-MM5 surface layer (``_pbl_surface_forcing`` ->
 # ``surface_layer.surface_layer_with_diagnostics``) because the frozen State carries
@@ -100,7 +101,7 @@ DEFAULT_SF_SURFACE_PHYSICS = 4  # Noah-MP
 # WRF's isfc==1 requirement for YSU/MRF (sf in {1,91}); we further restrict to {1}
 # because only the revised-MM5 forcing path is wired into these adapters (the old-MM5
 # sf=91 forcing is NOT separately threaded into the PBL re-derivation).
-_PBL_REQUIRES_REVISED_MM5_SFCLAY: frozenset[int] = frozenset({1, 3, 7, 8, 99})
+_PBL_REQUIRES_REVISED_MM5_SFCLAY: frozenset[int] = frozenset({1, 7, 8, 11, 12, 99})
 _REVISED_MM5_SFCLAY_OPTION = 1
 
 
@@ -157,6 +158,7 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     6: _mp_entry(6, "gpuwrf.physics.microphysics_wsm6", "wsm6_physics_tendency", gpu=True),
     8: _mp_entry(8, "gpuwrf.coupling.physics_couplers", "thompson_adapter", gpu=True, adapter=True),
     10: _mp_entry(10, "gpuwrf.physics.microphysics_morrison", "morrison_tendency", gpu=True),
+    13: _mp_entry(13, "gpuwrf.physics.microphysics_sbu_ylin", "sbu_ylin_physics_tendency", gpu=True),
     14: _mp_entry(14, "gpuwrf.physics.microphysics_wdm5", "wdm5_physics_tendency", gpu=True),
     16: _mp_entry(16, "gpuwrf.physics.microphysics_wdm6", "wdm6_physics_tendency", gpu=True),
     # v0.17 WSM7 = WSM6 + separate precipitating hail (qh + hail_acc).
@@ -168,6 +170,10 @@ _MP_ENTRIES: dict[int, SchemeEntry] = {
     # Ni/Nr/Ns/Ng + the aerosol-aware prognostics Nc/nwfa/nifa and applying the
     # WRF fake surface aerosol emission each step.
     28: _mp_entry(28, "gpuwrf.coupling.physics_couplers", "thompson_aero_adapter", gpu=True, adapter=True),
+    # mp=97 Goddard GCE single-moment 3-ice (gsfcgce): jit/vmap column port,
+    # savepoint-parity-proven against unmodified phys/module_mp_gsfcgce.F
+    # (proofs/v090/goddard_mp_r2_savepoint_parity.json). No new prognostic state.
+    97: _mp_entry(97, "gpuwrf.physics.microphysics_goddard", "goddard_physics_tendency", gpu=True),
 }
 
 # --- PBL (bl_pbl_physics) ------------------------------------------------------
@@ -206,6 +212,20 @@ _PBL_ENTRIES: dict[int, SchemeEntry] = {
                    "column_state", True,
                    reads_state=("u", "v", "theta", "qv", "qc", "qke"),
                    writes_state=("u", "v", "theta", "qv", "qc", "qke"), carry_members=("qke",)),
+    # Shin-Hong(11): v0.18 JAX/vmap port of the scale-aware YSU-family PBL,
+    # scan-wired as a State->State adapter. It consumes revised-MM5 surface
+    # forcing and grid dx/dy for the scale-aware partition functions.
+    11: SchemeEntry("pbl", 11, PBL_SCHEMES[11].name, "gpuwrf.coupling.scan_adapters", "shinhong_pbl_adapter",
+                    "state_adapter", True,
+                    reads_state=("u", "v", "theta", "qv", "qke"),
+                    writes_state=("u", "v", "theta", "qv", "qke"), carry_members=("qke",)),
+    # GBM(12): v0.18 JAX/vmap port of phys/module_bl_gbmpbl.F, scan-wired as a
+    # State->State adapter. It consumes revised-MM5 surface forcing and advances
+    # cloud water plus prognostic TKE (qke) in addition to the driving PBL fields.
+    12: SchemeEntry("pbl", 12, PBL_SCHEMES[12].name, "gpuwrf.coupling.scan_adapters", "gbm_pbl_adapter",
+                    "state_adapter", True,
+                    reads_state=("u", "v", "theta", "qv", "qc", "qke"),
+                    writes_state=("u", "v", "theta", "qv", "qc", "qke"), carry_members=("qke",)),
     # MRF(99): v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F, scan-wired as a
     # State->State adapter (coupling.scan_adapters.mrf_pbl_adapter). Nonlocal-K, no
     # prognostic PBL carry; consumes the revised-MM5 surface forcing (sf_sfclay=1).
@@ -257,10 +277,10 @@ _SFCLAY_ENTRIES: dict[int, SchemeEntry] = {
 # runtime RQVFTEN/RQVBLTEN from active moisture advection and the PBL qv increment.
 # Grell-Freitas (cu=3) is the v0.9.0 GPU-batched jit/vmap port of the scale-aware
 # closure-ensemble kernel (physics._gf_jax.gfdrv_batched), savepoint-parity gated.
-# New Tiedtke (cu=16) shares the Tiedtke kernel but is NOT separately savepoint-
-# gated, so it stays gpu_runnable=False / fail-closed. All route through the combined R*CUTEN
-# tendency + RAINCV/PRATEC family (S0 cugd_* correction: no inert cugd_* State
-# carry for GF).
+# New Tiedtke (cu=16) and the SAS family (cu=4/94/95/96) stay
+# gpu_runnable=False / fail-closed until their distinct WRF source paths pass
+# traceable JAX parity. All route through the combined R*CUTEN tendency +
+# RAINCV/PRATEC family (S0 cugd_* correction: no inert cugd_* State carry for GF).
 _CU_ENTRIES: dict[int, SchemeEntry] = {
     0: SchemeEntry("cumulus", 0, "disabled", "", "", "disabled", True),
     1: SchemeEntry("cumulus", 1, CU_SCHEMES[1].name, "gpuwrf.physics.cumulus_kf", "step_kf_column",
@@ -287,6 +307,15 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                    "module_cu_gf_deep.F/module_cu_gf_sh.F/module_cu_gf_wrfdrv.F "
                    "(proofs/v060/gf_gpubatch_savepoint_parity.json). cugd_* carry DROPPED per S0 "
                    "correction -- routed via R*CUTEN + RAINCV/PRATEC + shallow diags."),
+    4: SchemeEntry("cumulus", 4, CU_SCHEMES[4].name, "gpuwrf.physics.cumulus_sas",
+                   "step_sas_family_column", "column_state", False,
+                   reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "ph"),
+                   writes_state=("theta", "qv", "qc", "qi", "u", "v"),
+                   tendency_members=CUMULUS_TENDENCY_MEMBERS[4], accumulators=("rainc_acc",),
+                   notes="v0.17 reference-only: fp64 pristine-WRF oracle exists for "
+                   "phys/module_cu_scalesas.F:CU_SCALESAS, but the shared JAX "
+                   "endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); "
+                   "fail-closed in the operational scan."),
     6: SchemeEntry("cumulus", 6, CU_SCHEMES[6].name, "gpuwrf.physics.cumulus_tiedtke_jax", "tiedtke_column_jax",
                    "column_state", True,
                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
@@ -305,6 +334,47 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                     notes="New Tiedtke option spec; shares the Tiedtke kernel but is NOT separately "
                     "savepoint-gated by a distinct WRF source path -- accepted/fail-closed in the "
                     "operational GPU scan, NOT parity-proven for cu=16 specifically."),
+    93: SchemeEntry("cumulus", 93, CU_SCHEMES[93].name, "gpuwrf.physics.cumulus_grell_devenyi",
+                    "step_grell_devenyi_column", "column_state", False,
+                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
+                    writes_state=("theta", "qv", "qc", "qi"),
+                    tendency_members=CUMULUS_TENDENCY_MEMBERS[93], accumulators=("rainc_acc",),
+                    notes="v0.18 RED/reference-only. A pristine-WRF GRELLDRV harness/savepoints exist, "
+                    "but current trial columns are null-only; no source-specific traceable JAX endpoint "
+                    "has passed parity; not scan-wired."),
+    94: SchemeEntry("cumulus", 94, CU_SCHEMES[94].name, "gpuwrf.physics.cumulus_sas",
+                    "step_sas_family_column", "column_state", False,
+                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "ph"),
+                    writes_state=("theta", "qv", "qc", "qi", "u", "v"),
+                    tendency_members=CUMULUS_TENDENCY_MEMBERS[94], accumulators=("rainc_acc",),
+                    notes="v0.17 reference-only: fp64 pristine-WRF oracle exists for "
+                    "phys/module_cu_sas.F:CU_SAS, but the shared JAX endpoint is "
+                    "RED vs oracle (proofs/v017/sas_family_parity.json); fail-closed."),
+    95: SchemeEntry("cumulus", 95, CU_SCHEMES[95].name, "gpuwrf.physics.cumulus_sas",
+                    "step_sas_family_column", "column_state", False,
+                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "ph"),
+                    writes_state=("theta", "qv", "qc", "qi", "u", "v"),
+                    tendency_members=CUMULUS_TENDENCY_MEMBERS[95], accumulators=("rainc_acc",),
+                    notes="v0.17 reference-only: fp64 pristine-WRF oracle exists for "
+                    "phys/module_cu_osas.F:CU_OSAS, but the shared JAX endpoint is "
+                    "RED vs oracle (proofs/v017/sas_family_parity.json); fail-closed."),
+    96: SchemeEntry("cumulus", 96, CU_SCHEMES[96].name, "gpuwrf.physics.cumulus_sas",
+                    "step_sas_family_column", "column_state", False,
+                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "ph"),
+                    writes_state=("theta", "qv", "qc", "qi", "u", "v"),
+                    tendency_members=CUMULUS_TENDENCY_MEMBERS[96], accumulators=("rainc_acc",),
+                    notes="v0.17 reference-only: fp64 pristine-WRF oracle exists for "
+                    "phys/module_cu_nsas.F:CU_NSAS, but the shared JAX endpoint is "
+                    "RED vs oracle (proofs/v017/sas_family_parity.json); fail-closed."),
+    99: SchemeEntry("cumulus", 99, CU_SCHEMES[99].name, "gpuwrf.physics.cumulus_kf_previous",
+                    "step_previous_kf_column", "column_state", False,
+                    reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
+                    writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
+                    carry_members=CUMULUS_CARRY_MEMBERS[99],
+                    tendency_members=CUMULUS_TENDENCY_MEMBERS[99], accumulators=("rainc_acc",),
+                    notes="v0.17 RED/reference-only candidate: reuses the KF-eta family endpoint for "
+                    "comparison only; not parity-proven against phys/module_cu_kf.F:KFCPS and not "
+                    "scan-wired."),
 }
 
 # --- Land surface (sf_surface_physics) -----------------------------------------
@@ -313,17 +383,18 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
 # lsm_noah_classic.sflx_step land step + a 4-layer land carry (S0 land carry).
 _SURFACE_ENTRIES: dict[int, SchemeEntry] = {
     0: SchemeEntry("land_surface", 0, "disabled", "", "", "disabled", True),
-    # v0.13 Tier-3 slab LSM (1): jit/vmap column port + fp64 oracle, REFERENCE-ONLY
-    # (carries TSLB soil temperatures; not yet threaded into the operational scan --
-    # needs the GSW/GLW radiation forcing + TMN/THC/EMISS static hook).
-    1: SchemeEntry("land_surface", 1, SURFACE_SCHEMES[1].name, "gpuwrf.physics.lsm_slab",
-                   "slab_columns", "land_step", False,
+    # v0.17 slab LSM (1): jit/vmap column port + fp64 oracle, now OPERATIONAL via
+    # coupling.slab_surface_hook.slab_surface_step (5-layer TSLB land carry +
+    # GSW/GLW radiation forcing + TMN/THC/EMISS static bundle; FLHC/FLQC recovered
+    # from the resident surface-layer kinematic flux handles).
+    1: SchemeEntry("land_surface", 1, SURFACE_SCHEMES[1].name, "gpuwrf.coupling.slab_surface_hook",
+                   "slab_surface_step", "state_adapter", True,
                    reads_state=("t_skin", "mavail"),
                    writes_state=("t_skin",),
                    carry_members=("tslb",),
-                   notes="5-layer thermal-diffusion slab LSM; reference-only (fp64 oracle "
-                   "proofs/v013/t3_surface_lsm_oracle.json) -- fail-closed in the operational "
-                   "scan until the slab LSM hook (TSLB carry + GSW/GLW forcing) lands."),
+                   notes="5-layer thermal-diffusion slab LSM; fp64 pristine-WRF oracle "
+                   "(proofs/v013/t3_surface_lsm_oracle.json, SLAB1D) -- scan-wired in "
+                   "runtime.operational_mode via an explicit slab_static SlabStaticBundle."),
     2: SchemeEntry("land_surface", 2, SURFACE_SCHEMES[2].name, "gpuwrf.physics.lsm_noah_classic",
                    "sflx_step", "land_step", True,
                    reads_state=("t_skin", "soil_moisture", "mavail"),
@@ -331,11 +402,47 @@ _SURFACE_ENTRIES: dict[int, SchemeEntry] = {
                    carry_members=("flx4", "fvb", "fbur", "fgsn", "smcrel", "xlaidyn"),
                    notes="Owns a 4-layer (num_soil_layers=4) land carry; does NOT reinterpret the "
                    "2-D State.soil_moisture as a 4-layer field (S0 land carry rule)."),
+    # v0.17 RUC LSM (3): REFERENCE-ONLY. A fp64 pristine-WRF single-column oracle is
+    # staged (proofs/v017/oracle/ruclsm; LSMRUC->SOILVEGIN->SFCTMP, unmodified source),
+    # but the ~7.5k-LOC multi-layer soil/snow JAX column kernel is a documented
+    # carry-over, so it is gpu_runnable=False / fail-closed in the operational scan.
+    3: SchemeEntry("land_surface", 3, SURFACE_SCHEMES[3].name, "gpuwrf.physics.lsm_ruc",
+                   "ruc_column", "land_step", False,
+                   reads_state=("t_skin", "soil_moisture", "mavail"),
+                   writes_state=("t_skin", "soil_moisture", "mavail"),
+                   carry_members=LAND_CARRY_MEMBERS[3],
+                   notes="RUC multi-layer soil/snow LSM; fp64 pristine-WRF oracle staged "
+                   "(proofs/v017/oracle/ruclsm) but the faithful JAX column port "
+                   "(SFCTMP+SOIL+SOILTEMP+SOILMOIST+SOILPROP+TRANSF) is a carry-over -- "
+                   "accepted/fail-closed in the operational GPU scan, NOT parity-proven as a "
+                   "JAX kernel yet."),
     4: SchemeEntry("land_surface", 4, SURFACE_SCHEMES[4].name, "gpuwrf.coupling.noahmp_surface_hook",
                    "noahmp_surface_step", "state_adapter", True,
                    reads_state=("t_skin", "soil_moisture", "mavail"),
                    writes_state=("t_skin", "soil_moisture", "mavail"),
                    carry_members=("NoahMPLandState",)),
+    # v0.17 Pleim-Xiu LSM (7): fp64-oracle-validated SURFPX+QFLUX port, OPERATIONAL
+    # via coupling.pleim_xiu_surface_hook.pleim_xiu_surface_step (2-layer ISBA land
+    # carry + GSW/GLW radiation + PleimXiuStaticBundle; pairs with sf_sfclay=7).
+    7: SchemeEntry("land_surface", 7, SURFACE_SCHEMES[7].name, "gpuwrf.coupling.pleim_xiu_surface_hook",
+                   "pleim_xiu_surface_step", "state_adapter", True,
+                   reads_state=("t_skin", "soil_moisture", "mavail"),
+                   writes_state=("t_skin",),
+                   carry_members=("tg", "t2", "wg", "w2", "wr")),
+    # v0.17 SSiB LSM (8): REFERENCE-ONLY. A fp64 pristine-WRF single-column oracle is
+    # staged (proofs/v017/oracle/ssib; the unmodified SSIB driver), but the ~6.6k-LOC
+    # coupled SiB canopy/soil/4-level-snow JAX column kernel is a documented carry-over,
+    # so it is gpu_runnable=False / fail-closed in the operational scan.
+    8: SchemeEntry("land_surface", 8, SURFACE_SCHEMES[8].name, "gpuwrf.physics.lsm_ssib",
+                   "ssib_column", "land_step", False,
+                   reads_state=("t_skin", "soil_moisture", "mavail"),
+                   writes_state=("t_skin", "soil_moisture", "mavail"),
+                   carry_members=LAND_CARRY_MEMBERS[8],
+                   notes="SSiB SiB biophysical canopy/soil/snow LSM; fp64 pristine-WRF oracle "
+                   "staged (proofs/v017/oracle/ssib) but the faithful JAX column port "
+                   "(TEMRS1/TEMRS2+UPDAT1+RADAB+STOMA1+INTERC+STRES1+NEWTON) is a carry-over -- "
+                   "accepted/fail-closed in the operational GPU scan, NOT parity-proven as a "
+                   "JAX kernel yet."),
 }
 
 
@@ -485,7 +592,7 @@ def resolve_physics_suite(config: Any) -> PhysicsSuite:
     ):
         raise UnsupportedSchemeSelection(
             f"surface-layer/PBL pairing violation: bl_pbl_physics={pbl_opt} "
-            f"(YSU/GFS/ACM2/BouLac/MRF) re-derives its surface-layer forcing via the "
+            f"(YSU/ACM2/BouLac/Shin-Hong/GBM/MRF) re-derives its surface-layer forcing via the "
             f"revised-MM5 surface layer, so it is faithful ONLY with "
             f"sf_sfclay_physics=1 (revised-MM5); selected sf_sfclay_physics="
             f"{sfclay_opt}. Running this pairing would SILENTLY substitute revised-MM5 "

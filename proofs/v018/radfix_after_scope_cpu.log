@@ -1,0 +1,12 @@
+ra_sw=0 ra_lw=0 finite_all=True all_nan=False nan_count=0/72 min=0.000000e+00 max=0.000000e+00 absmax=0.000000e+00
+ra_sw=0 ra_lw=1 finite_all=True all_nan=False nan_count=0/72 min=-1.066531e-04 max=3.980118e-05 absmax=1.066531e-04
+ra_sw=0 ra_lw=4 finite_all=True all_nan=False nan_count=0/72 min=-9.399356e-05 max=4.263157e-05 absmax=9.399356e-05
+ra_sw=1 ra_lw=0 finite_all=True all_nan=False nan_count=0/72 min=3.941818e-07 max=4.634871e-04 absmax=4.634871e-04
+ra_sw=1 ra_lw=1 finite_all=True all_nan=False nan_count=0/72 min=-5.691043e-06 max=3.568340e-04 absmax=3.568340e-04
+ra_sw=1 ra_lw=4 finite_all=True all_nan=False nan_count=0/72 min=2.001824e-06 max=3.694936e-04 absmax=3.694936e-04
+ra_sw=2 ra_lw=0 finite_all=True all_nan=False nan_count=0/72 min=0.000000e+00 max=4.373810e-04 absmax=4.373810e-04
+ra_sw=2 ra_lw=1 finite_all=True all_nan=False nan_count=0/72 min=-6.085225e-06 max=3.307279e-04 absmax=3.307279e-04
+ra_sw=2 ra_lw=4 finite_all=True all_nan=False nan_count=0/72 min=2.273262e-06 max=3.433874e-04 absmax=3.433874e-04
+ra_sw=4 ra_lw=0 finite_all=True all_nan=False nan_count=0/72 min=3.332509e-10 max=2.641580e-04 absmax=2.641580e-04
+ra_sw=4 ra_lw=1 finite_all=True all_nan=False nan_count=0/72 min=-6.084890e-06 max=1.575050e-04 absmax=1.575050e-04
+ra_sw=4 ra_lw=4 finite_all=True all_nan=False nan_count=0/72 min=1.365812e-07 max=1.701645e-04 absmax=1.701645e-04

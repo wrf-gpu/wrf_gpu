@@ -322,8 +322,8 @@ def test_microphysics_operational_runs_and_mutates(mp: int) -> None:
 #    mp/cumulus/radiation disabled so the u/v change is attributable to the PBL.
 #    bl=2 (MYJ) is mandatorily paired with sf=2 (Janjic Eta); covered as a pair.
 # ============================================================================
-_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 3: 1, 5: 5, 7: 1, 8: 1, 99: 1}
-_PBL_TKE_SCHEMES = {2, 5, 8}  # also carry a prognostic TKE (qke) update
+_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 3: 1, 5: 5, 7: 1, 8: 1, 11: 1, 12: 1, 99: 1}
+_PBL_TKE_SCHEMES = {2, 5, 8, 11}  # also carry a prognostic TKE (qke) update
 
 
 @pytest.mark.parametrize("bl", OPERATIONAL_BL)
@@ -496,8 +496,14 @@ def test_ra_sw_operational_runs_and_heats(ra_sw: int) -> None:
 def test_ra_lw_operational_runs_and_cools(ra_lw: int) -> None:
     grid = _grid()
     state = _base_state(grid)
+    # Held-Suarez (ra_lw=31) is a COMBINED idealized LW+SW scheme: WRF makes the
+    # single HSRAD call and NO separate shortwave call, so the operational suite
+    # fail-closes any real SW selection. Pin ra_sw=0 for it; the other LW schemes
+    # keep the namelist default SW (selected independently of LW).
+    sw_over = {"ra_sw_physics": 0} if ra_lw == 31 else {}
     nml = _namelist(
-        grid, mp_physics=0, bl_pbl_physics=0, sf_sfclay_physics=0, cu_physics=0, ra_lw_physics=ra_lw
+        grid, mp_physics=0, bl_pbl_physics=0, sf_sfclay_physics=0, cu_physics=0,
+        ra_lw_physics=ra_lw, **sw_over,
     )
     _resolve_operational_suite(nml)
     carry = initial_operational_carry(state)
@@ -703,3 +709,182 @@ def test_sf_surface_noahclassic_operational_runs_and_advances_land() -> None:
     assert _maxabs(state_out.theta_flux) > 0.0, "Noah-classic did not write a surface theta flux"
     assert _changed(state_out.t_skin, state.t_skin), "Noah-classic did not advance the skin temperature"
     assert _changed(land_out.stc, land.stc), "Noah-classic did not advance the soil temperature column"
+
+
+# --------------------------------------------------------------------------- #
+# sf_surface_physics=1 (thermal-diffusion slab LSM) -- v0.17 operational        #
+# --------------------------------------------------------------------------- #
+def _slab_land_state(grid: GridSpec) -> State:
+    """Mixed land/water column for the slab coupler (xland=1 land, =2 water).
+
+    The surface layer would have written the kinematic flux handles
+    (``theta_flux``/``qv_flux``/``rhosfc``) before the slab runs; seed realistic
+    nonzero values so the slab can recover FLHC/FLQC.
+    """
+
+    nz, ny, nx = grid.nz, grid.ny, grid.nx
+    fields = {n: jnp.zeros(s, dtype=jnp.float64) for n, s in _state_field_shapes(grid).items()}
+    z_iface = np.arange(nz + 1) * 300.0
+    z_mid = 0.5 * (z_iface[:-1] + z_iface[1:])
+    fields["theta"] = jnp.broadcast_to(jnp.asarray(300.0 + 0.004 * z_mid)[:, None, None], (nz, ny, nx))
+    fields["p"] = jnp.broadcast_to(
+        jnp.asarray(P0_PA * (1.0 - GRAVITY * z_mid / (C_P * 290.0)) ** (C_P / R_D))[:, None, None], (nz, ny, nx)
+    )
+    fields["p_total"] = fields["p"]
+    fields["qv"] = jnp.full((nz, ny, nx), 8.0e-3, dtype=jnp.float64)
+    fields["u"] = jnp.full((nz, ny, nx + 1), 4.0, dtype=jnp.float64)
+    fields["v"] = jnp.full((nz, ny + 1, nx), 1.0, dtype=jnp.float64)
+    ph = jnp.broadcast_to(jnp.asarray(GRAVITY * z_iface)[:, None, None], (nz + 1, ny, nx))
+    fields["ph"] = ph
+    fields["ph_total"] = ph
+    xland = np.ones((ny, nx))
+    xland[:, nx - 1] = 2.0  # last column is water
+    fields["xland"] = jnp.asarray(xland, dtype=jnp.float64)
+    fields["t_skin"] = jnp.asarray(np.where(xland > 1.5, 299.0, 305.0), dtype=jnp.float64)
+    fields["soil_moisture"] = jnp.full((ny, nx), 0.3, dtype=jnp.float64)
+    fields["mavail"] = jnp.where(jnp.asarray(xland) > 1.5, 1.0, 0.4).astype(jnp.float64)
+    fields["roughness_m"] = jnp.full((ny, nx), 0.08, dtype=jnp.float64)
+    fields["ustar"] = jnp.full((ny, nx), 0.3, dtype=jnp.float64)
+    fields["rhosfc"] = jnp.full((ny, nx), 1.15, dtype=jnp.float64)
+    # Surface-layer-written kinematic fluxes (nonzero so FLHC/FLQC are well-posed).
+    fields["theta_flux"] = jnp.full((ny, nx), 0.02, dtype=jnp.float64)   # ~23 W/m^2 HFX
+    fields["qv_flux"] = jnp.full((ny, nx), 5.0e-6, dtype=jnp.float64)
+    fields["lu_index"] = jnp.zeros((ny, nx), dtype=jnp.int32)
+    return State(**fields)
+
+
+def test_sf_surface_slab_operational_runs_and_advances_land() -> None:
+    """sf_surface_physics=1 (thermal-diffusion slab LSM) via the EXACT scan coupler
+    slab_surface_step. Advances the 5-layer TSLB land carry from a TMN/THC/EMISS
+    static bundle + GSW/GLW radiation; water columns keep the surface-layer path."""
+
+    from gpuwrf.coupling.slab_surface_hook import (
+        SlabLandState,
+        SlabRadiation,
+        SlabStaticBundle,
+        initial_slab_land,
+        slab_surface_step,
+    )
+
+    grid = _land_grid()
+    state = _slab_land_state(grid)
+    ny, nx = grid.ny, grid.nx
+
+    # 5-layer slab soil column (the only WRF slab configuration). WRF defaults:
+    # ZS center depths and DZS thicknesses for the 5-layer thermal-diffusion model.
+    zs = jnp.asarray([0.005, 0.025, 0.07, 0.16, 0.34], dtype=jnp.float64)
+    dzs = jnp.asarray([0.01, 0.02, 0.06, 0.12, 0.22], dtype=jnp.float64)
+
+    def tile(value):
+        return jnp.full((ny, nx), value, dtype=jnp.float64)
+
+    static = SlabStaticBundle(
+        zs=zs, dzs=dzs,
+        thc=tile(3.0),       # thermal inertia (Cal/cm/K/s^0.5), mid-range soil
+        tmn=tile(287.0),     # deep-soil restore temperature (K)
+        emiss=tile(0.98),
+        snowc=tile(0.0),
+        ifsnow=0,
+    )
+    land = initial_slab_land(state, static)
+    rad = SlabRadiation(gsw=tile(450.0), glw=tile(330.0))  # daytime down-radiation
+
+    # dt=90 s -> the kernel resolves the adaptive soil sub-step count statically.
+    state_out, land_out = slab_surface_step(state, land, static, 90.0, radiation=rad)
+
+    assert _all_finite(state_out), "slab step produced a non-finite State field"
+    for leaf in jax.tree_util.tree_leaves(land_out):
+        assert np.all(np.isfinite(np.asarray(leaf))), "slab land carry has a non-finite leaf"
+
+    is_land = np.asarray(state.xland) < 1.5
+    tsk_before = np.asarray(state.t_skin)
+    tsk_after = np.asarray(state_out.t_skin)
+    tslb_before = np.asarray(land.tslb)
+    tslb_after = np.asarray(land_out.tslb)
+
+    # Land columns: skin temp + the 5-layer soil column truly advanced.
+    assert np.any(np.abs(tsk_after[is_land] - tsk_before[is_land]) > 0.0), \
+        "slab did not advance the land skin temperature"
+    assert np.any(np.abs(tslb_after[is_land] - tslb_before[is_land]) > 0.0), \
+        "slab did not advance the land soil-temperature column"
+    # Land wrote a finite ground heat capacity + sensible flux.
+    assert np.all(np.asarray(land_out.capg)[is_land] > 0.0), "slab CAPG not positive on land"
+    assert np.any(np.abs(np.asarray(land_out.hfx)[is_land]) > 0.0), "slab wrote no land HFX"
+
+    # Water columns: skin temp + soil column UNCHANGED (WRF SLAB1D skips water).
+    water = ~is_land
+    if np.any(water):
+        assert np.allclose(tsk_after[water], tsk_before[water]), \
+            "slab altered a water-column skin temperature (must passthrough)"
+        assert np.allclose(tslb_after[water], tslb_before[water]), \
+            "slab altered a water-column soil temperature (must passthrough)"
+
+
+# --------------------------------------------------------------------------- #
+# sf_surface_physics=7 (Pleim-Xiu 2-layer ISBA LSM) -- v0.17 operational        #
+# --------------------------------------------------------------------------- #
+def test_sf_surface_pleim_xiu_operational_runs_and_advances_land() -> None:
+    """sf_surface_physics=7 (Pleim-Xiu LSM) via the EXACT scan coupler
+    pleim_xiu_surface_step. Advances the 2-layer ISBA carry (TG/T2/WG/W2/WR) from a
+    WRF-derived ISBA/vegetation static bundle + GSW/GLW; water columns passthrough."""
+
+    from gpuwrf.coupling.pleim_xiu_surface_hook import (
+        PleimXiuLandState,
+        PleimXiuRadiation,
+        PleimXiuStaticBundle,
+        initial_pleim_xiu_land,
+        pleim_xiu_surface_step,
+    )
+    from gpuwrf.physics.lsm_pleim_xiu import PleimXiuStatic
+
+    grid = _land_grid()
+    # Reuse the slab mixed land/water state (it seeds the kinematic flux handles the
+    # PX LSM recovers RMOL from, and a last-column water point for the passthrough).
+    state = _slab_land_state(grid)
+    ny, nx = grid.ny, grid.nx
+
+    def tile(value):
+        return jnp.full((ny, nx), value, dtype=jnp.float64)
+
+    # WRF-consistent loam ISBA constants + vegetation (the exact SOILPROP/VEGELAND
+    # values the fp64 pristine-WRF oracle exercises; proofs/v017 savepoints).
+    params = PleimXiuStatic(
+        vegfrc=tile(0.6), lai=tile(2.5), imperv=tile(0.0), canfra=tile(0.0),
+        rstmin=tile(100.0), emissi=tile(0.98), znt=tile(0.1), wetfra=tile(0.0),
+        hc_snow=tile(0.0), snow_fra=tile(0.0),
+        wwlt=tile(0.1575470678036249), wfc=tile(0.2446026158944999), wres=tile(0.0369),
+        cgsat=tile(3.77321), wsat=tile(0.447865), b=tile(5.967000000000001),
+        c1sat=tile(1.8532), c2r=tile(0.8766392658445255), asoil=tile(0.1542298068529886),
+        jp=tile(5.811999999999999), c3=tile(0.2613566013328523), ds1=tile(0.01), ds2=tile(0.99),
+    )
+    static = PleimXiuStaticBundle(params=params, ifsnow=0)
+    land = initial_pleim_xiu_land(state, static)
+    rad = PleimXiuRadiation(gsw=tile(600.0), glw=tile(350.0))  # daytime down-radiation
+
+    # dt=180 s -> the kernel resolves the PX sub-step count statically.
+    state_out, land_out = pleim_xiu_surface_step(state, land, static, 180.0, radiation=rad)
+
+    assert _all_finite(state_out), "Pleim-Xiu step produced a non-finite State field"
+    for leaf in jax.tree_util.tree_leaves(land_out):
+        assert np.all(np.isfinite(np.asarray(leaf))), "Pleim-Xiu land carry has a non-finite leaf"
+
+    is_land = np.asarray(state.xland) < 1.5
+    # Land columns: the 2-layer ISBA soil state truly advanced.
+    assert np.any(np.abs(np.asarray(land_out.tg)[is_land] - np.asarray(land.tg)[is_land]) > 0.0), \
+        "Pleim-Xiu did not advance the surface soil temperature TG"
+    assert np.any(np.abs(np.asarray(land_out.t2)[is_land] - np.asarray(land.t2)[is_land]) > 0.0), \
+        "Pleim-Xiu did not advance the root-zone soil temperature T2"
+    assert np.any(np.abs(np.asarray(land_out.wg)[is_land] - np.asarray(land.wg)[is_land]) > 0.0), \
+        "Pleim-Xiu did not advance the surface soil moisture WG"
+    # Land wrote a finite ground heat capacity + skin-temp update (TSK = TG).
+    assert np.all(np.asarray(land_out.capg)[is_land] > 0.0), "Pleim-Xiu CAPG not positive on land"
+    assert _changed(state_out.t_skin, state.t_skin), "Pleim-Xiu did not advance the skin temperature"
+
+    # Water columns: TG/T2/WG/W2 UNCHANGED (WRF SURFPX skips XLAND>=1.5).
+    water = ~is_land
+    if np.any(water):
+        for fld in ("tg", "t2", "wg", "w2"):
+            before = np.asarray(getattr(land, fld))[water]
+            after = np.asarray(getattr(land_out, fld))[water]
+            assert np.allclose(after, before), \
+                f"Pleim-Xiu altered a water-column {fld} (must passthrough)"

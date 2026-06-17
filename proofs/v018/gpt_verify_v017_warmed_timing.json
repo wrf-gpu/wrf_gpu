@@ -1,0 +1,94 @@
+{
+  "scope": "Task 1 warmed timing breakdown (compile vs throughput) -- coupled real d02",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "init_utc": "2026-05-21 18:00:00+00:00",
+  "grid": {
+    "ny": 66,
+    "nx": 159,
+    "nz": 44
+  },
+  "device": "cuda:0",
+  "config": {
+    "dt_s": 10.0,
+    "acoustic_substeps": 10,
+    "radiation_cadence_steps": 180,
+    "run_physics": true,
+    "run_boundary": true,
+    "disable_guards": false,
+    "force_fp64": true,
+    "use_flux_advection": true,
+    "epssm": 0.5,
+    "top_lid": false,
+    "w_damping": 1,
+    "damp_opt": 3
+  },
+  "cpu_wrf_denominator": "Speedup denominator = 28-rank CPU WRF on this workstation (memory baseline: previous Gen2 attempt was ~4.8x SLOWER than 28-rank CPU WRF on an incomplete dycore). No CPU-WRF wallclock is re-measured here; speedup framing is deferred to the dedicated perf sprint. This artifact reports ABSOLUTE warmed GPU wall.",
+  "timing": {
+    "h1_hours": 0.1,
+    "n1_steps": 36,
+    "h2_hours": 0.5,
+    "n2_steps": 180,
+    "cold_h1_wall_s": 13.064755843020976,
+    "warm_h1_wall_s": 2.079138583969325,
+    "cold_h2_wall_s": 36.5007551680319,
+    "warm_h2_wall_s": 10.224591905949637,
+    "warm_h2_b_wall_s": 10.30882245209068,
+    "compile_s_at_h1": 10.98561725905165,
+    "compile_s_at_h2": 26.276163262082264,
+    "fixed_per_call_exec_overhead_s": 0.0322464352066163,
+    "warmed_per_step_ms": 56.85811524340857,
+    "warmed_ms_per_forecast_hour": 20468.921487627085
+  },
+  "peak_gpu_mem_mb": {
+    "after_h1_compile": 4570.19873046875,
+    "after_h2_compile": 5138.4267578125
+  },
+  "extrapolation_warmed": {
+    "3.0h": {
+      "steps": 1080.0,
+      "warmed_wall_s": 61.43901089808787,
+      "warmed_wall_min": 1.0239835149681311
+    },
+    "6.0h": {
+      "steps": 2160.0,
+      "warmed_wall_s": 122.84577536096913,
+      "warmed_wall_min": 2.0474295893494854
+    },
+    "12.0h": {
+      "steps": 4320.0,
+      "warmed_wall_s": 245.65930428673164,
+      "warmed_wall_min": 4.094321738112194
+    },
+    "24.0h": {
+      "steps": 8640.0,
+      "warmed_wall_s": 491.28636213825666,
+      "warmed_wall_min": 8.188106035637611
+    },
+    "48.0h": {
+      "steps": 17280.0,
+      "warmed_wall_s": 982.5404778413067,
+      "warmed_wall_min": 16.375674630688444
+    },
+    "72.0h": {
+      "steps": 25920.0,
+      "warmed_wall_s": 1473.7945935443568,
+      "warmed_wall_min": 24.563243225739278
+    }
+  },
+  "ensemble_30_case": {
+    "24.0h": {
+      "per_case_warmed_min": 8.188106035637611,
+      "ensemble_30_warmed_min": 245.64318106912833,
+      "ensemble_30_warmed_hours": 4.094053017818806
+    },
+    "72.0h": {
+      "per_case_warmed_min": 24.563243225739278,
+      "ensemble_30_warmed_min": 736.8972967721784,
+      "ensemble_30_warmed_hours": 12.281621612869639
+    }
+  },
+  "verdict_inputs": {
+    "compile_dominates_at_short_runs": true,
+    "warmed_per_step_ms": 56.85811524340857
+  }
+}

@@ -59,9 +59,9 @@ class UnsupportedSelection:
 
     * ``"not_yet_implemented"`` -- a recognized WRF v4 scheme that the port does
       not yet wire (``wrf_scheme`` names it);
-    * ``"reference_only_not_operational"`` -- a parity-proven WRF v4 scheme that
-      is accepted by ``validate_namelist`` for a reference comparison but is NOT
-      wired into the operational scan; the OPERATIONAL run path
+    * ``"reference_only_not_operational"`` -- an oracle-backed WRF v4 scheme
+      that is accepted by ``validate_namelist`` for a reference comparison but is
+      NOT wired into the operational scan; the OPERATIONAL run path
       (``validate_operational_namelist``) rejects it to avoid a silent
       wrong-scheme run (``wrf_scheme`` names it);
     * ``"invalid_wrf_option"`` -- not a recognized WRF v4 option at all;
@@ -110,17 +110,17 @@ class UnsupportedNamelistOption(UnsupportedSchemeError):
 
 
 class NotOperationallyWiredError(UnsupportedSchemeError):
-    """Raised by the OPERATIONAL run path for a parity-proven-but-not-wired scheme.
+    """Raised by the OPERATIONAL run path for an oracle-backed-but-not-wired scheme.
 
     The validation layer (:func:`validate_namelist`) intentionally *accepts*
-    ``REFERENCE_ONLY`` schemes (New-Tiedtke cumulus) so a single-column /
-    reference comparison can be run against them. The OPERATIONAL forecast scan,
-    however, cannot actually select those schemes -- the New-Tiedtke
-    column adapter has no operational GPU scan carry-path. Running them through
-    ``gpuwrf run`` would therefore *silently substitute a different scheme*, which
-    violates the "no silent wrong path" contract. The operational entrypoint
+    ``REFERENCE_ONLY`` schemes so parity comparisons and RED oracle-inventory
+    work can use the same WRF-option contract. The OPERATIONAL forecast scan,
+    however, cannot actually select those schemes. Running them through
+    ``gpuwrf run`` would therefore *silently substitute a different scheme* or
+    route through a missing kernel, which violates the "no silent wrong path"
+    contract. The operational entrypoint
     (:func:`validate_operational_namelist`) fail-closes them loudly, naming the
-    scheme the scan would have run instead and the operational alternative.
+    requested scheme and the operational alternative.
 
     It subclasses :class:`UnsupportedSchemeError` -- the exact type the CLI
     ``run`` path catches -- so the operational rejection reaches the user as a
@@ -134,9 +134,9 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="mp_physics",
         supported_values=frozenset(ACCEPTED_MP_PHYSICS),
         implemented="0=disabled/passive qv, 1=Kessler, 2=Purdue-Lin, 3=WSM3, 4=WSM5, 6=WSM6, "
-        "8=Thompson, 10=Morrison, 14=WDM5, 16=WDM6, 24=WSM7 hail, 26=WDM7 hail, "
-        "28=aerosol-aware Thompson (v0.16; use_aero_icbc=.false. climatological self-init path only)",
-        action="Use one of the frozen v0.6.0/v0.16/v0.17 microphysics options; all other MP options remain unsupported.",
+        "8=Thompson, 10=Morrison, 13=SBU-YLin, 14=WDM5, 16=WDM6, 24=WSM7, "
+        "26=WDM7, 28=aerosol-aware Thompson, 97=Goddard GCE",
+        action="Use one of the frozen accepted microphysics options; all other MP options remain unsupported.",
     ),
     "cu_physics": SupportedOption(
         key="cu_physics",
@@ -144,32 +144,45 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         implemented=(
             "0=disabled, 1=Kain-Fritsch, 2=Betts-Miller-Janjic (fp64 savepoint-parity), "
             "3=Grell-Freitas (v0.9.0 GPU-batched jit/vmap scale-aware adapter, savepoint-parity), "
+            "4/94/95/96=SAS family (v0.17 fp64 pristine-WRF savepoints staged, "
+            "shared JAX endpoint RED vs oracle; fail-closed in the GPU scan), "
             "6=Tiedtke (GPU-operational only with use_flux_advection=True and "
             "moist_adv_opt=1/2 so RQVFTEN is available); "
-            "16=New Tiedtke (accepted, NOT separately source-gated; fail-closed in the GPU scan) "
-            "-- 16 is selectable for reference but fail-closed in the operational GPU scan"
+            "5=Grell-3D, 14=KIM-SAS, 16=New Tiedtke, 93=Grell-Devenyi, "
+            "99=previous Kain-Fritsch (with 4/94/95/96=SAS family) are "
+            "accepted/reference-only and fail-closed in the operational GPU scan"
         ),
         action=(
             "Use cu_physics=0/1/2/3/6 for the operational GPU scan; cu=6 requires "
             "active flux-form moisture advection (use_flux_advection=True, moist_adv_opt=1/2); "
-            "16=New Tiedtke remains fail-closed (not separately source-gated)."
+            "4/5/14/16/93/94/95/96/99 remain reference-only until source-specific "
+            "WRF parity and scan wiring land."
         ),
     ),
     "bl_pbl_physics": SupportedOption(
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
         implemented=(
-            "0=disabled, 1=YSU, 2=MYJ, 3=GFS, 5=MYNN, 7=ACM2, 8=BouLac, 99=MRF (all GPU-operational, "
-            "scan-wired); 2=MYJ is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired with "
+            "0=disabled, 1=YSU, 2=MYJ, 3=GFS, 5=MYNN, 7=ACM2, 8=BouLac, 11=Shin-Hong, 12=GBM, 99=MRF "
+            "(all GPU-operational, scan-wired); 2=MYJ is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired with "
             "sf_sfclay_physics=2 Janjic Eta), savepoint-parity-proven; 3=GFS is the v0.17 "
-            "jax.lax.scan-wired nonlocal-K PBL using revised-MM5 surface forcing; 99=MRF is the v0.13 "
-            "jit/vmap-traceable port of phys/module_bl_mrf.F, savepoint-parity-proven"
+            "jit/vmap-traceable port of phys/module_bl_gfs.F, savepoint-parity-proven; 99=MRF is the "
+            "v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F, savepoint-parity-proven. "
+            "11=Shin-Hong is the v0.18 JAX/vmap scale-aware PBL port; "
+            "12=GBM is the v0.18 JAX/vmap moist prognostic-TKE PBL port, fp64 "
+            "parity-green vs the pristine-WRF savepoint oracle. "
+            "4=QNSE, 10=TEMF, 16=EEPS, and 17=KEPS are accepted/reference-only "
+            "v0.18 fp64 pristine-WRF oracle endpoints and fail-close in the "
+            "operational GPU scan. 9=CAM-UW is proven CAM-family architecture "
+            "work, not accepted into the standalone PBL matrix"
         ),
         action=(
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/99 for the operational GPU scan; 2=MYJ MUST "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for the operational GPU scan; 2=MYJ MUST "
             "pair with sf_sfclay_physics=2. "
-            "All other PBL options remain unsupported. "
-            "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, GFS<->1, MYJ<->2, MRF<->1)."
+            "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, GFS<->1, "
+            "Shin-Hong<->1, GBM<->1, MYJ<->2, MRF<->1). "
+            "Use bl_pbl_physics=4/10/16/17 only for single-column oracle/reference "
+            "comparisons; PBL9 CAM-UW belongs to a future CAM-family sprint."
         ),
     ),
     "sf_sfclay_physics": SupportedOption(
@@ -192,13 +205,24 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "sf_surface_physics": SupportedOption(
         key="sf_surface_physics",
         supported_values=frozenset(ACCEPTED_SF_SURFACE_PHYSICS),
-        implemented="0=disabled, 2=Noah classic (explicit static/land bundle), 4=Noah-MP "
-        "(set use_noahmp=True) -- both GPU-operational, scan-wired; 1=thermal-diffusion "
-        "slab LSM is v0.13 Tier-3 JAX-ported + fp64 oracle-validated (physics.lsm_slab) "
-        "but REFERENCE-ONLY (fail-closed in the operational scan until the LSM hook lands)",
-        action="Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic) for the operational "
-        "scan; 1=slab is accepted for a single-column reference comparison only; all other "
-        "land-surface options remain unsupported.",
+        implemented="0=disabled; 1=thermal-diffusion slab LSM (explicit slab_static bundle); "
+        "2=Noah classic (explicit static/land bundle); 4=Noah-MP (set use_noahmp=True); "
+        "7=Pleim-Xiu 2-layer ISBA LSM (explicit px_static bundle; pairs with sf_sfclay=7) "
+        "-- all GPU-operational, scan-wired; slab (1) + Pleim-Xiu (7) are fp64 pristine-WRF "
+        "oracle-validated (physics.lsm_slab / physics.lsm_pleim_xiu). 3=RUC and 8=SSiB are "
+        "namelist-accepted REFERENCE-ONLY (fp64 pristine-WRF single-column oracle staged in "
+        "proofs/v017/oracle/{ruclsm,ssib}; faithful JAX column kernel is a carry-over) and "
+        "fail-close in the operational scan. 5=CLM4 and 6=CTSM are documented v0.18->v1.0 "
+        "CAM/CLM/CTSM ARCHITECTURE-BOUNDARY options that fail closed with a named reason "
+        "(CLM4 is ~61.5k-LOC with a global clmtype + external surface-dataset; CTSM is the "
+        "external CESM land model via LILAC) -- a faithful oracle is multi-session, carried "
+        "to the v1.0 ADR; never a silent substitution.",
+        action="Use sf_surface_physics=4 (Noah-MP), 2 (Noah classic), 1 (slab, with an "
+        "explicit slab_static SlabStaticBundle), or 7 (Pleim-Xiu, with an explicit "
+        "px_static PleimXiuStaticBundle) for the operational scan; 3 (RUC) and 8 (SSiB) are "
+        "reference-only (oracle staged, JAX kernel carry-over); 5 (CLM4) and 6 (CTSM) are "
+        "documented v1.0 architecture-boundary (fail-closed, carried to the CAM/CLM/CTSM "
+        "ADR); all other land-surface options remain unsupported.",
     ),
     "ra_sw_physics": SupportedOption(
         key="ra_sw_physics",
@@ -207,10 +231,16 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         "scan-wired held-rate RTHRATEN with RRTMG/classic-RRTM longwave), 2=GSFC (Chou-Suarez) "
         "shortwave (multi-band delta-Eddington; GPU-operational, jit/vmap-traceable port of "
         "phys/module_ra_gsfcsw.F scan-wired via gsfc_sw_theta_tendency), 4=RRTMG shortwave "
-        "(GPU-operational; the operational radiation slot runs RRTMG SW+LW)",
+        "(GPU-operational; the operational radiation slot runs RRTMG SW+LW), "
+        "3=CAM SW, 5=New Goddard SW, 7=FLG/UCLA SW, and 99=GFDL-Eta SW "
+        "(v0.18 REFERENCE-ONLY: exact-driver real-WRF oracles staged, but no "
+        "faithful JAX kernel or operational scan wiring yet)",
         action="Use ra_sw_physics=4 (RRTMG SW+LW), 1 (Dudhia SW + RRTMG/RRTM LW) or 2 (GSFC SW + "
-        "RRTMG/RRTM LW) for the operational SW path, or 0 when radiation is disabled. All are "
-        "scan-wired; the surface SWDOWN/flux history diagnostics remain RRTMG-derived.",
+        "RRTMG/RRTM LW) for the operational SW path, or 0 when radiation is disabled. "
+        "ra_sw=3/5/7/99 are accepted for reference/parity development only and fail-close in "
+        "the operational scan; the surface SWDOWN/flux history diagnostics remain RRTMG-derived. "
+        "ra_sw=14 (RRTMG-K) and 24 (fast RRTMG) are compiled-out of standard WRF "
+        "(configure.wrf BUILD_RRTMK=0 / BUILD_RRTMG_FAST=0) and cannot run even in unmodified WRF.",
     ),
     "ra_lw_physics": SupportedOption(
         key="ra_lw_physics",
@@ -218,15 +248,17 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         implemented="0=disabled, 1=classic AER RRTM longwave (16-band k-distribution; "
         "GPU-operational, scan-wired held-rate RTHRATEN via the JAX-traceable "
         "physics.ra_lw_rrtm_jax port of phys/module_ra_rrtm.F), 4=RRTMG longwave "
-        "(GPU-operational, default), 5=GSFC/Goddard NUWRF longwave (v0.13 Tier-3 "
-        "REFERENCE-ONLY: fp64 pristine-WRF single-column oracle staged at "
-        "module_ra_goddard.F:lwrad, but the traceable JAX kernel is a documented "
-        "carry-over, so it is namelist-accepted for a reference comparison and "
-        "fail-closes in the operational scan)",
+        "(GPU-operational, default), 3=CAM LW, 5=GSFC/Goddard NUWRF longwave, "
+        "7=FLG/UCLA LW, and 99=GFDL-Eta longwave (v0.18 REFERENCE-ONLY: "
+        "exact-driver real-WRF oracles staged; ra_lw=5 also retains the v0.13 "
+        "single-column module_ra_goddard.F:lwrad oracle; no faithful JAX kernel or "
+        "operational scan wiring yet)",
         action="Use ra_lw_physics=4 (RRTMG) or 1 (classic RRTM) for the operational LW path, "
-        "or 0 when radiation is disabled. ra_lw=5 (GSFC/Goddard) is reference-only and "
-        "fail-closes in the operational scan. SW and LW are selected independently; the "
-        "surface GLW history diagnostic remains RRTMG-derived.",
+        "or 0 when radiation is disabled. ra_lw=3/5/7/99 "
+        "are reference-only and fail-close in the operational scan. SW and LW are "
+        "selected independently; the surface GLW history diagnostic remains RRTMG-derived. "
+        "ra_lw=14 (RRTMG-K) and 24 (fast RRTMG) are compiled-out of standard WRF "
+        "(configure.wrf BUILD_RRTMK=0 / BUILD_RRTMG_FAST=0) and cannot run even in unmodified WRF.",
     ),
     # Runtime/dynamics controls exposed by OperationalNamelist.
     "rk_order": SupportedOption(
@@ -368,17 +400,18 @@ def validate_operational_namelist(config: Any) -> None:
     fail closed exactly as before) AND THEN additionally rejects any selected
     scheme classified ``REFERENCE_ONLY`` by :func:`scheme_catalog.classify_scheme`.
 
-    Why the extra rejection: ``REFERENCE_ONLY`` schemes (New-Tiedtke cumulus) are
-    *parity-proven* and so are accepted by :func:`validate_namelist`
-    for a reference / single-column comparison -- but they are NOT wired into the
-    operational GPU scan. The New-Tiedtke adapter has no operational scan
+    Why the extra rejection: ``REFERENCE_ONLY`` schemes have oracle-backed
+    reference evidence (GREEN where claimed, or an explicitly measured RED gap)
+    and so are accepted by :func:`validate_namelist` for a reference /
+    single-column comparison or RED oracle-inventory work -- but they are NOT
+    wired into the operational GPU scan. Some adapters have no operational scan
     carry-path (MYJ PBL + Janjic Eta surface layer were REFERENCE_ONLY through
     v0.12.0 but are now IMPLEMENTED via the v0.13 traceable pair). Running
     a reference-only scheme through ``gpuwrf run`` would therefore *silently
-    substitute a different scheme*, which violates
-    the v0.12.0 "no silent wrong path" Scope-A contract. So the operational path
-    refuses them loudly, naming the operational scheme the scan would actually run
-    and the supported alternative.
+    substitute a different scheme* or route through a missing kernel, which
+    violates the v0.12.0 "no silent wrong path" Scope-A contract. So the
+    operational path refuses them loudly, naming the operational scheme the scan
+    would actually run and the supported alternative.
 
     The authoritative IMPLEMENTED-vs-not decision comes from
     :class:`scheme_catalog.SupportStatus`: only ``IMPLEMENTED`` selections run on
@@ -481,7 +514,7 @@ def _reference_only_failures(config: Any) -> list[UnsupportedSelection]:
                     # the operational scan can actually run.
                     supported_values=_operationally_wired_values(key),
                     implemented=(
-                        f"REFERENCE-ONLY (parity-proven, NOT operationally wired): "
+                        f"REFERENCE-ONLY (oracle-backed, NOT operationally wired): "
                         f"{support.wrf_name or key}"
                     ),
                     action=support.alternative,
@@ -813,10 +846,11 @@ def _format_selection(item: UnsupportedSelection) -> str:
         label = WRF_PARAM_LABEL.get(item.key, item.key)
         scheme = item.wrf_scheme or f"{item.key}={item.value}"
         return (
-            f"- {item.location}{domain}={item.value} ({scheme}): parity-proven WRF v4 "
+            f"- {item.location}{domain}={item.value} ({scheme}): oracle-backed WRF v4 "
             f"{label} scheme, but NOT operationally wired into the GPU forecast scan. "
             f"Running it would SILENTLY use a DIFFERENT scheme than requested "
-            f"(the operational {label} path runs the implemented scheme instead) -- "
+            f"(the operational {label} path runs the implemented scheme instead) "
+            f"or route through a missing kernel -- "
             f"refusing rather than producing a silent wrong-scheme run. "
             f"Operationally-wired {item.key} values: {supported}. Action: {item.action}"
         )

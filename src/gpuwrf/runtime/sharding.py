@@ -8,7 +8,9 @@ for users who do not opt in to sharding.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
+import os
 from typing import Any, Callable, Literal
 import hashlib
 import re
@@ -23,6 +25,8 @@ from gpuwrf.contracts.state import Tendencies
 
 ShardAxis = Literal["x", "y"]
 ShardBackend = Literal["pmap"]
+_TRUE_ENV = {"1", "true", "yes", "on", "enable", "enabled"}
+_FALSE_ENV = {"", "0", "false", "no", "off", "disable", "disabled"}
 
 COLLECTIVE_TOKENS: tuple[str, ...] = (
     "collective-permute",
@@ -76,6 +80,49 @@ class ShardingConfig:
 
         return cls(enabled=False)
 
+    @classmethod
+    def from_env(
+        cls,
+        env: Mapping[str, str] | None = None,
+        *,
+        prefix: str = "GPUWRF_K2",
+    ) -> "ShardingConfig":
+        """Build the K2 experimental sharding config from environment variables.
+
+        K2 is default-off.  Operators must explicitly set
+        ``GPUWRF_K2_EXPERIMENTAL=1`` (or ``GPUWRF_K2_ENABLED=1``) before this
+        returns an enabled config.  This helper is intentionally host-side; it is
+        not referenced by the default forecast path and does not appear in the
+        single-GPU compiled graph.
+        """
+
+        source = os.environ if env is None else env
+        enabled = _env_bool(source, f"{prefix}_EXPERIMENTAL", default=False)
+        if not enabled:
+            enabled = _env_bool(source, f"{prefix}_ENABLED", default=False)
+        if not enabled:
+            return cls.disabled()
+
+        num_partitions = _env_int(source, f"{prefix}_PARTITIONS", default=None)
+        if num_partitions is None:
+            num_partitions = _env_int(source, f"{prefix}_NUM_PARTITIONS", default=None)
+        forecast_halo = _env_int(source, f"{prefix}_FORECAST_HALO_WIDTH", default=None)
+        multi_node = _env_bool(source, f"{prefix}_MULTI_NODE", default=False)
+        coordinator = _env_str(source, f"{prefix}_COORDINATOR_ADDRESS", default=None)
+        return cls(
+            enabled=True,
+            axis=_env_str(source, f"{prefix}_AXIS", default="x"),  # type: ignore[arg-type]
+            num_partitions=num_partitions,
+            halo_width=int(_env_int(source, f"{prefix}_HALO_WIDTH", default=2)),
+            forecast_halo_width=forecast_halo,
+            backend=_env_str(source, f"{prefix}_BACKEND", default="pmap"),  # type: ignore[arg-type]
+            axis_name=_env_str(source, f"{prefix}_AXIS_NAME", default="shard"),
+            multi_node=multi_node,
+            coordinator_address=coordinator,
+            process_id=int(_env_int(source, f"{prefix}_PROCESS_ID", default=0)),
+            process_count=int(_env_int(source, f"{prefix}_PROCESS_COUNT", default=1)),
+        )
+
     def resolved_partitions(self, *, platform: str | None = None) -> int:
         """Return the local partition count this process should use."""
 
@@ -105,6 +152,70 @@ def select_forecast_runner(config: ShardingConfig | None = None) -> Callable[...
     return run_forecast_operational_sharded
 
 
+def _env_str(env: Mapping[str, str], name: str, *, default: str | None) -> str | None:
+    value = env.get(name)
+    if value is None:
+        return default
+    text = str(value).strip()
+    return text if text else default
+
+
+def _env_int(env: Mapping[str, str], name: str, *, default: int | None) -> int | None:
+    value = _env_str(env, name, default=None)
+    if value is None:
+        return default
+    return int(value)
+
+
+def _env_bool(env: Mapping[str, str], name: str, *, default: bool) -> bool:
+    value = env.get(name)
+    if value is None:
+        return bool(default)
+    text = str(value).strip().lower()
+    if text in _TRUE_ENV:
+        return True
+    if text in _FALSE_ENV:
+        return False
+    raise ValueError(f"{name} must be a boolean token, got {value!r}")
+
+
+def _env_device_ids(env: Mapping[str, str], name: str) -> tuple[int, ...] | None:
+    value = _env_str(env, name, default=None)
+    if value is None:
+        return None
+    return tuple(int(part.strip()) for part in value.split(",") if part.strip())
+
+
+def initialize_k2_distributed_from_env(
+    config: ShardingConfig | None = None,
+    env: Mapping[str, str] | None = None,
+    *,
+    prefix: str = "GPUWRF_K2",
+) -> bool:
+    """Initialize JAX distributed for K2 multi-node runs when explicitly enabled.
+
+    Returns ``True`` only when ``config.multi_node`` is true and initialization is
+    attempted.  Call this before any JAX device enumeration.  The lab path on this
+    one-GPU workstation leaves it unused; NCAR/UCAR can set the env variables and
+    run the same verification script under their cluster launcher.
+    """
+
+    cfg = ShardingConfig.from_env(env, prefix=prefix) if config is None else config
+    if not bool(cfg.enabled) or not bool(cfg.multi_node):
+        return False
+    source = os.environ if env is None else env
+    jax.distributed.initialize(
+        coordinator_address=cfg.coordinator_address,
+        num_processes=int(cfg.process_count),
+        process_id=int(cfg.process_id),
+        local_device_ids=_env_device_ids(source, f"{prefix}_LOCAL_DEVICE_IDS"),
+        initialization_timeout=int(_env_int(source, f"{prefix}_INIT_TIMEOUT_S", default=300)),
+        heartbeat_timeout_seconds=int(_env_int(source, f"{prefix}_HEARTBEAT_TIMEOUT_S", default=100)),
+        coordinator_bind_address=_env_str(source, f"{prefix}_COORDINATOR_BIND_ADDRESS", default=None),
+    )
+    return True
+
+
 def run_forecast_operational_optional_sharding(
     state,
     namelist,
@@ -121,6 +232,29 @@ def run_forecast_operational_optional_sharding(
     if not bool(cfg.enabled):
         return select_forecast_runner(cfg)(state, namelist, hours)
     return run_forecast_operational_sharded(state, namelist, hours, sharding=cfg)
+
+
+def run_forecast_operational_k2_experimental(
+    state,
+    namelist,
+    hours: float,
+    *,
+    env: Mapping[str, str] | None = None,
+    initialize_distributed: bool = False,
+):
+    """Environment-gated K2 experimental forecast entry.
+
+    With no K2 environment set this is a direct call to the existing default
+    forecast runner.  With ``GPUWRF_K2_EXPERIMENTAL=1`` it dispatches to the
+    opt-in sharded runner.  This is the public cluster/lab switch; production
+    code should continue to call ``run_forecast_operational`` unless K2 is being
+    explicitly tested.
+    """
+
+    cfg = ShardingConfig.from_env(env)
+    if initialize_distributed:
+        initialize_k2_distributed_from_env(cfg, env)
+    return run_forecast_operational_optional_sharding(state, namelist, hours, sharding=cfg)
 
 
 def run_forecast_operational_sharded(
@@ -329,6 +463,13 @@ def assert_flag_off_graph_unchanged(reference_hlo: str, candidate_hlo: str) -> N
         )
     if bool(candidate["collectives_present"]):
         raise AssertionError(f"flag-off HLO contains collectives: {candidate['collective_counts']}")
+    # The default-off graph is byte-identical to the reference (the disabled
+    # selector returns the exact same function object), so assert the strongest
+    # available invariant: identical HLO sha256.
+    if str(reference["hlo_sha256"]) != str(candidate["hlo_sha256"]):
+        raise AssertionError(
+            f"flag-off HLO sha256 changed: {reference['hlo_sha256']} != {candidate['hlo_sha256']}"
+        )
 
 
 def x_partition_bounds(nx: int, num_partitions: int) -> tuple[tuple[int, int], ...]:
@@ -430,13 +571,17 @@ def partition_state_x(
 
     bounds = x_partition_bounds(int(grid.nx), int(num_partitions))
     values = {
-        name: _partition_leaf_x(
-            name,
-            getattr(state, name),
-            grid=grid,
-            bounds=bounds,
-            halo_width=int(halo_width),
-            fill_halos=bool(fill_halos),
+        name: (
+            None
+            if getattr(state, name) is None
+            else _partition_leaf_x(
+                name,
+                getattr(state, name),
+                grid=grid,
+                bounds=bounds,
+                halo_width=int(halo_width),
+                fill_halos=bool(fill_halos),
+            )
         )
         for name in State.__slots__
     }
@@ -642,7 +787,11 @@ def merge_state_x(sharded_state: State, grid, *, halo_width: int = 0) -> State:
     """Merge a leading device-axis x-domain State back to global layout."""
 
     values = {
-        name: _merge_leaf_x(name, getattr(sharded_state, name), grid=grid, halo_width=int(halo_width))
+        name: (
+            None
+            if getattr(sharded_state, name) is None
+            else _merge_leaf_x(name, getattr(sharded_state, name), grid=grid, halo_width=int(halo_width))
+        )
         for name in State.__slots__
     }
     return State(**values)

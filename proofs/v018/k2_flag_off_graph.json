@@ -1,0 +1,46 @@
+{
+  "check": "flag_off_graph_unchanged",
+  "device_count": 4,
+  "disabled": {
+    "collective_counts": {
+      "all-gather": 0,
+      "all-reduce": 0,
+      "all-to-all": 0,
+      "collective-permute": 0,
+      "partition-id": 0,
+      "replica-id": 0
+    },
+    "collectives_present": false,
+    "hlo_sha256": "0d9b8dcf6cfe4aacfc699e33a645bddf927a00184b214fe7d4e2039e7942200b",
+    "hlo_size_bytes": 32724,
+    "op_count": 161
+  },
+  "local_device_count": 4,
+  "passed": true,
+  "platform": "cpu",
+  "reference": {
+    "collective_counts": {
+      "all-gather": 0,
+      "all-reduce": 0,
+      "all-to-all": 0,
+      "collective-permute": 0,
+      "partition-id": 0,
+      "replica-id": 0
+    },
+    "collectives_present": false,
+    "hlo_sha256": "0d9b8dcf6cfe4aacfc699e33a645bddf927a00184b214fe7d4e2039e7942200b",
+    "hlo_size_bytes": 32724,
+    "op_count": 161
+  },
+  "selection_identity": true,
+  "simulation_can_prove": [
+    "disabled sharding selects the exact existing default forecast function",
+    "compiled flag-off HLO op count is unchanged",
+    "compiled flag-off HLO has no collective/SPMD tokens"
+  ],
+  "simulation_cannot_prove": [
+    "real H200/NVLink performance",
+    "NCCL transport behavior",
+    "multi-node strong scaling"
+  ]
+}

@@ -114,7 +114,7 @@
       "rmse": 1.6240307915374732
     }
   },
-  "host": "user-workstation",
+  "host": "user-battlestation",
   "legacy_mismatch_metrics": {
     "legacy_standard_g_dz_vs_wrf_dz8w": {
       "bias": 0.017457734172978197,

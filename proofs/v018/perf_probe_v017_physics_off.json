@@ -1,0 +1,21 @@
+{
+  "label": "v017_physics_off",
+  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "override": {
+    "run_physics": false
+  },
+  "timing": {
+    "h1_hours": 0.1,
+    "n1_steps": 36,
+    "h2_hours": 0.5,
+    "n2_steps": 180,
+    "cold_h1_wall_s": 82.1339093579445,
+    "warm_h1_wall_s": 0.7761235360521823,
+    "cold_h2_wall_s": 75.46606952603906,
+    "warm_h2_wall_s": 3.8834330970421433,
+    "warm_h2_b_wall_s": 3.8829825930297375,
+    "warmed_per_step_ms": 21.576974367942764,
+    "s_per_forecast_hour": 7.767710772459395
+  },
+  "device": "cuda:0"
+}

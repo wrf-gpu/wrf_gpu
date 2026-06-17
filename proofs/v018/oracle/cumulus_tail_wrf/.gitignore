@@ -1,0 +1,5 @@
+run/
+*.log
+*.out
+rsl.*
+wrfout_d01_*

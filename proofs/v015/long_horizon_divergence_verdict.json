@@ -215,7 +215,7 @@
   "regions": {
     "switzerland_d01_72h": {
       "region": "switzerland_d01_72h",
-      "summary_path": "proofs/v015/finalgates/switzerland_d01/atlas_grid_delta_summary.json",
+      "summary_path": "/home/user/src/wrf_gpu2/.claude/worktrees/agent-a5ad8e7d34c16cb7e/proofs/v015/finalgates/switzerland_d01/atlas_grid_delta_summary.json",
       "leads_h": [
         1,
         2,
@@ -1288,7 +1288,7 @@
     },
     "canary_l2_d02_72h": {
       "region": "canary_l2_d02_72h",
-      "summary_path": "proofs/v015/finalgates/canary_l2_d02/atlas_grid_delta_summary.json",
+      "summary_path": "/home/user/src/wrf_gpu2/.claude/worktrees/agent-a5ad8e7d34c16cb7e/proofs/v015/finalgates/canary_l2_d02/atlas_grid_delta_summary.json",
       "leads_h": [
         1,
         2,

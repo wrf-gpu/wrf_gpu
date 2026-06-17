@@ -11,14 +11,15 @@ WRF developer evaluating this port cares about:
 Every option resolves to exactly one :class:`SupportStatus`:
 
 * ``IMPLEMENTED``            -- operationally GPU-scan-wired and run normally.
-* ``REFERENCE_ONLY``        -- a recognized WRF v4 scheme with a parity-proven
-                               (savepoint / isolated / analytic-oracle) adapter
-                               that is NOT yet wired into the operational GPU
-                               scan. It is *accepted* by the namelist validator
-                               (so a reference / single-column comparison can be
-                               run) but the operational forecast scan fail-closes
-                               it loudly with a named reason -- never a silent
-                               wrong result.
+* ``REFERENCE_ONLY``        -- a recognized WRF v4 scheme with an oracle-backed
+                               reference path (GREEN parity where claimed, or an
+                               explicitly measured RED gap) that is NOT yet
+                               wired into the operational GPU scan. It is
+                               *accepted* by the namelist validator (so a
+                               reference / single-column comparison can be run)
+                               but the operational forecast scan fail-closes it
+                               loudly with a named reason -- never a silent wrong
+                               result.
 * ``RECOGNIZED_FAIL_CLOSED``-- a valid WRF v4 option that the port does not
                                implement at all. Selecting it fails closed with a
                                message naming the WRF scheme, the reason, and the
@@ -55,8 +56,9 @@ Honesty rules followed when authoring this catalog (do not relax them):
   ``contracts.physics_registry`` (the frozen accept-matrix). See
   ``assert_catalog_consistent`` for the machine-checked invariants that keep this
   module from drifting away from those authorities.
-* When a scheme is parity-proven but not operationally wired, it is
-  ``REFERENCE_ONLY`` (a caveat), never ``IMPLEMENTED`` (an over-claim).
+* When a scheme has oracle-backed reference evidence but is not operationally
+  wired, it is ``REFERENCE_ONLY`` (a caveat), never ``IMPLEMENTED`` (an
+  over-claim). The reason must say whether the comparison is GREEN or RED.
 * When in doubt about a scheme's support, the safe classification is
   ``RECOGNIZED_FAIL_CLOSED`` (refuse loudly), never ``IMPLEMENTED``.
 
@@ -136,43 +138,87 @@ class SchemeSupport:
 # physics_registry accept-matrix and the WRF v4 catalog.                      #
 # --------------------------------------------------------------------------- #
 _IMPLEMENTED: Mapping[str, frozenset[int]] = {
+    # mp=13 (SBU-YLin) is the v0.18-harvested sbu_ylin single-moment scheme
+    # (savepoint-parity-proven against unmodified phys/module_mp_sbu_ylin.F,
+    # proofs/v017/sbu_ylin oracle; scan-wired).
     # mp=24 WSM7 (WSM6 + separate precipitating hail) + mp=26 WDM7 (WDM6
-    # double-moment + separate single-moment hail) are v0.17 GPU scan-wired
+    # double-moment + separate single-moment hail) are GPU scan-wired
     # (coupling.scan_adapters.{wsm7,wdm7}_adapter; the qh hail State substrate
     # ADR-032 carries them end-to-end), savepoint-parity-proven against the
     # unmodified phys/module_mp_wsm7.F (proofs/v013) and module_mp_wdm7.F
     # (proofs/v013_wdm7), 6/6 PASS each.
-    # mp=28 (aerosol-aware Thompson) is the v0.16 thompson_aero_adapter.
-    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 14, 16, 24, 26, 28}),
+    # mp=28 (aerosol-aware Thompson) is the v0.16 thompson_aero_adapter
+    # (coupling.physics_couplers; WRF grid-savepoint parity-gated,
+    # proofs/v016/thompson_aero_savepoint_parity.json; scan-wired in
+    # runtime.operational_mode._SCAN_WIRED_OPTIONS / _physics_step_forcing).
+    # mp=97 Goddard GCE (gsfcgce, single-moment 3-ice) is operationally scan-wired
+    # (coupling.scan_adapters.MP_SCAN_ADAPTERS[97] = goddard_adapter, plain
+    # State->State on the existing moist substrate), savepoint-parity-proven against
+    # unmodified phys/module_mp_gsfcgce.F (proofs/v090/goddard_mp_r2_savepoint_parity.json).
+    "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97}),
     "cu_physics": frozenset({0, 1, 2, 3, 6}),
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
     # bl=99 MRF is the v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F
     # (savepoint-parity gated, proofs/v013/mrf_oracle.py); consumes the revised-MM5
     # surface layer (sf_sfclay=1), no new surface partner needed.
-    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 99}),
+    # bl=3 GFS is the v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F
+    # (BL_GFS -> MONINP, savepoint-parity gated, proofs/v017/gfs_oracle.py ~1e-13);
+    # nonlocal-K, consumes the revised-MM5 surface layer (sf_sfclay=1).
+    # bl=11 Shin-Hong is the v0.18 JAX/vmap scale-aware PBL port: dynamics-green
+    # operational, with explicit non-driving TKE/EL diagnostic caveat vs the v090
+    # PARTIAL reference (TKE rel ~=0.285, EL rel ~=0.013). bl=12 GBM is the
+    # v0.18 JAX/vmap moist prognostic-TKE PBL port.
+    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 11, 12, 99}),
     # sf_sfclay 3 (NCEP-GFS) + 91 (old-MM5) are v0.13 Tier-3 scan-wired surface
     # layers (coupling.scan_adapters.{gfs_sfclay_adapter,sfclay_old_mm5_adapter};
     # fp64 pristine-WRF oracle-validated; B2 kinematic flux handles).
     "sf_sfclay_physics": frozenset({0, 1, 2, 3, 5, 7, 91}),
-    "sf_surface_physics": frozenset({0, 2, 4}),
+    # sf_surface=1 (5-layer thermal-diffusion slab LSM) is v0.17 operationally
+    # scan-wired (coupling.slab_surface_hook.slab_surface_step over the fp64
+    # pristine-WRF-oracle-validated physics.lsm_slab.slab_columns SLAB1D port;
+    # advances the 5-layer TSLB land carry from GSW/GLW + a TMN/THC/EMISS bundle).
+    # sf_surface=7 (Pleim-Xiu 2-layer ISBA LSM) is v0.17 operationally scan-wired
+    # (coupling.pleim_xiu_surface_hook.pleim_xiu_surface_step over the fp64
+    # pristine-WRF-oracle-validated physics.lsm_pleim_xiu SURFPX+QFLUX port).
+    "sf_surface_physics": frozenset({0, 1, 2, 4, 7}),
     # ra_lw=1 (classic AER RRTM 16-band LW) is now operationally scan-wired
     # (coupling.physics_couplers.rrtm_lw_theta_tendency over the JAX-traceable
     # physics.ra_lw_rrtm_jax kernel, dispatched in runtime.operational_mode by
     # OperationalNamelist.ra_lw_physics; SW selected independently).
-    "ra_lw_physics": frozenset({0, 1, 4}),
+    # ra_lw=31 (Held-Suarez idealized radiation, phys/module_ra_hs.F:HSRAD) is a
+    # v0.17 no-kernel-change endpoint port: a stateless combined LW+SW Newtonian
+    # relaxation selected through the LW slot, operationally scan-wired
+    # (coupling.physics_couplers.held_suarez_theta_tendency; dispatch fail-closes
+    # any SW selection since HSRAD is the sole radiative call), savepoint-parity-
+    # proven against the unmodified WRF source at fp64
+    # (proofs/v017/held_suarez_lw_savepoint_parity.json).
+    "ra_lw_physics": frozenset({0, 1, 4, 31}),
     # ra_sw=1 (Dudhia, Stephens-1984 broadband SW) and ra_sw=2 (GSFC/Chou-Suarez
     # multi-band delta-Eddington SW) are now operationally scan-wired
     # (coupling.physics_couplers.dudhia_sw_theta_tendency / gsfc_sw_theta_tendency,
     # dispatched in runtime.operational_mode by OperationalNamelist.ra_sw_physics).
+    # ra_sw=3/5/7/99 (CAM/Goddard-new/FLG/GFDL-Eta) are accepted reference-only
+    # in v0.18 for real-WRF oracle/parity work, not operational scan-wiring.
     "ra_sw_physics": frozenset({0, 1, 2, 4}),
 }
 
-# Recognized WRF schemes with a parity-proven adapter that the operational scan
-# fail-closes (selectable for a reference comparison, NOT an operational run).
+# Recognized WRF schemes with an oracle-backed reference path that the
+# operational scan fail-closes (selectable for a reference comparison, NOT an
+# operational run). Some entries are GREEN; some are RED and say so in the reason.
 # reason = the named scan-unwired reason; alternative = the operational swap.
 _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
     "cu_physics": {
+        # v0.17 SAS family: all four requested codes now have fp64 pristine-WRF
+        # single-column savepoints, but the shared JAX endpoint is still RED
+        # against those oracles. They are reference-only and fail-closed.
+        4: (
+            "Scale-aware GFS SAS has v0.17 single-column fp64 pristine-WRF "
+            "savepoints (module_cu_scalesas.F), but the shared JAX endpoint is "
+            "RED vs oracle, so it is fail-closed in the operational GPU scan.",
+            "Use cu_physics=1/2/3/6 for operational runs; use "
+            "proofs/v017/run_sas_family_parity.py for SAS oracle comparisons.",
+        ),
         # v0.13 Tier-3 cumulus batch: New-Tiedtke(16) / KSAS(14) / Grell-3D(5) each
         # have a single-column fp64 pristine-WRF oracle staged
         # (proofs/v013/oracle/cumulus, savepoints/cumulus), but their traceable JAX
@@ -199,49 +245,188 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "Use cu_physics=6 (modified Tiedtke with active flux-form moisture "
             "advection for RQVFTEN) or 1/3.",
         ),
-    },
-    # sf_surface_physics=1 (5-layer thermal-diffusion slab LSM) is a v0.13 Tier-3
-    # JAX port (physics.lsm_slab.slab_columns) with a passing fp64 pristine-WRF
-    # oracle (proofs/v013/t3_surface_lsm_oracle.json), but it is NOT yet threaded
-    # into the operational LSM scan slot: the slab needs a land carry (TSLB soil
-    # temperatures) + radiation forcing (GSW/GLW) + static (TMN/THC/EMISS) bundle
-    # that the resident State does not yet carry (unlike the surface-layer slot,
-    # which is a plain State->State adapter). So it is REFERENCE_ONLY: selectable
-    # for a single-column reference comparison, fail-closed in the operational scan.
-    "sf_surface_physics": {
-        1: (
-            "the 5-layer thermal-diffusion slab LSM is JAX-ported and fp64 "
-            "oracle-validated (physics.lsm_slab), but the operational LSM scan "
-            "slot needs a TSLB soil-temperature land carry + GSW/GLW radiation "
-            "forcing + TMN/THC/EMISS statics that the resident State does not "
-            "yet carry; the LSM hook is deferred, so it fail-closes in the scan.",
-            "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic); slab=1 is a "
-            "reference-only single-column path until the slab LSM hook lands.",
+        93: (
+            "Grell-Devenyi ensemble is recognized for v0.17 oracle work, but no "
+            "source-specific traceable JAX column endpoint has passed parity "
+            "against unmodified phys/module_cu_gd.F:GRELLDRV, so it is fail-"
+            "closed in the operational GPU scan.",
+            "Use cu_physics=3 (Grell-Freitas, GPU-operational) or 1/2/6.",
+        ),
+        94: (
+            "2015 GFS SAS / HWRF has v0.17 single-column fp64 pristine-WRF "
+            "savepoints (module_cu_sas.F), but the shared JAX endpoint is RED "
+            "vs oracle, so it is fail-closed in the operational GPU scan.",
+            "Use cu_physics=1/2/3/6 for operational runs; use "
+            "proofs/v017/run_sas_family_parity.py for SAS oracle comparisons.",
+        ),
+        95: (
+            "Previous GFS SAS / HWRF OSAS has v0.17 single-column fp64 pristine-WRF "
+            "savepoints (module_cu_osas.F), but the shared JAX endpoint is RED "
+            "vs oracle, so it is fail-closed in the operational GPU scan.",
+            "Use cu_physics=1/2/3/6 for operational runs; use "
+            "proofs/v017/run_sas_family_parity.py for SAS oracle comparisons.",
+        ),
+        96: (
+            "Previous new GFS SAS / YSU NSAS has v0.17 single-column fp64 "
+            "pristine-WRF savepoints (module_cu_nsas.F), but the shared JAX "
+            "endpoint is RED vs oracle, so it is fail-closed in the operational "
+            "GPU scan.",
+            "Use cu_physics=1/2/3/6 for operational runs; use "
+            "proofs/v017/run_sas_family_parity.py for SAS oracle comparisons.",
+        ),
+        99: (
+            "Previous Kain-Fritsch is recognized for v0.17 oracle work, but the "
+            "available GPU endpoint is the KF-eta family (cu_physics=1), not a "
+            "parity-proven port of unmodified phys/module_cu_kf.F:KFCPS, so it "
+            "is fail-closed in the operational GPU scan.",
+            "Use cu_physics=1 (Kain-Fritsch eta, GPU-operational) or 0/2/3/6.",
         ),
     },
-    # ra_lw_physics=5 (GSFC/Goddard NUWRF LW) is a v0.13 Tier-3 reference-only
-    # scheme: a single-column fp64 pristine-WRF oracle is staged (the unmodified-
-    # physics module_ra_goddard.F:lwrad, proofs/v013/oracle/radiation_lw), but its
-    # traceable JAX column kernel is a documented carry-over (the combined NUWRF
-    # SW+LW module is ~12.5k LOC, with ~11.8k hardcoded LW correlated-k
-    # coefficients -- too large for a faithful single-session port without becoming
-    # a self-compare/happy-path). It is REFERENCE_ONLY: namelist-accepted so a
-    # single-column reference comparison can be run, fail-closed in the operational
-    # GPU scan with a named reason (never silently wrong).
+    # sf_surface_physics=1 (5-layer thermal-diffusion slab LSM) was REFERENCE_ONLY
+    # (JAX-ported + fp64 oracle, no operational hook); it is now operationally
+    # scan-wired via coupling.slab_surface_hook.slab_surface_step (IMPLEMENTED
+    # above), so it is no longer listed here.
+    # sf_surface_physics=3 (RUC) + 8 (SSiB) are v0.17 Tier-3 REFERENCE-ONLY: each has
+    # a fp64 pristine-WRF single-column oracle staged (proofs/v017/oracle/{ruclsm,ssib},
+    # built from the unmodified WRF LSMRUC / SSIB drivers, NOT a self-compare), but the
+    # faithful traceable JAX column kernels for these large multi-layer/biophysical
+    # solvers are documented carry-overs, so both are namelist-accepted (selectable for a
+    # single-column reference comparison) and fail-closed in the operational GPU scan with
+    # a named reason (never silently wrong).
+    "sf_surface_physics": {
+        3: (
+            "RUC multi-layer soil/snow LSM has a v0.17 single-column fp64 pristine-WRF "
+            "oracle staged (LSMRUC->SOILVEGIN->SFCTMP, proofs/v017/oracle/ruclsm), but its "
+            "faithful traceable JAX column kernel (the ~7.5k-LOC soil/snow solver) is not "
+            "yet ported, so it is fail-closed in the operational GPU scan.",
+            "Use sf_surface_physics=4 (Noah-MP, GPU-operational), 2 (Noah classic), 1 (slab) "
+            "or 7 (Pleim-Xiu).",
+        ),
+        8: (
+            "SSiB SiB biophysical canopy/soil/snow LSM has a v0.17 single-column fp64 "
+            "pristine-WRF oracle staged (the unmodified SSIB driver, proofs/v017/oracle/ssib), "
+            "but its faithful traceable JAX column kernel (the ~6.6k-LOC coupled SiB solver) "
+            "is not yet ported, so it is fail-closed in the operational GPU scan.",
+            "Use sf_surface_physics=4 (Noah-MP, GPU-operational), 2 (Noah classic), 1 (slab) "
+            "or 7 (Pleim-Xiu).",
+        ),
+    },
+    # v0.18 RA tail: CAM/Goddard/FLG/GFDL-Eta have exact-driver real-WRF
+    # savepoints in proofs/v018/savepoints/ra_tail_wrf. They remain REFERENCE_ONLY
+    # because no faithful traceable JAX kernels are wired into the operational scan.
     "ra_lw_physics": {
+        3: (
+            "CAM longwave has a v0.18 real-WRF driver oracle "
+            "(proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
+            "module_radiation_driver.F dispatch to module_ra_cam.F:CAMRAD), but no "
+            "faithful JAX column kernel is operationally scan-wired, so it is "
+            "fail-closed in the operational GPU scan.",
+            "Use ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).",
+        ),
         5: (
             "GSFC/Goddard NUWRF longwave has a v0.13 single-column fp64 pristine-WRF "
-            "oracle staged (module_ra_goddard.F:lwrad), but its traceable JAX column "
-            "kernel is not yet ported (the combined NUWRF SW+LW module is ~12.5k LOC "
-            "with ~11.8k hardcoded LW coefficients), so it is fail-closed in the "
-            "operational GPU scan.",
+            "oracle staged (module_ra_goddard.F:lwrad) and a v0.18 real-WRF paired "
+            "driver oracle (proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json), "
+            "but its traceable JAX column kernel is not operationally scan-wired, so "
+            "it is fail-closed in the operational GPU scan.",
             "Use ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).",
+        ),
+        7: (
+            "FLG/UCLA longwave has a v0.18 real-WRF driver oracle "
+            "(proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json, "
+            "module_radiation_driver.F dispatch to module_ra_flg.F:RAD_FLG), but no "
+            "faithful JAX column kernel is operationally scan-wired, so it is "
+            "fail-closed in the operational GPU scan.",
+            "Use ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).",
+        ),
+        99: (
+            "GFDL-Eta longwave has a v0.18 real-WRF paired driver oracle "
+            "(proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json, "
+            "module_radiation_driver.F dispatch to module_ra_gfdleta.F:ETARA), but no "
+            "faithful JAX column kernel is operationally scan-wired, so it is "
+            "fail-closed in the operational GPU scan.",
+            "Use ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).",
+        ),
+    },
+    "ra_sw_physics": {
+        3: (
+            "CAM shortwave has a v0.18 real-WRF driver oracle "
+            "(proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
+            "module_radiation_driver.F dispatch to module_ra_cam.F:CAMRAD), but no "
+            "faithful JAX column kernel is operationally scan-wired, so it is "
+            "fail-closed in the operational GPU scan.",
+            "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia), or 2 (GSFC/Chou-Suarez).",
+        ),
+        5: (
+            "New Goddard shortwave has a v0.18 real-WRF paired driver oracle "
+            "(proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json, "
+            "module_radiation_driver.F dispatch to module_ra_goddard.F:goddardrad), "
+            "but no faithful JAX column kernel is operationally scan-wired, so it is "
+            "fail-closed in the operational GPU scan.",
+            "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia), or 2 (GSFC/Chou-Suarez).",
+        ),
+        7: (
+            "FLG/UCLA shortwave has a v0.18 real-WRF driver oracle "
+            "(proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json, "
+            "module_radiation_driver.F dispatch to module_ra_flg.F:RAD_FLG), but no "
+            "faithful JAX column kernel is operationally scan-wired, so it is "
+            "fail-closed in the operational GPU scan.",
+            "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia), or 2 (GSFC/Chou-Suarez).",
+        ),
+        99: (
+            "GFDL-Eta shortwave has a v0.18 real-WRF paired driver oracle "
+            "(proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json, "
+            "module_radiation_driver.F dispatch to module_ra_gfdleta.F:ETARA), but no "
+            "faithful JAX column kernel is operationally scan-wired, so it is "
+            "fail-closed in the operational GPU scan.",
+            "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia), or 2 (GSFC/Chou-Suarez).",
+        ),
+    },
+    "bl_pbl_physics": {
+        4: (
+            "QNSE-EDMF PBL has a v0.18 fp64 pristine-WRF single-column oracle "
+            "staged (unmodified phys/module_bl_qnsepbl.F; "
+            "proofs/v018/qnse_pbl4_reference_oracle.json), but no traceable JAX "
+            "column kernel is scan-wired, so it is fail-closed in the operational "
+            "GPU scan.",
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "proofs/v018/run_qnse_pbl4_oracle_check.py for QNSE oracle comparisons.",
+        ),
+        10: (
+            "TEMF PBL has a v0.18 fp64 pristine-WRF single-column oracle staged "
+            "(unmodified phys/module_bl_temf.F; "
+            "proofs/v018/temf_pbl10_reference_oracle.json), but no traceable JAX "
+            "column kernel is scan-wired, so it is fail-closed in the operational "
+            "GPU scan.",
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "proofs/v018/run_temf_pbl10_oracle_check.py for TEMF oracle comparisons.",
+        ),
+        16: (
+            "EEPS epsilon PBL has a v0.18 fp64 pristine-WRF single-column oracle "
+            "staged (unmodified phys/module_bl_eepsilon.F; "
+            "proofs/v018/eeps_pbl16_reference_oracle.json), but no traceable JAX "
+            "column kernel is scan-wired, so it is fail-closed in the operational "
+            "GPU scan.",
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "proofs/v018/run_eeps_pbl16_oracle_check.py for EEPS oracle comparisons.",
+        ),
+        17: (
+            "KEPS k-epsilon PBL has a v0.18 fp64 pristine-WRF single-column oracle "
+            "staged (unmodified phys/module_bl_keps.F; "
+            "proofs/v018/keps_pbl17_reference_oracle.json), but no traceable JAX "
+            "column kernel is scan-wired, so it is fail-closed in the operational "
+            "GPU scan.",
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "proofs/v018/run_keps_pbl17_oracle_check.py for KEPS oracle comparisons.",
         ),
     },
     # bl_pbl_physics=2 (MYJ) + sf_sfclay_physics=2 (Janjic Eta) were REFERENCE_ONLY
     # (host-NumPy savepoint kernels); they are now operationally scan-wired as a
     # mandatory pair via the JAX-traceable physics.bl_myj / physics.sf_myj rewrites
-    # (IMPLEMENTED above), so they are no longer listed here.
+    # (IMPLEMENTED above), so they are no longer listed here. bl=3 GFS is IMPLEMENTED.
+    # bl_pbl_physics=9 (CAM-UW) is NOT reference-only here: the v0.18 endpoint
+    # classification proves it belongs to the CAM physics-family stack rather
+    # than the standalone PBL matrix, so it stays recognized/fail-closed by name.
     # ra_lw_physics=1 (classic RRTM LW) was REFERENCE_ONLY (host-NumPy kernel); it
     # is now operationally scan-wired via the JAX-traceable physics.ra_lw_rrtm_jax
     # rewrite (IMPLEMENTED above), so it is no longer listed here.
@@ -256,20 +441,26 @@ def _label(key: str) -> str:
 
 # Per-key fallback alternative text used for RECOGNIZED_FAIL_CLOSED schemes.
 _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
-    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/14/16/24/26/28 "
-    "(8=Thompson is the operational default; 24=WSM7 / 26=WDM7 add a "
-    "precipitating hail class; 28=aerosol-aware Thompson).",
-    "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch, 3=Grell-"
-    "Freitas, 6=Tiedtke requires active flux-form moisture advection for RQVFTEN).",
-    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/99 (5=MYNN, 1=YSU, 2=MYJ "
-    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 99=MRF).",
+    "mp_physics": "Use one of mp_physics=0/1/2/3/4/6/8/10/13/14/16/24/26/28/97 (8=Thompson is the "
+    "operational default; 13=SBU-YLin; 24=WSM7 / 26=WDM7 add a precipitating hail class; "
+    "28=aerosol-aware Thompson; 97=Goddard GCE single-moment 3-ice).",
+    "cu_physics": "Use one of cu_physics=0/1/2/3/6 (1=Kain-Fritsch eta, "
+    "3=Grell-Freitas, 6=Tiedtke requires active flux-form moisture advection "
+    "for RQVFTEN). Reference-only cumulus options 4/5/14/16/93/94/95/96/99 "
+    "fail-close in the operational scan.",
+    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 (5=MYNN, 1=YSU, 2=MYJ "
+    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 11=Shin-Hong, "
+    "12=GBM, 99=MRF). PBL4/10/16/17 are accepted reference-only and fail-close "
+    "in the operational scan; PBL9 CAM-UW is a CAM-family architecture endpoint, "
+    "not part of the standalone PBL operational matrix.",
     "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/3/5/7/91 (5=MYNN-SL, "
     "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 3=NCEP-GFS, "
     "7=Pleim-Xiu, 91=old-MM5).",
-    "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP) or 2 (Noah classic); "
-    "1=slab is reference-only.",
-    "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG).",
-    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia) or 2 (GSFC/Chou-Suarez); all GPU-operational.",
+    "sf_surface_physics": "Use sf_surface_physics=4 (Noah-MP), 2 (Noah classic), 1 (slab) "
+    "or 7 (Pleim-Xiu); 3=RUC and 8=SSiB are reference-only (fp64 oracle staged, JAX "
+    "kernel carry-over).",
+    "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG) or 1 (classic RRTM); 3/5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
+    "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia) or 2 (GSFC/Chou-Suarez); 3/5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
     "diff_opt": "Use diff_opt=0/1/2 (1+km_opt=4 = 2-D Smagorinsky real-data "
     "default; 2+km_opt=1 = constant-K).",
     "km_opt": "Use km_opt=0/1/4 (4 with diff_opt=1 = 2-D Smagorinsky; 1 with "
@@ -303,12 +494,201 @@ _DYNAMICS_IMPLEMENTED: Mapping[str, frozenset[int]] = {
 # Smagorinsky / SMS-3DTKE) are the notable real-data-LES selections the port
 # does not implement; the operational horizontal-mixing path is the 2-D
 # Smagorinsky (diff_opt=1/km_opt=4) or constant-K (diff_opt=2/km_opt=1).
-_DYNAMICS_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
+# Per-(key, code) fail-closed reason override for RECOGNIZED_FAIL_CLOSED schemes.
+# Despite the historical name, this is consulted for ANY namelist key in
+# classify_scheme (not only dynamics): it supplies a specific reason in place of
+# the generic "NOT YET IMPLEMENTED" string when the truth is more precise.
+_PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
     # mp=24 WSM7 was fail-closed before v0.17 (it carries a separate precipitating
     # hail class qh the operational moist-state pytree did not hold). v0.17 added
     # the qh hail State substrate (ADR-032) + the hail surface accumulator and
     # scan-wired WSM7 (coupling.scan_adapters.wsm7_adapter); it is now IMPLEMENTED
     # (see _IMPLEMENTED["mp_physics"]), so it no longer has a fail-closed reason.
+    "mp_physics": {
+        5: "REFERENCE-WITH-REAL-ORACLE / fail-closed: Ferrier-HRW (new Eta, "
+        "operational High-Resolution Window) has exact pristine-WRF FER_HIRES "
+        "savepoints under proofs/v018/mp_oracles/ferrier_hires for "
+        "phys/module_mp_fer_hires.F:FER_HIRES. The staged MP95 ETAMP_NEW oracle "
+        "drives phys/module_mp_etanew.F and is not reused for MP5. The JAX "
+        "endpoint is NOT YET "
+        "IMPLEMENTED: it carries lumped total condensate qt/CWM plus "
+        "f_ice_phy/f_rain_phy/f_rimef_phy state and ETAMPNEW_DATA lookup-table "
+        "control flow that is not present in the operational State or scan "
+        "interface.",
+        95: "REFERENCE-WITH-REAL-ORACLE / fail-closed: Ferrier old Eta "
+        "(etampnew) has exact pristine-WRF ETAMP_NEW oracle artifacts under "
+        "proofs/v018/mp_oracles/ferrier_etanew for "
+        "phys/module_mp_etanew.F:ETAMP_NEW. The operational JAX endpoint is "
+        "still NOT YET IMPLEMENTED: the scheme carries lumped total condensate "
+        "qt/CWM plus f_ice_phy/f_rain_phy/f_rimef_phy state and ETAMPNEW_DATA "
+        "lookup-table control flow that is not present in the operational State "
+        "or scan interface.",
+        96: "PROVEN-NO-OP at the microphysics step: MadWRF mp_physics=96 is "
+        "source-verified as a no-op inside "
+        "phys/module_microphysics_driver.F CASE (MADWRF_MP), which only emits "
+        "wrf_debug; the real MadWRF cloud initialization/nudging lives outside "
+        "the microphysics step, so there is no faithful MP kernel to wire and it "
+        "is NOT YET IMPLEMENTED as an operational GPU microphysics option.",
+        7: "REFERENCE-WITH-REAL-ORACLE / fail-closed: Goddard 4-ice / NUWRF has "
+        "exact pristine-WRF oracle artifacts under "
+        "proofs/v018/mp_oracles/goddard4ice for "
+        "phys/module_mp_gsfcgce_4ice_nuwrf.F. The JAX kernel is NOT YET "
+        "IMPLEMENTED: this is the separate hail-class scheme with qh, hail "
+        "accumulators, large phys*/re_* carry, and the long saticel_s 4-ice path, "
+        "not the operational mp=97 Goddard GCE 3-ice port.",
+        38: "REFERENCE-WITH-REAL-ORACLE / fail-closed: Thompson graupel-hail has "
+        "exact pristine-WRF oracle artifacts under proofs/v018/mp_oracles/thompgh "
+        "for phys/module_mp_thompson.F. The JAX kernel is NOT YET IMPLEMENTED: "
+        "its hail path uses variable-density graupel via qvolg/Ng and hail-aware "
+        "collision/terminal-velocity tables that are not the operational "
+        "fixed-density mp=8/28 Thompson path.",
+        9: "REFERENCE-WITH-REAL-ORACLE / fail-closed: Milbrandt-Yau 2-moment "
+        "has active pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp9 for "
+        "phys/module_mp_milbrandt2mom.F selected by mp_physics=9. The JAX "
+        "endpoint is NOT YET IMPLEMENTED: it is a real multimoment bulk scheme "
+        "and requires qh plus qnc/qnr/qni/qns/qng/qnh number-state transport "
+        "before operational scan wiring.",
+        11: "PROVEN-IRRELEVANT for the lean operational GPU target: CAM 5.1 "
+        "microphysics is recognized in phys/module_mp_cammgmp_driver.F, but its "
+        "WRF source warns that QME3D is wrong without CAM macrophysics, "
+        "convective cloud fraction is unavailable to microphysics, and the "
+        "outputs are not currently consumed by RRTMG. It is CAM-specific and "
+        "NOT YET IMPLEMENTED in the operational microphysics State/PhysicsCarry "
+        "contract.",
+        17: "PROVEN-IRRELEVANT / SUPERSEDED legacy NSSL option: "
+        "phys/module_mp_nssl_2mom.F recognizes it, but doc/README.NSSLmp says to "
+        "use mp_physics=18 with modifier flags going forward. It is NOT YET "
+        "IMPLEMENTED as a separate GPU scheme; MP18 is the reference-oracle-"
+        "backed exact NSSL target and carries the qh/qnh/qvolg/qvolh-style "
+        "state/oracle work.",
+        18: "REFERENCE-WITH-REAL-ORACLE / fail-closed: NSSL 2-moment 4-ice "
+        "with predicted CCN has active pristine-WRF full-model oracle artifacts "
+        "under proofs/v018/mp_oracles/wrf_full_model/mp18 for "
+        "phys/module_mp_nssl_2mom.F selected by mp_physics=18. The JAX endpoint "
+        "is NOT YET IMPLEMENTED: it is the non-legacy NSSL target and needs "
+        "NSSL number/hail-volume state, qvolg/qvolh-style carry, and CCN "
+        "controls before operational scan wiring.",
+        19: "PROVEN-IRRELEVANT / SUPERSEDED legacy NSSL option: "
+        "phys/module_mp_nssl_2mom.F recognizes it, but doc/README.NSSLmp maps it "
+        "to mp_physics=18 with nssl_2moment_on=0 and nssl_ccn_on=1. It is NOT "
+        "YET IMPLEMENTED as a separate GPU scheme; MP18 is the reference-oracle-"
+        "backed exact NSSL target and carries the "
+        "qh/qnh/qvolg/qvolh-style state/oracle work.",
+        21: "PROVEN-IRRELEVANT / SUPERSEDED legacy NSSL option: "
+        "phys/module_mp_nssl_2mom.F recognizes it, but doc/README.NSSLmp maps it "
+        "to mp_physics=18 with nssl_2moment_on=0, nssl_hail_on=0, "
+        "nssl_ccn_on=0, and nssl_density_on=0. It is NOT YET IMPLEMENTED as a "
+        "separate GPU scheme; MP18 is the reference-oracle-backed exact NSSL "
+        "target and carries the qh/qnh/qvolg/qvolh-style state/oracle work.",
+        22: "PROVEN-IRRELEVANT / SUPERSEDED legacy NSSL option: "
+        "phys/module_mp_nssl_2mom.F recognizes it, but doc/README.NSSLmp maps it "
+        "to mp_physics=18 with nssl_hail_on=0 and nssl_ccn_on=1. It is NOT YET "
+        "IMPLEMENTED as a separate GPU scheme; MP18 is the reference-oracle-"
+        "backed exact NSSL target and carries the qh/qnh/qvolg/qvolh-style "
+        "state/oracle work.",
+        27: "REFERENCE-WITH-REAL-ORACLE / fail-closed: UDM 7-class "
+        "microphysics has active pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp27 for phys/module_mp_udm.F "
+        "selected by mp_physics=27. The JAX endpoint is NOT YET IMPLEMENTED: it "
+        "is a UFS double-moment scheme and still needs its qh plus qnn/qnc/qnr "
+        "number-state contract and kernel.",
+        29: "REFERENCE-WITH-REAL-ORACLE / fail-closed: RCON has active "
+        "pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp29 for phys/module_mp_rcon.F "
+        "selected by mp_physics=29. The JAX endpoint is NOT YET IMPLEMENTED: "
+        "this January-2025 Thompson aerosol-aware variant adds cloudnc/black-"
+        "carbon aerosol state beyond the operational mp=28 Thompson-aero path "
+        "and needs its own aerosol-state ADR.",
+        30: "PROVEN-IRRELEVANT / RESEARCH-ONLY for the lean operational GPU "
+        "target: HUJI fast spectral-bin microphysics is recognized in "
+        "phys/module_mp_fast_sbm.F, is a spectral-bin research scheme guarded by "
+        "the BUILD_SBM_FAST compile path, and requires bin-state transport plus "
+        "external SBM lookup tables. It is NOT YET IMPLEMENTED as an operational "
+        "bulk-scheme adapter.",
+        32: "PROVEN-IRRELEVANT / RESEARCH-ONLY for the lean operational GPU "
+        "target: HUJI full spectral-bin microphysics is recognized in "
+        "phys/module_mp_full_sbm.F and requires full spectral-bin-state and "
+        "external SBM lookup-table architecture. It is NOT YET IMPLEMENTED as an "
+        "operational bulk-scheme adapter.",
+        40: "REFERENCE-WITH-REAL-ORACLE / fail-closed: Morrison aerosol "
+        "microphysics has active pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp40 for "
+        "phys/module_mp_morr_two_moment_aero.F selected by mp_physics=40. The "
+        "JAX endpoint is NOT YET IMPLEMENTED: it extends Morrison with aerosol "
+        "activation/effectiveness and CCN state fields that are not in the "
+        "current operational mp=10 interface.",
+        50: "REFERENCE-WITH-REAL-ORACLE / fail-closed: P3 1-category "
+        "microphysics has active pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp50 for phys/module_mp_p3.F "
+        "selected by mp_physics=50. The JAX endpoint is NOT YET IMPLEMENTED: "
+        "the P3 family needs qir/qib/rime-density particle property state, "
+        "lookup-table initialization, and a dedicated State ADR before "
+        "operational scan wiring.",
+        51: "REFERENCE-WITH-REAL-ORACLE / fail-closed: P3 1-category + cloud-"
+        "number microphysics has active pristine-WRF full-model oracle artifacts "
+        "under proofs/v018/mp_oracles/wrf_full_model/mp51 for "
+        "phys/module_mp_p3.F selected by mp_physics=51. The JAX endpoint is NOT "
+        "YET IMPLEMENTED: the P3 family needs qnc/qir/qib/rime-density particle "
+        "property state, lookup-table initialization, and a dedicated State ADR.",
+        52: "REFERENCE-WITH-REAL-ORACLE / fail-closed: P3 2-category "
+        "microphysics has active pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp52 for phys/module_mp_p3.F "
+        "selected by mp_physics=52. The JAX endpoint is NOT YET IMPLEMENTED: it "
+        "adds qi2/qni2/qir2/qib2 second-ice-category state plus P3 particle-"
+        "property/rime-density carry that the operational State does not yet "
+        "expose.",
+        53: "REFERENCE-WITH-REAL-ORACLE / fail-closed: P3 1-category 3-moment "
+        "microphysics has active pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp53 for phys/module_mp_p3.F "
+        "selected by mp_physics=53. The JAX endpoint is NOT YET IMPLEMENTED: it "
+        "adds qzi and P3 particle-property/rime-density carry that need a "
+        "dedicated State ADR and kernel.",
+        55: "PROVEN-IRRELEVANT / RESEARCH-ONLY for the lean operational GPU "
+        "target: Jensen-ISHMAEL is recognized in phys/module_mp_jensen_ishmael.F "
+        "as an initial-release habit research model with external ishmael-*.bin "
+        "tables. It is NOT YET IMPLEMENTED: it uses multiple ice habits "
+        "(qi2/qi3), habit volume/axis scalars, phii/itype diagnostics, and "
+        "habit-state carry outside the current microphysics interface.",
+        56: "REFERENCE-WITH-REAL-ORACLE / fail-closed: NTU multi-moment "
+        "microphysics has active pristine-WRF full-model oracle artifacts under "
+        "proofs/v018/mp_oracles/wrf_full_model/mp56 for phys/module_mp_ntu.F "
+        "selected by mp_physics=56. The JAX endpoint is NOT YET IMPLEMENTED: it "
+        "requires qh plus many liquid/ice/aerosol moments "
+        "(qdc/qtc/qcc/qrc/qnin/fi/fs/vi/vs/vg/ai/as/ag/ah/i3m) and an NTU "
+        "State ADR before operational scan wiring.",
+    },
+    #
+    # ra_lw/sw_physics=14 (RRTMG-K / KIAPS) and =24 (fast RRTMG, GPU/MIC) are NOT
+    # a port gap: they are compiled OUT of standard WRF itself. Their source
+    # modules (phys/module_ra_rrtmg_{lwk,swk,lwf,swf}.F) are bare dummy stubs
+    # guarded by `#if( BUILD_RRTMK != 1)` / `#if( BUILD_RRTMG_FAST != 1)`, and the
+    # pristine configure.wrf sets `-DBUILD_RRTMK=0` / `-DBUILD_RRTMG_FAST=0`. The
+    # radiation_driver CASEs are likewise `#if( BUILD_* == 1)`-gated, so selecting
+    # 14/24 in unmodified WRF reaches the driver's default branch and aborts with
+    # "The longwave/shortwave option does not exist". They are therefore
+    # documented as class-(c) computationally-unavailable and fail closed here --
+    # there is no real oracle to build because the scheme cannot run in this build.
+    "ra_lw_physics": {
+        14: "RRTMG-K (KIAPS) longwave is compiled OUT of standard WRF "
+        "(phys/module_ra_rrtmg_lwk.F is a `#if( BUILD_RRTMK != 1)` dummy stub; "
+        "pristine configure.wrf sets -DBUILD_RRTMK=0), so it cannot run even in "
+        "unmodified WRF -- selecting it hits the radiation_driver default abort.",
+        24: "fast RRTMG (GPU/MIC) longwave is compiled OUT of standard WRF "
+        "(phys/module_ra_rrtmg_lwf.F is a `#if( BUILD_RRTMG_FAST != 1)` dummy "
+        "stub; pristine configure.wrf sets -DBUILD_RRTMG_FAST=0), so it cannot "
+        "run even in unmodified WRF -- selecting it hits the driver default abort.",
+    },
+    "ra_sw_physics": {
+        14: "RRTMG-K (KIAPS) shortwave is compiled OUT of standard WRF "
+        "(phys/module_ra_rrtmg_swk.F is a `#if( BUILD_RRTMK != 1)` dummy stub; "
+        "pristine configure.wrf sets -DBUILD_RRTMK=0), so it cannot run even in "
+        "unmodified WRF -- selecting it hits the radiation_driver default abort.",
+        24: "fast RRTMG (GPU/MIC) shortwave is compiled OUT of standard WRF "
+        "(phys/module_ra_rrtmg_swf.F is a `#if( BUILD_RRTMG_FAST != 1)` dummy "
+        "stub; pristine configure.wrf sets -DBUILD_RRTMG_FAST=0), so it cannot "
+        "run even in unmodified WRF -- selecting it hits the driver default abort.",
+    },
     "km_opt": {
         2: "1.5-order 3-D TKE closure is not implemented (the port mixes "
         "vertically via the PBL scheme, not a prognostic 3-D TKE field).",
@@ -326,6 +706,60 @@ _DYNAMICS_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
     },
     "rk_order": {
         2: "RK2 time integration is not implemented; the port is RK3-only.",
+    },
+}
+
+_SCHEME_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
+    "bl_pbl_physics": {
+        9: (
+            "UW (CAM5) PBL is a recognized WRF v4 PBL option but is NOT YET "
+            "IMPLEMENTED in the standalone GPU PBL matrix. v0.18 classified it "
+            "as a CAM-family architecture endpoint: phys/module_bl_camuwpbl_driver.F "
+            "requires CAM cloud-number/sedimentation inputs, CAMMGMP coupling, "
+            "and CAM residual-stress/cloud carry state, so it is fail-closed "
+            "until a CAM-family sprint owns the full vertical-diffusion stack."
+        ),
+    },
+}
+
+
+# Physics options that ARE valid WRF v4 codes but are documented v0.18->v1.0
+# ARCHITECTURE BOUNDARIES the port fails closed with a SPECIFIC reason +
+# alternative (reason, alternative), rather than the generic "NOT YET
+# IMPLEMENTED" text. Reserved for schemes whose faithful single-column oracle is
+# itself architecture-scale (so a v0.18-session port would necessarily become a
+# happy-path/self-compare) -- selecting one raises a clear named error, NEVER a
+# silent substitution or a stub kernel. CLM4 (sf=5) + CTSM (sf=6) are the
+# CAM/CLM/CTSM-family land-surface boundary (carried to the v1.0 ADR).
+_PHYSICS_FAIL_CLOSED_REASON: Mapping[str, dict[int, tuple[str, str]]] = {
+    "sf_surface_physics": {
+        5: (
+            "CLM4 (Community Land Model v4) is a recognized WRF v4 land-surface "
+            "option that is a documented v0.18->v1.0 ARCHITECTURE BOUNDARY, NOT a "
+            "happy-path stub: phys/module_sf_clm.F is ~61.5k LOC built around a "
+            "single global clmtype PFT/column/landunit/gridcell subgrid hierarchy "
+            "initialized from an EXTERNAL CLM surface dataset (PFT fractions + soil "
+            "colour/sand/clay) plus netCDF MEGAN/SNICAR inputs, so a faithful "
+            "single-column pristine-WRF oracle is itself architecture-scale "
+            "(multi-session) -- it is deferred to the v1.0 CAM/CLM/CTSM-family ADR "
+            "and fails closed (never silently substituted by another LSM).",
+            "Use sf_surface_physics=4 (Noah-MP, GPU-operational), 2 (Noah classic), "
+            "1 (slab) or 7 (Pleim-Xiu); 3=RUC / 8=SSiB are reference-only. CLM4 is "
+            "carried to the v1.0 CAM/CLM/CTSM ADR.",
+        ),
+        6: (
+            "CTSM (Community Terrestrial Systems Model) is a recognized WRF v4 "
+            "land-surface option that is a documented v0.18->v1.0 ARCHITECTURE "
+            "BOUNDARY: phys/module_sf_ctsm.F is compiled only under -DWRF_USE_CTSM "
+            "and runs the FULL external CESM/CTSM land model through the LILAC "
+            "coupler (its WRF-side Registry state package is empty -- it carries NO "
+            "in-core prognostic land state), so there is no in-core WRF physics to "
+            "build a single-column oracle from without the external coupled-model "
+            "build. It is out of scope for the in-core GPU dycore port and fails "
+            "closed.",
+            "Use sf_surface_physics=4 (Noah-MP), 2 (Noah classic), 1 (slab) or 7 "
+            "(Pleim-Xiu). CTSM is carried to the v1.0 CAM/CLM/CTSM ADR.",
+        ),
     },
 }
 
@@ -973,7 +1407,7 @@ def classify_scheme(key: str, code: int) -> SchemeSupport:
             wrf_name=_scheme_name_or_none(key, code),
         )
 
-    # 3) Reference-only (parity-proven, not scan-wired).
+    # 3) Reference-only (oracle-backed, not scan-wired).
     ref = _REFERENCE_ONLY.get(key)
     if ref is not None and code in ref:
         reason, alternative = ref[code]
@@ -989,18 +1423,26 @@ def classify_scheme(key: str, code: int) -> SchemeSupport:
     # 4) Recognized WRF v4 option, not implemented -> fail closed.
     scheme = wrf_scheme_name(key, code)
     if scheme is not None:
-        per_code = _DYNAMICS_FAIL_CLOSED_REASON.get(key, {})
-        reason = per_code.get(
-            code,
-            f"{scheme.name} is a recognized WRF v4 {_label(key)} option that is "
-            f"NOT YET IMPLEMENTED in the GPU port.",
-        )
+        phys = _PHYSICS_FAIL_CLOSED_REASON.get(key, {}).get(code)
+        if phys is not None:
+            # A documented v0.18->v1.0 architecture-boundary scheme (e.g. CLM4 /
+            # CTSM): a SPECIFIC named reason + alternative, never the generic
+            # "NOT YET IMPLEMENTED" text -- selecting it errors cleanly.
+            reason, alternative = phys
+        else:
+            per_code = _PER_CODE_FAIL_CLOSED_REASON.get(key, {}) | _SCHEME_FAIL_CLOSED_REASON.get(key, {})
+            reason = per_code.get(
+                code,
+                f"{scheme.name} is a recognized WRF v4 {_label(key)} option that is "
+                f"NOT YET IMPLEMENTED in the GPU port.",
+            )
+            alternative = _DEFAULT_ALTERNATIVE.get(key, "")
         return SchemeSupport(
             key=key,
             code=code,
             status=SupportStatus.RECOGNIZED_FAIL_CLOSED,
             reason=reason,
-            alternative=_DEFAULT_ALTERNATIVE.get(key, ""),
+            alternative=alternative,
             wrf_name=scheme.name,
         )
 

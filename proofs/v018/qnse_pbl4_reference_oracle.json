@@ -1,0 +1,814 @@
+{
+  "all_finite": true,
+  "cases": [
+    {
+      "case": 1,
+      "extrema": {
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EL_PBL": {
+          "max": 17.19467329997894,
+          "min": 0.0
+        },
+        "EXCH_H": {
+          "max": 13.41442583633942,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 5.844460953307467,
+          "min": 0.0
+        },
+        "P": {
+          "max": 98877.34022864261,
+          "min": 21586.80902359209
+        },
+        "PI": {
+          "max": 0.9967794566474706,
+          "min": 0.6453096035997157
+        },
+        "PINT": {
+          "max": 100000.0,
+          "min": 22303.87321932467
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.01340155722874638,
+          "min": 8.35415457284161e-05
+        },
+        "RHO": {
+          "max": 1.142679568228821,
+          "min": 0.3345447067655488
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 2.08274390441011e-07,
+          "min": 2.013164824125373e-12
+        },
+        "RTHBLTEN": {
+          "max": 0.001381725900264049,
+          "min": -1.293424511459307e-05
+        },
+        "RUBLTEN": {
+          "max": 1.877868297646875e-06,
+          "min": -0.004742938696506401
+        },
+        "RVBLTEN": {
+          "max": 4.694670744117187e-07,
+          "min": -0.0011857346741266
+        },
+        "T": {
+          "max": 299.0638835440122,
+          "min": 224.8176055826524
+        },
+        "TH": {
+          "max": 348.3871994598522,
+          "min": 300.0301436286338
+        },
+        "TKE_PBL": {
+          "max": 1.0,
+          "min": 0.03837043717132092
+        },
+        "U": {
+          "max": 21.66906648661741,
+          "min": 4.150718143169167
+        },
+        "V": {
+          "max": 5.417266621654353,
+          "min": 1.037679535792292
+        }
+      },
+      "finite": {
+        "DZ": true,
+        "EL_PBL": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P": true,
+        "PI": true,
+        "PINT": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "T": true,
+        "TH": true,
+        "TKE_PBL": true,
+        "U": true,
+        "V": true
+      },
+      "kpbl": 32,
+      "pblh_m": 12000.0,
+      "regime": "unstable_daytime",
+      "scalar_finite": {
+        "AKHS": true,
+        "AKMS": true,
+        "CASE": true,
+        "DT": true,
+        "ELFLX": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KPBL": true,
+        "KX": true,
+        "PBL": true,
+        "QSFC": true,
+        "QZ0": true,
+        "THZ0": true,
+        "TSK": true,
+        "UST": true,
+        "UZ0": true,
+        "VZ0": true,
+        "XLAND": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 2,
+      "extrema": {
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EL_PBL": {
+          "max": 19.77129467773605,
+          "min": 0.0
+        },
+        "EXCH_H": {
+          "max": 12.7687671110535,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 5.563157284023806,
+          "min": 0.0
+        },
+        "P": {
+          "max": 99679.59091600752,
+          "min": 21582.99567030153
+        },
+        "PI": {
+          "max": 0.9990834959808836,
+          "min": 0.6452770314757623
+        },
+        "PINT": {
+          "max": 100800.0,
+          "min": 22313.77497969112
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.01539346462741783,
+          "min": 0.0001723994439469169
+        },
+        "RHO": {
+          "max": 1.140351050996959,
+          "min": 0.3410088085899209
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 1.686329701606345e-07,
+          "min": 3.816713058807938e-12
+        },
+        "RTHBLTEN": {
+          "max": 0.0023564221141811,
+          "min": -7.553821989366346e-06
+        },
+        "RUBLTEN": {
+          "max": 1.748414493585315e-06,
+          "min": -0.004795242929992701
+        },
+        "RVBLTEN": {
+          "max": 4.371036233963288e-07,
+          "min": -0.001198810732498175
+        },
+        "T": {
+          "max": 301.7432931208115,
+          "min": 220.5051222880043
+        },
+        "TH": {
+          "max": 341.7216350994307,
+          "min": 302.0200957524225
+        },
+        "TKE_PBL": {
+          "max": 2.115702479338843,
+          "min": 0.0400992745124323
+        },
+        "U": {
+          "max": 27.55875531548988,
+          "min": 4.200957524225555
+        },
+        "V": {
+          "max": 6.889688828872471,
+          "min": 1.050239381056389
+        }
+      },
+      "finite": {
+        "DZ": true,
+        "EL_PBL": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P": true,
+        "PI": true,
+        "PINT": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "T": true,
+        "TH": true,
+        "TKE_PBL": true,
+        "U": true,
+        "V": true
+      },
+      "kpbl": 32,
+      "pblh_m": 12000.0,
+      "regime": "strong_unstable",
+      "scalar_finite": {
+        "AKHS": true,
+        "AKMS": true,
+        "CASE": true,
+        "DT": true,
+        "ELFLX": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KPBL": true,
+        "KX": true,
+        "PBL": true,
+        "QSFC": true,
+        "QZ0": true,
+        "THZ0": true,
+        "TSK": true,
+        "UST": true,
+        "UZ0": true,
+        "VZ0": true,
+        "XLAND": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 3,
+      "extrema": {
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EL_PBL": {
+          "max": 7.128693011473795,
+          "min": 0.0
+        },
+        "EXCH_H": {
+          "max": 0.05852017163482719,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.1984099674030077,
+          "min": 0.0
+        },
+        "P": {
+          "max": 99321.36620795811,
+          "min": 21733.26350117424
+        },
+        "PI": {
+          "max": 0.9980563285733907,
+          "min": 0.6465574604867054
+        },
+        "PINT": {
+          "max": 100500.0,
+          "min": 22434.14510643914
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.005634792046505441,
+          "min": 1e-05
+        },
+        "RHO": {
+          "max": 1.199830270156089,
+          "min": 0.3269002405970112
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 9.515206925547369e-11,
+          "min": -7.44233774411331e-10
+        },
+        "RTHBLTEN": {
+          "max": -2.018053919528029e-08,
+          "min": -0.0002254706608776284
+        },
+        "RUBLTEN": {
+          "max": -6.730763402925295e-08,
+          "min": -0.005322666574818546
+        },
+        "RVBLTEN": {
+          "max": -1.682690850731324e-08,
+          "min": -0.001330666643704637
+        },
+        "T": {
+          "max": 287.4450009447019,
+          "min": 231.6461926630089
+        },
+        "TH": {
+          "max": 358.2762659464697,
+          "min": 288.0047876211278
+        },
+        "TKE_PBL": {
+          "max": 0.2066115702479339,
+          "min": 0.03303118618639356
+        },
+        "U": {
+          "max": 74.67626594646964,
+          "min": 4.602872572676665
+        },
+        "V": {
+          "max": 18.66906648661741,
+          "min": 1.150718143169166
+        }
+      },
+      "finite": {
+        "DZ": true,
+        "EL_PBL": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P": true,
+        "PI": true,
+        "PINT": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "T": true,
+        "TH": true,
+        "TKE_PBL": true,
+        "U": true,
+        "V": true
+      },
+      "kpbl": 32,
+      "pblh_m": 12000.0,
+      "regime": "stable_nocturnal",
+      "scalar_finite": {
+        "AKHS": true,
+        "AKMS": true,
+        "CASE": true,
+        "DT": true,
+        "ELFLX": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KPBL": true,
+        "KX": true,
+        "PBL": true,
+        "QSFC": true,
+        "QZ0": true,
+        "THZ0": true,
+        "TSK": true,
+        "UST": true,
+        "UZ0": true,
+        "VZ0": true,
+        "XLAND": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 4,
+      "extrema": {
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EL_PBL": {
+          "max": 6.811242363169232,
+          "min": 0.0
+        },
+        "EXCH_H": {
+          "max": 0.054503485349141,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.1913309693959125,
+          "min": 0.0
+        },
+        "P": {
+          "max": 100023.9405698841,
+          "min": 20168.37273859334
+        },
+        "PI": {
+          "max": 1.000068395780562,
+          "min": 0.632899177341444
+        },
+        "PINT": {
+          "max": 101200.0,
+          "min": 20895.73850659358
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.009620915392136142,
+          "min": 0.000107749652466823
+        },
+        "RHO": {
+          "max": 1.197171702992128,
+          "min": 0.3396401336382039
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 1.073765534413825e-07,
+          "min": 1.360944500683454e-12
+        },
+        "RTHBLTEN": {
+          "max": -9.279699497710681e-09,
+          "min": -0.002756242343311518
+        },
+        "RUBLTEN": {
+          "max": -1.030081307658766e-08,
+          "min": -0.004745070469153512
+        },
+        "RVBLTEN": {
+          "max": -2.575203269146916e-09,
+          "min": -0.001186267617288378
+        },
+        "T": {
+          "max": 289.4217089183269,
+          "min": 206.8909490605247
+        },
+        "TH": {
+          "max": 326.8940085047838,
+          "min": 289.4019150484511
+        },
+        "TKE_PBL": {
+          "max": 0.1071074380165289,
+          "min": 0.03218469938547518
+        },
+        "U": {
+          "max": 15.77937765774494,
+          "min": 4.100478762112777
+        },
+        "V": {
+          "max": 3.944844414436235,
+          "min": 1.025119690528194
+        }
+      },
+      "finite": {
+        "DZ": true,
+        "EL_PBL": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P": true,
+        "PI": true,
+        "PINT": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "T": true,
+        "TH": true,
+        "TKE_PBL": true,
+        "U": true,
+        "V": true
+      },
+      "kpbl": 32,
+      "pblh_m": 12000.0,
+      "regime": "stable_marine",
+      "scalar_finite": {
+        "AKHS": true,
+        "AKMS": true,
+        "CASE": true,
+        "DT": true,
+        "ELFLX": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KPBL": true,
+        "KX": true,
+        "PBL": true,
+        "QSFC": true,
+        "QZ0": true,
+        "THZ0": true,
+        "TSK": true,
+        "UST": true,
+        "UZ0": true,
+        "VZ0": true,
+        "XLAND": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 5,
+      "extrema": {
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EL_PBL": {
+          "max": 14.86830381293229,
+          "min": 0.0
+        },
+        "EXCH_H": {
+          "max": 0.1390481803253112,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.4142485532223428,
+          "min": 0.0
+        },
+        "P": {
+          "max": 98859.34336774255,
+          "min": 20319.43457636098
+        },
+        "PI": {
+          "max": 0.99672761733275,
+          "min": 0.6342499804520825
+        },
+        "PINT": {
+          "max": 100000.0,
+          "min": 21044.4919806834
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.00859819599076698,
+          "min": 4.255159265914686e-05
+        },
+        "RHO": {
+          "max": 1.1610593718884,
+          "min": 0.338523515762034
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 5.985774244538983e-10,
+          "min": -2.357150748570273e-09
+        },
+        "RTHBLTEN": {
+          "max": 6.343403763745906e-07,
+          "min": -5.795031086108793e-07
+        },
+        "RUBLTEN": {
+          "max": -6.61342709188754e-08,
+          "min": -0.004914606421640396
+        },
+        "RVBLTEN": {
+          "max": -1.653356772971885e-08,
+          "min": -0.001228651605410099
+        },
+        "T": {
+          "max": 295.1315246876472,
+          "min": 209.1364043925803
+        },
+        "TH": {
+          "max": 329.7381329732348,
+          "min": 296.1004787621128
+        },
+        "TKE_PBL": {
+          "max": 0.5289256198347108,
+          "min": 0.03876861536970567
+        },
+        "U": {
+          "max": 33.44844414436236,
+          "min": 4.251196905281944
+        },
+        "V": {
+          "max": 8.362111036090589,
+          "min": 1.062799226320486
+        }
+      },
+      "finite": {
+        "DZ": true,
+        "EL_PBL": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P": true,
+        "PI": true,
+        "PINT": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "T": true,
+        "TH": true,
+        "TKE_PBL": true,
+        "U": true,
+        "V": true
+      },
+      "kpbl": 32,
+      "pblh_m": 12000.0,
+      "regime": "neutral",
+      "scalar_finite": {
+        "AKHS": true,
+        "AKMS": true,
+        "CASE": true,
+        "DT": true,
+        "ELFLX": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KPBL": true,
+        "KX": true,
+        "PBL": true,
+        "QSFC": true,
+        "QZ0": true,
+        "THZ0": true,
+        "TSK": true,
+        "UST": true,
+        "UZ0": true,
+        "VZ0": true,
+        "XLAND": true,
+        "ZNT": true
+      }
+    },
+    {
+      "case": 6,
+      "extrema": {
+        "DZ": {
+          "max": 441.2446845101185,
+          "min": 200.957524225555
+        },
+        "EL_PBL": {
+          "max": 2.902927233434696,
+          "min": 0.0
+        },
+        "EXCH_H": {
+          "max": 0.02317240646032638,
+          "min": 0.0
+        },
+        "EXCH_M": {
+          "max": 0.08122025765599615,
+          "min": 0.0
+        },
+        "P": {
+          "max": 98358.9270199246,
+          "min": 20683.40030052583
+        },
+        "PI": {
+          "max": 0.9952834786269982,
+          "min": 0.6374753714008511
+        },
+        "PINT": {
+          "max": 99500.0,
+          "min": 21395.78922986037
+        },
+        "QC": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "QV": {
+          "max": 0.007565663176455319,
+          "min": 1.150864073983968e-05
+        },
+        "RHO": {
+          "max": 1.161504377252349,
+          "min": 0.3324851904726536
+        },
+        "RQCBLTEN": {
+          "max": 0.0,
+          "min": 0.0
+        },
+        "RQVBLTEN": {
+          "max": 4.005464855090531e-08,
+          "min": 1.163840811821297e-13
+        },
+        "RTHBLTEN": {
+          "max": 7.820944048072912e-05,
+          "min": -1.952934743106501e-07
+        },
+        "RUBLTEN": {
+          "max": -7.001319790589377e-09,
+          "min": -0.004746030967932395
+        },
+        "RVBLTEN": {
+          "max": -1.750329947647344e-09,
+          "min": -0.001186507741983099
+        },
+        "T": {
+          "max": 293.7086310468482,
+          "min": 216.7527888722767
+        },
+        "TH": {
+          "max": 340.0175106309798,
+          "min": 295.1004787621128
+        },
+        "TKE_PBL": {
+          "max": 0.01153420844537761,
+          "min": 0.006920855211273211
+        },
+        "U": {
+          "max": 15.77937765774494,
+          "min": 4.100478762112777
+        },
+        "V": {
+          "max": 3.944844414436235,
+          "min": 1.025119690528194
+        }
+      },
+      "finite": {
+        "DZ": true,
+        "EL_PBL": true,
+        "EXCH_H": true,
+        "EXCH_M": true,
+        "P": true,
+        "PI": true,
+        "PINT": true,
+        "QC": true,
+        "QV": true,
+        "RHO": true,
+        "RQCBLTEN": true,
+        "RQVBLTEN": true,
+        "RTHBLTEN": true,
+        "RUBLTEN": true,
+        "RVBLTEN": true,
+        "T": true,
+        "TH": true,
+        "TKE_PBL": true,
+        "U": true,
+        "V": true
+      },
+      "kpbl": 32,
+      "pblh_m": 12000.0,
+      "regime": "low_ust_edge",
+      "scalar_finite": {
+        "AKHS": true,
+        "AKMS": true,
+        "CASE": true,
+        "DT": true,
+        "ELFLX": true,
+        "FULL_WRF_EXE": true,
+        "HFX": true,
+        "KPBL": true,
+        "KX": true,
+        "PBL": true,
+        "QSFC": true,
+        "QZ0": true,
+        "THZ0": true,
+        "TSK": true,
+        "UST": true,
+        "UZ0": true,
+        "VZ0": true,
+        "XLAND": true,
+        "ZNT": true
+      }
+    }
+  ],
+  "endpoint_class": "reference_with_real_oracle",
+  "git_head": "66896f08ab06d457eb076e715fe7915e02630075",
+  "operational_kernel": null,
+  "oracle": {
+    "build_manifest": [
+      "mode=fp64",
+      "full_wrf_exe=false",
+      "wrf_sources=/home/user/src/wrf_pristine/WRF/share/module_model_constants.F,/home/user/src/wrf_pristine/WRF/phys/module_bl_qnsepbl.F",
+      "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
+      "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -DNMM_CORE=0 -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
+    ],
+    "full_wrf_exe": false,
+    "savepoints": "proofs/v018/savepoints_fp64/qnse",
+    "self_compare": false,
+    "source_checksums_sha256": [
+      "5b80377fecdc18a5f0ad38d3b6c15cfc86ad5d76701adbbbb08a08698d0f7062  module_model_constants.F",
+      "737a235b9febb01004d5bfe7a9364a0fc57e8af79cbced8239d68ab623e80e66  module_bl_qnsepbl.F"
+    ],
+    "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF phys/module_bl_qnsepbl.F"
+  },
+  "schema": "gpuwrf.v018.qnse_pbl4_reference_oracle.v1",
+  "scheme": "QNSE-EDMF PBL (bl_pbl_physics=4)",
+  "verdict": "PASS"
+}

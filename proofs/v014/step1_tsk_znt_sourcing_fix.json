@@ -58,7 +58,7 @@
     }
   },
   "created_utc": "2026-06-10T04:01:45.823562+00:00",
-  "host": "user-workstation",
+  "host": "user-battlestation",
   "later_handoff_metrics": {
     "mynn_driver_in_tsk_vs_sfclay_in_tsk": {
       "bias": 0.07544341686227696,

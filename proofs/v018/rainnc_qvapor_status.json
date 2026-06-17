@@ -1,0 +1,130 @@
+{
+  "schema": "v018_rainnc_qvapor_status",
+  "schema_version": 1,
+  "decision": {
+    "accepted": true,
+    "accepted_class": "c",
+    "accepted_class_label": "real-world-irrelevant bounded coupled diagnostic residual",
+    "tolerance_widened": false,
+    "rationale": [
+      "RAINNC bulk 72h RMSE remains outside the frozen tolerance, but the bounded per-process pass did not find a single remaining bounded missing mass-production process.",
+      "The faithful cold-process work is kept: rci/sci/rcg are oracle-green, qcfz WRF-active/JAX-zero was fixed, and the remaining signal is diffuse Thompson staging plus coupled accumulated-precip propagation.",
+      "RAINNC is a derived accumulated-precip diagnostic in this replay gate, not a prognostic feedback field; this residual is accepted as no forecast-skill-impact for this sprint.",
+      "QVAPOR is prognostic, passes the frozen Switzerland 72h gate, and improved versus the v017 baseline."
+    ]
+  },
+  "rainnc": {
+    "status": "process-green+bounded-coupled-residual",
+    "accepted_class": "c",
+    "bulk_tolerance_pass": false,
+    "bulk_tolerance": {
+      "metric": "RMSE_mm",
+      "limit": 1.0,
+      "widened": false
+    },
+    "switzerland_72h_rmse_mm": {
+      "v017_baseline": 5.0787054202182125,
+      "v018_pre_qcfz": 5.2200971263847045,
+      "v018_final_qcfz": 5.220155956735137
+    },
+    "residual_classification": {
+      "kind": "diffuse_coupled_accumulated_precip_diagnostic",
+      "single_bounded_missing_process_found": false,
+      "writer_or_accumulator_convention_ruled_out": true,
+      "forecast_skill_impact": "none_expected_by_decision"
+    },
+    "accumulator_decomposition_rmse_mm": {
+      "RAINC": {
+        "v017_baseline": 0.0,
+        "v018_pre_qcfz": 0.0,
+        "v018_final_qcfz": 0.0
+      },
+      "LIQ_DERIVED": {
+        "v017_baseline": 4.150177713162069,
+        "v018_pre_qcfz": 4.296899246212194,
+        "v018_final_qcfz": 4.296910789520173
+      },
+      "SNOWNC": {
+        "v017_baseline": 2.908838444559882,
+        "v018_pre_qcfz": 2.908122512935265,
+        "v018_final_qcfz": 2.9081612239109256
+      },
+      "GRAUPELNC": {
+        "v017_baseline": 0.4710224637351543,
+        "v018_pre_qcfz": 0.4584771976481336,
+        "v018_final_qcfz": 0.4584574568873638
+      }
+    }
+  },
+  "qvapor": {
+    "status": "green",
+    "tolerance_pass": true,
+    "tolerance": {
+      "metric": "RMSE",
+      "limit": 0.001,
+      "widened": false
+    },
+    "switzerland_72h_rmse": {
+      "v017_baseline": 0.0005858611198575604,
+      "v018_pre_qcfz": 0.0005583985710404751,
+      "v018_final_qcfz": 0.000558447999338664
+    },
+    "improvement_vs_v017_final": -0.000027413120518896347
+  },
+  "process_oracle": {
+    "rci_sci_terms_match_wrf": true,
+    "rcg_terms_match_wrf": true,
+    "qcfz_wrf_active_jax_zero_gap_fixed": true,
+    "qcfz_remaining_numeric_delta": {
+      "pri_wfz_l1_rel_to_wrf": 0.12740749220296332,
+      "pni_wfz_l1_rel_to_wrf": 0.1274074897278674,
+      "classification": "source-staging residual, not a missing bounded process"
+    },
+    "warm_rain_terms": {
+      "prr_wau_l1_rel_to_wrf": 0.000006493694727845888,
+      "prr_rcw_l1_rel_to_wrf": 0.0000006729488231354465
+    },
+    "cold_collection_terms": {
+      "prr_rcg_l1_rel_to_wrf": 0.000000034008449716714404,
+      "prg_rcg_l1_rel_to_wrf": 0.000000034008449716714404,
+      "prr_rci_l1_rel_to_wrf": 0.00000009978349636695823,
+      "prg_rci_l1_rel_to_wrf": 0.00000006863691370157585,
+      "prs_sci_l1_rel_to_wrf": 0.0000006524182088126256
+    },
+    "remaining_wrf_active_jax_zero_terms": [
+      {
+        "term": "pni_ihm",
+        "abs_sum": 2185.9561796962007,
+        "mass_process": false
+      },
+      {
+        "term": "pri_ihm",
+        "abs_sum": 2.1859561709615514e-9,
+        "mass_process": true
+      },
+      {
+        "term": "prs_ihm",
+        "abs_sum": 1.814476656724954e-9,
+        "mass_process": true
+      },
+      {
+        "term": "prg_ihm",
+        "abs_sum": 3.714795142365969e-10,
+        "mass_process": true
+      }
+    ]
+  },
+  "proof_objects": {
+    "process_oracle_json": "proofs/v018/thompson_process_oracle.json",
+    "target_metrics_json": "proofs/v018/switzerland_72h_target_metrics.json",
+    "final_report_md": "proofs/v018/rainnc_qvapor_fix_report.md",
+    "post_qcfz_grid_compare_json": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.json",
+    "post_qcfz_grid_compare_md": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.md",
+    "post_qcfz_run_root": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z"
+  },
+  "final_verdict": {
+    "rainnc": "accepted_class_c_process_green_bounded_coupled_residual",
+    "qvapor": "green",
+    "no_tolerance_widening": true
+  }
+}

@@ -1,0 +1,5 @@
+[with_gpu_lock] gpt-radfix waiting for GPU lock (/tmp/wrf_gpu2_gpu.lock, timeout 7200s)...
+[with_gpu_lock] gpt-radfix ACQUIRED GPU lock -> running: taskset -c 0-3 env OMP_NUM_THREADS=4 PYTHONPATH=src JAX_ENABLE_X64=true JAX_PLATFORMS=cuda CUDA_VISIBLE_DEVICES=0 XLA_PYTHON_CLIENT_PREALLOCATE=false GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache pytest -q tests/test_v017_qh_hail_state.py::test_state_zeros_hail_leaves_zero_on_gpu --tb=short
+.                                                                        [100%]
+1 passed in 3.19s
+[with_gpu_lock] gpt-radfix released GPU lock (rc=0)

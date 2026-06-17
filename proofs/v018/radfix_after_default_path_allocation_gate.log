@@ -1,0 +1,3 @@
+mp=8 active_fields=60 tree_leaves=60 bytes=213088 conditional={'qh': False, 'Nh': False, 'qvolg': False, 'qvolh': False, 'nwfa': False, 'nifa': False, 'hail_acc': False}
+mp=24 active_fields=65 tree_leaves=65 bytes=223840 conditional={'qh': True, 'Nh': True, 'qvolg': True, 'qvolh': True, 'nwfa': False, 'nifa': False, 'hail_acc': True}
+mp=28 active_fields=62 tree_leaves=62 bytes=218208 conditional={'qh': False, 'Nh': False, 'qvolg': False, 'qvolh': False, 'nwfa': True, 'nifa': True, 'hail_acc': False}

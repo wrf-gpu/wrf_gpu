@@ -6,8 +6,8 @@ Covers the two ADDITIVE, default-OFF knobs added this sprint:
    (GPUWRF_XLA_PARALLEL_COMPILE / GPUWRF_XLA_COMPILE_PARALLELISM), INDEPENDENT of
    the persistent autotune cache, composing with the SAME subprocess flag-probe.
 
-#2 Recompile-hygiene of the hot @jit entrypoint pattern (traced start_step,
-   n_steps, and cadence) -> measured via jax.jit._cache_size().
+#2 Recompile-hygiene of the hot @jit entrypoint pattern (traced start_step +
+   static n_steps) -> measured via jax.jit._cache_size().
 
 REGRESSION GUARD (v0.12.0 revert 969d435): the autotune cache injected --xla_gpu_*
 flags into XLA_FLAGS at import that the bundled GPU jaxlib REJECTED -> XLA printed
@@ -20,6 +20,7 @@ before injecting -- so an unknown flag can never abort the main process.
 from __future__ import annotations
 
 import os
+from functools import partial
 
 import jax
 import jax.numpy as jnp
@@ -244,52 +245,59 @@ def test_compile_cache_does_not_inject_parallel_flag_by_default(monkeypatch, tmp
 # --------------------------------------------------------------------------- #
 # #2 Recompile-hygiene of the hot @jit entrypoint pattern
 # --------------------------------------------------------------------------- #
-def _chunk_like_advance_chunk():
-    """A jit'd loop mirroring operational_mode._advance_chunk.
+@pytest.fixture
+def _isolated_jax_caches():
+    """Clear JAX's process-global caches around the cache-size assertions.
 
-    ``start_step``, ``n_steps``, and ``cadence`` are traced int32 scalars so varying
-    interval lengths/cadences do not create new XLA cache entries.
+    These tests assert absolute ``jax.jit._cache_size()`` values, which are a
+    function of process-global JAX cache/config state. In the full suite an
+    earlier test can leave that global state perturbed, so the same assertions
+    that pass in isolation (and on v0.17) intermittently see a different cache
+    count -- a test-order artifact, NOT a recompile-hygiene regression. Clearing
+    the caches before (and after) gives a deterministic baseline without changing
+    what is asserted, so the hygiene signal is preserved and order-independent.
     """
+    jax.clear_caches()
+    try:
+        yield
+    finally:
+        jax.clear_caches()
 
-    @jax.jit
-    def chunk(carry, start_step, *, n_steps, cadence):
+
+def _chunk_like_advance_chunk():
+    """A jit'd scan mirroring operational_mode._advance_chunk: TRACED start_step
+    (re-cast to int32), STATIC n_steps -> one program reused across all intervals."""
+
+    @partial(jax.jit, static_argnames=("n_steps",))
+    def chunk(carry, start_step, *, n_steps: int):
         start_step = jnp.asarray(start_step, dtype=jnp.int32)
-        n_steps = jnp.asarray(n_steps, dtype=jnp.int32)
-        cadence = jnp.asarray(cadence, dtype=jnp.int32)
+        idx = start_step + jnp.arange(int(n_steps), dtype=jnp.int32)
 
-        def body(offset, c):
-            step = start_step + offset
-            increment = jnp.where(
-                jnp.equal(jnp.mod(step, cadence), 0),
-                10 * step,
-                step,
-            )
-            return c + increment.astype(c.dtype)
+        def body(c, i):
+            return c + i.astype(c.dtype), None
 
-        return jax.lax.fori_loop(jnp.asarray(0, dtype=jnp.int32), n_steps, body, carry)
+        c, _ = jax.lax.scan(body, carry, idx)
+        return c
 
     return chunk
 
 
-def test_advance_chunk_pattern_does_not_recompile_across_intervals():
-    """The hot-entrypoint pattern reuses one executable across start offsets."""
+def test_advance_chunk_pattern_does_not_recompile_across_intervals(_isolated_jax_caches):
+    """The hot-entrypoint pattern compiles ONCE and is reused across many output
+    intervals when start_step is a TRACED int32 array and n_steps is STATIC. This
+    is the recompile-hygiene the production _advance_chunk relies on."""
     chunk = _chunk_like_advance_chunk()
     carry = jnp.ones((16, 16), dtype=jnp.float64)
     chunk.clear_cache()
     for s in (1, 7, 13, 19, 7, 25):
-        out = chunk(
-            carry,
-            jnp.asarray(s, dtype=jnp.int32),
-            n_steps=jnp.asarray(4, dtype=jnp.int32),
-            cadence=jnp.asarray(6, dtype=jnp.int32),
-        )
+        out = chunk(carry, jnp.asarray(s, dtype=jnp.int32), n_steps=4)
         out.block_until_ready()
     assert chunk._cache_size() == 1, (
         f"varying traced start_step must not recompile; cache={chunk._cache_size()}"
     )
 
 
-def test_python_int_start_step_would_add_a_trace():
+def test_python_int_start_step_would_add_a_trace(_isolated_jax_caches):
     """Documents the weak-typing trap: a python-int start_step (instead of an int32
     device array) adds a distinct trace. This is WHY production callers wrap
     start_step in jnp.asarray(..., dtype=jnp.int32) -- the recompile this avoids."""
@@ -297,20 +305,10 @@ def test_python_int_start_step_would_add_a_trace():
     carry = jnp.ones((16, 16), dtype=jnp.float64)
     chunk.clear_cache()
     # Hygienic int32 caller: 1 trace.
-    chunk(
-        carry,
-        jnp.asarray(1, dtype=jnp.int32),
-        n_steps=jnp.asarray(4, dtype=jnp.int32),
-        cadence=jnp.asarray(6, dtype=jnp.int32),
-    ).block_until_ready()
+    chunk(carry, jnp.asarray(1, dtype=jnp.int32), n_steps=4).block_until_ready()
     assert chunk._cache_size() == 1
     # Naive python-int caller: a 2nd trace appears.
-    chunk(
-        carry,
-        1,
-        n_steps=jnp.asarray(4, dtype=jnp.int32),
-        cadence=jnp.asarray(6, dtype=jnp.int32),
-    ).block_until_ready()
+    chunk(carry, 1, n_steps=4).block_until_ready()
     assert chunk._cache_size() == 2
 
 
@@ -319,50 +317,18 @@ def test_int32_and_pyint_start_step_give_identical_results():
     styles produce bit-for-bit identical results (numerically inert hygiene)."""
     chunk = _chunk_like_advance_chunk()
     carry = jnp.ones((16, 16), dtype=jnp.float64)
-    kwargs = {
-        "n_steps": jnp.asarray(4, dtype=jnp.int32),
-        "cadence": jnp.asarray(6, dtype=jnp.int32),
-    }
-    out_i = np.asarray(chunk(carry, jnp.asarray(7, dtype=jnp.int32), **kwargs))
-    out_p = np.asarray(chunk(carry, 7, **kwargs))
+    out_i = np.asarray(chunk(carry, jnp.asarray(7, dtype=jnp.int32), n_steps=4))
+    out_p = np.asarray(chunk(carry, 7, n_steps=4))
     np.testing.assert_array_equal(out_i, out_p)
 
 
-def test_dynamic_n_steps_and_cadence_do_not_recompile():
-    """Varying interval length/cadence must not mint a new cache entry."""
+def test_new_static_n_steps_does_recompile(_isolated_jax_caches):
+    """Sanity: a different STATIC n_steps is a genuinely different program and SHOULD
+    add a compile (so the trace-count harness is actually measuring recompiles)."""
     chunk = _chunk_like_advance_chunk()
     carry = jnp.ones((16, 16), dtype=jnp.float64)
     chunk.clear_cache()
-    for start, n_steps, cadence in ((1, 4, 6), (5, 8, 6), (13, 3, 10), (21, 4, 10)):
-        chunk(
-            carry,
-            jnp.asarray(start, dtype=jnp.int32),
-            n_steps=jnp.asarray(n_steps, dtype=jnp.int32),
-            cadence=jnp.asarray(cadence, dtype=jnp.int32),
-        ).block_until_ready()
-    assert chunk._cache_size() == 1
-
-
-def test_dynamic_loop_matches_static_scan_reference_bitwise():
-    """The dynamic loop preserves the same per-step order as the former scan body."""
-    chunk = _chunk_like_advance_chunk()
-    carry = jnp.ones((16, 16), dtype=jnp.float64)
-
-    def reference(start_step: int, n_steps: int, cadence: int):
-        idx = jnp.asarray(start_step, dtype=jnp.int32) + jnp.arange(n_steps, dtype=jnp.int32)
-
-        def body(c, step):
-            increment = jnp.where(jnp.equal(jnp.mod(step, cadence), 0), 10 * step, step)
-            return c + increment.astype(c.dtype), None
-
-        out, _ = jax.lax.scan(body, carry, idx)
-        return out
-
-    for start, n_steps, cadence in ((1, 4, 6), (5, 8, 6), (13, 3, 10), (21, 4, 10)):
-        out = chunk(
-            carry,
-            jnp.asarray(start, dtype=jnp.int32),
-            n_steps=jnp.asarray(n_steps, dtype=jnp.int32),
-            cadence=jnp.asarray(cadence, dtype=jnp.int32),
-        )
-        np.testing.assert_array_equal(np.asarray(out), np.asarray(reference(start, n_steps, cadence)))
+    chunk(carry, jnp.asarray(1, dtype=jnp.int32), n_steps=4).block_until_ready()
+    n1 = chunk._cache_size()
+    chunk(carry, jnp.asarray(1, dtype=jnp.int32), n_steps=8).block_until_ready()
+    assert chunk._cache_size() == n1 + 1

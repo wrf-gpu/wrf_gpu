@@ -17,6 +17,23 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _config_wrf_root() -> Path | None:
+    """Return ``config.paths.wrf_root()`` if the ``gpuwrf`` package is importable.
+
+    This script is loaded two ways: as a standalone CLI (``PYTHONPATH=src``) and as
+    the RRTMG table extractor module pulled in by ``gpuwrf.physics.rrtmg_lw`` (in
+    which case ``gpuwrf`` is already imported). Either way the env-overridable
+    ``GPUWRF_WRF_ROOT`` is the single source of truth for the WRF source/run tree;
+    we just defer the import so a missing package doesn't break the standalone path.
+    """
+
+    try:
+        from gpuwrf.config.paths import wrf_root  # noqa: PLC0415 (deferred on purpose)
+    except Exception:
+        return None
+    return wrf_root()
+
+
 def _resolve_wrf_root() -> Path:
     """Resolve the WRF source tree that carries the RRTMG ``.F`` + DATA tables.
 
@@ -24,30 +41,34 @@ def _resolve_wrf_root() -> Path:
     workstation path was hardcoded, which makes a clean clone (or a corpus with the
     artifacts tree purged) un-runnable -- the exact standalone out-of-the-box
     failure mode this guards. Precedence:
-      1. ``$GPUWRF_WRF_SRC`` (explicit override),
-      2. the historical workstation artifacts path (kept for the original layout),
-      3. the pristine WRF build (``/home/user/src/wrf_pristine/WRF``; project memory
-         "WRF ground truth BUILT 2026-05-29"),
+      1. ``config.paths.wrf_root()`` (the env-overridable ``GPUWRF_WRF_ROOT``; the
+         single source of truth shared with every other runtime path),
+      2. ``$GPUWRF_WRF_SRC`` (legacy explicit override, kept for old harnesses),
+      3. the historical workstation artifacts path (kept for the original layout),
       4. a checkout-relative ``external/WRF``.
-    Returns the first that has ``phys/module_ra_rrtmg_lw.F``; falls back to the
-    historical path (so the error message still names a concrete location).
+    Returns the first that has ``phys/module_ra_rrtmg_lw.F``; falls back to
+    ``wrf_root()`` (so the error message names the env-configured location).
     """
 
-    candidates = []
+    candidates: list[Path] = []
+    config_root = _config_wrf_root()
+    if config_root is not None:
+        candidates.append(config_root)
     env = os.environ.get("GPUWRF_WRF_SRC", "").strip()
     if env:
         candidates.append(Path(env).expanduser())
     candidates.extend(
         [
             Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF"),
-            Path("/home/user/src/wrf_pristine/WRF"),
             ROOT / "external" / "WRF",
         ]
     )
     for cand in candidates:
         if (cand / "phys" / "module_ra_rrtmg_lw.F").is_file():
             return cand
-    return candidates[1] if len(candidates) > 1 else candidates[0]
+    # No candidate had the source; prefer the env-configured root so the
+    # downstream FileNotFoundError names a path the user actually controls.
+    return config_root or candidates[0]
 
 
 WRF_ROOT = _resolve_wrf_root()

@@ -13,6 +13,7 @@ import numpy as np
 from gpuwrf.physics.rrtmg_constants import CP_AIR, STEFAN_BOLTZMANN
 from gpuwrf.physics.rrtmg_lw import solve_rrtmg_lw_column
 from gpuwrf.physics.rrtmg_sw import solve_rrtmg_sw_column
+from gpuwrf.validation.proof_write import should_write_proof as _should_write_proof
 from gpuwrf.validation.tier1_rrtmg import LW_SAMPLE, SW_SAMPLE, load_lw_fixture_state, load_sw_fixture_state
 
 
@@ -116,8 +117,9 @@ def run_tier2(out: Path = ARTIFACT) -> dict[str, Any]:
     """Writes the required Tier-2 RRTMG invariant proof JSON."""
 
     record = invariant_record()
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if _should_write_proof(out, ARTIFACT):
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return record
 
 

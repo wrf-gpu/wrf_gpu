@@ -1,0 +1,216 @@
+{
+  "asset_dir": "docs/assets/v018/identity_proof/canary_l2_d02",
+  "command": "scripts/build_identity_proof_plots.py --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z --gpu-dir /mnt/data/wrf_gpu_validation/v018_canary_d02_8h_gpu_20260617T081455Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z --domain d02 --init 2026-05-01T18:00:00+00:00 --min-lead 1 --max-lead 8 --case-id canary_l2_d02_8h --region-label Canary L2 d02 8h (2026-05-01 18Z, v0.18 GPU vs CPU-WRF, fresh nested run) --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --spatial-lead 2 --spatial-lead 5 --spatial-lead 8 --proof-dir proofs/v018/identity_proof/canary_l2_d02 --asset-dir docs/assets/v018/identity_proof/canary_l2_d02",
+  "cpu_only": true,
+  "field_metrics": [
+    {
+      "bias": -0.020883201146250956,
+      "correlation": 0.9999861358932106,
+      "field": "T",
+      "finite_pair_fraction": 1.0,
+      "limit": 1.5,
+      "max_abs": 4.520416259765625,
+      "p99_abs": 0.97418212890625,
+      "rmse": 0.30093692513841797,
+      "scored_metric": "rmse",
+      "value": 0.30093692513841797,
+      "within_tolerance": true
+    },
+    {
+      "bias": 0.34320680281919813,
+      "correlation": 0.9984165357904008,
+      "field": "U",
+      "finite_pair_fraction": 1.0,
+      "limit": 1.8,
+      "max_abs": 6.8384950160980225,
+      "p99_abs": 2.0545937871932995,
+      "rmse": 0.6118142209552481,
+      "scored_metric": "rmse",
+      "value": 0.6118142209552481,
+      "within_tolerance": true
+    },
+    {
+      "bias": -0.13497097353033463,
+      "correlation": 0.9911853053184304,
+      "field": "V",
+      "finite_pair_fraction": 1.0,
+      "limit": 1.8,
+      "max_abs": 8.065551280975342,
+      "p99_abs": 1.167800471186643,
+      "rmse": 0.406924918725404,
+      "scored_metric": "rmse",
+      "value": 0.406924918725404,
+      "within_tolerance": true
+    },
+    {
+      "bias": 0.0009768399826989463,
+      "correlation": 0.7975361822243292,
+      "field": "W",
+      "finite_pair_fraction": 1.0,
+      "limit": 0.3,
+      "max_abs": 1.5334197878837585,
+      "p99_abs": 0.07895286537706817,
+      "rmse": 0.02293460873171974,
+      "scored_metric": "rmse",
+      "value": 0.02293460873171974,
+      "within_tolerance": true
+    },
+    {
+      "bias": -1.8621507143485254e-05,
+      "correlation": 0.9875968505870959,
+      "field": "QVAPOR",
+      "finite_pair_fraction": 1.0,
+      "limit": 0.001,
+      "max_abs": 0.007929828017950058,
+      "p99_abs": 0.0021810792980249956,
+      "rmse": 0.0005735327550078258,
+      "scored_metric": "rmse",
+      "value": 0.0005735327550078258,
+      "within_tolerance": true
+    },
+    {
+      "bias": -0.2510717409052848,
+      "correlation": 0.9709502315593179,
+      "field": "T2",
+      "finite_pair_fraction": 1.0,
+      "limit": 1.5,
+      "max_abs": 4.025909423828125,
+      "p99_abs": 1.315090942382814,
+      "rmse": 0.4615820830170086,
+      "scored_metric": "rmse",
+      "value": 0.4615820830170086,
+      "within_tolerance": true
+    },
+    {
+      "bias": 0.13546200401165592,
+      "correlation": 0.9475121249845638,
+      "field": "U10",
+      "finite_pair_fraction": 1.0,
+      "limit": 1.5,
+      "max_abs": 5.98201060295105,
+      "p99_abs": 1.75460660353303,
+      "rmse": 0.5149882643103653,
+      "scored_metric": "rmse",
+      "value": 0.5149882643103653,
+      "within_tolerance": true
+    },
+    {
+      "bias": 0.0013167724452334295,
+      "correlation": 0.9464632202638924,
+      "field": "V10",
+      "finite_pair_fraction": 1.0,
+      "limit": 1.5,
+      "max_abs": 7.662237167358398,
+      "p99_abs": 2.2051082372665443,
+      "rmse": 0.5811405924816255,
+      "scored_metric": "rmse",
+      "value": 0.5811405924816255,
+      "within_tolerance": true
+    },
+    {
+      "bias": 25.473997511226653,
+      "correlation": 0.9999719156423551,
+      "field": "PSFC",
+      "finite_pair_fraction": 1.0,
+      "limit": 120.0,
+      "max_abs": 77.453125,
+      "p99_abs": 64.90625,
+      "rmse": 30.69459062188812,
+      "scored_metric": "rmse",
+      "value": 30.69459062188812,
+      "within_tolerance": true
+    },
+    {
+      "bias": -2.361558541390898e-05,
+      "correlation": -0.00010141968490328907,
+      "field": "RAINNC",
+      "finite_pair_fraction": 1.0,
+      "limit": 1.0,
+      "max_abs": 0.12001107633113861,
+      "p99_abs": 0.0,
+      "rmse": 0.0012737629981016685,
+      "scored_metric": "rmse",
+      "value": 0.0012737629981016685,
+      "within_tolerance": true
+    }
+  ],
+  "generated_utc": "2026-06-17T08:42:59.161122+00:00",
+  "gpu_used": false,
+  "headline": {
+    "all_within": true,
+    "n_scored": 10,
+    "n_within": 10,
+    "worst_field": "QVAPOR",
+    "worst_fraction_of_limit": 0.5735327550078257
+  },
+  "honest_scope": "Honest scope: differences shown at true scale; variable set = predeclared focused-writer hard-gate fields; report-only / bounded fields labelled, breaches drawn red.",
+  "identity_fields_compared": [
+    "T",
+    "U",
+    "V",
+    "W",
+    "QVAPOR",
+    "T2",
+    "U10",
+    "V10",
+    "PSFC",
+    "RAINNC"
+  ],
+  "identity_fields_requested": [
+    "T",
+    "U",
+    "V",
+    "W",
+    "QVAPOR",
+    "T2",
+    "U10",
+    "V10",
+    "PSFC",
+    "RAINNC"
+  ],
+  "init_time_utc": "2026-05-01T18:00:00+00:00",
+  "lead_count": 8,
+  "leads_h": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "paired_file_count": 8,
+  "plots": [
+    {
+      "kind": "timeseries_rmse_bias",
+      "path": "docs/assets/v018/identity_proof/canary_l2_d02/identity_timeseries_rmse_bias.png"
+    },
+    {
+      "kind": "scoreboard",
+      "path": "docs/assets/v018/identity_proof/canary_l2_d02/identity_scoreboard.png"
+    },
+    {
+      "kind": "identity_scatter",
+      "path": "docs/assets/v018/identity_proof/canary_l2_d02/identity_scatter_1to1.png"
+    },
+    {
+      "kind": "spatial_diff_maps",
+      "path": "docs/assets/v018/identity_proof/canary_l2_d02/identity_spatial_diff_maps.png"
+    },
+    {
+      "kind": "dashboard",
+      "path": "docs/assets/v018/identity_proof/canary_l2_d02/identity_dashboard.png"
+    }
+  ],
+  "region_label": "Canary L2 d02 8h (2026-05-01 18Z, v0.18 GPU vs CPU-WRF, fresh nested run)",
+  "reuses": "scripts/build_grid_delta_atlas.py (pairing, parsing, tolerances, statistics)",
+  "schema": "identity-proof-plots-v1",
+  "tolerances": {
+    "field_count": 62,
+    "path": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json",
+    "policy": "Tolerances are read before comparison and never tuned by this script.",
+    "supplied": true
+  },
+  "tool": "scripts/build_identity_proof_plots.py"
+}

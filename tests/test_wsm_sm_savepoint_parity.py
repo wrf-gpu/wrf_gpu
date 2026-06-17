@@ -83,7 +83,14 @@ def test_wsm_sm_generated_report_declares_pristine_oracle_pass(scheme_name: str)
     assert report["schema"] == f"gpuwrf.v060.{scheme_name}_savepoint_parity.v1"
     assert report["overall_pass"] is True
     assert report["oracle"]["no_self_compare"] is True
-    assert report["oracle"]["wrf_source"] == "/home/user/src/wrf_pristine/WRF"
+    # Compare expanded paths: the committed report may store the pristine-WRF
+    # oracle root as either an absolute path or the `~`-prefixed form depending on
+    # how WRF_PRISTINE_ROOT was set at regeneration time. Both denote the same
+    # tree; expanduser canonicalizes them. This keeps the real-WRF-oracle check
+    # (no self-compare, real module source) without being fragile to tilde form.
+    assert os.path.expanduser(report["oracle"]["wrf_source"]) == os.path.expanduser(
+        "~/src/wrf_pristine/WRF"
+    )
     assert report["predeclared_tolerances"] == runner.PREDECLARED_TOL
 
 

@@ -121,9 +121,14 @@ def test_jax_vs_oracle():
             "categorical": "exact ISHALL, CUTOP/CUBOT within 0.5",
         },
     }
-    with open(JAX_PROOF, "w") as fh:
-        json.dump(proof, fh, indent=2, sort_keys=True)
-        fh.write("\n")
+    # The committed canonical proof at JAX_PROOF is regenerated ONLY on an
+    # explicit request (GPUWRF_WRITE_PROOFS=1). The numeric correctness signal is
+    # the assertion below; the default suite run must not re-dirty the tracked
+    # proof with elapsed_seconds timing noise.
+    if os.environ.get("GPUWRF_WRITE_PROOFS", "").strip().lower() in {"1", "true", "yes", "on"}:
+        with open(JAX_PROOF, "w") as fh:
+            json.dump(proof, fh, indent=2, sort_keys=True)
+            fh.write("\n")
     assert not failures, "; ".join(failures)
 
 

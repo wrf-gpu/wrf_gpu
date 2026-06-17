@@ -39,6 +39,7 @@ from .physics_registry import (
     NUMBER_SPECIES,
     VOLUME_SPECIES,
     PBL_CARRY_MEMBERS,
+    PBL_DIAGNOSTIC_MEMBERS,
     PHYSICS_REGISTRY_VERSION,
     assert_registry_consistent,
     state_leaves_for_mp,
@@ -258,6 +259,15 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "M20 physics-oracle factory savepoint at module_microphysics_driver.F:morrison two moment",
     ),
     _mp_spec(
+        13,
+        "SBU-YLin",
+        "src/gpuwrf/physics/microphysics_sbu_ylin.py",
+        "v0.17 SBU-YLin pristine-WRF single-column savepoint parity gate at "
+        "module_mp_sbu_ylin.F (proofs/v017/run_sbu_ylin_parity.py / "
+        "savepoints_sbu_ylin)",
+        diagnostics=("ri3d",),
+    ),
+    _mp_spec(
         14,
         "WDM5",
         "src/gpuwrf/physics/microphysics_wdm5.py",
@@ -271,6 +281,23 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "src/gpuwrf/physics/microphysics_wdm6.py",
         "M20 physics-oracle factory savepoint at module_microphysics_driver.F:wdm6",
         diagnostics=("re_cloud", "re_ice", "re_snow"),
+    ),
+    _mp_spec(
+        28,
+        "Thompson aerosol-aware",
+        "src/gpuwrf/physics/thompson_aero_column.py",
+        "v0.16 aerosol-aware Thompson pristine-WRF grid savepoint parity gate at "
+        "module_mp_thompson.F:mp_gt_driver (mp_physics=28; "
+        "proofs/v016/thompson_aero_savepoint_parity.py/.json)",
+    ),
+    _mp_spec(
+        97,
+        "Goddard GCE",
+        "src/gpuwrf/physics/microphysics_goddard.py",
+        "v0.17 Goddard GCE (gsfcgcescheme) single-column savepoint parity gate vs "
+        "unmodified phys/module_mp_gsfcgce.F (proofs/v090/run_goddard_parity.py, "
+        "proofs/v090/goddard_mp_r2_savepoint_parity.json; 5/5 cases, ~machine "
+        "precision vs the fp64 transparency oracle)",
     ),
     # v0.17 WSM7 = WSM6 + a separate precipitating hail class (qh leaf + hail_acc
     # surface accumulator). Savepoint-parity-proven against the unmodified
@@ -296,14 +323,6 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "module_mp_wdm7.F (proofs/v013_wdm7/run_wdm7_parity.py/.json)",
         diagnostics=("re_cloud", "re_ice", "re_snow"),
         accumulators=("rain_acc", "snow_acc", "graupel_acc", "ice_acc", "hail_acc"),
-    ),
-    _mp_spec(
-        28,
-        "Thompson aerosol-aware",
-        "src/gpuwrf/physics/thompson_aero_column.py",
-        "v0.16 aerosol-aware Thompson pristine-WRF grid savepoint parity gate at "
-        "module_mp_thompson.F:mp_gt_driver (mp_physics=28; "
-        "proofs/v016/thompson_aero_savepoint_parity.py/.json)",
     ),
     PhysicsStepSpec(
         family="pbl",
@@ -347,9 +366,66 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         writes_state=("u", "v", "theta", "qv"),
         diagnostics=("pblh", "kpbl"),
         notes="v0.17 OPERATIONAL (jit/vmap-traceable bl_gfs.gfs_columns, scan-wired via "
-        "coupling.scan_adapters.gfs_pbl_adapter -> PBL_SCAN_ADAPTERS[3]). GFS "
-        "nonlocal-K PBL re-derives revised-MM5 surface forcing (sf_sfclay=1) and "
-        "does not carry prognostic PBL state.",
+        "coupling.scan_adapters.gfs_pbl_adapter -> PBL_SCAN_ADAPTERS[3]). NCEP-GFS "
+        "Hybrid-EDMF-ancestor nonlocal-K PBL (Hong-Pan lineage); re-derives the "
+        "revised-MM5 surface forcing (sf_sfclay=1), nonlocal-K so no prognostic carry.",
+    ),
+    PhysicsStepSpec(
+        family="pbl",
+        option=4,
+        name="QNSE-EDMF",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/pbl_reference_only.py",
+        oracle="v0.18 fp64 pristine-WRF savepoint oracle vs unmodified "
+        "phys/module_bl_qnsepbl.F (proofs/v018/qnse_pbl4_reference_oracle.json; "
+        "proofs/v018/savepoints_fp64/qnse)",
+        reads_state=("u", "v", "theta", "qv", "qc", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv", "qc"),
+        reads_carry=PBL_CARRY_MEMBERS[4],
+        writes_carry=PBL_CARRY_MEMBERS[4],
+        diagnostics=PBL_DIAGNOSTIC_MEMBERS[4],
+        notes="v0.18 REFERENCE-ONLY: real fp64 WRF oracle/savepoints staged, but "
+        "no traceable JAX column kernel is scan-wired. Operational scan fail-closes.",
+    ),
+    PhysicsStepSpec(
+        family="pbl",
+        option=11,
+        name="Shin-Hong",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/bl_shinhong.py",
+        oracle="v0.18 savepoint-derived JAX/vmap kernel checked against the v090 faithful host-NumPy "
+        "reference port of unmodified phys/module_bl_shinhong.F; forecast-driving "
+        "tendencies/EXCH_H/PBLH/KPBL/WSTAR/DELTA are parity-gated. TKE/EL are "
+        "diagnostic-only here and retain explicit residuals vs the v090 PARTIAL "
+        "reference (TKE rel ~=0.285, EL rel ~=0.013; fp32-sensitive upstream oracle)",
+        reads_state=("u", "v", "theta", "qv", "qke", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv", "qke"),
+        reads_carry=PBL_CARRY_MEMBERS[11],
+        writes_carry=PBL_CARRY_MEMBERS[11],
+        diagnostics=("pblh", "kpbl", "tke_pbl", "el_pbl", "exch_h"),
+        notes="v0.18 OPERATIONAL dynamics-green: scale-aware (grid-dependent) YSU-family PBL "
+        "(Shin-Hong 2015), scan-wired via coupling.scan_adapters.shinhong_pbl_adapter "
+        "-> PBL_SCAN_ADAPTERS[11]. Consumes revised-MM5 surface forcing (sf_sfclay=1) "
+        "and grid dx/dy for pu/pq/pthnl/pthl/ptke partition functions. Follow up by "
+        "refining TKE/EL if a faithful pristine-WRF Shin-Hong TKE oracle is built.",
+    ),
+    PhysicsStepSpec(
+        family="pbl",
+        option=12,
+        name="GBM TKE",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/bl_gbm.py",
+        oracle="v0.18 fp64 parity-green vs single-column pristine-WRF savepoints "
+        "from unmodified phys/module_bl_gbmpbl.F (proofs/v018/gbm_pbl12_jax_parity.json)",
+        reads_state=("u", "v", "theta", "qv", "qc", "qke", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qke"),
+        reads_carry=PBL_CARRY_MEMBERS[12],
+        writes_carry=PBL_CARRY_MEMBERS[12],
+        diagnostics=("pblh", "kpbl", "tke_pbl", "el_pbl", "exch_tke"),
+        notes="v0.18 OPERATIONAL: Grenier-Bretherton-McCaa moist prognostic-TKE PBL, "
+        "scan-wired via coupling.scan_adapters.gbm_pbl_adapter -> PBL_SCAN_ADAPTERS[12]. "
+        "The JAX/vmap kernel preserves GBMPBL's two-pass wrapper, advances qc/qke, and "
+        "matches the fp64 pristine-WRF savepoint oracle at roundoff.",
     ),
     PhysicsStepSpec(
         family="pbl",
@@ -387,6 +463,57 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         reads_carry=PBL_CARRY_MEMBERS[8],
         writes_carry=PBL_CARRY_MEMBERS[8],
         diagnostics=("pblh", "tke_pbl", "dlk", "exch_h", "exch_m"),
+    ),
+    PhysicsStepSpec(
+        family="pbl",
+        option=10,
+        name="TEMF",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/pbl_reference_only.py",
+        oracle="v0.18 fp64 pristine-WRF savepoint oracle vs unmodified "
+        "phys/module_bl_temf.F (proofs/v018/temf_pbl10_reference_oracle.json; "
+        "proofs/v018/savepoints_fp64/temf)",
+        reads_state=("u", "v", "theta", "qv", "qc", "qi", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux", "t_skin"),
+        writes_state=("u", "v", "theta", "qv", "qc"),
+        reads_carry=PBL_CARRY_MEMBERS[10],
+        writes_carry=PBL_CARRY_MEMBERS[10],
+        diagnostics=PBL_DIAGNOSTIC_MEMBERS[10],
+        notes="v0.18 REFERENCE-ONLY: real fp64 WRF oracle/savepoints staged, but "
+        "no traceable JAX column kernel is scan-wired. Operational scan fail-closes.",
+    ),
+    PhysicsStepSpec(
+        family="pbl",
+        option=16,
+        name="EEPS epsilon",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/pbl_reference_only.py",
+        oracle="v0.18 fp64 pristine-WRF savepoint oracle vs unmodified "
+        "phys/module_bl_eepsilon.F (proofs/v018/eeps_pbl16_reference_oracle.json; "
+        "proofs/v018/savepoints_fp64/eeps)",
+        reads_state=("u", "v", "theta", "qv", "qc", "qi", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qi"),
+        reads_carry=PBL_CARRY_MEMBERS[16],
+        writes_carry=PBL_CARRY_MEMBERS[16],
+        diagnostics=PBL_DIAGNOSTIC_MEMBERS[16],
+        notes="v0.18 REFERENCE-ONLY: real fp64 WRF oracle/savepoints staged, but "
+        "no traceable JAX column kernel is scan-wired. Operational scan fail-closes.",
+    ),
+    PhysicsStepSpec(
+        family="pbl",
+        option=17,
+        name="KEPS k-epsilon",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/pbl_reference_only.py",
+        oracle="v0.18 fp64 pristine-WRF savepoint oracle vs unmodified "
+        "phys/module_bl_keps.F (proofs/v018/keps_pbl17_reference_oracle.json; "
+        "proofs/v018/savepoints_fp64/keps)",
+        reads_state=("u", "v", "theta", "qv", "qc", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv", "qc"),
+        reads_carry=PBL_CARRY_MEMBERS[17],
+        writes_carry=PBL_CARRY_MEMBERS[17],
+        diagnostics=PBL_DIAGNOSTIC_MEMBERS[17],
+        notes="v0.18 REFERENCE-ONLY: real fp64 WRF oracle/savepoints staged, but "
+        "no traceable JAX column kernel is scan-wired. Operational scan fail-closes.",
     ),
     PhysicsStepSpec(
         family="pbl",
@@ -539,6 +666,23 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
     ),
     PhysicsStepSpec(
         family="cumulus",
+        option=4,
+        name="Scale-aware GFS SAS",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_sas.py",
+        oracle="v0.17 single-column fp64 pristine-WRF savepoint "
+        "(proofs/v017/oracle/cumulus_sas) vs unmodified "
+        "phys/module_cu_scalesas.F:CU_SCALESAS; current shared JAX endpoint is "
+        "RED in proofs/v017/sas_family_parity.json",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "pb", "ph", "mu"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qi"),
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", "pratec", "hbot", "htop", *CUMULUS_TENDENCY_MEMBERS[4]),
+        notes="v0.17 reference-only/fail-closed. Do not wire into CU_SCAN_ADAPTERS "
+        "until the shared SAS JAX kernel is GREEN vs pristine WRF.",
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
         option=16,
         name="New Tiedtke",
         wrf_slot="first_rk_cumulus_driver",
@@ -551,6 +695,51 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         notes="v0.13 Tier-3 reference-only: single-column fp64 pristine-WRF oracle "
         "staged (proofs/v013/oracle/cumulus/ntiedtke_*); traceable JAX kernel is a "
         "carry-over (fail-closed in the operational scan).",
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
+        option=94,
+        name="2015 GFS SAS / HWRF",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_sas.py",
+        oracle="v0.17 single-column fp64 pristine-WRF savepoint "
+        "(proofs/v017/oracle/cumulus_sas) vs unmodified phys/module_cu_sas.F:CU_SAS; "
+        "current shared JAX endpoint is RED in proofs/v017/sas_family_parity.json",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "pb", "ph", "mu"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qi"),
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", "pratec", "hbot", "htop", *CUMULUS_TENDENCY_MEMBERS[94]),
+        notes="v0.17 reference-only/fail-closed.",
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
+        option=95,
+        name="Previous GFS SAS / HWRF OSAS",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_sas.py",
+        oracle="v0.17 single-column fp64 pristine-WRF savepoint "
+        "(proofs/v017/oracle/cumulus_sas) vs unmodified phys/module_cu_osas.F:CU_OSAS; "
+        "current shared JAX endpoint is RED in proofs/v017/sas_family_parity.json",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "pb", "ph", "mu"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qi"),
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", "pratec", "hbot", "htop", *CUMULUS_TENDENCY_MEMBERS[95]),
+        notes="v0.17 reference-only/fail-closed.",
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
+        option=96,
+        name="Previous new GFS SAS / YSU NSAS",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_sas.py",
+        oracle="v0.17 single-column fp64 pristine-WRF savepoint "
+        "(proofs/v017/oracle/cumulus_sas) vs unmodified phys/module_cu_nsas.F:CU_NSAS; "
+        "current shared JAX endpoint is RED in proofs/v017/sas_family_parity.json",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "pb", "ph", "mu"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qi"),
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", "pratec", "hbot", "htop", *CUMULUS_TENDENCY_MEMBERS[96]),
+        notes="v0.17 reference-only/fail-closed.",
     ),
     PhysicsStepSpec(
         family="cumulus",
@@ -586,6 +775,46 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "kernel is a carry-over (fail-closed in the operational scan).",
     ),
     PhysicsStepSpec(
+        family="cumulus",
+        option=93,
+        name="Grell-Devenyi ensemble",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_grell_devenyi.py",
+        oracle="v0.17 RED: real-WRF source target is unmodified "
+        "phys/module_cu_gd.F:GRELLDRV; no committed single-column savepoint "
+        "exists yet (proofs/v017/run_cu_kfgrell_parity.py records the gap).",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
+        writes_state=("theta", "qv", "qc", "qi"),
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", "pratec", *CUMULUS_TENDENCY_MEMBERS[93]),
+        notes="v0.17 reference-only / RED. The Grell-Devenyi ensemble has a "
+        "distinct WRF source path from Grell-Freitas; it is accepted for oracle "
+        "work but fail-closed in the operational scan until a source-specific "
+        "traceable JAX column endpoint passes pristine-WRF parity.",
+    ),
+    PhysicsStepSpec(
+        family="cumulus",
+        option=99,
+        name="previous Kain-Fritsch",
+        wrf_slot="first_rk_cumulus_driver",
+        owner_module="src/gpuwrf/physics/cumulus_kf_previous.py",
+        oracle="v0.17 real-WRF single-column savepoint gate target is "
+        "unmodified phys/module_cu_kf.F:KFCPS; candidate wrapper reuses the "
+        "cu=1 KF-eta family endpoint and is intentionally RED until the "
+        "source-specific parity gate passes "
+        "(proofs/v017/run_cu_kfgrell_parity.py).",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
+        writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
+        reads_carry=CUMULUS_CARRY_MEMBERS[99],
+        writes_carry=CUMULUS_CARRY_MEMBERS[99],
+        returns_accumulators=("rainc_acc",),
+        diagnostics=("raincv", "pratec", *CUMULUS_TENDENCY_MEMBERS[99]),
+        notes="v0.17 reference-only / RED. This is WRF's previous "
+        "Kain-Fritsch path (module_cu_kf.F), not the already-green KF-eta "
+        "path (module_cu_kfeta.F). Reusing the KF-eta family code is only a "
+        "candidate, not operational scan wiring.",
+    ),
+    PhysicsStepSpec(
         family="land_surface",
         option=1,
         name="thermal-diffusion slab LSM",
@@ -598,11 +827,12 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         reads_carry=LAND_CARRY_MEMBERS[1],
         writes_carry=LAND_CARRY_MEMBERS[1],
         diagnostics=("TSK", "HFX", "QFX", "LH", "QSFC", "CAPG"),
-        notes="v0.13 Tier-3 REFERENCE-ONLY: 5-layer Blackadar thermal-diffusion slab. "
-        "JAX-ported + fp64 oracle-validated (physics.lsm_slab.slab_columns), but the "
-        "operational LSM scan slot needs a TSLB soil-temperature land carry + GSW/GLW "
-        "radiation forcing + TMN/THC/EMISS statics that the resident State does not yet "
-        "carry; fail-closed in the operational scan until the slab LSM hook lands.",
+        notes="5-layer Blackadar thermal-diffusion slab (SLAB1D). JAX-ported + fp64 "
+        "oracle-validated (physics.lsm_slab.slab_columns) and v0.17 operationally "
+        "scan-wired via coupling.slab_surface_hook.slab_surface_step: advances the "
+        "5-layer TSLB soil-temperature land carry from GSW/GLW radiation forcing + an "
+        "explicit TMN/THC/EMISS SlabStaticBundle (FLHC/FLQC recovered from the resident "
+        "surface-layer kinematic flux handles).",
     ),
     PhysicsStepSpec(
         family="land_surface",
@@ -621,6 +851,30 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
     ),
     PhysicsStepSpec(
         family="land_surface",
+        option=3,
+        name="RUC LSM",
+        wrf_slot="first_rk_surface_driver",
+        owner_module="src/gpuwrf/physics/lsm_ruc.py",
+        oracle="v0.17 fp64 single-column savepoint vs unmodified WRF module_sf_ruclsm.F "
+        "(LSMRUC->SOILVEGIN->SFCTMP; proofs/v017/oracle/ruclsm + "
+        "savepoints/ruclsm/fp64/ruclsm_fp64.json, 5 regimes, REFERENCE-ONLY)",
+        reads_state=("t_skin", "soil_moisture", "xland", "mavail", "roughness_m", "lu_index"),
+        writes_state=("t_skin", "soil_moisture", "mavail"),
+        reads_carry=LAND_CARRY_MEMBERS[3],
+        writes_carry=LAND_CARRY_MEMBERS[3],
+        diagnostics=("TSK", "HFX", "QFX", "LH", "GRDFLX", "SFCRUNOFF", "UDRUNOFF", "SNOW", "SNOWH"),
+        notes="RUC multi-layer soil/snow LSM (sf_surface_physics=3). STATUS: REFERENCE-ONLY -- "
+        "a fp64 pristine-WRF single-column oracle is staged (proofs/v017/oracle/ruclsm, "
+        "LSMRUC driver with SOILVEGIN reading the unmodified VEGPARM/SOILPARM/GENPARM "
+        "tables; NOT a self-compare), but a faithful traceable JAX column port of the "
+        "~7.5k-LOC multi-layer soil/snow solver (SFCTMP + SOIL/SNOWSOIL + SOILTEMP/"
+        "SNOWTEMP/SOILMOIST/SOILPROP/TRANSF/VILKA) is a documented carry-over, so NO "
+        "operational kernel is shipped (avoiding a silently-wrong port) and RUC fail-closes "
+        "in the operational scan (not in _SCAN_WIRED_OPTIONS). owner_module is the JAX "
+        "column endpoint stub that exposes the carry shapes for the future port.",
+    ),
+    PhysicsStepSpec(
+        family="land_surface",
         option=4,
         name="Noah-MP",
         wrf_slot="first_rk_surface_driver",
@@ -631,6 +885,51 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         reads_carry=LAND_CARRY_MEMBERS[4],
         writes_carry=LAND_CARRY_MEMBERS[4],
         diagnostics=("TSK", "GRDFLX", "QFX", "ALBEDO", "EMISS"),
+    ),
+    PhysicsStepSpec(
+        family="land_surface",
+        option=7,
+        name="Pleim-Xiu LSM",
+        wrf_slot="first_rk_surface_driver",
+        owner_module="src/gpuwrf/physics/lsm_pleim_xiu.py",
+        oracle="v0.17 fp64 savepoint parity vs unmodified WRF module_sf_pxlsm.F "
+        "(SURFPX+QFLUX; proofs/v017/oracle/pxlsm + pxlsm_savepoint_parity_report.json, "
+        "worst |jax-oracle| 4.4e-11 over 5 regimes)",
+        reads_state=("t_skin", "soil_moisture", "xland", "ustar", "roughness_m", "theta_flux", "qv_flux"),
+        writes_state=("t_skin",),
+        reads_carry=LAND_CARRY_MEMBERS[7],
+        writes_carry=LAND_CARRY_MEMBERS[7],
+        diagnostics=("TSK", "HFX", "QFX", "LH", "GRDFLX", "CAPG", "T2", "Q2"),
+        notes="Pleim-Xiu 2-layer ISBA LSM (SURFPX+QFLUX, NUDGEX=0). fp64-oracle-validated "
+        "(physics.lsm_pleim_xiu.pxlsm_columns) and v0.17 operationally scan-wired via "
+        "coupling.pleim_xiu_surface_hook.pleim_xiu_surface_step: advances the 2-layer ISBA "
+        "carry (TG/T2/WG/W2/WR) from GSW/GLW radiation + an explicit PleimXiuStaticBundle "
+        "(ISBA soil constants + vegetation fields); pairs with the PX surface layer "
+        "(sf_sfclay_physics=7). RMOL recovered from the resident surface-layer flux handles.",
+    ),
+    PhysicsStepSpec(
+        family="land_surface",
+        option=8,
+        name="SSiB LSM",
+        wrf_slot="first_rk_surface_driver",
+        owner_module="src/gpuwrf/physics/lsm_ssib.py",
+        oracle="v0.17 fp64 single-column savepoint vs unmodified WRF module_sf_ssib.F "
+        "(SSIB driver + ~30 internal subroutines; proofs/v017/oracle/ssib + "
+        "savepoints/ssib/fp64/ssib_case_{1..5}.json, 5 regimes, REFERENCE-ONLY)",
+        reads_state=("t_skin", "soil_moisture", "xland", "mavail", "roughness_m", "lu_index"),
+        writes_state=("t_skin", "soil_moisture", "mavail"),
+        reads_carry=LAND_CARRY_MEMBERS[8],
+        writes_carry=LAND_CARRY_MEMBERS[8],
+        diagnostics=("TSK", "HFX", "QFX", "LH", "GRDFLX", "ALBEDO", "T2", "Q2"),
+        notes="SSiB SiB biophysical canopy/soil/snow LSM (sf_surface_physics=8). STATUS: "
+        "REFERENCE-ONLY -- a fp64 pristine-WRF single-column oracle is staged "
+        "(proofs/v017/oracle/ssib, the unmodified SSIB driver; vegetation parameters from "
+        "module-level DATA arrays, no external table; NOT a self-compare), but a faithful "
+        "traceable JAX column port of the ~6.6k-LOC coupled SiB canopy/soil/4-level-snow "
+        "solver (TEMRS1/TEMRS2 + UPDAT1 + RADAB + STOMA1 + INTERC + STRES1 + NEWTON) is a "
+        "documented carry-over, so NO operational kernel is shipped and SSiB fail-closes in "
+        "the operational scan (not in _SCAN_WIRED_OPTIONS). owner_module is the JAX column "
+        "endpoint stub exposing the carry shapes for the future port.",
     ),
     # Radiation (RRTMG, ra_lw/ra_sw option 4). Unlike the other families, the
     # radiation drivers write a HELD-RATE potential-temperature tendency
@@ -716,6 +1015,34 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "remain RRTMG-derived. v0.13 Tier-3 (kernel/coupler/oracle validated; full multi-step "
         "forecast gate is a follow-on).",
     ),
+    # New Goddard shortwave (ra_sw_physics=5) -- v0.18 RA-tail
+    # REFERENCE-ONLY. This is backed by the paired real-WRF exact-driver oracle
+    # for ra_lw/sw=5, generated from the upstream-identical module through the
+    # physics-pristine WRFGPU2_ORACLE-instrumented executable.
+    # This is the SW half of phys/module_ra_goddard.F:goddardrad('sw'), not the
+    # older standalone module_ra_gsfcsw.F path above. It shares the Goddard
+    # cloud optical LUT / ozone / aerosol conventions with the LW half. No JAX
+    # kernel is shipped in v0.18 because the faithful full-module port is still
+    # outstanding; selecting ra_sw=5 is accepted for oracle work but fail-closes
+    # operationally.
+    PhysicsStepSpec(
+        family="radiation",
+        option=5,
+        name="Goddard shortwave (new)",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_goddard.py",
+        oracle="v0.18 exact-driver real-WRF savepoint at module_radiation_driver.F -> "
+        "module_ra_goddard.F:goddardrad (proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_sw_physics=5 paired with ra_lw_physics=5; NOT a self-compare).",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb"),
+        writes_state=("theta",),
+        diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
+        variant="sw",
+        notes="ra_sw_physics=5. New Goddard SW shares module_ra_goddard.F tables with "
+        "Goddard LW. STATUS: REFERENCE-ONLY. Namelist-accepted for a reference "
+        "comparison, fail-closed in the operational scan; no faithful JAX kernel is shipped.",
+    ),
     # Classic RRTM longwave (ra_lw_physics=1) -- 16-band k-distribution from
     # AER, loaded from the RRTM_DATA asset. Reads cloud hydrometeors + qv +
     # interface T/p (t8w/p8w) + LSM surface emissivity/skin temperature; emits
@@ -743,12 +1070,13 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "proofs/radiation/rrtm_lw_oracle.py (pristine-WRF, NOT a self-compare). The surface GLW "
         "history diagnostic remains RRTMG-derived.",
     ),
-    # GSFC/Goddard NUWRF longwave (ra_lw_physics=5) -- v0.13 Tier-3 REFERENCE-ONLY.
+    # GSFC/Goddard NUWRF longwave (ra_lw_physics=5) -- v0.18 RA-tail
+    # REFERENCE-ONLY.
     # The Goddard LW core (phys/module_ra_goddard.F:lwrad, the Chou-Suarez 1994
     # 10-band correlated-k IR transfer) is the LW half of the ~12.5k-LOC combined
     # NUWRF SW+LW module (~11.8k hardcoded LW coefficients). A faithful traceable
     # JAX column port of that volume is a documented carry-over; NO kernel is wired.
-    # A fp64 single-column pristine-WRF oracle IS staged (NOT a self-compare) so a
+    # A paired exact-driver real-WRF oracle IS staged (NOT a self-compare) so a
     # future port has a ready reference. This spec exists so the interface freeze
     # stays consistent with the reference-only accept-matrix; the operational scan
     # fail-closes ra_lw=5 (it is NOT in _SCAN_WIRED_OPTIONS["ra_lw_physics"]).
@@ -758,9 +1086,11 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="GSFC/Goddard NUWRF longwave",
         wrf_slot="first_rk_radiation_driver",
         owner_module="src/gpuwrf/physics/rrtmg_lw.py",
-        oracle="pristine-WRF fp64 single-column savepoint at module_ra_goddard.F:lwrad "
-        "(proofs/v013/t3_gsfc_lw_oracle.py + proofs/v013/oracle/radiation_lw; NOT a self-compare). "
-        "REFERENCE-ONLY: faithful JAX kernel is a v0.13 carry-over.",
+        oracle="v0.18 exact-driver real-WRF savepoint at module_radiation_driver.F -> "
+        "module_ra_goddard.F:goddardrad (proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_lw_physics=5 paired with ra_sw_physics=5; NOT a self-compare). Prior v0.13 "
+        "single-column lwrad oracle remains useful background evidence.",
         reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb", "t_skin"),
         writes_state=("theta",),
         diagnostics=("GLW", "OLR", "RTHRATENLW"),
@@ -770,13 +1100,162 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         "Goddard LW core lwrad is the LW half of the ~12.5k-LOC combined NUWRF SW+LW module "
         "(~11.8k hardcoded LW coefficients), so a faithful traceable JAX column kernel is a "
         "documented v0.13 carry-over and NO kernel is shipped (avoiding a silently-wrong port). "
-        "A fp64 pristine-WRF single-column oracle IS staged (proofs/v013/oracle/radiation_lw, "
-        "build via goddard_lw_build_and_run.sh with a checksummed visibility-only public::lwrad "
-        "shim) so a future faithful port has a ready non-self-compare reference. ra_lw=5 is "
+        "A paired v0.18 exact-driver real-WRF oracle IS staged "
+        "(proofs/v018/savepoints/ra_tail_wrf/ra5_wrf_real.json), with the older v0.13 "
+        "single-column lwrad oracle retained as background evidence, so a future faithful port "
+        "has a ready non-self-compare reference. ra_lw=5 is "
         "namelist-accepted (selectable for a single-column reference comparison) but FAIL-CLOSES "
         "in the operational scan (OperationalNamelist.ra_lw_physics=5 is not in "
         "_SCAN_WIRED_OPTIONS); the operational default remains ra_lw=4 (RRTMG), byte-unchanged. "
         "owner_module points at the RRTMG LW slot used as the operational fallback path.",
+    ),
+    # GFDL-Eta radiation pair (ra_lw_physics=99 / ra_sw_physics=99) -- v0.18
+    # RA-tail REFERENCE-ONLY. WRF's ETARA computes both SW and LW together and
+    # then exposes the selected components through THRATENLW/THRATENSW. A paired
+    # real-WRF exact-driver oracle is staged; no faithful JAX kernel is shipped.
+    PhysicsStepSpec(
+        family="radiation",
+        option=99,
+        name="GFDL (Eta) longwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_gfdleta.py",
+        oracle="v0.18 exact-driver real-WRF savepoint at module_radiation_driver.F -> "
+        "module_ra_gfdleta.F:ETARA (proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_lw_physics=99 paired with ra_sw_physics=99; NOT a self-compare).",
+        reads_state=("theta", "qv", "qc", "qi", "qs", "p", "pb", "ph", "phb", "t_skin"),
+        writes_state=("theta",),
+        diagnostics=("GLW", "OLR", "RTHRATENLW"),
+        variant="lw",
+        notes="ra_lw_physics=99. GFDL-Eta LW half of ETARA; STATUS: REFERENCE-ONLY. "
+        "Paired with ra_sw=99 because WRF ETARA shares tables, cloud diagnostics, "
+        "and call state between SW/LW; fail-closed in the operational scan.",
+    ),
+    PhysicsStepSpec(
+        family="radiation",
+        option=99,
+        name="GFDL (Eta) shortwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_gfdleta.py",
+        oracle="v0.18 exact-driver real-WRF savepoint at module_radiation_driver.F -> "
+        "module_ra_gfdleta.F:ETARA (proofs/v018/savepoints/ra_tail_wrf/ra99_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_sw_physics=99 paired with ra_lw_physics=99; NOT a self-compare).",
+        reads_state=("theta", "qv", "qc", "qi", "qs", "p", "pb", "ph", "phb"),
+        writes_state=("theta",),
+        diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
+        variant="sw",
+        notes="ra_sw_physics=99. GFDL-Eta SW half of ETARA; STATUS: REFERENCE-ONLY. "
+        "Paired with ra_lw=99 because WRF ETARA computes and stores both radiative "
+        "components in one shared driver; fail-closed in the operational scan.",
+    ),
+    # CAM radiation pair (ra_lw_physics=3 / ra_sw_physics=3) -- v0.18 RA-tail
+    # REFERENCE-ONLY. WRF's CAMRAD (phys/module_ra_cam.F, the NCAR CAM 3.0 radiation,
+    # ~8.1k LOC) computes the LW and SW components selected through the camlwscheme /
+    # camswscheme slots. No faithful traceable JAX kernel is shipped (the volume +
+    # monthly ozone/aerosol climatology coupling makes an in-scope faithful port a
+    # self-compare risk), so both specs are fail-closed in the operational scan and
+    # lean on the v0.18 exact-driver real-WRF savepoint oracle.
+    PhysicsStepSpec(
+        family="radiation",
+        option=3,
+        name="CAM longwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_cam.py",
+        oracle="v0.18 exact-driver real-WRF column savepoint at module_radiation_driver.F -> "
+        "module_ra_cam.F:CAMRAD (proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_lw_physics=3; NOT a self-compare).",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb", "t_skin"),
+        writes_state=("theta",),
+        diagnostics=("GLW", "OLR", "RTHRATENLW"),
+        variant="lw",
+        notes="ra_lw_physics=3. CAM 3.0 LW half of CAMRAD; STATUS: REFERENCE-ONLY. Paired with "
+        "ra_sw=3 (CAMRAD computes SW+LW in one driver). Namelist-accepted for a reference "
+        "comparison, fail-closed in the operational scan; operational default stays ra_lw=4 (RRTMG).",
+    ),
+    PhysicsStepSpec(
+        family="radiation",
+        option=3,
+        name="CAM shortwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_cam.py",
+        oracle="v0.18 exact-driver real-WRF column savepoint at module_radiation_driver.F -> "
+        "module_ra_cam.F:CAMRAD (proofs/v018/savepoints/ra_tail_wrf/ra3_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_sw_physics=3; NOT a self-compare).",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb"),
+        writes_state=("theta",),
+        diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
+        variant="sw",
+        notes="ra_sw_physics=3. CAM 3.0 SW half of CAMRAD; STATUS: REFERENCE-ONLY. Shares the "
+        "CAMRAD driver + ozone/aerosol climatology with ra_lw=3, fail-closed in the operational scan.",
+    ),
+    # FLG/UCLA radiation pair (ra_lw_physics=7 / ra_sw_physics=7) -- v0.18 RA-tail
+    # REFERENCE-ONLY. WRF's RAD_FLG (phys/module_ra_flg.F, the UCLA/Fu-Liou-Gu
+    # radiation, ~15.3k LOC) is the largest of the tail modules. No faithful JAX
+    # kernel is shipped; both specs fail-close operationally and lean on the v0.18
+    # exact-driver real-WRF savepoint oracle.
+    PhysicsStepSpec(
+        family="radiation",
+        option=7,
+        name="FLG (UCLA) longwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_flg.py",
+        oracle="v0.18 exact-driver real-WRF column savepoint at module_radiation_driver.F -> "
+        "module_ra_flg.F:RAD_FLG (proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_lw_physics=7; NOT a self-compare).",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb", "t_skin"),
+        writes_state=("theta",),
+        diagnostics=("GLW", "OLR", "RTHRATENLW"),
+        variant="lw",
+        notes="ra_lw_physics=7. FLG/UCLA (Fu-Liou-Gu) LW half of RAD_FLG; STATUS: REFERENCE-ONLY. "
+        "Paired with ra_sw=7, fail-closed in the operational scan; operational default stays ra_lw=4.",
+    ),
+    PhysicsStepSpec(
+        family="radiation",
+        option=7,
+        name="FLG (UCLA) shortwave",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_flg.py",
+        oracle="v0.18 exact-driver real-WRF column savepoint at module_radiation_driver.F -> "
+        "module_ra_flg.F:RAD_FLG (proofs/v018/savepoints/ra_tail_wrf/ra7_wrf_real.json, "
+        "generated by a physics-pristine, WRFGPU2_ORACLE-instrumented wrf.exe run with "
+        "ra_sw_physics=7; NOT a self-compare).",
+        reads_state=("theta", "qv", "qc", "qr", "qi", "qs", "qg", "p", "pb", "ph", "phb"),
+        writes_state=("theta",),
+        diagnostics=("SWDOWN", "GSW", "COSZEN", "RTHRATENSW"),
+        variant="sw",
+        notes="ra_sw_physics=7. FLG/UCLA (Fu-Liou-Gu) SW half of RAD_FLG; STATUS: REFERENCE-ONLY. "
+        "Shares the RAD_FLG driver with ra_lw=7, fail-closed in the operational scan.",
+    ),
+    # Held-Suarez idealized radiation (ra_lw_physics=31) -- v0.17 GPU-op endpoint.
+    # A COMBINED LW+SW Newtonian relaxation toward an analytic radiative-equilibrium
+    # temperature (phys/module_ra_hs.F:HSRAD; Held & Suarez 1994). Selected through
+    # the LW slot; WRF makes NO separate shortwave call, so the operational dispatch
+    # requires ra_sw_physics=0. Carries NO prognostic state and reads only T, p,
+    # surface interface pressure, and latitude -> a true no-kernel-change port.
+    PhysicsStepSpec(
+        family="radiation",
+        option=31,
+        name="Held-Suarez idealized radiation",
+        wrf_slot="first_rk_radiation_driver",
+        owner_module="src/gpuwrf/physics/ra_lw_hs.py",
+        oracle="pristine-WRF fp64 single-column savepoint at module_ra_hs.F:HSRAD "
+        "(proofs/v017/oracle/hs_build_and_run.sh + proofs/v017/held_suarez_lw_savepoint_parity.json; "
+        "NOT a self-compare; fp64 worst rel 1.1e-14 across 7 latitude regimes).",
+        reads_state=("theta", "p", "pb"),
+        writes_state=("theta",),
+        diagnostics=("RTHRATEN",),
+        variant="lw",
+        notes="ra_lw_physics=31. Held-Suarez idealized COMBINED LW+SW Newtonian relaxation "
+        "(held-rate RTHRATEN theta tendency). STATUS: IMPLEMENTED + scan-wired "
+        "(coupling.physics_couplers.held_suarez_theta_tendency, stateless State->RTHRATEN). "
+        "HSRAD is the SOLE radiative call WRF makes for this scheme, so the operational scan "
+        "REQUIRES ra_sw_physics=0 (a real SW selection fail-closes to avoid double-counting). "
+        "No-kernel-change endpoint: no prognostic state, no solar geometry/moisture/cloud/ozone; "
+        "savepoint-parity-proven against the unmodified WRF source at fp64.",
     ),
 )
 

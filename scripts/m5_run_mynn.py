@@ -15,6 +15,10 @@ import time
 
 os.environ.setdefault("JAX_ENABLE_X64", "true")
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+# This is the canonical regenerator for the committed m5 MYNN proof artifacts;
+# opt in to the proof-write gate so run_tier1/run_tier2 dump to the tracked paths
+# (the pytest suite leaves the flag unset and does not re-dirty them).
+os.environ.setdefault("GPUWRF_WRITE_PROOFS", "1")
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"

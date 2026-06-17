@@ -11,7 +11,7 @@ def test_precision_matrix_covers_every_state_leaf_dtype():
     grid = GridSpec.canary_3km_template()
     state = State.zeros(grid)
 
-    for field in State.__slots__:
+    for field in state.active_field_names():
         assert field in PRECISION_MATRIX
         expected_dtype, _gate_required = PRECISION_MATRIX[field]
         assert getattr(state, field).dtype == expected_dtype
@@ -54,16 +54,16 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         "qc_bl",
         "qi_bl",
         "cldfra_bl",
-        # v0.16 additive aerosol-aware Thompson (mp=28) aerosol numbers
-        # (FP32_GATED, same class as Nc/Nn).
-        "nwfa",
-        "nifa",
         # v0.17 ADR-032 graupel/hail substrate (FP32_GATED, same class as the
         # qg/Ng hydrometeor + number species they extend).
         "qh",
         "Nh",
         "qvolg",
         "qvolh",
+        # v0.16 additive aerosol-aware Thompson (mp=28) aerosol numbers
+        # (FP32_GATED, same class as Nc/Nn).
+        "nwfa",
+        "nifa",
     }
     integer_static = {"lu_index"}
     locked = set(State.__slots__) - gated - integer_static

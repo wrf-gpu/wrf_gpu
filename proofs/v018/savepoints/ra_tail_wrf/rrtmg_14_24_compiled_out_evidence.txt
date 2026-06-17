@@ -1,0 +1,48 @@
+# v0.18 RA tail -- ra_lw/sw_physics = 14 (RRTMG-K/KIAPS) & 24 (fast RRTMG, GPU/MIC)
+# CLASS (c): proven computationally-UNAVAILABLE (compiled out of standard WRF).
+# Two independent investigations (this RA worker + GPT schemes-worker handoff
+# /tmp/v018_rrtmg1424_handoff.md) + WRF source + compiled object sizes all agree.
+
+WRF_ROOT = /home/user/src/wrf_pristine/WRF
+
+## Registry integer mapping (Registry/Registry.EM_COMMON)
+ra_lw_physics==14 -> rrtmk_lwscheme        ra_sw_physics==14 -> rrtmk_swscheme
+ra_lw_physics==24 -> rrtmg_lwscheme_fast   ra_sw_physics==24 -> rrtmg_swscheme_fast
+
+## Source guards (phys/) -- the public entry points are DUMMY stubs unless BUILD flag set
+phys/module_ra_rrtmg_lwk.F : line 1 = `#if( BUILD_RRTMK != 1)`  -> SUBROUTINE rrtmg_lw; REAL::dummy; dummy=1
+phys/module_ra_rrtmg_swk.F : line 1 = `#if( BUILD_RRTMK != 1)`  -> SUBROUTINE rrtmg_sw; REAL::dummy; dummy=1
+phys/module_ra_rrtmg_lwf.F : line 1 = `#if( BUILD_RRTMG_FAST != 1)` -> SUBROUTINE RRTMG_LWRAD_FAST; REAL::dummy; dummy=1
+phys/module_ra_rrtmg_swf.F : line 1 = `#if( BUILD_RRTMG_FAST != 1)` -> SUBROUTINE RRTMG_SWRAD_FAST; REAL::dummy; dummy=1
+(real code is under the `#else` branches; requires BUILD_RRTMK=1 / BUILD_RRTMG_FAST=1)
+
+## Pristine build policy (configure.wrf) -- both flags OFF
+configure.wrf:204 : -DBUILD_RRTMG_FAST=0
+configure.wrf:205 : -DBUILD_RRTMK=0
+
+## Driver dispatch (phys/module_radiation_driver.F) -- CASEs are BUILD-gated
+line 2165 `#if( BUILD_RRTMK == 1)` ... CASE (RRTMK_LWSCHEME)          (not compiled here)
+line 2197 `#if( BUILD_RRTMG_FAST == 1)` ... CASE (RRTMG_LWSCHEME_FAST) (not compiled here)
+=> selecting 14/24 in unmodified WRF reaches the default branch and ABORTS:
+   line 2309 (LW): 'The longwave option does not exist: lw_physics = '
+   line 2971 (SW): 'The shortwave option does not exist: sw_physics = '
+
+## Compiled object-size corroboration (stub vs real base RRTMG)
+phys/module_ra_rrtmg_lw.o   627784 bytes   (real base RRTMG LW)
+phys/module_ra_rrtmg_sw.o   599056 bytes   (real base RRTMG SW)
+phys/module_ra_rrtmg_lwk.o    1264 bytes   (14 LW stub)
+phys/module_ra_rrtmg_swk.o    1264 bytes   (14 SW stub)
+phys/module_ra_rrtmg_lwf.o    1272 bytes   (24 LW stub)
+phys/module_ra_rrtmg_swf.o    1272 bytes   (24 SW stub)
+
+## Prior independent attempt
+worker/gpt/v017-rrtmg (checkpoint da6c2ffd) built RRTMG-14/24 JAX wiring but marked
+WRF oracle parity RED/blocked because the local WRF variant objects are dummy stubs.
+
+## Endpoint
+NOT accepted at the namelist layer; fail-closed (RECOGNIZED_FAIL_CLOSED) with a
+source-cited reason (scheme_catalog._PER_CODE_FAIL_CLOSED_REASON) + user-facing
+"compiled-out" action text. Building a real oracle would require a BUILD_RRTMK=1 /
+BUILD_RRTMG_FAST=1 rebuild = a different binary than the validated pristine build:
+out of scope, and not real-world-relevant for this target. Proven + documented + carried.
+Test: tests/test_v018_ra_tail_oracle.py::test_ra_compiled_out_schemes_fail_closed_with_source_citation

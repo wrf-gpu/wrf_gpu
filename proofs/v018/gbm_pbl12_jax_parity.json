@@ -1,0 +1,732 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "diagnostics": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "candidate": 4.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 4.0,
+          "rel_tolerance": 0.0,
+          "scale": 4.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-08,
+          "candidate": 1031.656363604808,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1031.656363604808,
+          "rel_tolerance": 1e-10,
+          "scale": 1031.656363604808
+        },
+        "UST": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.24758294969245617,
+          "max_abs": 8.326672684688674e-17,
+          "max_abs_index": 0,
+          "max_rel": 3.3631850234565604e-16,
+          "pass": true,
+          "reference": 0.2475829496924561,
+          "rel_tolerance": 1e-10,
+          "scale": 0.2475829496924561
+        }
+      },
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 2e-08,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 2.699548533310024e-07,
+          "max_abs": 4.0482880922835217e-19,
+          "max_abs_index": 2,
+          "max_rel": 4.3340022654021553e-13,
+          "pass": true,
+          "reference": 2.699548533305976e-07,
+          "rel_tolerance": 2e-08,
+          "scale": 9.340761366463841e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -5.839324183890919e-06,
+          "max_abs": 9.473911049108844e-16,
+          "max_abs_index": 2,
+          "max_rel": 6.293797823662181e-13,
+          "pass": true,
+          "reference": -5.839324182943528e-06,
+          "rel_tolerance": 2e-08,
+          "scale": 0.001505277308637195
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -1.826082253807796e-05,
+          "max_abs": 5.1811311317651043e-17,
+          "max_abs_index": 2,
+          "max_rel": 3.4443523663543836e-13,
+          "pass": true,
+          "reference": -1.826082253802615e-05,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0001504239572691857
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -4.56520563451949e-06,
+          "max_abs": 1.2951980796465506e-17,
+          "max_abs_index": 2,
+          "max_rel": 3.444127127512744e-13,
+          "pass": true,
+          "reference": -4.565205634506538e-06,
+          "rel_tolerance": 2e-08,
+          "scale": 3.760598931729642e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 5e-10,
+          "candidate": 0.020915724061103532,
+          "max_abs": 1.1581013925621164e-14,
+          "max_abs_index": 1,
+          "max_rel": 4.4500040054429575e-13,
+          "pass": true,
+          "reference": 0.02091572406109195,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0260247269698095
+        }
+      },
+      "pass": true,
+      "regime": "unstable_daytime"
+    },
+    {
+      "case": 2,
+      "diagnostics": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "candidate": 5.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 5.0,
+          "rel_tolerance": 0.0,
+          "scale": 5.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-08,
+          "candidate": 1342.4214308162009,
+          "max_abs": 2.2737367544323206e-13,
+          "max_abs_index": 0,
+          "max_rel": 1.6937577889008175e-16,
+          "pass": true,
+          "reference": 1342.421430816201,
+          "rel_tolerance": 1e-10,
+          "scale": 1342.421430816201
+        },
+        "UST": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.242743560140465,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.242743560140465,
+          "rel_tolerance": 1e-10,
+          "scale": 0.242743560140465
+        }
+      },
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 3.5421247497372385e-07,
+          "max_abs": 2.175815883259484e-20,
+          "max_abs_index": 30,
+          "max_rel": 3.590154918888145e-14,
+          "pass": true,
+          "reference": 3.542124749737456e-07,
+          "rel_tolerance": 2e-08,
+          "scale": 6.060506948634196e-07
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 3.651347256119463e-07,
+          "max_abs": 2.601979334846804e-19,
+          "max_abs_index": 3,
+          "max_rel": 2.132981901136346e-13,
+          "pass": true,
+          "reference": 3.651347256116861e-07,
+          "rel_tolerance": 2e-08,
+          "scale": 1.219878768526165e-06
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 0.0001587524105228037,
+          "max_abs": 1.894805926744292e-15,
+          "max_abs_index": 1,
+          "max_rel": 7.584053171519735e-13,
+          "pass": true,
+          "reference": 0.0001587524105246985,
+          "rel_tolerance": 2e-08,
+          "scale": 0.002498408019948784
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -3.620090758026754e-05,
+          "max_abs": 4.440485522685944e-17,
+          "max_abs_index": 3,
+          "max_rel": 1.634912927562789e-13,
+          "pass": true,
+          "reference": -3.620090758022313e-05,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0002716037929497262
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -9.050226895066884e-06,
+          "max_abs": 1.110121380671486e-17,
+          "max_abs_index": 3,
+          "max_rel": 1.6349129275627892e-13,
+          "pass": true,
+          "reference": -9.050226895055783e-06,
+          "rel_tolerance": 2e-08,
+          "scale": 6.790094823743154e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 5e-10,
+          "candidate": 0.028690720792717516,
+          "max_abs": 6.376843497690743e-15,
+          "max_abs_index": 2,
+          "max_rel": 1.8898381069329615e-13,
+          "pass": true,
+          "reference": 0.02869072079271114,
+          "rel_tolerance": 2e-08,
+          "scale": 0.03374280301734306
+        }
+      },
+      "pass": true,
+      "regime": "strong_unstable"
+    },
+    {
+      "case": 3,
+      "diagnostics": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "candidate": 1.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1.0,
+          "rel_tolerance": 0.0,
+          "scale": 1.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-08,
+          "candidate": 200.957524225555,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 200.957524225555,
+          "rel_tolerance": 1e-10,
+          "scale": 200.957524225555
+        },
+        "UST": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.2495310498331851,
+          "max_abs": 8.326672684688674e-17,
+          "max_abs_index": 0,
+          "max_rel": 3.33692848655715e-16,
+          "pass": true,
+          "reference": 0.2495310498331852,
+          "rel_tolerance": 1e-10,
+          "scale": 0.2495310498331852
+        }
+      },
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 2e-08,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -1.0813666812397685e-10,
+          "max_abs": 5.169878828456423e-26,
+          "max_abs_index": 0,
+          "max_rel": 4.780874904088262e-16,
+          "pass": true,
+          "reference": -1.081366681239769e-10,
+          "rel_tolerance": 2e-08,
+          "scale": 1.081366681239769e-10
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -4.554599778809158e-09,
+          "max_abs": 9.473903149533994e-16,
+          "max_abs_index": 6,
+          "max_rel": 3.820381227451069e-12,
+          "pass": true,
+          "reference": -4.554598831418843e-09,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0002479831876845158
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -4.7580920240856506e-09,
+          "max_abs": 8.271806125530277e-25,
+          "max_abs_index": 2,
+          "max_rel": 2.721283788949649e-21,
+          "pass": true,
+          "reference": -4.758092024085651e-09,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0003039670525771587
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -2.4942085434057997e-08,
+          "max_abs": 3.308722450212111e-24,
+          "max_abs_index": 31,
+          "max_rel": 4.3540540623194385e-20,
+          "pass": true,
+          "reference": -2.4942085434058e-08,
+          "rel_tolerance": 2e-08,
+          "scale": 7.599176314428968e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 5e-10,
+          "candidate": 0.001,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.001,
+          "rel_tolerance": 2e-08,
+          "scale": 0.001
+        }
+      },
+      "pass": true,
+      "regime": "stable_nocturnal"
+    },
+    {
+      "case": 4,
+      "diagnostics": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "candidate": 1.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1.0,
+          "rel_tolerance": 0.0,
+          "scale": 1.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-08,
+          "candidate": 200.957524225555,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 200.957524225555,
+          "rel_tolerance": 1e-10,
+          "scale": 200.957524225555
+        },
+        "UST": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.14679236837447773,
+          "max_abs": 2.7755575615628914e-17,
+          "max_abs_index": 0,
+          "max_rel": 1.8908050822385042e-16,
+          "pass": true,
+          "reference": 0.1467923683744777,
+          "rel_tolerance": 1e-10,
+          "scale": 0.1467923683744777
+        }
+      },
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 1.2070488414746566e-06,
+          "max_abs": 3.239901023247699e-20,
+          "max_abs_index": 23,
+          "max_rel": 1.874645515918111e-14,
+          "pass": true,
+          "reference": 1.207048841474689e-06,
+          "rel_tolerance": 2e-08,
+          "scale": 1.7282739567224e-06
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -1.2070479116699305e-06,
+          "max_abs": 3.239901023247699e-20,
+          "max_abs_index": 23,
+          "max_rel": 1.8746459997788412e-14,
+          "pass": true,
+          "reference": -1.207047911669963e-06,
+          "rel_tolerance": 2e-08,
+          "scale": 1.728273510641434e-06
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 0.006238134890886235,
+          "max_abs": 9.488937413593135e-16,
+          "max_abs_index": 28,
+          "max_rel": 1.5109773386265038e-13,
+          "pass": true,
+          "reference": 0.006238134890885286,
+          "rel_tolerance": 2e-08,
+          "scale": 0.006279999819334611
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -1.362696533391272e-09,
+          "max_abs": 2.9605947006251606e-17,
+          "max_abs_index": 27,
+          "max_rel": 2.8142426687296817e-13,
+          "pass": true,
+          "reference": -1.362696503785325e-09,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0001052004055485926
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -3.40674133347818e-10,
+          "max_abs": 7.40148680326169e-18,
+          "max_abs_index": 27,
+          "max_rel": 2.81424268838694e-13,
+          "pass": true,
+          "reference": -3.406741259463312e-10,
+          "rel_tolerance": 2e-08,
+          "scale": 2.630010138714815e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 5e-10,
+          "candidate": 0.001,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.001,
+          "rel_tolerance": 2e-08,
+          "scale": 0.001
+        }
+      },
+      "pass": true,
+      "regime": "stable_marine"
+    },
+    {
+      "case": 5,
+      "diagnostics": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "candidate": 1.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1.0,
+          "rel_tolerance": 0.0,
+          "scale": 1.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-08,
+          "candidate": 200.957524225555,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 200.957524225555,
+          "rel_tolerance": 1e-10,
+          "scale": 200.957524225555
+        },
+        "UST": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.24564647085138058,
+          "max_abs": 2.7755575615628914e-17,
+          "max_abs_index": 0,
+          "max_rel": 1.129899221406743e-16,
+          "pass": true,
+          "reference": 0.2456464708513806,
+          "rel_tolerance": 1e-10,
+          "scale": 0.2456464708513806
+        }
+      },
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 1.3636465014716553e-07,
+          "max_abs": 6.723324018831009e-21,
+          "max_abs_index": 31,
+          "max_rel": 4.9304009591748956e-14,
+          "pass": true,
+          "reference": 1.363646501471588e-07,
+          "rel_tolerance": 2e-08,
+          "scale": 1.363646501471588e-07
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -1.3636412514494297e-07,
+          "max_abs": 6.776263578034403e-21,
+          "max_abs_index": 31,
+          "max_rel": 4.9692421454925716e-14,
+          "pass": true,
+          "reference": -1.363641251449362e-07,
+          "rel_tolerance": 2e-08,
+          "scale": 1.363641251449362e-07
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 0.00012928127002946135,
+          "max_abs": 9.474571734807702e-16,
+          "max_abs_index": 30,
+          "max_rel": 1.770874919508965e-12,
+          "pass": true,
+          "reference": 0.0001292812700304088,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0005350220747061485
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 1.2177631179000059e-07,
+          "max_abs": 2.6469779601696886e-23,
+          "max_abs_index": 1,
+          "max_rel": 8.987713064691188e-20,
+          "pass": true,
+          "reference": 1.217763117900006e-07,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0002945107327211538
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 3.0444077947500146e-08,
+          "max_abs": 6.617444900424222e-24,
+          "max_abs_index": 1,
+          "max_rel": 8.987713064691188e-20,
+          "pass": true,
+          "reference": 3.044407794750015e-08,
+          "rel_tolerance": 2e-08,
+          "scale": 7.362768318028846e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 5e-10,
+          "candidate": 0.001,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.001,
+          "rel_tolerance": 2e-08,
+          "scale": 0.001
+        }
+      },
+      "pass": true,
+      "regime": "neutral"
+    },
+    {
+      "case": 6,
+      "diagnostics": {
+        "KPBL": {
+          "abs_tolerance": 0.5,
+          "candidate": 1.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1.0,
+          "rel_tolerance": 0.0,
+          "scale": 1.0
+        },
+        "PBL": {
+          "abs_tolerance": 1e-08,
+          "candidate": 200.957524225555,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 200.957524225555,
+          "rel_tolerance": 1e-10,
+          "scale": 200.957524225555
+        },
+        "UST": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.20830528104300003,
+          "max_abs": 2.7755575615628914e-17,
+          "max_abs_index": 0,
+          "max_rel": 1.3324470448686988e-16,
+          "pass": true,
+          "reference": 0.208305281043,
+          "rel_tolerance": 1e-10,
+          "scale": 0.208305281043
+        }
+      },
+      "fields": {
+        "RQCBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 2e-08,
+          "scale": 1e-30
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -1.3510470322069627e-10,
+          "max_abs": 2.5849394142282115e-26,
+          "max_abs_index": 1,
+          "max_rel": 6.074427504638783e-19,
+          "pass": true,
+          "reference": -1.351047032206963e-10,
+          "rel_tolerance": 2e-08,
+          "scale": 4.25544532757071e-08
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -3.5971898644978263e-09,
+          "max_abs": 9.473903153669897e-16,
+          "max_abs_index": 15,
+          "max_rel": 1.1044870593231385e-11,
+          "pass": true,
+          "reference": -3.597188917107511e-09,
+          "rel_tolerance": 2e-08,
+          "scale": 8.577649754878773e-05
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -5.656641796451349e-08,
+          "max_abs": 1.4802979396787668e-17,
+          "max_abs_index": 2,
+          "max_rel": 6.988367738635243e-14,
+          "pass": true,
+          "reference": -5.656641794971051e-08,
+          "rel_tolerance": 2e-08,
+          "scale": 0.0002118231316727837
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 5e-11,
+          "candidate": -1.4141604491128372e-08,
+          "max_abs": 3.700741540474467e-18,
+          "max_abs_index": 2,
+          "max_rel": 6.988361490550017e-14,
+          "pass": true,
+          "reference": -1.414160448742763e-08,
+          "rel_tolerance": 2e-08,
+          "scale": 5.295578291819591e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 5e-10,
+          "candidate": 0.001,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.001,
+          "rel_tolerance": 2e-08,
+          "scale": 0.001
+        }
+      },
+      "pass": true,
+      "regime": "low_ust_edge"
+    }
+  ],
+  "git_head": "66896f08ab06d457eb076e715fe7915e02630075",
+  "jax_backend": "cpu",
+  "jax_precision": "fp64",
+  "operational_kernel": "gpuwrf.physics.bl_gbm.gbm_columns",
+  "oracle": {
+    "build_manifest": [
+      "mode=fp64",
+      "full_wrf_exe=false",
+      "wrf_sources=/home/user/src/wrf_pristine/WRF/share/module_model_constants.F,/home/user/src/wrf_pristine/WRF/phys/module_bl_gbmpbl.F",
+      "compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0",
+      "fflags=-O2 -ffree-form -ffree-line-length-none -cpp -DEM_CORE=1 -DNMM_CORE=0 -ffpe-summary=none -fdefault-real-8 -fdefault-double-8"
+    ],
+    "full_wrf_exe": false,
+    "savepoints": "proofs/v017/savepoints_fp64/gbm",
+    "self_compare": false,
+    "source_checksums_sha256": [
+      "5b80377fecdc18a5f0ad38d3b6c15cfc86ad5d76701adbbbb08a08698d0f7062  module_model_constants.F",
+      "92d318297a54b3e89a2735da1bf6cfcef27b053c02339c3fb82dbbc4ca59a4cf  module_bl_gbmpbl.F"
+    ],
+    "type": "single-column Fortran driver linked against UNMODIFIED pristine WRF phys/module_bl_gbmpbl.F"
+  },
+  "overall_pass": true,
+  "schema": "gpuwrf.v018.gbm_pbl12_jax_parity.v1",
+  "scheme": "GBM moist TKE PBL (bl_pbl_physics=12)",
+  "tolerances": {
+    "pbl_abs": 1e-08,
+    "pbl_rel": 1e-10,
+    "tend_abs": 5e-11,
+    "tend_rel": 2e-08,
+    "tke_abs": 5e-10,
+    "tke_rel": 2e-08
+  },
+  "verdict": "PASS",
+  "worst": {
+    "KPBL": {
+      "case": 1,
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PBL": {
+      "case": 2,
+      "max_abs": 2.2737367544323206e-13,
+      "max_rel": 1.6937577889008175e-16
+    },
+    "RQCBLTEN": {
+      "case": 4,
+      "max_abs": 3.239901023247699e-20,
+      "max_rel": 1.874645515918111e-14
+    },
+    "RQVBLTEN": {
+      "case": 1,
+      "max_abs": 4.0482880922835217e-19,
+      "max_rel": 4.3340022654021553e-13
+    },
+    "RTHBLTEN": {
+      "case": 2,
+      "max_abs": 1.894805926744292e-15,
+      "max_rel": 7.584053171519735e-13
+    },
+    "RUBLTEN": {
+      "case": 1,
+      "max_abs": 5.1811311317651043e-17,
+      "max_rel": 3.4443523663543836e-13
+    },
+    "RVBLTEN": {
+      "case": 1,
+      "max_abs": 1.2951980796465506e-17,
+      "max_rel": 3.444127127512744e-13
+    },
+    "TKE_PBL": {
+      "case": 1,
+      "max_abs": 1.1581013925621164e-14,
+      "max_rel": 4.4500040054429575e-13
+    },
+    "UST": {
+      "case": 1,
+      "max_abs": 8.326672684688674e-17,
+      "max_rel": 3.3631850234565604e-16
+    }
+  }
+}

@@ -11,8 +11,12 @@ PROOF_DIR = Path("proofs/f2")
 
 
 @pytest.mark.close_gate
-def test_warm_bubble_runs_or_writes_blocked_proof() -> None:
-    result = run_warm_bubble_case(proof_dir=PROOF_DIR, require_gpu=True)
+def test_warm_bubble_runs_or_writes_blocked_proof(tmp_path) -> None:
+    # Write the run's proof under a pytest tmp dir, not the committed proofs/f2
+    # tree: on a CPU-only run this case is BLOCKED_GPU_UNAVAILABLE and would
+    # otherwise clobber the canonical GPU-PASS proof with a BLOCKED record. The
+    # close-gate assertions below still verify the proof was written and PASS.
+    result = run_warm_bubble_case(proof_dir=tmp_path, require_gpu=True)
 
     assert result.proof_json.exists()
     assert result.proof_markdown.exists()

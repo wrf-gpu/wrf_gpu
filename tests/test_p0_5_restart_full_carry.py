@@ -84,7 +84,8 @@ def test_full_carry_roundtrip_bit_identical(tmp_path: Path) -> None:
 
     restored, _, restored_grid, step = read_restart(path)
     assert step == 137
-    for field in State.__slots__:
+    assert restored.state.active_field_names() == carry.state.active_field_names()
+    for field in carry.state.active_field_names():
         assert _equal(getattr(carry.state, field), getattr(restored.state, field)), field
     for field in restart_mod._CARRY_SCRATCH_FIELDS:
         assert _equal(getattr(carry, field), getattr(restored, field)), field
@@ -119,7 +120,8 @@ def test_landless_roundtrip_and_metadata(tmp_path: Path) -> None:
     assert meta["step_index"] == 3
     restored, _, _, step = read_restart(path)
     assert step == 3
-    for field in State.__slots__:
+    assert restored.state.active_field_names() == carry.state.active_field_names()
+    for field in carry.state.active_field_names():
         assert _equal(getattr(carry.state, field), getattr(restored.state, field)), field
 
 

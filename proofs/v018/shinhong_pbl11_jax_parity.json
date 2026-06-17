@@ -1,0 +1,816 @@
+{
+  "accepted_for_operational_scan": true,
+  "candidate": "gpuwrf.physics.bl_shinhong.shinhong_columns (JAX/vmap operational endpoint)",
+  "cases": [
+    {
+      "case": 1,
+      "diagnostics": {
+        "delta": {
+          "abs_tolerance": 1e-10,
+          "candidate": 34.35402979927181,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 34.35402979927181,
+          "rel_tolerance": 1e-10,
+          "scale": 34.35402979927181
+        },
+        "kpbl": {
+          "candidate": 6,
+          "pass": true,
+          "reference": 6
+        },
+        "pblh": {
+          "abs_tolerance": 1e-10,
+          "candidate": 1403.73626216613,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1403.73626216613,
+          "rel_tolerance": 1e-10,
+          "scale": 1403.73626216613
+        },
+        "wstar": {
+          "abs_tolerance": 1e-10,
+          "candidate": 2.351748770262479,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 2.351748770262479,
+          "rel_tolerance": 1e-10,
+          "scale": 2.351748770262479
+        }
+      },
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "dynamics_path_pass": true,
+      "fields": {
+        "EL_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 27.172671565800336,
+          "max_abs": 1.3491538913658339,
+          "max_abs_index": 4,
+          "max_rel": 0.009561273058292788,
+          "pass": false,
+          "reference": 25.823517674434502,
+          "rel_tolerance": 0.0,
+          "scale": 141.10609362794747
+        },
+        "EXCH_H": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.16470546799438265,
+          "max_abs": 2.7755575615628914e-17,
+          "max_abs_index": 6,
+          "max_rel": 8.155338530752669e-20,
+          "pass": true,
+          "reference": 0.16470546799438263,
+          "rel_tolerance": 1e-10,
+          "scale": 340.3362780216471
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 1.3082359373768789e-06,
+          "max_abs": 1.461131834013668e-20,
+          "max_abs_index": 4,
+          "max_rel": 5.698450091710537e-15,
+          "pass": true,
+          "reference": 1.3082359373768643e-06,
+          "rel_tolerance": 1e-10,
+          "scale": 2.5640863927880285e-06
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.0007275217133998998,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0007275217133998998,
+          "rel_tolerance": 1e-10,
+          "scale": 0.0007275217133998998
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -4.618916766250998e-05,
+          "max_abs": 7.406456090791602e-18,
+          "max_abs_index": 2,
+          "max_rel": 1.1008510579003385e-14,
+          "pass": true,
+          "reference": -4.618916766251739e-05,
+          "rel_tolerance": 1e-10,
+          "scale": 0.0006727936570200507
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -4.4176492863147916e-05,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -4.4176492863147916e-05,
+          "rel_tolerance": 1e-10,
+          "scale": 0.00016819841425501266
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 1.8339855162555407,
+          "max_abs": 0.3235795688304979,
+          "max_abs_index": 2,
+          "max_rel": 0.12963579404516867,
+          "pass": false,
+          "reference": 2.1575650850860386,
+          "rel_tolerance": 0.0,
+          "scale": 2.4960665471586796
+        }
+      },
+      "regime": "unstable_daytime_3km",
+      "tke_diagnostic_exact_pass": false
+    },
+    {
+      "case": 2,
+      "diagnostics": {
+        "delta": {
+          "abs_tolerance": 1e-10,
+          "candidate": 45.33090365260702,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 45.33090365260702,
+          "rel_tolerance": 1e-10,
+          "scale": 45.33090365260702
+        },
+        "kpbl": {
+          "candidate": 8,
+          "pass": true,
+          "reference": 8
+        },
+        "pblh": {
+          "abs_tolerance": 1e-10,
+          "candidate": 1853.8932798003202,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1853.8932798003202,
+          "rel_tolerance": 1e-10,
+          "scale": 1853.8932798003202
+        },
+        "wstar": {
+          "abs_tolerance": 1e-10,
+          "candidate": 3.064383455825084,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 3.064383455825084,
+          "rel_tolerance": 1e-10,
+          "scale": 3.064383455825084
+        }
+      },
+      "dx_m": 1000.0,
+      "dy_m": 1000.0,
+      "dynamics_path_pass": true,
+      "fields": {
+        "EL_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 18.028489013543428,
+          "max_abs": 2.7455979754122843,
+          "max_abs_index": 6,
+          "max_rel": 0.012754529090829652,
+          "pass": false,
+          "reference": 15.282891038131144,
+          "rel_tolerance": 0.0,
+          "scale": 215.2645508007297
+        },
+        "EXCH_H": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 636.5289961396285
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 1.2860049722002078e-06,
+          "max_abs": 4.341043854678289e-20,
+          "max_abs_index": 3,
+          "max_rel": 1.1750344181907682e-14,
+          "pass": true,
+          "reference": 1.2860049722001644e-06,
+          "rel_tolerance": 1e-10,
+          "scale": 3.694397191668913e-06
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.001287889399317521,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.001287889399317521,
+          "rel_tolerance": 1e-10,
+          "scale": 0.001287889399317521
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -0.0008891485858114981,
+          "max_abs": 7.37257477290143e-18,
+          "max_abs_index": 4,
+          "max_rel": 7.485384812871486e-15,
+          "pass": true,
+          "reference": -0.0008891485858115055,
+          "rel_tolerance": 1e-10,
+          "scale": 0.0009849292931772761
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -0.0002222871464528727,
+          "max_abs": 1.8431436932253575e-18,
+          "max_abs_index": 4,
+          "max_rel": 7.48538481287143e-15,
+          "pass": true,
+          "reference": -0.00022228714645287453,
+          "rel_tolerance": 1e-10,
+          "scale": 0.0002462323232943209
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 3.433523745928498,
+          "max_abs": 1.365833314611192,
+          "max_abs_index": 2,
+          "max_rel": 0.2845867263848886,
+          "pass": false,
+          "reference": 4.79935706053969,
+          "rel_tolerance": 0.0,
+          "scale": 4.79935706053969
+        }
+      },
+      "regime": "strong_unstable_1km",
+      "tke_diagnostic_exact_pass": false
+    },
+    {
+      "case": 3,
+      "diagnostics": {
+        "delta": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 1e-12
+        },
+        "kpbl": {
+          "candidate": 1,
+          "pass": true,
+          "reference": 1
+        },
+        "pblh": {
+          "abs_tolerance": 1e-10,
+          "candidate": 183.84647453108536,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 183.84647453108536,
+          "rel_tolerance": 1e-10,
+          "scale": 183.84647453108536
+        },
+        "wstar": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 1e-12
+        }
+      },
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "dynamics_path_pass": true,
+      "fields": {
+        "EL_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 5.838001123391376,
+          "max_abs": 0.7634965759824626,
+          "max_abs_index": 1,
+          "max_rel": 0.14408151396227364,
+          "pass": false,
+          "reference": 5.074504547408913,
+          "rel_tolerance": 0.0,
+          "scale": 5.29905992091655
+        },
+        "EXCH_H": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 0.03309333387191455
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -2.178069444276389e-10,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -2.178069444276389e-10,
+          "rel_tolerance": 1e-10,
+          "scale": 2.178069444276389e-10
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -0.00024811295620376465,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -0.00024811295620376465,
+          "rel_tolerance": 1e-10,
+          "scale": 0.00024811295620376465
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -0.0003005030867842651,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -0.0003005030867842651,
+          "rel_tolerance": 1e-10,
+          "scale": 0.0003005030867842651
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -7.512577169606627e-05,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -7.512577169606627e-05,
+          "rel_tolerance": 1e-10,
+          "scale": 7.512577169606627e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 0.01864903614794462,
+          "max_abs": 0.0010088335213138538,
+          "max_abs_index": 1,
+          "max_rel": 0.004882754243159053,
+          "pass": false,
+          "reference": 0.017640202626630765,
+          "rel_tolerance": 0.0,
+          "scale": 0.20661157024793386
+        }
+      },
+      "regime": "stable_nocturnal_3km",
+      "tke_diagnostic_exact_pass": false
+    },
+    {
+      "case": 4,
+      "diagnostics": {
+        "delta": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 1e-12
+        },
+        "kpbl": {
+          "candidate": 1,
+          "pass": true,
+          "reference": 1
+        },
+        "pblh": {
+          "abs_tolerance": 1e-10,
+          "candidate": 151.37779497862394,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 151.37779497862394,
+          "rel_tolerance": 1e-10,
+          "scale": 151.37779497862394
+        },
+        "wstar": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 1e-12
+        }
+      },
+      "dx_m": 9000.0,
+      "dy_m": 9000.0,
+      "dynamics_path_pass": true,
+      "fields": {
+        "EL_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 5.838472461992453,
+          "max_abs": 0.5863255745442393,
+          "max_abs_index": 4,
+          "max_rel": 0.10328124947888997,
+          "pass": false,
+          "reference": 5.252146887448213,
+          "rel_tolerance": 0.0,
+          "scale": 5.676979872944706
+        },
+        "EXCH_H": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 0.010009579457961874
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 8.323789597694705e-08,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 8.323789597694705e-08,
+          "rel_tolerance": 1e-10,
+          "scale": 8.323789597694705e-08
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -6.209566161838135e-05,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -6.209566161838135e-05,
+          "rel_tolerance": 1e-10,
+          "scale": 6.209566161838135e-05
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -0.00015752586532448524,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -0.00015752586532448524,
+          "rel_tolerance": 1e-10,
+          "scale": 0.00015752586532448524
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -3.938146633112131e-05,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -3.938146633112131e-05,
+          "rel_tolerance": 1e-10,
+          "scale": 3.938146633112131e-05
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 0.018915404795944585,
+          "max_abs": 0.0008012808629957804,
+          "max_abs_index": 1,
+          "max_rel": 0.0074810938825,
+          "pass": false,
+          "reference": 0.018114123932948804,
+          "rel_tolerance": 0.0,
+          "scale": 0.10710744652866351
+        }
+      },
+      "regime": "stable_marine_9km",
+      "tke_diagnostic_exact_pass": false
+    },
+    {
+      "case": 5,
+      "diagnostics": {
+        "delta": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 1e-12
+        },
+        "kpbl": {
+          "candidate": 1,
+          "pass": true,
+          "reference": 1
+        },
+        "pblh": {
+          "abs_tolerance": 1e-10,
+          "candidate": 100.4787826538086,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 100.4787826538086,
+          "rel_tolerance": 1e-10,
+          "scale": 100.4787826538086
+        },
+        "wstar": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 1e-12
+        }
+      },
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "dynamics_path_pass": true,
+      "fields": {
+        "EL_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 11.836013710768354,
+          "max_abs": 1.2485590088773257,
+          "max_abs_index": 3,
+          "max_rel": 0.09213746673796262,
+          "pass": false,
+          "reference": 10.587454701891028,
+          "rel_tolerance": 0.0,
+          "scale": 13.551045552708826
+        },
+        "EXCH_H": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 0.024118903268368182
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -4.40683215483309e-10,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -4.40683215483309e-10,
+          "rel_tolerance": 1e-10,
+          "scale": 4.40683215483309e-10
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 1.1869423227987378e-07,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 1.1869423227987378e-07,
+          "rel_tolerance": 1e-10,
+          "scale": 1.1869423227987378e-07
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -0.000764770002334747,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -0.000764770002334747,
+          "rel_tolerance": 1e-10,
+          "scale": 0.000764770002334747
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -0.00019119250058368675,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -0.00019119250058368675,
+          "rel_tolerance": 1e-10,
+          "scale": 0.00019119250058368675
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 0.015409630488575477,
+          "max_abs": 0.00043422194214712273,
+          "max_abs_index": 4,
+          "max_rel": 0.0008209508349056625,
+          "pass": false,
+          "reference": 0.014975408546428355,
+          "rel_tolerance": 0.0,
+          "scale": 0.5289256355979226
+        }
+      },
+      "regime": "neutral_3km",
+      "tke_diagnostic_exact_pass": false
+    },
+    {
+      "case": 6,
+      "diagnostics": {
+        "delta": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 1e-12
+        },
+        "kpbl": {
+          "candidate": 1,
+          "pass": true,
+          "reference": 1
+        },
+        "pblh": {
+          "abs_tolerance": 1e-10,
+          "candidate": 149.24687221264492,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 149.24687221264492,
+          "rel_tolerance": 1e-10,
+          "scale": 149.24687221264492
+        },
+        "wstar": {
+          "abs_tolerance": 1e-10,
+          "candidate": 0.45086779920069503,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.45086779920069503,
+          "rel_tolerance": 1e-10,
+          "scale": 0.45086779920069503
+        }
+      },
+      "dx_m": 750.0,
+      "dy_m": 750.0,
+      "dynamics_path_pass": true,
+      "fields": {
+        "EL_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 2.0598819474420975,
+          "max_abs": 0.15170831074830504,
+          "max_abs_index": 8,
+          "max_rel": 0.05570014771615878,
+          "pass": false,
+          "reference": 1.9081736366937925,
+          "rel_tolerance": 0.0,
+          "scale": 2.7236608333857975
+        },
+        "EXCH_H": {
+          "abs_tolerance": 1e-12,
+          "candidate": 0.0,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 0.0,
+          "rel_tolerance": 1e-10,
+          "scale": 0.01022334927726787
+        },
+        "RQVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 4.2786036320194344e-08,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 4.2786036320194344e-08,
+          "rel_tolerance": 1e-10,
+          "scale": 4.2786036320194344e-08
+        },
+        "RTHBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": 8.5634527271831e-05,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": 8.5634527271831e-05,
+          "rel_tolerance": 1e-10,
+          "scale": 8.5634527271831e-05
+        },
+        "RUBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -1.1746053274904374e-05,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -1.1746053274904374e-05,
+          "rel_tolerance": 1e-10,
+          "scale": 1.1746053274904374e-05
+        },
+        "RVBLTEN": {
+          "abs_tolerance": 1e-12,
+          "candidate": -2.9365133187260936e-06,
+          "max_abs": 0.0,
+          "max_abs_index": 0,
+          "max_rel": 0.0,
+          "pass": true,
+          "reference": -2.9365133187260936e-06,
+          "rel_tolerance": 1e-10,
+          "scale": 2.9365133187260936e-06
+        },
+        "TKE_PBL": {
+          "abs_tolerance": 0.0,
+          "candidate": 0.005371161848947188,
+          "max_abs": 0.0002287336355053923,
+          "max_abs_index": 3,
+          "max_rel": 0.02767676907132047,
+          "pass": false,
+          "reference": 0.005142428213441796,
+          "rel_tolerance": 0.0,
+          "scale": 0.00826446305621754
+        }
+      },
+      "regime": "low_ust_edge_750m",
+      "tke_diagnostic_exact_pass": false
+    }
+  ],
+  "diagnostic_caveat": "TKE_PBL/EL_PBL exact parity is not claimed and tolerances are not widened: the JAX path is operationally accepted on the forecast-driving dynamics path, while TKE is treated as a non-driving diagnostic against the v090 PARTIAL host reference.",
+  "dynamics_path_pass": true,
+  "follow_up": "Refine Shin-Hong TKE/EL if and when a faithful pristine-WRF Shin-Hong TKE oracle is built.",
+  "jax_backend": "cpu",
+  "oracle_source": "proofs/v090 savepoints generated from unmodified WRF module_bl_shinhong.F",
+  "reason": "Forecast-driving tendencies (RUBLTEN/RVBLTEN/RTHBLTEN/RQVBLTEN), EXCH_H, and scalar PBL diagnostics match the v090 host reference at roundoff on all six staged cases. TKE_PBL/EL_PBL are emitted by the JAX path and operational qke is updated, but exact host-reference TKE/EL parity is not yet achieved; the upstream v090 WRF-oracle report already classified those diagnostics as fp32-sensitive/reference-partial. The operational promotion is therefore dynamics-green with the TKE diagnostic residual explicitly tracked.",
+  "reference": "gpuwrf.physics.pbl_shinhong.shinhong_column (v090 faithful host-NumPy fp64 reference)",
+  "schema": "gpuwrf.v018.shinhong_pbl11_jax_parity",
+  "scheme": "Shin-Hong scale-aware PBL (bl_pbl_physics=11)",
+  "tke_diagnostic_exact_pass": false,
+  "verdict": "PASS_DYNAMICS_PATH_TKE_TRACKED",
+  "worst": {
+    "EL_PBL": {
+      "case": 2,
+      "max_abs": 2.7455979754122843,
+      "max_rel": 0.012754529090829652
+    },
+    "EXCH_H": {
+      "case": 1,
+      "max_abs": 2.7755575615628914e-17,
+      "max_rel": 8.155338530752669e-20
+    },
+    "RQVBLTEN": {
+      "case": 2,
+      "max_abs": 4.341043854678289e-20,
+      "max_rel": 1.1750344181907682e-14
+    },
+    "RTHBLTEN": {
+      "case": 1,
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "RUBLTEN": {
+      "case": 1,
+      "max_abs": 7.406456090791602e-18,
+      "max_rel": 1.1008510579003385e-14
+    },
+    "RVBLTEN": {
+      "case": 2,
+      "max_abs": 1.8431436932253575e-18,
+      "max_rel": 7.48538481287143e-15
+    },
+    "TKE_PBL": {
+      "case": 2,
+      "max_abs": 1.365833314611192,
+      "max_rel": 0.2845867263848886
+    }
+  }
+}

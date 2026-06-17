@@ -1709,26 +1709,12 @@ def execute_daily_pipeline(
 
     # Auto-select the forecast driver by init mode (callers may still override).
     # Standalone native-init uses the long-run-safe segmented entry (no outer
-    # donate, bounded compile/VRAM); replay defaults to the donate-safe while-loop
-    # entry (``run_forecast_operational``).
-    #
-    # FAST-COMPILE switch (GPUWRF_REPLAY_SEGMENTED=1): route the replay path through
-    # the SAME segmented entry. The per-hour ``run_forecast_operational`` while-loop
-    # emits one ``jax.lax.scan`` per radiation interval (~12 distinct XLA modules for
-    # a 1 h advance at dt=18 s / radt=10 min), so the cold compile of a single hourly
-    # advance is ~10-11 min and a second compile fires at hour 2 (the operational
-    # 72 h replay slow-compile pathology). ``run_forecast_operational_segmented``
-    # compiles ONE small fixed-length segment ONCE and reuses that single executable
-    # across every radiation interval AND every hour, collapsing the compile tax.
-    # Bit-identical to the while-loop (proofs/perf/segscan_equiv.json:
-    # max_abs_diff_seg_vs_production == 0.0 on every field), so the identity result
-    # is unchanged -- only the compile time differs.
+    # donate, bounded compile/VRAM); replay uses the donate-safe single-scan entry.
     init_mode = detect_init_mode(config)
     if forecast_fn is None:
-        replay_segmented = os.environ.get("GPUWRF_REPLAY_SEGMENTED", "") not in ("", "0", "false", "False")
         forecast_fn = (
             _segmented_forecast_fn
-            if (init_mode == "standalone_native_init" or replay_segmented)
+            if init_mode == "standalone_native_init"
             else _default_forecast_fn
         )
 

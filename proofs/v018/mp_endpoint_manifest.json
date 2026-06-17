@@ -1,0 +1,571 @@
+{
+  "schema": "gpuwrf-v018-mp-endpoint-manifest-v1",
+  "date": "2026-06-16",
+  "branch": "worker/gpt/v018-mp",
+  "exact_oracle_rule": "An oracle counts only for the exact WRF module/routine it drives. Family-similar or wrapper-adjacent oracles do not validate a different mp_physics option.",
+  "oracle_provenance": {
+    "full_wrf_oracles": "Full-WRF MP oracles are physics-pristine, WRFGPU2_ORACLE-instrumented dump-only wrf.exe runs; summaries record wrf.exe hashes, exact physics-module checksums, driver checksums, raw wrfout/log hashes, seeded fields, and success markers. No clean uninstrumented full-wrf.exe rebuild is claimed.",
+    "standalone_module_oracles": "Standalone module oracles link/call pristine physics modules directly and commit source checksum text files next to their savepoints."
+  },
+  "endpoint_classes": {
+    "operational": "Operational GPU scan-wired and accepted by the runtime.",
+    "ref_with_oracle_fail_closed": "Exact pristine-WRF oracle artifacts exist for this module/scheme, but no operational GPU kernel is claimed; runtime remains fail-closed.",
+    "proven_irrelevant_fail_closed": "No operational GPU kernel is claimed; local WRF source/docs prove the option is no-op, superseded, or research/out-of-scope for the lean operational target."
+  },
+  "schemes": {
+    "0": {
+      "scheme": "No microphysics / passive qv",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "1": {
+      "scheme": "Kessler warm rain",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "2": {
+      "scheme": "Purdue-Lin",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "3": {
+      "scheme": "WSM3 simple ice",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "4": {
+      "scheme": "WSM5",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "5": {
+      "scheme": "Ferrier-HRW / new Eta operational High-Resolution Window",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_fer_hires.F:FER_HIRES",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/ferrier_hires/oracle/ferrier_oracle_driver.f90",
+        "proofs/v018/mp_oracles/ferrier_hires/oracle/build_ferrier_hires_oracle.sh",
+        "proofs/v018/mp_oracles/ferrier_hires/savepoints/ferrier_mp5_case_1.json"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is exact FER_HIRES-oracle-backed reference/fail-closed. The MP95 ETAMP_NEW oracle is not reused for MP5.",
+      "artifact_root": "proofs/v018/mp_oracles/ferrier_hires",
+      "source_checksums": [
+        "proofs/v018/mp_oracles/ferrier_hires/savepoints/ferrier_hires_source_checksums.txt"
+      ],
+      "savepoint_dirs": [
+        "proofs/v018/mp_oracles/ferrier_hires/savepoints"
+      ]
+    },
+    "6": {
+      "scheme": "WSM6 graupel",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "7": {
+      "scheme": "Goddard 4-ice / NUWRF",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_gsfcgce_4ice_nuwrf.F",
+      "artifact_root": "proofs/v018/mp_oracles/goddard4ice",
+      "source_checksums": [
+        "proofs/v018/mp_oracles/goddard4ice/savepoints_fp32/goddard4ice_source_checksums.txt",
+        "proofs/v018/mp_oracles/goddard4ice/savepoints_fp64/goddard4ice_source_checksums.txt"
+      ],
+      "savepoint_dirs": [
+        "proofs/v018/mp_oracles/goddard4ice/savepoints_fp32",
+        "proofs/v018/mp_oracles/goddard4ice/savepoints_fp64"
+      ],
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/goddard4ice/oracle/goddard4ice_oracle_driver.f90",
+        "proofs/v018/mp_oracles/goddard4ice/oracle/build_goddard4ice_oracle.sh"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is exact-oracle-backed reference/fail-closed."
+    },
+    "8": {
+      "scheme": "Thompson",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "9": {
+      "scheme": "Milbrandt-Yau 2-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_milbrandt2mom.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp9/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp9",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp9/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp9/oracle_summary.json"
+      ]
+    },
+    "10": {
+      "scheme": "Morrison two-moment",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "11": {
+      "scheme": "CAM 5.1 microphysics",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_cammgmp_driver.F",
+      "irrelevance_basis": "WRF source comments state QME3D is wrong without CAM macrophysics, convective cloud fraction is unavailable to microphysics, and current RRTMG does not use the outputs. This is out-of-scope for the lean operational meteorology target.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_cammgmp_driver.F"
+      ],
+      "remaining": "No v0.18 operational port planned; reopening would require a CAM macrophysics/cloud-fraction/radiation contract first."
+    },
+    "13": {
+      "scheme": "SBU-YLin",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "14": {
+      "scheme": "WDM5",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "16": {
+      "scheme": "WDM6",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "17": {
+      "scheme": "NSSL legacy 2-moment with hail",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
+      "irrelevance_basis": "WRF doc/README.NSSLmp says legacy options 17/19/21/22 should use mp_physics=18 with modifier flags going forward; option 17 is now equivalent to MP18 with nssl_ccn_on=1 unless old behavior is explicitly requested.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+      ],
+      "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
+    },
+    "18": {
+      "scheme": "NSSL 2-moment 4-ice with predicted CCN",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_nssl_2mom.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp18/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp18",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp18/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp18/oracle_summary.json"
+      ]
+    },
+    "19": {
+      "scheme": "NSSL legacy 1-moment 7-class",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
+      "irrelevance_basis": "WRF doc/README.NSSLmp maps option 19 to MP18 with nssl_2moment_on=0 and nssl_ccn_on=1.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+      ],
+      "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
+    },
+    "21": {
+      "scheme": "NSSL legacy 1-moment 6-class",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
+      "irrelevance_basis": "WRF doc/README.NSSLmp maps option 21 to MP18 with nssl_2moment_on=0, nssl_hail_on=0, nssl_ccn_on=0, and nssl_density_on=0.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+      ],
+      "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
+    },
+    "22": {
+      "scheme": "NSSL legacy 2-moment without hail",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
+      "irrelevance_basis": "WRF doc/README.NSSLmp maps option 22 to MP18 with nssl_hail_on=0 and nssl_ccn_on=1.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+      ],
+      "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
+    },
+    "24": {
+      "scheme": "WSM7",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": "Skipped by this sprint, but retained as existing operational trunk support."
+    },
+    "26": {
+      "scheme": "WDM7",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": "Skipped by this sprint, but retained as existing operational trunk support."
+    },
+    "27": {
+      "scheme": "UDM 7-class / UFS double-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_udm.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp27/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp27",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp27/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp27/oracle_summary.json"
+      ]
+    },
+    "28": {
+      "scheme": "Thompson aerosol-aware",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    },
+    "29": {
+      "scheme": "RCON Thompson aerosol-aware variant",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_rcon.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp29/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp29",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp29/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp29/oracle_summary.json"
+      ]
+    },
+    "30": {
+      "scheme": "HUJI fast spectral-bin microphysics",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_fast_sbm.F",
+      "irrelevance_basis": "Research spectral-bin scheme with optional BUILD_SBM_FAST compile path, bin-state transport, and external SBM_input_* tables. This is outside the lean operational bulk microphysics target.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/run/README.namelist",
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_fast_sbm.F",
+        "/home/user/src/wrf_pristine/WRF/phys/module_microphysics_driver.F"
+      ],
+      "remaining": "No v0.18 operational port planned; reopening would require a spectral-bin architecture sprint."
+    },
+    "32": {
+      "scheme": "HUJI full spectral-bin microphysics",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_full_sbm.F",
+      "irrelevance_basis": "Research spectral-bin scheme with full bin-state transport and external table architecture, outside the lean operational bulk microphysics target.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/run/README.namelist",
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_full_sbm.F"
+      ],
+      "remaining": "No v0.18 operational port planned; reopening would require a spectral-bin architecture sprint."
+    },
+    "38": {
+      "scheme": "Thompson 2-moment graupel/hail",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_thompson.F",
+      "artifact_root": "proofs/v018/mp_oracles/thompgh",
+      "source_checksums": [
+        "proofs/v018/mp_oracles/thompgh/savepoints_fp32/thompgh_source_checksums.txt"
+      ],
+      "savepoint_dirs": [
+        "proofs/v018/mp_oracles/thompgh/savepoints_fp32"
+      ],
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/thompgh/oracle/thompgh_oracle_driver.f90",
+        "proofs/v018/mp_oracles/thompgh/oracle/build_thompgh_oracle.sh"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is exact-oracle-backed reference/fail-closed."
+    },
+    "40": {
+      "scheme": "Morrison aerosol",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_morr_two_moment_aero.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp40/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp40",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp40/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp40/oracle_summary.json"
+      ]
+    },
+    "50": {
+      "scheme": "P3 1-category",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp50/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp50",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp50/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp50/oracle_summary.json"
+      ]
+    },
+    "51": {
+      "scheme": "P3 1-category plus cloud number",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp51/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp51",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp51/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp51/oracle_summary.json"
+      ]
+    },
+    "52": {
+      "scheme": "P3 2-category",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp52/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp52",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp52/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp52/oracle_summary.json"
+      ]
+    },
+    "53": {
+      "scheme": "P3 1-category 3-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp53/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp53",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp53/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp53/oracle_summary.json"
+      ]
+    },
+    "55": {
+      "scheme": "Jensen-ISHMAEL",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_jensen_ishmael.F",
+      "irrelevance_basis": "Initial-release ice-habit research model with external ishmael-*.bin tables and multi-habit state. This is outside the lean operational Canary forecast target.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/run/README.namelist",
+        "/home/user/src/wrf_pristine/WRF/phys/module_mp_jensen_ishmael.F"
+      ],
+      "remaining": "No v0.18 operational port planned; reopening would require a multi-habit state/oracle architecture sprint."
+    },
+    "56": {
+      "scheme": "NTU multi-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_ntu.F",
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp56/oracle_summary.json",
+        "proofs/v018/mp_oracles/wrf_full_model/extract_active_oracles.py"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics.",
+      "artifact_root": "proofs/v018/mp_oracles/wrf_full_model/mp56",
+      "oracle_summaries": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp56/oracle_summary.json"
+      ],
+      "source_checksums": [
+        "proofs/v018/mp_oracles/wrf_full_model/mp56/oracle_summary.json"
+      ]
+    },
+    "95": {
+      "scheme": "Ferrier old Eta / etampnew",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_etanew.F:ETAMP_NEW",
+      "artifact_root": "proofs/v018/mp_oracles/ferrier_etanew",
+      "source_checksums": [
+        "proofs/v018/mp_oracles/ferrier_etanew/savepoints_fp32/ferrier_source_checksums.txt",
+        "proofs/v018/mp_oracles/ferrier_etanew/savepoints_fp64/ferrier_source_checksums.txt"
+      ],
+      "savepoint_dirs": [
+        "proofs/v018/mp_oracles/ferrier_etanew/savepoints_fp32",
+        "proofs/v018/mp_oracles/ferrier_etanew/savepoints_fp64"
+      ],
+      "evidence_paths": [
+        "proofs/v018/mp_oracles/ferrier_etanew/oracle/ferrier_oracle_driver.f90",
+        "proofs/v018/mp_oracles/ferrier_etanew/oracle/build_ferrier_oracle.sh"
+      ],
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is exact-oracle-backed reference/fail-closed."
+    },
+    "96": {
+      "scheme": "MadWRF",
+      "endpoint": "proven_irrelevant_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_microphysics_driver.F:CASE (MADWRF_MP)",
+      "irrelevance_basis": "Source driver case contains only wrf_debug; real MadWRF work is outside the microphysics step, so there is no MP kernel to validate.",
+      "evidence_paths": [
+        "/home/user/src/wrf_pristine/WRF/phys/module_microphysics_driver.F"
+      ],
+      "remaining": "No MP kernel endpoint; keep fail-closed."
+    },
+    "97": {
+      "scheme": "Goddard GCE 3-ice",
+      "endpoint": "operational",
+      "bar_met": true,
+      "catalog_status": "implemented",
+      "evidence_paths": [
+        "src/gpuwrf/io/scheme_catalog.py",
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "remaining": ""
+    }
+  },
+  "full_ship_gate": true,
+  "still_open": []
+}

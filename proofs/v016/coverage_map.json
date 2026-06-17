@@ -1,11 +1,11 @@
 {
   "schema": "V016CoverageMap",
   "totals": {
-    "implemented_excl0": 37,
-    "coupled_runnable": 32,
+    "implemented_excl0": 58,
+    "coupled_runnable": 39,
     "coupled_tested": 7,
-    "l2_targets": 25,
-    "reference_only": 5
+    "l2_targets": 32,
+    "reference_only": 19
   },
   "rows": [
     {
@@ -87,6 +87,17 @@
     },
     {
       "family": "mp_physics",
+      "option": 13,
+      "name": "SBU-YLin",
+      "wrf_package": "sbu_ylinscheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
       "option": 14,
       "name": "WDM5",
       "wrf_package": "wdm5scheme",
@@ -102,6 +113,50 @@
       "name": "WDM6",
       "wrf_package": "wdm6scheme",
       "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 24,
+      "name": "WSM7",
+      "wrf_package": "wsm7scheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 26,
+      "name": "WDM7",
+      "wrf_package": "wdm7scheme",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 28,
+      "name": "Thompson aerosol-aware",
+      "wrf_package": "thompson_aero",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "mp_physics",
+      "option": 97,
+      "name": "Goddard GCE",
+      "wrf_package": "gsfcgcescheme",
+      "status": "implemented",
       "coupled_runnable": true,
       "coupled_tested": false,
       "l2_target": true,
@@ -124,6 +179,17 @@
       "name": "MYJ",
       "wrf_package": "myjpblscheme",
       "status": "accepted",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 3,
+      "name": "GFS",
+      "wrf_package": "gfsscheme",
+      "status": "implemented",
       "coupled_runnable": true,
       "coupled_tested": false,
       "l2_target": true,
@@ -161,6 +227,28 @@
       "coupled_tested": false,
       "l2_target": true,
       "reference_only": false
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 11,
+      "name": "Shin-Hong",
+      "wrf_package": "shinhongscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "bl_pbl_physics",
+      "option": 12,
+      "name": "GBM TKE",
+      "wrf_package": "gbmpblscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
     },
     {
       "family": "bl_pbl_physics",
@@ -274,6 +362,17 @@
     },
     {
       "family": "cu_physics",
+      "option": 4,
+      "name": "Scale-aware GFS SAS",
+      "wrf_package": "scalesasscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "cu_physics",
       "option": 5,
       "name": "Grell-3D ensemble",
       "wrf_package": "g3scheme",
@@ -317,11 +416,66 @@
       "reference_only": true
     },
     {
+      "family": "cu_physics",
+      "option": 93,
+      "name": "Grell-Devenyi ensemble",
+      "wrf_package": "gdscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "cu_physics",
+      "option": 94,
+      "name": "2015 GFS SAS / HWRF",
+      "wrf_package": "sasscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "cu_physics",
+      "option": 95,
+      "name": "Previous GFS SAS / HWRF OSAS",
+      "wrf_package": "osasscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "cu_physics",
+      "option": 96,
+      "name": "Previous new GFS SAS / YSU NSAS",
+      "wrf_package": "nsasscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "cu_physics",
+      "option": 99,
+      "name": "previous Kain-Fritsch",
+      "wrf_package": "kfscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
       "family": "sf_surface_physics",
       "option": 1,
       "name": "thermal-diffusion slab LSM",
       "wrf_package": "slabscheme",
-      "status": "accepted",
+      "status": "implemented",
       "coupled_runnable": false,
       "coupled_tested": false,
       "l2_target": false,
@@ -340,6 +494,17 @@
     },
     {
       "family": "sf_surface_physics",
+      "option": 3,
+      "name": "RUC LSM",
+      "wrf_package": "ruclsmscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "sf_surface_physics",
       "option": 4,
       "name": "Noah-MP",
       "wrf_package": "noahmpscheme",
@@ -348,6 +513,28 @@
       "coupled_tested": true,
       "l2_target": false,
       "reference_only": false
+    },
+    {
+      "family": "sf_surface_physics",
+      "option": 7,
+      "name": "Pleim-Xiu LSM",
+      "wrf_package": "pxlsmscheme",
+      "status": "implemented",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "sf_surface_physics",
+      "option": 8,
+      "name": "SSiB LSM",
+      "wrf_package": "ssibscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
     },
     {
       "family": "ra_sw_physics",
@@ -383,6 +570,28 @@
       "reference_only": false
     },
     {
+      "family": "ra_sw_physics",
+      "option": 5,
+      "name": "Goddard shortwave (new)",
+      "wrf_package": "goddard_swscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "ra_sw_physics",
+      "option": 99,
+      "name": "GFDL (Eta) shortwave",
+      "wrf_package": "gfdl_swscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
       "family": "ra_lw_physics",
       "option": 1,
       "name": "RRTM longwave",
@@ -409,6 +618,28 @@
       "option": 5,
       "name": "GSFC/Goddard NUWRF longwave",
       "wrf_package": "goddardlwscheme",
+      "status": "accepted",
+      "coupled_runnable": false,
+      "coupled_tested": false,
+      "l2_target": false,
+      "reference_only": true
+    },
+    {
+      "family": "ra_lw_physics",
+      "option": 31,
+      "name": "Held-Suarez idealized radiation",
+      "wrf_package": "heldsuarez",
+      "status": "implemented",
+      "coupled_runnable": true,
+      "coupled_tested": false,
+      "l2_target": true,
+      "reference_only": false
+    },
+    {
+      "family": "ra_lw_physics",
+      "option": 99,
+      "name": "GFDL (Eta) longwave",
+      "wrf_package": "gfdl_lwscheme",
       "status": "accepted",
       "coupled_runnable": false,
       "coupled_tested": false,

@@ -1,0 +1,17 @@
+{
+  "label": "v018_full_conditional_leaves",
+  "timing": {
+    "h1_hours": 0.1,
+    "n1_steps": 36,
+    "h2_hours": 0.5,
+    "n2_steps": 180,
+    "cold_h1_wall_s": 104.06597848399542,
+    "warm_h1_wall_s": 2.1979870019713417,
+    "cold_h2_wall_s": 242.22027432499453,
+    "warm_h2_wall_s": 10.862109728972428,
+    "warm_h2_b_wall_s": 10.867158590001054,
+    "warmed_per_step_ms": 60.185049704968044,
+    "s_per_forecast_hour": 21.666617893788494
+  },
+  "device": "cuda:0"
+}

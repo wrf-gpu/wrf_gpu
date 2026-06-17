@@ -2,10 +2,10 @@
   "tag": "baseline_1h",
   "namelist_overrides": {},
   "per_hour_wall_s": [
-    77.324
+    522.024
   ],
   "all_finite": true,
   "first_nonfinite_hour": null,
-  "peak_vram_gib": 6.96,
-  "_state_npz": "proofs/v016/coverage/_baseline_1h_state.npz"
+  "peak_vram_gib": 7.317,
+  "_state_npz": "/home/user/src/wrf_gpu2/.wt-v018-schemes/proofs/v016/coverage/_baseline_1h_state.npz"
 }

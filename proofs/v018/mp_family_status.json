@@ -1,0 +1,133 @@
+{
+  "schema": "gpuwrf-v018-mp-family-status-v1",
+  "date": "2026-06-16",
+  "branch": "worker/gpt/v018-mp",
+  "full_ship_gate": true,
+  "still_open": [],
+  "closer_scope": [
+    5,
+    9,
+    18,
+    27,
+    29,
+    40,
+    50,
+    51,
+    52,
+    53,
+    56
+  ],
+  "exact_oracle_rule": "An oracle counts only for the exact WRF module/routine it drives. Family-similar or wrapper-adjacent oracles do not validate a different mp_physics option.",
+  "schemes": {
+    "5": {
+      "scheme": "Ferrier-HRW / new Eta operational High-Resolution Window",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_fer_hires.F:FER_HIRES",
+      "oracle_type": "standalone_pristine_wrf_module_driver",
+      "oracle_path": "proofs/v018/mp_oracles/ferrier_hires/savepoints/ferrier_mp5_case_1.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is exact FER_HIRES-oracle-backed reference/fail-closed. The MP95 ETAMP_NEW oracle is not reused for MP5."
+    },
+    "9": {
+      "scheme": "Milbrandt-Yau 2-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_milbrandt2mom.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp9/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "18": {
+      "scheme": "NSSL 2-moment 4-ice with predicted CCN",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_nssl_2mom.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp18/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "27": {
+      "scheme": "UDM 7-class / UFS double-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_udm.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp27/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "29": {
+      "scheme": "RCON Thompson aerosol-aware variant",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_rcon.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp29/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "40": {
+      "scheme": "Morrison aerosol",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_morr_two_moment_aero.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp40/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "50": {
+      "scheme": "P3 1-category",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp50/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "51": {
+      "scheme": "P3 1-category plus cloud number",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp51/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "52": {
+      "scheme": "P3 2-category",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp52/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "53": {
+      "scheme": "P3 1-category 3-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_p3.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp53/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    },
+    "56": {
+      "scheme": "NTU multi-moment",
+      "endpoint": "ref_with_oracle_fail_closed",
+      "bar_met": true,
+      "catalog_status": "recognized_fail_closed",
+      "exact_module": "phys/module_mp_ntu.F",
+      "oracle_type": "pristine_wrf_full_model_active_driver",
+      "oracle_path": "proofs/v018/mp_oracles/wrf_full_model/mp56/oracle_summary.json",
+      "remaining": "Operational GPU kernel/state wiring remains future work; the v0.18 endpoint is active pristine-WRF full-model oracle backed reference/fail-closed for the exact module selected by mp_physics."
+    }
+  }
+}

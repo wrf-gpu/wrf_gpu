@@ -93,6 +93,22 @@ class OperationalCarry:
     # sf_surface_physics=2 run supplies a WRF-derived NoahClassicStatic/land bundle.
     noahclassic_land: Any = field(default=None)
     noahclassic_rad: Any = field(default=None)
+    # --- v0.17 thermal-diffusion slab LSM (sf_surface_physics=1) coupler -------
+    # ``slab_land`` is the 5-layer slab land carry (TSLB soil temperatures + last
+    # land flux diagnostics, a SlabLandState pytree). ``slab_rad`` is the held
+    # GSW/GLW down-radiation forcing the slab energy budget reads. Both are
+    # ``None`` unless an explicit sf_surface_physics=1 run supplies a WRF-derived
+    # SlabStaticBundle (TMN/THC/EMISS + soil ZS/DZS). Appended LAST so the prefix
+    # of the existing carry leaves keeps its pytree position.
+    slab_land: Any = field(default=None)
+    slab_rad: Any = field(default=None)
+    # --- v0.17 Pleim-Xiu (sf_surface_physics=7) 2-layer ISBA LSM coupler --------
+    # ``px_land`` is the 2-layer ISBA land carry (TG/T2/WG/W2/WR + last land flux
+    # diagnostics, a PleimXiuLandState pytree). ``px_rad`` is the held GSW/GLW
+    # down-radiation. Both ``None`` unless an explicit sf_surface_physics=7 run
+    # supplies a WRF-derived PleimXiuStaticBundle. Appended LAST.
+    px_land: Any = field(default=None)
+    px_rad: Any = field(default=None)
 
     def replace(self, **updates) -> "OperationalCarry":
         values = {name: getattr(self, name) for name in self.__dataclass_fields__}
@@ -122,6 +138,10 @@ def initial_operational_carry(
     cumulus_carry: Any = None,
     noahclassic_land: Any = None,
     noahclassic_rad: Any = None,
+    slab_land: Any = None,
+    slab_rad: Any = None,
+    px_land: Any = None,
+    px_rad: Any = None,
 ) -> OperationalCarry:
     """Build promoted carry from the initialized operational ``State``.
 
@@ -174,6 +194,10 @@ def initial_operational_carry(
         cumulus_carry=cumulus_carry,
         noahclassic_land=noahclassic_land,
         noahclassic_rad=noahclassic_rad,
+        slab_land=slab_land,
+        slab_rad=slab_rad,
+        px_land=px_land,
+        px_rad=px_rad,
     )
 
 

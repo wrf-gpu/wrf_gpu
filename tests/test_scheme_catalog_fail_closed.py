@@ -197,25 +197,56 @@ def test_recognized_unimplemented_scheme_fails_closed_by_name() -> None:
 
 
 def test_reference_only_scheme_passes_namelist_layer() -> None:
-    """Reference-only schemes (New-Tiedtke cumulus) are accepted at the namelist
+    """Reference-only schemes (New-Tiedtke + v0.17 SAS-family/Grell-Devenyi/old-KF cumulus)
+    are accepted at the namelist
     layer (the operational scan fail-closes them downstream with a named reason).
     NOTE: classic RRTM LW (ra_lw=1), Dudhia SW (ra_sw=1), and the v0.13 MYJ pair
     (bl=2 / sf=2) are now operationally scan-wired (IMPLEMENTED)."""
 
     assert classify_scheme("cu_physics", 16).status is SupportStatus.REFERENCE_ONLY
+    for cu in (4, 93, 94, 95, 96, 99):
+        assert classify_scheme("cu_physics", cu).status is SupportStatus.REFERENCE_ONLY
     assert classify_scheme("ra_lw_physics", 1).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("ra_sw_physics", 1).status is SupportStatus.IMPLEMENTED
     # v0.13: the MYJ PBL + Janjic Eta surface layer pair is now IMPLEMENTED.
     assert classify_scheme("bl_pbl_physics", 2).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_sfclay_physics", 2).status is SupportStatus.IMPLEMENTED
+    # v0.18 PBL reference endpoints: real pristine-WRF module oracles staged,
+    # operational scan still fail-closes until traceable JAX kernels land.
+    for pbl in (4, 10, 16, 17):
+        assert classify_scheme("bl_pbl_physics", pbl).status is SupportStatus.REFERENCE_ONLY
+    # CAM-UW is a proven CAM-family architecture endpoint, not a standalone PBL
+    # reference-only option in v0.18.
+    camuw = classify_scheme("bl_pbl_physics", 9)
+    assert camuw.status is SupportStatus.RECOGNIZED_FAIL_CLOSED
+    assert "CAM-family" in camuw.reason
     # v0.13 Tier-3 batch2: GSFC/Goddard NUWRF longwave (ra_lw=5) is REFERENCE_ONLY
     # (fp64 pristine-WRF oracle staged; faithful JAX kernel = carry-over). It is
     # namelist-accepted (for a single-column reference comparison) and fail-closes
     # in the operational scan.
     assert classify_scheme("ra_lw_physics", 5).status is SupportStatus.REFERENCE_ONLY
-    validate_namelist({"physics": {"cu_physics": [16]}})
+    # v0.17 Tier-3: RUC (sf_surface=3) + SSiB (sf_surface=8) are REFERENCE_ONLY (fp64
+    # pristine-WRF single-column oracle staged in proofs/v017/oracle/{ruclsm,ssib};
+    # faithful JAX column kernel = carry-over). Namelist-accepted for a single-column
+    # reference comparison, fail-closed in the operational scan.
+    assert classify_scheme("sf_surface_physics", 3).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("sf_surface_physics", 8).status is SupportStatus.REFERENCE_ONLY
+    # v0.17/v0.18 radiation-longtail: CAM (3), new Goddard (5), FLG/UCLA (7) and
+    # GFDL-Eta (99) LW+SW are accepted only for reference/oracle development. Each
+    # has a real-WRF exact-driver oracle staged in proofs/v018/savepoints/ra_tail_wrf
+    # (see tests/test_v018_ra_tail_oracle.py); none is operationally wired.
+    for code in (3, 5, 7, 99):
+        assert classify_scheme("ra_sw_physics", code).status is SupportStatus.REFERENCE_ONLY
+        assert classify_scheme("ra_lw_physics", code).status is SupportStatus.REFERENCE_ONLY
+    validate_namelist({"physics": {"cu_physics": [16, 4, 93, 94, 95, 96, 99]}})
     validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
+    validate_namelist({"physics": {"bl_pbl_physics": [4, 10, 16, 17]}})
     validate_namelist({"physics": {"ra_lw_physics": [5]}})
+    validate_namelist({"physics": {"sf_surface_physics": [3]}})
+    validate_namelist({"physics": {"sf_surface_physics": [8]}})
+    validate_namelist(
+        {"physics": {"ra_sw_physics": [3, 5, 7, 99], "ra_lw_physics": [3, 5, 7, 99]}}
+    )
 
 
 def test_unsupported_namelist_option_is_an_unsupported_scheme_error() -> None:

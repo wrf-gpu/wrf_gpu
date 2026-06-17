@@ -1,0 +1,46 @@
+{
+  "artifacts": {
+    "v017_committed": "proofs/v018/perf_neutrality_v017_committed_warmed_timing.json",
+    "v017_rerun": "proofs/v018/perf_neutrality_v017_rerun_warmed_timing.json",
+    "v018_rerun": "proofs/v018/perf_neutrality_v018_warmed_timing.json"
+  },
+  "baseline_committed_ref": "worker/opus/v017-release:proofs/perf/warmed_timing.json",
+  "branch": "worker/gpt/v018-integration",
+  "case": "canonical proofs/perf/warmed_timing.py coupled real d02 standard default-scheme case",
+  "command_v017_rerun": "scripts/with_gpu_lock.sh --label gpt-integ-v017-baseline -- env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 JAX_ENABLE_X64=true JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 python proofs/perf/warmed_timing.py",
+  "command_v018": "scripts/with_gpu_lock.sh --label gpt-integ-v018-confirm -- env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 JAX_ENABLE_X64=true JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 python proofs/perf/warmed_timing.py",
+  "deltas": {
+    "vs_v017_committed_percent": 41.81632382518463,
+    "vs_v017_committed_s_per_forecast_hour": 6.556896347647124,
+    "vs_v017_same_session_percent": 7.7105619110041435,
+    "vs_v017_same_session_s_per_forecast_hour": 1.5918657125439495
+  },
+  "generated_date": "2026-06-16",
+  "measurements": {
+    "v017_committed_s_per_forecast_hour": 15.680231421247301,
+    "v017_committed_warmed_per_step_ms": 43.556198392353615,
+    "v017_same_session_s_per_forecast_hour": 20.645262056350475,
+    "v017_same_session_warmed_per_step_ms": 57.347950156529095,
+    "v018_integration_s_per_forecast_hour": 22.237127768894425,
+    "v018_warmed_per_step_ms": 61.76979935804007
+  },
+  "schema": "gpuwrf.v018.integration.perf_neutrality.v1",
+  "verdict": {
+    "hibernate_note": "System hibernate occurred during the v0.17 rerun compile path; the same-session v0.17 result is therefore recorded separately from the committed v0.17 artifact. The current session is treated as drifted because v0.17 reran at 20.645 s/forecast-hour versus the committed 15.680 s/forecast-hour artifact.",
+    "perf_neutrality_gate": "PENDING_REMEASURE",
+    "reason": "Not green. The apparent +41.8% v0.18-vs-committed-v0.17 delta is dominated by baseline drift; the same-session signal is +7.7%. Rerun after hibernate on a warmed, clock-stable GPU.",
+    "remeasure_required": true,
+    "radfix_hygiene": {
+      "per_step_total_legacy_reductions_removed": true,
+      "production_total_fields_direct": true,
+      "synthetic_fixtures_use_state_replace": true,
+      "real_init_mu_total_nonzero_assert": true
+    },
+    "other_default_path_overhead_candidates": [
+      "Wider default State pytree from RAINNC/QVAPOR plus hail/aerosol substrate may affect donation/dealiasing and HLO pressure even when schemes are default-off.",
+      "The public forecast wrapper's _dealias_pytree_buffers traversal over the wider State tree is one-time per call, not per-step, but remains a plausible warm-call contributor.",
+      "Larger registry/catalog fail-closed additions are mostly Python validation and lower priority for timestep overhead.",
+      "K2 default-off is unlikely because the graph proof selected the default runner and emitted no collectives."
+    ]
+  }
+}

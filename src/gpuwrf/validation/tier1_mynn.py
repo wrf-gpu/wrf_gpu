@@ -11,6 +11,7 @@ import numpy as np
 import yaml
 
 from gpuwrf.physics.mynn_pbl import MynnPBLColumnState, step_mynn_pbl_column
+from gpuwrf.validation.proof_write import should_write_proof as _should_write_proof
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -38,26 +39,22 @@ def _tolerance_map(manifest: dict[str, Any]) -> dict[str, tuple[float, float]]:
     return out
 
 
-def _dtype_name(dtype) -> str:
-    return str(np.dtype(dtype))
-
-
-def load_fixture_state(sample: Path = SAMPLE, *, dtype=jnp.float64) -> tuple[MynnPBLColumnState, float, dict[str, np.ndarray]]:
+def load_fixture_state(sample: Path = SAMPLE) -> tuple[MynnPBLColumnState, float, dict[str, np.ndarray]]:
     """Builds the JAX state and NumPy expected outputs from the fixture."""
 
     with np.load(sample, allow_pickle=False) as loaded:
         arrays = {name: loaded[name] for name in loaded.files}
-    zeros = jnp.zeros_like(jnp.asarray(arrays["input_u"], dtype=dtype))
+    zeros = jnp.zeros_like(jnp.asarray(arrays["input_u"], dtype=jnp.float64))
     state = MynnPBLColumnState(
-        u=jnp.asarray(arrays["input_u"], dtype=dtype),
-        v=jnp.asarray(arrays["input_v"], dtype=dtype),
-        w=jnp.asarray(arrays["input_w"], dtype=dtype),
-        theta=jnp.asarray(arrays["input_theta"], dtype=dtype),
-        qv=jnp.asarray(arrays["input_qv"], dtype=dtype),
-        tke=jnp.asarray(arrays["input_tke"], dtype=dtype),
-        p=jnp.asarray(arrays["input_p"], dtype=dtype),
-        rho=jnp.asarray(arrays["input_rho"], dtype=dtype),
-        dz=jnp.asarray(arrays["input_dz"], dtype=dtype),
+        u=jnp.asarray(arrays["input_u"], dtype=jnp.float64),
+        v=jnp.asarray(arrays["input_v"], dtype=jnp.float64),
+        w=jnp.asarray(arrays["input_w"], dtype=jnp.float64),
+        theta=jnp.asarray(arrays["input_theta"], dtype=jnp.float64),
+        qv=jnp.asarray(arrays["input_qv"], dtype=jnp.float64),
+        tke=jnp.asarray(arrays["input_tke"], dtype=jnp.float64),
+        p=jnp.asarray(arrays["input_p"], dtype=jnp.float64),
+        rho=jnp.asarray(arrays["input_rho"], dtype=jnp.float64),
+        dz=jnp.asarray(arrays["input_dz"], dtype=jnp.float64),
         km=zeros,
         kh=zeros,
         el=zeros,
@@ -90,17 +87,25 @@ def compare_against_fixture(state: MynnPBLColumnState, dt: float, expected: dict
         "tolerances_met": bool(all(pass_fields.values())),
         "field_pass": pass_fields,
         "pass": bool(all(pass_fields.values())),
-        "result_dtypes": {field: str(getattr(candidate, field).dtype) for field in OUTPUT_FIELDS},
     }
 
 
-def run_tier1(out: Path = ARTIFACT, *, dtype=jnp.float64) -> dict[str, Any]:
-    """Writes the required tier-1 MYNN parity proof JSON."""
+def run_tier1(out: Path = ARTIFACT) -> dict[str, Any]:
+    """Computes the tier-1 MYNN parity record.
+
+    The committed canonical proof at ``ARTIFACT`` is overwritten ONLY when an
+    explicit regeneration is requested -- either the caller passes a non-default
+    ``out`` (e.g. a tmp path), or ``GPUWRF_WRITE_PROOFS=1`` is set (the
+    ``scripts/m5_run_mynn.py`` regenerator sets it). The pytest suite calls this
+    with neither, so it asserts on the returned record without re-dirtying the
+    tracked proof with fp/path/timing noise. The correctness signal is the
+    returned ``record``; the write is purely the artifact dump.
+    """
 
     manifest = _load_manifest()
-    state, dt, expected = load_fixture_state(dtype=dtype)
+    state, dt, expected = load_fixture_state()
     record = compare_against_fixture(state, dt, expected, _tolerance_map(manifest))
-    record["compute_dtype"] = _dtype_name(dtype)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if _should_write_proof(out, ARTIFACT):
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return record

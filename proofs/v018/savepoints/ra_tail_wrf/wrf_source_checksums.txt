@@ -1,0 +1,15 @@
+# v0.18 RA tail -- physics-pristine radiation module/source checksums (sha256)
+# WRF_ROOT=/home/user/src/wrf_pristine/WRF
+# Exact RA modules are upstream-identical; module_radiation_driver.F is WRFGPU2_ORACLE-instrumented.
+# Exact-driver oracle modules (ra_lw/sw_physics dispatch targets) + compiled-out 14/24 stubs + BUILD flags:
+4f0177189eb616c9220fe2022186dd6cc310666ca29977557dfe53d4409d733b  phys/module_radiation_driver.F
+041eae098223943d58ad6a1dc54df201792f8f708a5d87c538cd91e4c34f2c7f  phys/module_wrfgpu2_oracle.F
+b0484d38338d9c7925d8011889f5a57280870febe451cfdce843b1e9ae669e32  phys/module_ra_cam.F
+0917531726cbed5a128e05c45e70ee292c209dbcd1ae2bad17db6e46b8d3a5ad  phys/module_ra_goddard.F
+c4977cdf2ddf3f2279c9be7e1fc659ef23bbb37376e5cf11f9a98a73d33b0266  phys/module_ra_flg.F
+b6b2e9e006eff0b61f637a30e31a70f21b3c2bd8275182acb3c49aaf3fac0b4a  phys/module_ra_gfdleta.F
+088cb30e7b113ac97e300592ed15159b183421029c453ab61974fdb6c9ff007f  phys/module_ra_rrtmg_lwk.F
+30f9eb5f03f5208517b91851ddc7ee205733c56e462b82779126c7a7bd3b59eb  phys/module_ra_rrtmg_swk.F
+5088bb2bc46a2491a3fc32ffe6ee53f94714594f0fe483245e6d18ee5211a2a0  phys/module_ra_rrtmg_lwf.F
+1342819760116987125de50ca058baa7e7f7eea1a38a18ab67b1df726ff94f5c  phys/module_ra_rrtmg_swf.F
+c1bd80d6d4db6c703a7af29479c75e8e6d2d9acda79c6fb928585c858f4c8aba  configure.wrf

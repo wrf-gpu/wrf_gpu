@@ -30,6 +30,19 @@ Environment variables
     Path to the CPU-WRF ``mpirun`` (only needed by the CPU baseline helper).
 ``GPUWRF_WRF_EXE``
     Path to the CPU-WRF ``wrf.exe`` (only needed by the CPU baseline helper).
+``GPUWRF_WRF_ROOT``
+    Root of a pristine WRF v4 source/run tree. Used to read the unmodified WRF
+    runtime tables that gpuwrf parses at startup: Noah-MP ``run/MPTABLE.TBL`` /
+    ``SOILPARM.TBL`` / ``GENPARM.TBL`` (``sf_surface_physics=4``) and the classic
+    RRTM longwave ``run/RRTM_DATA[_DBL]`` + ``phys/module_ra_rrtm.F``
+    (``ra_lw_physics=1``). Default: ``<repo>/data/wrf_pristine/WRF``. On the
+    workstation set it to e.g. ``/home/<you>/src/wrf_pristine/WRF``.
+``GPUWRF_AIFS_VTABLE``
+    Path to the ``Vtable.AIFS_PURE`` GRIB2 Vtable (only needed by the AIFS GRIB
+    ingest). Default: ``<canairy_root>/Gen2/configs/Vtable.AIFS_PURE``.
+``GPUWRF_TMPDIR``
+    Scratch root for replay traces / cached outputs.
+    Default: ``~/.cache/gpuwrf``.
 ``GPUWRF_JAX_CACHE_DIR`` / ``JAX_COMPILATION_CACHE_DIR``
     XLA compilation cache directory. Default: ``<repo>/.gpuwrf-cache/jax``.
 """
@@ -49,6 +62,10 @@ __all__ = [
     "jax_cache_dir",
     "mpirun_path",
     "wrf_exe_path",
+    "wrf_root",
+    "wrf_run_dir",
+    "aifs_vtable_path",
+    "tmp_root",
 ]
 
 
@@ -117,3 +134,39 @@ def mpirun_path() -> Path | None:
 def wrf_exe_path() -> Path | None:
     """CPU-WRF ``wrf.exe`` path (``GPUWRF_WRF_EXE``), or ``None`` if unset."""
     return _env_path("GPUWRF_WRF_EXE")
+
+
+def wrf_root() -> Path:
+    """Root of a pristine WRF v4 source/run tree.
+
+    gpuwrf parses a few *unmodified* WRF runtime tables at startup (Noah-MP
+    ``run/MPTABLE.TBL`` etc. for ``sf_surface_physics=4`` and the classic RRTM
+    longwave ``run/RRTM_DATA[_DBL]`` for ``ra_lw_physics=1``). ``GPUWRF_WRF_ROOT``
+    overrides; default is ``<repo>/data/wrf_pristine/WRF`` for a clean checkout.
+    """
+    return _env_path("GPUWRF_WRF_ROOT") or (data_root() / "wrf_pristine" / "WRF")
+
+
+def wrf_run_dir() -> Path:
+    """Pristine WRF ``run/`` directory holding the runtime tables."""
+    return wrf_root() / "run"
+
+
+def aifs_vtable_path() -> Path:
+    """``Vtable.AIFS_PURE`` GRIB2 Vtable used by the AIFS ingest.
+
+    ``GPUWRF_AIFS_VTABLE`` overrides; default is
+    ``<canairy_root>/Gen2/configs/Vtable.AIFS_PURE``.
+    """
+    return _env_path("GPUWRF_AIFS_VTABLE") or (
+        canairy_root() / "Gen2" / "configs" / "Vtable.AIFS_PURE"
+    )
+
+
+def tmp_root() -> Path:
+    """Scratch root for replay traces / cached outputs.
+
+    ``GPUWRF_TMPDIR`` overrides; default is ``~/.cache/gpuwrf`` so a fresh clone
+    never writes scratch into a private hardcoded ``/home/<name>`` path.
+    """
+    return _env_path("GPUWRF_TMPDIR") or (Path.home() / ".cache" / "gpuwrf")
