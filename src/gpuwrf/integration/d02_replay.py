@@ -49,11 +49,25 @@ config.update("jax_enable_x64", True)
 
 _DEBUG = os.environ.get("GPUWRF_D02_REPLAY_DEBUG", "").lower() not in {"", "0", "false", "no", "off"}
 _DEBUG_START = time.perf_counter()
+_METADATA_HOST_MAX_ELEMENT_LIMIT = 2_000_000
 
 
 def _debug(message: str) -> None:
     if _DEBUG:
         print(f"[d02-replay +{time.perf_counter() - _DEBUG_START:8.3f}s] {message}", flush=True)
+
+
+def _metadata_host_max(value: Any) -> float | None:
+    """Return a host max for small metadata arrays without forcing d03-scale GPU work."""
+
+    shape = getattr(value, "shape", np.shape(value))
+    try:
+        size = int(np.prod(shape))
+    except Exception:
+        size = _METADATA_HOST_MAX_ELEMENT_LIMIT + 1
+    if not _DEBUG and size > _METADATA_HOST_MAX_ELEMENT_LIMIT:
+        return None
+    return float(jnp.max(value))
 
 
 def _shape_dtype(value: Any) -> str:
@@ -2033,10 +2047,11 @@ def build_replay_case(
             "theta_qv_adjust": theta_qv_adjust_meta,
             "start_domain_perturb_init": perturb_init_meta,
         }
-        _debug(
-            f"live-nest theta_m/adjust_tempqv applied use_theta_m={use_theta_m} "
-            f"theta_max={float(jnp.max(theta)):.4f}"
-        )
+        if _DEBUG:
+            _debug(
+                f"live-nest theta_m/adjust_tempqv applied use_theta_m={use_theta_m} "
+                f"theta_max={float(jnp.max(theta)):.4f}"
+            )
         _debug(
             "live-nest start_domain perturb init applied "
             f"(w_set={perturb_init_meta.get('w_needs_to_be_set')}, "
@@ -2120,7 +2135,9 @@ def build_replay_case(
     )
     if did_seed_qke:
         state = state.replace(qke=qke_seeded.astype(state.qke.dtype))
-        _debug(f"WRF MYNN cold-start qke seeded: max={float(jnp.max(qke_seeded)):.4g}")
+        if _DEBUG:
+            _debug(f"WRF MYNN cold-start qke seeded: max={float(jnp.max(qke_seeded)):.4g}")
+    qke_max = _metadata_host_max(state.qke)
     base = BaseState(
         pb=pb.astype(state.p_total.dtype),
         phb=phb.astype(state.ph_total.dtype),
@@ -2167,7 +2184,8 @@ def build_replay_case(
         "qke_coldstart": {
             "seeded": bool(did_seed_qke),
             "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)",
-            "qke_max": float(jnp.max(state.qke)),
+            "qke_max": qke_max,
+            "qke_max_skipped": qke_max is None,
             "note": (
                 "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF "
                 "cold-start background TKE profile" if did_seed_qke

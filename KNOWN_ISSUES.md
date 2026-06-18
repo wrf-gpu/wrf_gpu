@@ -1,10 +1,20 @@
-# Known Issues — v0.18.0
+# Known Issues — v0.18.2
 
 Honest, code-grounded list of what is open or bounded. Each entry states the
 symptom, the current understanding, the workaround, and the tracked follow-up.
 No spin. The deeper per-issue history (KI-1…KI-11, including resolved items) is in
 [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md); the v0.15 release-gate detail is
 retained verbatim below the v0.18 section.
+
+## Resolved in v0.18.2
+
+- **1 km nested all-island VRAM/OOM path.** The prior AC1_FIT 9/3/1 nested 1 km
+  path OOMed near **31.8/32 GiB** and failed a **12.72 GiB** contiguous-arena
+  request plus recurring **2.09 GiB** allocations. v0.18.2 resolves this with
+  bit-identical RRTMG radiation column tiling (**16384→2048**) plus tiled MYNN
+  cold-start BouLac initialization: warm-cache 1-forecast-hour run PASS,
+  **18.1 GiB peak VRAM**, 26/26 `wrfout` fields exact (`max_abs_diff=0.0`).
+  Proof: `proofs/v018/oom_fix/fix_report.md`.
 
 ## v0.18 carried items (this release)
 

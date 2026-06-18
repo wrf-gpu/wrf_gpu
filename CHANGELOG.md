@@ -7,6 +7,24 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.18.2] — 1 km nested VRAM-efficiency fix (bit-identical)
+
+Memory-efficiency patch over 0.18.1. Default numerics are unchanged and the
+validated outputs are bit-identical on the default path. This release:
+
+- **Makes the AC1_FIT 9/3/1 nested 1 km all-island case fit one RTX 5090**:
+  the prior path OOMed on the 32 GiB card; the fixed warm-cache 1-forecast-hour
+  run passes at **18.1 GiB peak VRAM**.
+- **Realizes the algorithmic VRAM lever bit-identically** via RRTMG radiation
+  column-tile defaults **16384→2048** plus tiled MYNN cold-start BouLac
+  initialization; 26/26 `wrfout` fields compare exact (`max_abs_diff=0.0`) and
+  MYNN cold-start `qke`/`pblh` diffs are 0.0.
+- **Clarifies utilization honestly**: warm steady-state nested 1 km execution is
+  ~85–88% GPU utilization; the lower full-run aggregate is the one-time
+  load/cold-JIT prefix, not steady-state idleness.
+- **Restores `data/fixtures` runtime tables** for Thompson aerosol and cold
+  collection so Thompson cases import from a source-only tree.
+
 ## [0.18.1] — Quickstart usability patch
 
 Documentation/usability patch over 0.18.0 (no model-code change; default numerics

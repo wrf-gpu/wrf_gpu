@@ -23,14 +23,19 @@ roadmap in the README).
 
 ## Memory (VRAM)
 
-- **Peak VRAM during integration ≈ 24.6 GiB** on the validated 3 km Canary d02
-  (159 × 66 × 44) forecast at fp64. This includes JAX/XLA working buffers, which
-  are several times the bare prognostic-state footprint.
-- A 32 GiB card (RTX 5090) runs d02 comfortably. Cards with less than ~26 GiB of
-  free VRAM are likely to OOM on this domain at fp64.
-- Nested d01→d02→d03 runs hold only one domain's transient scratch live at a
-  time, but the peak is still set by the largest domain; budget for the 32 GiB
-  card.
+- **MEASURED v0.18.2:** the AC1_FIT 9/3/1 nested 1 km all-island case (d03
+  520x280x45, ~145k columns, fp64, mp8 Thompson / MYNN / Noah-MP / RRTMG) now
+  fits one reference RTX 5090 at **~18.1 GiB peak VRAM**. Before the fix, the
+  same path OOMed near **31.8/32 GiB** and failed a **12.72 GiB** contiguous-arena
+  request plus recurring **2.09 GiB** allocations.
+- The realized algorithmic lever is bit-identical column tiling: RRTMG radiation
+  column-tile defaults **16384→2048** plus tiled MYNN cold-start BouLac
+  initialization. The peak is transient working memory, not persistent State
+  (persistent State is ~2.5 GiB), so the fix reduces the radiation/cold-start
+  scratch peak rather than changing default numerics.
+- Retained 72 h gate peaks remain **22.9 GiB** (Switzerland d01) and **29.8 GiB**
+  (Canary L2 d02, nested). d01 9 km standalone peaks **≈ 4.7 GiB**; the 1 km
+  single-domain gate fits in a fresh process at **18.25 GiB**.
 
 If you hit an out-of-memory error, the first levers are: run a smaller domain,
 reduce the forecast a single segment at a time, or (experimental) try the
@@ -105,7 +110,9 @@ note, not a near-term capability or a benchmark.
 
 ## Quick sizing checklist
 
-- [ ] GPU with **≥ 26 GiB free VRAM** (RTX 5090 / 32 GiB recommended) for d02 fp64.
+- [ ] GPU sized to the case: **~18.1 GiB peak** for the measured v0.18.2
+      1 km-NESTED AC1_FIT path, **29.8 GiB peak** for the retained Canary L2 d02
+      72 h gate; RTX 5090 / 32 GiB remains the reference recommendation.
 - [ ] **Local NVMe scratch**, non-tmpfs, several GiB free.
 - [ ] Expect a **~5 min cold compile** on the first run; warm the cache before
       timing or gating.

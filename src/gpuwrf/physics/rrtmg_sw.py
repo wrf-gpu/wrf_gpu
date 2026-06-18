@@ -108,11 +108,13 @@ def _env_bool(name: str, default: bool) -> bool:
 # taumol/optics chunking lower per-column spectral transients, but a full 1 km
 # nest still materialises LW/SW temporaries for every column if the public solver
 # sees all columns at once.  The production entry point therefore flattens the
-# arbitrary leading shape to columns and scans over fixed-size column tiles.
-# Set either `_SW_COLUMN_TILING=False` or `_SW_COLUMN_TILE_COLS=0` for the
-# whole-column reference path used by proofs.
+# arbitrary leading shape to columns and scans over fixed-size column tiles.  The
+# 2048 default matches the LW cap that keeps AC1_FIT d03 radiation comfortably
+# below 32 GiB; smaller domains still execute as one tile.  Set either
+# `_SW_COLUMN_TILING=False` or `_SW_COLUMN_TILE_COLS=0` for the whole-column
+# reference path used by proofs.
 _SW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_SW_COLUMN_TILING", True)
-_SW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_SW_COLUMN_TILE_COLS", 16384))
+_SW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_SW_COLUMN_TILE_COLS", 2048))
 
 
 @jax.tree_util.register_pytree_node_class
