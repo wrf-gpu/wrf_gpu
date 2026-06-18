@@ -561,10 +561,13 @@ def _env_bool(name: str, default: bool) -> bool:
 # chunking removed per-spectral-stack blowups, but the public LW solve still had
 # an `ncol`-wide transient floor when invoked on a whole 1 km nest.  The
 # production entry flattens arbitrary leading dimensions, scans over fixed-size
-# column tiles, and reshapes outputs back.  Set `_LW_COLUMN_TILING=False` or
-# `_LW_COLUMN_TILE_COLS=0` for the exact whole-column reference path.
+# column tiles, and reshapes outputs back.  The 2048 default keeps the measured
+# AC1_FIT d03 LW transient near 1.2 GiB while preserving one-tile execution for
+# small domains; env overrides remain authoritative.  Set
+# `_LW_COLUMN_TILING=False` or `_LW_COLUMN_TILE_COLS=0` for the exact
+# whole-column reference path.
 _LW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_LW_COLUMN_TILING", True)
-_LW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_LW_COLUMN_TILE_COLS", 16384))
+_LW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_LW_COLUMN_TILE_COLS", 2048))
 
 
 def _leaves(state: RRTMGLWColumnState):

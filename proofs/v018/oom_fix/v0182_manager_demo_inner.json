@@ -1,0 +1,336 @@
+{
+  "all_domains_finite": true,
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "event_count": 2200,
+  "finite_summary": {
+    "d01": {
+      "all_finite": true,
+      "field_count": 60,
+      "fields": {}
+    },
+    "d02": {
+      "all_finite": true,
+      "field_count": 60,
+      "fields": {}
+    },
+    "d03": {
+      "all_finite": true,
+      "field_count": 60,
+      "fields": {}
+    }
+  },
+  "forecast_seconds_requested": 3600.0,
+  "forecast_wall_s": 1952.9716131760506,
+  "input_dir": "ac1fit_9_3_1/run_cpu",
+  "load_wall_s": 80.91890261392109,
+  "memory_stats_after_forecast": {},
+  "metadata_domains": {
+    "d01": {
+      "grid": {
+        "dx_m": 9000.0,
+        "dy_m": 9000.0,
+        "mass_shape": [
+          44,
+          63,
+          91
+        ],
+        "wrf_staggered_extent": [
+          45,
+          64,
+          92
+        ]
+      },
+      "ic_source": "wrfinput_d01",
+      "land_surface": {
+        "noahmp_energy_params_loaded": true,
+        "noahmp_julian": 117.75,
+        "noahmp_land_seeded": true,
+        "noahmp_n_land_cells": 666,
+        "noahmp_rad_params_loaded": true,
+        "noahmp_static_loaded": true,
+        "noahmp_yearlen": 365.0,
+        "provenance": "ac1fit_9_3_1/run_cpu/wrfinput_d01",
+        "sf_surface_physics": 4,
+        "use_noahmp": true
+      },
+      "lbc_source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
+      "live_nest_base_init": {
+        "enabled": false
+      },
+      "namelist": {
+        "boundary_update_cadence_s": 21600.0,
+        "cu_physics": 1,
+        "dt_s": 18.0,
+        "gwd_opt": 1,
+        "gwdo_statics_loaded": true,
+        "radiation_cadence_steps": 100,
+        "radiation_static_loaded": true
+      },
+      "qke_coldstart": {
+        "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+        "qke_max": 24.198199149175036,
+        "qke_max_skipped": false,
+        "seeded": true,
+        "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+      },
+      "standalone_native_init": true,
+      "wrfbdy_path": "ac1fit_9_3_1/run_cpu/wrfbdy_d01"
+    },
+    "d02": {
+      "grid": {
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "mass_shape": [
+          44,
+          123,
+          207
+        ],
+        "wrf_staggered_extent": [
+          45,
+          124,
+          208
+        ]
+      },
+      "ic_source": "wrfinput_d02",
+      "land_surface": {
+        "noahmp_energy_params_loaded": true,
+        "noahmp_julian": 117.75,
+        "noahmp_land_seeded": true,
+        "noahmp_n_land_cells": 1460,
+        "noahmp_rad_params_loaded": true,
+        "noahmp_static_loaded": true,
+        "noahmp_yearlen": 365.0,
+        "provenance": "ac1fit_9_3_1/run_cpu/wrfinput_d02",
+        "sf_surface_physics": 4,
+        "use_noahmp": true
+      },
+      "lbc_source": "live parent boundary package (build_child_boundary_package)",
+      "live_nest_base_init": {
+        "blend_width": 5,
+        "child_domain": "d02",
+        "cpu_wrfout_dependency": false,
+        "enabled": true,
+        "i_parent_start": 10,
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "j_parent_start": 12,
+        "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+        "parent_domain": "d01",
+        "parent_grid_ratio": 3,
+        "production_inputs": [
+          "parent native initialized terrain",
+          "wrfinput_d02",
+          "namelist.input"
+        ],
+        "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+        "spec_bdy_width": 5,
+        "start_domain_perturb_init": {
+          "cpu_wrfout_dependency": false,
+          "hypsometric_opt": 2,
+          "libm_provider": "glibc-libm-float32",
+          "surfaces": [
+            "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+            "press_adj MU correction",
+            "input W kept (surface W nonzero)"
+          ],
+          "timestep_loop_transfer": false,
+          "use_theta_m_qvf": 1.0,
+          "w_needs_to_be_set": false,
+          "w_surface_input_max_abs": 0.6857630014419556,
+          "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+        },
+        "theta_qv_adjust": {
+          "final_base_state_unchanged": true,
+          "perturbation_pressure_unchanged": true,
+          "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+          "theta_m_conversion_applied": true,
+          "timestep_loop_transfer": false,
+          "use_theta_m": 1,
+          "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+        },
+        "timestep_loop_transfer": false,
+        "transient_adjust_mub": {
+          "blend_width": 5,
+          "child_domain": "d02",
+          "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+          "final_base_state_unchanged": true,
+          "i_parent_start": 10,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 12,
+          "parent_domain": "d01",
+          "parent_grid_ratio": 3,
+          "spec_bdy_width": 5,
+          "surface": "post_blend_terrain_pre_start_domain",
+          "timestep_loop_transfer": false,
+          "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+        }
+      },
+      "namelist": {
+        "boundary_update_cadence_s": 18.0,
+        "cu_physics": 0,
+        "dt_s": 6.0,
+        "gwd_opt": 1,
+        "gwdo_statics_loaded": true,
+        "radiation_cadence_steps": 300,
+        "radiation_static_loaded": true
+      },
+      "qke_coldstart": {
+        "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+        "qke_max": 23.640218607294024,
+        "qke_max_skipped": false,
+        "seeded": true,
+        "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+      },
+      "standalone_native_init": true,
+      "wrfbdy_path": null
+    },
+    "d03": {
+      "grid": {
+        "dx_m": 1000.0,
+        "dy_m": 1000.0,
+        "mass_shape": [
+          44,
+          279,
+          519
+        ],
+        "wrf_staggered_extent": [
+          45,
+          280,
+          520
+        ]
+      },
+      "ic_source": "wrfinput_d03",
+      "land_surface": {
+        "noahmp_energy_params_loaded": true,
+        "noahmp_julian": 117.75,
+        "noahmp_land_seeded": true,
+        "noahmp_n_land_cells": 7429,
+        "noahmp_rad_params_loaded": true,
+        "noahmp_static_loaded": true,
+        "noahmp_yearlen": 365.0,
+        "provenance": "ac1fit_9_3_1/run_cpu/wrfinput_d03",
+        "sf_surface_physics": 4,
+        "use_noahmp": true
+      },
+      "lbc_source": "live parent boundary package (build_child_boundary_package)",
+      "live_nest_base_init": {
+        "blend_width": 5,
+        "child_domain": "d03",
+        "cpu_wrfout_dependency": false,
+        "enabled": true,
+        "i_parent_start": 18,
+        "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+        "j_parent_start": 16,
+        "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+        "parent_domain": "d02",
+        "parent_grid_ratio": 3,
+        "production_inputs": [
+          "parent native initialized terrain",
+          "wrfinput_d03",
+          "namelist.input"
+        ],
+        "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+        "spec_bdy_width": 5,
+        "start_domain_perturb_init": {
+          "cpu_wrfout_dependency": false,
+          "hypsometric_opt": 2,
+          "libm_provider": "glibc-libm-float32",
+          "surfaces": [
+            "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+            "press_adj MU correction",
+            "input W kept (surface W nonzero)"
+          ],
+          "timestep_loop_transfer": false,
+          "use_theta_m_qvf": 1.0,
+          "w_needs_to_be_set": false,
+          "w_surface_input_max_abs": 1.845611333847046,
+          "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+        },
+        "theta_qv_adjust": {
+          "final_base_state_unchanged": true,
+          "perturbation_pressure_unchanged": true,
+          "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+          "theta_m_conversion_applied": true,
+          "timestep_loop_transfer": false,
+          "use_theta_m": 1,
+          "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+        },
+        "timestep_loop_transfer": false,
+        "transient_adjust_mub": {
+          "blend_width": 5,
+          "child_domain": "d03",
+          "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+          "final_base_state_unchanged": true,
+          "i_parent_start": 18,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 16,
+          "parent_domain": "d02",
+          "parent_grid_ratio": 3,
+          "spec_bdy_width": 5,
+          "surface": "post_blend_terrain_pre_start_domain",
+          "timestep_loop_transfer": false,
+          "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+        }
+      },
+      "namelist": {
+        "boundary_update_cadence_s": 6.0,
+        "cu_physics": 0,
+        "dt_s": 2.0,
+        "gwd_opt": 1,
+        "gwdo_statics_loaded": true,
+        "radiation_cadence_steps": 900,
+        "radiation_static_loaded": true
+      },
+      "qke_coldstart": {
+        "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+        "qke_max": null,
+        "qke_max_skipped": true,
+        "seeded": true,
+        "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+      },
+      "standalone_native_init": true,
+      "wrfbdy_path": null
+    }
+  },
+  "note": "Direct nested-runtime smoke because the public CLI accepts integer --hours only; 1800 s reaches d03 radt=30 first radiation gate without running a full output hour.",
+  "persistent_state_bytes": {
+    "d01": 60488928,
+    "d02": 176684128,
+    "d03": 971442976
+  },
+  "radiation_gate": {
+    "d01": {
+      "dt_s": 18.0,
+      "ended_on_gate": true,
+      "first_gate_reached": true,
+      "forecast_seconds": 3600.0,
+      "own_steps": 200,
+      "radiation_cadence_steps": 100
+    },
+    "d02": {
+      "dt_s": 6.0,
+      "ended_on_gate": true,
+      "first_gate_reached": true,
+      "forecast_seconds": 3600.0,
+      "own_steps": 600,
+      "radiation_cadence_steps": 300
+    },
+    "d03": {
+      "dt_s": 2.0,
+      "ended_on_gate": true,
+      "first_gate_reached": true,
+      "forecast_seconds": 3600.0,
+      "own_steps": 1800,
+      "radiation_cadence_steps": 900
+    }
+  },
+  "root_steps": 200,
+  "run_start_utc": "2026-04-28T18:00:00+00:00",
+  "schema": "OomFixRealAc1fitHalfhourSmoke",
+  "schema_version": 1,
+  "status": "PASS",
+  "total_wall_s": 2036.295493675978
+}

@@ -18,6 +18,11 @@ from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State
 from gpuwrf.physics.mynn_pbl import (
     MynnPBLColumnState,
+    _MYNN_COLUMN_TILE_COLS,
+    _MYNN_COLUMN_TILING,
+    _pad_columns_leaf,
+    _scatter_columns_leaf,
+    _slice_columns_leaf,
     mynn_coldstart_init_columns,
     step_mynn_pbl_column,
     step_mynn_pbl_column_with_pblh,
@@ -1790,6 +1795,82 @@ def _unflatten_batch_to_columns(tree, ny: int, nx: int):
     )
 
 
+def _mynn_coldstart_init_columns_tiled(
+    column_b: MynnPBLColumnState,
+    ust_b: jax.Array,
+    dx: float,
+    xland_b: jax.Array,
+    *,
+    rmol_init,
+) -> tuple[jax.Array, jax.Array]:
+    """Run WRF MYNN cold-start QKE over bounded column tiles.
+
+    The cold-start initializer is per-column, but the dense BouLac path inside it
+    materializes ``(ncol, nz, nz)`` scratch. On AC1_FIT d03 that full-domain init
+    can trip XLA autotune allocations before the forecast starts. Reusing the
+    production MYNN column tile width keeps the exact dense algorithm and only
+    changes the independent column batch size.
+    """
+
+    profile = jnp.asarray(column_b.theta)
+    tiling_active = (
+        _MYNN_COLUMN_TILING
+        and _MYNN_COLUMN_TILE_COLS > 0
+        and profile.ndim == 2
+        and int(profile.shape[0]) > _MYNN_COLUMN_TILE_COLS
+    )
+    if not tiling_active:
+        return mynn_coldstart_init_columns(
+            column_b, ust_b, dx, xland_b, rmol_init=rmol_init
+        )
+
+    ncol = int(profile.shape[0])
+    tile_cols = int(_MYNN_COLUMN_TILE_COLS)
+    n_tiles = (ncol + tile_cols - 1) // tile_cols
+    padded_ncol = n_tiles * tile_cols
+
+    padded_column = jax.tree_util.tree_map(
+        lambda arr: _pad_columns_leaf(arr, ncol=ncol, padded_ncol=padded_ncol),
+        column_b,
+    )
+    ust_pad = _pad_columns_leaf(ust_b, ncol=ncol, padded_ncol=padded_ncol)
+    xland_pad = _pad_columns_leaf(xland_b, ncol=ncol, padded_ncol=padded_ncol)
+    rmol_pad = (
+        None
+        if rmol_init is None
+        else _pad_columns_leaf(rmol_init, ncol=ncol, padded_ncol=padded_ncol)
+    )
+    init_qke = jnp.zeros((padded_ncol, int(profile.shape[1])), dtype=profile.dtype)
+    init_pblh = jnp.zeros((padded_ncol,), dtype=profile.dtype)
+
+    def body(carry, tile_index):
+        start = tile_index * tile_cols
+        tile_column = jax.tree_util.tree_map(
+            lambda arr: _slice_columns_leaf(arr, start, tile_cols, padded_ncol),
+            padded_column,
+        )
+        tile_ust = _slice_columns_leaf(ust_pad, start, tile_cols, padded_ncol)
+        tile_xland = _slice_columns_leaf(xland_pad, start, tile_cols, padded_ncol)
+        tile_rmol = (
+            None
+            if rmol_pad is None
+            else _slice_columns_leaf(rmol_pad, start, tile_cols, padded_ncol)
+        )
+        tile_qke, tile_pblh = mynn_coldstart_init_columns(
+            tile_column, tile_ust, dx, tile_xland, rmol_init=tile_rmol
+        )
+        qke_acc, pblh_acc = carry
+        return (
+            _scatter_columns_leaf(qke_acc, tile_qke, start),
+            _scatter_columns_leaf(pblh_acc, tile_pblh, start),
+        ), None
+
+    (qke, pblh), _ = jax.lax.scan(
+        body, (init_qke, init_pblh), jnp.arange(n_tiles, dtype=jnp.int32)
+    )
+    return qke[:ncol], pblh[:ncol]
+
+
 # MYNN-EDMF mass-flux nonlocal transport (WRF ``bl_mynn_edmf=1``).
 # The Canary namelist selects MYNN (``bl_pbl_physics=5``) and relies on WRF's
 # Registry defaults: ``bl_mynn_edmf=1`` and ``bl_mynn_edmf_mom=1``. The
@@ -1853,7 +1934,7 @@ def mynn_coldstart_qke_from_state(
     ust_b = jnp.asarray(state.ustar, dtype=jnp.float64).reshape(ny * nx)
     xland_b = jnp.asarray(state.xland, dtype=jnp.float64).reshape(ny * nx)
     rmol_b = None if rmol_init is None else jnp.asarray(rmol_init, dtype=jnp.float64).reshape(ny * nx)
-    qke_b, _pblh = mynn_coldstart_init_columns(
+    qke_b, _pblh = _mynn_coldstart_init_columns_tiled(
         column_b, ust_b, _mynn_dx(grid), xland_b, rmol_init=rmol_b
     )
     return _from_columns(_unflatten_batch_to_columns(qke_b, ny, nx))

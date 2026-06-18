@@ -16,6 +16,25 @@ warm/cold are labelled. For sizing and the cold-compile / VRAM behaviour see
 **A modest honest number beats an impressive shaky one.** Where a value is
 projected, pending, or superseded, it says so.
 
+## v0.18.2 nested 1 km utilization addendum
+
+v0.18.2 is a **VRAM-fit release, not a speed release**. On the AC1_FIT 9/3/1
+nested case (d03 520x280x45, ~145k columns, fp64, mp8 Thompson / MYNN /
+Noah-MP / RRTMG), the bit-identical radiation column-tiling + tiled MYNN
+cold-start fix makes the path fit at **18.1 GiB peak VRAM** on the reference
+RTX 5090.
+
+The utilization story is warm/cold-sensitive:
+
+| Window | Measured utilization |
+|---|---|
+| Warm steady state after the one-time load+compile prefix | **~85–88%** GPU utilization; p95 100%; idle about **6%** |
+| Full run including the one-time ~81 s domain-load + cold JIT compile prefix | **~66%** aggregate |
+
+The low-utilization window is cold compilation and setup, not steady-state
+forecast idleness. Warm forecast-only speed for this path is **~1734
+s/forecast-hour**; no new single-card speedup claim is made.
+
 ## v0.14 measured — at parity with CPU-WRF (the load-bearing number)
 
 The two final 72 h GPU-vs-CPU-WRF field-parity gates were timed end-to-end on the
@@ -137,7 +156,7 @@ The pipeline reports `wall_clock_per_hour_s`: element `[0]` carries the XLA comp
 
 > ~~Deferred~~ The clean compile-only cache delta, peak VRAM, and the
 > coupled graph-capture A/B all needed a free GPU; they were queued
-> (`/mnt/data/wrf_perf_scratch/run_suite.sh`) but blocked on the one-GPU-at-a-time lock
+> but blocked on the one-GPU-at-a-time lock
 > behind a concurrent agent's long-running 24 h job. The discipline was respected (no
 > contended measurement). The directional cache evidence (147.6 s cache-off vs 140.8 s
 > cache-on hour-1, plus the documented d02 ~4 min 55 s cold compile) and the bit-identical
