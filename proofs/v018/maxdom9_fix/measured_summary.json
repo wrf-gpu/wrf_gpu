@@ -1,0 +1,223 @@
+{
+  "ac1fit_history5_first_output": {
+    "finite": {
+      "all_numeric_fields_finite": true,
+      "dimensions": {
+        "DateStrLen": 19,
+        "Time": 1,
+        "bottom_top": 44,
+        "bottom_top_stag": 45,
+        "seed_dim_stag": 8,
+        "snow_layers_stag": 3,
+        "snso_layers_stag": 7,
+        "soil_layers_stag": 4,
+        "south_north": 279,
+        "south_north_stag": 280,
+        "west_east": 519,
+        "west_east_stag": 520
+      },
+      "exists": true,
+      "expected_times": "2026-04-28_18:05:00",
+      "expected_xtime_minutes": 5.0,
+      "global_attrs": {
+        "SIMULATION_START_DATE": "2026-04-28_18:00:00",
+        "START_DATE": "2026-04-28_18:00:00"
+      },
+      "invalid_fields": [],
+      "numeric_field_count": 106,
+      "path": "proofs/v018/maxdom9_fix/runs/ac1fit_history5_fast/wrfout_d03_2026-04-28_18:05:00",
+      "schema": "MaxDom9FixAc1fitHistory5WrfoutFinite",
+      "schema_version": 1,
+      "size_bytes": 625803789,
+      "status": "PASS",
+      "times": "2026-04-28_18:05:00",
+      "xtime_minutes": 5.0
+    },
+    "wrapper": {
+      "command": [
+        "python",
+        "proofs/v018/maxdom9_fix/ac1fit_history5_first_output.py",
+        "--input-dir",
+        "proofs/v018/maxdom9_fix/input_ac1fit_history5",
+        "--output-dir",
+        "proofs/v018/maxdom9_fix/runs/ac1fit_history5_fast",
+        "--scratch-dir",
+        "proofs/v018/maxdom9_fix/scratch/ac1fit_history5_fast",
+        "--proof-json",
+        "proofs/v018/maxdom9_fix/ac1fit_history5_first_output.json",
+        "--max-dom",
+        "3"
+      ],
+      "memory_mib_median": 8059.0,
+      "memory_mib_min": 2938.0,
+      "memory_mib_p95": 18201.0,
+      "nvidia_smi_final_gib": 2.8740234375,
+      "nvidia_smi_final_mib": 2943,
+      "nvidia_smi_peak_gib": 19.6982421875,
+      "nvidia_smi_peak_mib": 20171,
+      "returncode": 143,
+      "samples": 4439,
+      "samples_csv": "proofs/v018/maxdom9_fix/ac1fit_history5_run.smi.csv",
+      "schema": "OomFixLockedGpuRun",
+      "schema_version": 2,
+      "stderr": "proofs/v018/maxdom9_fix/ac1fit_history5_run.stderr",
+      "stdout": "proofs/v018/maxdom9_fix/ac1fit_history5_run.stdout",
+      "util_busy_ge_80_fraction": 0.0991214237440865,
+      "util_idle_lt_10_fraction": 0.7882405947285425,
+      "util_mean_pct": 14.05564316287452,
+      "util_median_pct": 3.0,
+      "util_min_pct": 0.0,
+      "util_p95_pct": 98.0,
+      "wall_s": 1242.783154
+    }
+  },
+  "bit_identity_summary": {
+    "all_compared_exact": true,
+    "compared_field_count": 26,
+    "max_abs_diff_overall": 0.0,
+    "missing_field_count": 0,
+    "status": "PASS"
+  },
+  "cadence_summary": {
+    "ac1fit_history5_copy": {
+      "domains": {
+        "d01": {
+          "ceil_equals_old_round": true,
+          "dt_s": 18.0,
+          "first_lead_seconds": 306.0,
+          "first_valid_time": "2026-04-28_18:05:06",
+          "helper_cadence_steps": 17,
+          "history_interval_min": 5.0,
+          "new_ceil_steps": 17,
+          "old_round_steps": 17,
+          "raw_steps": 16.666666666666668
+        },
+        "d02": {
+          "ceil_equals_old_round": true,
+          "dt_s": 6.0,
+          "first_lead_seconds": 300.0,
+          "first_valid_time": "2026-04-28_18:05:00",
+          "helper_cadence_steps": 50,
+          "history_interval_min": 5.0,
+          "new_ceil_steps": 50,
+          "old_round_steps": 50,
+          "raw_steps": 50.0
+        },
+        "d03": {
+          "ceil_equals_old_round": true,
+          "dt_s": 2.0,
+          "first_lead_seconds": 300.0,
+          "first_valid_time": "2026-04-28_18:05:00",
+          "helper_cadence_steps": 150,
+          "history_interval_min": 5.0,
+          "new_ceil_steps": 150,
+          "old_round_steps": 150,
+          "raw_steps": 150.0
+        }
+      },
+      "input_dir": "proofs/v018/maxdom9_fix/input_ac1fit_history5",
+      "max_dom": 3,
+      "run_start": "2026-04-28T18:00:00"
+    },
+    "ac1fit_hourly_original": {
+      "domains": {
+        "d01": {
+          "ceil_equals_old_round": true,
+          "dt_s": 18.0,
+          "first_lead_seconds": 3600.0,
+          "first_valid_time": "2026-04-28_19:00:00",
+          "helper_cadence_steps": 200,
+          "history_interval_min": 60.0,
+          "new_ceil_steps": 200,
+          "old_round_steps": 200,
+          "raw_steps": 200.0
+        },
+        "d02": {
+          "ceil_equals_old_round": true,
+          "dt_s": 6.0,
+          "first_lead_seconds": 3600.0,
+          "first_valid_time": "2026-04-28_19:00:00",
+          "helper_cadence_steps": 600,
+          "history_interval_min": 60.0,
+          "new_ceil_steps": 600,
+          "old_round_steps": 600,
+          "raw_steps": 600.0
+        },
+        "d03": {
+          "ceil_equals_old_round": true,
+          "dt_s": 2.0,
+          "first_lead_seconds": 3600.0,
+          "first_valid_time": "2026-04-28_19:00:00",
+          "helper_cadence_steps": 1800,
+          "history_interval_min": 60.0,
+          "new_ceil_steps": 1800,
+          "old_round_steps": 1800,
+          "raw_steps": 1800.0
+        }
+      },
+      "hourly_release_regression_pass": true,
+      "input_dir": "<ac1fit-input>",
+      "max_dom": 3,
+      "run_start": "2026-04-28T18:00:00"
+    },
+    "status": "PASS"
+  },
+  "cold_maxdom9": {
+    "advance_chunk_compile_count": 9,
+    "advance_chunk_compile_times_s": [
+      259.455593348,
+      273.094744444,
+      367.153789759,
+      351.210450888,
+      408.645744801,
+      251.634578228,
+      214.754453897,
+      288.460623741,
+      228.021249771
+    ],
+    "cache_hits": 0,
+    "cache_writes": 0,
+    "max_advance_chunk_compile_s": 408.645744801,
+    "path": "proofs/v018/maxdom9_fix/maxdom9_run.stderr",
+    "slow_compile_alarm_count": 6,
+    "smi": {
+      "busy_ge_80_fraction": 0.11399678234888531,
+      "path": "proofs/v018/maxdom9_fix/maxdom9_run.smi.csv",
+      "peak_gib": 13.841796875,
+      "peak_mib": 14174,
+      "samples": 13053,
+      "util_mean_pct": 15.23059832988585,
+      "util_p95_pct": 100.0
+    }
+  },
+  "schema": "MaxDom9FixMeasuredSummary",
+  "schema_version": 2,
+  "warm_maxdom9": {
+    "advance_chunk_compile_count": 9,
+    "advance_chunk_compile_times_s": [
+      17.419896603,
+      18.68543911,
+      21.785703897,
+      21.19946003,
+      21.17720437,
+      15.811573267,
+      16.022844076,
+      19.187122345,
+      16.82524085
+    ],
+    "cache_hits": 9,
+    "cache_writes": 0,
+    "max_advance_chunk_compile_s": 21.785703897,
+    "path": "proofs/v018/maxdom9_fix/maxdom9_warm_run.stderr",
+    "slow_compile_alarm_count": 0,
+    "smi": {
+      "busy_ge_80_fraction": 0.8394166099901761,
+      "path": "proofs/v018/maxdom9_fix/maxdom9_warm_run.smi.csv",
+      "peak_gib": 14.1669921875,
+      "peak_mib": 14507,
+      "samples": 13233,
+      "util_mean_pct": 84.74374669387139,
+      "util_p95_pct": 100.0
+    }
+  }
+}

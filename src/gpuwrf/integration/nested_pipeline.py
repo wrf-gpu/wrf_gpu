@@ -20,10 +20,10 @@ already-validated runtime:
     :func:`gpuwrf.runtime.domain_tree.run_operational_domain_tree` that drove the
     v0.11.0 24 h ``d01 -> d02 -> d03`` nesting proof.
 
-The driver writes one ``wrfout_<domain>_<valid_time>`` per domain at the hourly
-output cadence and returns a JSON-serializable payload mirroring the daily
-pipeline's ``M7DailyPipelineRun`` shape (so the CLI can print/branch on it
-uniformly).
+The driver writes one ``wrfout_<domain>_<valid_time>`` per domain at the
+namelist ``history_interval`` cadence and returns a JSON-serializable payload
+mirroring the daily pipeline's ``M7DailyPipelineRun`` shape (so the CLI can
+print/branch on it uniformly).
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ import calendar
 from collections import Counter
 from dataclasses import dataclass, replace as dataclass_replace
 from datetime import datetime, timedelta, timezone
+import math
 import os
 from pathlib import Path
 import time
@@ -134,6 +135,48 @@ def _dt_by_domain(run, names: tuple[str, ...]) -> dict[str, float]:
             raise ValueError(f"{name}: parent {parent} not loaded before child (bad domain order)")
         dt[name] = dt[parent] / float(ratio)
     return dt
+
+
+def _domain_list_value(value: Any, index: int, default: Any) -> Any:
+    if value is None:
+        return default
+    if isinstance(value, (list, tuple)):
+        if not value:
+            return default
+        return value[index] if index < len(value) else value[-1]
+    return value
+
+
+def _history_interval_minutes_by_domain(run, names: tuple[str, ...]) -> dict[str, float]:
+    """Per-domain WRF history interval in minutes, defaulting to hourly output."""
+
+    raw = run.namelist.get("time_control", {}).get("history_interval", 60)
+    out: dict[str, float] = {}
+    for idx, name in enumerate(names):
+        minutes = float(_domain_list_value(raw, idx, 60))
+        if minutes <= 0.0:
+            raise ValueError(f"{name}: history_interval must be positive, got {minutes}")
+        out[name] = minutes
+    return out
+
+
+def _output_cadence_steps_by_domain(
+    run,
+    names: tuple[str, ...],
+    dt_by_domain: dict[str, float],
+) -> tuple[dict[str, int], dict[str, float]]:
+    """Return output cadence steps and interval minutes per domain."""
+
+    interval_minutes = _history_interval_minutes_by_domain(run, names)
+    cadence_steps: dict[str, int] = {}
+    for name in names:
+        dt_s = float(dt_by_domain[name])
+        raw_steps = interval_minutes[name] * 60.0 / dt_s
+        steps = int(math.ceil(raw_steps - 1.0e-12))
+        if steps <= 0:
+            raise ValueError(f"{name}: history_interval produced nonpositive cadence")
+        cadence_steps[name] = steps
+    return cadence_steps, interval_minutes
 
 
 def _radiation_cadence_steps(dt_s: float) -> int:
@@ -579,7 +622,7 @@ def _noahmp_surface_diagnostics_for_output(
 
 
 class _PerDomainWrfoutWriter:
-    """Output callback: write one wrfout per domain at the hourly cadence.
+    """Output callback: write one wrfout per domain at history cadence.
 
     Declares ``wants_carry`` so the domain-tree runner hands it the full
     ``OperationalCarry``: under Noah-MP the writer diagnostics must read the
@@ -597,11 +640,13 @@ class _PerDomainWrfoutWriter:
         run_start: datetime,
         bundles: dict[str, DomainBundle],
         output_cadence_steps: dict[str, int],
+        dt_by_domain: dict[str, float],
     ) -> None:
         self.output_dir = output_dir
         self.run_start = run_start
         self.bundles = bundles
         self.output_cadence_steps = output_cadence_steps
+        self.dt_by_domain = dt_by_domain
         self.written: dict[str, list[str]] = {name: [] for name in bundles}
         # Lazy imports kept off the module top-level so importing this module stays
         # light for non-GPU callers (mirrors daily_pipeline).
@@ -629,9 +674,9 @@ class _PerDomainWrfoutWriter:
 
     def __call__(self, name: str, own_step: int, carry: Any) -> dict[str, Any]:
         state = getattr(carry, "state", carry)
-        cadence = int(self.output_cadence_steps[name])
-        lead_h = int(round(int(own_step) / cadence))
-        valid_time = self.run_start + timedelta(hours=lead_h)
+        lead_seconds = float(own_step) * float(self.dt_by_domain[name])
+        lead_hours = lead_seconds / 3600.0
+        valid_time = self.run_start + timedelta(seconds=lead_seconds)
         namelist = self.bundles[name].namelist
         grid = self.bundles[name].grid
         noahmp_land = getattr(carry, "noahmp_land", None)
@@ -640,13 +685,13 @@ class _PerDomainWrfoutWriter:
                 state,
                 namelist,
                 self.run_start,
-                lead_seconds=float(lead_h) * 3600.0,
+                lead_seconds=lead_seconds,
                 noahmp_land=noahmp_land,
                 noahmp_rad=getattr(carry, "noahmp_rad", None),
             )
         else:
             surface_diagnostics = self._surface_diagnostics_for_output(
-                state, namelist, self.run_start, lead_seconds=float(lead_h) * 3600.0
+                state, namelist, self.run_start, lead_seconds=lead_seconds
             )
         diagnostics = self._merge_output_diagnostics(
             self.writer_diagnostics.get(name), surface_diagnostics
@@ -658,7 +703,7 @@ class _PerDomainWrfoutWriter:
             namelist,
             path,
             valid_time=valid_time,
-            lead_hours=float(lead_h),
+            lead_hours=float(lead_hours),
             run_start=self.run_start,
             diagnostics=diagnostics,
         )
@@ -666,7 +711,7 @@ class _PerDomainWrfoutWriter:
         summary = self._finite_summary(state)
         return {
             "domain": name,
-            "lead_h": int(lead_h),
+            "lead_hours": float(lead_hours),
             "own_step": int(own_step),
             "all_finite": bool(summary["all_finite"]),
             "wrfout": str(path),
@@ -765,7 +810,12 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             f"hours={config.hours} does not align with root dt={root_dt}s "
             f"(would need {root_steps_raw} steps)"
         )
-    output_cadence = {name: int(round(3600.0 / dt_by_domain[name])) for name in names}
+    from gpuwrf.io.gen2_accessor import Gen2Run
+
+    cadence_run = Gen2Run(Path(config.input_dir))
+    output_cadence, history_interval_minutes = _output_cadence_steps_by_domain(
+        cadence_run, names, dt_by_domain
+    )
 
     feedback_enabled = bool(config.feedback)
     tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=feedback_enabled)
@@ -775,6 +825,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         run_start=run_start,
         bundles=bundles,
         output_cadence_steps=output_cadence,
+        dt_by_domain=dt_by_domain,
     )
     for domain, latlon_meta in writer.writer_static_latlon_metadata.items():
         meta.setdefault("domains", {}).setdefault(domain, {})["writer_static_latlon"] = latlon_meta
@@ -796,7 +847,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # memory/segmentation orchestration changes, NOT the physics/dynamics or the
     # live parent->child boundary coupling.
     forecast_start = time.perf_counter()
-    root_seg_steps = int(output_cadence[root])  # one wrfout hour of root steps
+    root_seg_steps = int(output_cadence[root])  # one root history-output segment
     # Pre-seeded initial carries from _load_domains: bit-identical to the former
     # domain-tree cold start for the bulk path, and REQUIRED under Noah-MP so the
     # land carry is structurally present from the very first scan segment.
@@ -851,19 +902,21 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     per_domain: dict[str, Any] = {}
     all_finite = True
     all_output_present = True
-    expected_outputs_per_domain = int(config.hours)
     for name in names:
         outputs = writer.written.get(name, [])
         finite_ok = bool(final_finite[name]["all_finite"])
-        output_ok = len(outputs) == expected_outputs_per_domain
+        total_steps = int(math.floor(float(config.hours) * 3600.0 / float(dt_by_domain[name])))
+        expected_outputs = int(total_steps // int(output_cadence[name]))
+        output_ok = len(outputs) == expected_outputs
         all_finite = all_finite and finite_ok
         all_output_present = all_output_present and output_ok
         per_domain[name] = {
             "final_state_finite": finite_ok,
             "wrfout_count": len(outputs),
-            "expected_wrfout_count": expected_outputs_per_domain,
+            "expected_wrfout_count": expected_outputs,
             "wrfout_files": outputs,
             "dt_s": float(dt_by_domain[name]),
+            "history_interval_min": float(history_interval_minutes[name]),
             "own_steps": int(result.own_steps.get(name, 0)),
         }
 

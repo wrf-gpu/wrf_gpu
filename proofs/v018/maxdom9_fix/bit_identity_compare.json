@@ -1,0 +1,445 @@
+{
+  "a": "proofs/v018/maxdom9_fix/runs/switzerland_old/wrfout_d01_2023-01-15_01:00:00",
+  "all_compared_exact": true,
+  "b": "proofs/v018/maxdom9_fix/runs/switzerland_new/wrfout_d01_2023-01-15_01:00:00",
+  "compared_field_count": 26,
+  "field_count": 26,
+  "fields": [
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "U",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "7255ecf8cf0148ca951520a908ea39492a9ddf5fb4a94e2da281832f2fda6fa3",
+      "sha256_b": "7255ecf8cf0148ca951520a908ea39492a9ddf5fb4a94e2da281832f2fda6fa3",
+      "shape": [
+        1,
+        44,
+        42,
+        43
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "V",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "6a9a5284cd28c792e7652dce886d7862d1ee3b57470d3cea47ddd923fdfd79f3",
+      "sha256_b": "6a9a5284cd28c792e7652dce886d7862d1ee3b57470d3cea47ddd923fdfd79f3",
+      "shape": [
+        1,
+        44,
+        43,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "W",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "6e80c9ec55c43a28dabd3f8233b47e33af3931eca73081629b13efc8f360253d",
+      "sha256_b": "6e80c9ec55c43a28dabd3f8233b47e33af3931eca73081629b13efc8f360253d",
+      "shape": [
+        1,
+        45,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "T",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "6c97aa077b1fab1b1a483b8302f6e32a1d29151103cc707f03872d2176c53ca0",
+      "sha256_b": "6c97aa077b1fab1b1a483b8302f6e32a1d29151103cc707f03872d2176c53ca0",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "THM",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "e19cc8bbb6b344ac8f608ed0523b5e644f40c1b8c28311b1fbd4ec898bae5221",
+      "sha256_b": "e19cc8bbb6b344ac8f608ed0523b5e644f40c1b8c28311b1fbd4ec898bae5221",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "QVAPOR",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "04e3fb99a90207609f07e7e0cb7e96ebc9e34439208a13284d5703af3e9455a1",
+      "sha256_b": "04e3fb99a90207609f07e7e0cb7e96ebc9e34439208a13284d5703af3e9455a1",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "P",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "973b7427d010b5244f9cb47ed4677ebe18150b31a794324f9b558edff9ffe34c",
+      "sha256_b": "973b7427d010b5244f9cb47ed4677ebe18150b31a794324f9b558edff9ffe34c",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "PB",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "86a709f543e8baf111442f7a4fb607d8429adeb2d87aee9adb795724e7a3281f",
+      "sha256_b": "86a709f543e8baf111442f7a4fb607d8429adeb2d87aee9adb795724e7a3281f",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "PH",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "8c68dbc110aa735b75bb2a32ab928d64f0772bc511a27571771fb175eddeb030",
+      "sha256_b": "8c68dbc110aa735b75bb2a32ab928d64f0772bc511a27571771fb175eddeb030",
+      "shape": [
+        1,
+        45,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "PHB",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "4a039981c18628a203e7da928d186a536d7a1bed29aa3e518cb6588e483b1220",
+      "sha256_b": "4a039981c18628a203e7da928d186a536d7a1bed29aa3e518cb6588e483b1220",
+      "shape": [
+        1,
+        45,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "MU",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "3ebe5696c95ef6ff24bb99051ce6e91f12513f5a1829f73d7c3e0752634212e3",
+      "sha256_b": "3ebe5696c95ef6ff24bb99051ce6e91f12513f5a1829f73d7c3e0752634212e3",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "MUB",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "f4f781a5a54deca3a7feeff49168bdd1751f1644317a10a1abaea2e60edb1c03",
+      "sha256_b": "f4f781a5a54deca3a7feeff49168bdd1751f1644317a10a1abaea2e60edb1c03",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "T2",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "a6e462a5a04c3aede3739ef9cd4c16dab36b2a91381490e7320d394dc981734c",
+      "sha256_b": "a6e462a5a04c3aede3739ef9cd4c16dab36b2a91381490e7320d394dc981734c",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "U10",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "6e028228babff344832ee906a8bfc6475786741af5a1643c484ef30acb64fcab",
+      "sha256_b": "6e028228babff344832ee906a8bfc6475786741af5a1643c484ef30acb64fcab",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "V10",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "9a4d9cae90fab883a4dcf876b73a76bedb230e36487f6812a49cba0d19b1898c",
+      "sha256_b": "9a4d9cae90fab883a4dcf876b73a76bedb230e36487f6812a49cba0d19b1898c",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "PSFC",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "75ce8337818bb937455baa09ed855a7f107597ad93767bd7fcb17bb1b63dd5b3",
+      "sha256_b": "75ce8337818bb937455baa09ed855a7f107597ad93767bd7fcb17bb1b63dd5b3",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "SWDOWN",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "2c2cbccd5d41f1ab10f0106ca8df33869145cbdd02930a498214ef5c10af503e",
+      "sha256_b": "2c2cbccd5d41f1ab10f0106ca8df33869145cbdd02930a498214ef5c10af503e",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "GLW",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "080821e16e8998b8ca3becf5d29a2e28014d86467834e140d9c3bdb3ca4fd06d",
+      "sha256_b": "080821e16e8998b8ca3becf5d29a2e28014d86467834e140d9c3bdb3ca4fd06d",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "PBLH",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "f880ae227b7466a6b9e127783cad28f4ae1f2948af85234ede65b901e116bc6a",
+      "sha256_b": "f880ae227b7466a6b9e127783cad28f4ae1f2948af85234ede65b901e116bc6a",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "RAINC",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "2c2cbccd5d41f1ab10f0106ca8df33869145cbdd02930a498214ef5c10af503e",
+      "sha256_b": "2c2cbccd5d41f1ab10f0106ca8df33869145cbdd02930a498214ef5c10af503e",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "RAINNC",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "2c2cbccd5d41f1ab10f0106ca8df33869145cbdd02930a498214ef5c10af503e",
+      "sha256_b": "2c2cbccd5d41f1ab10f0106ca8df33869145cbdd02930a498214ef5c10af503e",
+      "shape": [
+        1,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "QCLOUD",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "sha256_b": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "QICE",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "sha256_b": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "QRAIN",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "sha256_b": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "QSNOW",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "sha256_b": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    },
+    {
+      "dtype": "float32",
+      "exact": true,
+      "field": "QGRAUP",
+      "finite_a": true,
+      "finite_b": true,
+      "max_abs_diff": 0.0,
+      "sha256_a": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "sha256_b": "800357a953f8450b782ea019ea95fc1a6e1e73f57df4087e90a6662a0ad59417",
+      "shape": [
+        1,
+        44,
+        42,
+        42
+      ],
+      "status": "PASS"
+    }
+  ],
+  "max_abs_diff_overall": 0.0,
+  "missing_field_count": 0,
+  "schema": "OomFixWrfoutExactCompare",
+  "schema_version": 1,
+  "status": "PASS"
+}
