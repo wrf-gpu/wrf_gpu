@@ -561,9 +561,9 @@ def _env_bool(name: str, default: bool) -> bool:
 # chunking removed per-spectral-stack blowups, but the public LW solve still had
 # an `ncol`-wide transient floor when invoked on a whole 1 km nest.  The
 # production entry flattens arbitrary leading dimensions, scans over fixed-size
-# column tiles, and reshapes outputs back.  The 2048 default keeps the measured
-# AC1_FIT d03 LW transient near 1.2 GiB while preserving one-tile execution for
-# small domains; env overrides remain authoritative.  Set
+# column tiles, and reshapes outputs back.  The fixed 2048 default is deliberately
+# compile-key-stable for the warm all-7 cache and preserves the AC1_FIT d03 OOM
+# fix; env overrides remain authoritative for explicit cold-cache experiments. Set
 # `_LW_COLUMN_TILING=False` or `_LW_COLUMN_TILE_COLS=0` for the exact
 # whole-column reference path.
 _LW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_LW_COLUMN_TILING", True)
