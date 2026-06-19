@@ -15,6 +15,9 @@ single-domain entry, so the WRF scratch carry persists across nested substeps.
 
 from __future__ import annotations
 
+import os
+import weakref
+
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace as dataclass_replace
 from typing import Any
@@ -48,6 +51,8 @@ AdvanceFn = Callable[[str, Any, int, int], Any]
 ForceFn = Callable[["DomainEdge", Any, Any], Any]
 FeedbackFn = Callable[["DomainEdge", Any, Any], Any]
 OutputFn = Callable[[str, int, Any], Any]
+FusedSubstepFn = Callable[[Any, tuple[Any, ...], int, tuple[int, ...]], tuple[Any, tuple[Any, ...]]]
+FusedCascadeLookup = Callable[[str], "FusedSubstepFn | None"]
 
 
 @dataclass(frozen=True)
@@ -234,6 +239,7 @@ def run_domain_tree_callbacks(
     block_between: bool = True,
     root_sync_cadence: int | None = None,
     edge_lookup: Callable[[DomainNest], DomainEdge] | None = None,
+    fused_cascade: FusedCascadeLookup | None = None,
     initial_own_steps: dict[str, int] | None = None,
 ) -> DomainTreeResult:
     """Generic WRF-recursive domain-tree runner.
@@ -326,6 +332,44 @@ def run_domain_tree_callbacks(
                 _sync_all_domains()
             return
 
+        cascade = fused_cascade(name) if fused_cascade is not None else None
+        if cascade is not None:
+            child_specs = tuple(children)
+            for local in range(1, int(n_steps) + 1):
+                parent_start = own_steps[name] + 1
+                child_starts = tuple(own_steps[spec.child] + 1 for spec in child_specs)
+                new_parent, new_children = cascade(
+                    out[name],
+                    tuple(out[spec.child] for spec in child_specs),
+                    int(parent_start),
+                    tuple(int(start) for start in child_starts),
+                )
+
+                out[name] = new_parent
+                own_steps[name] += 1
+                events.append(("advance", name, parent_start, 1, own_steps[name]))
+                for spec in child_specs:
+                    events.append(("force", spec.parent, spec.child, own_steps[spec.parent]))
+                for spec, child_carry, child_start in zip(child_specs, new_children, child_starts):
+                    out[spec.child] = child_carry
+                    own_steps[spec.child] += int(spec.parent_grid_ratio)
+                    events.append(
+                        (
+                            "advance",
+                            spec.child,
+                            child_start,
+                            int(spec.parent_grid_ratio),
+                            own_steps[spec.child],
+                        )
+                    )
+                    maybe_output(spec.child)
+                maybe_output(name)
+                if per_advance_block:
+                    _sync_all_domains()
+                if depth == 0 and root_cadence and (local % root_cadence == 0 or local == int(n_steps)):
+                    _sync_all_domains()
+            return
+
         for local in range(1, int(n_steps) + 1):
             start_step = own_steps[name] + 1
             out[name] = advance(name, out[name], int(start_step), 1)
@@ -386,6 +430,155 @@ def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: Operat
         bdy_width=bdy_width,
     )
     return child.replace(state=forced_state)
+
+
+def _build_fused_cascade_program(
+    *,
+    parent_namelist: OperationalNamelist,
+    parent_cadence: int,
+    child_namelists: tuple[OperationalNamelist, ...],
+    child_weights: tuple[NestForceWeights, ...],
+    child_bdy_widths: tuple[int, ...],
+    child_ratios: tuple[int, ...],
+    child_cadences: tuple[int, ...],
+) -> FusedSubstepFn:
+    """Build one jitted parent-substep cascade for a flat one-way leaf subtree."""
+
+    parent_cad = int(parent_cadence)
+    n_children = len(child_namelists)
+
+    @jax.jit
+    def fused(parent_carry, child_carries, parent_start, child_starts):
+        parent_new = _advance_chunk(
+            parent_carry,
+            parent_namelist,
+            jnp.asarray(parent_start, dtype=jnp.int32),
+            n_steps=1,
+            cadence=parent_cad,
+        )
+        new_children = []
+        for idx in range(n_children):
+            child_carry = child_carries[idx]
+            forced_state = build_child_boundary_package(
+                child_carry.state,
+                parent_new.state,
+                child_weights[idx],
+                bdy_width=int(child_bdy_widths[idx]),
+            )
+            child_forced = child_carry.replace(state=forced_state)
+            child_new = _advance_chunk(
+                child_forced,
+                child_namelists[idx],
+                jnp.asarray(child_starts[idx], dtype=jnp.int32),
+                n_steps=int(child_ratios[idx]),
+                cadence=int(child_cadences[idx]),
+            )
+            new_children.append(child_new)
+        return parent_new, tuple(new_children)
+
+    return fused
+
+
+_FUSED_PROGRAM_CACHE: dict[int, "tuple[weakref.ref[Any], dict[str, FusedSubstepFn]]"] = {}
+_FALSEY_ENV = {"0", "false", "off", "no", ""}
+_TRUEY_ENV = {"1", "true", "on", "yes"}
+
+
+def _env_flag(name: str) -> str | None:
+    value = os.environ.get(name)
+    return None if value is None else value.strip().lower()
+
+
+def _nested_fuse_default_enabled() -> bool:
+    """Default-on fused mode, with explicit eager opt-outs for identity proofs."""
+
+    bitwise = _env_flag("GPUWRF_BITWISE")
+    if bitwise is not None and bitwise not in _FALSEY_ENV:
+        return False
+    fuse = _env_flag("GPUWRF_NESTED_FUSE")
+    if fuse is None:
+        return True
+    if fuse in _FALSEY_ENV:
+        return False
+    if fuse in _TRUEY_ENV:
+        return True
+    return True
+
+
+def _fusable_parent(tree: DomainTree, name: str) -> tuple[DomainEdge, ...] | None:
+    """Return edges for a safe fused parent, otherwise fail closed to eager."""
+
+    if name == tree.hierarchy.roots()[0]:
+        return None
+    children = tree.hierarchy.children(name)
+    if not children:
+        return None
+    edges: list[DomainEdge] = []
+    for spec in children:
+        if int(spec.parent_grid_ratio) <= 0:
+            return None
+        if tree.hierarchy.children(spec.child):
+            return None
+        if bool(spec.feedback) or bool(tree.feedback_enabled):
+            return None
+        edge = next((edge for edge in tree.children(name) if edge.child == spec.child), None)
+        if edge is None or edge.weights is None:
+            return None
+        edges.append(edge)
+    return tuple(edges)
+
+
+def _operational_fused_cascade_factory(tree: DomainTree) -> FusedCascadeLookup:
+    """Build a default-on fused cascade lookup, fail-closed when unsafe."""
+
+    enabled = _nested_fuse_default_enabled()
+    cache: dict[str, FusedSubstepFn | None] = {}
+
+    def lookup(parent_name: str) -> FusedSubstepFn | None:
+        if not enabled:
+            return None
+        if parent_name in cache:
+            return cache[parent_name]
+        edges = _fusable_parent(tree, parent_name)
+        if edges is None:
+            cache[parent_name] = None
+            return None
+
+        parent_namelist = tree.domains[parent_name].namelist
+        parent_cadence = int(parent_namelist.radiation_cadence_steps)
+        child_namelists = tuple(tree.domains[edge.child].namelist for edge in edges)
+        child_cadences = tuple(int(namelist.radiation_cadence_steps) for namelist in child_namelists)
+        if parent_cadence <= 0 or any(cadence <= 0 for cadence in child_cadences):
+            cache[parent_name] = None
+            return None
+
+        key = id(tree)
+        entry = _FUSED_PROGRAM_CACHE.get(key)
+        if entry is not None and entry[0]() is tree:
+            tree_programs = entry[1]
+        else:
+            tree_programs = {}
+            _FUSED_PROGRAM_CACHE[key] = (
+                weakref.ref(tree, lambda _ref, _key=key: _FUSED_PROGRAM_CACHE.pop(_key, None)),
+                tree_programs,
+            )
+
+        program = tree_programs.get(str(parent_name))
+        if program is None:
+            program = _build_fused_cascade_program(
+                parent_namelist=parent_namelist,
+                parent_cadence=parent_cadence,
+                child_namelists=child_namelists,
+                child_weights=tuple(edge.weights for edge in edges),
+                child_bdy_widths=tuple(int(tree.domains[edge.child].state.u_bdy.shape[2]) for edge in edges),
+                child_ratios=tuple(int(edge.parent_grid_ratio) for edge in edges),
+                child_cadences=child_cadences,
+            )
+            tree_programs[str(parent_name)] = program
+        cache[parent_name] = program
+        return program
+
+    return lookup
 
 
 def _operational_feedback(edge: DomainEdge, parent: OperationalCarry, child: OperationalCarry) -> OperationalCarry:
@@ -453,6 +646,9 @@ def run_operational_domain_tree(
     def lookup(spec: DomainNest) -> DomainEdge:
         return edge_by_pair[(spec.parent, spec.child)]
 
+    effective_feedback = tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled)
+    fused_cascade = None if effective_feedback else _operational_fused_cascade_factory(tree)
+
     return run_domain_tree_callbacks(
         tree.hierarchy,
         carries,
@@ -461,12 +657,13 @@ def run_operational_domain_tree(
         force=_operational_force,
         feedback=_operational_feedback,
         root=root,
-        feedback_enabled=tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled),
+        feedback_enabled=effective_feedback,
         output=output,
         output_cadence_steps=output_cadence_steps,
         block_between=block_between,
         root_sync_cadence=root_sync_cadence,
         edge_lookup=lookup,
+        fused_cascade=fused_cascade,
         initial_own_steps=initial_own_steps,
     )
 

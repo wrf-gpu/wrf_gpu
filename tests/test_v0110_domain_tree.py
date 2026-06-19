@@ -10,6 +10,9 @@ from gpuwrf.contracts.grid import DomainHierarchy, DomainNest
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
     DomainTree,
+    _FUSED_PROGRAM_CACHE,
+    _fusable_parent,
+    _operational_fused_cascade_factory,
     build_live_nested_boundary_config,
     run_domain_tree_callbacks,
 )
@@ -221,8 +224,17 @@ class _Grid:
 
 
 class _State:
+    def __init__(self, bdy_width: int = 5) -> None:
+        import numpy as _np
+
+        self.u_bdy = _np.zeros((2, 4, int(bdy_width), 1, 1))
+
     def bytes(self) -> int:
         return 0
+
+
+class _Namelist:
+    radiation_cadence_steps = 4
 
 
 def test_feedback_weights_are_available_when_runtime_gate_flips_on():
@@ -249,3 +261,143 @@ def test_live_nested_boundary_config_sets_parent_dt_and_wrf_toggles():
     assert cfg.nested_ph_relax is True
     assert cfg.nested_w_relax is True
     assert cfg.nested_ph_spec is True
+
+
+def _all7_shaped_hierarchy() -> DomainHierarchy:
+    order = ("d01", "d02", "d03", "d04", "d05", "d06", "d07", "d08", "d09")
+    edges = [DomainNest("d01", "d02", 3, 30, 20)]
+    edges += [DomainNest("d02", child, 3, 10, 10) for child in order[2:]]
+    return DomainHierarchy.from_edges(order, tuple(edges), max_dom=9)
+
+
+def _python_d02_fused_lookup(hierarchy: DomainHierarchy):
+    child_specs = hierarchy.children("d02")
+
+    def lookup(parent_name: str):
+        if parent_name != "d02":
+            return None
+
+        def fused(parent_carry, child_carries, parent_start, child_starts):
+            del parent_start, child_starts
+            parent_new = _Carry(parent_carry.value + 1)
+            new_children = []
+            for spec, child_carry in zip(child_specs, child_carries):
+                forced = _Carry(child_carry.value + parent_new.value * 1000)
+                new_children.append(_Carry(forced.value + int(spec.parent_grid_ratio)))
+            return parent_new, tuple(new_children)
+
+        return fused
+
+    return lookup
+
+
+def _run_all7_recorded(*, fused_cascade=None):
+    hierarchy = _all7_shaped_hierarchy()
+    names = hierarchy.order
+
+    def advance(name, carry, start_step, n_steps):
+        del name, start_step
+        return _Carry(carry.value + int(n_steps))
+
+    def force(edge, parent, child):
+        return _Carry(child.value + parent.value * 1000)
+
+    result = run_domain_tree_callbacks(
+        hierarchy,
+        {name: _Carry(0) for name in names},
+        root_steps=2,
+        advance=advance,
+        force=force,
+        output=lambda name, step, state: (name, step, state.value),
+        output_cadence_steps={"d01": 1, "d02": 3, **{child: 9 for child in names[2:]}},
+        block_between=False,
+        fused_cascade=fused_cascade,
+    )
+    return (
+        result.events,
+        result.own_steps,
+        {name: carry.value for name, carry in result.carries.items()},
+        result.outputs,
+    )
+
+
+def test_fused_cascade_is_scheduler_and_value_identical_to_eager_all7():
+    hierarchy = _all7_shaped_hierarchy()
+    eager = _run_all7_recorded(fused_cascade=None)
+    fused = _run_all7_recorded(fused_cascade=_python_d02_fused_lookup(hierarchy))
+    assert fused == eager
+    events, own_steps, _carries, _outputs = eager
+    assert own_steps == {
+        "d01": 2,
+        "d02": 6,
+        "d03": 18,
+        "d04": 18,
+        "d05": 18,
+        "d06": 18,
+        "d07": 18,
+        "d08": 18,
+        "d09": 18,
+    }
+    assert sum(1 for event in events if event[0] == "force") == 44
+    assert sum(1 for event in events if event[0] == "force" and event[1] == "d02") == 42
+    assert sum(1 for event in events if event[0] == "force" and event[1] == "d01") == 2
+
+
+def test_fused_cascade_none_lookup_is_eager_byte_identical():
+    eager = _run_all7_recorded(fused_cascade=None)
+    always_none = _run_all7_recorded(fused_cascade=lambda name: None)
+    assert always_none == eager
+
+
+def _stub_all7_tree(*, feedback_enabled: bool = False) -> DomainTree:
+    hierarchy = _all7_shaped_hierarchy()
+    namelist = _Namelist()
+    domains = {
+        "d01": DomainBundle("d01", _State(), namelist, grid=_Grid(94, 60), metrics=object()),
+        "d02": DomainBundle("d02", _State(), namelist, grid=_Grid(196, 94), metrics=object()),
+    }
+    for child in hierarchy.order[2:]:
+        domains[child] = DomainBundle(child, _State(), namelist, grid=_Grid(40, 40), metrics=object())
+    return DomainTree.from_domains(hierarchy, domains, feedback_enabled=feedback_enabled)
+
+
+def test_fusable_parent_accepts_d02_and_rejects_root_and_leaves():
+    tree = _stub_all7_tree(feedback_enabled=False)
+    d02_edges = _fusable_parent(tree, "d02")
+    assert d02_edges is not None
+    assert [edge.child for edge in d02_edges] == list(tree.hierarchy.order[2:])
+    assert _fusable_parent(tree, "d01") is None
+    assert _fusable_parent(tree, "d03") is None
+
+
+def test_fusable_parent_rejects_when_feedback_enabled():
+    tree = _stub_all7_tree(feedback_enabled=True)
+    assert _fusable_parent(tree, "d02") is None
+
+
+def test_fused_factory_default_on_and_gates_d02_only(monkeypatch):
+    monkeypatch.delenv("GPUWRF_BITWISE", raising=False)
+    monkeypatch.delenv("GPUWRF_NESTED_FUSE", raising=False)
+    _FUSED_PROGRAM_CACHE.clear()
+    tree = _stub_all7_tree()
+    lookup = _operational_fused_cascade_factory(tree)
+    program = lookup("d02")
+    assert program is not None
+    assert callable(program)
+    assert lookup("d01") is None
+    assert lookup("d03") is None
+    assert lookup("d02") is program
+    lookup2 = _operational_fused_cascade_factory(tree)
+    assert lookup2("d02") is program
+    _FUSED_PROGRAM_CACHE.clear()
+
+
+def test_fused_factory_eager_optouts(monkeypatch):
+    tree = _stub_all7_tree()
+    for value in ("0", "false", "off", "no"):
+        monkeypatch.delenv("GPUWRF_BITWISE", raising=False)
+        monkeypatch.setenv("GPUWRF_NESTED_FUSE", value)
+        assert _operational_fused_cascade_factory(tree)("d02") is None
+    monkeypatch.delenv("GPUWRF_NESTED_FUSE", raising=False)
+    monkeypatch.setenv("GPUWRF_BITWISE", "1")
+    assert _operational_fused_cascade_factory(tree)("d02") is None
