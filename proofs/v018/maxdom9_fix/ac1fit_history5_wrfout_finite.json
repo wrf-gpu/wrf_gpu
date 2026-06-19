@@ -1,0 +1,33 @@
+{
+  "all_numeric_fields_finite": true,
+  "dimensions": {
+    "DateStrLen": 19,
+    "Time": 1,
+    "bottom_top": 44,
+    "bottom_top_stag": 45,
+    "seed_dim_stag": 8,
+    "snow_layers_stag": 3,
+    "snso_layers_stag": 7,
+    "soil_layers_stag": 4,
+    "south_north": 279,
+    "south_north_stag": 280,
+    "west_east": 519,
+    "west_east_stag": 520
+  },
+  "exists": true,
+  "expected_times": "2026-04-28_18:05:00",
+  "expected_xtime_minutes": 5.0,
+  "global_attrs": {
+    "SIMULATION_START_DATE": "2026-04-28_18:00:00",
+    "START_DATE": "2026-04-28_18:00:00"
+  },
+  "invalid_fields": [],
+  "numeric_field_count": 106,
+  "path": "proofs/v018/maxdom9_fix/runs/ac1fit_history5_fast/wrfout_d03_2026-04-28_18:05:00",
+  "schema": "MaxDom9FixAc1fitHistory5WrfoutFinite",
+  "schema_version": 1,
+  "size_bytes": 625803789,
+  "status": "PASS",
+  "times": "2026-04-28_18:05:00",
+  "xtime_minutes": 5.0
+}

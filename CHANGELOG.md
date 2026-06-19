@@ -7,6 +7,27 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.18.3] — max_dom=9 compile fix + nested history_interval cadence fix (bit-identical)
+
+Two bugfixes; default forecast numerics unchanged (bit-identical: 26/26 `wrfout`
+fields exact, `max_abs_diff 0.0`). This release:
+
+- **Fixes the `--max-dom 9` (all-7-island nest) compile blowup.** Thompson
+  sedimentation/fall-speed scans materialized static `s64[nz]` vertical-index
+  arrays (`jnp.arange(nz)`); across the 9 distinct domain shapes XLA folded them
+  unbounded, so `jit__advance_chunk` compiled forever and never integrated
+  (HLO-confirmed: `proofs/v018/maxdom9_fix/report.md`). The scans now thread a
+  scalar `int32` counter in the carry (`scan(..., None, length=nz)`) — identical
+  iteration order/values, no static index vector. All 9 domain-shape compiles now
+  complete **bounded** (≤409 s cold, ≤22 s warm cache-hit), reach stable
+  integration (~85 % GPU util), and write output.
+- **Fixes nested output ignoring `history_interval`.** The nested pipeline was
+  hardcoded to hourly output; it now honors the per-domain namelist
+  `history_interval` (valid time / `XTIME` from `own_step·dt`). Hourly gates are
+  unchanged (`ceil(3600/dt)` equals the old `round(3600/dt)` for the v0.18.2
+  timesteps). Proven: a d03 `wrfout` at forecast **+5 min** (`XTIME=5.0`, 106
+  fields finite) under `history_interval=5`.
+
 ## [0.18.2] — 1 km nested VRAM-efficiency fix (bit-identical)
 
 Memory-efficiency patch over 0.18.1. Default numerics are unchanged and the

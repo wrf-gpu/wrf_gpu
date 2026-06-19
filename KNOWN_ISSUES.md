@@ -1,4 +1,18 @@
-# Known Issues — v0.18.2
+# Known Issues — v0.18.3
+
+## Resolved in v0.18.3
+
+- **`--max-dom 9` (all-7-island nest) compile blowup.** `jit__advance_chunk`
+  compiled forever (never integrated) because Thompson sedimentation scans
+  materialized static `s64[nz]` index arrays that XLA constant-folded unbounded
+  across the 9 domain shapes. Fixed by threading scalar `int32` scan counters
+  (bit-identical): all 9 domain-shape compiles now bounded (≤409 s cold / ≤22 s
+  warm), integration stable (~85 % util), output written. Proof:
+  `proofs/v018/maxdom9_fix/report.md`.
+- **Nested output ignored `history_interval`.** The nested pipeline hardcoded
+  hourly output; it now honors the namelist per-domain `history_interval` (hourly
+  gates unchanged). Proof: d03 `wrfout` at forecast +5 min (`XTIME=5.0`).
+
 
 Honest, code-grounded list of what is open or bounded. Each entry states the
 symptom, the current understanding, the workaround, and the tracked follow-up.

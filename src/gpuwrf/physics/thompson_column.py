@@ -1660,10 +1660,16 @@ def _sed_implicit_q(q, vt, dz, rho, dt, nsub):
     diag = 1.0 + dts * vtr / dzr
 
     def one(qcur):
-        def body(inflow_mass, k):
+        def body(carry, _):
+            inflow_mass, k = carry
             qk = (qcur[k] + dts / (rhor[k] * dzr[k]) * inflow_mass) / diag[k]
-            return rhor[k] * vtr[k] * qk, qk
-        _, qsol = jax.lax.scan(body, jnp.zeros(qcur.shape[1:], acc), jnp.arange(nz))
+            return (rhor[k] * vtr[k] * qk, k + jnp.asarray(1, dtype=jnp.int32)), qk
+        (_, _), qsol = jax.lax.scan(
+            body,
+            (jnp.zeros(qcur.shape[1:], acc), jnp.asarray(0, dtype=jnp.int32)),
+            None,
+            length=nz,
+        )
         surf = rhor[nz - 1] * vtr[nz - 1] * qsol[nz - 1]  # bottom (surface) flux
         return jnp.maximum(qsol, 0.0), surf
 
@@ -1715,14 +1721,18 @@ def _fill_down(vt, active):
     act_t = jnp.moveaxis(active, -1, 0)
     nz = vt_t.shape[0]
 
-    def body(carry, k):
-        prev = carry  # fall speed of the layer above (higher index), already filled
-        kk = nz - 1 - k  # iterate top (nz-1) -> bottom (0)
+    def body(carry, _):
+        prev, kk = carry  # fall speed of the layer above (higher index), already filled
         cur = jnp.where(act_t[kk], vt_t[kk], prev)
-        return cur, cur
+        return (cur, kk - jnp.asarray(1, dtype=jnp.int32)), cur
 
     init = jnp.zeros(vt_t.shape[1:], dtype=vt_t.dtype)
-    _, filled_rev = jax.lax.scan(body, init, jnp.arange(nz))
+    (_, _), filled_rev = jax.lax.scan(
+        body,
+        (init, jnp.asarray(nz - 1, dtype=jnp.int32)),
+        None,
+        length=nz,
+    )
     # filled_rev[k] corresponds to physical level nz-1-k; reverse to level order.
     filled = filled_rev[::-1]
     return jnp.moveaxis(filled, 0, -1)
@@ -1816,10 +1826,10 @@ def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt, nstep):
     dt_sub_col = dt_sub[..., None]
     surf_thresh = jnp.asarray(RR_SURF_THRESHOLD, acc_dtype)
 
-    def body(carry, n):
-        q_c, num_c, ppt_c = carry
+    def body(carry, _):
+        q_c, num_c, ppt_c, n = carry
         # column-level mask: this substep is real only while n < nstep_col.
-        live = (n < nstep).astype(acc_dtype)             # (...,)
+        live = (n.astype(acc_dtype) < nstep).astype(acc_dtype)  # (...,)
         live_col = live[..., None]
         rq = jnp.maximum(q_c * rho, 0.0)
         rn = jnp.maximum(num_c * rho, 0.0)
@@ -1846,11 +1856,12 @@ def _sed_one_species(q, num, vt_mass, vt_num, dz, rho, dt, nstep):
         rr_surf_updated = jnp.maximum(q_c[..., 0] * rho[..., 0], 0.0)
         gate = (live > 0) & (rr_surf_updated > surf_thresh)
         surf = jnp.where(gate, flux_q[..., 0] * dt_sub, 0.0)  # kg m^-2 == mm
-        return (q_c, num_c, ppt_c + surf), None
+        return (q_c, num_c, ppt_c + surf, n + jnp.asarray(1, dtype=jnp.int32)), None
 
     zero_ppt = jnp.zeros(q.shape[:-1], dtype=acc_dtype)
-    (q_out, num_out, ppt), _ = jax.lax.scan(
-        body, (q0, num0, zero_ppt), jnp.arange(NSED_MAX, dtype=acc_dtype),
+    (q_out, num_out, ppt, _), _ = jax.lax.scan(
+        body, (q0, num0, zero_ppt, jnp.asarray(0, dtype=jnp.int32)), None,
+        length=NSED_MAX,
         unroll=_sed_unroll(),
     )
     return q_out.astype(q_dt), num_out.astype(num_dt), ppt
