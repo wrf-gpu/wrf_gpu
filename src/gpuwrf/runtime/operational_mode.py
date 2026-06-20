@@ -4505,8 +4505,19 @@ def compute_m9_diagnostics(
     )
 
 
-@partial(jax.jit, static_argnames=("n_steps", "cadence"))
-def _advance_chunk(
+def _advance_chunk_loop_mode() -> str:
+    """Select the compiled loop lowering for `_advance_chunk`.
+
+    Default is the traced-count fori_loop path.  The static scan path is kept as
+    an opt-in diagnostic because it was proven to make tiny all-7 leaf domains
+    pathologically slow.
+    """
+
+    return os.environ.get("GPUWRF_ADVANCE_CHUNK_LOOP", "fori").strip().lower()
+
+
+@jax.jit
+def _advance_chunk_fori(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
     start_step,
@@ -4514,16 +4525,50 @@ def _advance_chunk(
     n_steps: int,
     cadence: int,
 ) -> OperationalCarry:
-    """Advance one output interval as a SINGLE compiled scan (no diagnostics).
+    """Advance one output interval as a SINGLE compiled loop (no diagnostics).
 
     Radiation is gated by the traced ``step_index %% cadence == 0`` predicate via
     ``_physics_boundary_step``'s cond path, so this is byte-identical to the
-    production per-step cadence.  ``start_step`` is TRACED (only ``n_steps``/
-    ``cadence`` static) so equal-length intervals reuse the SAME compiled executable
-    -- one compile for the whole forecast, not one per interval.  Kept SEPARATE from
-    the diagnostics call so the dynamics scratch is freed before the large RRTMG
-    diagnostic transient is allocated (peak-memory bound, Task 2 OOM fix).
+    production per-step cadence.  ``start_step``, ``n_steps``, and the explicit
+    ``cadence`` argument are TRACED scalars, so interval-length/cadence variation at
+    the caller does not mint a new XLA cache key.  Kept SEPARATE from the diagnostics
+    call so the dynamics scratch is freed before the large RRTMG diagnostic transient
+    is allocated (peak-memory bound, Task 2 OOM fix).
     """
+    run_physics = bool(namelist.run_physics)
+    start_step = jnp.asarray(start_step, dtype=jnp.int32)
+    n_steps = jnp.asarray(n_steps, dtype=jnp.int32)
+    cadence = jnp.asarray(cadence, dtype=jnp.int32)
+
+    def body(offset, scan_carry: OperationalCarry):
+        step_index = start_step + offset
+        if run_physics:
+            run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+        else:
+            run_radiation = False
+        return _physics_boundary_step(
+            scan_carry, namelist, step_index, run_radiation=run_radiation, debug=False
+        )
+
+    return jax.lax.fori_loop(
+        jnp.asarray(0, dtype=jnp.int32),
+        n_steps,
+        body,
+        carry,
+    )
+
+
+@partial(jax.jit, static_argnames=("n_steps", "cadence"))
+def _advance_chunk_static_scan(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    start_step,
+    *,
+    n_steps: int,
+    cadence: int,
+) -> OperationalCarry:
+    """Opt-in static-scan lowering retained for diagnostics/repro only."""
+
     run_physics = bool(namelist.run_physics)
     start_step = jnp.asarray(start_step, dtype=jnp.int32)
     indices = start_step + jnp.arange(int(n_steps), dtype=jnp.int32)
@@ -4540,6 +4585,29 @@ def _advance_chunk(
 
     carry, _ = jax.lax.scan(body, carry, indices)
     return carry
+
+
+def _advance_chunk(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    start_step,
+    *,
+    n_steps: int,
+    cadence: int,
+) -> OperationalCarry:
+    """Advance one output interval; default to the fast traced-count loop."""
+
+    mode = _advance_chunk_loop_mode()
+    if mode in {"scan", "static_scan", "static-scan"}:
+        return _advance_chunk_static_scan(
+            carry, namelist, start_step, n_steps=int(n_steps), cadence=int(cadence)
+        )
+    if mode not in {"", "fori", "fori_loop", "fori-loop"}:
+        raise ValueError(
+            "GPUWRF_ADVANCE_CHUNK_LOOP must be 'fori' (default) or 'static_scan'; "
+            f"got {mode!r}"
+        )
+    return _advance_chunk_fori(carry, namelist, start_step, n_steps=n_steps, cadence=cadence)
 
 
 @jax.jit

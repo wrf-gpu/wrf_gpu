@@ -327,11 +327,34 @@ def _load(run: Gen2Run, domain: str, var: str, time_index: int):
     return value
 
 
+def _load_wrfinput(run: Gen2Run, domain: str, var: str):
+    start = time.perf_counter()
+    _debug(f"load wrfinput start {domain}:{var}")
+    value = run.load_wrfinput(domain, var, lazy=False)
+    _debug(f"load wrfinput done {domain}:{var} {_shape_dtype(value)} elapsed_s={time.perf_counter() - start:.3f}")
+    return value
+
+
+def _load_initial(run: Gen2Run, domain: str, var: str, time_index: int, *, use_wrfinput: bool):
+    if use_wrfinput:
+        return _load_wrfinput(run, domain, var)
+    return _load(run, domain, var, time_index)
+
+
 def _optional_load(run: Gen2Run, domain: str, var: str, time: int, fallback):
     try:
         return _load(run, domain, var, time)
     except KeyError:
         _debug(f"optional load missing {domain}:{var}[{time}], using fallback {_shape_dtype(fallback)}")
+        return fallback
+
+
+def _optional_load_initial(run: Gen2Run, domain: str, var: str, time: int, fallback, *, use_wrfinput: bool):
+    try:
+        return _load_initial(run, domain, var, time, use_wrfinput=use_wrfinput)
+    except KeyError:
+        source = "wrfinput" if use_wrfinput else f"history[{time}]"
+        _debug(f"optional load missing {domain}:{var} from {source}, using fallback {_shape_dtype(fallback)}")
         return fallback
 
 
@@ -901,17 +924,29 @@ def _wrf_base_theta_from_loaded_state(
     namelist base-profile parameters.
     """
 
-    mass_h = metrics.c1h[:, None, None] * mub[None, :, :] + metrics.c2h[:, None, None]  # (nz, ny, nx)
-    dphb = phb[1:, :, :] - phb[:-1, :, :]  # (nz, ny, nx)
-    # Invert phb(k+1)-phb(k) = -dnw(k)*(c1h*mub+c2h)*alb(k) for the discrete alb.
-    denom = metrics.dnw[:, None, None] * mass_h
-    safe_denom = jnp.where(jnp.abs(denom) > 1.0e-12, denom, jnp.asarray(1.0e-12, dtype=denom.dtype))
-    alb = -dphb / safe_denom
+    alb = _wrf_base_alb_from_loaded_state(phb=phb, mub=mub, metrics=metrics)
     # Back out theta_base from alb = (R_d/p0)*theta_base*(pb/p0)**cvpm so the
     # dycore's _inverse_density_from_theta_pressure(theta_base, pb) reproduces it.
     p_ratio = (jnp.maximum(pb, jnp.asarray(1.0, dtype=pb.dtype)) / _EOS_P0_PA) ** _EOS_CVPM
     theta_base = alb * (_EOS_P0_PA / _EOS_R_D) / p_ratio
     return theta_base
+
+
+def _wrf_base_alb_from_loaded_state(
+    *,
+    phb: jax.Array,
+    mub: jax.Array,
+    metrics: DycoreMetrics,
+) -> jax.Array:
+    """Invert WRF's discrete base hydrostatic relation for ``alb``."""
+
+    mass_h = metrics.c1h[:, None, None] * mub[None, :, :] + metrics.c2h[:, None, None]
+    dphb = phb[1:, :, :] - phb[:-1, :, :]
+    denom = metrics.dnw[:, None, None] * mass_h
+    safe_denom = jnp.where(
+        jnp.abs(denom) > 1.0e-12, denom, jnp.asarray(1.0e-12, dtype=denom.dtype)
+    )
+    return -dphb / safe_denom
 
 
 def _namelist_int_any(run: Gen2Run, key: str, default: int, *, domain: str | None = None) -> int:
@@ -985,6 +1020,47 @@ def _wrf_blend_terrain_host(
             ):
                 out[..., jj, ii] = parent[..., jj, ii]
     return out
+
+
+def _sint_to_child_reference_stack(
+    coarse: np.ndarray,
+    *,
+    ratio: int,
+    i_parent_start: int,
+    j_parent_start: int,
+    child_ny: int,
+    child_nx: int,
+    dtype: type = np.float32,
+) -> np.ndarray:
+    """Apply WRF SINT to every leading-level slab of a 2-D/3-D base field."""
+
+    arr = np.asarray(coarse, dtype=dtype)
+    if arr.ndim == 2:
+        return sint_to_child_reference(
+            arr,
+            ratio=ratio,
+            i_parent_start=i_parent_start,
+            j_parent_start=j_parent_start,
+            child_ny=child_ny,
+            child_nx=child_nx,
+            dtype=dtype,
+        )
+    if arr.ndim < 2:
+        raise ValueError(f"SINT stack interpolation expects >=2D field, got shape {arr.shape}")
+    leading = arr.shape[:-2]
+    flat = arr.reshape((-1, arr.shape[-2], arr.shape[-1]))
+    out = np.empty((flat.shape[0], int(child_ny), int(child_nx)), dtype=dtype)
+    for idx, slab in enumerate(flat):
+        out[idx] = sint_to_child_reference(
+            slab,
+            ratio=ratio,
+            i_parent_start=i_parent_start,
+            j_parent_start=j_parent_start,
+            child_ny=child_ny,
+            child_nx=child_nx,
+            dtype=dtype,
+        )
+    return out.reshape(leading + (int(child_ny), int(child_nx)))
 
 
 def _metrics_with_terrain(
@@ -1098,6 +1174,8 @@ def _apply_live_nest_base_init(
     grid: GridSpec,
     metrics: DycoreMetrics,
     parent_case: ReplayCase,
+    child_mub: Any,
+    child_phb: Any,
 ) -> tuple[GridSpec, DycoreMetrics, jax.Array, jax.Array, jax.Array, dict[str, Any]]:
     """Apply WRF live-nest terrain/base initialization before timestep ownership."""
 
@@ -1147,6 +1225,45 @@ def _apply_live_nest_base_init(
         grid=grid,
         provenance_suffix=f"live_nest_base_init:{expected_parent}->{domain}:sint_tr4_blend_terrain",
     )
+
+    parent_mub_on_child = _sint_to_child_reference_stack(
+        np.asarray(jax.device_get(parent_case.base_state.mub), dtype=np.float32),
+        ratio=ratio,
+        i_parent_start=int(child_meta.i_parent_start),
+        j_parent_start=int(child_meta.j_parent_start),
+        child_ny=int(grid.ny),
+        child_nx=int(grid.nx),
+        dtype=np.float32,
+    )
+    parent_phb_on_child = _sint_to_child_reference_stack(
+        np.asarray(jax.device_get(parent_case.base_state.phb), dtype=np.float32),
+        ratio=ratio,
+        i_parent_start=int(child_meta.i_parent_start),
+        j_parent_start=int(child_meta.j_parent_start),
+        child_ny=int(grid.ny),
+        child_nx=int(grid.nx),
+        dtype=np.float32,
+    )
+    if not np.isfinite(parent_mub_on_child).all() or not np.isfinite(parent_phb_on_child).all():
+        raise ValueError(
+            f"{domain}: live-nest SINT base-state interpolation produced non-finite values"
+        )
+    blended_mub_np = _wrf_blend_terrain_host(
+        parent_mub_on_child,
+        np.asarray(jax.device_get(child_mub), dtype=np.float32),
+        spec_bdy_width=spec_bdy_width,
+        blend_width=blend_width,
+    )
+    blended_phb_np = _wrf_blend_terrain_host(
+        parent_phb_on_child,
+        np.asarray(jax.device_get(child_phb), dtype=np.float32),
+        spec_bdy_width=spec_bdy_width,
+        blend_width=blend_width,
+    )
+    # WRF does blend MUB/PHB here, but for this real multi-domain branch
+    # start_domain(nest,.TRUE.) immediately rebuilds final MUB/PB/PHB from blended
+    # HT (start_em.F:600-638). The blended MUB is still the transient field consumed
+    # by adjust_tempqv; _wrf_live_nest_transient_adjust_mub mirrors that path below.
     pb, mub, phb, _t_init, _alb = _wrf_start_domain_base_from_hgt(
         run,
         domain,
@@ -1162,7 +1279,11 @@ def _apply_live_nest_base_init(
     grid = dataclass_replace(grid, terrain=terrain, terrain_height=blended_hgt, metrics=metrics)
     meta = {
         "enabled": True,
-        "source": "native live-nest parent SINT/TR4 terrain interpolation + WRF blend_terrain + start_domain_em base recompute",
+        "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+        "base_state_source": (
+            "HT/MUB/PHB are independently blended like med_nest_initial; final "
+            "PB/MUB/PHB are WRF start_domain_em recompute from blended HT"
+        ),
         "parent_domain": expected_parent,
         "child_domain": domain,
         "parent_grid_ratio": ratio,
@@ -1174,6 +1295,8 @@ def _apply_live_nest_base_init(
         "production_inputs": ["parent native initialized terrain", f"wrfinput_{domain}", "namelist.input"],
         "cpu_wrfout_dependency": False,
         "timestep_loop_transfer": False,
+        "pre_start_blended_mub_max_pa": float(np.nanmax(blended_mub_np)),
+        "pre_start_blended_phb_max_m2_s2": float(np.nanmax(blended_phb_np)),
         "note": (
             "The host SINT reference runs before OperationalCarry creation. The forecast "
             "loop remains device-resident; no CPU-WRF history file is read."
@@ -1423,6 +1546,9 @@ def _wrf_live_nest_start_domain_perturb_init(
     u: Any,
     v: Any,
     ht_fine: Any,
+    base_pb: Any | None = None,
+    base_mub: Any | None = None,
+    base_phb: Any | None = None,
 ) -> tuple[jax.Array, jax.Array, jax.Array, dict[str, Any]]:
     """WRF live-nest ``start_domain_em`` perturbation-state initialization.
 
@@ -1452,12 +1578,18 @@ def _wrf_live_nest_start_domain_perturb_init(
     """
 
     m = _WRF_INIT_LIBM32
-    pb64, mub64, phb64, _t_init64, alb64 = _wrf_start_domain_base_from_hgt(
-        run,
-        domain,
-        hgt=grid.terrain_height,
-        metrics=metrics,
-    )
+    if base_pb is None or base_mub is None or base_phb is None:
+        pb64, mub64, phb64, _t_init64, alb64 = _wrf_start_domain_base_from_hgt(
+            run,
+            domain,
+            hgt=grid.terrain_height,
+            metrics=metrics,
+        )
+    else:
+        pb64 = jnp.asarray(base_pb)
+        mub64 = jnp.asarray(base_mub)
+        phb64 = jnp.asarray(base_phb)
+        alb64 = _wrf_base_alb_from_loaded_state(phb=phb64, mub=mub64, metrics=metrics)
     pb = np.asarray(jax.device_get(pb64), dtype=np.float32)
     mub = np.asarray(jax.device_get(mub64), dtype=np.float32)
     phb = np.asarray(jax.device_get(phb64), dtype=np.float32)
@@ -1894,47 +2026,19 @@ def build_replay_case(
 
     ``live_nest_parent`` enables the WRF live-nest source initialization for a
     child: parent terrain is interpolated with the WRF ``sint`` host reference,
-    blended with child terrain, and PB/MUB/PHB are recomputed before the
-    ``State`` is handed to the device-resident timestep loop.  CPU-WRF history
+    HT/MUB/PHB go through the WRF ``blend_terrain`` pre-start path, and the final
+    real-run base state is rebuilt by ``start_domain`` from blended HT before the
+    ``State`` is handed to the device-resident timestep loop. CPU-WRF history
     output is not read; the parent case must already be loaded from native inputs.
     """
 
     _debug(f"build_replay_case start run_dir={run_dir} domain={domain} boundary_domain={boundary_domain}")
     run = Gen2Run(run_dir)
     _debug("Gen2Run created")
-    grid = run.grid(domain).as_grid_spec()
-    _debug(f"grid loaded mass_shape={(grid.nz, grid.ny, grid.nx)}")
-    # Keep GridSpec.metrics and the runtime namelist metrics on the same loaded
-    # WRF payload. GridSpec.__post_init__ fills metrics=None with DycoreMetrics.flat;
-    # leaving that fallback in place made wrfout static metrics emit flat C/DN/map
-    # fields even though dynamics consumed the loaded WRF metrics below.
-    metrics_source = run.history_files(domain)[0]
-    metrics = load_wrfinput_metrics(metrics_source)
-    grid = dataclass_replace(grid, metrics=metrics)
-    _debug(f"load_wrfinput_metrics complete (source={metrics_source})")
-    state = State.zeros(grid)
-    _debug("State.zeros complete")
-    tendencies = Tendencies.zeros(grid)
-    _debug("Tendencies.zeros complete")
-    # B4 loader-consistency fix: the prognostic state (PH/PHB) and the GridSpec
-    # terrain are both built from the t=0 ``wrfout_<domain>`` snapshot, whose
-    # surface geopotential PHB[0]/g matches that file's HGT to fp32 round-off.
-    # The ``wrfinput_<domain>`` HGT differs from the wrfout HGT by up to ~228 m
-    # near the nest boundary (parent->nest terrain blending applied during
-    # init), so loading the dycore terrain slopes from wrfinput left the
-    # pressure-gradient terrain inconsistent with the base-state geopotential by
-    # the same amount -- a boundary-strip-dominant init error.  All map factors
-    # and hybrid-eta coefficients are bitwise-identical between the two files;
-    # only HGT differs, so sourcing the metrics from the same wrfout snapshot
-    # makes the terrain slopes consistent with PHB without changing any other
-    # metric.  See proofs/b4/static_field_parity.json and metrics_consistency.json.
-    land = load_prescribed_land_state(run, domain=domain, time=0)
-    _debug("load_prescribed_land_state complete")
-    # Auto-detect the standalone native-init path: fewer than two CPU-WRF
-    # ``wrfout_<domain>`` history files means there is no replay history, so the
-    # lateral forcing must come from ``wrfbdy_<domain>`` (the genuine fresh-case
-    # path). ``history_files`` falls back to ``[wrfinput_<domain>]`` when no
-    # wrfout exists, so the IC reads below still resolve to wrfinput.
+    # Auto-detect the standalone native-init path before any grid/IC payload is
+    # loaded.  The canonical CPU reference directory contains complete wrfout
+    # histories; a live-nested GPU ship run must still initialize from the sibling
+    # wrfinput files, not from those CPU history snapshots.
     wrfout_history_count = len(sorted(run.path.glob(f"wrfout_{domain}_*")))
     is_standalone = bool(standalone) if standalone is not None else (wrfout_history_count < 2)
     # A live-nested child reads NO lateral forcing from disk: force the standalone
@@ -1942,6 +2046,37 @@ def build_replay_case(
     # parent overwrites them each parent step via build_child_boundary_package.
     if not load_lateral_boundaries:
         is_standalone = True
+    grid = run.grid(domain).as_grid_spec()
+    _debug(f"grid loaded mass_shape={(grid.nz, grid.ny, grid.nx)}")
+    # Keep GridSpec.metrics and the runtime namelist metrics on the same loaded
+    # WRF payload. GridSpec.__post_init__ fills metrics=None with DycoreMetrics.flat;
+    # leaving that fallback in place made wrfout static metrics emit flat C/DN/map
+    # fields even though dynamics consumed the loaded WRF metrics below.
+    metrics_source = run.wrfinput_file(domain) if is_standalone else run.history_files(domain)[0]
+    metrics = load_wrfinput_metrics(metrics_source)
+    grid = dataclass_replace(grid, metrics=metrics)
+    _debug(f"load_wrfinput_metrics complete (source={metrics_source})")
+    if is_standalone:
+        wrfinput_hgt = jnp.asarray(_load_wrfinput(run, domain, "HGT"), dtype=grid.terrain_height.dtype)
+        terrain = dataclass_replace(
+            grid.terrain,
+            source_path=str(run.wrfinput_file(domain)),
+            max_elevation_m=float(np.nanmax(np.asarray(jax.device_get(wrfinput_hgt)))),
+        )
+        grid = dataclass_replace(grid, terrain=terrain, terrain_height=wrfinput_hgt, metrics=metrics)
+        _debug(f"standalone grid static HGT sourced from wrfinput_{domain}")
+    state = State.zeros(grid)
+    _debug("State.zeros complete")
+    tendencies = Tendencies.zeros(grid)
+    _debug("Tendencies.zeros complete")
+    # Replay mode intentionally keeps the B4 snapshot-consistency invariant:
+    # prognostic PH/PHB and GridSpec terrain both come from the same t=0 wrfout.
+    # Standalone/live-nest mode is different by construction: WRF first reads the
+    # child wrfinput, then med_nest_initial blends parent-interpolated fields into
+    # that input payload. In that mode the grid and IC loads above are forced to
+    # wrfinput before the live-nest blend is applied.
+    land = load_prescribed_land_state(run, domain=domain, time=0)
+    _debug("load_prescribed_land_state complete")
     source_domain = boundary_domain or domain
     boundary_leaves: dict[str, Any] | None = None
     boundary_meta: dict[str, Any] | None = None
@@ -1971,17 +2106,17 @@ def build_replay_case(
         )
         _debug("load_nested_parent_boundary_leaves complete")
 
-    p_perturbation = _load(run, domain, "P", 0)
-    pb = _load(run, domain, "PB", 0)
-    ph_perturbation = _load(run, domain, "PH", 0)
-    phb = _load(run, domain, "PHB", 0)
-    mu_perturbation = _load(run, domain, "MU", 0)
-    mub = _load(run, domain, "MUB", 0)
-    theta = _load(run, domain, "T", 0) + P0_THETA_OFFSET_K
-    qv_initial = _load(run, domain, "QVAPOR", 0)
-    u_initial = _load(run, domain, "U", 0)
-    v_initial = _load(run, domain, "V", 0)
-    w_initial = _load(run, domain, "W", 0)
+    p_perturbation = _load_initial(run, domain, "P", 0, use_wrfinput=is_standalone)
+    pb = _load_initial(run, domain, "PB", 0, use_wrfinput=is_standalone)
+    ph_perturbation = _load_initial(run, domain, "PH", 0, use_wrfinput=is_standalone)
+    phb = _load_initial(run, domain, "PHB", 0, use_wrfinput=is_standalone)
+    mu_perturbation = _load_initial(run, domain, "MU", 0, use_wrfinput=is_standalone)
+    mub = _load_initial(run, domain, "MUB", 0, use_wrfinput=is_standalone)
+    theta = _load_initial(run, domain, "T", 0, use_wrfinput=is_standalone) + P0_THETA_OFFSET_K
+    qv_initial = _load_initial(run, domain, "QVAPOR", 0, use_wrfinput=is_standalone)
+    u_initial = _load_initial(run, domain, "U", 0, use_wrfinput=is_standalone)
+    v_initial = _load_initial(run, domain, "V", 0, use_wrfinput=is_standalone)
+    w_initial = _load_initial(run, domain, "W", 0, use_wrfinput=is_standalone)
     live_nest_base_meta: dict[str, Any] = {"enabled": False}
     if live_nest_parent is not None:
         # ``nest%mub_save`` is the pre-blend child input column mass; capture it
@@ -1997,6 +2132,8 @@ def build_replay_case(
             grid=grid,
             metrics=metrics,
             parent_case=live_nest_parent,
+            child_mub=child_input_mub,
+            child_phb=phb,
         )
         _debug(f"live-nest base init complete parent={live_nest_base_meta.get('parent_domain')} child={domain}")
         # WRF ``med_nest_initial`` adjusts the child temperature/moisture to the
@@ -2039,6 +2176,9 @@ def build_replay_case(
                 u=u_initial,
                 v=v_initial,
                 ht_fine=child_input_terrain,
+                base_pb=pb,
+                base_mub=mub,
+                base_phb=phb,
             )
         )
         live_nest_base_meta = {
@@ -2104,16 +2244,16 @@ def build_replay_case(
         ph_perturbation=ph_perturbation,
         mu_total=mub + mu_perturbation,
         mu_perturbation=mu_perturbation,
-        qc=_optional_load(run, domain, "QCLOUD", 0, jnp.zeros_like(state.qc)),
-        qr=_optional_load(run, domain, "QRAIN", 0, jnp.zeros_like(state.qr)),
-        qi=_optional_load(run, domain, "QICE", 0, jnp.zeros_like(state.qi)),
-        qs=_optional_load(run, domain, "QSNOW", 0, jnp.zeros_like(state.qs)),
-        qg=_optional_load(run, domain, "QGRAUP", 0, jnp.zeros_like(state.qg)),
-        Ni=_optional_load(run, domain, "QNICE", 0, jnp.zeros_like(state.Ni)),
-        Nr=_optional_load(run, domain, "QNRAIN", 0, jnp.zeros_like(state.Nr)),
+        qc=_optional_load_initial(run, domain, "QCLOUD", 0, jnp.zeros_like(state.qc), use_wrfinput=is_standalone),
+        qr=_optional_load_initial(run, domain, "QRAIN", 0, jnp.zeros_like(state.qr), use_wrfinput=is_standalone),
+        qi=_optional_load_initial(run, domain, "QICE", 0, jnp.zeros_like(state.qi), use_wrfinput=is_standalone),
+        qs=_optional_load_initial(run, domain, "QSNOW", 0, jnp.zeros_like(state.qs), use_wrfinput=is_standalone),
+        qg=_optional_load_initial(run, domain, "QGRAUP", 0, jnp.zeros_like(state.qg), use_wrfinput=is_standalone),
+        Ni=_optional_load_initial(run, domain, "QNICE", 0, jnp.zeros_like(state.Ni), use_wrfinput=is_standalone),
+        Nr=_optional_load_initial(run, domain, "QNRAIN", 0, jnp.zeros_like(state.Nr), use_wrfinput=is_standalone),
         Ns=jnp.zeros_like(state.Ns),
         Ng=jnp.zeros_like(state.Ng),
-        qke=_optional_load(run, domain, "QKE", 0, jnp.zeros_like(state.qke)),
+        qke=_optional_load_initial(run, domain, "QKE", 0, jnp.zeros_like(state.qke), use_wrfinput=is_standalone),
         t_skin=land.t_skin,
         soil_moisture=land.soil_moisture[0],
         xland=land.xland,
@@ -2159,6 +2299,12 @@ def build_replay_case(
         "domain": domain,
         "run_start_label": start_label,
         "standalone_native_init": bool(is_standalone),
+        "initial_condition_source": (
+            f"wrfinput_{domain}" if is_standalone else "wrfout history snapshot at t=0"
+        ),
+        "static_grid_source": (
+            f"wrfinput_{domain}" if is_standalone else "wrfout history snapshot at t=0"
+        ),
         "grid": {
             "mass_shape": [int(grid.nz), int(grid.ny), int(grid.nx)],
             "wrf_staggered_extent": [int(grid.nz + 1), int(grid.ny + 1), int(grid.nx + 1)],
@@ -2213,7 +2359,7 @@ def build_l2_d02_replay_case(run_dir: str | Path, *, domain: str = "d02", parent
         "parent_domain": parent_domain,
         "expected_mass_shape_yx": list(EXPECTED_L2_D02_MASS_SHAPE_YX),
         "actual_mass_shape_yx": list(actual_yx),
-        "ic_source": "wrfout snapshot at t=0 plus wrfinput metrics/land state",
+        "ic_source": metadata.get("initial_condition_source", "wrfout history snapshot at t=0"),
         "boundary_source": "parent d01 hourly wrfout interpolated to child d02 side strips",
     }
     return ReplayCase(
