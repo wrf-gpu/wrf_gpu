@@ -20,7 +20,7 @@ USAGE
     XLA_PYTHON_CLIENT_PREALLOCATE=false OMP_NUM_THREADS=4 taskset -c 0-3 \
     python proofs/perf/win2_dynamic_clock_equiv.py \
       --run-id 20260521_18z_l3_24h_20260522T133443Z \
-      --run-root /mnt/data/canairy_meteo/runs/wrf_l3 --hours 1 --segment-steps 60
+      --run-root <DATA_ROOT>/canairy_meteo/runs/wrf_l3 --hours 1 --segment-steps 60
 """
 from __future__ import annotations
 

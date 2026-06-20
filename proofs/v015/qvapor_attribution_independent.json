@@ -1,7 +1,7 @@
 {
   "purpose": "independent verification of Canary QVAPOR attribution (all_green_fixes Miss 2)",
-  "cpu_truth": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
-  "gpu_run": "/mnt/data/wrf_gpu_validation/v015_canary_d02_72h_allgreen/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+  "cpu_truth": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+  "gpu_run": "<DATA_ROOT>/wrf_gpu_validation/v015_canary_d02_72h_allgreen/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
   "frame_dropped": 5,
   "A_surface_flux_check": [
     {

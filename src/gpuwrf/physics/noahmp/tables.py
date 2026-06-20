@@ -337,7 +337,7 @@ def load_noahmp_parameters(
     ----------
     table_dir
         Directory holding ``MPTABLE.TBL`` / ``SOILPARM.TBL`` / ``GENPARM.TBL``
-        (e.g. ``/home/user/src/wrf_pristine/WRF/run``).
+        (e.g. ``<USER_HOME>/src/wrf_pristine/WRF/run``).
     scope_options
         Frozen iopt map recorded into the restart (ADR §5). Defaults to the
         Canary active set; a non-default map raises if it selects a CUT option

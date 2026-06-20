@@ -5,7 +5,7 @@ not depend on a helper under `/tmp`; those disappear and were the source of the
 failed launch attempt on 2026-06-08.
 
 > **Paths in this runbook are the maintainer's reference layout.** Concrete
-> `/mnt/data/...` directories (run roots, the Canary CPU-WRF truth, the AEMET
+> `<DATA_ROOT>/...` directories (run roots, the Canary CPU-WRF truth, the AEMET
 > station dataset) are the paths on the reference workstation. **Substitute your
 > own** writable run root and your own case/truth directories — every command
 > here takes the paths as explicit arguments or honours an environment override
@@ -30,7 +30,7 @@ With resource logging:
 
 ```bash
 scripts/run_gpu_lowprio.sh --cores 0-23 \
-  --resource-log-dir /mnt/data/wrf_gpu_validation/my_run/resources \
+  --resource-log-dir <DATA_ROOT>/wrf_gpu_validation/my_run/resources \
   --resource-label my_run \
   --resource-interval 5 \
   -- \
@@ -75,20 +75,20 @@ scripts/run_powered_tost_n15.sh --detach --resume
 
 Default detached artifacts:
 
-- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.log`
-- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.rc`
-- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.runinfo`
-- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_gpu_usage.csv`
-- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_process_usage.csv`
-- `/mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_system_memory.csv`
+- `<DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current.log`
+- `<DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current.rc`
+- `<DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current.runinfo`
+- `<DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_gpu_usage.csv`
+- `<DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_process_usage.csv`
+- `<DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_system_memory.csv`
 
 Monitor:
 
 ```bash
-tail -f /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.log
-cat /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.runinfo
-cat /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current.rc
-tail -f /mnt/data/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_gpu_usage.csv
+tail -f <DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current.log
+cat <DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current.runinfo
+cat <DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current.rc
+tail -f <DATA_ROOT>/wrf_gpu_validation/v0130_marathon/n15_current_resources/n15_current_gpu_usage.csv
 nvidia-smi
 ps -eo pid,ppid,stat,etime,pcpu,pmem,args | rg 'run_powered_tost|run_one_case'
 ```
@@ -132,15 +132,15 @@ The mandatory Canary gate uses this existing CPU-WRF truth:
 
 - run id: `20260501_18z_l2_72h_20260519T173026Z`
 - CPU truth:
-  `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+  `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
 - retained inputs:
-  `/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z`
+  `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z`
 - domain: `d02`
 
 Short h1 Canary falsifier with resource CSVs:
 
 ```bash
-RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
+RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources}
 scripts/run_gpu_lowprio.sh --cores 0-23 \
   --resource-log-dir "$RUN_ROOT/resources" \
@@ -148,8 +148,8 @@ scripts/run_gpu_lowprio.sh --cores 0-23 \
   --resource-interval 5 \
   -- \
   python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
-    --run-root /mnt/data/canairy_meteo/runs/wrf_l2 \
-    --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+    --run-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2 \
+    --cpu-truth-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output \
     --run-id 20260501_18z_l2_72h_20260519T173026Z \
     --hours 1 \
     --output-root "$RUN_ROOT/gpu_output" \
@@ -160,7 +160,7 @@ Detached h1 Canary falsifier (recommended for manager/agent shells that may
 exit before the run finishes):
 
 ```bash
-RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
+RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources}
 cat > "$RUN_ROOT/runinfo.txt" <<EOF
 run_root=$RUN_ROOT
@@ -173,7 +173,7 @@ status=launched
 EOF
 nohup setsid bash -lc '
   set +e
-  cd /home/user/src/wrf_gpu2
+  cd <USER_HOME>/src/wrf_gpu2
   RUN_ROOT="'"$RUN_ROOT"'"
   scripts/run_gpu_lowprio.sh --cores 0-23 \
     --resource-log-dir "$RUN_ROOT/resources" \
@@ -181,8 +181,8 @@ nohup setsid bash -lc '
     --resource-interval 5 \
     -- \
     python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
-      --run-root /mnt/data/canairy_meteo/runs/wrf_l2 \
-      --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+      --run-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2 \
+      --cpu-truth-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output \
       --run-id 20260501_18z_l2_72h_20260519T173026Z \
       --hours 1 \
       --output-root "$RUN_ROOT/gpu_output" \
@@ -205,7 +205,7 @@ Compare the h1 output:
 ```bash
 JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
   python scripts/compare_wrfout_grid.py \
-    --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z \
+    --cpu-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z \
     --gpu-dir "$RUN_ROOT/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z" \
     --domain d02 \
     --init 2026-05-01T18:00:00+00:00 \
@@ -215,13 +215,13 @@ JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
 ```
 
 If the h1 falsifier is classified as launch-safe, run the full Canary 72 h gate
-with an immutable detached run root under `/mnt/data/wrf_gpu_validation/`.
+with an immutable detached run root under `<DATA_ROOT>/wrf_gpu_validation/`.
 This is the exact v0.14 Canary d02 release-gate command shape:
 
 ```bash
-RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_$(date -u +%Y%m%dT%H%M%SZ)
+RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_$(date -u +%Y%m%dT%H%M%SZ)
 RUN_ID=20260501_18z_l2_72h_20260519T173026Z
-CPU_DIR=/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/$RUN_ID
+CPU_DIR=<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/$RUN_ID
 GPU_DIR="$RUN_ROOT/gpu_output/l2_d02_$RUN_ID"
 mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources,grid_delta_atlas,grid_delta_atlas_assets}
 cat > "$RUN_ROOT/runinfo.txt" <<EOF
@@ -232,16 +232,16 @@ head=$(git rev-parse HEAD)
 kind=v014_canary_d02_72h_field_parity_gate
 run_id=$RUN_ID
 cpu_truth=$CPU_DIR
-input_root=/mnt/data/canairy_meteo/runs/wrf_l2
+input_root=<DATA_ROOT>/canairy_meteo/runs/wrf_l2
 launch=nohup setsid
 status=launched
 EOF
 nohup setsid bash -lc '
   set +e
-  cd /home/user/src/wrf_gpu2
+  cd <USER_HOME>/src/wrf_gpu2
   RUN_ROOT="'"$RUN_ROOT"'"
   RUN_ID="'"$RUN_ID"'"
-  CPU_DIR=/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/$RUN_ID
+  CPU_DIR=<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/$RUN_ID
   GPU_DIR="$RUN_ROOT/gpu_output/l2_d02_$RUN_ID"
   scripts/run_gpu_lowprio.sh --cores 0-23 \
     --resource-log-dir "$RUN_ROOT/resources" \
@@ -249,8 +249,8 @@ nohup setsid bash -lc '
     --resource-interval 5 \
     -- \
     python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
-      --run-root /mnt/data/canairy_meteo/runs/wrf_l2 \
-      --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+      --run-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2 \
+      --cpu-truth-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output \
       --run-id "$RUN_ID" \
       --hours 72 \
       --output-root "$RUN_ROOT/gpu_output" \
@@ -301,7 +301,7 @@ echo "$RUN_ROOT"
 Monitor the detached Canary gate:
 
 ```bash
-RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_<timestamp>
+RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_<timestamp>
 cat "$RUN_ROOT"/canary_d02_72h_*.rc 2>/dev/null || true
 cat "$RUN_ROOT/runinfo.txt"
 find "$RUN_ROOT/gpu_output" -type f -name 'wrfout_d0*' | wc -l
@@ -316,7 +316,7 @@ job. After the Switzerland case builder has populated `wrfinput_d01`,
 with the monitor directly around the launched WRF process:
 
 ```bash
-OUT=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_$(date -u +%Y%m%dT%H%M%SZ)
+OUT=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_$(date -u +%Y%m%dT%H%M%SZ)
 CPU_DIR=$OUT/run_cpu
 mkdir -p "$OUT/resources"
 # Launch the CPU-WRF wrapper in the background, then monitor its PID tree.
@@ -344,8 +344,8 @@ Matched Switzerland/Gotthard 72 h GPU gate after the CPU truth above is
 available and the GPU lock is free:
 
 ```bash
-RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_$(date -u +%Y%m%dT%H%M%SZ)
-CPU_DIR=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
+RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_$(date -u +%Y%m%dT%H%M%SZ)
+CPU_DIR=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
 GPU_OUT="$RUN_ROOT/gpu_output"
 SCRATCH="$RUN_ROOT/scratch"
 mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources,grid_delta_atlas,grid_delta_atlas_assets,scratch}
@@ -362,7 +362,7 @@ status=launched
 EOF
 nohup setsid bash -lc '
   set +e
-  cd /home/user/src/wrf_gpu2
+  cd <USER_HOME>/src/wrf_gpu2
   RUN_ROOT="'"$RUN_ROOT"'"
   CPU_DIR="'"$CPU_DIR"'"
   GPU_OUT="$RUN_ROOT/gpu_output"
@@ -436,7 +436,7 @@ Use the TOST-fixed live-nested per-case runner for short debug smokes:
 scripts/run_gpu_lowprio.sh --cores 0-23 -- \
   python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
     --run-root /tmp/v0120_merged_run_root \
-    --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+    --cpu-truth-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output \
     --run-id 20260501_18z_l2_72h_20260519T173026Z \
     --hours 1 \
     --output-root /tmp/v014_post_static_writer_smoke \
@@ -448,7 +448,7 @@ Then compare the written d02 wrfout against CPU-WRF truth:
 ```bash
 JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src \
   python scripts/compare_wrfout_grid.py \
-    --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z \
+    --cpu-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z \
     --gpu-dir /tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z \
     --domain d02 \
     --min-lead 1 --max-lead 1 \

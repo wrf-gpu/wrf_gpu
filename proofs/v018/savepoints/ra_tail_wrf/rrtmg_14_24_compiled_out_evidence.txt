@@ -3,7 +3,7 @@
 # Two independent investigations (this RA worker + GPT schemes-worker handoff
 # /tmp/v018_rrtmg1424_handoff.md) + WRF source + compiled object sizes all agree.
 
-WRF_ROOT = /home/user/src/wrf_pristine/WRF
+WRF_ROOT = <USER_HOME>/src/wrf_pristine/WRF
 
 ## Registry integer mapping (Registry/Registry.EM_COMMON)
 ra_lw_physics==14 -> rrtmk_lwscheme        ra_sw_physics==14 -> rrtmk_swscheme

@@ -6,7 +6,7 @@ SCRATCH="${ROOT}/data/scratch"
 OUT="${SCRATCH}/wrf_mynn_harness"
 OBJ="${SCRATCH}/wrf_mynn_harness.o"
 LOG="${SCRATCH}/wrf_mynn_harness_build.log"
-WRF_ROOT="/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF"
+WRF_ROOT="<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF"
 WRF_MAIN="${WRF_ROOT}/main"
 WRF_EDMF_SRC="${WRF_ROOT}/phys/MYNN-EDMF/module_bl_mynnedmf.F90"
 WRF_EDMF_OBJ="${WRF_ROOT}/phys/module_bl_mynnedmf.o"
@@ -17,9 +17,9 @@ WRF_CONST_OBJ="${WRF_ROOT}/share/module_model_constants.o"
 mkdir -p "${SCRATCH}"
 : > "${LOG}"
 
-if [[ -f /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh ]]; then
+if [[ -f <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh ]]; then
   # shellcheck disable=SC1091
-  source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh >>"${LOG}" 2>&1 || true
+  source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh >>"${LOG}" 2>&1 || true
 fi
 
 FC="${FC:-$(command -v nvfortran || true)}"

@@ -14,7 +14,7 @@
   "dt_s": 10.0,
   "files": [
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d02_2026-05-08_18:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d02_2026-05-08_18:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,
@@ -79,7 +79,7 @@
       }
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_18:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_18:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,
@@ -144,7 +144,7 @@
       }
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_08:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_08:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,
@@ -209,7 +209,7 @@
       }
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_17:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_17:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,
@@ -274,7 +274,7 @@
       }
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_07:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_07:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,
@@ -339,7 +339,7 @@
       }
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d02_2026-05-08_20:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d02_2026-05-08_20:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,
@@ -404,7 +404,7 @@
       }
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_11:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_11:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,
@@ -469,7 +469,7 @@
       }
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_06:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_06:00:00",
       "species": {
         "graupel": {
           "all_column_max": 1.0,

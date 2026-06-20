@@ -17,7 +17,7 @@ from gpuwrf.init.projection import (
 )
 
 
-WPS_ROOT = Path(os.environ.get("GPUWRF_WPS_CASES_ROOT", "/mnt/data/canairy_meteo/runs/wps_cases"))
+WPS_ROOT = Path(os.environ.get("GPUWRF_WPS_CASES_ROOT", "<DATA_ROOT>/canairy_meteo/runs/wps_cases"))
 DOMAINS = ("d01", "d02", "d03")
 
 

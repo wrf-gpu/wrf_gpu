@@ -8,7 +8,7 @@ Two paths:
     (sedimentation + precip) against the frozen Phase-B savepoint schema
     (``mp_gt_driver_pre`` -> ``mp_gt_driver_post``).  The oracle path is the B1
     gate; it runs the instant the WRF-oracle factory populates
-    ``/mnt/data/wrf_gpu2/physics_oracle/microphysics/``.
+    ``<DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics/``.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ ARTIFACT = ROOT / "artifacts" / "m5" / "tier1_thompson_parity.json"
 OUTPUT_FIELDS = ("qv", "qc", "qr", "qi", "qs", "qg", "Ni", "Nr", "T")
 
 # --- Real WRF oracle harness (Phase-B B1 gate) ---------------------------------
-ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle/microphysics")
+ORACLE_DIR = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics")
 ORACLE_ARTIFACT = ROOT / "proofs" / "b1" / "oracle_parity.json"
 P0_PA = 100000.0
 RD_CP = 287.0 / 1004.0

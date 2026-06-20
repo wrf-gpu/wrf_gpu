@@ -44,7 +44,7 @@ SPRINT_CONTRACT = (
     ROOT
     / ".agent/sprints/2026-06-09-v014-step1-part1-physics-state-mutation/sprint-contract.md"
 )
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation")
 WRF_TRUTH = SCRATCH / "wrf_truth"
 WRF_BUILD_LOG = SCRATCH / "compile_step1_part1_physics_state_mutation.log"
 WRF_RUN_LOG = SCRATCH / "wrf_step1_part1_physics_state_mutation_stdout.log"
@@ -882,9 +882,9 @@ def main() -> int:
         "comparisons": comparisons,
         "commands": {
             "wrf_instrumentation": [
-                "cp -a --reflink=auto /mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF /mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF",
+                "cp -a --reflink=auto <DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF <DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF",
                 "tcsh ./compile em_real (scratch WRF, conda wrf-build toolchain)",
-                "WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION=1 WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION_ROOT=/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe",
+                "WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION=1 WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION_ROOT=<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe",
             ],
             "required_validation": [
                 "python -m py_compile proofs/v014/step1_part1_physics_state_mutation.py",

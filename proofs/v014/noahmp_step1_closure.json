@@ -146,10 +146,10 @@
     "domain": "d02",
     "init_note": "corpus wrfinput is the PRE-NOAHMP_INIT state; canopy/snow prognostic XY fields are 0 over land, so they are built via a faithful module_sf_noahmpdrv.F NOAHMP_INIT replica (TV/TG/TAH=TSK, EAH=2000, CANLIQ=CANWAT, SNOW_INIT for ZSNSO/ISNOW/TSNO). This is the SAME land carry WRF integrates from.",
     "n_land_cells": 768,
-    "run_dir": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3",
+    "run_dir": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3",
     "source": "warm-start from corpus wrfinput",
-    "table_dir": "/home/user/src/wrf_pristine/WRF/run",
-    "wrfinput_file": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02"
+    "table_dir": "<USER_HOME>/src/wrf_pristine/WRF/run",
+    "wrfinput_file": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02"
   },
   "noahmp_land_tile_energy_closure": "proofs/v014/noahmp_land_tile_energy_closure.{py,json,md} -- energy solve exonerated; moist-theta decoupling fix; RRTMG radiation lane isolated.",
   "post_overlay_mynn_boundary": {

@@ -1,7 +1,7 @@
 {
  "schema": "v014_switzerland_ustar_decisive",
  "generated_utc": "2026-06-11T23:32:28.739417+00:00",
- "cpu_reference": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+ "cpu_reference": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
  "depth": 8,
  "cpu_budget_h36_h37": {
   "dM_pa_per_cell_h": -69.33673469387755,
@@ -11,7 +11,7 @@
  "baseline_phys_tendf_excess_h37": -26.544642857142847,
  "variants": {
   "phys_tendf_baseline": {
-   "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
+   "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
    "budget_h37": {
     "dM_pa_per_cell_h": -119.01020408163265,
     "net_influx_pa_per_cell_h": -101.05982142857142,
@@ -104,7 +104,7 @@
    }
   },
   "ustar_x164": {
-   "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x164",
+   "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x164",
    "budget_h37": {
     "dM_pa_per_cell_h": -119.01020408163265,
     "net_influx_pa_per_cell_h": -101.05982142857142,

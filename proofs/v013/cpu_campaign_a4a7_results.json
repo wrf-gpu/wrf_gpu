@@ -6,7 +6,7 @@
   "base_commit": "0b917ea6",
   "worker_branch": "validation-cpu-a4a7",
   "platform": "CPU only (JAX_PLATFORMS=cpu), pinned taskset -c 12-23",
-  "out_root": "/mnt/data/wrf_gpu_validation/v0130_campaign_cpu",
+  "out_root": "<DATA_ROOT>/wrf_gpu_validation/v0130_campaign_cpu",
   "note_on_xla_warnings": "A5/A7 logs contain thousands of benign XLA:CPU AOT 'machine feature +prefer-no-gather/+prefer-no-scatter not supported on host' warnings from a persistent JIT cache compiled on a different CPU feature set. They are non-fatal (the runtime recompiles) and A7's PASS confirms they do not affect correctness; they are NOT the A5 failure cause.",
   "lanes": [
     {

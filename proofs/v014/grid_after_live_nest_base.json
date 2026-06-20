@@ -51329,9 +51329,9 @@
   "generated_utc": "2026-06-09T09:24:37.201560+00:00",
   "gpu_used": false,
   "inputs": {
-    "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
     "domain": "d02",
-    "gpu_dir": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z"
+    "gpu_dir": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z"
   },
   "inventory": {
     "common": [
@@ -51755,74 +51755,74 @@
     "paired_file_count": 12,
     "pairs": [
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
         "lead_h": 1,
         "valid_time_utc": "2026-05-01T19:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
         "lead_h": 2,
         "valid_time_utc": "2026-05-01T20:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
         "lead_h": 3,
         "valid_time_utc": "2026-05-01T21:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
         "lead_h": 4,
         "valid_time_utc": "2026-05-01T22:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
         "lead_h": 5,
         "valid_time_utc": "2026-05-01T23:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
         "lead_h": 6,
         "valid_time_utc": "2026-05-02T00:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
         "lead_h": 7,
         "valid_time_utc": "2026-05-02T01:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
         "lead_h": 8,
         "valid_time_utc": "2026-05-02T02:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
         "lead_h": 9,
         "valid_time_utc": "2026-05-02T03:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
         "lead_h": 10,
         "valid_time_utc": "2026-05-02T04:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
         "lead_h": 11,
         "valid_time_utc": "2026-05-02T05:00:00+00:00"
       },
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
         "lead_h": 12,
         "valid_time_utc": "2026-05-02T06:00:00+00:00"
       }
@@ -53989,7 +53989,7 @@
     "gpu_run": {
       "command_log": "proofs/v014/grid_after_live_nest_base/gpu_h12/gpu_h12_run.log",
       "device": "cuda:0",
-      "output_dir": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+      "output_dir": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
       "peak_vram_mib": null,
       "peak_vram_note": "not recorded by wall_clock_l2_d02.json",
       "status": "L2_D02_GREEN",

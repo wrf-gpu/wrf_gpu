@@ -16,9 +16,9 @@ drove the Switzerland d01 72h pressure/mass drift.
 
 ## Proof
 
-- Broken run: `/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_20260611T001250Z/gpu_output`
-- CPU truth: `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
-- Fixed h6 run: `/mnt/data/wrf_gpu_validation/v014_switzerland_d01_h6_lbcfix_20260611T013851Z/gpu_output`
+- Broken run: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_20260611T001250Z/gpu_output`
+- CPU truth: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+- Fixed h6 run: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_h6_lbcfix_20260611T013851Z/gpu_output`
 - JSON proof: `proofs/v014/switzerland_lbc_clock_root_cause.json`
 - Proof script: `proofs/v014/switzerland_lbc_clock_root_cause.py`
 

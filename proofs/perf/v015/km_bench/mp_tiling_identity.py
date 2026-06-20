@@ -30,7 +30,7 @@ from gpuwrf.integration import daily_pipeline as dp
 from gpuwrf.coupling.physics_couplers import _thompson_column_from_state
 from gpuwrf.physics import thompson_column as tc
 
-PROBE = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+PROBE = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 OUT = Path("proofs/perf/v015/km_bench/mp_tiling_identity.json")
 
 

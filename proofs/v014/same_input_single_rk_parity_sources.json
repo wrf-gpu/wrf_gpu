@@ -9,7 +9,7 @@
     "existing_checkpoint": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
       "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
       "size_bytes": 163257218
     },
@@ -69,42 +69,42 @@
     "namelist": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input",
       "sha256": "4109f2e69988f7f263f4172a03c66f38b2da9812918ebb34cc09d6ca98cff3a5",
       "size_bytes": 4153
     },
     "post_rk_truth_dir": {
       "exists": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output",
       "sha256": null,
       "size_bytes": 4096
     },
     "source_save_hook_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.json",
       "sha256": "0e69931e482d7f1c2987cda795c884ff51372c83d5d46cb3232f4bcdb4d755f2",
       "size_bytes": 6005415
     },
     "source_save_hook_md": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/source_save_boundary_hook.md",
       "sha256": "4684f39de28799b2c937b50d0c35713e7899571f29c9eac30a5edd27c1871c70",
       "size_bytes": 828
     },
     "source_save_patch_diff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/source_save_boundary_hook_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/source_save_boundary_hook_wrf_patch.diff",
       "sha256": "9f194e15d6b7703c4018662d7c06230dffd5616d3403eccc313c50a3c1e282c5",
       "size_bytes": 17713
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-source-save-boundary/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-source-save-boundary/sprint-contract.md",
       "sha256": "198bab6c0eb59204b32e6a46505158e0dba61b34b8d648f23d18f862916824e1",
       "size_bytes": 6743
     }
@@ -169,8 +169,8 @@
   ],
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_sources.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_sources.md"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_sources.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_sources.md"
   },
   "required_dry_physics_tendency_fields": [
     "ru_tendf",
@@ -326,28 +326,28 @@
       "operational_mode_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
         "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
         "size_bytes": 175388
       },
       "operational_state_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
         "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
         "size_bytes": 8390
       },
       "rk_addtend_dry_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
         "sha256": "2152716c17ffd78d5521e4674b280b18751c03f7440e74385122d6ade74453e7",
         "size_bytes": 24911
       },
       "state_py": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
         "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
         "size_bytes": 25734
       }

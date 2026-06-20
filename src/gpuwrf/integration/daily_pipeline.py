@@ -63,7 +63,7 @@ from gpuwrf.validation.forecast_vs_obs import (
 ROOT = Path(__file__).resolve().parents[3]
 SPRINT_DIR = ROOT / ".agent" / "sprints" / "2026-05-27-m7-daily-pipeline-integration"
 # Path indirection (see gpuwrf.config.paths): environment-overridable so the
-# pipeline default run root is not the private /mnt/data path on a clean clone.
+# pipeline default run root is not the private <DATA_ROOT> path on a clean clone.
 # The CLI passes an absolute --input-dir that bypasses this default entirely.
 RUN_ROOT = paths.wrf_l3_root()
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T133443Z"

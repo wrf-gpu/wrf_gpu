@@ -349,7 +349,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "8d2468ecb14e6f531ff83d89602ace0a01a5aaaa2f4612a1b72cc6cc3accb438",
       "size_bytes": 103238
     },
@@ -357,7 +357,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split.md",
       "sha256": "43f2c7d181b041d99dc058dc7e9d867ba5880c75874032ed6cda9345de768ed1",
       "size_bytes": 2013
     },
@@ -365,7 +365,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-10-v014-dry-source-leaf-fix/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-10-v014-dry-source-leaf-fix/sprint-contract.md",
       "sha256": "db3a536cd0e678640fb3e23e36bbba3ecdc592ba85a1be76202a8ee1f123e269",
       "size_bytes": 4407
     },

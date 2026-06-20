@@ -53,18 +53,18 @@ BUILDER_PY = PROOF_DIR / "same_input_contract_builder.py"
 REFRESH_PATCH = PROOF_DIR / "wrf_post_rk_refresh_localization_patch.diff"
 SAME_STATE_PY = PROOF_DIR / "same_state_momentum_mass.py"
 
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_same_input_truth")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth")
 SCRATCH_WRF = SCRATCH / "WRF"
 SCRATCH_RUN = SCRATCH / "run"
 RAW_TRUTH = SCRATCH / "raw_truth"
-WRF_SOURCE = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/WRF")
-RUN_CASE3 = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3")
+WRF_SOURCE = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/WRF")
+RUN_CASE3 = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3")
 ACCEPTED_TRUTH = (
-    Path("/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth")
+    Path("<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth")
     / "same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
 )
-WRF_ENV_BIN = Path("/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin")
-WRF_ENV_LIB = Path("/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/lib")
+WRF_ENV_BIN = Path("<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin")
+WRF_ENV_LIB = Path("<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/lib")
 
 TARGET_STEP = 1
 TARGET_DOMAIN = 2

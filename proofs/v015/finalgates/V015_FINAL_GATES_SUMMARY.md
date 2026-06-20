@@ -20,8 +20,8 @@ DZS/ZS paired and the Canary MUB/PB boundary-frame seam is fixed.
 
 ## Switzerland d01 72h (init 2023-01-15 00Z)
 
-- Run root: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z`
-- CPU truth: `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+- Run root: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z`
+- CPU truth: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
 - GPU rc=0, compare rc=0, atlas rc=0, identity rc=0. 72/72 frames, all finite, stable to h72. **9/10**.
 
 | field | verdict | overall rmse | limit | h72 rmse | ratio |
@@ -54,8 +54,8 @@ DZS/ZS paired and the Canary MUB/PB boundary-frame seam is fixed.
 
 ## Canary L2 d02 72h (init 2026-05-01 18Z, nested d01+d02)
 
-- Run root: `/mnt/data/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z`
-- CPU truth: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- Run root: `<DATA_ROOT>/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z`
+- CPU truth: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
 - GPU rc=0 (CLI verdict L2_D02_GREEN), compare rc=0, atlas rc=0, identity rc=0.
   72/72 d02 frames, all finite, stable to h72. **9/10**.
 

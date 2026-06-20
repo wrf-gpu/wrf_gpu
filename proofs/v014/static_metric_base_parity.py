@@ -28,8 +28,8 @@ from netCDF4 import Dataset
 ROOT = Path(__file__).resolve().parents[2]
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DOMAIN = "d02"
-INIT_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2") / RUN_ID
-CPU_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+INIT_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2") / RUN_ID
+CPU_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 GPU_DIR = Path("/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z")
 WRFINPUT = INIT_DIR / "wrfinput_d02"
 CPU_H0 = CPU_DIR / "wrfout_d02_2026-05-01_18:00:00"

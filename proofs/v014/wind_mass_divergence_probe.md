@@ -7,7 +7,7 @@ CPU-only wrfout anatomy probe for Case 3. This is not an equivalence pass and it
 ## Inputs
 
 - GPU retained wrfouts: `/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
-- CPU-WRF truth: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- CPU-WRF truth: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
 - common leads: `1` to `24` h (`24` files)
 - JAX_PLATFORMS during run: `cpu`
 

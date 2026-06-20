@@ -1,8 +1,8 @@
 """Environment-overridable filesystem locations for gpuwrf.
 
 Historically the runnable path hardcoded a single workstation layout rooted at
-``/mnt/data/canairy_meteo`` (the Canary Gen2 / CPU-WRF backfill corpus) and a few
-``/home/user`` build paths. That makes a clean clone un-runnable: a naive agent
+``<DATA_ROOT>/canairy_meteo`` (the Canary Gen2 / CPU-WRF backfill corpus) and a few
+``<USER_HOME>`` build paths. That makes a clean clone un-runnable: a naive agent
 following ``README.md`` only has no such directories.
 
 This module centralizes every such location behind a small set of environment
@@ -18,7 +18,7 @@ Environment variables
 ``GPUWRF_CANAIRY_ROOT``
     Root of the Canary Gen2 / CPU-WRF corpus. Default: ``<repo>/data/canairy_meteo``
     in an editable checkout. On the user's workstation set it to
-    ``/mnt/data/canairy_meteo`` to keep the original layout working.
+    ``<DATA_ROOT>/canairy_meteo`` to keep the original layout working.
 ``GPUWRF_RUN_ROOT``
     Override the L3 run root directly. Default: ``<canairy_root>/runs/wrf_l3``.
 ``GPUWRF_L2_RUN_ROOT``
@@ -36,7 +36,7 @@ Environment variables
     ``SOILPARM.TBL`` / ``GENPARM.TBL`` (``sf_surface_physics=4``) and the classic
     RRTM longwave ``run/RRTM_DATA[_DBL]`` + ``phys/module_ra_rrtm.F``
     (``ra_lw_physics=1``). Default: ``<repo>/data/wrf_pristine/WRF``. On the
-    workstation set it to e.g. ``/home/<you>/src/wrf_pristine/WRF``.
+    workstation set it to e.g. ``<USER_HOME>/<you>/src/wrf_pristine/WRF``.
 ``GPUWRF_AIFS_VTABLE``
     Path to the ``Vtable.AIFS_PURE`` GRIB2 Vtable (only needed by the AIFS GRIB
     ingest). Default: ``<canairy_root>/Gen2/configs/Vtable.AIFS_PURE``.
@@ -167,6 +167,6 @@ def tmp_root() -> Path:
     """Scratch root for replay traces / cached outputs.
 
     ``GPUWRF_TMPDIR`` overrides; default is ``~/.cache/gpuwrf`` so a fresh clone
-    never writes scratch into a private hardcoded ``/home/<name>`` path.
+    never writes scratch into a private hardcoded ``<USER_HOME>/<name>`` path.
     """
     return _env_path("GPUWRF_TMPDIR") or (Path.home() / ".cache" / "gpuwrf")

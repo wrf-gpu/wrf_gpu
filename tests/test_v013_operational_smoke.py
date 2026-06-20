@@ -536,7 +536,7 @@ def test_sw_and_lw_are_selected_independently() -> None:
 # 6. LAND SURFACE -- the two operational LSMs run through the EXACT coupler steps
 #    the scan invokes and advance their land carry + write finite surface fluxes.
 # ============================================================================
-_NOAHMP_TABLE_DIR = Path("/home/user/src/wrf_pristine/WRF/run")
+_NOAHMP_TABLE_DIR = Path("<USER_HOME>/src/wrf_pristine/WRF/run")
 _HAVE_MPTABLE = (_NOAHMP_TABLE_DIR / "MPTABLE.TBL").exists()
 _NOAHCLASSIC_SAVEPOINTS = ROOT / "proofs" / "v060" / "savepoints_noahclassic.json"
 

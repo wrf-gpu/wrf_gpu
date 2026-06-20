@@ -1,5 +1,5 @@
 {
-  "savepoint": "/mnt/data/wrf_gpu2/physics_oracle/microphysics_coldmix",
+  "savepoint": "<DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_coldmix",
   "n_columns": 8,
   "n_levels": 44,
   "regime": {

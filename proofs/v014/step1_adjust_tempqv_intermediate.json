@@ -4,8 +4,8 @@
       "git rev-parse HEAD",
       "git merge-base --is-ancestor c3620d09 HEAD",
       "diff -u disposable WRF backups vs patched files > proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
-      "cd /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && /home/user/miniconda3/bin/tcsh ./compile em_real",
-      "cd /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run && WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE=1 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_DOMAIN=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_I=18 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J=10 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT=/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth /home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe"
+      "cd <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && <USER_HOME>/miniconda3/bin/tcsh ./compile em_real",
+      "cd <DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run && WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE=1 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_DOMAIN=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_I=18 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J=10 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT=<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth <USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe"
     ],
     "required_validation": [
       "python -m py_compile proofs/v014/step1_adjust_tempqv_intermediate.py",
@@ -177,7 +177,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-theta-qvapor-opus-critic.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-theta-qvapor-opus-critic.md",
       "sha256": "69eca974b56c8f8ea5550c2bbc7c340da6e76d2a0a9d991596ba148fc958eb12",
       "size_bytes": 6270
     },
@@ -185,7 +185,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.md",
       "sha256": "ae6713905c4f2e734e0db77a0366fa44ba98a9dfef9512397190258f86e03679",
       "size_bytes": 1929
     },
@@ -193,7 +193,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
       "sha256": "8d4ebe82db0c03583a19d699984968b343f705b85bc119baf2613088c947e55f",
       "size_bytes": 44524
     },
@@ -201,7 +201,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
       "sha256": "ffc489ed3286ecc217d0f8efaf4b23f70f895cccd6d3c1fee77d8a0cd95f31ca",
       "size_bytes": 2538
     },
@@ -209,7 +209,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run",
       "sha256": null,
       "size_bytes": null
     },
@@ -217,7 +217,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate",
       "sha256": null,
       "size_bytes": null
     },
@@ -225,7 +225,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-adjust-tempqv-intermediate/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-adjust-tempqv-intermediate/sprint-contract.md",
       "sha256": "f209cd5ebc8418f896c48caebca926012ee198204d18ef270b715cbf5a4c47ea",
       "size_bytes": 5605
     },
@@ -233,7 +233,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
       "sha256": null,
       "size_bytes": null
     }
@@ -253,7 +253,7 @@
       "qvapor_post": 0.007871171017318369,
       "t_2_post": -0.2382344899281179
     },
-    "source": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+    "source": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
     "status": "READY",
     "target_worst_cell": {
       "abs_delta": 0.00541785382188209,
@@ -322,11 +322,11 @@
   "no_tost": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md",
-    "script": "/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.py",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md",
+    "script": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.py",
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff"
   },
   "schema": "wrfgpu2.v014.step1_adjust_tempqv_intermediate.v1",
   "source_patch_allowed_by_proof": false,
@@ -352,13 +352,13 @@
   "verdict": "STEP1_ADJUST_TEMPQV_INTERMEDIATE_PRESSURE_INPUT_MISMATCH",
   "verdict_reason": "WRF in-routine pressure/base inputs differ materially from the JAX reconstruction.",
   "wrf_build": {
-    "compile_command": "cd /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && /home/user/miniconda3/bin/tcsh ./compile em_real",
-    "compile_log": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real_tcsh.log",
+    "compile_command": "cd <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF && <USER_HOME>/miniconda3/bin/tcsh ./compile em_real",
+    "compile_log": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real_tcsh.log",
     "compile_log_info": {
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real_tcsh.log",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real_tcsh.log",
       "sha256": "96b8f38858c70faeb1ebcc2766d16f91bfdcbcd2ea8ceb77157005c1982def4f",
       "size_bytes": 79230
     },
@@ -366,19 +366,19 @@
       "command": [
         "bash",
         "-lc",
-        "strings /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe | rg 'WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE'"
+        "strings <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe | rg 'WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE'"
       ],
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1\n"
     },
     "hook_string_present": true,
-    "shebang_compile_blocker_log": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real.log",
+    "shebang_compile_blocker_log": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/compile_em_real.log",
     "wrf_exe": {
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe",
       "sha256": "8c9496d5a7d2d1aafbd47a7d34d58929987ed8bac5fa6762d551723a9b7dbad4",
       "size_bytes": 54654336
     }
@@ -421,7 +421,7 @@
       "use_theta_m": 1
     },
     "marker": "# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1",
-    "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+    "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
     "status": "READY",
     "values": {
       "c3h": 0.9896281957626343,
@@ -457,22 +457,22 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
       "sha256": "41d7708c44ccb57e20fe6453a596f7babada3cb1b5dfa4712942d150d8b52102",
       "size_bytes": 10372
     },
-    "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
+    "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff",
     "touched_disposable_files": [
-      "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F",
-      "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
+      "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F",
+      "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
     ]
   },
   "wrf_run": {
-    "command": "cd /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run && WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE=1 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_DOMAIN=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_I=18 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J=10 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT=/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth /home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe",
-    "log": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_mpirun_np28_manager.log",
+    "command": "cd <DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/run && WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE=1 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_DOMAIN=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_I=18 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_J=10 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_K=2 WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE_ROOT=<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth <USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun -np 28 ./wrf.exe",
+    "log": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_mpirun_np28_manager.log",
     "log_tail": " starting wrf task           12  of           28\n starting wrf task           14  of           28\n starting wrf task           22  of           28\n starting wrf task            5  of           28\n starting wrf task           25  of           28\n starting wrf task            1  of           28\n starting wrf task           17  of           28\n starting wrf task           24  of           28\n starting wrf task            4  of           28\n starting wrf task            0  of           28\n starting wrf task           23  of           28\n starting wrf task           10  of           28\n starting wrf task           26  of           28\n starting wrf task           13  of           28\n starting wrf task           15  of           28\n starting wrf task           11  of           28\n starting wrf task           27  of           28\n starting wrf task            6  of           28\n starting wrf task           18  of           28\n starting wrf task           21  of           28\n starting wrf task            9  of           28\n starting wrf task           20  of           28\n starting wrf task            7  of           28\n starting wrf task            2  of           28\n starting wrf task            3  of           28\n starting wrf task           16  of           28\n starting wrf task           19  of           28\n starting wrf task            8  of           28\n",
     "returncode": 0,
-    "status_file": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_status.txt"
+    "status_file": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_status.txt"
   },
   "wrf_source_evidence": {
     "adjust_tempqv": {
@@ -482,7 +482,7 @@
         "env-gated hook emits the target d02 Fortran cell i=18,j=10,k=2"
       ],
       "lines": "812-1017",
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
     },
     "mediation_integrate_live_nest_call": {
       "evidence": [
@@ -491,7 +491,7 @@
         "adjust_tempqv is called with nest%mub, nest%mub_save, c3h, c4h, znw, p_top, t_2, p, QVAPOR, and nest%id"
       ],
       "lines": "726-763",
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F"
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F"
     }
   }
 }

@@ -76,7 +76,7 @@
   },
   "output_packer_gain_pct_daily_wall": 0.40709398859338336,
   "output_packer_static_cache_saved_s_per_output": 0.09906245698221028,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
   "schema": "V0100WaveB3DailyWrapperGains",
   "schema_version": 1,
   "static_cache_fields": [

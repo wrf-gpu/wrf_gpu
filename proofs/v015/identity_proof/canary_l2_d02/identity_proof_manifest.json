@@ -1,6 +1,6 @@
 {
   "asset_dir": "docs/assets/v015/identity_proof/canary_l2_d02",
-  "command": "scripts/build_identity_proof_plots.py --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z --gpu-dir /mnt/data/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z --domain d02 --init 2026-05-01T18:00:00+00:00 --case-id canary_l2_d02_72h --region-label Canary L2 d02 72h (2026-05-01 18Z, v0.15) --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir proofs/v015/identity_proof/canary_l2_d02 --asset-dir docs/assets/v015/identity_proof/canary_l2_d02",
+  "command": "scripts/build_identity_proof_plots.py --cpu-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z --gpu-dir <DATA_ROOT>/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z --domain d02 --init 2026-05-01T18:00:00+00:00 --case-id canary_l2_d02_72h --region-label Canary L2 d02 72h (2026-05-01 18Z, v0.15) --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir proofs/v015/identity_proof/canary_l2_d02 --asset-dir docs/assets/v015/identity_proof/canary_l2_d02",
   "cpu_only": true,
   "field_metrics": [
     {

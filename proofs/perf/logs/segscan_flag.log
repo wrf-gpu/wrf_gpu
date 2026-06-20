@@ -1,4 +1,4 @@
-+ cd /home/user/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
++ cd <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
 + export PYTHONPATH=src
 + PYTHONPATH=src
 + export OMP_NUM_THREADS=4
@@ -14,7 +14,7 @@
 + XLA_FLAGS=
 + taskset -c 0-3 python proofs/perf/segscan_24h.py --hours 24 --out segscan_24h_windfix_noflag.json
 === SEGSCAN 24h feasibility: +24.0h=8640 steps, segment=180 steps, cadence=180 ===
-  run_dir=/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
+  run_dir=<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
 {
   "inner_segment_cold_compile_s": 257.92054109001765,
   "compile_s_one_time": 38.68359148100717,
@@ -34,7 +34,7 @@ NOFLAG_24H_EXIT=0
 + XLA_FLAGS=--xla_gpu_graph_min_graph_size=1
 + taskset -c 0-3 python proofs/perf/segscan_24h.py --hours 24 --out segscan_24h_windfix_gms1.json
 === SEGSCAN 24h feasibility: +24.0h=8640 steps, segment=180 steps, cadence=180 ===
-  run_dir=/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
+  run_dir=<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
 {
   "inner_segment_cold_compile_s": 260.17247532799956,
   "compile_s_one_time": 29.642924737010617,

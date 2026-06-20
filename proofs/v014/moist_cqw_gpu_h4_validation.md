@@ -2,11 +2,11 @@
 
 Verdict: `MOIST_CQW_GPU_H4_ACCEPT`
 
-- run root: `/mnt/data/wrf_gpu_validation/v014_canary_d02_moistcqw_h4_20260610T165255Z`
-- previous PSFC-fix baseline: `/mnt/data/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z`
+- run root: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_moistcqw_h4_20260610T165255Z`
+- previous PSFC-fix baseline: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z`
 - GPU rc: `0`
-- compare JSON: `/mnt/data/wrf_gpu_validation/v014_canary_d02_moistcqw_h4_20260610T165255Z/canary_d02_h4_grid_compare.json`
-- resource CSV: `/mnt/data/wrf_gpu_validation/v014_canary_d02_moistcqw_h4_20260610T165255Z/resources/v014_canary_d02_moistcqw_h4_gpu_usage.csv`
+- compare JSON: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_moistcqw_h4_20260610T165255Z/canary_d02_h4_grid_compare.json`
+- resource CSV: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_moistcqw_h4_20260610T165255Z/resources/v014_canary_d02_moistcqw_h4_gpu_usage.csv`
 - peak VRAM: `16921 MiB`; avg GPU util: `38.4%`; max power: `281.8 W`
 
 ## Field RMSE Delta

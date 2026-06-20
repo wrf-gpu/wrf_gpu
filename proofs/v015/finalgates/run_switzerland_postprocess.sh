@@ -6,7 +6,7 @@
 set -euo pipefail
 
 RR="$1"                       # GPU run root
-CPU_DIR=/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
+CPU_DIR=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
 GPU_DIR="${RR}/gpu_output"
 MANIFEST=proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json
 INIT=2023-01-15T00:00:00+00:00

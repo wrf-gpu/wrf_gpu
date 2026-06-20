@@ -50,13 +50,13 @@ BOUNDARY_CONSTRUCTION = ROOT / "src/gpuwrf/nesting/boundary_construction.py"
 DOMAIN_TREE = ROOT / "src/gpuwrf/runtime/domain_tree.py"
 METRICS_SOURCE = ROOT / "src/gpuwrf/dynamics/metrics.py"
 
-RUN_CASE3 = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3")
+RUN_CASE3 = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3")
 WRFINPUT_D01 = RUN_CASE3 / "wrfinput_d01"
 WRFINPUT_D02 = RUN_CASE3 / "wrfinput_d02"
 WRFBDY_D01 = RUN_CASE3 / "wrfbdy_d01"
 NAMELIST_INPUT = RUN_CASE3 / "namelist.input"
 RSL_ERROR_0000 = RUN_CASE3 / "rsl.error.0000"
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_same_input_contract_builder")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder")
 
 STRICT_STEP = 1
 TARGET_FIELDS = ("T", "P", "PB", "PH", "PHB", "MU", "MUB", "U", "V", "W")
@@ -70,11 +70,11 @@ BDY_WIDTH = 5
 
 TRUTH_SEARCH_ROOTS = (
     SCRATCH,
-    Path("/mnt/data/wrf_gpu2/v014_early_step_discriminator"),
-    Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output"),
-    Path("/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output"),
-    Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output"),
-    Path("/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_early_step_discriminator"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/marker_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"),
 )
 
 TRUTH_PATTERNS = (
@@ -912,7 +912,7 @@ def blocker_payload(truth: Mapping[str, Any]) -> list[dict[str, Any]]:
             "smallest_next_patch_or_tool": (
                 "Apply a disposable CPU-WRF hook in a scratch WRF copy that emits the schema fields at "
                 "domain 2, step 1, post_after_all_rk_steps_pre_halo, then convert the full-domain surface "
-                "to /mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/"
+                "to <DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/"
                 "same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz with the schema keys."
             ),
             "why_existing_surfaces_fail": "Existing refresh_post_after_all_rk_steps_pre_halo files are step 6000 tile/patch surfaces, not candidate step 1 full-domain truth.",
@@ -925,9 +925,9 @@ def implementation_ready_wrf_recipe() -> dict[str, Any]:
         "status": "PATCH_NOT_APPLIED_IN_THIS_SPRINT",
         "reason": "Strict CPU/JAX contract was built first; no candidate WRF truth file exists under allowed scratch, and applying/rebuilding WRF would require a separate disposable CPU-WRF hook run.",
         "source_candidates": [
-            "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
-            "/mnt/data/wrf_gpu2/v014_source_save_boundary/WRF",
-            "/home/user/src/wrf_pristine/WRF",
+            "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF",
+            "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/WRF",
+            "<USER_HOME>/src/wrf_pristine/WRF",
         ],
         "scratch_root_for_next_run": str(SCRATCH / "wrf_step1_truth_run"),
         "required_hook_boundary": "dyn_em/solve_em.F::solve_em, after after_all_rk_steps and before RK halos, domain grid%id==2, grid%itimestep==1",
@@ -937,11 +937,11 @@ def implementation_ready_wrf_recipe() -> dict[str, Any]:
             "shape_semantics": "Time stripped; axes exactly match field_schema.index_semantics.array_order.",
         },
         "minimal_commands_next_sprint": [
-            "mkdir -p /mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_step1_truth_run",
+            "mkdir -p <DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_step1_truth_run",
             "copy or rsync a disposable WRF tree into that scratch run directory",
             "apply a post_after_all_rk_steps_pre_halo full-domain step-1 hook patch to the scratch WRF tree",
             "rebuild wrf.exe in the scratch WRF tree",
-            "run CPU-WRF from /mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3 with WRFGPU2_SAME_INPUT_STEP1=1 and output root under /mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth",
+            "run CPU-WRF from <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3 with WRFGPU2_SAME_INPUT_STEP1=1 and output root under <DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth",
             "convert emitted WRF surface to the accepted npz contract and rerun this builder",
         ],
     }

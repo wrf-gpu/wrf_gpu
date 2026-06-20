@@ -233,49 +233,49 @@
     "dynamic_field_attribution_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
       "sha256": "a8979ebd844d6aa6a05319bbfdaf548e119f2a8f0165c0ceed56c0854a84c020",
       "size_bytes": 1798878
     },
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "949e8948bde7a37277d83015271edcbb147bde4843f0d1c59d0f984ccef03f4c",
       "size_bytes": 24098
     },
     "same_state_savepoint_request_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
       "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
       "size_bytes": 269809
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-jax-after-all-rk-wrapper/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-jax-after-all-rk-wrapper/sprint-contract.md",
       "sha256": "22bd58e5329e67a04f50d4f82e6c2e3fe81ee0310077965e176fc64ad641d399",
       "size_bytes": 2964
     },
     "wrf_refresh_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
       "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
       "size_bytes": 34079
     },
     "wrf_refresh_md": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
       "sha256": "28a831c5c1d3c74f85e5259c7fcfdf14f78e473b92469006cc84c3e3f7358eab",
       "size_bytes": 3217
     },
     "wrf_same_state_marker_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json",
       "sha256": "4bb28da001ebabe53ce57ce8ff11ca2a5a8ab160eef2493cb45f233f4586935c",
       "size_bytes": 18006
     }
@@ -425,28 +425,28 @@
       "calc_p_rho": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/dynamics/core/calc_p_rho.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/dynamics/core/calc_p_rho.py",
         "sha256": "f8e194f2968d5aab1475c48873b8c17024ed3429bd75e3df1b0d564ef5543350",
         "size_bytes": 6035
       },
       "contracts_state": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
         "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
         "size_bytes": 25734
       },
       "runtime_operational_mode": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
         "sha256": "bb2ab239a149ac4cb53f895b331a12c01b3059a1adf1e5f48149d00e0fc48825",
         "size_bytes": 173666
       },
       "small_step_finish": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/dynamics/core/small_step_finish.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/dynamics/core/small_step_finish.py",
         "sha256": "41c210106a7eaeae3d971dad4ac8da29d926d5a50ec3a9a93737ee7101abbf66",
         "size_bytes": 3758
       }
@@ -521,9 +521,9 @@
   "no_hermes": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/jax_after_all_rk_wrapper.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/jax_after_all_rk_wrapper.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-jax-after-all-rk-wrapper.md"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_after_all_rk_wrapper.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_after_all_rk_wrapper.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-jax-after-all-rk-wrapper.md"
   },
   "schema": "wrfgpu2.v014.jax_after_all_rk_wrapper.v1",
   "target": {
@@ -900,21 +900,21 @@
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
         "size_bytes": 11774
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
         "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
         "size_bytes": 159441
       }
     ],
     "source_files": [
-      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
-      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
     ]
   }
 }

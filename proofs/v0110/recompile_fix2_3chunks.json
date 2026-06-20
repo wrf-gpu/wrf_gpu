@@ -181,7 +181,7 @@
     "nz": 44
   },
   "radiation_cadence_steps": 180,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
   "run_id": "20260521_18z_l2_72h_20260522T133443Z",
   "schema": "V0110RecompileDiagnostic",
   "schema_version": 1,

@@ -82,14 +82,14 @@
     "wrf_radiation_driver": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
       "sha256_16": "4f0177189eb616c9",
       "size": 259472
     },
     "wrf_rrtmg_lw": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
       "sha256_16": "c7a5238612aa8a42",
       "size": 652002
     }

@@ -6,7 +6,7 @@
 # SAME real IC/BC (20260428_18z_l3_24h), but for several model hours so warm-rain +
 # ice/snow/graupel develop, then captures ONE late, hydrometeor-ACTIVE timestep.
 #
-# The existing /mnt/data/.../microphysics oracle was captured at itimestep=1 which
+# The existing <DATA_ROOT>/.../microphysics oracle was captured at itimestep=1 which
 # is a near-inactive step (only trace qc). This run captures itimestep=WRFGPU2_ORACLE_STEP
 # (default 1000 ~= 5h) where qr/qi/qs are active, into a SEPARATE oracle subdir so the
 # original is preserved.
@@ -19,10 +19,10 @@ set -u
 # Resolve the directory holding this script + the namelist template BEFORE any cd.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
-PRISTINE=/home/user/src/wrf_pristine/WRF
-SRC=/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z
+PRISTINE=<USER_HOME>/src/wrf_pristine/WRF
+SRC=<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z
 RUN="$PRISTINE/test/em_real/oracle_run_v090"
-ORACLE_ROOT=/mnt/data/wrf_gpu2/physics_oracle_v090
+ORACLE_ROOT=<DATA_ROOT>/wrf_gpu2/physics_oracle_v090
 STEP="${WRFGPU2_ORACLE_STEP:-1000}"
 RUN_HOURS="${RUN_HOURS:-6}"
 
@@ -61,7 +61,7 @@ export WRFGPU2_ORACLE_GRID=1
 export WRFGPU2_ORACLE_STEP="$STEP"
 export WRFGPU2_ORACLE_ROOT="$ORACLE_ROOT"
 
-export LD_LIBRARY_PATH=/home/user/miniconda3/envs/wrfbuild/lib:${LD_LIBRARY_PATH:-}
+export LD_LIBRARY_PATH=<USER_HOME>/miniconda3/envs/wrfbuild/lib:${LD_LIBRARY_PATH:-}
 ulimit -s unlimited 2>/dev/null || true
 export OMP_NUM_THREADS=1
 

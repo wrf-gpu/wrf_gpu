@@ -14,7 +14,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-CORPUS = Path("/mnt/data/wrf_gpu2/corpus")
+CORPUS = Path("<DATA_ROOT>/wrf_gpu2/corpus")
 PROOF = Path(__file__).resolve().parent
 
 # Domain-mean diagnostics measured from the surviving full-output wrfout (d02 3km),

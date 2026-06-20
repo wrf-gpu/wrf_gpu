@@ -43,7 +43,7 @@ from gpuwrf.runtime.operational_mode import (
 from gpuwrf.runtime.operational_state import initial_operational_carry
 
 RUN_ID = "20260521_18z_l3_24h_20260522T133443Z"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 CORPUS = RUN_ROOT / RUN_ID
 HOURS = 2
 DT = 10.0

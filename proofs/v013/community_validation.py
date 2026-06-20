@@ -224,7 +224,7 @@ CPU_GPU_GAP = {
         "Multi-hour restart forecast-CONTINUITY acceptance (restart trajectory == uninterrupted) -- the structural bit-identity above is CPU; the trajectory match needs GPU + corpus.",
     ],
     "needs_purged_corpus": [
-        "TOST operational equivalence vs 28-rank CPU-WRF (proofs/m20/*) -- needs real CPU-WRF wrfout + AIFS forcing (not redistributable; /mnt/data).",
+        "TOST operational equivalence vs 28-rank CPU-WRF (proofs/m20/*) -- needs real CPU-WRF wrfout + AIFS forcing (not redistributable; <DATA_ROOT>).",
         "Multi-day operational skill-vs-obs gates and station scoring.",
     ],
 }

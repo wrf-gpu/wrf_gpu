@@ -36,8 +36,8 @@ import numpy as np
 from netCDF4 import Dataset
 
 ROOT = Path(__file__).resolve().parents[2]
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
-PROBE = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+PROBE = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 RUN_START = datetime(2023, 1, 15)
 OUT_JSON = ROOT / "proofs/v014/switzerland_flux_localizer.json"
 

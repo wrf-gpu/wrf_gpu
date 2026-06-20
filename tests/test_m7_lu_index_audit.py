@@ -10,7 +10,7 @@ from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.land_state import load_prescribed_land_state
 
 
-RUN_PATH = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+RUN_PATH = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 CPU_LEAD1 = RUN_PATH / "wrfout_d02_2026-05-21_19:00:00"
 
 

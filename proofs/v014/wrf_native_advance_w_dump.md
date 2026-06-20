@@ -8,7 +8,7 @@ captured replica), `wrf_native_advance_w_dump.json` (all numbers),
 ## What was built
 
 A disposable instrumented WRF v4.7.1 copy
-(`/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF`, additive env-gated patches in
+(`<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF`, additive env-gated patches in
 `module_small_step_em.F`, `solve_em.F`, `module_em.F`) re-ran the bit-exact
 36h30m 24-rank d01 Switzerland truth twice (~25 min each) and dumped, at
 `itimestep=7201, rk_step=1, iteration=1` (the first-bad RK1 acoustic substep,
@@ -23,7 +23,7 @@ WRF call 21601→21602):
    `*_tendf` (48 files).
 
 Dumps live outside git under
-`/mnt/data/wrf_gpu_validation/v014_switzerland_awd_dump/awd_dumps/` (96 files,
+`<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_awd_dump/awd_dumps/` (96 files,
 130,257,560 bytes; per-file sha256 in the JSON `manifest`). Gating sanity: the
 dumped small-step `mu''` equals the independent HPG (call 21602 − 21601) `mu`
 increment to fp32 roundoff (interior rmse 1.86e-5 vs field rms 0.135).

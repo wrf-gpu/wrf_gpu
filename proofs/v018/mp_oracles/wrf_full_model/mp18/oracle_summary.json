@@ -42,7 +42,7 @@
       "sha256": "48ce2f6c8d1e6671378113582adaa24eb0921c83180c3d01803a2796e4142055"
     },
     "wrf_exe": {
-      "path": "/home/user/src/wrf_pristine/WRF/main/wrf.exe",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/main/wrf.exe",
       "sha256": "52f914cb38e0899d8a1da54bd52f3e08d81ba0f6a7015d3159e48393f5226bd6"
     },
     "wrfinput_d01": {
@@ -71,19 +71,19 @@
   ],
   "source_checksums": [
     {
-      "path": "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F",
       "sha256": "29f42e76fbeca027a3ffb2ac805b148aaa1425c7f99ed1d8f19a90ebc1d015f8"
     },
     {
-      "path": "/home/user/src/wrf_pristine/WRF/phys/module_microphysics_driver.F",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_microphysics_driver.F",
       "sha256": "68acf025323b643ae976b89f40691675557cb9787fdc558fee6cb77472a6e518"
     },
     {
-      "path": "/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON",
       "sha256": "6f3ee02175b76487c5c6c046ff2fb4c5d41980b86c0f06eb2e09e34dacc9623a"
     },
     {
-      "path": "/home/user/src/wrf_pristine/WRF/run/README.namelist",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/run/README.namelist",
       "sha256": "3d526a45f0184dbcb8ebecfcaa637ea9a0853992bf11bb79e8c3d77a3a97ea67"
     }
   ],

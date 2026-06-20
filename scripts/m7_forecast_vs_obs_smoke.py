@@ -24,7 +24,7 @@ from gpuwrf.validation.forecast_vs_obs import (
 )
 
 
-DEFAULT_WRF_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+DEFAULT_WRF_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 DEFAULT_SPRINT_DIR = Path(".agent/sprints/2026-05-27-m7-forecast-vs-obs-scaffold")
 
 

@@ -46,10 +46,10 @@ OUT_PATCH = PROOF_DIR / "step1_current_mub_base_input_split_wrf_patch.diff"
 SPRINT_CONTRACT = (
     ROOT / ".agent/sprints/2026-06-09-v014-step1-current-mub-base-input-split/sprint-contract.md"
 )
-WRF_TREE = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF")
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_current_mub_base_input_split")
+WRF_TREE = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_current_mub_base_input_split")
 PRIOR_ADJUST_HOOK = (
-    Path("/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth")
+    Path("<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth")
     / "adjust_tempqv_d2_i18_j10_k2.txt"
 )
 PRIOR_THETA_JSON = PROOF_DIR / "step1_theta_same_qvapor.json"
@@ -94,7 +94,7 @@ WRF_PATCH_TEXT = """diff --git a/share/mediation_integrate.F b/share/mediation_i
 +   wrfgpu2_target_i = 18
 +   wrfgpu2_target_j = 10
 +   wrfgpu2_target_k = 2
-+   wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_current_mub_base_input_split/wrf_truth'
++   wrfgpu2_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_current_mub_base_input_split/wrf_truth'
 +   wrfgpu2_env = ''
 +   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT', wrfgpu2_env)
 +   IF (TRIM(wrfgpu2_env) == '1') wrfgpu2_enabled = .TRUE.
@@ -727,7 +727,7 @@ def render_review(payload: Mapping[str, Any]) -> str:
         "Findings:",
         "- HIGH: The residual is caused by using the final post-`start_domain` base MUB as the current `adjust_tempqv` MUB. WRF uses the transient post-`blend_terrain`/pre-`start_domain` MUB.",
         "- MEDIUM: The requested grouped pressure formula is not what WRF `adjust_tempqv` executes; the verified source formula is `p + c4h + c3h*mub + p_top`.",
-        "- LOW: This sandbox could not write the new `/mnt/data` scratch root, so the new WRF hook is delivered as a proposed disposable patch while scalar WRF truth is recovered from the prior accepted hook.",
+        "- LOW: This sandbox could not write the new `<DATA_ROOT>` scratch root, so the new WRF hook is delivered as a proposed disposable patch while scalar WRF truth is recovered from the prior accepted hook.",
         "",
         "Evidence:",
         f"- WRF adjust hook: `{PRIOR_ADJUST_HOOK}`",
@@ -866,7 +866,7 @@ def main() -> int:
             "executed": [
                 "git rev-parse HEAD",
                 f"git merge-base --is-ancestor {REQUIRED_ANCESTOR} HEAD",
-                "recovered prior WRF adjust hook from /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth",
+                "recovered prior WRF adjust hook from <DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth",
                 "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src:proofs/v014 python proof-side live-nest target recompute",
             ],
             "required_validation": [
@@ -884,7 +884,7 @@ def main() -> int:
             "review": str(OUT_REVIEW),
         },
         "unresolved_risks": [
-            "Fresh WRF terrain/PHB target emission could not be run because /mnt/data scratch writes are read-only in this sandbox.",
+            "Fresh WRF terrain/PHB target emission could not be run because <DATA_ROOT> scratch writes are read-only in this sandbox.",
             "The source-changing sprint should validate the transient MUB blend over the full domain before patching production initialization.",
         ],
         "next_decision": (

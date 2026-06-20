@@ -21,7 +21,7 @@
   "require_conservation_pass": true,
   "require_restart_pass": true,
   "cpu_wrfout_roots": [
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output"
   ],
   "candidate_cases": [
     "20260428_18z_l3_24h_20260525T221139Z",
@@ -46,7 +46,7 @@
       "20260521_18z_l2_72h_20260522T133443Z"
     ],
     "cpu_wrfout_backfill_roots_exist": {
-      "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output": true
+      "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output": true
     },
     "retained_per_case_wrfout_present": true,
     "continuous_gate_module_present": true,

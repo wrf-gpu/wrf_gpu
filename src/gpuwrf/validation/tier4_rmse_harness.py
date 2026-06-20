@@ -21,8 +21,8 @@ from gpuwrf.validation.tier4_probtest import DEFAULT_ENDING_CYCLE, DEFAULT_HELDO
 
 
 DEFAULT_GEN2_ROOTS = (
-    Path("/mnt/data/canairy_meteo/runs/wrf_l3"),
-    Path("/mnt/data/canairy_meteo/runs/wrf_l2"),
+    Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3"),
+    Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2"),
 )
 DEFAULT_DOMAIN = "d02"
 DEFAULT_PINNED_GRID_YX = (66, 159)

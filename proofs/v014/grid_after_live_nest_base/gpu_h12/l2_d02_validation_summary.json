@@ -1,7 +1,7 @@
 {
   "blocked_reason": null,
   "init_mode": "standalone_native_init_nested",
-  "output_dir": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
+  "output_dir": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
   "proofs": {
     "bounds": "proofs/v014/grid_after_live_nest_base/gpu_h12/bounds_check_l2_d02.json",
     "tier4_rmse": "proofs/v014/grid_after_live_nest_base/gpu_h12/tier4_rmse_l2_d02.json",

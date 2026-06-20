@@ -41,7 +41,7 @@ OUT_REVIEW = ROOT / ".agent/reviews/2026-06-09-v014-step1-pre-part1-handoff.md"
 OUT_WRF_PATCH = PROOF_DIR / "step1_pre_part1_handoff_wrf_patch.diff"
 
 SPRINT_CONTRACT = ROOT / ".agent/sprints/2026-06-09-v014-step1-pre-part1-handoff/sprint-contract.md"
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff")
 WRF_TRUTH = SCRATCH / "wrf_truth"
 WRF_TREE = SCRATCH / "WRF"
 WRF_RUN_DIR = SCRATCH / "run"
@@ -967,10 +967,10 @@ def main() -> int:
         "comparisons": comparisons,
         "commands": {
             "wrf_instrumentation": [
-                "cp -a --reflink=auto /mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
-                "cp -a --reflink=auto /mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/run /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run",
+                "cp -a --reflink=auto <DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
+                "cp -a --reflink=auto <DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/run <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/run",
                 "tcsh ./compile em_real (scratch WRF, conda wrf-build toolchain)",
-                "WRFGPU2_STEP1_PRE_PART1_HANDOFF=1 WRFGPU2_STEP1_PRE_PART1_HANDOFF_ROOT=/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe",
+                "WRFGPU2_STEP1_PRE_PART1_HANDOFF=1 WRFGPU2_STEP1_PRE_PART1_HANDOFF_ROOT=<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe",
             ],
             "required_validation": [
                 "python -m py_compile proofs/v014/step1_pre_part1_handoff.py",

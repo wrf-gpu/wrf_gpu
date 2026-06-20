@@ -69,8 +69,8 @@
     "ustar_oracle": "proofs/v014/switzerland_sfclay_ustar_oracle.{py,json}",
     "patch_reach_check": "proofs/v014/switzerland_ustar_patch_reach_check.py (eager _physics_step_forcing: ustar x1.64 -> ru_tendf k0 mean 336->172, drag tendency demonstrably changes)",
     "forecasts": [
-      "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x164clean (x1.64 correct-patch, h37 excess -26.24, stable)",
-      "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x500 (x5.0, BLEW UP hour 1 -> proves the patch reaches dynamics)"
+      "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x164clean (x1.64 correct-patch, h37 excess -26.24, stable)",
+      "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_ustar_x500 (x5.0, BLEW UP hour 1 -> proves the patch reaches dynamics)"
     ]
   }
 }

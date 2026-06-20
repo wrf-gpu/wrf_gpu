@@ -5,10 +5,10 @@ Date: 2026-06-10
 Status: **PASS**.
 
 Run root:
-`/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z`
+`<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z`
 
 CPU truth:
-`/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+`<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
 
 ## Result
 
@@ -33,9 +33,9 @@ The final frame finite check passed for `T2`, `U10`, `V10`, `PSFC`, `T`, `U`,
 CSV artifacts:
 
 - process/RSS:
-  `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources/switzerland_72h_cpu_process_usage.csv`
+  `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources/switzerland_72h_cpu_process_usage.csv`
 - system memory:
-  `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources/switzerland_72h_cpu_system_memory.csv`
+  `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/resources/switzerland_72h_cpu_system_memory.csv`
 
 Peaks:
 

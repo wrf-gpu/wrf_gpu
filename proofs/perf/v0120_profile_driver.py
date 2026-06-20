@@ -20,7 +20,7 @@ flag / precision are whatever the environment + production path set
 Usage (under the GPU lock wrapper)::
 
     /tmp/wrf_gpu_run.sh taskset -c 0-3 env PYTHONPATH=src JAX_ENABLE_X64=true \
-        XLA_PYTHON_CLIENT_PREALLOCATE=false GPUWRF_JAX_CACHE_DIR=/mnt/data/gpuwrf_jax_cache \
+        XLA_PYTHON_CLIENT_PREALLOCATE=false GPUWRF_JAX_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache \
         python proofs/perf/v0120_profile_driver.py \
         --input-dir <case> --domain d01 --hours 2 --out proofs/perf/v0120_profile_run.json
 """

@@ -1304,7 +1304,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--run-dir",
         type=Path,
-        default=Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"),
+        default=Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"),
     )
     parser.add_argument("--forecast-steps", type=int, default=1)
     parser.add_argument("--dt-s", type=float, default=10.0)

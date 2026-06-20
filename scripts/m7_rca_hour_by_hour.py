@@ -26,7 +26,7 @@ from gpuwrf.io.data_inventory import parse_wrfout_valid_time  # noqa: E402
 
 SPRINT_DIR = ROOT / ".agent/sprints/2026-05-27-m7-skill-regression-rca-codex"
 DEFAULT_GPU_ROOT = Path("/tmp/m7_pipeline_runs/20260521")
-DEFAULT_CPU_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+DEFAULT_CPU_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_HOURLY_OUTPUT = SPRINT_DIR / "hour_by_hour_deviation.json"
 DEFAULT_FIRST_HOUR_OUTPUT = SPRINT_DIR / "first_hour_diff.json"
 DEFAULT_FIELDS = ("T2", "U10", "V10", "T", "U", "V", "QVAPOR", "P", "PSFC")

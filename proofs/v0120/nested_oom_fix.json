@@ -1,6 +1,6 @@
 {
   "objective": "Fix the standalone LIVE-NESTED (gpuwrf.cli run --max-dom N) 24 h OOM: 'RESOURCE_EXHAUSTED: Out of memory trying to allocate 9.24 GiB'. Make the nested forecast memory-bounded so it fits the 32 GiB RTX 5090 for a full 24 h.",
-  "case": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+  "case": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
   "case_note": "the EXACT production failing case (3 domains, fresh real.exe wrfinput_d01/d02/d03 + wrfbdy_d01, NO CPU-WRF wrfout).",
   "device": "NVIDIA GeForce RTX 5090, 32607 MiB total (~3 GiB held by desktop apps krunner/chrome/plasmashell).",
   "grids": {"d01": "94x60x45 dt=18s", "d02": "160x67x45 dt=6s", "d03": "94x76x45 dt=2s", "ratios": "1:3:9"},
@@ -57,7 +57,7 @@
     "wall_clock_forecast_s": {"BFC": 497.4, "platform_reexec": 660.3, "ratio": 1.33}
   },
 
-  "manager_24h_command": "/tmp/wrf_gpu_run.sh taskset -c 0-3 env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --output-dir $HOME/.gpuwrf_nest24h_out --scratch-dir $HOME/.gpuwrf_nest24h_scratch --max-dom 3 --hours 24",
+  "manager_24h_command": "/tmp/wrf_gpu_run.sh taskset -c 0-3 env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false python -m gpuwrf.cli run --input-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z --output-dir $HOME/.gpuwrf_nest24h_out --scratch-dir $HOME/.gpuwrf_nest24h_scratch --max-dom 3 --hours 24",
   "manager_24h_command_note": "Do NOT set XLA_PYTHON_CLIENT_ALLOCATOR on the command line -- the CLI re-execs to platform automatically for --max-dom>1 (you'll see a 'nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=platform' line on stderr). Output/scratch must be DISK-backed (not /tmp tmpfs); the CLI redirects /tmp scratch to $HOME/.gpuwrf_scratch automatically. Expect ~1.3x slower than BFC; the H=2 forecast was ~11 min, so 24 h is roughly ~1.5-2 h wall on this workstation.",
 
   "confidence_24h_fits_32gb": "HIGH. Peak is a single recurring ~8 GiB transient + a ~6 GiB working set, and the platform allocator makes peak LEAD-INDEPENDENT (no arena => no growth, no fragmentation). Measured peak 15.8 GiB at H=2 with all transients exercised; this does not grow with forecast length, leaving ~17 GiB headroom for the full 24 h.",

@@ -11,6 +11,6 @@
   "warm_big_s": 3.694454337004572,
   "warmed_per_step_ms": 45.94135068327887,
   "peak_gpu_mem_mb": 1444.68896484375,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "radiation_in_window": false
 }

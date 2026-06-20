@@ -220,9 +220,9 @@
   "generated_utc": "2026-06-12T05:35:08.777567+00:00",
   "gpu_used": false,
   "inputs": {
-    "cpu_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+    "cpu_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
     "domain": "d01",
-    "gpu_dir": "/mnt/data/wrf_gpu_validation/v014_dzs_zs_d01_1h_gpu_20260612T053106Z/gpu_output"
+    "gpu_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_dzs_zs_d01_1h_gpu_20260612T053106Z/gpu_output"
   },
   "inventory": {
     "common": [
@@ -622,8 +622,8 @@
     "paired_file_count": 1,
     "pairs": [
       {
-        "cpu_file": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu/wrfout_d01_2023-01-15_01:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu_validation/v014_dzs_zs_d01_1h_gpu_20260612T053106Z/gpu_output/wrfout_d01_2023-01-15_01:00:00",
+        "cpu_file": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu/wrfout_d01_2023-01-15_01:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu_validation/v014_dzs_zs_d01_1h_gpu_20260612T053106Z/gpu_output/wrfout_d01_2023-01-15_01:00:00",
         "lead_h": 1,
         "valid_time_utc": "2023-01-15T01:00:00+00:00"
       }

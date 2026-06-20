@@ -17,7 +17,7 @@ and make the per-substep diff directly comparable).
 We run steps 1..169 with the fast jitted segment, then steps 170..205 with the
 instrumented loop, dumping per (step, rk, substep) at columns center-1/center/center+1.
 
-Output: /mnt/data/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_substeps.json (JAX side)
+Output: <DATA_ROOT>/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_substeps.json (JAX side)
 """
 from __future__ import annotations
 
@@ -165,7 +165,7 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--start", type=int, default=170)
     p.add_argument("--end", type=int, default=205)
-    p.add_argument("--out", type=str, default="/mnt/data/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_substeps.json")
+    p.add_argument("--out", type=str, default="<DATA_ROOT>/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_substeps.json")
     args = p.parse_args()
 
     case = build_density_current_numpy()

@@ -4,7 +4,7 @@ This module is the *full WRF v4 ARW enumeration* of the valid integer codes for
 the core physics namelist parameters, transcribed faithfully from the WRF v4
 namelist documentation:
 
-    /home/user/src/wrf_pristine/WRF/run/README.namelist  (verified 2026-06-04)
+    <USER_HOME>/src/wrf_pristine/WRF/run/README.namelist  (verified 2026-06-04)
 
 It is a pure-data, dependency-free reference table. It makes **no** claim about
 what the GPU port implements -- that is owned by
@@ -32,7 +32,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-WRF_README_SOURCE = "/home/user/src/wrf_pristine/WRF/run/README.namelist (v4, audited 2026-06-04)"
+WRF_README_SOURCE = "<USER_HOME>/src/wrf_pristine/WRF/run/README.namelist (v4, audited 2026-06-04)"
 
 
 @dataclass(frozen=True)

@@ -174,7 +174,7 @@
         "c3h_c4h_p_top": "live child DycoreMetrics from wrfinput_d02",
         "mub": "live-nest recomputed MUB via live_state.mu_total-live_state.mu_perturbation",
         "pp": "raw wrfinput_d02 P via raw_state.p_perturbation",
-        "qv": "raw child input QVAPOR via raw_state.qv for the WRF formula transcription; accepted WRF pre-call QVAPOR truth parsed only from /mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+        "qv": "raw child input QVAPOR via raw_state.qv for the WRF formula transcription; accepted WRF pre-call QVAPOR truth parsed only from <DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
         "save_mub": "raw wrfinput_d02 MUB via raw_state.mu_total-raw_state.mu_perturbation",
         "th": "raw wrfinput_d02 T, with WRF use_theta_m=1 dry-to-moist conversion tested explicitly"
       },
@@ -672,7 +672,7 @@
           159
         ]
       },
-      "source_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+      "source_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
       "status": "SAME_BOUNDARY_PRECALL_QVAPOR_USED"
     },
     "status": "STEP1_THETA_SAME_QVAPOR_COMPARISON_EXECUTED",
@@ -969,7 +969,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/user/src/wrf_gpu2",
+    "cwd": "<USER_HOME>/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "9b4cb3a9 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open theta same qvapor sprint\n",
@@ -981,7 +981,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
       "sha256": "8dae3298e9781ba5d3b8d71e6a9b96af38f5bc50ad374082cbaf830baf6bcae9",
       "size_bytes": 5283
     },
@@ -989,7 +989,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.json",
       "sha256": "ec4c7a47e52f63b5c727426cc01610c761b3fad3467756ce653c7832c91ab0a3",
       "size_bytes": 35811
     },
@@ -997,7 +997,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.py",
       "sha256": "04efd98420b48ba76ad7fd5267883284d918d4600555fd09c152072b13d9f0bd",
       "size_bytes": 35565
     },
@@ -1005,7 +1005,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint.json",
       "sha256": "8dae3298e9781ba5d3b8d71e6a9b96af38f5bc50ad374082cbaf830baf6bcae9",
       "size_bytes": 5283
     },
@@ -1013,7 +1013,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3",
       "sha256": null,
       "size_bytes": null
     },
@@ -1021,7 +1021,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
       "sha256": null,
       "size_bytes": null
     },
@@ -1029,7 +1029,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_theta_same_qvapor",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_theta_same_qvapor",
       "sha256": null,
       "size_bytes": null
     },
@@ -1037,7 +1037,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-theta-same-qvapor/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-theta-same-qvapor/sprint-contract.md",
       "sha256": "d1ead6c7cf8b80b36cf6a46efcc41f6c20b78169524c143d56842b7817f4b3ca",
       "size_bytes": 4399
     },
@@ -1045,7 +1045,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
       "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
       "size_bytes": 11005720
     },
@@ -1053,7 +1053,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfout_d02_2026-05-01_18:00:00",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfout_d02_2026-05-01_18:00:00",
       "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
       "size_bytes": 10945385
     }
@@ -1067,15 +1067,15 @@
   "no_wrf_run": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-theta-same-qvapor.md",
-    "same_boundary_qvapor_root_reused": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-theta-same-qvapor.md",
+    "same_boundary_qvapor_root_reused": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only"
   },
   "qvapor_source_rule": {
     "candidate_formula_qvapor_source": "raw child input state, matching the prior theta proof logic",
     "same_boundary_qvapor_root_required": true,
-    "wrf_qvapor_truth_source": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+    "wrf_qvapor_truth_source": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
     "wrfout_qvapor_loaded": false
   },
   "required_ancestor_912b7371": {
@@ -1220,7 +1220,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
         "record_schemas": [
           [
             "MASS_PREPART",
@@ -1313,7 +1313,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
         "record_schemas": [
           [
             "MASS_PREPART",
@@ -1406,7 +1406,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
         "record_schemas": [
           [
             "MASS_PREPART",
@@ -1499,7 +1499,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
         "record_schemas": [
           [
             "MASS_PREPART",
@@ -1562,7 +1562,7 @@
       "MASS_PREPART": 461736,
       "WPH_PREPART": 472230
     },
-    "root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+    "root": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
     "shapes": {
       "mass": [
         44,
@@ -1720,7 +1720,7 @@
         "lines 852-855 and 869-879 branch on use_theta_m; use_theta_m=1 treats th as moist theta"
       ],
       "lines": "812-890",
-      "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F"
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F"
     },
     "mediation_integrate_live_nest_call": {
       "evidence": [
@@ -1729,7 +1729,7 @@
         "lines 754-762 call adjust_tempqv(nest%mub, nest%mub_save, nest%c3h, nest%c4h, nest%znw, nest%p_top, nest%t_2, nest%p, QVAPOR, use_theta_m, ...)"
       ],
       "lines": "726-762",
-      "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F"
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/share/mediation_integrate.F"
     },
     "theta_m_conversion": {
       "evidence": [
@@ -1737,7 +1737,7 @@
         "lines 4923-4928 apply grid%t_2 = (grid%t_2 + T0) * (1 + R_v/R_d * QVAPOR) - T0 when use_theta_m=1"
       ],
       "lines": "4918-4928",
-      "path": "/home/user/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F"
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F"
     }
   }
 }

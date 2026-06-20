@@ -29,7 +29,7 @@
         "--abbrev-ref",
         "HEAD"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
@@ -41,7 +41,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "0ea550dd82b80b1cc0ec287c5b314270eb78b4c8\n",
@@ -53,7 +53,7 @@
         "status",
         "--short"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": " M .agent/reviews/2026-06-10-v014-dry-source-leaf-fix.md\n M .agent/reviews/2026-06-10-v014-step1-source-fidelity-closure.md\n M proofs/v014/same_input_contract_builder.py\n M proofs/v014/step1_dry_source_leaf_fix.json\n M proofs/v014/step1_dry_source_leaf_fix.md\n M proofs/v014/step1_part2_source_leaves_split.json\n M proofs/v014/step1_part2_source_leaves_split.md\n M proofs/v014/step1_source_fidelity_closure.json\n M proofs/v014/step1_source_fidelity_closure.md\n M proofs/v014/step1_source_fidelity_closure.py\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n M src/gpuwrf/coupling/physics_couplers.py\n M src/gpuwrf/integration/d02_replay.py\n M src/gpuwrf/physics/mynn_pbl.py\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .agent/reviews/2026-06-10-v014-mynn-driver-source-output-fix.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v014/mynn_driver_source_output_fix.json\n?? proofs/v014/mynn_driver_source_output_fix.md\n?? proofs/v014/mynn_driver_source_output_fix.py\n?? proofs/v014/mynn_driver_source_output_fix_wrf_patch.diff\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n?? tests/test_v014_mynn_coldstart_init.py\n",
@@ -105,7 +105,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "8d2468ecb14e6f531ff83d89602ace0a01a5aaaa2f4612a1b72cc6cc3accb438",
       "size_bytes": 103238
     },
@@ -121,7 +121,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-part2-source-leaves-split/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-part2-source-leaves-split/sprint-contract.md",
       "sha256": "515015ccf07f3b652bdf0bd6c113f821ca30c91abc0982ffa71f0769a18ff1f8",
       "size_bytes": 3398
     },
@@ -1256,7 +1256,7 @@
   },
   "tooling": {
     "wrf_fixture_commands": {
-      "compile": "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real",
+      "compile": "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF && timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real",
       "run": "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/run && timeout 1800 env CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT=1 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_ROOT=/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_GRID=2 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_START_STEP=1 WRFGPU2_STEP1_PART2_SOURCE_LEAVES_SPLIT_END_STEP=1 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY=1 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_ROOT=/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_GRID=2 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_START_STEP=1 WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_END_STEP=1 WRFGPU2_SOURCE_SAVE_BOUNDARY=1 WRFGPU2_SOURCE_SAVE_BOUNDARY_ROOT=/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/wrf_truth WRFGPU2_SOURCE_SAVE_BOUNDARY_GRID=2 WRFGPU2_SOURCE_SAVE_BOUNDARY_START_STEP=1 WRFGPU2_SOURCE_SAVE_BOUNDARY_END_STEP=1 ./wrf.exe"
     },
     "wrf_patch_diff": {
@@ -1266,7 +1266,7 @@
             "exists": true,
             "is_dir": false,
             "is_file": true,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/module_first_rk_step_part2.F",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/module_first_rk_step_part2.F",
             "sha256": "9c8c06b246c1cb1bb1632c25e5683a0cfd8545e6832df6eeaa1c744524325738",
             "size_bytes": 64799
           },
@@ -1287,7 +1287,7 @@
             "exists": true,
             "is_dir": false,
             "is_file": true,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/solve_em.F",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/solve_em.F",
             "sha256": "27703b7cb58e6da2a1d1b435847b13f50b013c8d60f471e53dbdc84a88b027b5",
             "size_bytes": 402400
           },
@@ -1308,7 +1308,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split_wrf_patch.diff",
+        "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_part2_source_leaves_split_wrf_patch.diff",
         "sha256": "6d35bf6584881ebac439fdc98ae9709a88baa180ce083dce77bba912b8e29885",
         "size_bytes": 14360
       },

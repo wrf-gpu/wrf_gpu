@@ -26,7 +26,7 @@ from netCDF4 import Dataset
 ROOT = Path(__file__).resolve().parents[2]
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 GPU_DIR = Path("/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z")
-CPU_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z")
+CPU_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z")
 OUT_JSON = ROOT / "proofs/v014/wind_mass_divergence_probe.json"
 OUT_MD = ROOT / "proofs/v014/wind_mass_divergence_probe.md"
 WRFOUT_RE = re.compile(r"^wrfout_(d\d{2})_(\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2})$")

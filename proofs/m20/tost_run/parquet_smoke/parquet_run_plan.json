@@ -1,6 +1,6 @@
 {
   "mode": "DRY-PLAN (no GPU)",
-  "parquet": "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet",
+  "parquet": "<DATA_ROOT>/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet",
   "margins_frozen_adr029": {
     "T2": 0.2148692978020805,
     "U10": 0.23064713972582307,

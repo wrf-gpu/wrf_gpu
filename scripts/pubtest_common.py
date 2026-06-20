@@ -19,10 +19,10 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 SPRINT_DIR = ROOT / ".agent" / "sprints" / "2026-05-27-testing-plan-execution-redo"
-WRF_SOURCE = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF")
-WRF_ENV = Path("/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
-STABLE_WRF_EXE = Path("/home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe")
-CANARY_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+WRF_SOURCE = Path("<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF")
+WRF_ENV = Path("<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
+STABLE_WRF_EXE = Path("<USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe")
+CANARY_RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 
 HIGH_TEST_FILES = {
     "IDEALIZED-WARMBUBBLE": "idealized_warmbubble.json",

@@ -97,7 +97,7 @@ GPUWRF_K2_EXPERIMENTAL=1 \
 PYTHONPATH=src JAX_ENABLE_X64=true \
 JAX_PLATFORM_NAME=cpu XLA_FLAGS=--xla_force_host_platform_device_count=3 \
 python scripts/verify_multigpu_dgx_sim.py --check k2-lab --devices 3 \
-  --run-dir /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z \
+  --run-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z \
   --forecast-halo-width 8 \
   --output proofs/v018/k2_multigpu_lab.json \
   --status-md proofs/v018/k2_multigpu_report.md

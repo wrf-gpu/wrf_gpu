@@ -19,7 +19,7 @@
 
 - `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu OMP_NUM_THREADS=2 XLA_PYTHON_CLIENT_PREALLOCATE=false python proofs/p1_5/precip_water_parity.py`
 - `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu OMP_NUM_THREADS=2 XLA_PYTHON_CLIENT_PREALLOCATE=false python proofs/v090/thompson_savepoint_parity.py --out proofs/v0110/thompson_v090_savepoint.json`
-- `/tmp/wrf_gpu_run.sh taskset -c 0-27 env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=2 XLA_PYTHON_CLIENT_PREALLOCATE=false XLA_PYTHON_CLIENT_MEM_FRACTION=0.55 TF_GPU_ALLOCATOR=cuda_malloc_async python -`
+- `/tmp/wrf_gpu_run.sh taskset -c 0-27 env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=2 XLA_PYTHON_CLIENT_PREALLOCATE=false XLA_PYTHON_CLIENT_MEM_FRACTION=0.55 TF_GPU_ALLOCATOR=cuda_malloc_async python -`
 - `taskset -c 0-27 env PYTHONPATH=src JAX_PLATFORMS=cpu OMP_NUM_THREADS=2 XLA_PYTHON_CLIENT_PREALLOCATE=false pytest -q tests/test_m6b_20260509_microphysics_fix.py::test_20260509_bad_cell_invalid_pressure_does_not_create_cloud_feedback tests/test_m5_thompson_column_shapes.py::test_debug_false_hlo_has_no_debug_assert_ops`
 
 ## Test Notes

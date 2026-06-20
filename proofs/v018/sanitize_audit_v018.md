@@ -10,7 +10,7 @@
 > tokens (old home-dir path, old username, private account handle, private
 > email). They are written in redacted/placeholder form below so this audit file
 > itself contains **zero** live PII and stays clean under any pre-push secrets
-> scan. `OLDHOME` = the old `/home/<old-username>` path prefix; `OLDUSER` = the
+> scan. `OLDHOME` = the old `<USER_HOME>/<old-username>` path prefix; `OLDUSER` = the
 > old lowercase username; `OLDNAME` = the capitalized personal name; `OLDACCT` =
 > the private GitHub account handle.
 
@@ -33,7 +33,7 @@ public path set (Python set-diff: 0 changed files outside the public set).
 
 ## Scrub rules applied (match v0.17 exactly)
 
-- `OLDHOME` (the old `/home/<old-username>` prefix) → `/home/user` (handled by the
+- `OLDHOME` (the old `<USER_HOME>/<old-username>` prefix) → `<USER_HOME>` (handled by the
   word-boundary `OLDUSER` rule below).
 - bare username `OLDUSER` → `user`, word-boundary safe (`\b…\b`). Verified this
   never touches `generic` (113 occ. preserved), `enrich`/`enriches`/`enrichment`
@@ -48,23 +48,23 @@ public path set (Python set-diff: 0 changed files outside the public set).
   dev/backup remote". This line is **new in v0.18** (not present in the v0.17
   public SKILL.md) — a real finding. The public org remote
   `git@github.com:wrf-gpu/wrf_gpu.git` was preserved (it is public on purpose).
-- `/mnt/data` paths **KEPT** (v0.17 decision — generic data mount, not PII;
+- `<DATA_ROOT>` paths **KEPT** (v0.17 decision — generic data mount, not PII;
   112,094 occ. preserved unchanged).
 - repo dir name `wrf_gpu2` in paths **KEPT** (matches v0.17 public, e.g.
-  `/home/user/src/wrf_gpu2`).
+  `<USER_HOME>/src/wrf_gpu2`).
 
 ## Before / after grep counts (public path set)
 
 | Pattern | Before (HEAD 5d2a2d2a) | After |
 |---|---|---|
-| `OLDHOME` (`/home/<old-username>`) | 1432 | **0** |
+| `OLDHOME` (`<USER_HOME>/<old-username>`) | 1432 | **0** |
 | bare `OLDUSER` (lowercase username, word-boundary) | 1452 | **0** |
 | capitalized `OLDNAME` (personal name, word-boundary) | 6 | **0** |
 | `OLDACCT` (private GitHub account handle) | 1 | **0** |
 | private email | 0 | **0** |
 | any old-username (case-insensitive, excl. `enrich`/`generic`) | — | **0** |
-| `/home/user` (replacement, sanity) | 0 | 1432 |
-| `/mnt/data` (KEPT, sanity) | 112094 | 112094 |
+| `<USER_HOME>` (replacement, sanity) | 0 | 1432 |
+| `<DATA_ROOT>` (KEPT, sanity) | 112094 | 112094 |
 
 **Files changed:** 261 (all in the public path set). Diff is pure substitution:
 1460 insertions / 1460 deletions (equal — no lines added or removed).
@@ -76,7 +76,7 @@ public path set (Python set-diff: 0 changed files outside the public set).
 - Bearer/Authorization tokens: **0**
 - AWS `AKIA…` keys: **0**
 - Personal email addresses (gmail/yahoo/hotmail/outlook/protonmail): **0**
-- Other `/home/<name>` username-leaking paths (non-`user`): **0**
+- Other `<USER_HOME>/<name>` username-leaking paths (non-`user`): **0**
 - Other personal `github.com/<account>` URLs (besides the public `wrf-gpu` org):
   **0** (the remaining `github.com/kokkos/kokkos.git` is a legitimate public
   third-party dependency URL, not PII).
@@ -107,7 +107,7 @@ checklist items) — none are actual secret literals.
 ## Functional verification (scrub changed only strings, not behavior)
 
 - All `src/` edits are comment / docstring / source-citation **string-literal**
-  changes only. Verified: every added `src/` line matches `/home/user` or
+  changes only. Verified: every added `src/` line matches `<USER_HOME>` or
   "the user"; zero logic/path/env-var-name changes.
 - `python3 -m py_compile` on all changed `.py` files: **OK**.
 - `import gpuwrf` (+ all scrubbed src modules: `config.paths`, `io.gen2_accessor`,
@@ -123,6 +123,6 @@ checklist items) — none are actual secret literals.
 **ZERO PII and ZERO secrets remain in the public-shipping tree.** Confirmed by
 final re-audit across the full public path set: 0 old-home-dir paths, 0 bare
 old-username, 0 capitalized personal name, 0 private account handle, 0 private
-email, 0 token/key/credential literals, 0 private-account URLs. `/mnt/data` and
+email, 0 token/key/credential literals, 0 private-account URLs. `<DATA_ROOT>` and
 `wrf_gpu2` preserved per the v0.17 standard. Not pushed or tagged — manager
 performs merge + tag + push after review.

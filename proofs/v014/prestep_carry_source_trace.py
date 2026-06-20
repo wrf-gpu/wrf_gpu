@@ -56,7 +56,7 @@ OPERATIONAL_STATE_MODULE = ROOT / "src/gpuwrf/runtime/operational_state.py"
 CHECKPOINT = Path(
     os.environ.get(
         "WRFGPU2_H10_PRESTEP_CARRY",
-        "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
     )
 )
 CHECKPOINT_PROVENANCE = CHECKPOINT.with_suffix(".provenance.json")
@@ -997,7 +997,7 @@ def main() -> int:
             "CHECKPOINT_MISSING",
             f"Missing {CHECKPOINT}",
             (
-                "Provide /mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl "
+                "Provide <DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl "
                 "or set WRFGPU2_H10_PRESTEP_CARRY to a CPU-loadable step-5999 runtime checkpoint."
             ),
         )

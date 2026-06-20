@@ -1,6 +1,6 @@
 {
   "scope": "SEGSCAN stability probe -- hour-by-hour finiteness of the coupled forecast advanced by the host-loop segment",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "segment_steps": 180,
   "radiation_cadence_steps": 180,
   "method": "each hour advanced by the SAME compiled 180-step _advance_chunk segment (proven bitwise-equal to the single scan in segscan_equiv.json); finite ranges read at each hour boundary",

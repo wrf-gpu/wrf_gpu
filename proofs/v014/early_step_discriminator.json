@@ -160,18 +160,18 @@
     "candidate_surface_available": false,
     "candidate_surface_file_count": 0,
     "search_roots": [
-      "/mnt/data/wrf_gpu2/v014_early_step_discriminator",
-      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output",
-      "/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output",
-      "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output",
-      "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"
+      "<DATA_ROOT>/wrf_gpu2/v014_early_step_discriminator",
+      "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output",
+      "<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/marker_output",
+      "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output",
+      "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"
     ]
   },
   "commands": {
     "loader_probe": [
-      "/home/user/miniconda3/bin/python",
+      "<USER_HOME>/miniconda3/bin/python",
       "-c",
-      "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
+      "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
     ],
     "validation": [
       "python -m py_compile proofs/v014/early_step_discriminator.py",
@@ -187,16 +187,16 @@
   },
   "cpu_loader_probe": {
     "command": [
-      "/home/user/miniconda3/bin/python",
+      "<USER_HOME>/miniconda3/bin/python",
       "-c",
-      "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
+      "from gpuwrf.integration.d02_replay import build_replay_case\nbuild_replay_case(\n    '<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3',\n    domain='d02',\n    load_lateral_boundaries=False,\n)\nprint('LOAD_OK')"
     ],
-    "cwd": "/home/user/src/wrf_gpu2",
+    "cwd": "<USER_HOME>/src/wrf_gpu2",
     "gpu_only_state_zero_observed": true,
     "probe_purpose": "Can the existing real-case wrfinput replay loader construct a d02 State/Tendencies under JAX_PLATFORMS=cpu without production source edits?",
     "returncode": 1,
     "status": "BLOCKED_GPU_ONLY_STATE_ZERO",
-    "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 2, in <module>\n    build_replay_case(\n    ~~~~~~~~~~~~~~~~~^\n        '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        domain='d02',\n        ^^^^^^^^^^^^^\n        load_lateral_boundaries=False,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1357, in build_replay_case\n    state = State.zeros(grid)\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 2, in <module>\n    build_replay_case(\n    ~~~~~~~~~~~~~~~~~^\n        '<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3',\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        domain='d02',\n        ^^^^^^^^^^^^^\n        load_lateral_boundaries=False,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1357, in build_replay_case\n    state = State.zeros(grid)\n  File \"<USER_HOME>/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"<USER_HOME>/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
     "stdout_tail": "",
     "strict_cpu_realcase_loader_available": false,
     "wall_s": 2.9292168149986537
@@ -530,75 +530,75 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "managing_sprints_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
       "sha256": "bf9bfd3ab37fc1af814c7b816cf5cc563a86334ab64d57e9a93e824ca90a3f88",
       "size_bytes": 10774
     },
     "namelist_input": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input",
       "sha256": "4109f2e69988f7f263f4172a03c66f38b2da9812918ebb34cc09d6ca98cff3a5",
       "size_bytes": 4153
     },
     "plan": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-EARLY-STEP-DISCRIMINATOR-PLAN.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-EARLY-STEP-DISCRIMINATOR-PLAN.md",
       "sha256": "5f4861c1bb84c901744fae3fcb3f333a54c73e8dd274a700de934844dbdabd71",
       "size_bytes": 3284
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "run_case3": {
       "exists": true,
       "is_dir": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3"
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3"
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-early-step-discriminator/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-early-step-discriminator/sprint-contract.md",
       "sha256": "a135336780c94ee4ab6815fc0434744c1e659e00637d546e120527dc51966647",
       "size_bytes": 5190
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_oracle_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
     "wrfbdy_d01": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfbdy_d01",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfbdy_d01",
       "sha256": "32ebf0c703f53cad9fbe6660ea1227fb76a051e0c4dc2cbded7157cb4b01d57b",
       "size_bytes": 25073698
     },
     "wrfinput_d02": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
       "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
       "size_bytes": 11005720
     }
@@ -616,56 +616,56 @@
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "sha256": "9b87194063639617c64ab31372201ed2374094df622e80cf4c724ae5244bd247",
         "size_bytes": 848336
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
         "sha256": "e863b61d0ec1834eb2439da2abdee054465f2cce3c8eddfc0a6cfce7f3ba1f88",
         "size_bytes": 12545265
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
         "size_bytes": 11774
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
         "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
         "size_bytes": 159441
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "sha256": "2d859d3cc1eca06c6205727a42c03b4fc7d6486ec811519959c0fb05947c46d0",
         "size_bytes": 11753
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_final_calc_p_rho_phi_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
         "sha256": "0b94f36f58db4e64f5fbe0470ae9dd219047c9af23b429ac6fe6e67c0f289201",
         "size_bytes": 159420
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "sha256": "89cd5a4bf070f1fde86e927f6fb3470492fd0412156858c9685f7ccff1e3ab6b",
         "size_bytes": 890178
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output/source_save_after_rk_tendency_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
         "sha256": "f8b811a5abed3630fe54dd7f4db90b6e964df1d736ddc475a2f59ae015243de8",
         "size_bytes": 12449131
       }
@@ -675,8 +675,8 @@
   "one_cell_proof": false,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/early_step_discriminator.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/early_step_discriminator.md"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/early_step_discriminator.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/early_step_discriminator.md"
   },
   "required_fields": {
     "active_moisture_candidates": [
@@ -717,7 +717,7 @@
   "schema": "wrfgpu2.v014.early_step_discriminator.v1",
   "scratch": {
     "exists": true,
-    "root": "/mnt/data/wrf_gpu2/v014_early_step_discriminator"
+    "root": "<DATA_ROOT>/wrf_gpu2/v014_early_step_discriminator"
   },
   "source_contract_inspection": {
     "d02_replay": {
@@ -748,7 +748,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
         "sha256": "360eced25ef4db037913a7936ac2b2a638a568f51cf88dcdbfe39383f5b91d8c",
         "size_bytes": 98563
       }
@@ -770,7 +770,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
         "sha256": "e6d5535f19de70d38f8e6a65a775bb4da3a80409f663deb40a6a5a89363de2bf",
         "size_bytes": 26757
       }
@@ -803,7 +803,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
         "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
         "size_bytes": 175388
       }
@@ -825,7 +825,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
         "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
         "size_bytes": 8390
       }
@@ -880,7 +880,7 @@
       "path": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/contracts/state.py",
         "sha256": "be08facd297708892cc36cad0761520716abc0f35bcaf418534acf20641c01aa",
         "size_bytes": 25734
       }

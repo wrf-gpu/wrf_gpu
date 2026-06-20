@@ -29,7 +29,7 @@ from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
 from pathlib import Path
 
-TABLE_DIR = Path("/home/user/src/wrf_pristine/WRF/run")
+TABLE_DIR = Path("<USER_HOME>/src/wrf_pristine/WRF/run")
 HAVE_TABLES = (TABLE_DIR / "MPTABLE.TBL").exists()
 
 

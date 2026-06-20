@@ -30,6 +30,6 @@ WRF changes heat/moisture fluxes between `SFCLAY1D_mynn` output and the MYNN dri
 
 ## Files
 
-- JSON proof: `/home/user/src/wrf_gpu2/proofs/v014/step1_mynn_source_coupling.json`
-- WRF patch archive: `/home/user/src/wrf_gpu2/proofs/v014/step1_mynn_source_coupling_wrf_patch.diff`
-- Review: `/home/user/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md`
+- JSON proof: `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_mynn_source_coupling.json`
+- WRF patch archive: `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_mynn_source_coupling_wrf_patch.diff`
+- Review: `<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-mynn-source-coupling.md`

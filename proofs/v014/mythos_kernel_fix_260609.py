@@ -509,7 +509,7 @@ def build_proof() -> dict[str, Any]:
             "(acoustic/mass/vertical) lane, not init and not pressure-diagnosis semantics. Next sprint: (1) "
             "freeze one-step namelist parity (acoustic substep count, epssm, damping) between the proof "
             "surrogate and the WRF case3 namelist; (2) rerun the existing RK1 substage comparator chain "
-            "(/mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth is still valid WRF-side) "
+            "(<DATA_ROOT>/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth is still valid WRF-side) "
             "against JAX substages built from the NOW-CLOSED init state. No dycore source edit is justified "
             "before that localization."
         ),

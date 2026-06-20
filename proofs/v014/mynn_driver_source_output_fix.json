@@ -366,7 +366,7 @@
     },
     "patch_diff": {
       "exists": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/mynn_driver_source_output_fix_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/mynn_driver_source_output_fix_wrf_patch.diff",
       "sha256": "9e7632bee5f2a8d64cf6659107d903a78eab80676c3b9c07ba8ed7dd9493d8b8",
       "size_bytes": 10678
     },

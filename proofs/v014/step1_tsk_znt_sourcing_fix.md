@@ -31,5 +31,5 @@ Surface output remains red with exact TSK/ZNT/MAVAIL:
 
 ## Files
 
-- JSON proof: `/home/user/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix.json`
-- WRF hook patch archive: `/home/user/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff`
+- JSON proof: `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix.json`
+- WRF hook patch archive: `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff`

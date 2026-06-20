@@ -1,7 +1,7 @@
 {
-  "state_oracle": "/mnt/data/wrf_gpu2/v018_thompson_process_oracle/state/microphysics_coldmix",
-  "process_oracle": "/mnt/data/wrf_gpu2/v018_thompson_process_oracle/process",
-  "build_dir": "/mnt/data/wrf_gpu2/v018_thompson_process_oracle/build",
+  "state_oracle": "<DATA_ROOT>/wrf_gpu2/v018_thompson_process_oracle/state/microphysics_coldmix",
+  "process_oracle": "<DATA_ROOT>/wrf_gpu2/v018_thompson_process_oracle/process",
+  "build_dir": "<DATA_ROOT>/wrf_gpu2/v018_thompson_process_oracle/build",
   "n_columns": 8,
   "n_levels": 44,
   "dt_s": 18.0,

@@ -30,7 +30,7 @@ from gpuwrf.init.real_init.vertical_coord import (
 )
 
 
-WRF_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+WRF_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 
 # Static fp64-vs-oracle residual bound (max over the campaign). C1F/C1H are pure
 # functions of the eta levels + etac, so this is identical for every case/domain.

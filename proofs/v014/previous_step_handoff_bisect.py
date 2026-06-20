@@ -64,7 +64,7 @@ STATE_MODULE = ROOT / "src/gpuwrf/contracts/state.py"
 CHECKPOINT = Path(
     os.environ.get(
         "WRFGPU2_H10_PRESTEP_CARRY",
-        "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
     )
 )
 CHECKPOINT_PROVENANCE = CHECKPOINT.with_suffix(".provenance.json")
@@ -72,7 +72,7 @@ CHECKPOINT_PROVENANCE = CHECKPOINT.with_suffix(".provenance.json")
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DEFAULT_INPUT_ROOTS = (
     Path("/tmp/v0120_merged_run_root"),
-    Path("/mnt/data/canairy_meteo/runs/wrf_l2"),
+    Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2"),
 )
 TARGET_DOMAIN = "d02"
 TARGET_FIELDS = ("T", "P", "PB", "MU", "MUB")
@@ -88,7 +88,7 @@ ARTIFACT_ROOT_CANDIDATES = (
     Path(os.environ["WRFGPU2_PREVIOUS_STEP_HANDOFF_BISECT_ROOT"])
     if os.environ.get("WRFGPU2_PREVIOUS_STEP_HANDOFF_BISECT_ROOT")
     else None,
-    Path("/mnt/data/wrf_gpu2/v014_previous_step_handoff_bisect"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_previous_step_handoff_bisect"),
     Path("/tmp/wrf_gpu2_v014_previous_step_handoff_bisect"),
 )
 
@@ -236,7 +236,7 @@ from pathlib import Path
 os.environ.setdefault("JAX_ENABLE_X64", "true")
 from gpuwrf.integration.nested_pipeline import NestedPipelineConfig, _load_domains, domain_names_for
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
-roots = [Path("/tmp/v0120_merged_run_root"), Path("/mnt/data/canairy_meteo/runs/wrf_l2")]
+roots = [Path("/tmp/v0120_merged_run_root"), Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2")]
 run_dir = next((root / RUN_ID for root in roots if (root / RUN_ID / "wrfinput_d01").exists()), None)
 if run_dir is None:
     raise FileNotFoundError("missing native L2 run directory")

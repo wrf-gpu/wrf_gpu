@@ -5,7 +5,7 @@ Compares the static / prescribed fields that the B4 loaders place into the
 operational ``State`` against the WRF ``wrfinput_d02`` (and, where the field is
 a model-diagnostic, the t=0 ``wrfout_d02``) for the pinned Canary L3 run.
 
-Ground truth: ``/mnt/data/canairy_meteo/runs/wrf_l3/<run>/wrfinput_d02`` and
+Ground truth: ``<DATA_ROOT>/canairy_meteo/runs/wrf_l3/<run>/wrfinput_d02`` and
 ``wrfout_d02_<t0>``.  No self-compares: every reference array is read straight
 from the WRF NetCDF, independently of the gpuwrf loader path.
 
@@ -33,7 +33,7 @@ from netCDF4 import Dataset
 
 from gpuwrf.integration.d02_replay import build_replay_case
 
-DEFAULT_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
+DEFAULT_RUN = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
 EXPLAINABLE_TOL = 1.0e-5  # relative-to-range tolerance for "explainably close"
 
 

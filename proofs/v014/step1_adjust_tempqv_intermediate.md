@@ -6,11 +6,11 @@ Verdict: `STEP1_ADJUST_TEMPQV_INTERMEDIATE_PRESSURE_INPUT_MISMATCH`.
 
 - CPU-only proof; GPU used: `False`.
 - Required ancestor `c3620d09` present: `True`.
-- Disposable WRF hook patch: `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`.
-- Rebuilt executable: `/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe`; hook string present: `True`.
+- Disposable WRF hook patch: `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`.
+- Rebuilt executable: `<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/main/wrf.exe`; hook string present: `True`.
 - WRF run return code: `0`.
-- WRF run log: `/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_mpirun_np28_manager.log`.
-- WRF hook file: `/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt`; status `READY`.
+- WRF run log: `<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/logs/wrf_run_mpirun_np28_manager.log`.
+- WRF hook file: `<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt`; status `READY`.
 
 ## Interpretation
 
@@ -45,10 +45,10 @@ files changed:
 - `.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md`
 
 proof objects produced:
-- `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json`
-- `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.md`
-- `/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`
-- `/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md`
+- `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json`
+- `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.md`
+- `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate_wrf_patch.diff`
+- `<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-adjust-tempqv-intermediate.md`
 
 unresolved risks:
 - Only one target cell was emitted; broader savepoint may still be needed for neighborhood effects.

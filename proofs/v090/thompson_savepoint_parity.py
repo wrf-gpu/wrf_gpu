@@ -28,7 +28,7 @@ import gpuwrf  # noqa: F401  enables jax_enable_x64 at import (fp64 throughout)
 
 from gpuwrf.validation.tier1_thompson import run_oracle_parity_f64
 
-ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics")
+ORACLE_DIR = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/microphysics")
 # Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
 WRF_PRISTINE_ROOT = Path(
     os.environ.get("WRF_PRISTINE_ROOT", str(Path(__file__).resolve().parents[2].parent / "wrf_pristine" / "WRF"))

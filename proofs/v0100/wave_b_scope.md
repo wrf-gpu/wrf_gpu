@@ -114,7 +114,7 @@ high-risk MYNN/PBL rewrite and further architecture work.
 - `python proofs/v0100/compare_idealized_snapshots.py proofs/v0100/idealized_after_u1 proofs/v0100/wave_b_idealized_spot --rtol 1e-12 --out proofs/v0100/wave_b_idealized_roundoff.json`
 - `python proofs/v0100/wave_a_gate.py --hours 0.25 --out wave_b_coupled_spot_fp64.json`
 - `python proofs/v0100/wave_b_timing_probe.py ...` for full fp64, gated-fp32, unroll=2, no_thompson, no_pbl, dycore_only, and `GPUWRF_THOMPSON_NSED=16`
-- `python proofs/v0100/find_graupel_wet_wrfouts.py /mnt/data/canairy_meteo/runs --max-files 5000`
+- `python proofs/v0100/find_graupel_wet_wrfouts.py <DATA_ROOT>/canairy_meteo/runs --max-files 5000`
 - `JAX_PLATFORMS=cpu python proofs/v0100/thompson_nstep_histogram.py --dt-s 10 --caps 16,32,48,64 ...`
 
 ## Unresolved Risks

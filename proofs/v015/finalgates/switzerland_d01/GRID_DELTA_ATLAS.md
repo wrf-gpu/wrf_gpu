@@ -14,9 +14,9 @@ This report is produced by offline tooling from existing CPU-WRF and GPU wrfout 
 
 ## Artifacts
 
-- manifest: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas/manifest.json`
-- summary: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas/grid_delta_summary.json`
-- assets: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets`
+- manifest: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas/manifest.json`
+- summary: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas/grid_delta_summary.json`
+- assets: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets`
 
 ## Coverage
 
@@ -79,13 +79,13 @@ This report is produced by offline tooling from existing CPU-WRF and GPU wrfout 
 
 ## Plot Inventory
 
-- `heatmap`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_rmse.png`
-- `heatmap`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_bias.png`
-- `heatmap`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_p99_abs.png`
-- `heatmap`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_max_abs.png`
-- `timeseries`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/core_fields_rmse_timeseries.png`
-- `dashboard`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/dashboard.png`
-- `spatial_max_abs`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_PH.png`
-- `spatial_max_abs`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_MU.png`
-- `spatial_max_abs`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_P.png`
-- `spatial_max_abs`: `/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_RAINNC.png`
+- `heatmap`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_rmse.png`
+- `heatmap`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_bias.png`
+- `heatmap`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_p99_abs.png`
+- `heatmap`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/heatmap_max_abs.png`
+- `timeseries`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/core_fields_rmse_timeseries.png`
+- `dashboard`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/dashboard.png`
+- `spatial_max_abs`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_PH.png`
+- `spatial_max_abs`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_MU.png`
+- `spatial_max_abs`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_P.png`
+- `spatial_max_abs`: `<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/grid_delta_atlas_assets/spatial_maxabs_RAINNC.png`

@@ -65,9 +65,9 @@ NESTED_PIPELINE_MODULE = ROOT / "src/gpuwrf/integration/nested_pipeline.py"
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DEFAULT_INPUT_ROOTS = (
     Path("/tmp/v0120_merged_run_root"),
-    Path("/mnt/data/canairy_meteo/runs/wrf_l2"),
+    Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2"),
 )
-CPU_WRFOUT_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+CPU_WRFOUT_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 TARGET_DOMAIN = "d02"
 TARGET_FIELDS = ("T", "P", "PB", "MU", "MUB")
 STATIC_BASE_FIELDS = ("PB", "MUB")
@@ -85,7 +85,7 @@ ARTIFACT_ROOT_CANDIDATES = (
     Path(os.environ["WRFGPU2_EARLIER_SOURCE_BISECT_ROOT"])
     if os.environ.get("WRFGPU2_EARLIER_SOURCE_BISECT_ROOT")
     else None,
-    Path("/mnt/data/wrf_gpu2/v014_earlier_source_bisect"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_earlier_source_bisect"),
     Path("/tmp/wrf_gpu2_v014_earlier_source_bisect"),
 )
 

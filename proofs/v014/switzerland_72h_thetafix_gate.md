@@ -1,9 +1,9 @@
 # Switzerland d01 72h Field Gate — Theta-Clamp Venting Fix
 
 Date: 2026-06-12 UTC
-Run root: `/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_thetafix_20260612T012219Z`
+Run root: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_thetafix_20260612T012219Z`
 Branch/head: `worker/gpt/v013-close-manager` @ `4a7f1e46` (`_THETA_LIMITER_MAX_K` 500→1000)
-CPU truth: `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+CPU truth: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
 
 ## Result: venting FIXED, run stable to h72
 

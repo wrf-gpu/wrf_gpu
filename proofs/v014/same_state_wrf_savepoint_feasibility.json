@@ -11,7 +11,7 @@
     "objective": "Determine the fastest reliable path to generate CPU-WRF source-derived term savepoints for the selected h8-h14 dynamic divergence case."
   },
   "verdict": {
-    "fastest_reliable_path": "Use a disposable instrumented copy of /home/user/src/wrf_pristine/WRF, because it has a current WRF v4.7.1 source tree and built CPU executables. Run the Case 3 d01/d02 forecast from 2026-05-01_18:00:00 to h10 with a small env-gated Fortran emitter that dumps selected d02 cell patches around existing dycore routine boundaries. Do not use the old external/wrf_savepoint_patch as-is; its hooks are empty and its build paths are stale.",
+    "fastest_reliable_path": "Use a disposable instrumented copy of <USER_HOME>/src/wrf_pristine/WRF, because it has a current WRF v4.7.1 source tree and built CPU executables. Run the Case 3 d01/d02 forecast from 2026-05-01_18:00:00 to h10 with a small env-gated Fortran emitter that dumps selected d02 cell patches around existing dycore routine boundaries. Do not use the old external/wrf_savepoint_patch as-is; its hooks are empty and its build paths are stale.",
     "expected_first_target": {
       "lead_h": 10,
       "valid_time_utc": "2026-05-02T04:00:00Z",
@@ -24,27 +24,27 @@
   },
   "target_case": {
     "case_id": "20260501_18z_l2_72h_20260519T173026Z",
-    "cpu_truth_history_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
-    "case_launch_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_truth_history_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "case_launch_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
     "gpu_output_for_cell_selection_only": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
-    "target_cpu_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+    "target_cpu_wrfout": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
     "input_files": {
       "namelist_input": {
-        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
+        "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
         "sha256": "1a4711a1df97dfd28ff72f512024c07b3463de7a942f04f4c5b679f2ef690e38"
       },
       "wrfinput_d02": {
-        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+        "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
         "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34"
       },
       "wrfinput_d01": {
-        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01"
+        "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01"
       },
       "wrfbdy_d01": {
-        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01"
+        "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01"
       },
       "rsl_error_0000": {
-        "path": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/rsl.error.0000"
+        "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/rsl.error.0000"
       }
     },
     "domain_geometry": {
@@ -108,7 +108,7 @@
   },
   "wrf_source_paths": [
     {
-      "path": "/home/user/src/wrf_pristine/WRF",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF",
       "role": "fastest_buildable_candidate",
       "exists": true,
       "git_repository": true,
@@ -123,13 +123,13 @@
       "build_available": true,
       "executables": {
         "wrf.exe": {
-          "path": "/home/user/src/wrf_pristine/WRF/main/wrf.exe",
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/main/wrf.exe",
           "present": true,
           "size_bytes": 45501808,
           "mtime_local": "2026-06-04 10:13"
         },
         "real.exe": {
-          "path": "/home/user/src/wrf_pristine/WRF/main/real.exe",
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/main/real.exe",
           "present": true,
           "size_bytes": 36021856,
           "mtime_local": "2026-06-04 10:13"
@@ -140,18 +140,18 @@
         "sfc": "gfortran",
         "scc": "gcc",
         "dmparallel": "disabled/commented serial build",
-        "netcdfpath": "/home/user/miniconda3/envs/wrfbuild",
+        "netcdfpath": "<USER_HOME>/miniconda3/envs/wrfbuild",
         "fc_optimization": "-O2"
       },
       "linkage_summary": [
-        "/home/user/miniconda3/envs/wrfbuild/lib/libnetcdff.so.7",
-        "/home/user/miniconda3/envs/wrfbuild/lib/libnetcdf.so.22",
+        "<USER_HOME>/miniconda3/envs/wrfbuild/lib/libnetcdff.so.7",
+        "<USER_HOME>/miniconda3/envs/wrfbuild/lib/libnetcdf.so.22",
         "libgfortran.so.5"
       ],
       "recommendation": "Use only through a disposable copy/worktree for V0.14 instrumentation; do not patch this tree in place."
     },
     {
-      "path": "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF",
+      "path": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF",
       "role": "historical_case_source_path_from_rsl",
       "exists": true,
       "git_repository": false,
@@ -161,7 +161,7 @@
       "recommendation": "Use for provenance and source-diff comparison. It is not the fastest path because configure.wrf and main/wrf.exe are absent."
     },
     {
-      "path": "/home/user/src/wrf_ideal_f7i/WRF",
+      "path": "<USER_HOME>/src/wrf_ideal_f7i/WRF",
       "role": "source_reference_only",
       "exists": true,
       "git_repository": false,
@@ -170,14 +170,14 @@
       "recommendation": "Do not use for this sprint unless a specific source comparison is needed."
     },
     {
-      "path": "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF",
+      "path": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF",
       "role": "stale_path_referenced_by_old_savepoint_patch",
       "exists": false,
       "build_available": false,
       "recommendation": "Do not use."
     },
     {
-      "path": "/home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe",
+      "path": "<USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe",
       "role": "stale_executable_referenced_by_old_savepoint_patch",
       "exists": false,
       "build_available": false,
@@ -199,7 +199,7 @@
         "use": "Comparison/reporting pattern only; not a WRF source truth generator."
       },
       {
-        "path": "phys/module_wrfgpu2_oracle.F in /home/user/src/wrf_pristine/WRF",
+        "path": "phys/module_wrfgpu2_oracle.F in <USER_HOME>/src/wrf_pristine/WRF",
         "use": "Fortran raw binary plus sidecar emission idiom, env-gated outside repo src."
       }
     ],
@@ -225,78 +225,78 @@
   },
   "candidate_routines_to_instrument": {
     "orchestration": [
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "solve_em", "line": 3, "reason": "Best first hook layer for pre/post snapshots around RK, large-step, small-step, and boundary calls."},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "rk_tendency call", "line": 882, "term_group": "large_step_tendency"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "rk_addtend_dry call", "line": 968, "term_group": "large_step_total"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "small_step_prep call", "line": 1090, "term_group": "small_step_prep"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "calc_p_rho call", "line": 1110, "term_group": "pressure_density"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_uv call", "line": 1280, "term_group": "acoustic_uv"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_mu_t call", "line": 1393, "term_group": "mu_theta"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_w call", "line": 1500, "term_group": "w_ph_pressure"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "calc_p_rho call", "line": 1624, "term_group": "pressure_density"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "small_step_finish call", "line": 1825, "term_group": "stage_finish"}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "solve_em", "line": 3, "reason": "Best first hook layer for pre/post snapshots around RK, large-step, small-step, and boundary calls."},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "rk_tendency call", "line": 882, "term_group": "large_step_tendency"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "rk_addtend_dry call", "line": 968, "term_group": "large_step_total"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "small_step_prep call", "line": 1090, "term_group": "small_step_prep"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "calc_p_rho call", "line": 1110, "term_group": "pressure_density"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_uv call", "line": 1280, "term_group": "acoustic_uv"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_mu_t call", "line": 1393, "term_group": "mu_theta"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "advance_w call", "line": 1500, "term_group": "w_ph_pressure"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "calc_p_rho call", "line": 1624, "term_group": "pressure_density"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F", "routine": "small_step_finish call", "line": 1825, "term_group": "stage_finish"}
     ],
     "large_step_and_terms": [
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rk_tendency", "line": 190, "term_group": "large_step_tendency"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rhs_ph call", "line": 668, "term_group": "geopotential"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "horizontal_pressure_gradient call", "line": 717, "term_group": "pressure_gradient"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "pg_buoy_w call", "line": 730, "term_group": "vertical_pressure_buoyancy"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "coriolis call", "line": 761, "term_group": "coriolis"},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rk_addtend_dry", "line": 959, "term_group": "large_step_total"}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rk_tendency", "line": 190, "term_group": "large_step_tendency"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rhs_ph call", "line": 668, "term_group": "geopotential"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "horizontal_pressure_gradient call", "line": 717, "term_group": "pressure_gradient"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "pg_buoy_w call", "line": 730, "term_group": "vertical_pressure_buoyancy"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "coriolis call", "line": 761, "term_group": "coriolis"},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F", "routine": "rk_addtend_dry", "line": 959, "term_group": "large_step_total"}
     ],
     "big_step_utilities": [
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "rhs_ph", "line": 1365},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "horizontal_pressure_gradient", "line": 2183},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "pg_buoy_w", "line": 2419},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "coriolis", "line": 3640},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "phy_prep", "line": 4730},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "set_tend", "line": 5792}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "rhs_ph", "line": 1365},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "horizontal_pressure_gradient", "line": 2183},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "pg_buoy_w", "line": 2419},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "coriolis", "line": 3640},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "phy_prep", "line": 4730},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F", "routine": "set_tend", "line": 5792}
     ],
     "small_step": [
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "small_step_prep", "line": 16},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "small_step_finish", "line": 295},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "calc_p_rho", "line": 438},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "calc_coef_w", "line": 570},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_uv", "line": 654},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_mu_t", "line": 969},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_w", "line": 1178}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "small_step_prep", "line": 16},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "small_step_finish", "line": 295},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "calc_p_rho", "line": 438},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "calc_coef_w", "line": 570},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_uv", "line": 654},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_mu_t", "line": 969},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_small_step_em.F", "routine": "advance_w", "line": 1178}
     ],
     "advection": [
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_u", "line": 126},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_v", "line": 1530},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar", "line": 3029},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_w", "line": 4364},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar_pd", "line": 6069},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar_mono", "line": 9495}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_u", "line": 126},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_v", "line": 1530},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar", "line": 3029},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_w", "line": 4364},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar_pd", "line": 6069},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_advect_em.F", "routine": "advect_scalar_mono", "line": 9495}
     ],
     "diffusion": [
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "cal_deform_and_div", "line": 17},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_u_2", "line": 3118},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_v_2", "line": 3323},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_w_2", "line": 3519},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_s", "line": 3711},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "vertical_diffusion_s", "line": 4789},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "phy_bc", "line": 5901},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "compute_diff_metrics", "line": 6882}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "cal_deform_and_div", "line": 17},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_u_2", "line": 3118},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_v_2", "line": 3323},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_w_2", "line": 3519},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "horizontal_diffusion_s", "line": 3711},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "vertical_diffusion_s", "line": 4789},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "phy_bc", "line": 5901},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F", "routine": "compute_diff_metrics", "line": 6882}
     ],
     "boundary_and_relaxation": [
-      {"file": "/home/user/src/wrf_pristine/WRF/share/module_bc.F", "routine": "set_physical_bc2d", "line": 202},
-      {"file": "/home/user/src/wrf_pristine/WRF/share/module_bc.F", "routine": "set_physical_bc3d", "line": 651},
-      {"file": "/home/user/src/wrf_pristine/WRF/share/module_bc.F", "routine": "spec_bdyupdate", "line": 1955},
-      {"file": "/home/user/src/wrf_pristine/WRF/share/module_bc.F", "routine": "flow_dep_bdy", "line": 2335},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_bc_em.F", "routine": "EM boundary helper module", "line": 1}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/share/module_bc.F", "routine": "set_physical_bc2d", "line": 202},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/share/module_bc.F", "routine": "set_physical_bc3d", "line": 651},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/share/module_bc.F", "routine": "spec_bdyupdate", "line": 1955},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/share/module_bc.F", "routine": "flow_dep_bdy", "line": 2335},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_bc_em.F", "routine": "EM boundary helper module", "line": 1}
     ],
     "physics_source_tendency_folding": [
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F", "routine": "first_rk_step_part1", "line": 10},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F", "routine": "phy_prep call", "line": 208},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part2.F", "routine": "first_rk_step_part2", "line": 10},
-      {"file": "/home/user/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part2.F", "routine": "conv_t_tendf_to_moist call", "line": 1009},
-      {"file": "/home/user/src/wrf_pristine/WRF/phys/module_physics_addtendc.F", "routine": "physics tendency accumulation add_a2a sites", "line_examples": [229, 286, 302, 1126, 1740, 1958, 1974, 2075]}
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F", "routine": "first_rk_step_part1", "line": 10},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F", "routine": "phy_prep call", "line": 208},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part2.F", "routine": "first_rk_step_part2", "line": 10},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part2.F", "routine": "conv_t_tendf_to_moist call", "line": 1009},
+      {"file": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_physics_addtendc.F", "routine": "physics tendency accumulation add_a2a sites", "line_examples": [229, 286, 302, 1126, 1740, 1958, 1974, 2075]}
     ]
   },
   "minimal_patch_strategy": {
-    "patch_location": "outside repo src, in a disposable WRF worktree/copy such as /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF or /tmp/wrf_v014_same_state_savepoint/WRF",
-    "base_tree": "/home/user/src/wrf_pristine/WRF",
+    "patch_location": "outside repo src, in a disposable WRF worktree/copy such as <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF or /tmp/wrf_v014_same_state_savepoint/WRF",
+    "base_tree": "<USER_HOME>/src/wrf_pristine/WRF",
     "do_not_patch_in_place": true,
     "phase_0_marker_validation": [
       "Copy the Case 3 run directory to an output scratch directory.",
@@ -474,7 +474,7 @@
     }
   },
   "runtime_estimate": {
-    "source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/rsl.error.0000",
+    "source": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/rsl.error.0000",
     "d02_timing_lines": 43200,
     "warm_median_seconds_per_d02_step": 0.13411,
     "warm_mean_seconds_per_d02_step": 0.151967,
@@ -483,7 +483,7 @@
     "estimated_h10_d02_compute_seconds": 804.66,
     "notes": [
       "Original run used 28 MPI tasks according to rsl.error.0000.",
-      "Current fastest available executable in /home/user/src/wrf_pristine/WRF appears serial, so walltime may be materially longer unless the copied tree is rebuilt dmpar.",
+      "Current fastest available executable in <USER_HOME>/src/wrf_pristine/WRF appears serial, so walltime may be materially longer unless the copied tree is rebuilt dmpar.",
       "No wrfrst files were found in the Case 3 launch directory, so h10 cannot be reached by restart without creating a new restart first."
     ]
   },
@@ -536,17 +536,17 @@
       "CPU only.",
       "No GPU performance claims.",
       "No edits to repo src unless a separate schema-extension contract is approved.",
-      "Do not patch /home/user/src/wrf_pristine/WRF in place; use a disposable copy/worktree.",
+      "Do not patch <USER_HOME>/src/wrf_pristine/WRF in place; use a disposable copy/worktree.",
       "All emitted truth must come from instrumented WRF source execution, not wrfout interpolation or Python recomputation."
     ],
     "inputs": [
-      "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+      "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
       "proofs/v014/dynamic_field_attribution.json",
       "proofs/v014/same_state_tendency_localization_plan.md",
       "this feasibility report"
     ],
     "implementation_steps": [
-      "Create disposable WRF copy under /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF or /tmp/wrf_v014_same_state_savepoint/WRF.",
+      "Create disposable WRF copy under <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF or /tmp/wrf_v014_same_state_savepoint/WRF.",
       "Record base source git/diff/build metadata and executable checksums.",
       "Apply minimal env-gated Fortran emitter and solve_em.F hook patch.",
       "Run marker validation to prove d02 h10 step mapping and patch indexing.",
@@ -565,14 +565,14 @@
       "proofs/v014/same_state_wrf_savepoints_manifest.json",
       "proofs/v014/same_state_wrf_step_marker.md",
       "proofs/v014/same_state_wrf_term_compare_h10.md",
-      "raw/HDF5 savepoint payloads outside git under /mnt/data/wrf_gpu2/v014_same_state_wrf_savepoints/"
+      "raw/HDF5 savepoint payloads outside git under <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf_savepoints/"
     ],
-    "recommended_first_decision": "Approve a disposable WRF instrumentation sprint using /home/user/src/wrf_pristine/WRF as the build base, with optional dmpar rebuild if walltime/fidelity matters more than fastest first proof."
+    "recommended_first_decision": "Approve a disposable WRF instrumentation sprint using <USER_HOME>/src/wrf_pristine/WRF as the build base, with optional dmpar rebuild if walltime/fidelity matters more than fastest first proof."
   },
   "commands_run_summary": [
     "Read PROJECT_CONSTITUTION.md, AGENTS.md, V0140 handoff, same-state localization plan, sprint contract, and local project skills.",
     "Inspected existing savepoint schema, IO, scripts, tests, and external WRF savepoint patch scaffolding.",
-    "Inspected WRF source/build candidates under /home/user/src/wrf_pristine/WRF, /home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF, /home/user/src/wrf_ideal_f7i/WRF, and stale old paths.",
+    "Inspected WRF source/build candidates under <USER_HOME>/src/wrf_pristine/WRF, <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF, <USER_HOME>/src/wrf_ideal_f7i/WRF, and stale old paths.",
     "Inspected Case 3 launch/history directories, namelist, rsl logs, and NetCDF dimensions/metadata.",
     "Extracted routine names/line numbers from WRF source files using ripgrep."
   ]

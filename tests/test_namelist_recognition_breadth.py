@@ -284,7 +284,7 @@ def test_recognized_control_keyspace_is_covered() -> None:
 # --------------------------------------------------------------------------- #
 
 # Modeled on the real production namelist
-# /mnt/data/canairy_meteo/runs/wrf_l3/20260503_18z_l3_24h_*/namelist.input
+# <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260503_18z_l3_24h_*/namelist.input
 # (cudt=5,5,..., gwd_opt=1, radt=30, cu_physics=1,0,..., bldt=0, slope_rad=1,
 # topo_shading=1, mp=8 Thompson, bl=5 MYNN, sfclay=5, sf_surface=4 Noah-MP,
 # ra_lw=4/ra_sw=4 RRTMG, diff_opt=1/km_opt=4, damp_opt=3, moist/scalar_adv=1).

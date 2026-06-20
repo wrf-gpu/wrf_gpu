@@ -15,7 +15,7 @@ The writer and restart writer still emit only fields with real sources. They do 
 ## Reference Inventory
 
 CPU-WRF reference file:
-`/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_18:00:00`
+`<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-21_18:00:00`
 
 Reference variable count: 375.
 

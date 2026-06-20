@@ -1,6 +1,6 @@
 {
   "scope": "Task 1 warmed timing breakdown (compile vs throughput) -- coupled real d02",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "init_utc": "2026-05-21 18:00:00+00:00",
   "grid": {
     "ny": 66,

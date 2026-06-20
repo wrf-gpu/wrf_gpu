@@ -53,7 +53,7 @@ config.update("jax_enable_x64", True)
 
 DEFAULT_RUN_ID = "20260429_18z_l3_24h_20260524T204451Z"
 DEFAULT_OUTPUT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-tier4-rmse-dryrun"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 BASELINE_RMSE_CSV = ROOT / "data" / "fixtures" / "gen2_baseline" / "rmse_summary.csv"
 
 TIER4_THRESHOLDS = {"T2": 3.0, "U10": 7.5, "V10": 7.5}

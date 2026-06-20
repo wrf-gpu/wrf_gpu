@@ -2,7 +2,7 @@
  "schema": "v014_switzerland_flux_localizer",
  "generated_utc": "2026-06-11T23:15:05.838136+00:00",
  "depth": 8,
- "cpu_reference": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+ "cpu_reference": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
  "note": "Per-face/per-level decomposition of the depth-8 budget_between outflux. outflux_pa_cell_h is the TIME-MEAN (h36-state, hN-state) face flux scaled like budget_between; net excess vs CPU should reproduce the ~-26.5 venting. Sign: positive outflux = mass leaving the box.",
  "cpu": {
   "h36_h37": {
@@ -398,7 +398,7 @@
  },
  "phys_tendf": {
   "available": true,
-  "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
+  "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
   "h36_h37": {
    "per_face_pa_cell_h": {
     "W": -20644.8671875,
@@ -2330,7 +2330,7 @@
  },
  "awd_fix_open": {
   "available": true,
-  "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_awd_fix_open",
+  "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_awd_fix_open",
   "h36_h37": {
    "per_face_pa_cell_h": {
     "W": -20644.494140625,

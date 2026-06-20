@@ -172,7 +172,7 @@ $ROLE_INSTRUCTIONS
 
 - Do not edit any file outside the role's allowed scope.
 - Do not modify governance files or goal files.
-- Do not commit binary fixture data to git. Use \`data/\` (symlink to \`/mnt/data/wrf_gpu2/\`).
+- Do not commit binary fixture data to git. Use \`data/\` (symlink to \`<DATA_ROOT>/wrf_gpu2/\`).
 - All work happens on the role's branch ($BRANCH if applicable). The manager integrates branches.
 - Your report file must be >=400 bytes and include the role-specific decision token.
 - Exit cleanly when your deliverable is on disk. Do not loop.
@@ -192,7 +192,7 @@ EOF
 case "$ROLE" in
   tester)
     AI_CLI="claude"
-    LAUNCH_CMD="claude --model opus --effort \"$REASONING\" --permission-mode auto --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions sent as the first message. When your deliverable file is on disk, type /exit to end the session.\" --add-dir \"$REPO\" --add-dir /mnt/data/wrf_gpu2"
+    LAUNCH_CMD="claude --model opus --effort \"$REASONING\" --permission-mode auto --append-system-prompt \"You are acting as the sonnet-test-engineer ROLE for this project, running as Claude Opus 4.7. Strictly follow the role-specific instructions sent as the first message. When your deliverable file is on disk, type /exit to end the session.\" --add-dir \"$REPO\" --add-dir <DATA_ROOT>/wrf_gpu2"
     ;;
   worker|reviewer|critical-review)
     AI_CLI="codex"

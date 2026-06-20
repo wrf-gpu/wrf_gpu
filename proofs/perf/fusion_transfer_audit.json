@@ -1,6 +1,6 @@
 {
   "scope": "Task 3 -- XLA fusion + host/device transfer audit (warmed coupled scan)",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "hours_profiled": 0.5,
   "device": "cuda:0",
   "config": {

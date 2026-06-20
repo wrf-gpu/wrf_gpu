@@ -21,7 +21,7 @@ verify_force_cpu
 ROW="row6_tost_selftest"
 
 cd "${REPO_ROOT}"
-CPU_RUN="/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
+CPU_RUN="<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
 OUT="proofs/m20/selftest_verify_release.json"
 
 if [ ! -d "${CPU_RUN}" ]; then

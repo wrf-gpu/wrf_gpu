@@ -9,8 +9,8 @@ inland-lake categorical cell, SH2O which is out-of-gate) are reported in the
 proof JSON, not masked away.
 
 Oracle layout (S0 recon, V0.4.0-S0-PLAN.md §2):
-  * wrfinput: ``/mnt/data/canairy_meteo/runs/{wrf_l2,wrf_l3}/<case>/wrfinput_d0X``
-  * met_em:   ``/mnt/data/canairy_meteo/runs/wps_cases/<case*>/l3/met_em.d0X.*.nc``
+  * wrfinput: ``<DATA_ROOT>/canairy_meteo/runs/{wrf_l2,wrf_l3}/<case>/wrfinput_d0X``
+  * met_em:   ``<DATA_ROOT>/canairy_meteo/runs/wps_cases/<case*>/l3/met_em.d0X.*.nc``
 
 The same harness also writes ``proofs/v040/s2_wrfinput_surface_soil_report.json``
 (run ``pytest -s`` or the ``__main__`` block) with per-field max-abs/rmse error,
@@ -44,7 +44,7 @@ from gpuwrf.init.real_init.soil_init import compute_soil_init
 
 
 ROOT = Path(__file__).resolve().parents[3]
-RUNS_ROOT = Path(os.environ.get("GPUWRF_RUNS_ROOT", "/mnt/data/canairy_meteo/runs"))
+RUNS_ROOT = Path(os.environ.get("GPUWRF_RUNS_ROOT", "<DATA_ROOT>/canairy_meteo/runs"))
 WPS_ROOT = RUNS_ROOT / "wps_cases"
 PROOF_PATH = ROOT / "proofs" / "v040" / "s2_wrfinput_surface_soil_report.json"
 DOMAINS = ("d01", "d02", "d03")

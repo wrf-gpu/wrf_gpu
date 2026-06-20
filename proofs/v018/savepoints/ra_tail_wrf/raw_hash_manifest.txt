@@ -5,7 +5,7 @@ Path taken: no clean full-wrf.exe rebuild. The available wrf.exe is
 physics-pristine and WRFGPU2_ORACLE-instrumented; the instrumentation is
 documented here and audited as numerically-inert dump-only.
 
-WRF root: /home/user/src/wrf_pristine/WRF
+WRF root: <USER_HOME>/src/wrf_pristine/WRF
 WRF git HEAD: f52c197ed39d12e087d02c50f412d90d418f6186
 wrf.exe: 52f914cb38e0899d8a1da54bd52f3e08d81ba0f6a7015d3159e48393f5226bd6  main/wrf.exe
 wrf.exe embedded provenance in each raw log: git commit f52c197ed39d12e087d02c50f412d90d418f6186 1 file changed, 38 insertions(+)

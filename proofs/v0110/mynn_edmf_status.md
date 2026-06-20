@@ -15,7 +15,7 @@ Objective: enable the operational MYNN EDMF and cloud/moisture terms that affect
 
 Corpus namelists select MYNN via `bl_pbl_physics = 5, 5` and MYNN surface layer via `sf_sfclay_physics = 5, 5`, for example:
 
-- `/mnt/data/canairy_meteo/gen2_archive/provenance/namelists/namelist_20240315_00z_A.input`
+- `<DATA_ROOT>/canairy_meteo/gen2_archive/provenance/namelists/namelist_20240315_00z_A.input`
 
 WRF Registry defaults checked from the available WRF sources:
 

@@ -3,7 +3,7 @@
   "verdict": "NOAHMP_NESTED_ACTIVATION_CPU_PROVEN",
   "problems": [],
   "run_id": "20260501_18z_l2_72h_20260519T173026Z",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
   "run_start_utc": "2026-05-01T18:00:00+00:00",
   "noahmp_clock": {
     "julian": 120.75,
@@ -29,7 +29,7 @@
         93
       ],
       "initial_land_mean_tsk_K": 300.94585994917395,
-      "provenance_wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
+      "provenance_wrfinput": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
       "prognostic_state_real_from_corpus": [
         "CANWAT",
         "ISLTYP",
@@ -62,7 +62,7 @@
         159
       ],
       "initial_land_mean_tsk_K": 294.87908987204236,
-      "provenance_wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "provenance_wrfinput": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
       "prognostic_state_real_from_corpus": [
         "CANWAT",
         "ISLTYP",

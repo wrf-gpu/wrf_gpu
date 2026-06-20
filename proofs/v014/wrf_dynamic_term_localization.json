@@ -7,13 +7,13 @@
     "wrf_source_truth_layer_emitted": true
   },
   "commands": [
-    "mkdir -p /mnt/data/wrf_gpu2/v014_dynamic_terms && rsync -a /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/ /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/ && rsync -a /mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/ /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/ && cp /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms",
-    "diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F > /mnt/data/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff",
-    "find /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3 -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name 'wrf_stdout.log' -o -name 'marker_run_post_thphy_28rank_stdout.log' \\) -delete",
-    "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log 2>&1",
-    "ln -sf /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/main/wrf.exe /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/wrf.exe",
-    "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_DYNAMIC_TERMS=1 WRFGPU2_DYNAMIC_TERMS_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output WRFGPU2_DYNAMIC_TERMS_GRID=2 WRFGPU2_DYNAMIC_TERMS_START_STEP=6000 WRFGPU2_DYNAMIC_TERMS_END_STEP=6000 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log 2>&1",
-    "cp /mnt/data/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff proofs/v014/wrf_dynamic_term_localization_patch.diff",
+    "mkdir -p <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms && rsync -a <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF/ <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF/ && rsync -a <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/run_case3/ <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3/ && cp <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms",
+    "diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F.before_v014_dynamic_terms <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF/dyn_em/solve_em.F > <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff",
+    "find <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3 -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name 'wrf_stdout.log' -o -name 'marker_run_post_thphy_28rank_stdout.log' \\) -delete",
+    "timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log 2>&1",
+    "ln -sf <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF/main/wrf.exe <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3/wrf.exe",
+    "timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_DYNAMIC_TERMS=1 WRFGPU2_DYNAMIC_TERMS_ROOT=<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/term_output WRFGPU2_DYNAMIC_TERMS_GRID=2 WRFGPU2_DYNAMIC_TERMS_START_STEP=6000 WRFGPU2_DYNAMIC_TERMS_END_STEP=6000 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log 2>&1",
+    "cp <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/wrf_dynamic_term_localization_patch.diff proofs/v014/wrf_dynamic_term_localization_patch.diff",
     "python -m py_compile proofs/v014/wrf_dynamic_term_localization.py",
     "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/wrf_dynamic_term_localization.py",
     "python -m json.tool proofs/v014/wrf_dynamic_term_localization.json >/tmp/wrf_dynamic_term_localization.validated.json"
@@ -50,16 +50,16 @@
     },
     "files": {
       "post": [
-        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_post_small_step_finish_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
-        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_post_small_step_finish_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+        "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_post_small_step_finish_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_post_small_step_finish_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
       ],
       "post_marker": [
-        "/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
-        "/mnt/data/wrf_gpu2/v014_dynamic_terms/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+        "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/marker_output/marker_post_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
       ],
       "pre": [
-        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_pre_small_step_finish_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
-        "/mnt/data/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_pre_small_step_finish_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+        "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_pre_small_step_finish_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/term_output/terms_final_stage_pre_small_step_finish_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
       ]
     },
     "metadata": {
@@ -356,11 +356,11 @@
     "thm_side": "grid%t_2 / emitted T_THM"
   },
   "inputs_read": {
-    "dynamic_field_attribution_json": "/home/user/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
+    "dynamic_field_attribution_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
     "marker_verdict": "MARKER_GREEN",
     "request_selected_cell_count": 24,
-    "same_state_savepoint_request_json": "/home/user/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
-    "wrf_same_state_marker_savepoint_json": "/home/user/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json"
+    "same_state_savepoint_request_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+    "wrf_same_state_marker_savepoint_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_same_state_marker_savepoint.json"
   },
   "next_jax_wrappers": [
     "src/gpuwrf/dynamics/core/small_step_finish.py::small_step_finish_wrf",
@@ -676,18 +676,18 @@
     }
   },
   "proof_objects": {
-    "compile_log": "/mnt/data/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log",
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.md",
-    "patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization_patch.diff",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-dynamic-term-localization.md",
-    "rsl_logs": "/mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/rsl.error.*",
-    "run_stdout": "/mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log"
+    "compile_log": "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/compile_dynamic_terms.log",
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization.md",
+    "patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_dynamic_term_localization_patch.diff",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-dynamic-term-localization.md",
+    "rsl_logs": "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3/rsl.error.*",
+    "run_stdout": "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3/dynamic_terms_28rank_stdout.log"
   },
   "provenance": {
     "dynamic_patch_sha256": "84e0bc0d0494147af903c0307d3ec4e5cd94e604ffe1d6d596d349d035111ba4",
     "green_marker_patch_sha256": "f967f26a8497b0d8ee2a4dbd7051b72c28c96fc54d8b2168ad730e180a1a0ba8",
-    "run_dir": "/mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3",
+    "run_dir": "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3",
     "run_wrf_exe_sha256": "b042810093d715e915372e5dd8a5cdbbab44e32bd28d9b5233767fb61d422ab7",
     "solve_em_sha256": "2b25eea316b755609a75d76535c240bf7d8bc8824db9342d9f1dcac5f143fbe7",
     "source_wrf_describe": "v4.7.1-dirty",
@@ -747,8 +747,8 @@
       "?? tools/registry"
     ],
     "source_wrf_head": "f52c197ed39d12e087d02c50f412d90d418f6186",
-    "source_wrf_pristine": "/home/user/src/wrf_pristine/WRF",
-    "wrf_copy": "/mnt/data/wrf_gpu2/v014_dynamic_terms/WRF",
+    "source_wrf_pristine": "<USER_HOME>/src/wrf_pristine/WRF",
+    "wrf_copy": "<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF",
     "wrf_exe_sha256": "b042810093d715e915372e5dd8a5cdbbab44e32bd28d9b5233767fb61d422ab7"
   },
   "schema": "wrf_dynamic_term_localization_v1",

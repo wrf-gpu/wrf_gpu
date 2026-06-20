@@ -35,7 +35,7 @@ from gpuwrf.integration.nested_pipeline import (
 from gpuwrf.runtime.domain_tree import run_domain_tree_callbacks
 
 
-REAL_CANARY_L2 = Path("/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z")
+REAL_CANARY_L2 = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z")
 
 
 class _StubRun:

@@ -196,9 +196,9 @@ def test_v060_myj_pbl_savepoint_parity_report() -> None:
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_bl_myjpbl.F and module_sf_myjsfc.F",
             "wrf_sources": [
-                "/home/user/src/wrf_pristine/WRF/share/module_model_constants.F",
-                "/home/user/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
-                "/home/user/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F",
+                "<USER_HOME>/src/wrf_pristine/WRF/share/module_model_constants.F",
+                "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_myjsfc.F",
+                "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_myjpbl.F",
             ],
             "generation_command": "taskset -c 0-3 env CUDA_VISIBLE_DEVICES= bash proofs/v060/oracle/myjpbl_build_and_run.sh",
             "full_wrf_exe": False,

@@ -1,6 +1,6 @@
 {
   "scope": "Roofline FLOP/byte cost analysis -- warmed per-step coupled d02",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "device": "cuda:0",
   "grid": {
     "ny": 66,

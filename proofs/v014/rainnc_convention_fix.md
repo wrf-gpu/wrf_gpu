@@ -1,7 +1,7 @@
 # v0.14 Switzerland d01 72h — RAINNC gate miss: ROOT-CAUSED + PARTIAL FIX + BOUNDED RESIDUAL
 
-Run: `/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_thetafix_20260612T012219Z`
-CPU truth: `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+Run: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_thetafix_20260612T012219Z`
+CPU truth: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
 Config: `mp_physics=8` (Thompson, graupel), `cu_physics=0` (no cumulus -> RAINC=0).
 
 ## Verdict

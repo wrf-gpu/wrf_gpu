@@ -22,7 +22,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 # Scratch root: env-overridable via GPUWRF_TMPDIR (config.paths.tmp_root); never a
-# hardcoded /home/<name> so a clean checkout works out of the box.
+# hardcoded <USER_HOME>/<name> so a clean checkout works out of the box.
 from gpuwrf.config.paths import tmp_root  # noqa: E402
 
 TMP_ROOT = tmp_root()

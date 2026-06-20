@@ -13,7 +13,7 @@ hour:
 This sizes the GPT#3 device-side-finite-summary lever (Phase 1) honestly.
 
 Run:
-  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 \
+  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 \
     XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false \
     TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 \
     python proofs/v0100/wave_a_host_breakdown.py --out wave_a_before_host.json

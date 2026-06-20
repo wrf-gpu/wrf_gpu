@@ -21,7 +21,7 @@ default ARW path the generated oracle exercises: ``isfflx=1``, no SCM-forced
 flux, no ``isftcflx`` water heat-transfer option, no ``iz0tlnd`` land
 thermal-roughness option.
 
-Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_sf_sfclay.F``
+Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_sfclay.F``
 (SFCLAY1D lines 263-951; sfclayinit lines 954-969).
 """
 

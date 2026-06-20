@@ -7,10 +7,10 @@
     "median_step_wall_s": 1.109895,
     "method": "mean WRF per-step Timing for main on d02 multiplied by 24h step count",
     "record_count": 28800,
-    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
     "source_files": [
-      "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/rsl.error.0000",
-      "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/rsl.out.0000"
+      "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/rsl.error.0000",
+      "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/rsl.out.0000"
     ],
     "status": "PASS",
     "steps_per_24h": 14400

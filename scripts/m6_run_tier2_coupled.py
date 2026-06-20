@@ -263,9 +263,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "per_step": per_step,
         "artifact_paths": [_artifact_path(output), _artifact_path(boundary)],
         "wrf_source_citations": [
-            "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/dyn_em/module_em.F:141-151",
-            "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/dyn_em/module_em.F:184-212",
-            "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_diagnostics_driver.F:336-356",
+            "<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/dyn_em/module_em.F:141-151",
+            "<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/dyn_em/module_em.F:184-212",
+            "<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_diagnostics_driver.F:336-356",
             "dyn_em/module_bc_em.F:lbc_fcx_gcx and share/module_bc.F:relax_bdytend_core/spec_bdytend via coupling.boundary_apply",
         ],
     }

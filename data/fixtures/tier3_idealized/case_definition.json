@@ -4,7 +4,7 @@
   "case_choice_rationale": {
     "why_not_d02": "The sprint requires an idealized case independent of Gen2/d02 replay so timestep sensitivity is not mixed with boundary replay or configuration noise.",
     "why_flat_warm_bubble": "The contract validation command names flat_warm_bubble_tier3. To avoid reusing the old amplitude gate, this case uses a small cosine-bell theta perturbation, short integration, and convergence norms instead of a target w-amplitude band.",
-    "wrf_inspiration": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/test/em_hill2d_x/namelist.input exists and documents an ideal dycore-only, open-x/periodic-y, no-physics test family. This case is flatter and smaller for infrastructure smoke only."
+    "wrf_inspiration": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/test/em_hill2d_x/namelist.input exists and documents an ideal dycore-only, open-x/periodic-y, no-physics test family. This case is flatter and smaller for infrastructure smoke only."
   },
   "grid": {
     "nx": 4,

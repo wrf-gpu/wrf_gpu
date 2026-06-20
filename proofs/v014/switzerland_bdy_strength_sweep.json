@@ -4,7 +4,7 @@
   "depth": 8,
   "cpu_ref_outflux": -74.515,
   "prod_phys_tendf_s20": {
-    "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
+    "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
     "h37_excess": -26.544642857142847,
     "h37_dM": -119.01020408163265,
     "h37_bias": {
@@ -46,7 +46,7 @@
     }
   },
   "my_src_s20": {
-    "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_bdyaud_s20",
+    "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_bdyaud_s20",
     "h37_excess": -26.544642857142847,
     "h37_dM": -119.01020408163265,
     "h37_bias": {
@@ -88,7 +88,7 @@
     }
   },
   "my_src_s60": {
-    "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_bdyaud_s60",
+    "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_bdyaud_s60",
     "h37_excess": -21.47257653061223,
     "h37_dM": -107.46938775510205,
     "h37_bias": {

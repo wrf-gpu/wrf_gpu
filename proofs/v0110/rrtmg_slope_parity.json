@@ -60,7 +60,7 @@
     "The proof isolates radiation/topography by feeding WRF history columns to RRTMG; it is not a forecast-state self-compare.",
     "The selected d02 daytime fixture has zero ray-cast shadow cells; the exercised terrain signal is WRF slope/aspect radiation."
   ],
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "schema": "v0110_rrtmg_slope_parity",
   "selection": {
     "batch_size": 4,
@@ -74,7 +74,7 @@
     "method": "largest |WRF_SWNORM - WRF_SWDOWN| land/daylit columns",
     "selected_columns": 16
   },
-  "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_12:00:00",
+  "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_12:00:00",
   "status": "PASS",
   "tolerances": {
     "glw_rmse_Wm2": 35.0,

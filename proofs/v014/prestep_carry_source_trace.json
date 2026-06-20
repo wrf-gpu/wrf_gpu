@@ -23,7 +23,7 @@
     "actual_checkpoint": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
       "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
       "size_bytes": 163257218
     },
@@ -911,112 +911,112 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "checkpoint": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
       "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
       "size_bytes": 163257218
     },
     "checkpoint_module": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/checkpoint.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/checkpoint.py",
       "sha256": "bec8f1ac9d213f5e7ca212928dc7e02043de34fc256a80a207d6bb781b59720b",
       "size_bytes": 10705
     },
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "43781958716108a4cb406c33621e72ba16e712e53d44ab001b23ff5fd70f677c",
       "size_bytes": 34413
     },
     "jax_h10_prestep_carry_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
       "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
       "size_bytes": 35739
     },
     "jax_t_history_source_attribution_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_t_history_source_attribution.json",
       "sha256": "81340e58be285a10b9348f2c822f4c83059faba1012c0c76439f3b91caa14b4e",
       "size_bytes": 57546
     },
     "jax_theta_evolution_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_theta_evolution_localization.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_theta_evolution_localization.json",
       "sha256": "d1a77beb4b7ac1bbe16e240c05c32595c619601ac2a6026b6e0d132c54e0f44e",
       "size_bytes": 767749
     },
     "operational_state_module": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
       "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
       "size_bytes": 8390
     },
     "pre_rk_input_boundary_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
       "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
       "size_bytes": 43617
     },
     "producer_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
       "sha256": "59eb1f936d51874825aeae1de531ba7d13ac674a5e5cbef1fe859f8f1e511bbb",
       "size_bytes": 24206
     },
     "producer_provenance": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
       "sha256": "5d5534cdd19c5b467d94b7790ecee4e45400069410e75c7bc84d2b33d95d008d",
       "size_bytes": 3185
     },
     "producer_script": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.py",
       "sha256": "134dbba08d1802cdf928846f14db24557fe21af7b3f76e755d9f164396ed3271",
       "size_bytes": 34212
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "reporting_to_human_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
       "sha256": "3e857f0fca442e5c069f2873fd20ebf26ca87b966d37a79525e399c1f1f7156b",
       "size_bytes": 954
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-prestep-carry-source-trace/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-prestep-carry-source-trace/sprint-contract.md",
       "sha256": "441580b6375c5e204999518382d282172b35ac2e09755a81c435196dedcc4ed2",
       "size_bytes": 3654
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     }
@@ -1050,7 +1050,7 @@
       "has_runtime_state": true,
       "is_file": true,
       "namelist_type": "OperationalNamelist",
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
       "runtime_state_type": "OperationalCarry",
       "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
       "size_bytes": 163257218,
@@ -1060,7 +1060,7 @@
     },
     "producer_provenance": {
       "gpu_used_for_original_production": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
       "present": true,
       "producer_command_display": "WRFGPU2_H10_PRODUCER_ALLOW_GPU=1 CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry_producer.py",
       "producer_summary": {
@@ -1226,9 +1226,9 @@
   },
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-prestep-carry-source-trace.md",
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-prestep-carry-source-trace.md",
     "roundtrip_checkpoint": "/tmp/wrf_gpu2_v014_prestep_carry_source_trace/d02_step5999_roundtrip.pkl"
   },
   "schema": "wrfgpu2.v014.prestep_carry_source_trace.v1",
@@ -1604,7 +1604,7 @@
         "owned_tile_overlap_only"
       ]
     },
-    "source_json": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+    "source_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
     "source_verdict": "PRE_RK_INPUT_JAX_PRESTEP_MISMATCH_CONFIRMED",
     "unique_counts": {
       "MASS_K1": 289

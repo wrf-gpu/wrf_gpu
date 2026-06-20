@@ -291,7 +291,7 @@
       ]
     }
   },
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
   "run_id": "20260521_18z_l2_72h_20260522T133443Z",
   "runner": "run_forecast_operational_single_scan in fixed step_h increments (jit-cached on hours, one compiled program reused per increment; donates state; memory-bounded; no 600-step single advance / no incremental fp64 probe)",
   "schema": "V090D02Replay2to3hReverify",

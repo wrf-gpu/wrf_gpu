@@ -29,7 +29,7 @@ GPU_DIR = Path(
     else "/tmp/v010_d03_runs/d03_20260521_18z_l3_24h_20260522T133443Z_p1_4a"
 )
 COR_DIR = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
 )
 
 R_D = 287.0

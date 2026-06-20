@@ -5,9 +5,9 @@ Owner: manager
 
 ## Run
 
-- run root: `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`
-- CPU truth: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
-- GPU output: `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
+- run root: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z`
+- CPU truth: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- GPU output: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_noahmp_lu16fix_20260610T214731Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
 - branch/head at launch: `worker/gpt/v013-close-manager` / `5c2422acde15d7bf49ed1179877c56ae6f8bb8c8`
 - command proof: `launch_env.txt` in the run root
 - GPU rc: `0`

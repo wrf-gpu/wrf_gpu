@@ -7,7 +7,7 @@
     },
     "acoustic_fix_dt18_budget": {
       "available": false,
-      "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_dt18"
+      "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_dt18"
     },
     "acoustic_fix_nokm_budget": {
       "dM_pa_per_cell_h": -139.1734693877551,
@@ -67,7 +67,7 @@
       "hypso_3d0b439c": -28.3281887755102,
       "old_ec4d6769": -28.614795918367335
     },
-    "fixed_output": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix",
+    "fixed_output": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix",
     "h36_h38": {
       "acoustic_fix": {
         "dM_pa_per_cell_h": -258.2142857142857,
@@ -4822,7 +4822,7 @@
         "v": 5.966670890700243e-08,
         "w": 8.110179194886769e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_advdeg",
       "wall_s": 152.8111397610046
     },
@@ -8637,7 +8637,7 @@
         "v": 5.96669327279642e-08,
         "w": 5.85947956821542e-12
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_bcfix",
       "wall_s": 204.5571623109863
     },
@@ -12452,7 +12452,7 @@
         "v": 5.966639982091237e-08,
         "w": 9.623621344267974e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_cpfix",
       "wall_s": 125.40195347499684
     },
@@ -17107,7 +17107,7 @@
         "v": 5.966633942477984e-08,
         "w": 4.936329123239602e-12
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_final",
       "wall_s": 131.7638912719849
     },
@@ -20922,7 +20922,7 @@
         "v": 5.966677818491917e-08,
         "w": 4.98168173379554e-12
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_omfix",
       "wall_s": 129.17154405399924
     },
@@ -24737,7 +24737,7 @@
         "v": 5.966683147562435e-08,
         "w": 9.247602683615241e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_prefix",
       "wall_s": 204.03276765797636
     },
@@ -29392,7 +29392,7 @@
         "v": 5.966670890700243e-08,
         "w": 8.110179194886769e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_rhsph",
       "wall_s": 126.71030167400022
     },
@@ -34047,7 +34047,7 @@
         "v": 5.966670890700243e-08,
         "w": 8.111289417911394e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_rhsph2",
       "wall_s": 130.40485513498425
     },
@@ -38702,7 +38702,7 @@
         "v": 5.966670890700243e-08,
         "w": 8.109068971862143e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_dt18_speccad",
       "wall_s": 217.1580029509787
     },
@@ -42517,7 +42517,7 @@
         "v": 3.552075966695156e-08,
         "w": 4.3921810632951974e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "sub4_phys",
       "wall_s": 273.6149738819804
     },
@@ -45648,7 +45648,7 @@
         "v": 5.966686345004746e-08,
         "w": 8.240907956036381e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "v014_awd_fixes_lid",
       "wall_s": 139.69139655999606
     },
@@ -48779,7 +48779,7 @@
         "v": 5.966679239577388e-08,
         "w": 1.4963308370141704e-12
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "v014_awd_fixes_open",
       "wall_s": 163.1124617229798
     },
@@ -51910,7 +51910,7 @@
         "v": 6.378278527563452e-08,
         "w": 2.3306473417861184e-09
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
       "tag": "v014_phys_tendf_fold",
       "wall_s": 153.66894638902158
     }

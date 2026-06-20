@@ -81,7 +81,7 @@ def test_operational_output_round_trip_schema(tmp_path: Path):
         "domains": {"d02": {"dx_m": 3000, "shape": [66, 159]}},
         "fields": {"T2": {"units": "K", "dimensions": ["south_north", "west_east"]}},
         "output_formats": ["netcdf_hourly", "zarr_cycle"],
-        "root_path": "/mnt/data/wrf_gpu2/operational/m7/cycles/20260520_18z",
+        "root_path": "<DATA_ROOT>/wrf_gpu2/operational/m7/cycles/20260520_18z",
         "attrs": {"model": "gpuwrf", "schema": "OperationalOutput"},
         "artifact_paths": ["artifacts/m7/postprocess/product_manifest.json"],
     }
@@ -135,7 +135,7 @@ def test_operational_scheduler_schema_validates_daily_18z_contract():
         "aifs_poll_start_utc": "01:25",
         "aifs_poll_timeout_utc": "05:25",
         "forecast_hours_minimum": 24,
-        "locks": {"single_machine_lock": "/mnt/data/wrf_gpu2/operational/m7/cycle.lock"},
+        "locks": {"single_machine_lock": "<DATA_ROOT>/wrf_gpu2/operational/m7/cycle.lock"},
         "retention_policy": {"netcdf_days": 14, "zarr_days": 90},
         "failure_states": ["AIFS_LATE", "FAILED", "STALE_PUBLISHED"],
         "artifact_paths": ["artifacts/m7/monitoring/ops_status_schema.json"],

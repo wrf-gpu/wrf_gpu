@@ -27,7 +27,7 @@ from gpuwrf.validation.comparator_common import DEFAULT_GEN2_WRFOUT
 DEFAULT_OUTPUT = ROOT / "proofs/m9/savepoint_parity_1000.json"
 DEFAULT_SAVEPOINT_ROOT = ROOT / ".agent/sprints/2026-05-28-m9a-trace-harness/savepoints_1000"
 DEFAULT_M9_SOURCE_WRFOUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_00:00:00"
 )
 

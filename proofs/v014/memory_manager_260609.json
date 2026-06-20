@@ -317,7 +317,7 @@
         "proofs/v014/exact_branch_memory_preflight.py",
         "--run-gpu",
         "--nested-input",
-        "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+        "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
         "--max-dom",
         "3",
         "--hours",
@@ -2426,22 +2426,22 @@
         "source_constant_hits": {
           "d02_replay_cp": {
             "line": 164,
-            "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+            "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
             "text": "_EOS_CP_D = 1004.0"
           },
           "wrf_cp": {
             "line": 20,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/module_model_constants.F",
             "text": "REAL    , PARAMETER :: cp           = 7.*r_d/2.  !"
           },
           "wrf_start_domain_alt": {
             "line": 810,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
             "text": "grid%al(i,k,j) = (grid%ph_1(i,k+1,j)-grid%ph_1(i,k,j)+grid%phb(i,k+1,j)-grid%phb(i,k,j)) &"
           },
           "wrf_start_domain_base": {
             "line": 608,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
             "text": "p_surf = p00 * EXP ( -t00/a + ( (t00/a)**2 - 2.*g*grid%ht(i,j)/a/r_d ) **0.5 )"
           }
         },
@@ -2810,7 +2810,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -2893,7 +2893,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -2976,7 +2976,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -3059,7 +3059,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -3527,7 +3527,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -3610,7 +3610,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -3693,7 +3693,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -3776,7 +3776,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -4244,7 +4244,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -4327,7 +4327,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -4410,7 +4410,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -4493,7 +4493,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -4961,7 +4961,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -5044,7 +5044,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -5127,7 +5127,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
                 "press_adj_flag": [
                   "T"
                 ],
@@ -5210,7 +5210,7 @@
                 "patch_record_policy": [
                   "mass_owned_single_owner_no_overlap"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
                 "press_adj_flag": [
                   "T"
                 ],

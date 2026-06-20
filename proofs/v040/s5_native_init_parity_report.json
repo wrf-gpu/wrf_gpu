@@ -1,7 +1,7 @@
 {
   "proof": "v0.4.0 S5 native-init wrfinput/wrfbdy parity gate",
   "types_version": "0.4.0-S5-carrybatch-2026-06-02",
-  "oracle_root": "/mnt/data/canairy_meteo/runs",
+  "oracle_root": "<DATA_ROOT>/canairy_meteo/runs",
   "oracle": "real.exe wrfinput_d0{1,2,3} + wrfbdy_d01 vs assembled native driver.build_real_init (S1 dynamics + S2 surface/soil + S3 LBC)",
   "non_gpu": true,
   "applied_tol_carry_batch_2026_06_02": {
@@ -855,7 +855,7 @@
       {
         "case_id": "20260428_18z_l3_24h_20260525T221139Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
         "domains": [
           {
             "domain": "d01",
@@ -2261,7 +2261,7 @@
       {
         "case_id": "20260429_18z_l3_24h_20260524T204451Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z",
         "domains": [
           {
             "domain": "d01",
@@ -3667,7 +3667,7 @@
       {
         "case_id": "20260521_18z_l2rerun_l3_24h_20260522T231647Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z",
         "domains": [
           {
             "domain": "d01",
@@ -5073,7 +5073,7 @@
       {
         "case_id": "20260521_18z_l3_24h_20260522T072630Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z",
         "domains": [
           {
             "domain": "d01",
@@ -6479,7 +6479,7 @@
       {
         "case_id": "20260521_18z_l3_24h_20260522T133443Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
         "domains": [
           {
             "domain": "d01",
@@ -7885,7 +7885,7 @@
       {
         "case_id": "20260522_18z_l3_24h_20260523T055700Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260522_18z_l3_24h_20260523T055700Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260522_18z_l3_24h_20260523T055700Z",
         "domains": [
           {
             "domain": "d01",
@@ -9291,7 +9291,7 @@
       {
         "case_id": "20260523_18z_l3_24h_20260524T004313Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260523_18z_l3_24h_20260524T004313Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260523_18z_l3_24h_20260524T004313Z",
         "domains": [
           {
             "domain": "d01",
@@ -10697,7 +10697,7 @@
       {
         "case_id": "20260524_18z_l3_24h_20260525T225640Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260524_18z_l3_24h_20260525T225640Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260524_18z_l3_24h_20260525T225640Z",
         "domains": [
           {
             "domain": "d01",
@@ -12103,7 +12103,7 @@
       {
         "case_id": "20260525_18z_l3_24h_20260526T221207Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260525_18z_l3_24h_20260526T221207Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260525_18z_l3_24h_20260526T221207Z",
         "domains": [
           {
             "domain": "d01",
@@ -13509,7 +13509,7 @@
       {
         "case_id": "20260527_18z_l3_24h_20260528T002306Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260527_18z_l3_24h_20260528T002306Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260527_18z_l3_24h_20260528T002306Z",
         "domains": [
           {
             "domain": "d01",
@@ -14915,7 +14915,7 @@
       {
         "case_id": "20260528_18z_l3_24h_20260529T002423Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260528_18z_l3_24h_20260529T002423Z",
         "domains": [
           {
             "domain": "d01",
@@ -16321,7 +16321,7 @@
       {
         "case_id": "20260529_18z_l3_24h_20260530T054804Z",
         "level": "l3",
-        "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z",
+        "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z",
         "domains": [
           {
             "domain": "d01",

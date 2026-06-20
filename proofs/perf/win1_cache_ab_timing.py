@@ -15,7 +15,7 @@ USAGE (cold then hot against a fresh cache):
     TF_GPU_ALLOCATOR=cuda_malloc_async OMP_NUM_THREADS=4 taskset -c 0-3 \
     python proofs/perf/win1_cache_ab_timing.py --tag $tag \
       --run-id 20260521_18z_l3_24h_20260522T133443Z \
-      --run-root /mnt/data/canairy_meteo/runs/wrf_l3 --hours 1 --segment-steps 60
+      --run-root <DATA_ROOT>/canairy_meteo/runs/wrf_l3 --hours 1 --segment-steps 60
   done
 """
 from __future__ import annotations

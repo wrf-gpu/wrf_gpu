@@ -16,7 +16,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 ROOT = Path(__file__).resolve().parents[1]
 SPRINT_DIR = ROOT / ".agent/sprints/2026-05-27-m7-honest-speedup-skill-diff"
-DEFAULT_NAMELIST_GLOB = "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_*/namelist.output"
+DEFAULT_NAMELIST_GLOB = "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_*/namelist.output"
 DEFAULT_PIPELINE_RUN = ROOT / ".agent/sprints/2026-05-27-m7-daily-pipeline-integration/pipeline_run_20260521.json"
 DEFAULT_CPU_OUTPUT = SPRINT_DIR / "cpu_per_domain_wall_clock.json"
 DEFAULT_SPEEDUP_OUTPUT = SPRINT_DIR / "honest_speedup_table.json"

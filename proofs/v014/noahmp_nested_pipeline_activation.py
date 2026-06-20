@@ -29,7 +29,7 @@ untouched.
 
 Usage:
   python proofs/v014/noahmp_nested_pipeline_activation.py \
-      [--run-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z]
+      [--run-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z]
 """
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ sys.path.insert(0, str(ROOT / "src"))
 import numpy as np  # noqa: E402
 
 DEFAULT_RUN_DIR = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z"
 )
 DOMAINS = ("d01", "d02")
 

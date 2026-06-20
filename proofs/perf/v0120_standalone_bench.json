@@ -7,7 +7,7 @@
     "dx_m": 9000.0,
     "grid_mass_points": "93 x 59 x 44 (e_we=94, e_sn=60, e_vert=45)",
     "init_mode": "standalone_native_init (IC from wrfinput_d01, LBC from wrfbdy_d01; NO CPU-WRF wrfout dependency)",
-    "input_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z",
+    "input_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z",
     "precision": "fp64 (force_fp64=True; the operational standalone path forces pure fp64 for the acoustic solve per daily_pipeline.py:265 / ADR F7)",
     "radiation_cadence_steps": 180
   },
@@ -70,7 +70,7 @@
       "gms1_warm_s_per_forecast_hour": 19.811,
       "interpretation": "On the FULL COUPLED standalone d01 path (physics ON), --xla_gpu_graph_min_graph_size=1 is ~19% SLOWER (0.84x), NOT faster. The prior sprint's 1.71x was dynamics-ONLY (run_physics=False); that win does NOT carry to the coupled step - the physics couplers' graph structure does not benefit from lowering the capture threshold, and the extra graph-capture/overhead hurts. This is exactly the coupled-leg confirmation the prior sprint deferred, and it FALSIFIES the carry-over assumption.",
       "numerics": "BIT-IDENTICAL final state (u/v/theta/w/ph_total/mu_total/qv all dmax=dmean=0.0, rel_L2=0), all_finite both. So the flag is safe numerically - it is simply not a speedup on the coupled path.",
-      "provenance": "proofs/perf/v0120_flag_baseline.json (warm 16.71, finite) vs v0120_flag_gms1.json (warm 19.81, finite, XLA_FLAGS=--xla_gpu_graph_min_graph_size=1). Raw scratch copies under /mnt/data/wrf_perf_scratch/.",
+      "provenance": "proofs/perf/v0120_flag_baseline.json (warm 16.71, finite) vs v0120_flag_gms1.json (warm 19.81, finite, XLA_FLAGS=--xla_gpu_graph_min_graph_size=1). Raw scratch copies under <DATA_ROOT>/wrf_perf_scratch/.",
       "ratio_baseline_over_gms1": 0.844,
       "recommendation": "Do NOT set --xla_gpu_graph_min_graph_size=1 in the operational launch env. Keep XLA defaults. The launch-tax reduction must instead target the COUPLED graph (future work: per-coupler fusion / a coupled-aware command-buffer config), or be re-measured if a dynamics-only fast path is ever shipped standalone.",
       "verdict": "DO NOT LAND - the flag is a REGRESSION on the coupled full-physics standalone path."

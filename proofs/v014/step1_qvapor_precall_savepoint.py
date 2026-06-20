@@ -19,9 +19,9 @@ from typing import Iterable
 
 
 REPO = Path(__file__).resolve().parents[2]
-OLD_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
-NEW_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/wrf_truth")
-SCRATCH_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint")
+OLD_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
+NEW_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/wrf_truth")
+SCRATCH_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint")
 FILTERED_ROOT = SCRATCH_ROOT / "precall_truth_only"
 LOG_ROOT = SCRATCH_ROOT / "logs"
 TARGET_GLOB = "before_first_rk_step_part1_call_d2_step_1_rk_1_*.txt"

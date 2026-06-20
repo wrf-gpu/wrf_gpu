@@ -4,12 +4,12 @@
 CPU-only analysis over existing run artifacts plus two short GPU probe runs
 (launched separately through scripts/run_gpu_lowprio.sh):
 
-* full fixed run: /mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_lbcclockfix_20260611T020428Z
-* CPU truth:      /mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
+* full fixed run: <DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_lbcclockfix_20260611T020428Z
+* CPU truth:      <DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu
 * h36 re-init probe (IC = CPU truth wrfout 2023-01-16_12, 12h):
-                  /mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output
+                  <DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output
 * h36 re-init probe with mp_physics=0 (3h):
-                  /mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_nomp
+                  <DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_nomp
 
 Gates:
 
@@ -49,14 +49,14 @@ from datetime import datetime, timedelta
 import numpy as np
 from netCDF4 import Dataset
 
-CPU = "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu"
-FULL = "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_lbcclockfix_20260611T020428Z/gpu_output"
-PROBE = "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output"
+CPU = "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu"
+FULL = "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_lbcclockfix_20260611T020428Z/gpu_output"
+PROBE = "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output"
 # gpu_output_nomp (namelist.input edit) ran Thompson bit-identically: the daily
 # path resolves the physics suite from OperationalNamelist DEFAULTS, not the case
 # namelist.input (daily_pipeline._build_real_case from_grid call).  gpu_output_nomp2
 # is the genuine mp_physics=0 run via run_nomp_driver.py (patched case_builder).
-PROBE_NOMP = "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_nomp2"
+PROBE_NOMP = "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_nomp2"
 RUN_START = datetime(2023, 1, 15)
 OUT_JSON = os.path.join(os.path.dirname(__file__), "switzerland_post_lbc_residual.json")
 

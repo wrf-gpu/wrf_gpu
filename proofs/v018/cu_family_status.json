@@ -126,7 +126,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_kfcup.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_kfcup.F",
       "wrf_source_sha256": "d5773c66c9e353b7838bc14e59d66905091425ce449e84cea58f14e7725b074c"
     },
     "11": {
@@ -200,7 +200,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_mskf.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_mskf.F",
       "wrf_source_sha256": "4bca54b294def08ffc98ef69a30650c943e2c394f34802e75e50c7f1a2896fcb"
     },
     "14": {
@@ -232,7 +232,7 @@
         "self_compare": false
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_ksas.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_ksas.F",
       "wrf_source_sha256": "84d88fe79c3aba7c299d0efaee216c596021c9659b445dd8d3365c5799a48854"
     },
     "16": {
@@ -263,7 +263,7 @@
         "self_compare": false
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_ntiedtke.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_ntiedtke.F",
       "wrf_source_sha256": "447406d1550d4095e4e6f129ee74a7ec0ccdebd21383ba0cc6fe3d282ac58d2f"
     },
     "2": {
@@ -304,7 +304,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_scalesas.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_scalesas.F",
       "wrf_source_sha256": "7059cd38a34a855959a20eb6f5988637f49b8ec33d0f94fadd421763c4139bd8"
     },
     "5": {
@@ -334,7 +334,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_g3.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_g3.F",
       "wrf_source_sha256": "68089efd157753e8d050c19d4e65f711838147381639014f5f0be40576a337e9"
     },
     "6": {
@@ -396,7 +396,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_camzm_driver.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_camzm_driver.F",
       "wrf_source_sha256": "a77aa3716ad10a8ef0264d58f220c5df92c093c9d12618dd4d052273b756eb3e"
     },
     "93": {
@@ -426,7 +426,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_gd.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_gd.F",
       "wrf_source_sha256": "14948e3b6e82ba2d1529c2b31ff89c2e40e1596018d01898123bc2baa8eb81df"
     },
     "94": {
@@ -455,7 +455,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_sas.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_sas.F",
       "wrf_source_sha256": "a59026ff2061293ce657e7d56fdcbe2381a615721e2801616997cd3f96456158"
     },
     "95": {
@@ -484,7 +484,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_osas.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_osas.F",
       "wrf_source_sha256": "f8cc3fbd6277cf886bcdffa9e8df7623884dfb1886acdbfd0d2471329c3cfd50"
     },
     "96": {
@@ -513,7 +513,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_nsas.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_nsas.F",
       "wrf_source_sha256": "092cfc6685a7006ecf9200b0dbb9296f0e7bb6af11e46bbbd92a843a4d1b911a"
     },
     "99": {
@@ -540,7 +540,7 @@
         ]
       },
       "status": "REFERENCE_ONLY_WITH_REAL_ORACLE_RED_JAX",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_cu_kf.F",
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_kf.F",
       "wrf_source_sha256": "8042c90f7b7f5b14b36acd809f4f310b8fc3f75101039169e602e7df3b5d2f61"
     }
   },

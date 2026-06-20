@@ -2,7 +2,7 @@
 
 - Status: `PASS`
 - Verdict: `LIVE_NESTED_24H_FINITE_RMSE_RECORDED`
-- Run: `/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z`
+- Run: `<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z`
 - Git: `3db9ec6efb6a81e041fb373e3b8c382914dddf84`
 - Live nesting: one-way d01->d02->d03, parent boundary packages generated from live parent state, child subcycling enabled.
 - Feedback: `off`.

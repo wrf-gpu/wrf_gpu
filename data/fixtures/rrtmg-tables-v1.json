@@ -10,10 +10,10 @@
   "sw_bands": 14,
   "sw_payload_bytes": 680256,
   "sw_records": 14,
-  "wrf_lw_data_path": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/install_gen2_dmpar/run/RRTMG_LW_DATA",
+  "wrf_lw_data_path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/install_gen2_dmpar/run/RRTMG_LW_DATA",
   "wrf_lw_data_sha256": "bcfdee24b63a4c909522a329b8e16c539f0173c7e5aea2caf933ab4fe28c5c97",
   "wrf_lw_source_sha256": "c7a5238612aa8a4213c8d3af6708ec6a5248e6701e19758a80e563905d306de3",
-  "wrf_sw_data_path": "/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/install_gen2_dmpar/run/RRTMG_SW_DATA",
+  "wrf_sw_data_path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/install_gen2_dmpar/run/RRTMG_SW_DATA",
   "wrf_sw_data_sha256": "a7d25f5b4d33be8629cbef7ecacc1ff413bf398a021297793e843ba1cc627baf",
   "wrf_sw_source_sha256": "f6da816cd8ffa89e73397a2fe005e5e8a07716aa176eb0b5004f6a60efeda4e0"
 }

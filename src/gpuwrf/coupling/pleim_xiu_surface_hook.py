@@ -27,7 +27,7 @@ is a per-run read-only input, like the Noah-classic REDPRM block. The PX sub-ste
 count ``ntsps`` is a Python static int (depends only on the step), so the kernel
 stays fully ``jax.jit``/``jax.vmap``-traceable.
 
-Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_sf_pxlsm.F`` (SURFPX,
+Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_pxlsm.F`` (SURFPX,
 QFLUX, and the ``pxlsm`` driver per-column input prep, lines 600-672).
 """
 

@@ -14,8 +14,8 @@ special-casing.
 USAGE
 =====
     python scripts/make_compact_reference.py \
-        --src /mnt/data/wrf_gpu_switzerland/run_cpu \
-        --dst /mnt/data/wrf_gpu_switzerland/cpu_reference_compact \
+        --src <DATA_ROOT>/wrf_gpu_switzerland/run_cpu \
+        --dst <DATA_ROOT>/wrf_gpu_switzerland/cpu_reference_compact \
         --domain d01
 """
 

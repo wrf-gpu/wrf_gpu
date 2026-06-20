@@ -15,7 +15,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 PARITY = ROOT / "proofs" / "v016" / "thompson_aero_savepoint_parity.py"
-ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero")
+ORACLE_DIR = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero")
 
 
 def _load_parity_module():

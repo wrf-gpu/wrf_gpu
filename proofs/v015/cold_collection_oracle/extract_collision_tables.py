@@ -33,7 +33,7 @@ NTB_TC = 45
 NTB_IN = 55
 IDX_BG1 = 5  # WRF mp8 fixed graupel-density index, even with dimNRHG=1.
 
-DAT_DIR = Path("/home/user/src/wrf_pristine/WRF/test/em_real/oracle_run")
+DAT_DIR = Path("<USER_HOME>/src/wrf_pristine/WRF/test/em_real/oracle_run")
 OUT = Path(__file__).resolve().parents[3] / "data" / "fixtures" / "thompson-cold-collection-v1.npz"
 
 

@@ -1041,7 +1041,7 @@
     "status": "COMPARISON_EXECUTED",
     "step_index": 1,
     "strict_same_input_comparison_run": true,
-    "truth_file": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
+    "truth_file": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
   },
   "cpu_only": true,
   "environment": {
@@ -1085,7 +1085,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/user/src/wrf_gpu2",
+    "cwd": "<USER_HOME>/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "3b0fb624 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 same-input truth sprint\n",
@@ -1097,7 +1097,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
@@ -1105,7 +1105,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/managing-sprints/SKILL.md",
       "sha256": "4b15ebdd78a2675bed449ea1a3498212b2536efa51e384944a10eaf776a48702",
       "size_bytes": 11998
     },
@@ -1113,7 +1113,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
@@ -1121,7 +1121,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3",
       "sha256": null,
       "size_bytes": null
     },
@@ -1129,7 +1129,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_input_contract_builder.json",
       "sha256": "7358c6318d4620d8cf9ff59ac025d65701e8b8d06d4e37b6a96cc7262d05875a",
       "size_bytes": 53998
     },
@@ -1137,7 +1137,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_input_contract_builder.md",
       "sha256": "25dc6af076230ef22486bf420419dba0fb2a4be152d0cd7a3b9a0a400e198473",
       "size_bytes": 871
     },
@@ -1145,7 +1145,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_input_contract_builder.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_input_contract_builder.py",
       "sha256": "a54992edf44f1fbf1e3f0365808e0e66ff289008a2b64d7a54be36eaa063a2b8",
       "size_bytes": 48231
     },
@@ -1153,7 +1153,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_state_momentum_mass.py",
       "sha256": "0059207c996099fdfbfb76cd1c66bfffe7e2075d34b8d1478ef56f8cf7f7f3f6",
       "size_bytes": 29008
     },
@@ -1161,7 +1161,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-same-input-truth/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-same-input-truth/sprint-contract.md",
       "sha256": "40d40833406bbdbf44b8c5980331821a22f6c36e8f02a5a941427f352035bf9b",
       "size_bytes": 7389
     },
@@ -1169,7 +1169,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization_patch.diff",
       "sha256": "fe5e0666961e4b0f106d6427b1dbdcbbc2edb78990e7b4943f7f36a299e60091",
       "size_bytes": 17755
     },
@@ -1177,7 +1177,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/WRF",
       "sha256": null,
       "size_bytes": null
     }
@@ -1192,11 +1192,11 @@
   "one_cell_proof": false,
   "production_src_edits": false,
   "proof_objects": {
-    "accepted_truth_npz": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-same-input-truth.md",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff"
+    "accepted_truth_npz": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_same_input_truth.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_same_input_truth.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-same-input-truth.md",
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff"
   },
   "schema": "wrfgpu2.v014.step1_same_input_truth.v1",
   "target": {
@@ -1218,7 +1218,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
       "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
       "size_bytes": 12179669
     },
@@ -1227,7 +1227,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
         "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
         "size_bytes": 12179669
       },
@@ -1560,7 +1560,7 @@
             "6",
             "7"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_18_je_33.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_18_je_33.txt",
           "record_schema": [
             "WPH_FULL",
             "fortran_i",
@@ -1642,7 +1642,7 @@
             "6",
             "7"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_1_je_17.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_1_je_17.txt",
           "record_schema": [
             "WPH_FULL",
             "fortran_i",
@@ -1724,7 +1724,7 @@
             "6",
             "7"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_34_je_50.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_34_je_50.txt",
           "record_schema": [
             "WPH_FULL",
             "fortran_i",
@@ -1806,7 +1806,7 @@
             "6",
             "7"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_51_je_67.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_51_je_67.txt",
           "record_schema": [
             "WPH_FULL",
             "fortran_i",
@@ -1867,7 +1867,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_18_je_33.txt",
         "sha256": "6d31d2b533b231d37196bc1e59a92c6f85b430debe1f80dc06af371cac12dd89",
         "size_bytes": 8317881
       },
@@ -1875,7 +1875,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_1_je_17.txt",
         "sha256": "ddf90cd0c46c31f64fb5829bf3190106173663447caee878830a6570d1857942",
         "size_bytes": 8760331
       },
@@ -1883,7 +1883,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_34_je_50.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_34_je_50.txt",
         "sha256": "a94cad1f5e2026018d5125f41a6c71fc065452c258ed90d630acdb9f89cf568f",
         "size_bytes": 8837681
       },
@@ -1891,7 +1891,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_51_je_67.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_115_ie_137_js_51_je_67.txt",
         "sha256": "f39dab7b890f9ce7b39bbd8eca3898004b6c82194553fcce70e25a2ddb23af67",
         "size_bytes": 8370068
       },
@@ -1899,7 +1899,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_18_je_33.txt",
         "sha256": "29f06e93206f161b0bfc248624da734c577d25638c95413d1b4bceaaee6454fd",
         "size_bytes": 7992585
       },
@@ -1907,7 +1907,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_1_je_17.txt",
         "sha256": "15cf12f991fd379fa3890bd82ab89ec14a45036a30aeeeec4fca156a0110b0ec",
         "size_bytes": 8417231
       },
@@ -1915,7 +1915,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_34_je_50.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_34_je_50.txt",
         "sha256": "de7513b494f92d465409ad8c3ead1c5a84984d129444909860f7c3e141493e82",
         "size_bytes": 8492054
       },
@@ -1923,7 +1923,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_51_je_67.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth/same_input_post_after_all_rk_steps_pre_halo_d2_step_1_is_138_ie_160_js_51_je_67.txt",
         "sha256": "da6c835455bab0ad370b9ac6716a861b2fc583acc37546d39aa1be3b760cc8d2",
         "size_bytes": 8042503
       }
@@ -1932,7 +1932,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth",
       "sha256": null,
       "size_bytes": null
     },
@@ -1944,12 +1944,12 @@
           "./compile",
           "em_real"
         ],
-        "cwd": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/WRF",
+        "cwd": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/WRF",
         "log": {
           "exists": true,
           "is_dir": false,
           "is_file": true,
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/compile_step1_same_input_truth.log",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/compile_step1_same_input_truth.log",
           "sha256": "0ecd9eff7444c175a5f46c0314fa95b9cc66d92065e21acf40248876262a1779",
           "size_bytes": 9117
         },
@@ -1957,18 +1957,18 @@
       },
       {
         "command": [
-          "/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+          "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
           "--oversubscribe",
           "-np",
           "28",
-          "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/run/wrf.exe"
+          "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/run/wrf.exe"
         ],
-        "cwd": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/run",
+        "cwd": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/run",
         "log": {
           "exists": true,
           "is_dir": false,
           "is_file": true,
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/wrf_step1_same_input_truth_stdout.log",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/wrf_step1_same_input_truth_stdout.log",
           "sha256": "6461c1b1f4dadec7a3d90c4182d4cbfdfbce7422ec56fa691b7c7c8df04bdb6a",
           "size_bytes": 1604
         },
@@ -1977,7 +1977,7 @@
           "exists": true,
           "is_dir": false,
           "is_file": true,
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/run/rsl.error.0000",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/run/rsl.error.0000",
           "sha256": "3ba6a1107cd3004058e75ea20969baf9f063a0e59c517ebbe647f9e35b45b6f3",
           "size_bytes": 9510
         },
@@ -1985,7 +1985,7 @@
           "exists": true,
           "is_dir": false,
           "is_file": true,
-          "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/run/rsl.out.0000",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/run/rsl.out.0000",
           "sha256": "7d0de18bb61d1b429669457747c345784a3bc19f6e10334f1090477c462a7628",
           "size_bytes": 9211
         },
@@ -1996,7 +1996,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/run",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/run",
       "sha256": null,
       "size_bytes": null
     },
@@ -2004,7 +2004,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_same_input_truth/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/WRF",
       "sha256": null,
       "size_bytes": null
     },
@@ -2013,7 +2013,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_same_input_truth_wrf_patch.diff",
       "sha256": "b9eb27c6a1dd921ea79a5a5adebe133264b7cf1914ef6dbb8232bf640805e6b9",
       "size_bytes": 8919
     }

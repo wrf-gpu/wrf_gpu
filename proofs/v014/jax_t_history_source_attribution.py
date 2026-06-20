@@ -52,7 +52,7 @@ SAVEPOINT_REQUEST_JSON = ROOT / "proofs/v014/same_state_savepoint_request.json"
 CHECKPOINT = Path(
     os.environ.get(
         "WRFGPU2_H10_PRESTEP_CARRY",
-        "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
     )
 )
 STDERR_CAPTURE = Path(os.environ.get("WRFGPU2_T_ATTRIBUTION_STDERR", "/tmp/jax_t_history_source_attribution.stderr"))

@@ -143,10 +143,10 @@
       "git diff -- src/gpuwrf"
     ],
     "wrf_instrumentation": [
-      "cp -a --reflink=auto /mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
-      "cp -a --reflink=auto /mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/run /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run",
+      "cp -a --reflink=auto <DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
+      "cp -a --reflink=auto <DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/run <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/run",
       "tcsh ./compile em_real (scratch WRF, conda wrf-build toolchain)",
-      "WRFGPU2_STEP1_PRE_PART1_HANDOFF=1 WRFGPU2_STEP1_PRE_PART1_HANDOFF_ROOT=/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe"
+      "WRFGPU2_STEP1_PRE_PART1_HANDOFF=1 WRFGPU2_STEP1_PRE_PART1_HANDOFF_ROOT=<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe"
     ]
   },
   "comparisons": {
@@ -7555,7 +7555,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/user/src/wrf_gpu2",
+    "cwd": "<USER_HOME>/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "3bf433b2 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 pre-part1 handoff sprint\n",
@@ -7567,7 +7567,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
       "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
       "size_bytes": 12179669
     },
@@ -7575,7 +7575,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth",
       "sha256": null,
       "size_bytes": null
     },
@@ -7583,7 +7583,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-pre-part1-handoff/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-pre-part1-handoff/sprint-contract.md",
       "sha256": "9aee323e1da784fb94424c5cea82beee61e36a2e2a93f5b368ff7f65edb42118",
       "size_bytes": 7327
     },
@@ -7591,7 +7591,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/compile_step1_pre_part1_handoff.log",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/compile_step1_pre_part1_handoff.log",
       "sha256": "88d285a3f3ccde2c5e44847a8b12fa4f16e5abb9768b1b593ec0e5dce93bd81b",
       "size_bytes": 74786
     },
@@ -7599,7 +7599,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
       "sha256": "b6adaa9d9f5b57c94fb84fe67931e36986a43ab0019e93ffd6b692b4170fdb87",
       "size_bytes": 8899
     },
@@ -7607,7 +7607,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/run",
       "sha256": null,
       "size_bytes": null
     },
@@ -7615,7 +7615,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_step1_pre_part1_handoff_stdout.log",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_step1_pre_part1_handoff_stdout.log",
       "sha256": "ded07cde5de81325bfef70bc32b73304f4881969eee4d28e8a3e36ced62e59cc",
       "size_bytes": 1372
     },
@@ -7623,7 +7623,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
       "sha256": null,
       "size_bytes": null
     },
@@ -7631,7 +7631,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
       "sha256": null,
       "size_bytes": null
     }
@@ -8369,11 +8369,11 @@
   "no_tost": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-pre-part1-handoff.md",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
-    "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-pre-part1-handoff.md",
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_pre_part1_handoff_wrf_patch.diff",
+    "wrf_truth_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth"
   },
   "required_ancestor_588686d6": {
     "command": [
@@ -8504,7 +8504,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -8576,7 +8576,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -8648,7 +8648,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -8720,7 +8720,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_halo_em_a_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -8960,7 +8960,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9032,7 +9032,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9104,7 +9104,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9176,7 +9176,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_phys_bc_dry_1_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9416,7 +9416,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9488,7 +9488,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9560,7 +9560,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9632,7 +9632,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9872,7 +9872,7 @@
             "number_of_small_timesteps": [
               "0"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -9944,7 +9944,7 @@
             "number_of_small_timesteps": [
               "0"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10016,7 +10016,7 @@
             "number_of_small_timesteps": [
               "0"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10088,7 +10088,7 @@
             "number_of_small_timesteps": [
               "0"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/after_step_increment_d2_step_1_rk_0_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10328,7 +10328,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10400,7 +10400,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10472,7 +10472,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10544,7 +10544,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10784,7 +10784,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10856,7 +10856,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -10928,7 +10928,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",
@@ -11000,7 +11000,7 @@
             "number_of_small_timesteps": [
               "1"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/rk_loop_entry_before_rk_step_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "WPH_PREPART",
               "fortran_i",

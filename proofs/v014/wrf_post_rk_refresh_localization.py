@@ -17,18 +17,18 @@ import numpy as np
 
 
 REPO = Path(__file__).resolve().parents[2]
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh")
 WRF_COPY = SCRATCH / "WRF"
 RUN_DIR = SCRATCH / "run_case3"
 REFRESH_DIR = SCRATCH / "refresh_output"
 MARKER_DIR = SCRATCH / "marker_output"
-PRISTINE = Path("/home/user/src/wrf_pristine/WRF")
+PRISTINE = Path("<USER_HOME>/src/wrf_pristine/WRF")
 
-DYNAMIC_SCRATCH = Path("/mnt/data/wrf_gpu2/v014_dynamic_terms")
+DYNAMIC_SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_dynamic_terms")
 DYNAMIC_POST_DIR = DYNAMIC_SCRATCH / "term_output"
 
 CPU_H10 = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/"
     "20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00"
 )
 GPU_H10 = Path(
@@ -498,7 +498,7 @@ def main() -> None:
             "source_wrf_describe": run_text(["git", "describe", "--tags", "--dirty", "--always"], PRISTINE),
             "source_wrf_dirty_status_first_lines": run_text(["git", "status", "--short"], PRISTINE).splitlines()[:80],
             "scratch_root": str(SCRATCH),
-            "scratch_provenance": "rsync copy of /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF and run_case3",
+            "scratch_provenance": "rsync copy of <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF and run_case3",
             "wrf_copy": str(WRF_COPY),
             "run_dir": str(RUN_DIR),
             "patch_diff": str(PATCH_DIFF),
@@ -604,14 +604,14 @@ def main() -> None:
         },
         "next_jax_cpu_wrapper_target": next_target,
         "commands": [
-            "mkdir -p /mnt/data/wrf_gpu2/v014_post_rk_refresh && rsync -a /mnt/data/wrf_gpu2/v014_dynamic_terms/WRF/ /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/ && rsync -a /mnt/data/wrf_gpu2/v014_dynamic_terms/run_case3/ /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/",
-            "cp /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F.before_v014_post_rk_refresh",
-            "diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F.before_v014_post_rk_refresh /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F > /mnt/data/wrf_gpu2/v014_post_rk_refresh/wrf_post_rk_refresh_localization_patch.diff || true",
-            "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_post_rk_refresh/compile_post_rk_refresh.log 2>&1",
-            "find /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3 -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name '*stdout.log' -o -name 'wrf_stdout.log' \\) -delete",
-            "ln -sf /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/wrf.exe",
-            "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_POST_RK_REFRESH=1 WRFGPU2_POST_RK_REFRESH_ROOT=/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output WRFGPU2_POST_RK_REFRESH_GRID=2 WRFGPU2_POST_RK_REFRESH_START_STEP=6000 WRFGPU2_POST_RK_REFRESH_END_STEP=6000 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=/mnt/data/wrf_gpu2/v014_post_rk_refresh/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_rk_refresh_28rank_stdout.log 2>&1",
-            "cp /mnt/data/wrf_gpu2/v014_post_rk_refresh/wrf_post_rk_refresh_localization_patch.diff proofs/v014/wrf_post_rk_refresh_localization_patch.diff",
+            "mkdir -p <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh && rsync -a <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/WRF/ <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/ && rsync -a <DATA_ROOT>/wrf_gpu2/v014_dynamic_terms/run_case3/ <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/",
+            "cp <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F.before_v014_post_rk_refresh",
+            "diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F.before_v014_post_rk_refresh <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/solve_em.F > <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/wrf_post_rk_refresh_localization_patch.diff || true",
+            "timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/compile_post_rk_refresh.log 2>&1",
+            "find <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3 -maxdepth 1 \\( -name 'rsl.error.*' -o -name 'rsl.out.*' -o -name 'wrfout_d0*' -o -name 'wrfrst_d0*' -o -name '*stdout.log' -o -name 'wrf_stdout.log' \\) -delete",
+            "ln -sf <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/wrf.exe",
+            "timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_POST_RK_REFRESH=1 WRFGPU2_POST_RK_REFRESH_ROOT=<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output WRFGPU2_POST_RK_REFRESH_GRID=2 WRFGPU2_POST_RK_REFRESH_START_STEP=6000 WRFGPU2_POST_RK_REFRESH_END_STEP=6000 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_rk_refresh_28rank_stdout.log 2>&1",
+            "cp <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/wrf_post_rk_refresh_localization_patch.diff proofs/v014/wrf_post_rk_refresh_localization_patch.diff",
             "python -m py_compile proofs/v014/wrf_post_rk_refresh_localization.py",
             "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/wrf_post_rk_refresh_localization.py",
             "python -m json.tool proofs/v014/wrf_post_rk_refresh_localization.json >/tmp/wrf_post_rk_refresh_localization.validated.json",

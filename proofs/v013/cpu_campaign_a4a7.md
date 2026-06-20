@@ -1,7 +1,7 @@
 # v0.13 Validation Campaign - CPU Lanes A4-A7
 
 Base: worker/opus/v0120-integration @ 0b917ea6. Branch: validation-cpu-a4a7.
-CPU only (JAX_PLATFORMS=cpu), pinned `taskset -c 12-23`. OUT=/mnt/data/wrf_gpu_validation/v0130_campaign_cpu.
+CPU only (JAX_PLATFORMS=cpu), pinned `taskset -c 12-23`. OUT=<DATA_ROOT>/wrf_gpu_validation/v0130_campaign_cpu.
 
 | Lane | Verdict | Headline |
 | --- | --- | --- |

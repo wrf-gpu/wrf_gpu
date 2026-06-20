@@ -6,7 +6,7 @@ Verdict: `STEP1_QVAPOR_PRECALL_TRUTH_MISSING_SAVEPOINT_SPEC_READY`.
 
 - GPU used: `false`.
 - Target WRF boundary: `before_first_rk_step_part1_call`, domain `2`, step `1`, rk `1`.
-- Accepted pre-call text files: `28` under `/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth`.
+- Accepted pre-call text files: `28` under `<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth`.
 - Accepted pre-call mass schema: `['fortran_i', 'fortran_j', 'fortran_k', 'zero_x', 'zero_y', 'zero_k', 'T_STATE', 'P_STATE', 'PB', 'MU_STATE', 'MUB', 'MUT']`.
 - Accepted pre-call W/PH schema: `None`.
 - QVAPOR at accepted pre-call boundary: `False`.
@@ -16,8 +16,8 @@ Verdict: `STEP1_QVAPOR_PRECALL_TRUTH_MISSING_SAVEPOINT_SPEC_READY`.
 
 | Artifact | Boundary | Step/RK | Shape | Same-boundary? | Classification |
 |---|---|---:|---|---:|---|
-| 28 text tiles: `/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth` | `post_after_all_rk_steps_pre_halo` | 1/4 | `[44, 66, 159]` | `no` | `post_rk_or_different_boundary` |
-| 1 npz: `/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz` | `post_after_all_rk_steps_pre_halo` | 1/None | `[44, 66, 159]` | `no` | `post_rk_or_different_boundary` |
+| 28 text tiles: `<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth` | `post_after_all_rk_steps_pre_halo` | 1/4 | `[44, 66, 159]` | `no` | `post_rk_or_different_boundary` |
+| 1 npz: `<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz` | `post_after_all_rk_steps_pre_halo` | 1/None | `[44, 66, 159]` | `no` | `post_rk_or_different_boundary` |
 
 ## Boundary Evidence
 

@@ -25,7 +25,7 @@ RUC land-carry state shape (:class:`RucLandState`) the future port must thread,
 so the interface/registry/dispatch/catalog freeze stays consistent. Calling the
 column kernel raises :class:`NotImplementedError` with a pointer to the oracle.
 
-Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_sf_ruclsm.F``
+Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_ruclsm.F``
 (``LSMRUC`` line 84; ``SFCTMP`` line 1180; ``SOIL`` line 2229; ``SNOWSOIL`` line
 3120; ``SOILTEMP`` line 4530; ``SNOWTEMP`` line 4836; ``SOILMOIST`` line 5732;
 ``SOILPROP`` line 6092; ``TRANSF`` line 6305; ``VILKA`` line 6486; ``SOILVEGIN``

@@ -1,7 +1,7 @@
 # v0.15 IDENTITY-ALL-GREEN — root causes + fixes (branch v015-all-green)
 
 Scope: the four v0.14 bounded-accept misses, fixed WRF-faithfully against
-/home/user/src/wrf_pristine/WRF, frozen tolerance manifest UNCHANGED
+<USER_HOME>/src/wrf_pristine/WRF, frozen tolerance manifest UNCHANGED
 (proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json).
 
 ## Miss 3 — Canary MUB/PB static nest-frame seam (Atlas max_abs 250.7 / 249.9 vs 0.2)
@@ -77,7 +77,7 @@ RAINC+RAINNC.
 
 Pending the running WRF-internal-variability falsifier: same binary/inputs/
 24 ranks, ONE 1e-3 K perturbation at wrfinput T[k20,j64,i64]
-(/mnt/data/wrf_gpu_validation/v015_switzerland_72h_cpu_pert1). If CPU-vs-CPU
+(<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_72h_cpu_pert1). If CPU-vs-CPU
 pooled RAINNC rmse over 72 leads >> 1.0 mm while the other nine fields stay in
 tolerance, the 5.19 mm GPU residual is inside WRF's own chaotic sensitivity =>
 ACCEPTED-PHYSICAL (with the Thompson cold-collection fidelity gap documented

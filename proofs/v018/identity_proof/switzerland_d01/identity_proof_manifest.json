@@ -1,6 +1,6 @@
 {
   "asset_dir": "docs/assets/v018/identity_proof/switzerland_d01",
-  "command": "scripts/build_identity_proof_plots.py --cpu-dir /mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu --gpu-dir /mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/gpu_output --domain d01 --init 2023-01-15T00:00:00+00:00 --case-id switzerland_d01_72h --region-label Switzerland d01 72h (v0.18) --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir proofs/v018/identity_proof/switzerland_d01 --asset-dir docs/assets/v018/identity_proof/switzerland_d01",
+  "command": "scripts/build_identity_proof_plots.py --cpu-dir <DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu --gpu-dir <DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/gpu_output --domain d01 --init 2023-01-15T00:00:00+00:00 --case-id switzerland_d01_72h --region-label Switzerland d01 72h (v0.18) --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir proofs/v018/identity_proof/switzerland_d01 --asset-dir docs/assets/v018/identity_proof/switzerland_d01",
   "cpu_only": true,
   "field_metrics": [
     {

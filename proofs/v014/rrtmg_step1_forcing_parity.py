@@ -60,10 +60,10 @@ NOAHMP_CLOSURE_JSON = PROOF_DIR / "noahmp_step1_closure.json"
 RRTMG_RTHRATEN_CLOSURE_JSON = PROOF_DIR / "rrtmg_rthraten_closure.json"
 PINNED_SURFACE = Path("/tmp/wrfgpu2_v014_surface_handoff_pinned_onerun/surface_land_flux_d02_step1.txt")
 WRF_RADIATION_DRIVER = Path(
-    "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F"
+    "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F"
 )
 WRF_RRTMG_LW = Path(
-    "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F"
+    "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F"
 )
 PRIOR_CLEARSKY = ROOT / "proofs/v013/clearsky_radiation.json"
 

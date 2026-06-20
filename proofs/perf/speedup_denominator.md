@@ -55,14 +55,14 @@ These are **finished 72 h runs where d02 is nested with ONLY d01 and has NO inne
 | Physics | CONUS suite, Thompson mp(8), MYNN PBL(5), Noah-MP(4), RRTMG(4), radt=30 min |
 
 **Run A** — `run_id 20260528_18z_l2_72h_20260529T002423Z`
-`/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/rsl.error.0000`
+`<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/rsl.error.0000`
 - d02 timing lines sampled: **43200** (= 72 h × 3600 / 6 s; full run, warmup-5 dropped).
 - d02 **median = 0.1431 s/step**, trimmed-mean(5–95%) = 0.1603 s/step, p90 = 0.2524, max 41.4 s (radiation/IO spikes).
 - d02 per-forecast-hour (median × 600 steps/fc-hr) = **85.9 s/fc-hour** (clean compute).
 - d02 total-compute / 72 = **160.7 s/fc-hour** (includes all radiation + IO spikes).
 
 **Run B** — `run_id 20260527_18z_l2_72h_20260528T002306Z`
-`/mnt/data/canairy_meteo/runs/wrf_l2/20260527_18z_l2_72h_20260528T002306Z/rsl.error.0000`
+`<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260527_18z_l2_72h_20260528T002306Z/rsl.error.0000`
 - d02 lines: 43200. **median = 0.1338 s/step**, trimmed-mean = 0.1368.
 - d02 median × 600 = **80.3 s/fc-hour**; total-compute / 72 = **84.5 s/fc-hour** (this run had far less IO/radiation contention, so the two metrics nearly coincide).
 
@@ -73,7 +73,7 @@ Full-nest wall sanity: Run A's full d01+d02 72 h wall (file mtimes `namelist.inp
 
 ### Cross-check / reference: live 5-domain L3 run (running NOW, read-only)
 
-`/mnt/data/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z/` — the 28-rank `prterun` job currently on cores 4–31 (PIDs 3518022+). I read its logs only and did not disturb it.
+`<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z/` — the 28-rank `prterun` job currently on cores 4–31 (PIDs 3518022+). I read its logs only and did not disturb it.
 - **max_dom=5**: d01 9 km, **d02 3 km 160×67** (same as L2 d02), d03/d04/d05 1 km. d02 dt = 6 s.
 - d02 median = 1.0445 s/step → 627 s/fc-hour — **~7× slower than the L2 d02** because the workstation is heavily contended (this box is simultaneously running GPU/other jobs, and the 5-domain nest competes for the same 28 cores). Full-nest wall per d02 fc-hour swung **11 min to 114 min** across hours.
 - **This run is NOT a usable denominator** for a clean per-d02 number: its d02 timing is contaminated by contention and by sharing cores with d01+d03+d04+d05. It is included only to show *why the contended-nest wall is not a fair denominator*, and to confirm the d02 grid/dt config matches.
@@ -133,6 +133,6 @@ The "~50–85×" sits in the gap between the 24× (L2 d01+d02 nest) and the 167�
 ## Provenance manifest
 
 - GPU numerator: `proofs/perf/segscan_24h.json` (15.35 s/fc-hr, dt=10s, fp64, RTX 5090; tracked commit `177c734`), `proofs/perf/warmed_timing.json` (16.39 s/fc-hr).
-- CPU denominator A: `/mnt/data/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/rsl.error.0000` + `namelist.input` (WRF V4.7.1, 28 ranks, d02 3km 160×67, dt=6s, 43200 d02 steps, median 0.1431 s/step).
-- CPU denominator B: `/mnt/data/canairy_meteo/runs/wrf_l2/20260527_18z_l2_72h_20260528T002306Z/rsl.error.0000` (median 0.1338 s/step).
-- Contended reference: `/mnt/data/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z/` (live 5-domain run, read-only).
+- CPU denominator A: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260528_18z_l2_72h_20260529T002423Z/rsl.error.0000` + `namelist.input` (WRF V4.7.1, 28 ranks, d02 3km 160×67, dt=6s, 43200 d02 steps, median 0.1431 s/step).
+- CPU denominator B: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260527_18z_l2_72h_20260528T002306Z/rsl.error.0000` (median 0.1338 s/step).
+- Contended reference: `<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z/` (live 5-domain run, read-only).

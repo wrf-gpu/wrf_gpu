@@ -78,7 +78,7 @@ import proofs.perf.v015.viability.fp32_fp64_ab_bench as AB
 OUT_DIR = Path("proofs/perf/v015/viability")
 OUT_JSON = OUT_DIR / "true_fp32_cost_proxy.json"
 
-ANCHOR_RUN_ROOT = "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable"
+ANCHOR_RUN_ROOT = "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable"
 ANCHOR_RUN_ID = "run_h36"
 ANCHOR_DOMAIN = "d01"
 ANCHOR_DT_S = 18.0

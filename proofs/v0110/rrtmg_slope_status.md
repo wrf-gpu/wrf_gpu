@@ -2,7 +2,7 @@
 
 - status: PARTIAL
 - radiation parity: PASS
-- fixture: `/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_12:00:00`
+- fixture: `<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d02_2026-05-22_12:00:00`
 - selected columns: 16 largest terrain-radiation deltas
 - gross SWDOWN RMSE vs WRF SWDNB: 7.561 W m-2
 - topo SWNORM RMSE vs WRF SWNORM: 6.693 W m-2

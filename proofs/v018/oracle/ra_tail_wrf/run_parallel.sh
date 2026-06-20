@@ -7,7 +7,7 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${HERE}/../../../.." && pwd)"
-WRF_ROOT="${WRF_PRISTINE_ROOT:-/home/user/src/wrf_pristine/WRF}"
+WRF_ROOT="${WRF_PRISTINE_ROOT:-<USER_HOME>/src/wrf_pristine/WRF}"
 BASE_RUN="${WRF_RA_BASE_RUN:-${WRF_ROOT}/test/em_real/oracle_run_v090}"
 RUN_ROOT="${HERE}/run"
 SAVE_ROOT="${ROOT}/proofs/v018/savepoints/ra_tail_wrf"

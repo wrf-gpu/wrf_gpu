@@ -28,7 +28,7 @@ D02_REPLAY_PATH = REPO_ROOT / "src/gpuwrf/integration/d02_replay.py"
 GEN2_ACCESSOR_PATH = REPO_ROOT / "src/gpuwrf/io/gen2_accessor.py"
 BOUNDARY_REPLAY_PATH = REPO_ROOT / "src/gpuwrf/io/boundary_replay.py"
 DEFAULT_REFERENCE = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260525_18z_l3_24h_20260526T221207Z/"
     "wrfout_d02_2026-05-25_18:00:00"
 )

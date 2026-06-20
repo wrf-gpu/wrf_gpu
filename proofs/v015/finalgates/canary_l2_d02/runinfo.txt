@@ -1,12 +1,12 @@
-run_root=/mnt/data/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z
+run_root=<DATA_ROOT>/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z
 started_utc=20260613T095113Z
 branch=worker/opus/v015-final-gates
 head=8dc6b46667efb58f48fd70435bc77c1b65e59fa8
 kind=v015_canary_l2_d02_72h_field_parity_finalgate
 defaults=niter16,thompson_cold_collection_on,dense_boulac
 run_id=20260501_18z_l2_72h_20260519T173026Z
-cpu_truth=/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z
-input_run_root=/mnt/data/canairy_meteo/runs/wrf_l2
+cpu_truth=<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z
+input_run_root=<DATA_ROOT>/canairy_meteo/runs/wrf_l2
 domain=d02
 hours=72
 status=prepared_pending_lock

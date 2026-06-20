@@ -48,7 +48,7 @@ import gpuwrf.runtime.operational_mode as operational_mode  # noqa: E402
 
 _ORIGINAL_NON_DRY_INCREMENT_FIELDS = operational_mode._PHYSICS_NON_DRY_INCREMENT_FIELDS
 
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2")
 FALLBACK_RUN_ROOT = Path("/tmp/vburst_runs")
 DEFAULT_RUN_ID = "20260507_18z_l2_72h_20260513T124307Z"
 DEFAULT_OUTPUT_ROOT = Path("/tmp/v0110_wind_regression")

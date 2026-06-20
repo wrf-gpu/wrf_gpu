@@ -36,22 +36,22 @@
     "full_domain_source_truth_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/full_domain_source_truth.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/full_domain_source_truth.json",
       "sha256": "41558a56685d03f7543db1af21dbb65b1c867605d9376302d82341d577ee47a4",
       "size_bytes": 4686
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-full-domain-source-wrapper/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-full-domain-source-wrapper/sprint-contract.md",
       "sha256": "efa7a84545041e63f6edf295ab20e5b6c0acbd686a3054e7cdd1cf9017c044a9",
       "size_bytes": 6978
     }
   },
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_wrapped.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_wrapped.md"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_wrapped.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_input_single_rk_parity_wrapped.md"
   },
   "schema": "wrfgpu2.v014.same_input_single_rk_parity_wrapped.v1",
   "verdict": "FULL_DOMAIN_WRAPPER_BLOCKED_TRUTH_SURFACE_PATCH_ONLY_AND_CARRY_LEAVES"

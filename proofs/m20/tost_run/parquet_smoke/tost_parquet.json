@@ -2,7 +2,7 @@
   "schema": "V020ParquetTostCampaign",
   "schema_version": 1,
   "generated_utc": "2026-06-02T12:46:51.216688+00:00",
-  "truth_source": "/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet",
+  "truth_source": "<DATA_ROOT>/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet",
   "truth_kind": "31-case CPU-WRF point-shadow parquet (nearest_grid_cell), 278 stations, 4 nests, 0% NaN",
   "units_run": [
     "20260509_18z__d02",
@@ -86,7 +86,7 @@
         71,
         72
       ],
-      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+      "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
       "init_utc": "2026-05-09T18:00:00+00:00",
       "max_lead_h": 72,
       "grid": [
@@ -245,7 +245,7 @@
         71,
         72
       ],
-      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260530_18z_l2_72h_20260531T161057Z",
+      "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260530_18z_l2_72h_20260531T161057Z",
       "init_utc": "2026-05-30T18:00:00+00:00",
       "max_lead_h": 72,
       "grid": [

@@ -30,9 +30,9 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
-FULL = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_lbcclockfix_20260611T020428Z/gpu_output")
-PROBE_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+FULL = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_lbcclockfix_20260611T020428Z/gpu_output")
+PROBE_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 PROBE = PROBE_ROOT / "gpu_output"
 PROBE_NOMP = PROBE_ROOT / "gpu_output_nomp2"
 PROBE_OPENLID = PROBE_ROOT / "gpu_output_openlid_gpt"

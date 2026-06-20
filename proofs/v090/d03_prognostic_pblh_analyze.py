@@ -14,7 +14,7 @@ written and the CPU corpus d03 truth.
 Usage:
   taskset -c 0-3 python3 proofs/v090/d03_prognostic_pblh_analyze.py \
       --gpu-output-dir /tmp/vburst_d03/d03_<run_id> \
-      --cpu-ref-dir /mnt/data/canairy_meteo/runs/wrf_l3/<run_id> \
+      --cpu-ref-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l3/<run_id> \
       --out proofs/v090/d03_prognostic_pblh.json
 """
 from __future__ import annotations

@@ -130,7 +130,7 @@ def _run_slab() -> dict:
             "scan until the slab LSM hook (TSLB land carry + GSW/GLW forcing + TMN/THC/EMISS "
             "statics) is threaded; selectable for a single-column reference comparison."
         ),
-        "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_sf_slab.F",
+        "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_slab.F",
         "source_checksums_sha256": _read_checksums("slab_wrf_source_checksums.txt"),
         "cases": cases,
         "pass": bool(all(c["pass"] for c in cases)),
@@ -175,7 +175,7 @@ def _run_old_mm5() -> dict:
             "IMPLEMENTED -- scan-wired via coupling.scan_adapters.sfclay_old_mm5_adapter "
             "(SFCLAY_SCAN_ADAPTERS[91]); writes the B2 kinematic surface flux handles."
         ),
-        "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_sf_sfclay.F",
+        "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_sfclay.F",
         "source_checksums_sha256": _read_checksums("sfclay_old_mm5_wrf_source_checksums.txt"),
         "cases": cases,
         "pass": bool(all(c["pass"] for c in cases)),
@@ -217,7 +217,7 @@ def _run_gfs() -> dict:
             "(SFCLAY_SCAN_ADAPTERS[3]); writes the B2 kinematic surface flux handles. "
             "fpvs reproduced faithfully (the same 7501-node Clausius-Clapeyron table)."
         ),
-        "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_sf_gfs.F (+ module_gfs_funcphys/physcons/machine)",
+        "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_gfs.F (+ module_gfs_funcphys/physcons/machine)",
         "source_checksums_sha256": _read_checksums("sfclay_gfs_wrf_source_checksums.txt"),
         "cases": cases,
         "pass": bool(all(c["pass"] for c in cases)),

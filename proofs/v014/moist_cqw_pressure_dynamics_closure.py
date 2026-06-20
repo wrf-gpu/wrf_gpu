@@ -14,7 +14,7 @@ the MOIST column.  Prior proof
   P+PB(k0) vs own column, h1: CPU MOIST -13.5 Pa ; GPU MOIST -202.7 Pa ;
   GPU DRY -8.2 Pa.
 
-WRF SOURCE ANCHORING (pristine tree /home/user/src/wrf_pristine/WRF)
+WRF SOURCE ANCHORING (pristine tree <USER_HOME>/src/wrf_pristine/WRF)
   - calc_cq        module_big_step_utilities_em.F:856-870
       cqw(i,k,j) = 0.5*qtot,  qtot = sum_species( q(k)+q(k-1) )   (w-faces)
   - pg_buoy_w      module_big_step_utilities_em.F:2474-2497
@@ -80,11 +80,11 @@ from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
 from gpuwrf.contracts.grid import DycoreMetrics
 
 RUN_ROOT = Path(
-    "/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z"
 )
 GPU_DIR = RUN_ROOT / "gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z"
 CPU_DIR = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/"
     "20260501_18z_l2_72h_20260519T173026Z"
 )
 DOMAIN = "d02"

@@ -21,7 +21,7 @@
     },
     "wrf_patch": {
       "exists": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_surface_land_flux_handoff_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_surface_land_flux_handoff_wrf_patch.diff",
       "size_bytes": 9051
     }
   },

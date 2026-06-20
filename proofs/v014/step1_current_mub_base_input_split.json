@@ -3,7 +3,7 @@
     "executed": [
       "git rev-parse HEAD",
       "git merge-base --is-ancestor 9a7016d9 HEAD",
-      "recovered prior WRF adjust hook from /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth",
+      "recovered prior WRF adjust hook from <DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth",
       "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src:proofs/v014 python proof-side live-nest target recompute"
     ],
     "required_validation": [
@@ -99,7 +99,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "331e2ba860d390a62aa6cf45118ec0d958574b5b\n",
@@ -124,7 +124,7 @@
         "--",
         "src/gpuwrf"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "",
@@ -138,7 +138,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "3f99a3a7bba5edbafa1a8983c8e85a568de25750484e761f694cf7bb7952b0e8",
       "size_bytes": 65635
     },
@@ -146,7 +146,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.json",
       "sha256": "9dd4fb4bfe796a4b03db5cf36b1339b3492d52f7d681594a374baf714da630df",
       "size_bytes": 194511
     },
@@ -154,7 +154,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
       "sha256": "2db120b4ca59b3b6af5ac42572c8a1d5ffc58f3af10676bafceef9e1c5ceeb38",
       "size_bytes": 1145
     },
@@ -162,7 +162,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_adjust_tempqv_intermediate.json",
       "sha256": "4d913f3c019acf2df6c996962a390730a3b4b4829196b1eb1737765d7b39fc6c",
       "size_bytes": 18225
     },
@@ -170,7 +170,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
       "sha256": "8d4ebe82db0c03583a19d699984968b343f705b85bc119baf2613088c947e55f",
       "size_bytes": 44524
     },
@@ -178,7 +178,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-current-mub-base-input-split/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-current-mub-base-input-split/sprint-contract.md",
       "sha256": "a865b9a1f14f8edae2bdad6dc7d0b5e2e5994143368258bcc6d8e22bb351b67f",
       "size_bytes": 5038
     },
@@ -186,7 +186,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF",
       "sha256": null,
       "size_bytes": null
     }
@@ -292,7 +292,7 @@
       "raw_mub_save": 85928.6875,
       "raw_pp": 1750.15625
     },
-    "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
+    "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_theta_same_qvapor.json",
     "status": "READY",
     "worst_cell": {
       "abs_delta": 0.00541785382188209,
@@ -354,18 +354,18 @@
   },
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-current-mub-base-input-split.md",
-    "script": "/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.py",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-current-mub-base-input-split.md",
+    "script": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.py",
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff"
   },
   "schema": "wrfgpu2.v014.step1_current_mub_base_input_split.v1",
   "scratch_write_probe": {
-    "parent": "/mnt/data/wrf_gpu2",
+    "parent": "<DATA_ROOT>/wrf_gpu2",
     "parent_exists": true,
     "parent_writable_by_os_access": true,
-    "path": "/mnt/data/wrf_gpu2/v014_step1_current_mub_base_input_split",
+    "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_current_mub_base_input_split",
     "status": "WRITABLE_NOT_USED"
   },
   "source_patch_allowed_by_proof": false,
@@ -386,7 +386,7 @@
     "zero_index_order": "k,y,x"
   },
   "unresolved_risks": [
-    "Fresh WRF terrain/PHB target emission could not be run because /mnt/data scratch writes are read-only in this sandbox.",
+    "Fresh WRF terrain/PHB target emission could not be run because <DATA_ROOT> scratch writes are read-only in this sandbox.",
     "The source-changing sprint should validate the transient MUB blend over the full domain before patching production initialization."
   ],
   "verdict": "STEP1_CURRENT_MUB_BASE_SPLIT_WRF_BLEND_UNIMPLEMENTED_OR_MISMATCHED",
@@ -428,7 +428,7 @@
       "use_theta_m": 1
     },
     "marker": "# WRFGPU2_V014_STEP1_ADJUST_TEMPQV_INTERMEDIATE v1",
-    "path": "/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
+    "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt",
     "status": "READY",
     "values": {
       "c3h": 0.9896281957626343,
@@ -460,7 +460,7 @@
     }
   },
   "wrf_patch": {
-    "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff",
+    "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff",
     "purpose": "fresh disposable hook for parent-interpolated, child-input, post-blend, and post-start-domain target values",
     "status": "PROPOSED_NOT_APPLIED_SANDBOX_SCRATCH_READ_ONLY"
   },
@@ -471,7 +471,7 @@
         "p_new = c4(k) + c3(k)*mub(i,j) + p_top + pp(i,k,j)"
       ],
       "lines": "812-890",
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F"
     },
     "mediation_integrate": {
       "evidence": [
@@ -481,7 +481,7 @@
         "start_domain(nest,.TRUE.) runs later and recomputes final base fields"
       ],
       "lines": "726-805",
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F"
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F"
     }
   }
 }

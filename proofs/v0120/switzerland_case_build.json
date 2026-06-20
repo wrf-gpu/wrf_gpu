@@ -142,12 +142,12 @@
   "wps": {
     "geog": "WPS_GEOG_LOW_RES (lowres: topo_gmted2010_5m etc.)",
     "n_met_em": 9,
-    "wps_bin": "/mnt/data/canairy_meteo/artifacts/wrf_src/WPS/install_gen2_dmpar/bin"
+    "wps_bin": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WPS/install_gen2_dmpar/bin"
   },
   "wrfbdy_d01": {
     "bdy_times": 8,
     "bytes": 10084632,
-    "path": "/mnt/data/wrf_gpu_switzerland/run_cpu/wrfbdy_d01",
+    "path": "<DATA_ROOT>/wrf_gpu_switzerland/run_cpu/wrfbdy_d01",
     "sha256": "f3e556670e4768326997bdfa1dd8b0f77eb6d5da07d9c4dbf900bf8ff9e30230"
   },
   "wrfinput_d01": {
@@ -159,7 +159,7 @@
       "south_north": 42,
       "west_east": 42
     },
-    "path": "/mnt/data/wrf_gpu_switzerland/run_cpu/wrfinput_d01",
+    "path": "<DATA_ROOT>/wrf_gpu_switzerland/run_cpu/wrfinput_d01",
     "sha256": "a5d696550d1dc6713e2e340b8c2fba83811d43f4a94a65ca95266035860e2781"
   }
 }

@@ -2,7 +2,7 @@
 """V0.14 Switzerland h36 acoustic-substep u''/v'' (advance_uv) lane decomposition.
 
 Proof-only harness; every score is JAX-vs-WRF-native (dump truth at
-``/mnt/data/wrf_gpu_validation/v014_switzerland_awd_dump/awd_dumps``, WRF call
+``<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_awd_dump/awd_dumps``, WRF call
 21601 -> 21602, itimestep=7201 rk=1 iter=1).
 
 Key identity exploited: at rk_step=1, iteration=1 WRF ``small_step_prep`` zeroes

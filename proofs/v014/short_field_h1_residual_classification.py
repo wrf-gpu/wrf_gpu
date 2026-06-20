@@ -25,10 +25,10 @@ import numpy as np
 from netCDF4 import Dataset
 
 CASE = "20260501_18z_l2_72h_20260519T173026Z"
-WRF_L2 = f"/mnt/data/canairy_meteo/runs/wrf_l2/{CASE}"
-CPU_TRUTH = f"/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/{CASE}"
+WRF_L2 = f"<DATA_ROOT>/canairy_meteo/runs/wrf_l2/{CASE}"
+CPU_TRUTH = f"<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/{CASE}"
 GPU_ROOT = (
-    "/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z/"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z/"
     f"gpu_output/l2_d02_{CASE}"
 )
 

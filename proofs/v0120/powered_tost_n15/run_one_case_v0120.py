@@ -204,7 +204,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-root",       type=Path, default=L2_RUN_ROOT)
     parser.add_argument("--cpu-truth-root", type=Path,
-                        default=Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output"),
+                        default=Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output"),
                         help="Root for CPU-WRF reference wrfouts")
     parser.add_argument("--run-id",    required=True)
     parser.add_argument("--hours",     type=int, default=24)

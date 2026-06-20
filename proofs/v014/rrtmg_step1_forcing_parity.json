@@ -264,14 +264,14 @@
     "noahmp_closure_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/noahmp_step1_closure.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/noahmp_step1_closure.json",
       "sha256_16": "c39eb659c9835d72",
       "size": 20211
     },
     "rrtmg_rthraten_closure_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/rrtmg_rthraten_closure.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/rrtmg_rthraten_closure.json",
       "sha256_16": "9a3b360d4ec15b4f",
       "size": 14707
     },
@@ -286,14 +286,14 @@
     "wrf_radiation_driver": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
       "sha256_16": "4f0177189eb616c9",
       "size": 259472
     },
     "wrf_rrtmg_lw": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
       "sha256_16": "c7a5238612aa8a42",
       "size": 652002
     }
@@ -312,8 +312,8 @@
       "rmse_Wm2": 1.4514370602096323
     },
     "oracle_kind": "pristine-CPU-WRF RRTMG clear-sky wrfout (...C) vs JAX clear-sky on IDENTICAL profiles; all-sky JAX-vs-WRF = calibration floor (NOT self-compare)",
-    "source": "/home/user/src/wrf_gpu2/proofs/v013/clearsky_radiation.json",
-    "source_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
+    "source": "<USER_HOME>/src/wrf_gpu2/proofs/v013/clearsky_radiation.json",
+    "source_wrfout": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
   },
   "recommended_fix": {
     "next_action": "Rerun the split WRF-oracle closure proof: JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= JAX_ENABLE_COMPILATION_CACHE=false PYTHONPATH=src python proofs/v014/rrtmg_rthraten_closure.py",
@@ -541,34 +541,34 @@
   "schema": "wrfgpu2.v014.rrtmg_step1_forcing_parity.v1",
   "source_checks": {
     "jax_rrtmg_dry_theta_input_fix": {
-      "file": "/home/user/src/wrf_gpu2/src/gpuwrf/coupling/physics_couplers.py",
+      "file": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/coupling/physics_couplers.py",
       "meaning": "Metric-backed RRTMG input now mirrors WRF phy_prep by converting stored theta_m to dry theta before T3D temperature conversion.",
       "owner": "_rrtmg_column_inputs"
     },
     "radiation_driver_rrtmg_lw_call": {
-      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F",
       "line": 2087,
       "meaning": "RRTMG LW driver owns GLW and RTHRATENLW before SW is added."
     },
     "wrf_lw_glw_assignment": {
-      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
       "line": 12782,
       "meaning": "WRF GLW is downward longwave surface flux, not emissivity-scaled by NoahMP.",
       "statement": "glw(i,j) = dflx(1,1)"
     },
     "wrf_lw_theta_conversion": {
-      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
       "line": 12816,
       "meaning": "WRF converts LW temperature heating to theta tendency before mass coupling.",
       "statement": "rthratenlw(i,k,j) = (hr(ncol,k)/86400.)/pi3d(i,k,j)"
     },
     "wrf_lw_unhooked_derived_boundary": {
-      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F",
       "lines": "12254-12780",
       "meaning": "WRF builds top-of-model buffer, ozone/trace-gas profiles, cloud optical properties, aerosol optical depth, then calls rrtmg_lw; this exact derived column is not present in the current Step-1 hooks."
     },
     "wrf_noahmp_lwdn_handoff": {
-      "file": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_sf_noahmpdrv.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_sf_noahmpdrv.F",
       "line": 760,
       "meaning": "NoahMP receives GLW directly as LWDN.",
       "statement": "LWDN = GLW(I,J)"

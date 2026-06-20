@@ -18,7 +18,7 @@ from gpuwrf.init.static_geog import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
-WPS_ROOT = Path(os.environ.get("GPUWRF_WPS_CASES_ROOT", "/mnt/data/canairy_meteo/runs/wps_cases"))
+WPS_ROOT = Path(os.environ.get("GPUWRF_WPS_CASES_ROOT", "<DATA_ROOT>/canairy_meteo/runs/wps_cases"))
 PROOF_PATH = ROOT / "proofs" / "v030" / "s2_static_geog_report.json"
 DOMAINS = ("d01", "d02", "d03")
 CATEGORY_FIELDS = ("LU_INDEX", "LANDMASK", "SCT_DOM", "SCB_DOM")

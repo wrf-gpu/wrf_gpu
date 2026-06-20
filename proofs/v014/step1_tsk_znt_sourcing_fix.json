@@ -322,7 +322,7 @@
         "diff",
         "--no-index",
         "--",
-        "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F",
+        "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F",
         "/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F"
       ],
       [
@@ -335,7 +335,7 @@
       ]
     ],
     "exists": true,
-    "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff",
+    "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff",
     "size_bytes": 28195
   }
 }

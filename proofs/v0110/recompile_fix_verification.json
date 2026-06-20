@@ -9,7 +9,7 @@
   ],
   "controls": {
     "same_head_uncommitted_carry_one_step": {
-      "command": "/tmp/wrf_gpu_run.sh bash -lc 'PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_JAX_CACHE=0 taskset -c 0-27 python - <<PY ...'",
+      "command": "/tmp/wrf_gpu_run.sh bash -lc 'PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_JAX_CACHE=0 taskset -c 0-27 python - <<PY ...'",
       "log_path": "proofs/v0110/recompile_fix_uncommitted_control.log",
       "purpose": "Control showing the same HEAD, same d02 L2 fixture, and old uncommitted initial carry can trace and execute _advance_chunk; isolates failure to the new committed-carry path.",
       "status": "PASS",
@@ -37,7 +37,7 @@
         }
       ],
       "chunk_wall_s": [],
-      "command": "/tmp/wrf_gpu_run.sh bash -lc 'PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_JAX_CACHE=0 JAX_LOG_COMPILES=1 JAX_EXPLAIN_CACHE_MISSES=1 taskset -c 0-27 python proofs/v0110/recompile_diag.py --chunks 3 --steps 180 --cadence 180 --out proofs/v0110/recompile_fix_fixed_3chunks.json > proofs/v0110/recompile_fix_fixed_3chunks.log 2>&1'",
+      "command": "/tmp/wrf_gpu_run.sh bash -lc 'PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_JAX_CACHE=0 JAX_LOG_COMPILES=1 JAX_EXPLAIN_CACHE_MISSES=1 taskset -c 0-27 python proofs/v0110/recompile_diag.py --chunks 3 --steps 180 --cadence 180 --out proofs/v0110/recompile_fix_fixed_3chunks.json > proofs/v0110/recompile_fix_fixed_3chunks.log 2>&1'",
       "end_chunk_markers": [],
       "exception": "TypeError: int() argument must be a string, a bytes-like object or a real number, not 'Leaf'",
       "failure_stack_summary": [

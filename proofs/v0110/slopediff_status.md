@@ -42,7 +42,7 @@ Result: `2 passed in 248.12s`.
 d02 sanity:
 
 ```bash
-/tmp/wrf_gpu_run.sh env GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo PYTHONPATH=src JAX_ENABLE_X64=true python proofs/v0110/recompile_diag.py --domain d02 --chunks 1 --steps 1 --cadence 180 --out proofs/v0110/slopediff_d02_sanity.json
+/tmp/wrf_gpu_run.sh env GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo PYTHONPATH=src JAX_ENABLE_X64=true python proofs/v0110/recompile_diag.py --domain d02 --chunks 1 --steps 1 --cadence 180 --out proofs/v0110/slopediff_d02_sanity.json
 ```
 
 Result: PASS. Proof object: `proofs/v0110/slopediff_d02_sanity.json`; all recorded state and diagnostic hashes are finite.

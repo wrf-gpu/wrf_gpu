@@ -1,5 +1,5 @@
---- /mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/backups/solve_em.F.before_qvapor_precall	2026-06-09 15:27:14.885965002 +0100
-+++ /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F	2026-06-09 16:26:52.187976855 +0100
+--- <DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/backups/solve_em.F.before_qvapor_precall	2026-06-09 15:27:14.885965002 +0100
++++ <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F	2026-06-09 16:26:52.187976855 +0100
 @@ -7013,12 +7013,13 @@
               'mass_vertical_fortran_k_start_k_end_inclusive', k_start, wrfgpu2_mass_k_end
          WRITE(wrfgpu2_unit,'(A,2(1X,I0))') &

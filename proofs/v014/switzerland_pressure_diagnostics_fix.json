@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "cpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
-    "h36_baseline_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output",
-    "h36_fixed_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_pressure_diagnostics_fix_gpt",
-    "previous_hydro_subterms_proof": "/home/user/src/wrf_gpu2/.codex/worktrees/v014-switzerland-pressure-diagnostics-fix/proofs/v014/switzerland_hydro_pgf_subterms.json",
-    "previous_strongflow_proof": "/home/user/src/wrf_gpu2/.codex/worktrees/v014-switzerland-pressure-diagnostics-fix/proofs/v014/switzerland_strongflow_dynamics.json"
+    "cpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+    "h36_baseline_gpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output",
+    "h36_fixed_gpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_pressure_diagnostics_fix_gpt",
+    "previous_hydro_subterms_proof": "<USER_HOME>/src/wrf_gpu2/.codex/worktrees/v014-switzerland-pressure-diagnostics-fix/proofs/v014/switzerland_hydro_pgf_subterms.json",
+    "previous_strongflow_proof": "<USER_HOME>/src/wrf_gpu2/.codex/worktrees/v014-switzerland-pressure-diagnostics-fix/proofs/v014/switzerland_strongflow_dynamics.json"
   },
   "baseline_from_previous": {
     "hydro_step_probe_window": "h36 dry step probe, first 30 model steps (300 s)",
@@ -39,7 +39,7 @@
   "generated_utc": "2026-06-11T06:27:44.394540+00:00",
   "hourly_gate": {
     "available": false,
-    "fixed_output": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_pressure_diagnostics_fix_gpt"
+    "fixed_output": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_pressure_diagnostics_fix_gpt"
   },
   "hypothesis": {
     "manager_suspicion": "State.mu_total already stores MUB+MU, so old _absolute_diagnostics muts=mu_total+mu_perturbation evaluates to MUB+2*MU.",
@@ -48,47 +48,47 @@
   "resources": {
     "gpt_pressure_diag_fix_1h": {
       "exists": false,
-      "gpu_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_gpu_usage.csv",
+      "gpu_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_gpu_usage.csv",
       "max_gpu_memory_mib": null,
       "max_gpu_util_pct": null,
       "max_process_rss_kib": null,
-      "monitor": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_monitor.runinfo",
-      "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_process_usage.csv",
+      "monitor": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_monitor.runinfo",
+      "process_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_process_usage.csv",
       "samples": 0,
-      "system_memory_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_system_memory.csv"
+      "system_memory_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_1h_system_memory.csv"
     },
     "gpt_pressure_diag_fix_3h": {
       "exists": false,
-      "gpu_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_gpu_usage.csv",
+      "gpu_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_gpu_usage.csv",
       "max_gpu_memory_mib": null,
       "max_gpu_util_pct": null,
       "max_process_rss_kib": null,
-      "monitor": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_monitor.runinfo",
-      "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_process_usage.csv",
+      "monitor": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_monitor.runinfo",
+      "process_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_process_usage.csv",
       "samples": 0,
-      "system_memory_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_system_memory.csv"
+      "system_memory_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_fix_3h_system_memory.csv"
     },
     "gpt_pressure_diag_muts_probe": {
       "exists": true,
-      "gpu_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_gpu_usage.csv",
+      "gpu_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_gpu_usage.csv",
       "max_gpu_memory_mib": 7568,
       "max_gpu_util_pct": 80,
       "max_process_rss_kib": 4509048,
-      "monitor": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_monitor.runinfo",
-      "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_process_usage.csv",
+      "monitor": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_monitor.runinfo",
+      "process_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_process_usage.csv",
       "samples": 121,
-      "system_memory_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_system_memory.csv"
+      "system_memory_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_muts_probe_system_memory.csv"
     },
     "gpt_pressure_diag_next_probe": {
       "exists": true,
-      "gpu_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_gpu_usage.csv",
+      "gpu_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_gpu_usage.csv",
       "max_gpu_memory_mib": 5294,
       "max_gpu_util_pct": 75,
       "max_process_rss_kib": 5231600,
-      "monitor": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_monitor.runinfo",
-      "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_process_usage.csv",
+      "monitor": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_monitor.runinfo",
+      "process_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_process_usage.csv",
       "samples": 172,
-      "system_memory_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_system_memory.csv"
+      "system_memory_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_pressure_diag_next_probe_system_memory.csv"
     }
   },
   "root_classification": {
@@ -788,7 +788,7 @@
         "rmse": 0.0
       }
     },
-    "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+    "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
     "state_semantics": {
       "mu_perturbation": {
         "max": -186.53863525390625,
@@ -1312,7 +1312,7 @@
       "top_lid": true
     },
     "previous_generated_utc": "2026-06-11T05:58:58.704113+00:00",
-    "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+    "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
     "steps_requested": 30,
     "variants": {
       "double_count_muts": {
@@ -14668,12 +14668,12 @@
   },
   "verdict": "EXACT_ROOT_NO_FIX",
   "wrf_source_anchors": {
-    "calc_p_rho_phi_al_line": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1029",
-    "horizontal_pgf_u_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
-    "horizontal_pgf_v_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
+    "calc_p_rho_phi_al_line": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1029",
+    "horizontal_pgf_u_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
+    "horizontal_pgf_v_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
     "jax_absolute_diagnostics": "src/gpuwrf/dynamics/core/rk_addtend_dry.py:_absolute_diagnostics",
     "jax_state_mu_semantics": "src/gpuwrf/contracts/state.py:378-380",
-    "solve_em_calc_p_rho_phi_call": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:3049-3052",
-    "solve_em_muts_reset": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:1446"
+    "solve_em_calc_p_rho_phi_call": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F:3049-3052",
+    "solve_em_muts_reset": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F:1446"
   }
 }

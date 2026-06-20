@@ -6,7 +6,7 @@ No segmented host loop, no second compile -- isolates the per-step launch cost s
 the carry-split / unroll effect is measured cleanly and fast.
 
 Run:
-  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 \
+  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 \
     XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false \
     TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_ACOUSTIC_UNROLL=2 taskset -c 0-3 \
     python proofs/v0100/wave_a_micro_timing.py --steps 90 --out micro_u2.json

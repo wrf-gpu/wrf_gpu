@@ -15,11 +15,11 @@ grid-cell parity root-cause work.
 
 Use the `128x128` mass-grid case first:
 
-- input/truth root: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu`
-- clean native-init seed already available: `/mnt/data/wrf_gpu_switzerland_128/run_gpu_input`
+- input/truth root: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu`
+- clean native-init seed already available: `<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input`
 - CPU truth: 25 hourly files, `2023-01-15_00:00:00` through
   `2023-01-16_00:00:00`
-- CPU24 tracked rerun: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z`
+- CPU24 tracked rerun: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z`
   completed on 2026-06-10 with 25 hourly files, `rc=0`, `SUCCESS COMPLETE WRF`,
   last-frame finite PASS, total wall `1084.6 s`, mainloop `1078.4 s`, `24` MPI
   ranks, and peak sampled total WRF-rank RSS `12563.766 MiB`; see
@@ -31,14 +31,14 @@ Use the `128x128` mass-grid case first:
   MYNN PBL (`bl_pbl_physics=5`), no cumulus (`cu_physics=0`)
 
 Do not use the old partial GPU output at
-`/mnt/data/wrf_gpu_switzerland_128/run_gpu`.
+`<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu`.
 
 ## Durable Output Root
 
 Use a new root per attempt:
 
 ```bash
-OUT=/mnt/data/wrf_gpu_validation/v014_switzerland_gotthard_$(date -u +%Y%m%dT%H%M%SZ)
+OUT=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_gotthard_$(date -u +%Y%m%dT%H%M%SZ)
 ```
 
 Expected contents:
@@ -62,7 +62,7 @@ Run only after the go/no-go conditions below are satisfied.
 
 ```bash
 set -euo pipefail
-OUT=/mnt/data/wrf_gpu_validation/v014_switzerland_gotthard_$(date -u +%Y%m%dT%H%M%SZ)
+OUT=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_gotthard_$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "$OUT"
 
 scripts/run_gpu_lowprio.sh --cores 0-23 \
@@ -71,8 +71,8 @@ scripts/run_gpu_lowprio.sh --cores 0-23 \
   --resource-interval 5 \
   -- env \
   CASE_ROOT="$OUT" \
-  CASE_INPUTS=/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu \
-  CPU_REF=/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu \
+  CASE_INPUTS=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu \
+  CPU_REF=<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu \
   GPU_INPUT="$OUT/input" \
   GPU_OUT="$OUT/gpu" \
   SCRATCH="$OUT/scratch" \
@@ -84,7 +84,7 @@ scripts/run_gpu_lowprio.sh --cores 0-23 \
   GPUWRF_RRTMG_LW_COLUMN_TILING=true \
   GPUWRF_RRTMG_SW_COLUMN_TILE_COLS=16384 \
   GPUWRF_RRTMG_LW_COLUMN_TILE_COLS=16384 \
-  PYTHON=/home/user/miniconda3/bin/python \
+  PYTHON=<USER_HOME>/miniconda3/bin/python \
   bash scripts/equivalence_switzerland.sh \
   | tee "$OUT/equivalence_switzerland.stdout.log"
 ```
@@ -104,8 +104,8 @@ Why this command:
   memory baseline recorded in
   `proofs/v014/switzerland_cpu24_reference_resource_summary.md`.
 - The proof and resource CSVs are written under durable
-  `/mnt/data/wrf_gpu_validation`, not `/tmp` and not the previous failed
-  `/mnt/data/wrf_gpu_switzerland_128/run_gpu`.
+  `<DATA_ROOT>/wrf_gpu_validation`, not `/tmp` and not the previous failed
+  `<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu`.
 
 ## Post-Run Coverage Guard
 
@@ -194,7 +194,7 @@ GO only when all are true:
 - RRTMG column tiling is in the run branch, with `proofs/v013/rrtmg_column_tile.json`
   and `proofs/v013/rrtmg_column_tile_vram_suite.json` accepted.
 - No GPU validation is active; wrapper lock is available.
-- Output root is durable under `/mnt/data/wrf_gpu_validation`.
+- Output root is durable under `<DATA_ROOT>/wrf_gpu_validation`.
 - The run uses clean native-init input, not `run_cpu` directly.
 - The post-run coverage guard is required before reporting the comparator
   verdict.
@@ -206,7 +206,7 @@ NO-GO if any are true:
 - The current branch lacks RRTMG column tiling.
 - The intended report would claim CPU-WRF equivalence from incomplete fields.
 - The GPU output would be written into or scored from the old failed
-  `/mnt/data/wrf_gpu_switzerland_128/run_gpu` directory.
+  `<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu` directory.
 
 ## Follow-Up If 128 Passes
 

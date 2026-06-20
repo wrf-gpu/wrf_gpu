@@ -164,7 +164,7 @@
           }
         }
       },
-      "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
+      "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z",
       "gpu_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260429_18z_l2_72h_20260524T204451Z",
       "reason_spatial_unavailable": "Retained GPU wrfout directory is not available; only stored case JSON aggregates can be used.",
       "run_id": "20260429_18z_l2_72h_20260524T204451Z",
@@ -489,7 +489,7 @@
           }
         }
       },
-      "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260430_18z_l2_72h_20260520T191306Z",
+      "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260430_18z_l2_72h_20260520T191306Z",
       "gpu_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260430_18z_l2_72h_20260520T191306Z",
       "reason_spatial_unavailable": "Retained GPU wrfout directory is not available; only stored case JSON aggregates can be used.",
       "run_id": "20260430_18z_l2_72h_20260520T191306Z",
@@ -1874,7 +1874,7 @@
           }
         ]
       },
-      "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+      "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
       "cross_field_correlations": {
         "by_lead": [
           {
@@ -37001,8 +37001,8 @@
   "contract": ".agent/sprints/2026-06-08-v014-grid-parity-attribution/sprint-contract.md",
   "generated_utc": "2026-06-08T22:50:02.736380+00:00",
   "inputs": {
-    "case_dir": "/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15",
-    "cpu_root": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output",
+    "case_dir": "<USER_HOME>/src/wrf_gpu2/proofs/v0120/powered_tost_n15",
+    "cpu_root": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output",
     "diagnostic_tolerances": {
       "T2": 2.0,
       "U10": 2.5,

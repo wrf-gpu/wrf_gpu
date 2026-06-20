@@ -154,7 +154,7 @@
   "paths": {
     "surface_oracle": "/tmp/wrf_gpu2_step1_tsk_znt_sourcing_fix/wrf_truth_surface/surface_mynn",
     "wrf_hook_changed_this_sprint": false,
-    "wrf_patch_source": "/home/user/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff"
+    "wrf_patch_source": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_tsk_znt_sourcing_fix_wrf_patch.diff"
   },
   "ranked_findings": [
     {

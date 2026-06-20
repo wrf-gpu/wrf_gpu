@@ -2,7 +2,7 @@
   "schema": "M20StationJoinManifest",
   "schema_version": 1,
   "generated_utc": "2026-05-29T16:07:06.155154+00:00",
-  "obs_source": "/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations",
+  "obs_source": "<DATA_ROOT>/canairy_meteo/artifacts/datasets/aemet_stations",
   "obs_kind": "AEMET station daily+hourly parquet (Canary Islands network)",
   "scorer": "src/gpuwrf/validation/forecast_vs_obs.py (interpolate_to_stations + compute_station_scores; bilinear inverse-map station->grid, inner time-join on station_id x valid_time)",
   "score_variables": [

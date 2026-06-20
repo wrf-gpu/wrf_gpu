@@ -23,7 +23,7 @@ os.environ.setdefault("JAX_ENABLE_X64", "true")
 
 OUT_JSON = ROOT / "proofs/v018/cu_family_status.json"
 OUT_MD = ROOT / "proofs/v018/cu_family_report.md"
-WRF = Path("/home/user/src/wrf_pristine/WRF")
+WRF = Path("<USER_HOME>/src/wrf_pristine/WRF")
 
 SOURCES = {
     4: ("Scale-aware GFS SAS", WRF / "phys/module_cu_scalesas.F"),

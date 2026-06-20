@@ -41,7 +41,7 @@ WRF_SMALL_STEP = WRF_ROOT / "dyn_em/module_small_step_em.F"
 WRF_SMALL_STEP_OBJ = WRF_ROOT / "dyn_em/module_small_step_em.o"
 DRIVER_SRC = ROOT / "proofs/v040/wrf_advance_mu_t_driver.F90"
 DEFAULT_WRFINPUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01"
 )
 OUT_PATH = ROOT / "proofs/v040/mu_continuity_savepoint_parity.json"

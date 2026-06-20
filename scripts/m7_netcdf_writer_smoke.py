@@ -28,7 +28,7 @@ from gpuwrf.io.wrfout_writer import (
 
 SPRINT_DIR = ROOT / ".agent/sprints/2026-05-27-m7-netcdf-writer"
 DEFAULT_REFERENCE = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260525_18z_l3_24h_20260526T221207Z/"
     "wrfout_d02_2026-05-25_18:00:00"
 )

@@ -31,12 +31,12 @@ NATIVE_WRFINPUT_D02 = RUN_ROOT / "wrfinput_d02"
 NATIVE_NAMELIST = RUN_ROOT / "namelist.input"
 NATIVE_WRFBDY_D01 = RUN_ROOT / "wrfbdy_d01"
 
-CPU_WRFOUT_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+CPU_WRFOUT_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 CPU_H0 = CPU_WRFOUT_DIR / "wrfout_d02_2026-05-01_18:00:00"
 CPU_H1 = CPU_WRFOUT_DIR / "wrfout_d02_2026-05-01_19:00:00"
 CPU_H10 = CPU_WRFOUT_DIR / "wrfout_d02_2026-05-02_04:00:00"
 
-WRF_ROOT = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF")
+WRF_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF")
 WRF_MEDIATION_INTEGRATE = WRF_ROOT / "share/mediation_integrate.F"
 WRF_NEST_INC = WRF_ROOT / "inc/nest_interpdown_interp.inc"
 WRF_NEST_INIT_UTILS = WRF_ROOT / "dyn_em/nest_init_utils.F"
@@ -382,7 +382,7 @@ def source_citations() -> dict[str, Any]:
 
 
 def previous_marker_runs() -> dict[str, Any]:
-    run_case3 = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3")
+    run_case3 = Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3")
     return {
         "run_case3": path_info(run_case3),
         "first_28rank_early_marker_run": {

@@ -5,7 +5,7 @@
   "mp_physics": 28,
   "n_columns": 5187,
   "note": "Oracle state is float32 storage from a single-precision WRF build; the binding gate is the tier-1 carry band + 2-ULP theta criterion used to close the mp=8 Thompson lane (see proofs/v090, v0110).",
-  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero",
+  "oracle_dir": "<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero",
   "oracle_itimestep": 1000,
   "pass": true,
   "pass_binding_carry_band": true,
@@ -225,7 +225,7 @@
   "use_aero_icbc": false,
   "water_closure_max_rel_residual": 2.4213709348654717e-07,
   "water_closure_pass": true,
-  "wrf_source": "/home/user/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
+  "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_thompson.F",
   "wrf_source_sha256": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802",
   "wrf_source_sha256_manifest": "fabf19e2a9073cff886e882b187080bfdf089d3fd40c0fce1d19bc93b1e5e802"
 }

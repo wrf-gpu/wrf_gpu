@@ -34,7 +34,7 @@ TOLERANCE_MAX_ABS = 2.0e-6
 FORMULA_ROUNDOFF_TOL = 6.0e-2
 
 RUN_ROOT = Path("/tmp/v0120_merged_run_root") / RUN_ID
-CPU_WRFOUT_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+CPU_WRFOUT_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 NATIVE_WRFINPUT_D01 = RUN_ROOT / "wrfinput_d01"
 NATIVE_WRFINPUT_D02 = RUN_ROOT / "wrfinput_d02"
 CPU_H0 = CPU_WRFOUT_DIR / "wrfout_d02_2026-05-01_18:00:00"
@@ -47,7 +47,7 @@ BASE_ATTR_JSON = ROOT / "proofs/v014/base_state_writer_attribution.json"
 STATIC_PARITY_JSON = ROOT / "proofs/v014/static_metric_base_parity.json"
 D02_REPLAY = ROOT / "src/gpuwrf/integration/d02_replay.py"
 
-WRF_ROOT = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF")
+WRF_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF")
 WRF_MEDIATION_INTEGRATE = WRF_ROOT / "share/mediation_integrate.F"
 WRF_START_EM = WRF_ROOT / "dyn_em/start_em.F"
 WRF_NEST_INIT_UTILS = WRF_ROOT / "dyn_em/nest_init_utils.F"

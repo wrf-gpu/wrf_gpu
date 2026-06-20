@@ -55,7 +55,7 @@ def main() -> int:
     cfg = DailyPipelineConfig(
         run_id=run_id,
         domain="d03",
-        run_root=Path("/mnt/data/canairy_meteo/runs/wrf_l3"),
+        run_root=Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3"),
         dt_s=3.0,
         acoustic_substeps=10,
     )

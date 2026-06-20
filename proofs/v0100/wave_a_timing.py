@@ -19,7 +19,7 @@ Measures:
     output-pack-D2H / netcdf / land-refresh for one production-style forecast hour.
 
 Run:
-  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 \
+  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 \
     XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false \
     TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 \
     python proofs/v0100/wave_a_timing.py --out wave_a_before.json

@@ -56,7 +56,7 @@ PREDECESSOR_JSON = PROOF_DIR / "step1_live_nest_perturb_state_init.json"
 PREDECESSOR_MD = PROOF_DIR / "step1_live_nest_perturb_state_init.md"
 REQUIRED_ANCESTOR = "ee6cbbe1"
 
-SCRATCH_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface")
+SCRATCH_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface")
 WORK_DIR = Path(
     os.environ.get(
         "WRFGPU2_STEP1_START_DOMAIN_WORK_DIR",
@@ -68,7 +68,7 @@ WRF_TREE = WORK_DIR / "WRF"
 WRF_RUN_DIR = WORK_DIR / "run"
 WRF_LOG_DIR = WORK_DIR / "logs"
 WRF_BACKUP = WORK_DIR / "backups/start_em.F.before_start_domain_perturb_subsurface"
-PRECALL_QV_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only")
+PRECALL_QV_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only")
 
 SURFACES = (
     "after_hypsometric_p_al_alt",
@@ -786,8 +786,8 @@ def hygiene_report() -> dict[str, Any]:
         "clean_work_dirs": clean_work_dirs,
         "prefilled_root_state": prefilled,
         "source_copy_roots": {
-            "wrf_source": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
-            "run_source": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run",
+            "wrf_source": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF",
+            "run_source": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/run",
         },
         "checks": {
             "work_dir_exists": WORK_DIR.is_dir(),
@@ -1164,13 +1164,13 @@ def main() -> int:
         "commands": {
             "executed": [
                 "date +%Y%m%d_%H%M%S",
-                "rm -rf /mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
-                "cp --reflink=auto -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF work_clean_20260609_194715/WRF",
-                "cp --reflink=auto -a /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run work_clean_20260609_194715/run",
+                "rm -rf <DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
+                "cp --reflink=auto -a <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF work_clean_20260609_194715/WRF",
+                "cp --reflink=auto -a <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/run work_clean_20260609_194715/run",
                 "apply_patch work_clean_20260609_194715/WRF/dyn_em/start_em.F",
                 "diff -u backup/start_em.F.before_start_domain_perturb_subsurface WRF/dyn_em/start_em.F > proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
                 "./compile em_real (failed: /bin/csh missing, exit 126)",
-                "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH /home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/tcsh ./compile em_real (first env-missing check failed in log, then rerun with PATH/NETCDF/PNETCDF)",
+                "PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH <USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/tcsh ./compile em_real (first env-missing check failed in log, then rerun with PATH/NETCDF/PNETCDF)",
                 "PATH=wrf-build/bin:$PATH NETCDF=wrf-build PNETCDF=wrf-build tcsh ./compile em_real",
                 "mpirun -np 28 ./wrf.exe (failed: insufficient slots)",
                 "mpirun --map-by :OVERSUBSCRIBE -np 28 ./wrf.exe",

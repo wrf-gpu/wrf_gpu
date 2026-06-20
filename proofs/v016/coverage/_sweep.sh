@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # v0.16 coverage sweep: remaining L2 targets, sequential, GPU-lock-serialized, idempotent.
 # Detached (setsid) so it survives a manager crash and shares the GPU fairly with the fp32 lane.
-cd /home/user/src/wrf_gpu2/.wt-v016-coverage || exit 1
+cd <USER_HOME>/src/wrf_gpu2/.wt-v016-coverage || exit 1
 LOG=proofs/v016/coverage/_sweep.log
 FOOT="Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 # cu6 is already running independently -> excluded. 5 done (mp10,pbl1,lw1,sw1,cu3) -> auto-skipped if present.

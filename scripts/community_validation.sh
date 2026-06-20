@@ -108,7 +108,7 @@ Needs an NVIDIA GPU (out of scope here):
   * Multi-hour restart forecast-CONTINUITY acceptance (restart trajectory == uninterrupted);
     the structural bit-identity above is CPU, the trajectory match needs GPU + corpus.
 
-Needs the purged CPU-WRF corpus (not redistributable; /mnt/data):
+Needs the purged CPU-WRF corpus (not redistributable; <DATA_ROOT>):
   * TOST operational equivalence vs 28-rank CPU-WRF (proofs/m20/*).
   * Multi-day operational skill-vs-obs gates and station scoring.
 GAPS

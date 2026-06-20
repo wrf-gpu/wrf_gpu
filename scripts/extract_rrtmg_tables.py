@@ -59,7 +59,7 @@ def _resolve_wrf_root() -> Path:
         candidates.append(Path(env).expanduser())
     candidates.extend(
         [
-            Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF"),
+            Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF"),
             ROOT / "external" / "WRF",
         ]
     )

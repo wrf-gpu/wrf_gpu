@@ -5,7 +5,7 @@ Verdict: `STEP1_JAX_LOADER_TSTATE_LOCALIZED_LIVE_NEST_STATE_BASE_MISMATCH`.
 ## Result
 
 - CPU backend: `cpu`.
-- WRF pre-call truth reused: `/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth`.
+- WRF pre-call truth reused: `<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth`.
 - First material stage/field: `raw_child_state` / `T_STATE`.
 - Raw child `T_STATE = State.theta - 300 K` vs WRF pre-call: max_abs `5.490173101425171`, rmse `1.9175184863907806`.
 - Live child `T_STATE` vs WRF pre-call: max_abs `5.490173101425171`, rmse `1.9175184863907806`.

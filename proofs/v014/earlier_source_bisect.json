@@ -33,13 +33,13 @@
   "cpu_preflight": {
     "command_result": {
       "command": [
-        "/home/user/miniconda3/bin/python",
+        "<USER_HOME>/miniconda3/bin/python",
         "-c",
-        "\nimport os\nimport time\nfrom pathlib import Path\nos.environ.setdefault(\"JAX_ENABLE_X64\", \"true\")\nfrom gpuwrf.integration.nested_pipeline import NestedPipelineConfig, _load_domains, domain_names_for\nRUN_ID = \"20260501_18z_l2_72h_20260519T173026Z\"\nroots = [Path(\"/tmp/v0120_merged_run_root\"), Path(\"/mnt/data/canairy_meteo/runs/wrf_l2\")]\nrun_dir = next((root / RUN_ID for root in roots if (root / RUN_ID / \"wrfinput_d01\").exists()), None)\nif run_dir is None:\n    raise FileNotFoundError(\"missing native L2 run directory\")\nconfig = NestedPipelineConfig(\n    input_dir=run_dir,\n    output_dir=Path(\"/tmp/wrf_gpu2_v014_previous_step_cpu_preflight_unused\"),\n    proof_dir=Path(\"/tmp/wrf_gpu2_v014_previous_step_cpu_preflight_setup\"),\n    hours=10,\n    max_dom=2,\n    feedback=False,\n)\nt0 = time.perf_counter()\n_load_domains(config, domain_names_for(2))\nprint({\"status\": \"CPU_LOAD_OK\", \"wall_s\": time.perf_counter() - t0, \"run_dir\": str(run_dir)})\n"
+        "\nimport os\nimport time\nfrom pathlib import Path\nos.environ.setdefault(\"JAX_ENABLE_X64\", \"true\")\nfrom gpuwrf.integration.nested_pipeline import NestedPipelineConfig, _load_domains, domain_names_for\nRUN_ID = \"20260501_18z_l2_72h_20260519T173026Z\"\nroots = [Path(\"/tmp/v0120_merged_run_root\"), Path(\"<DATA_ROOT>/canairy_meteo/runs/wrf_l2\")]\nrun_dir = next((root / RUN_ID for root in roots if (root / RUN_ID / \"wrfinput_d01\").exists()), None)\nif run_dir is None:\n    raise FileNotFoundError(\"missing native L2 run directory\")\nconfig = NestedPipelineConfig(\n    input_dir=run_dir,\n    output_dir=Path(\"/tmp/wrf_gpu2_v014_previous_step_cpu_preflight_unused\"),\n    proof_dir=Path(\"/tmp/wrf_gpu2_v014_previous_step_cpu_preflight_setup\"),\n    hours=10,\n    max_dom=2,\n    feedback=False,\n)\nt0 = time.perf_counter()\n_load_domains(config, domain_names_for(2))\nprint({\"status\": \"CPU_LOAD_OK\", \"wall_s\": time.perf_counter() - t0, \"run_dir\": str(run_dir)})\n"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 1,
-      "stderr_tail": "mi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 08:17:45.520203 1184641 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-scatter is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nTraceback (most recent call last):\n  File \"<string>\", line 21, in <module>\n    _load_domains(config, domain_names_for(2))\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py\", line 248, in _load_domains\n    root_case = build_replay_case(run_dir, domain=names[0], standalone=True)\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1125, in build_replay_case\n    state = State.zeros(grid)\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"/home/user/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
+      "stderr_tail": "mi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 08:17:45.520203 1184641 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-scatter is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nTraceback (most recent call last):\n  File \"<string>\", line 21, in <module>\n    _load_domains(config, domain_names_for(2))\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py\", line 248, in _load_domains\n    root_case = build_replay_case(run_dir, domain=names[0], standalone=True)\n  File \"<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py\", line 1125, in build_replay_case\n    state = State.zeros(grid)\n  File \"<USER_HOME>/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 604, in zeros\n    device = _gpu_device()\n  File \"<USER_HOME>/src/wrf_gpu2/src/gpuwrf/contracts/state.py\", line 25, in _gpu_device\n    raise RuntimeError(\"State.zeros requires a GPU device; no JAX GPU backend is visible\")\nRuntimeError: State.zeros requires a GPU device; no JAX GPU backend is visible\n",
       "stdout_tail": "",
       "wall_s": 2.481027677000384
     },
@@ -172,33 +172,33 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "base_state_writer_attribution_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/base_state_writer_attribution.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/base_state_writer_attribution.json",
       "sha256": "9cc58cc1146d3d56bb291af6b16287dcb70580e4aea76fee550904a1df155594",
       "size_bytes": 80754
     },
     "building_wrf_oracles_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
     "cpu_wrfout_dir": {
       "exists": true,
       "is_dir": true,
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
     },
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "92ffecb1c402fa54796f51b0b25d5d8bc3abd60380791359d210d553a813259b",
       "size_bytes": 37873
     },
@@ -212,63 +212,63 @@
     "pre_rk_input_boundary_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
       "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
       "size_bytes": 43617
     },
     "prestep_carry_source_trace_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/prestep_carry_source_trace.json",
       "sha256": "566a4cf91f17be424fa5b2d1e5b0b4f9b296790c68e69be96f69958333f84bbc",
       "size_bytes": 55104
     },
     "previous_step_handoff_bisect_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/previous_step_handoff_bisect.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/previous_step_handoff_bisect.json",
       "sha256": "74a278009eebfa99747c04ab536e0e483ee8fdb88be9e65ac026c53f26d84531",
       "size_bytes": 198632
     },
     "producer_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
       "sha256": "59eb1f936d51874825aeae1de531ba7d13ac674a5e5cbef1fe859f8f1e511bbb",
       "size_bytes": 24206
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "reporting_to_human_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
       "sha256": "3e857f0fca442e5c069f2873fd20ebf26ca87b966d37a79525e399c1f1f7156b",
       "size_bytes": 954
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-earlier-source-bisect/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-earlier-source-bisect/sprint-contract.md",
       "sha256": "30712862f470310458077a277b9679ae4d2f96550ca8438c9c21ae5e4b548617",
       "size_bytes": 4354
     },
     "static_metric_base_parity_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
       "sha256": "f66883d32749a0d9fc9c6ea386307a14db4b0bf5810c7f928c06b0f2f3092bb7",
       "size_bytes": 272492
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     }
@@ -467,10 +467,10 @@
   },
   "production_src_edits": false,
   "proof_objects": {
-    "compact_replay_artifact": "/mnt/data/wrf_gpu2/v014_earlier_source_bisect/earlier_source_bisect.live_replay_compact.json",
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/earlier_source_bisect.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-earlier-source-bisect.md"
+    "compact_replay_artifact": "<DATA_ROOT>/wrf_gpu2/v014_earlier_source_bisect/earlier_source_bisect.live_replay_compact.json",
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/earlier_source_bisect.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-earlier-source-bisect.md"
   },
   "schema": "wrfgpu2.v014.earlier_source_bisect.v1",
   "snapshots": {
@@ -508,7 +508,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 51.839675495155916,
@@ -555,7 +555,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -602,7 +602,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 296.5746063385741,
@@ -649,7 +649,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 1047.015625,
@@ -696,7 +696,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 2.1354675892178534,
@@ -1253,7 +1253,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 51.839675495155916,
@@ -1300,7 +1300,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -1347,7 +1347,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 296.5746063385741,
@@ -1394,7 +1394,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 1047.015625,
@@ -1441,7 +1441,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1200",
           "worst": {
             "abs_diff": 2.1354675892178534,
@@ -1502,7 +1502,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 160.4468061017185,
@@ -1549,7 +1549,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -1596,7 +1596,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 459.3791256579425,
@@ -1643,7 +1643,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 1047.015625,
@@ -1690,7 +1690,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 2.5002211643588907,
@@ -2247,7 +2247,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 160.4468061017185,
@@ -2294,7 +2294,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -2341,7 +2341,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 459.3791256579425,
@@ -2388,7 +2388,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 1047.015625,
@@ -2435,7 +2435,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 1800",
           "worst": {
             "abs_diff": 2.5002211643588907,
@@ -2496,7 +2496,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 124.21179074296128,
@@ -2543,7 +2543,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -2590,7 +2590,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 405.03469222084095,
@@ -2637,7 +2637,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 1047.015625,
@@ -2684,7 +2684,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 2.3589295668281807,
@@ -3241,7 +3241,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 124.21179074296128,
@@ -3288,7 +3288,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -3335,7 +3335,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 405.03469222084095,
@@ -3382,7 +3382,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 1047.015625,
@@ -3429,7 +3429,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 2400",
           "worst": {
             "abs_diff": 2.3589295668281807,
@@ -3490,7 +3490,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 260.0810942576595,
@@ -3537,7 +3537,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -3584,7 +3584,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 527.3708211494959,
@@ -3631,7 +3631,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 1047.015625,
@@ -3678,7 +3678,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 2.3485886841007186,
@@ -4235,7 +4235,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 260.0810942576595,
@@ -4282,7 +4282,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -4329,7 +4329,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 527.3708211494959,
@@ -4376,7 +4376,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 1047.015625,
@@ -4423,7 +4423,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3000",
           "worst": {
             "abs_diff": 2.3485886841007186,
@@ -4484,7 +4484,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 420.04794820676125,
@@ -4531,7 +4531,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -4578,7 +4578,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 704.0728635959094,
@@ -4625,7 +4625,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 1047.015625,
@@ -4672,7 +4672,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 2.33158071777018,
@@ -5229,7 +5229,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 420.04794820676125,
@@ -5276,7 +5276,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -5323,7 +5323,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 704.0728635959094,
@@ -5370,7 +5370,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 1047.015625,
@@ -5417,7 +5417,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 3600",
           "worst": {
             "abs_diff": 2.33158071777018,
@@ -5478,7 +5478,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 418.9454608125668,
@@ -5525,7 +5525,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -5572,7 +5572,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 719.4065828920575,
@@ -5619,7 +5619,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 1047.015625,
@@ -5666,7 +5666,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 2.7187439240554454,
@@ -6223,7 +6223,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 418.9454608125668,
@@ -6270,7 +6270,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -6317,7 +6317,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 719.4065828920575,
@@ -6364,7 +6364,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 1047.015625,
@@ -6411,7 +6411,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4200",
           "worst": {
             "abs_diff": 2.7187439240554454,
@@ -6472,7 +6472,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 294.03368183965176,
@@ -6519,7 +6519,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -6566,7 +6566,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 598.9514722678286,
@@ -6613,7 +6613,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 1047.015625,
@@ -6660,7 +6660,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 2.7470799858829196,
@@ -7217,7 +7217,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 294.03368183965176,
@@ -7264,7 +7264,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -7311,7 +7311,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 598.9514722678286,
@@ -7358,7 +7358,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 1047.015625,
@@ -7405,7 +7405,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 4800",
           "worst": {
             "abs_diff": 2.7470799858829196,
@@ -7466,7 +7466,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 314.87836432608174,
@@ -7513,7 +7513,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -7560,7 +7560,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 643.1780382621364,
@@ -7607,7 +7607,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 1047.015625,
@@ -7654,7 +7654,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 2.726914862807689,
@@ -8211,7 +8211,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 314.87836432608174,
@@ -8258,7 +8258,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -8305,7 +8305,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 643.1780382621364,
@@ -8352,7 +8352,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 1047.015625,
@@ -8399,7 +8399,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 5400",
           "worst": {
             "abs_diff": 2.726914862807689,
@@ -9156,7 +9156,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 134.3866787523741,
@@ -9203,7 +9203,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -9250,7 +9250,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 183.0738328144439,
@@ -9297,7 +9297,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 1047.015625,
@@ -9344,7 +9344,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 0.9233652017254599,
@@ -9901,7 +9901,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 134.3866787523741,
@@ -9948,7 +9948,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -9995,7 +9995,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 183.0738328144439,
@@ -10042,7 +10042,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 1047.015625,
@@ -10089,7 +10089,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 600",
           "worst": {
             "abs_diff": 0.9233652017254599,
@@ -10150,7 +10150,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 12.2550048828125,
@@ -10197,7 +10197,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -10244,7 +10244,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 33.4765625,
@@ -10291,7 +10291,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 1047.015625,
@@ -10338,7 +10338,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "MATCH",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 0.0,
@@ -10763,7 +10763,7 @@
           "source_expression": "carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 12.2550048828125,
@@ -10810,7 +10810,7 @@
           "source_expression": "carry.state.mu_total - carry.state.mu_perturbation",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 1050.3046875,
@@ -10857,7 +10857,7 @@
           "source_expression": "carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 33.4765625,
@@ -10904,7 +10904,7 @@
           "source_expression": "carry.state.p_total - carry.state.p_perturbation, k=1",
           "status": "DIFF",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 1047.015625,
@@ -10951,7 +10951,7 @@
           "source_expression": "carry.state.theta - 300 K, k=1",
           "status": "MATCH",
           "tolerance_max_abs": 2e-06,
-          "truth_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+          "truth_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
           "truth_surface": "CPU-WRF hourly wrfout at d02 completed step 0",
           "worst": {
             "abs_diff": 0.0,
@@ -11167,18 +11167,18 @@
   "wall_s": 1094.2817771610062,
   "wrf_source_edits": false,
   "wrf_truth": {
-    "cpu_wrfout_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_wrfout_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
     "hourly_wrfout_steps": {
-      "0": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
-      "1200": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
-      "1800": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
-      "2400": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
-      "3000": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
-      "3600": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
-      "4200": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
-      "4800": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
-      "5400": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
-      "600": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
+      "0": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "1200": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+      "1800": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+      "2400": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+      "3000": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+      "3600": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+      "4200": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+      "4800": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+      "5400": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+      "600": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
     },
     "native_wrfinput": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
     "pre_rk_file_info": [
@@ -11201,7 +11201,7 @@
       "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
       "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
     ],
-    "pre_rk_input_boundary_json": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+    "pre_rk_input_boundary_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
     "pre_rk_unique_counts": {
       "MASS_K1": 289
     },
@@ -12260,7 +12260,7 @@
           }
         },
         "name": "cpu_wrf_h0_wrfout_vs_h10_pre_rk_static_base",
-        "netcdf": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "netcdf": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "pre_rk_files": [
           "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
           "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
@@ -12312,9 +12312,9 @@
             }
           }
         },
-        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "left": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "name": "cpu_wrf_h0_vs_h10_wrfout_static_base",
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00"
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00"
       },
       "h0_vs_h1_static": {
         "all_static_base_match": true,
@@ -12362,9 +12362,9 @@
             }
           }
         },
-        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "left": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "name": "cpu_wrf_h0_vs_h1_static_base",
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
       }
     }
   }

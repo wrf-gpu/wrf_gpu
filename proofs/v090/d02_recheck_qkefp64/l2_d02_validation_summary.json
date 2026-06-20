@@ -7,7 +7,7 @@
     "wall_clock": "proofs/v090/d02_recheck_qkefp64/wall_clock_l2_d02.json"
   },
   "publish_readiness": "nested-grid backfills are not publish-ready from this sprint evidence",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
   "run_id": "20260509_18z_l2_72h_20260511T190519Z",
   "schema": "M7L2D02ReplayValidationSummary",
   "schema_version": 1,

@@ -95,7 +95,7 @@ def field_compare(
 
 # Default Gen2 canary path; comparator scripts override via --source-wrfout.
 DEFAULT_GEN2_WRFOUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260521_18z_l3_24h_20260522T072630Z/wrfout_d02_2026-05-22_00:00:00"
 )
 

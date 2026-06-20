@@ -59,11 +59,11 @@ from gpuwrf.runtime.operational_state import OperationalCarry, initial_operation
 config.update("jax_enable_x64", True)
 
 SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-operational-composition-bisection"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_ID = "20260523_18z_l3_24h_20260524T004313Z"
 THRESHOLD = 1.0e-10
-WRF_SOLVE = "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
-WRF_SMALL = "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
+WRF_SOLVE = "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/solve_em.F"
+WRF_SMALL = "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF/dyn_em/module_small_step_em.F"
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

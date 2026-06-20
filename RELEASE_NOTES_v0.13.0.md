@@ -116,7 +116,7 @@ KF/BMJ/Tiedtke/Grell-Freitas cumulus), all of which carries forward unchanged.
   `with_clear_sky` through `M9Diagnostics` for operational `wrfout`. Proof:
   `proofs/v013/clearsky_radiation.json`.
 - **Outsider-runnable reproducibility.** 45 proof `.py` runners sanitized of
-  hard-coded `/home/user` paths → repo-root resolvers + `WRF_PRISTINE_ROOT` env
+  hard-coded `<USER_HOME>` paths → repo-root resolvers + `WRF_PRISTINE_ROOT` env
   (semantics-preserving, `py_compile`-clean); the Thompson table assets are vendored
   and pinned (`manifest/reproducibility_assets.json`); a new
   `scripts/verify_reproducibility.sh` is **GREEN 11/11 outsider-runnable** on

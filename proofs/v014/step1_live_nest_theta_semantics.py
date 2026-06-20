@@ -41,8 +41,8 @@ OUT_MD = PROOF_DIR / "step1_live_nest_theta_semantics.md"
 OUT_REVIEW = ROOT / ".agent/reviews/2026-06-09-v014-step1-live-nest-theta-semantics.md"
 
 SPRINT_CONTRACT = ROOT / ".agent/sprints/2026-06-09-v014-step1-live-nest-theta-semantics/sprint-contract.md"
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_live_nest_theta_semantics")
-WRF_TRUTH = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_live_nest_theta_semantics")
+WRF_TRUTH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
 RUN_CASE3 = live.RUN_CASE3
 WRFINPUT_D02 = RUN_CASE3 / "wrfinput_d02"
 WRFOUT_H0_D02 = RUN_CASE3 / "wrfout_d02_2026-05-01_18:00:00"
@@ -587,7 +587,7 @@ def classify(comparisons: Mapping[str, Any]) -> tuple[str, list[str], str]:
 def source_evidence() -> dict[str, Any]:
     return {
         "mediation_integrate_live_nest_call": {
-            "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F",
+            "path": "<USER_HOME>/src/wrf_pristine/WRF/share/mediation_integrate.F",
             "lines": "726-762",
             "evidence": [
                 "lines 726-735 save elevation and mub for temp and qv adjustment; nest%mub_save receives nest%mub",
@@ -596,7 +596,7 @@ def source_evidence() -> dict[str, Any]:
             ],
         },
         "adjust_tempqv": {
-            "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
+            "path": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F",
             "lines": "812-890",
             "evidence": [
                 "lines 846-859 compute p_old and relative humidity from save_mub, pp, th, and qv",
@@ -605,7 +605,7 @@ def source_evidence() -> dict[str, Any]:
             ],
         },
         "theta_m_conversion": {
-            "path": "/home/user/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F",
+            "path": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F",
             "lines": "4918-4928",
             "evidence": [
                 "lines 4918-4920 state dry potential temperature is turned into moist potential temperature before halo communications",

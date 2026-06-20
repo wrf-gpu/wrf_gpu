@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CASE_DIR = ROOT / "proofs/v0120/powered_tost_n15"
 OUT_JSON = ROOT / "proofs/v014/grid_cell_envelope.json"
 OUT_MD = ROOT / "proofs/v014/grid_cell_envelope.md"
-CPU_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output")
+CPU_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output")
 GPU_ROOT = Path("/tmp/v0120_powered_tost_runs")
 WRFOUT_RE = re.compile(r"^wrfout_(d\d{2})_(\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2})$")
 

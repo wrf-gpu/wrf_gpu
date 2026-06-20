@@ -23,10 +23,10 @@ CPU-only NetCDF probe. No GPU, no model execution, no source edits.
 
 ## Exact Files
 
-- `cpu_wrfinput`: `/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02`
+- `cpu_wrfinput`: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02`
 - `gpu_native_wrfinput`: `/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02`
-- `cpu_wrfout_h0`: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00`
-- `cpu_wrfout_h1`: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00`
+- `cpu_wrfout_h0`: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00`
+- `cpu_wrfout_h1`: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00`
 - `gpu_wrfout_h1`: `/tmp/v014_post_static_writer_smoke/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00`
 
 Full comparison tables, finite coverage, p99/max/worst-cell statistics, writer-fallback tests, and derived state-split totals are in `proofs/v014/base_state_writer_attribution.json`.

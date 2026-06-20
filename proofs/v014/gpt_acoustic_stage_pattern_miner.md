@@ -2,7 +2,7 @@
 
 Date: 2026-06-11
 Worker: GPT-5.5 xhigh Runner C
-Worktree: `/home/user/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix`
+Worktree: `<USER_HOME>/src/wrf_gpu2/.claude/worktrees/v014-hpg-native-face-fix`
 
 ## Verdict
 
@@ -12,11 +12,11 @@ The remaining Switzerland h36->h37 acoustic blocker is most likely an interior p
 
 - Primary proof JSON: `proofs/v014/switzerland_acoustic_substep_blocker.json`
 - Generated CPU-only summary: `proofs/v014/gpt_acoustic_stage_pattern_miner_summary.json`
-- WRF HPG dump root: `/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps`
-- Hourly output root: `/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable`
-- CPU truth root: `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+- WRF HPG dump root: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps`
+- Hourly output root: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable`
+- CPU truth root: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
 
-No source files were edited. No GPU work, Fable interaction, Hermes, Telegram, or `/home/user/src/canairy_waves` access was performed.
+No source files were edited. No GPU work, Fable interaction, Hermes, Telegram, or `<USER_HOME>/src/canairy_waves` access was performed.
 
 ## Evidence Basis
 
@@ -87,14 +87,14 @@ The h37/h38 net output mismatch is interior-heavy for mass and surface pressure,
 
 - `sed -n '1,240p' PROJECT_CONSTITUTION.md`
 - `sed -n '1,260p' AGENTS.md`
-- `sed -n '1,260p' /home/user/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-gpt-acoustic-stage-mismatch-analysis/sprint-contract.md`
-- `sed -n '1,260p' /home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md`
-- `sed -n '1,260p' /home/user/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-switzerland-acoustic-substep-continuation/manager-handoff.md`
+- `sed -n '1,260p' <USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-gpt-acoustic-stage-mismatch-analysis/sprint-contract.md`
+- `sed -n '1,260p' <USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md`
+- `sed -n '1,260p' <USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-11-v014-switzerland-acoustic-substep-continuation/manager-handoff.md`
 - `sed -n '1,260p' .agent/reviews/2026-06-11-v014-gpt-acoustic-substep-verifier.md`
 - `find proofs/v014 -maxdepth 2 -type f | sort`
 - `python -m json.tool proofs/v014/switzerland_acoustic_substep_blocker.json`
 - CPU-only Python miners over `proofs/v014/switzerland_acoustic_substep_blocker.json`
-- `find /mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps -maxdepth 2 -type f | sort`
+- `find <DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps -maxdepth 2 -type f | sort`
 - CPU-only Python inventory of WRF dump calls and rank-tile counts
 - `sed -n` reads of `proofs/v014/switzerland_acoustic_substep_blocker.py`, `proofs/v014/switzerland_hpg_native_face_fix.py`, and relevant acoustic source files
 - `git status --short`

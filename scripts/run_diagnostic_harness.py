@@ -46,7 +46,7 @@ os.environ.setdefault("JAX_ENABLE_X64", "true")
 os.environ.setdefault("OMP_NUM_THREADS", "4")
 
 
-DEFAULT_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+DEFAULT_RUN_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_OUTPUT = ROOT / "proofs/diagnostic_harness/diagnostic_report.json"
 DEFAULT_WRF_ANCHOR = ROOT / "proofs/m9/operational_trace_hourly.json"
 

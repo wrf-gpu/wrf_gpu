@@ -8,7 +8,7 @@
   "kind": "REAL WRF MYNN-EDMF PBL (bl_pbl_physics=5) operator-boundary savepoint parity",
   "n_columns": 5487,
   "n_levels": 44,
-  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle_v090/surface_mynn",
+  "oracle_dir": "<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/surface_mynn",
   "oracle_itimestep": 1000,
   "oracle_scheme_tag": "mynnedmf",
   "pass": false,
@@ -214,7 +214,7 @@
     }
   },
   "proof": "v090-mynn-pbl-savepoint-parity",
-  "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "source_run": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
   "status": "COMPARED",
   "wrf_source": "~/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F",
   "wrf_source_sha256": "6e4a7d5b35ce46f01591f2c1d58e545380d546e654b4a59ee1bcf99cfbce2d72"

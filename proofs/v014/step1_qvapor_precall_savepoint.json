@@ -6,7 +6,7 @@
     "qvapor_all_finite": true,
     "qvapor_full_mass_shape": true
   },
-  "accepted_truth_root": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
+  "accepted_truth_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
   "created_at_utc": "2026-06-09T15:38:50.576781+00:00",
   "file_counts": {
     "accepted_precall_files": 28,
@@ -56,11 +56,11 @@
       "w_ph_vertical_fortran_kstag_start_kstag_end_inclusive": "1 45"
     }
   },
-  "new_filtered_precall_truth_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
-  "new_raw_truth_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/wrf_truth",
+  "new_filtered_precall_truth_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+  "new_raw_truth_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/wrf_truth",
   "next_use": {
     "rerun_theta_proof_with_same_boundary_qvapor": true,
-    "suggested_input_root": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only"
+    "suggested_input_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only"
   },
   "old_field_comparisons_vs_accepted_precall": {
     "MUB": {
@@ -153,10 +153,10 @@
   "target_glob": "before_first_rk_step_part1_call_d2_step_1_rk_1_*.txt",
   "verdict": "STEP1_QVAPOR_PRECALL_SAVEPOINT_READY",
   "wrf_logs": {
-    "compile_env_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/compile_qvapor_precall_savepoint_env.log",
-    "manager_mpirun_stdout": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_manager_stdout.log",
-    "sandboxed_mpirun_failure_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_stdout.log",
-    "sandboxed_singleton_failure_log": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_singleton_stdout.log"
+    "compile_env_log": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/compile_qvapor_precall_savepoint_env.log",
+    "manager_mpirun_stdout": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_manager_stdout.log",
+    "sandboxed_mpirun_failure_log": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_stdout.log",
+    "sandboxed_singleton_failure_log": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/logs/wrf_qvapor_precall_savepoint_singleton_stdout.log"
   },
-  "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint_wrf_patch.diff"
+  "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_qvapor_precall_savepoint_wrf_patch.diff"
 }

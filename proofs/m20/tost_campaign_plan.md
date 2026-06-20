@@ -166,7 +166,7 @@ diagnostic+I/O, a few seconds per lead).
 ### Option A — Generate more CPU-WRF cases (backfill, no AIFS fetch needed)
 
 The raw AIFS GRIB2 forcing is **preserved for 35 init dates** in
-`/mnt/data/canairy_meteo/runs/forcing_cases/` (30 of them May 2026). Backfill needs only the
+`<DATA_ROOT>/canairy_meteo/runs/forcing_cases/` (30 of them May 2026). Backfill needs only the
 local `WPS(metgrid) → real.exe → wrf.exe` chain — **no network/data dependency**. CPU-WRF runs
 on **28 ranks (cores 4–31)**, so they do **not** contend with the GPU.
 
@@ -194,7 +194,7 @@ on **28 ranks (cores 4–31)**, so they do **not** contend with the GPU.
 | n=21 (all preserved obs-overlap dates) | ~19 | ~19 × 5.2 h ≈ **99 CPU-h** | ~4–5 nights |
 | n=27 (10% MDE) | (only ~21 May dates exist) → **not reachable from May forcing alone** | — | needs >1 season anyway |
 
-- **Disk:** ~1.8 GB per L2 72h run; `/mnt/data` has ~223 GB free (92% used). A 15-case L2
+- **Disk:** ~1.8 GB per L2 72h run; `<DATA_ROOT>` has ~223 GB free (92% used). A 15-case L2
   corpus ≈ 27 GB — feasible but tight; **thin scored wrfout to T2/U10/V10/RAINNC + XLAT/XLONG**
   or move to a compressed archive promptly, and **patch the nightly purge** to retain enrolled
   validation cases (else the corpus re-depletes and the result is irreproducible).
@@ -255,4 +255,4 @@ seasonal headline is a v0.2.0 deliverable gated on multi-season coverage + revie
 - Design/margins: `proofs/m20/tost_design.json`.
 - Prior assessment (corroborated, refined): `proofs/m20/seasonal_gap_assessment.md`.
 - GPU runtimes: `proofs/v010_validation/v010_d02_result.json`.
-- CPU-WRF runtimes: rsl logs under the corresponding `/mnt/data/canairy_meteo/runs/*` dirs.
+- CPU-WRF runtimes: rsl logs under the corresponding `<DATA_ROOT>/canairy_meteo/runs/*` dirs.

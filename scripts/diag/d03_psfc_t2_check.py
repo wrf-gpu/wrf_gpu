@@ -23,7 +23,7 @@ if hasattr(os, "sched_setaffinity"):
 import numpy as np
 from netCDF4 import Dataset
 
-CORB = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+CORB = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 
 
 def _tag(p: Path) -> str:

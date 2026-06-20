@@ -26205,9 +26205,9 @@
   "generated_utc": "2026-06-10T12:31:32.053903+00:00",
   "gpu_used": false,
   "inputs": {
-    "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
     "domain": "d02",
-    "gpu_dir": "/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z"
+    "gpu_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z"
   },
   "inventory": {
     "common": [
@@ -26620,8 +26620,8 @@
     "paired_file_count": 1,
     "pairs": [
       {
-        "cpu_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
-        "gpu_file": "/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "cpu_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "gpu_file": "<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
         "lead_h": 1,
         "valid_time_utc": "2026-05-01T19:00:00+00:00"
       }

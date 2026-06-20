@@ -20,7 +20,7 @@
     "w_damping": 1,
     "zdamp": 5000.0
   },
-  "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+  "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
   "steps_requested": 60,
   "variants": {
     "open_boundary": {

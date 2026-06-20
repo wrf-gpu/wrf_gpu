@@ -109,7 +109,7 @@
   "mp_physics": 8,
   "n_cells": 228228,
   "n_columns": 5187,
-  "oracle_dir": "/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics",
+  "oracle_dir": "<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/microphysics",
   "oracle_format": "raw big-endian float64 (manifest.json authoritative)",
   "oracle_note": "ACTIVE-PRECIP oracle (late forecast step) replacing the inactive itimestep=1 oracle (proofs/b1) which had all hydrometeors zero.",
   "pass": false,
@@ -192,7 +192,7 @@
     }
   },
   "proof": "v090-thompson-savepoint-parity",
-  "source_run": "/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
+  "source_run": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z",
   "status": "ORACLE-VALIDATED",
   "th_storage_precision_pass": true,
   "water_closure_max_rel_residual": 3.046657320892406e-07,

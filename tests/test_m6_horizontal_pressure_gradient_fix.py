@@ -19,7 +19,7 @@ from gpuwrf.integration.d02_replay import build_replay_case
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "data/fixtures/m6-horizontal-pressure-gradient-fix/step49_input_state.npz"
-RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
+RUN_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
 BAD_CELL_KJI = (32, 52, 40)
 
 

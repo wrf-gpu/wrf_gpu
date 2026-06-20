@@ -9,7 +9,7 @@
     "S",
     "N"
   ],
-  "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z",
+  "source_path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260519_18z_l3_24h_20260520T025228Z",
   "times_utc": [
     "2026-05-19T18:00:00+00:00",
     "2026-05-19T19:00:00+00:00",

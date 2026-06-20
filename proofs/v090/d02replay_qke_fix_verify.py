@@ -48,7 +48,7 @@ from gpuwrf.runtime.operational_mode import (  # noqa: E402
     run_forecast_operational,
 )
 
-L2_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
+L2_RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2")
 DT_S = 12.0
 
 STABLE_FLAGS = dict(

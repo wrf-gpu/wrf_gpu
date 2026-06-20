@@ -14,7 +14,7 @@ dry-mass / pressure-state lanes rather than the missing vapor-column load.
 ## Run
 
 - run root:
-  `/mnt/data/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z`
+  `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z`
 - branch/head: `worker/gpt/v013-close-manager`, `a08553dc`
 - case: `20260501_18z_l2_72h_20260519T173026Z`
 - GPU command: `proofs/v0120/powered_tost_n15/run_one_case_v0120.py --hours 4`

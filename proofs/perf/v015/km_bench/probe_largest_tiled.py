@@ -11,7 +11,7 @@ Run (GPU lock):
   scripts/with_gpu_lock.sh --label kernel-final -- timeout 5400 \
     taskset -c 0-3 env OMP_NUM_THREADS=4 PYTHONPATH=src JAX_ENABLE_X64=true \
     XLA_PYTHON_CLIENT_PREALLOCATE=false XLA_PYTHON_CLIENT_ALLOCATOR=cuda_async \
-    GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo \
+    GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo \
     python proofs/perf/v015/km_bench/probe_largest_tiled.py
 """
 from __future__ import annotations

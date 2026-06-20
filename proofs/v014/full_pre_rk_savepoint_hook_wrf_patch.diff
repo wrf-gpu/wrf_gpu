@@ -33,7 +33,7 @@
 +     wrfgpu2_full_grid = 2
 +     wrfgpu2_full_start_step = 6000
 +     wrfgpu2_full_end_step = 6000
-+     wrfgpu2_full_root = '/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output'
++     wrfgpu2_full_root = '<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output'
 +     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_FULL_PRE_RK_GRID', wrfgpu2_full_env)
 +     IF (LEN_TRIM(wrfgpu2_full_env) > 0) THEN
 +       READ(wrfgpu2_full_env,*,IOSTAT=wrfgpu2_full_ios) wrfgpu2_full_grid

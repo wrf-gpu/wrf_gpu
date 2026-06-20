@@ -22,8 +22,8 @@ from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
-GPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+GPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf")
 OUT = Path(__file__).with_suffix(".json")
 
 H = {36: "2023-01-16_12:00:00", 37: "2023-01-16_13:00:00", 38: "2023-01-16_14:00:00"}

@@ -31,7 +31,7 @@
         "--abbrev-ref",
         "HEAD"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
@@ -43,7 +43,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "8f735a56f7df53a42e4a6eed6eab022883104a09\n",
@@ -57,7 +57,7 @@
         "--oneline",
         "--decorate"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "8f735a56 (HEAD -> worker/gpt/v013-close-manager) v014 close mythos memory/fp32 lane: proofs, roadmaps, sprint closeout\n",
@@ -70,7 +70,7 @@
         "--short",
         "--branch"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "## worker/gpt/v013-close-manager...origin/worker/gpt/v013-close-manager [ahead 3]\n M .agent/memory/stable/mythos-heavy-lane.md\n M .agent/reviews/2026-06-09-v014-mythos-memory-fixes.md\n M .agent/skills/managing-sprints/CHANGELOG.md\n M .agent/skills/managing-sprints/SKILL.md\n M proofs/v014/fp32_acoustic_static_audit.json\n M proofs/v014/mythos_memory_fixes_260609.json\n M proofs/v014/mythos_memory_fixes_260609.md\n M proofs/v060/sfclayrev1_savepoint_parity_report.json\n?? .agent/decisions/V0120-18H-PUSH-ROADMAP.md\n?? .agent/reviews/2026-05-29-agy-phaseB.stderr\n?? .agent/reviews/2026-06-02-gpt-plan-v040-v100-review.md\n?? .agent/reviews/2026-06-02-gpt-rrtmg-sw-airmass-zenith.md\n?? .agent/reviews/2026-06-02-gpt-tost-verdict-skeptic.md\n?? .agent/reviews/2026-06-02-sonnet-h200-europe-1km-estimate.md\n?? .agent/reviews/2026-06-03-agy-v040-acoustic-cadence.md\n?? .agent/reviews/2026-06-03-agy-v040-config-and-criterion.md\n?? .agent/reviews/2026-06-03-agy-v040-pgf-arch.md\n?? .agent/reviews/2026-06-03-gpt-readme-runnability-plan.md\n?? .agent/reviews/2026-06-03-gpt-v060-completeness-audit.md\n?? .agent/reviews/2026-06-03-opus-v040-boundary-transport.md\n?? .agent/reviews/2026-06-03-opus-v040-expand-dates.md\n?? .agent/reviews/2026-06-03-opus-v060-morrison.md\n?? .agent/reviews/2026-06-04-gpt-rows1-9-completeness-audit.md\n?? .agent/reviews/2026-06-04-gpt-v060-close-critic.md\n?? .agent/reviews/2026-06-04-gpt-v060-reclose-critic.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15-finalize.md\n?? .agent/reviews/2026-06-04-opus-backfill-case15.md\n?? .agent/reviews/2026-06-04-opus-v050-close-critic.md\n?? .agent/reviews/2026-06-06-gpt-perwatt-scale-headline.md\n?? .agent/reviews/2026-06-06-v0120-readme-headlines-STAGED.md\n?? .claude/worktrees/\n?? .codex/\n?? cache/\n?? proofs/v040/expand_dates_gate_report.json\n?? proofs/v090/backfill_case15_0530.json\n?? proofs/v090/backfill_case15_finalize.json\n?? proofs/v090/thompson_aero_oracle/\n?? tests/savepoint/fixtures/wrf_b6_100step/golden/\n?? tests/savepoint/fixtures/wrf_b6_100step/patch16/\n",
@@ -84,7 +84,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
       "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
       "size_bytes": 12179669
     },
@@ -92,7 +92,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "dee4d4a85e1447bda39bce2ee4f26a9a7d32d83ae39548e87efae115f5378aa0",
       "size_bytes": 91477
     },
@@ -100,7 +100,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_rk1_p_state_source_split.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_rk1_p_state_source_split.json",
       "sha256": "0f3a63fd745ced7f9af200073e5a628f27100ce00c82613b97dfadd6c66af39d",
       "size_bytes": 292623
     },
@@ -109,7 +109,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
         "sha256": "03fb357300db141da73ad26b8d4845c5d22b131d63cb1ed546eb0c5ba06c1d02",
         "size_bytes": 890175
       },
@@ -117,7 +117,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt",
         "sha256": "723f90931646b72bcf6754ba1817b23d6caf27ffe4992e4d3e4385aab8b88005",
         "size_bytes": 12449128
       }
@@ -126,7 +126,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth",
       "sha256": null,
       "size_bytes": null
     },
@@ -134,7 +134,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-tendency-contract-split/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-tendency-contract-split/sprint-contract.md",
       "sha256": "9621cdb4461556b824bf96a04929fe6de625817b6248bc3507f90084855f3bf5",
       "size_bytes": 4928
     }
@@ -3870,7 +3870,7 @@
           }
         ]
       },
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_rk1_p_state_source_split.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_rk1_p_state_source_split.json",
       "verdict": "STEP1_RK1_P_STATE_SOURCE_REFUTED_STALE_PROOF_LOADER_BYPASS_NEXT_T_TENDF"
     },
     "ranked_hypotheses": [
@@ -4994,14 +4994,14 @@
           {
             "exists": true,
             "is_file": true,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
             "sha256": "03fb357300db141da73ad26b8d4845c5d22b131d63cb1ed546eb0c5ba06c1d02",
             "size_bytes": 890175
           },
           {
             "exists": true,
             "is_file": true,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt",
             "sha256": "723f90931646b72bcf6754ba1817b23d6caf27ffe4992e4d3e4385aab8b88005",
             "size_bytes": 12449128
           }
@@ -5305,8 +5305,8 @@
       "source_boundary": {
         "rk_tendency_patch_file_count": 2,
         "rk_tendency_patch_files": [
-          "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
-          "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt"
+          "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
+          "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt"
         ],
         "shapes": {
           "mass": [
@@ -5459,7 +5459,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -5525,7 +5525,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -5591,7 +5591,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -5657,7 +5657,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part1_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -6041,7 +6041,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -6107,7 +6107,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -6173,7 +6173,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -6239,7 +6239,7 @@
                   "1",
                   "44"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_first_rk_step_part2_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
                 "record_schema": [
                   "WPH_SOURCE",
                   "fortran_i",
@@ -6635,7 +6635,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
                 "record_schema": [
                   "WPH_TEND",
                   "fortran_i",
@@ -6713,7 +6713,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
                 "record_schema": [
                   "WPH_TEND",
                   "fortran_i",
@@ -6791,7 +6791,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
                 "record_schema": [
                   "WPH_TEND",
                   "fortran_i",
@@ -6869,7 +6869,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_rk_addtend_before_small_step_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
                 "record_schema": [
                   "WPH_TEND",
                   "fortran_i",
@@ -7264,7 +7264,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
                 "record_schema": [
                   "WPH_PREP",
                   "fortran_i",
@@ -7344,7 +7344,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
                 "record_schema": [
                   "WPH_PREP",
                   "fortran_i",
@@ -7424,7 +7424,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
                 "record_schema": [
                   "WPH_PREP",
                   "fortran_i",
@@ -7504,7 +7504,7 @@
                 "number_of_small_timesteps": [
                   "1"
                 ],
-                "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+                "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/after_small_step_prep_calc_p_rho_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
                 "record_schema": [
                   "WPH_PREP",
                   "fortran_i",
@@ -8031,14 +8031,14 @@
           {
             "exists": true,
             "is_file": true,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_18_je_33.txt",
             "sha256": "03fb357300db141da73ad26b8d4845c5d22b131d63cb1ed546eb0c5ba06c1d02",
             "size_bytes": 890175
           },
           {
             "exists": true,
             "is_file": true,
-            "path": "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth/source_save_after_rk_tendency_d2_step_1_is_1_ie_23_js_1_je_17.txt",
             "sha256": "723f90931646b72bcf6754ba1817b23d6caf27ffe4992e4d3e4385aab8b88005",
             "size_bytes": 12449128
           }
@@ -8338,9 +8338,9 @@
     }
   },
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_tendency_contract_split.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_tendency_contract_split.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-tendency-contract-split.md"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_tendency_contract_split.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_tendency_contract_split.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-tendency-contract-split.md"
   },
   "schema": "wrfgpu2.v014.step1_tendency_contract_split.v1",
   "source_save_patch_only": true,

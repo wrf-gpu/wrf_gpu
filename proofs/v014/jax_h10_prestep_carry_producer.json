@@ -1,5 +1,5 @@
 {
-  "artifact_root": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry",
+  "artifact_root": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry",
   "blocked": null,
   "checkpoint": {
     "exists": true,
@@ -11,7 +11,7 @@
     "has_runtime_state": true,
     "is_file": true,
     "namelist_type": "OperationalNamelist",
-    "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+    "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
     "runtime_state_type": "OperationalCarry",
     "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
     "size_bytes": 163257218,
@@ -26,7 +26,7 @@
       "exists": true,
       "format": "gpuwrf-runtime-checkpoint",
       "has_runtime_state": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
       "runtime_state_type": "OperationalCarry",
       "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
       "size_bytes": 163257218,
@@ -153,7 +153,7 @@
     "argv": [
       "proofs/v014/jax_h10_prestep_carry_producer.py"
     ],
-    "comparison_command": "cd /mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree && WRFGPU2_H10_PRESTEP_CARRY=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry.py",
+    "comparison_command": "cd <DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree && WRFGPU2_H10_PRESTEP_CARRY=<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry.py",
     "run_or_validation": [
       "python -m py_compile proofs/v014/jax_h10_prestep_carry_producer.py",
       "WRFGPU2_H10_PRODUCER_ALLOW_GPU=1 CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=4 PYTHONPATH=src python proofs/v014/jax_h10_prestep_carry_producer.py",
@@ -165,17 +165,17 @@
     "blocked": null,
     "command_result": {
       "command": [
-        "/home/user/miniconda3/bin/python",
+        "<USER_HOME>/miniconda3/bin/python",
         "proofs/v014/jax_h10_prestep_carry.py"
       ],
-      "cwd": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
+      "cwd": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
       "returncode": 0,
       "stderr_tail": "nni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 05:49:26.422239  916085 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-gather is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\nE0609 05:49:26.422255  916085 cpu_aot_loader.cc:195] Loading XLA:CPU AOT result. Target machine feature +prefer-no-scatter is not  supported on the host machine. Machine type used for XLA:CPU compilation doesn't match the machine type for execution. Compile machine features: [+64bit,+adx,+aes,+avx,+avx2,+avx512bf16,+avx512bitalg,+avx512bw,+avx512cd,+avx512dq,+avx512f,+avx512ifma,+avx512vbmi,+avx512vbmi2,+avx512vl,+avx512vnni,+avx512vp2intersect,+avx512vpopcntdq,+avxvnni,+bmi,+bmi2,+clflushopt,+clwb,+clzero,+cmov,+crc32,+cx16,+cx8,+f16c,+fma,+fsgsbase,+fxsr,+gfni,+invpcid,+lzcnt,+mmx,+movbe,+movdir64b,+movdiri,+mwaitx,+pclmul,+pku,+popcnt,+prefer-no-gather,+prefer-no-scatter,+prefetchi,+prfchw,+rdpid,+rdpru,+rdrnd,+sahf,+sha,+shstk,+sse,+sse2,+sse3,+sse4.1,+sse4.2,+sse4a,+ssse3,+vaes,+vpclmulqdq,+wbnoinvd,+xsave,+xsavec,+xsaveopt,+xsaves,-amx-avx512,-amx-bf16,-amx-complex,-amx-fp16,-amx-fp8,-amx-int8,-amx-movrs,-amx-tf32,-amx-tile,-avx10.1,-avx10.2,-avx512fp16,-avxifma,-avxneconvert,-avxvnniint16,-avxvnniint8,-ccmp,-cf,-cldemote,-cmpccxadd,-egpr,-enqcmd,-fma4,-hreset,-jmpabs,-kl,-lwp,-movrs,-ndd,-nf,-pconfig,-ppx,-ptwrite,-push2pop2,-raoint,-rdseed,-rtm,-serialize,-sgx,-sha512,-sm3,-sm4,-tbm,-tsxldtrk,-uintr,-usermsr,-waitpkg,-widekl,-xop,-zu] vs host machine features: [prfchw,avx,aes,sahf,pclmul,crc32,xsaves,sse4.1,avx512ifma,xsave,sse4.2,invpcid,64bit,xsavec,avx512vpopcntdq,cmov,avx512vp2intersect,avx512cd,movbe,avxvnni,adx,avx2,movdiri,vpclmulqdq,avx512vl,clflushopt,bmi,sse,gfni,xsaveopt,rdrnd,avx512f,avx512bf16,avx512vnni,cx8,avx512bw,sse3,pku,fsgsbase,clzero,mwaitx,lzcnt,sha,movdir64b,wbnoinvd,ssse3,cx16,bmi2,fma,popcnt,f16c,avx512bitalg,rdpru,clwb,mmx,sse2,avx512vbmi2,prefetchi,rdpid,avx512vbmi,shstk,vaes,fxsr,avx512dq,sse4a]. This could lead to execution errors such as SIGILL.\n",
-      "stdout_tail": "JAX_MISMATCH_T\njson=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.json\nmarkdown=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.md\nreview=/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md\n",
+      "stdout_tail": "JAX_MISMATCH_T\njson=<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.json\nmarkdown=<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.md\nreview=<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md\n",
       "wall_s": 24.671680450999702
     },
     "comparison": {
-      "checkpoint_path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "checkpoint_path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
       "comparison": {
         "MU": {
           "count": 289,
@@ -382,21 +382,21 @@
     "output_json": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.json",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.json",
       "sha256": "b4fee7937cfc617b03090a9b60b9ac71193ee8ef46a8a2718cd5ce3c4dc9643b",
       "size_bytes": 33492
     },
     "output_md": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.md",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.md",
       "sha256": "e9bac36a73c5fffc391e3951af49a6d0a1e0db1f69aaeb68485fca03c85c6550",
       "size_bytes": 526
     },
     "output_review": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md",
       "sha256": "9c1e59d1b3bd7acbf87523cfc3f19b4715f9ccfe8f7297b1ef2e11da3294d43b",
       "size_bytes": 1265
     },
@@ -420,15 +420,15 @@
       }
     },
     "setup": {
-      "compare_root": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
+      "compare_root": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
       "script": {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.py",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/proofs/v014/jax_h10_prestep_carry.py",
         "sha256": "b88e1aefc87ec7a479d7d85cfc8fbd5c1054e741d74aa65fe31af3a5502d9fea",
         "size_bytes": 38406
       },
-      "src_symlink": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/src"
+      "src_symlink": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree/src"
     },
     "status": "RAN",
     "verdict": "JAX_MISMATCH_T"
@@ -462,70 +462,70 @@
     "agents": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
     "building_wrf_oracles_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "9a0efb53ed28e0fc135dde57cd76d46aacbb705fadf6e8035dfe0e6862c5f9e8",
       "size_bytes": 29308
     },
     "jax_h10_prestep_carry_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
       "sha256": "eef111050059c431f2115cbc047348fae2eca1dd9333656e43de89625c58c652",
       "size_bytes": 35739
     },
     "jax_pre_halo_capture_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
       "sha256": "fc480540f075cb894d2c3bae181e332eabf510302057a00473406040ffbd6a69",
       "size_bytes": 24406
     },
     "project_constitution": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
     "same_state_savepoint_request_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
       "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
       "size_bytes": 269809
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-producer/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-producer/sprint-contract.md",
       "sha256": "0da197e2aa5897c6278470498d62757c935d9afd35d407caa4a4f4cef7f31fb1",
       "size_bytes": 3789
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_post_rk_refresh_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
       "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
       "size_bytes": 34079
     }
@@ -543,7 +543,7 @@
       "has_runtime_state": true,
       "is_file": true,
       "namelist_type": "OperationalNamelist",
-      "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
       "runtime_state_type": "OperationalCarry",
       "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
       "size_bytes": 163257218,
@@ -555,12 +555,12 @@
   },
   "production_src_edits": false,
   "proof_objects": {
-    "checkpoint": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
-    "checkpoint_provenance": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
-    "comparison_tree": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-producer.md"
+    "checkpoint": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+    "checkpoint_provenance": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.provenance.json",
+    "comparison_tree": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/jax_h10_compare_tree",
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry_producer.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-producer.md"
   },
   "schema": "wrfgpu2.v014.jax_h10_prestep_carry_producer.v1",
   "switzerland_validation_run": false,
@@ -570,7 +570,7 @@
     "lead_seconds_after_step": 36000.0,
     "prestep_completed_steps": 5999,
     "run_request": {
-      "cpu_wrf_truth_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+      "cpu_wrf_truth_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
       "domain": "d02",
       "retained_jax_output_dir_for_selection_only": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
       "run_id": "20260501_18z_l2_72h_20260519T173026Z",

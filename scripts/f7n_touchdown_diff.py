@@ -27,9 +27,9 @@ import json
 import sys
 import numpy as np
 
-WRF_TXT = "/mnt/data/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_dump.txt"
-JAX_JSON = "/mnt/data/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_substeps.json"
-OUT = "/home/user/src/wrf_gpu2/proofs/f7n/touchdown_substep_diff.json"
+WRF_TXT = "<DATA_ROOT>/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_dump.txt"
+JAX_JSON = "<DATA_ROOT>/wrf_gpu2/wrf_truth/em_grav2d_x_touchdown_substeps.json"
+OUT = "<USER_HOME>/src/wrf_gpu2/proofs/f7n/touchdown_substep_diff.json"
 
 G = 9.81
 DX = 100.0

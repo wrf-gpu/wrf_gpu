@@ -14,7 +14,7 @@
 #
 # DIFFERENCES vs scripts/build_switzerland_case.sh (F's robust 43x43 default):
 #   * Parameterized large grid (E_WE/E_SN), separate RUNROOT (does NOT clobber
-#     F's /mnt/data/wrf_gpu_switzerland 43x43 case).
+#     F's <DATA_ROOT>/wrf_gpu_switzerland 43x43 case).
 #   * Reuses F's already-downloaded GFS (symlinks) — no re-download.
 #   * Runs real.exe via the **dmpar MPI build** (mpirun -np ${REAL_NP}) so the
 #     wrfinput_d01/wrfbdy_d01 are produced by the same WRF build family that the

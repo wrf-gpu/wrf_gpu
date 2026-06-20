@@ -6,7 +6,7 @@ Verdict: `STEP1_START_DOMAIN_PERTURB_SUBSURFACE_LOCALIZED_CURRENT_JAX_AL_ALT_BAS
 
 - CPU backend: `cpu`; GPU used: `False`.
 - Required ancestor `ee6cbbe1` present: `True`.
-- Clean workdir: `/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715`; prefilled root WRF/run ignored: `True`.
+- Clean workdir: `<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715`; prefilled root WRF/run ignored: `True`.
 - WRF emitted 28 d02 patch files for each requested surface: after hypsometric P/al/alt, before press_adj, after press_adj, and after W surface branch.
 - Production source patch applied: `False`. No production patch was applied because current JAX AL/ALT/base/PH inputs still leave P max_abs 3.9458582235092763 Pa, above the 1 Pa material gate.
 

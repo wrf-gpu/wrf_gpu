@@ -11,7 +11,7 @@ band, and that disabling it (GPUWRF_THOMPSON_COLD_COLLECTION=0) collapses the
 rain sink -- so the lane, not a coincidence, is what closes the bias.
 
 Skips when the cold savepoint or a JAX backend is unavailable (the savepoint
-lives outside git at /mnt/data; regenerate via
+lives outside git at <DATA_ROOT>; regenerate via
 proofs/v015/cold_collection_oracle/build_and_run.sh).
 """
 from __future__ import annotations
@@ -23,7 +23,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-ORACLE = Path("/mnt/data/wrf_gpu2/physics_oracle/microphysics_coldmix")
+ORACLE = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_coldmix")
 ROOT = Path(__file__).resolve().parents[1]
 
 

@@ -20,7 +20,7 @@ Two complementary localizers in one GPU session:
 Run (GPU lock):
   scripts/with_gpu_lock.sh --label v015-vram -- env \
     PYTHONPATH=src JAX_ENABLE_X64=true OMP_NUM_THREADS=4 \
-    GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo taskset -c 0-3 \
+    GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo taskset -c 0-3 \
     python proofs/perf/v015/km_bench/localize_18g_alloc.py
 """
 from __future__ import annotations

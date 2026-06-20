@@ -1,5 +1,5 @@
---- /mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/WRF/dyn_em/solve_em.F	2026-06-09 14:03:55.709216649 +0100
-+++ /mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/solve_em.F	2026-06-09 14:30:54.890166453 +0100
+--- <DATA_ROOT>/wrf_gpu2/v014_step1_t_p_operator_localization/WRF/dyn_em/solve_em.F	2026-06-09 14:03:55.709216649 +0100
++++ <DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/dyn_em/solve_em.F	2026-06-09 14:30:54.890166453 +0100
 @@ -1076,6 +1076,110 @@
                               , feedback_is_ready=feedback_is_ready    &
                              )
@@ -10,7 +10,7 @@
 +         wrfgpu2_tp_grid = 2
 +         wrfgpu2_tp_start_step = 1
 +         wrfgpu2_tp_end_step = 1
-+         wrfgpu2_tp_root = '/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth'
++         wrfgpu2_tp_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth'
 +         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_GRID', wrfgpu2_tp_env)
 +         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
 +           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_grid
@@ -121,7 +121,7 @@
 +         wrfgpu2_tp_grid = 2
 +         wrfgpu2_tp_start_step = 1
 +         wrfgpu2_tp_end_step = 1
-+         wrfgpu2_tp_root = '/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth'
++         wrfgpu2_tp_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth'
 +         CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY_GRID', wrfgpu2_tp_env)
 +         IF (LEN_TRIM(wrfgpu2_tp_env) > 0) THEN
 +           READ(wrfgpu2_tp_env,*,IOSTAT=wrfgpu2_tp_ios) wrfgpu2_tp_grid

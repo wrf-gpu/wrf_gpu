@@ -1,6 +1,6 @@
 # v0.18 Final Pre-Release Test-Suite Triage
 
-**Worktree:** `/home/user/src/wrf_gpu2/.wt-v018-integration` (branch
+**Worktree:** `<USER_HOME>/src/wrf_gpu2/.wt-v018-integration` (branch
 `worker/gpt/v018-integration`, base HEAD `e12b5afe`)
 **Baselines compared:** trunk `db314b70` (v018 integration base) and tag
 `v0.17.0` (`b3ceb5aa`).

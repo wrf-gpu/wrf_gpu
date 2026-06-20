@@ -34,7 +34,7 @@ scripts/with_gpu_lock.sh [--timeout SECONDS] [--label NAME] -- <gpu-command> [ar
 
 Standard GPU env (compose with the wrapper):
 `taskset -c 0-3 env OMP_NUM_THREADS=4 PYTHONPATH=src JAX_ENABLE_X64=true
-XLA_PYTHON_CLIENT_PREALLOCATE=false GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo`.
+XLA_PYTHON_CLIENT_PREALLOCATE=false GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo`.
 
 ## Lock-per-command vs lock-per-sequence
 

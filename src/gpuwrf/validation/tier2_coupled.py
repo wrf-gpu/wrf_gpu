@@ -2,7 +2,7 @@
 
 Formula provenance:
 - Dry-column mass and mass-coupled advection follow WRF EM's RK prep path:
-  `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/dyn_em/module_em.F:141-151`
+  `<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/dyn_em/module_em.F:141-151`
   and `:184-212`, where WRF builds `mut/muu/muv` and moisture coefficients
   before RK advection.
 - Boundary relaxation follows the M6-S2 WRF-cited implementation of
@@ -10,7 +10,7 @@ Formula provenance:
   tendencies in `gpuwrf.coupling.boundary_apply`.
 - Water budget diagnostics follow WRF's diagnostic driver call carrying
   `DMUDT`, `MU_2`, `RAIN*`, and surface evaporation terms:
-  `/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_diagnostics_driver.F:336-356`.
+  `<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_diagnostics_driver.F:336-356`.
 """
 
 from __future__ import annotations

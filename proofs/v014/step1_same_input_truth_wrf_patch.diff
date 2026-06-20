@@ -10,7 +10,7 @@
 +     wrfgpu2_full_grid = 2
 +     wrfgpu2_full_start_step = 1
 +     wrfgpu2_full_end_step = 1
-+     wrfgpu2_full_root = '/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth'
++     wrfgpu2_full_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth'
 +     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_SAME_INPUT_STEP1_GRID', wrfgpu2_full_env)
 +     IF (LEN_TRIM(wrfgpu2_full_env) > 0) THEN
 +       READ(wrfgpu2_full_env,*,IOSTAT=wrfgpu2_full_ios) wrfgpu2_full_grid

@@ -27,7 +27,7 @@ from netCDF4 import Dataset
 ROOT = Path(__file__).resolve().parents[2]
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DOMAIN = "d02"
-CPU_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+CPU_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 GPU_DIR = Path("/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z")
 GRID_COMPARATOR_JSON = ROOT / "proofs/v014/grid_comparison_framework_smoke.json"
 STATIC_PARITY_JSON = ROOT / "proofs/v014/static_metric_base_parity.json"

@@ -82,7 +82,7 @@ MINIMUM_WRFOUT_VARIABLES: tuple[str, ...] = (
 # --- P0-5a operational completeness additions (closing the gap to WRF's field
 # list for the Canary operational product). Every name below is a real WRF-ARW
 # wrfout variable (verified against
-# /mnt/data/canairy_meteo/runs/wrf_l3/.../wrfout_d02_*): names, units, dims,
+# <DATA_ROOT>/canairy_meteo/runs/wrf_l3/.../wrfout_d02_*): names, units, dims,
 # staggering, and descriptions are copied from the reference file -- no invented
 # fields. They are populated ONLY from real model state / grid metrics /
 # operational diagnostics; a field with no available source is left out (it does

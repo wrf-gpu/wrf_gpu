@@ -14,7 +14,7 @@ from gpuwrf.io.land_state import load_prescribed_land_state
 from gpuwrf.physics.noah_mp import roughness_from_prescribed_fields
 
 
-RUN_PATH = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+RUN_PATH = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 WRFINPUT = RUN_PATH / "wrfinput_d02"
 
 

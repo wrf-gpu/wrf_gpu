@@ -148,16 +148,16 @@ def check_storage_health(errors: list[str]) -> None:
         errors.append("./data is not a symlink — fixture storage not bootstrapped")
     else:
         target = os.readlink(data)
-        if not target.startswith("/mnt/data"):
-            errors.append(f"./data symlink does not point at /mnt/data: {target}")
+        if not target.startswith("<DATA_ROOT>"):
+            errors.append(f"./data symlink does not point at <DATA_ROOT>: {target}")
     # disk space
     try:
-        st = os.statvfs("/mnt/data")
+        st = os.statvfs("<DATA_ROOT>")
         free_gb = (st.f_bavail * st.f_frsize) / (1024**3)
         if free_gb < 50:
-            errors.append(f"/mnt/data has only {free_gb:.1f} GB free (<50)")
+            errors.append(f"<DATA_ROOT> has only {free_gb:.1f} GB free (<50)")
     except OSError as e:
-        errors.append(f"cannot statvfs /mnt/data: {e}")
+        errors.append(f"cannot statvfs <DATA_ROOT>: {e}")
 
 
 def main() -> int:

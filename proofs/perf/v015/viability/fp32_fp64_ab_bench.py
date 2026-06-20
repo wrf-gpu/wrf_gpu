@@ -59,7 +59,7 @@ OUT_JSON = OUT_DIR / "fp32_fp64_ab.json"
 # Anchor case = the SAME 128x128x44 dt=18s Switzerland d01 reinit-h36 case behind
 # the kernel-characterization headline (119.8 ms/step fp64; CPU 24-rank = 200.5
 # ms/step -> 1.67x).  base ncol = 16384.
-ANCHOR_RUN_ROOT = "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable"
+ANCHOR_RUN_ROOT = "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable"
 ANCHOR_RUN_ID = "run_h36"
 ANCHOR_DOMAIN = "d01"
 ANCHOR_DT_S = 18.0

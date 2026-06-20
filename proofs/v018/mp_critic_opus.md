@@ -1,10 +1,10 @@
 # v0.18 MP-family — Opus adversarial critic report
 
 - **Branch / HEAD:** `worker/gpt/v018-mp` @ `48ee2d9e` (confirmed)
-- **Worktree:** `/home/user/src/wrf_gpu2/.wt-v018-mp`
+- **Worktree:** `<USER_HOME>/src/wrf_gpu2/.wt-v018-mp`
 - **Date:** 2026-06-16
 - **Critic:** Opus (adversarial verification of frontrunner `full_ship_gate=true`)
-- **Pristine WRF arbiter:** `/home/user/src/wrf_pristine/WRF`
+- **Pristine WRF arbiter:** `<USER_HOME>/src/wrf_pristine/WRF`
 
 ## Overall verdict: **ACCEPT**
 

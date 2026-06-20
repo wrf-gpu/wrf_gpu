@@ -211,6 +211,6 @@
     "dpn_fix_only_dv_accel_interior_x24h_m_s": 0.004249536187597778,
     "note": "JAX PGF minus a FULLY WRF-faithful PGF (correct al=alb/muts + dpn cfn/cfn1 top). GPT round-4 oracle shared both transcription bugs, so its 'source-equivalent' verdict was a self-compare for these terms.  Interior signed-mean accel x 24h bounds the surface bias each correction can explain."
   },
-  "savepoint": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00",
+  "savepoint": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00",
   "schema": "v040_adjudicate_al_vs_advection.v1"
 }

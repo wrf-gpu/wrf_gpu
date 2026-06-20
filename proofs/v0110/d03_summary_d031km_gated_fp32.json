@@ -11,7 +11,7 @@
     "pipeline": "proofs/v0110/pipeline_run_d03_d031km_gated_fp32.json",
     "validation": "proofs/v0110/d03_validation_d031km_gated_fp32.json"
   },
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "run_id": "20260521_18z_l3_24h_20260522T133443Z",
   "schema": "V010D03ReplayValidationSummary",
   "schema_version": 1,

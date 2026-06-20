@@ -168,7 +168,7 @@ CPU-WRF corpus.
   trajectory match needs a GPU + corpus.
 - Open-domain 24 h LBC-corrected conservation budgets (full forecast).
 
-### Needs the purged CPU-WRF corpus (not redistributable; `/mnt/data`)
+### Needs the purged CPU-WRF corpus (not redistributable; `<DATA_ROOT>`)
 - TOST operational equivalence vs 28-rank CPU-WRF (`proofs/m20/*`) — needs real
   CPU-WRF `wrfout` + AIFS forcing.
 - Multi-day operational skill-vs-obs gates and station scoring.

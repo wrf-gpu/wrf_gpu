@@ -9,14 +9,14 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF_PHYS="/home/user/src/wrf_pristine/WRF/phys"
+WRF_PHYS="<USER_HOME>/src/wrf_pristine/WRF/phys"
 WRF_KIND="${WRF_PHYS}/ccpp_kind_types.F"
 WRF_CORE="${WRF_PHYS}/physics_mmm/cu_ntiedtke.F90"
 WRF_DRV="${WRF_PHYS}/module_cu_ntiedtke.F"
 OUT_SAVE="${HERE}/../../savepoints/cumulus"
 
 set +u
-source /home/user/miniconda3/etc/profile.d/conda.sh
+source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -u
 export OMP_NUM_THREADS=2

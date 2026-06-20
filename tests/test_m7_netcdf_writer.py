@@ -19,7 +19,7 @@ from gpuwrf.io.wrfout_writer import (
 
 
 REFERENCE = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260525_18z_l3_24h_20260526T221207Z/"
     "wrfout_d02_2026-05-25_18:00:00"
 )
@@ -347,7 +347,7 @@ SNOW_CANOPY_REFERENCE_SCHEMA = (
 )
 
 _B3_REFERENCE = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260428_18z_l3_24h_20260525T221139Z/"
     "wrfout_d02_2026-04-28_19:00:00"
 )
@@ -485,7 +485,7 @@ RADIATION_FLUX_SKIPPED_CLEARSKY = (
 )
 
 _B1_REFERENCE = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260428_18z_l3_24h_20260525T221139Z/"
     "wrfout_d02_2026-04-28_19:00:00"
 )

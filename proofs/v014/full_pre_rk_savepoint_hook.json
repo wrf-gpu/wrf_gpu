@@ -1,16 +1,16 @@
 {
   "commands": {
-    "build": "cd /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real >/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/compile_full_pre_rk.log 2>&1",
+    "build": "cd <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF && timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real ><DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/compile_full_pre_rk.log 2>&1",
     "minimum_validation": [
       "python -m py_compile proofs/v014/full_pre_rk_savepoint_hook.py",
       "python -m json.tool proofs/v014/full_pre_rk_savepoint_hook.json >/tmp/full_pre_rk_savepoint_hook.validated.json"
     ],
-    "run": "ln -sf /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/main/wrf.exe /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/wrf.exe && cd /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3 && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_FULL_PRE_RK=1 WRFGPU2_FULL_PRE_RK_ROOT=/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output WRFGPU2_FULL_PRE_RK_GRID=2 WRFGPU2_FULL_PRE_RK_START_STEP=6000 WRFGPU2_FULL_PRE_RK_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe >/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/full_pre_rk_28rank_stdout.log 2>&1",
+    "run": "ln -sf <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/main/wrf.exe <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/wrf.exe && cd <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3 && timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_FULL_PRE_RK=1 WRFGPU2_FULL_PRE_RK_ROOT=<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output WRFGPU2_FULL_PRE_RK_GRID=2 WRFGPU2_FULL_PRE_RK_START_STEP=6000 WRFGPU2_FULL_PRE_RK_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe ><DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/full_pre_rk_28rank_stdout.log 2>&1",
     "setup": [
-      "mkdir -p /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook",
-      "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/ /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/",
-      "rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/ /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/",
-      "cd /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF && patch -p1 < /home/user/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff"
+      "mkdir -p <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook",
+      "rsync -a <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/ <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/",
+      "rsync -a <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/ <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/",
+      "cd <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF && patch -p1 < <USER_HOME>/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff"
     ]
   },
   "cpu_only": true,
@@ -159,14 +159,14 @@
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "sha256": "9b87194063639617c64ab31372201ed2374094df622e80cf4c724ae5244bd247",
         "size_bytes": 848336
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
         "sha256": "e863b61d0ec1834eb2439da2abdee054465f2cce3c8eddfc0a6cfce7f3ba1f88",
         "size_bytes": 12545265
       }
@@ -510,9 +510,9 @@
   },
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook.md",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook.md",
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff"
   },
   "schema": "wrfgpu2.v014.full_pre_rk_savepoint_hook.v1",
   "switzerland_validation_run": false,
@@ -539,7 +539,7 @@
     "compile_log": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/compile_full_pre_rk.log",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/compile_full_pre_rk.log",
       "sha256": "1f389f8700e02198043a3d5d1fd8150719ba8db75107bb7c33cccfa991f62f64",
       "size_bytes": 73459
     },
@@ -625,22 +625,22 @@
       "==========================================================================",
       " "
     ],
-    "output_dir": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output",
+    "output_dir": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output",
     "output_files": [
-      "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
-      "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output/full_pre_rk_step_entry_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
     ],
     "patch_diff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/full_pre_rk_savepoint_hook_wrf_patch.diff",
       "sha256": "efa776216a22c24acffbce3d30c93033d2c814c861d7e94184f44eb9936fb2d7",
       "size_bytes": 14519
     },
     "rsl_error_0000": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/rsl.error.0000",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/rsl.error.0000",
       "sha256": "4c52bdf3685978f04e6b34f8c74c638fd61eb554d422e6eaf25e962cebc84ea2",
       "size_bytes": 681788
     },
@@ -726,11 +726,11 @@
       "Timing for Writing wrfout_d01_2026-05-02_04:00:00 for domain        1:    0.37318 elapsed seconds",
       "d01 2026-05-02_04:00:00 wrf: SUCCESS COMPLETE WRF"
     ],
-    "run_dir": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3",
+    "run_dir": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3",
     "run_log": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/full_pre_rk_28rank_stdout.log",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/full_pre_rk_28rank_stdout.log",
       "sha256": "bb72e5499b28ad3eccb868de80051120f67bd691a5c3e0728a26adb2a27b50e7",
       "size_bytes": 1372
     },
@@ -767,29 +767,29 @@
     "run_wrf_exe": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/wrf.exe",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3/wrf.exe",
       "sha256": "cc33f2b49293e74a19a96ddac1a7e401311dcfe556a2e9b27033ae4353dd91c7",
       "size_bytes": 54514968
     },
-    "scratch_root": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook",
+    "scratch_root": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook",
     "solve_em": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/dyn_em/solve_em.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/dyn_em/solve_em.F",
       "sha256": "9544de46bd18bb24bb3b30c90bf20d514189b209523a62b200a2b58761213563",
       "size_bytes": 348681
     },
     "wrf_exe": {
       "exists": true,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/main/wrf.exe",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF/main/wrf.exe",
       "sha256": "cc33f2b49293e74a19a96ddac1a7e401311dcfe556a2e9b27033ae4353dd91c7",
       "size_bytes": 54514968
     },
     "wrf_source_path": {
       "exists": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF",
       "sha256": null,
       "size_bytes": 4096
     }

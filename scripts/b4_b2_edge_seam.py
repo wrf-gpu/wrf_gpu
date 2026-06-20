@@ -49,7 +49,7 @@ from gpuwrf.coupling.physics_couplers import _mass_to_u_face, _mass_to_v_face, _
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.runtime.operational_mode import _enforce_operational_precision
 
-DEFAULT_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
+DEFAULT_RUN = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
 
 
 def run(run_dir: Path) -> dict:

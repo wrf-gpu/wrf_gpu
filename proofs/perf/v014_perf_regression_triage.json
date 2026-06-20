@@ -7,7 +7,7 @@
   "base_commit": "0c333235",
   "case": {
     "name": "Switzerland d01 reinit h36 (replay)",
-    "input_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+    "input_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
     "grid": "128x128x44",
     "time_step_s": 18,
     "acoustic_substeps": 10,

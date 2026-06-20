@@ -7,8 +7,8 @@ sum_sq over every paired finite cell across every lead).
 """
 import netCDF4 as nc, numpy as np, glob, os, json, sys
 
-TRUTH = '/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu'
-PERT = '/mnt/data/wrf_gpu_validation/v015_switzerland_72h_cpu_pert1/run_cpu'
+TRUTH = '<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu'
+PERT = '<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_72h_cpu_pert1/run_cpu'
 
 fields = ["RAINNC", "T2", "U10", "V10", "PSFC", "QVAPOR", "T", "U", "V", "W"]
 acc = {f: [0.0, 0] for f in fields}

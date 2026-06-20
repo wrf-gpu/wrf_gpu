@@ -1,6 +1,6 @@
 # v0.18 PBL/schemes — Opus critic verdict (round 2)
 
-Branch `worker/gpt/v018-schemes` @ HEAD `8454971c`. Worktree `/home/user/src/wrf_gpu2/.wt-v018-schemes`.
+Branch `worker/gpt/v018-schemes` @ HEAD `8454971c`. Worktree `<USER_HOME>/src/wrf_gpu2/.wt-v018-schemes`.
 Critic scope: pick up the unfinished, higher-risk checks (prior critic confirmed PBL4/10/16/17 reference-only-green, PBL9 RECOGNIZED_FAIL_CLOSED).
 
 ## OVERALL VERDICT: ACCEPT

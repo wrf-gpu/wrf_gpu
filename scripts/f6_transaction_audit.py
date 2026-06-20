@@ -92,7 +92,7 @@ from gpuwrf.runtime.operational_state import OperationalCarry, initial_operation
 config.update("jax_enable_x64", True)
 
 
-DEFAULT_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+DEFAULT_RUN_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_OUTPUT_DIR = ROOT / "proofs/f6"
 
 BUDGET_FIELDS = (

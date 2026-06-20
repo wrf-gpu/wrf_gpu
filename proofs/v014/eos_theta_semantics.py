@@ -33,13 +33,13 @@ CP = 7.0 * RD / 2.0
 CPOVCV = CP / (CP - RD)
 
 FALSIFIER = Path(
-    "/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_20260610T122005Z"
 )
 GPU_DIR = FALSIFIER / "gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z"
 CPU_DIR = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
 )
-RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z")
+RUN_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z")
 GPU_D01_H1 = GPU_DIR / "wrfout_d01_2026-05-01_19:00:00"
 GPU_D02_H1 = GPU_DIR / "wrfout_d02_2026-05-01_19:00:00"
 CPU_D01_H1 = CPU_DIR / "wrfout_d01_2026-05-01_19:00:00"

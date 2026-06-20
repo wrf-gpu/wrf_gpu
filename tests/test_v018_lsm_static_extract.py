@@ -24,7 +24,7 @@ import numpy as np
 import pytest
 
 PROBE_RUN = Path(
-    "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36"
 )
 SAVEPOINT_DIR = Path(__file__).resolve().parents[1] / "proofs/v017/savepoints/pxlsm/fp64"
 

@@ -11399,13 +11399,13 @@
   "generated_utc": "2026-06-08T23:12:27.518908+00:00",
   "gpu_used": false,
   "inputs": {
-    "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
     "domain": "d02",
     "gpu_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
-    "grid_comparator_json": "/home/user/src/wrf_gpu2/proofs/v014/grid_comparison_framework_smoke.json",
-    "same_state_inventory_json": "/home/user/src/wrf_gpu2/proofs/v014/same_state_tendency_inventory.json",
-    "static_parity_json": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
-    "wind_mass_probe_json": "/home/user/src/wrf_gpu2/proofs/v014/wind_mass_divergence_probe.json"
+    "grid_comparator_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/grid_comparison_framework_smoke.json",
+    "same_state_inventory_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_state_tendency_inventory.json",
+    "static_parity_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
+    "wind_mass_probe_json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wind_mass_divergence_probe.json"
   },
   "lead_analysis": {
     "by_lead": {
@@ -15268,7 +15268,7 @@
             "value_at_max": 12.17519324622117
           },
           "_files": {
-            "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+            "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
             "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00"
           },
           "_valid_time_utc": "2026-05-02T04:00:00+00:00"
@@ -15690,7 +15690,7 @@
             "value_at_max": 11.801994774490595
           },
           "_files": {
-            "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
+            "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
             "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00"
           },
           "_valid_time_utc": "2026-05-02T05:00:00+00:00"
@@ -16112,7 +16112,7 @@
             "value_at_max": 11.70594959333539
           },
           "_files": {
-            "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+            "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
             "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00"
           },
           "_valid_time_utc": "2026-05-02T06:00:00+00:00"
@@ -16534,7 +16534,7 @@
             "value_at_max": 11.791577420197427
           },
           "_files": {
-            "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_07:00:00",
+            "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_07:00:00",
             "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_07:00:00"
           },
           "_valid_time_utc": "2026-05-02T07:00:00+00:00"
@@ -16956,7 +16956,7 @@
             "value_at_max": 11.921402088366449
           },
           "_files": {
-            "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_08:00:00",
+            "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_08:00:00",
             "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_08:00:00"
           },
           "_valid_time_utc": "2026-05-02T08:00:00+00:00"
@@ -38200,7 +38200,7 @@
         "value_at_max": 11.22011443786323
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
       },
       "_valid_time_utc": "2026-05-01T19:00:00+00:00"
@@ -38622,7 +38622,7 @@
         "value_at_max": 12.17519324622117
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00"
       },
       "_valid_time_utc": "2026-05-02T04:00:00+00:00"
@@ -39044,7 +39044,7 @@
         "value_at_max": 11.801994774490595
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_05:00:00"
       },
       "_valid_time_utc": "2026-05-02T05:00:00+00:00"
@@ -39466,7 +39466,7 @@
         "value_at_max": 11.70594959333539
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00"
       },
       "_valid_time_utc": "2026-05-02T06:00:00+00:00"
@@ -39888,7 +39888,7 @@
         "value_at_max": 11.791577420197427
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_07:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_07:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_07:00:00"
       },
       "_valid_time_utc": "2026-05-02T07:00:00+00:00"
@@ -40310,7 +40310,7 @@
         "value_at_max": 11.921402088366449
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_08:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_08:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_08:00:00"
       },
       "_valid_time_utc": "2026-05-02T08:00:00+00:00"
@@ -40732,7 +40732,7 @@
         "value_at_max": 11.894756050780416
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_09:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_09:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_09:00:00"
       },
       "_valid_time_utc": "2026-05-02T09:00:00+00:00"
@@ -41154,7 +41154,7 @@
         "value_at_max": 11.894755747111049
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_10:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_10:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_10:00:00"
       },
       "_valid_time_utc": "2026-05-02T10:00:00+00:00"
@@ -41576,7 +41576,7 @@
         "value_at_max": 11.875161562813446
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_11:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_11:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_11:00:00"
       },
       "_valid_time_utc": "2026-05-02T11:00:00+00:00"
@@ -41998,7 +41998,7 @@
         "value_at_max": 11.88200946804136
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_12:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_12:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_12:00:00"
       },
       "_valid_time_utc": "2026-05-02T12:00:00+00:00"
@@ -42420,7 +42420,7 @@
         "value_at_max": 11.883731049485505
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_13:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_13:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_13:00:00"
       },
       "_valid_time_utc": "2026-05-02T13:00:00+00:00"
@@ -42842,7 +42842,7 @@
         "value_at_max": 11.182981241494417
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_20:00:00"
       },
       "_valid_time_utc": "2026-05-01T20:00:00+00:00"
@@ -43264,7 +43264,7 @@
         "value_at_max": 11.852909207344055
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_14:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_14:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_14:00:00"
       },
       "_valid_time_utc": "2026-05-02T14:00:00+00:00"
@@ -43686,7 +43686,7 @@
         "value_at_max": 11.841919235885143
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_15:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_15:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_15:00:00"
       },
       "_valid_time_utc": "2026-05-02T15:00:00+00:00"
@@ -44108,7 +44108,7 @@
         "value_at_max": 11.819885417819023
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_16:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_16:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_16:00:00"
       },
       "_valid_time_utc": "2026-05-02T16:00:00+00:00"
@@ -44530,7 +44530,7 @@
         "value_at_max": 11.806332539767027
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_17:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_17:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_17:00:00"
       },
       "_valid_time_utc": "2026-05-02T17:00:00+00:00"
@@ -44952,7 +44952,7 @@
         "value_at_max": 11.757398057729006
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_18:00:00"
       },
       "_valid_time_utc": "2026-05-02T18:00:00+00:00"
@@ -45374,7 +45374,7 @@
         "value_at_max": 10.857722049579024
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_21:00:00"
       },
       "_valid_time_utc": "2026-05-01T21:00:00+00:00"
@@ -45796,7 +45796,7 @@
         "value_at_max": 10.676695581525564
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_22:00:00"
       },
       "_valid_time_utc": "2026-05-01T22:00:00+00:00"
@@ -46218,7 +46218,7 @@
         "value_at_max": 10.962930087000132
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_23:00:00"
       },
       "_valid_time_utc": "2026-05-01T23:00:00+00:00"
@@ -46640,7 +46640,7 @@
         "value_at_max": 11.239651078358293
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_00:00:00"
       },
       "_valid_time_utc": "2026-05-02T00:00:00+00:00"
@@ -47062,7 +47062,7 @@
         "value_at_max": 11.070020338636823
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_01:00:00"
       },
       "_valid_time_utc": "2026-05-02T01:00:00+00:00"
@@ -47484,7 +47484,7 @@
         "value_at_max": 11.229763596318662
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_02:00:00"
       },
       "_valid_time_utc": "2026-05-02T02:00:00+00:00"
@@ -47906,7 +47906,7 @@
         "value_at_max": 11.822801318950951
       },
       "_files": {
-        "cpu": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
+        "cpu": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00",
         "gpu": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_03:00:00"
       },
       "_valid_time_utc": "2026-05-02T03:00:00+00:00"

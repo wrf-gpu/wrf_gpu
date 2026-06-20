@@ -1180,6 +1180,6 @@
     }
   },
   "note": "JAX standalone wrfout minus CPU-WRF wrfout 3D U/V + PSFC, interior vs boundary-ring + per-level.",
-  "ref_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "ref_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "schema": "v040_localize_u_bias_3d.v1"
 }

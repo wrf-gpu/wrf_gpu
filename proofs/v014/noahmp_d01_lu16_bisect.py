@@ -24,7 +24,7 @@ sys.path.insert(0, "src")
 from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
 from gpuwrf.physics.noahmp.types import NoahMPForcing
 
-RUN_DIR = "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z"
+RUN_DIR = "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z"
 DT = 18.0
 
 land, static, meta = build_noahmp_land_state(RUN_DIR, "d01")

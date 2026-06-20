@@ -53,9 +53,9 @@ SPRINT_CONTRACT = (
 HANDOFF = ROOT / ".agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md"
 PREDECESSOR_JSON = PROOF_DIR / "step1_p_ph_mu_boundary_localization.json"
 PREDECESSOR_MD = PROOF_DIR / "step1_p_ph_mu_boundary_localization.md"
-PRECALL_TRUTH_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
-PART1_TRUTH_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth")
-SOURCE_TRUTH_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth")
+PRECALL_TRUTH_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
+PART1_TRUTH_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth")
+SOURCE_TRUTH_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/wrf_truth")
 
 REQUIRED_ANCESTOR = "ebedb3c1"
 TARGET_STEP = 1

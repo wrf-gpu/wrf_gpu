@@ -40,7 +40,7 @@ sys.path.insert(0, str(ROOT / "proofs/v0120/powered_tost_n15"))
 import run_powered_tost_n15_v0120 as camp  # noqa: E402
 
 GPU_DIR = Path("/tmp/wrf_gpu2_v090_for_v0100_validate/proofs/m20/tost_run/gpu_wrfout/case1_L2")
-CPU_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260530_18z_l2_72h_20260531T161057Z")
+CPU_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260530_18z_l2_72h_20260531T161057Z")
 OUT_JSON = ROOT / "proofs/v013/tost_scoring_path_cpu_proof.json"
 
 # init_time anchored to the CPU-truth init so lead-block bucketing is meaningful.

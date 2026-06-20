@@ -1,8 +1,8 @@
 {
   "schema": "v014_switzerland_bdy_normal_wind_oracle",
   "generated_utc": "2026-06-11T22:37:44.162586+00:00",
-  "cpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
-  "gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
+  "cpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+  "gpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_phys_tendf",
   "depth": 8,
   "note": "Sign convention: flux_excess is the GPU-minus-CPU single-face mass flux in budget units; net_influx = -(fe-fw + fn-fs). At the W/S faces, positive normal wind = INFLOW; at E/N, positive = OUTFLOW. A coherent OUTWARD normal-wind bias on all four faces == venting.",
   "h36": {

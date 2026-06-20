@@ -17,8 +17,8 @@ KI-9-class scheme-fidelity residual, not a per-cell bug or a missing scheme.
 All numbers below were re-derived **independently** from the raw v0.15 GPU
 wrfout vs the CPU truth, not copied from the prior `all_green_fixes.md`.
 
-- GPU run: `/mnt/data/wrf_gpu_validation/v015_canary_d02_72h_allgreen/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
-- CPU truth: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- GPU run: `<DATA_ROOT>/wrf_gpu_validation/v015_canary_d02_72h_allgreen/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
+- CPU truth: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
 - QVAPOR pooled RMSE 1.442e-3 vs frozen 1.0e-3 kg/kg (+44%); error grows from
   ~2e-4 (h1) and saturates ~1.7e-3 by h48 (does not amplify).
 
