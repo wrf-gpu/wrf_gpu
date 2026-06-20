@@ -46,18 +46,21 @@ NVL72-class).
   dynamics/thermodynamics core is proven **cell-for-cell identical** to CPU-WRF;
   the broader T2/U10/V10 forecast-skill equivalence is the **open credibility gate**
   (see [Boundaries](#boundaries--what-is-not-claimed)).
-- **Not a single-card speedup story.** On tiny-nest geometries the GPU is
-  launch/occupancy-bound and runs at ~parity with same-box CPU-WRF; an opt-in
-  fast-mode reaches ~1.3×. The value is **capability** (1 km + scale) and
-  **energy efficiency**, not raw single-card speed (see [Performance](#performance)).
+- **Not a blanket single-card speedup story.** On tiny standalone geometries the
+  GPU can still be launch/occupancy-bound, but the v0.19.0 all-7-island nested
+  fast path is now **MEASURED 1.43x faster** than the same-box 12-rank CPU-WRF
+  baseline. The broader value remains **capability** (1 km + scale), fidelity,
+  and **energy efficiency** (see [Performance](#performance)).
 - **Not** DFI / FDDA / spectral-nudging / WRF-Chem / WRF-Fire / urban / lake.
 
-**v0.18 is the feature-completeness release.** Every WRF v4 namelist scheme is now
-classified and handled: **50 operational** (oracle-gated), **23
-reference-only-with-real-oracle** (recognized, validated against a real WRF
-oracle, fail-closed if selected operationally), and **33 documented-boundary or
-proven-irrelevant** (recognized, fail-closed with a named reason). No scheme is
-silently substituted or skipped. See the [Scheme triage](#scheme-triage--every-wrf-v4-scheme-classified).
+**v0.19.0 is the fast all-7 nested release.** On the canonical all-7-island,
+9-domain case, the default fused nested path is **MEASURED 713
+s/forecast-hour** warm on the reference GPU versus **1020 s/forecast-hour** for
+the 12-rank CPU-WRF baseline (**1.43x faster**), with all 9 domains
+tolerance-green against the frozen grid-comparator manifest. v0.18 remains the
+feature-completeness baseline: every WRF v4 namelist scheme is classified and
+handled, with no silent substitution or skipped scheme. See the [Scheme
+triage](#scheme-triage--every-wrf-v4-scheme-classified).
 
 > ### First run is slow on purpose, then fast
 > The first forecast **JIT-compiles the GPU kernels** — a **~8–12 min one-time cold
@@ -65,9 +68,10 @@ silently substituted or skipped. See the [Scheme triage](#scheme-triage--every-w
 > It is compiling, not hung. A **persistent on-disk JIT cache** (on by default)
 > makes **every later run a fast cache read** (`cold ~147 s → cache-hit ~29 s` on
 > the d01 hour-1 wrapper); the cached executable is **bit-identical** to the cold
-> one. The opt-in fused fast-mode (`GPUWRF_NESTED_FUSE=1`, below) carries a
-> separate, larger **one-time compile (~38 min on the n=1 reference system)** —
-> also cached after the first run.
+> one. The v0.19.0 default fused nested fast path carries a separate, larger
+> **one-time compile (~41 min on the n=1 reference system for the all-7 case)** —
+> also cached after the first run. Set `GPUWRF_BITWISE=1` or
+> `GPUWRF_NESTED_FUSE=0` when you want the eager bitwise/debug path instead.
 
 ---
 
@@ -318,17 +322,23 @@ Measured on the reference RTX 5090 workstation vs same-box CPU-WRF.
   Warm steady-state utilization is **~85–88%**; the low-utilization window is the
   one-time domain-load/cold-JIT prefix, not the steady-state forecast. This is a
   VRAM-fit fix, not a new single-card speedup claim.
-- **Default config runs at ~parity total-wall** on the 72 h gates (Switzerland
+- **v0.19.0 makes the all-7 nested fast path faster than CPU.** The default fused
+  all-7-island, 9-domain run measures **713 s/forecast-hour warm** on the
+  reference GPU versus the canonical **12-rank CPU-WRF baseline at 1020
+  s/forecast-hour** (**1.43x faster**); the best warm segment measured **683
+  s/forecast-hour**. The gate wrote all 9 domains, all fields finite, and the
+  established grid comparator reported **PASS for 102 fields/domain with 0
+  tolerance failures**. The first fused segment includes the one-time compile
+  (**7348 s/forecast-hour**, about **41 min wall**) and is cached after that.
+- **Historical 72 h eager/default gates ran at ~parity total-wall** (Switzerland
   0.99×, Canary 1.04× vs 24/28-rank CPU-WRF; forecast-only ~1.05–1.20×; warmed
-  steady-state ~1.5×). This is a **GeForce fp64 hardware law** (1/64 fp32
-  throughput), not a defect — the acoustic core is deliberately fp64 around
+  steady-state ~1.5×). v0.19.0's all-7 nested fused path is the measured faster
+  path above; the fp64 acoustic core remains deliberately fp64 around
   cancellation.
-- **Opt-in fused fast-mode** (`GPUWRF_NESTED_FUSE=1`) lifts the canary all-7
-  (9/3/1 km) nested run to **~1.27–1.30× vs the same-box 12-rank CPU-WRF
-  (MEASURED)**, GPU utilization 56 → 96 %. It is **tolerance-PASS vs CPU but NOT
-  bitwise** (XLA FMA-contraction → a different valid trajectory) and carries a
-  **~38 min one-time fused compile** (cached) — so it ships **opt-in**, and a
-  24 h/72 h-tolerance check vs WRF v4 is the operator's gate for their case.
+- **Fused mode is default-fast, not bitwise-vs-eager.** It is
+  **tolerance-PASS vs CPU-WRF but NOT bitwise** (XLA fusion/FMA contraction can
+  choose a different valid trajectory). Use `GPUWRF_BITWISE=1` or
+  `GPUWRF_NESTED_FUSE=0` for the eager non-fused identity/debug path.
 - **The ceiling** (profiler + independent GPT-5.5 cross-confirmed): after v0.17's
   host-orchestration fixes, the tiny-nest all-7 is **GPU-compute-bound (~674
   s/forecast-hour)** — an nsys trace shows **many ~1.5 µs kernels with no
@@ -338,12 +348,13 @@ Measured on the reference RTX 5090 workstation vs same-box CPU-WRF.
   on ~55 k tiny columns). The genuine speedup/scale levers are **algorithmic +
   multi-GPU**, not fp32.
 
-**HEADLINE = CAPABILITY, not single-card tiny-nest speedup.** **MEASURED:** 1 km
+**HEADLINE = capability plus a measured all-7 nested speedup.** **MEASURED:** 1 km
 single domain fits one RTX 5090 bit-identically; the all-7 1 km nested case runs
-end-to-end on one card; the ~1.27–1.30× opt-in fast-mode is real. **PROJECTED /
-UNMEASURED:** large single grids + **cluster / multi-GPU weak-scaling** and
-whole-Earth-at-1 km "fits one rack" (exact memory arithmetic; multi-GPU throughput
-**not benchmarked**). Detail: [docs/PERFORMANCE.md](docs/PERFORMANCE.md),
+end-to-end on one card; v0.19.0 default fused mode is **1.43x faster** than the
+same-box 12-rank CPU-WRF all-7 baseline. **PROJECTED / UNMEASURED:** large single
+grids + **cluster / multi-GPU weak-scaling** and whole-Earth-at-1 km "fits one
+rack" (exact memory arithmetic; multi-GPU throughput **not benchmarked**). Detail:
+[docs/PERFORMANCE.md](docs/PERFORMANCE.md),
 [`proofs/v017/analyze_hostgap_arm.py`](proofs/v017/analyze_hostgap_arm.py),
 [`proofs/v018/perf_neutrality_FINAL.md`](proofs/v018/perf_neutrality_FINAL.md).
 
@@ -371,8 +382,8 @@ domain-decomposition path is bit-identity-proven on a **CPU fake mesh only**
 (`shard_map` + `lax.ppermute` halo); **real multi-GPU throughput is not yet
 shipped**, and a global wall-clock figure is **not claimed**.
 
-**Opt-in performance env flags** (all default to the bit-identical path):
-`GPUWRF_NESTED_FUSE=1` (fused cascade fast-mode; ~1.3×, not bitwise),
+**Performance / identity env flags**:
+`GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` (eager non-fused bitwise/debug path),
 `GPUWRF_NESTED_SYNC_MODE` (`root` default / `advance` / `segment`),
 `GPUWRF_EDGE_ONLY_BOUNDARY` (ring-only boundary, **default on, bit-identical**),
 `GPUWRF_JIT_BOUNDARY` (jit the boundary builder, default off),
@@ -385,9 +396,9 @@ Measured on the reference RTX 5090. Full detail: **[docs/resource-profile.md](do
 | Resource | What to expect |
 |---|---|
 | GPU / VRAM | The **1 km-NESTED all-island AC1_FIT case** (9/3/1, d03 520x280x45, ~145k columns) now fits the reference RTX 5090 at **~18.1 GiB peak VRAM**; before v0.18.2 it OOMed near **31.8/32 GiB**. Retained 72 h gate peaks: **22.9 GiB** (Switzerland d01) / **29.8 GiB** (Canary L2 d02, nested); d01 9 km standalone peaks **≈ 4.7 GiB**; the 1 km single domain fits in a fresh process at **18.25 GiB** (chunked BouLac). Peak is transient working memory, not persistent fp64 State; the v0.18.2 levers are bit-identical radiation/cold-start column tiling, with multi-GPU still the scale path. |
-| First-run compile | **~8–12 min** one-time cold JIT compile (no output during compile). The **persistent on-disk cache** (default on since v0.12.0) turns later runs into a fast cache read (**cold ~147 s → cache-hit ~29 s** d01 hour-1 wrapper); cached executable is **bit-identical**. The opt-in `GPUWRF_NESTED_FUSE=1` adds a separate **~38 min one-time** fused compile (cached). |
+| First-run compile | **~8–12 min** one-time cold JIT compile for the ordinary single-domain/nested programs (no output during compile). The **persistent on-disk cache** (default on since v0.12.0) turns later runs into a fast cache read (**cold ~147 s → cache-hit ~29 s** d01 hour-1 wrapper); cached executable is **bit-identical**. The v0.19.0 default fused all-7 program adds a separate **~41 min one-time** fused compile on the reference system, cached after the first run. |
 | Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
-| Throughput | **~Parity** default (Switzerland 0.99×, Canary 1.04× total-wall vs 24-rank CPU; forecast-only ~1.05–1.20×; warmed steady-state ~1.5×); **~1.27–1.30×** with the opt-in fused fast-mode (vs 12-rank CPU); **perf-neutral vs v0.17** on the default case. No multi-× single-card speedup is claimed. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md). |
+| Throughput | **v0.19.0 all-7 nested fast path: 713 s/forecast-hour warm vs 1020 s/forecast-hour 12-rank CPU-WRF (1.43x faster)**, with all 9 domains tolerance-green. Historical 72 h gates remain ~parity total-wall (Switzerland 0.99×, Canary 1.04× vs 24/28-rank CPU). No multi-× single-card speedup is claimed. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md). |
 | Runtime data | The vendored `data/fixtures/` tables (~147 MiB: Thompson + RRTMG) are loaded at import; a minimal run install needs `src` + `data/fixtures` (see the source-only quickstart above). |
 | Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
 
@@ -398,6 +409,7 @@ Newest first. Full per-release evidence is under [`proofs/`](proofs/) and the
 
 | Version | Headline | Key proof / link |
 |---|---|---|
+| **v0.19.0** | **Fast all-7 nested fusion + terrain-blend fidelity.** Default fused nesting plus the restored fast `_advance_chunk` loop body makes the all-7-island `max_dom=9` case **1.43x faster than the 12-rank CPU-WRF baseline** (713 vs 1020 s/forecast-hour; best segment 683). The one-time fused compile remains large (~41 min first segment, cached). The live-nest terrain/base-state fix closes the HGT/MUB/PB/PHB red-field class; all 9 domains write finite `wrfout` and the established grid comparator reports 102 fields/domain, 0 tolerance failures. | [`proofs/v019/release_prep/gate_summary.json`](proofs/v019/release_prep/gate_summary.json), [`proofs/v019/release_prep/grid_compare_summary.json`](proofs/v019/release_prep/grid_compare_summary.json), [`RELEASE_NOTES_v0.19.0.md`](RELEASE_NOTES_v0.19.0.md) |
 | **v0.18.3** | **max_dom=9 compile fix + nested `history_interval` cadence fix, bit-identical.** The all-7-island `--max-dom 9` nest compiled forever (`jit__advance_chunk` constant-folding static `s64[nz]` Thompson scan-index arrays across 9 domain shapes) → now all 9 domain-shape compiles complete **bounded** (≤409 s cold / ≤22 s warm), integrate (~85 % util), and write output. Also fixes the nested pipeline ignoring the namelist `history_interval` (was hardcoded hourly). Default numerics bit-identical (26/26 `wrfout` exact, `max_abs_diff 0.0`); hourly gates unchanged. | [`proofs/v018/maxdom9_fix/report.md`](proofs/v018/maxdom9_fix/report.md), [`RELEASE_NOTES_v0.18.3.md`](RELEASE_NOTES_v0.18.3.md) |
 | **v0.18.2** | **1 km nested VRAM-efficiency fix, bit-identical.** The AC1_FIT 9/3/1 all-island nested case now fits the reference RTX 5090 (**OOM near 31.8/32 GiB → 18.1 GiB peak**) via radiation column-tile defaults 16384→2048 plus tiled MYNN cold-start. Default numerics unchanged: 26/26 `wrfout` fields exact, MYNN cold-start `qke`/`pblh` diffs 0.0. Warm steady-state utilization is ~85–88%; full-run aggregate is lower because it includes the one-time load/cold-JIT prefix. Restores Thompson aero+cold runtime fixture tables. | [`proofs/v018/oom_fix/fix_report.md`](proofs/v018/oom_fix/fix_report.md), [`RELEASE_NOTES_v0.18.2.md`](RELEASE_NOTES_v0.18.2.md) |
 | **v0.18.0** | **FEATURE-COMPLETENESS + scheme triage.** Classifies and handles **every WRF v4 namelist scheme**: **50 operational** / **23 reference-only-with-real-oracle** / **33 documented-boundary or proven-irrelevant** (State = 67 leaves; no scheme/leaf dropped). Default **Thompson microphysics is strictly more WRF-faithful than v0.17** (cold-process additions + a warm-process melt/cold-gate fix → cell `qv` bit-exact WRF). **Perf-neutral vs v0.17** (default case, dual-confirmed). Adds **experimental, default-OFF K2 multi-GPU** domain decomposition (periodic-BC bit-exact; specified-BC not yet faithful — lab-only). | [`proofs/v018/integration_report.md`](proofs/v018/integration_report.md), [`proofs/v018/scheme_count_no_clobber.json`](proofs/v018/scheme_count_no_clobber.json), [`proofs/v018/suite_triage.md`](proofs/v018/suite_triage.md), [`docs/IDENTITY_PROOF.md`](docs/IDENTITY_PROOF.md) |
@@ -522,13 +534,12 @@ The full per-code support table is in
   **supersedes** the earlier TOST framing as the primary fidelity gate. The
   station-RMSE TOST campaign is underpowered at the available corpus (n=15;
   n≈27 for full power) and is **not run / not claimed**; deferred (KI-5).
-- **Not a single-card speedup release.** Default total-wall is ~parity; the opt-in
-  fused fast-mode reaches ~1.27–1.30× (tolerance-PASS, not bitwise). On tiny-nest
-  geometries the GPU is **launch/occupancy-bound**, so **≥2×/3× are NOT
-  single-card reachable** and **fp32 cannot move it** (the valid-numerics fp32
-  ceiling is ~1.1×, proven + cross-confirmed). The genuine speedup/scale levers are
-  **algorithmic + multi-GPU**, not fp32. v0.18 is **perf-neutral vs v0.17** on the
-  default case.
+- **Single-card speedup is measured but bounded.** v0.19.0 default fused all-7
+  nesting is **1.43x faster** than the same-box 12-rank CPU-WRF baseline and
+  tolerance-green, but tiny-nest geometries remain launch/occupancy-bound: **≥2×
+  / 3× are NOT single-card reachable** for this workload and **fp32 cannot move
+  it** (the valid-numerics fp32 ceiling is ~1.1×, proven + cross-confirmed). The
+  remaining scale levers are **algorithmic + multi-GPU**, not broad fp32.
 - **Multi-GPU throughput unmeasured.** The `shard_map` + `lax.ppermute` halo
   sharding is bit-identical on a CPU fake mesh, but this workstation has one
   physical RTX 5090 — real multi-GPU throughput / NVLink-NCCL bandwidth / collective
@@ -634,19 +645,19 @@ tier.
 | See every WRF v4 scheme's classification | [Scheme triage](#scheme-triage--every-wrf-v4-scheme-classified), [`proofs/v018/scheme_count_no_clobber.json`](proofs/v018/scheme_count_no_clobber.json) |
 | Understand the project scope | [`PROJECT_CONSTITUTION.md`](PROJECT_CONSTITUTION.md), [`CHANGELOG.md`](CHANGELOG.md) |
 | See the WRF-v4 cell-identity proof + how to reproduce it | [`docs/IDENTITY_PROOF.md`](docs/IDENTITY_PROOF.md), `docs/assets/v018/identity_proof/`, [`proofs/v018/identity_proof/`](proofs/v018/identity_proof/) |
-| Understand the performance (~parity + opt-in fast-mode + ceiling + perf-neutral vs v0.17) | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/v018/perf_neutrality_FINAL.md`](proofs/v018/perf_neutrality_FINAL.md), [`proofs/v017/analyze_hostgap_arm.py`](proofs/v017/analyze_hostgap_arm.py) |
+| Understand the performance (v0.19 all-7 1.43x + historical parity/ceiling) | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/v019/release_prep/gate_summary.json`](proofs/v019/release_prep/gate_summary.json), [`proofs/v017/analyze_hostgap_arm.py`](proofs/v017/analyze_hostgap_arm.py) |
 | Read the AceCAST positioning (PROJECTED) | [`proofs/v018/acecast_reconciliation.md`](proofs/v018/acecast_reconciliation.md) |
 | Run & verify the GPU-vs-CPU equivalence demo | [`docs/equivalence-demo.md`](docs/equivalence-demo.md) — `scripts/equivalence_demo.py` |
 | Run long GPU validation reliably | [`docs/GPU_RUNBOOK.md`](docs/GPU_RUNBOOK.md) — `scripts/run_gpu_lowprio.sh` |
 | Check current known issues | [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md), [`proofs/v018/suite_triage.md`](proofs/v018/suite_triage.md) |
 | Reproduce the proof collection on CPU | [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) — `scripts/verify_reproducibility.sh` |
 | See the full WRF v4 gap inventory | [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md) |
-| See prior release proofs | [`proofs/`](proofs/) (`v018`, `v017`, `v016`, `v015`, `v014`, `v013`, `v0120`, `v0110`, `v090`, `v0100`) |
+| See prior release proofs | [`proofs/`](proofs/) (`v019`, `v018`, `v017`, `v016`, `v015`, `v014`, `v013`, `v0120`, `v0110`, `v090`, `v0100`) |
 
-## Known issues (v0.18.0)
+## Known issues (v0.19.0)
 
 Full detail with symptom / ruled-out / workaround / follow-up in
-**[KNOWN_ISSUES.md](KNOWN_ISSUES.md)**. The v0.18 release carries only the
+**[KNOWN_ISSUES.md](KNOWN_ISSUES.md)**. The v0.19 release carries only the
 items below; everything resolved in prior releases is dropped.
 
 | ID | Summary | Severity |
@@ -657,7 +668,7 @@ items below; everything resolved in prior releases is dropped.
 | **Shin-Hong PBL11 TKE** | Shin-Hong (`bl_pbl_physics=11`) is operational despite a ~28.5 % diagnostic-TKE residual, source-traced as **non-driving** (dynamics tendencies never read it); TKE-oracle upgrade is a documented follow-up. | Documented follow-up |
 | **CPU suite xfail debt** | The full CPU test suite carries **38 documented non-strict xfail tests**, all **pre-existing** (each fails identically on tag `v0.17.0`; **zero v0.18-introduced regressions**, verified). They run and surface an XPASS if they start passing. Triage + per-test disposition: [`proofs/v018/suite_triage.md`](proofs/v018/suite_triage.md). | Carried test-debt |
 | **KI-9** | **The credibility gate.** Cell-identity proven (dynamics/thermo core cell-for-cell), but the broader **24 h/72 h forecast-skill equivalence** is open — equivalence demo 24 h d02 `NOT_EQUIVALENT`, dominated by **lead-time wind divergence** (3D V pooled RMSE 8.13 m/s). Hard dynamics-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob. | Documented gap |
-| **Perf ceiling** | Tiny-nest single-card is launch/occupancy-bound; **≥2×/3× not single-card reachable**, fp32 ceiling ~1.1×. Opt-in fuse ~1.27–1.30× (not bitwise). **Perf-neutral vs v0.17.** Value = capability + scale. | Documented next-lever |
+| **Fused fast-path caveat** | v0.19 default fused all-7 nesting is **1.43x faster than 12-rank CPU-WRF** and all-fields tolerance-green, but it is tolerance-green rather than bitwise-vs-eager and pays a large one-time compile before cache warm. Use `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` for eager bitwise/debug comparisons. | Carried caveat |
 | **KI-4** | d02 **U10** episodic final-lead under-prediction (8.06 m/s vs 7.5 m/s bar); within bar at all other leads, beats persistence 23/24. Tied to KI-9. | Documented residual |
 | **KI-3** | Operational `wrfout` is a focused **104-variable** subset (vs WRF's 375). | Scope boundary |
 | **KI-5** | Powered TOST campaign not run; **superseded by cell-identity as the primary gate**. No TOST PASS claimed. | Scope boundary |

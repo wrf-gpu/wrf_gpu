@@ -1,4 +1,25 @@
-# Known Issues — v0.18.3
+# Known Issues — v0.19.0
+
+## Resolved in v0.19.0
+
+- **All-7 nested speed gate was host-orchestration-bound.** The fori-loop
+  `_advance_chunk` restore alone was still slower than the 12-rank CPU baseline;
+  v0.19.0 ships the fused nested cascade default-on and measures **713
+  s/forecast-hour warm** vs **1020 s/forecast-hour CPU** (**1.43x faster**).
+  Proof: `proofs/v019/release_prep/gate_summary.json`.
+- **Nested terrain/base-state blend mismatch.** Runtime nest initialization now
+  matches WRF's terrain/base-state blend path, closing the HGT/MUB/PB/PHB red
+  class on nests and enabling the all-fields gate: all 9 domains PASS the
+  established grid comparator, **102 compared numeric fields/domain**, **0
+  tolerance failures**. Proof:
+  `proofs/v019/release_prep/grid_compare_summary.json`.
+
+## v0.19 carried caveat
+
+- **Default fused mode is tolerance-green, not bitwise-vs-eager, and has a large
+  one-time compile.** The first all-7 fused run pays a large XLA compile (about
+  41 min wall on the reference system, cached after). Use `GPUWRF_BITWISE=1` or
+  `GPUWRF_NESTED_FUSE=0` for eager bitwise/debug comparisons.
 
 ## Resolved in v0.18.3
 

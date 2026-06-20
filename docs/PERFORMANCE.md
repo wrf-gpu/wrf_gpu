@@ -1,4 +1,4 @@
-# Performance — measured, reproducible (v0.14)
+# Performance — measured, reproducible
 
 **v0.14 headline: the GPU port runs the same 72 h forecast at parity with
 28-rank CPU-WRF (~1.05×–1.06×).** v0.14 is a **memory + WRF-identity release, not
@@ -15,6 +15,37 @@ warm/cold are labelled. For sizing and the cold-compile / VRAM behaviour see
 
 **A modest honest number beats an impressive shaky one.** Where a value is
 projected, pending, or superseded, it says so.
+
+## v0.19.0 all-7 nested fast-path addendum
+
+v0.19.0 is the first release where the all-7-island, 9-domain nested GPU path is
+measured faster than the same-box CPU-WRF baseline while staying field-green.
+
+Measured scope:
+
+- reference RTX 5090 workstation;
+- all-7-island `max_dom=9` case, fast fused nested path, fp64/JAX GPU;
+- canonical 12-rank CPU-WRF all-7 pilot for the same initialization;
+- established grid-delta atlas comparator and the frozen v0.14 tolerance
+  manifest.
+
+| Window | GPU result | CPU reference | Verdict |
+|---|---:|---:|---|
+| Warm fused segment used for the gate | **713 s/forecast-hour** | **1020 s/forecast-hour** | **1.43x faster than CPU** |
+| Best warm fused segment | **683 s/forecast-hour** | **1020 s/forecast-hour** | **1.49x faster than CPU** |
+| First fused segment including one-time compile | **7348 s/forecast-hour** | — | cold compile dominates |
+
+Correctness gate:
+
+- all 9 domains wrote the expected `wrfout` files;
+- all fields finite, no NaN/instability;
+- 102 compared numeric fields per domain;
+- 0 tolerance failures on every domain.
+
+The first fused run is compile-heavy (about 41 min wall for the first segment on
+the reference system). It is a one-time XLA compile and is cached after the first
+run. The default fused path is tolerance-green vs CPU-WRF, not bitwise-vs-eager;
+use `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` for eager bitwise/debug runs.
 
 ## v0.18.2 nested 1 km utilization addendum
 

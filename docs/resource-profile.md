@@ -50,6 +50,10 @@ JAX/XLA compiles the timestep program the first time it runs. This is a
 - **Cold compile ≈ 4 min 55 s** on the reference workstation before the first
   forecast hour is integrated. The process appears to "hang" with no output
   during this window — it is compiling, not stuck.
+- **v0.19.0 fused all-7 nested program:** the default fast fused all-7 path pays
+  a larger one-time compile on first use. The release gate's first fused segment
+  took about **41 min wall** including compile; subsequent runs use the persistent
+  cache.
 - `wrf_gpu` enables JAX's **persistent on-disk compilation cache** automatically
   (`src/gpuwrf/runtime/jax_cache.py`). After the first run, the identical XLA
   executable is read from disk, so **subsequent runs skip the ~5 min compile**
@@ -78,7 +82,15 @@ history** — a few GiB for a single-domain 24 h run, more for nested runs.
   being finalized with the v0.12.0 standalone CLI; see the quickstart for the
   current invocation.
 
-## Wall-clock & energy (measured, v0.14)
+## Wall-clock & energy
+
+**v0.19.0 all-7 nested fast path:** the all-7-island `max_dom=9` fused run is
+measured at **713 s/forecast-hour warm** on the reference GPU versus **1020
+s/forecast-hour** for the canonical 12-rank CPU-WRF baseline (**1.43x faster**).
+The best warm segment measured **683 s/forecast-hour**. The first fused segment
+is compile-dominated and should not be used as a steady-state timing number.
+
+## Historical wall-clock & energy (measured, v0.14)
 
 **v0.14 runs at parity with 28-rank CPU-WRF.** On the final 72 h GPU-vs-CPU
 field-parity gates (fp64, reference RTX 5090 workstation):
@@ -115,6 +127,8 @@ note, not a near-term capability or a benchmark.
       72 h gate; RTX 5090 / 32 GiB remains the reference recommendation.
 - [ ] **Local NVMe scratch**, non-tmpfs, several GiB free.
 - [ ] Expect a **~5 min cold compile** on the first run; warm the cache before
-      timing or gating.
+      timing or gating. For the default v0.19.0 fused all-7 path, expect a
+      larger one-time compile (about **41 min wall** in the release gate) before
+      cached steady-state timing.
 - [ ] CUDA 13 + a JAX CUDA build that sees the GPU (`python -c "import jax;
       print(jax.devices())"` should list a `cuda` device).

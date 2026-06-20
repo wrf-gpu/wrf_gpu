@@ -7,6 +7,34 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.19.0] — fast all-7 nested fusion + terrain-blend fidelity
+
+Performance and fidelity release for the all-7-island `max_dom=9` nested path.
+This release ships the tested tree `7a84e519`:
+
+- **Makes fused nested cascade the default fast path.** The all-7-island,
+  9-domain case now measures **713 s/forecast-hour warm** on the reference GPU
+  against the canonical **12-rank CPU-WRF baseline at 1020 s/forecast-hour** —
+  **1.43x faster than CPU**. The best warm segment measured **683
+  s/forecast-hour**. The first fused run still pays the one-time XLA megacompile
+  (cold segment **7348 s/forecast-hour**, about **41 min wall**) and is cached
+  after that.
+- **Restores the fast `_advance_chunk` body.** The v0.18.0 `fori_loop` to `scan`
+  rewrite made the warm leaf body much slower; v0.19.0 returns to the traced-count
+  `fori_loop` form while preserving the v0.18.3 `max_dom=9` compile-bounded fix.
+- **Fixes live-nest terrain/base-state initialization.** Nested runtime
+  initialization now matches WRF's `blend_terrain` ordering for terrain and base
+  state, eliminating the d02-d09 HGT/MUB/PB/PHB red-field class that blocked the
+  speed gate.
+- **Ships the all-fields release gate green.** The GPU run writes all expected
+  `wrfout` files for all 9 domains, all fields are finite, and the established
+  grid-delta atlas comparator reports **PASS on all 9 domains** against the
+  frozen v0.14 tolerance manifest (**102 compared numeric fields/domain, 0
+  tolerance failures**).
+- **Keeps opt-outs explicit.** `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0`
+  selects the eager non-fused path for bit-identical/debug comparisons. Fused
+  mode is tolerance-green vs CPU-WRF, not bitwise-identical to the eager path.
+
 ## [0.18.3] — max_dom=9 compile fix + nested history_interval cadence fix (bit-identical)
 
 Two bugfixes; default forecast numerics unchanged (bit-identical: 26/26 `wrfout`
