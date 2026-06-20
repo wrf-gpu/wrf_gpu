@@ -39,4 +39,4 @@ _JAX_CACHE_STATUS = _configure_jax_cache()
 
 __all__ = ["__version__"]
 
-__version__ = "0.19.0"
+__version__ = "0.19.1"
