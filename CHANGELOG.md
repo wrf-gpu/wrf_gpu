@@ -7,6 +7,18 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## v0.19.1 — 24-hour VRAM-stability fix (nested fast path)
+
+- Fix a GPU memory leak in the default fused nested cascade that blocked sustained
+  24-hour all-7-island `max_dom=9` runs. A self-referential recursive closure
+  (`integrate` in `runtime/domain_tree.py`) pinned one per-domain carry set per
+  output group via a reference cycle that the cyclic GC does not reclaim during
+  the device-bound loop, so VRAM grew ~1 GB/output group -> CUDA OOM at ~9.7 h.
+  Break the closure cycle (memory-only; no kernel/numerics/throughput change).
+  Validated on the canonical all-7 `max_dom=9` real case: VRAM flat over 9 output
+  groups, warm 721 s/forecast-hour (= v0.19.0, no regression), all 9 domains
+  tolerance-green. See `RELEASE_NOTES_v0.19.1.md`.
+
 ## [0.19.0] — fast all-7 nested fusion + terrain-blend fidelity
 
 Performance and fidelity release for the all-7-island `max_dom=9` nested path.

@@ -393,6 +393,17 @@ def run_domain_tree_callbacks(
                 _sync_all_domains()
 
     integrate(root_name, int(root_steps), reset_clock=False)
+    # MEMORY FIX (v0.19.1): ``integrate`` is a recursive nested closure -- its
+    # ``__closure__`` holds a self-reference cell (the ``integrate`` cellvar,
+    # written below) AND the per-segment ``out`` carry dict.  That self-reference
+    # forms a reference CYCLE reclaimable only by Python's cyclic GC, which does
+    # not trip during the on-device-heavy per-output loop, so one full 9-domain
+    # carry-set (~1043 device arrays) leaked per output group -> VRAM 15->30 GiB
+    # -> OOM ~9.7 h on the 24 h all-7 nest.  Writing the cellvars to None severs
+    # the cycle so the closures (and their captured carry copies) are freed by
+    # refcount at return.  Memory-only: ``integrate`` is never called after this,
+    # so numerics/speed are unchanged (proof: proofs/v019/vram_fix/).
+    integrate = maybe_output = _sync_all_domains = None  # noqa: F841 - break closure ref-cycle
     states = {name: _state_from_carry(carry) for name, carry in out.items()}
     return DomainTreeResult(
         carries=out,
