@@ -46,7 +46,7 @@ OPERATIONAL_MODE_PY = ROOT / "src/gpuwrf/runtime/operational_mode.py"
 RK_ADDTEND_DRY_PY = ROOT / "src/gpuwrf/dynamics/core/rk_addtend_dry.py"
 
 POST_RK_FILES = sorted(
-    Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output").glob(
+    Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output").glob(
         "refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_*.txt"
     )
 )

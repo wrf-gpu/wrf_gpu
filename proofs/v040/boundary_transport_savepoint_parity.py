@@ -52,8 +52,8 @@ from pgf_inloop_isolation import _metrics_np, _state_np, wrf_advect_u_components
 
 CASES = [
     ("20260429_d01_l2",
-     "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z/wrfinput_d01",
-     "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00"),
+     "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z/wrfinput_d01",
+     "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00"),
 ]
 
 # Gen2 WRF dyn_em source tree used for provenance hashing only (sha256 -> "missing"

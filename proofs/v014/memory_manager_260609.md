@@ -40,7 +40,7 @@
 
 - Current status: `NO_RUN_PLAN`.
 - GPU attempted in this lane: `False`.
-- Prepared command: `['scripts/run_gpu_lowprio.sh', '--cores', '0-23', '--', 'python', 'proofs/v014/exact_branch_memory_preflight.py', '--run-gpu', '--nested-input', '/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z', '--max-dom', '3', '--hours', '1', '--timeout-s', '600.0']`.
+- Prepared command: `['scripts/run_gpu_lowprio.sh', '--cores', '0-23', '--', 'python', 'proofs/v014/exact_branch_memory_preflight.py', '--run-gpu', '--nested-input', '<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z', '--max-dom', '3', '--hours', '1', '--timeout-s', '600.0']`.
 - This is deliberately not a long validation substitute.
 
 ## GPU Usage

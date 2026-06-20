@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DOMAIN = "d02"
 
-CPU_TRUTH_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+CPU_TRUTH_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 FRESH_GPU_DIR = Path("/tmp/v014_post_static_writer_smoke") / f"l2_d02_{RUN_ID}"
 RUN_ROOT_INPUT_DIR = Path("/tmp/v0120_merged_run_root") / RUN_ID
 

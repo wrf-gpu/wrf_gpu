@@ -78,7 +78,7 @@
   "peak_gpu_mem_mb_final": 9292.873046875,
   "physically_plausible_short_run": true,
   "repeats": 5,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
   "run_id": "20260521_18z_l2_72h_20260522T133443Z",
   "schema": "V0100WaveBTimingProbe",
   "schema_version": 1,

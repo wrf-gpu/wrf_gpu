@@ -11,7 +11,7 @@ Base: branch `perf-wins` off `worker/opus/final-verdict` tip `135b6dc`.
 
 What: central import-time hook (`gpuwrf/runtime/jax_cache.py`, wired in
 `gpuwrf/__init__.py`) enables JAX's on-disk persistent compilation cache at
-`/mnt/data/gpuwrf_jax_cache` for every entry path. Env override
+`<DATA_ROOT>/gpuwrf_jax_cache` for every entry path. Env override
 (`GPUWRF_JAX_CACHE_DIR` / standard `JAX_COMPILATION_CACHE_DIR`), kill switch
 (`GPUWRF_JAX_CACHE=0`), `min_compile_time_secs=0`, graceful no-op if the dir is
 unavailable.

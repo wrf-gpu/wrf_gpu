@@ -43,7 +43,7 @@ SPRINT_CONTRACT = (
     ROOT
     / ".agent/sprints/2026-06-09-v014-step1-t-p-operator-localization/sprint-contract.md"
 )
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_t_p_operator_localization")
 WRF_TRUTH = SCRATCH / "wrf_truth"
 WRF_BUILD_LOG = SCRATCH / "compile_step1_tp_localization.log"
 WRF_RUN_LOG = SCRATCH / "wrf_step1_tp_localization_stdout.log"
@@ -980,7 +980,7 @@ def main() -> int:
         "final_comparison": final_comparison,
         "commands": {
             "wrf_instrumentation": [
-                "tcsh ./compile em_real (scratch WRF under /mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/WRF)",
+                "tcsh ./compile em_real (scratch WRF under <DATA_ROOT>/wrf_gpu2/v014_step1_t_p_operator_localization/WRF)",
                 "WRFGPU2_STEP1_TP_LOCALIZATION=1 mpirun --oversubscribe -np 28 run/wrf.exe",
             ],
             "required_validation": [

@@ -5,12 +5,12 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${HERE}/../../../.." && pwd)"
-WRF_ROOT="${WRF_PRISTINE_ROOT:-/home/user/src/wrf_pristine/WRF}"
+WRF_ROOT="${WRF_PRISTINE_ROOT:-<USER_HOME>/src/wrf_pristine/WRF}"
 WRF_PHYS="${WRF_ROOT}/phys"
 OUT_SAVE="${ROOT}/proofs/v018/savepoints/cumulus_grell"
 
 set +u
-source /home/user/miniconda3/etc/profile.d/conda.sh
+source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -u
 export OMP_NUM_THREADS=2

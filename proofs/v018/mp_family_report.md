@@ -116,7 +116,7 @@ scripts/with_gpu_lock.sh --label gpt-mp -- taskset -c 0-3 env \
   JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false \
   JAX_ENABLE_COMPILATION_CACHE=true \
-  JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache \
+  JAX_COMPILATION_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache \
   pytest -q \
     tests/test_v017_qh_hail_state.py::test_state_zeros_hail_leaves_zero_on_gpu \
     tests/test_v013_operational_smoke.py::test_microphysics_operational_runs_and_mutates

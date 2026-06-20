@@ -88,7 +88,7 @@ SPRINT = (
 )
 ARTIFACTS = SPRINT / "artifacts"
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 # Five 10 s steps inside the profile window. Both warmup and profiled calls
 # use this exact value so the JIT cache key is identical and the second call
 # is a guaranteed cache hit (no first-graph constant staging).

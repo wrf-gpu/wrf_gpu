@@ -55,10 +55,10 @@ ORACLE_ROOT = Path(
 )
 PINNED_SURFACE = Path("/tmp/wrfgpu2_v014_surface_handoff_pinned_onerun/surface_land_flux_d02_step1.txt")
 WRF_RADIATION_DRIVER = Path(
-    "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F"
+    "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_radiation_driver.F"
 )
 WRF_RRTMG_LW = Path(
-    "/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F"
+    "<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF/phys/module_ra_rrtmg_lw.F"
 )
 
 

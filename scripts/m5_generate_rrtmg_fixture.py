@@ -32,8 +32,8 @@ SCRATCH = ROOT / "data" / "scratch"
 RRTMG_RUNTIME = SCRATCH / "rrtmg_runtime"
 BUILD_SCRIPT = ROOT / "scripts" / "wrf_rrtmg_harness_build.sh"
 HARNESS = SCRATCH / "wrf_rrtmg_harness"
-WRF_SW_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o")
-WRF_LW_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o")
+WRF_SW_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o")
+WRF_LW_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o")
 
 INPUT_FIELDS = ("T", "p", "qv", "qc", "qi", "qs", "qg", "cloud_fraction", "dz", "rho")
 ORACLE_MARKER = b"#RRTMG_ORACLE_V1_BINARY\n"

@@ -51,7 +51,7 @@ GPU forecast and converts it to `PIPELINE_BLOCKED`), or when post-forecast scori
 
 ## GPU-campaign runbook (manager-run, later GPU step)
 
-Prerequisites already verified present: `/mnt/data/canairy_meteo/runs/wrf_l2/<RID>/` (init), `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/<RID>/` (73 d01 + 73 d02 CPU truth each), `/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations/` (AEMET parquet). Merged run root is rebuilt automatically by `prepare_merged_run_root()`.
+Prerequisites already verified present: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/<RID>/` (init), `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/<RID>/` (73 d01 + 73 d02 CPU truth each), `<DATA_ROOT>/canairy_meteo/artifacts/datasets/aemet_stations/` (AEMET parquet). Merged run root is rebuilt automatically by `prepare_merged_run_root()`.
 
 **Step 0 — single-case GPU smoke (root-cause the remaining forecast blocker FIRST):**
 ```bash

@@ -27,7 +27,7 @@
           "status": "READ",
           "step_index": 5999
         },
-        "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
         "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
         "size_bytes": 163257218,
         "source": "env:WRFGPU2_H10_PRESTEP_CARRY",
@@ -40,10 +40,10 @@
         "metadata": {
           "status": "MISSING"
         },
-        "path": "/home/user/src/wrf_gpu2/proofs/v0110/wrfrst_d02_hour01.nc",
+        "path": "<USER_HOME>/src/wrf_gpu2/proofs/v0110/wrfrst_d02_hour01.nc",
         "sha256": null,
         "size_bytes": null,
-        "source": "/home/user/src/wrf_gpu2/proofs/v0110/restart_continuity.json",
+        "source": "<USER_HOME>/src/wrf_gpu2/proofs/v0110/restart_continuity.json",
         "usable_h10_prestep_candidate": false,
         "why_not_usable": "path does not exist"
       },
@@ -53,10 +53,10 @@
         "metadata": {
           "status": "MISSING"
         },
-        "path": "/home/user/src/wrf_gpu2/proofs/v0110/wrfrst_full_carry_roundtrip.nc",
+        "path": "<USER_HOME>/src/wrf_gpu2/proofs/v0110/wrfrst_full_carry_roundtrip.nc",
         "sha256": null,
         "size_bytes": null,
-        "source": "/home/user/src/wrf_gpu2/proofs/v0110/restart_continuity.json",
+        "source": "<USER_HOME>/src/wrf_gpu2/proofs/v0110/restart_continuity.json",
         "usable_h10_prestep_candidate": false,
         "why_not_usable": "path does not exist"
       },
@@ -69,7 +69,7 @@
         "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_overhead.json",
         "sha256": null,
         "size_bytes": null,
-        "source": "/home/user/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "source": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
         "usable_h10_prestep_candidate": false,
         "why_not_usable": "path does not exist"
       },
@@ -82,7 +82,7 @@
         "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_work/20260521_step20_reference.pkl",
         "sha256": null,
         "size_bytes": null,
-        "source": "/home/user/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "source": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
         "usable_h10_prestep_candidate": false,
         "why_not_usable": "path does not exist"
       },
@@ -95,7 +95,7 @@
         "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_work/20260521_step10.pkl",
         "sha256": null,
         "size_bytes": null,
-        "source": "/home/user/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "source": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
         "usable_h10_prestep_candidate": false,
         "why_not_usable": "path does not exist"
       },
@@ -108,7 +108,7 @@
         "path": "/tmp/wrf_gpu2_restart/.agent/sprints/2026-05-27-m7-restart-continuity/restart_work/20260521_step20_restarted.pkl",
         "sha256": null,
         "size_bytes": null,
-        "source": "/home/user/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
+        "source": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-05-27-m7-restart-continuity/restart_continuity.json",
         "usable_h10_prestep_candidate": false,
         "why_not_usable": "path does not exist"
       }
@@ -128,7 +128,7 @@
           "status": "READ",
           "step_index": 5999
         },
-        "path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
         "sha256": "0896e4a272cbeaa85d1bb969ecae82b047e75a028df45a87ddab4f4572af8dde",
         "size_bytes": 163257218,
         "source": "env:WRFGPU2_H10_PRESTEP_CARRY",
@@ -148,7 +148,7 @@
     ]
   },
   "comparison": {
-    "checkpoint_path": "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+    "checkpoint_path": "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
     "comparison": {
       "MU": {
         "count": 289,
@@ -373,56 +373,56 @@
     "dynamic_field_attribution_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/dynamic_field_attribution.json",
       "sha256": "a8979ebd844d6aa6a05319bbfdaf548e119f2a8f0165c0ceed56c0854a84c020",
       "size_bytes": 1798878
     },
     "handoff": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "9a0efb53ed28e0fc135dde57cd76d46aacbb705fadf6e8035dfe0e6862c5f9e8",
       "size_bytes": 29308
     },
     "jax_pre_halo_capture_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_pre_halo_capture.json",
       "sha256": "fc480540f075cb894d2c3bae181e332eabf510302057a00473406040ffbd6a69",
       "size_bytes": 24406
     },
     "same_state_savepoint_request_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/same_state_savepoint_request.json",
       "sha256": "4ab550e562fd777c91ed533953a575081bf8617d0c835e5616a965acd3907869",
       "size_bytes": 269809
     },
     "sprint_contract": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-checkpoint/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-h10-prestep-carry-checkpoint/sprint-contract.md",
       "sha256": "2c454878fb0f847ff8b2178f4175bf7f2f2815c0d5bdd2e59220a77f092bd729",
       "size_bytes": 3561
     },
     "validating_physics_skill": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
     "wrf_post_rk_refresh_localization_json": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.json",
       "sha256": "328b1a36f85ad99683b68d91cb304cba679e3648fb82e9a075afc6a391bff810",
       "size_bytes": 34079
     },
     "wrf_post_rk_refresh_localization_md": {
       "exists": true,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/wrf_post_rk_refresh_localization.md",
       "sha256": "28a831c5c1d3c74f85e5259c7fcfdf14f78e473b92469006cc84c3e3f7358eab",
       "size_bytes": 3217
     }
@@ -431,9 +431,9 @@
   "no_hermes": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/jax_h10_prestep_carry.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-h10-prestep-carry-checkpoint.md"
   },
   "schema": "wrfgpu2.v014.jax_h10_prestep_carry.v1",
   "source_inspection": {
@@ -470,56 +470,56 @@
       "integration_d02_replay": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
         "sha256": "cef435fd9d78851944955810263d95c72efe1861a9611403f46f20de0c1a7655",
         "size_bytes": 88775
       },
       "integration_daily_pipeline": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/daily_pipeline.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/daily_pipeline.py",
         "sha256": "2586eaf18be90b50b36106ffefe501b33c9605133c977f6d1024f2e98a6e4628",
         "size_bytes": 71814
       },
       "integration_nested_pipeline": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/nested_pipeline.py",
         "sha256": "80daf87cf24ed77260af69359ca80508407a8c1250df898b8fa37f6cd08634d9",
         "size_bytes": 26134
       },
       "io_restart": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/io/restart.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/io/restart.py",
         "sha256": "36e95118365039d3948d61b808dc5703c5035b60b41fbcf0161b40b95b06c409",
         "size_bytes": 12753
       },
       "io_wrfrst_netcdf": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/io/wrfrst_netcdf.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/io/wrfrst_netcdf.py",
         "sha256": "d4893a248aac821a3ffcdb1949d7e8b1d7ce5bd9055c47c39125718a1500505b",
         "size_bytes": 55934
       },
       "runtime_checkpoint": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/checkpoint.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/checkpoint.py",
         "sha256": "bec8f1ac9d213f5e7ca212928dc7e02043de34fc256a80a207d6bb781b59720b",
         "size_bytes": 10705
       },
       "runtime_operational_mode": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_mode.py",
         "sha256": "a6e9908edae33bc98ee17c5b4e04ae4117e7feaa1f805a3effe88a754433da16",
         "size_bytes": 175388
       },
       "runtime_operational_state": {
         "exists": true,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
+        "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/runtime/operational_state.py",
         "sha256": "f9cd7169112ae7094da408f1e8e40b00e5492567e21d7e90389066a8e72c396e",
         "size_bytes": 8390
       }
@@ -861,8 +861,8 @@
     "duplicate_count": 17,
     "duplicate_max_delta": 0.0,
     "files": [
-      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
-      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
     ],
     "unique_counts": {
       "MASS_K1": 289,
@@ -968,21 +968,21 @@
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "sha256": "e5b1f2d7f80474b3339e5822c99eeac5fa165a04d7f92a93bd4604779d1c0843",
         "size_bytes": 11774
       },
       {
         "exists": true,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt",
         "sha256": "09228f01ca7f1326daae19b1f6ddece18403ef8e4bed3048225e5ead4c51d3d8",
         "size_bytes": 159441
       }
     ],
     "source_files": [
-      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
-      "/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
+      "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
+      "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output/refresh_post_after_all_rk_steps_pre_halo_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
     ],
     "target_surface": "post dyn_em/solve_em.F::after_all_rk_steps state before RK halo exchanges",
     "unique_counts": {

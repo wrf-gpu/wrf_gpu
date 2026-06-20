@@ -40,7 +40,7 @@ export XLA_PYTHON_CLIENT_PREALLOCATE="${XLA_PYTHON_CLIENT_PREALLOCATE:-false}"
 # ── Configuration (override via env) ───────────────────────────────────────
 # CASE_ROOT defaults to a writable dir under the repo so a fresh clone works
 # out of the box (NO canairy-internal /mnt path is required). The maintainers'
-# own runs live under /mnt/data/wrf_gpu_switzerland; set CASE_ROOT to point
+# own runs live under <DATA_ROOT>/wrf_gpu_switzerland; set CASE_ROOT to point
 # there (or anywhere writable) if you already have the case built.
 CASE_ROOT="${CASE_ROOT:-${REPO}/runs/switzerland}"
 CASE_INPUTS="${CASE_INPUTS:-${CASE_ROOT}/run_cpu}"          # holds wrfinput/wrfbdy/namelist

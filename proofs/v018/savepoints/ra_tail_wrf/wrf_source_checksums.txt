@@ -1,5 +1,5 @@
 # v0.18 RA tail -- physics-pristine radiation module/source checksums (sha256)
-# WRF_ROOT=/home/user/src/wrf_pristine/WRF
+# WRF_ROOT=<USER_HOME>/src/wrf_pristine/WRF
 # Exact RA modules are upstream-identical; module_radiation_driver.F is WRFGPU2_ORACLE-instrumented.
 # Exact-driver oracle modules (ra_lw/sw_physics dispatch targets) + compiled-out 14/24 stubs + BUILD flags:
 4f0177189eb616c9220fe2022186dd6cc310666ca29977557dfe53d4409d733b  phys/module_radiation_driver.F

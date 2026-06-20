@@ -513,7 +513,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path("proofs/v0110/restart_continuity.json"))
     parser.add_argument("--run-id", default="20260521_18z_l3_24h_20260522T133443Z")
-    parser.add_argument("--run-root", type=Path, default=Path("/mnt/data/canairy_meteo/runs/wrf_l3"))
+    parser.add_argument("--run-root", type=Path, default=Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3"))
     parser.add_argument("--domain", default="d02")
     parser.add_argument("--split-hour", type=int, default=1)
     parser.add_argument("--final-hour", type=int, default=2)

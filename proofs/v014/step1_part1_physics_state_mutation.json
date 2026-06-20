@@ -118,9 +118,9 @@
       "git diff -- src/gpuwrf"
     ],
     "wrf_instrumentation": [
-      "cp -a --reflink=auto /mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF /mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF",
+      "cp -a --reflink=auto <DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF <DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF",
       "tcsh ./compile em_real (scratch WRF, conda wrf-build toolchain)",
-      "WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION=1 WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION_ROOT=/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe"
+      "WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION=1 WRFGPU2_STEP1_PART1_PHYSICS_STATE_MUTATION_ROOT=<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth mpirun --oversubscribe -np 28 ./wrf.exe"
     ]
   },
   "comparisons": {
@@ -18652,7 +18652,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/user/src/wrf_gpu2",
+    "cwd": "<USER_HOME>/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "c1e1d275 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 part1 physics-state mutation sprint\n",
@@ -18664,7 +18664,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
       "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
       "size_bytes": 12179669
     },
@@ -18672,7 +18672,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-part1-physics-state-mutation/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-part1-physics-state-mutation/sprint-contract.md",
       "sha256": "458142d33fbb8a0d4eacd14987b948e441e8a747532bb2c690575dba565e172f",
       "size_bytes": 7705
     },
@@ -18680,7 +18680,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/compile_step1_part1_physics_state_mutation.log",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/compile_step1_part1_physics_state_mutation.log",
       "sha256": "9514c1b52eb2d4bc6628684b57d248e718f99d503e11fbd5f501a22dcf45bd5d",
       "size_bytes": 80296
     },
@@ -18688,7 +18688,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
       "sha256": "d9c4a3dcddcba2a3aa2aeaffdff77d4317f1582ed672f733cbebd0a1cdb12c70",
       "size_bytes": 9378
     },
@@ -18696,7 +18696,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/run",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/run",
       "sha256": null,
       "size_bytes": null
     },
@@ -18704,7 +18704,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_step1_part1_physics_state_mutation_stdout.log",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_step1_part1_physics_state_mutation_stdout.log",
       "sha256": "7028195030ed80879ffbfa3c22ca8c6292ff0d83d7b91012bbd02667cdd793c2",
       "size_bytes": 1372
     },
@@ -18712,7 +18712,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/WRF",
       "sha256": null,
       "size_bytes": null
     },
@@ -18720,7 +18720,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth",
       "sha256": null,
       "size_bytes": null
     }
@@ -18750,11 +18750,11 @@
   "no_tost": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-part1-physics-state-mutation.md",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
-    "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-part1-physics-state-mutation.md",
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_part1_physics_state_mutation_wrf_patch.diff",
+    "wrf_truth_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth"
   },
   "required_ancestor_c18795af": {
     "command": [
@@ -18940,7 +18940,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -19011,7 +19011,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -19082,7 +19082,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -19153,7 +19153,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_cumulus_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -19590,7 +19590,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -19661,7 +19661,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -19732,7 +19732,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -19803,7 +19803,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_fddagd_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -20240,7 +20240,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -20311,7 +20311,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -20382,7 +20382,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -20453,7 +20453,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_force_scm_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -20890,7 +20890,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -20961,7 +20961,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -21032,7 +21032,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -21103,7 +21103,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -21540,7 +21540,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -21611,7 +21611,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -21682,7 +21682,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -21753,7 +21753,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pbl_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -22190,7 +22190,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -22261,7 +22261,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -22332,7 +22332,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -22403,7 +22403,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_phy_prep_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -22840,7 +22840,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -22911,7 +22911,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -22982,7 +22982,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -23053,7 +23053,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_pre_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -23490,7 +23490,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -23561,7 +23561,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -23632,7 +23632,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -23703,7 +23703,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_radiation_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -24140,7 +24140,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -24211,7 +24211,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -24282,7 +24282,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -24353,7 +24353,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_shallowcu_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -24790,7 +24790,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -24861,7 +24861,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -24932,7 +24932,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -25003,7 +25003,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/after_surface_driver_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -25440,7 +25440,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -25511,7 +25511,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -25582,7 +25582,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -25653,7 +25653,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_entry_before_init_zero_tendency_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -26090,7 +26090,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -26161,7 +26161,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -26232,7 +26232,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",
@@ -26303,7 +26303,7 @@
               "1",
               "44"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_part1_physics_state_mutation/wrf_truth/part1_exit_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
             "record_schema": [
               "MASS_PART1",
               "fortran_i",

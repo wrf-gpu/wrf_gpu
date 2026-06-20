@@ -29,7 +29,7 @@ import gpuwrf.contracts.state as _stmod
 from gpuwrf.integration.daily_pipeline import _build_real_case, DailyPipelineConfig
 from gpuwrf.runtime.operational_mode import run_forecast_operational
 
-PROBE = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+PROBE = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 OUT = Path("proofs/perf/v015")
 
 _orig_asarray = _stmod.jnp.asarray

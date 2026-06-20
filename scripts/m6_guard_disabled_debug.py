@@ -54,7 +54,7 @@ from gpuwrf.runtime.operational_state import OperationalCarry, initial_operation
 config.update("jax_enable_x64", True)
 
 
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
 DT_S = 10.0
 

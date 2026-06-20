@@ -6,7 +6,7 @@ Fix commit: `80a693e2`
 ## Verdict
 
 **ROOT-CAUSED + FIXED.** The 51 nonfinite d01 cells in the failing L2 nested
-preflight (`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_20260610T192315Z`)
+preflight (`<DATA_ROOT>/wrf_gpu_validation/v014_noahmp_l2_preflight_20260610T192315Z`)
 are exactly the 51 **ISLTYP=1 (sand)** land cells of d01. LU_INDEX=16 was
 coincident (sand occurs only under LU16 in this domain), **not causal**.
 
@@ -63,13 +63,13 @@ id IS the row index into the 1-based table, identical to
 | 200-step CPU repro on real wrfinput_d01 (post-fix) | finite everywhere; sand TG cools 297.2→296.7 K over 1 h (18z evening), HFX small negative — physical |
 | `tests/test_v014_noahmp_water_soil_category.py` (3 tests: gather-row identity vs driver gather; one-step WATER on the exact failing dry-sand config; all-category finite sweep) | **pass post-fix; all 3 fail pre-fix** |
 | S4 water savepoint gate `proofs/noahmp/water_savepoint_gate.py` (real-WRF oracle) | conservation 11/11 PASS, finite, parity-constrained 8/11 — unchanged verdict vs pre-fix (savepoint columns move soil water ~1e-6/step → too parameter-insensitive to see the shift; that is HOW the bug survived) |
-| Noah-MP test set (coupler, nested pipeline, surface hook, energy canopy, checkpoint, sh2o init, phenology, new water tests) | 47 pass + 8 energy savepoint pass (needs `WRF_PRISTINE_ROOT=/home/user/src/wrf_pristine/WRF` inside worktrees; path default is worktree-relative — pre-existing, not physics) |
+| Noah-MP test set (coupler, nested pipeline, surface hook, energy canopy, checkpoint, sh2o init, phenology, new water tests) | 47 pass + 8 energy savepoint pass (needs `WRF_PRISTINE_ROOT=<USER_HOME>/src/wrf_pristine/WRF` inside worktrees; path default is worktree-relative — pre-existing, not physics) |
 
 ## GPU confirmation
 
 Bounded re-run of the SAME exact-branch 1h L2 nested preflight via
 `scripts/run_gpu_lowprio.sh` from this worktree (commit `80a693e2`):
-`/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
+`<DATA_ROOT>/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z`
 
 **GREEN.** `rc=0`, preflight verdict `PASS_SHORT_GPU_PREFLIGHT`, pipeline
 verdict `PIPELINE_GREEN`, `all_domains_finite=true`

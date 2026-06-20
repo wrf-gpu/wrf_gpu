@@ -339,12 +339,12 @@
   "pattern_corr_initgap_vs_h1gap": 0.05873528004661319
  },
  "provenance": {
-  "backfill_manifest": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/.cpu_wrf_backfill/20260603T000612Z_manifest.json",
+  "backfill_manifest": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/.cpu_wrf_backfill/20260603T000612Z_manifest.json",
   "backfill_mode": "wrf-only",
-  "backfill_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+  "backfill_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
   "cpu_namelist_input_from_file_d02": true,
   "gpu_init_mode": "standalone_native_init_nested",
-  "gpu_input_symlink_resolves_to": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+  "gpu_input_symlink_resolves_to": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
   "init_mode_mismatch": "CPU-WRF d02 initialized from real.exe wrfinput_d02 (input_from_file=.true.); GPU d02 initialized by native live-nest interpolation from d01 and never reads wrfinput_d02.",
   "same_input_files": true
  },

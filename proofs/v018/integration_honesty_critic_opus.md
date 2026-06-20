@@ -2,7 +2,7 @@
 
 **Reviewer:** Opus 4.8 (honesty-critic, adversarial).
 **Branch:** `worker/gpt/v018-integration` @ `db314b70` (confirmed HEAD).
-**Worktree:** `/home/user/src/wrf_gpu2/.wt-v018-integration`.
+**Worktree:** `<USER_HOME>/src/wrf_gpu2/.wt-v018-integration`.
 **Date:** 2026-06-17.
 **Scope:** last gate before README/sanitize/tag. Set-UNION integrity, family/consolidated suites, perf-neutral + #37 + VRAM, deferred NITs, provenance, status-class honesty, carried items.
 
@@ -58,7 +58,7 @@ cuda:0): **17 passed** — `test_v017_qh_hail_state::...zero_on_gpu`,
 
 **Two failures found in the broader physics sweep (junit-captured):**
 1. `tests/test_m5_thompson_process_residuals.py::test_rain_evaporation_and_warm_graupel_melt_cell_matches_wrf_mass_oracle` — **REAL REGRESSION (MEDIUM).** See Findings F1.
-2. `tests/test_noahmp_energy_canopy.py::test_real_wrf_energy_savepoint_parity` — **ENVIRONMENT, not a defect (INFO).** Hardcodes `/home/user/src/wrf_gpu2/wrf_pristine/WRF/run/MPTABLE.TBL`; the pristine WRF is at `/home/user/src/wrf_pristine/...` (per project memory) where MPTABLE.TBL DOES exist. Path-resolution mismatch in this worktree, pre-existing, not introduced by integration. (Test-path hardening is a follow-up, not a release blocker.)
+2. `tests/test_noahmp_energy_canopy.py::test_real_wrf_energy_savepoint_parity` — **ENVIRONMENT, not a defect (INFO).** Hardcodes `<USER_HOME>/src/wrf_gpu2/wrf_pristine/WRF/run/MPTABLE.TBL`; the pristine WRF is at `<USER_HOME>/src/wrf_pristine/...` (per project memory) where MPTABLE.TBL DOES exist. Path-resolution mismatch in this worktree, pre-existing, not introduced by integration. (Test-path hardening is a follow-up, not a release blocker.)
 
 Note: the full 2183-test CPU sweep does not complete here because the
 `test_v013_operational_smoke` coupled-scan tests are GPU-targeted and compile
@@ -234,7 +234,7 @@ self-report):
   melt-intercept override `N0_melt=(1.E-4/rg)*ogg2*lamg**cge(2,1)` when
   `(rg*ng)<1.E-4`, and (b) gates the rci/sci cloud-ice collection family on the
   cold block `T<T_0`. I confirmed BOTH against pristine WRF
-  `/home/user/src/wrf_pristine/WRF/phys/module_mp_thompson.F` — the override is
+  `<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_thompson.F` — the override is
   verbatim at lines 2802-2806 and the `if (temp(k).lt.T_0)` cold block at line
   2554, exactly as cited. The previously-RED
   `test_m5_thompson_process_residuals.py::test_rain_evaporation_..._warm_graupel_melt...`
@@ -251,7 +251,7 @@ self-report):
   GREEN with a 2026-06-17 honesty-fix closeout section. `KNOWN_ISSUES.md`
   refreshed with the v0.18 carries.
 - **noahmp env path — CLOSED.** `proofs/noahmp/energy_savepoint_gate.py` now
-  defaults `WRF_PRISTINE_ROOT` to canonical `/home/user/src/wrf_pristine/WRF`
+  defaults `WRF_PRISTINE_ROOT` to canonical `<USER_HOME>/src/wrf_pristine/WRF`
   (env override preserved); `test_real_wrf_energy_savepoint_parity` runs.
 
 **No-clobber re-confirmed at `206739a2`:** catalog self-consistent;

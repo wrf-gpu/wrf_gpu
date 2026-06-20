@@ -204,7 +204,7 @@ def build_land_state_manifest(
         "summaries": summaries,
         "roughness_derivation": land.source.get("roughness_note"),
         "mavail_derivation": land.source.get("mavail_note"),
-        "read_only_source_root": "/mnt/data/canairy_meteo",
+        "read_only_source_root": "<DATA_ROOT>/canairy_meteo",
         "artifact_paths": [],
     }
 

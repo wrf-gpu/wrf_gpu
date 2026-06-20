@@ -29,7 +29,7 @@ from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_par
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.types import NoahMPForcing
 
-RUN_DIR = "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z"
+RUN_DIR = "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z"
 DT = 18.0
 NSTEPS = 200
 

@@ -2,13 +2,13 @@
 
 Verdict: `MARKER_GREEN`.
 
-This sprint used CPU-only WRF (`CUDA_VISIBLE_DEVICES=`, `JAX_PLATFORMS=cpu`, `OMP_NUM_THREADS=1`, 28 MPI ranks). No Hermes was used. The original WRF tree at `/home/user/src/wrf_pristine/WRF` was not patched; all WRF source edits were made in `/mnt/data/wrf_gpu2/v014_same_state_wrf/WRF`. Repo `src/` was not edited.
+This sprint used CPU-only WRF (`CUDA_VISIBLE_DEVICES=`, `JAX_PLATFORMS=cpu`, `OMP_NUM_THREADS=1`, 28 MPI ranks). No Hermes was used. The original WRF tree at `<USER_HOME>/src/wrf_pristine/WRF` was not patched; all WRF source edits were made in `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF`. Repo `src/` was not edited.
 
 ## Provenance
 
-- Source WRF: `/home/user/src/wrf_pristine/WRF`, head `f52c197ed39d12e087d02c50f412d90d418f6186`, describe `v4.7.1-dirty`.
-- Disposable WRF copy: `/mnt/data/wrf_gpu2/v014_same_state_wrf/WRF`.
-- Disposable run dir: `/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3`.
+- Source WRF: `<USER_HOME>/src/wrf_pristine/WRF`, head `f52c197ed39d12e087d02c50f412d90d418f6186`, describe `v4.7.1-dirty`.
+- Disposable WRF copy: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF`.
+- Disposable run dir: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/run_case3`.
 - Target case: `20260501_18z_l2_72h_20260519T173026Z`, domain `d02`, h10 valid time `2026-05-02_04:00:00`.
 - Final disposable `wrf.exe` sha256: `96fc731fd818936e0f59c2ae745c8b4e9c24091c04b0fb7f4f4e9ee2321678dd`.
 - Patch diff: `proofs/v014/wrf_same_state_marker_patch.diff`.
@@ -52,25 +52,25 @@ Against provided CPU h10 wrfout:
 
 ## Logs And Proofs
 
-- Final run stdout: `/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/marker_run_post_thphy_28rank_stdout.log`.
-- Final RSL logs: `/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/rsl.error.*` and `rsl.out.*`.
-- Final comparison JSON: `/mnt/data/wrf_gpu2/v014_same_state_wrf/compare_post_thphy_marker.json`.
-- Archived comparison JSON: `/mnt/data/wrf_gpu2/v014_same_state_wrf/compare_archived_marker_runs.json`.
-- Build logs: `/mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar*.log` and `/mnt/data/wrf_gpu2/v014_same_state_wrf/configure_dmpar.log`.
-- Archived attempts: `/mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/first_28rank_early_marker_run`, `post_marker_noemit_run`, `post_t2_marker_run`, `post_t1_marker_run`, `failed_serial_rsl_before_dmpar_marker`, `aborted_single_rank_marker_run`.
+- Final run stdout: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/run_case3/marker_run_post_thphy_28rank_stdout.log`.
+- Final RSL logs: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/run_case3/rsl.error.*` and `rsl.out.*`.
+- Final comparison JSON: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/compare_post_thphy_marker.json`.
+- Archived comparison JSON: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/compare_archived_marker_runs.json`.
+- Build logs: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/compile_dmpar*.log` and `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/configure_dmpar.log`.
+- Archived attempts: `<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/run_case3/first_28rank_early_marker_run`, `post_marker_noemit_run`, `post_t2_marker_run`, `post_t1_marker_run`, `failed_serial_rsl_before_dmpar_marker`, `aborted_single_rank_marker_run`.
 
 ## Commands
 
 ```bash
-rsync -a /home/user/src/wrf_pristine/WRF/ /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/
-rsync -a /mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/ /mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/
-env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 sh -c "printf '34\n1\n' | ./configure > /mnt/data/wrf_gpu2/v014_same_state_wrf/configure_dmpar.log 2>&1"
-timeout 5400 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar.log 2>&1
-timeout 1800 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_same_state_wrf/compile_dmpar_post_thphy_marker.log 2>&1
-timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_same_state_wrf/run_case3/marker_run_post_thphy_28rank_stdout.log 2>&1
-python - <<'PY'  # parsed marker_post_d2_step_6000_*.txt and compared to scratch/provided CPU h10 wrfout; wrote /mnt/data/wrf_gpu2/v014_same_state_wrf/compare_post_thphy_marker.json
-python - <<'PY'  # parsed archived marker attempts; wrote /mnt/data/wrf_gpu2/v014_same_state_wrf/compare_archived_marker_runs.json
-diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/dyn_em/solve_em.F.before_v014_marker /mnt/data/wrf_gpu2/v014_same_state_wrf/WRF/dyn_em/solve_em.F > proofs/v014/wrf_same_state_marker_patch.diff
+rsync -a <USER_HOME>/src/wrf_pristine/WRF/ <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF/
+rsync -a <DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/ <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/run_case3/
+env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 sh -c "printf '34\n1\n' | ./configure > <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/configure_dmpar.log 2>&1"
+timeout 5400 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/compile_dmpar.log 2>&1
+timeout 1800 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 tcsh ./compile em_real > <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/compile_dmpar_post_thphy_marker.log 2>&1
+timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_SAMESTATE=1 WRFGPU2_SAMESTATE_ROOT=<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/marker_output WRFGPU2_SAMESTATE_GRID=2 WRFGPU2_SAMESTATE_START_STEP=6000 WRFGPU2_SAMESTATE_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/run_case3/marker_run_post_thphy_28rank_stdout.log 2>&1
+python - <<'PY'  # parsed marker_post_d2_step_6000_*.txt and compared to scratch/provided CPU h10 wrfout; wrote <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/compare_post_thphy_marker.json
+python - <<'PY'  # parsed archived marker attempts; wrote <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/compare_archived_marker_runs.json
+diff -u --label a/dyn_em/solve_em.F --label b/dyn_em/solve_em.F <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF/dyn_em/solve_em.F.before_v014_marker <DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/WRF/dyn_em/solve_em.F > proofs/v014/wrf_same_state_marker_patch.diff
 ```
 
 ## Next Sprint Recommendation

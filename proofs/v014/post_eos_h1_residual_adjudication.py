@@ -18,7 +18,7 @@ from netCDF4 import Dataset
 
 ROOT = Path(__file__).resolve().parents[2]
 NEW_COMPARE = Path(
-    "/mnt/data/wrf_gpu_validation/"
+    "<DATA_ROOT>/wrf_gpu_validation/"
     "v014_short_field_falsifier_20260610T134205Z/short_field_h1_grid_compare.json"
 )
 OLD_COMPARE = ROOT / "proofs/v014/short_field_falsifier_h1_grid_compare.json"
@@ -27,15 +27,15 @@ OUT_JSON = ROOT / "proofs/v014/post_eos_h1_residual_adjudication.json"
 OUT_MD = ROOT / "proofs/v014/post_eos_h1_residual_adjudication.md"
 
 CPU_H0 = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/"
     "20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00"
 )
 CPU_H1 = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/"
     "20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00"
 )
 GPU_H1 = Path(
-    "/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_20260610T134205Z/"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_20260610T134205Z/"
     "gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/"
     "wrfout_d02_2026-05-01_19:00:00"
 )
@@ -78,14 +78,14 @@ REPORT_ONLY_NONBLOCKERS = [
 ]
 
 NEXT_COMMANDS = [
-    "RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_$(date -u +%Y%m%dT%H%M%SZ)",
+    "RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_$(date -u +%Y%m%dT%H%M%SZ)",
     "mkdir -p \"$RUN_ROOT\"/{gpu_output,proofs,resources}",
     "set +e",
-    "scripts/run_gpu_lowprio.sh --cores 0-23 --resource-log-dir \"$RUN_ROOT/resources\" --resource-label v014_canary_d02_72h --resource-interval 5 -- python proofs/v0120/powered_tost_n15/run_one_case_v0120.py --run-root /mnt/data/canairy_meteo/runs/wrf_l2 --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output --run-id 20260501_18z_l2_72h_20260519T173026Z --hours 72 --output-root \"$RUN_ROOT/gpu_output\" --proof-dir \"$RUN_ROOT/proofs\" > \"$RUN_ROOT/canary_d02_72h_gpu.log\" 2>&1",
+    "scripts/run_gpu_lowprio.sh --cores 0-23 --resource-log-dir \"$RUN_ROOT/resources\" --resource-label v014_canary_d02_72h --resource-interval 5 -- python proofs/v0120/powered_tost_n15/run_one_case_v0120.py --run-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2 --cpu-truth-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output --run-id 20260501_18z_l2_72h_20260519T173026Z --hours 72 --output-root \"$RUN_ROOT/gpu_output\" --proof-dir \"$RUN_ROOT/proofs\" > \"$RUN_ROOT/canary_d02_72h_gpu.log\" 2>&1",
     "echo $? > \"$RUN_ROOT/canary_d02_72h_gpu.rc\"",
     "set -e",
-    "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python scripts/compare_wrfout_grid.py --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z --gpu-dir \"$RUN_ROOT/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z\" --domain d02 --init 2026-05-01T18:00:00+00:00 --min-lead 1 --max-lead 72 --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --out-json \"$RUN_ROOT/canary_d02_72h_grid_compare.json\" --out-md \"$RUN_ROOT/canary_d02_72h_grid_compare.md\"",
-    "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python scripts/build_grid_delta_atlas.py --cpu-dir /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z --gpu-dir \"$RUN_ROOT/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z\" --case-id canary_d02_20260501_18z --domain d02 --init 2026-05-01T18:00:00+00:00 --min-lead 1 --max-lead 72 --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir \"$RUN_ROOT/grid_delta_atlas\" --asset-dir \"$RUN_ROOT/grid_delta_atlas_assets\"",
+    "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python scripts/compare_wrfout_grid.py --cpu-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z --gpu-dir \"$RUN_ROOT/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z\" --domain d02 --init 2026-05-01T18:00:00+00:00 --min-lead 1 --max-lead 72 --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --out-json \"$RUN_ROOT/canary_d02_72h_grid_compare.json\" --out-md \"$RUN_ROOT/canary_d02_72h_grid_compare.md\"",
+    "JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONPATH=src python scripts/build_grid_delta_atlas.py --cpu-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z --gpu-dir \"$RUN_ROOT/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z\" --case-id canary_d02_20260501_18z --domain d02 --init 2026-05-01T18:00:00+00:00 --min-lead 1 --max-lead 72 --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json --proof-dir \"$RUN_ROOT/grid_delta_atlas\" --asset-dir \"$RUN_ROOT/grid_delta_atlas_assets\"",
 ]
 
 

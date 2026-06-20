@@ -55,7 +55,7 @@ from gpuwrf.physics.rrtmg_sw import RRTMGSWColumnState, solve_rrtmg_sw_column  #
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column  # noqa: E402
 from gpuwrf.io.wrfout_writer import WRFOUT_VARIABLE_SPECS  # noqa: E402
 
-RDIR = "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
+RDIR = "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z"
 DOM = "d03"
 # A daytime time slice (sun up) so the SW clear-sky vars are meaningful.
 WRFOUT = "wrfout_d03_2026-05-22_12:00:00"

@@ -46,7 +46,7 @@ from diagnostic_operator_term_budget_tracer import build_payload as build_term_b
 
 config.update("jax_enable_x64", True)
 
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
 LOWER_LEVELS = 30
 UPPER_LEVELS = 14

@@ -33,7 +33,7 @@ from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_op
 config.update("jax_enable_x64", True)
 
 SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-honest-1h-canary-V3"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 BASELINE_RMSE = ROOT / "data" / "fixtures" / "gen2_baseline" / "rmse_summary.csv"
 
 PINNED_RUN_IDS = (

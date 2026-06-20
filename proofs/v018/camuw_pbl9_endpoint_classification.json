@@ -15,7 +15,7 @@
   "reason": "CAM-UW is not an isolated standalone PBL column scheme in the v0.18 target matrix. The WRF source routes it through the CAM5 vertical-diffusion stack, requiring CAM cloud-number and sedimentation inputs, CAMMGMP/constituent coupling, and CAM residual-stress/cloud carry state. It is therefore fail-closed rather than accepted as an in-scope standalone PBL option.",
   "wrf_sources": {
     "module_bl_camuwpbl_driver.F": {
-      "path": "/home/user/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F",
       "sha256": "253886780ae99823608f28bbcf68e1bfdc97483fe6fe2d7df24866c2f2b1e42a",
       "evidence": [
         "CAMUWPBL imports CAM support and diffusion modules: module_cam_support, trb_mtn_stress, eddy_diff, wv_saturation, molec_diff, constituents, diffusion_solver, and optional modal_aero_data.",
@@ -25,7 +25,7 @@
       ]
     },
     "module_pbl_driver.F": {
-      "path": "/home/user/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
       "sha256": "c1c083365a4e780381fce09b97231cd322913590f089ac91aa9bfc1f6be54424",
       "evidence": [
         "The CAMUWPBL call is guarded by presence checks for qv_curr, qc_curr, qi_curr, qnc_curr, qni_curr, rqvblten, rqcblten, rqiblten, and rqniblten.",
@@ -34,7 +34,7 @@
       ]
     },
     "Registry.EM_COMMON": {
-      "path": "/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON",
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON",
       "sha256": "6f3ee02175b76487c5c6c046ff2fb4c5d41980b86c0f06eb2e09e34dacc9623a",
       "evidence": [
         "package camuwpblscheme bl_pbl_physics==9 state:tauresx2d,tauresy2d,tpert2d,qpert2d,wpert2d,tke_pbl,smaw3d,wsedl3d,turbtype3d",

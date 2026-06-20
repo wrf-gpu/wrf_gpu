@@ -37,6 +37,6 @@ The thermodynamic input boundary is fixed/bounded. Strict Step-1 is still red, s
 
 ## Files
 
-- JSON proof: `/home/user/src/wrf_gpu2/proofs/v014/step1_thermo_column_inputs.json`
-- Review: `/home/user/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-thermo-column-inputs.md`
+- JSON proof: `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_thermo_column_inputs.json`
+- Review: `<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-thermo-column-inputs.md`
 - WRF hook changes this sprint: `none`.

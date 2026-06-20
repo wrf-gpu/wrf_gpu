@@ -1,8 +1,8 @@
 {
   "schema": "v0.12.0-standalone-native-init-smoke-2026-06-07",
   "objective": "CLI standalone native-init forecast runs out-of-the-box from wrfinput+wrfbdy (no CPU wrfout), no FileNotFoundError, no donate crash, finite wrfout, scratch off /tmp",
-  "cli_command": "python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z --output-dir <out> --domain d01 --hours 2",
-  "case": "/mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z (wrfinput_d01+wrfbdy_d01+met_em[broken symlinks], NO wrfout)",
+  "cli_command": "python -m gpuwrf.cli run --input-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z --output-dir <out> --domain d01 --hours 2",
+  "case": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z (wrfinput_d01+wrfbdy_d01+met_em[broken symlinks], NO wrfout)",
   "init_mode": "standalone_native_init",
   "verdict": "PIPELINE_GREEN",
   "all_finite": true,

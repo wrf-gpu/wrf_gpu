@@ -5,7 +5,7 @@ Verdict: `JAX_MISMATCH_T`.
 ## Result
 
 - Checkpoint produced: `True`.
-- Checkpoint path: `/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`.
+- Checkpoint path: `<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`.
 - CPU-loadable: `True`.
 - GPU used: `True`.
 - Comparison run: `RAN`.

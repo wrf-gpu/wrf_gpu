@@ -31,7 +31,7 @@ The column kernel is a pure ``jnp`` function, ``jax.jit``/``jax.vmap``-traceable
 default ARW path the generated oracle exercises: ``isfflx=1``, ``rcl=1`` (no
 reduced-grid map factor), no down-draft velocity (``ddvel=0``).
 
-Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_sf_gfs.F`` (SF_GFS
+Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_gfs.F`` (SF_GFS
 9-282; PROGTM MO subset 519-753, diagnostics 1432-1457) and
 ``module_gfs_funcphys.F`` (fpvsx 814-882) / ``module_gfs_physcons.F`` (constants).
 """

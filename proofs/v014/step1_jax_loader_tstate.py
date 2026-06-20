@@ -40,8 +40,8 @@ OUT_MD = PROOF_DIR / "step1_jax_loader_tstate.md"
 OUT_REVIEW = ROOT / ".agent/reviews/2026-06-09-v014-step1-jax-loader-tstate.md"
 
 SPRINT_CONTRACT = ROOT / ".agent/sprints/2026-06-09-v014-step1-jax-loader-tstate/sprint-contract.md"
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_jax_loader_tstate")
-WRF_TRUTH = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_jax_loader_tstate")
+WRF_TRUTH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
 RUN_CASE3 = live.RUN_CASE3
 REQUIRED_ANCESTOR = "99df65e0"
 

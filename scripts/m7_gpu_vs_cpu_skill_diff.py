@@ -29,7 +29,7 @@ from gpuwrf.validation.forecast_vs_obs import (
 
 SPRINT_DIR = ROOT / ".agent/sprints/2026-05-27-m7-honest-speedup-skill-diff"
 DEFAULT_GPU_ROOT = Path("/tmp/m7_pipeline_runs/20260521")
-DEFAULT_CPU_RUN_GLOB = "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_*/"
+DEFAULT_CPU_RUN_GLOB = "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_*/"
 DEFAULT_OUTPUT = SPRINT_DIR / "gpu_vs_cpu_skill_diff.json"
 DEFAULT_VARIABLES = ("T2", "U10", "V10")
 TOLERANCE_FRACTION = 0.20

@@ -29,7 +29,7 @@
     "rain": 0.0,
     "snow": 0.0
   },
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "schema": "V0110ThompsonD02Sanity",
   "schema_version": 1,
   "scope": "one real d02 Thompson microphysics step over full initial-condition columns; GPU used only because State loader requires GPU; not a coupled forecast",

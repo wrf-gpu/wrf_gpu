@@ -49,11 +49,11 @@ OPERATIONAL_MODE = ROOT / "src/gpuwrf/runtime/operational_mode.py"
 OPERATIONAL_STATE = ROOT / "src/gpuwrf/runtime/operational_state.py"
 STATE_CONTRACT = ROOT / "src/gpuwrf/contracts/state.py"
 
-WRFINPUT_D02 = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02")
-NAMELIST_INPUT = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input")
-WRFBDY_D01 = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfbdy_d01")
-RUN_CASE3 = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3")
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_early_step_discriminator")
+WRFINPUT_D02 = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02")
+NAMELIST_INPUT = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/namelist.input")
+WRFBDY_D01 = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfbdy_d01")
+RUN_CASE3 = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_early_step_discriminator")
 
 CANDIDATE_STEPS = (1, 60, 600, 3000, 5999)
 TARGET_FIELDS = ("T", "P", "PB", "PH", "PHB", "MU", "MUB", "U", "V", "W")
@@ -65,10 +65,10 @@ VERDICT = (
 
 SURFACE_SEARCH_ROOTS = (
     SCRATCH,
-    Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output"),
-    Path("/mnt/data/wrf_gpu2/v014_same_state_wrf/marker_output"),
-    Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output"),
-    Path("/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_same_state_wrf/marker_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output"),
+    Path("<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"),
 )
 
 
@@ -284,7 +284,7 @@ def strict_cpu_loader_probe() -> dict[str, Any]:
         [
             "from gpuwrf.integration.d02_replay import build_replay_case",
             "build_replay_case(",
-            "    '/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3',",
+            "    '<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3',",
             "    domain='d02',",
             "    load_lateral_boundaries=False,",
             ")",
@@ -327,9 +327,9 @@ def surface_files_for_step(step: int) -> list[dict[str, Any]]:
 
 def noncandidate_step6000_inventory() -> dict[str, Any]:
     roots = (
-        Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output"),
-        Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output"),
-        Path("/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"),
+        Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output"),
+        Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output"),
+        Path("<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output"),
     )
     hits: list[Path] = []
     for root in roots:

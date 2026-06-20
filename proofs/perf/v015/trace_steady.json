@@ -13,5 +13,5 @@
     "land_refresh_s": 0.719,
     "hour4_traced_s": 199.327
   },
-  "trace_dir": "/home/user/src/wrf_gpu2/.claude/worktrees/agent-a9d253235b98dc17d/proofs/perf/v015/jax_trace"
+  "trace_dir": "<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a9d253235b98dc17d/proofs/perf/v015/jax_trace"
 }

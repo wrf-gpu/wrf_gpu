@@ -38,7 +38,7 @@ from gpuwrf.init.metgrid_schema import (  # noqa: E402
 
 netCDF4 = pytest.importorskip("netCDF4")
 
-_ORACLE_GLOB = "/mnt/data/canairy_meteo/runs/wps_cases/*/l3/met_em.d01.*.nc"
+_ORACLE_GLOB = "<DATA_ROOT>/canairy_meteo/runs/wps_cases/*/l3/met_em.d01.*.nc"
 
 
 # --- synthetic source grid + forcing -----------------------------------------

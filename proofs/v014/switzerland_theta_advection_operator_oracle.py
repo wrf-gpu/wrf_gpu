@@ -36,7 +36,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
 H36 = "wrfout_d01_2023-01-16_12:00:00"
 H37 = "wrfout_d01_2023-01-16_13:00:00"
 OUT = Path(__file__).with_suffix(".json")

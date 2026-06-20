@@ -420,7 +420,7 @@
   "radiation_cadence_steps_on": 180,
   "rrtmg_feature_offending_term": null,
   "rrtmg_off_same_signature": true,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "run_id": "20260521_18z_l3_24h_20260522T133443Z",
   "schema": "V0110RRTMGFiniteRecheckAggregate",
   "schema_version": 1,

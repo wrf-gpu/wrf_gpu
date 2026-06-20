@@ -2,16 +2,16 @@
 set -euo pipefail
 
 ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)}"
-WRF_ROOT="${WRF_ROOT:-/home/user/src/wrf_pristine/WRF}"
+WRF_ROOT="${WRF_ROOT:-<USER_HOME>/src/wrf_pristine/WRF}"
 BUILD_DIR="$ROOT/proofs/v018/mp_oracles/ferrier_hires/oracle/build"
 OUT_DIR="$ROOT/proofs/v018/mp_oracles/ferrier_hires/savepoints"
 SRC_DIR="$ROOT/proofs/v018/mp_oracles/ferrier_hires/oracle"
 
 mkdir -p "$BUILD_DIR" "$OUT_DIR"
 
-if [ -f /home/user/miniconda3/etc/profile.d/conda.sh ]; then
+if [ -f <USER_HOME>/miniconda3/etc/profile.d/conda.sh ]; then
   set +u
-  source /home/user/miniconda3/etc/profile.d/conda.sh
+  source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
   conda activate wrfbuild
   set -u
 fi

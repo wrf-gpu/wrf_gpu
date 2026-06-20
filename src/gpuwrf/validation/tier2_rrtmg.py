@@ -128,7 +128,7 @@ def run_tier2(out: Path = ARTIFACT) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 #
 # Validates the JAX RRTMG SW/LW kernels against the WRF-oracle savepoints the
-# parallel factory writes under ``/mnt/data/wrf_gpu2/physics_oracle/radiation/``
+# parallel factory writes under ``<DATA_ROOT>/wrf_gpu2/physics_oracle/radiation/``
 # (oracle_manifest B3 boundaries radiation_driver_pre / rrtmg_sw_post /
 # rrtmg_lw_post / radiation_driver_post).  Built against the frozen Gate-1
 # ``phase_b_savepoint`` schema + ``PHASE_B_TOLERANCES`` so it runs the moment the
@@ -142,7 +142,7 @@ from gpuwrf.validation.phase_b_savepoint import (  # noqa: E402
     source_run_id,
 )
 
-ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle/radiation")
+ORACLE_DIR = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle/radiation")
 ORACLE_ARTIFACT = ROOT / "proofs" / "b3" / "tier2_rrtmg_oracle_parity.json"
 
 _PRE = "radiation_driver_pre"

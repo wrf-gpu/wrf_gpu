@@ -9,8 +9,8 @@ Use the existing Canary **L2 d02 72 h** CPU-WRF truth as the mandatory v0.14
 Canary field-parity gate. The selected primary case is:
 
 - run id: `20260501_18z_l2_72h_20260519T173026Z`
-- CPU truth: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
-- retained input/run dir: `/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z`
+- CPU truth: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- retained input/run dir: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z`
 - selected domain: `d02`
 - horizon: 72 h, 73 hourly frames from `2026-05-01_18:00:00` through
   `2026-05-04_18:00:00`
@@ -27,7 +27,7 @@ settled: rerun the short h1 GPU falsifier, then extend the same case to 72 h.
 Command used to find retained d02/d03 truth:
 
 ```bash
-find /mnt/data/canairy_meteo/runs -maxdepth 3 -type f \
+find <DATA_ROOT>/canairy_meteo/runs -maxdepth 3 -type f \
   \( -name 'wrfout_d02_*' -o -name 'wrfout_d03_*' \) \
   | sed -E 's#/wrfout_d0[23]_[0-9:_-]+$##' \
   | sort | uniq -c | sort -nr | head -80
@@ -43,22 +43,22 @@ Findings:
 
 Representative complete L2/d02 roots found:
 
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260430_18z_l2_72h_20260520T191306Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260502_18z_l2_72h_20260520T103946Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260507_18z_l2_72h_20260513T124307Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260508_18z_l2_72h_20260512T161222Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260511_18z_l2_72h_20260512T045528Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260512_18z_l2_72h_20260513T014823Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260513_18z_l2_72h_20260514T054102Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260530_18z_l2_72h_20260531T161057Z`
-- `/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260430_18z_l2_72h_20260520T191306Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260502_18z_l2_72h_20260520T103946Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260507_18z_l2_72h_20260513T124307Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260508_18z_l2_72h_20260512T161222Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260511_18z_l2_72h_20260512T045528Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260512_18z_l2_72h_20260513T014823Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260513_18z_l2_72h_20260514T054102Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260530_18z_l2_72h_20260531T161057Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z`
 
 The selected `20260501` backfill manifest reports:
 
@@ -68,8 +68,8 @@ The selected `20260501` backfill manifest reports:
   "ncores": 28,
   "returncodes": {"wrf": 0},
   "final_output_counts": {"wrfout_d01": 73, "wrfout_d02": 73},
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
-  "safe_output_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+  "safe_output_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
 }
 ```
 
@@ -80,9 +80,9 @@ steep-island nests and are more complementary to the Switzerland/Gotthard
 single-domain 3 km Alps gate. However, the retained complete L3 examples are
 24 h, not 72 h:
 
-- `/mnt/data/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260509_18z_l3_24h_20260511T190519Z`
   has 25 frames for each `d01` through `d05`.
-- `/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z`
+- `<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z`
   has 25 frames for `d02` and `d03`.
 
 For the 20260509 L3 root:
@@ -104,13 +104,13 @@ green.
 Short Canary h1 falsifier on the selected case:
 
 ```bash
-RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
+RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources}
 GPUWRF_RESOURCE_LOG_DIR="$RUN_ROOT/resources" \
 GPUWRF_RESOURCE_LABEL=v014_canary_h1_field_falsifier \
 scripts/run_gpu_lowprio.sh -- python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
-  --run-root /mnt/data/canairy_meteo/runs/wrf_l2 \
-  --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+  --run-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2 \
+  --cpu-truth-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output \
   --run-id 20260501_18z_l2_72h_20260519T173026Z \
   --hours 1 \
   --output-root "$RUN_ROOT/gpu_output" \

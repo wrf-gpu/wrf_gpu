@@ -55,7 +55,7 @@ DYNAMIC_ATTRIBUTION_JSON = ROOT / "proofs/v014/dynamic_field_attribution.json"
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DEFAULT_INPUT_ROOTS = (
     Path("/tmp/v0120_merged_run_root"),
-    Path("/mnt/data/canairy_meteo/runs/wrf_l2"),
+    Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2"),
 )
 TARGET_DOMAIN = "d02"
 TARGET_STEP = 6000
@@ -76,7 +76,7 @@ def artifact_root() -> Path:
         candidates.append(Path(override))
     candidates.extend(
         [
-            Path("/mnt/data/wrf_gpu2/v014_h10_prestep_carry"),
+            Path("<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry"),
             Path("/tmp/wrf_gpu2_v014_h10_prestep_carry"),
         ]
     )
@@ -88,7 +88,7 @@ def artifact_root() -> Path:
             return candidate
         except OSError:
             continue
-    raise OSError("could not create /mnt/data or /tmp artifact root")
+    raise OSError("could not create <DATA_ROOT> or /tmp artifact root")
 
 
 ARTIFACT_ROOT = artifact_root()
@@ -541,7 +541,7 @@ def blocked_payload(reason: str, detail: str) -> dict[str, Any]:
         "detail": detail,
         "exact_missing_input_or_command": (
             "Run the producer on a backend that can complete the real L2 d01->d02 h10 live-nested "
-            "replay and write /mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl, "
+            "replay and write <DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl, "
             "or provide an equivalent CPU-loadable gpuwrf-runtime-checkpoint with runtime_state at step_index=5999."
         ),
     }

@@ -3,9 +3,9 @@
   "init_mode": "standalone_native_init_nested",
   "output_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
   "proofs": {
-    "bounds": "/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs/20260501_18z_l2_72h_20260519T173026Z/bounds_check_l2_d02.json",
-    "tier4_rmse": "/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs/20260501_18z_l2_72h_20260519T173026Z/tier4_rmse_l2_d02.json",
-    "wall_clock": "/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs/20260501_18z_l2_72h_20260519T173026Z/wall_clock_l2_d02.json"
+    "bounds": "<USER_HOME>/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs/20260501_18z_l2_72h_20260519T173026Z/bounds_check_l2_d02.json",
+    "tier4_rmse": "<USER_HOME>/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs/20260501_18z_l2_72h_20260519T173026Z/tier4_rmse_l2_d02.json",
+    "wall_clock": "<USER_HOME>/src/wrf_gpu2/proofs/v0120/powered_tost_n15/pipeline_proofs/20260501_18z_l2_72h_20260519T173026Z/wall_clock_l2_d02.json"
   },
   "run_dir": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z",
   "run_id": "20260501_18z_l2_72h_20260519T173026Z",

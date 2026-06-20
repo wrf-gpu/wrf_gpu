@@ -22,10 +22,10 @@ FULL = ROOT / "data" / "fixtures" / FIXTURE_ID / "full.npz"
 SCRATCH = ROOT / "data" / "scratch"
 BUILD_SCRIPT = ROOT / "scripts" / "wrf_mynn_harness_build.sh"
 HARNESS = SCRATCH / "wrf_mynn_harness"
-WRF_SOURCE = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90")
-WRF_EDMF_SOURCE = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/module_bl_mynnedmf.F90")
-WRF_EDMF_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf.o")
-WRF_EDMF_COMMON_OBJECT = Path("/mnt/data/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf_common.o")
+WRF_SOURCE = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90")
+WRF_EDMF_SOURCE = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/module_bl_mynnedmf.F90")
+WRF_EDMF_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf.o")
+WRF_EDMF_COMMON_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf_common.o")
 
 INPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "p", "rho", "dz")
 OUTPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "km", "kh", "el")

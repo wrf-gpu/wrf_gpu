@@ -6,7 +6,7 @@ Verdict: `STEP1_THETA_SAME_QVAPOR_INTERIOR_RESIDUAL_NEEDS_WRF_INTERMEDIATE`.
 
 - CPU backend: `cpu`; GPU used: `False`.
 - Required ancestor `912b7371` present: `True`.
-- Same-boundary QVAPOR root: `/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only`.
+- Same-boundary QVAPOR root: `<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only`.
 - Real run `USE_THETA_M`: `{'wrfinput_attr': 1, 'wrfout_attr': 1, 'namelist_output': 'USE_THETA_M=1          ,'}`.
 - Raw/current live dry `T_STATE` vs WRF pre-call: max_abs `5.490173101425171` / `5.490173101425171`.
 - `adjust_tempqv` directly on raw dry `T` with `use_theta_m=1`: max_abs `5.490177290476879`.

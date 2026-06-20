@@ -28,7 +28,7 @@ read-only bundle, like the Noah-classic REDPRM block. The soil sub-step count
 ``nsoil_steps`` is a Python static int (depends only on DZS(1) and the step), so
 the kernel stays fully ``jax.jit``/``jax.vmap``-traceable.
 
-Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_sf_slab.F`` (SLAB1D) and
+Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_slab.F`` (SLAB1D) and
 the WRF call site ``phys/module_surface_driver.F:2659`` (SLAB(t_phy,qv_curr,
 p_phy,flhc,flqc,...,gsw,glw,tmn,...)).
 """

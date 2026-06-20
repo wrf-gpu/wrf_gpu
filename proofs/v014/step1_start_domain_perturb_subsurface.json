@@ -2,13 +2,13 @@
   "commands": {
     "executed": [
       "date +%Y%m%d_%H%M%S",
-      "rm -rf /mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
-      "cp --reflink=auto -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF work_clean_20260609_194715/WRF",
-      "cp --reflink=auto -a /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run work_clean_20260609_194715/run",
+      "rm -rf <DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
+      "cp --reflink=auto -a <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF work_clean_20260609_194715/WRF",
+      "cp --reflink=auto -a <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/run work_clean_20260609_194715/run",
       "apply_patch work_clean_20260609_194715/WRF/dyn_em/start_em.F",
       "diff -u backup/start_em.F.before_start_domain_perturb_subsurface WRF/dyn_em/start_em.F > proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
       "./compile em_real (failed: /bin/csh missing, exit 126)",
-      "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH /home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/tcsh ./compile em_real (first env-missing check failed in log, then rerun with PATH/NETCDF/PNETCDF)",
+      "PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH <USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/tcsh ./compile em_real (first env-missing check failed in log, then rerun with PATH/NETCDF/PNETCDF)",
       "PATH=wrf-build/bin:$PATH NETCDF=wrf-build PNETCDF=wrf-build tcsh ./compile em_real",
       "mpirun -np 28 ./wrf.exe (failed: insufficient slots)",
       "mpirun --map-by :OVERSUBSCRIBE -np 28 ./wrf.exe",
@@ -22,11 +22,11 @@
       "run_success": "      ppm\n N2O   range =    274.37200000000001        359.79800000000000       ppb\n CH4   range =    738.98599999999999        997.31100000000004       ppb\n CFC11 range =    0.0000000000000000        1.4000000000000000E-002  ppt\n CFC12 range =    0.0000000000000000        2.8809999999999998       ppt\n Normal ending of CAMtr_volume_mixing_ratio file\n GHG annual values from CAM trace gas file\n Year =         2026 , Julian day =          121\n CO2   =    4.3165164227391349E-004  volume mixing ratio\n N2O   =    3.3668267016245353E-007  volume mixing ratio\n CH4   =    1.9684692584420169E-006  volume mixing ratio\n CFC11 =    2.0198148261540234E-010  volume mixing ratio\n CFC12 =    4.6758969875045946E-010  volume mixing ratio\nINPUT LandUse = \"MODIFIED_IGBP_MODIS_NOAH\"\n LANDUSE TYPE = \"MODIFIED_IGBP_MODIS_NOAH\" FOUND          61  CATEGORIES           2  SEASONS WATER CATEGORY =           17  SNOW CATEGORY =           15\n SOIL TEXTURE CLASSIFICATION = STAS FOUND          19  CATEGORIES\nMax map factor in domain 1 =  1.00. Scale the dt in the model accordingly.\n D01: Time step                              =    18.0000000      (s)\n D01: Grid Distance                          =    9.00000000      (km)\n D01: Grid Distance Ratio dt/dx              =    2.00000000      (s/km)\n D01: Ratio Including Maximum Map Factor     =    2.00112772      (s/km)\n D01: NML defined reasonable_time_step_ratio =    6.00000000\n Climate GHG input from file from year         1765  to         2499\n CO2   range =    277.91300000000001        579.26400000000001       ppm\n N2O   range =    274.37200000000001        359.79800000000000       ppb\n CH4   range =    738.98599999999999        997.31100000000004       ppb\n CFC11 range =    0.0000000000000000        1.4000000000000000E-002  ppt\n CFC12 range =    0.0000000000000000        2.8809999999999998       ppt\n Normal ending of CAMtr_volume_mixing_ratio file\n GHG annual values from CAM trace gas file\n Year =         2026 , Julian day =          121\n CO2   =    4.3165164227391349E-004  volume mixing ratio\n N2O   =    3.3668267016245353E-007  volume mixing ratio\n CH4   =    1.9684692584420169E-006  volume mixing ratio\n CFC11 =    2.0198148261540234E-010  volume mixing ratio\n CFC12 =    4.6758969875045946E-010  volume mixing ratio\nINPUT LandUse = \"MODIFIED_IGBP_MODIS_NOAH\"\n LANDUSE TYPE = \"MODIFIED_IGBP_MODIS_NOAH\" FOUND          61  CATEGORIES           2  SEASONS WATER CATEGORY =           17  SNOW CATEGORY =           15\n SOIL TEXTURE CLASSIFICATION = STAS FOUND          19  CATEGORIES\n mediation_integrate.G        1249 DATASET=HISTORY\n mediation_integrate.G        1250  grid%id            1  grid%oid            1\nTiming for Writing wrfout_d01_2026-05-01_18:00:00 for domain        1:    0.30614 elapsed seconds\nd01 2026-05-01_18:00:00  Input data is acceptable to use: wrfbdy_d01\nTiming for processing lateral boundary for domain        1:    0.06340 elapsed seconds\n Tile Strategy is not specified. Assuming 1D-Y\nWRF TILE   1 IS      1 IE     14 JS      1 JE     15\nWRF NUMBER OF TILES =   1\nd01 2026-05-01_18:00:00  ----------------------------------------\nd01 2026-05-01_18:00:00  W-DAMPING  BEGINS AT W-COURANT NUMBER =    1.00000000\nd01 2026-05-01_18:00:00  ----------------------------------------\n mediation_integrate.G        1249 DATASET=HISTORY\n mediation_integrate.G        1250  grid%id            2  grid%oid            2\nTiming for Writing wrfout_d02_2026-05-01_18:00:00 for domain        2:    0.47041 elapsed seconds\n Tile Strategy is not specified. Assuming 1D-Y\nWRF TILE   1 IS      1 IE     23 JS      1 JE     17\nWRF NUMBER OF TILES =   1\nTiming for main: time 2026-05-01_18:00:06 on domain   2:    0.93868 elapsed seconds\nTiming for main: time 2026-05-01_18:00:12 on domain   2:    0.12501 elapsed seconds\nTiming for main: time 2026-05-01_18:00:18 on domain   2:    0.12600 elapsed seconds\nTiming for main: time 2026-05-01_18:00:18 on domain   1:    3.33240 elapsed seconds\nd01 2026-05-01_18:00:18 wrf: SUCCESS COMPLETE WRF\n"
     },
     "logs": {
-      "compile_bad_shebang": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface.log",
-      "compile_missing_env": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface_tcsh.log",
-      "compile_success": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface_wrfbuild.log",
-      "run_insufficient_slots": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/wrf_start_domain_perturb_subsurface_28rank_stdout.log",
-      "run_success": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/wrf_start_domain_perturb_subsurface_28rank_oversub_stdout.log"
+      "compile_bad_shebang": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface.log",
+      "compile_missing_env": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface_tcsh.log",
+      "compile_success": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/compile_start_domain_perturb_subsurface_wrfbuild.log",
+      "run_insufficient_slots": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/wrf_start_domain_perturb_subsurface_28rank_stdout.log",
+      "run_success": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/logs/wrf_start_domain_perturb_subsurface_28rank_oversub_stdout.log"
     }
   },
   "cpu_only": true,
@@ -53,7 +53,7 @@
         "--abbrev-ref",
         "HEAD"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "worker/gpt/v013-close-manager\n",
@@ -65,7 +65,7 @@
         "rev-parse",
         "HEAD"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "b0de9ad254f8b06113e144ac4f925e1bcd27d607\n",
@@ -79,7 +79,7 @@
         "--oneline",
         "--decorate"
       ],
-      "cwd": "/home/user/src/wrf_gpu2",
+      "cwd": "<USER_HOME>/src/wrf_gpu2",
       "returncode": 0,
       "stderr_tail": "",
       "stdout_tail": "b0de9ad2 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 refresh grid parity manager handoff\n",
@@ -99,7 +99,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/main/wrf.exe",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/main/wrf.exe",
         "sha256": "fca4099bc98e4a39f8d9d3ceb24555784dadf6d7214bd7781f2a49b0351bda81",
         "size_bytes": 54605136
       },
@@ -118,7 +118,7 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/backups/start_em.F.before_start_domain_perturb_subsurface",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/backups/start_em.F.before_start_domain_perturb_subsurface",
         "sha256": "4b6c98a06fb2b2c4472af73415099e311502747dc5543d9e9b1323497d83ddb4",
         "size_bytes": 123365
       },
@@ -126,14 +126,14 @@
         "exists": true,
         "is_dir": false,
         "is_file": true,
-        "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
+        "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
         "sha256": "2c29aa2da766cd08a422b8b720e13901c2feff8b639897f6a90c180da3f63f9f",
         "size_bytes": 8991
       },
       "wrf_tree_exists": true
     },
     "clean_work_dirs": [
-      "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715"
+      "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715"
     ],
     "prefilled_root_state": {
       "ignored_for_this_proof": true,
@@ -141,11 +141,11 @@
       "legacy_root_wrf_exists": true,
       "legacy_root_wrf_truth_file_count": 0
     },
-    "scratch_root": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface",
-    "selected_clean_work_dir": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
+    "scratch_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface",
+    "selected_clean_work_dir": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715",
     "source_copy_roots": {
-      "run_source": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/run",
-      "wrf_source": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF"
+      "run_source": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/run",
+      "wrf_source": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF"
     }
   },
   "inputs": {
@@ -153,7 +153,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md",
       "sha256": "5e543d6aa1ebb6c4cd196ac89c02f7142c25c1930be78ea21a9f2dfec485105e",
       "size_bytes": 77290
     },
@@ -161,7 +161,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only",
       "sha256": null,
       "size_bytes": null
     },
@@ -169,7 +169,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.json",
       "sha256": "9a473a7b685b74d99f27ac2818dffbf04d94f95769da53cac9ccd72260716f76",
       "size_bytes": 87776
     },
@@ -177,7 +177,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_live_nest_perturb_state_init.md",
       "sha256": "b3d2e91eebc18af9c4198d762bc3a6d7ef8665ab38adc89634e54897eb93b19b",
       "size_bytes": 3137
     },
@@ -185,7 +185,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-start-domain-perturb-subsurface/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-start-domain-perturb-subsurface/sprint-contract.md",
       "sha256": "72f26241d2496854e21e94f4302ef408b1c84765ab60fbf05c424c50729ec06f",
       "size_bytes": 5880
     },
@@ -193,7 +193,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
       "sha256": "2c29aa2da766cd08a422b8b720e13901c2feff8b639897f6a90c180da3f63f9f",
       "size_bytes": 8991
     },
@@ -201,7 +201,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/run",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/run",
       "sha256": null,
       "size_bytes": null
     },
@@ -209,7 +209,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF",
       "sha256": null,
       "size_bytes": null
     },
@@ -217,7 +217,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
       "sha256": null,
       "size_bytes": null
     }
@@ -945,7 +945,7 @@
           "number_of_small_timesteps": [
             "1"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
           "record_schema": [
             "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
             "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
@@ -1012,7 +1012,7 @@
           "number_of_small_timesteps": [
             "1"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
           "record_schema": [
             "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
             "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
@@ -1079,7 +1079,7 @@
           "number_of_small_timesteps": [
             "1"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
           "record_schema": [
             "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
             "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
@@ -1146,7 +1146,7 @@
           "number_of_small_timesteps": [
             "1"
           ],
-          "path": "/mnt/data/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_qvapor_precall_savepoint/precall_truth_only/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
           "record_schema": [
             "MASS_PREPART fortran_i fortran_j fortran_k zero_x zero_y zero_k T_STATE P_STATE PB MU_STATE MUB MUT QVAPOR",
             "WPH_PREPART fortran_i fortran_j fortran_kstag zero_x zero_y zero_kstag W_STATE PH_STATE PHB"
@@ -2461,7 +2461,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -2544,7 +2544,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -2627,7 +2627,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -2710,7 +2710,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_hypsometric_p_al_alt_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -3178,7 +3178,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -3261,7 +3261,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -3344,7 +3344,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -3427,7 +3427,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -3895,7 +3895,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -3978,7 +3978,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -4061,7 +4061,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -4144,7 +4144,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/after_w_surface_branch_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -4612,7 +4612,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_18_jpe_33.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -4695,7 +4695,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_1_jpe_17.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -4778,7 +4778,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_34_jpe_50.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -4861,7 +4861,7 @@
             "patch_record_policy": [
               "mass_owned_single_owner_no_overlap"
             ],
-            "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
+            "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth/before_press_adj_d2_step_0_ips_115_ipe_137_jps_51_jpe_67.txt",
             "press_adj_flag": [
               "T"
             ],
@@ -5148,11 +5148,11 @@
     }
   },
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-start-domain-perturb-subsurface.md",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
-    "wrf_truth_root": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-start-domain-perturb-subsurface.md",
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_start_domain_perturb_subsurface_wrf_patch.diff",
+    "wrf_truth_root": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth"
   },
   "schema": "wrfgpu2.v014.step1_start_domain_perturb_subsurface.v1",
   "unresolved_risks": [

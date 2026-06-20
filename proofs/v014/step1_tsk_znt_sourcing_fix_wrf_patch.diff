@@ -1,6 +1,6 @@
-diff --git a/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
+diff --git a<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
 index 24e0d252..ec3b16a2 100644
---- a/home/user/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F
+--- a<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/phys/module_surface_driver.F
 +++ b/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF/phys/module_surface_driver.F
 @@ -382,6 +382,7 @@ CONTAINS
     USE module_sf_noah_seaice_drv
@@ -329,7 +329,7 @@ index 00000000..2343df91
 +  PUBLIC :: oracle_enabled, oracle_want, oracle_dump3d, oracle_dump2d, &
 +            oracle_open_scheme, oracle_close_scheme
 +
-+  CHARACTER(LEN=512), SAVE :: out_root = '/mnt/data/wrf_gpu2/physics_oracle'
++  CHARACTER(LEN=512), SAVE :: out_root = '<DATA_ROOT>/wrf_gpu2/physics_oracle'
 +  LOGICAL, SAVE :: g_enabled = .FALSE.
 +  LOGICAL, SAVE :: g_inited  = .FALSE.
 +  INTEGER, SAVE :: g_grid    = 2

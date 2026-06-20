@@ -26,11 +26,11 @@ os.environ.setdefault("JAX_ENABLE_COMPILATION_CACHE", "false")
 
 PROOF_DIR = Path(__file__).resolve().parent
 REPO = Path(__file__).resolve().parents[2]
-WRF = Path("/home/user/src/wrf_pristine/WRF")
-WRFBUILD_PREFIX = Path("/home/user/miniconda3/envs/wrfbuild")
-BUILD = Path("/mnt/data/wrf_gpu2/v018_thompson_process_oracle/build")
-STATE_ROOT = Path("/mnt/data/wrf_gpu2/v018_thompson_process_oracle/state")
-PROC_ROOT = Path("/mnt/data/wrf_gpu2/v018_thompson_process_oracle/process")
+WRF = Path("<USER_HOME>/src/wrf_pristine/WRF")
+WRFBUILD_PREFIX = Path("<USER_HOME>/miniconda3/envs/wrfbuild")
+BUILD = Path("<DATA_ROOT>/wrf_gpu2/v018_thompson_process_oracle/build")
+STATE_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v018_thompson_process_oracle/state")
+PROC_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v018_thompson_process_oracle/process")
 REPORT = PROOF_DIR / "thompson_process_oracle.json"
 DT = 18.0
 
@@ -450,7 +450,7 @@ def build_and_run_wrf_oracle() -> None:
             WRF / "test" / "em_real" / "oracle_run" / name,
             WRF / "run" / name,
         ]
-        candidates.extend(Path("/mnt/data/canairy_meteo/runs/wrf_l2").glob(f"*/{name}"))
+        candidates.extend(Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2").glob(f"*/{name}"))
         for candidate in candidates:
             if candidate.exists():
                 target = BUILD / name

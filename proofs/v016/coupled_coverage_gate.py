@@ -49,7 +49,7 @@ import numpy as np
 
 from gpuwrf.integration import daily_pipeline as dp
 
-PROBE = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+PROBE = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 HERE = Path(__file__).resolve().parent
 COVERAGE = HERE / "coverage"
 COVERAGE.mkdir(parents=True, exist_ok=True)

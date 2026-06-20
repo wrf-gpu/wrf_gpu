@@ -47,7 +47,7 @@ from gpuwrf.coupling.boundary_apply import (
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.runtime.operational_mode import _enforce_operational_precision
 
-DEFAULT_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
+DEFAULT_RUN = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
 
 
 # --- independent NumPy re-derivation of WRF relax_bdytend for the West edge ---

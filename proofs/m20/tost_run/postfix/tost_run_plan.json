@@ -9,7 +9,7 @@
       "init_utc": "2026-05-09T18:00:00+00:00",
       "fh": 72,
       "level": "L2",
-      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+      "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
       "init_exists": true
     },
     {
@@ -17,7 +17,7 @@
       "init_utc": "2026-05-21T18:00:00+00:00",
       "fh": 24,
       "level": "L3",
-      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
       "init_exists": true
     },
     {
@@ -25,7 +25,7 @@
       "init_utc": "2026-05-30T18:00:00+00:00",
       "fh": 24,
       "level": "L3",
-      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260530_18z_l3_24h_20260531T161057Z",
+      "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260530_18z_l3_24h_20260531T161057Z",
       "init_exists": true
     }
   ],

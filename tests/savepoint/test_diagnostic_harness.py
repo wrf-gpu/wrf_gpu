@@ -21,7 +21,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CANARY_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+CANARY_RUN_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 
 
 def _skip_if_no_canary_data() -> None:

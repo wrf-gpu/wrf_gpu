@@ -16,7 +16,7 @@
   },
   "proof_dir": "proofs/v0110/wind_regression/no_mynn_edmf",
   "run_id": "20260507_18z_l2_72h_20260513T124307Z",
-  "run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+  "run_root": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2",
   "run_root_resolution": {
     "effective_run_root": "/tmp/vburst_runs",
     "fallback_reason": "requested run_root lacks d01/d02 wrfout history required by build_l2_d02_replay_case; using same-run complete vburst fixture",
@@ -27,8 +27,8 @@
       "d01": 73,
       "d02": 73
     },
-    "requested_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260507_18z_l2_72h_20260513T124307Z",
-    "requested_run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+    "requested_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260507_18z_l2_72h_20260513T124307Z",
+    "requested_run_root": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2",
     "requested_wrfout_counts": {
       "d01": 0,
       "d02": 0

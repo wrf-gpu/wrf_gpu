@@ -1,4 +1,4 @@
-+ cd /home/user/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
++ cd <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
 + export PYTHONPATH=src
 + PYTHONPATH=src
 + export OMP_NUM_THREADS=2
@@ -26,7 +26,7 @@
   "warm_big_s": 3.521747916005552,
   "warmed_per_step_ms": 43.95163716690149,
   "peak_gpu_mem_mb": 9682.02001953125,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "radiation_in_window": false
 }
 + echo BASELINE_EXIT=0
@@ -57,7 +57,7 @@ E0530 22:31:07.314907 1161906 slow_operation_alarm.cc:140] The operation took 2m
   "warm_big_s": 4.210325457999716,
   "warmed_per_step_ms": 53.208279149839655,
   "peak_gpu_mem_mb": 9682.02001953125,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "radiation_in_window": false
 }
 + echo GMS1_EXIT=0

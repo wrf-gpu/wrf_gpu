@@ -20,7 +20,7 @@
 #
 # Provenance: module_mp_thompson.F, module_mp_radar.F, libmassv.F, and
 # module_model_constants.F are copied VERBATIM (unmodified) from
-# /home/user/src/wrf_pristine/WRF. The only project-authored Fortran is:
+# <USER_HOME>/src/wrf_pristine/WRF. The only project-authored Fortran is:
 #   * thompgh_oracle_driver.f90  -- the single-column builder + dump (never
 #                                   touches scheme physics).
 #   * thompgh_stub_modules.f90   -- module_wrf_error / module_dm(wrf_dm_max_real)
@@ -35,12 +35,12 @@
 set -o pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF="/home/user/src/wrf_pristine/WRF"
+WRF="<USER_HOME>/src/wrf_pristine/WRF"
 WRF_PHYS="${WRF}/phys"
 WRF_SHARE="${WRF}/share"
 WRF_FRAME="${WRF}/frame"
 
-source /home/user/miniconda3/etc/profile.d/conda.sh
+source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -e
 export OMP_NUM_THREADS=2

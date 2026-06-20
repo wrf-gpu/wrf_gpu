@@ -2,7 +2,7 @@
 """Recover 28-rank CPU-WRF real wall-clock from EXISTING run artifacts.
 
 NO new CPU runs. READ-ONLY analysis of finished L2 (9/3 km nest) and L3
-(5-domain incl. 1 km) WRF run dirs under /mnt/data/canairy_meteo/runs.
+(5-domain incl. 1 km) WRF run dirs under <DATA_ROOT>/canairy_meteo/runs.
 
 Two independent wall-clock derivations per run:
   (1) file-mtime span  = mtime(rsl.out.0000) - mtime(freezeH2O.dat)
@@ -109,7 +109,7 @@ def analyze_run(run_dir: str, dt_by_dom: dict[int, int], fc_hours: int) -> dict 
 
 
 def scan_level(level: str, dt_by_dom: dict[int, int], fc_hours: int, limit: int | None = None) -> list[dict]:
-    base = f"/mnt/data/canairy_meteo/runs/{level}"
+    base = f"<DATA_ROOT>/canairy_meteo/runs/{level}"
     out: list[dict] = []
     for rd in sorted(glob.glob(f"{base}/*/")):
         rd = rd.rstrip("/")

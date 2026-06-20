@@ -18,11 +18,11 @@ from gpuwrf.init.real_init.vinterp import vertical_interpolate
 
 
 WRFINPUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260523_18z_l3_24h_20260524T004313Z/wrfinput_d01"
 )
 METEM = Path(
-    "/mnt/data/canairy_meteo/runs/wps_cases/20260523_18z_72h/l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wps_cases/20260523_18z_72h/l3/"
     "met_em.d01.2026-05-23_18:00:00.nc"
 )
 

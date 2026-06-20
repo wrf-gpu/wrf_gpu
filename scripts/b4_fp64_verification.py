@@ -44,7 +44,7 @@ from gpuwrf.contracts.precision import PRECISION_MATRIX
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.runtime.operational_mode import _enforce_operational_precision
 
-DEFAULT_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
+DEFAULT_RUN = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
 
 PROGNOSTIC = ("u", "v", "w", "theta", "qv", "p_total", "p_perturbation",
               "ph_total", "ph_perturbation", "mu_total", "mu_perturbation")

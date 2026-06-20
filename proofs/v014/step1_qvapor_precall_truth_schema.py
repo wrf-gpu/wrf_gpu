@@ -29,18 +29,18 @@ TARGET_STEP = 1
 TARGET_RK = 1
 ANCESTOR = "5b1f6b10"
 
-PREPART_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
+PREPART_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
 SAME_INPUT_NPZ = Path(
-    "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/"
+    "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/"
     "same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
 )
-SAME_INPUT_RAW_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_same_input_truth/raw_truth")
-MNT_ROOT = Path("/mnt/data/wrf_gpu2")
+SAME_INPUT_RAW_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_same_input_truth/raw_truth")
+MNT_ROOT = Path("<DATA_ROOT>/wrf_gpu2")
 
-PRISTINE_MEDIATION = Path("/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F")
-PRISTINE_NEST_INIT = Path("/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F")
-PRISTINE_SOLVE = Path("/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F")
-INSTRUMENTED_SOLVE = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F")
+PRISTINE_MEDIATION = Path("<USER_HOME>/src/wrf_pristine/WRF/share/mediation_integrate.F")
+PRISTINE_NEST_INIT = Path("<USER_HOME>/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F")
+PRISTINE_SOLVE = Path("<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F")
+INSTRUMENTED_SOLVE = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F")
 
 
 def run(cmd: list[str], cwd: Path = REPO) -> dict[str, Any]:

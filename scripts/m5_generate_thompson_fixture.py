@@ -29,7 +29,7 @@ WRF_SOURCE_CANDIDATES = (
     / "post13_thompson_first_divergence_20260508T224837Z"
     / "source_snapshots_pre"
     / "module_mp_thompson.F.pre",
-    Path("/home/user/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"),
+    Path("<USER_HOME>/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"),
 )
 WRF_SOURCE = next((path for path in WRF_SOURCE_CANDIDATES if path.exists()), WRF_SOURCE_CANDIDATES[0])
 

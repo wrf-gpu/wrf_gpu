@@ -931,8 +931,8 @@
         "d01": 73,
         "d02": 73
       },
-      "requested_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260507_18z_l2_72h_20260513T124307Z",
-      "requested_run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+      "requested_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260507_18z_l2_72h_20260513T124307Z",
+      "requested_run_root": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2",
       "requested_wrfout_counts": {
         "d01": 0,
         "d02": 0

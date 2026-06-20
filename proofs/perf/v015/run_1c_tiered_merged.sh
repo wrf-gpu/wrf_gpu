@@ -14,7 +14,7 @@ cd "$(git rev-parse --show-toplevel)"
 
 COMMON="taskset -c 0-3 env OMP_NUM_THREADS=4 PYTHONPATH=src JAX_ENABLE_X64=true \
   XLA_PYTHON_CLIENT_PREALLOCATE=false XLA_PYTHON_CLIENT_ALLOCATOR=cuda_async \
-  GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo"
+  GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo"
 
 echo "=== 1c BASE dump (v0.14-equivalent: niter=50, tiling OFF) ==="
 $COMMON GPUWRF_MYNN_COND_NITER=50 GPUWRF_MP_COLUMN_TILING=0 \

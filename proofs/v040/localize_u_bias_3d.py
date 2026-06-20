@@ -20,7 +20,7 @@ import numpy as np
 import netCDF4
 
 JAX_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/tmp/v040_loc/20260521_18z_l3_24h_20260522T133443Z_d01")
-REF_DIR = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+REF_DIR = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 OUT = Path(__file__).resolve().parent / "localize_u_bias_3d.json"
 
 

@@ -33,12 +33,12 @@
       {
         "unit_id": "case1_L2",
         "reason": "CPU corpus frames absent on disk",
-        "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260529_18z_l2_72h_20260530T054804Z"
+        "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260529_18z_l2_72h_20260530T054804Z"
       },
       {
         "unit_id": "case1_L3",
         "reason": "CPU corpus frames absent on disk",
-        "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z"
+        "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260529_18z_l3_24h_20260530T054804Z"
       }
     ]
   },
@@ -140,7 +140,7 @@
       "init_utc": "2026-05-09T18:00:00+00:00",
       "max_lead_h": 72,
       "gpu_dir": "REPO/proofs/m20/tost_run/gpu_wrfout/case2_L2",
-      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+      "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
       "gpu_frames_found": 34,
       "cpu_frames_found": 73,
       "leads_scored": [
@@ -2170,7 +2170,7 @@
       "init_utc": "2026-05-21T18:00:00+00:00",
       "max_lead_h": 24,
       "gpu_dir": "REPO/proofs/m20/tost_run/gpu_wrfout/case3_L3",
-      "cpu_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "cpu_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
       "gpu_frames_found": 24,
       "cpu_frames_found": 25,
       "leads_scored": [

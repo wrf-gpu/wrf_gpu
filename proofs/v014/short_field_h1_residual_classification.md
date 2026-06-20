@@ -80,12 +80,12 @@ production helper reproduces CPU-WRF truth P to rmse 27.0 Pa / max 55.5 Pa
 Re-run the 1h falsifier on the fixed branch, then the comparator:
 
 ```bash
-RUN_ROOT=/mnt/data/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
+RUN_ROOT=<DATA_ROOT>/wrf_gpu_validation/v014_short_field_falsifier_$(date -u +%Y%m%dT%H%M%SZ)
 mkdir -p "$RUN_ROOT"/{gpu_output,proofs,resources}
 GPUWRF_RESOURCE_LOG_DIR="$RUN_ROOT/resources" GPUWRF_RESOURCE_LABEL=v014_short_field_h1_eosfix \
 scripts/run_gpu_lowprio.sh -- python proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
   --run-root /tmp/v0120_merged_run_root \
-  --cpu-truth-root /mnt/data/canairy_meteo/runs/wrf_l2_backfill_output \
+  --cpu-truth-root <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output \
   --run-id 20260501_18z_l2_72h_20260519T173026Z --hours 1 \
   --output-root "$RUN_ROOT/gpu_output" --proof-dir "$RUN_ROOT/proofs"
 ```

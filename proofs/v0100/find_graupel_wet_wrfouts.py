@@ -37,7 +37,7 @@ def _scan_file(path: Path, threshold: float) -> dict | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("roots", nargs="*", type=Path, default=[Path("/mnt/data/canairy_meteo/runs")])
+    parser.add_argument("roots", nargs="*", type=Path, default=[Path("<DATA_ROOT>/canairy_meteo/runs")])
     parser.add_argument("--threshold", type=float, default=1.0e-12)
     parser.add_argument("--limit", type=int, default=40)
     parser.add_argument("--max-files", type=int, default=5000)

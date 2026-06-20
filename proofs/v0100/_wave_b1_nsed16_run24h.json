@@ -160,14 +160,14 @@
   "cpu_skill": {
     "available": false,
     "fields": {},
-    "reference_file": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z/wrfout_d02_2026-05-22_18:00:00",
+    "reference_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z/wrfout_d02_2026-05-22_18:00:00",
     "valid_time_utc": "2026-05-22T18:00:00+00:00"
   },
   "device": "cuda:0",
   "forecast_wall_s": 790.3891683029942,
   "hours": 24.0,
   "radiation_cadence_steps": 180,
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z",
   "run_id": "20260521_18z_l2_72h_20260522T133443Z",
   "schema": "V0100WaveB1NSED24HRun",
   "schema_version": 1,

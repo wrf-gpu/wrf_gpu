@@ -7,7 +7,7 @@ Verdict: `STEP1_CURRENT_MUB_BASE_SPLIT_WRF_BLEND_UNIMPLEMENTED_OR_MISMATCHED`.
 - CPU-only proof; GPU used: `False`.
 - Required ancestor `9a7016d9` present: `True`.
 - Fresh scratch WRF hook not run here: `WRITABLE_NOT_USED`.
-- Recovered WRF adjust hook: `/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt`.
+- Recovered WRF adjust hook: `<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth/adjust_tempqv_d2_i18_j10_k2.txt`.
 - Target zero `{'k': 1, 'y': 9, 'x': 17}`, Fortran `{'i': 18, 'j': 10, 'k': 2}`.
 
 ## Explanation
@@ -61,13 +61,13 @@ commands run:
 - `git diff -- src/gpuwrf`
 
 proof objects produced:
-- `/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json`
-- `/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.md`
-- `/home/user/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff`
-- `/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-current-mub-base-input-split.md`
+- `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.json`
+- `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split.md`
+- `<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_current_mub_base_input_split_wrf_patch.diff`
+- `<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-current-mub-base-input-split.md`
 
 unresolved risks:
-- Fresh WRF terrain/PHB target emission could not be run because /mnt/data scratch writes are read-only in this sandbox.
+- Fresh WRF terrain/PHB target emission could not be run because <DATA_ROOT> scratch writes are read-only in this sandbox.
 - The source-changing sprint should validate the transient MUB blend over the full domain before patching production initialization.
 
 next decision needed: Open the smallest source-changing sprint to add a transient live-nest adjust base path: compute WRF post-blend/pre-start_domain MUB for adjust_tempqv, use it only for theta/QV adjustment, keep final BaseState from start_domain, and rerun the Step-1 theta proof.

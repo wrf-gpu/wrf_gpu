@@ -40,7 +40,7 @@ from netCDF4 import Dataset
 
 ROOT = Path(__file__).resolve().parents[2]
 P = ROOT / "proofs/v014"
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
 OUT_JSON = ROOT / "proofs/v014/switzerland_ustar_drag_root.json"
 
 _AWD = importlib.util.spec_from_file_location(

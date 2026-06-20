@@ -8,7 +8,7 @@
   "threshold": 1e-12,
   "top": [
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d02_2026-05-08_18:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d02_2026-05-08_18:00:00",
       "qcloud_max": 0.0013429782120510936,
       "qgraup_max": 6.118582859926391e-06,
       "qgraup_wet_cells": 1158,
@@ -18,7 +18,7 @@
       "rainnc_max": 98.7842025756836
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_18:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_18:00:00",
       "qcloud_max": 0.0010803437326103449,
       "qgraup_max": 6.118268629506929e-06,
       "qgraup_wet_cells": 1111,
@@ -28,7 +28,7 @@
       "rainnc_max": 26.15266227722168
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_08:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_08:00:00",
       "qcloud_max": 0.0001916996989166364,
       "qgraup_max": 1.060661998053547e-05,
       "qgraup_wet_cells": 1179,
@@ -38,7 +38,7 @@
       "rainnc_max": 4.528515815734863
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_17:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_17:00:00",
       "qcloud_max": 0.0010508871637284756,
       "qgraup_max": 4.078455276612658e-06,
       "qgraup_wet_cells": 988,
@@ -48,7 +48,7 @@
       "rainnc_max": 26.15266227722168
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_07:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_07:00:00",
       "qcloud_max": 0.0004190448089502752,
       "qgraup_max": 8.968731890490744e-06,
       "qgraup_wet_cells": 1058,
@@ -58,7 +58,7 @@
       "rainnc_max": 4.186888694763184
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d02_2026-05-08_20:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d02_2026-05-08_20:00:00",
       "qcloud_max": 0.0013972078450024128,
       "qgraup_max": 1.3605408639705274e-06,
       "qgraup_wet_cells": 647,
@@ -68,7 +68,7 @@
       "rainnc_max": 62.101158142089844
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_11:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_11:00:00",
       "qcloud_max": 0.0012031446676701307,
       "qgraup_max": 3.2992527394526405e-06,
       "qgraup_wet_cells": 562,
@@ -78,7 +78,7 @@
       "rainnc_max": 11.683963775634766
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_06:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_06:00:00",
       "qcloud_max": 0.0008288268581964076,
       "qgraup_max": 5.01598697155714e-06,
       "qgraup_wet_cells": 538,
@@ -88,7 +88,7 @@
       "rainnc_max": 5.990328311920166
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_09:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_09:00:00",
       "qcloud_max": 0.0002727873215917498,
       "qgraup_max": 7.185456524894107e-06,
       "qgraup_wet_cells": 828,
@@ -98,7 +98,7 @@
       "rainnc_max": 4.812870025634766
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d02_2026-05-08_17:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d02_2026-05-08_17:00:00",
       "qcloud_max": 0.0012742857215926051,
       "qgraup_max": 4.856141799791658e-07,
       "qgraup_wet_cells": 598,
@@ -108,7 +108,7 @@
       "rainnc_max": 98.77642059326172
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_12:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_12:00:00",
       "qcloud_max": 0.0012244934914633632,
       "qgraup_max": 4.291141522116959e-06,
       "qgraup_wet_cells": 514,
@@ -118,7 +118,7 @@
       "rainnc_max": 12.21783447265625
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_15:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_15:00:00",
       "qcloud_max": 0.000453536951681599,
       "qgraup_max": 2.0097857031942112e-06,
       "qgraup_wet_cells": 682,
@@ -128,7 +128,7 @@
       "rainnc_max": 26.15266227722168
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_16:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_16:00:00",
       "qcloud_max": 0.0007182318950071931,
       "qgraup_max": 2.0834722818108276e-06,
       "qgraup_wet_cells": 684,
@@ -138,7 +138,7 @@
       "rainnc_max": 26.15266227722168
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d02_2026-05-08_19:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d02_2026-05-08_19:00:00",
       "qcloud_max": 0.0013730258215218782,
       "qgraup_max": 1.3636470157507574e-06,
       "qgraup_wet_cells": 618,
@@ -148,7 +148,7 @@
       "rainnc_max": 62.09990692138672
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_07:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_07:00:00",
       "qcloud_max": 0.0010578162036836147,
       "qgraup_max": 1.042143594531808e-06,
       "qgraup_wet_cells": 454,
@@ -158,7 +158,7 @@
       "rainnc_max": 6.22889518737793
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_10:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_10:00:00",
       "qcloud_max": 0.0011082191485911608,
       "qgraup_max": 8.112033356155735e-06,
       "qgraup_wet_cells": 489,
@@ -168,7 +168,7 @@
       "rainnc_max": 11.03813362121582
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_18:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_18:00:00",
       "qcloud_max": 0.0009300194215029478,
       "qgraup_max": 4.460600393940695e-06,
       "qgraup_wet_cells": 667,
@@ -178,7 +178,7 @@
       "rainnc_max": 18.809123992919922
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_20:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_20:00:00",
       "qcloud_max": 0.0007435784791596234,
       "qgraup_max": 3.1584809221385513e-06,
       "qgraup_wet_cells": 584,
@@ -188,7 +188,7 @@
       "rainnc_max": 19.07228660583496
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_14:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-08_14:00:00",
       "qcloud_max": 0.0003243123064748943,
       "qgraup_max": 2.3376742319669574e-06,
       "qgraup_wet_cells": 658,
@@ -198,7 +198,7 @@
       "rainnc_max": 26.15266227722168
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_06:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_06:00:00",
       "qcloud_max": 0.00047854779404588044,
       "qgraup_max": 6.8618055593105964e-06,
       "qgraup_wet_cells": 758,
@@ -208,7 +208,7 @@
       "rainnc_max": 3.762444257736206
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z/wrfout_d01_2026-05-06_09:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z/wrfout_d01_2026-05-06_09:00:00",
       "qcloud_max": 0.0009216601611115038,
       "qgraup_max": 3.7620134207827505e-06,
       "qgraup_wet_cells": 464,
@@ -218,7 +218,7 @@
       "rainnc_max": 5.045876502990723
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-06_16:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-06_16:00:00",
       "qcloud_max": 0.001170421252027154,
       "qgraup_max": 1.0133907380804885e-05,
       "qgraup_wet_cells": 590,
@@ -228,7 +228,7 @@
       "rainnc_max": 8.204838752746582
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_10:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_10:00:00",
       "qcloud_max": 0.00044601556146517396,
       "qgraup_max": 6.81970095683937e-06,
       "qgraup_wet_cells": 651,
@@ -238,7 +238,7 @@
       "rainnc_max": 5.103543758392334
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_11:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260510_18z_l2_72h_20260511T124717Z/wrfout_d01_2026-05-11_11:00:00",
       "qcloud_max": 0.0006372608477249742,
       "qgraup_max": 6.662769465037854e-06,
       "qgraup_wet_cells": 612,
@@ -248,7 +248,7 @@
       "rainnc_max": 5.40815544128418
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_17:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_17:00:00",
       "qcloud_max": 0.0004506644909270108,
       "qgraup_max": 5.933930879109539e-06,
       "qgraup_wet_cells": 660,
@@ -258,7 +258,7 @@
       "rainnc_max": 18.746932983398438
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z/wrfout_d01_2026-05-06_06:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z/wrfout_d01_2026-05-06_06:00:00",
       "qcloud_max": 0.00107658957131207,
       "qgraup_max": 3.2210775771090994e-06,
       "qgraup_wet_cells": 388,
@@ -268,7 +268,7 @@
       "rainnc_max": 3.1298751831054688
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_19:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260506_18z_l2_72h_20260513T222831Z/wrfout_d01_2026-05-08_19:00:00",
       "qcloud_max": 0.0008146910695359111,
       "qgraup_max": 1.6870302488314337e-06,
       "qgraup_wet_cells": 571,
@@ -278,7 +278,7 @@
       "rainnc_max": 18.953001022338867
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z/wrfout_d01_2026-05-06_10:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260503_18z_l2_72h_20260518T205545Z/wrfout_d01_2026-05-06_10:00:00",
       "qcloud_max": 0.001056752516888082,
       "qgraup_max": 3.0679407245770562e-06,
       "qgraup_wet_cells": 430,
@@ -288,7 +288,7 @@
       "rainnc_max": 5.3239426612854
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-06_09:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260505_18z_l2_72h_20260518T074056Z/wrfout_d01_2026-05-06_09:00:00",
       "qcloud_max": 0.001152165699750185,
       "qgraup_max": 6.361436135193799e-06,
       "qgraup_wet_cells": 415,
@@ -298,7 +298,7 @@
       "rainnc_max": 5.21274471282959
     },
     {
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_13:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260504_18z_l2_72h_20260515T061907Z/wrfout_d01_2026-05-06_13:00:00",
       "qcloud_max": 0.0012322154361754656,
       "qgraup_max": 2.4002140435186448e-06,
       "qgraup_wet_cells": 452,

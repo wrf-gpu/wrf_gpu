@@ -39,7 +39,7 @@
         "txt": 24
       }
     },
-    "root": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps",
+    "root": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps",
     "sample_hpg_call021601_i001_j001": {
       "domain_ids_ide_jds_jde_kds_kde": [
         "1",
@@ -130,7 +130,7 @@
     },
     "acoustic_fix_dt18_budget": {
       "available": false,
-      "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_dt18"
+      "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_dt18"
     },
     "acoustic_fix_nokm_budget": {
       "dM_pa_per_cell_h": -139.1734693877551,
@@ -190,7 +190,7 @@
       "hypso_3d0b439c": -28.3281887755102,
       "old_ec4d6769": -28.614795918367335
     },
-    "fixed_output": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix",
+    "fixed_output": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix",
     "h36_h38": {
       "acoustic_fix": {
         "dM_pa_per_cell_h": -258.2142857142857,
@@ -459,7 +459,7 @@
             }
           }
         },
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix"
       },
       "acoustic_fix_nokm": {
         "available": true,
@@ -625,7 +625,7 @@
             }
           }
         },
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_nokm"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_nokm"
       },
       "hypso_3d0b439c": {
         "available": true,
@@ -791,7 +791,7 @@
             }
           }
         },
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix"
       },
       "old_ec4d6769": {
         "available": true,
@@ -957,7 +957,7 @@
             }
           }
         },
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output"
       }
     },
     "38": {
@@ -1125,7 +1125,7 @@
             }
           }
         },
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix"
       },
       "acoustic_fix_nokm": {
         "available": true,
@@ -1291,11 +1291,11 @@
             }
           }
         },
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_nokm"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_acoustic_substep_fix_nokm"
       },
       "hypso_3d0b439c": {
         "available": false,
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix"
       },
       "old_ec4d6769": {
         "available": true,
@@ -1461,14 +1461,14 @@
             }
           }
         },
-        "path": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output"
+        "path": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output"
       }
     }
   },
   "inputs": {
-    "cpu_truth": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+    "cpu_truth": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
     "proof_json": "proofs/v014/switzerland_acoustic_substep_blocker.json",
-    "reinit_probe_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable"
+    "reinit_probe_root": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable"
   },
   "observations": {
     "first_divergence": {
@@ -1971,7 +1971,7 @@
         "v": 5.96669327279642e-08,
         "w": 5.85947956821542e-12
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
     },
     "sub4_dt18_cpfix": {
       "base_identity_vs_21601": {
@@ -2447,7 +2447,7 @@
         "v": 5.966639982091237e-08,
         "w": 9.623621344267974e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
     },
     "sub4_dt18_final": {
       "base_identity_vs_21601": {
@@ -2923,7 +2923,7 @@
         "v": 5.966633942477984e-08,
         "w": 4.936329123239602e-12
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
     },
     "sub4_dt18_omfix": {
       "base_identity_vs_21601": {
@@ -3399,7 +3399,7 @@
         "v": 5.966677818491917e-08,
         "w": 4.98168173379554e-12
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
     },
     "sub4_dt18_prefix": {
       "base_identity_vs_21601": {
@@ -3875,7 +3875,7 @@
         "v": 5.966683147562435e-08,
         "w": 9.247602683615241e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
     },
     "sub4_phys": {
       "base_identity_vs_21601": {
@@ -4351,7 +4351,7 @@
         "v": 3.552075966695156e-08,
         "w": 4.3921810632951974e-13
       },
-      "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
+      "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36"
     }
   },
   "variant_matrix": {

@@ -38,8 +38,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
-PROBE_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+PROBE_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 BASELINE_GPU = PROBE_ROOT / "gpu_output"
 FIX_GPU = PROBE_ROOT / "gpu_output_hydro_pgf_edgefix_gpt"
 PREV_PROOF = ROOT / "proofs/v014/switzerland_strongflow_dynamics.json"
@@ -305,11 +305,11 @@ def analyze() -> dict[str, Any]:
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "target": previous.get("target", {}),
         "wrf_source_anchors": {
-            "large_step_hpg_loop_bounds": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
-            "hydro_v_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
-            "hydro_u_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
-            "rk_step_prep_call": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682",
-            "large_step_hpg_call": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
+            "large_step_hpg_loop_bounds": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
+            "hydro_v_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
+            "hydro_u_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
+            "rk_step_prep_call": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682",
+            "large_step_hpg_call": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
         },
         "artifacts": {
             "cpu": str(CPU),
@@ -619,7 +619,7 @@ def run_step_probe(args: argparse.Namespace) -> dict[str, Any]:
         },
         "wrf_loop_bound_mismatch_probe": {
             "meaning": "full_wrf_specified_edge_skip zeros only the outer normal faces skipped by WRF when specified/nested",
-            "wrf_source": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
+            "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
         },
         "variants": {},
         "environment": {

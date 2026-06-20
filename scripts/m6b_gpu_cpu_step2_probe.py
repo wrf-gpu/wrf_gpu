@@ -54,7 +54,7 @@ CPU_BISECT_REPORT = (
     / "2026-05-25-m6b-standalone-vs-comparator-bisect"
     / "worker-report.md"
 )
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T072630Z"
 DEFAULT_IC_TIME = "2026-05-21_18:00:00"
 DT_S = 10.0

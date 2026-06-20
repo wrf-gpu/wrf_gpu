@@ -35,9 +35,9 @@ from netCDF4 import Dataset
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DOMAIN = "d02"
 INIT = datetime(2026, 5, 1, 18, tzinfo=UTC)
-DEFAULT_CPU_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+DEFAULT_CPU_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 DEFAULT_BASELINE_ROOT = Path(
-    "/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_moistcqw_20260610T171818Z"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_moistcqw_20260610T171818Z"
 )
 FIELDS = (
     "PSFC",

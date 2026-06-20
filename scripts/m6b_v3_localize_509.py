@@ -36,7 +36,7 @@ from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_op
 
 config.update("jax_enable_x64", True)
 
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 PINNED_RUN_ID = "20260509_18z_l3_24h_20260511T190519Z"
 LOWER_LEVELS = 30
 UPPER_LEVELS = 14

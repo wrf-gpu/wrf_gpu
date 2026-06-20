@@ -25,7 +25,7 @@ from gpuwrf.init.real_init.vertical_coord import compute_vertical_coord
 from gpuwrf.init.real_init.vinterp import vertical_interpolate
 
 
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs")
 WRF_ROOT = RUN_ROOT / "wrf_l3"
 WPS_ROOT = RUN_ROOT / "wps_cases"
 OUT = ROOT / "proofs/v040/s1_wrfinput_dynamics_report.json"
@@ -308,7 +308,7 @@ def main() -> int:
     aggregate = _aggregate(reports)
     payload = {
         "sprint": "v0.4.0-S1",
-        "oracle": "real.exe wrfinput files under /mnt/data/canairy_meteo/runs",
+        "oracle": "real.exe wrfinput files under <DATA_ROOT>/canairy_meteo/runs",
         "case_count": len(reports),
         "domains": sorted({case["domain"] for case in reports}),
         "resource_limits": {"python_prefix_required": "taskset -c 0-3", "jax_platform": "cpu"},

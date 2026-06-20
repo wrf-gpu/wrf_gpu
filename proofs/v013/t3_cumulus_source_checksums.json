@@ -154,5 +154,5 @@
     ]
   },
   "source_files_all_found": true,
-  "wrf_pristine_root": "/home/user/src/wrf_pristine/WRF"
+  "wrf_pristine_root": "<USER_HOME>/src/wrf_pristine/WRF"
 }

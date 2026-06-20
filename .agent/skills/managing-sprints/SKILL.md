@@ -54,7 +54,7 @@ of the manager job, not an afterthought. Rules:
 
 ## Release publishing — dev folder vs public org repo (principal directive 2026-06-13)
 
-THIS repo (`/home/user/src/wrf_gpu2`) is the **dev folder** — full of internal
+THIS repo (`<USER_HOME>/src/wrf_gpu2`) is the **dev folder** — full of internal
 agent/process cruft (`.agent`, `.codex`, `codex`, `cache`, `artifacts`, internal
 `PROJECT_*`/`MORNING-REPORT*`/contract docs, the bulk of `proofs/`, oversized
 fixtures). It is NOT what users see. Two remotes:

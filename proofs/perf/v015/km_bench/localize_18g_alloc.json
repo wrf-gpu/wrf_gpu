@@ -8,7 +8,7 @@
     "ncol": 10494
   },
   "phase_a": {
-    "dump_dir": "/home/user/src/wrf_gpu2/.claude/worktrees/agent-adc733e01dbae7ef4/proofs/perf/v015/km_bench/hlo_dump_localize_base",
+    "dump_dir": "<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-adc733e01dbae7ef4/proofs/perf/v015/km_bench/hlo_dump_localize_base",
     "n_buffer_assignment_files": 40,
     "largest_buffers_ge_64MiB": [
       {

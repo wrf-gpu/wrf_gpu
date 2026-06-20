@@ -35,7 +35,7 @@ from gpuwrf.physics.rrtmg_sw import (  # noqa: E402
 )
 
 
-DEFAULT_RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+DEFAULT_RUN_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 DEFAULT_DOMAIN = "d02"
 DEFAULT_VALID = "2026-05-22_12:00:00"
 GRAVITY = 9.80665

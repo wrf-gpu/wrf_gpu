@@ -54,7 +54,7 @@ PREDECESSOR_JSON = PROOF_DIR / "step1_start_domain_perturb_subsurface.json"
 PREDECESSOR_MD = PROOF_DIR / "step1_start_domain_perturb_subsurface.md"
 D02_REPLAY = SRC / "gpuwrf/integration/d02_replay.py"
 WRF_CONSTANTS = (
-    Path("/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715")
+    Path("<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715")
     / "WRF/share/module_model_constants.F"
 )
 
@@ -893,12 +893,12 @@ def build_proof() -> dict[str, Any]:
             "wrf_cp": line_hit(WRF_CONSTANTS, "cp           = 7.*r_d/2."),
             "d02_replay_cp": line_hit(D02_REPLAY, "_EOS_CP_D = 1004.0"),
             "wrf_start_domain_base": line_hit(
-                Path("/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715")
+                Path("<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715")
                 / "WRF/dyn_em/start_em.F",
                 "p_surf = p00 * EXP",
             ),
             "wrf_start_domain_alt": line_hit(
-                Path("/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715")
+                Path("<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715")
                 / "WRF/dyn_em/start_em.F",
                 "grid%al(i,k,j) = (grid%ph_1",
             ),

@@ -33,7 +33,7 @@
     "selected_PBLH": 464.2323303222656,
     "selected_QFX": 1.3317567209014669e-05,
     "valid_time": "2026-05-22_12:00:00",
-    "wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
+    "wrfout": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
   },
   "floor_effect": {
     "active_interface_indices_0based": [],

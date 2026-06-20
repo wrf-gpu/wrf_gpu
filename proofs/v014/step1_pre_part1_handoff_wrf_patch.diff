@@ -1,5 +1,5 @@
---- /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/solve_em.F.before_step1_pre_part1_handoff	2026-06-09 14:30:54.890166453 +0100
-+++ /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F	2026-06-09 15:27:14.885965002 +0100
+--- <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/solve_em.F.before_step1_pre_part1_handoff	2026-06-09 14:30:54.890166453 +0100
++++ <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/solve_em.F	2026-06-09 15:27:14.885965002 +0100
 @@ -411,6 +411,7 @@
 
     grid%itimestep = grid%itimestep + 1
@@ -75,7 +75,7 @@
 +      wrfgpu2_grid = 2
 +      wrfgpu2_start_step = 1
 +      wrfgpu2_end_step = 1
-+      wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth'
++      wrfgpu2_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth'
 +
 +      wrfgpu2_env = ''
 +      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_PRE_PART1_HANDOFF_GRID', wrfgpu2_env)

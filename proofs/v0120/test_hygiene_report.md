@@ -56,7 +56,7 @@ test_m4_tester_adversarial, test_m7_skill_fix_algorithmic, test_m7_skill_fix_ite
 ### B. Purged corpus / un-vendored data (explicit skipif on path existence)
 - test_m6_gen2_accessor — module skipif on `DEFAULT_M6_GEN2_RUN_DIR.exists()` (corpus run dir not vendored)
 - test_m6_validation_io — same module skipif
-- test_m7_default_gen2_run_dir — corrected existing skipif from `/mnt/...mounted` to the actual `DEFAULT_M6_GEN2_RUN_DIR.exists()`
+- test_m7_default_gen2_run_dir — corrected existing skipif from `<MOUNT_ROOT>/...mounted` to the actual `DEFAULT_M6_GEN2_RUN_DIR.exists()`
 - test_canary_wrf_fixture — 3 tests skipif on external `full.npz` payload (only the small slice SAMPLE is committed)
 - test_m7_s0a_schemas — 1 test skipif when the cited Gen2 WPS-case artifacts (namelist.wps/ungrib gribs) are purged
 

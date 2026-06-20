@@ -38,12 +38,12 @@ from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
-RUN_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z")
+RUN_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z")
 CPU_TRUTH = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z"
 )
 GPU_RUN = Path(
-    "/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z/gpu_output/"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_20260610T142426Z/gpu_output/"
     "l2_d02_20260501_18z_l2_72h_20260519T173026Z"
 )
 INTERVAL_S = 21600.0

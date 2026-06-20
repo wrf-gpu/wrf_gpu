@@ -37,7 +37,7 @@ def runner():
 
 
 REAL_CASE = "20260429_18z_l2_72h_20260524T204451Z"
-REAL_L2 = Path("/mnt/data/canairy_meteo/runs/wrf_l2") / REAL_CASE
+REAL_L2 = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2") / REAL_CASE
 
 
 def test_max_dom_constant_is_two(runner):

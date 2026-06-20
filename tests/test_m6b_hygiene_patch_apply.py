@@ -23,7 +23,7 @@ PATCH_ROOT = ROOT / "external" / "wrf_savepoint_patch"
 SOLVE_EM_PATCH = PATCH_ROOT / "solve_em.F.patch"
 MODULE_SMALL_STEP_PATCH = PATCH_ROOT / "module_small_step_em.F.patch"
 CANONICAL_WRF = Path(
-    "/home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF"
+    "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/WRF"
 )
 SOLVE_EM_SRC = CANONICAL_WRF / "dyn_em" / "solve_em.F"
 MODULE_SMALL_STEP_SRC = CANONICAL_WRF / "dyn_em" / "module_small_step_em.F"

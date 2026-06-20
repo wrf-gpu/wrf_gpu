@@ -16,7 +16,7 @@ same as the daily pipeline / segscan) and reports:
   * final-state finiteness + physical ranges (the stability gate).
 
 Run:
-  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 \
+  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 \
     XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false \
     TF_GPU_ALLOCATOR=cuda_malloc_async GPUWRF_ACOUSTIC_UNROLL=2 taskset -c 0-3 \
     python proofs/v0100/wave_a_gate.py --hours 1 --out wave_a_after_u2_1h.json

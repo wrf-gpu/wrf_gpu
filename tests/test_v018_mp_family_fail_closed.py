@@ -23,7 +23,7 @@ from gpuwrf.io.namelist_check import UnsupportedSchemeError, validate_namelist
 from gpuwrf.io.scheme_catalog import SupportStatus, classify_scheme
 
 
-WRF_ROOT = Path(os.environ.get("GPUWRF_WRF_ROOT", "/home/user/src/wrf_pristine/WRF"))
+WRF_ROOT = Path(os.environ.get("GPUWRF_WRF_ROOT", "<USER_HOME>/src/wrf_pristine/WRF"))
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = REPO_ROOT / "proofs/v018/mp_endpoint_manifest.json"
 STATUS_PATH = REPO_ROOT / "proofs/v018/mp_family_status.json"

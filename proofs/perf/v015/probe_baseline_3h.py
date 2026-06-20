@@ -16,7 +16,7 @@ from pathlib import Path
 
 from gpuwrf.integration import daily_pipeline as dp
 
-PROBE = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+PROBE = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 OUT = Path("/tmp/v015_perf/baseline_3h")
 PROOF = Path(__file__).resolve().parent / "baseline_3h.json"
 

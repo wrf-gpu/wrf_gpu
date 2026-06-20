@@ -149,7 +149,7 @@ repo alone and are therefore out of scope for this gate (see docs/REPRODUCIBILIT
                    and ANY speedup / throughput claim -> require an NVIDIA GPU.
   * Purged corpus  proofs/m20/* (TOST equivalence), multi-day operational gates,
                    and proofs/v090/*_savepoint_parity oracle dirs -> require real
-                   CPU-WRF wrfout + AIFS forcing (not redistributable; /mnt/data).
+                   CPU-WRF wrfout + AIFS forcing (not redistributable; <DATA_ROOT>).
   * Oracle rebuild Fortran-linked savepoint regeneration + provenance sha256 over
                    the WRF source -> set WRF_PRISTINE_ROOT to a pristine WRF v4
                    checkout. Vendored savepoints make this OPTIONAL for the gates

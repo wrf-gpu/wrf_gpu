@@ -34,7 +34,7 @@ worker in `/tmp/v018_rrtmg1424_handoff.md`.
 
 LSM static-bundle inventory check used the real-case wrfinput:
 
-`/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36/wrfinput_d01`
+`<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36/wrfinput_d01`
 
 Fields present include `XLAND`, `LANDMASK`, `TSK`, `TSLB`, `SMOIS`, `SH2O`,
 `ZS`, `DZS`, `TMN`, `SNOWC`, `SNOW`, `SNOWH`, `VEGFRA`, `LAI`, `SHDMAX`,
@@ -48,11 +48,11 @@ Fields not present include slab/PX statics needed for honest bundle extraction:
 Phase-2 source/proof survey commands:
 
 ```bash
-sed -n '1,260p' /home/user/src/wrf_gpu2/.agent/decisions/V018-PRIORITY-QUEUE-20260614.md
-rg -ni "subroutine|function|call |pblh|kpbl|rthblten|rqvblten|rublten|rvblten" /home/user/src/wrf_pristine/WRF/phys/module_bl_shinhong.F
-sed -n '292,1215p' /home/user/src/wrf_pristine/WRF/phys/module_bl_gbmpbl.F
-git -C /home/user/src/wrf_gpu2/.wt-v017-rrtmg show --stat --oneline da6c2ffd
-sed -n '1,180p' /home/user/src/wrf_gpu2/.wt-v017-rrtmg/.agent/reviews/2026-06-14-gpt-v017-rrtmg-result.md
+sed -n '1,260p' <USER_HOME>/src/wrf_gpu2/.agent/decisions/V018-PRIORITY-QUEUE-20260614.md
+rg -ni "subroutine|function|call |pblh|kpbl|rthblten|rqvblten|rublten|rvblten" <USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_shinhong.F
+sed -n '292,1215p' <USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_gbmpbl.F
+git -C <USER_HOME>/src/wrf_gpu2/.wt-v017-rrtmg show --stat --oneline da6c2ffd
+sed -n '1,180p' <USER_HOME>/src/wrf_gpu2/.wt-v017-rrtmg/.agent/reviews/2026-06-14-gpt-v017-rrtmg-result.md
 git show worker/opus/v090-shinhong-r2:proofs/v090/shinhong_r2_savepoint_parity.json
 git show worker/opus/v090-shinhong-r2:.agent/reviews/2026-06-04-opus-shinhong-r2.md
 ```

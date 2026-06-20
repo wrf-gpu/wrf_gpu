@@ -12,7 +12,7 @@
   },
   "generated_utc": "2026-06-09T00:10:37.050482+00:00",
   "inputs": {
-    "cpu_wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+    "cpu_wrfinput": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
     "domain": "d02",
     "gpu_native_wrfinput": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
     "gpu_run_dir": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z"
@@ -769,8 +769,8 @@
   "model_numerics_note": "No dycore, physics, State, GridSpec, or OperationalNamelist runtime arrays are changed; this is a host-only wrfout payload selection.",
   "outputs": {
     "fallback_wrfout_without_latlon_payload": "/tmp/v014_latlon_writer_payload/wrfout_d02_2026-05-01_19:00:00.fallback",
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/latlon_writer_payload.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/latlon_writer_payload.md",
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/latlon_writer_payload.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/latlon_writer_payload.md",
     "real_latlon_wrfout_with_payload": "/tmp/v014_latlon_writer_payload/wrfout_d02_2026-05-01_19:00:00.real_latlon"
   },
   "remaining_static_base_exclusions": [

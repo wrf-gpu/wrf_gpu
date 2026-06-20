@@ -14,7 +14,7 @@
   "net_influx_pa_per_cell_h": -74.51517857142858,
   "residual_pa_per_cell_h": 5.178443877551032
  },
- "cpu_reference": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+ "cpu_reference": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
  "depth": 8,
  "excess_outflux_pa_per_cell_h_h37": {
   "acoustic_fix": -28.81913265306123,

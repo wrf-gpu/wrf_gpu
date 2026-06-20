@@ -41,7 +41,7 @@ from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_op
 config.update("jax_enable_x64", True)
 
 SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-rk1-d2h-acceptance"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 BASELINE_RMSE = ROOT / "data" / "fixtures" / "gen2_baseline" / "rmse_summary.csv"
 D2H_WARMED_MEMO = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-d2h-warmed-recapture" / "d2h_warmed_memo.md"
 D2H_GREP_MEMO = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-d2h-grep" / "d2h_localization.md"

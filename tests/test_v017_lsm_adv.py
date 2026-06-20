@@ -161,7 +161,7 @@ def test_oracle_savepoints_are_real_non_self_compare_evidence(
     checksum_text = checks[0].read_text()
     assert src in checksum_text, f"{src} not recorded in {checks[0]}"
     pristine = Path(
-        os.environ.get("GPUWRF_WRF_ROOT", "/home/user/src/wrf_pristine/WRF")
+        os.environ.get("GPUWRF_WRF_ROOT", "<USER_HOME>/src/wrf_pristine/WRF")
     ) / "phys" / src
     if pristine.exists():
         import hashlib

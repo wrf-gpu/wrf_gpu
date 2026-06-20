@@ -4,9 +4,9 @@
 set -e
 cd "$(dirname "$0")"
 python ../emit_flat.py
-PHYS=/home/user/src/wrf_pristine/WRF/phys
-SHARE=/home/user/src/wrf_pristine/WRF/share
-GF=/home/user/miniconda3/envs/wrfbuild/bin/gfortran
+PHYS=<USER_HOME>/src/wrf_pristine/WRF/phys
+SHARE=<USER_HOME>/src/wrf_pristine/WRF/share
+GF=<USER_HOME>/miniconda3/envs/wrfbuild/bin/gfortran
 $GF -I$PHYS -ffree-line-length-none -fbacktrace -g -c oracle.f90 -o oracle.o
 $GF oracle.o $PHYS/module_bl_mynnedmf.o $PHYS/module_bl_mynnedmf_common.o \
     $SHARE/module_model_constants.o $PHYS/ccpp_kind_types.o -o oracle

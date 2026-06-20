@@ -24,7 +24,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--pair", action="append", help="JSON object or path with case_id,cpu_dir,gpu_dir,domain,init,fh")
     ap.add_argument("--pairs-json", type=Path, help="JSON list of pair objects")
-    ap.add_argument("--aemet-root", type=Path, default=Path("/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations"))
+    ap.add_argument("--aemet-root", type=Path, default=Path("<DATA_ROOT>/canairy_meteo/artifacts/datasets/aemet_stations"))
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args(argv)
 

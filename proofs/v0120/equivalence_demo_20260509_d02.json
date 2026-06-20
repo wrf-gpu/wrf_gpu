@@ -1,5 +1,5 @@
 {
-  "case_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
+  "case_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z",
   "comparison": {
     "compared_files": [
       {
@@ -2297,7 +2297,7 @@
     "n_steps_for_lead": 14400.0,
     "n_steps_recorded": 43200,
     "source_files": [
-      "/mnt/data/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/rsl.error.0000"
+      "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260509_18z_l2_72h_20260511T190519Z/rsl.error.0000"
     ],
     "speedup": 1.6990301349123595,
     "status": "OK"

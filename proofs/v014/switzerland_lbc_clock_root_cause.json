@@ -1,7 +1,7 @@
 {
   "schema": "v014_switzerland_lbc_clock_root_cause",
-  "cpu_truth": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
-  "broken_run": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_20260611T001250Z/gpu_output",
+  "cpu_truth": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+  "broken_run": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_20260611T001250Z/gpu_output",
   "run_start": "2023-01-15T00:00:00",
   "g1_broken_ring_frozen_at_h01": {
     "rows": [
@@ -144,7 +144,7 @@
     }
   ],
   "g3_fixed_rerun": {
-    "run_root": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_h6_lbcfix_20260611T013851Z/gpu_output",
+    "run_root": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_h6_lbcfix_20260611T013851Z/gpu_output",
     "rows": [
       {
         "hour": 1,

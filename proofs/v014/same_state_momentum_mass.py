@@ -41,7 +41,7 @@ DEBUG_METHOD_CRITIC = ROOT / ".agent/reviews/2026-06-09-v014-debug-method-critic
 JAX_PRE_HALO_JSON = PROOF_DIR / "jax_pre_halo_capture.json"
 JAX_H10_MODULE_PATH = PROOF_DIR / "jax_h10_prestep_carry.py"
 
-DEFAULT_H10_CARRY = Path("/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl")
+DEFAULT_H10_CARRY = Path("<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl")
 
 TARGET_SURFACE = "post_after_all_rk_steps_pre_halo"
 TARGET_STEP = 6000
@@ -183,7 +183,7 @@ def add_default_h10_candidate(candidates: list[dict[str, Any]]) -> list[dict[str
     out = list(candidates)
     default = str(DEFAULT_H10_CARRY)
     if all(str(item.get("path")) != default for item in out):
-        out.append({"source": "default:/mnt/data/wrf_gpu2/v014_h10_prestep_carry", "path": default, **path_info(DEFAULT_H10_CARRY)})
+        out.append({"source": "default:<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry", "path": default, **path_info(DEFAULT_H10_CARRY)})
     seen: set[str] = set()
     unique: list[dict[str, Any]] = []
     for item in out:

@@ -26,7 +26,7 @@ from gpuwrf.dynamics.orchestrator import OrchestratorConfig, run_scan
 SPRINT = Path(".agent/sprints/2026-05-22-m6x-c2-jax-wrf-dycore-architecture")
 PROOFS = SPRINT / "proofs"
 WRFINPUT_D02 = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z/wrfinput_d02"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z/wrfinput_d02"
 )
 
 

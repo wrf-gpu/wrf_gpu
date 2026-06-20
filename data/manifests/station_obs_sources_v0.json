@@ -42,8 +42,8 @@
       "status": "PARTIAL",
       "source_type": "AEMET_LOCAL_NETWORK",
       "station_count": 106,
-      "station_manifest": "/home/user/src/canairy_meteo/Gen2/manifests/aemet_stations_canary_v1.yaml",
-      "local_archive_glob": "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/aemet_stations/*_daily_v1.parquet",
+      "station_manifest": "<USER_HOME>/src/canairy_meteo/Gen2/manifests/aemet_stations_canary_v1.yaml",
+      "local_archive_glob": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/datasets/aemet_stations/*_daily_v1.parquet",
       "variables": ["temperature_2m", "relative_humidity", "pressure", "wind_speed", "wind_direction", "precipitation"],
       "cadence": "conventional observation cadence by station; daily archives exist locally for many stations",
       "primary_url": "https://opendata.aemet.es/opendata/api/observacion/convencional/todas",
@@ -61,7 +61,7 @@
       "status": "PARTIAL",
       "source_type": "REGIONAL_LOCAL_NETWORK",
       "station_count": 57,
-      "station_manifest": "/home/user/src/canairy_meteo/Gen2/manifests/grafcan_sitcan_stations_v1.yaml",
+      "station_manifest": "<USER_HOME>/src/canairy_meteo/Gen2/manifests/grafcan_sitcan_stations_v1.yaml",
       "inventory_url": "https://opendata.sitcan.es/upload/meteorologia/estaciones.csv",
       "live_api_base": "https://sensores.grafcan.es/api/v1.0/",
       "variables": ["temperature_2m", "relative_humidity", "pressure", "wind_speed", "wind_direction", "precipitation", "solar_ghi_partial"],
@@ -81,11 +81,11 @@
       "station_count": 193,
       "row_count": 6935614,
       "date_range_utc": ["2016-04-21", "2026-05-07"],
-      "station_registry": "/home/user/src/canairy_meteo/Gen2/manifests/high_quality_station_registry_v1.json",
-      "station_cube": "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/station_benchmark_cube_v3_candidate.parquet",
+      "station_registry": "<USER_HOME>/src/canairy_meteo/Gen2/manifests/high_quality_station_registry_v1.json",
+      "station_cube": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/datasets/station_benchmark_cube_v3_candidate.parquet",
       "wrf_matched_skill_products": [
-        "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_0_24h_matched_v1.parquet",
-        "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_25_72h_matched_v1.parquet"
+        "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_0_24h_matched_v1.parquet",
+        "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_25_72h_matched_v1.parquet"
       ],
       "variables": ["wind", "temperature", "humidity_partial", "precipitation_partial", "station_metadata"],
       "cadence": "historical station cube cadence by source",
@@ -111,12 +111,12 @@
     "GRAFCAN SITCAN for dense local enrichment once key path is operational"
   ],
   "artifact_paths": [
-    "/home/user/src/canairy_meteo/Gen2/manifests/high_quality_station_registry_v1.json",
-    "/home/user/src/canairy_meteo/Gen2/manifests/aemet_stations_canary_v1.yaml",
-    "/home/user/src/canairy_meteo/Gen2/manifests/grafcan_sitcan_stations_v1.yaml",
-    "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/station_benchmark_cube_v3_candidate.parquet",
-    "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_0_24h_matched_v1.parquet",
-    "/home/user/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_25_72h_matched_v1.parquet"
+    "<USER_HOME>/src/canairy_meteo/Gen2/manifests/high_quality_station_registry_v1.json",
+    "<USER_HOME>/src/canairy_meteo/Gen2/manifests/aemet_stations_canary_v1.yaml",
+    "<USER_HOME>/src/canairy_meteo/Gen2/manifests/grafcan_sitcan_stations_v1.yaml",
+    "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/datasets/station_benchmark_cube_v3_candidate.parquet",
+    "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_0_24h_matched_v1.parquet",
+    "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/datasets/wrf_case_bank_skill_25_72h_matched_v1.parquet"
   ],
   "notes": [
     "This is a source manifest only; no live station ingest is implemented in M7-S0a.",

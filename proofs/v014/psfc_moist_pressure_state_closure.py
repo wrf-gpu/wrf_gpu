@@ -2,7 +2,7 @@
 
 Sprint: .agent/sprints/2026-06-10-v014-fable-psfc-moist-pressure-closure/
 
-WRF source anchor (pristine WRFv4, /home/user/src/wrf_pristine/WRF):
+WRF source anchor (pristine WRFv4, <USER_HOME>/src/wrf_pristine/WRF):
   - phys/module_surface_driver.F:1988          PSFC(I,J) = p8w(I,kts,J)
   - dyn_em/module_first_rk_step_part1.F:1400   surface driver gets P8W=grid%p_hyd_w
   - dyn_em/module_big_step_utilities_em.F:4946-4958 (phy_prep):
@@ -40,11 +40,11 @@ import numpy as np
 from netCDF4 import Dataset
 
 RUN_ROOT = Path(
-    "/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_lbcfix_20260610T151455Z"
 )
 GPU_DIR = RUN_ROOT / "gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z"
 CPU_DIR = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/"
     "20260501_18z_l2_72h_20260519T173026Z"
 )
 DOMAIN = "d02"
@@ -229,8 +229,8 @@ def main() -> None:
             "psfc": "phys/module_surface_driver.F:1988 PSFC=p8w(kts)",
             "p8w_binding": "dyn_em/module_first_rk_step_part1.F:1400 P8W=grid%p_hyd_w",
             "p_hyd_w": "dyn_em/module_big_step_utilities_em.F:4946-4958 phy_prep",
-            "source_tree": "/home/user/src/wrf_pristine/WRF",
-            "note": "contract path /home/user/src/canairy_meteo/Gen2/artifacts/"
+            "source_tree": "<USER_HOME>/src/wrf_pristine/WRF",
+            "note": "contract path <USER_HOME>/src/canairy_meteo/Gen2/artifacts/"
                     "wrf_gpu_src/WRF does not exist on this box",
         },
         "leads": [analyse_lead(h) for h in leads],

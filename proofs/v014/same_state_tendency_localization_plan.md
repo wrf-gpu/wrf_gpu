@@ -30,7 +30,7 @@ The wind/mass probe shows broad dynamic divergence by h8-h14, including interior
 Use the same retained Case 3 paths from the wind/mass divergence probe:
 
 - JAX/GPU retained outputs for failure-cell selection only: `/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
-- CPU WRF truth history: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
+- CPU WRF truth history: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z`
 
 The same-state term truth must come from CPU WRF source-derived savepoints, not from hourly interpolated WRF history and not from JAX self-comparison.
 

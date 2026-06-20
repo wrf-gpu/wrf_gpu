@@ -52,7 +52,7 @@ runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
 
 REAL_CASE = "20260429_18z_l2_72h_20260524T204451Z"
-REAL_L2_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
+REAL_L2_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2")
 
 
 def _stage_real_case(workdir: Path) -> tuple[Path, str] | None:

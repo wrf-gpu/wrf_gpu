@@ -7,7 +7,7 @@
     "branch": "worker/opus/v040-s4",
     "head_sha": "bb728bc9dfccc10b2ec048c09d790f72ae5539e3"
   },
-  "oracle_root": "/mnt/data/canairy_meteo/runs",
+  "oracle_root": "<DATA_ROOT>/canairy_meteo/runs",
   "n_cases": 12,
   "min_cases_required": 10,
   "domains": [
@@ -1479,7 +1479,7 @@
     "require_conservation_pass": true,
     "require_restart_pass": true,
     "cpu_wrfout_roots": [
-      "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output"
+      "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output"
     ],
     "candidate_cases": [
       "20260428_18z_l3_24h_20260525T221139Z",

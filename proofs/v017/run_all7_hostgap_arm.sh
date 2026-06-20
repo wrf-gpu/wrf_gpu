@@ -14,8 +14,8 @@ MODE="${1:?need MODE}"
 HOURS="${2:?need HOURS}"
 RR="${3:?need RR}"
 
-ROOT=/home/user/src/wrf_gpu2/.wt-opus-hostgap
-INPUT=/mnt/data/wrf_downscale/canary_all7/run
+ROOT=<USER_HOME>/src/wrf_gpu2/.wt-opus-hostgap
+INPUT=<DATA_ROOT>/wrf_downscale/canary_all7/run
 mkdir -p "$RR/gpu_output" "$RR/proofs" "$RR/scratch"
 LOG="$RR/run.log"
 SAMP="$RR/gpu_samples.csv"
@@ -26,7 +26,7 @@ sync_mode=$MODE
 hours=$HOURS
 root=$ROOT
 input_dir=$INPUT
-cache=/mnt/data/gpuwrf_jax_cache (warm, shared)
+cache=<DATA_ROOT>/gpuwrf_jax_cache (warm, shared)
 cpu_cores=0-3
 EOF
 
@@ -45,7 +45,7 @@ env PYTHONPATH="$ROOT/src" \
     JAX_ENABLE_X64=true \
     XLA_PYTHON_CLIENT_PREALLOCATE=false \
     JAX_ENABLE_COMPILATION_CACHE=true \
-    JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache \
+    JAX_COMPILATION_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache \
     OMP_NUM_THREADS=4 \
     GPUWRF_MYNN_BOULAC_ONZ=1 \
     GPUWRF_SCRATCH="$RR/scratch" \

@@ -10,7 +10,7 @@
   "case": {
     "name": "l2_d02_20260501_18z_l2_72h_case3",
     "jax_retained_outputs_for_selection_only": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
-    "cpu_wrf_history": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_wrf_history": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
     "lead_candidates": ["h10", "h8", "h12", "h14"],
     "preferred_first_lead": "h10"
   },

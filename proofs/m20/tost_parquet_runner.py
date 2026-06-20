@@ -59,14 +59,14 @@ sys.path.insert(0, str(HERE))
 RUNNABLE_UNITS = {
     "20260509_18z__d02": {
         "case_id": "20260509_18z", "domain": "d02",
-        "run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+        "run_root": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2",
         "run_id": "20260509_18z_l2_72h_20260511T190519Z",
         "init_utc": "2026-05-09T18:00:00+00:00", "max_lead_h": 72,
         "wrfout_frames": 73, "grid": [66, 120], "parquet_workdir_match": True,
     },
     "20260530_18z__d02": {
         "case_id": "20260530_18z", "domain": "d02",
-        "run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+        "run_root": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2",
         "run_id": "20260530_18z_l2_72h_20260531T161057Z",
         "init_utc": "2026-05-30T18:00:00+00:00", "max_lead_h": 72,
         "wrfout_frames": 73, "grid": [66, 159], "parquet_workdir_match": True,
@@ -78,7 +78,7 @@ RUNNABLE_UNITS = {
     # (kept here for completeness / manager override only).
     "20260521_18z_l2rerun__d02": {
         "case_id": "20260521_18z_l2rerun", "domain": "d02",
-        "run_root": "/mnt/data/canairy_meteo/runs/wrf_l2",
+        "run_root": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2",
         "run_id": "20260521_18z_l2_72h_20260522T133443Z",
         "init_utc": "2026-05-21T18:00:00+00:00", "max_lead_h": 19,
         "wrfout_frames": 20, "grid": [66, 159], "parquet_workdir_match": False,

@@ -33,7 +33,7 @@ sys.path.insert(0, str(REPO / "src"))
 from gpuwrf.integration.d02_replay import build_l2_d02_replay_case  # noqa: E402
 from gpuwrf.coupling.physics_couplers import surface_adapter, mynn_adapter  # noqa: E402
 
-RUN_DIR = "/mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z"
+RUN_DIR = "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z"
 DT = 12.0
 STEPS = 8
 

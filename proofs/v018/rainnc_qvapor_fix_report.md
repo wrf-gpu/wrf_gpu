@@ -20,9 +20,9 @@ After the qcfz fix, no material mass-production process remains WRF-active/JAX-z
 
 ## 72 h Switzerland Gate
 
-CPU reference: `/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
+CPU reference: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu`
 
-Post-qcfz GPU run: `/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z`
+Post-qcfz GPU run: `<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z`
 
 Wrapper result: `PIPELINE_GREEN`, dimension compare PASS, 72 wrfouts, inventory PASS.
 
@@ -47,8 +47,8 @@ Accumulator decomposition again rules out writer/convention error:
 - `proofs/v018/thompson_process_oracle.py`
 - `proofs/v018/thompson_process_oracle.json`
 - `proofs/v018/switzerland_72h_target_metrics.json`
-- `/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.json`
-- `/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.md`
+- `<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.json`
+- `<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.md`
 
 ## Carried Risk
 

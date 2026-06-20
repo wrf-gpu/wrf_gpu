@@ -112,7 +112,7 @@
       42.48920994283117
     ]
   },
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "schema": "v0110_rrtmg_slope_gpu_sanity",
   "state_summary": {
     "mu": {

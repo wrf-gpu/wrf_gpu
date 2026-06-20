@@ -21,7 +21,7 @@
   "require_conservation_pass": true,
   "require_restart_pass": true,
   "cpu_wrfout_roots": [
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output"
   ],
   "candidate_cases": [
     "20260428_18z_l3_24h_20260525T221139Z",

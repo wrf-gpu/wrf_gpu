@@ -35,8 +35,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
-PROBE_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+PROBE_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 BASELINE_GPU = PROBE_ROOT / "gpu_output"
 FIX_GPU = PROBE_ROOT / "gpu_output_pressure_diagnostics_fix_gpt"
 PREV_STRONGFLOW = ROOT / "proofs/v014/switzerland_strongflow_dynamics.json"
@@ -469,11 +469,11 @@ def analyze() -> dict[str, Any]:
         "schema": "v014_switzerland_pressure_diagnostics_fix",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "wrf_source_anchors": {
-            "solve_em_muts_reset": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:1446",
-            "solve_em_calc_p_rho_phi_call": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:3049-3052",
-            "calc_p_rho_phi_al_line": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1029",
-            "horizontal_pgf_v_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
-            "horizontal_pgf_u_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
+            "solve_em_muts_reset": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F:1446",
+            "solve_em_calc_p_rho_phi_call": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F:3049-3052",
+            "calc_p_rho_phi_al_line": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1029",
+            "horizontal_pgf_v_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
+            "horizontal_pgf_u_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
             "jax_state_mu_semantics": "src/gpuwrf/contracts/state.py:378-380",
             "jax_absolute_diagnostics": "src/gpuwrf/dynamics/core/rk_addtend_dry.py:_absolute_diagnostics",
         },

@@ -41,7 +41,7 @@
 +       wrfgpu2_source_grid = 2
 +       wrfgpu2_source_start_step = 6000
 +       wrfgpu2_source_end_step = 6000
-+       wrfgpu2_source_root = '/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output'
++       wrfgpu2_source_root = '<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output'
 +       CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_SOURCE_SAVE_BOUNDARY_GRID', wrfgpu2_source_env)
 +       IF (LEN_TRIM(wrfgpu2_source_env) > 0) THEN
 +         READ(wrfgpu2_source_env,*,IOSTAT=wrfgpu2_source_ios) wrfgpu2_source_grid

@@ -70,7 +70,7 @@ SPRINT_CONTRACT = (
     ROOT / ".agent/sprints/2026-06-09-v014-step1-live-nest-theta-qv-wiring/sprint-contract.md"
 )
 PRIOR_ADJUST_HOOK = (
-    Path("/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth")
+    Path("<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth")
     / "adjust_tempqv_d2_i18_j10_k2.txt"
 )
 PRIOR_FIX_JSON = PROOF_DIR / "step1_transient_adjust_base_fix.json"

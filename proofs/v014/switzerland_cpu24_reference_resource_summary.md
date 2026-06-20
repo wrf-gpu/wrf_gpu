@@ -10,11 +10,11 @@ memory baseline.
 
 Run artifacts:
 
-- Runroot: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z`
-- CPU dir: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu`
-- Resource dir: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu`
-- Summary JSON: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/cpu24_resource_summary.json`
-- Summary markdown: `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/cpu24_resource_summary.md`
+- Runroot: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z`
+- CPU dir: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/run_cpu`
+- Resource dir: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu`
+- Summary JSON: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/cpu24_resource_summary.json`
+- Summary markdown: `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/cpu24_resource_summary.md`
 
 Run configuration:
 
@@ -48,12 +48,12 @@ Timing:
 Resource summary:
 
 - Process CSV:
-  `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/switzerland_cpu24_live_process_usage.csv`
+  `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/switzerland_cpu24_live_process_usage.csv`
 - Host-memory CSV:
-  `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/switzerland_cpu24_live_system_memory.csv`
+  `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/switzerland_cpu24_live_system_memory.csv`
 - Initial launch samples:
-  `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/initial_switzerland_cpu24_process_usage.csv`,
-  `/mnt/data/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/initial_switzerland_cpu24_system_memory.csv`
+  `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/initial_switzerland_cpu24_process_usage.csv`,
+  `<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_cpu24_20260610T073414Z/resources/cpu/initial_switzerland_cpu24_system_memory.csv`
 - WRF-rank process rows: `3936`
 - System-memory samples: `166`
 - Peak single-rank RSS: `579.203 MiB` at `2026-06-10T08:39:39+01:00`

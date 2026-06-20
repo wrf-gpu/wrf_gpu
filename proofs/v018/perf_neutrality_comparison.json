@@ -7,8 +7,8 @@
   "baseline_committed_ref": "worker/opus/v017-release:proofs/perf/warmed_timing.json",
   "branch": "worker/gpt/v018-integration",
   "case": "canonical proofs/perf/warmed_timing.py coupled real d02 standard default-scheme case",
-  "command_v017_rerun": "scripts/with_gpu_lock.sh --label gpt-integ-v017-baseline -- env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 JAX_ENABLE_X64=true JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 python proofs/perf/warmed_timing.py",
-  "command_v018": "scripts/with_gpu_lock.sh --label gpt-integ-v018-confirm -- env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 JAX_ENABLE_X64=true JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 python proofs/perf/warmed_timing.py",
+  "command_v017_rerun": "scripts/with_gpu_lock.sh --label gpt-integ-v017-baseline -- env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 JAX_ENABLE_X64=true JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 python proofs/perf/warmed_timing.py",
+  "command_v018": "scripts/with_gpu_lock.sh --label gpt-integ-v018-confirm -- env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 JAX_ENABLE_X64=true JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 XLA_PYTHON_CLIENT_PREALLOCATE=false TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 python proofs/perf/warmed_timing.py",
   "deltas": {
     "vs_v017_committed_percent": 41.81632382518463,
     "vs_v017_committed_s_per_forecast_hour": 6.556896347647124,

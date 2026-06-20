@@ -156,7 +156,7 @@ def main() -> int:
         run_root = args.run_root
     else:
         run_root = paths.wrf_l3_root()
-        fallback_root = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+        fallback_root = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
         if not (run_root / args.run_id).is_dir() and (fallback_root / args.run_id).is_dir():
             run_root = fallback_root
     run_dir = resolve_run_dir(args.run_id, run_root)

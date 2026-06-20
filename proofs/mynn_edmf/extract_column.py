@@ -26,7 +26,7 @@ RCP = R_D / CP
 G = 9.81
 
 WRFOUT = (
-    "/mnt/data/canairy_meteo/runs/wrf_l3/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00"
 )
 OUT = str(Path(__file__).resolve().parent / "column_d03_12z.json")

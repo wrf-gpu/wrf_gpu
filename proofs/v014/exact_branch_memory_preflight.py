@@ -35,9 +35,9 @@ OUT_JSON = ROOT / "proofs" / "v014" / "exact_branch_memory_preflight.json"
 OUT_MD = ROOT / "proofs" / "v014" / "exact_branch_memory_preflight.md"
 
 DEFAULT_NESTED_INPUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z"
 )
-DEFAULT_RUN_ROOT_PARENT = Path("/mnt/data/wrf_gpu_validation")
+DEFAULT_RUN_ROOT_PARENT = Path("<DATA_ROOT>/wrf_gpu_validation")
 GPU_LOCK = Path("/tmp/wrf_gpu_validation_gpu.lock")
 
 

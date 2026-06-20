@@ -38,7 +38,7 @@ from gpuwrf.validation.data_quality import compute_rmse_against_gen2  # noqa: E4
 
 
 SPRINT_DIR = ROOT / ".agent" / "sprints" / "2026-05-27-m7-l2-d02-replay-validation"
-L2_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
+L2_RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2")
 OUTPUT_ROOT = Path("/tmp/m7_pipeline_runs")
 RMSE_THRESHOLDS = {"T2": 3.0, "U10": 7.5, "V10": 7.5}
 

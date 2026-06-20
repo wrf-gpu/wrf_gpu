@@ -52,11 +52,11 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-CPU = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
-PROBE_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
+CPU = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+PROBE_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable")
 BASELINE_GPU = PROBE_ROOT / "gpu_output"
 FIX_GPU = PROBE_ROOT / "gpu_output_hpg_native_face_fix"
-NATIVE_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face")
+NATIVE_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face")
 NATIVE_RUN = NATIVE_ROOT / "run_wrf"
 NATIVE_DUMPS = NATIVE_ROOT / "hpg_dumps"
 NATIVE_REPLAY = NATIVE_ROOT / "run_h36"
@@ -696,10 +696,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "schema": "v014_switzerland_hpg_native_face_fix",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "wrf_source_anchors": {
-            "registry_hypsometric_default": "/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON:2285 (default 2)",
-            "calc_p_rho_phi_hypso2": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1043-1062",
-            "calc_p_rho_phi_hypso1": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1027-1030",
-            "horizontal_pgf_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2316,2385-2392",
+            "registry_hypsometric_default": "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON:2285 (default 2)",
+            "calc_p_rho_phi_hypso2": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1043-1062",
+            "calc_p_rho_phi_hypso1": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1027-1030",
+            "horizontal_pgf_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2316,2385-2392",
             "gen2_hpg_identical_to_pristine": "diff of horizontal_pressure_gradient gen2 vs pristine 4.7.1: byte-identical",
         },
         "jax_fix_anchors": {

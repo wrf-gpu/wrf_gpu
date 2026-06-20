@@ -10,7 +10,7 @@ that:
 * the v0.4.0 native real.exe-equivalent init consumes.
 
 It is derived from the real WPS ``met_em.*`` structure (recon: ``proofs/v030/
-RECON.md`` + ``recon_inventory.json``, oracle = ``/mnt/data/canairy_meteo/runs/
+RECON.md`` + ``recon_inventory.json``, oracle = ``<DATA_ROOT>/canairy_meteo/runs/
 wps_cases/<case>/l3/met_em.d0{1,2,3}.*.nc``, metgrid V4.6.0) intersected with what
 WRF ``real.exe`` (``module_initialize_real.F``) requires.
 

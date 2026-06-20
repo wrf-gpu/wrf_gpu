@@ -1,4 +1,4 @@
-+ cd /home/user/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
++ cd <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
 + export PYTHONPATH=src
 + PYTHONPATH=src
 + export OMP_NUM_THREADS=4
@@ -16,8 +16,8 @@
 + taskset -c 0-3 python -m pytest tests/idealized/test_dycore_close_gate.py -v -p no:cacheprovider
 + tail -25
 ============================= test session starts ==============================
-platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- /home/user/miniconda3/bin/python
-rootdir: /home/user/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
+platform linux -- Python 3.13.11, pytest-9.0.3, pluggy-1.5.0 -- <USER_HOME>/miniconda3/bin/python
+rootdir: <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-aed38ddc03ff3ad39
 configfile: pyproject.toml
 plugins: zarr-3.1.6, anyio-4.12.1
 collecting ... collected 2 items

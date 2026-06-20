@@ -38,7 +38,7 @@ from netCDF4 import Dataset
 from gpuwrf.dynamics.metrics import load_wrfinput_metrics, terrain_slope_metrics
 from gpuwrf.io.gen2_accessor import Gen2Run
 
-DEFAULT_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
+DEFAULT_RUN = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
 G = 9.81
 
 

@@ -62,7 +62,7 @@ dist/
 /runs/
 
 # External fixture / runs / profiler storage
-# `data` is a symlink to /mnt/data/wrf_gpu2 (created by scripts/bootstrap_storage.sh)
+# `data` is a symlink to <DATA_ROOT>/wrf_gpu2 (created by scripts/bootstrap_storage.sh)
 data
 data/
 # Exception: small in-repo manifests committed under data/manifests/ (M7-S0a F-S0a-1)

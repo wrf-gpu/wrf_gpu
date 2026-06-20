@@ -21,9 +21,9 @@ import numpy as np
 from netCDF4 import Dataset
 
 RUN_ROOT = Path(os.environ.get("GPUWRF_MOIST_CQW_H4_RUN_ROOT", "") or Path("/tmp/v014_latest_moistcqw_h4_run_root").read_text().strip())
-OLD_RUN_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z")
+OLD_RUN_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_psfcfix_h4_20260610T160708Z")
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
-CPU_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
+CPU_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output") / RUN_ID
 GPU_DIR = RUN_ROOT / "gpu_output" / f"l2_d02_{RUN_ID}"
 OLD_GPU_DIR = OLD_RUN_ROOT / "gpu_output" / f"l2_d02_{RUN_ID}"
 DOMAIN = "d02"

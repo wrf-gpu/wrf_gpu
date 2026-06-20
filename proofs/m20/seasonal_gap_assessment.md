@@ -38,7 +38,7 @@ without explicit reviewer sign-off (ADR-029 season-stratification rule).
 
 ## 2. What is recoverable cheaply (the good news)
 
-`/mnt/data/canairy_meteo/runs/forcing_cases/` retains the **raw AIFS GRIB2 forcing for 39
+`<DATA_ROOT>/canairy_meteo/runs/forcing_cases/` retains the **raw AIFS GRIB2 forcing for 39
 init dates** (2026-03-26, 03-27, and a near-continuous 2026-04-28 → 2026-05-28 daily
 series). The expensive, externally-dependent stage — fetching AIFS — is **already done and
 preserved**. Backfill therefore only needs the local compute chain WPS(metgrid) → real.exe
@@ -48,7 +48,7 @@ preserved**. Backfill therefore only needs the local compute chain WPS(metgrid) 
   i.e. they can be re-run *and* scored against hourly T2/U10/V10. This is enough to reach
   the **n≥15** floor and approach the **n≈27 / n=30** target purely by re-running May cases.
 - Output size per full run: **~1.8 GB (L2, 72 h)**, **~1.3 GB (L3, 24 h)**. Disk free on
-  `/mnt/data`: ~261 GB (91 % used). A 30-case L2 corpus ≈ 54 GB — feasible, but tight; the
+  `<DATA_ROOT>`: ~261 GB (91 % used). A 30-case L2 corpus ≈ 54 GB — feasible, but tight; the
   re-run pipeline should thin to T2/U10/V10/RAINNC/RAINC + XLAT/XLONG or move scored cases
   to a compressed archive promptly.
 
@@ -63,7 +63,7 @@ in spring trade-wind conditions, n≥15"), which is itself a legitimate viabilit
 
 **Critical pipeline change:** disable or lengthen the wrfout purge for cases entered into
 the validation corpus, OR have the nightly job copy scored wrfout into
-`/mnt/data/wrf_gpu2/corpus/wrfout_archive/<case_id>/` (thinned to the 5 surface fields +
+`<DATA_ROOT>/wrf_gpu2/corpus/wrfout_archive/<case_id>/` (thinned to the 5 surface fields +
 grid) before deletion. Without this, the corpus will re-deplete and M21 will not be
 reproducible.
 

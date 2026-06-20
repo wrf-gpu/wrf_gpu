@@ -7,7 +7,7 @@ Generated UTC: `2026-06-09T09:28:37.727541+00:00`
 - verdict: `GRID_SYMPTOM_NOT_CLOSED`
 - GPU run: `L2_D02_GREEN` on `cuda:0`, total wall `1192.299` s, forecast-only `1186.443` s
 - VRAM: not recorded by wall_clock_l2_d02.json
-- output: `/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
+- output: `<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z`
 - log: `proofs/v014/grid_after_live_nest_base/gpu_h12/gpu_h12_run.log`
 
 The live-nest base source fix materially improves base/static payloads, but it does not close the grid-cell dynamic symptom.

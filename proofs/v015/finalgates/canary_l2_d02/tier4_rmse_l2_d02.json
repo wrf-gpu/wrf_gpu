@@ -2,7 +2,7 @@
   "failures": [],
   "fields": {
     "T2": {
-      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
+      "gen2_source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
       "max_abs_error": 3.7864990234375,
       "mean_error": -0.5693582164371084,
       "pass": true,
@@ -16,7 +16,7 @@
       "valid_time_utc": "2026-05-04T18:00:00+00:00"
     },
     "U10": {
-      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
+      "gen2_source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
       "max_abs_error": 12.119186401367188,
       "mean_error": 0.01271158760107879,
       "pass": true,
@@ -30,7 +30,7 @@
       "valid_time_utc": "2026-05-04T18:00:00+00:00"
     },
     "V10": {
-      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
+      "gen2_source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
       "max_abs_error": 8.3026704788208,
       "mean_error": 0.3129813663149581,
       "pass": true,
@@ -44,8 +44,8 @@
       "valid_time_utc": "2026-05-04T18:00:00+00:00"
     }
   },
-  "final_wrfout": "/mnt/data/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
-  "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+  "final_wrfout": "<DATA_ROOT>/wrf_gpu_validation/v015_canary_d02_72h_gpu_finalgates_20260613T095113Z/gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-04_18:00:00",
+  "reference_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
   "schema": "M7L2D02Tier4RMSE",
   "schema_version": 1,
   "status": "PASS",

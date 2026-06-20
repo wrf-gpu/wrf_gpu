@@ -60,7 +60,7 @@ RK_ADDTEND_DRY = ROOT / "src/gpuwrf/dynamics/core/rk_addtend_dry.py"
 CHECKPOINT = Path(
     os.environ.get(
         "WRFGPU2_H10_PRESTEP_CARRY",
-        "/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
+        "<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl",
     )
 )
 STDERR_CAPTURE = Path(

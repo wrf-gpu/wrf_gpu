@@ -58,7 +58,7 @@
   "bc_flag_routing_pass": true,
   "real_field_old_vs_new_locality": {
     "pass": true,
-    "fixture": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01",
+    "fixture": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01",
     "fixture_sha256": "449d6c3af25865c5dce93e5ec96c22cd05400d9cb3582224223984c1ae4f2028",
     "base_ref": "worker/gpt/v040-nativeinit-diag",
     "base_ref_commit": "4735e53a8ac8993295820edade3e2b0a9d530705",

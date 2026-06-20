@@ -26,7 +26,7 @@ from gpuwrf.physics.thompson_column import (  # noqa: E402
     density_from_pressure_temperature,
 )
 
-ORACLE = Path("/mnt/data/wrf_gpu2/physics_oracle/microphysics_coldmix")
+ORACLE = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_coldmix")
 Q3D = ("qv", "qc", "qr", "qi", "qs", "qg", "ni", "nr", "th", "pii", "p", "dz8w")
 ORACLE_TO_KERNEL = {"qv": "qv", "qc": "qc", "qr": "qr", "qi": "qi", "qs": "qs",
                     "qg": "qg", "ni": "Ni", "nr": "Nr"}

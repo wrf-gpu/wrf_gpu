@@ -2,7 +2,7 @@
   "proof": "v0.13.0 clear-sky radiation flux (RRTMG SW+LW ...C vars)",
   "generated_utc": "2026-06-08T21:52:36.929379+00:00",
   "oracle_kind": "pristine-CPU-WRF RRTMG clear-sky wrfout (...C) vs JAX clear-sky on IDENTICAL profiles; all-sky JAX-vs-WRF = calibration floor (NOT self-compare)",
-  "source_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00",
+  "source_wrfout": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00",
   "domain_shape": [
     75,
     93

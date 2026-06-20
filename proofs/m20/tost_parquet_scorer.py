@@ -5,7 +5,7 @@ TRUTH SOURCE (the honest one)
 -----------------------------
 The CPU-WRF station truth is the 31-case POINT-SHADOW PARQUET corpus:
 
-    /mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet
+    <DATA_ROOT>/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet
 
 It carries CPU-WRF ``wrf_phase14c_{t2_k,u10,v10}`` interpolated to 278 station
 points (4 nests: d02, d03, d04, d05; 278 stations; d02 73 lead-h, d03/d04/d05
@@ -77,7 +77,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-PARQUET = Path("/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/"
+PARQUET = Path("<DATA_ROOT>/canairy_meteo/artifacts/datasets/wrf_case_bank/"
                "_all_cases_point_shadows.parquet")
 
 # ADR-029 predeclared TOST equivalence margins (10% of CPU WRF RMSE benchmark).

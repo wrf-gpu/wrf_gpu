@@ -5,7 +5,7 @@ Scans the CPU-WRF baseline runs, the AEMET station network, and emits the
 manifests + TOST design + mini-ensemble selection that the project's viability
 decision depends on. PURE DATA/ANALYSIS - does not import or touch model code.
 
-Outputs (written to both /mnt/data/wrf_gpu2/corpus and proofs/m20):
+Outputs (written to both <DATA_ROOT>/wrf_gpu2/corpus and proofs/m20):
   - case_manifest.json
   - cpu_baseline_manifest.json
   - station_join_manifest.json
@@ -33,13 +33,13 @@ from netCDF4 import Dataset
 # ----------------------------------------------------------------------------
 # Paths
 # ----------------------------------------------------------------------------
-RUNS_ROOT = Path("/mnt/data/canairy_meteo/runs")
+RUNS_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs")
 WRF_L2 = RUNS_ROOT / "wrf_l2"
 WRF_L3 = RUNS_ROOT / "wrf_l3"
 WPS_CASES = RUNS_ROOT / "wps_cases"
-AEMET_ROOT = Path("/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations")
+AEMET_ROOT = Path("<DATA_ROOT>/canairy_meteo/artifacts/datasets/aemet_stations")
 
-CORPUS_OUT = Path("/mnt/data/wrf_gpu2/corpus")
+CORPUS_OUT = Path("<DATA_ROOT>/wrf_gpu2/corpus")
 PROOF_OUT = Path(__file__).resolve().parent
 
 CORPUS_OUT.mkdir(parents=True, exist_ok=True)

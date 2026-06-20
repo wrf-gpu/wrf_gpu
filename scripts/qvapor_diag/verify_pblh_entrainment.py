@@ -15,9 +15,9 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 
-CPU = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
+CPU = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/"
            "20260501_18z_l2_72h_20260519T173026Z")
-GPU = Path("/mnt/data/wrf_gpu_validation/v015_canary_d02_72h_allgreen/"
+GPU = Path("<DATA_ROOT>/wrf_gpu_validation/v015_canary_d02_72h_allgreen/"
            "gpu_output/l2_d02_20260501_18z_l2_72h_20260519T173026Z")
 FRAME = 5
 

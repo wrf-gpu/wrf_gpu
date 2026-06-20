@@ -45,7 +45,7 @@ from gpuwrf.init.real_init import comparator as C  # noqa: E402
 from gpuwrf.init.real_init.comparator import ForecastGateSpec  # noqa: E402
 import s5_native_init_parity as s5  # noqa: E402
 
-BACKFILL_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output")
+BACKFILL_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output")
 
 
 def _run_start(case_id: str) -> datetime:

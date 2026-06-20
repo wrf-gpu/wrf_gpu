@@ -49,8 +49,8 @@ from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_op
 config.update("jax_enable_x64", True)
 
 SPRINT_DIR = ROOT / ".agent" / "sprints" / "2026-05-27-m7-1km-memory-audit"
-CONTRACT_L2_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l2/20260520_18z_l2_72h_20260521T045847Z")
-FALLBACK_L3_RUN = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
+CONTRACT_L2_RUN = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260520_18z_l2_72h_20260521T045847Z")
+FALLBACK_L3_RUN = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z")
 TARGET_DX_M = 1000.0
 DT_S = 10.0
 NVIDIA_SMI_MEMORY_CMD = (

@@ -74,7 +74,7 @@ from gpuwrf.runtime.operational_mode import (  # noqa: E402
 from gpuwrf.validation.data_quality import compute_rmse_against_gen2  # noqa: E402
 
 
-L3_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+L3_RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 OUTPUT_ROOT = Path("/tmp/v010_d03_runs")
 PROOF_DIR = ROOT / "proofs" / "v010_validation"
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T133443Z"

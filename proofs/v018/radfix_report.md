@@ -66,7 +66,7 @@ After the fix:
 
 Commands were run with CPU cores pinned to `0-3`; GPU commands used
 `scripts/with_gpu_lock.sh --label gpt-radfix` and the shared JAX compilation
-cache under `/mnt/data/gpuwrf_jax_cache`.
+cache under `<DATA_ROOT>/gpuwrf_jax_cache`.
 
 - CPU focused wiring + regression:
   `proofs/v018/radfix_after_cpu_focused.log` - `22 passed in 42.59s`.

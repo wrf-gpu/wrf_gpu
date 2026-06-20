@@ -15,7 +15,7 @@
       "rc": 1,
       "error_tail": [
         "    ~~~~~~~~~~~~^^^^^^^^^^^",
-        "  File \"/home/user/miniconda3/lib/python3.13/site-packages/jax/_src/api.py\", line 2564, in try_to_block",
+        "  File \"<USER_HOME>/miniconda3/lib/python3.13/site-packages/jax/_src/api.py\", line 2564, in try_to_block",
         "    return x.block_until_ready()",
         "           ~~~~~~~~~~~~~~~~~~~^^",
         "jax.errors.JaxRuntimeError: RESOURCE_EXHAUSTED: Out of memory while trying to allocate 32.11GiB."

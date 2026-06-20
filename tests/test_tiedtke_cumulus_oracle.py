@@ -162,8 +162,8 @@ def test_tiedtke_savepoint_parity_report():
         rec["pass"] = not any(f"case {case} " in f for f in failures)
         case_records.append(rec)
 
-    wrf_tiedtke = Path("/home/user/src/wrf_pristine/WRF/phys/module_cu_tiedtke.F")
-    wrf_constants = Path("/home/user/src/wrf_pristine/WRF/share/module_model_constants.F")
+    wrf_tiedtke = Path("<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_tiedtke.F")
+    wrf_constants = Path("<USER_HOME>/src/wrf_pristine/WRF/share/module_model_constants.F")
     savepoint_files = sorted(SAVE.glob("tiedtke_case_*.json"))
     report = {
         "schema": "wrf-v060-tiedtke-savepoint-parity-report-v1",

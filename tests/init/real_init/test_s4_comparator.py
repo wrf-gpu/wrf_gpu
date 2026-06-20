@@ -30,7 +30,7 @@ from gpuwrf.init.real_init.types import WRFINPUT_TOLS
 from tests.init.real_init._oracle_product import build_product_from_oracle
 
 
-ORACLE_ROOT = Path("/mnt/data/canairy_meteo/runs")
+ORACLE_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs")
 
 
 def _first_case():
@@ -38,7 +38,7 @@ def _first_case():
         ORACLE_ROOT, require_domains=("d01", "d02", "d03"),
         require_wrfbdy=True, limit=1)
     if not cases:
-        pytest.skip("real.exe oracle corpus not mounted at /mnt/data")
+        pytest.skip("real.exe oracle corpus not mounted at <DATA_ROOT>")
     return cases[0]
 
 

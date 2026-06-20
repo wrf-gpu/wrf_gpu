@@ -4,7 +4,7 @@ Oracle = UNMODIFIED pristine WRF v4.x ``module_mp_thompson.F`` running the
 ``is_aerosol_aware`` path (mp_physics=28, use_aero_icbc=.false.,
 wif_input_opt=1), captured around the ``mp_gt_driver`` call at a LATE
 real-case timestep (itimestep=1000, 20260428_18z_l3 d01, dt=18 s) into
-``/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero``.
+``<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero``.
 JAX-vs-WRF, NOT a self-compare.
 
 Validated fields: the six moist species + ni/nr (as the mp=8 v090 parity)
@@ -46,9 +46,9 @@ from gpuwrf.physics.thompson_aero_column import (
 )
 from gpuwrf.physics.thompson_column import density_from_pressure_temperature
 
-ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero")
+ORACLE_DIR = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/microphysics_thompson_aero")
 WRF_PRISTINE_ROOT = Path(
-    os.environ.get("WRF_PRISTINE_ROOT", "/home/user/src/wrf_pristine/WRF")
+    os.environ.get("WRF_PRISTINE_ROOT", "<USER_HOME>/src/wrf_pristine/WRF")
 )
 PRISTINE_SRC = WRF_PRISTINE_ROOT / "phys/module_mp_thompson.F"
 DEFAULT_OUT = Path(__file__).resolve().parent / "thompson_aero_savepoint_parity.json"

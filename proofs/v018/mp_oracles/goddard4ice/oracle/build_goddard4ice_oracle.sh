@@ -20,7 +20,7 @@
 #
 # Provenance: module_mp_gsfcgce_4ice_nuwrf.F, module_mp_radar.F, and
 # module_model_constants.F are copied VERBATIM (unmodified) from
-# /home/user/src/wrf_pristine/WRF. The only project-authored Fortran is:
+# <USER_HOME>/src/wrf_pristine/WRF. The only project-authored Fortran is:
 #   * goddard4ice_oracle_driver.f90 -- the single-column builder + dump (never
 #                                      touches scheme physics).
 #   * goddard4ice_stub_modules.f90  -- module_wrf_error + the global wrf_debug /
@@ -34,11 +34,11 @@
 set -o pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF="/home/user/src/wrf_pristine/WRF"
+WRF="<USER_HOME>/src/wrf_pristine/WRF"
 WRF_PHYS="${WRF}/phys"
 WRF_SHARE="${WRF}/share"
 
-source /home/user/miniconda3/etc/profile.d/conda.sh
+source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -e
 export OMP_NUM_THREADS=2

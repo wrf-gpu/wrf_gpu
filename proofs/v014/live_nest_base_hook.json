@@ -145,8 +145,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
-      "resolved": "/home/user/src/wrf_gpu2/AGENTS.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
@@ -155,8 +155,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
-      "resolved": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
@@ -165,8 +165,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
-      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "resolved": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
       "size_bytes": 10945385
     },
@@ -175,8 +175,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
-      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "resolved": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
       "sha256": "df39e031194cdf8c8e7016459b3236bd777fcace30a98ae276cca5a2cc772456",
       "size_bytes": 15515282
     },
@@ -185,8 +185,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
-      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+      "resolved": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
       "sha256": "daeab63574bc0ffd3689af6ad6e2c6724b326e2780cb2eaddfd565706aa3128d",
       "size_bytes": 15424459
     },
@@ -196,7 +196,7 @@
       "is_file": true,
       "is_symlink": true,
       "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
-      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
+      "resolved": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/namelist.input",
       "sha256": "1a4711a1df97dfd28ff72f512024c07b3463de7a942f04f4c5b679f2ef690e38",
       "size_bytes": 4153
     },
@@ -206,7 +206,7 @@
       "is_file": true,
       "is_symlink": true,
       "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01",
-      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01",
+      "resolved": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfbdy_d01",
       "sha256": "32ebf0c703f53cad9fbe6660ea1227fb76a051e0c4dc2cbded7157cb4b01d57b",
       "size_bytes": 25073698
     },
@@ -216,7 +216,7 @@
       "is_file": true,
       "is_symlink": true,
       "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
-      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
+      "resolved": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d01",
       "sha256": "94b73381b706b342c4f20b9b3286a8aeebc7f93e1df878c7da781fa1f79c251f",
       "size_bytes": 7138457
     },
@@ -226,7 +226,7 @@
       "is_file": true,
       "is_symlink": true,
       "path": "/tmp/v0120_merged_run_root/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
-      "resolved": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+      "resolved": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
       "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
       "size_bytes": 11005720
     },
@@ -235,8 +235,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
-      "resolved": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
       "sha256": "7949e3ea9df04b5ba6caab8ebc2ca8fd5301f84dada362cf70b8bc419454b04b",
       "size_bytes": 35794
     },
@@ -245,8 +245,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
-      "resolved": "/home/user/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
       "sha256": "6e1ccc24a64aced0f1eeaee5375e62c10218c8f03d92a3eb61cb8e32ae5119a7",
       "size_bytes": 413156
     },
@@ -255,8 +255,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
-      "resolved": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
@@ -265,8 +265,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
-      "resolved": "/home/user/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/.agent/skills/reporting-to-human/SKILL.md",
       "sha256": "3e857f0fca442e5c069f2873fd20ebf26ca87b966d37a79525e399c1f1f7156b",
       "size_bytes": 954
     },
@@ -275,8 +275,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-live-nest-base-hook/sprint-contract.md",
-      "resolved": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-live-nest-base-hook/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-live-nest-base-hook/sprint-contract.md",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-live-nest-base-hook/sprint-contract.md",
       "sha256": "c05f32c808c216521e6865080bcd1dde5fcdf3641c60c23c19804b43d3d90798",
       "size_bytes": 3835
     },
@@ -285,8 +285,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
-      "resolved": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "resolved": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     },
@@ -295,8 +295,8 @@
       "is_dir": true,
       "is_file": false,
       "is_symlink": false,
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
-      "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF",
+      "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF",
       "size_bytes": 4096
     }
   },
@@ -550,7 +550,7 @@
         "784: ",
         "785: END SUBROUTINE blend_terrain"
       ],
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/nest_init_utils.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/nest_init_utils.F",
       "sha256": "07db287108ab031f89e8bb80d830871daf8ba962f60d394e1ff31c845c1b4a14",
       "start_line": 712,
       "start_needle": "SUBROUTINE blend_terrain"
@@ -583,7 +583,7 @@
         "87:                                cids, cide, ckds, ckde, cjds, cjde,   &",
         "88:                                cims, cime, ckms, ckme, cjms, cjme,   &"
       ],
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/interp_fcn.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/share/interp_fcn.F",
       "sha256": "680881db48904396f38856ca1dd2578a84e8eb0a9cdd05d49f4c63cd8ce9bdaa",
       "start_line": 66,
       "start_needle": "interp_method_type = SINT"
@@ -603,7 +603,7 @@
           "3060:                  nids, nide, 1, 1, njds, njde,   &         ! ND dims",
           "3061:                  nims, nime, 1, 1, njms, njme,   &         ! ND dims"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
         "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
         "start_line": 3053,
         "start_needle": "grid%ht,   &"
@@ -622,7 +622,7 @@
           "340:                  nids, nide, 1, 1, njds, njde,   &         ! ND dims",
           "341:                  nims, nime, 1, 1, njms, njme,   &         ! ND dims"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
         "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
         "start_line": 333,
         "start_needle": "grid%mub,   &"
@@ -641,7 +641,7 @@
           "372:                  nids, nide, nkds, nkde, njds, njde,   &         ! ND dims",
           "373:                  nims, nime, nkms, nkme, njms, njme,   &         ! ND dims"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
         "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
         "start_line": 365,
         "start_needle": "grid%pb,   &"
@@ -660,7 +660,7 @@
           "260:                  nids, nide, nkds, nkde, njds, njde,   &         ! ND dims",
           "261:                  nims, nime, nkms, nkme, njms, njme,   &         ! ND dims"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
         "sha256": "3997fdde0d70714fc28166c727e2e5fe59105682b3fc3ad08d4202b8a688b9b0",
         "start_line": 253,
         "start_needle": "grid%phb,   &"
@@ -752,7 +752,7 @@
         "756:        CALL adjust_tempqv ( nest%mub , nest%mub_save , &",
         "757:                             nest%c3h , nest%c4h , nest%znw , nest%p_top , &"
       ],
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/mediation_integrate.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/share/mediation_integrate.F",
       "sha256": "7dc254b60c558d08354389d748c14fa1323f33448c1c6b26f7c91eff70ab9eef",
       "start_line": 677,
       "start_needle": "CALL med_interp_domain( parent, nest )"
@@ -958,7 +958,7 @@
         "196:  2000 CONTINUE",
         "197:       RETURN"
       ],
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/sint.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/share/sint.F",
       "sha256": "5df841aea44c53c745a90fe96d2b9b8404097b457cceb1321faed592b727af1c",
       "start_line": 2,
       "start_needle": "SUBROUTINE SINT"
@@ -999,7 +999,7 @@
         "635:                END DO",
         "636:             END IF"
       ],
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
       "sha256": "4b6c98a06fb2b2c4472af73415099e311502747dc5543d9e9b1323497d83ddb4",
       "start_line": 606,
       "start_needle": "p_surf = p00 * EXP"
@@ -1104,7 +1104,7 @@
         "762: ",
         "763: !------base state is finished, perturbation values are recalculated below-----"
       ],
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
       "sha256": "4b6c98a06fb2b2c4472af73415099e311502747dc5543d9e9b1323497d83ddb4",
       "start_line": 669,
       "start_needle": "!  reconstitute base-state fields"
@@ -1918,8 +1918,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/real.exe",
-      "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/real.exe",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/main/real.exe",
+      "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/main/real.exe",
       "sha256": "32002ed2ea09184ddcbc8945e1dd9c3b8658ea99a7201ba44cd5b9bc192313e0",
       "size_bytes": 39953592
     },
@@ -1928,8 +1928,8 @@
       "is_dir": false,
       "is_file": true,
       "is_symlink": false,
-      "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe",
-      "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe",
+      "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/main/wrf.exe",
       "sha256": "9b830e844252c5dc70b858bdfd20cd3a99b84e5c4c7ffcb68607ef658cabcb0c",
       "size_bytes": 54478104
     },
@@ -1946,8 +1946,8 @@
           "is_dir": true,
           "is_file": false,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run",
           "size_bytes": 4096
         },
         "h0_output": {
@@ -1955,8 +1955,8 @@
           "is_dir": false,
           "is_file": true,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/wrfout_d02_2026-05-01_18:00:00",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/wrfout_d02_2026-05-01_18:00:00",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/wrfout_d02_2026-05-01_18:00:00",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/wrfout_d02_2026-05-01_18:00:00",
           "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
           "size_bytes": 10945385
         },
@@ -1965,8 +1965,8 @@
           "is_dir": false,
           "is_file": true,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/rsl.error.0000",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/rsl.error.0000",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/rsl.error.0000",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/rsl.error.0000",
           "sha256": "be8b4fe494ebd05f8fff18f9abb01334d30a9484e9c1b5dbf67707215ebd1063",
           "size_bytes": 681788
         },
@@ -1975,8 +1975,8 @@
           "is_dir": false,
           "is_file": true,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/marker_run_28rank_stdout.log",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/marker_run_28rank_stdout.log",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/marker_run_28rank_stdout.log",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/first_28rank_early_marker_run/marker_run_28rank_stdout.log",
           "sha256": "18588a7d6298637e2050e337d40c7bc421314cb0dd4c9b81a76ef4ea093c480f",
           "size_bytes": 1372
         }
@@ -1988,8 +1988,8 @@
           "is_dir": true,
           "is_file": false,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run",
           "size_bytes": 4096
         },
         "h0_output": {
@@ -1997,8 +1997,8 @@
           "is_dir": false,
           "is_file": true,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/wrfout_d02_2026-05-01_18:00:00",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/wrfout_d02_2026-05-01_18:00:00",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/wrfout_d02_2026-05-01_18:00:00",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/wrfout_d02_2026-05-01_18:00:00",
           "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
           "size_bytes": 10945385
         },
@@ -2007,8 +2007,8 @@
           "is_dir": false,
           "is_file": true,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/rsl.error.0000",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/rsl.error.0000",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/rsl.error.0000",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/rsl.error.0000",
           "sha256": "881e052a2111ac76e904cee4f7dfc8cd2e3e5a56206d2adf5dd2e87256219e00",
           "size_bytes": 681788
         },
@@ -2017,8 +2017,8 @@
           "is_dir": false,
           "is_file": true,
           "is_symlink": false,
-          "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/marker_run_post_28rank_stdout.log",
-          "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/marker_run_post_28rank_stdout.log",
+          "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/marker_run_post_28rank_stdout.log",
+          "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/post_marker_noemit_run/marker_run_post_28rank_stdout.log",
           "sha256": "390e3640a660a2378c152b07805eeba8d3f2e0aa9bee9956a3e5aff1cfa019cf",
           "size_bytes": 1372
         }
@@ -2028,8 +2028,8 @@
         "is_dir": true,
         "is_file": false,
         "is_symlink": false,
-        "path": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3",
-        "resolved": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3",
+        "resolved": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3",
         "size_bytes": 12288
       }
     },

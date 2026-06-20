@@ -34,13 +34,13 @@ OUT_JSON = PROOF_DIR / "source_save_boundary_hook.json"
 OUT_MD = PROOF_DIR / "source_save_boundary_hook.md"
 PATCH_DIFF = PROOF_DIR / "source_save_boundary_hook_wrf_patch.diff"
 
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary")
 WRF_COPY = SCRATCH / "WRF"
 RUN_DIR = SCRATCH / "run_case3"
 OUTPUT_DIR = SCRATCH / "source_save_output"
 COMPILE_LOG = SCRATCH / "compile_source_save_boundary.log"
 RUN_LOG = RUN_DIR / "source_save_boundary_28rank_stdout.log"
-FULL_PRE_OUTPUT_DIR = Path("/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output")
+FULL_PRE_OUTPUT_DIR = Path("<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/full_pre_rk_output")
 
 TARGET_STEP = 6000
 TARGET_DOMAIN = 2
@@ -469,9 +469,9 @@ def main() -> int:
             "rsl_error_0000_tail": tail_text(RUN_DIR / "rsl.error.0000"),
         },
         "commands": {
-            "copy": "mkdir -p /mnt/data/wrf_gpu2/v014_source_save_boundary && rsync -a /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF /mnt/data/wrf_gpu2/v014_source_save_boundary/ && rsync -a /mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3 /mnt/data/wrf_gpu2/v014_source_save_boundary/",
-            "build": "cd /mnt/data/wrf_gpu2/v014_source_save_boundary/WRF && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real > /mnt/data/wrf_gpu2/v014_source_save_boundary/compile_source_save_boundary.log 2>&1",
-            "run": "cd /mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3 && timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_SOURCE_SAVE_BOUNDARY=1 WRFGPU2_SOURCE_SAVE_BOUNDARY_ROOT=/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output WRFGPU2_SOURCE_SAVE_BOUNDARY_GRID=2 WRFGPU2_SOURCE_SAVE_BOUNDARY_START_STEP=6000 WRFGPU2_SOURCE_SAVE_BOUNDARY_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > /mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/source_save_boundary_28rank_stdout.log 2>&1",
+            "copy": "mkdir -p <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary && rsync -a <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/WRF <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/ && rsync -a <DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook/run_case3 <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/",
+            "build": "cd <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/WRF && timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real > <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/compile_source_save_boundary.log 2>&1",
+            "run": "cd <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3 && timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 WRFGPU2_SOURCE_SAVE_BOUNDARY=1 WRFGPU2_SOURCE_SAVE_BOUNDARY_ROOT=<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output WRFGPU2_SOURCE_SAVE_BOUNDARY_GRID=2 WRFGPU2_SOURCE_SAVE_BOUNDARY_START_STEP=6000 WRFGPU2_SOURCE_SAVE_BOUNDARY_END_STEP=6000 mpirun --oversubscribe -np 28 ./wrf.exe > <DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/source_save_boundary_28rank_stdout.log 2>&1",
             "validation": [
                 "python -m py_compile proofs/v014/source_save_boundary_hook.py",
                 "python -m json.tool proofs/v014/source_save_boundary_hook.json >/tmp/source_save_boundary_hook.validated.json",

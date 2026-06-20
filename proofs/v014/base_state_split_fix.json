@@ -54,7 +54,7 @@
         "max_abs": 12.2550048828125,
         "name": "native_wrfinput_vs_cpu_h0_MU_patch",
         "p99_abs": 10.598417968750002,
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "rmse": 2.442524419374578,
         "scope": "target_patch",
         "shape": [
@@ -83,7 +83,7 @@
         "max_abs": 33.4765625,
         "name": "native_wrfinput_vs_cpu_h0_P_patch",
         "p99_abs": 15.00371093750001,
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "rmse": 2.923556314010176,
         "scope": "target_patch",
         "shape": [
@@ -114,7 +114,7 @@
         "max_abs": 0.0,
         "name": "native_wrfinput_vs_cpu_h0_T_patch",
         "p99_abs": 0.0,
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "rmse": 0.0,
         "scope": "target_patch",
         "shape": [
@@ -158,11 +158,11 @@
         "count": 10494,
         "field": "MUB",
         "finite_count": 10494,
-        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "left": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "max_abs": 0.0,
         "name": "cpu_h0_vs_cpu_h1_MUB",
         "p99_abs": 0.0,
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
         "rmse": 0.0,
         "scope": "whole_domain",
         "shape": [
@@ -187,11 +187,11 @@
         "count": 461736,
         "field": "PB",
         "finite_count": 461736,
-        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "left": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "max_abs": 0.0,
         "name": "cpu_h0_vs_cpu_h1_PB",
         "p99_abs": 0.0,
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
         "rmse": 0.0,
         "scope": "whole_domain",
         "shape": [
@@ -220,11 +220,11 @@
         "count": 10494,
         "field": "MUB",
         "finite_count": 10494,
-        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "left": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "max_abs": 0.0,
         "name": "cpu_h0_vs_cpu_h10_MUB",
         "p99_abs": 0.0,
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
         "rmse": 0.0,
         "scope": "whole_domain",
         "shape": [
@@ -249,11 +249,11 @@
         "count": 461736,
         "field": "PB",
         "finite_count": 461736,
-        "left": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+        "left": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
         "max_abs": 0.0,
         "name": "cpu_h0_vs_cpu_h10_PB",
         "p99_abs": 0.0,
-        "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+        "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
         "rmse": 0.0,
         "scope": "whole_domain",
         "shape": [
@@ -323,7 +323,7 @@
         }
       },
       "name": "cpu_wrf_h0_wrfout_vs_h10_pre_rk_static_base",
-      "netcdf": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "netcdf": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "pre_rk_files": [
         "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_18_je_33.txt",
         "/tmp/wrf_gpu2_v014_pre_rk_input_boundary/pre_rk_output/pre_rk_input_d2_step_6000_is_1_ie_23_js_1_je_17.txt"
@@ -335,7 +335,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/AGENTS.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/AGENTS.md",
       "sha256": "10ca25e57d5920d4596563b6023c0ed751520fd30716864a4b08df0d93a505c8",
       "size_bytes": 2561
     },
@@ -343,7 +343,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/base_state_writer_attribution.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/base_state_writer_attribution.json",
       "sha256": "9cc58cc1146d3d56bb291af6b16287dcb70580e4aea76fee550904a1df155594",
       "size_bytes": 80754
     },
@@ -351,7 +351,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/building-wrf-oracles/SKILL.md",
       "sha256": "aad594b4728f1b328012556a2a6028bfd2e187cd15010d71622daa1605048430",
       "size_bytes": 1128
     },
@@ -359,7 +359,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
       "size_bytes": 10945385
     },
@@ -367,7 +367,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
       "sha256": "df39e031194cdf8c8e7016459b3236bd777fcace30a98ae276cca5a2cc772456",
       "size_bytes": 15515282
     },
@@ -375,7 +375,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
+      "path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_04:00:00",
       "sha256": "daeab63574bc0ffd3689af6ad6e2c6724b326e2780cb2eaddfd565706aa3128d",
       "size_bytes": 15424459
     },
@@ -383,7 +383,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "cef435fd9d78851944955810263d95c72efe1861a9611403f46f20de0c1a7655",
       "size_bytes": 88775
     },
@@ -391,7 +391,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/earlier_source_bisect.json",
       "sha256": "6e1ccc24a64aced0f1eeaee5375e62c10218c8f03d92a3eb61cb8e32ae5119a7",
       "size_bytes": 413156
     },
@@ -415,7 +415,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/pre_rk_input_boundary.json",
       "sha256": "4566340217a6d1ee92c92f3ec45e001f7547a755695681e10224a02aeb754f8c",
       "size_bytes": 43617
     },
@@ -423,7 +423,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/PROJECT_CONSTITUTION.md",
       "sha256": "abb0594165687b6c7746a482703cc630860fb9adb6da03fa2eb70a8e6a85fe8e",
       "size_bytes": 1157
     },
@@ -431,7 +431,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-base-state-split-fix/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-base-state-split-fix/sprint-contract.md",
       "sha256": "12e1c41ff9e024cce36520a1320637203cbfed6fe9a56506e9e1a1af885e2cfe",
       "size_bytes": 4215
     },
@@ -439,7 +439,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/static_metric_base_parity.json",
       "sha256": "f66883d32749a0d9fc9c6ea386307a14db4b0bf5810c7f928c06b0f2f3092bb7",
       "size_bytes": 272492
     },
@@ -447,7 +447,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/skills/validating-physics/SKILL.md",
       "sha256": "fa0c8e00b4cccabc1a08cabe26c112345159997deb1228689381649df83951c6",
       "size_bytes": 1208
     }
@@ -462,7 +462,7 @@
       "max_abs": 12.2550048828125,
       "name": "native_wrfinput_vs_cpu_h0_MU_patch",
       "p99_abs": 10.598417968750002,
-      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "rmse": 2.442524419374578,
       "scope": "target_patch",
       "shape": [
@@ -491,7 +491,7 @@
       "max_abs": 1050.3046875,
       "name": "native_wrfinput_vs_cpu_h0_MUB_patch",
       "p99_abs": 931.3696875,
-      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "rmse": 224.12240397269977,
       "scope": "target_patch",
       "shape": [
@@ -520,7 +520,7 @@
       "max_abs": 33.4765625,
       "name": "native_wrfinput_vs_cpu_h0_P_patch",
       "p99_abs": 15.00371093750001,
-      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "rmse": 2.923556314010176,
       "scope": "target_patch",
       "shape": [
@@ -551,7 +551,7 @@
       "max_abs": 1047.015625,
       "name": "native_wrfinput_vs_cpu_h0_PB_patch",
       "p99_abs": 611.4304687500003,
-      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "rmse": 109.23204781815154,
       "scope": "target_patch",
       "shape": [
@@ -582,7 +582,7 @@
       "max_abs": 0.0,
       "name": "native_wrfinput_vs_cpu_h0_T_patch",
       "p99_abs": 0.0,
-      "right": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+      "right": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
       "rmse": 0.0,
       "scope": "target_patch",
       "shape": [
@@ -607,10 +607,10 @@
   },
   "next_decision": "Instrument or port WRF live-nest initialization: capture/reproduce med_interp_domain parent-interpolated HGT/MUB/PHB, blend_terrain, and start_domain_em base recomputation before changing build_replay_case.",
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-base-state-split-fix.md",
-    "script": "/home/user/src/wrf_gpu2/proofs/v014/base_state_split_fix.py"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/base_state_split_fix.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/base_state_split_fix.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-base-state-split-fix.md",
+    "script": "<USER_HOME>/src/wrf_gpu2/proofs/v014/base_state_split_fix.py"
   },
   "schema": "wrfgpu2.v014.base_state_split_fix.v1",
   "scope_impact": {
@@ -1076,37 +1076,37 @@
   "verdict": "BASE_STATE_SPLIT_FIX_BLOCKED_PARENT_INTERP_BLEND_NOT_LOCAL",
   "wrf_source_refs": {
     "mediation_integrate_live_nest_input_from_file": {
-      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/mediation_integrate.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/share/mediation_integrate.F",
       "lines": "688-756",
       "role": "med_interp_domain(parent,nest), save parent-interpolated ht/mub/phb, read wrfinput child, blend ht/mub/phb, then adjust_tempqv"
     },
     "nest_interp_generated_fields": {
-      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/inc/nest_interpdown_interp.inc",
       "lines": "253-347",
       "role": "generated parent-to-child interp_fcn calls for phb, mu_2, mub and nearby base fields"
     },
     "press_adj_dynamic_split": {
-      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
       "lines": "878-886",
       "role": "optional pressure adjustment modifies MU_2 after base recomputation; not part of PB/MUB static-base fix"
     },
     "start_domain_base_recompute": {
-      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/start_em.F",
       "lines": "599-647,675-721",
       "role": "start_domain_em recomputes MUB/PB/T_INIT/ALB/PHB from the modified HGT/MUB base surface"
     },
     "wrf_blend_formula": {
-      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/nest_init_utils.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/dyn_em/nest_init_utils.F",
       "lines": "712-785",
       "role": "blend_terrain sets the spec_bdy_width ring to parent-interpolated values and blends the next blend_width rows"
     },
     "wrf_default_interpolation": {
-      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/interp_fcn.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/share/interp_fcn.F",
       "lines": "34-131,874-993",
       "role": "interp_method_type default 2 dispatches to interp_fcn_sint; sint implementation is in share/sint.F"
     },
     "wrf_sint_kernel": {
-      "file": "/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/share/sint.F",
+      "file": "<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/share/sint.F",
       "lines": "2-202",
       "role": "Smolarkiewicz positive-definite monotonic interpolation used by interp_fcn_sint"
     }

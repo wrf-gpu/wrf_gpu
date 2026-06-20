@@ -28,9 +28,9 @@ OUT_MD = PROOF_DIR / "full_domain_source_truth.md"
 OUT_DIFF = PROOF_DIR / "full_domain_source_truth_wrf_patch.diff"
 
 SOURCE_JSON = PROOF_DIR / "source_save_boundary_hook.json"
-SOURCE_DIR = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/source_save_output")
-POST_RK_DIR = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output")
-WRFINPUT_D02 = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02")
+SOURCE_DIR = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/source_save_output")
+POST_RK_DIR = Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output")
+WRFINPUT_D02 = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02")
 
 VERDICT = "FULL_DOMAIN_TRUTH_SURFACE_BLOCKED_PATCH_ONLY_EXISTING_SURFACES"
 

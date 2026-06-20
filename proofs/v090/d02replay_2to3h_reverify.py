@@ -67,7 +67,7 @@ from gpuwrf.integration.daily_pipeline import (  # noqa: E402
 )
 from gpuwrf.runtime.operational_mode import run_forecast_operational_single_scan  # noqa: E402
 
-L2_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
+L2_RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2")
 DT_S = 12.0
 SUBSTEPS = 10
 RAD_CADENCE = 180  # 36 min @ dt=12, matches the qke-fix verify cadence

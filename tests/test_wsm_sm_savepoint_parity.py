@@ -1,7 +1,7 @@
 """WSM3/WSM5 JAX ports vs pristine-WRF savepoint parity gates.
 
 References are generated from UNMODIFIED pristine WRF
-``/home/user/src/wrf_pristine/WRF`` by
+``<USER_HOME>/src/wrf_pristine/WRF`` by
 ``proofs/v060/oracle/build_wsm_sm_oracles.sh``. This is not a JAX self-compare.
 """
 

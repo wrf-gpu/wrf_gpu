@@ -13,7 +13,7 @@
   "case": {
     "id": "gpuwrf-canary-d02-sample",
     "provenance_run": "20260429_18z_l2_72h_20260524T204451Z",
-    "provenance_path": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z (wrfout) + /mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z (namelist/wrfinput/wrfbdy)",
+    "provenance_path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260429_18z_l2_72h_20260524T204451Z (wrfout) + <DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z (namelist/wrfinput/wrfbdy)",
     "description": "Canary Islands d02 (3 km nest) CPU-WRF / Gen2 operational backfill case. Complete 72 h hourly run; sample packages the first 3 hourly d02 frames (init + 2 h) so a 1 h replay forecast can run and dimension-compare.",
     "domain": "d02",
     "initial_valid_time_utc": "2026-04-29_18:00:00",

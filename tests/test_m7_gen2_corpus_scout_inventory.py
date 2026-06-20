@@ -25,8 +25,8 @@ from pathlib import Path
 import pytest
 
 GEN2_ROOTS = (
-    Path("/mnt/data/canairy_meteo/runs/wrf_l3"),
-    Path("/mnt/data/canairy_meteo/runs/wrf_l2"),
+    Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3"),
+    Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2"),
 )
 WRFOUT_RE = re.compile(
     r"^wrfout_(?P<dom>d0[1-5])_(?P<stamp>\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2})$"
@@ -52,7 +52,7 @@ def _gen2_available() -> bool:
 
 pytestmark = pytest.mark.skipif(
     not _gen2_available(),
-    reason="Gen2 read-only tree /mnt/data/canairy_meteo not mounted",
+    reason="Gen2 read-only tree <DATA_ROOT>/canairy_meteo not mounted",
 )
 
 
@@ -171,7 +171,7 @@ def test_default_m6_gen2_run_dir_is_now_wrfout_empty() -> None:
     """
 
     reference = Path(
-        "/mnt/data/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z"
+        "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260520_18z_l3_24h_20260521T045847Z"
     )
     if not reference.exists():
         pytest.skip("reference cycle dir not mounted")

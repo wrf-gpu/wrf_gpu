@@ -2,7 +2,7 @@
   "schema": "v0.4.0-mu-continuity-savepoint-parity-2026-06-03",
   "created_utc": "2026-06-03T09:58:22.447930+00:00",
   "case": {
-    "source_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01",
+    "source_path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260429_18z_l3_24h_20260524T204451Z/wrfinput_d01",
     "source_sha256": "449d6c3af25865c5dce93e5ec96c22cd05400d9cb3582224223984c1ae4f2028",
     "nx": 93,
     "ny": 59,

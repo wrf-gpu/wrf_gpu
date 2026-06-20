@@ -17,7 +17,7 @@ from gpuwrf.init.aifs_grib import (
 
 
 CASE = "20260428_18z_72h"
-UNGRIB_DIR = Path("/mnt/data/canairy_meteo/runs/wps_cases") / CASE / "ungrib"
+UNGRIB_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wps_cases") / CASE / "ungrib"
 GRIB = UNGRIB_DIR / "step_000.grib2"
 INTERMEDIATE = UNGRIB_DIR / "AIFS:2026-04-28_18"
 

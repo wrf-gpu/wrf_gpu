@@ -1009,7 +1009,7 @@
       }
     }
   },
-  "cpu_reference": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+  "cpu_reference": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
   "rmse_delta_vs_v017": {
     "v018_pre_qcfz": {
       "QGRAUP": -1.8912472278449608e-06,
@@ -1030,16 +1030,16 @@
   },
   "runs": {
     "v017": {
-      "gpu_output": "/mnt/data/wrf_gpu_validation/v017_switzerland_d01_72h_identity_fast_20260615T011416Z/gpu_output",
-      "grid_compare": "/mnt/data/wrf_gpu_validation/v017_switzerland_d01_72h_identity_fast_20260615T011416Z/switzerland_d01_72h_grid_compare.json"
+      "gpu_output": "<DATA_ROOT>/wrf_gpu_validation/v017_switzerland_d01_72h_identity_fast_20260615T011416Z/gpu_output",
+      "grid_compare": "<DATA_ROOT>/wrf_gpu_validation/v017_switzerland_d01_72h_identity_fast_20260615T011416Z/switzerland_d01_72h_grid_compare.json"
     },
     "v018_pre_qcfz": {
-      "gpu_output": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_20260616T102724Z/gpu_output",
-      "grid_compare": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_20260616T102724Z/switzerland_d01_72h_grid_compare.json"
+      "gpu_output": "<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_20260616T102724Z/gpu_output",
+      "grid_compare": "<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_20260616T102724Z/switzerland_d01_72h_grid_compare.json"
     },
     "v018_qcfz": {
-      "gpu_output": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/gpu_output",
-      "grid_compare": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.json"
+      "gpu_output": "<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/gpu_output",
+      "grid_compare": "<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.json"
     }
   },
   "schema": "v018_rainnc_qvapor_target_metrics",

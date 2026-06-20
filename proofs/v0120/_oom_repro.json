@@ -41,7 +41,7 @@
       }
     }
   },
-  "case": "/mnt/data/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
+  "case": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260531_18z_l3_24h_20260601T125256Z",
   "hours": 1.0,
   "load_wall_s": 8.860246674972586,
   "max_dom": 3,

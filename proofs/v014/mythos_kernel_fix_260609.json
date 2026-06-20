@@ -41,55 +41,55 @@
   "inputs": {
     "accepted_step1_truth_npz": {
       "exists": true,
-      "path": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz",
       "sha256": "42081a481eb25b36b7a171670183b26142a85f81439e21954a5812aaec92a779",
       "size_bytes": 12179669
     },
     "d02_replay": {
       "exists": true,
-      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "f9996886da6954b17426b5e4cdb12935da56f2720ffbb24abfdaef2abe2e97b7",
       "size_bytes": 125534
     },
     "interp": {
       "exists": true,
-      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/nesting/interp.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/nesting/interp.py",
       "sha256": "dfe49114946609f1053c9522d56357314cefe29d180ee9fbbed0b9d05bb73f91",
       "size_bytes": 18277
     },
     "wrf_configure": {
       "exists": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/configure.wrf",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/configure.wrf",
       "sha256": "28916217d7be75d762955736011fe575da88c2f00a341862778244b44ff6005a",
       "size_bytes": 21292
     },
     "wrf_module_bc_em": {
       "exists": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/module_bc_em.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/module_bc_em.F",
       "sha256": "6cfb52b849e3dd0b24769709cf502faa75886da454d9b668af725cccdc56d47f",
       "size_bytes": 90222
     },
     "wrf_nest_init_utils": {
       "exists": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/nest_init_utils.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/nest_init_utils.F",
       "sha256": "07db287108ab031f89e8bb80d830871daf8ba962f60d394e1ff31c845c1b4a14",
       "size_bytes": 48692
     },
     "wrf_sint": {
       "exists": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/sint.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/share/sint.F",
       "sha256": "5df841aea44c53c745a90fe96d2b9b8404097b457cceb1321faed592b727af1c",
       "size_bytes": 17878
     },
     "wrf_start_em": {
       "exists": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F",
       "sha256": "69b4ca7615978e94aceaf5662001ec360ad4a7de344397b0221351c610ab6d40",
       "size_bytes": 130593
     },
     "wrf_truth_root": {
       "exists": true,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/wrf_truth",
       "sha256": null,
       "size_bytes": null
     }
@@ -134,7 +134,7 @@
       "No dycore, runtime, state-contract, boundary-ABI, wrfout, memory, or FP32 source was modified.",
       "The W branch keeps the WRF w_needs_to_be_set gate; inputs carrying real W are not overwritten."
     ],
-    "next_decision": "Init-time P/MU/W is closed to WRF start_domain truth (bit-exact base, P 0.039 Pa). The strict Step-1 16-field one-RK-step comparison is now the authoritative post-init divergence frontier, and the attribution probe shows it is REAL one-step dynamics state divergence in the PH/MU/P (acoustic/mass/vertical) lane, not init and not pressure-diagnosis semantics. Next sprint: (1) freeze one-step namelist parity (acoustic substep count, epssm, damping) between the proof surrogate and the WRF case3 namelist; (2) rerun the existing RK1 substage comparator chain (/mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth is still valid WRF-side) against JAX substages built from the NOW-CLOSED init state. No dycore source edit is justified before that localization.",
+    "next_decision": "Init-time P/MU/W is closed to WRF start_domain truth (bit-exact base, P 0.039 Pa). The strict Step-1 16-field one-RK-step comparison is now the authoritative post-init divergence frontier, and the attribution probe shows it is REAL one-step dynamics state divergence in the PH/MU/P (acoustic/mass/vertical) lane, not init and not pressure-diagnosis semantics. Next sprint: (1) freeze one-step namelist parity (acoustic substep count, epssm, damping) between the proof surrogate and the WRF case3 namelist; (2) rerun the existing RK1 substage comparator chain (<DATA_ROOT>/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth is still valid WRF-side) against JAX substages built from the NOW-CLOSED init state. No dycore source edit is justified before that localization.",
     "perturb_init_meta": {
       "cpu_wrfout_dependency": false,
       "hypsometric_opt": 2,
@@ -1382,7 +1382,7 @@
       ],
       "status": "COMPARISON_EXECUTED",
       "strict_live_nest_init_comparison_run": true,
-      "truth_file": "/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
+      "truth_file": "<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth/same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
     },
     "verdict": "MYTHOS_KERNEL_FIX_START_DOMAIN_P_MU_W_CLOSED_FP32_LIBM_SINT_BLEND_BIT_EXACT",
     "wrf_build_facts": {
@@ -1394,9 +1394,9 @@
     }
   },
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-mythos-kernel-fix.md"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/mythos_kernel_fix_260609.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-mythos-kernel-fix.md"
   },
   "schema": "wrfgpu2.v014.mythos_kernel_fix_260609.v1",
   "verdict": "MYTHOS_KERNEL_FIX_START_DOMAIN_P_MU_W_CLOSED_FP32_LIBM_SINT_BLEND_BIT_EXACT"

@@ -5,7 +5,7 @@ warm cache-hit samples, and a short finiteness summary.  The probe intentionally
 does not edit model code; variants are namelist/config toggles only.
 
 Examples:
-  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo OMP_NUM_THREADS=4 \
+  PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo OMP_NUM_THREADS=4 \
     XLA_PYTHON_CLIENT_MEM_FRACTION=0.7 XLA_PYTHON_CLIENT_PREALLOCATE=false \
     TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 \
     python proofs/v0100/wave_b_timing_probe.py --variant full --force-fp64 true \

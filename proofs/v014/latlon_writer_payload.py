@@ -46,7 +46,7 @@ from gpuwrf.io.wrfout_writer import (  # noqa: E402
 
 RUN_ID = "20260501_18z_l2_72h_20260519T173026Z"
 DOMAIN = "d02"
-CPU_INIT_DIR = Path("/mnt/data/canairy_meteo/runs/wrf_l2") / RUN_ID
+CPU_INIT_DIR = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2") / RUN_ID
 GPU_RUN_DIR = Path("/tmp/v0120_merged_run_root") / RUN_ID
 CPU_WRFINPUT = CPU_INIT_DIR / "wrfinput_d02"
 GPU_NATIVE_WRFINPUT = GPU_RUN_DIR / "wrfinput_d02"

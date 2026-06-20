@@ -2,7 +2,7 @@
 """V0.14 Switzerland h36 WRF-native intra-``advance_w`` oracle comparison.
 
 WRF side: a disposable instrumented WRF copy
-(``/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF``, patch recorded as
+(``<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF``, patch recorded as
 ``proofs/v014/wrf_native_advance_w_dump_wrf_patch.diff``) re-runs the bit-exact
 36h30m d01 Switzerland truth and dumps, at ``itimestep=7201, rk_step=1,
 iteration=1`` (the first-bad RK1 acoustic substep ``WRF call 21601 -> 21602``):
@@ -59,7 +59,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-AWD_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_awd_dump")
+AWD_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_awd_dump")
 AWD_DUMPS = AWD_ROOT / "awd_dumps"
 OUT_JSON = ROOT / "proofs/v014/wrf_native_advance_w_dump.json"
 

@@ -20,7 +20,7 @@ verify_force_cpu
 ROW="row10_precip"
 
 cd "${REPO_ROOT}"
-ORACLE="/mnt/data/wrf_gpu2/physics_oracle/microphysics_precip"
+ORACLE="<DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_precip"
 if [ ! -f "${ORACLE}/thompson_in.sidecar.txt" ]; then
   echo "FAIL: WRF precipitating oracle missing at ${ORACLE}"
   verify_result "${ROW}" "FAIL" "WRF Thompson precipitating oracle data absent"

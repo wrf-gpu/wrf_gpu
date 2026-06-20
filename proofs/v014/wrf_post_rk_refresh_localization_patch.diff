@@ -10,7 +10,7 @@
 +     wrfgpu2_marker_grid = 2
 +     wrfgpu2_marker_start_step = 6000
 +     wrfgpu2_marker_end_step = 6000
-+     wrfgpu2_marker_root = '/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output'
++     wrfgpu2_marker_root = '<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output'
 +     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_POST_RK_REFRESH_GRID', wrfgpu2_marker_env)
 +     IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
 +       READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_grid
@@ -146,7 +146,7 @@
 +     wrfgpu2_marker_grid = 2
 +     wrfgpu2_marker_start_step = 6000
 +     wrfgpu2_marker_end_step = 6000
-+     wrfgpu2_marker_root = '/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output'
++     wrfgpu2_marker_root = '<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output'
 +     CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_POST_RK_REFRESH_GRID', wrfgpu2_marker_env)
 +     IF (LEN_TRIM(wrfgpu2_marker_env) > 0) THEN
 +       READ(wrfgpu2_marker_env,*,IOSTAT=wrfgpu2_marker_ios) wrfgpu2_marker_grid

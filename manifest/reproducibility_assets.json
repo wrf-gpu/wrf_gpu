@@ -59,7 +59,7 @@
     },
     "corpus_runs": {
       "what": "Real CPU-WRF forecast output (wrfout) + AIFS forcing used by the operational/TOST equivalence proofs.",
-      "location_on_dev_machine": "/mnt/data/canairy_meteo/runs and /mnt/data/wrf_gpu2 (purged from most dirs; see docs/fixture-storage-policy.md)",
+      "location_on_dev_machine": "<DATA_ROOT>/canairy_meteo/runs and <DATA_ROOT>/wrf_gpu2 (purged from most dirs; see docs/fixture-storage-policy.md)",
       "needed_for": "proofs/m20/* (TOST), proofs/v0*/ multi-day operational gates, proofs/v090/*_savepoint_parity oracle dirs.",
       "outsider_status": "NOT reproducible by an outsider without re-running CPU-WRF from the AIFS forcing (data/manifests/aifs_ingest_v0.json documents the source)."
     },

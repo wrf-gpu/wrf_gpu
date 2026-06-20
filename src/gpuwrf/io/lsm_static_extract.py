@@ -13,7 +13,7 @@ invented.  A wrong land-surface static is a silently-wrong forecast, which the
 project forbids, so the ISBA-soil-constant path is falsifiably checked against the
 pristine-WRF PX oracle savepoints in ``tests/test_v018_lsm_static_extract.py``.
 
-Pristine WRF sources (``/home/user/src/wrf_pristine/WRF``):
+Pristine WRF sources (``<USER_HOME>/src/wrf_pristine/WRF``):
   * SLAB THC/EMISS/Z0/MAVAIL = THERIN/SFEM/SFZ0/SLMO[LU_INDEX, ISN] / scale --
     ``phys/module_physics_init.F:1958-1972`` (landuse_init), with the season index
     ISN from ``phys/module_physics_init.F:1833-1835``:

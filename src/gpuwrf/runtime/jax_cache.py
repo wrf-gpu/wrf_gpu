@@ -3,7 +3,7 @@
 The canonical implementation now lives in :mod:`gpuwrf.runtime.compile_cache`
 (v0.12.0), which uses a **portable per-user default** cache dir
 (``$HOME/.cache/gpuwrf/jit``) so a fresh clone is fast out of the box instead of
-writing into a private ``/mnt/data`` path.
+writing into a private ``<DATA_ROOT>`` path.
 
 This module is kept only so the older name
 ``configure_jax_compilation_cache`` and the ``CACHE_STATUS`` object continue to
@@ -23,8 +23,8 @@ __all__ = ["CACHE_STATUS", "configure_jax_compilation_cache", "DEFAULT_CACHE_DIR
 # Historical default (the user's workstation NVMe). No longer the out-of-box
 # default -- the portable per-user dir is now preferred -- but exported for any
 # caller that referenced the constant.  To get the old behaviour explicitly,
-# export ``GPUWRF_JAX_CACHE_DIR=/mnt/data/gpuwrf_jax_cache``.
-DEFAULT_CACHE_DIR = "/mnt/data/gpuwrf_jax_cache"
+# export ``GPUWRF_JAX_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache``.
+DEFAULT_CACHE_DIR = "<DATA_ROOT>/gpuwrf_jax_cache"
 
 
 def configure_jax_compilation_cache() -> dict[str, object]:

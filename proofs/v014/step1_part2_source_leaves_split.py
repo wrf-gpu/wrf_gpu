@@ -60,7 +60,7 @@ SCRATCH = Path("/tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609")
 WRF_TRUTH = SCRATCH / "wrf_truth"
 WRF_RUN_DIR = SCRATCH / "run"
 WRF_COPY = SCRATCH / "WRF"
-WRF_BASE = Path("/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary/WRF")
+WRF_BASE = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary/WRF")
 
 TARGET_DOMAIN = 2
 TARGET_STEP = 1
@@ -1151,9 +1151,9 @@ def build_proof() -> dict[str, Any]:
             "wrf_fixture_commands": {
                 "compile": (
                     "cd /tmp/wrf_gpu2_step1_part2_source_leaves_split_20260609/WRF && "
-                    "timeout 3600 env PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
-                    "NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
-                    "PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+                    "timeout 3600 env PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+                    "NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+                    "PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
                     "WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu tcsh ./compile em_real"
                 ),
                 "run": (

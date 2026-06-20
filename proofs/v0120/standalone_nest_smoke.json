@@ -1,8 +1,8 @@
 {
   "schema": "v0.12.0-standalone-live-nested-smoke-2026-06-07",
   "objective": "CLI runs a STANDALONE LIVE-NESTED forecast (d01->d02) out-of-the-box from real.exe outputs (wrfinput_d0N + wrfbdy_d01), with NO CPU-WRF wrfout dependency: parent advances, builds each child lateral boundary LIVE, recurses to child; both domains produce finite wrfout; no FileNotFoundError; no wrfbdy_d02 required",
-  "cli_command": "python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z --output-dir <out> --scratch-dir <disk-scratch-off-/tmp> --max-dom 2 --hours 2",
-  "case": "/mnt/data/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z (wrfinput_d01 + wrfinput_d02 + wrfbdy_d01, NO wrfout, NO wrfbdy_d02; namelist max_dom=2)",
+  "cli_command": "python -m gpuwrf.cli run --input-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z --output-dir <out> --scratch-dir <disk-scratch-off-/tmp> --max-dom 2 --hours 2",
+  "case": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260514_18z_l2_72h_20260517T145509Z (wrfinput_d01 + wrfinput_d02 + wrfbdy_d01, NO wrfout, NO wrfbdy_d02; namelist max_dom=2)",
   "init_mode": "standalone_native_init_nested",
   "path_chosen": "max_dom > 1 -> integration.nested_pipeline.execute_nested_pipeline (logged at runtime)",
   "verdict": "PIPELINE_GREEN",

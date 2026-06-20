@@ -64,10 +64,10 @@ from pgf_inloop_isolation import (  # noqa: E402
 )
 
 TARGET_METADATA = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260429_18z_l2_72h_20260524T204451Z"
 )
 TARGET_WRFOUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/"
     "20260429_18z_l2_72h_20260524T204451Z/wrfout_d01_2026-04-29_18:00:00"
 )
 

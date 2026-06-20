@@ -7,7 +7,7 @@ set -euo pipefail
 
 RR="$1"                       # GPU run root
 RUN_ID=20260501_18z_l2_72h_20260519T173026Z
-CPU_DIR=/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/${RUN_ID}
+CPU_DIR=<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/${RUN_ID}
 GPU_DIR="${RR}/gpu_output/l2_d02_${RUN_ID}"
 MANIFEST=proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json
 INIT=2026-05-01T18:00:00+00:00

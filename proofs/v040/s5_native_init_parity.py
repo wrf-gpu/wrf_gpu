@@ -45,7 +45,7 @@ from gpuwrf.init.real_init.types import (
     RealInitConfig,
 )
 
-RUNS_ROOT = Path("/mnt/data/canairy_meteo/runs")
+RUNS_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs")
 WPS_ROOT = RUNS_ROOT / "wps_cases"
 
 

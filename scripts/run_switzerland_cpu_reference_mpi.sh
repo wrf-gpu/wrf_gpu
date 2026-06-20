@@ -16,7 +16,7 @@
 #   cpu_timing.json            — both, plus ranks/grid/per-fcst-hour numbers.
 #
 # Launch it DETACHED (it is ~1-1.5 h); hand the manager the PID + log:
-#     RUNROOT=/mnt/data/wrf_gpu_switzerland_big \
+#     RUNROOT=<DATA_ROOT>/wrf_gpu_switzerland_big \
 #       setsid nohup taskset -c 0-27 bash scripts/run_switzerland_cpu_reference_mpi.sh \
 #       > $RUNROOT/run_cpu/cpu_reference.out 2>&1 &
 #     echo "PID=$!"

@@ -49,7 +49,7 @@ def _ccn_bin_path() -> Path:
     """Pristine WRF ``run/CCN_ACTIVATE.BIN``, read VERBATIM as the CCN table input.
 
     Env-overridable via ``GPUWRF_WRF_ROOT`` (``config.paths.wrf_run_dir``) so a
-    clean checkout never depends on a hardcoded ``/home/<name>`` path. Run this
+    clean checkout never depends on a hardcoded ``<USER_HOME>/<name>`` path. Run this
     build script with ``PYTHONPATH=src`` so the ``gpuwrf`` package is importable.
     """
 

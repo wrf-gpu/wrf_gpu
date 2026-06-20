@@ -140,7 +140,7 @@
     "n_common_lead_hours": 24,
     "run_id": "20260430_18z_l2_72h_20260520T191306Z"
   },
-  "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260430_18z_l2_72h_20260520T191306Z",
+  "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260430_18z_l2_72h_20260520T191306Z",
   "gpu_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260430_18z_l2_72h_20260520T191306Z",
   "gpu_validation": {
     "dtype_fp64_first_file": false,

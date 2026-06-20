@@ -1,5 +1,5 @@
---- /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/backups/mediation_integrate.F.before_adjust_tempqv_intermediate	2026-05-29 11:08:05.062805183 +0100
-+++ /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F	2026-06-09 17:05:40.225530979 +0100
+--- <DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/backups/mediation_integrate.F.before_adjust_tempqv_intermediate	2026-05-29 11:08:05.062805183 +0100
++++ <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/share/mediation_integrate.F	2026-06-09 17:05:40.225530979 +0100
 @@ -756,6 +756,7 @@
         CALL adjust_tempqv ( nest%mub , nest%mub_save , &
                              nest%c3h , nest%c4h , nest%znw , nest%p_top , &
@@ -8,8 +8,8 @@
                              nest_config_flags%use_theta_m, &
                              ids , ide , jds , jde , kds , kde , &
                              ims , ime , jms , jme , kms , kme , &
---- /mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/backups/nest_init_utils.F.before_adjust_tempqv_intermediate	2026-05-29 11:08:04.497801263 +0100
-+++ /mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F	2026-06-09 17:05:40.280248368 +0100
+--- <DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/backups/nest_init_utils.F.before_adjust_tempqv_intermediate	2026-05-29 11:08:04.497801263 +0100
++++ <DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/WRF/dyn_em/nest_init_utils.F	2026-06-09 17:05:40.280248368 +0100
 @@ -811,6 +811,7 @@
  
  SUBROUTINE adjust_tempqv ( mub, save_mub, c3, c4, znw, p_top, &
@@ -49,7 +49,7 @@
 +   wrfgpu2_target_i = 18
 +   wrfgpu2_target_j = 10
 +   wrfgpu2_target_k = 2
-+   wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth'
++   wrfgpu2_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_adjust_tempqv_intermediate/wrf_truth'
 +
 +   wrfgpu2_env = ''
 +   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_ADJUST_TEMPQV_INTERMEDIATE', wrfgpu2_env)

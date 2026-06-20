@@ -43,7 +43,7 @@ SPRINT_CONTRACT = (
     ROOT
     / ".agent/sprints/2026-06-09-v014-step1-rk1-source-boundary/sprint-contract.md"
 )
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary")
 WRF_TRUTH = SCRATCH / "wrf_truth"
 WRF_BUILD_LOG = SCRATCH / "compile_step1_rk1_source_boundary.log"
 WRF_RUN_LOG = SCRATCH / "wrf_step1_rk1_source_boundary_stdout.log"
@@ -1082,7 +1082,7 @@ def main() -> int:
         "classification_evidence": classification_evidence,
         "commands": {
             "wrf_instrumentation": [
-                "cp -a --reflink=auto prior Step-1 WRF scratch into /mnt/data/wrf_gpu2/v014_step1_rk1_source_boundary",
+                "cp -a --reflink=auto prior Step-1 WRF scratch into <DATA_ROOT>/wrf_gpu2/v014_step1_rk1_source_boundary",
                 "tcsh ./compile em_real (scratch WRF, conda wrf-build toolchain)",
                 "WRFGPU2_STEP1_RK1_SOURCE_BOUNDARY=1 WRFGPU2_STEP1_TP_LOCALIZATION=1 WRFGPU2_SOURCE_SAVE_BOUNDARY=1 mpirun --oversubscribe -np 28 ./wrf.exe",
             ],

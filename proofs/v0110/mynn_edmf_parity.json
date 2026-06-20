@@ -12,7 +12,7 @@
   "operational_options_resolved": {
     "corpus_namelist_examples": [
       {
-        "path": "/mnt/data/canairy_meteo/gen2_archive/provenance/namelists/namelist_20240315_00z_A.input",
+        "path": "<DATA_ROOT>/canairy_meteo/gen2_archive/provenance/namelists/namelist_20240315_00z_A.input",
         "bl_pbl_physics": "5, 5",
         "sf_sfclay_physics": "5, 5"
       }

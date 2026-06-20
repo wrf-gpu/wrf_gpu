@@ -11,7 +11,7 @@ This policy applies to M1 fixture manifests, sample slices, WRF-derived payloads
 - Profiler dumps live under `data/profiler_artifacts/<sprint_or_candidate>/`.
 - Scratch files live under `data/cache/`.
 
-`data/` is a repository symlink to `/mnt/data/wrf_gpu2/`. If the local symlink is unavailable, manifests may use an `external_uri` with a placeholder S3-style URI such as `s3://wrf-gpu2-fixtures/<fixture_id>/`, but local validation still requires checksums in the manifest.
+`data/` is a repository symlink to `<DATA_ROOT>/wrf_gpu2/`. If the local symlink is unavailable, manifests may use an `external_uri` with a placeholder S3-style URI such as `s3://wrf-gpu2-fixtures/<fixture_id>/`, but local validation still requires checksums in the manifest.
 
 ## Checksums
 

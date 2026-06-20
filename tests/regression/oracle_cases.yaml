@@ -27,7 +27,7 @@ cases:
     status: AVAILABLE
     oracle:
       kind: cpu_wrf
-      run_dir: /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
+      run_dir: <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
       domain: d02
       expected_forecast_hours: 24
       expected_wrfout_count_including_initial: 25
@@ -38,7 +38,7 @@ cases:
     gpu:
       runner: m7_daily_pipeline
       run_id: 20260521_18z_l3_24h_20260522T133443Z
-      run_root: /mnt/data/canairy_meteo/runs/wrf_l3
+      run_root: <DATA_ROOT>/canairy_meteo/runs/wrf_l3
       domain: d02
       full_hours: 24
       smoke_hours: 1
@@ -52,21 +52,21 @@ cases:
       required 72h Oracle history.
     oracle:
       kind: cpu_wrf
-      run_dir: /mnt/data/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z
+      run_dir: <DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260521_18z_l2_72h_20260522T133443Z
       domain: d02
       expected_forecast_hours: 72
       expected_wrfout_count_including_initial: 73
       observed_wrfout_count_including_initial: 20
       generation_command: >
-        taskset -c 0-3 bash -lc 'source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
+        taskset -c 0-3 bash -lc 'source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
         && cd <prepared-20260521-18z-l2-72h-run-directory>
-        && mpirun -np 28 /home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
+        && mpirun -np 28 <USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
     expected_variables: DEFAULT
     tolerance_class: EQUIVALENCE_LOOSE
     gpu:
       runner: m7_l2_d02_replay
       run_id: 20260521_18z_l2_72h_20260522T133443Z
-      run_root: /mnt/data/canairy_meteo/runs/wrf_l2
+      run_root: <DATA_ROOT>/canairy_meteo/runs/wrf_l2
       domain: d02
       full_hours: 72
       smoke_hours: 1
@@ -84,9 +84,9 @@ cases:
       expected_forecast_hours: 1
       expected_wrfout_count_including_initial: 2
       generation_command: >
-        taskset -c 0-3 bash -lc 'source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
+        taskset -c 0-3 bash -lc 'source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
         && cd <prepared-WRF-em_quarter_ss-warm-bubble-run-directory>
-        && mpirun -np 4 /home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
+        && mpirun -np 4 <USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
     expected_variables:
       - theta
       - U
@@ -110,9 +110,9 @@ cases:
       expected_forecast_hours: 1
       expected_wrfout_count_including_initial: 2
       generation_command: >
-        taskset -c 0-3 bash -lc 'source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
+        taskset -c 0-3 bash -lc 'source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
         && cd <prepared-WRF-density-current-run-directory>
-        && mpirun -np 4 /home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
+        && mpirun -np 4 <USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
     expected_variables:
       - theta
       - U
@@ -128,7 +128,7 @@ cases:
     status: AVAILABLE
     oracle:
       kind: cpu_wrf
-      run_dir: /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
+      run_dir: <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z
       domain: d03
       expected_forecast_hours: 24
       expected_wrfout_count_including_initial: 25
@@ -138,7 +138,7 @@ cases:
     gpu:
       runner: m7_daily_pipeline
       run_id: 20260521_18z_l3_24h_20260522T133443Z
-      run_root: /mnt/data/canairy_meteo/runs/wrf_l3
+      run_root: <DATA_ROOT>/canairy_meteo/runs/wrf_l3
       domain: d03
       full_hours: 24
       smoke_hours: 1

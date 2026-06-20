@@ -66,19 +66,19 @@ speedup = CPU_wall(28-rank dmpar MPI, big grid, per forecast hour)
 
 ```bash
 # 1. Mint the BIG case (geogrid/ungrib/metgrid + real.exe via dmpar MPI).
-#    Reuses F's cached GFS; writes /mnt/data/wrf_gpu_switzerland_big/run_cpu/.
-RUNROOT=/mnt/data/wrf_gpu_switzerland_big \
+#    Reuses F's cached GFS; writes <DATA_ROOT>/wrf_gpu_switzerland_big/run_cpu/.
+RUNROOT=<DATA_ROOT>/wrf_gpu_switzerland_big \
   taskset -c 0-3 bash scripts/build_switzerland_big_case.sh
 
 # 2. 28-rank CPU-WRF reference (HONEST denominator). Launch DETACHED (~25 min
 #    main-loop). Captures cpu_wall_seconds.txt, cpu_mainloop_seconds.txt, cpu_timing.json.
-RUNROOT=/mnt/data/wrf_gpu_switzerland_big NRANKS=28 \
+RUNROOT=<DATA_ROOT>/wrf_gpu_switzerland_big NRANKS=28 \
   setsid nohup taskset -c 0-27 bash scripts/run_switzerland_cpu_reference_mpi.sh \
-  > /mnt/data/wrf_gpu_switzerland_big/run_cpu/cpu_reference.out 2>&1 &
+  > <DATA_ROOT>/wrf_gpu_switzerland_big/run_cpu/cpu_reference.out 2>&1 &
 
 # 3. GPU forecast + comparison (MANAGER runs when the GPU is free; warm-cached fp64).
 #    CPU_RANKS=28 + mainloop basis -> honest per-forecast-hour ratio in the proof.
-CASE_ROOT=/mnt/data/wrf_gpu_switzerland_big \
+CASE_ROOT=<DATA_ROOT>/wrf_gpu_switzerland_big \
   CPU_WALL_BASIS=mainloop CPU_RANKS=28 HOURS=24 DOMAIN=d01 \
   JAX_ENABLE_X64=true \
   PYTHONPATH=src bash scripts/equivalence_switzerland.sh
@@ -89,9 +89,9 @@ The GPU forecast inside step 3 runs:
 ```bash
 PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false \
 python -m gpuwrf.cli run \
-  --input-dir  /mnt/data/wrf_gpu_switzerland_big/run_gpu_input \
-  --output-dir /mnt/data/wrf_gpu_switzerland_big/run_gpu \
-  --scratch-dir /mnt/data/wrf_gpu_switzerland_big/scratch \
+  --input-dir  <DATA_ROOT>/wrf_gpu_switzerland_big/run_gpu_input \
+  --output-dir <DATA_ROOT>/wrf_gpu_switzerland_big/run_gpu \
+  --scratch-dir <DATA_ROOT>/wrf_gpu_switzerland_big/scratch \
   --domain d01 --max-dom 1 --hours 24
 ```
 
@@ -111,4 +111,4 @@ end-to-end wall and label it cold/warm explicitly.
 | `scripts/equivalence_switzerland_compare.py`        | GPU-vs-CPU comparator; honest 28-rank speedup block + per-fcst-hour |
 | `proofs/v0120/switzerland_benchmark.md`             | this doc (big-grid config + honest-speedup definition) |
 | `proofs/v0120/equivalence_switzerland.json`         | verdict + per-field stats + speedup proof object (written by step 3) |
-| `/mnt/data/wrf_gpu_switzerland_big/run_cpu/cpu_timing.json` | 28-rank ranks/grid/total+mainloop wall + per-fcst-hour |
+| `<DATA_ROOT>/wrf_gpu_switzerland_big/run_cpu/cpu_timing.json` | 28-rank ranks/grid/total+mainloop wall + per-fcst-hour |

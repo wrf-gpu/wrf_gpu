@@ -76,7 +76,7 @@ paths resolve from the file location or `WRF_PRISTINE_ROOT`.
 | Category | Examples | Why | What you'd need |
 |----------|----------|-----|-----------------|
 | **GPU-only** | `proofs/perf/*`, `proofs/multigpu_dgx/*`, `proofs/v0120/*` nested 1 km; any speedup / throughput / per-watt claim | Correctness is CPU-checkable, but performance requires real GPU execution | An NVIDIA GPU + CUDA-enabled JAX |
-| **Purged corpus** | `proofs/m20/*` (TOST equivalence), multi-day operational gates, `proofs/v090/*_savepoint_parity` oracle dirs | Depend on real CPU-WRF `wrfout` + AIFS forcing that are not redistributable (lived under `/mnt/data`, mostly purged — see `docs/fixture-storage-policy.md`) | Re-run CPU-WRF from the AIFS forcing documented in `data/manifests/aifs_ingest_v0.json` |
+| **Purged corpus** | `proofs/m20/*` (TOST equivalence), multi-day operational gates, `proofs/v090/*_savepoint_parity` oracle dirs | Depend on real CPU-WRF `wrfout` + AIFS forcing that are not redistributable (lived under `<DATA_ROOT>`, mostly purged — see `docs/fixture-storage-policy.md`) | Re-run CPU-WRF from the AIFS forcing documented in `data/manifests/aifs_ingest_v0.json` |
 | **Oracle rebuild** | Fortran-linked savepoint regeneration (e.g. `proofs/v040/*_savepoint_parity.py` compile paths) | Recompile/relink against the WRF source | `WRF_PRISTINE_ROOT` + `gfortran` |
 
 These exclusions are also printed at the end of every `verify_reproducibility.sh`

@@ -118,9 +118,9 @@
     "process_oracle_json": "proofs/v018/thompson_process_oracle.json",
     "target_metrics_json": "proofs/v018/switzerland_72h_target_metrics.json",
     "final_report_md": "proofs/v018/rainnc_qvapor_fix_report.md",
-    "post_qcfz_grid_compare_json": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.json",
-    "post_qcfz_grid_compare_md": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.md",
-    "post_qcfz_run_root": "/mnt/data/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z"
+    "post_qcfz_grid_compare_json": "<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.json",
+    "post_qcfz_grid_compare_md": "<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z/switzerland_d01_72h_grid_compare.md",
+    "post_qcfz_run_root": "<DATA_ROOT>/wrf_gpu_validation/v018_rainnc_qvapor_switzerland_d01_72h_qcfz_20260616T115735Z"
   },
   "final_verdict": {
     "rainnc": "accepted_class_c_process_green_bounded_coupled_residual",

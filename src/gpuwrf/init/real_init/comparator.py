@@ -5,7 +5,7 @@ extraction + the gate logic + the campaign runner + the proof emitter) — it do
 NOT own any production lane module. The harness:
 
   1. Reads a real.exe oracle pair (``wrfinput_d0N`` + ``wrfbdy_d01``) from the
-     corpus (``/mnt/data/canairy_meteo/runs/{wrf_l2,wrf_l3}/<case>/``).
+     corpus (``<DATA_ROOT>/canairy_meteo/runs/{wrf_l2,wrf_l3}/<case>/``).
   2. Builds the native :class:`RealInitProduct` via
      :func:`gpuwrf.init.real_init.driver.build_real_init` from the matching
      met_em (``wps_cases``) for the SAME case/time/domain. (Until the S1/S2/S3
@@ -61,7 +61,7 @@ except Exception as _exc:  # pragma: no cover - exercised only without netCDF4
 COMPARATOR_SCHEMA_VERSION = "v0.4.0-S4-comparator-2026-06-02"
 
 # Corpus root holding the real.exe oracle pairs.
-ORACLE_ROOT_DEFAULT = Path("/mnt/data/canairy_meteo/runs")
+ORACLE_ROOT_DEFAULT = Path("<DATA_ROOT>/canairy_meteo/runs")
 
 # The four wrfbdy sides and their _Bxx / _BTxx suffixes (WRF convention).
 _SIDES = ("W", "E", "S", "N")
@@ -718,7 +718,7 @@ class ForecastGateSpec:
     require_restart_pass: bool = True
     # CPU-WRF reference roots (the backfill output + retained corpus wrfout).
     cpu_wrfout_roots: tuple[str, ...] = (
-        "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output",
+        "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output",
     )
 
 

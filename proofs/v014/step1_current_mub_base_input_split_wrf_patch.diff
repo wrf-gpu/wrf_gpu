@@ -28,7 +28,7 @@ diff --git a/share/mediation_integrate.F b/share/mediation_integrate.F
 +   wrfgpu2_target_i = 18
 +   wrfgpu2_target_j = 10
 +   wrfgpu2_target_k = 2
-+   wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_current_mub_base_input_split/wrf_truth'
++   wrfgpu2_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_current_mub_base_input_split/wrf_truth'
 +   wrfgpu2_env = ''
 +   CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_CURRENT_MUB_BASE_INPUT_SPLIT', wrfgpu2_env)
 +   IF (TRIM(wrfgpu2_env) == '1') wrfgpu2_enabled = .TRUE.

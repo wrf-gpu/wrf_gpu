@@ -273,7 +273,7 @@ class _WRFInitLibm32:
 
 _WRF_INIT_LIBM32 = _WRFInitLibm32()
 # Replay scratch/output defaults; env-overridable via config.paths
-# (GPUWRF_RUN_ROOT / GPUWRF_TMPDIR) with no hardcoded /home/<name> path so a
+# (GPUWRF_RUN_ROOT / GPUWRF_TMPDIR) with no hardcoded <USER_HOME>/<name> path so a
 # clean clone writes its scratch under ~/.cache/gpuwrf.
 DEFAULT_REPLAY_RUN_DIR = wrf_l3_root() / "20260521_18z_l3_24h_20260522T133443Z"
 DEFAULT_OUTPUT_FIELD_PATH = tmp_root() / "outputs" / "m6x_d02_replay" / "proof_d02_replay_fields.npz"

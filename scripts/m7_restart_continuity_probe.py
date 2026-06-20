@@ -42,7 +42,7 @@ from gpuwrf.runtime.operational_state import initial_operational_carry  # noqa: 
 config.update("jax_enable_x64", True)
 
 SPRINT = ROOT / ".agent" / "sprints" / "2026-05-27-m7-restart-continuity"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 DT_S = 10.0
 RUN_IDS = {
     "20260429": "20260429_18z_l3_24h_20260524T204451Z",

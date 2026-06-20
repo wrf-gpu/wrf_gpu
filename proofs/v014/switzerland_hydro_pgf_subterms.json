@@ -1,9 +1,9 @@
 {
   "artifacts": {
-    "cpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
-    "h36_baseline_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output",
-    "h36_fixed_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hydro_pgf_edgefix_gpt",
-    "previous_proof": "/home/user/src/wrf_gpu2/.codex/worktrees/v014-switzerland-hydro-pgf-subterms/proofs/v014/switzerland_strongflow_dynamics.json"
+    "cpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+    "h36_baseline_gpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output",
+    "h36_fixed_gpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hydro_pgf_edgefix_gpt",
+    "previous_proof": "<USER_HOME>/src/wrf_gpu2/.codex/worktrees/v014-switzerland-hydro-pgf-subterms/proofs/v014/switzerland_strongflow_dynamics.json"
   },
   "baseline_from_previous": {
     "hydro_first_three_terms_contribution_pa_per_cell_per_h": -31.645774891774636,
@@ -22,37 +22,37 @@
   "generated_utc": "2026-06-11T05:45:23.684749+00:00",
   "hourly_gate": {
     "available": false,
-    "fixed_output": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hydro_pgf_edgefix_gpt"
+    "fixed_output": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hydro_pgf_edgefix_gpt"
   },
   "resources": {
     "gpt_hydro_pgf_edgefix_1h": {
       "exists": false,
-      "gpu_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_1h_gpu_usage.csv",
+      "gpu_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_1h_gpu_usage.csv",
       "max_gpu_memory_mib": null,
       "max_gpu_util_pct": null,
       "max_process_rss_kib": null,
-      "monitor": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_1h_monitor.runinfo",
-      "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_1h_process_usage.csv",
+      "monitor": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_1h_monitor.runinfo",
+      "process_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_1h_process_usage.csv",
       "samples": 0
     },
     "gpt_hydro_pgf_edgefix_3h": {
       "exists": false,
-      "gpu_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_3h_gpu_usage.csv",
+      "gpu_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_3h_gpu_usage.csv",
       "max_gpu_memory_mib": null,
       "max_gpu_util_pct": null,
       "max_process_rss_kib": null,
-      "monitor": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_3h_monitor.runinfo",
-      "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_3h_process_usage.csv",
+      "monitor": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_3h_monitor.runinfo",
+      "process_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_edgefix_3h_process_usage.csv",
       "samples": 0
     },
     "gpt_hydro_pgf_subterms": {
       "exists": true,
-      "gpu_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_subterms_gpu_usage.csv",
+      "gpu_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_subterms_gpu_usage.csv",
       "max_gpu_memory_mib": 7603,
       "max_gpu_util_pct": 74,
       "max_process_rss_kib": 5289408,
-      "monitor": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_subterms_monitor.runinfo",
-      "process_csv": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_subterms_process_usage.csv",
+      "monitor": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_subterms_monitor.runinfo",
+      "process_csv": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/resources/gpt_hydro_pgf_subterms_process_usage.csv",
       "samples": 267
     }
   },
@@ -127,7 +127,7 @@
       "min": -0.0010424106990276048,
       "rmse": 0.0006946331857670018
     },
-    "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+    "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
     "source": "src/gpuwrf/dynamics/core/rk_addtend_dry.py::_absolute_diagnostics"
   },
   "schema": "v014_switzerland_hydro_pgf_subterms",
@@ -156,7 +156,7 @@
       "run_physics": false,
       "top_lid": true
     },
-    "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+    "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
     "steps_requested": 30,
     "variants": {
       "baseline": {
@@ -8434,7 +8434,7 @@
     },
     "wrf_loop_bound_mismatch_probe": {
       "meaning": "full_wrf_specified_edge_skip zeros only the outer normal faces skipped by WRF when specified/nested",
-      "wrf_source": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407"
+      "wrf_source": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407"
     }
   },
   "subterm_attribution_5min": {
@@ -8484,10 +8484,10 @@
     "valid_window": "h36->h37 storm-state reinit"
   },
   "wrf_source_anchors": {
-    "hydro_u_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
-    "hydro_v_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
-    "large_step_hpg_call": "/home/user/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
-    "large_step_hpg_loop_bounds": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
-    "rk_step_prep_call": "/home/user/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682"
+    "hydro_u_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2385-2388",
+    "hydro_v_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2313",
+    "large_step_hpg_call": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_em.F:717-732",
+    "large_step_hpg_loop_bounds": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2268-2407",
+    "rk_step_prep_call": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/solve_em.F:658-682"
   }
 }

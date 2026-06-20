@@ -1,7 +1,7 @@
 {
  "region": "switzerland_d01_72h",
  "schema": "v015-finalgate-distilled-v1",
- "source_compare_json": "/mnt/data/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/switzerland_d01_72h_grid_compare.json",
+ "source_compare_json": "<DATA_ROOT>/wrf_gpu_validation/v015_switzerland_d01_72h_gpu_finalgates_20260613T094842Z/switzerland_d01_72h_grid_compare.json",
  "paired_files": 72,
  "top_verdict": "FAIL",
  "frozen_manifest": "proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json",

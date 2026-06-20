@@ -45,8 +45,8 @@ if str(SRC) not in sys.path:
 import numpy as np
 from netCDF4 import Dataset
 
-L3_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
-L2_RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l2")
+L3_RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
+L2_RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l2")
 OUTPUT_ROOT = Path("/tmp/v010_d02_diag_runs")
 PROOF_DIR = ROOT / "proofs" / "v010_validation"
 

@@ -9809,15 +9809,15 @@
   },
   "generated_utc": "2026-06-08T22:48:18.772856+00:00",
   "inputs": {
-    "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
-    "cpu_h0": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
-    "cpu_h1": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
+    "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_h0": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_18:00:00",
+    "cpu_h1": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
     "domain": "d02",
     "gpu_dir": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
     "gpu_h1": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-01_19:00:00",
-    "init_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
+    "init_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z",
     "run_id": "20260501_18z_l2_72h_20260519T173026Z",
-    "wrfinput": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02"
+    "wrfinput": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02"
   },
   "key_field_origins": {
     "C2F": {
@@ -9941,15 +9941,15 @@
       "nested_pipeline._PerDomainWrfoutWriter passes grid, not namelist.metrics, to write_wrfout_netcdf.",
       "wrfout_writer._add_grid_coordinate_fields reads metrics = grid.metrics."
     ],
-    "current_grid_metrics_provenance": "wrfinput:/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02:nz=44:eta=(45,)",
+    "current_grid_metrics_provenance": "wrfinput:<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02:nz=44:eta=(45,)",
     "grid_shape": {
       "nx": 159,
       "ny": 66,
       "nz": 44
     },
-    "grid_source_wrfout": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
-    "loaded_metrics_provenance": "wrfinput:/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02:nz=44:eta=(45,)",
-    "metrics_source": "/mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+    "grid_source_wrfout": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
+    "loaded_metrics_provenance": "wrfinput:<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02:nz=44:eta=(45,)",
+    "metrics_source": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z/wrfinput_d02",
     "raw_grid_metrics_provenance": "analytic-flat"
   },
   "schema": "v014_static_metric_base_parity",

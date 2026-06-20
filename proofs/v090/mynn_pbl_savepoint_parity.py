@@ -41,7 +41,7 @@ from typing import Any
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
-ORACLE_DIR = Path("/mnt/data/wrf_gpu2/physics_oracle_v090/surface_mynn")
+ORACLE_DIR = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle_v090/surface_mynn")
 SCHEME = "mynnedmf"
 # Pristine-WRF checkout root. Override with WRF_PRISTINE_ROOT; default = sibling of repo.
 WRF_PRISTINE_ROOT = Path(os.environ.get("WRF_PRISTINE_ROOT", str(ROOT.parent / "wrf_pristine" / "WRF")))

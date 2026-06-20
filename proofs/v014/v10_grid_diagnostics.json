@@ -1,5 +1,5 @@
 {
-  "case_dir": "/home/user/src/wrf_gpu2/proofs/v0120/powered_tost_n15",
+  "case_dir": "<USER_HOME>/src/wrf_gpu2/proofs/v0120/powered_tost_n15",
   "cases": [
     {
       "cell_level": {
@@ -1277,7 +1277,7 @@
         "corr_dV10_dT2": 0.003952303850801751,
         "corr_dV10_dU10": -0.13797593988625842
       },
-      "cpu_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+      "cpu_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
       "field_stats": {
         "PSFC": {
           "bias": -504.5133086341997,

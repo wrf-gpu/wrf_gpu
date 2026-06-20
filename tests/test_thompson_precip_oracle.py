@@ -5,7 +5,7 @@ Validates the shipped FAITHFUL-EXPLICIT GPU Thompson against a real WRF
 asserts the implicit-sed gate is default-OFF so the shipped default is unchanged.
 
 Skips when the oracle savepoint or a JAX GPU backend is unavailable (the
-savepoint lives outside git at /mnt/data; regenerate via
+savepoint lives outside git at <DATA_ROOT>; regenerate via
 proofs/thompson_perf/precip_oracle_harness/precip_column_oracle.F).
 """
 from __future__ import annotations
@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-ORACLE = Path("/mnt/data/wrf_gpu2/physics_oracle/microphysics_precip")
+ORACLE = Path("<DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_precip")
 ROOT = Path(__file__).resolve().parents[1]
 
 

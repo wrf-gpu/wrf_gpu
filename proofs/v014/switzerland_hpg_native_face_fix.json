@@ -1,10 +1,10 @@
 {
   "artifacts": {
-    "cpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
-    "h36_baseline_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output",
-    "h36_fixed_gpu": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix",
-    "native_dumps": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps",
-    "native_wrf_run": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_wrf",
+    "cpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu",
+    "h36_baseline_gpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output",
+    "h36_fixed_gpu": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix",
+    "native_dumps": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/hpg_dumps",
+    "native_wrf_run": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_wrf",
     "wrf_patch": "proofs/v014/switzerland_hpg_native_face_wrf_patch.diff"
   },
   "generated_utc": "2026-06-11T08:17:26.591905+00:00",
@@ -61,7 +61,7 @@
       "residual_pa_per_cell_h": -27.697448979591826
     },
     "fixed_excess_outflux_pa_per_cell_h": -28.3281887755102,
-    "fixed_output": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix",
+    "fixed_output": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/gpu_output_hpg_native_face_fix",
     "metrics_h37": {
       "available": true,
       "mu": {
@@ -137,7 +137,7 @@
       "min": -4.057246476694581e-05,
       "rmse": 2.590529564458939e-06
     },
-    "h36_file": "/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu/wrfout_d01_2023-01-16_12:00:00",
+    "h36_file": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu/wrfout_d01_2023-01-16_12:00:00",
     "per_level_mean_abs_rel": {
       "linear_form": [
         8.283531844466156e-06,
@@ -245,7 +245,7 @@
       "python": "3.13.11"
     },
     "generated_utc": "2026-06-11T07:54:50.453842+00:00",
-    "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
+    "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_reinit_h36_fable/run_h36",
     "steps_requested": 30,
     "variants": {
       "hypso1_legacy": {
@@ -3179,7 +3179,7 @@
     },
     "ncall": 21601,
     "ranks": 24,
-    "run_dir": "/mnt/data/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
+    "run_dir": "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_hpg_native_face/run_h36",
     "state_vs_wrf_live": {
       "mu": {
         "max": 0.0,
@@ -3221,10 +3221,10 @@
     ]
   },
   "wrf_source_anchors": {
-    "calc_p_rho_phi_hypso1": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1027-1030",
-    "calc_p_rho_phi_hypso2": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1043-1062",
+    "calc_p_rho_phi_hypso1": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1027-1030",
+    "calc_p_rho_phi_hypso2": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:1043-1062",
     "gen2_hpg_identical_to_pristine": "diff of horizontal_pressure_gradient gen2 vs pristine 4.7.1: byte-identical",
-    "horizontal_pgf_terms": "/home/user/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2316,2385-2392",
-    "registry_hypsometric_default": "/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON:2285 (default 2)"
+    "horizontal_pgf_terms": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_big_step_utilities_em.F:2310-2316,2385-2392",
+    "registry_hypsometric_default": "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON:2285 (default 2)"
   }
 }

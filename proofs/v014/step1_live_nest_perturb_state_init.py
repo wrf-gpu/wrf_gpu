@@ -53,8 +53,8 @@ SPRINT_CONTRACT = (
 HANDOFF = ROOT / ".agent/decisions/V0140-GRID-PARITY-FIRST-HANDOFF.md"
 PREDECESSOR_JSON = PROOF_DIR / "step1_first_rk_part1_p_state_split.json"
 PREDECESSOR_MD = PROOF_DIR / "step1_first_rk_part1_p_state_split.md"
-PRECALL_TRUTH_ROOT = Path("/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
-WRF_SOURCE_ROOT = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF")
+PRECALL_TRUTH_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth")
+WRF_SOURCE_ROOT = Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF")
 
 REQUIRED_ANCESTOR = "131b27cd"
 P_FAMILY = ("P_STATE", "MU_STATE", "W_STATE", "PH_STATE")

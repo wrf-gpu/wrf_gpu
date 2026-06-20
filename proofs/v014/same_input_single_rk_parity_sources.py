@@ -43,10 +43,10 @@ OPERATIONAL_STATE_PY = ROOT / "src/gpuwrf/runtime/operational_state.py"
 OPERATIONAL_MODE_PY = ROOT / "src/gpuwrf/runtime/operational_mode.py"
 RK_ADDTEND_DRY_PY = ROOT / "src/gpuwrf/dynamics/core/rk_addtend_dry.py"
 
-RUN_DIR = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3")
+RUN_DIR = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3")
 NAMELIST = RUN_DIR / "namelist.input"
-PRESTEP_CARRY = Path("/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl")
-POST_RK_TRUTH = Path("/mnt/data/wrf_gpu2/v014_post_rk_refresh/refresh_output")
+PRESTEP_CARRY = Path("<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl")
+POST_RK_TRUTH = Path("<DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/refresh_output")
 
 TARGET_STEP = 6000
 TARGET_FIELDS = ("T", "P", "PB", "PH", "PHB", "MU", "MUB", "U", "V", "W")

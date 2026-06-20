@@ -5,7 +5,7 @@ Verdict: `STEP1_TP_LOCALIZED_RK_STAGE_ENTRY_STATE_AFTER_FIRST_RK_PARTS_RK1_P_STA
 ## Result
 
 - CPU backend: `cpu`.
-- WRF substage truth root: `/mnt/data/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth`.
+- WRF substage truth root: `<DATA_ROOT>/wrf_gpu2/v014_step1_t_p_operator_localization/wrf_truth`.
 - Fastest rigorous method: `FOCUSED_STEP1_SUBSTAGE_TRUTH_COMPARATOR_FASTEST_RIGOROUS_WALL_CLOCK`.
 - First material T/P-family mismatch: `after_rk_addtend_before_small_step_prep` RK`1` field `P_STATE`.
 - Top material residual there: `PH_TEND` max_abs `794096.1875` rmse `26657.670278603327`.

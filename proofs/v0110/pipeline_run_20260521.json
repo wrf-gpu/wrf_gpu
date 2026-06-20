@@ -726,7 +726,7 @@
         "N"
       ],
       "source": "Gen2 L2 parent-domain hourly wrfout nested interpolation",
-      "source_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+      "source_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
       "strip_order": "WRF wrfbdy order: outer-to-inner bdy_width, vertical, side_index",
       "times": 25,
       "variables": [
@@ -742,7 +742,7 @@
         "MU",
         "MUB"
       ],
-      "wrfbdy_path": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d01",
+      "wrfbdy_path": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfbdy_d01",
       "wrfbdy_width_source": "decode_wrfbdy"
     },
     "d03_replay_adapter": {
@@ -797,7 +797,7 @@
           ],
           "hour": 1,
           "requested_time_index": 1,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_19:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_19:00:00",
           "status": "PASS",
           "time_index": 1
         },
@@ -819,7 +819,7 @@
           ],
           "hour": 2,
           "requested_time_index": 2,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_20:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_20:00:00",
           "status": "PASS",
           "time_index": 2
         },
@@ -841,7 +841,7 @@
           ],
           "hour": 3,
           "requested_time_index": 3,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_21:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_21:00:00",
           "status": "PASS",
           "time_index": 3
         },
@@ -863,7 +863,7 @@
           ],
           "hour": 4,
           "requested_time_index": 4,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_22:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_22:00:00",
           "status": "PASS",
           "time_index": 4
         },
@@ -885,7 +885,7 @@
           ],
           "hour": 5,
           "requested_time_index": 5,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_23:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-21_23:00:00",
           "status": "PASS",
           "time_index": 5
         },
@@ -907,7 +907,7 @@
           ],
           "hour": 6,
           "requested_time_index": 6,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_00:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_00:00:00",
           "status": "PASS",
           "time_index": 6
         },
@@ -929,7 +929,7 @@
           ],
           "hour": 7,
           "requested_time_index": 7,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_01:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_01:00:00",
           "status": "PASS",
           "time_index": 7
         },
@@ -951,7 +951,7 @@
           ],
           "hour": 8,
           "requested_time_index": 8,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_02:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_02:00:00",
           "status": "PASS",
           "time_index": 8
         },
@@ -973,7 +973,7 @@
           ],
           "hour": 9,
           "requested_time_index": 9,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_03:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_03:00:00",
           "status": "PASS",
           "time_index": 9
         },
@@ -995,7 +995,7 @@
           ],
           "hour": 10,
           "requested_time_index": 10,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_04:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_04:00:00",
           "status": "PASS",
           "time_index": 10
         },
@@ -1017,7 +1017,7 @@
           ],
           "hour": 11,
           "requested_time_index": 11,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_05:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_05:00:00",
           "status": "PASS",
           "time_index": 11
         },
@@ -1039,7 +1039,7 @@
           ],
           "hour": 12,
           "requested_time_index": 12,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_06:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_06:00:00",
           "status": "PASS",
           "time_index": 12
         },
@@ -1061,7 +1061,7 @@
           ],
           "hour": 13,
           "requested_time_index": 13,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_07:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_07:00:00",
           "status": "PASS",
           "time_index": 13
         },
@@ -1083,7 +1083,7 @@
           ],
           "hour": 14,
           "requested_time_index": 14,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_08:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_08:00:00",
           "status": "PASS",
           "time_index": 14
         },
@@ -1105,7 +1105,7 @@
           ],
           "hour": 15,
           "requested_time_index": 15,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_09:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_09:00:00",
           "status": "PASS",
           "time_index": 15
         },
@@ -1127,7 +1127,7 @@
           ],
           "hour": 16,
           "requested_time_index": 16,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_10:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_10:00:00",
           "status": "PASS",
           "time_index": 16
         },
@@ -1149,7 +1149,7 @@
           ],
           "hour": 17,
           "requested_time_index": 17,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_11:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_11:00:00",
           "status": "PASS",
           "time_index": 17
         },
@@ -1171,7 +1171,7 @@
           ],
           "hour": 18,
           "requested_time_index": 18,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_12:00:00",
           "status": "PASS",
           "time_index": 18
         },
@@ -1193,7 +1193,7 @@
           ],
           "hour": 19,
           "requested_time_index": 19,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_13:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_13:00:00",
           "status": "PASS",
           "time_index": 19
         },
@@ -1215,7 +1215,7 @@
           ],
           "hour": 20,
           "requested_time_index": 20,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_14:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_14:00:00",
           "status": "PASS",
           "time_index": 20
         },
@@ -1237,7 +1237,7 @@
           ],
           "hour": 21,
           "requested_time_index": 21,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_15:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_15:00:00",
           "status": "PASS",
           "time_index": 21
         },
@@ -1259,7 +1259,7 @@
           ],
           "hour": 22,
           "requested_time_index": 22,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_16:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_16:00:00",
           "status": "PASS",
           "time_index": 22
         },
@@ -1281,7 +1281,7 @@
           ],
           "hour": 23,
           "requested_time_index": 23,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_17:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_17:00:00",
           "status": "PASS",
           "time_index": 23
         },
@@ -1303,7 +1303,7 @@
           ],
           "hour": 24,
           "requested_time_index": 24,
-          "source_file": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_18:00:00",
+          "source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z/wrfout_d03_2026-05-22_18:00:00",
           "status": "PASS",
           "time_index": 24
         }
@@ -1335,14 +1335,14 @@
       "seeded": true,
       "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
     },
-    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+    "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
     "run_id": "20260521_18z_l3_24h_20260522T133443Z",
     "source": "gpuwrf.integration.d02_replay.build_replay_case"
   },
   "output_dir": "/tmp/v0110_d031km_runs/d03_20260521_18z_l3_24h_20260522T133443Z_d031km_gated_fp32_clone",
   "repeatability_status": "NOT_RUN",
   "restart_probe_status": "NOT_RUN",
-  "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "run_id": "20260521_18z_l3_24h_20260522T133443Z",
   "run_start_utc": "2026-05-21T18:00:00+00:00",
   "schema": "M7DailyPipelineRun",

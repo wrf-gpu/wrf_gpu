@@ -52,10 +52,10 @@ LIVE_NEST_FIX_JSON = PROOF_DIR / "live_nest_base_source_fix.json"
 D02_REPLAY = SRC / "gpuwrf/integration/d02_replay.py"
 NESTED_PIPELINE = SRC / "gpuwrf/integration/nested_pipeline.py"
 
-RUN_CASE3 = Path("/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3")
+RUN_CASE3 = Path("<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3")
 CPU_H0_D02 = RUN_CASE3 / "wrfout_d02_2026-05-01_18:00:00"
 ACCEPTED_TRUTH = (
-    Path("/mnt/data/wrf_gpu2/v014_same_input_contract_builder/wrf_truth")
+    Path("<DATA_ROOT>/wrf_gpu2/v014_same_input_contract_builder/wrf_truth")
     / "same_input_post_after_all_rk_steps_pre_halo_d02_step_1.npz"
 )
 

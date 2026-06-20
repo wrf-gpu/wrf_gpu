@@ -17,8 +17,8 @@
     "reason": "No GPU GWD implementation was added because the active supported GPU path integrates d02/nests from CPU-WRF replay inputs and boundaries, while the CPU-WRF nest wrfinput files carry GWD_OPT=0."
   },
   "corpus_case": {
-    "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z",
-    "namelist": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input",
+    "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z",
+    "namelist": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input",
     "namelist_sha256": "69cf9e267aafa69febb129b1c965fefe8abd9a70b7c5a41763a8688397f13784",
     "namelist_excerpt": {
       "max_dom": 5,
@@ -152,11 +152,11 @@
     "rg -n \"gwd_opt|GWDO|gwdo|module_bl_gwdo|gravity wave drag|GWD\" ~/src/wrf_pristine/WRF/dyn_em ~/src/wrf_pristine/WRF/phys ~/src/wrf_pristine/WRF/share ~/src/wrf_pristine/WRF/Registry -S",
     "sed -n '2200,2290p' ~/src/wrf_pristine/WRF/phys/module_pbl_driver.F",
     "sed -n '1228,1275p' ~/src/wrf_pristine/WRF/dyn_em/module_first_rk_step_part1.F",
-    "sed -n '70,105p' /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input",
-    "ncdump -h /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",
-    "ncdump -h /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",
+    "sed -n '70,105p' <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input",
+    "ncdump -h <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",
+    "ncdump -h <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02 | rg -n \":GWD_OPT|:DX|:DY|WEST-EAST_GRID_DIMENSION|SOUTH-NORTH_GRID_DIMENSION\"",
     "PYTHONPATH=src taskset -c 0-27 python - <<'PY' ... NetCDF4 GWD descriptor stats ... PY",
-    "sha256sum /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01 /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02 /mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d03"
+    "sha256sum <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/namelist.input <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d01 <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d02 <DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l2rerun_l3_24h_20260522T231647Z/wrfinput_d03"
   ],
   "unresolved_risks": [
     "This is not a proof that GWD is meteorologically negligible for a future live 9 km d01 parent; it is active there and should be reopened for live multi-domain equivalence.",

@@ -16,7 +16,7 @@
   "hour1_compile_plus_first_s": 29.258226208970882,
   "hours": 2,
   "jax_cache_status": {
-    "dir": "/mnt/data/wrf_perf_scratch/cache_iso2",
+    "dir": "<DATA_ROOT>/wrf_perf_scratch/cache_iso2",
     "enabled": true,
     "error": null,
     "min_compile_time_secs": 0,

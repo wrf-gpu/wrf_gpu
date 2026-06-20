@@ -3,17 +3,17 @@
 # Drives the REAL WRF mp_gt_driver on a sub-freezing rain+snow+graupel column
 # (activates qr_acr_qs / qr_acr_qg / freezeH2O cold-collection lanes) and dumps
 # the bit-exact pre/post state to
-#   /mnt/data/wrf_gpu2/physics_oracle/microphysics_coldmix/
+#   <DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_coldmix/
 #
 # CPU-LIGHT: single column block, single 18 s step, serial, <1 s on cores 0-3.
 # No GPU. Prereq: pristine WRF built with the oracle instrumentation + Thompson
 # lookup tables (qr_acr_qsV2.dat, qr_acr_qg_V4.dat, freezeH2O.dat) available.
 set -e
-source /home/user/miniconda3/etc/profile.d/conda.sh
+source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild 2>/dev/null || true
 
-WRF=/home/user/src/wrf_pristine/WRF
-HERE=/home/user/src/wrf_pristine/coldmix_oracle   # build dir (outside git)
+WRF=<USER_HOME>/src/wrf_pristine/WRF
+HERE=<USER_HOME>/src/wrf_pristine/coldmix_oracle   # build dir (outside git)
 SRC="$(dirname "$0")/coldmix_column_oracle.F"
 mkdir -p "$HERE"; cp "$SRC" "$HERE/"; cd "$HERE"
 
@@ -36,12 +36,12 @@ taskset -c 0-3 gfortran $FLAGS coldmix_column_oracle.o \
 
 # Thompson lookup tables (link from the pristine WRF oracle_run dir).
 for f in qr_acr_qg_V4.dat qr_acr_qsV2.dat freezeH2O.dat CCN_ACTIVATE.BIN; do
-  for src in "$WRF/test/em_real/oracle_run/$f" "$WRF/run/$f" /mnt/data/canairy_meteo/runs/wrf_l2/*/$f; do
+  for src in "$WRF/test/em_real/oracle_run/$f" "$WRF/run/$f" <DATA_ROOT>/canairy_meteo/runs/wrf_l2/*/$f; do
     [ -e "$src" ] && ln -sf "$src" . && break
   done
 done
 
-export WRFGPU2_ORACLE_ROOT=/mnt/data/wrf_gpu2/physics_oracle
-rm -rf /mnt/data/wrf_gpu2/physics_oracle/microphysics_coldmix
+export WRFGPU2_ORACLE_ROOT=<DATA_ROOT>/wrf_gpu2/physics_oracle
+rm -rf <DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_coldmix
 taskset -c 0-3 ./coldmix_column_oracle.exe
-echo "=== oracle written to /mnt/data/wrf_gpu2/physics_oracle/microphysics_coldmix ==="
+echo "=== oracle written to <DATA_ROOT>/wrf_gpu2/physics_oracle/microphysics_coldmix ==="

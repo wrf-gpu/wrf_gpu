@@ -117,9 +117,9 @@ Canonical harness:
 
 ```bash
 scripts/with_gpu_lock.sh --label gpt-integ-v018-confirm -- \
-  env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo \
+  env PYTHONPATH=src GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo \
   OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 JAX_ENABLE_X64=true \
-  JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache \
+  JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache \
   XLA_PYTHON_CLIENT_MEM_FRACTION=0.5 XLA_PYTHON_CLIENT_PREALLOCATE=false \
   TF_GPU_ALLOCATOR=cuda_malloc_async taskset -c 0-3 \
   python proofs/perf/warmed_timing.py
@@ -155,7 +155,7 @@ Other default-path overhead candidates observed during the merge:
 
 ## Commands Run
 
-- `git worktree add /home/user/src/wrf_gpu2/.wt-v018-integration -b worker/gpt/v018-integration worker/opus/v018-trunk`
+- `git worktree add <USER_HOME>/src/wrf_gpu2/.wt-v018-integration -b worker/gpt/v018-integration worker/opus/v018-trunk`
 - `git merge` for all eight family branches listed above.
 - `python -m py_compile ...` for touched runtime/coupler/test modules.
 - `PYTHONPATH=src JAX_PLATFORMS=cpu JAX_ENABLE_X64=true pytest -q ...` family suites listed above.
@@ -195,7 +195,7 @@ path NIT before tag.
 was RED on trunk (qv abs err 4.93e-8 vs 1e-9 tol, ~49×) and was absent from the
 integration test run → it would have shipped silently RED.
 
-**Root cause (proven against pristine WRF at `/home/user/src/wrf_pristine`):**
+**Root cause (proven against pristine WRF at `<USER_HOME>/src/wrf_pristine`):**
 accepted commit `044bb65a` ("v018 thompson cold-process fidelity") bundled, besides
 the genuine cold-process additions, a new diagnostic graupel-number distribution
 (`_graupel_distribution` + `_reset_mp8_graupel_number`). The graupel-MELT rate
@@ -237,8 +237,8 @@ Perf-neutral verdict unchanged and no longer overclaims a missing artifact.
 ### Path NIT — noahmp energy savepoint gate hardcoded a non-existent path → **FIXED**
 
 `proofs/noahmp/energy_savepoint_gate.py` defaulted `WRF_PRISTINE_ROOT` to
-`ROOT.parent/"wrf_pristine"/"WRF"` = `/home/user/src/wrf_gpu2/wrf_pristine/WRF`
-(does not exist). Now defaults to the canonical `/home/user/src/wrf_pristine/WRF`
+`ROOT.parent/"wrf_pristine"/"WRF"` = `<USER_HOME>/src/wrf_gpu2/wrf_pristine/WRF`
+(does not exist). Now defaults to the canonical `<USER_HOME>/src/wrf_pristine/WRF`
 (env `WRF_PRISTINE_ROOT` still overrides; repo-sibling kept as last-resort fallback).
 `test_real_wrf_energy_savepoint_parity` now RUNS and passes (was effectively
 skipping/failing on the path).

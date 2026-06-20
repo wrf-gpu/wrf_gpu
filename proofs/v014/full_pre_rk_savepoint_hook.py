@@ -32,7 +32,7 @@ OUT_JSON = PROOF_DIR / "full_pre_rk_savepoint_hook.json"
 OUT_MD = PROOF_DIR / "full_pre_rk_savepoint_hook.md"
 PATCH_DIFF = PROOF_DIR / "full_pre_rk_savepoint_hook_wrf_patch.diff"
 
-SCRATCH = Path("/mnt/data/wrf_gpu2/v014_full_pre_rk_savepoint_hook")
+SCRATCH = Path("<DATA_ROOT>/wrf_gpu2/v014_full_pre_rk_savepoint_hook")
 WRF_COPY = SCRATCH / "WRF"
 RUN_DIR = SCRATCH / "run_case3"
 OUTPUT_DIR = SCRATCH / "full_pre_rk_output"
@@ -355,13 +355,13 @@ def assess_sufficiency(surface: Mapping[str, Any]) -> dict[str, Any]:
 
 def commands() -> dict[str, Any]:
     build_env = (
-        "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
-        "NETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
-        "PNETCDF=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+        "PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+        "NETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
+        "PNETCDF=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build "
         "WRFIO_NCD_LARGE_FILE_SUPPORT=1 CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu"
     )
     run_env = (
-        "PATH=/home/user/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
+        "PATH=<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin:$PATH "
         "CUDA_VISIBLE_DEVICES= JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 "
         f"WRFGPU2_FULL_PRE_RK=1 WRFGPU2_FULL_PRE_RK_ROOT={OUTPUT_DIR} "
         "WRFGPU2_FULL_PRE_RK_GRID=2 WRFGPU2_FULL_PRE_RK_START_STEP=6000 "
@@ -370,8 +370,8 @@ def commands() -> dict[str, Any]:
     return {
         "setup": [
             f"mkdir -p {SCRATCH}",
-            f"rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/WRF/ {WRF_COPY}/",
-            f"rsync -a /mnt/data/wrf_gpu2/v014_post_rk_refresh/run_case3/ {RUN_DIR}/",
+            f"rsync -a <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/WRF/ {WRF_COPY}/",
+            f"rsync -a <DATA_ROOT>/wrf_gpu2/v014_post_rk_refresh/run_case3/ {RUN_DIR}/",
             f"cd {WRF_COPY} && patch -p1 < {PATCH_DIFF}",
         ],
         "build": f"cd {WRF_COPY} && timeout 3600 env {build_env} tcsh ./compile em_real >{COMPILE_LOG} 2>&1",

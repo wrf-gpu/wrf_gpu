@@ -396,7 +396,7 @@
     }
   ],
   "run_request": {
-    "cpu_wrf_truth_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+    "cpu_wrf_truth_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
     "domain": "d02",
     "retained_jax_output_dir_for_selection_only": "/tmp/v0120_powered_tost_runs/l2_d02_20260501_18z_l2_72h_20260519T173026Z",
     "run_id": "20260501_18z_l2_72h_20260519T173026Z",
@@ -9607,7 +9607,7 @@
       "reason": "h10 is the strongest selected h8-h14 divergence lead in the dynamic attribution plan.",
       "valid_time_utc": "2026-05-02T04:00:00Z"
     },
-    "fastest_reliable_path": "Use a disposable instrumented copy of /home/user/src/wrf_pristine/WRF, because it has a current WRF v4.7.1 source tree and built CPU executables. Run the Case 3 d01/d02 forecast from 2026-05-01_18:00:00 to h10 with a small env-gated Fortran emitter that dumps selected d02 cell patches around existing dycore routine boundaries. Do not use the old external/wrf_savepoint_patch as-is; its hooks are empty and its build paths are stale.",
+    "fastest_reliable_path": "Use a disposable instrumented copy of <USER_HOME>/src/wrf_pristine/WRF, because it has a current WRF v4.7.1 source tree and built CPU executables. Run the Case 3 d01/d02 forecast from 2026-05-01_18:00:00 to h10 with a small env-gated Fortran emitter that dumps selected d02 cell patches around existing dycore routine boundaries. Do not use the old external/wrf_savepoint_patch as-is; its hooks are empty and its build paths are stale.",
     "impact": "Use this feasibility proof for WRF source/build choice and provenance risks. The selected h10 cells, levels, and patch bounds in this request remain sourced from dynamic_field_attribution.json.",
     "proof_json": {
       "exists": true,

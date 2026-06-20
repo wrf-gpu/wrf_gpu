@@ -19,7 +19,7 @@ import numpy as np
 from netCDF4 import Dataset
 
 
-WRF_ROOT = Path("/home/user/src/wrf_pristine/WRF")
+WRF_ROOT = Path("<USER_HOME>/src/wrf_pristine/WRF")
 
 SCHEMES: dict[int, dict[str, str]] = {
     9: {

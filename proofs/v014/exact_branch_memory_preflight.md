@@ -12,8 +12,8 @@
 
 ## GPU Run
 
-- Command: `/home/user/miniconda3/bin/python -m gpuwrf.cli run --input-dir /mnt/data/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z --output-dir /mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/nested_1h_out --scratch-dir /mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/scratch --proof-dir /mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/proofs --max-dom 2 --hours 1`
-- Output path: `/mnt/data/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/nested_1h_out`
+- Command: `<USER_HOME>/miniconda3/bin/python -m gpuwrf.cli run --input-dir <DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260501_18z_l2_72h_20260519T173026Z --output-dir <DATA_ROOT>/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/nested_1h_out --scratch-dir <DATA_ROOT>/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/scratch --proof-dir <DATA_ROOT>/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/proofs --max-dom 2 --hours 1`
+- Output path: `<DATA_ROOT>/wrf_gpu_validation/v014_noahmp_l2_preflight_fix_20260610T205333Z/nested_1h_out`
 - Duration: `988.362` s
 - Return code: `0`
 - Nested payload verdict: `PIPELINE_GREEN`

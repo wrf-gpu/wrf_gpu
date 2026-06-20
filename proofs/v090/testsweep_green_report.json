@@ -126,12 +126,12 @@
   "setup_only_repairs": [
     {
       "item": "data/fixtures/canary-wrf-d01-20260518T18-tslice-v1",
-      "action": "Created ignored worktree-local symlink to /mnt/data/wrf_gpu2/fixtures/canary-wrf-d01-20260518T18-tslice-v1.",
+      "action": "Created ignored worktree-local symlink to <DATA_ROOT>/wrf_gpu2/fixtures/canary-wrf-d01-20260518T18-tslice-v1.",
       "verification": "proofs/v090/fix_canary_external_fixture_setup.log"
     },
     {
       "item": "data/scratch/m2-cupy and data/profiler_artifacts/cupy_or_numba static referenced files",
-      "action": "Restored ignored static artifacts from /mnt/data/wrf_gpu2 for static profile path checks.",
+      "action": "Restored ignored static artifacts from <DATA_ROOT>/wrf_gpu2 for static profile path checks.",
       "verification": "proofs/v090/fix_m2_cupy_static_setup2.log"
     }
   ],

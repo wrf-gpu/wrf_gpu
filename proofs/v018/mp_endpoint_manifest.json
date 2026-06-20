@@ -169,7 +169,7 @@
       "exact_module": "phys/module_mp_cammgmp_driver.F",
       "irrelevance_basis": "WRF source comments state QME3D is wrong without CAM macrophysics, convective cloud fraction is unavailable to microphysics, and current RRTMG does not use the outputs. This is out-of-scope for the lean operational meteorology target.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_cammgmp_driver.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_cammgmp_driver.F"
       ],
       "remaining": "No v0.18 operational port planned; reopening would require a CAM macrophysics/cloud-fraction/radiation contract first."
     },
@@ -214,8 +214,8 @@
       "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
       "irrelevance_basis": "WRF doc/README.NSSLmp says legacy options 17/19/21/22 should use mp_physics=18 with modifier flags going forward; option 17 is now equivalent to MP18 with nssl_ccn_on=1 unless old behavior is explicitly requested.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
       ],
       "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
     },
@@ -246,8 +246,8 @@
       "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
       "irrelevance_basis": "WRF doc/README.NSSLmp maps option 19 to MP18 with nssl_2moment_on=0 and nssl_ccn_on=1.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
       ],
       "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
     },
@@ -259,8 +259,8 @@
       "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
       "irrelevance_basis": "WRF doc/README.NSSLmp maps option 21 to MP18 with nssl_2moment_on=0, nssl_hail_on=0, nssl_ccn_on=0, and nssl_density_on=0.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
       ],
       "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
     },
@@ -272,8 +272,8 @@
       "exact_module": "MP18 alias via phys/module_mp_nssl_2mom.F (README.NSSLmp modifier mapping)",
       "irrelevance_basis": "WRF doc/README.NSSLmp maps option 22 to MP18 with nssl_hail_on=0 and nssl_ccn_on=1.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/doc/README.NSSLmp",
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/doc/README.NSSLmp",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F"
       ],
       "remaining": "No separate legacy-option port; MP18 is the reference-oracle-backed NSSL target."
     },
@@ -356,9 +356,9 @@
       "exact_module": "phys/module_mp_fast_sbm.F",
       "irrelevance_basis": "Research spectral-bin scheme with optional BUILD_SBM_FAST compile path, bin-state transport, and external SBM_input_* tables. This is outside the lean operational bulk microphysics target.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/run/README.namelist",
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_fast_sbm.F",
-        "/home/user/src/wrf_pristine/WRF/phys/module_microphysics_driver.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/run/README.namelist",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_fast_sbm.F",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_microphysics_driver.F"
       ],
       "remaining": "No v0.18 operational port planned; reopening would require a spectral-bin architecture sprint."
     },
@@ -370,8 +370,8 @@
       "exact_module": "phys/module_mp_full_sbm.F",
       "irrelevance_basis": "Research spectral-bin scheme with full bin-state transport and external table architecture, outside the lean operational bulk microphysics target.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/run/README.namelist",
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_full_sbm.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/run/README.namelist",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_full_sbm.F"
       ],
       "remaining": "No v0.18 operational port planned; reopening would require a spectral-bin architecture sprint."
     },
@@ -497,8 +497,8 @@
       "exact_module": "phys/module_mp_jensen_ishmael.F",
       "irrelevance_basis": "Initial-release ice-habit research model with external ishmael-*.bin tables and multi-habit state. This is outside the lean operational Canary forecast target.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/run/README.namelist",
-        "/home/user/src/wrf_pristine/WRF/phys/module_mp_jensen_ishmael.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/run/README.namelist",
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_jensen_ishmael.F"
       ],
       "remaining": "No v0.18 operational port planned; reopening would require a multi-habit state/oracle architecture sprint."
     },
@@ -550,7 +550,7 @@
       "exact_module": "phys/module_microphysics_driver.F:CASE (MADWRF_MP)",
       "irrelevance_basis": "Source driver case contains only wrf_debug; real MadWRF work is outside the microphysics step, so there is no MP kernel to validate.",
       "evidence_paths": [
-        "/home/user/src/wrf_pristine/WRF/phys/module_microphysics_driver.F"
+        "<USER_HOME>/src/wrf_pristine/WRF/phys/module_microphysics_driver.F"
       ],
       "remaining": "No MP kernel endpoint; keep fail-closed."
     },

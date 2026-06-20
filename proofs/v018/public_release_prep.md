@@ -81,9 +81,9 @@ substitute the dev username / dev account for the angle-bracket placeholders.)
 
 | Check | Result |
 | --- | --- |
-| `git grep -In "/home/<dev-user>"` | **0** |
+| `git grep -In "<USER_HOME>/<dev-user>"` | **0** |
 | private email (`<dev-user>...@`) | **0** |
-| garbled over-scrubbed home-path strings (`/home/user` immediately followed by `-`) | **0** |
+| garbled over-scrubbed home-path strings (`<USER_HOME>` immediately followed by `-`) | **0** |
 | AWS keys (`AKIA…`) | **0** |
 | private SSH key blocks (`BEGIN … PRIVATE KEY`) | **0** |
 | GitHub tokens (`ghp_…`), Slack (`xox…`), bearer tokens | **0** |
@@ -96,8 +96,8 @@ substitute the dev username / dev account for the angle-bracket placeholders.)
 | `import gpuwrf` (CPU, `PYTHONPATH=src`) | **OK** |
 | version | **0.18.0** (`pyproject.toml` + `src/gpuwrf/__init__.py`) |
 
-Residual `/home/user` strings (the established sanitize placeholder, already present
-on `sanitize/public`) and `/mnt/data/canairy_meteo` corpus paths (the documented
+Residual `<USER_HOME>` strings (the established sanitize placeholder, already present
+on `sanitize/public`) and `<DATA_ROOT>/canairy_meteo` corpus paths (the documented
 `GPUWRF_CANAIRY_ROOT` value, no username) are intentional and not PII. The 17
 "hermes/telegram" word-matches are proof-object hygiene attestations
 (`"no_hermes": true`) carried over unchanged from `sanitize/public`'s
@@ -105,16 +105,16 @@ on `sanitize/public`) and `/mnt/data/canairy_meteo` corpus paths (the documented
 
 ## PII scrub applied (4 new files had the dev home path)
 
-Only 4 of the 279 new files contained a `/home/<dev-user>` path; all scrubbed:
+Only 4 of the 279 new files contained a `<USER_HOME>/<dev-user>` path; all scrubbed:
 
-- `proofs/v018/path_portability_fix.md` — 7 dev-home-path strings → `/home/user`
+- `proofs/v018/path_portability_fix.md` — 7 dev-home-path strings → `<USER_HOME>`
   (and the before→after prose de-garbled so the doc reads correctly).
 - `tests/test_v017_lsm_adv.py` — runtime WRF-root read routed through
-  `GPUWRF_WRF_ROOT` env (default `/home/user/...` placeholder); added `import os`.
+  `GPUWRF_WRF_ROOT` env (default `<USER_HOME>/...` placeholder); added `import os`.
 - `tests/test_v018_mp_family_fail_closed.py` — `WRF_ROOT` constant routed through
   `GPUWRF_WRF_ROOT` env; added `import os`. (Used only under `.exists()`/`skipif`.)
 - `tests/test_v017_lsm_pleim_xiu.py` — `wrf_sources` provenance citation strings →
-  `/home/user` (citations, not runtime reads).
+  `<USER_HOME>` (citations, not runtime reads).
 
 ## Status
 

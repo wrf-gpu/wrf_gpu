@@ -2,7 +2,7 @@
   "failures": [],
   "fields": {
     "T2": {
-      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+      "gen2_source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
       "max_abs_error": 10.35443115234375,
       "mean_error": 0.3211259036739372,
       "pass": true,
@@ -16,7 +16,7 @@
       "valid_time_utc": "2026-05-02T06:00:00+00:00"
     },
     "U10": {
-      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+      "gen2_source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
       "max_abs_error": 6.826760292053223,
       "mean_error": -0.4510521275661027,
       "pass": true,
@@ -30,7 +30,7 @@
       "valid_time_utc": "2026-05-02T06:00:00+00:00"
     },
     "V10": {
-      "gen2_source_file": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+      "gen2_source_file": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
       "max_abs_error": 12.527826309204102,
       "mean_error": 3.044475141899209,
       "pass": true,
@@ -44,8 +44,8 @@
       "valid_time_utc": "2026-05-02T06:00:00+00:00"
     }
   },
-  "final_wrfout": "/mnt/data/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
-  "reference_run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
+  "final_wrfout": "<DATA_ROOT>/wrf_gpu2/v014_grid_after_live_nest_base/l2_d02_20260501_18z_l2_72h_20260519T173026Z/wrfout_d02_2026-05-02_06:00:00",
+  "reference_run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/20260501_18z_l2_72h_20260519T173026Z",
   "schema": "M7L2D02Tier4RMSE",
   "schema_version": 1,
   "status": "PASS",

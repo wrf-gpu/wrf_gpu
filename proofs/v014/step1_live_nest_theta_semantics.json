@@ -493,7 +493,7 @@
           155
         ]
       },
-      "source": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfout_d02_2026-05-01_18:00:00",
+      "source": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfout_d02_2026-05-01_18:00:00",
       "status": "REPORT_ONLY_NOT_ACCEPTED_PRECALL_TRUTH"
     },
     "qvapor_vs_wrf_precall": {
@@ -791,7 +791,7 @@
       "--oneline",
       "--decorate"
     ],
-    "cwd": "/home/user/src/wrf_gpu2",
+    "cwd": "<USER_HOME>/src/wrf_gpu2",
     "returncode": 0,
     "stderr_tail": "",
     "stdout_tail": "e339de56 (HEAD -> worker/gpt/v013-close-manager, origin/worker/gpt/v013-close-manager) v014 open step1 qvapor precall truth schema sprint\n",
@@ -803,7 +803,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/src/gpuwrf/integration/d02_replay.py",
       "sha256": "360eced25ef4db037913a7936ac2b2a638a568f51cf88dcdbfe39383f5b91d8c",
       "size_bytes": 98563
     },
@@ -811,7 +811,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3",
       "sha256": null,
       "size_bytes": null
     },
@@ -819,7 +819,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_live_nest_theta_semantics",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_live_nest_theta_semantics",
       "sha256": null,
       "size_bytes": null
     },
@@ -827,7 +827,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-live-nest-theta-semantics/sprint-contract.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/.agent/sprints/2026-06-09-v014-step1-live-nest-theta-semantics/sprint-contract.md",
       "sha256": "7517cfccd34a09d1e1358aef696ee0b0467368751a20ce7ea2d39b61e6f64e5a",
       "size_bytes": 6428
     },
@@ -835,7 +835,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.json",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.json",
       "sha256": "9dd4fb4bfe796a4b03db5cf36b1339b3492d52f7d681594a374baf714da630df",
       "size_bytes": 194511
     },
@@ -843,7 +843,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.md",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.md",
       "sha256": "530e9bb85543008254b7586bd49b0aa5ccf7e8b3061b7ea73ec4ff2539d4a11f",
       "size_bytes": 1808
     },
@@ -851,7 +851,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.py",
+      "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_jax_loader_tstate.py",
       "sha256": "957fe0931d0ce575ee3e209e742132a0ee08ea0a9c9687a5773ab587affa1872",
       "size_bytes": 34969
     },
@@ -859,7 +859,7 @@
       "exists": true,
       "is_dir": true,
       "is_file": false,
-      "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth",
       "sha256": null,
       "size_bytes": null
     },
@@ -867,7 +867,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfinput_d02",
       "sha256": "150108f807fbc441783b2b2f309d32c555380b4bd8d909bbca9fe94057ed3c34",
       "size_bytes": 11005720
     },
@@ -875,7 +875,7 @@
       "exists": true,
       "is_dir": false,
       "is_file": true,
-      "path": "/mnt/data/wrf_gpu2/v014_source_save_boundary/run_case3/wrfout_d02_2026-05-01_18:00:00",
+      "path": "<DATA_ROOT>/wrf_gpu2/v014_source_save_boundary/run_case3/wrfout_d02_2026-05-01_18:00:00",
       "sha256": "6bb21f8fd866f598434e69968294f491c4f11f18fa268e4a699c6d5fb3b99d5a",
       "size_bytes": 10945385
     }
@@ -888,10 +888,10 @@
   "no_tost": true,
   "production_src_edits": false,
   "proof_objects": {
-    "json": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.json",
-    "markdown": "/home/user/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.md",
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-live-nest-theta-semantics.md",
-    "wrf_truth_root_reused": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth"
+    "json": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.json",
+    "markdown": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_live_nest_theta_semantics.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-09-v014-step1-live-nest-theta-semantics.md",
+    "wrf_truth_root_reused": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth"
   },
   "required_ancestor_7ae33eda": {
     "command": [
@@ -1023,7 +1023,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_18_je_33.txt",
         "record_schema": [
           "WPH_PREPART",
           "fortran_i",
@@ -1095,7 +1095,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_1_je_17.txt",
         "record_schema": [
           "WPH_PREPART",
           "fortran_i",
@@ -1167,7 +1167,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_34_je_50.txt",
         "record_schema": [
           "WPH_PREPART",
           "fortran_i",
@@ -1239,7 +1239,7 @@
         "number_of_small_timesteps": [
           "1"
         ],
-        "path": "/mnt/data/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
+        "path": "<DATA_ROOT>/wrf_gpu2/v014_step1_pre_part1_handoff/wrf_truth/before_first_rk_step_part1_call_d2_step_1_rk_1_is_115_ie_137_js_51_je_67.txt",
         "record_schema": [
           "WPH_PREPART",
           "fortran_i",
@@ -1396,7 +1396,7 @@
         "lines 852-855 and 869-879 branch on use_theta_m; use_theta_m=1 treats th as moist theta"
       ],
       "lines": "812-890",
-      "path": "/home/user/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F"
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/nest_init_utils.F"
     },
     "mediation_integrate_live_nest_call": {
       "evidence": [
@@ -1405,7 +1405,7 @@
         "lines 754-762 call adjust_tempqv(nest%mub, nest%mub_save, nest%c3h, nest%c4h, nest%znw, nest%p_top, nest%t_2, nest%p, QVAPOR, use_theta_m, ...)"
       ],
       "lines": "726-762",
-      "path": "/home/user/src/wrf_pristine/WRF/share/mediation_integrate.F"
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/share/mediation_integrate.F"
     },
     "theta_m_conversion": {
       "evidence": [
@@ -1413,7 +1413,7 @@
         "lines 4923-4928 apply grid%t_2 = (grid%t_2 + T0) * (1 + R_v/R_d * QVAPOR) - T0 when use_theta_m=1"
       ],
       "lines": "4918-4928",
-      "path": "/home/user/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F"
+      "path": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_initialize_real.F"
     }
   }
 }

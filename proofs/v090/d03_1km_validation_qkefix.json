@@ -6,7 +6,7 @@
   "headline": "The qke->FP64 precision-matrix promotion was implemented, verified to take effect (qke is genuinely float64 end-to-end through MYNN), and re-run on the d03 1km gated-fp32 case. It does NOT close the gate: d03 still goes NONFINITE at forecast hour 1 with qke the sole offending field and the SAME ~3036 cells (=~69 columns x 44 levels). The burst's root-cause hypothesis ('qke fp32 OVERFLOW at 1km') is FALSIFIED -- qke in fp64 diverges identically, at tiny qke magnitudes (~0.04-0.13, nowhere near any fp32/fp64 range limit). This is a STRUCTURAL/dynamics-driven NaN over the steep Tenerife terrain, not a precision-range problem. Reported FAIL, not green.",
   "precision_mode": "gated_fp32 (qke promoted FP64; theta/u/v/qv + bulk fields FP32_GATED; mu/p/ph/w + acoustic/pressure accumulators FP64)",
   "run_id": "20260521_18z_l3_24h_20260522T133443Z",
-  "cpu_reference_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
+  "cpu_reference_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z",
   "grid_mass_shape_zyx": [44, 75, 93],
   "dt_s": 3.0,
   "acoustic_substeps": 10,

@@ -15,11 +15,11 @@
 set -o pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF="/home/user/src/wrf_pristine/WRF"
+WRF="<USER_HOME>/src/wrf_pristine/WRF"
 WRF_PHYS="${WRF}/phys"
 WRF_RUN="${WRF}/run"
 
-source /home/user/miniconda3/etc/profile.d/conda.sh
+source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -e
 export OMP_NUM_THREADS=2

@@ -41,7 +41,7 @@ config.update("jax_enable_x64", True)
 
 SPRINT = ROOT / ".agent" / "sprints" / "2026-05-25-m6b-honest-1h-canary"
 ARTIFACTS = SPRINT / "artifacts"
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 DEFAULT_RUN_IDS = (
     "20260509_18z_l3_24h_20260511T190519Z",
     "20260521_18z_l3_24h_20260522T072630Z",

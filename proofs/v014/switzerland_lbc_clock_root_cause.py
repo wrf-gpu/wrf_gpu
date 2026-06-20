@@ -32,9 +32,9 @@ from pathlib import Path
 import numpy as np
 import netCDF4 as nc
 
-CPU_ROOT = Path("/mnt/data/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
+CPU_ROOT = Path("<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_72h_cpu_20260610T122909Z/run_cpu")
 BROKEN_ROOT = Path(
-    "/mnt/data/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_20260611T001250Z/gpu_output"
+    "<DATA_ROOT>/wrf_gpu_validation/v014_switzerland_d01_72h_gpu_20260611T001250Z/gpu_output"
 )
 RUN_START = datetime(2023, 1, 15, 0, 0, 0)
 PROBE_HOURS = (1, 2, 3, 6, 12, 24, 48, 72)

@@ -89,7 +89,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("subdir")
     ap.add_argument("--scheme", required=True)
-    ap.add_argument("--source-run", default="/mnt/data/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z")
+    ap.add_argument("--source-run", default="<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260428_18z_l3_24h_20260525T221139Z")
     args = ap.parse_args()
     sd = Path(args.subdir)
     man = build(sd, args.scheme, args.source_run)

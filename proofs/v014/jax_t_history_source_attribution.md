@@ -11,7 +11,7 @@ Verdict: `T_EVOLUTION_MISMATCH_CONFIRMED`.
 
 ## Artifact Identity
 
-- Checkpoint: `/mnt/data/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`.
+- Checkpoint: `<DATA_ROOT>/wrf_gpu2/v014_h10_prestep_carry/d02_step5999_full_carry.pkl`.
 - Same as producer record: `True`.
 - Same as canonical h10 compared artifact: `True`.
 

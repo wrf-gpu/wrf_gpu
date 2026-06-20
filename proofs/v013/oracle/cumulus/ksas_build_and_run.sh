@@ -8,11 +8,11 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WRF_KSAS="/home/user/src/wrf_pristine/WRF/phys/module_cu_ksas.F"
+WRF_KSAS="<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_ksas.F"
 OUT_SAVE="${HERE}/../../savepoints/cumulus"
 
 set +u
-source /home/user/miniconda3/etc/profile.d/conda.sh
+source <USER_HOME>/miniconda3/etc/profile.d/conda.sh
 conda activate wrfbuild
 set -u
 export OMP_NUM_THREADS=2

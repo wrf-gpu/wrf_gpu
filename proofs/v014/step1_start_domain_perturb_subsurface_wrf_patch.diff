@@ -1,5 +1,5 @@
---- /mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/backups/start_em.F.before_start_domain_perturb_subsurface	2026-05-29 11:08:04.498801271 +0100
-+++ /mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F	2026-06-09 19:49:33.466329316 +0100
+--- <DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/backups/start_em.F.before_start_domain_perturb_subsurface	2026-05-29 11:08:04.498801271 +0100
++++ <DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/work_clean_20260609_194715/WRF/dyn_em/start_em.F	2026-06-09 19:49:33.466329316 +0100
 @@ -7,7 +7,7 @@
  )
  
@@ -61,7 +61,7 @@
 +      IF (TRIM(wrfgpu2_env) /= '1') RETURN
 +
 +      wrfgpu2_grid = 2
-+      wrfgpu2_root = '/mnt/data/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/wrf_truth'
++      wrfgpu2_root = '<DATA_ROOT>/wrf_gpu2/v014_step1_start_domain_perturb_subsurface/wrf_truth'
 +
 +      wrfgpu2_env = ''
 +      CALL GET_ENVIRONMENT_VARIABLE('WRFGPU2_STEP1_START_DOMAIN_SUBSURFACE_GRID', wrfgpu2_env)

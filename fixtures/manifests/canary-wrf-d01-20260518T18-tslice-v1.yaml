@@ -1,6 +1,6 @@
 fixture_id: canary-wrf-d01-20260518T18-tslice-v1
 source: wrf-derived
-source_commit: path=/mnt/data/wrf_gpu2/source_wrfouts/wrfout_d01_2026-05-18_18:00:00
+source_commit: path=<DATA_ROOT>/wrf_gpu2/source_wrfouts/wrfout_d01_2026-05-18_18:00:00
   sha256=5cb92e491d0d7ccf5ba1f4835cbca73a82c4e1b2db75fdcaa6fa12a9093301e1
 wrf_version: 4.7.1
 scenario: Canary Islands WRF L3 d01 valid 2026-05-18 13:00 UTC, single interior timestep

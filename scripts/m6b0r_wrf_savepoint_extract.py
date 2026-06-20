@@ -26,7 +26,7 @@ from gpuwrf.validation.savepoint_schema import Savepoint, SavepointMetadata, Var
 
 SPRINT = ROOT / ".agent/sprints/2026-05-24-m6b0r-real-fortran-emission"
 SOURCE_WRFOUT = Path(
-    "/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/"
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T072630Z/"
     "wrfout_d02_2026-05-22_00:00:00"
 )
 WRF_COMMIT = "115e5756f98ee2370d62b6709baac6417d8f7338"

@@ -21,7 +21,7 @@ Options:
     --dry-run       Prepare merged root + print plan; no GPU forecasts, no scoring
 
 Root fix: ROOT is resolved from __file__ so this script always imports
-gpuwrf from THIS worktree's src/, not from /home/user/src/wrf_gpu2.
+gpuwrf from THIS worktree's src/, not from <USER_HOME>/src/wrf_gpu2.
 """
 from __future__ import annotations
 
@@ -55,12 +55,12 @@ from proofs.m20.paired_tost_scorer import (                   # noqa: E402
 
 # ── Data paths (all env-overridable so the manager can repoint without edits) ───
 L2_INIT_ROOT  = Path(os.environ.get(
-    "GPUWRF_L2_INIT_ROOT", "/mnt/data/canairy_meteo/runs/wrf_l2"))
+    "GPUWRF_L2_INIT_ROOT", "<DATA_ROOT>/canairy_meteo/runs/wrf_l2"))
 L2_CPU_ROOT   = Path(os.environ.get(
-    "GPUWRF_L2_CPU_ROOT", "/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output"))
+    "GPUWRF_L2_CPU_ROOT", "<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output"))
 AEMET_ROOT    = Path(os.environ.get(
     "GPUWRF_AEMET_ROOT",
-    "/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations",
+    "<DATA_ROOT>/canairy_meteo/artifacts/datasets/aemet_stations",
 ))
 MERGED_RUN_ROOT = Path(os.environ.get(
     "GPUWRF_TOST_MERGED_ROOT", "/tmp/v0120_merged_run_root"))
@@ -629,9 +629,9 @@ def build_report(tost_result: dict, cell_pooled: dict) -> str:
     lines.append("")
     lines.append("## Data Wiring")
     lines.append("")
-    lines.append("- GPU init: `/mnt/data/canairy_meteo/runs/wrf_l2/<RUN_ID>/`")
-    lines.append("- CPU truth: `/mnt/data/canairy_meteo/runs/wrf_l2_backfill_output/<RUN_ID>/` (73 d02 + 73 d01 hourly wrfout each)")
-    lines.append("- AEMET obs: `/mnt/data/canairy_meteo/artifacts/datasets/aemet_stations/`")
+    lines.append("- GPU init: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2/<RUN_ID>/`")
+    lines.append("- CPU truth: `<DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_output/<RUN_ID>/` (73 d02 + 73 d01 hourly wrfout each)")
+    lines.append("- AEMET obs: `<DATA_ROOT>/canairy_meteo/artifacts/datasets/aemet_stations/`")
     lines.append("- GPU outputs: `/tmp/v0120_powered_tost_runs/l2_d02_<RUN_ID>/`")
     lines.append("- Precision: fp64 (JAX_ENABLE_X64=true)")
     lines.append("- Complete-pair deletion: rows missing GPU/CPU/obs dropped before RMSE.")

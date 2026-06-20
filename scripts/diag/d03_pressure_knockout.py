@@ -24,7 +24,7 @@ if hasattr(os, "sched_setaffinity"):
     except OSError:
         pass
 
-ROOT = Path("/home/user/src/wrf_gpu2")
+ROOT = Path("<USER_HOME>/src/wrf_gpu2")
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -36,7 +36,7 @@ from gpuwrf.integration.daily_pipeline import DailyPipelineConfig
 from gpuwrf.runtime.operational_mode import run_forecast_operational, _psfc_from_state
 
 HOURS = int(sys.argv[1]) if len(sys.argv) > 1 else 3
-CORB = Path("/mnt/data/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
+CORB = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260521_18z_l3_24h_20260522T133443Z")
 
 
 def corpus_psfc(tag: str) -> float:
@@ -58,7 +58,7 @@ def main() -> int:
         hours=HOURS,
         output_dir=Path("/tmp/v010_d03_runs/d03_pknockout"),
         proof_dir=Path("/tmp/v010_d03_runs/d03_pknockout"),
-        run_root=Path("/mnt/data/canairy_meteo/runs/wrf_l3"),
+        run_root=Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3"),
         score=False,
         domain="d03",
         dt_s=3.0,

@@ -7,7 +7,7 @@ Generated: 2026-06-06
 Localize, root-cause, and fix the v0.11.0 d02 surface-wind regression for
 `20260507_18z_l2_72h_20260513T124307Z` on the fp64 segmented operational d02 path.
 
-Requested run root `/mnt/data/canairy_meteo/runs/wrf_l2` did not contain d01/d02
+Requested run root `<DATA_ROOT>/canairy_meteo/runs/wrf_l2` did not contain d01/d02
 `wrfout` history for the replay scorer. The harness recorded the fallback to the
 same-run complete fixture under `/tmp/vburst_runs`, which is also the reference
 fixture used by the v0.9/v0.11 proof objects.

@@ -31,7 +31,7 @@ the WDM7 CCN background is ``CCN0 = 1.0e8``.
 The gamma constants are reproduced from WRF's ``rgmma`` infinite-product
 function (10000 terms) evaluated in fp64 so the JAX port's init is numerically
 identical to the Fortran init to ~fp64 precision. Verified against
-/home/user/src/wrf_pristine/WRF/phys/module_mp_wdm7.F on 2026-06-14.
+<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_wdm7.F on 2026-06-14.
 """
 
 from __future__ import annotations

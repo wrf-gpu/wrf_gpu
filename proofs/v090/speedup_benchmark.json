@@ -35,7 +35,7 @@
     "binary": "~/src/canairy_meteo/Gen2/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
     "wall_clock_derivation": "TWO independent methods per run: (1) file-mtime span = mtime(rsl.out.0000) - mtime(freezeH2O.dat) [freezeH2O.dat is loaded by Thompson init immediately before time-stepping; rsl.out.0000 is closed at SUCCESS], giving the true command-to-finish wall; (2) sum / median of per-step 'Timing for main on domain N: X elapsed seconds' lines. On contended days method (2) sum EXCEEDS method (1) because the per-step wall timer counts time the rank-0 process was descheduled; the MEDIAN per-step is robust and is used for the per-domain standalone cost.",
     "completeness_filter": "Only runs with 'SUCCESS COMPLETE WRF' and the full expected per-domain step count are used. Incomplete/crashed runs (e.g. the 31 s/fc-hr L2 outlier, SUCCESS=False, 15694/57600 lines) are excluded.",
-    "live_backfill_avoided": "The live 28-rank CPU-WRF backfill is writing /mnt/data/canairy_meteo/runs/wrf_l2_backfill_staging/20260513_..._20260604T062130Z (verified via /proc/<pid>/cwd). This lane read ONLY finished runs under wrf_l2/ and wrf_l3/ and did not touch the staging dir."
+    "live_backfill_avoided": "The live 28-rank CPU-WRF backfill is writing <DATA_ROOT>/canairy_meteo/runs/wrf_l2_backfill_staging/20260513_..._20260604T062130Z (verified via /proc/<pid>/cwd). This lane read ONLY finished runs under wrf_l2/ and wrf_l3/ and did not touch the staging dir."
   },
   "cases": {
     "nested_9_3km": {
@@ -50,7 +50,7 @@
         },
         "best_complete_run_least_contended": {
           "run_id": "20260523_18z_l2_72h_20260524T004313Z",
-          "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l2/20260523_18z_l2_72h_20260524T004313Z",
+          "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l2/20260523_18z_l2_72h_20260524T004313Z",
           "success_complete": true,
           "full_nest_wall_s": 6735.2,
           "full_nest_wall_human": "1h52m",
@@ -229,7 +229,7 @@
             "total_s": 1166.5,
             "hour1_s": 67.1,
             "hour2_s": 435.6,
-            "note": "hour-2 = 435.6s: this run paid the FULL COLD radiation-graph compile (it was not yet in the shared persistent jax cache /mnt/data/gpuwrf_jax_cache for the recorded gated-fp32 replay config). Because fp32-vs-fp64 is ~1.00x here, the conservative real-user cold-launch speedup used for the fp64 ship mode is 1.33x."
+            "note": "hour-2 = 435.6s: this run paid the FULL COLD radiation-graph compile (it was not yet in the shared persistent jax cache <DATA_ROOT>/gpuwrf_jax_cache for the recorded gated-fp32 replay config). Because fp32-vs-fp64 is ~1.00x here, the conservative real-user cold-launch speedup used for the fp64 ship mode is 1.33x."
           },
           "warm_cache_72h_run": {
             "source": "proofs/v090/speedup_d02_72h (72h, THIS fill)",
@@ -238,7 +238,7 @@
             "hour2_s": 57.3,
             "note": "hour-2 = 57.3s: the radiation graph was REUSED from the persistent jax cache the 24h run populated. This is the realistic OPERATIONAL daily-cadence scenario (warm cache). steady-state 27.72 s/fc-hr."
           },
-          "headline_choice": "The filled headline below uses the 72h warm-cache total (2149.9s/72h = 29.86 s/fc-hr -> 2.16x conservative). This is honest for the operational daily cadence (warm jax_cache) and stands for the fp64 ship mode because the workload is launch/bandwidth-bound and fp32-vs-fp64 is ~1.00x. The 24h COLD-launch first-ever-run conservative number is 1.33x; report BOTH. JAX persistent compilation cache is on by default (gpuwrf.runtime.jax_cache -> /mnt/data/gpuwrf_jax_cache)."
+          "headline_choice": "The filled headline below uses the 72h warm-cache total (2149.9s/72h = 29.86 s/fc-hr -> 2.16x conservative). This is honest for the operational daily cadence (warm jax_cache) and stands for the fp64 ship mode because the workload is launch/bandwidth-bound and fp32-vs-fp64 is ~1.00x. The 24h COLD-launch first-ever-run conservative number is 1.33x; report BOTH. JAX persistent compilation cache is on by default (gpuwrf.runtime.jax_cache -> <DATA_ROOT>/gpuwrf_jax_cache)."
         }
       },
       "results": {
@@ -276,7 +276,7 @@
         },
         "best_complete_run_least_contended": {
           "run_id": "20260510_18z_l3_24h_20260511T124717Z",
-          "run_dir": "/mnt/data/canairy_meteo/runs/wrf_l3/20260510_18z_l3_24h_20260511T124717Z",
+          "run_dir": "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/20260510_18z_l3_24h_20260511T124717Z",
           "success_complete": true,
           "full_nest_wall_s": 15104.6,
           "full_nest_wall_human": "4h11m",

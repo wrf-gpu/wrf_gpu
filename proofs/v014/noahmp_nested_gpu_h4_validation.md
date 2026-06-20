@@ -2,10 +2,10 @@
 
 Verdict: `NOAHMP_NESTED_GPU_H4_ACCEPT`
 
-- run root: `/mnt/data/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z`
+- run root: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z`
 - GPU rc: `0`
-- compare JSON: `/mnt/data/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z/canary_d02_h4_grid_compare.json`
-- frozen-land baseline compare: `/mnt/data/wrf_gpu_validation/v014_canary_d02_72h_moistcqw_20260610T171818Z/canary_d02_h04_grid_compare.json`
+- compare JSON: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_noahmp_lu16fix_h4_20260610T212056Z/canary_d02_h4_grid_compare.json`
+- frozen-land baseline compare: `<DATA_ROOT>/wrf_gpu_validation/v014_canary_d02_72h_moistcqw_20260610T171818Z/canary_d02_h04_grid_compare.json`
 - peak GPU memory: `20975 MiB`
 - peak process RSS: `15005 MiB`
 

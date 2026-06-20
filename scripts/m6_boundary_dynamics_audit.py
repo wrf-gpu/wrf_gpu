@@ -63,7 +63,7 @@ from gpuwrf.runtime.operational_mode import OperationalNamelist, run_forecast_op
 config.update("jax_enable_x64", True)
 
 
-RUN_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3")
+RUN_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3")
 
 IC_RUN_IDS = {
     "20260429": "20260429_18z_l3_24h_20260524T204451Z",

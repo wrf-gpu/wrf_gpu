@@ -227,9 +227,9 @@
     "status": "REUSED_EXISTING"
   },
   "paths": {
-    "review": "/home/user/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md",
+    "review": "<USER_HOME>/src/wrf_gpu2/.agent/reviews/2026-06-10-v014-step1-sfclay-output-algebra.md",
     "surface_oracle": "/tmp/wrf_gpu2_step1_tsk_znt_sourcing_fix/wrf_truth_surface/surface_mynn",
-    "wrf_patch_diff": "/home/user/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff"
+    "wrf_patch_diff": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff"
   },
   "production_changes": [
     {
@@ -665,7 +665,7 @@
   },
   "wrf_patch": {
     "exists": true,
-    "path": "/home/user/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff",
+    "path": "<USER_HOME>/src/wrf_gpu2/proofs/v014/step1_sfclay_output_algebra_wrf_patch.diff",
     "size_bytes": 1859
   }
 }

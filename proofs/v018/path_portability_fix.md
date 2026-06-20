@@ -12,8 +12,8 @@ A naive user on their own machine sets exactly two paths and the case runs:
 
 | Variable | Meaning | Value used in the proof run |
 | --- | --- | --- |
-| `GPUWRF_WRF_ROOT` | Root of a pristine WRF v4 source/run tree (RRTMG `.F` sources, `run/` tables, `run/CCN_ACTIVATE.BIN`) | `/home/user/src/wrf_pristine/WRF` |
-| `GPUWRF_CANAIRY_ROOT` | Canary Gen2 / CPU-WRF corpus root (run inputs + backfill reference) | `/mnt/data/canairy_meteo` |
+| `GPUWRF_WRF_ROOT` | Root of a pristine WRF v4 source/run tree (RRTMG `.F` sources, `run/` tables, `run/CCN_ACTIVATE.BIN`) | `<USER_HOME>/src/wrf_pristine/WRF` |
+| `GPUWRF_CANAIRY_ROOT` | Canary Gen2 / CPU-WRF corpus root (run inputs + backfill reference) | `<DATA_ROOT>/canairy_meteo` |
 
 Optional (performance / scratch, all defaulted): `JAX_ENABLE_COMPILATION_CACHE`,
 `JAX_COMPILATION_CACHE_DIR`, `GPUWRF_TMPDIR`. `GPUWRF_WRF_ROOT` pointing at the
@@ -23,32 +23,32 @@ env; the SOURCE TREE contains no hardcoded home path.
 ## Single source of truth
 
 Every functional runtime path now resolves through `src/gpuwrf/config/paths.py`
-env-overrides. There is no hardcoded `/home/<name>` on any runtime read path.
+env-overrides. There is no hardcoded `<USER_HOME>/<name>` on any runtime read path.
 
 ## Functional path constants routed through `config.paths` (this fix)
 
 | File | Was | Now |
 | --- | --- | --- |
-| `scripts/extract_rrtmg_tables.py` (`LW_SOURCE`/`SW_SOURCE`/DATA via `WRF_ROOT`) | `_resolve_wrf_root()` honored only `$GPUWRF_WRF_SRC`, then fell back to a non-env `/home/user/src/wrf_pristine/WRF` → `FileNotFoundError` on a clean-env run that sets `GPUWRF_WRF_ROOT` | First candidate is now `config.paths.wrf_root()` (`GPUWRF_WRF_ROOT`); legacy `$GPUWRF_WRF_SRC` + historical artifacts path kept as later fallbacks; final fallback names `wrf_root()`. This is the runtime blocker (A): `gpuwrf.physics.rrtmg_lw` loads this module dynamically and reads `extractor.LW_SOURCE`. |
-| `scripts/build_thompson_aero_tables.py` (`CCN_BIN`) | `Path("/home/user/.../run/CCN_ACTIVATE.BIN")` (hardcoded + non-env) | `_ccn_bin_path()` → `config.paths.wrf_run_dir() / "CCN_ACTIVATE.BIN"` (`GPUWRF_WRF_ROOT`). (B) |
-| `scripts/m6_full_domain_batching.py` (`TMP_ROOT`, `DEFAULT_FORECAST_OUTPUT_DIR`) | `Path(os.environ.get("GPUWRF_TMPDIR", "/home/user/.cache/gpuwrf_tmp"))` + `.mkdir()` AT IMPORT → crashes on a clean checkout (cannot `mkdir /home/user`) | `config.paths.tmp_root()` (`GPUWRF_TMPDIR`, default `~/.cache/gpuwrf`); output dir derived from `TMP_ROOT`. Surfaced by pytest collection. |
-| `scripts/m6_run_coupled_forecast.py` (`TMP_ROOT`, `--output-dir` default) | same import-time `/home/user/.cache` mkdir + `--output-dir` default `/home/user/.cache/...` | `config.paths.tmp_root()`; `--output-dir` default derived from `TMP_ROOT`. |
+| `scripts/extract_rrtmg_tables.py` (`LW_SOURCE`/`SW_SOURCE`/DATA via `WRF_ROOT`) | `_resolve_wrf_root()` honored only `$GPUWRF_WRF_SRC`, then fell back to a non-env `<USER_HOME>/src/wrf_pristine/WRF` → `FileNotFoundError` on a clean-env run that sets `GPUWRF_WRF_ROOT` | First candidate is now `config.paths.wrf_root()` (`GPUWRF_WRF_ROOT`); legacy `$GPUWRF_WRF_SRC` + historical artifacts path kept as later fallbacks; final fallback names `wrf_root()`. This is the runtime blocker (A): `gpuwrf.physics.rrtmg_lw` loads this module dynamically and reads `extractor.LW_SOURCE`. |
+| `scripts/build_thompson_aero_tables.py` (`CCN_BIN`) | `Path("<USER_HOME>/.../run/CCN_ACTIVATE.BIN")` (hardcoded + non-env) | `_ccn_bin_path()` → `config.paths.wrf_run_dir() / "CCN_ACTIVATE.BIN"` (`GPUWRF_WRF_ROOT`). (B) |
+| `scripts/m6_full_domain_batching.py` (`TMP_ROOT`, `DEFAULT_FORECAST_OUTPUT_DIR`) | `Path(os.environ.get("GPUWRF_TMPDIR", "<USER_HOME>/.cache/gpuwrf_tmp"))` + `.mkdir()` AT IMPORT → crashes on a clean checkout (cannot `mkdir <USER_HOME>`) | `config.paths.tmp_root()` (`GPUWRF_TMPDIR`, default `~/.cache/gpuwrf`); output dir derived from `TMP_ROOT`. Surfaced by pytest collection. |
+| `scripts/m6_run_coupled_forecast.py` (`TMP_ROOT`, `--output-dir` default) | same import-time `<USER_HOME>/.cache` mkdir + `--output-dir` default `<USER_HOME>/.cache/...` | `config.paths.tmp_root()`; `--output-dir` default derived from `TMP_ROOT`. |
 
-## PII scrubbed — comment / docstring / citation strings (dev home path → `/home/user`)
+## PII scrubbed — comment / docstring / citation strings (dev home path → `<USER_HOME>`)
 
 These are file:line provenance citations (not runtime reads), so per the rule they
-are PII-scrubbed in place to `/home/user`, not env-routed:
+are PII-scrubbed in place to `<USER_HOME>`, not env-routed:
 
 - `src/` (6): `physics/lsm_pleim_xiu.py`, `physics/lsm_ruc.py`, `physics/lsm_ssib.py`,
   `coupling/slab_surface_hook.py`, `coupling/pleim_xiu_surface_hook.py`,
   `io/lsm_static_extract.py`.
-- `scripts/extract_rrtmg_tables.py` docstring (removed the `/home/user` literal candidate as part of the env-routing).
+- `scripts/extract_rrtmg_tables.py` docstring (removed the `<USER_HOME>` literal candidate as part of the env-routing).
 - `proofs/v018/` (49 files): oracle build scripts (`build_and_run.sh`, `build_*_oracle.sh`,
   `run_parallel.sh`), JSON oracle/source manifests (`*_reference_oracle.json`,
   `cu_family_status.json`, `mp_endpoint_manifest.json`, `mp_oracles/**/oracle_summary.json`,
   `camuw_pbl9_endpoint_classification.json`, …), checksum/manifest `.txt`, and critic
   `.md` reports — all provenance citing where the pristine WRF source lived.
-  (the dev `miniconda3` home path → `/home/user/miniconda3` covered by the same scrub.)
+  (the dev `miniconda3` home path → `<USER_HOME>/miniconda3` covered by the same scrub.)
 
 ## Re-audit (final)
 
@@ -57,8 +57,8 @@ grep -rn "<dev-home-path>" src/ docs/ scripts/ README.md KNOWN_ISSUES.md proofs/
 ```
 
 - 0 dev-home-path PII anywhere in the public scope.
-- 0 FUNCTIONAL `/home/user` Path constants that mkdir/read at import (the m6
-  import-time breakers are fixed; the only remaining `/home/user` strings in `src/`
+- 0 FUNCTIONAL `<USER_HOME>` Path constants that mkdir/read at import (the m6
+  import-time breakers are fixed; the only remaining `<USER_HOME>` strings in `src/`
   are docstrings and source-citation strings — e.g. `forcing_decode.py` `source_refs`,
   `wrf_scheme_catalog.WRF_README_SOURCE`, `gen2_accessor` `source_citations` — which
   the rule explicitly permits as citations).
@@ -69,13 +69,13 @@ grep -rn "<dev-home-path>" src/ docs/ scripts/ README.md KNOWN_ISSUES.md proofs/
 ### Residual (non-blocking, PII-clean, not on the run/import path)
 
 Legacy alternate-backend / Fortran-harness dev tooling still carries
-`/home/user/...wrf_gpu_src/...` constants that reference the now-defunct Gen2
+`<USER_HOME>/...wrf_gpu_src/...` constants that reference the now-defunct Gen2
 `wrf_gpu_src` artifacts tree (does not exist even on the dev box). These are
-**already PII-clean (`/home/user`)**, are only touched inside `main()`/functions when
+**already PII-clean (`<USER_HOME>`)**, are only touched inside `main()`/functions when
 the script is invoked directly (they do NOT break `import gpuwrf` or pytest
 collection), and are NOT on the Canary run path:
 `scripts/{precision_bench,pubtest_common,extract_thompson_tables,m6b0r_relinked_extract}.py`,
-`scripts/diag/d03_pressure_knockout.py`, and the `if [[ -f /home/user/... ]]; then source`
+`scripts/diag/d03_pressure_knockout.py`, and the `if [[ -f <USER_HOME>/... ]]; then source`
 guarded build harnesses (`src/gpuwrf/backends/{cuda_tile,kokkos}/build.sh`,
 `scripts/m2_run_*.sh`, `scripts/wrf_*_harness_build.sh`). No config.paths helper
 maps to that abandoned tree; converting dead tooling is out of scope for the run gate.
@@ -86,10 +86,10 @@ Command (exactly the gate command, only `GPUWRF_WRF_ROOT` + `GPUWRF_CANAIRY_ROOT
 as the runtime path env):
 
 ```
-GPUWRF_WRF_ROOT=/home/user/src/wrf_pristine/WRF \
-GPUWRF_CANAIRY_ROOT=/mnt/data/canairy_meteo \
+GPUWRF_WRF_ROOT=<USER_HOME>/src/wrf_pristine/WRF \
+GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo \
 JAX_ENABLE_COMPILATION_CACHE=true \
-JAX_COMPILATION_CACHE_DIR=/mnt/data/gpuwrf_jax_cache \
+JAX_COMPILATION_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache \
 PYTHONPATH=src scripts/with_gpu_lock.sh --label opus-pathfix2 -- \
   taskset -c 0-3 python3 proofs/v0120/powered_tost_n15/run_one_case_v0120.py \
   --run-id 20260501_18z_l2_72h_20260519T173026Z --hours 1 \
@@ -97,7 +97,7 @@ PYTHONPATH=src scripts/with_gpu_lock.sh --label opus-pathfix2 -- \
 ```
 
 Result: **`"verdict": "L2_D02_GREEN"`** on the first attempt (no FileNotFound, no
-`/home/user` path error), `blocked_reason: null`.
+`<USER_HOME>` path error), `blocked_reason: null`.
 
 ```
 statuses: { bounds: PASS, pipeline: PIPELINE_GREEN, rmse: PASS, wall_clock: PASS }

@@ -41,7 +41,7 @@ the L1+Thompson merge did NOT perturb the dycore).
 ## 3. TOST METHODOLOGY (predeclared before scoring)
 
 ### Truth source — the 31-case point-shadow PARQUET corpus
-`/mnt/data/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet`
+`<DATA_ROOT>/canairy_meteo/artifacts/datasets/wrf_case_bank/_all_cases_point_shadows.parquet`
 - **32 case_ids, 4 nests (d02, d03, d04, d05), 278 stations, 73 lead-h (d02) /
   25 lead-h (nests), 0% NaN on `wrf_phase14c_{t2_k,u10,v10}`.**
 - CPU-WRF values are `wrf_phase14c_*`, interpolated to stations by

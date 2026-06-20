@@ -30,7 +30,7 @@ os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 DEFAULT_CASE = "20260521"
 DEFAULT_DOMAIN = "d02"
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T133443Z"
-DEFAULT_WRF_ROOT = Path("/mnt/data/canairy_meteo/runs/wrf_l3") / DEFAULT_RUN_ID
+DEFAULT_WRF_ROOT = Path("<DATA_ROOT>/canairy_meteo/runs/wrf_l3") / DEFAULT_RUN_ID
 DEFAULT_GPU_PIPELINE_RUN = (
     ROOT / ".agent/sprints/2026-05-27-m7-skill-fix-iter2/pipeline_run_20260521.json"
 )
