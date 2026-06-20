@@ -1,0 +1,72 @@
+{
+  "configuration": "all-7-island, max_dom=9, fast fusion mode default-on, fp64/JAX GPU",
+  "integration": {
+    "all_finite": true,
+    "all_outputs_present": true,
+    "domains": [
+      "d01",
+      "d02",
+      "d03",
+      "d04",
+      "d05",
+      "d06",
+      "d07",
+      "d08",
+      "d09"
+    ],
+    "event_counts": {
+      "advance": 5025,
+      "feedback": 0,
+      "force": 4422,
+      "output": 27
+    },
+    "history_interval_minutes": {
+      "d01": 20.0,
+      "d02": 20.0,
+      "d03": 20.0,
+      "d04": 20.0,
+      "d05": 20.0,
+      "d06": 20.0,
+      "d07": 20.0,
+      "d08": 20.0,
+      "d09": 20.0
+    },
+    "wrfout_count": 27
+  },
+  "pii_note": "This summary intentionally omits local filesystem input/output paths from the raw gate JSON.",
+  "reference_case": "canonical CPU 12-rank all-7 pilot, same 2026-04-28 18Z init",
+  "schema": "wrf_gpu_v019_release_gate_summary",
+  "segments": [
+    {
+      "forecast_seconds": 1206.0,
+      "s_per_forecast_hour": 7348.528409991135,
+      "segment": 1,
+      "wall_s": 2461.7570173470303
+    },
+    {
+      "forecast_seconds": 1206.0,
+      "s_per_forecast_hour": 682.8569563491436,
+      "segment": 2,
+      "wall_s": 228.75708037696313
+    },
+    {
+      "forecast_seconds": 1206.0,
+      "s_per_forecast_hour": 713.1174421372281,
+      "segment": 3,
+      "wall_s": 238.89434311597142
+    }
+  ],
+  "speed": {
+    "cold_segment_s_per_forecast_hour_including_one_time_compile": 7348.528409991135,
+    "cold_segment_wall_s": 2461.7570173470303,
+    "cpu_12rank_s_per_forecast_hour": 1020.0,
+    "gpu_segment2_s_per_forecast_hour": 682.8569563491436,
+    "gpu_speedup_vs_cpu": 1.4303394360163713,
+    "gpu_warm_s_per_forecast_hour": 713.1174421372281,
+    "one_time_compile_note": "The first fused run pays a large one-time XLA compile; subsequent runs use the persistent compilation cache."
+  },
+  "status": "PASS",
+  "tested_branch": "worker/gpt/field-fix-blend-terrain",
+  "tested_commit": "7a84e5198777acdf14168bbdc0e9850c0405b5c6",
+  "version": "0.19.0"
+}

@@ -1,0 +1,770 @@
+{
+  "all_domains_pass": true,
+  "comparison": "GPU all-7-island fast fusion mode vs canonical CPU 12-rank all-7 pilot, first forecast hour",
+  "domains": {
+    "d01": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 48,
+      "pass": true,
+      "static_or_time_invariant_fields": 53,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 432.5419921875,
+          "rmse": 57.7409302533039,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 187.20969486236572,
+          "rmse": 10.067626670710705,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 133.74436950683594,
+          "rmse": 16.465207978619155,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 113.61961364746094,
+          "rmse": 95.62175546082449,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "P",
+          "max_abs": 107.1224365234375,
+          "rmse": 28.45515937629846,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 99.83880615234375,
+          "rmse": 10.035477245193277,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 96.49603271484375,
+          "rmse": 47.97851284850619,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PSFC",
+          "max_abs": 90.3515625,
+          "rmse": 47.157264892223786,
+          "tolerance_pass": true
+        }
+      ]
+    },
+    "d02": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 35,
+      "pass": true,
+      "static_or_time_invariant_fields": 66,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 553.94287109375,
+          "rmse": 85.59357033999558,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 240.97844195365906,
+          "rmse": 15.22469680157764,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 218.0434865951538,
+          "rmse": 16.089698605242383,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 204.4857177734375,
+          "rmse": 13.152192772218116,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 201.77987670898438,
+          "rmse": 74.96297691598903,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 157.5438690185547,
+          "rmse": 11.51987802906844,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "P",
+          "max_abs": 104.8021240234375,
+          "rmse": 27.49986918533829,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 101.7987060546875,
+          "rmse": 50.25536345643949,
+          "tolerance_pass": false
+        }
+      ]
+    },
+    "d03": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 35,
+      "pass": true,
+      "static_or_time_invariant_fields": 66,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 524.986328125,
+          "rmse": 125.21521174506006,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 263.140380859375,
+          "rmse": 39.55579632994074,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 242.55184936523438,
+          "rmse": 34.51264575628981,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 240.0665373802185,
+          "rmse": 35.65934150718476,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 173.34356021881104,
+          "rmse": 39.72779193146844,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 109.17256164550781,
+          "rmse": 76.3804298424816,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "P",
+          "max_abs": 104.02880859375,
+          "rmse": 23.072417772091935,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 84.7685546875,
+          "rmse": 57.750191443543514,
+          "tolerance_pass": false
+        }
+      ]
+    },
+    "d04": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 34,
+      "pass": true,
+      "static_or_time_invariant_fields": 67,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 423.384765625,
+          "rmse": 98.91188414005745,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 280.0989074707031,
+          "rmse": 31.366027481218264,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 245.51632738113403,
+          "rmse": 51.76280020910466,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 229.85313415527344,
+          "rmse": 35.152732231881714,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 195.321683883667,
+          "rmse": 50.202289335285315,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 107.24635314941406,
+          "rmse": 75.30921686575506,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 98.599609375,
+          "rmse": 63.17345955808757,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PSFC",
+          "max_abs": 92.734375,
+          "rmse": 58.62934751890805,
+          "tolerance_pass": true
+        }
+      ]
+    },
+    "d05": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 35,
+      "pass": true,
+      "static_or_time_invariant_fields": 66,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 465.81201171875,
+          "rmse": 118.07847683873888,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 289.79307091236115,
+          "rmse": 43.17538414036091,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 288.9622039794922,
+          "rmse": 57.62397485853362,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 281.8927001953125,
+          "rmse": 38.05904631730616,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 243.77447760105133,
+          "rmse": 33.12496507928894,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 170.26353454589844,
+          "rmse": 77.07923638259099,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 102.5863037109375,
+          "rmse": 57.4600322703466,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PSFC",
+          "max_abs": 101.875,
+          "rmse": 56.36248356037697,
+          "tolerance_pass": true
+        }
+      ]
+    },
+    "d06": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 35,
+      "pass": true,
+      "static_or_time_invariant_fields": 66,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 561.373046875,
+          "rmse": 166.8734402584989,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 293.088017642498,
+          "rmse": 39.03570219309311,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 260.0980224609375,
+          "rmse": 34.792926305839345,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 222.0961151123047,
+          "rmse": 37.30003798300159,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 170.7049045562744,
+          "rmse": 38.99128037217223,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 134.3316192626953,
+          "rmse": 76.40702306800262,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PSFC",
+          "max_abs": 85.703125,
+          "rmse": 65.16172236050089,
+          "tolerance_pass": true
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 84.299560546875,
+          "rmse": 68.41721696927706,
+          "tolerance_pass": false
+        }
+      ]
+    },
+    "d07": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 38,
+      "pass": true,
+      "static_or_time_invariant_fields": 63,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 531.244140625,
+          "rmse": 151.68828953574965,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 387.14581298828125,
+          "rmse": 30.576511457862516,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 289.2413088083267,
+          "rmse": 42.79960345837499,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 281.35646057128906,
+          "rmse": 39.25467364617246,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 240.81386744976044,
+          "rmse": 49.71593909103533,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 221.79853057861328,
+          "rmse": 80.43163501067805,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDNB",
+          "max_abs": 120.39473724365234,
+          "rmse": 13.454743271171871,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LWDNB",
+          "max_abs": 92.76235961914062,
+          "rmse": 12.1771864867942,
+          "tolerance_pass": false
+        }
+      ]
+    },
+    "d08": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 38,
+      "pass": true,
+      "static_or_time_invariant_fields": 63,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 205.67172241210938,
+          "rmse": 17.183048251097333,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 199.64148998260498,
+          "rmse": 21.305128046974453,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 192.85595703125,
+          "rmse": 35.377074658886116,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 177.25840377807617,
+          "rmse": 74.96641874997796,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 130.86117553710938,
+          "rmse": 10.90162231945055,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 128.28302431106567,
+          "rmse": 8.979429811146844,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "P",
+          "max_abs": 104.386962890625,
+          "rmse": 29.256670821093245,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 90.9200439453125,
+          "rmse": 53.11037188319069,
+          "tolerance_pass": false
+        }
+      ]
+    },
+    "d09": {
+      "base_state_fields": {
+        "HGT": {
+          "max_abs": 0.0,
+          "tolerance_pass": true
+        },
+        "MUB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PB": {
+          "max_abs": 0.0078125,
+          "tolerance_pass": true
+        },
+        "PHB": {
+          "max_abs": 0.015625,
+          "tolerance_pass": true
+        }
+      },
+      "compared_numeric_fields": 102,
+      "dynamic_fields": 37,
+      "pass": true,
+      "static_or_time_invariant_fields": 64,
+      "time_metadata_fields": 2,
+      "tolerance_failures": 0,
+      "top_raw_max_abs_fields": [
+        {
+          "classification": "dynamic",
+          "field": "PBLH",
+          "max_abs": 188.9581298828125,
+          "rmse": 22.822017865847577,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "HFX",
+          "max_abs": 186.9501247406006,
+          "rmse": 32.427386171704384,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "LH",
+          "max_abs": 186.01034265756607,
+          "rmse": 20.80162296125099,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWDOWN",
+          "max_abs": 157.77889251708984,
+          "rmse": 76.47957432704034,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "SWNORM",
+          "max_abs": 128.39215087890625,
+          "rmse": 11.243785421306898,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "PH",
+          "max_abs": 123.396484375,
+          "rmse": 27.026875892550056,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "P",
+          "max_abs": 93.555419921875,
+          "rmse": 35.999437220668206,
+          "tolerance_pass": false
+        },
+        {
+          "classification": "dynamic",
+          "field": "MU",
+          "max_abs": 87.761962890625,
+          "rmse": 56.14033112359674,
+          "tolerance_pass": false
+        }
+      ]
+    }
+  },
+  "established_comparator": "project grid-delta atlas comparator / frozen v0.14 tolerance manifest",
+  "pii_note": "This summary omits raw CPU/GPU filesystem paths from comparator inputs.",
+  "schema": "wrf_gpu_v019_grid_compare_summary",
+  "tested_commit": "7a84e5198777acdf14168bbdc0e9850c0405b5c6",
+  "tolerance_manifest": "frozen v0.14 grid-delta atlas manifest",
+  "total_fields_compared": 918,
+  "total_tolerance_failures": 0,
+  "version": "0.19.0"
+}
