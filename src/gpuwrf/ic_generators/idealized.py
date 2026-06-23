@@ -9,6 +9,8 @@ objects do not depend on optional plotting packages.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import argparse
 from dataclasses import dataclass, replace as dataclass_replace
 from functools import partial
@@ -41,7 +43,7 @@ from gpuwrf.runtime.operational_mode import (
 from gpuwrf.runtime.operational_state import OperationalCarry, initial_operational_carry
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 CaseName = Literal["warm_bubble", "density_current"]
 

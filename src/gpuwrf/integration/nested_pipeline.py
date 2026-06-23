@@ -29,12 +29,13 @@ print/branch on it uniformly).
 from __future__ import annotations
 
 import calendar
-from collections import Counter
+from collections import Counter, deque
 from dataclasses import dataclass, replace as dataclass_replace
 from datetime import datetime, timedelta, timezone
 import math
 import os
 from pathlib import Path
+import sys
 import time
 from typing import Any
 
@@ -42,10 +43,11 @@ import numpy as np
 
 from gpuwrf.contracts.grid import DomainHierarchy, DomainNest
 from gpuwrf.integration.d02_replay import build_replay_case
+from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
 from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.gwdo_static import load_gwdo_statics
-from gpuwrf.io.wrfout_writer import write_wrfout_netcdf
+from gpuwrf.io.wrfout_writer import prepare_wrfout_payload, write_wrfout_netcdf
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
     DomainTree,
@@ -210,7 +212,7 @@ def _make_namelist(
         tendencies=tendencies,
         metrics=metrics,
         dt_s=float(dt_s),
-        acoustic_substeps=10,
+        acoustic_substeps=int(os.environ.get("GPUWRF_ACOUSTIC_SUBSTEPS", 10)),
         radiation_cadence_steps=_radiation_cadence_steps(dt_s),
         use_vertical_solver=True,
         use_flux_advection=True,
@@ -229,6 +231,10 @@ def _make_namelist(
         time_utc=run_start,
         gwd_opt=int(gwd_opt),
         gwdo_statics=gwdo_statics,
+        # v0.20 S4: production opt-in for perturbation-authoritative mixed fp32.
+        # Unset remains fp64_default; invalid strings fail closed in
+        # OperationalNamelist.__post_init__.
+        acoustic_precision_mode=os.environ.get("GPUWRF_ACOUSTIC_PRECISION_MODE", "fp64_default"),
     )
     if parent_dt_s is not None:
         namelist = with_live_child_boundary_config(
@@ -593,6 +599,7 @@ def _noahmp_surface_diagnostics_for_output(
 
     from gpuwrf.integration.daily_pipeline import _M9_OUTPUT_FIELDS  # noqa: PLC0415
     from gpuwrf.runtime.operational_mode import (  # noqa: PLC0415
+        build_clock_base,
         compute_m9_diagnostics,
         surface_layer_diagnostics,
     )
@@ -600,12 +607,14 @@ def _noahmp_surface_diagnostics_for_output(
     clock_namelist = namelist
     if getattr(namelist, "time_utc", None) is None:
         clock_namelist = dataclass_replace(namelist, time_utc=run_start)
+    # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
     m9 = compute_m9_diagnostics(
         state,
         clock_namelist,
         lead_seconds,
         noahmp_land=noahmp_land,
         noahmp_rad=noahmp_rad,
+        clock_base=build_clock_base(clock_namelist),
     )
     # Q2 stays the bulk surface-layer diagnostic (matches the single-domain path).
     try:
@@ -641,12 +650,20 @@ class _PerDomainWrfoutWriter:
         bundles: dict[str, DomainBundle],
         output_cadence_steps: dict[str, int],
         dt_by_domain: dict[str, float],
+        async_writer: AsyncWrfoutWriter | None = None,
     ) -> None:
         self.output_dir = output_dir
         self.run_start = run_start
         self.bundles = bundles
         self.output_cadence_steps = output_cadence_steps
         self.dt_by_domain = dt_by_domain
+        # When set, the device->host materialization stays on the step thread but
+        # the NetCDF write is submitted to this background writer (the step loop
+        # resumes GPU compute immediately). When None, the write is synchronous on
+        # the step thread (legacy path). The written wrfout bytes are identical in
+        # both cases; ``self.written`` records the deterministic output path at
+        # submit time so the output-present check below stays valid either way.
+        self._async_writer = async_writer
         self.written: dict[str, list[str]] = {name: [] for name in bundles}
         # Lazy imports kept off the module top-level so importing this module stays
         # light for non-GPU callers (mirrors daily_pipeline).
@@ -697,16 +714,34 @@ class _PerDomainWrfoutWriter:
             self.writer_diagnostics.get(name), surface_diagnostics
         )
         path = self.output_dir / f"wrfout_{name}_{valid_time:%Y-%m-%d_%H:%M:%S}"
-        write_wrfout_netcdf(
-            state,
-            grid,
-            namelist,
-            path,
-            valid_time=valid_time,
-            lead_hours=float(lead_hours),
-            run_start=self.run_start,
-            diagnostics=diagnostics,
-        )
+        if self._async_writer is not None:
+            # Keep the device->host pull on the step thread (so no off-thread
+            # touch of a device buffer the GPU may reuse), then submit the
+            # host-only payload to the background writer and resume compute. The
+            # deterministic output path is recorded NOW (at submit time) so the
+            # output-present check stays valid; join() runs before that check.
+            prepared = prepare_wrfout_payload(
+                state,
+                grid,
+                namelist,
+                path,
+                valid_time=valid_time,
+                lead_hours=float(lead_hours),
+                run_start=self.run_start,
+                diagnostics=diagnostics,
+            )
+            self._async_writer.submit(prepared)
+        else:
+            write_wrfout_netcdf(
+                state,
+                grid,
+                namelist,
+                path,
+                valid_time=valid_time,
+                lead_hours=float(lead_hours),
+                run_start=self.run_start,
+                diagnostics=diagnostics,
+            )
         self.written[name].append(str(path))
         summary = self._finite_summary(state)
         return {
@@ -722,6 +757,35 @@ def _finite_stats_host(state: Any) -> dict[str, Any]:
     from gpuwrf.integration.daily_pipeline import finite_summary
 
     return finite_summary(state)
+
+
+def _nested_async_output_from_env() -> bool:
+    """Resolve whether the nested path writes wrfout on a background thread.
+
+    The per-domain writer used to do the device->host pull AND the synchronous
+    NetCDF write on the step thread, stalling GPU compute for the full write of
+    every output group (~30 s on the all-7 nest -- the single biggest discrete
+    host bubble).  When async output is on, the step thread keeps the
+    device->host materialization (``prepare_wrfout_payload`` -> host-only
+    ``PreparedWrfout``) and then hands the host payload to a single bounded-queue
+    background writer thread (the already-proven :class:`AsyncWrfoutWriter`); the
+    step loop resumes GPU compute immediately while the write overlaps.
+
+    The written NetCDF bytes are byte-for-byte identical to the synchronous path
+    (``write_prepared_wrfout`` is pure host work and the single writer thread
+    serializes writes deterministically); only the wall-clock timing of the write
+    changes.  A failed background write still fails the run (``join()`` re-raises).
+
+    Default = ON (the lever's purpose).  ``GPUWRF_NESTED_ASYNC_OUTPUT=0`` (also
+    ``false``/``off``/``no``) forces the legacy synchronous write -- used to
+    reproduce the slow baseline for A/B measurement and for byte-identity proofs
+    that want the write fully on the step thread.
+    """
+
+    raw = os.environ.get("GPUWRF_NESTED_ASYNC_OUTPUT", "").strip().lower()
+    if raw in ("0", "false", "off", "no"):
+        return False
+    return True
 
 
 def _nested_sync_mode_from_env() -> tuple[bool, int | None]:
@@ -762,6 +826,34 @@ def _nested_sync_mode_from_env() -> tuple[bool, int | None]:
     return False, 1
 
 
+def _nested_event_tail_cap_from_env(default: int = 4096) -> int:
+    """Resolve the cross-segment event-tail cap (``GPUWRF_NESTED_EVENT_TAIL``).
+
+    HOST-RAM GUARD (v0.20 / v0.19.2 item 7).  The segmented host loop folds each
+    output-segment's :attr:`DomainTreeResult.events` into running ``event_counts``
+    / ``force_counts`` Counters (the ONLY values any downstream consumer reads)
+    and retains just the most-recent ``cap`` raw event tuples for diagnostics.
+    The per-segment ``events`` list is itself bounded (one output interval), but
+    the OLD code did ``events.extend(result.events)`` every segment, so the host
+    list grew O(forecast_length) -- one batch of (str/int) tuples per segment --
+    over a 24-120 h skill-gate run.  At ~5,000 events/forecast-hour x 120 h that
+    is ~600k tuples (tens of MB of fragmented Python objects) accumulated purely
+    for a summary; near the swap-thrash incident this is real host-RAM pressure.
+    Folding to counts + a bounded tail makes host RAM O(1) in forecast length.
+
+    ``cap <= 0`` keeps an UNBOUNDED tail (legacy behaviour; the summary counts are
+    identical either way).  Default keeps the last 4096 events (a few root-step
+    cascades) -- ample for a post-mortem, trivially small.
+    """
+    raw = os.environ.get("GPUWRF_NESTED_EVENT_TAIL", "").strip()
+    if not raw:
+        return int(default)
+    try:
+        return int(raw)
+    except ValueError:
+        return int(default)
+
+
 def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     """Run a standalone live-nested forecast and write per-domain wrfout.
 
@@ -769,21 +861,30 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     ``standalone_native_init_nested`` and a per-domain finite/output summary.
     """
 
-    # NESTED-OOM FIX (allocator).  The live nest allocates a recurring ~8-9 GiB
-    # RRTMG g-point radiation transient every radiation step.  Under the default
-    # XLA BFC arena (esp. with XLA_PYTHON_CLIENT_PREALLOCATE=false) a long 24 h
-    # run fragments the pool so that single transient can no longer find a
-    # contiguous block -- the production "allocate 9.24 GiB" OOM -- even though
-    # peak in-use stays ~9 GiB.  The synchronous platform (cudaMalloc/cudaFree)
-    # allocator has NO arena and so cannot fragment: every transient gets a fresh
-    # contiguous device allocation and is returned to the driver immediately on
-    # free.  Combined with the output-interval segmentation below this keeps peak
-    # VRAM flat (one segment working set + ONE transient) across any forecast
-    # length.  It MUST be set before JAX initializes its GPU backend; the nested
-    # path's first device op is inside this function, and the only earlier jax
-    # touch (CLI namelist parsing) does no device op, so setting it here is in
+    # NESTED allocator (v0.20.0 speed lever G_allocator_env).  The live nest
+    # allocates a recurring ~8-9 GiB RRTMG g-point radiation transient every
+    # radiation step.  The DEFAULT is now ``cuda_async`` -- the stream-ordered
+    # CUDA memory pool -- which amortises the per-op malloc/free churn that the
+    # old synchronous ``platform`` allocator paid on every device buffer, while
+    # (unlike the default XLA BFC arena) NOT using the best-fit arena whose
+    # fragmentation caused the original "allocate 9.24 GiB" 1km-nest OOM.  The
+    # ``platform`` (raw cudaMalloc/cudaFree, no arena, cannot fragment) path
+    # remains one env var away: ``GPUWRF_ALLOCATOR=platform``.  This is a
+    # NUMERICS-FREE knob (governs only where device buffers live, never the math)
+    # and is coordinated with cli.py:_resolve_nested_allocator (same default and
+    # precedence).  It MUST be set before JAX initializes its GPU backend; the
+    # nested path's first device op is inside this function, and the only earlier
+    # jax touch (CLI namelist parsing) does no device op, so setting it here is in
     # time.  ``setdefault`` keeps an explicit operator override authoritative.
-    os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
+    if not os.environ.get("XLA_PYTHON_CLIENT_ALLOCATOR"):
+        _requested = os.environ.get("GPUWRF_ALLOCATOR", "").strip().lower()
+        if not _requested:
+            _allocator = "cuda_async"  # v0.20.0 default (was "platform")
+        elif _requested == "bfc":
+            _allocator = "default"  # XLA spells its default BFC arena "default"
+        else:
+            _allocator = _requested
+        os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = _allocator
 
     import jax  # local import keeps module import light for --help / arg parsing.
 
@@ -819,6 +920,16 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
 
     feedback_enabled = bool(config.feedback)
     tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=feedback_enabled)
+    # Async history output (v0.20 host-bubble lever): when on, the per-domain
+    # writer keeps the device->host materialization on the step thread but submits
+    # the host payload to this single bounded-queue background writer thread, so
+    # the step loop resumes GPU compute instead of stalling on the ~30 s/output-
+    # group synchronous NetCDF write. Byte-identical output; default-on, disable
+    # with GPUWRF_NESTED_ASYNC_OUTPUT=0. ``max_pending`` is kept small to bound the
+    # queued 9-domain PreparedWrfout host RAM. join()ed below before the output-
+    # present check / pipeline exit so a failed background write fails the run.
+    async_output_enabled = _nested_async_output_from_env()
+    async_writer = AsyncWrfoutWriter(max_pending=2) if async_output_enabled else None
     writer = _PerDomainWrfoutWriter(
         output_dir=config.output_dir,
         input_dir=Path(config.input_dir),
@@ -826,6 +937,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         bundles=bundles,
         output_cadence_steps=output_cadence,
         dt_by_domain=dt_by_domain,
+        async_writer=async_writer,
     )
     for domain, latlon_meta in writer.writer_static_latlon_metadata.items():
         meta.setdefault("domains", {}).setdefault(domain, {})["writer_static_latlon"] = latlon_meta
@@ -853,7 +965,17 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # land carry is structurally present from the very first scan segment.
     carries: dict[str, Any] | None = initial_carries
     own_steps: dict[str, int] = {name: 0 for name in names}
-    events: list[Any] = []
+    # HOST-RAM GUARD (v0.20): fold each segment's events into running summary
+    # Counters + a bounded tail instead of accumulating EVERY event tuple across
+    # the whole forecast (the old ``events.extend`` grew O(forecast_length) on the
+    # host -- a real concern for the 24-120 h skill-gate runs, implicated near the
+    # swap-thrash incident).  ``event_counts`` / ``force_counts`` are the only
+    # values any downstream consumer reads, and are IDENTICAL whether folded
+    # incrementally or computed once over the full list (counting is associative).
+    event_tail_cap = _nested_event_tail_cap_from_env()
+    event_counts: Counter = Counter()
+    force_counts: Counter = Counter()
+    events_tail: deque = deque(maxlen=event_tail_cap if event_tail_cap > 0 else None)
     final_states: dict[str, Any] = {}
     # Host-sync granularity for the live nest (v0.17 GPU-idle fix).  Default =
     # async per-root-step sync (keeps the GPU queue full across nested cascades);
@@ -861,43 +983,70 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # The per-segment block below is ALWAYS kept (peak-VRAM bound between hours).
     nested_block_between, nested_root_sync_cadence = _nested_sync_mode_from_env()
     start = 0
-    while start < root_steps:
-        seg = min(root_seg_steps, root_steps - start)
-        result = run_operational_domain_tree(
-            tree,
-            root_steps=seg,
-            feedback_enabled=feedback_enabled,
-            output=writer,
-            output_cadence_steps=output_cadence,
-            block_between=nested_block_between,
-            root_sync_cadence=nested_root_sync_cadence,
-            carries=carries,
-            initial_own_steps=own_steps,
-        )
-        # Block so this segment's device scratch (incl. the RRTMG transient) is
-        # freed before the next segment allocates -- bounds peak VRAM to one
-        # segment's working set regardless of forecast length.
-        jax.block_until_ready(tuple(state.theta for state in result.states.values()))
-        carries = result.carries
-        own_steps = dict(result.own_steps)
-        events.extend(result.events)
-        final_states = result.states
-        start += seg
-    jax.block_until_ready(tuple(state.theta for state in final_states.values()))
-    forecast_wall_s = time.perf_counter() - forecast_start
+    try:
+        while start < root_steps:
+            seg = min(root_seg_steps, root_steps - start)
+            result = run_operational_domain_tree(
+                tree,
+                root_steps=seg,
+                feedback_enabled=feedback_enabled,
+                output=writer,
+                output_cadence_steps=output_cadence,
+                block_between=nested_block_between,
+                root_sync_cadence=nested_root_sync_cadence,
+                carries=carries,
+                initial_own_steps=own_steps,
+            )
+            # Block so this segment's device scratch (incl. the RRTMG transient) is
+            # freed before the next segment allocates -- bounds peak VRAM to one
+            # segment's working set regardless of forecast length.
+            jax.block_until_ready(tuple(state.theta for state in result.states.values()))
+            carries = result.carries
+            own_steps = dict(result.own_steps)
+            # Fold this segment's events into the running summary + bounded tail, then
+            # DROP the segment's tuple (host RAM stays O(1) in forecast length).
+            for event in result.events:
+                if not event:
+                    continue
+                event_counts[event[0]] += 1
+                if event[0] == "force":
+                    force_counts[f"{event[1]}->{event[2]}"] += 1
+                events_tail.append(event)
+            final_states = result.states
+            start += seg
+        jax.block_until_ready(tuple(state.theta for state in final_states.values()))
+        forecast_wall_s = time.perf_counter() - forecast_start
+        # Drain the background wrfout writer: all submitted output groups must be
+        # on disk (and any writer error surfaced -- join() re-raises, failing the
+        # run) before the output-present check below reads writer.written. The
+        # writes overlapped GPU compute, so this join only waits on the last
+        # in-flight write and is outside the forecast_wall_s timing. Idempotent /
+        # no-op when async output is disabled (async_writer is None).
+        if async_writer is not None:
+            async_writer.join()
+    finally:
+        # Fail-closed: if the forecast loop above raised (NaN/OOM/etc.), still
+        # drain the background writer so the daemon thread cannot outlive the run
+        # and any in-flight write is flushed -- but do NOT mask the body's
+        # exception with a secondary writer error. join() is idempotent, so on the
+        # success path this is a no-op.
+        if async_writer is not None:
+            try:
+                async_writer.join()
+            except BaseException:
+                if sys.exc_info()[0] is None:
+                    raise
     result = DomainTreeResult(
         carries=carries or {},
         states=final_states,
         own_steps=own_steps,
-        events=tuple(events),
+        # ``events`` now carries only the bounded recent-event tail (last N); the
+        # authoritative aggregate lives in event_counts/force_counts below.
+        events=tuple(events_tail),
         outputs=(),
     )
 
     final_finite = {name: _finite_stats_host(state) for name, state in result.states.items()}
-    event_counts = Counter(event[0] for event in result.events)
-    force_counts = Counter(
-        f"{event[1]}->{event[2]}" for event in result.events if event and event[0] == "force"
-    )
 
     per_domain: dict[str, Any] = {}
     all_finite = True

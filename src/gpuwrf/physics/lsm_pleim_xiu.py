@@ -42,6 +42,8 @@ QFLUX 1505-1671, driver input prep 426-667) and
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import NamedTuple
 
 import jax
@@ -49,7 +51,7 @@ from jax import config
 import jax.numpy as jnp
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 # --- module_model_constants.F constants (verified against the pristine tree) ---

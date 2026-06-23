@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from jax import config
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 # WRF MYNN constants are declared in module_bl_mynnedmf.F90 lines 278-309.

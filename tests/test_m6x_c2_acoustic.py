@@ -23,20 +23,19 @@ def _rest_state_and_base(grid: GridSpec) -> tuple[State, BaseState]:
     arrays = {field: jnp.zeros(shape, dtype=jnp.float64) for field, shape in _state_field_shapes(grid).items()}
     metrics = flat_metrics_for_grid(grid)
     theta = jnp.ones_like(arrays["theta"]) * 300.0
-    pb = jnp.ones_like(arrays["p"]) * 90000.0
-    mub = jnp.ones_like(arrays["mu"]) * 90000.0
+    # v0.20 S1: legacy p/ph/mu aliases removed from the shape contract; reference
+    # the totals (same shapes). The State p/ph/mu properties re-expose them.
+    pb = jnp.ones_like(arrays["p_total"]) * 90000.0
+    mub = jnp.ones_like(arrays["mu_total"]) * 90000.0
     alb = _inverse_density_from_theta_pressure(theta, pb)
     base_mass = metrics.c1h[:, None, None] * mub[None, :, :] + metrics.c2h[:, None, None]
     dphb = -metrics.dnw[:, None, None] * base_mass * alb
-    phb = jnp.zeros_like(arrays["ph"]).at[1:].set(jnp.cumsum(dphb, axis=0))
+    phb = jnp.zeros_like(arrays["ph_total"]).at[1:].set(jnp.cumsum(dphb, axis=0))
     arrays["theta"] = theta
-    arrays["p"] = pb
     arrays["p_total"] = pb
     arrays["p_perturbation"] = jnp.zeros_like(pb)
-    arrays["ph"] = phb
     arrays["ph_total"] = phb
     arrays["ph_perturbation"] = jnp.zeros_like(phb)
-    arrays["mu"] = mub
     arrays["mu_total"] = mub
     arrays["mu_perturbation"] = jnp.zeros_like(mub)
     state = State(**arrays)

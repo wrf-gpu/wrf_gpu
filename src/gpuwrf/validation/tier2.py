@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import json
 from pathlib import Path
 from typing import Any
@@ -16,7 +18,7 @@ from gpuwrf.dynamics.rk3 import rk3_step
 from gpuwrf.profiling.transfer_audit import block_until_ready
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 ROOT = Path(__file__).resolve().parents[3]
 ARTIFACT = ROOT / "artifacts" / "m4" / "tier2_invariants.json"

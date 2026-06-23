@@ -31,6 +31,8 @@ boundary order degradation remains out of scope for this module.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 
 import jax
@@ -41,7 +43,7 @@ from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.state import State, Tendencies
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 _SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
 
 

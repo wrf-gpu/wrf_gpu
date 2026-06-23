@@ -13,6 +13,8 @@ Loads two assets:
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import lru_cache
 import hashlib
 from pathlib import Path
@@ -24,7 +26,7 @@ import numpy as np
 
 from gpuwrf.physics.thompson_tables import TABLE_ASSET as MP8_ASSET
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 ROOT = Path(__file__).resolve().parents[3]
 AERO_ASSET = ROOT / "data" / "fixtures" / "thompson-aero-tables-v1.npz"

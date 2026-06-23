@@ -1363,10 +1363,32 @@ def _build_output_fields(
                 _dp_dry = (
                     _c1h[:, None, None] * _mut[None, :, :] + _c2h[:, None, None]
                 ) * (-_dnw[:, None, None])
-                _psfc_default = (
-                    float(np.asarray(_p_top).reshape(-1)[0])
-                    + ((1.0 + _qtot) * _dp_dry).sum(axis=0)
+                _terms = np.asarray((1.0 + _qtot) * _dp_dry, dtype=np.float64)
+                # v0.20 fp32 INTEGRATION bit-identity fix (secondary source): the S4
+                # merge unconditionally switched this PSFC column integral to Kahan
+                # compensated summation, which rounds differently from the historical
+                # plain .sum(axis=0) and broke fp64_default PSFC bit-identity. Kahan
+                # is only needed for the perturbation-authoritative fp32 mode (its
+                # accumulator is fp32-sensitive); gate on the perturbation storage
+                # dtype so fp64_default re-emits the exact pre-S4 plain sum.
+                _mixed_fp32_psfc = (
+                    np.asarray(mu_pert).dtype == np.float32
+                    or np.asarray(p_pert).dtype == np.float32
                 )
+                if _mixed_fp32_psfc:
+                    _total = np.zeros_like(_terms[0], dtype=np.float64)
+                    _comp = np.zeros_like(_total, dtype=np.float64)
+                    for _k in range(_terms.shape[0]):
+                        _y = _terms[_k] - _comp
+                        _t = _total + _y
+                        _comp = (_t - _total) - _y
+                        _total = _t
+                    _psfc_default = float(np.asarray(_p_top).reshape(-1)[0]) + (_total - _comp)
+                else:
+                    # fp64_default: historical plain vertical sum (byte-identical).
+                    _psfc_default = (
+                        float(np.asarray(_p_top).reshape(-1)[0]) + _terms.sum(axis=0)
+                    )
     if _psfc_default is None:
         _p_total = p_pert + p_base
         _phi = ph_pert + ph_base

@@ -7,6 +7,8 @@ boundary and applies only bounds/diagnostic derivations.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -16,7 +18,7 @@ import jax.numpy as jnp
 from gpuwrf.physics.surface_constants import DEFAULT_LAND_ROUGHNESS_M, DEFAULT_WATER_ROUGHNESS_M
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 @dataclass(frozen=True)

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import importlib.util
 import os
 from functools import lru_cache, partial
@@ -42,7 +44,7 @@ from gpuwrf.physics.rrtmg_constants import (
 from gpuwrf.physics.rrtmg_tables import RRTMGTableBundle, RRTMG_TABLES, TABLE_ASSET
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 O3_MMR_TO_VMR = 0.603461
 _O3SUM = (
@@ -568,6 +570,11 @@ def _env_bool(name: str, default: bool) -> bool:
 # whole-column reference path.
 _LW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_LW_COLUMN_TILING", True)
 _LW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_LW_COLUMN_TILE_COLS", 2048))
+# Opt-in v0.20 S4 capability lever: keep the LW McICA/cloud optical-depth
+# substrate in fp32.  The surrounding gas optics and band-summed flux
+# accumulation remain on their existing dtypes, so default fp64/oracle behavior
+# is unchanged unless the proof/runtime explicitly enables this knob.
+_LW_CLOUD_OPTICS_FP32 = _env_bool("GPUWRF_RRTMG_LW_CLOUD_OPTICS_FP32", False)
 
 
 def _leaves(state: RRTMGLWColumnState):
@@ -1893,7 +1900,7 @@ def _kiss_step(seed1, seed2, seed3, seed4):
     return seed1, seed2, seed3, seed4, _kiss_uint_to_float(kiss)
 
 
-def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction):
+def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction, *, output_dtype=jnp.float64):
     """Builds the WRF random-overlap McICA mask for the LW fixture path.
 
     The WRF harness uses `icld=1`, `irng=0`, and `permuteseed=150`, so this
@@ -1917,22 +1924,34 @@ def _lw_mcica_random_cloud_mask(p_layer_pa, cloud_fraction):
     leading = len(p_layer_pa.shape) - 1
     cdf = jnp.transpose(cdf, tuple(range(2, 2 + leading)) + (1, 0))
     cldf = jnp.where(cloud_fraction < 1.0e-20, 0.0, cloud_fraction)
-    return (cdf >= (1.0 - cldf[..., :, None])).astype(jnp.float64)
+    return (cdf >= (1.0 - cldf[..., :, None])).astype(output_dtype)
 
 
 def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
     """Ports the WRF LW `mcica_subcol_lw` random mask plus `cldprmc` optical depth."""
 
     del tables
+    cloud_dtype = jnp.float32 if _LW_CLOUD_OPTICS_FP32 else None
     cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
     qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
     qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
     qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
+    if cloud_dtype is not None:
+        cloud_ext = cloud_ext.astype(cloud_dtype)
+        qc_ext = qc_ext.astype(cloud_dtype)
+        qi_ext = qi_ext.astype(cloud_dtype)
+        qs_ext = qs_ext.astype(cloud_dtype)
+        layer_mass_ext = layer_mass_ext.astype(cloud_dtype)
+        p_ext = p_ext.astype(cloud_dtype)
     cloud_safe = jnp.maximum(cloud_ext, 0.01)
     clw_path = qc_ext * layer_mass_ext * 1000.0 / cloud_safe
     ciw_path = qi_ext * layer_mass_ext * 1000.0 / cloud_safe
     csw_path = qs_ext * 0.99 * layer_mass_ext * 1000.0 / cloud_safe
-    cldf_global = _lw_mcica_random_cloud_mask(p_ext, cloud_ext)
+    cldf_global = _lw_mcica_random_cloud_mask(
+        p_ext,
+        cloud_ext,
+        output_dtype=(cloud_dtype or jnp.float64),
+    )
     clw_global = jnp.where(cldf_global > 0.5, clw_path[..., :, None], 0.0)
     ciw_global = jnp.where(cldf_global > 0.5, ciw_path[..., :, None], 0.0)
     csw_global = jnp.where(cldf_global > 0.5, csw_path[..., :, None], 0.0)

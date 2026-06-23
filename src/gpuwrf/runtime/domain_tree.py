@@ -18,6 +18,7 @@ from __future__ import annotations
 import os
 import weakref
 
+from collections import Counter, deque
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace as dataclass_replace
 from typing import Any
@@ -43,6 +44,7 @@ from gpuwrf.runtime.operational_mode import (
     _advance_chunk,
     _initial_carry_for_run,
     _resolve_operational_suite,
+    build_clock_base,
 )
 from gpuwrf.runtime.operational_state import OperationalCarry
 
@@ -165,13 +167,29 @@ class DomainTree:
 
 @dataclass(frozen=True)
 class DomainTreeResult:
-    """Final carries/states plus a concise event/output audit."""
+    """Final carries/states plus a concise event/output audit.
+
+    ``events`` / ``outputs`` are the full per-call audit lists (unbounded within a
+    single call, but a single call only spans ``root_steps`` -- the segmented host
+    loop drives one output interval per call).  When the caller opts in via
+    ``max_event_tail`` (see :func:`run_domain_tree_callbacks`) these become the
+    BOUNDED most-recent tail and the aggregate moves to the summary fields below:
+
+    * ``event_counts`` -- total count by event TYPE (``advance``/``force``/
+      ``feedback``/``output``).  Empty when no cap is set.
+    * ``force_counts`` -- count by ``parent->child`` force edge.  Empty when no cap.
+
+    The summary fields default empty so every existing consumer (and the
+    bit-identical fp64 path, which sets no cap) is unaffected.
+    """
 
     carries: dict[str, Any]
     states: dict[str, Any]
     own_steps: dict[str, int]
     events: tuple[tuple[Any, ...], ...]
     outputs: tuple[Any, ...]
+    event_counts: dict[str, int] = field(default_factory=dict)
+    force_counts: dict[str, int] = field(default_factory=dict)
 
 
 def build_live_nested_boundary_config(
@@ -224,6 +242,54 @@ def _state_from_carry(carry: Any) -> Any:
     return getattr(carry, "state", carry)
 
 
+class _BoundedTail:
+    """A list-like ``.append``/iterable that keeps only the last ``cap`` items.
+
+    Drop-in for the plain ``outputs`` list when the opt-in ``max_event_tail`` host
+    guard is on.  ``tuple(...)`` and iteration yield the retained tail in order.
+    """
+
+    __slots__ = ("_tail",)
+
+    def __init__(self, cap: int) -> None:
+        self._tail: deque = deque(maxlen=int(cap))
+
+    def append(self, item: Any) -> None:
+        self._tail.append(item)
+
+    def __iter__(self):
+        return iter(self._tail)
+
+    def __len__(self) -> int:
+        return len(self._tail)
+
+
+class _BoundedEventLog(_BoundedTail):
+    """Bounded event tail that ALSO folds an exact aggregate as it appends.
+
+    The retained tail is the last ``cap`` event tuples (for a post-mortem); the
+    ``counts`` / ``force_counts`` Counters are the EXACT lifetime aggregate by
+    event type and force edge -- identical to counting the full (un-capped) log,
+    because counting is order-independent.  This lets a single long call report a
+    complete audit summary with O(cap) host RAM instead of O(events).
+    """
+
+    __slots__ = ("counts", "force_counts")
+
+    def __init__(self, cap: int) -> None:
+        super().__init__(cap)
+        self.counts: Counter = Counter()
+        self.force_counts: Counter = Counter()
+
+    def append(self, item: tuple[Any, ...]) -> None:
+        super().append(item)
+        if not item:
+            return
+        self.counts[item[0]] += 1
+        if item[0] == "force":
+            self.force_counts[f"{item[1]}->{item[2]}"] += 1
+
+
 def run_domain_tree_callbacks(
     hierarchy: DomainHierarchy,
     carries: dict[str, Any],
@@ -241,6 +307,7 @@ def run_domain_tree_callbacks(
     edge_lookup: Callable[[DomainNest], DomainEdge] | None = None,
     fused_cascade: FusedCascadeLookup | None = None,
     initial_own_steps: dict[str, int] | None = None,
+    max_event_tail: int | None = None,
 ) -> DomainTreeResult:
     """Generic WRF-recursive domain-tree runner.
 
@@ -257,12 +324,33 @@ def run_domain_tree_callbacks(
     same global steps as a single full-length call -- the memory-bounded nested
     analogue of ``run_forecast_operational_segmented`` (peak VRAM independent of
     forecast length).  Defaults to ``0`` for every domain (a fresh full run).
+
+    ``max_event_tail`` is an OPT-IN host-RAM guard (default ``None`` =
+    unbounded = bit-identical legacy behaviour).  When set to a positive int the
+    ``events`` / ``outputs`` audit lists are capped to that many most-recent
+    entries (a ``deque`` tail) while the aggregate is folded into the result's
+    ``event_counts`` / ``force_counts`` summary dicts.  ``0`` is equivalent to
+    ``None`` (unbounded).  The per-CALL lists are already bounded by ``root_steps``
+    so the default path never needs this; it exists for callers that drive ONE
+    long call (rather than the segmented host loop) and want O(1) host RAM in
+    forecast length.  The cap changes NO dispatched op, callback, or step clock --
+    only how many host audit tuples are retained -- so numerics stay identical.
     """
 
     root_name = root or hierarchy.roots()[0]
     out = dict(carries)
-    events: list[tuple[Any, ...]] = []
-    outputs: list[Any] = []
+    _cap = int(max_event_tail) if max_event_tail is not None else 0
+    # ``events`` / ``outputs`` are append-only audit logs.  Default = plain lists
+    # (unbounded, bit-identical).  When the opt-in cap is on they become bounded
+    # tails that fold an exact aggregate (Counter) as they grow -- O(cap) host RAM.
+    events: Any
+    outputs: Any
+    if _cap > 0:
+        events = _BoundedEventLog(_cap)
+        outputs = _BoundedTail(_cap)
+    else:
+        events = []
+        outputs = []
     own_steps = {name: 0 for name in hierarchy.order}
     if initial_own_steps:
         for name, value in initial_own_steps.items():
@@ -405,6 +493,16 @@ def run_domain_tree_callbacks(
     # so numerics/speed are unchanged (proof: proofs/v019/vram_fix/).
     integrate = maybe_output = _sync_all_domains = None  # noqa: F841 - break closure ref-cycle
     states = {name: _state_from_carry(carry) for name, carry in out.items()}
+    if _cap > 0:
+        return DomainTreeResult(
+            carries=out,
+            states=states,
+            own_steps=own_steps,
+            events=tuple(events),
+            outputs=tuple(outputs),
+            event_counts=dict(events.counts),
+            force_counts=dict(events.force_counts),
+        )
     return DomainTreeResult(
         carries=out,
         states=states,
@@ -415,6 +513,12 @@ def run_domain_tree_callbacks(
 
 
 def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
+    # #91: one traced clock_base per domain namelist (built once, reused every chunk)
+    # so each domain's compiled HLO is date-independent (cross-date cache hit).
+    _clock_bases = {
+        name: build_clock_base(dom.namelist) for name, dom in tree.domains.items()
+    }
+
     def advance(name: str, carry: OperationalCarry, start_step: int, n_steps: int) -> OperationalCarry:
         namelist = tree.domains[name].namelist
         cadence = int(namelist.radiation_cadence_steps)
@@ -424,6 +528,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
             carry,
             namelist,
             jnp.asarray(int(start_step), dtype=jnp.int32),
+            _clock_bases[name],
             n_steps=int(n_steps),
             cadence=cadence,
         )
@@ -457,13 +562,19 @@ def _build_fused_cascade_program(
 
     parent_cad = int(parent_cadence)
     n_children = len(child_namelists)
+    # #91: per-run date scalars built ONCE on the host and passed into the jitted
+    # cascade as TRACED arguments (parent_cb / child_cbs) so the fused HLO is
+    # date-independent (cross-date compile-cache hit; numerically inert).
+    parent_clock_base = build_clock_base(parent_namelist)
+    child_clock_bases = tuple(build_clock_base(nl) for nl in child_namelists)
 
     @jax.jit
-    def fused(parent_carry, child_carries, parent_start, child_starts):
+    def fused_jit(parent_carry, child_carries, parent_start, child_starts, parent_cb, child_cbs):
         parent_new = _advance_chunk(
             parent_carry,
             parent_namelist,
             jnp.asarray(parent_start, dtype=jnp.int32),
+            parent_cb,
             n_steps=1,
             cadence=parent_cad,
         )
@@ -481,11 +592,20 @@ def _build_fused_cascade_program(
                 child_forced,
                 child_namelists[idx],
                 jnp.asarray(child_starts[idx], dtype=jnp.int32),
+                child_cbs[idx],
                 n_steps=int(child_ratios[idx]),
                 cadence=int(child_cadences[idx]),
             )
             new_children.append(child_new)
         return parent_new, tuple(new_children)
+
+    def fused(parent_carry, child_carries, parent_start, child_starts):
+        # The traced clock bases ride as runtime jit arguments (NOT closed-over
+        # constants), keeping the compiled cascade identical for every date.
+        return fused_jit(
+            parent_carry, child_carries, parent_start, child_starts,
+            parent_clock_base, child_clock_bases,
+        )
 
     return fused
 
@@ -624,6 +744,7 @@ def run_operational_domain_tree(
     root_sync_cadence: int | None = None,
     carries: dict[str, Any] | None = None,
     initial_own_steps: dict[str, int] | None = None,
+    max_event_tail: int | None = None,
 ) -> DomainTreeResult:
     """Run a live nested operational tree for ``root_steps`` root timesteps.
 
@@ -676,6 +797,7 @@ def run_operational_domain_tree(
         edge_lookup=lookup,
         fused_cascade=fused_cascade,
         initial_own_steps=initial_own_steps,
+        max_event_tail=max_event_tail,
     )
 
 

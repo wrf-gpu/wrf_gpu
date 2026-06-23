@@ -14,6 +14,8 @@ model top to surface; this avoids the usual off-by-one mistakes in ``LPBL``,
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
@@ -28,7 +30,7 @@ from gpuwrf.contracts.physics_interfaces import (
 from gpuwrf.physics import myj_constants as C
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _as1d(value, *, length: int | None = None, name: str = "array") -> np.ndarray:

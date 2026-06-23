@@ -8,6 +8,8 @@ batched entry is JAX-transformable and uses ``jax.vmap`` over columns with
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 
 import jax
@@ -18,7 +20,7 @@ from gpuwrf.contracts.physics_interfaces import PhysicsCarry, PhysicsDiagnostics
 from gpuwrf.physics.tridiagonal_solver import solve_tridiagonal
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 CK_B = 0.4

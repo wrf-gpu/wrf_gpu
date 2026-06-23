@@ -9,6 +9,8 @@ vertical-velocity ramp. MPAS source anchor:
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 from functools import partial
 
@@ -17,7 +19,7 @@ from jax import config
 import jax.numpy as jnp
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 @dataclass(frozen=True)

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import partial
 
 import jax
@@ -13,7 +15,7 @@ from gpuwrf.contracts.state import State, Tendencies
 from .rk3 import rk3_step
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _step_impl(state: State, tendencies: Tendencies, grid: GridSpec, dt: float, n_acoustic: int, debug: bool) -> State:

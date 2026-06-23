@@ -17,6 +17,7 @@ from __future__ import annotations
 import jax
 import jax.numpy as jnp
 
+from gpuwrf.contracts.precision import force_fp64_island
 from gpuwrf.dynamics.core.small_step_prep import SmallStepPrepState
 
 # WRF EM default external/internal divergence damping coefficient
@@ -74,6 +75,15 @@ def _calc_al_p(
     variables (``mu_work``/``ph_work``/``theta_work``); only the total-mass
     denominator is the full ``muts`` total.
     """
+
+    # v0.20 S2 intrinsic fp64-island lock: this is the WRF linearized equation of
+    # state -- ``al`` and ``p`` are small residuals of large nearly-cancelling
+    # mass/geopotential/theta terms. Force the bracket inputs to fp64 IN-OPERATOR
+    # so a future fp32 storage downcast cannot contaminate the EOS cancellation.
+    # No-op (bit-identical) on the fp64_default path: every input is already fp64.
+    mu_work, muts_total, ph_work, theta_work, theta_1, c2a, alt, c1h, c2h, rdnw = force_fp64_island(
+        mu_work, muts_total, ph_work, theta_work, theta_1, c2a, alt, c1h, c2h, rdnw
+    )
 
     mass_h = c1h[:, None, None] * muts_total[None, :, :] + c2h[:, None, None]
     safe_mass = jnp.where(jnp.abs(mass_h) > 1.0e-12, mass_h, jnp.asarray(1.0e-12, dtype=mass_h.dtype))

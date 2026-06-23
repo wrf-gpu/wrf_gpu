@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from datetime import timedelta
 from functools import partial
 from pathlib import Path
@@ -29,7 +31,7 @@ from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 from gpuwrf.profiling.transfer_audit import block_until_ready
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 P0_THETA_OFFSET_K = 300.0
 GRAVITY_M_S2 = 9.80665

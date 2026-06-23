@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import NamedTuple, Protocol
 
 import jax
@@ -11,7 +13,7 @@ import jax.numpy as jnp
 from gpuwrf.physics.mynn_constants import BULK_CD, BULK_CH, BULK_CQ, MIN_WIND, P608, R_D
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 class SurfaceLayerState(Protocol):

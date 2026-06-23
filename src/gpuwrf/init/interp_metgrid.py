@@ -38,6 +38,8 @@ All math is fp64 (the analytic oracle gate is ``<= 1e-6`` rel).
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 
 import jax
@@ -45,7 +47,7 @@ import jax.numpy as jnp
 
 # x64 is required for the analytic-oracle tolerance; enable at import like the
 # rest of the package (mirrors gpuwrf state layout policy).
-jax.config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 # --- METGRID.TBL interp-method enum (mirrors misc_definitions_module) --------

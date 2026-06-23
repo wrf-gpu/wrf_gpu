@@ -13,11 +13,13 @@ surface-layer diagnostic mapping.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import Iterable, NamedTuple
 
 from jax import config
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 import jax
 import jax.numpy as jnp

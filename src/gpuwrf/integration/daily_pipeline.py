@@ -46,6 +46,7 @@ from gpuwrf.runtime.checkpoint import read_checkpoint, write_checkpoint
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
     _commit_to_operational_device,
+    build_clock_base,
     compute_m9_diagnostics,
     dealias_state_buffers,
     run_forecast_operational,
@@ -478,7 +479,13 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         radiation_cadence_steps=int(config.radiation_cadence_steps),
         use_vertical_solver=True,
         use_flux_advection=True,
-        force_fp64=True,
+        # v0.20 S4-ultracode: force_fp64 stays the production DEFAULT (True). The
+        # env hook lets a measurement run engage the ADR-007 fp32-gated DEFAULT_DTYPES
+        # matrix (u/v/theta/qv + moisture fp32, dynamics/mass/pressure fp64) WITHOUT
+        # changing the default -- the broad-matrix arm of the fp32 VRAM/capability
+        # study. Unset/"1"/"true" => fp64 baseline (byte-unchanged); "0" => fp32-gated.
+        force_fp64=os.environ.get("GPUWRF_FORCE_FP64", "1").strip().lower()
+        not in {"0", "false", "off", "no"},
         diff_6th_opt=2,
         diff_6th_factor=0.12,
         w_damping=1,
@@ -531,6 +538,10 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         # case.  GPUWRF_PHYS_RK_TENDF=0 restores the legacy cadence for
         # bisection.
         rad_rk_tendf=0 if os.environ.get("GPUWRF_PHYS_RK_TENDF", "1") == "0" else 1,
+        # v0.20 S4: production opt-in for perturbation-authoritative mixed fp32.
+        # Unset remains fp64_default; invalid strings fail closed in
+        # OperationalNamelist.__post_init__.
+        acoustic_precision_mode=os.environ.get("GPUWRF_ACOUSTIC_PRECISION_MODE", "fp64_default"),
         # Same sprint: honour the case's own WRF &dynamics horizontal-diffusion
         # config (Switzerland/Gen2 run diff_opt=1, km_opt=4 2-D Smagorinsky; the
         # JAX side ran 0/0, dropping the Smag u/v/theta/w tendencies WRF folds
@@ -862,7 +873,10 @@ def _surface_diagnostics_for_output(
     if getattr(namelist, "time_utc", None) is None and hasattr(namelist, "__dataclass_fields__"):
         clock_namelist = replace(namelist, time_utc=run_start)
     try:
-        m9 = compute_m9_diagnostics(state, clock_namelist, lead_seconds)
+        # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
+        m9 = compute_m9_diagnostics(
+            state, clock_namelist, lead_seconds, clock_base=build_clock_base(clock_namelist)
+        )
     except Exception:  # noqa: BLE001 -- diagnostics are best-effort; never block output.
         return None
 

@@ -17,6 +17,8 @@ collapse to ~1x once evaporation is soil-hydraulic + canopy-resistance limited).
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax.numpy as jnp
 from jax import config
 
@@ -24,7 +26,7 @@ from gpuwrf.contracts.noahmp_state import NSOIL
 from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.types import NoahMPEtFluxes, NoahMPForcing
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 _TFRZ = 273.16
 _HFUS = 0.3336e6

@@ -27,6 +27,8 @@ authority on WRF faithfulness; do not infer parity from this module alone.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import partial
 
 import jax
@@ -42,7 +44,7 @@ from gpuwrf.contracts.physics_interfaces import (
     PhysicsTendency,
 )
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # --- WRF module_cu_bmj.F PARAMETERs (exact) ---------------------------------
 CP = 1004.5

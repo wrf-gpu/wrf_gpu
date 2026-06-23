@@ -161,7 +161,7 @@ def test_wrfrst_state_roundtrip_bit_identical_and_wrf_schema(tmp_path: Path) -> 
     assert metadata["schema_version"] == SCHEMA_VERSION
     assert metadata["step_index"] == 1
     assert metadata["state_field_order"] == list(state.active_field_names())
-    assert len(metadata["state_field_order"]) == 60
+    assert len(metadata["state_field_order"]) == 57  # v0.20 S1: -3 legacy p/ph/mu aliases
     for field in state.active_field_names():
         assert _equal(getattr(state, field), getattr(restored, field)), field
 
@@ -199,7 +199,7 @@ def test_wrfrst_hail_state_roundtrip_writes_hail_conditionals(tmp_path: Path) ->
     schema = inspect_wrfrst_schema(path)
 
     assert metadata["state_field_order"] == list(state.active_field_names())
-    assert len(metadata["state_field_order"]) == 65
+    assert len(metadata["state_field_order"]) == 62  # v0.20 S1: 57 base + 5 hail
     for field in ("qh", "Nh", "qvolg", "qvolh", "hail_acc"):
         assert getattr(restored, field) is not None, field
         assert state_extension_name(field) in schema["variables"], field

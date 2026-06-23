@@ -21,15 +21,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 os.environ.setdefault("JAX_PLATFORMS", "cpu")
 
 from gpuwrf.contracts.grid import DomainHierarchy
+from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.integration.nested_pipeline import (
     _PerDomainWrfoutWriter,
     _SUPPORTED_NESTED_LAND_OPTIONS,
     _domain_sf_surface_physics,
+    _nested_async_output_from_env,
     _wrf_julian_yearlen,
 )
 from gpuwrf.runtime.domain_tree import run_domain_tree_callbacks
@@ -167,3 +170,116 @@ def test_real_canary_case_selects_noahmp_on_both_domains():
     run = Gen2Run(REAL_CANARY_L2)
     assert _domain_sf_surface_physics(run, "d01") == 4
     assert _domain_sf_surface_physics(run, "d02") == 4
+
+
+# ---------------------------------------------------------------------------
+# v0.20 async history output lever: env default + byte-identity of the writer split
+# ---------------------------------------------------------------------------
+
+def test_nested_async_output_default_is_on(monkeypatch):
+    monkeypatch.delenv("GPUWRF_NESTED_ASYNC_OUTPUT", raising=False)
+    assert _nested_async_output_from_env() is True
+
+
+@pytest.mark.parametrize("value", ["0", "false", "off", "no", "FALSE", "Off"])
+def test_nested_async_output_disable_tokens(monkeypatch, value):
+    monkeypatch.setenv("GPUWRF_NESTED_ASYNC_OUTPUT", value)
+    assert _nested_async_output_from_env() is False
+
+
+@pytest.mark.parametrize("value", ["1", "true", "on", "yes", "", "garbage"])
+def test_nested_async_output_enable_tokens(monkeypatch, value):
+    monkeypatch.setenv("GPUWRF_NESTED_ASYNC_OUTPUT", value)
+    assert _nested_async_output_from_env() is True
+
+
+def _make_nested_writer(*, async_writer):
+    """Build a _PerDomainWrfoutWriter without its Gen2Run-dependent __init__.
+
+    The async-output split lives entirely in __call__; this stubs only the host
+    attributes that split reads (no corpus, no device, no Gen2Run static latlon).
+    """
+    from gpuwrf.integration.daily_pipeline import (
+        _merge_output_diagnostics,
+        _surface_diagnostics_for_output,
+        finite_summary,
+    )
+
+    writer = object.__new__(_PerDomainWrfoutWriter)
+    writer._surface_diagnostics_for_output = _surface_diagnostics_for_output
+    writer._merge_output_diagnostics = _merge_output_diagnostics
+    writer._finite_summary = finite_summary
+    writer.writer_diagnostics = {}
+    writer.writer_static_latlon_metadata = {}
+    writer._async_writer = async_writer
+    writer.written = {"d01": []}
+    return writer
+
+
+def _drive_nested_writer(writer, *, output_dir, dt_s, run_start):
+    """Drive one __call__ on the nested writer with a synthetic plain-numpy case."""
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from test_m7_netcdf_writer import synthetic_case  # type: ignore
+
+    state, grid, namelist = synthetic_case()
+    bundle = SimpleNamespace(namelist=namelist, grid=grid)
+    writer.output_dir = output_dir
+    writer.run_start = run_start
+    writer.bundles = {"d01": bundle}
+    writer.dt_by_domain = {"d01": dt_s}
+    return writer("d01", own_step=120, carry=state)
+
+
+def test_nested_async_output_byte_identical_to_sync(tmp_path):
+    """The async-submit branch writes byte-identical wrfout vs the sync branch.
+
+    Drives the REAL _PerDomainWrfoutWriter.__call__ split: once with
+    async_writer=None (synchronous write on the step thread) and once with an
+    AsyncWrfoutWriter (device->host pull on the step thread, NetCDF write on the
+    background thread). The two wrfout files must be bit-identical -- the lever
+    changes only the wall-clock timing of the write, not its content.
+    """
+    from netCDF4 import Dataset
+
+    run_start = datetime(2026, 5, 25, 18, tzinfo=timezone.utc)
+    dt_s = 30.0
+
+    sync_dir = tmp_path / "sync"
+    sync_dir.mkdir()
+    sync_writer = _make_nested_writer(async_writer=None)
+    sync_result = _drive_nested_writer(
+        sync_writer, output_dir=sync_dir, dt_s=dt_s, run_start=run_start
+    )
+
+    async_dir = tmp_path / "async"
+    async_dir.mkdir()
+    aw = AsyncWrfoutWriter(max_pending=2)
+    async_writer = _make_nested_writer(async_writer=aw)
+    async_result = _drive_nested_writer(
+        async_writer, output_dir=async_dir, dt_s=dt_s, run_start=run_start
+    )
+    # The split records the path at submit time (before the write lands); join
+    # flushes the background write, mirroring execute_nested_pipeline.
+    aw.join()
+
+    # Same recorded output path basename + same summary payload.
+    assert Path(sync_result["wrfout"]).name == Path(async_result["wrfout"]).name
+    assert sync_result["all_finite"] == async_result["all_finite"]
+    assert sync_writer.written["d01"] and async_writer.written["d01"]
+
+    p_sync = Path(sync_result["wrfout"])
+    p_async = Path(async_result["wrfout"])
+    assert p_sync.exists() and p_async.exists()
+
+    with Dataset(p_sync) as ds_a, Dataset(p_async) as ds_b:
+        assert sorted(ds_a.variables) == sorted(ds_b.variables)
+        for name in ds_a.variables:
+            a = np.asarray(ds_a.variables[name][:])
+            b = np.asarray(ds_b.variables[name][:])
+            assert a.shape == b.shape, f"{name} shape differs"
+            if np.issubdtype(a.dtype, np.floating):
+                assert np.array_equal(a, b, equal_nan=True), f"{name} bytes differ"
+            else:
+                assert np.array_equal(a, b), f"{name} bytes differ"

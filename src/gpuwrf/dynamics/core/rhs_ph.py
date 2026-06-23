@@ -67,6 +67,8 @@ from __future__ import annotations
 import jax
 import jax.numpy as jnp
 
+from gpuwrf.contracts.precision import force_fp64_island
+
 GRAVITY_M_S2 = 9.81  # WRF ``g`` (share/module_model_constants.F).
 
 
@@ -212,6 +214,22 @@ def rhs_ph_wrf(
 
     WRF source: ``module_big_step_utilities_em.F:1481-1612`` (terms 3, 4, 1, 2).
     """
+
+    # v0.20 fp32 HARDENING (S4 path-forward §"Where it still loses"): the
+    # ``ph_tend`` accumulator (``jnp.zeros_like(ph)`` + four staged ``.add``
+    # contributions) is a large-cancellation transient. When the caller stores
+    # ``ph`` etc. in perturbation-authoritative fp32, accumulating each stage's
+    # prime in fp32 loses 2-3 significant digits BEFORE the result is widened to
+    # fp64 at the call site (``operational_mode.py`` ph_tend=...astype(float64)).
+    # Force the accumulation-driving inputs into the fp64 island at the operator
+    # boundary so the whole tendency sum runs in fp64 -- same pattern as the EOS /
+    # PGF / vertical-solve islands (precision.force_fp64_island). ZERO resident-
+    # VRAM cost (transient only). For fp64_default these inputs are ALREADY fp64,
+    # so force_fp64_island returns them UNCHANGED (Python identity, no convert HLO)
+    # -> fp64_default stays bit-identical.
+    u, v, ww, ph, phb, w, mut, muu, muv = force_fp64_island(
+        u, v, ww, ph, phb, w, mut, muu, muv
+    )
 
     nz = int(ph.shape[0]) - 1  # mass levels; faces 0..nz.
     g = float(gravity)

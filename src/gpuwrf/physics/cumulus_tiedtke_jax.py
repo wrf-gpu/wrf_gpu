@@ -31,11 +31,13 @@ top-down internal arrays) and the tendency definitions are identical to
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # --- WRF model + Tiedtke constants (verbatim from cumulus_tiedtke.py) ---------
 RD = 287.0

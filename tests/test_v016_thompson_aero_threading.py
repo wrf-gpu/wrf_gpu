@@ -157,9 +157,10 @@ def test_state_constructs_with_and_without_aerosol_kwargs() -> None:
 def test_state_pytree_round_trip_preserves_leaf_count_and_order() -> None:
     state = _tiny_state()
     leaves, treedef = jax.tree_util.tree_flatten(state)
-    # mp=28 carries the 60-leaf base plus nwfa/nifa only; hail leaves remain None
-    # and are not JAX pytree leaves.
-    assert len(leaves) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) + len(AEROSOL_CONDITIONAL_LEAVES) == 62
+    # mp=28 carries the base plus nwfa/nifa only; hail leaves remain None and are
+    # not JAX pytree leaves. v0.20 S1: base is 57 (-3 legacy p/ph/mu aliases) so
+    # 64 slots - 7 conditional + 2 aerosol = 59.
+    assert len(leaves) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) + len(AEROSOL_CONDITIONAL_LEAVES) == 59
     assert state.active_field_names()[-2:] == AEROSOL_CONDITIONAL_LEAVES
     assert leaves[-2] is state.nwfa
     assert leaves[-1] is state.nifa

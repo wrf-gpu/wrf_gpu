@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass, field
 from functools import partial
 
@@ -16,7 +18,7 @@ from gpuwrf.dynamics.hyperdiffusion import HyperdiffusionConfig, apply_horizonta
 from gpuwrf.dynamics.limiters import LimiterConfig, positive_definite_limiter
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 @jax.tree_util.register_pytree_node_class

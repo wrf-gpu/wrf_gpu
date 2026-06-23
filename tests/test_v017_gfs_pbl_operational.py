@@ -89,7 +89,10 @@ def _state(grid: GridSpec) -> State:
     p = jnp.broadcast_to(jnp.linspace(95000.0, 20000.0, nz)[:, None, None], (nz, ny, nx))
     ph = jnp.broadcast_to(jnp.linspace(0.0, 12000.0 * 9.80665, nz + 1)[:, None, None], (nz + 1, ny, nx))
     fields.update(
-        theta=jnp.full((nz, ny, nx), 295.0), p=p, ph=ph, mu=jnp.full((ny, nx), 90000.0),
+        theta=jnp.full((nz, ny, nx), 295.0),
+        p_total=p,
+        ph_total=ph,
+        mu_total=jnp.full((ny, nx), 90000.0),
         qv=jnp.full((nz, ny, nx), 5.0e-3), qc=jnp.full((nz, ny, nx), 1.0e-4),
         qke=jnp.full((nz, ny, nx), 0.5),
         u=jnp.full((nz, ny, nx + 1), 5.0), v=jnp.full((nz, ny + 1, nx), 2.0),

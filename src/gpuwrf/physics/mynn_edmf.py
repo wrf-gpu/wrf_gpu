@@ -30,6 +30,8 @@ WRF file:line anchors are cited inline.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import os
 from functools import partial
 
@@ -38,7 +40,7 @@ from jax import config
 import jax.numpy as jnp
 from jax import lax
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _cond_niter() -> int:

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass, field
 from functools import partial
 
@@ -10,6 +12,7 @@ from jax import config
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
+from gpuwrf.contracts.precision import force_fp64_island
 from gpuwrf.contracts.state import BaseState, State
 # WRF/MPAS source anchors for the imported damping hooks:
 # module_small_step_em.F:548-563, :1559-1569 and
@@ -18,7 +21,7 @@ from gpuwrf.dynamics.damping import RayleighConfig, SmdivConfig, apply_rayleigh_
 from gpuwrf.dynamics.vertical_implicit_solver import build_epssm_column_coefficients, solve_tridiagonal
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 R_D = 287.0
@@ -168,6 +171,12 @@ def _inverse_density_from_theta_pressure(theta: jax.Array, pressure: jax.Array, 
     form, ``qvf=1+rvovrd*qv``); the two forms are the same WRF EOS.
     """
 
+    # v0.20 S2 intrinsic fp64-island lock: the WRF equation of state is the
+    # canonical cancellation bracket (small inverse-density / pressure residuals of
+    # large theta*pressure powers). Widen the EOS inputs to fp64 IN-OPERATOR so an
+    # fp32 storage downcast cannot contaminate the diagnosis. No-op (bit-identical)
+    # on fp64_default.
+    theta, pressure, qv = force_fp64_island(theta, pressure, qv)
     qvf = 1.0 if qv is None else 1.0 + RVOVRD * qv
     return (R_D / P0_PA) * theta * qvf * ((_safe_pressure(pressure) / P0_PA) ** CVPM)
 
@@ -180,6 +189,9 @@ def _pressure_from_theta_alt(theta: jax.Array, alt: jax.Array, qv: jax.Array | N
     (production ``State.theta``) pass ``qv=None``; dry-theta callers pass ``qv``.
     """
 
+    # v0.20 S2 intrinsic fp64-island lock (EOS pressure inversion). No-op
+    # (bit-identical) on fp64_default; protects an fp32 caller's diagnostic.
+    theta, alt, qv = force_fp64_island(theta, alt, qv)
     qvf = 1.0 if qv is None else 1.0 + RVOVRD * qv
     argument = (R_D * theta * qvf) / (P0_PA * _safe_alt(alt))
     return P0_PA * (jnp.maximum(argument, 1.0e-12) ** CPOVCV)

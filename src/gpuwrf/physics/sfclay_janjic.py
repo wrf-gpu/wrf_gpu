@@ -18,10 +18,12 @@ operational loop calls the scheme after step 1.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 import jax.numpy as jnp
 import numpy as np

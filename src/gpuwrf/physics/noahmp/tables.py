@@ -36,6 +36,8 @@ SOILPARM uses the first (``STAS``, 19-category) block, matching the WRF read ord
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import re
 from pathlib import Path
 from typing import NamedTuple
@@ -44,7 +46,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import config
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # WRF fixed dimensions (module_sf_noahmplsm.F).
 MBAND: int = 2   # radiation bands: 1=vis, 2=nir

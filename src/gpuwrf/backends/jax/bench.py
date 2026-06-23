@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import argparse
 import json
 import os
@@ -24,7 +26,7 @@ from .column import column_thermo
 from .stencil import stencil_advdiff
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 ROOT = Path(__file__).resolve().parents[4]
 STENCIL_CASE = "analytic-stencil-3d-advdiff-v1"

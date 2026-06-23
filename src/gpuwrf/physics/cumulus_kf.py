@@ -33,6 +33,8 @@ them in production (`debug=False`).
 """
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import partial
 
 import jax
@@ -42,7 +44,7 @@ import jax.numpy as jnp
 from gpuwrf.contracts.physics_interfaces import PhysicsCarry, PhysicsDiagnostics, PhysicsStepResult, PhysicsTendency
 from gpuwrf.physics import cumulus_kf_tables as _T
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # ----------------------------------------------------------------------------
 # Constants (DATA statements + WRF model constants used by KF_eta_PARA).

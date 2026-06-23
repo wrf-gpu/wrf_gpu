@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import lru_cache
 import hashlib
 from pathlib import Path
@@ -12,7 +14,7 @@ import jax.numpy as jnp
 import numpy as np
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 ROOT = Path(__file__).resolve().parents[3]
 TABLE_ASSET = ROOT / "data" / "fixtures" / "rrtmg-tables-v1.npz"

@@ -47,8 +47,11 @@ def _state(grid):
 
 def _namelist(grid):
     shapes = _state_field_shapes(grid)
-    tend = Tendencies(**{k: jnp.zeros(shapes[k], dtype=DEFAULT_DTYPES.dtype_for(k))
-                         for k in ("u", "v", "w", "theta", "qv", "p", "ph", "mu")})
+    shape_key = {"p": "p_total", "ph": "ph_total", "mu": "mu_total"}
+    tend = Tendencies(**{
+        k: jnp.zeros(shapes[shape_key.get(k, k)], dtype=DEFAULT_DTYPES.dtype_for(k))
+        for k in ("u", "v", "w", "theta", "qv", "p", "ph", "mu")
+    })
     return OperationalNamelist(grid=grid, tendencies=tend, metrics=grid.metrics,
                                dt_s=10.0, acoustic_substeps=10)
 

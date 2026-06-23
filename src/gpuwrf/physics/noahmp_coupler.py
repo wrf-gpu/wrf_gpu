@@ -130,8 +130,20 @@ def assemble_noahmp_forcing(
         return _surface(v) if v is not None else jnp.zeros(shape)
 
     zero = jnp.zeros(shape)
-    julian = jnp.asarray(float(_get(clock, "julian", 1.0)))
-    yearlen = jnp.asarray(float(_get(clock, "yearlen", 365.0)))
+    # v0.20.0 #91 nested-fix: do NOT ``float()`` the clock scalars. #91 threads the
+    # date-derived phenology clock (``noahmp_julian``/``noahmp_yearlen``) as TRACED
+    # 0-D jnp arrays so the per-step HLO is date-INDEPENDENT and the persistent
+    # compile cache HITS across forecast dates. ``float()`` on a traced array raises
+    # ConcretizationTypeError -- it broke the all-7 nested ``_advance_chunk_fori``
+    # megacompile (#91 verified single-domain only). The downstream phenology
+    # (``noahmp/phenology.py``) is fully traced-compatible (only ``jnp`` ops on
+    # ``julian``/``yearlen``) and re-casts to f64, so this dtype is not load-bearing.
+    # No explicit dtype: a concrete Python float (legacy ``clock_base=None`` path)
+    # keeps JAX's default precision -- byte-identical to the old
+    # ``jnp.asarray(float(...))`` (f64 under x64 / f32 under x64-off) and warning-free
+    # in fp32 mode; a traced array preserves its own dtype from ``build_clock_base``.
+    julian = jnp.asarray(_get(clock, "julian", 1.0))
+    yearlen = jnp.asarray(_get(clock, "yearlen", 365.0))
     zlvl_field = _get(state, "zlvl", None)
     if zlvl_field is not None:
         zlvl = _surface(zlvl_field)

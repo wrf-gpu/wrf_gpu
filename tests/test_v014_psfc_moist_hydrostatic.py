@@ -63,6 +63,7 @@ def test_psfc_from_state_is_wrf_moist_hydrostatic_integral():
         qs=jnp.asarray(qs),
         qg=jnp.asarray(zeros),
         mu_total=jnp.asarray(mut),
+        mu_perturbation=jnp.asarray(mut, dtype=jnp.float64),  # fp64 => plain .sum branch
     )
     metrics = SimpleNamespace(
         c1h=jnp.asarray(c1h),

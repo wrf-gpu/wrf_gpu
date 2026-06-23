@@ -20,9 +20,9 @@
 # isolated subprocess before injecting -- so an unknown flag can NEVER abort import
 # (the v0.12.0 GPU-abort regression guard). With neither opted in, the default
 # GPU/CPU path is byte-unchanged.
-from jax import config as _jax_config
+from gpuwrf._x64_config import configure_jax_x64 as _configure_jax_x64
 
-_jax_config.update("jax_enable_x64", True)
+_JAX_X64_FORCE_STATUS = _configure_jax_x64()
 
 # Persistent JIT/XLA compilation cache (v0.12.0 first-run usability win): the
 # v0.12.0 critique measured a ~4 min 55 s cold JIT compile on EVERY fresh
@@ -39,4 +39,4 @@ _JAX_CACHE_STATUS = _configure_jax_cache()
 
 __all__ = ["__version__"]
 
-__version__ = "0.19.1"
+__version__ = "0.20.0"

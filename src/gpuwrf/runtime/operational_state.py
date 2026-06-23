@@ -13,7 +13,7 @@ from typing import Any
 import jax
 import jax.numpy as jnp
 
-from gpuwrf.contracts.state import State
+from gpuwrf.contracts.state import BaseState, State
 
 
 PROMOTED_CARRY_EVIDENCE = {
@@ -109,6 +109,9 @@ class OperationalCarry:
     # supplies a WRF-derived PleimXiuStaticBundle. Appended LAST.
     px_land: Any = field(default=None)
     px_rad: Any = field(default=None)
+    # Explicit fp64 WRF base fields for opt-in perturbation-authoritative mixed
+    # precision. Appended last so fp64_default carry prefixes stay unchanged.
+    base_state: BaseState | None = field(default=None)
 
     def replace(self, **updates) -> "OperationalCarry":
         values = {name: getattr(self, name) for name in self.__dataclass_fields__}
@@ -124,9 +127,11 @@ class OperationalCarry:
         return cls(*children)
 
 
-def _base_mu(state: State) -> jax.Array:
+def _base_mu(state: State, base_state: BaseState | None = None) -> jax.Array:
     """Return resident WRF ``MUB`` from explicit total/perturbation fields."""
 
+    if base_state is not None:
+        return jnp.asarray(base_state.mub)
     return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)
 
 
@@ -142,6 +147,7 @@ def initial_operational_carry(
     slab_rad: Any = None,
     px_land: Any = None,
     px_rad: Any = None,
+    base_state: BaseState | None = None,
 ) -> OperationalCarry:
     """Build promoted carry from the initialized operational ``State``.
 
@@ -155,13 +161,14 @@ def initial_operational_carry(
     to ``None`` (Noah-MP off; the carry is structurally identical to pre-S6b).
     """
 
-    mu_base = _base_mu(state)
-    muts = mu_base + state.mu_perturbation
-    ww = jnp.zeros_like(state.w)
-    mudf = jnp.zeros_like(state.mu_perturbation)
-    ph_tend = jnp.zeros_like(state.ph, dtype=jnp.float64)
+    mu_base = _base_mu(state, base_state)
+    muts = jnp.asarray(mu_base, dtype=jnp.float64) + jnp.asarray(state.mu_perturbation, dtype=jnp.float64)
+    ww = jnp.zeros_like(state.w, dtype=jnp.float64)
+    mudf = jnp.zeros_like(state.mu_perturbation, dtype=jnp.float64)
+    ph_tend = jnp.zeros_like(state.ph_perturbation, dtype=jnp.float64)
     return OperationalCarry(
         state=state,
+        base_state=base_state,
         # F7G: ``t_2ave`` is the WRF small-step WORK-theta running average
         # (module_small_step_em.F:1341-1344), NOT the full initialized theta.  At a
         # fresh RK stage on a fixed-mass rest thermal the coupled work theta ``t_2``
@@ -175,15 +182,15 @@ def initial_operational_carry(
         # (module_small_step_em.F:1102-1108).  For a fixed-mass thermal with mu'=0
         # and no mass tendency it is zero; it becomes nonzero only from actual
         # small-step mass evolution, so seed it at zero rather than the full mu'.
-        muave=jnp.zeros_like(state.mu_perturbation),
+        muave=jnp.zeros_like(state.mu_perturbation, dtype=jnp.float64),
         muts=muts,
         ph_tend=ph_tend,
         u_save=jnp.asarray(state.u),
         v_save=jnp.asarray(state.v),
         w_save=jnp.asarray(state.w),
         t_save=jnp.asarray(state.theta),
-        ph_save=jnp.asarray(state.ph),
-        mu_save=jnp.asarray(state.mu_perturbation),
+        ph_save=jnp.asarray(state.ph, dtype=jnp.float64),
+        mu_save=jnp.asarray(state.mu_perturbation, dtype=jnp.float64),
         ww_save=ww,
         # Held WRF radiative theta tendency (K/s). Zero until the first radiation
         # call refreshes it; theta += dt*rthraten is applied every dynamics step.

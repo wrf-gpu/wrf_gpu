@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import json
 from pathlib import Path
 from typing import Any
@@ -338,7 +340,7 @@ def run_real_oracle_parity(oracle_dir: Path = ORACLE_DIR, out: Path = RAW_ORACLE
 
     from jax import config
 
-    config.update("jax_enable_x64", True)
+    configure_jax_x64()
     import jax.numpy as jnp
 
     from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
