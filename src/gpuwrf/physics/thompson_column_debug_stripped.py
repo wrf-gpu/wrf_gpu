@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import partial
 
 import jax
@@ -30,7 +32,7 @@ from gpuwrf.physics.thompson_column import (
 )
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _step_thompson_column_stripped_impl(state: ThompsonColumnState, dt: float) -> ThompsonColumnState:

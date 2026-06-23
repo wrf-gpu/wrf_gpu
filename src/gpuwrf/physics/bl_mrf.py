@@ -27,11 +27,13 @@ JAX-vs-JAX self-compare).
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # --- WRF model_model_constants / MRF driver-passed constants ---------------- #
 G = 9.81

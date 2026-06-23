@@ -15,11 +15,13 @@ standalone Fortran driver linked to the unmodified WRF module.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 G = 9.81
 R_D = 287.0

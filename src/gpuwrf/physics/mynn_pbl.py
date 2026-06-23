@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import os
 from functools import partial
 from typing import Iterable
@@ -71,7 +73,7 @@ from gpuwrf.physics.mynn_surface_stub import surface_layer
 from gpuwrf.physics.tridiagonal_solver import solve_tridiagonal
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _env_bool(name: str, default: bool) -> bool:

@@ -7,6 +7,8 @@ snapshots/sanitizers out of the compiled path.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import os
 import dataclasses
 from dataclasses import dataclass
@@ -24,6 +26,7 @@ from gpuwrf.contracts.precision import (
     DEFAULT_DTYPES,
     STATE_FIELD_ORDER,
     acoustic_precision_mode_label,
+    is_mixed_perturb_fp32_mode,
 )
 from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import (
@@ -58,6 +61,7 @@ from gpuwrf.coupling.physics_couplers import (
     thompson_adapter,
     thompson_aero_adapter,
     thompson_aero_coldstart_init,
+    time_utc_clock_base,
 )
 from gpuwrf.coupling.noahmp_surface_hook import (
     noahmp_surface_step,
@@ -157,7 +161,7 @@ from gpuwrf.dynamics.tendencies import add_scaled_tendencies
 from gpuwrf.runtime.operational_state import OperationalCarry, initial_operational_carry
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 _THETA_LIMITER_MIN_K = 0.0
 # v0.14 Switzerland venting ROOT CAUSE (proofs/v014/switzerland_midlevel_momentum_budget,
@@ -962,7 +966,105 @@ def _steps_for_hours(hours: float, dt_s: float) -> int:
     return rounded
 
 
-def _enforce_operational_precision(state: State, *, force_fp64: bool = False) -> State:
+def _base_state_from_totals(state: State) -> BaseState:
+    """Build explicit fp64 WRF base leaves from a concrete fp64 total/prime state."""
+
+    theta_base = jnp.full_like(state.theta, jnp.asarray(300.0, dtype=jnp.float64), dtype=jnp.float64)
+    return BaseState(
+        pb=jnp.asarray(state.p_total, dtype=jnp.float64) - jnp.asarray(state.p_perturbation, dtype=jnp.float64),
+        phb=jnp.asarray(state.ph_total, dtype=jnp.float64) - jnp.asarray(state.ph_perturbation, dtype=jnp.float64),
+        mub=jnp.asarray(state.mu_total, dtype=jnp.float64) - jnp.asarray(state.mu_perturbation, dtype=jnp.float64),
+        t0=jnp.asarray(300.0, dtype=jnp.float64),
+        theta_base=theta_base,
+    )
+
+
+# v0.20 fp32 HARDENING (b): moisture / number species stored fp32 under the
+# aggressive ADR-007 matrix. The qke promote (precision.py:233-257) handled the
+# ONE field that went non-finite in fp32 at 1km by a static FP64 promotion. For
+# the bulk moisture/number species (which stay FP32_GATED for the resident-state
+# win) we instead apply a per-field RUNTIME finiteness GATE in the
+# mixed_perturb_fp32 path: any non-finite fp32 cell is replaced by a finite floor
+# (0.0 -- the WRF-faithful clamp for a poisoned mixing ratio / number
+# concentration), so a single non-finite excursion guards locally instead of
+# poisoning the whole run. Mirrors the existing _valid_mixing_ratio nonfinite
+# trap; storage dtype is preserved (no resident-VRAM change). Only reached in the
+# opt-in fp32 mode -> fp64_default is byte-unchanged.
+_MIXED_FP32_FINITENESS_GATED_SPECIES: tuple[str, ...] = (
+    "qv",
+    "qc",
+    "qr",
+    "qi",
+    "qs",
+    "qg",
+    "qh",
+    "Ni",
+    "Nr",
+    "Ns",
+    "Ng",
+    "Nc",
+    "Nn",
+    "Nh",
+    "qvolg",
+    "qvolh",
+    "nwfa",
+    "nifa",
+)
+
+
+def _gate_species_finiteness(value: jax.Array) -> jax.Array:
+    """Replace non-finite fp32 species cells with a finite zero floor in-place dtype."""
+
+    finite = jnp.isfinite(value)
+    floor = jnp.zeros((), dtype=value.dtype)
+    return jnp.where(finite, value, floor)
+
+
+def _apply_mixed_perturb_fp32_storage(state: State, base_state: BaseState) -> State:
+    """Store S4 acoustic dynamic carry as fp32 primes with fp64 rebuilt totals."""
+
+    p_prime = jnp.asarray(state.p_perturbation, dtype=jnp.float32)
+    ph_prime = jnp.asarray(state.ph_perturbation, dtype=jnp.float32)
+    mu_prime = jnp.asarray(state.mu_perturbation, dtype=jnp.float32)
+    w = jnp.asarray(state.w, dtype=jnp.float32)
+    p_total = jnp.asarray(base_state.pb, dtype=jnp.float64) + p_prime.astype(jnp.float64)
+    ph_total = jnp.asarray(base_state.phb, dtype=jnp.float64) + ph_prime.astype(jnp.float64)
+    mu_total = jnp.asarray(base_state.mub, dtype=jnp.float64) + mu_prime.astype(jnp.float64)
+    # Per-field 1km finiteness gate on the fp32-stored moisture/number species.
+    species_updates: dict[str, jax.Array] = {}
+    for field in _MIXED_FP32_FINITENESS_GATED_SPECIES:
+        value = getattr(state, field, None)
+        if value is None:
+            continue
+        if jnp.dtype(value.dtype) != jnp.dtype(jnp.float32):
+            # Only fp32-stored leaves can carry the fp32 non-finite excursion;
+            # leave any (statically promoted) fp64 species untouched.
+            continue
+        species_updates[field] = _gate_species_finiteness(value)
+    return state.replace(
+        _cast=False,
+        p_total=p_total,
+        p_perturbation=p_prime,
+        ph_total=ph_total,
+        ph_perturbation=ph_prime,
+        mu_total=mu_total,
+        mu_perturbation=mu_prime,
+        w=w,
+        **species_updates,
+    )
+
+
+def _enforce_operational_precision(
+    state: State,
+    *,
+    force_fp64: bool = False,
+    acoustic_precision_mode: str | None = None,
+    base_state: BaseState | None = None,
+) -> State:
+    if is_mixed_perturb_fp32_mode(acoustic_precision_mode):
+        fp64_state = _enforce_operational_precision(state, force_fp64=True)
+        base = _base_state_from_totals(fp64_state) if base_state is None else base_state
+        return _apply_mixed_perturb_fp32_storage(fp64_state, base)
     if bool(force_fp64):
         # Sprint F7-B is fp64-correctness-only: idealized cases and any caller
         # that sets force_fp64 keep every prognostic in float64.  The fp32-gated
@@ -996,7 +1098,16 @@ def _enforce_operational_precision(state: State, *, force_fp64: bool = False) ->
         target = DEFAULT_DTYPES.dtype_for(field)
         if value.dtype != target:
             updates[field] = value.astype(target)
-    return state.replace(**updates)
+    # v0.20 S4-ultracode: _cast=False so the ADR-007 fp32-gated DOWNCAST actually
+    # stands.  Without it, State.replace's default _cast=True re-canonicalises each
+    # updated leaf back to its CURRENT (fp64) dtype (state.py:861) -- the SAME no-op
+    # trap the force_fp64 branch documents at :1034 and fixes with _cast=False.  An
+    # fp64 carry would otherwise pass through here UNCHANGED, so the fp32-gated
+    # operational matrix was dormant whenever the carry arrived fp64 (i.e. always,
+    # since the pipeline force_fp64=True path produces an fp64 carry).  Only reached
+    # when force_fp64=False (the GPUWRF_FORCE_FP64=0 measurement hook); the fp64 and
+    # mixed branches above are untouched, so the production default is byte-identical.
+    return state.replace(_cast=False, **updates)
 
 
 def _theta_base_offset(theta: jax.Array) -> jax.Array:
@@ -1116,6 +1227,20 @@ def _first_limited_cell_xyz(mask: jax.Array) -> jax.Array:
     xyz = jnp.stack((x, y, z)).astype(jnp.int32)
     missing = jnp.full((3,), -1, dtype=jnp.int32)
     return jnp.where(count > 0, xyz, missing)
+
+
+def _kahan_sum_vertical(values: jax.Array) -> jax.Array:
+    """Kahan-compensated fp64 sum over the leading vertical axis."""
+
+    arr = jnp.asarray(values, dtype=jnp.float64)
+    total = jnp.zeros_like(arr[0], dtype=jnp.float64)
+    compensation = jnp.zeros_like(total, dtype=jnp.float64)
+    for k in range(int(arr.shape[0])):
+        y = arr[k] - compensation
+        t = total + y
+        compensation = (t - total) - y
+        total = t
+    return total - compensation
 
 
 def _empty_theta_limiter_diagnostics(theta: jax.Array) -> dict[str, jax.Array]:
@@ -1335,15 +1460,23 @@ def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist)
     theta_pert = (state.theta - theta_offset).astype(jnp.float64)
     theta_save_pert = (carry.t_save - theta_offset).astype(jnp.float64)
     theta_ave_pert = (carry.t_2ave - theta_offset).astype(jnp.float64)
-    mu_base = _base_mu(state)
+    mu_base = carry.base_state.mub if carry.base_state is not None else _base_mu(state)
     mu_total = mu_base + state.mu_perturbation
     metrics = namelist.metrics
     # Real advance_w inputs for the legacy non-prep helper path so the WRF
     # implicit-w solve receives finite, consistent coefficients (matches the
     # production prep-path semantics): real c2a from the dry EOS, real dry cqw,
     # base pressure/geopotential, and terrain ht = phb(sfc)/g.
-    p_base = (state.p_total - state.p_perturbation).astype(jnp.float64)
-    ph_base = (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+    p_base = (
+        carry.base_state.pb.astype(jnp.float64)
+        if carry.base_state is not None
+        else (state.p_total - state.p_perturbation).astype(jnp.float64)
+    )
+    ph_base = (
+        carry.base_state.phb.astype(jnp.float64)
+        if carry.base_state is not None
+        else (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+    )
     alt = _inverse_density_from_theta_pressure(
         state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
     )
@@ -1374,7 +1507,7 @@ def _acoustic_core_state(carry: OperationalCarry, namelist: OperationalNamelist)
         theta_tend=namelist.tendencies.theta,
         mu_tend=namelist.tendencies.mu,
         ph_tend=carry.ph_tend,
-        ph=state.ph_perturbation,
+        ph=state.ph_perturbation.astype(jnp.float64),
         p=state.p_perturbation,
         t_2ave=theta_ave_pert,
         dnw=metrics.dnw,
@@ -1432,7 +1565,7 @@ def _acoustic_core_state_from_prep(
 
     state = prep.entry_state
     theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
-    ph_base = state.ph_total - state.ph_perturbation
+    ph_base = prep.phb
     # F7H: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` ONCE per RK
     # stage in rk_tendency (module_em.F:1361-1368) by calling pg_buoy_w with the
     # stage diagnostic ``grid%p`` and the stage perturbation dry mass
@@ -1583,7 +1716,7 @@ def _acoustic_core_state_from_prep(
         # omega (grid%ww), not a carried post-acoustic omega; prep.ww_save now
         # holds exactly that (see advance_stage).
         ww=prep.ww_save,
-        ph=state.ph_perturbation,
+        ph=state.ph_perturbation.astype(jnp.float64),
         phb=ph_base,
         w=state.w,
         mut=prep.mut,
@@ -1791,16 +1924,16 @@ def _acoustic_core_state_from_prep(
         v=prep.v_work,
         v_1=prep.v_save,
         w=prep.w_work,
-        mu=prep.mu_save + prep.mu_work,
-        mut=prep.mut,
+        mu=(prep.mu_save + prep.mu_work).astype(jnp.float64),
+        mut=prep.mut.astype(jnp.float64),
         # F7G: stage-entry small-step mass-WORK average is ZERO; advance_mu_t
         # (module_small_step_em.F:1102-1108) rebuilds it from actual small-step
         # mass evolution.  For a fixed-mass mu'=0 thermal it stays zero.
-        muave=jnp.zeros_like(prep.mu_work),
-        muts=prep.muts,
+        muave=jnp.zeros_like(prep.mu_work, dtype=jnp.float64),
+        muts=prep.muts.astype(jnp.float64),
         muu=prep.muu,
         muv=prep.muv,
-        mudf=carry.mudf,
+        mudf=carry.mudf.astype(jnp.float64),
         theta=theta_pert,
         theta_1=prep.t_save,
         # F7G: stage-entry small-step WORK-theta average is ZERO (the coupled work
@@ -1814,8 +1947,8 @@ def _acoustic_core_state_from_prep(
         theta_tend=tendencies.theta,
         mu_tend=tendencies.mu,
         # F7J: real WRF rhs_ph large-step geopotential tendency (was stub=0).
-        ph_tend=ph_tend_stage,
-        ph=prep.ph_work,
+        ph_tend=ph_tend_stage.astype(jnp.float64),
+        ph=prep.ph_work.astype(jnp.float64),
         p=pressure.p,
         t_2ave=jnp.zeros_like(prep.theta_work),
         dnw=namelist.metrics.dnw,
@@ -1864,14 +1997,14 @@ def _acoustic_core_state_from_prep(
         c1f=namelist.metrics.c1f,
         c2f=namelist.metrics.c2f,
         rdn=namelist.metrics.rdn,
-        phb=state.ph_total - state.ph_perturbation,
+        phb=prep.phb,
         ph_1=prep.ph_1,
         # Terrain height ht = phb(surface)/g (WRF advance_w lower BC :1417-1429).
-        ht=(state.ph_total - state.ph_perturbation)[0, :, :] / GRAVITY_M_S2,
+        ht=prep.phb[0, :, :] / GRAVITY_M_S2,
         pm1=pressure.pm1,
         ru_m=jnp.zeros_like(prep.u_work),
         rv_m=jnp.zeros_like(prep.v_work),
-        ww_m=jnp.zeros_like(carry.ww),
+        ww_m=jnp.zeros_like(carry.ww, dtype=jnp.float64),
         # F7G: the once-per-RK-stage pg_buoy_w tendency from the stage grid%p/mu'
         # (computed above), carried UNCHANGED through all acoustic substeps.  The
         # legacy per-substep ``p_buoy`` recompute is disabled (None).
@@ -1925,9 +2058,34 @@ def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, n
     still uses ``calc_p_rho_step`` for its own work-array pressure + smdiv memory.
     """
 
+    # v0.20 fp32 INTEGRATION bit-identity fix (the PRIMARY source): choose the
+    # base-field source for the closing grid%p diagnostic by storage mode so
+    # fp64_default stays BYTE-IDENTICAL to the pre-S4 baseline while the
+    # perturbation-authoritative fp32 mode stays cancellation-safe.
+    #
+    # The S4 merge unconditionally switched phb and the p_total base term from the
+    # historical FINISHED-state reconstruction
+    # (next_state.{ph_total,p_total} - next_state.{ph_perturbation,p_perturbation})
+    # to the pristine ENTRY-state prep.pb/prep.phb. The base is physically
+    # constant across the acoustic substeps, but in floating point the FINISHED
+    # totals/primes have evolved, so entry-base != finished-base at fp64 round-off.
+    # That feeds diagnose_pressure_al_alt and the written-back p_total every RK
+    # stage -> cascades into P/PH/U/V/W/QKE and (via total-minus-pert) the output
+    # PB/PHB/MU/MUB + downstream radiation/surface, breaking fp64_default
+    # bit-identity (GPU all-7 byte-compare: PB maxΔ~1.6e-2 Pa). This refresh runs
+    # AFTER small_step_finish and OVERWRITES p/p_total, which is why the earlier
+    # small_step_finish gating alone had no effect.
+    #
+    # For the mixed_perturb_fp32 mode the pristine fp64 base (prep.pb/prep.phb) is
+    # REQUIRED -- there next_state.p_perturbation is stored fp32 and the
+    # total-minus-pert reconstruction would re-introduce the fp32 cancellation the
+    # perturbation-authoritative design avoids. Gate on the static acoustic
+    # precision mode (compile-time -> zero runtime cost; the fp64 branch re-emits
+    # the exact pre-S4 HLO -> byte-identical).
+    _mixed = is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode)
     base = BaseState(
-        pb=prep.pb,
-        phb=next_state.ph_total - next_state.ph_perturbation,
+        pb=prep.pb,  # pb was prep.pb pre-merge too (unchanged); only phb regressed.
+        phb=prep.phb if _mixed else (next_state.ph_total - next_state.ph_perturbation),
         mub=prep.mub,
         t0=jnp.asarray(prep.theta_offset),
         theta_base=jnp.full_like(next_state.theta, prep.theta_offset),
@@ -1935,8 +2093,11 @@ def _refresh_grid_p_from_finished(next_state: State, prep: SmallStepPrepState, n
     p_pert, _al, _alt = diagnose_pressure_al_alt(
         next_state, base, namelist.metrics, hypsometric_opt=int(namelist.hypsometric_opt)
     )
-    p_base = next_state.p_total - next_state.p_perturbation
-    p_total = p_base + p_pert
+    if _mixed:
+        p_total = prep.pb + p_pert
+    else:
+        p_base = next_state.p_total - next_state.p_perturbation
+        p_total = p_base + p_pert
     return next_state.replace(
         p=p_total, p_total=p_total, p_perturbation=p_pert,
     )
@@ -1951,6 +2112,12 @@ def _carry_from_finished_stage(
     next_state = small_step_finish_wrf(prep, acoustic)
     if namelist is not None:
         next_state = _refresh_grid_p_from_finished(next_state, prep, namelist)
+    if (
+        namelist is not None
+        and is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode)
+        and carry.base_state is not None
+    ):
+        next_state = _apply_mixed_perturb_fp32_storage(next_state, carry.base_state)
     ww = acoustic.ww + prep.ww_save
     return carry.replace(
         state=next_state,
@@ -1964,8 +2131,8 @@ def _carry_from_finished_stage(
         v_save=prep.v_save,
         w_save=prep.w_save,
         t_save=prep.t_save + prep.theta_offset,
-        ph_save=prep.ph_save,
-        mu_save=prep.mu_save,
+        ph_save=prep.ph_save.astype(jnp.float64),
+        mu_save=prep.mu_save.astype(jnp.float64),
         ww_save=prep.ww_save,
     )
 
@@ -2243,6 +2410,7 @@ def _augment_large_step_tendencies(
     step_origin: State | None = None,
     transport_velocities: CoupledVelocities | None = None,
     bdy_relax: SpecifiedRelaxTendencies | None = None,
+    base_state: BaseState | None = None,
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -2494,6 +2662,7 @@ def _augment_large_step_tendencies(
         non_hydrostatic=True,
         top_lid=bool(namelist.top_lid),
         hypsometric_opt=int(namelist.hypsometric_opt),
+        base_state=base_state,
     )
     u_t = u_t + ru_pgf
     v_t = v_t + rv_pgf
@@ -2828,6 +2997,7 @@ def _rk_scan_step(
             step_origin=rk1_reference,
             transport_velocities=stage_velocities,
             bdy_relax=bdy_relax,
+            base_state=stage_carry.base_state,
         )
         # WRF advances moisture in the LARGE step (NOT the acoustic substeps):
         # build the coupled moisture tendency d(mu*q)/dt for THIS stage from the
@@ -2901,6 +3071,7 @@ def _rk_scan_step(
             metrics=namelist.metrics,
             reference_state=rk1_reference,
             ww=ww_stage,
+            base_state=stage_carry.base_state,
         )
         pressure = calc_p_rho_wrf(prep, step=0, non_hydrostatic=True)
         acoustic_result = _acoustic_scan(
@@ -3002,14 +3173,24 @@ def _coupled_core_extras(state: State) -> dict[str, jax.Array]:
     }
 
 
-def _state_from_coupled_core(snapshot: dict[str, jax.Array], template: State, theta_offset: jax.Array, dt_s: float) -> State:
+def _state_from_coupled_core(
+    snapshot: dict[str, jax.Array],
+    template: State,
+    theta_offset: jax.Array,
+    dt_s: float,
+    *,
+    base_state: BaseState | None = None,
+) -> State:
     theta = jnp.asarray(snapshot["theta"]) + theta_offset
     p_pert = jnp.asarray(snapshot["p"])
     ph_pert = jnp.asarray(snapshot["ph"])
     mu_pert = jnp.asarray(snapshot["mu"])
-    p_total = template.p_total - template.p_perturbation + p_pert
-    ph_total = template.ph_total - template.ph_perturbation + ph_pert
-    mu_total = template.mu_total - template.mu_perturbation + mu_pert
+    p_base = base_state.pb if base_state is not None else template.p_total - template.p_perturbation
+    ph_base = base_state.phb if base_state is not None else template.ph_total - template.ph_perturbation
+    mu_base = base_state.mub if base_state is not None else template.mu_total - template.mu_perturbation
+    p_total = p_base + p_pert
+    ph_total = ph_base + ph_pert
+    mu_total = mu_base + mu_pert
     return template.replace(
         u=jnp.asarray(snapshot["u"]),
         v=jnp.asarray(snapshot["v"]),
@@ -3034,8 +3215,18 @@ def _state_from_coupled_core(snapshot: dict[str, jax.Array], template: State, th
     )
 
 
-def _carry_from_coupled_core(snapshot: dict[str, jax.Array], template: State, theta_offset: jax.Array, dt_s: float, *, rthraten: jax.Array | None = None) -> OperationalCarry:
-    next_state = _state_from_coupled_core(snapshot, template, theta_offset, float(dt_s))
+def _carry_from_coupled_core(
+    snapshot: dict[str, jax.Array],
+    template: State,
+    theta_offset: jax.Array,
+    dt_s: float,
+    *,
+    rthraten: jax.Array | None = None,
+    base_state: BaseState | None = None,
+) -> OperationalCarry:
+    next_state = _state_from_coupled_core(
+        snapshot, template, theta_offset, float(dt_s), base_state=base_state
+    )
     return OperationalCarry(
         state=next_state,
         t_2ave=jnp.asarray(snapshot["t_2ave"]) + theta_offset,
@@ -3054,6 +3245,7 @@ def _carry_from_coupled_core(snapshot: dict[str, jax.Array], template: State, th
         # Preserve the held radiative theta tendency across the coupled core
         # (it is refreshed in the physics chain, not the dycore core).
         rthraten=jnp.zeros_like(next_state.theta) if rthraten is None else rthraten,
+        base_state=base_state,
     )
 
 
@@ -3082,7 +3274,14 @@ def _coupled_core_step(carry: OperationalCarry, namelist: OperationalNamelist, s
         extras=_coupled_core_extras(carry.state),
         step_index=step_index,
     )
-    return _carry_from_coupled_core(snapshot, carry.state, theta_offset, float(namelist.dt_s), rthraten=carry.rthraten)
+    return _carry_from_coupled_core(
+        snapshot,
+        carry.state,
+        theta_offset,
+        float(namelist.dt_s),
+        rthraten=carry.rthraten,
+        base_state=carry.base_state,
+    )
 
 
 class _NoahMPClock(NamedTuple):
@@ -3090,6 +3289,56 @@ class _NoahMPClock(NamedTuple):
 
     julian: float
     yearlen: float
+
+
+class _ClockBase(NamedTuple):
+    """v0.20.0 #91: the per-run date-derived scalars threaded as TRACED inputs.
+
+    Every value that used to be a Python-float *literal* baked into the radiation /
+    phenology HLO (so a new forecast date minted a new XLA cache key and the
+    persistent compile cache MISSED across dates) is bundled here and passed into
+    the compiled scan as a TRACED argument -- exactly like ``start_step``. Because
+    the date enters the program as a runtime input rather than a trace-time
+    constant, the compiled HLO is IDENTICAL for every forecast date, so the cache
+    HITS across dates with no config. The numeric values are byte-for-byte the same
+    as the old host-extracted floats; only their binding time changes, so the fix
+    is numerically inert (fp64_default stays bit-identical).
+
+    Fields (all 0-D ``float64`` ``jnp`` arrays):
+      ``rad_julian`` / ``rad_minute`` : WRF-style Julian day + UTC minute-of-day for
+          the radiation/solar geometry (``physics_couplers._time_utc_parts``).
+      ``noahmp_julian`` / ``noahmp_yearlen`` : the Noah-MP phenology greenness clock.
+    """
+
+    rad_julian: jax.Array
+    rad_minute: jax.Array
+    noahmp_julian: jax.Array
+    noahmp_yearlen: jax.Array
+
+
+def build_clock_base(namelist: "OperationalNamelist") -> _ClockBase:
+    """Build the traced :class:`_ClockBase` for ``namelist`` ONCE on the host.
+
+    Called OUTSIDE ``jax.jit`` (the host chunk loop / M9 snapshot) so the date
+    scalars enter the compiled program as runtime inputs, not baked literals.
+    """
+
+    rad_julian, rad_minute = time_utc_clock_base(namelist.time_utc)
+    return _ClockBase(
+        rad_julian=rad_julian,
+        rad_minute=rad_minute,
+        noahmp_julian=jnp.asarray(float(namelist.noahmp_julian), dtype=jnp.float64),
+        noahmp_yearlen=jnp.asarray(float(namelist.noahmp_yearlen), dtype=jnp.float64),
+    )
+
+
+def _rad_clock_base(clock_base):
+    """Extract the (rad_julian, rad_minute) pair for the radiation solar helpers,
+    or ``None`` when no traced clock was threaded (legacy host-extraction path)."""
+
+    if clock_base is None:
+        return None
+    return (clock_base.rad_julian, clock_base.rad_minute)
 
 
 def noahmp_initial_rad(
@@ -3365,7 +3614,14 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
     """
 
     state = state.ensure_conditional_leaves(mp_physics=int(namelist.mp_physics))
-    enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
+    mixed_precision = is_mixed_perturb_fp32_mode(namelist.acoustic_precision_mode)
+    base_state = None
+    if mixed_precision:
+        fp64_state = _enforce_operational_precision(state, force_fp64=True)
+        base_state = _base_state_from_totals(fp64_state)
+        enforced = _apply_mixed_perturb_fp32_storage(fp64_state, base_state)
+    else:
+        enforced = _enforce_operational_precision(state, force_fp64=bool(namelist.force_fp64))
     if int(namelist.mp_physics) == 28:
         # v0.16 aerosol-aware Thompson: cold-start nwfa/nifa from the WRF
         # thompson_init climatological profiles when the inputs carry no
@@ -3447,6 +3703,7 @@ def _initial_carry_for_run(state: State, namelist: OperationalNamelist) -> Opera
         px_rad=px_rad,
         noahmp_land=noahmp_land,
         noahmp_rad=noahmp_rad,
+        base_state=base_state,
     )
 
 
@@ -3567,7 +3824,7 @@ class _NoahMPRadiation(NamedTuple):
     cosz: jax.Array
 
 
-def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None):
+def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, *, land_state=None, clock_base=None):
     """Refresh the HELD Noah-MP surface radiation (SOLDN/LWDN/COSZ) at the radiation
     cadence; reuse the held value between calls (WRF holds the radiative forcing
     between radt intervals). Resident on device -- no host transfer.
@@ -3616,6 +3873,7 @@ def _refresh_noahmp_rad(state, namelist, lead_seconds, run_radiation, held_rad, 
             namelist.grid,
             time_utc=namelist.time_utc,
             lead_seconds=rad_lead_seconds,
+            clock_base=_rad_clock_base(clock_base),
             radiation_static=namelist.radiation_static,
             topo_shading=int(namelist.topo_shading),
             slope_rad=int(namelist.slope_rad),
@@ -3690,6 +3948,7 @@ def _physics_step_forcing(
     *,
     run_radiation: bool,
     first_timestep=False,
+    clock_base=None,
 ) -> _PhysicsStepForcing:
     """Run non-timesplit physics at step entry and expose RK-fixed tendencies."""
 
@@ -3751,10 +4010,15 @@ def _physics_step_forcing(
             run_radiation,
             carry.noahmp_rad,
             land_state=carry.noahmp_land,
+            clock_base=clock_base,
         )
-        clock = _NoahMPClock(
-            julian=float(namelist.noahmp_julian),
-            yearlen=float(namelist.noahmp_yearlen),
+        clock = (
+            _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
+            if clock_base is not None
+            else _NoahMPClock(
+                julian=float(namelist.noahmp_julian),
+                yearlen=float(namelist.noahmp_yearlen),
+            )
         )
         radiation = _NoahMPRadiation(*next_carry_rad)
         ep, rp = _noahmp_params(namelist)
@@ -3965,6 +4229,9 @@ def _physics_step_forcing(
     ra_sw = int(namelist.ra_sw_physics)
     ra_lw = int(namelist.ra_lw_physics)
     land_for_rad = carry.noahmp_land if bool(namelist.use_noahmp) else None
+    # #91: traced (julian, utc_minute) for the solar-geometry helpers (None on the
+    # legacy host-extraction path). Date-independent HLO -> cross-date cache hit.
+    rad_clock_base = _rad_clock_base(clock_base)
 
     def _sw_tendency() -> jnp.ndarray:
         if ra_sw == 0:
@@ -3975,6 +4242,7 @@ def _physics_step_forcing(
                 namelist.grid,
                 time_utc=namelist.time_utc,
                 lead_seconds=lead_seconds,
+                clock_base=rad_clock_base,
                 radiation_static=namelist.radiation_static,
                 land_state=land_for_rad,
             )
@@ -3984,6 +4252,7 @@ def _physics_step_forcing(
                 namelist.grid,
                 time_utc=namelist.time_utc,
                 lead_seconds=lead_seconds,
+                clock_base=rad_clock_base,
                 radiation_static=namelist.radiation_static,
                 land_state=land_for_rad,
             )
@@ -3992,6 +4261,7 @@ def _physics_step_forcing(
             namelist.grid,
             time_utc=namelist.time_utc,
             lead_seconds=lead_seconds,
+            clock_base=rad_clock_base,
             radiation_static=namelist.radiation_static,
             topo_shading=int(namelist.topo_shading),
             slope_rad=int(namelist.slope_rad),
@@ -4029,6 +4299,7 @@ def _physics_step_forcing(
             namelist.grid,
             time_utc=namelist.time_utc,
             lead_seconds=lead_seconds,
+            clock_base=rad_clock_base,
             radiation_static=namelist.radiation_static,
             land_state=land_for_rad,
         )
@@ -4041,6 +4312,7 @@ def _physics_step_forcing(
                 namelist.grid,
                 time_utc=namelist.time_utc,
                 lead_seconds=lead_seconds,
+                clock_base=rad_clock_base,
                 radiation_static=namelist.radiation_static,
                 topo_shading=int(namelist.topo_shading),
                 slope_rad=int(namelist.slope_rad),
@@ -4173,6 +4445,7 @@ def _physics_boundary_step_with_limiter_diagnostics(
     *,
     run_radiation: bool,
     debug: bool = False,
+    clock_base=None,
 ) -> tuple[OperationalCarry, dict[str, jax.Array]]:
     physical_origin = carry.state
     # Forecast clock for this step (traced scalar). Hoisted above the dycore so the
@@ -4186,6 +4459,7 @@ def _physics_boundary_step_with_limiter_diagnostics(
         lead_seconds,
         run_radiation=run_radiation,
         first_timestep=jnp.equal(step_index, 1),
+        clock_base=clock_base,
     )
     carry = physics_forcing.carry
     carry = _rk_scan_step(
@@ -4236,7 +4510,12 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
             )
             next_state = _limit_guarded_mass_state(next_state, physical_origin)
-    next_state = _enforce_operational_precision(next_state, force_fp64=bool(namelist.force_fp64))
+    next_state = _enforce_operational_precision(
+        next_state,
+        force_fp64=bool(namelist.force_fp64),
+        acoustic_precision_mode=namelist.acoustic_precision_mode,
+        base_state=carry.base_state,
+    )
     return _maybe_exchange_sharded_carry_halos(carry.replace(state=next_state)), limiter_diagnostics
 
 
@@ -4247,6 +4526,7 @@ def _physics_boundary_step(
     *,
     run_radiation: bool,
     debug: bool = False,
+    clock_base=None,
 ) -> OperationalCarry:
     next_carry, _diagnostics = _physics_boundary_step_with_limiter_diagnostics(
         carry,
@@ -4254,6 +4534,7 @@ def _physics_boundary_step(
         step_index,
         run_radiation=run_radiation,
         debug=debug,
+        clock_base=clock_base,
     )
     return next_carry
 
@@ -4385,7 +4666,16 @@ def _psfc_from_state(state: State, metrics: DycoreMetrics) -> jax.Array:
         + metrics.c2h[:, None, None]
     ) * (-metrics.dnw[:, None, None])
     p_top = jnp.reshape(jnp.asarray(metrics.p_top), ())
-    return p_top + ((1.0 + qtot) * dp_dry).sum(axis=0)
+    column = (1.0 + qtot) * dp_dry
+    # v0.20 fp32 INTEGRATION bit-identity fix (secondary source): the S4 merge
+    # introduced Kahan compensated summation here, which rounds differently from
+    # the historical plain .sum(axis=0) and broke fp64_default PSFC bit-identity.
+    # Kahan is only needed for the perturbation-authoritative fp32 mode; gate on
+    # the perturbation storage dtype so fp64_default re-emits the exact pre-S4 sum
+    # (compile-time static -> zero runtime cost, byte-identical HLO).
+    if jnp.dtype(jnp.asarray(state.mu_perturbation).dtype) == jnp.dtype(jnp.float32):
+        return p_top + _kahan_sum_vertical(column)
+    return p_top + column.sum(axis=0)
 
 
 def compute_m9_diagnostics(
@@ -4396,6 +4686,7 @@ def compute_m9_diagnostics(
     noahmp_land=None,
     noahmp_rad=None,
     noahclassic_land=None,
+    clock_base=None,
 ) -> M9Diagnostics:
     """Recompute the M9 surface map from a post-step State (side-channel only).
 
@@ -4415,6 +4706,7 @@ def compute_m9_diagnostics(
         namelist.grid,
         time_utc=namelist.time_utc,
         lead_seconds=lead_seconds,
+        clock_base=_rad_clock_base(clock_base),
         radiation_static=namelist.radiation_static,
         topo_shading=int(namelist.topo_shading),
         slope_rad=int(namelist.slope_rad),
@@ -4423,8 +4715,12 @@ def compute_m9_diagnostics(
     )
     hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
     if bool(namelist.use_noahmp) and noahmp_land is not None:
-        clock = _NoahMPClock(
-            julian=float(namelist.noahmp_julian), yearlen=float(namelist.noahmp_yearlen)
+        clock = (
+            _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
+            if clock_base is not None
+            else _NoahMPClock(
+                julian=float(namelist.noahmp_julian), yearlen=float(namelist.noahmp_yearlen)
+            )
         )
         radiation = (
             _NoahMPRadiation(*noahmp_rad) if noahmp_rad is not None
@@ -4521,6 +4817,7 @@ def _advance_chunk_fori(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
     start_step,
+    clock_base=None,
     *,
     n_steps: int,
     cadence: int,
@@ -4547,7 +4844,8 @@ def _advance_chunk_fori(
         else:
             run_radiation = False
         return _physics_boundary_step(
-            scan_carry, namelist, step_index, run_radiation=run_radiation, debug=False
+            scan_carry, namelist, step_index, run_radiation=run_radiation,
+            debug=False, clock_base=clock_base,
         )
 
     return jax.lax.fori_loop(
@@ -4563,6 +4861,7 @@ def _advance_chunk_static_scan(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
     start_step,
+    clock_base=None,
     *,
     n_steps: int,
     cadence: int,
@@ -4579,7 +4878,8 @@ def _advance_chunk_static_scan(
         else:
             run_radiation = False
         next_carry = _physics_boundary_step(
-            scan_carry, namelist, step_index, run_radiation=run_radiation, debug=False
+            scan_carry, namelist, step_index, run_radiation=run_radiation,
+            debug=False, clock_base=clock_base,
         )
         return next_carry, None
 
@@ -4591,37 +4891,52 @@ def _advance_chunk(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
     start_step,
+    clock_base=None,
     *,
     n_steps: int,
     cadence: int,
 ) -> OperationalCarry:
-    """Advance one output interval; default to the fast traced-count loop."""
+    """Advance one output interval; default to the fast traced-count loop.
+
+    ``clock_base`` (a TRACED :class:`_ClockBase` built once on the host via
+    :func:`build_clock_base`) carries the per-run date scalars as runtime inputs
+    so the compiled HLO is date-independent (#91 cross-date cache hit). ``None``
+    keeps the legacy host-extraction-from-``namelist.time_utc`` behaviour.
+    """
 
     mode = _advance_chunk_loop_mode()
     if mode in {"scan", "static_scan", "static-scan"}:
         return _advance_chunk_static_scan(
-            carry, namelist, start_step, n_steps=int(n_steps), cadence=int(cadence)
+            carry, namelist, start_step, clock_base, n_steps=int(n_steps), cadence=int(cadence)
         )
     if mode not in {"", "fori", "fori_loop", "fori-loop"}:
         raise ValueError(
             "GPUWRF_ADVANCE_CHUNK_LOOP must be 'fori' (default) or 'static_scan'; "
             f"got {mode!r}"
         )
-    return _advance_chunk_fori(carry, namelist, start_step, n_steps=n_steps, cadence=cadence)
+    return _advance_chunk_fori(
+        carry, namelist, start_step, clock_base, n_steps=n_steps, cadence=cadence
+    )
 
 
 @jax.jit
-def _m9_snapshot(carry: OperationalCarry, namelist: OperationalNamelist, lead_seconds) -> M9Diagnostics:
+def _m9_snapshot(
+    carry: OperationalCarry, namelist: OperationalNamelist, lead_seconds, clock_base=None
+) -> M9Diagnostics:
     """Compute the M9 surface map once from a post-chunk State (separate program).
 
     Isolated in its own ``jax.jit`` so XLA cannot co-schedule the ~15 GiB RRTMG
     g-point diagnostic transient with the dynamics-chunk scratch; the host loop
     blocks after the chunk so the chunk scratch is freed first.
+
+    ``clock_base`` (traced :class:`_ClockBase`) makes the diagnostic HLO
+    date-independent too (#91); ``None`` keeps the legacy host-extraction path.
     """
     return compute_m9_diagnostics(
         carry.state, namelist, lead_seconds,
         noahmp_land=carry.noahmp_land, noahmp_rad=carry.noahmp_rad,
         noahclassic_land=carry.noahclassic_land,
+        clock_base=clock_base,
     )
 
 
@@ -4679,18 +4994,25 @@ def run_forecast_operational_with_m9_diagnostics(
         boundaries.append(steps)
 
     dt_s = float(namelist.dt_s)
+    # #91: build the per-run date scalars ONCE on the host and thread them into the
+    # jitted chunk + snapshot as TRACED inputs so the compiled HLO is date-independent
+    # (cross-date compile-cache hit; numerically identical to the baked-literal path).
+    clock_base = build_clock_base(namelist)
     diag_chunks: list[M9Diagnostics] = []
     start = 1
     for end in boundaries:
         n = end - start + 1
         carry = _advance_chunk(
-            carry, namelist, jnp.asarray(start, dtype=jnp.int32), n_steps=n, cadence=cadence
+            carry, namelist, jnp.asarray(start, dtype=jnp.int32), clock_base,
+            n_steps=n, cadence=cadence,
         )
         # Free the dynamics-chunk scratch BEFORE the RRTMG diagnostic transient is
         # allocated, then free the transient before the next chunk -- this is what
         # bounds peak memory to (working set + ONE transient) for any forecast length.
         jax.block_until_ready(carry.state.theta)
-        diag = _m9_snapshot(carry, namelist, jnp.asarray(float(end) * dt_s, dtype=jnp.float64))
+        diag = _m9_snapshot(
+            carry, namelist, jnp.asarray(float(end) * dt_s, dtype=jnp.float64), clock_base
+        )
         jax.block_until_ready(diag.t2)
         diag_chunks.append(
             M9Diagnostics(*(getattr(diag, name)[None, ...] for name in M9Diagnostics._fields))
@@ -4836,11 +5158,14 @@ def run_forecast_operational_segmented(
     # Host loop over contiguous fixed-length segments covering global steps 1..steps.
     # Every full segment has identical static ``n_steps`` so it reuses ONE compiled
     # executable (``start_step`` is traced); a final partial segment compiles once.
+    # #91: traced per-run date scalars so each segment's HLO is date-independent.
+    clock_base = build_clock_base(namelist)
     start = 1
     while start <= steps:
         n = min(seg, steps - start + 1)
         carry = _advance_chunk(
-            carry, namelist, jnp.asarray(start, dtype=jnp.int32), n_steps=int(n), cadence=cadence
+            carry, namelist, jnp.asarray(start, dtype=jnp.int32), clock_base,
+            n_steps=int(n), cadence=cadence,
         )
         # Block so this segment's device scratch is freed before the next segment's
         # buffers are allocated -- this is what bounds peak memory to one segment's

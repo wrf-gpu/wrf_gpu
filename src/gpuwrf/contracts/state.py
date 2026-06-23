@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import argparse
 from pathlib import Path
 from typing import Iterable
@@ -14,7 +16,7 @@ from .grid import GridSpec
 from .precision import DEFAULT_DTYPES
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _gpu_device() -> jax.Device:
@@ -81,13 +83,12 @@ def _state_field_shapes(
         "w": (nz + 1, ny, nx),
         "theta": mass_3d,
         "qv": mass_3d,
-        "p": mass_3d,
+        # v0.20 S1: legacy total aliases p/ph/mu removed (they duplicated the
+        # totals); the State p/ph/mu properties re-expose p_total/ph_total/mu_total.
         "p_total": mass_3d,
         "p_perturbation": mass_3d,
-        "ph": (nz + 1, ny, nx),
         "ph_total": (nz + 1, ny, nx),
         "ph_perturbation": (nz + 1, ny, nx),
-        "mu": surface_2d,
         "mu_total": surface_2d,
         "mu_perturbation": surface_2d,
         "qc": mass_3d,
@@ -469,9 +470,16 @@ class State:
         "w",
         "theta",
         "qv",
-        "p",
-        "ph",
-        "mu",
+        # v0.20 S1 liveness reduction: the legacy total aliases ``p``/``ph``/``mu``
+        # were bitwise-identical duplicates of ``p_total``/``ph_total``/``mu_total``
+        # (kept in sync at every ``replace`` + equal at every construction site).
+        # They are REMOVED from the hot carry (3 fewer full-grid arrays per step)
+        # and re-exposed as read-only properties aliasing the totals, so every
+        # reader is unchanged and fp64_default stays BIT-IDENTICAL. (The TOTAL
+        # itself cannot be removed bit-identically -- the dycore recovers the base
+        # as ``total - perturbation`` each RK stage and reads ``p_total`` directly;
+        # that perturbation-authoritative rewrite is v0.20 S4, gated behind the
+        # additive fp32 mode.)
         "p_total",
         "p_perturbation",
         "ph_total",
@@ -565,9 +573,6 @@ class State:
         w: jax.Array,
         theta: jax.Array,
         qv: jax.Array,
-        p: jax.Array,
-        ph: jax.Array,
-        mu: jax.Array,
         p_total: jax.Array,
         p_perturbation: jax.Array,
         ph_total: jax.Array,
@@ -632,20 +637,28 @@ class State:
         nifa: jax.Array | None = None,
         # v0.17 hail surface-precip accumulator (append-only, at the very END).
         hail_acc: jax.Array | None = None,
+        # v0.20 S1: legacy total aliases accepted for call-site back-compat ONLY
+        # (they are no longer pytree leaves; the read-only p/ph/mu properties below
+        # re-expose the authoritative totals). A caller that still passes
+        # ``p=``/``ph=``/``mu=`` has its value folded into the matching total
+        # (they were always bitwise-equal); the total wins when both are given.
+        p: jax.Array | None = None,
+        ph: jax.Array | None = None,
+        mu: jax.Array | None = None,
     ) -> None:
         self.u = u
         self.v = v
         self.w = w
         self.theta = theta
         self.qv = qv
-        self.p = p
-        self.ph = ph
-        self.mu = mu
-        self.p_total = p_total
+        # v0.20 S1: fold the legacy aliases into the authoritative totals (they
+        # were always bitwise-equal); the total takes precedence when both are
+        # supplied. The read-only p/ph/mu properties re-expose them for readers.
+        self.p_total = p_total if p_total is not None else p
         self.p_perturbation = p_perturbation
-        self.ph_total = ph_total
+        self.ph_total = ph_total if ph_total is not None else ph
         self.ph_perturbation = ph_perturbation
-        self.mu_total = mu_total
+        self.mu_total = mu_total if mu_total is not None else mu
         self.mu_perturbation = mu_perturbation
         self.qc = qc
         self.qr = qr
@@ -746,6 +759,24 @@ class State:
         self.nifa = None if nifa is None else _as_dtype(nifa, DEFAULT_DTYPES.dtype_for("nifa"))
         self.hail_acc = None if hail_acc is None else _as_dtype(hail_acc, DEFAULT_DTYPES.dtype_for("hail_acc"))
 
+    # --- v0.20 S1 legacy total aliases (read-only properties; not pytree leaves) ---
+    # ``p``/``ph``/``mu`` were bitwise-identical duplicates of the totals carried
+    # alongside them in the hot loop. They are removed from ``__slots__`` (3 fewer
+    # full-grid arrays in the scan carry) and re-exposed here so every existing
+    # reader (``state.p`` etc.) is unchanged and fp64_default stays bit-identical.
+    # Writers go through ``replace(p=...)``, which redirects to the total.
+    @property
+    def p(self) -> jax.Array:
+        return self.p_total
+
+    @property
+    def ph(self) -> jax.Array:
+        return self.ph_total
+
+    @property
+    def mu(self) -> jax.Array:
+        return self.mu_total
+
     @classmethod
     def zeros(cls, grid: GridSpec, *, mp_physics: int | None = 8) -> "State":
         """Allocates the State leaves required by one static microphysics option."""
@@ -813,6 +844,17 @@ class State:
         Sprint U P0-1 / GPT firm-rule confirm-close).
         """
 
+        # v0.20 S1: ``p``/``ph``/``mu`` are read-only aliases of the totals (no
+        # longer pytree leaves). Redirect any legacy-alias write to the
+        # authoritative total leaf so the historical ``replace(p=...)`` contract is
+        # preserved; the total wins when both are supplied (they were always
+        # bitwise-equal).
+        for legacy, total in (("p", "p_total"), ("ph", "ph_total"), ("mu", "mu_total")):
+            if legacy in updates:
+                legacy_value = updates.pop(legacy)
+                if total not in updates:
+                    updates[total] = legacy_value
+
         values = {name: getattr(self, name) for name in self.__slots__}
         for name, value in updates.items():
             current = values[name]
@@ -822,23 +864,23 @@ class State:
                 value = value.astype(DEFAULT_DTYPES.dtype_for(name))
             values[name] = value
 
-        def sync_total_legacy_perturbation(total: str, legacy: str, perturbation: str) -> None:
-            """Keeps transitional legacy aliases aligned with explicit c2 totals."""
+        def sync_total_perturbation(total: str, perturbation: str) -> None:
+            """Maintain the perturbation as a delta when the total alone is updated.
 
-            total_changed = total in updates
-            legacy_changed = legacy in updates
-            perturbation_changed = perturbation in updates
-            old_total = getattr(self, total)
-            if total_changed:
-                values[legacy] = values[total]
-            elif legacy_changed:
-                values[total] = values[legacy]
-            if (total_changed or legacy_changed) and not perturbation_changed:
+            Mirrors the historical alias-sync arithmetic EXACTLY (bit-identical):
+            updating the total without an explicit perturbation shifts the
+            perturbation by the same increment, so the caller's
+            ``total = base + perturbation`` relation is preserved across the
+            update; an explicit perturbation update takes precedence.
+            """
+
+            if total in updates and perturbation not in updates:
+                old_total = getattr(self, total)
                 values[perturbation] = values[perturbation] + (values[total] - old_total)
 
-        sync_total_legacy_perturbation("p_total", "p", "p_perturbation")
-        sync_total_legacy_perturbation("ph_total", "ph", "ph_perturbation")
-        sync_total_legacy_perturbation("mu_total", "mu", "mu_perturbation")
+        sync_total_perturbation("p_total", "p_perturbation")
+        sync_total_perturbation("ph_total", "ph_perturbation")
+        sync_total_perturbation("mu_total", "mu_perturbation")
         obj = object.__new__(type(self))
         for name in self.__slots__:
             object.__setattr__(obj, name, values[name])

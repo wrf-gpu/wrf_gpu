@@ -40,6 +40,8 @@ All math fp64; one column step == one WRF ``mp_gt_driver`` call on a column.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import math
 from functools import partial
 from typing import Iterable
@@ -146,7 +148,7 @@ from gpuwrf.physics.thompson_aero_tables import (
     ThompsonAeroTableBundle,
 )
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 # --- WRF module_mp_thompson.F aerosol constants -------------------------------

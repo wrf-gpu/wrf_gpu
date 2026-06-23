@@ -27,6 +27,8 @@ Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_sfclay.F``
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import NamedTuple
 
 import jax
@@ -35,7 +37,7 @@ import jax.numpy as jnp
 import numpy as np
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 # --- SFCLAY1D parameters (lines 280-282) ---

@@ -12,6 +12,8 @@ WRF ordering anchors:
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -27,7 +29,7 @@ from gpuwrf.dynamics.core.dycore import DycoreCoreConfig, dycore_timestep_core
 from gpuwrf.contracts.grid import DycoreMetrics
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 PHYSICS_TENDENCY_FIELDS = (

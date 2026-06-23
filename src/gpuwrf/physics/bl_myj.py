@@ -24,6 +24,8 @@ like the reference kernel, here realized as length-``n+2`` ``jnp`` arrays.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
@@ -31,7 +33,7 @@ import jax.numpy as jnp
 from gpuwrf.physics import myj_constants as C
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _one_based_top_down(bottom_up: jax.Array, n: int) -> jax.Array:

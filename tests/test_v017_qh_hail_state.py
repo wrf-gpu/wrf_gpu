@@ -55,8 +55,9 @@ def test_hail_leaves_appended_at_end_append_only() -> None:
     # v0.18 trunk consolidated additive tail (set-UNION of every lane): 53
     # original + 3 v0.6.0 (Nc/Nn/rainc_acc) + 4 v0.15 MYNN + 4 v0.17 hail
     # substrate (qh/Nh/qvolg/qvolh) + 2 v0.16 aerosol-aware Thompson (nwfa/nifa)
-    # + 1 v0.17 hail surface accumulator (hail_acc) = 67.
-    assert len(State.__slots__) == 67
+    # + 1 v0.17 hail surface accumulator (hail_acc) = 67, minus the 3 legacy
+    # p/ph/mu duplicate aliases removed in v0.20 S1 = 64.
+    assert len(State.__slots__) == 64
     # The four 3-D hail substrate leaves sit just before the v0.16 aerosol leaves
     # and the final hail_acc accumulator: tail = ...,qh,Nh,qvolg,qvolh,nwfa,nifa,
     # hail_acc, so the hail block is __slots__[-7:-3].
@@ -73,7 +74,7 @@ def test_hail_leaves_appended_at_end_append_only() -> None:
     # are deliberately distinct orderings in the middle, but they cover the SAME
     # leaf set and BOTH end with the hail substrate + aerosol leaves + hail_acc.
     assert set(STATE_FIELD_ORDER) == set(State.__slots__)
-    assert len(STATE_FIELD_ORDER) == len(State.__slots__) == 67
+    assert len(STATE_FIELD_ORDER) == len(State.__slots__) == 64  # v0.20 S1: -3 legacy aliases
 
 
 def test_hail_leaves_precision_fp32_gated() -> None:
@@ -93,7 +94,7 @@ def test_hail_leaves_absent_by_default_and_materialized_for_hail_mp() -> None:
     }
     state = State(**fields)
     assert state.active_field_names() == tuple(name for name in State.__slots__ if name not in CONDITIONAL_STATE_LEAVES)
-    assert len(jax.tree_util.tree_leaves(state)) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) == 60
+    assert len(jax.tree_util.tree_leaves(state)) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) == 57
     for leaf in CONDITIONAL_STATE_LEAVES:
         assert getattr(state, leaf) is None, leaf
 
@@ -108,14 +109,14 @@ def test_hail_leaves_absent_by_default_and_materialized_for_hail_mp() -> None:
         assert arr.dtype == DEFAULT_DTYPES.dtype_for(leaf), leaf
     assert hail_state.hail_acc.shape == (ny, nx)
     assert float(np.asarray(hail_state.hail_acc).sum()) == 0.0
-    assert len(jax.tree_util.tree_leaves(hail_state)) == 65
+    assert len(jax.tree_util.tree_leaves(hail_state)) == 62  # v0.20 S1: 57 base + 5 hail
 
 
 def test_flatten_unflatten_identity_and_treedef_stable() -> None:
     grid = GridSpec.canary_3km_template()
     state = _full_state(grid)
     leaves, treedef = jax.tree_util.tree_flatten(state)
-    assert len(leaves) == 67
+    assert len(leaves) == 64  # v0.20 S1: -3 legacy p/ph/mu aliases removed
     # The hail substrate leaves sit before the v0.16 aerosol leaves + hail_acc.
     assert State.__slots__[-7:-3] == HAIL_LEAVES
     rebuilt = jax.tree_util.tree_unflatten(treedef, leaves)
@@ -137,7 +138,7 @@ def test_unflatten_does_not_recanonicalise_hail_leaves() -> None:
     grid = GridSpec.canary_3km_template()
     state = _full_state(grid)
     _, treedef = jax.tree_util.tree_flatten(state)
-    sentinel = jax.tree_util.tree_unflatten(treedef, [object()] * 67)
+    sentinel = jax.tree_util.tree_unflatten(treedef, [object()] * 64)  # v0.20 S1: -3 aliases
     assert sentinel.qvolh.__class__ is object  # verbatim, not coerced
 
 

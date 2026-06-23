@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def solve_tridiagonal(a, b, c, d):

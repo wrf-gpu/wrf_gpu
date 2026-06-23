@@ -34,11 +34,13 @@ driver linked against the UNMODIFIED ``module_bl_gfs.F`` (+ ``module_gfs_machine
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # --- WRF driver-passed constants (BL_GFS wrapper) -------------------------- #
 G = 9.81

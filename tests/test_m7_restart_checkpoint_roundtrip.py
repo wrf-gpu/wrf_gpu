@@ -37,9 +37,11 @@ def _synthetic_tendencies(grid: GridSpec) -> Tendencies:
         w=jnp.zeros(shapes["w"], dtype=DEFAULT_DTYPES.dtype_for("w")),
         theta=jnp.zeros(shapes["theta"], dtype=DEFAULT_DTYPES.dtype_for("theta")),
         qv=jnp.zeros(shapes["qv"], dtype=DEFAULT_DTYPES.dtype_for("qv")),
-        p=jnp.zeros(shapes["p"], dtype=DEFAULT_DTYPES.dtype_for("p")),
-        ph=jnp.zeros(shapes["ph"], dtype=DEFAULT_DTYPES.dtype_for("ph")),
-        mu=jnp.zeros(shapes["mu"], dtype=DEFAULT_DTYPES.dtype_for("mu")),
+        # v0.20 S1: legacy p/ph/mu shapes dropped from _state_field_shapes; the
+        # Tendencies pressure/geopotential/mass buffers share the total shapes.
+        p=jnp.zeros(shapes["p_total"], dtype=DEFAULT_DTYPES.dtype_for("p")),
+        ph=jnp.zeros(shapes["ph_total"], dtype=DEFAULT_DTYPES.dtype_for("ph")),
+        mu=jnp.zeros(shapes["mu_total"], dtype=DEFAULT_DTYPES.dtype_for("mu")),
     )
 
 
@@ -64,8 +66,9 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
     # appended the aerosol-aware Thompson (mp=28) nwfa/nifa leaves, and the v0.17
     # hail microphysics appended the hail surface accumulator (hail_acc) at the
     # very END (append-only) to the original 53-leaf schema. The guard tracks the
-    # authoritative consolidated count (53 + 3 + 4 + 4 + 2 + 1 = 67).
-    assert len(State.__slots__) == 67
+    # authoritative consolidated count (53 + 3 + 4 + 4 + 2 + 1 = 67), minus the 3
+    # legacy p/ph/mu duplicate aliases removed in v0.20 S1 = 64.
+    assert len(State.__slots__) == 64
     assert State.__slots__[-14:] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
         "qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc",
@@ -77,7 +80,7 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
 
     assert state.active_field_names() == tuple(name for name in State.__slots__ if name not in CONDITIONAL_STATE_LEAVES)
     assert restored_state.active_field_names() == state.active_field_names()
-    assert len(state.active_field_names()) == 60
+    assert len(state.active_field_names()) == 57  # v0.20 S1: -3 legacy p/ph/mu aliases
     for field in state.active_field_names():
         original = np.asarray(getattr(state, field))
         restored = np.asarray(getattr(restored_state, field))
@@ -131,7 +134,7 @@ def test_checkpoint_roundtrip_preserves_hail_conditional_state(tmp_path: Path) -
 
     assert restored_step == 23
     assert state.active_field_names() == restored_state.active_field_names()
-    assert len(restored_state.active_field_names()) == 65
+    assert len(restored_state.active_field_names()) == 62  # v0.20 S1: 57 base + 5 hail
     for field in ("qh", "Nh", "qvolg", "qvolh", "hail_acc"):
         assert getattr(restored_state, field) is not None, field
     for field in ("nwfa", "nifa"):

@@ -31,6 +31,8 @@ lines 194-515) and the WRF call site
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import NamedTuple
 
 import jax
@@ -40,7 +42,7 @@ import jax.numpy as jnp
 from gpuwrf.contracts.physics_interfaces import PhysicsStepResult, PhysicsTendency
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 # --- module_sf_slab.F parameters (lines 8-12) ---

@@ -297,49 +297,105 @@ def _is_tmpfs(path: Path) -> bool:
         return False
 
 
+# --------------------------------------------------------------------------- #
+# Nested GPU allocator selection (v0.20.0 speed lever G_allocator_env)         #
+# --------------------------------------------------------------------------- #
+# DEFAULT for the live-nested path is now ``cuda_async`` -- the CUDA
+# stream-ordered pooling allocator (``cudaMallocAsync``).  Historically this
+# path forced the synchronous ``platform`` allocator (raw cudaMalloc/cudaFree
+# per buffer, no pool) to dodge the production 1km-nest "allocate 9.24 GiB" OOM:
+# the default XLA *BFC* arena fragments over a 24 h run so the recurring ~9 GiB
+# RRTMG radiation transient can no longer find a contiguous block.  ``platform``
+# has no arena and so cannot fragment, but it pays a full driver malloc/free per
+# device buffer on every op, which shows up as host-side dispatch overhead.
+#
+# ``cuda_async`` is a *different* mechanism from BFC: it is a stream-ordered
+# memory pool managed by the CUDA driver.  It POOLS (so per-op malloc/free churn
+# is amortised, unlike ``platform``) but it does NOT use the BFC best-fit arena
+# whose fragmentation caused the original OOM -- the driver's async pool releases
+# memory back at stream-ordered sync points and is designed to stay
+# VRAM-bounded.  So it should recover most of ``platform``'s per-op overhead
+# while keeping the nest VRAM-bounded.  This is a NUMERICS-FREE change: the
+# allocator only governs *where* device buffers live, never the math.
+#
+# Selection precedence (highest first):
+#   1. explicit operator ``XLA_PYTHON_CLIENT_ALLOCATOR`` -- always authoritative.
+#   2. ``GPUWRF_ALLOCATOR`` -- documented gpuwrf-level knob; accepts
+#      ``cuda_async`` (default), ``platform`` (no-fragment fallback), ``bfc``
+#      (default XLA arena), or ``default``.
+#   3. built-in default ``cuda_async``.
+#
+# The platform fallback remains one env var away (``GPUWRF_ALLOCATOR=platform``)
+# for any case where ``cuda_async`` is unavailable or regresses.
+_DEFAULT_NESTED_ALLOCATOR = "cuda_async"
+_VALID_ALLOCATORS = ("cuda_async", "platform", "bfc", "default")
+
+
+def _resolve_nested_allocator() -> str | None:
+    """Return the XLA allocator string to use for the live-nested path.
+
+    Returns ``None`` when an explicit operator ``XLA_PYTHON_CLIENT_ALLOCATOR`` is
+    already set (caller must NOT override it).  Otherwise maps the documented
+    ``GPUWRF_ALLOCATOR`` knob to an XLA allocator string, defaulting to
+    ``cuda_async``.  An unrecognised ``GPUWRF_ALLOCATOR`` value is passed through
+    verbatim (so a future XLA allocator name still works) but a warning is left
+    to the caller; here we just normalise the well-known aliases.
+    """
+    import os
+
+    if os.environ.get("XLA_PYTHON_CLIENT_ALLOCATOR"):
+        return None  # operator chose explicitly -- honour it, do not override.
+    requested = os.environ.get("GPUWRF_ALLOCATOR", "").strip().lower()
+    if not requested:
+        return _DEFAULT_NESTED_ALLOCATOR
+    # ``bfc`` is the XLA default arena; XLA spells that allocator "default".
+    if requested == "bfc":
+        return "default"
+    return requested
+
+
 def _maybe_reexec_for_nested_allocator(args: argparse.Namespace) -> None:
-    """NESTED-OOM FIX: re-exec the process with the platform GPU allocator set.
+    """NESTED allocator selection: re-exec the process with the chosen GPU allocator.
 
-    The live-nested path allocates a recurring ~8-9 GiB RRTMG g-point radiation
-    transient every radiation step.  Under the default XLA BFC arena (especially
-    with ``XLA_PYTHON_CLIENT_PREALLOCATE=false``) a 24 h run fragments the pool so
-    that transient can no longer find a contiguous block -- the production
-    "allocate 9.24 GiB" OOM -- even though peak in-use stays ~9 GiB.  The
-    synchronous *platform* (cudaMalloc/cudaFree) allocator has no arena and so
-    cannot fragment; it also keeps the resident set ~2x smaller (measured ~15 GiB
-    vs ~29 GiB on this case), giving large headroom on a 32 GiB card.
+    The default is now ``cuda_async`` (stream-ordered pool); see the module
+    comment above for why this replaced the old ``platform`` default.  The
+    selection is robust and version-independent: JAX reads
+    ``XLA_PYTHON_CLIENT_ALLOCATOR`` from the OS environment when the GPU backend
+    first initializes, and importing ``gpuwrf`` already imports ``jax``, so
+    setting the variable from Python at this point is not reliably honoured.  We
+    therefore set it in the *environment* and re-exec the same interpreter
+    command (``sys.orig_argv``) ONCE so the fresh process initializes the backend
+    with the chosen allocator from the start.
 
-    JAX reads ``XLA_PYTHON_CLIENT_ALLOCATOR`` from the OS environment when the GPU
-    backend first initializes, and importing ``gpuwrf`` already imports ``jax``;
-    setting the variable from Python at this point is not reliably honoured.  The
-    robust, version-independent fix is to set it in the *environment* and re-exec
-    the same interpreter command (``sys.orig_argv``) ONCE so the fresh process
-    initializes the backend with the platform allocator from the start.  This is
-    gated on the nested opt-in (``--max-dom > 1``) so the single-domain
+    Gated on the nested opt-in (``--max-dom > 1``) so the single-domain
     operational path keeps the faster default BFC arena, and on a one-shot guard
     env so we never loop.  An explicit operator ``XLA_PYTHON_CLIENT_ALLOCATOR``
-    is always honoured (no re-exec).
+    is always honoured (no re-exec); ``GPUWRF_ALLOCATOR`` selects among
+    ``cuda_async`` (default), ``platform`` (no-fragment fallback), ``bfc``.
     """
     import os
     import sys
 
     if not (args.max_dom is not None and int(args.max_dom) > 1):
         return
-    if os.environ.get("XLA_PYTHON_CLIENT_ALLOCATOR"):
+    allocator = _resolve_nested_allocator()
+    if allocator is None:
         return  # operator already chose an allocator -- honour it, do not re-exec.
     if os.environ.get("_GPUWRF_NESTED_ALLOC_REEXEC") == "1":
         return  # already re-exec'd once; avoid an exec loop.
     orig = list(getattr(sys, "orig_argv", []) or [])
     if not orig:
         # No faithful argv to re-exec; fall back to a best-effort in-process set.
-        os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
+        os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", allocator)
         return
     new_env = dict(os.environ)
-    new_env["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
+    new_env["XLA_PYTHON_CLIENT_ALLOCATOR"] = allocator
     new_env["_GPUWRF_NESTED_ALLOC_REEXEC"] = "1"
     print(
-        "gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=platform "
-        "(no-fragment cudaMalloc allocator; nested-OOM fix)",
+        f"gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR={allocator} "
+        f"(GPUWRF_ALLOCATOR={os.environ.get('GPUWRF_ALLOCATOR') or 'cuda_async (default)'}; "
+        "stream-ordered pool by default, GPUWRF_ALLOCATOR=platform for the "
+        "no-fragment cudaMalloc fallback)",
         file=sys.stderr,
     )
     sys.stderr.flush()
@@ -446,12 +502,16 @@ def _cmd_run(args: argparse.Namespace) -> int:
         scratch_dir.mkdir(parents=True, exist_ok=True)
         os.environ.setdefault("GPUWRF_SCRATCH", str(scratch_dir))
         os.environ["GPUWRF_TMPDIR"] = str(scratch_dir)
-        # NESTED-OOM FIX: use the synchronous platform (cudaMalloc) allocator for
-        # the live-nested path so the recurring ~9 GiB RRTMG radiation transient
-        # cannot fragment a BFC arena over a 24 h run (the production
-        # "allocate 9.24 GiB" OOM). Set BEFORE the JAX backend initializes; the
-        # nested pipeline also setdefaults it. An explicit operator value wins.
-        os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
+        # NESTED allocator (v0.20.0 speed lever): default to ``cuda_async`` (the
+        # stream-ordered CUDA pool) so per-op malloc/free churn is amortised while
+        # staying VRAM-bounded; ``GPUWRF_ALLOCATOR=platform`` restores the old
+        # no-fragment synchronous cudaMalloc fallback that dodged the 1km-nest
+        # "allocate 9.24 GiB" OOM.  Set BEFORE the JAX backend initializes (the
+        # re-exec above normally already did this); the nested pipeline also
+        # setdefaults it. An explicit operator XLA_PYTHON_CLIENT_ALLOCATOR wins.
+        _alloc = _resolve_nested_allocator()
+        if _alloc is not None:
+            os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", _alloc)
         cleanup_scratch = args.scratch_dir is None and not os.environ.get("GPUWRF_KEEP_SCRATCH")
         print(
             f"gpuwrf: init mode = standalone_native_init_nested -- STANDALONE "

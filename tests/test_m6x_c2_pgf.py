@@ -19,12 +19,11 @@ from gpuwrf.dynamics.metrics import flat_metrics_for_grid
 def _state(grid: GridSpec) -> State:
     arrays = {field: jnp.zeros(shape, dtype=jnp.float64) for field, shape in _state_field_shapes(grid).items()}
     arrays["theta"] = jnp.ones_like(arrays["theta"]) * 300.0
-    arrays["p_total"] = arrays["p"]
-    arrays["p_perturbation"] = arrays["p"]
-    arrays["ph_total"] = arrays["ph"]
-    arrays["ph_perturbation"] = arrays["ph"]
-    arrays["mu_total"] = arrays["mu"]
-    arrays["mu_perturbation"] = arrays["mu"]
+    # v0.20 S1: legacy p/ph/mu aliases removed from the shape contract; the
+    # State p/ph/mu properties re-expose the totals (all zero here).
+    arrays["p_perturbation"] = arrays["p_total"]
+    arrays["ph_perturbation"] = arrays["ph_total"]
+    arrays["mu_perturbation"] = arrays["mu_total"]
     return State(**arrays)
 
 

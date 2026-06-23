@@ -42,6 +42,8 @@ local k = ``ISNOW+1 + (k - (NSNOW+ISNOW))`` for active k.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import partial
 
 import jax
@@ -51,7 +53,7 @@ import jax.numpy as jnp
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.noahmp.types import NoahMPForcing
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # --- pristine-WRF physical constants (module_sf_noahmplsm.F:204-220) ---------
 TFRZ = 273.16        # freezing/melting point [K]

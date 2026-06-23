@@ -527,7 +527,46 @@ def _time_utc_parts(time_utc) -> tuple[float, float]:
     return julian, minute
 
 
-def _compute_coszen(lat, lon, time_utc, lead_seconds=0.0):
+def time_utc_clock_base(time_utc):
+    """Host-side (``julian``, ``utc_minute``) pair for ``time_utc`` as fp64 arrays.
+
+    This is the v0.20.0 #91 cross-date-cache-hit seam: callers OUTSIDE ``jax.jit``
+    (the operational host loop, the M9 snapshot, the daily/nested pipelines) call
+    this ONCE per run and thread the resulting pair into the jitted scan as a
+    TRACED argument (``clock_base``).  Because the values then enter the compiled
+    program as runtime inputs -- not Python-float literals baked at trace time --
+    the radiation HLO is IDENTICAL for every forecast date, so the persistent
+    compile cache HITS across dates with no config.  The numbers are byte-for-byte
+    the same as the old host-extracted ``_time_utc_parts`` floats; only their
+    *binding time* (runtime vs trace) changes, so this is numerically inert.
+
+    Returns ``(julian, utc_minute)`` as 0-D ``float64`` ``jnp`` arrays.
+    """
+
+    julian, minute = _time_utc_parts(time_utc)
+    return (
+        jnp.asarray(julian, dtype=jnp.float64),
+        jnp.asarray(minute, dtype=jnp.float64),
+    )
+
+
+def _resolve_clock_parts(time_utc, clock_base):
+    """Return the ``(julian, utc_minute)`` used by the solar-geometry helpers.
+
+    ``clock_base`` (a TRACED ``(julian, utc_minute)`` pair built outside jit by
+    :func:`time_utc_clock_base`) overrides the host extraction so the compiled
+    HLO is date-independent.  ``clock_base=None`` keeps the legacy behaviour: the
+    host-side Python floats from ``time_utc`` (used by idealized cases, tests, and
+    any caller that has not yet threaded the traced base).
+    """
+
+    if clock_base is not None:
+        julian, utc_minute = clock_base
+        return julian, utc_minute
+    return _time_utc_parts(time_utc)
+
+
+def _compute_coszen(lat, lon, time_utc, lead_seconds=0.0, *, clock_base=None):
     """Compute WRF-style cosine solar zenith from lat/lon and the forecast clock.
 
     Faithful transcription of `module_radiation_driver.F` `radconst`
@@ -549,7 +588,7 @@ def _compute_coszen(lat, lon, time_utc, lead_seconds=0.0):
     on the operational diurnal path pass the real init instant + lead.
     """
 
-    julian, utc_minute = _time_utc_parts(time_utc)
+    julian, utc_minute = _resolve_clock_parts(time_utc, clock_base)
     lat_rad = jnp.asarray(lat, dtype=jnp.float64) * DEG_TO_RAD
     lon_deg = jnp.asarray(lon, dtype=jnp.float64)
     lead_minutes = jnp.asarray(lead_seconds, dtype=jnp.float64) / 60.0
@@ -580,14 +619,14 @@ def _compute_coszen(lat, lon, time_utc, lead_seconds=0.0):
     return jnp.clip(coszen, -1.0, 1.0)
 
 
-def _compute_solar_geometry(lat, lon, time_utc, lead_seconds=0.0) -> SolarGeometry:
+def _compute_solar_geometry(lat, lon, time_utc, lead_seconds=0.0, *, clock_base=None) -> SolarGeometry:
     """Return the same WRF solar geometry as :func:`_compute_coszen`.
 
     `declination_rad` and `hour_angle_rad` are also required by WRF's
     topographic-shadow and slope-radiation paths.
     """
 
-    julian, utc_minute = _time_utc_parts(time_utc)
+    julian, utc_minute = _resolve_clock_parts(time_utc, clock_base)
     lat_rad = jnp.asarray(lat, dtype=jnp.float64) * DEG_TO_RAD
     lon_deg = jnp.asarray(lon, dtype=jnp.float64)
     lead_minutes = jnp.asarray(lead_seconds, dtype=jnp.float64) / 60.0
@@ -878,7 +917,7 @@ def _rrtmg_topography_state(
     )
 
 
-def _solar_source_scale_for_time(time_utc=None, lead_seconds=0.0):
+def _solar_source_scale_for_time(time_utc=None, lead_seconds=0.0, *, clock_base=None):
     """WRF `solvar(ib) = scon / rrsw_scon` per-band SW source multiplier.
 
     Faithful transcription of `module_radiation_driver.F` `radconst`
@@ -906,10 +945,10 @@ def _solar_source_scale_for_time(time_utc=None, lead_seconds=0.0):
     scale advances correctly across a multi-day forecast.
     """
 
-    return _solcon_for_time(time_utc, lead_seconds) / RRSW_SCON
+    return _solcon_for_time(time_utc, lead_seconds, clock_base=clock_base) / RRSW_SCON
 
 
-def _solcon_for_time(time_utc=None, lead_seconds=0.0):
+def _solcon_for_time(time_utc=None, lead_seconds=0.0, *, clock_base=None):
     """WRF ``radconst`` date-adjusted total solar constant ``solcon`` (W m^-2).
 
     Faithful transcription of ``module_radiation_driver.F`` ``radconst``
@@ -930,7 +969,7 @@ def _solcon_for_time(time_utc=None, lead_seconds=0.0):
     Pure function of the run date; no replay output.
     """
 
-    julian, utc_minute = _time_utc_parts(time_utc)
+    julian, utc_minute = _resolve_clock_parts(time_utc, clock_base)
     lead_minutes = jnp.asarray(lead_seconds, dtype=jnp.float64) / 60.0
     # WRF grid%julian is 0-based (Jan 1 00z -> 0.0); _time_utc_parts returns the
     # 1-based tm_yday, so subtract one day and add the fractional time-of-day.
@@ -996,6 +1035,7 @@ def _rrtmg_column_inputs(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     topo_shading: int = 0,
     slope_rad: int = 0,
@@ -1052,7 +1092,7 @@ def _rrtmg_column_inputs(
         lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
     else:
         lat, lon = static.xlat_deg, static.xlong_deg
-    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds)
+    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds, clock_base=clock_base)
     geometry = SolarGeometry(
         coszen=geometry.coszen.astype(state.t_skin.dtype),
         declination_rad=geometry.declination_rad,
@@ -1069,9 +1109,9 @@ def _rrtmg_column_inputs(
     # WRF `solvar = scon/rrsw_scon` per-band SW source normalization, computed
     # from the run date (function-of-JULIAN, not replay output). Closes the GPU
     # per-band source sum to WRF's date-adjusted solar constant.
-    solar_source_scale = _solar_source_scale_for_time(time_utc, lead_seconds).astype(
-        state.t_skin.dtype
-    )
+    solar_source_scale = _solar_source_scale_for_time(
+        time_utc, lead_seconds, clock_base=clock_base
+    ).astype(state.t_skin.dtype)
 
     sw_state = RRTMGSWColumnState(
         _to_columns(T),
@@ -2150,6 +2190,7 @@ def rrtmg_radiation_diagnostics(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     topo_shading: int = 0,
     slope_rad: int = 0,
@@ -2173,6 +2214,7 @@ def rrtmg_radiation_diagnostics(
         grid,
         time_utc=time_utc,
         lead_seconds=lead_seconds,
+        clock_base=clock_base,
         radiation_static=radiation_static,
         topo_shading=topo_shading,
         slope_rad=slope_rad,
@@ -2292,6 +2334,7 @@ def rrtmg_theta_tendency(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     topo_shading: int = 0,
     slope_rad: int = 0,
@@ -2322,6 +2365,7 @@ def rrtmg_theta_tendency(
         grid,
         time_utc=time_utc,
         lead_seconds=lead_seconds,
+        clock_base=clock_base,
         radiation_static=radiation_static,
         topo_shading=topo_shading,
         slope_rad=slope_rad,
@@ -2344,6 +2388,7 @@ def rrtmg_sw_theta_tendency(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     topo_shading: int = 0,
     slope_rad: int = 0,
@@ -2364,6 +2409,7 @@ def rrtmg_sw_theta_tendency(
         grid,
         time_utc=time_utc,
         lead_seconds=lead_seconds,
+        clock_base=clock_base,
         radiation_static=radiation_static,
         topo_shading=topo_shading,
         slope_rad=slope_rad,
@@ -2386,6 +2432,7 @@ def _dudhia_sw_column_inputs(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     land_state=None,
 ) -> tuple[DudhiaSWColumnState, SolarGeometry]:
@@ -2422,13 +2469,13 @@ def _dudhia_sw_column_inputs(
         lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
     else:
         lat, lon = static.xlat_deg, static.xlong_deg
-    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds)
+    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds, clock_base=clock_base)
     geometry = SolarGeometry(
         coszen=geometry.coszen.astype(state.t_skin.dtype),
         declination_rad=geometry.declination_rad,
         hour_angle_rad=geometry.hour_angle_rad.astype(state.t_skin.dtype),
     )
-    solcon = _solcon_for_time(time_utc, lead_seconds).astype(state.t_skin.dtype)
+    solcon = _solcon_for_time(time_utc, lead_seconds, clock_base=clock_base).astype(state.t_skin.dtype)
     solcon = jnp.broadcast_to(solcon, surface_shape).reshape(ncol)
 
     column = DudhiaSWColumnState(
@@ -2454,6 +2501,7 @@ def dudhia_sw_theta_tendency(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     land_state=None,
 ) -> "jnp.ndarray":
@@ -2481,6 +2529,7 @@ def dudhia_sw_theta_tendency(
         grid,
         time_utc=time_utc,
         lead_seconds=lead_seconds,
+        clock_base=clock_base,
         radiation_static=radiation_static,
         land_state=land_state,
     )
@@ -2504,6 +2553,7 @@ def _gsfc_sw_column_inputs(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     land_state=None,
 ) -> tuple[GsfcSWColumnState, SolarGeometry]:
@@ -2543,15 +2593,22 @@ def _gsfc_sw_column_inputs(
         lat, lon = _grid_lat_lon(surface_shape, grid, state.t_skin.dtype)
     else:
         lat, lon = static.xlat_deg, static.xlong_deg
-    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds)
+    geometry = _compute_solar_geometry(lat, lon, time_utc, lead_seconds, clock_base=clock_base)
     geometry = SolarGeometry(
         coszen=geometry.coszen.astype(state.t_skin.dtype),
         declination_rad=geometry.declination_rad,
         hour_angle_rad=geometry.hour_angle_rad.astype(state.t_skin.dtype),
     )
-    solcon = _solcon_for_time(time_utc, lead_seconds).astype(state.t_skin.dtype)
+    solcon = _solcon_for_time(time_utc, lead_seconds, clock_base=clock_base).astype(state.t_skin.dtype)
     solcon = jnp.broadcast_to(solcon, surface_shape).reshape(ncol)
 
+    # NOTE (#91): ``julian`` here selects the GSFC ozone climatology band
+    # ``iprof`` (a discrete int 1-5) via ``_select_iprof`` -> a STATIC array
+    # index, so the GSFC SW HLO (ra_sw_physics=2, NON-default) still varies with
+    # the season band. The default operational path is RRTMG (ra_sw=4/ra_lw=4)
+    # and is fully date-independent via clock_base; the GSFC ozone-band index is
+    # a documented residual on the non-default path (would need a traced gather
+    # over the small ozone table to remove).
     julian, _ = _time_utc_parts(time_utc)
     # Grid CENTER latitude for the ozone profile (WRF gsfc_swinit cen_lat). The
     # projection lat_0 is the canonical grid center; falls back to 0 (tropical)
@@ -2587,6 +2644,7 @@ def gsfc_sw_theta_tendency(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     land_state=None,
 ) -> "jnp.ndarray":
@@ -2616,6 +2674,7 @@ def gsfc_sw_theta_tendency(
         grid,
         time_utc=time_utc,
         lead_seconds=lead_seconds,
+        clock_base=clock_base,
         radiation_static=radiation_static,
         land_state=land_state,
     )
@@ -2633,6 +2692,7 @@ def rrtmg_lw_theta_tendency(
     *,
     time_utc=None,
     lead_seconds=0.0,
+    clock_base=None,
     radiation_static: RRTMGRadiationStatic | None = None,
     land_state=None,
 ) -> "jnp.ndarray":
@@ -2649,6 +2709,7 @@ def rrtmg_lw_theta_tendency(
         grid,
         time_utc=time_utc,
         lead_seconds=lead_seconds,
+        clock_base=clock_base,
         radiation_static=radiation_static,
         land_state=land_state,
     )

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import os
 from functools import partial
 from typing import NamedTuple
@@ -31,7 +33,7 @@ from gpuwrf.physics.rrtmg_constants import (
 from gpuwrf.physics.rrtmg_tables import RRTMGTableBundle, RRTMG_TABLES
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 _SW_GPOINT_COUNTS = (6, 12, 8, 8, 10, 10, 2, 10, 8, 6, 6, 8, 6, 12)
 _SW_GLOBAL_GPOINT_INDEX = jnp.asarray(

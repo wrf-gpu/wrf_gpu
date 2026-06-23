@@ -57,9 +57,33 @@ def small_step_finish_wrf(prep: SmallStepPrepState, acoustic_out: object) -> Sta
     ww = jnp.asarray(getattr(acoustic_out, "ww")) + prep.ww_save
     del ww
 
-    p_base = state.p_total - state.p_perturbation
-    ph_base = state.ph_total - state.ph_perturbation
-    mu_base = state.mu_total - state.mu_perturbation
+    # v0.20 fp32 INTEGRATION bit-identity fix: choose the base-field source by
+    # storage mode so fp64_default stays BYTE-IDENTICAL to the pre-S4 baseline
+    # while the perturbation-authoritative fp32 mode stays cancellation-safe.
+    #
+    # The S4 merge unconditionally switched p_base/ph_base/mu_base from the
+    # historical `state.p_total - state.p_perturbation` reconstruction to the
+    # pristine `prep.pb/phb/mub`. Those are mathematically equal but NOT
+    # floating-point identical, so the always-on switch broke fp64_default
+    # bit-identity (GPU all-7 byte-compare: PB maxΔ~1.6e-2 Pa, P/PH/U/V at fp64
+    # round-off). For the mixed_perturb_fp32 mode the pristine fp64 base
+    # (`prep.pb`) is REQUIRED -- there `p_perturbation` is stored fp32 and
+    # `state.p_total - state.p_perturbation` would be a mixed-dtype subtraction
+    # that re-introduces the very fp32 cancellation the perturbation-authoritative
+    # design avoids. Gate on the perturbation storage dtype (a compile-time
+    # static property -> zero runtime cost; fp64_default re-emits the exact prior
+    # HLO -> bit-identical; mixed keeps the pristine base).
+    if jnp.dtype(jnp.asarray(state.p_perturbation).dtype) == jnp.dtype(jnp.float32):
+        # perturbation-authoritative fp32 storage: use the pristine fp64 base.
+        p_base = prep.pb
+        ph_base = prep.phb
+        mu_base = prep.mub
+    else:
+        # fp64_default (and every fp64-stored path): historical reconstruction,
+        # byte-identical to the pre-S4 baseline.
+        p_base = state.p_total - state.p_perturbation
+        ph_base = state.ph_total - state.ph_perturbation
+        mu_base = state.mu_total - state.mu_perturbation
     return state.replace(
         u=u,
         v=v,

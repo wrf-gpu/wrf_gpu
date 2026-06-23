@@ -32,11 +32,13 @@ the ``physics.noahmp.tables`` parameter bundle (read off ``static.parameters``).
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import jax
 from jax import config
 import jax.numpy as jnp
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # ---------------------------------------------------------------------------
 # Physical constants — pristine WRF module_sf_noahmplsm.F:204-220.

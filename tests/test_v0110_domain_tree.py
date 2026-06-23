@@ -235,6 +235,9 @@ class _State:
 
 class _Namelist:
     radiation_cadence_steps = 4
+    time_utc = None          # _coerce_datetime_utc(None) -> legacy RRTMG default datetime
+    noahmp_julian = 1.0
+    noahmp_yearlen = 365.0
 
 
 def test_feedback_weights_are_available_when_runtime_gate_flips_on():
@@ -401,3 +404,113 @@ def test_fused_factory_eager_optouts(monkeypatch):
     monkeypatch.delenv("GPUWRF_NESTED_FUSE", raising=False)
     monkeypatch.setenv("GPUWRF_BITWISE", "1")
     assert _operational_fused_cascade_factory(tree)("d02") is None
+
+
+# ---------------------------------------------------------------------------
+# v0.20 host-RAM guard: bounded per-call events/outputs tail (opt-in cap)
+# ---------------------------------------------------------------------------
+from collections import Counter as _Counter
+
+from gpuwrf.runtime.domain_tree import _BoundedEventLog, _BoundedTail
+
+
+def _run_for_cap(max_event_tail):
+    """Run a deterministic 3-domain two-way tree; return the DomainTreeResult."""
+    hierarchy = DomainHierarchy.from_edges(
+        ("d01", "d02", "d03"),
+        (DomainNest("d01", "d02", 3, 30, 20), DomainNest("d02", "d03", 3, 52, 20)),
+    )
+
+    def advance(name, carry, start_step, n_steps):
+        return _Carry(carry.value + int(n_steps))
+
+    def force(edge, parent, child):
+        return child
+
+    def feedback(edge, parent, child):
+        return parent
+
+    return run_domain_tree_callbacks(
+        hierarchy,
+        {"d01": _Carry(0), "d02": _Carry(0), "d03": _Carry(0)},
+        root_steps=8,
+        advance=advance,
+        force=force,
+        feedback=feedback,
+        feedback_enabled=True,
+        output=lambda name, step, state: (name, step, state.value),
+        output_cadence_steps={"d01": 1, "d02": 3, "d03": 9},
+        block_between=False,
+        max_event_tail=max_event_tail,
+    )
+
+
+def test_event_tail_cap_default_is_bit_identical_unbounded():
+    """Default (max_event_tail=None) keeps the FULL audit lists and leaves the
+    summary dicts empty -- byte-identical legacy behaviour."""
+    full = _run_for_cap(None)
+    assert full.event_counts == {}
+    assert full.force_counts == {}
+    # Full list retained (no truncation): one tuple per advance/force/feedback/output.
+    assert len(full.events) > 0
+    # advance count over a feedback-enabled d01<-d02<-d03 8-root-step run.
+    counts = _Counter(e[0] for e in full.events)
+    assert counts["advance"] == 56  # 8 + 8*3 + 8*3*3
+
+
+def test_event_tail_cap_aggregate_matches_full_and_tail_is_bounded():
+    """Opt-in cap: event_counts/force_counts are the EXACT aggregate (identical
+    to counting the un-capped log) while only the last-N events are retained."""
+    full = _run_for_cap(None)
+    capped = _run_for_cap(5)
+
+    full_counts = dict(_Counter(e[0] for e in full.events))
+    full_force = dict(
+        _Counter(f"{e[1]}->{e[2]}" for e in full.events if e and e[0] == "force")
+    )
+    assert capped.event_counts == full_counts
+    assert capped.force_counts == full_force
+
+    # Tail bounded to exactly the cap and equal to the last-N of the full log.
+    assert len(capped.events) == 5
+    assert tuple(capped.events) == tuple(full.events[-5:])
+    assert len(capped.outputs) == 5
+    assert tuple(capped.outputs) == tuple(full.outputs[-5:])
+
+    # Numerics-free: carries / own_steps unchanged by the cap.
+    assert capped.carries == full.carries
+    assert capped.own_steps == full.own_steps
+
+
+def test_event_tail_cap_zero_is_unbounded():
+    """max_event_tail=0 is treated as unbounded (legacy)."""
+    res = _run_for_cap(0)
+    assert res.event_counts == {}
+    assert res.force_counts == {}
+
+
+def test_bounded_event_log_counts_are_order_independent():
+    """The folded Counters are an exact lifetime aggregate even though the tail
+    deque overwrites old entries (counting is associative)."""
+    log = _BoundedEventLog(2)
+    events = [
+        ("advance", "d01", 1, 1, 1),
+        ("force", "d01", "d02", 1),
+        ("advance", "d02", 1, 3, 3),
+        ("force", "d02", "d03", 3),
+        ("output", "d01", 1),
+    ]
+    for ev in events:
+        log.append(ev)
+    assert dict(log.counts) == {"advance": 2, "force": 2, "output": 1}
+    assert dict(log.force_counts) == {"d01->d02": 1, "d02->d03": 1}
+    # Tail kept only the last 2.
+    assert tuple(log) == tuple(events[-2:])
+
+
+def test_bounded_tail_keeps_last_n():
+    tail = _BoundedTail(3)
+    for i in range(10):
+        tail.append(i)
+    assert tuple(tail) == (7, 8, 9)
+    assert len(tail) == 3

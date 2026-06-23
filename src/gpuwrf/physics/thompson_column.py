@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import math
 import os
 from functools import partial
@@ -138,7 +140,7 @@ from gpuwrf.physics.thompson_tables import (
 )
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 # --- Work-precision control (ADR-007 fp32 microphysics) -----------------------

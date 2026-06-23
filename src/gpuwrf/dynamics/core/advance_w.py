@@ -26,6 +26,8 @@ import os
 import jax
 import jax.numpy as jnp
 
+from gpuwrf.contracts.precision import force_fp64_island
+
 GRAVITY_M_S2 = 9.81  # WRF ``g`` constant used in the small-step solver.
 
 
@@ -166,6 +168,12 @@ def pg_buoy_w_dry(
     perturbation pressure on mass levels ``(nz, ny, nx)``; ``mu_work`` is the
     perturbation dry mass ``(ny, nx)``.
     """
+
+    # v0.20 S2 intrinsic fp64-island lock: the vertical PGF source differences
+    # nearly-equal mass-level perturbation pressures (p(k)-p(k-1)). Widen the
+    # cancellation inputs to fp64 IN-OPERATOR so an fp32 storage downcast cannot
+    # contaminate the buoyancy source. No-op (bit-identical) on fp64_default.
+    p, mu_work, c1f, rdnw, rdn, msfty = force_fp64_island(p, mu_work, c1f, rdnw, rdn, msfty)
 
     nz = int(p.shape[0])
     msft_inv = (1.0 / msfty)[None, :, :]
@@ -353,6 +361,23 @@ def advance_w_wrf(
 
     WRF source lines are cited inline.
     """
+
+    # v0.20 S2 intrinsic fp64-island lock: the implicit w/phi solve is a chain of
+    # nearly-cancelling vertical differences -- the geopotential predictor RHS, the
+    # buoyancy term-B (rdn*(c2a*alt*t2ave)(k) - (...)(k-1)), the dphi geopotential
+    # gradient, and the Thomas tridiagonal (a/alpha/gamma). Widen every
+    # cancellation-sensitive solve input to fp64 IN-OPERATOR so a later fp32
+    # storage downcast cannot contaminate the genuine-fp64 vertical solve. No-op
+    # (bit-identical, no convert ops) on fp64_default: all inputs already fp64.
+    (
+        w, rw_tend, ww, mu_work, mut, muave, muts, t_2ave, t_2, t_1,
+        ph, ph_1, phb, ph_tend, c2a, alt, a, alpha, gamma,
+        c1h, c2h, c1f, c2f, rdnw, rdn, fnm, fnp, cf1, cf2, cf3, msfty, w_save,
+    ) = force_fp64_island(
+        w, rw_tend, ww, mu_work, mut, muave, muts, t_2ave, t_2, t_1,
+        ph, ph_1, phb, ph_tend, c2a, alt, a, alpha, gamma,
+        c1h, c2h, c1f, c2f, rdnw, rdn, fnm, fnp, cf1, cf2, cf3, msfty, w_save,
+    )
 
     nz = int(w.shape[0]) - 1  # number of mass levels; faces 0..nz.
     g = float(gravity)

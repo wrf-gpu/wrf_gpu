@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import partial
 from pathlib import Path
 
@@ -14,7 +16,7 @@ from netCDF4 import Dataset
 from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _first_time_variable(dataset: Dataset, name: str) -> jax.Array:

@@ -25,12 +25,14 @@ water per unit LAI+SAI); it is gathered by the driver from ``static.parameters``
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import NamedTuple
 
 import jax.numpy as jnp
 from jax import config
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 # Physical constants (module_sf_noahmplsm.F:204-220) — identical to energy.py.
 TFRZ = 273.16

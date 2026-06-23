@@ -395,3 +395,61 @@ def test_compare_dimensions_missing_reference(tmp_path: Path) -> None:
     result = compare_wrfout_dimensions([gen_dir / name], ref_dir)
     assert result["status"] == "FAIL"
     assert result["files"][0]["status"] == "MISSING_REFERENCE"
+
+
+# --------------------------------------------------------------------------- #
+# Nested GPU allocator selection (v0.20.0 lever G_allocator_env)               #
+# --------------------------------------------------------------------------- #
+# Pure env-var logic; no JAX device op, CPU-only.  Verifies the new default is
+# cuda_async, the platform fallback is one env var away, the operator override
+# is authoritative, and ``bfc`` maps to XLA's "default" arena.
+def test_resolve_nested_allocator_default_is_cuda_async(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from gpuwrf.cli import _resolve_nested_allocator
+
+    monkeypatch.delenv("XLA_PYTHON_CLIENT_ALLOCATOR", raising=False)
+    monkeypatch.delenv("GPUWRF_ALLOCATOR", raising=False)
+    assert _resolve_nested_allocator() == "cuda_async"
+
+
+def test_resolve_nested_allocator_platform_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from gpuwrf.cli import _resolve_nested_allocator
+
+    monkeypatch.delenv("XLA_PYTHON_CLIENT_ALLOCATOR", raising=False)
+    monkeypatch.setenv("GPUWRF_ALLOCATOR", "platform")
+    assert _resolve_nested_allocator() == "platform"
+
+
+def test_resolve_nested_allocator_bfc_maps_to_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from gpuwrf.cli import _resolve_nested_allocator
+
+    monkeypatch.delenv("XLA_PYTHON_CLIENT_ALLOCATOR", raising=False)
+    monkeypatch.setenv("GPUWRF_ALLOCATOR", "bfc")
+    assert _resolve_nested_allocator() == "default"
+
+
+def test_resolve_nested_allocator_operator_override_is_authoritative(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from gpuwrf.cli import _resolve_nested_allocator
+
+    # Explicit operator XLA var wins; resolver returns None so callers do NOT
+    # override the operator's choice.
+    monkeypatch.setenv("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
+    monkeypatch.setenv("GPUWRF_ALLOCATOR", "cuda_async")
+    assert _resolve_nested_allocator() is None
+
+
+def test_resolve_nested_allocator_case_insensitive(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from gpuwrf.cli import _resolve_nested_allocator
+
+    monkeypatch.delenv("XLA_PYTHON_CLIENT_ALLOCATOR", raising=False)
+    monkeypatch.setenv("GPUWRF_ALLOCATOR", "  Platform  ")
+    assert _resolve_nested_allocator() == "platform"

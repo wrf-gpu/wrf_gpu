@@ -35,6 +35,8 @@ Serialization discipline (mirrors ``runtime.checkpoint``):
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import is_dataclass, replace
 from pathlib import Path
 import pickle
@@ -55,7 +57,7 @@ except Exception:  # pragma: no cover
     NoahMPStatic = None  # type: ignore
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 FORMAT = "gpuwrf-operational-restart"
 # v1: full OperationalCarry (State + small-step scratch + held rthraten +

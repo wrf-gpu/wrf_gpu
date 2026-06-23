@@ -14,6 +14,8 @@ WRF ordering anchors:
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -22,6 +24,7 @@ from jax import config
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
+from gpuwrf.contracts.precision import force_fp64_island
 from gpuwrf.dynamics.acoustic_wrf import calc_coef_w_wrf_coefficients
 from gpuwrf.dynamics.core.advance_w import (
     GRAVITY_M_S2,
@@ -41,7 +44,7 @@ from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 _SHARDED_HALO_CONTEXT: tuple[Any, int] | None = None
 
@@ -511,6 +514,23 @@ def advance_uv_wrf(
     v = state.v + dts * _optional_or(v_tend, jnp.zeros_like(state.v))
     if state.p_base is None or state.ph_base is None or state.al is None or state.alt is None:
         return state.replace(u=u, v=v)
+
+    # v0.20 S2 intrinsic fp64-island lock: the horizontal PGF brackets below take
+    # differences of large nearly-equal pressure / geopotential columns (p, ph,
+    # the base-pressure gradient pb, the inverse densities al/alt, the dpn vertical
+    # average, the php 4th-term geopotential). Widen these cancellation-sensitive
+    # inputs to fp64 IN-OPERATOR so a later fp32 storage downcast cannot
+    # contaminate the gradient. No-op (bit-identical) on fp64_default: every input
+    # is already fp64, so force_fp64_island returns each array unchanged (no
+    # convert op) and this replace re-wraps identical leaves.
+    state = state.replace(
+        p=force_fp64_island(state.p),
+        ph=force_fp64_island(state.ph),
+        p_base=force_fp64_island(state.p_base),
+        ph_base=force_fp64_island(state.ph_base),
+        al=force_fp64_island(state.al),
+        alt=force_fp64_island(state.alt),
+    )
 
     p_base = _optional_or(state.p_base, jnp.zeros_like(state.p))
     ph_base = _optional_or(state.ph_base, jnp.zeros_like(state.ph))

@@ -16,15 +16,12 @@ def _analytic_state(grid: GridSpec) -> State:
         field: jnp.zeros(shape, dtype=jnp.float64)
         for field, shape in _state_field_shapes(grid).items()
     }
-    arrays["p"] = jnp.ones_like(arrays["p"]) * 1000.0
-    arrays["p_total"] = arrays["p"]
-    arrays["p_perturbation"] = arrays["p"]
-    arrays["ph_total"] = arrays["ph"]
-    arrays["ph_perturbation"] = arrays["ph"]
+    arrays["p_total"] = jnp.ones_like(arrays["p_total"]) * 1000.0
+    arrays["p_perturbation"] = arrays["p_total"]
+    arrays["ph_perturbation"] = arrays["ph_total"]
     arrays["theta"] = jnp.ones_like(arrays["theta"]) * 300.0
-    arrays["mu"] = jnp.ones_like(arrays["mu"]) * 90000.0
-    arrays["mu_total"] = arrays["mu"]
-    arrays["mu_perturbation"] = arrays["mu"]
+    arrays["mu_total"] = jnp.ones_like(arrays["mu_total"]) * 90000.0
+    arrays["mu_perturbation"] = arrays["mu_total"]
     return State(**arrays)
 
 

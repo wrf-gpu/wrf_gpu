@@ -18,6 +18,37 @@ FP32_GATED = jnp.float32
 INT32 = jnp.int32
 
 
+def force_fp64_island(*arrays):
+    """Upcast cancellation-sensitive operator inputs to fp64 IN-OPERATOR (v0.20 S2).
+
+    A genuine fp64 cancellation bracket -- the equation of state, the
+    pressure-gradient brackets, the implicit w/phi vertical solve -- must compute
+    in fp64 regardless of how its inputs are *stored*, so that a later fp32 storage
+    downcast (the S3-S8 perturbation-authoritative work) cannot silently
+    contaminate it. The upcast is applied at the operator boundary and is
+    therefore CALLER-INDEPENDENT: the island is locked from inside.
+
+    No-op for the ``fp64_default`` path: an already-fp64 array is returned
+    UNCHANGED (Python identity -- no ``convert-element-type`` is emitted), so
+    fp64_default stays bit-identical with zero extra HLO converts. For an fp32
+    caller the array is widened to fp64 for the bracket arithmetic. ``None`` passes
+    through. Returns a single value when one array is given, else a tuple.
+    """
+
+    def _up(value):
+        if value is None:
+            return None
+        dtype = getattr(value, "dtype", None)
+        if dtype is not None and jnp.dtype(dtype) == jnp.dtype(FP64):
+            return value  # identity: no convert op, fp64_default bit-identical
+        if hasattr(value, "astype"):
+            return value.astype(FP64)
+        return jnp.asarray(value, dtype=FP64)
+
+    upcast = tuple(_up(value) for value in arrays)
+    return upcast[0] if len(upcast) == 1 else upcast
+
+
 class AcousticPrecisionMode(str, Enum):
     """Static acoustic precision contract labels.
 
@@ -31,6 +62,17 @@ class AcousticPrecisionMode(str, Enum):
 
 
 DEFAULT_ACOUSTIC_PRECISION_MODE = AcousticPrecisionMode.FP64_DEFAULT.value
+MIXED_PERTURB_FP32_ALIASES = frozenset({
+    AcousticPrecisionMode.MIXED_PERTURB_FP32.value,
+    "mixed_perturb_fp32_v020",
+    "s4_mixed_perturb_fp32",
+})
+MIXED_PERTURB_FP32_STORAGE_FIELDS = frozenset({
+    "p_perturbation",
+    "ph_perturbation",
+    "mu_perturbation",
+    "w",
+})
 
 
 def normalize_acoustic_precision_mode(
@@ -42,8 +84,11 @@ def normalize_acoustic_precision_mode(
         return AcousticPrecisionMode.FP64_DEFAULT
     if isinstance(mode, AcousticPrecisionMode):
         return mode
+    label = str(mode).strip().lower()
+    if label in MIXED_PERTURB_FP32_ALIASES:
+        return AcousticPrecisionMode.MIXED_PERTURB_FP32
     try:
-        return AcousticPrecisionMode(str(mode))
+        return AcousticPrecisionMode(label)
     except ValueError as exc:
         allowed = ", ".join(item.value for item in AcousticPrecisionMode)
         raise ValueError(
@@ -57,19 +102,34 @@ def acoustic_precision_mode_label(mode: str | AcousticPrecisionMode | None) -> s
     return normalize_acoustic_precision_mode(mode).value
 
 
+def is_mixed_perturb_fp32_mode(mode: str | AcousticPrecisionMode | None) -> bool:
+    """Whether an opt-in mode stores acoustic perturbation carry in fp32."""
+
+    return normalize_acoustic_precision_mode(mode) is AcousticPrecisionMode.MIXED_PERTURB_FP32
+
+
+def mixed_perturb_storage_dtype(field: str, mode: str | AcousticPrecisionMode | None):
+    """Return the opt-in mixed-mode storage dtype for a State field."""
+
+    if is_mixed_perturb_fp32_mode(mode) and field in MIXED_PERTURB_FP32_STORAGE_FIELDS:
+        return FP32_GATED
+    return FP64
+
+
 STATE_FIELD_ORDER = (
     "u",
     "v",
     "w",
     "theta",
     "qv",
-    "p",
+    # v0.20 S1: legacy total aliases p/ph/mu removed from the State pytree (they
+    # duplicated the totals). Kept in PRECISION_MATRIX below as harmless aliases so
+    # any direct dtype_for("p") lookup still resolves, but dropped from the field
+    # ORDER so it stays equal to State.__slots__ (the memory-audit invariant).
     "p_total",
     "p_perturbation",
-    "ph",
     "ph_total",
     "ph_perturbation",
-    "mu",
     "mu_total",
     "mu_perturbation",
     "qc",
@@ -288,9 +348,16 @@ class DTypeRegistry:
         """Returns the dtype for one state field; guards against misspelled field names."""
 
         mapping = dict(self.defaults)
-        if field not in mapping:
-            raise KeyError(f"unknown state field {field!r}")
-        return mapping[field]
+        if field in mapping:
+            return mapping[field]
+        # v0.20 S1: the legacy total aliases p/ph/mu were dropped from
+        # STATE_FIELD_ORDER (no longer State leaves) but remain valid dtype
+        # queries -- BaseState/BoundaryState/Tendencies still allocate
+        # pressure/geopotential/mass buffers keyed by these names. Resolve them
+        # from the precision matrix so those allocators are unchanged.
+        if field in PRECISION_MATRIX:
+            return PRECISION_MATRIX[field][0]
+        raise KeyError(f"unknown state field {field!r}")
 
 
 DEFAULT_DTYPES = DTypeRegistry.from_precision_matrix()

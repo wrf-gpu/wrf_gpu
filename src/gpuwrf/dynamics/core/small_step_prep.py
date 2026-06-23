@@ -13,7 +13,8 @@ import jax
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
-from gpuwrf.contracts.state import State
+from gpuwrf.contracts.precision import force_fp64_island
+from gpuwrf.contracts.state import BaseState, State
 from gpuwrf.dynamics.acoustic_wrf import CPOVCV, diagnose_pressure_al_alt, moisture_coupling_factors
 
 
@@ -23,6 +24,24 @@ _SHARDED_HALO_CONTEXT: tuple[object, int] | None = None
 
 def _base_mu(state: State) -> jax.Array:
     return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)
+
+
+def _base_pressure(state: State, base_state: BaseState | None) -> jax.Array:
+    if base_state is None:
+        return jnp.asarray(state.p_total) - jnp.asarray(state.p_perturbation)
+    return jnp.asarray(base_state.pb, dtype=jnp.float64)
+
+
+def _base_geopotential(state: State, base_state: BaseState | None) -> jax.Array:
+    if base_state is None:
+        return jnp.asarray(state.ph_total) - jnp.asarray(state.ph_perturbation)
+    return jnp.asarray(base_state.phb, dtype=jnp.float64)
+
+
+def _base_dry_mass(state: State, base_state: BaseState | None) -> jax.Array:
+    if base_state is None:
+        return _base_mu(state)
+    return jnp.asarray(base_state.mub, dtype=jnp.float64)
 
 
 def _maybe_sharded_u_face_average(field: jax.Array, face: jax.Array) -> jax.Array:
@@ -104,6 +123,7 @@ class SmallStepPrepState:
     al: jax.Array
     alt: jax.Array
     pb: jax.Array
+    phb: jax.Array
     cqu: jax.Array
     cqv: jax.Array
     c1h: jax.Array
@@ -167,6 +187,7 @@ class SmallStepPrepState:
             self.al,
             self.alt,
             self.pb,
+            self.phb,
             self.cqu,
             self.cqv,
             self.c1h,
@@ -195,6 +216,7 @@ def small_step_prep_wrf(
     metrics: DycoreMetrics,
     reference_state: State | None = None,
     ww: jax.Array | None = None,
+    base_state: BaseState | None = None,
 ) -> SmallStepPrepState:
     """Prepare one WRF acoustic small-step stage.
 
@@ -223,7 +245,7 @@ def small_step_prep_wrf(
     #                   :172-175, :196-199).
     # Previously JAX set ``mut = MUB`` which fed calc_p_rho/calc_coef_w/advance_w
     # the wrong (base) total mass and broke the acoustic restoring loop.
-    mub = _base_mu(state)
+    mub = _base_dry_mass(state, base_state)
     mu_current = jnp.asarray(state.mu_perturbation)
     mu_ref = jnp.asarray(reference.mu_perturbation)
     mu_save = mu_current
@@ -249,14 +271,39 @@ def small_step_prep_wrf(
     mass_f_ref = metrics.c1f[:, None, None] * muts[None, :, :] + metrics.c2f[:, None, None]
     mass_f_cur = metrics.c1f[:, None, None] * mut[None, :, :] + metrics.c2f[:, None, None]
 
-    u_work = (mass_u_ref * reference.u - mass_u_cur * state.u) / metrics.msfuy[None, :, :]
-    v_work = (mass_v_ref * reference.v - mass_v_cur * state.v) / metrics.msfvx[None, :, :]
-    theta_work = mass_h_ref * theta_ref - mass_h_cur * theta_cur
-    w_work = (mass_f_ref * reference.w - mass_f_cur * state.w) / metrics.msfty[None, :, :]
-    ph_work = reference.ph_perturbation - state.ph_perturbation
+    # v0.20 fp32 HARDENING (S4 path-forward §"Where it still loses"): the coupled
+    # small-step WORK primes below are mass-weighted ``reference - current``
+    # differences. reference and current are nearly equal at a fresh RK stage, so
+    # this is a large-cancellation subtraction; in perturbation-authoritative fp32
+    # the cancellation loses 2-3 significant digits before the work prime ever
+    # reaches the (fp64) acoustic substep scan. Compute the primes in the fp64
+    # island -- the mass factors (c1h/c2h/mu) are already fp64; widen the field
+    # operands (u/v/w/theta/ph') to fp64 so each subtraction runs in fp64. ZERO
+    # resident-VRAM cost (transient only). For fp64_default these fields are
+    # already fp64, so force_fp64_island returns them UNCHANGED (Python identity,
+    # no convert HLO) -> fp64_default stays bit-identical.
+    ref_u, cur_u, ref_v, cur_v, ref_w, cur_w, theta_ref_i, theta_cur_i, ref_php, cur_php = (
+        force_fp64_island(
+            reference.u,
+            state.u,
+            reference.v,
+            state.v,
+            reference.w,
+            state.w,
+            theta_ref,
+            theta_cur,
+            reference.ph_perturbation,
+            state.ph_perturbation,
+        )
+    )
+    u_work = (mass_u_ref * ref_u - mass_u_cur * cur_u) / metrics.msfuy[None, :, :]
+    v_work = (mass_v_ref * ref_v - mass_v_cur * cur_v) / metrics.msfvx[None, :, :]
+    theta_work = mass_h_ref * theta_ref_i - mass_h_cur * theta_cur_i
+    w_work = (mass_f_ref * ref_w - mass_f_cur * cur_w) / metrics.msfty[None, :, :]
+    ph_work = ref_php - cur_php
 
-    p_pert, al, alt = diagnose_pressure_al_alt(state, None, metrics)
-    pb = jnp.asarray(state.p_total) - jnp.asarray(state.p_perturbation)
+    p_pert, al, alt = diagnose_pressure_al_alt(state, base_state, metrics)
+    pb = _base_pressure(state, base_state)
     c2a = CPOVCV * (pb + p_pert) / jnp.maximum(jnp.abs(alt), jnp.asarray(1.0e-12, dtype=alt.dtype))
     cqu, cqv = moisture_coupling_factors(state)
 
@@ -270,7 +317,7 @@ def small_step_prep_wrf(
     # This frozen array is threaded into the acoustic core and used UNCHANGED by
     # advance_uv's 4th PGF term for every substep (replacing the per-substep
     # re-diagnosis from the live work-geopotential).
-    phb_full = jnp.asarray(state.ph_total) - jnp.asarray(state.ph_perturbation)
+    phb_full = _base_geopotential(state, base_state)
     ph_full = jnp.asarray(state.ph_perturbation)
     php = 0.5 * (phb_full[:-1, :, :] + phb_full[1:, :, :] + ph_full[:-1, :, :] + ph_full[1:, :, :])
 
@@ -311,6 +358,7 @@ def small_step_prep_wrf(
         al=al,
         alt=alt,
         pb=pb,
+        phb=phb_full,
         cqu=cqu,
         cqv=cqv,
         c1h=metrics.c1h,

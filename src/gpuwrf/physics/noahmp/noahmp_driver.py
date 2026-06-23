@@ -29,12 +29,14 @@ MODIS values.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import NamedTuple, Optional
 
 import jax.numpy as jnp
 from jax import config
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 from gpuwrf.contracts.noahmp_state import (
     NSNOW,

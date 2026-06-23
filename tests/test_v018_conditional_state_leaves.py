@@ -31,7 +31,7 @@ def test_default_mp8_state_carries_pre_hail_base_leaf_set_only() -> None:
     grid = GridSpec.canary_3km_template()
     state = _state_for_mp(grid, 8)
 
-    assert PRE_HAIL_BASE_LEAF_COUNT == 60
+    assert PRE_HAIL_BASE_LEAF_COUNT == 57  # v0.20 S1: -3 legacy p/ph/mu aliases removed
     assert len(_state_field_shapes(grid, mp_physics=8)) == PRE_HAIL_BASE_LEAF_COUNT
     assert len(state.active_field_names()) == PRE_HAIL_BASE_LEAF_COUNT
     assert len(jax.tree_util.tree_leaves(state)) == PRE_HAIL_BASE_LEAF_COUNT

@@ -13,6 +13,8 @@ batching is deliberately out of scope for this per-scheme savepoint lane.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -24,7 +26,7 @@ import numpy as np
 from gpuwrf.contracts.physics_interfaces import PhysicsDiagnostics, PhysicsStepResult, PhysicsTendency
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 RIC = 0.25

@@ -22,6 +22,8 @@ All arrays are device-resident JAX arrays, fp64 at construction. Shapes:
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from typing import Any, NamedTuple
 
 import jax
@@ -29,7 +31,7 @@ from jax import config
 
 from .grid import GridSpec
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 NSOIL: int = 4
 NSNOW: int = 3

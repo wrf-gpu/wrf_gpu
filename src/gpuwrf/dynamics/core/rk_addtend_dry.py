@@ -33,7 +33,7 @@ import jax
 import jax.numpy as jnp
 
 from gpuwrf.contracts.grid import DycoreMetrics
-from gpuwrf.contracts.state import State, Tendencies
+from gpuwrf.contracts.state import BaseState, State, Tendencies
 from gpuwrf.dynamics.acoustic_wrf import (
     _inverse_density_from_theta_pressure,
     moisture_coupling_factors,
@@ -125,7 +125,12 @@ class DryPhysicsTendencies:
 
 
 def _absolute_diagnostics(
-    state: State, metrics: DycoreMetrics, *, t0: float = 300.0, hypsometric_opt: int = 1
+    state: State,
+    metrics: DycoreMetrics,
+    *,
+    t0: float = 300.0,
+    hypsometric_opt: int = 1,
+    base_state: BaseState | None = None,
 ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
     """Return WRF ``rk_step_prep`` diagnostics ``(ph', p', al', alt, php)``.
 
@@ -163,7 +168,11 @@ def _absolute_diagnostics(
     ph_pert = state.ph_perturbation.astype(jnp.float64)
     mu_pert = state.mu_perturbation.astype(jnp.float64)
     mu_total = state.mu_total.astype(jnp.float64)
-    mub = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+    mub = (
+        base_state.mub.astype(jnp.float64)
+        if base_state is not None
+        else (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+    )
     alt = _inverse_density_from_theta_pressure(
         state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
     )
@@ -173,7 +182,11 @@ def _absolute_diagnostics(
     c1h = metrics.c1h[:, None, None]
     c2h = metrics.c2h[:, None, None]
     rdnw = metrics.rdnw[:, None, None]
-    phb = (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+    phb = (
+        base_state.phb.astype(jnp.float64)
+        if base_state is not None
+        else (state.ph_total - state.ph_perturbation).astype(jnp.float64)
+    )
     # WRF-faithful al (calc_p_rho_phi :1029).  Denominator = TOTAL column mass
     # muts = mut + mu_2 (solve_em.F:3610); the mu' term carries the BASE-state
     # inverse density alb (reconstructed from the base hydrostatic column).
@@ -225,6 +238,7 @@ def large_step_horizontal_pgf(
     non_hydrostatic: bool = True,
     top_lid: bool = False,
     hypsometric_opt: int = 1,
+    base_state: BaseState | None = None,
 ) -> tuple[jax.Array, jax.Array]:
     """Return the WRF large-step *coupled* horizontal PGF for ``ru/rv_tend``.
 
@@ -247,9 +261,19 @@ def large_step_horizontal_pgf(
     singleton y axis, so the v-PGF is structurally zero there.
     """
 
-    ph, p_abs, al, alt, php = _absolute_diagnostics(state, metrics, hypsometric_opt=hypsometric_opt)
-    pb = (state.p_total - state.p_perturbation).astype(jnp.float64)
-    mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+    ph, p_abs, al, alt, php = _absolute_diagnostics(
+        state, metrics, hypsometric_opt=hypsometric_opt, base_state=base_state
+    )
+    pb = (
+        base_state.pb.astype(jnp.float64)
+        if base_state is not None
+        else (state.p_total - state.p_perturbation).astype(jnp.float64)
+    )
+    mut = (
+        base_state.mub.astype(jnp.float64)
+        if base_state is not None
+        else (state.mu_total - state.mu_perturbation).astype(jnp.float64)
+    )
     mu_pert = state.mu_perturbation.astype(jnp.float64)
     cqu, cqv = moisture_coupling_factors(state)
     rdx = 1.0 / float(dx_m)

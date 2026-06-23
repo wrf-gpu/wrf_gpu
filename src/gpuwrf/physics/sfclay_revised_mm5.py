@@ -13,6 +13,8 @@ them directly for the later PBL call.
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from dataclasses import dataclass
 from typing import Iterable, NamedTuple
 
@@ -50,7 +52,7 @@ from gpuwrf.physics.surface_constants import (
 )
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _psim_stable_full(zolf):

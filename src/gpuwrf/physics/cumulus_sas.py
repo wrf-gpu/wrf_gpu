@@ -11,6 +11,8 @@ savepoints.  A scheme must pass that runner before it can be promoted into
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from jax import config
 import jax.numpy as jnp
 
@@ -22,7 +24,7 @@ from gpuwrf.contracts.physics_interfaces import (
 )
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 SAS_SCHEME_INFO: dict[int, dict[str, str]] = {

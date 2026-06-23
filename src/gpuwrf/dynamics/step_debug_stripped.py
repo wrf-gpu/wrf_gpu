@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 from functools import partial
 
 import jax
@@ -16,7 +18,7 @@ from .advection import compute_advection_tendencies, halo_spec
 from .tendencies import add_scaled_tendencies
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 
 def _rk3_stage_stripped(origin: State, stage_state: State, base_tendencies: Tendencies, grid: GridSpec, dt_stage: float) -> State:

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from gpuwrf._x64_config import configure_jax_x64
+
 import json
 from pathlib import Path
 from typing import Any
@@ -16,7 +18,7 @@ from gpuwrf.dynamics.advection import advect_mass_scalar
 from gpuwrf.validation.tier2 import make_ideal_grid
 
 
-config.update("jax_enable_x64", True)
+configure_jax_x64()
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE_ID = "analytic-stencil-3d-upwind5-v1"
