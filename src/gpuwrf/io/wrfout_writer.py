@@ -332,6 +332,10 @@ MINIMAL_TRAINING_SET: tuple[str, ...] = (
     # 2D surface (12)
     "T2", "Q2", "U10", "V10", "PSFC", "RAINNC",
     "SWDOWN", "GLW", "HFX", "LH", "PBLH", "TSK",
+    # 2D cloud-validation (v0.20.2, output-only): OLR (TOA outgoing LW == cloud-top,
+    # MSG-satellite-observable), RAINC (convective precip; completes RAINNC for the
+    # 3 km cumulus parent), SWDNB (RRTMG instantaneous surface downwelling SW) (3)
+    "OLR", "RAINC", "SWDNB",
     # static geography (5)
     "HGT", "XLAT", "XLONG", "LANDMASK", "LU_INDEX",
     # wind-rotation / map-factor (3)
