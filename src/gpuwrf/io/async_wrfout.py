@@ -50,6 +50,8 @@ class _WriteJob:
     prepared: PreparedWrfout
     variable_subset: Optional[frozenset[str]] = None
     target: Optional[Path] = None
+    include_mandatory_coords: bool = False
+    compress: bool = False
 
 
 class AsyncWrfoutWriter:
@@ -95,6 +97,8 @@ class AsyncWrfoutWriter:
                             item.prepared,
                             variable_subset=item.variable_subset,
                             target_override=item.target,
+                            include_mandatory_coords=item.include_mandatory_coords,
+                            compress=item.compress,
                         )
                         with self._written_lock:
                             self._written.append(path)
@@ -120,17 +124,27 @@ class AsyncWrfoutWriter:
         *,
         variable_subset: frozenset[str] | tuple[str, ...],
         target: Path,
+        include_mandatory_coords: bool = False,
+        compress: bool = False,
     ) -> None:
-        """Enqueue a secondary-stream (WRF ``auxhist``) write of a variable subset.
+        """Enqueue a secondary-stream (WRF ``auxhist`` / training) subset write.
 
         Reuses the same host-materialized ``prepared`` payload but writes only
-        ``variable_subset`` to ``target`` -- so an auxhist frame costs no extra
+        ``variable_subset`` to ``target`` -- so a subset frame costs no extra
         device->host pull and is serialized on the same background writer thread as
-        the main stream.
+        the main stream. ``include_mandatory_coords`` / ``compress`` (both OFF by
+        default, preserving the auxhist surface-stream behaviour) enable the #122
+        self-contained, lossless-compressed training stream.
         """
 
         self._enqueue(
-            _WriteJob(prepared=prepared, variable_subset=frozenset(variable_subset), target=Path(target))
+            _WriteJob(
+                prepared=prepared,
+                variable_subset=frozenset(variable_subset),
+                target=Path(target),
+                include_mandatory_coords=include_mandatory_coords,
+                compress=compress,
+            )
         )
 
     def _enqueue(self, job: _WriteJob) -> None:

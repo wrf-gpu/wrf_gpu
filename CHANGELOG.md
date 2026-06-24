@@ -7,6 +7,74 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.20.1] — reliability + I/O readiness + honesty refresh (default path byte-identical)
+
+A **bit-identical-safe** patch release on top of v0.20.0: it hardens the nested
+GPU path against the OOM class (co-resident headroom solved; solo fragmentation
+mitigated and carried), makes the nested compile cache hit across forecast dates,
+adds an opt-in compact training-output mode, lands the paid-B200 I/O readiness
+tooling, and applies a no-fabrication honesty refresh to the public claims. The
+fp64 default path stays byte-for-byte unchanged. Full notes:
+[`RELEASE_NOTES_v0.20.1.md`](RELEASE_NOTES_v0.20.1.md).
+
+- **#114 — cross-date warm NEST compile cache (bit-identical). CONFIRMED.** The
+  nested path carried a residual baked date scalar in the pytree treedef; it is now
+  wrapped in a `_DateClockAux` holder so the **treedef is date-invariant** and a
+  new/leap-year date no longer re-traces or re-lowers the fused nest, removing the
+  **~50-min per-date nested recompile**. Bit-identical on the default nested path.
+  **GPU gate PASSED:** cold `DATE_A` GREEN (cache_delta ≈ 6497, 26 `wrfout`) → warm
+  different-date `DATE_B` GREEN (cache_delta = 2, 26 `wrfout`); CPU treedef
+  date-invariance tests 9/9 (`tests/test_operational_namelist_cache_key.py`).
+  **Honest:** warm removes the recompile but still pays a fused-module load+link
+  (~19 min × 2 ≈ 38 min) → ~30 min net saving per new date, **not "instant"**.
+  *[Code: branch `worker/opus/v0201-nest-prep`; internal cross-date acceptance gate;
+  CPU tests `tests/test_operational_namelist_cache_key.py` (9/9); cache_delta verdict
+  in the v0.20.1 release-prep acceptance matrix.]*
+- **#122 — opt-in compact training-ready nest output.** `GPUWRF_TRAINING_OUTPUT_SUBSET`
+  (opt-in) writes a **36-variable MINIMAL** training set (+ mandatory coords, 44 names
+  total) with **zlib-lossless** compression. **Default OFF → output byte-identical to
+  the legacy writer.** Validated on a real GPU nest run; CPU 10/10
+  (`tests/test_v0201_training_output_subset.py`).
+  *[Code: branch `worker/opus/v0201-nest-prep`.]*
+- **#123 — GPU OOM hardening (nested path); two modes, one solved + one mitigated.**
+  (a) **Co-resident headroom → SOLVED.** Launch-time nested **preflight** fail-closes
+  with **exit 75 before** the ~50-min compile when the GPU lock or **card-relative
+  free VRAM** gate fails (`max(GPUWRF_MIN_FREE_VRAM_GIB=24,
+  GPUWRF_MIN_FREE_VRAM_FRACTION×total)`, default fraction 0.50; multi-GPU select via
+  `CUDA_VISIBLE_DEVICES`; `--force-gpu-run` bypass; launch-time-only guard).
+  GPU-validated fail-closed + happy-path; CPU 9/9.
+  (b) **Solo cuda_async fragmentation → MITIGATED, not fixed.** RRTMG column-tile cap
+  default **2048 → 1024, bit-identical** (column-local; CPU proof `max_abs = 0.0`);
+  GPU-measured largest allocation **0.432 → 0.271 GiB (−37 %)** + a shipped RRTMG
+  transient reproducer. **Carried limitation:** solo fragmentation can still OOM the
+  full fp64 nest — **no OOM-proof / fp32-nest / 24 h large-nest claim.**
+  *[Commits `b1c44524`, `4c9588db`; `proofs/v013/rrtmg_column_tile.json`
+  (`max_abs = 0.0`), a CPU-class RRTMG transient smoke (internal),
+  reproducer `scripts/rrtmg_transient_reproducer.py`; GPU A/B largest-alloc
+  (0.432→0.271 GiB) in the v0.20.1 release-prep acceptance matrix.]*
+- **S2 — paid-B200 I/O-readiness tooling (CPU-only).** Manifest + WRF-dimension
+  validator (rejects 897 / old 181 mini-nest, accepts 898/369 @ ratio 3, streamed
+  SHA-256) + block drain/backpressure/resume/stop-pull with **S3
+  read-back-verify-before-delete**. 22/22 CPU tests green, zero GPU imports.
+  **Carried:** tested on synthetic/local dry-runs only — the **real S3 path is not
+  yet exercised**, so the next paid pod needs a pre-pod read-back/delete dry-run
+  against a disposable prefix.
+  *[Commits `56fb28b1`, `3c0933b2`; `tests/test_b200_manifest_validator.py`,
+  `tests/test_b200_drain.py`.]*
+- **Honesty refresh (no fabricated numbers; S3 pass).** Identity **TH2 step-1
+  divergence is a metric artifact, not a bug** (I1: recomputed TH2 reproduces the
+  stored field to ~10⁻³ K on both runs; its absolute error equals T2's; the
+  collapse is low-variance Pearson over the shared near-surface T2 offset, not a
+  TH2 defect). Report **nRMSE alongside r** (I2). Annotate the **d01 mean-r
+  2-short-lead coverage** caveat (~+0.018 surface-wind inflation, I3). **#119
+  closed:** "Switzerland worse than Canary" is a presentation/metric artifact — two
+  hash-verified analyses converged that Swiss surface fields are comparable/better
+  and no model/port bug or paper claim is falsified (paper-figure provenance fix is
+  paper-track, not this release).
+  *[Source: S3 release-prep honesty pass + the v0.20.1 release-prep Pearson
+  consolidation (two hash-verified analyses); numbers recomputed from the paired
+  GPU/CPU `wrfout` trees.]*
+
 ## [0.20.0] — correctness + stability + capability + reliability (modest measured nest speedup)
 
 A **bit-identical-safe** release: the fp64 default path is byte-for-byte unchanged,
@@ -48,8 +116,8 @@ branches off **0.19.1** (0.19.2 was never shipped). This release:
   **Honest scope:** fp32 tolerance is checked at the **1 h lead** (19/19 fields
   green) — real but **not stringent**; the **24–120 h skill gate is future work,
   out of v0.20 scope**. fp32 is strictly opt-in; `fp64_default` remains the default.
-  *[MEASURED VRAM/capability + 1h tolerance: `proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md` §4.2.
-  INCONCLUSIVE single-card speed:
+  *[MEASURED VRAM/capability + 1h tolerance: FP32_INTEGRATION_REPORT.md §4.2,
+  `.agent/decisions/V0200-STATE-AND-FINISH.md`. INCONCLUSIVE single-card speed:
   `proofs/v020/benchmark/T2T3_REPORT.md` R∞ ratio ≈0.91.]*
 
 - **Makes the compile cache hit across forecast dates (#91), zero config.** The

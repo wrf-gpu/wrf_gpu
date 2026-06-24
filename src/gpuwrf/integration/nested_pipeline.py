@@ -47,7 +47,11 @@ from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
 from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.gwdo_static import load_gwdo_statics
-from gpuwrf.io.wrfout_writer import prepare_wrfout_payload, write_wrfout_netcdf
+from gpuwrf.io.wrfout_writer import (
+    MINIMAL_TRAINING_SET,
+    prepare_wrfout_payload,
+    write_wrfout_netcdf,
+)
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
     DomainTree,
@@ -630,6 +634,24 @@ def _noahmp_surface_diagnostics_for_output(
     return out or None
 
 
+def _resolve_training_output_subset() -> tuple[str, ...] | None:
+    """Resolve the OPT-IN compact training-output variable subset (#122).
+
+    Returns ``MINIMAL_TRAINING_SET`` when the ``GPUWRF_TRAINING_OUTPUT_SUBSET`` env
+    flag is truthy (``1``/``true``/``yes``/``on``, case-insensitive), else ``None``.
+    ``None`` keeps the per-domain nest output at the full, uncompressed,
+    byte-identical default for every existing caller -- the feature is off unless
+    explicitly enabled for a training run.
+    """
+
+    raw = os.environ.get("GPUWRF_TRAINING_OUTPUT_SUBSET")
+    if raw is None:
+        return None
+    if raw.strip().lower() in {"1", "true", "yes", "on"}:
+        return MINIMAL_TRAINING_SET
+    return None
+
+
 class _PerDomainWrfoutWriter:
     """Output callback: write one wrfout per domain at history cadence.
 
@@ -637,6 +659,11 @@ class _PerDomainWrfoutWriter:
     ``OperationalCarry``: under Noah-MP the writer diagnostics must read the
     EVOLVED land carry (``carry.noahmp_land``) and the held surface radiation
     (``carry.noahmp_rad``), not just the post-step ``State``.
+
+    When the ``GPUWRF_TRAINING_OUTPUT_SUBSET`` env flag is set, the per-domain
+    wrfout is restricted to the compact, lossless-compressed
+    ``MINIMAL_TRAINING_SET`` (#122 training output); otherwise the full
+    uncompressed wrfout is written exactly as before (byte-identical default).
     """
 
     wants_carry = True
@@ -664,6 +691,8 @@ class _PerDomainWrfoutWriter:
         # both cases; ``self.written`` records the deterministic output path at
         # submit time so the output-present check below stays valid either way.
         self._async_writer = async_writer
+        # Opt-in compact training output (#122): None => full byte-identical output.
+        self._variable_subset = _resolve_training_output_subset()
         self.written: dict[str, list[str]] = {name: [] for name in bundles}
         # Lazy imports kept off the module top-level so importing this module stays
         # light for non-GPU callers (mirrors daily_pipeline).
@@ -730,7 +759,18 @@ class _PerDomainWrfoutWriter:
                 run_start=self.run_start,
                 diagnostics=diagnostics,
             )
-            self._async_writer.submit(prepared)
+            if self._variable_subset is None:
+                self._async_writer.submit(prepared)
+            else:
+                # Compact training stream: same host payload, subset + mandatory
+                # coords + lossless compression (self-contained, ~10 GB/day target).
+                self._async_writer.submit_subset(
+                    prepared,
+                    variable_subset=self._variable_subset,
+                    target=path,
+                    include_mandatory_coords=True,
+                    compress=True,
+                )
         else:
             write_wrfout_netcdf(
                 state,
@@ -741,6 +781,9 @@ class _PerDomainWrfoutWriter:
                 lead_hours=float(lead_hours),
                 run_start=self.run_start,
                 diagnostics=diagnostics,
+                variable_subset=self._variable_subset,
+                include_mandatory_coords=self._variable_subset is not None,
+                compress=self._variable_subset is not None,
             )
         self.written[name].append(str(path))
         summary = self._finite_summary(state)

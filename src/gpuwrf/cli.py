@@ -233,6 +233,15 @@ def build_parser() -> argparse.ArgumentParser:
         "(WRF copy_fcn area-average + sm121 feedback-zone smoother). Default off "
         "(one-way nesting, the v0.11.0/v0.12.0-validated wiring).",
     )
+    run.add_argument(
+        "--force-gpu-run",
+        action="store_true",
+        help="Nested runs only: bypass the GPU lock/free-VRAM preflight. Prefer "
+        "GPUWRF_MIN_FREE_VRAM_FRACTION for card-relative tuning or "
+        "GPUWRF_MIN_FREE_VRAM_GIB for an explicit threshold override; this force flag is for "
+        "deliberate operator overrides and is also available as "
+        "GPUWRF_FORCE_GPU_RUN=1.",
+    )
     run.set_defaults(func=_cmd_run)
 
     return parser
@@ -403,10 +412,23 @@ def _maybe_reexec_for_nested_allocator(args: argparse.Namespace) -> None:
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
-    # NESTED-OOM FIX: ensure the platform GPU allocator for live-nested runs by
+    # NESTED-OOM FIX: ensure the cuda_async GPU allocator for live-nested runs by
     # re-exec'ing with it set in the environment (see the helper docstring). MUST
     # run before any jax device op; the nested pipeline also setdefaults it.
     _maybe_reexec_for_nested_allocator(args)
+    gpu_preflight: dict[str, Any] | None = None
+    if args.max_dom is not None and int(args.max_dom) > 1:
+        try:
+            from gpuwrf.runtime.gpu_preflight import (
+                GpuPreflightError,
+                run_nested_gpu_preflight,
+            )
+
+            gpu_preflight = run_nested_gpu_preflight(
+                force=bool(getattr(args, "force_gpu_run", False))
+            )
+        except GpuPreflightError as exc:
+            return _fail(str(exc), code=75)
 
     input_dir: Path = args.input_dir
     output_dir: Path = args.output_dir
@@ -558,6 +580,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
                 shutil.rmtree(scratch_dir, ignore_errors=True)
 
         payload["scratch_dir"] = str(scratch_dir)
+        if gpu_preflight is not None:
+            payload["gpu_preflight"] = gpu_preflight
         # Persist the run payload alongside the single-domain pipeline artifact name.
         proof_dir.mkdir(parents=True, exist_ok=True)
         (proof_dir / "nested_pipeline_run.json").write_text(

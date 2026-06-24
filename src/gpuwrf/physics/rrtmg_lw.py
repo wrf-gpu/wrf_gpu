@@ -563,13 +563,19 @@ def _env_bool(name: str, default: bool) -> bool:
 # chunking removed per-spectral-stack blowups, but the public LW solve still had
 # an `ncol`-wide transient floor when invoked on a whole 1 km nest.  The
 # production entry flattens arbitrary leading dimensions, scans over fixed-size
-# column tiles, and reshapes outputs back.  The fixed 2048 default is deliberately
-# compile-key-stable for the warm all-7 cache and preserves the AC1_FIT d03 OOM
-# fix; env overrides remain authoritative for explicit cold-cache experiments. Set
+# column tiles, and reshapes outputs back.  The fixed 1024 default tightens the
+# contiguous RRTMG-LW transient that triggered the #123 cuda_async fragmentation
+# failure; env overrides remain authoritative for explicit cold-cache experiments. Set
 # `_LW_COLUMN_TILING=False` or `_LW_COLUMN_TILE_COLS=0` for the exact
 # whole-column reference path.
 _LW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_LW_COLUMN_TILING", True)
-_LW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_LW_COLUMN_TILE_COLS", 2048))
+_LW_COLUMN_TILE_COLS = max(
+    0,
+    _env_int(
+        "GPUWRF_RRTMG_LW_COLUMN_TILE_COLS",
+        _env_int("GPUWRF_RRTMG_COLUMN_TILE_COLS", 1024),
+    ),
+)
 # Opt-in v0.20 S4 capability lever: keep the LW McICA/cloud optical-depth
 # substrate in fp32.  The surrounding gas optics and band-summed flux
 # accumulation remain on their existing dtypes, so default fp64/oracle behavior
@@ -856,6 +862,12 @@ def _column_count(leading_shape: tuple[int, ...]) -> int:
     """Returns the static number of flattened columns for a leading shape."""
 
     return int(np.prod(leading_shape, dtype=np.int64)) if leading_shape else 1
+
+
+def _effective_lw_column_tile_cols(ncol: int) -> int:
+    """Return the bounded LW tile width for a flattened column batch."""
+
+    return min(max(int(_LW_COLUMN_TILE_COLS), 1), int(ncol))
 
 
 def _flatten_layer_field(arr, leading_shape: tuple[int, ...], ncol: int):
@@ -2659,7 +2671,7 @@ def _longwave_column_tiled_impl(
 
     leading_shape = state.p.shape[:-1]
     ncol = _column_count(leading_shape)
-    tile_cols = min(max(int(_LW_COLUMN_TILE_COLS), 1), ncol)
+    tile_cols = _effective_lw_column_tile_cols(ncol)
     n_tiles = (ncol + tile_cols - 1) // tile_cols
     padded_ncol = n_tiles * tile_cols
     nlayers = state.p.shape[-1]
