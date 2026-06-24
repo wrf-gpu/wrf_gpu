@@ -58,9 +58,9 @@ def _var_values(path: Path) -> dict[str, np.ndarray]:
 
 # --- the 36-name training set is well-formed --------------------------------
 
-def test_minimal_training_set_is_36_known_specs():
-    assert len(MINIMAL_TRAINING_SET) == 36
-    assert len(set(MINIMAL_TRAINING_SET)) == 36  # no duplicates
+def test_minimal_training_set_is_39_known_specs():
+    assert len(MINIMAL_TRAINING_SET) == 39
+    assert len(set(MINIMAL_TRAINING_SET)) == 39  # no duplicates
     for name in MINIMAL_TRAINING_SET:
         assert name in WRFOUT_VARIABLE_SPECS, f"{name} is not a real writer spec"
 
@@ -73,6 +73,8 @@ def test_minimal_training_set_exact_membership():
         # 2D (12)
         "T2", "Q2", "U10", "V10", "PSFC", "RAINNC",
         "SWDOWN", "GLW", "HFX", "LH", "PBLH", "TSK",
+        # 2D cloud-validation (3)
+        "OLR", "RAINC", "SWDNB",
         # static (5)
         "HGT", "XLAT", "XLONG", "LANDMASK", "LU_INDEX",
         # wind-rot / map (3)

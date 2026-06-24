@@ -7,6 +7,15 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.20.2]
+
+### Added
+- **#122 training subset — cloud-validation fields** (output-only, opt-in, default byte-identical,
+  cache-neutral): `MINIMAL_TRAINING_SET` gains **OLR** (TOA outgoing LW = cloud-top, MSG-observable),
+  **RAINC** (convective precip; completes `RAINNC` for the 3 km cumulus parent), **SWDNB** (RRTMG
+  surface downwelling SW). Subset is now 39 vars (was 36). No HLO/compile change. `tests/
+  test_v0201_training_output_subset.py` 10/10 incl. default-byte-identity.
+
 ## [0.20.1] — reliability + I/O readiness + honesty refresh (default path byte-identical)
 
 A **bit-identical-safe** patch release on top of v0.20.0: it hardens the nested
