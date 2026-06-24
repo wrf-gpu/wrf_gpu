@@ -111,13 +111,18 @@ def _env_bool(name: str, default: bool) -> bool:
 # nest still materialises LW/SW temporaries for every column if the public solver
 # sees all columns at once.  The production entry point therefore flattens the
 # arbitrary leading shape to columns and scans over fixed-size column tiles. The
-# fixed 2048 default is deliberately compile-key-stable for the warm all-7 cache
-# and preserves the AC1_FIT d03 OOM fix; env overrides remain authoritative for
-# explicit cold-cache experiments. Set either
+# fixed 1024 default matches LW's #123 fragmentation hardening cap; env overrides
+# remain authoritative for explicit cold-cache experiments. Set either
 # `_SW_COLUMN_TILING=False` or `_SW_COLUMN_TILE_COLS=0` for the whole-column
 # reference path used by proofs.
 _SW_COLUMN_TILING = _env_bool("GPUWRF_RRTMG_SW_COLUMN_TILING", True)
-_SW_COLUMN_TILE_COLS = max(0, _env_int("GPUWRF_RRTMG_SW_COLUMN_TILE_COLS", 2048))
+_SW_COLUMN_TILE_COLS = max(
+    0,
+    _env_int(
+        "GPUWRF_RRTMG_SW_COLUMN_TILE_COLS",
+        _env_int("GPUWRF_RRTMG_COLUMN_TILE_COLS", 1024),
+    ),
+)
 
 
 @jax.tree_util.register_pytree_node_class
@@ -388,6 +393,12 @@ def _column_count(leading_shape: tuple[int, ...]) -> int:
     """Returns the static number of flattened columns for a leading shape."""
 
     return int(np.prod(leading_shape, dtype=np.int64)) if leading_shape else 1
+
+
+def _effective_sw_column_tile_cols(ncol: int) -> int:
+    """Return the bounded SW tile width for a flattened column batch."""
+
+    return min(max(int(_SW_COLUMN_TILE_COLS), 1), int(ncol))
 
 
 def _flatten_layer_field(arr, leading_shape: tuple[int, ...], ncol: int):
@@ -2289,7 +2300,7 @@ def _shortwave_column_tiled_impl(
 
     leading_shape = state.p.shape[:-1]
     ncol = _column_count(leading_shape)
-    tile_cols = min(max(int(_SW_COLUMN_TILE_COLS), 1), ncol)
+    tile_cols = _effective_sw_column_tile_cols(ncol)
     n_tiles = (ncol + tile_cols - 1) // tile_cols
     padded_ncol = n_tiles * tile_cols
     nlayers = state.p.shape[-1]

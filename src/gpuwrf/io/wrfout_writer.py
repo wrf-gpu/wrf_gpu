@@ -300,6 +300,45 @@ OPERATIONAL_WRFOUT_VARIABLES: tuple[str, ...] = (
 )
 
 
+# Coordinate / dimension variables that make a history frame self-describing
+# (geometry + eta levels + staggered lat/lon). ``Times`` and ``XTIME`` are always
+# written by ``_write_times`` / ``_write_xtime`` regardless; the rest go through
+# the normal variable loop, so ``write_prepared_wrfout`` force-includes THESE in
+# any ``variable_subset`` (a name still absent from the prepared payload is simply
+# skipped -- the file never fabricates a coordinate). This guarantees a subset
+# stream (e.g. the training stream) is a self-contained, stream-valid WRF file.
+MANDATORY_WRFOUT_COORDINATES: frozenset[str] = frozenset(
+    {"Times", "XTIME", "ZNU", "ZNW", "XLAT_U", "XLAT_V", "XLONG_U", "XLONG_V"}
+)
+
+
+# Lossless NetCDF4 (zlib) compression settings for SUBSET streams only (see
+# write_prepared_wrfout). complevel 4 is a strong size/CPU tradeoff for float
+# fields; the writer thread runs off the GPU step thread so the CPU cost is hidden.
+_SUBSET_STREAM_COMPRESSION: dict[str, object] = {"zlib": True, "complevel": 4}
+
+
+# A compact, training-ready variable subset for the B200 3km->1km nest dataset
+# (issue #122). These 36 names are the model fields a downstream learner needs;
+# the writer ALWAYS additionally emits MANDATORY_WRFOUT_COORDINATES so each frame
+# is self-describing. Every name is a real entry of WRFOUT_VARIABLE_SPECS; a name
+# whose source is absent from a given run is silently skipped (never fabricated).
+# OPT-IN ONLY -- selected via the GPUWRF_TRAINING_OUTPUT_SUBSET env flag on the
+# nest output path; the default full output is unchanged and byte-identical.
+MINIMAL_TRAINING_SET: tuple[str, ...] = (
+    # 3D prognostic / diagnostic (16)
+    "U", "V", "W", "T", "P", "PB", "PH", "PHB",
+    "QVAPOR", "QCLOUD", "QICE", "QRAIN", "QSNOW", "QGRAUP", "CLDFRA", "QKE",
+    # 2D surface (12)
+    "T2", "Q2", "U10", "V10", "PSFC", "RAINNC",
+    "SWDOWN", "GLW", "HFX", "LH", "PBLH", "TSK",
+    # static geography (5)
+    "HGT", "XLAT", "XLONG", "LANDMASK", "LU_INDEX",
+    # wind-rotation / map-factor (3)
+    "SINALPHA", "COSALPHA", "MAPFAC_M",
+)
+
+
 @dataclass(frozen=True)
 class WrfoutVariableSpec:
     """WRF variable schema metadata for the v0 minimum output subset."""
@@ -967,6 +1006,9 @@ def write_wrfout_netcdf(
     run_start: datetime | date | str,
     diagnostics: Mapping[str, Any] | None = None,
     land_state: Any | None = None,
+    variable_subset: tuple[str, ...] | frozenset[str] | None = None,
+    include_mandatory_coords: bool = False,
+    compress: bool = False,
 ) -> Path:
     """Write one WRF-style ``wrfout`` NetCDF file for the M7 minimum variable set.
 
@@ -993,6 +1035,13 @@ def write_wrfout_netcdf(
     fields (``TSLB``/``SMOIS``/``SH2O``/``SNOW``/``SNOWH``/``CANWAT``/``SFROFF``/
     ``UDROFF``/``ALBEDO``/``EMISS``) are written; when ``None`` they are simply
     absent from the file (the writer never fabricates a soil profile).
+
+    ``variable_subset`` optionally restricts the emitted variables to the named
+    subset -- the compact training-output path (#122). ``include_mandatory_coords``
+    additionally force-emits the geometry/eta/lat-lon coordinates and ``compress``
+    applies lossless NetCDF4 compression; both default OFF. When ``variable_subset``
+    is ``None`` (the default) the full uncompressed output is byte-identical to
+    before.
     """
 
     prepared = prepare_wrfout_payload(
@@ -1006,7 +1055,12 @@ def write_wrfout_netcdf(
         diagnostics=diagnostics,
         land_state=land_state,
     )
-    return write_prepared_wrfout(prepared)
+    return write_prepared_wrfout(
+        prepared,
+        variable_subset=variable_subset,
+        include_mandatory_coords=include_mandatory_coords,
+        compress=compress,
+    )
 
 
 @dataclass(frozen=True)
@@ -1084,6 +1138,8 @@ def write_prepared_wrfout(
     *,
     variable_subset: tuple[str, ...] | frozenset[str] | None = None,
     target_override: Path | None = None,
+    include_mandatory_coords: bool = False,
+    compress: bool = False,
 ) -> Path:
     """Write a :class:`PreparedWrfout` to NetCDF. Pure host work; thread-safe.
 
@@ -1102,6 +1158,17 @@ def write_prepared_wrfout(
     simply skipped (the file never fabricates a field), and the canonical
     operational write order is preserved.
 
+    ``include_mandatory_coords`` (#122 training output): additionally force-emit the
+    geometry/eta/staggered-lat-lon coordinates in :data:`MANDATORY_WRFOUT_COORDINATES`
+    so a subset frame is a self-contained, stream-valid WRF file. OFF by default so
+    the existing auxhist surface stream keeps its exact prior variable set (a coord
+    still absent from the payload is skipped -- never fabricated).
+
+    ``compress`` (#122 training output): apply lossless NetCDF4 zlib compression to
+    the written variables (shrinking the ~10 GB/day training target). OFF by default
+    so every existing caller's on-disk bytes are unchanged; compression is lossless
+    so values read back are bit-identical regardless.
+
     ``target_override`` writes the same host payload to a different path without a
     second device->host pull -- used by the auxhist stream, which reuses the main
     stream's already-materialized :class:`PreparedWrfout`.
@@ -1110,6 +1177,13 @@ def write_prepared_wrfout(
     target = Path(target_override) if target_override is not None else prepared.target
     target.parent.mkdir(parents=True, exist_ok=True)
     subset = None if variable_subset is None else frozenset(variable_subset)
+    if subset is not None and include_mandatory_coords:
+        # Self-contained training frame: also emit the coordinate/dimension vars (a
+        # coord still absent from the payload is skipped below, never fabricated).
+        subset = subset | MANDATORY_WRFOUT_COORDINATES
+    # Lossless NetCDF4 zlib compression, opt-in (#122 training stream). Default OFF
+    # keeps every existing caller's on-disk bytes unchanged.
+    compression = _SUBSET_STREAM_COMPRESSION if compress else None
     dimensions = prepared.dimensions
     with Dataset(target, "w", format="NETCDF4") as dataset:
         _create_dimensions(dataset, dimensions)
@@ -1130,7 +1204,7 @@ def write_prepared_wrfout(
             if subset is not None and name not in subset:
                 continue
             spec = WRFOUT_VARIABLE_SPECS[name]
-            _write_float_variable(dataset, spec, prepared.fields[name], dimensions)
+            _write_float_variable(dataset, spec, prepared.fields[name], dimensions, compression)
     return target
 
 
@@ -1194,10 +1268,16 @@ def _write_float_variable(
     spec: WrfoutVariableSpec,
     data: np.ndarray,
     dimensions: Mapping[str, int | None],
+    compression: Mapping[str, object] | None = None,
 ) -> None:
     expected_shape = _shape_for_dimensions(spec.dimensions, dimensions)
     array = _coerce_array(spec.name, data, expected_shape, dtype=_numpy_dtype_for_spec(spec))
-    variable = dataset.createVariable(spec.name, spec.dtype, spec.dimensions)
+    # ``compression`` (zlib/complevel) is passed ONLY for subset streams; the
+    # default full-output path leaves it None so the uncompressed bytes are
+    # unchanged for existing callers. Compression is lossless, so values read back
+    # are bit-identical regardless.
+    kwargs = dict(compression) if compression else {}
+    variable = dataset.createVariable(spec.name, spec.dtype, spec.dimensions, **kwargs)
     _set_variable_attrs(variable, spec)
     variable[0, ...] = array
 

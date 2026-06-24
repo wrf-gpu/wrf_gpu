@@ -25,6 +25,7 @@ LOCK_FILE="/tmp/wrf_gpu2_gpu.lock"
 HOLDER_FILE="${LOCK_FILE}.holder"
 TIMEOUT=7200
 LABEL="${USER:-worker}:$$"
+TOKEN="gpuwrf-lock-$$-${RANDOM:-0}-$(date -u +%s%N)"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -59,8 +60,18 @@ if ! flock -w "$TIMEOUT" 9; then
   exit 124
 fi
 
-printf 'holder=%s pid=%s since=%s cmd=%s\n' "$LABEL" "$$" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" > "$HOLDER_FILE" 2>/dev/null || true
+printf 'holder=%s pid=%s since=%s token=%s cmd=%s\n' "$LABEL" "$$" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TOKEN" "$*" > "$HOLDER_FILE" 2>/dev/null || true
 echo "[with_gpu_lock] $LABEL ACQUIRED GPU lock -> running: $*" >&2
+if command -v nvidia-smi >/dev/null 2>&1; then
+  echo "[with_gpu_lock] $LABEL GPU memory at acquire: $(nvidia-smi --query-gpu=index,name,memory.free,memory.total,memory.used --format=csv,noheader,nounits 2>/dev/null | head -1)" >&2 || true
+fi
+
+export GPUWRF_GPU_LOCK_HELD=1
+export GPUWRF_GPU_LOCK_FD=9
+export GPUWRF_GPU_LOCK_FILE="$LOCK_FILE"
+export GPUWRF_GPU_LOCK_HOLDER_FILE="$HOLDER_FILE"
+export GPUWRF_GPU_LOCK_LABEL="$LABEL"
+export GPUWRF_GPU_LOCK_TOKEN="$TOKEN"
 
 set +e
 "$@"

@@ -14,8 +14,8 @@
     "forced_tile4_pad": "column tiling enabled with tile_cols=4; two scan tiles and two padded columns"
   },
   "defaults": {
-    "sw_column_tile_cols": 16384,
-    "lw_column_tile_cols": 16384
+    "sw_column_tile_cols": 1024,
+    "lw_column_tile_cols": 1024
   },
   "sw": {
     "rows": [
@@ -24,7 +24,7 @@
         "candidate": "default",
         "with_clear_sky": false,
         "topography": false,
-        "requested_tile_cols": 16384,
+        "requested_tile_cols": 1024,
         "effective_tile_cols": 6,
         "n_tiles": 1,
         "pad_cols": 0,
@@ -380,7 +380,7 @@
         "candidate": "default",
         "with_clear_sky": true,
         "topography": false,
-        "requested_tile_cols": 16384,
+        "requested_tile_cols": 1024,
         "effective_tile_cols": 6,
         "n_tiles": 1,
         "pad_cols": 0,
@@ -986,7 +986,7 @@
         "case": "lw",
         "candidate": "default",
         "with_clear_sky": false,
-        "requested_tile_cols": 16384,
+        "requested_tile_cols": 1024,
         "effective_tile_cols": 6,
         "n_tiles": 1,
         "pad_cols": 0,
@@ -1200,7 +1200,7 @@
         "case": "lw",
         "candidate": "default",
         "with_clear_sky": true,
-        "requested_tile_cols": 16384,
+        "requested_tile_cols": 1024,
         "effective_tile_cols": 6,
         "n_tiles": 1,
         "pad_cols": 0,

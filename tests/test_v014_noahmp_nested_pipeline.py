@@ -212,6 +212,7 @@ def _make_nested_writer(*, async_writer):
     writer.writer_diagnostics = {}
     writer.writer_static_latlon_metadata = {}
     writer._async_writer = async_writer
+    writer._variable_subset = None  # full byte-identical default output
     writer.written = {"d01": []}
     return writer
 

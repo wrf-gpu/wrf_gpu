@@ -17,41 +17,53 @@ failed launch attempt on 2026-06-08.
 From the repository root:
 
 ```bash
-scripts/run_gpu_lowprio.sh --cores 0-23 -- \
-  python -m gpuwrf.cli run \
-    --input-dir my_case \
-    --output-dir runs/my_forecast \
-    --domain d02 \
-    --hours 24 \
-    --scratch-dir /fast/nvme/gpuwrf_scratch
+scripts/with_gpu_lock.sh --label my_forecast -- \
+  scripts/run_gpu_lowprio.sh --cores 0-23 -- \
+    python -m gpuwrf.cli run \
+      --input-dir my_case \
+      --output-dir runs/my_forecast \
+      --domain d02 \
+      --hours 24 \
+      --scratch-dir /fast/nvme/gpuwrf_scratch
 ```
 
 With resource logging:
 
 ```bash
-scripts/run_gpu_lowprio.sh --cores 0-23 \
-  --resource-log-dir <DATA_ROOT>/wrf_gpu_validation/my_run/resources \
-  --resource-label my_run \
-  --resource-interval 5 \
-  -- \
-  python -m gpuwrf.cli run \
-    --input-dir my_case \
-    --output-dir runs/my_forecast \
-    --domain d02 \
-    --hours 24 \
-    --scratch-dir /fast/nvme/gpuwrf_scratch
+scripts/with_gpu_lock.sh --label my_run -- \
+  scripts/run_gpu_lowprio.sh --cores 0-23 \
+    --resource-log-dir <DATA_ROOT>/wrf_gpu_validation/my_run/resources \
+    --resource-label my_run \
+    --resource-interval 5 \
+    -- \
+    python -m gpuwrf.cli run \
+      --input-dir my_case \
+      --output-dir runs/my_forecast \
+      --domain d02 \
+      --hours 24 \
+      --scratch-dir /fast/nvme/gpuwrf_scratch
 ```
 
-The wrapper:
+The wrapper stack:
 
-- holds `/tmp/wrf_gpu_validation_gpu.lock` with `flock` so only one GPU
-  validation owns the card;
+- holds `/tmp/wrf_gpu2_gpu.lock` with `flock` so only one GPU validation owns
+  the card, and exports lock metadata consumed by the nested forecast preflight;
 - sets `PYTHONPATH=src`, `JAX_ENABLE_X64=true`, and
-  `XLA_PYTHON_CLIENT_PREALLOCATE=false`;
+  `XLA_PYTHON_CLIENT_PREALLOCATE=false` through `run_gpu_lowprio.sh`;
 - runs at low CPU/IO priority and pins CPU helper work to the selected cores;
 - optionally writes `*_gpu_usage.csv`, `*_process_usage.csv`, and
   `*_system_memory.csv` via `scripts/monitor_resource_usage.sh`;
-- exits `75` if another GPU run already owns the lock.
+- blocks behind the current holder and exits `124` only on GPU-lock timeout.
+
+For live-nested runs (`--max-dom > 1`), `gpuwrf run` also checks the advisory
+lock metadata and selected-GPU free VRAM before JAX compile. By default the
+free-memory threshold is card-relative:
+`max(24 GiB, GPUWRF_MIN_FREE_VRAM_FRACTION * total VRAM)`, with
+`GPUWRF_MIN_FREE_VRAM_FRACTION=0.50`. Use `GPUWRF_MIN_FREE_VRAM_GIB=<GiB>` only
+for an explicit threshold override. A deliberate override is `--force-gpu-run`
+or `GPUWRF_FORCE_GPU_RUN=1`; do not make that a runbook default. This is a
+launch-time guard; it does not re-check if another process grows GPU memory
+during the forecast.
 
 The first JAX/XLA invocation can spend several minutes compiling with little or
 no log output. Check GPU memory/process state before assuming it is hung.

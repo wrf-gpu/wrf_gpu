@@ -124,7 +124,8 @@ live**, and recurses — so you only need `wrfinput_d0N` for each domain and
 `wrfbdy_d02`**):
 
 ```bash
-python -m gpuwrf.cli run \
+scripts/with_gpu_lock.sh --label my-nested-forecast -- \
+  python -m gpuwrf.cli run \
     --input-dir   my_case \
     --output-dir  runs/my_nested_forecast \
     --max-dom     3 \
@@ -138,6 +139,15 @@ initial state (carried by the native init and the WRF-restart path); see KI-1 in
 [KNOWN_ISSUES.md](KNOWN_ISSUES.md). The standalone live-nested path is proven on
 a 2 h `PIPELINE_GREEN` smoke (`proofs/v0120/standalone_nest_smoke.json`); the
 standalone nested 24 h 1 km skill proof is in flight.
+
+Nested GPU runs fail closed unless they are launched through
+`scripts/with_gpu_lock.sh` and the selected GPU has at least
+the resolved free-VRAM threshold before compile starts. The default threshold is
+card-relative: `max(24 GiB, GPUWRF_MIN_FREE_VRAM_FRACTION * total VRAM)`, with
+`GPUWRF_MIN_FREE_VRAM_FRACTION=0.50`; `GPUWRF_MIN_FREE_VRAM_GIB=<GiB>` is an
+explicit threshold override. This avoids co-resident JAX/GPU jobs shrinking the
+RRTMG radiation-transient headroom at launch time. Use `--force-gpu-run` or
+`GPUWRF_FORCE_GPU_RUN=1` only for an explicit operator override.
 
 ## 4. Read the output
 

@@ -116,6 +116,53 @@ triage](#scheme-triage--every-wrf-v4-scheme-classified).
 >
 > *[MEASURED: FP32_INTEGRATION_REPORT.md §4.1/§4.2 — 963/963 byte-identical fp64; 19/19 fields 1h tolerance-green. V0200-STATE — −14.4% VRAM / 1.16× cells. INCONCLUSIVE on single-card speed: T2T3 R∞ ratio ≈0.91.]*
 
+**v0.20.1 is a reliability + I/O-readiness patch.** It does **not** add any
+single-card speedup — it makes the existing nested path **easier and safer to
+operate**, and the **fp64 default stays byte-identical to v0.20.0**. Four things
+change, all honest about their limits:
+
+- **The warm compile cache now also hits across forecast dates for the *nested*
+  path.** v0.20.0 fixed this for single domains; the nested path still baked the
+  date into the program and paid the full **~50 min cold compile** on every new
+  date. Now the date is a runtime argument, so a new (or leap-year) date is a warm
+  cache hit and the fused nest is **not re-compiled**. *Warm is faster, not
+  "instant"*: you still pay a one-time **module load + link** of the cached
+  executable, so the net saving is **~30 min per new date**, not zero. The change
+  is **bit-identical** on the default nested path.
+- **An opt-in compact training-output mode.** Set
+  `GPUWRF_TRAINING_OUTPUT_SUBSET` to write a focused **36-variable training set**
+  (plus mandatory coordinates) with lossless compression instead of the full
+  variable list — much smaller `wrfout` files for building training corpora. The
+  kept variables are **bit-for-bit identical**, just fewer of them. **Off by
+  default**, and the default output stays byte-identical to v0.20.0.
+- **GPU out-of-memory hardening for the nested path (mitigation, not a blanket
+  fix).** For `--max-dom > 1` the CLI now runs a fast **CPU-side preflight** that
+  checks free VRAM headroom *before* the ~50 min nested compile and **fails closed
+  (exit 75)** instead of OOMing tens of minutes in. The RRTMG radiation
+  column-tile cap is also lowered (2048 → 1024), which cuts the radiation
+  transient's largest single allocation **0.432 → 0.271 GiB (−37 %, GPU-measured)**
+  while staying **bit-identical** (`max_abs = 0.0`). *Read this honestly:* this is
+  a **mitigation, not an OOM-proof guarantee** — solo `cuda_async` fragmentation
+  can still OOM the full fp64 nest, and a reproducer
+  (`scripts/rrtmg_transient_reproducer.py`) ships so the failure can be tracked.
+  No fp32-nest and no 24 h large-nest claim.
+- **Paid-B200 I/O-readiness tooling (CPU-only).** A manifest/WRF-dimension
+  validator and a block drain/resume/stop-pull tool (with read-back-verify-before-
+  delete) so a large paid nest run can stream and verify training output safely.
+  *Tested on synthetic/local dry-runs only* — the real S3 read-back/delete path
+  has not yet been exercised end-to-end, so the first paid run must do a disposable
+  dry-run first.
+
+v0.20.1 also applies an **honesty refresh** to the public claims (perf-headline
+framing, memory accounting, and an identity-metric clarification — the inner-nest
+`TH2` "low correlation" is a **low-variance Pearson-metric artifact, not a bug**;
+identity reporting now also carries a variance-robust `nRMSE` next to Pearson `r`)
+with **no fabricated numbers**. The open 24–120 h forecast-skill gate remains
+future work and is **not** claimed closed. See
+[RELEASE_NOTES_v0.20.1.md](RELEASE_NOTES_v0.20.1.md).
+
+*[MEASURED: RELEASE_NOTES_v0.20.1.md — #114 cold→warm cross-date cache_delta = 2 (nest not re-traced); #123 RRTMG cap 0.432 → 0.271 GiB (−37 %), bit-identical max_abs = 0.0; preflight fail-closed exit 75. CPU tests: cache-key 9/9, training-subset 10/10, OOM-hardening 9/9, B200 I/O 22/22.]*
+
 ---
 
 ## WRF-v4 identity — proven cell-for-cell against CPU-WRF v4
@@ -506,6 +553,7 @@ Newest first. Full per-release evidence is under [`proofs/`](proofs/) and the
 
 | Version | Headline | Key proof / link |
 |---|---|---|
+| **v0.20.1** | **Reliability + I/O-readiness patch; fp64 default byte-identical to v0.20.0.** No single-card speedup. The warm compile cache now **hits across forecast dates for the nested path too** (#114 — a new/leap date is a warm hit, the fused nest is not recompiled; saves the ~50 min cold compile, net ~30 min/date since you still pay a one-time module load/link — **warm, not "instant"**; bit-identical default path). Adds an **opt-in compact training-output mode** (`GPUWRF_TRAINING_OUTPUT_SUBSET`, 36-var subset + coordinates, lossless; **off by default**, default output byte-identical). **GPU OOM-hardening for the nested path (mitigation, not a blanket fix):** a `--max-dom > 1` CPU-side **VRAM-headroom preflight** that fails closed (exit 75) before the ~50 min compile, plus an RRTMG column-tile cap 2048→1024 that cuts the radiation transient's largest alloc **0.432 → 0.271 GiB (−37 %, GPU-measured), bit-identical (`max_abs = 0.0`)** — but solo `cuda_async` fragmentation **can still OOM the full fp64 nest** (reproducer shipped; **no OOM-proof / fp32-nest / 24 h large-nest claim**). Adds **CPU-only paid-B200 I/O tooling** (manifest/dimension validation + block drain/resume/stop-pull with read-back-verify-before-delete; tested on synthetic/local dry-runs only). **Honesty refresh** (perf framing, memory accounting, identity metric — inner-nest `TH2` low-`r` is a **low-variance Pearson artifact, not a bug**; now also reports variance-robust `nRMSE`), no fabricated numbers. Open 24–120 h skill gate carried, not closed. | [`RELEASE_NOTES_v0.20.1.md`](RELEASE_NOTES_v0.20.1.md), [`proofs/v013/rrtmg_column_tile.json`](proofs/v013/rrtmg_column_tile.json) |
 | **v0.20.0** | **Correctness + stability + capability + reliability; modest measured nest speedup.** Default fused all-7 9-domain nest is **~1.07× faster than v0.19 / ~1.53× faster than 12-rank CPU-WRF (~668 vs 713 vs 1020 s/forecast-hour), byte-identical to v0.19 (1926/1926, maxΔ=0)** — gain from a numerics-free `cuda_async` allocator (now default). Adds **opt-in fp32 mixed-precision** (`mixed_perturb_fp32_v020`) for **−14.4% VRAM / ~1.16× cell capability** (fp64 default byte-identical, 963/963 maxΔ=0; fp32 is **not** a single-card speedup, tolerance checked at 1 h only). **Compile cache now hits across forecast dates** (#91 — 0 new cache entries on new/leap dates, default path 64/64 byte-identical), zero config. GPU-vs-CPU all-7 24 h identity: **core EXCELLENT — T corr 0.9999 (RMSE 0.69 K), PH/PSFC 0.9997, U 0.991, V 0.968, QVAPOR 0.964; surface diagnostics looser (most parameterization-sensitive) — T2 0.944 (RMSE 0.78 K), TH2 0.878, U10 0.855, V10 0.852 mean corr; on the inner 1 km Alpine nests d06/d07 the 10 m winds spread to corr ~0.48–0.65 / RMSE ~4–5 m/s** — the expected most-sensitive field on complex terrain, **byte-identical to validated v0.19 (not a v0.20 regression)**, divergence grows with lead time; logged as v0.20.1 characterization item (#119). | `proofs/v020/lowhang/COMBINED_SPEEDUP.md`, `proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md`, `proofs/v020/julday_cache/JULDAY_CACHE_FIX_REPORT.md`, `proofs/v020/benchmark/T2T3_REPORT.md`, `proofs/v020/validation/identity/`, `RELEASE_NOTES_v0.20.0.md` |
 | **v0.19.0** | **Fast all-7 nested fusion + terrain-blend fidelity.** Default fused nesting plus the restored fast `_advance_chunk` loop body makes the all-7-island `max_dom=9` case **1.43x faster than the 12-rank CPU-WRF baseline** (713 vs 1020 s/forecast-hour; best segment 683). The one-time fused compile remains large (~41 min first segment, cached). The live-nest terrain/base-state fix closes the HGT/MUB/PB/PHB red-field class; all 9 domains write finite `wrfout` and the established grid comparator reports 102 fields/domain, 0 tolerance failures. | [`proofs/v019/release_prep/gate_summary.json`](proofs/v019/release_prep/gate_summary.json), [`proofs/v019/release_prep/grid_compare_summary.json`](proofs/v019/release_prep/grid_compare_summary.json), [`RELEASE_NOTES_v0.19.0.md`](RELEASE_NOTES_v0.19.0.md) |
 | **v0.18.3** | **max_dom=9 compile fix + nested `history_interval` cadence fix, bit-identical.** The all-7-island `--max-dom 9` nest compiled forever (`jit__advance_chunk` constant-folding static `s64[nz]` Thompson scan-index arrays across 9 domain shapes) → now all 9 domain-shape compiles complete **bounded** (≤409 s cold / ≤22 s warm), integrate (~85 % util), and write output. Also fixes the nested pipeline ignoring the namelist `history_interval` (was hardcoded hourly). Default numerics bit-identical (26/26 `wrfout` exact, `max_abs_diff 0.0`); hourly gates unchanged. | [`proofs/v018/maxdom9_fix/report.md`](proofs/v018/maxdom9_fix/report.md), [`RELEASE_NOTES_v0.18.3.md`](RELEASE_NOTES_v0.18.3.md) |
@@ -759,17 +807,18 @@ tier.
 | See the full WRF v4 gap inventory | [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md) |
 | See prior release proofs | [`proofs/`](proofs/) (`v019`, `v018`, `v017`, `v016`, `v015`, `v014`, `v013`, `v0120`, `v0110`, `v090`, `v0100`) |
 
-## Known issues (v0.20.0)
+## Known issues (v0.20.1)
 
 Full detail with symptom / ruled-out / workaround / follow-up in
-**[KNOWN_ISSUES.md](KNOWN_ISSUES.md)**. The v0.20 release carries only the
+**[KNOWN_ISSUES.md](KNOWN_ISSUES.md)**. The release carries only the
 items below; everything resolved in prior releases is dropped.
 
 | ID | Summary | Severity |
 |---|---|---|
-| **fp32 1 h-only fidelity** | The opt-in fp32 mode (`mixed_perturb_fp32_v020`) is tolerance-checked **only at the 1 h lead** (19/19 fields green) — real but **not stringent**; the **24–120 h skill gate is future work, out of v0.20 scope**. fp64 stays the byte-identical default. | Documented scope |
-| **High resident host RAM (~36 GB)** | A v0.20 run holds **~36 GB of host RAM** resident even at only ~9.6 GB VRAM, because the Noah-MP/physics constant tables are currently baked into the compiled executable (static aux) rather than passed as runtime arguments. This is **precision-independent** and **does not affect correctness, single-run stability, or results** — but it limits running two instances on a 64 GB box and reduces large-grid / pod-density headroom. Root-caused; the fix (tables as runtime args, est. **−5 to −15 GB** and also removes a residual per-date recompile) is **scoped to v0.20.1**. | Root-caused, fix scoped v0.20.1 |
-| **fp32 mixed-precision OOMs on the deep all-7 nest** | The opt-in fp32 mode is **single-domain / capability-only**; on the full all-7 9-domain nest it can OOM on the recurring RRTMG radiation transient (allocator fragmentation) and is **~5× slower than fp64 there anyway**. The nest default is **fp64 + `cuda_async`**, which is bounded (~12.6 GB peak) and **the OOM-free path**. fp32-on-nest is **out of v0.20 scope** → v0.20.1. | Documented scope; fp64 nest unaffected |
+| **#123 solo-fragmentation OOM** | The **co-resident-headroom** OOM mode is **SOLVED** by the v0.20.1 launch-time VRAM preflight (GPU-validated fail-closed exit 75 + healthy-card happy path). The **solo `cuda_async` fragmentation** mode is **MITIGATED, not fixed**: the bit-identical 1024 RRTMG column-tile cap cuts the transient's largest allocation **0.432 → 0.271 GiB (−37 %, GPU-measured)**, but solo fragmentation **can still OOM the full fp64 nest** (a reproducer is shipped). **No OOM-proof / fp32-nest / 24 h large-nest claim.** | Mitigated + carried limitation |
+| **fp32 1 h-only fidelity** | The opt-in fp32 mode (`mixed_perturb_fp32_v020`) is tolerance-checked **only at the 1 h lead** (19/19 fields green) — real but **not stringent**; the **24–120 h skill gate is future work, out of scope**. fp64 stays the byte-identical default. | Documented scope |
+| **High resident host RAM (~36 GB)** | A run holds **~36 GB of host RAM** resident even at only ~9.6 GB VRAM, because the Noah-MP/physics constant tables are currently baked into the compiled executable (static aux) rather than passed as runtime arguments. This is **precision-independent** and **does not affect correctness, single-run stability, or results** — but it limits running two instances on a 64 GB box and reduces large-grid / pod-density headroom. Root-caused; the tables-as-runtime-args fix is **deferred (not in v0.20.1)**. | Root-caused, deferred |
+| **fp32 mixed-precision OOMs on the deep all-7 nest** | The opt-in fp32 mode is **single-domain / capability-only**; on the full all-7 9-domain nest it can OOM on the recurring RRTMG radiation transient (allocator fragmentation) and is **~5× slower than fp64 there anyway**. The nest default is **fp64 + `cuda_async`**, which is bounded (~12.6 GB peak); the v0.20.1 preflight + 1024 RRTMG cap **reduce but do not eliminate** the solo-fragmentation OOM. fp32-on-nest remains **out of scope**. | Documented scope; fp64 nest unaffected |
 | **RAINNC residual** | Accumulated `RAINNC` is **5.22 mm RMSE vs the 1.0 mm bound** (class-c) on the Switzerland 72 h cell-identity proof — a bounded, derived accumulated-precip diagnostic with **no expected forecast-skill impact**; **no tolerance widening**, drawn red. Diffuse Thompson staging + coupled accumulated-precip propagation; no single bounded missing process. | Bounded acceptance |
 | **CLM4/CTSM boundary** | CLM4 (`sf_surface_physics=5`) / CTSM (`6`) are a **documented architecture boundary** — recognized, **fail-closed** with a named reason, **no oracle claimed**. A faithful port needs the CLM/CTSM column model; a v1.0 boundary. | Scope boundary |
 | **K2 multi-GPU experimental** | The K2 domain-decomposition path is **EXPERIMENTAL, default-OFF, lab-only**: periodic-BC bit-exact on interior + shard seams, **physical specified-BC not yet faithful** (boundary ring excluded from the pass gate, not hidden). Default single-GPU graph bit-identical (no collectives). Not for production. | Experimental |

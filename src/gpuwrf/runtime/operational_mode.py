@@ -278,6 +278,46 @@ class _StaticHolder:
         return isinstance(other, _StaticHolder) and self.value is other.value
 
 
+class _DateClockAux:
+    """Non-keying carrier for the date-derived clock scalars (#114 fix).
+
+    ``time_utc`` / ``noahmp_julian`` / ``noahmp_yearlen`` are pure functions of the
+    forecast init DATE. #91 already threads them into the compiled program via the
+    traced ``clock_base`` (see ``build_clock_base`` + ``_resolve_clock_parts``), so on
+    the production nest path they are DEAD inside the compiled function -- their values
+    are never read. Keeping them as discriminating entries of the namelist STATIC AUX
+    therefore only changed the ``@jax.jit`` cache key per forecast date, forcing a full
+    re-trace + re-lower of the fused 9-nest megakernel and a fresh persistent-cache key
+    every date (the #114 per-date recompile).
+
+    This holder rides in the aux tuple in their place. Its ``__hash__`` is CONSTANT and
+    its ``__eq__`` is date-blind (any two ``_DateClockAux`` compare equal), so two
+    namelists differing ONLY in date produce an IDENTICAL treedef -> the in-memory jit
+    cache HITS and the persistent compile-cache key is date-invariant. The VALUES are
+    still carried on the instance and restored in ``tree_unflatten``, so the legacy
+    ``clock_base=None`` path (idealized cases / old tests) still reads the exact same
+    ``time_utc`` / ``noahmp_julian`` / ``noahmp_yearlen`` -- the change is value-
+    preserving and bit-identical on every path.
+
+    Safety of the constant hash: this holder appears EXACTLY ONCE per namelist treedef,
+    so there is no within-treedef collision; every OTHER aux entry (grid, options, dt_s,
+    table holders, ...) still discriminates compiles correctly. The only merge is the
+    intended one (date axis)."""
+
+    __slots__ = ("time_utc", "noahmp_julian", "noahmp_yearlen")
+
+    def __init__(self, time_utc, noahmp_julian, noahmp_yearlen):
+        self.time_utc = time_utc
+        self.noahmp_julian = noahmp_julian
+        self.noahmp_yearlen = noahmp_yearlen
+
+    def __hash__(self):
+        return 0
+
+    def __eq__(self, other):
+        return isinstance(other, _DateClockAux)
+
+
 _PHYSICS_NON_DRY_INCREMENT_FIELDS: tuple[str, ...] = (
     "u",
     "v",
@@ -756,14 +796,24 @@ class OperationalNamelist:
             int(self.moist_adv_opt),
             bool(self.force_fp64),
             bool(self.use_deformation_momentum_diffusion),
-            self.time_utc,
+            # #114: the three date-derived scalars (time_utc, noahmp_julian,
+            # noahmp_yearlen) ride in a date-BLIND holder instead of as discriminating
+            # aux entries. #91 threads them via the traced clock_base, so they are dead
+            # inside the compiled fn -> keying on them only forced a per-date recompile
+            # of the fused nest. The holder hashes/compares date-blind so the namelist
+            # treedef is date-invariant (in-memory jit cache hit + persistent-cache-key
+            # stable across dates); tree_unflatten restores the values for the legacy
+            # clock_base=None path. Value-preserving and bit-identical on every path.
+            _DateClockAux(
+                self.time_utc,
+                float(self.noahmp_julian),
+                float(self.noahmp_yearlen),
+            ),
             int(self.topo_shading),
             int(self.slope_rad),
             float(self.topo_shadow_length_m),
             bool(self.use_noahmp),
             int(self.noahmp_nroot),
-            float(self.noahmp_julian),
-            float(self.noahmp_yearlen),
             _StaticHolder(self.noahmp_static),
             _StaticHolder(self.noahmp_energy_params),
             _StaticHolder(self.noahmp_rad_params),
@@ -827,14 +877,12 @@ class OperationalNamelist:
             moist_adv_opt,
             force_fp64,
             use_deformation_momentum_diffusion,
-            time_utc,
+            date_clock,
             topo_shading,
             slope_rad,
             topo_shadow_length_m,
             use_noahmp,
             noahmp_nroot,
-            noahmp_julian,
-            noahmp_yearlen,
             noahmp_static_holder,
             noahmp_energy_holder,
             noahmp_rad_holder,
@@ -863,6 +911,11 @@ class OperationalNamelist:
             specified_bdy_cadence,
             specified_adv_degrade,
         ) = aux
+        # #114: recover the date-derived clock scalars from the date-blind holder so the
+        # legacy clock_base=None path still reads the exact same values (value-preserving).
+        time_utc = date_clock.time_utc
+        noahmp_julian = date_clock.noahmp_julian
+        noahmp_yearlen = date_clock.noahmp_yearlen
         noahmp_static = noahmp_static_holder.value
         noahmp_energy_params = noahmp_energy_holder.value
         noahmp_rad_params = noahmp_rad_holder.value
