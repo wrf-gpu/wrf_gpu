@@ -59,6 +59,20 @@ GAMMA_DRY_AIR = CP_D / (CP_D - R_D)
 GRAVITY_M_S2 = 9.81
 MIN_PRESSURE_PA = 1.0
 MIN_ALT = 1.0e-8
+# Positive inverse-density (specific-volume) floor for the acoustic EOS / sound-
+# speed denominator.  WRF computes c2a = cpovcv*(pb+p)/alt (module_small_step_em.F
+# :233) and divides by the full inverse density directly, ASSUMING alt stays in
+# the positive atmospheric envelope (real Mont Blanc columns start at alt~0.85
+# m^3/kg).  0.5 m^3/kg corresponds to rho = 2 kg/m^3 -- denser than any real
+# atmospheric air (sea-level rho<=1.3 -> alt>=0.77) -- so flooring alt here is
+# EXACTLY identity for every valid column (verified: 23 dycore identity tests
+# bit-identical) and engages ONLY after a column has left the density envelope,
+# where the un-floored division would make c2a singular/sign-flipped (1e20+),
+# detonating the acoustic solve.  Keeping the floor near the physical alt-min
+# also keeps c2a close to its physical value, minimising the transient. This
+# conditions the SINGULARITY; the geopotential growth driving a column toward the
+# floor remains a tracked dycore follow-up.
+MIN_ACOUSTIC_ALT_M3KG = 0.1
 CONVECTIVE_BUOYANCY_GAIN = 0.0
 # Slice-only compatibility: WRF module_small_step_em.F:1451-1489 and MPAS
 # mpas_atm_time_integration.F:2160-2169 do not define a production scalar gain.

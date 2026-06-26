@@ -1854,9 +1854,13 @@ def load_wrfbdy_boundary_leaves(
         ) from exc
 
     # interval (bdyfrq) seconds: prefer the namelist, fall back to 6 h.
-    interval_s = float(
-        run.namelist.get("time_control", {}).get("interval_seconds", 21600) or 21600
-    )
+    # WRF namelists routinely return list-valued scalars (trailing comma / shared
+    # line, e.g. "interval_seconds = 10800, input_from_file = ..."), so coerce a
+    # list/tuple to its first element before float().
+    _interval_raw = run.namelist.get("time_control", {}).get("interval_seconds", 21600)
+    if isinstance(_interval_raw, (list, tuple)):
+        _interval_raw = _interval_raw[0] if _interval_raw else 21600
+    interval_s = float(_interval_raw or 21600)
     probe = decode_wrfbdy(bdy_path, variables=("MU",), time_index=0)
     ntimes = int(len(probe.get("times", [])) or 1)
     width = int(probe.get("bdy_width", 5))

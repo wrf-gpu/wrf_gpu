@@ -287,6 +287,11 @@ exactly one as 2 fails closed both at validation and in the dispatcher.
   GWD is **ENABLED by default**; set `GPUWRF_GWD_NESTED=0` to force it off for a
   memory-tighter config. `gwd_opt=1` requires the sub-grid orography statics
   (VAR/CON/OA1-4/OL1-4) in `wrfinput`. `gwd_opt=3` (GSL drag suite) is not wired.
+* **`GPUWRF_FINITE_CHECK`** (default `1` = ON). Fail-fast NaN/Inf detector for
+  prognostic forecast state at chunk/output boundaries. On first non-finite value
+  it raises `NonFiniteStateError` with domain, field, vertical level, step, and
+  sim-time before `wrfout` writing. Set `GPUWRF_FINITE_CHECK=0` only for explicit
+  max-performance experiments; it does not modify state values.
 
 ## Recognized non-enumerated controls (advection, GWD, MYNN-EDMF, cadence)
 

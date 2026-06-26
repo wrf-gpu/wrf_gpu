@@ -15,7 +15,12 @@ import jax.numpy as jnp
 from gpuwrf.contracts.grid import DycoreMetrics
 from gpuwrf.contracts.precision import force_fp64_island
 from gpuwrf.contracts.state import BaseState, State
-from gpuwrf.dynamics.acoustic_wrf import CPOVCV, diagnose_pressure_al_alt, moisture_coupling_factors
+from gpuwrf.dynamics.acoustic_wrf import (
+    CPOVCV,
+    MIN_ACOUSTIC_ALT_M3KG,
+    diagnose_pressure_al_alt,
+    moisture_coupling_factors,
+)
 
 
 THETA_BASE_OFFSET_K = 300.0
@@ -304,7 +309,19 @@ def small_step_prep_wrf(
 
     p_pert, al, alt = diagnose_pressure_al_alt(state, base_state, metrics)
     pb = _base_pressure(state, base_state)
-    c2a = CPOVCV * (pb + p_pert) / jnp.maximum(jnp.abs(alt), jnp.asarray(1.0e-12, dtype=alt.dtype))
+    # WRF (module_small_step_em.F:233) forms c2a = cpovcv*(pb+p)/alt by dividing by
+    # the full inverse density directly, ASSUMING alt stays positive/physical.  The
+    # prior port used max(|alt|, 1e-12): the ABSOLUTE value lets a collapsed column
+    # with alt<=0 through with a wrong-signed/near-singular c2a (rho->inf), which
+    # turns the implicit-w tridiagonal coefficients into 1e20+ and detonates the
+    # acoustic solve (the Mont Blanc d01 blowup: alt drifts 0.85->0->negative ->
+    # c2a~1e21 -> negative pressure/density -> downstream Thompson Ni NaN).  Floor
+    # alt to a positive physical minimum (MIN_ACOUSTIC_ALT_M3KG = 0.5 m^3/kg ==
+    # rho<=2 kg/m^3, denser than any real air) so c2a stays positive and
+    # bounded.  This is EXACTLY identity for every physical column (alt>>1e-2) and
+    # engages only after the state has left the density envelope.
+    alt_acoustic = jnp.maximum(alt, jnp.asarray(MIN_ACOUSTIC_ALT_M3KG, dtype=alt.dtype))
+    c2a = CPOVCV * (pb + p_pert) / alt_acoustic
     cqu, cqv = moisture_coupling_factors(state)
 
     # WRF ``calc_php`` (rk_step_prep, module_em.F:181;
@@ -356,7 +373,11 @@ def small_step_prep_wrf(
         ph_work=ph_work,
         c2a=c2a,
         al=al,
-        alt=alt,
+        # Store the SAME positively-floored inverse density the c2a denominator
+        # used, so the advance_w buoyancy term (c2a*alt*t2ave, advance_w.py:524)
+        # and the c2a coefficient stay mutually consistent in the (post-floor)
+        # acoustic operator.  Identity wherever alt is physical.
+        alt=alt_acoustic,
         pb=pb,
         phb=phb_full,
         cqu=cqu,

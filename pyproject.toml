@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gpuwrf"
-version = "0.20.2"
+version = "0.21.0"
 description = "A GPU-native WRF-compatible regional NWP model (JAX dynamical core + physics)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -48,4 +48,6 @@ testpaths = ["tests", "evals/agentos"]
 pythonpath = ["src"]
 markers = [
     "close_gate: dycore close-gate tests that MUST assert verdict==PASS (require a JAX GPU backend); a regression to FAIL fails CI rather than being false-green.",
+    "gpu: tests that require a CUDA/NVIDIA GPU and must run through scripts/with_gpu_lock.sh when they execute model work.",
+    "steep_terrain_gate: v0.21 steep-terrain nested stability gate over the Mont Blanc fixture.",
 ]

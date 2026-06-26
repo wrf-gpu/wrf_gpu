@@ -7,6 +7,87 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.21.0] - 2026-06-26
+
+Stability + compile-cache-speed release. Priority order: **STABILITY > IDENTITY >
+SPEED > MEMORY**. The fp64 default path stays byte-identical and warm forecast
+throughput is unchanged from v0.20; the speed win is **compile / warm-start time**.
+Full notes: [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md).
+
+### Added
+- **AOT cheap-key cross-process warm-start of the FUSED cascade (default on).** After a
+  one-time cold compile, a fresh process loads the compiled GPU executable from disk via
+  a cheap metadata key (computed **without lowering**, scoped to the trace-import closure
+  of the traced body, with the fused cascade's **edge geometry** — child
+  weights/ratios/cadences/bdy-widths/count/order + namelist aux — folded into the key) and
+  **skips the multi-tens-of-minutes re-lower** the old persistent cache still paid. MEASURED
+  3-domain fused+AOT cold→warm gate (RTX 5090, 20240901): the **fused** `d01` + `fused/d02`
+  blobs load `loaded=true source=aot_blob` cross-process with **0 re-lower** of `jit_fused`,
+  **warm output byte-identical to cold** (`REF_COMPARE` equal, max_abs_diff 0), **steady
+  s/step 1.20 ≤ the fused baseline ⇒ NO runtime regression**, warm peak host RSS **~10 GB**
+  (vs ~21 GB cold), load in seconds, finite. **9-nest fused stress re-confirm (MEASURED,
+  RTX 5090, 20240901):** both fused phases (`ed303`+`1db7`, ~1.7 GB each) load
+  `source=aot_blob` cross-process with **0 `jit_fused` re-lower**, a **bounded K=2** phase
+  set (no cached-call thrash, 0 cached-call-error), all nine domains finite; the warm-vs-jit
+  bit-identity rides the **same fused executable path** the 3-dom `REF_COMPARE` already proved
+  byte-identical. A fresh load is numerically inert (the key only
+  *locates* the blob; the loaded executable is byte-identical to a cold compile);
+  `GPUWRF_AOT_VERIFY=1` is a fail-closed lower-once + HLO-digest backstop (default off,
+  quarantine on mismatch). Opt out of AOT with `GPUWRF_NESTED_AOT=0`.
+- **Stability: dycore boundary mechanism fix.** An acoustic dry-mass-drain limiter
+  plus positive `c2a`/`alt` conditioning fix the diagnosed steep-terrain failure
+  mechanism. Identity-preserving on the integrated CPU baseline; the 9-nest Canary
+  gate-case (max_dom=9) is now **finite past its step-67 divergence window (all nine
+  domains, MEASURED)**.
+- **Stability: default-on fail-fast finite detector.** `GPUWRF_FINITE_CHECK` guards
+  the nested forecast path and reports the first non-finite prognostic
+  `{domain, field, level, step, sim_time_s, index}`. Observational on finite states
+  (does not mutate values); opt out with `GPUWRF_FINITE_CHECK=0`.
+- **Stability: steep-terrain GPU regression gate.** Opt-in two-domain nested gate via
+  `tests/test_v021_steep_terrain_stability_gate.py` (real `execute_nested_pipeline`
+  path, both domains required finite).
+- **Compile-cache safety.** Default persistent JAX cache directories are now
+  version/backend-keyed; `GPUWRF_CACHE` roots get `jit/<version-tag>`, so a stale
+  older-release cache is never mistaken for a warm one.
+- **Autotune cache.** XLA autotune cache is default-on when the compile cache is on,
+  with fail-open subprocess flag probing; prewarm `info`/`pack`/`unpack` is available.
+- **Operational hardening.** Nested namelist scalar coercion is more robust;
+  grid-scaled `GPUWRF_MIN_FREE_VRAM_GIB` preflight guidance; the next large-GPU
+  activation path uses the Python nested API runner, `cuda_async`, no preallocation,
+  version-keyed cache/prewarm, and read-back-before-delete output hygiene.
+
+### Changed
+- **Nest runtime default stays FUSED; AOT warm-start bolted onto the fused executable.**
+  The fused single-module cascade remains the runtime (byte-identical to v0.20, **zero
+  throughput change**); AOT now serializes/loads that fused executable for warm-start.
+  **De-fuse** (per-domain compile — the same bit-identical eager code path,
+  `GPUWRF_NESTED_DEFUSE_COMPILE=1` / `GPUWRF_NESTED_FUSE=0`) remains an **opt-in
+  low-host-RAM compile lever** (9-nest ~20–27 GB VmHWM vs ~60 GB fused) **with a documented
+  runtime cost**: it was briefly trialed as the default and **reverted** after the canary
+  benchmark measured **+18.8 % s/step** (the 9-nest de-fuse was host-bound, GPU ~0 %).
+  De-fuse cold (~70–75 min) is also slower than fused — a RAM-for-WALL trade, not a faster
+  cold compile. Optional parallel prewarm for the de-fuse path via
+  `GPUWRF_NESTED_PARALLEL_COMPILE=N` (`=0` opts out).
+- Release framing is **STABILITY > IDENTITY > SPEED > MEMORY**; the speed win is
+  compile/warm-start time, not warm forecast throughput.
+- Full CPU suite A/B (per-file-isolated, baseline vs edited): **zero new failures** vs
+  the v0.20.2 known-red baseline. 3-domain de-fuse CPU tol-match worst T2 2.96 K /
+  1.03%.
+
+### Carried limitations
+- **Most-extreme 1 km Mont-Blanc (~1042 m/cell) terrain not fully stabilized.** The
+  dycore fix stabilizes the standard 9-nest Canary gate-case but relocates the failure
+  on the extreme case → deep boundary-stability fix is **v0.21.1**.
+- **#123 long-horizon 9-nest GPU-VRAM OOM mitigated-not-eliminated.** In de-fuse mode
+  the single-card 32 GB run can still OOM around the ~90 min integration horizon
+  (mitigated by the RRTMG-transient cap + fail-closed preflight). For VRAM-bound long
+  integration use `GPUWRF_NESTED_FUSE=1`. B200 / fp32 / VRAM work is v0.21.1+.
+- The ≥1 h-finite + all-fields CPU-match Canary gate is a **local** gate, not a default
+  v0.21.0 claim. No new physics features (per `proofs/v021/WRF_V4_FEATURE_AUDIT.md`).
+
+### Follow-ups (carried, non-blocking)
+- AOT cheap-key hardening: `_walk`-repr robustness and an import-time env scanner.
+
 ## [0.20.2]
 
 ### Added
@@ -36,15 +117,15 @@ fp64 default path stays byte-for-byte unchanged. Full notes:
   date-invariance tests 9/9 (`tests/test_operational_namelist_cache_key.py`).
   **Honest:** warm removes the recompile but still pays a fused-module load+link
   (~19 min × 2 ≈ 38 min) → ~30 min net saving per new date, **not "instant"**.
-  *[Code: branch `worker/opus/v0201-nest-prep`; internal cross-date acceptance gate;
-  CPU tests `tests/test_operational_namelist_cache_key.py` (9/9); cache_delta verdict
+  *[Gate driver `scripts/gate_n114_n122.py`; CPU tests
+  `tests/test_operational_namelist_cache_key.py` (9/9); cache_delta verdict
   in the v0.20.1 release-prep acceptance matrix.]*
 - **#122 — opt-in compact training-ready nest output.** `GPUWRF_TRAINING_OUTPUT_SUBSET`
   (opt-in) writes a **36-variable MINIMAL** training set (+ mandatory coords, 44 names
   total) with **zlib-lossless** compression. **Default OFF → output byte-identical to
   the legacy writer.** Validated on a real GPU nest run; CPU 10/10
   (`tests/test_v0201_training_output_subset.py`).
-  *[Code: branch `worker/opus/v0201-nest-prep`.]*
+  *[CPU tests `tests/test_v0201_training_output_subset.py` (10/10).]*
 - **#123 — GPU OOM hardening (nested path); two modes, one solved + one mitigated.**
   (a) **Co-resident headroom → SOLVED.** Launch-time nested **preflight** fail-closes
   with **exit 75 before** the ~50-min compile when the GPU lock or **card-relative
@@ -58,7 +139,7 @@ fp64 default path stays byte-for-byte unchanged. Full notes:
   transient reproducer. **Carried limitation:** solo fragmentation can still OOM the
   full fp64 nest — **no OOM-proof / fp32-nest / 24 h large-nest claim.**
   *[Commits `b1c44524`, `4c9588db`; `proofs/v013/rrtmg_column_tile.json`
-  (`max_abs = 0.0`), a CPU-class RRTMG transient smoke (internal),
+  (`max_abs = 0.0`), `proofs/v020/oom_hardening/rrtmg_transient_cpu_smoke.json`,
   reproducer `scripts/rrtmg_transient_reproducer.py`; GPU A/B largest-alloc
   (0.432→0.271 GiB) in the v0.20.1 release-prep acceptance matrix.]*
 - **S2 — paid-B200 I/O-readiness tooling (CPU-only).** Manifest + WRF-dimension
@@ -125,9 +206,9 @@ branches off **0.19.1** (0.19.2 was never shipped). This release:
   **Honest scope:** fp32 tolerance is checked at the **1 h lead** (19/19 fields
   green) — real but **not stringent**; the **24–120 h skill gate is future work,
   out of v0.20 scope**. fp32 is strictly opt-in; `fp64_default` remains the default.
-  *[MEASURED VRAM/capability + 1h tolerance: FP32_INTEGRATION_REPORT.md §4.2,
-  `.agent/decisions/V0200-STATE-AND-FINISH.md`. INCONCLUSIVE single-card speed:
-  `proofs/v020/benchmark/T2T3_REPORT.md` R∞ ratio ≈0.91.]*
+  *[MEASURED VRAM/capability + 1h tolerance: FP32_INTEGRATION_REPORT.md §4.2.
+  INCONCLUSIVE single-card speed: `proofs/v020/benchmark/T2T3_REPORT.md` R∞
+  ratio ≈0.91.]*
 
 - **Makes the compile cache hit across forecast dates (#91), zero config.** The
   persistent per-user on-disk JIT cache (default on since v0.12.0) previously baked
@@ -168,7 +249,7 @@ branches off **0.19.1** (0.19.2 was never shipped). This release:
 - **Keeps opt-outs explicit.** `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` selects
   the eager non-fused bitwise/debug path; `GPUWRF_ALLOCATOR=platform` restores the
   pre-v0.20 synchronous allocator; `fp64_default` (default) is the byte-identical
-  precision mode. See `RELEASE_NOTES_v0.20.0.md`.
+  precision mode. See the v0.20.0 release notes (archived at tag v0.20.0).
 
 ## v0.19.1 — 24-hour VRAM-stability fix (nested fast path)
 
@@ -268,7 +349,7 @@ advertised Switzerland case was not runnable from a fresh clone. This release:
 ## [0.15.0] – [0.18.0]
 
 Per-release history for 0.15 → 0.18 is maintained in the README **"Release line"**
-table and the per-version proof archives (`proofs/v01{5,6,7,8}/`); standalone
+table and the per-version proof archives (`proofs/v01{5,7,8}/`); standalone
 `RELEASE_NOTES_*` files cover releases up to 0.15.0. 0.18.0 is the
 **feature-complete** release — every WRF v4 scheme classified and tested,
 experimental K2 multi-GPU, perf-neutral vs 0.17.
@@ -301,7 +382,7 @@ v0.13.0 — performance is the v0.15 focus). What v0.14 adds:
   pre-declared tolerance manifest and the grid-delta atlas.
 - **Release hygiene**: portable defaults (no hard-coded personal paths in
   user-facing instructions), standard release files, and a curated, clearly
-  framed development-log archive under [`.agent/`](.agent/).
+  framed development-log archive in the source tree.
 
 Carry-overs and bounded acceptances are in [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md).
 

@@ -13,6 +13,54 @@ import jax.numpy as jnp
 configure_jax_x64()
 
 
+# Acoustic dry-mass positivity guard.  WRF advance_mu_t (module_small_step_em.F:
+# 1103-1107) forms the total small-step dry mass MUTS = MUT + MU_work directly and
+# every downstream routine divides by (c1h*MUTS+c2h) / uses alt(MUTS), ASSUMING
+# MUTS stays physically positive.  Over the steepest d01 boundary-zone terrain the
+# acoustic continuity loop pumps a pathological NEGATIVE mass tendency that drains
+# MU_work until MUTS crosses 0 -> the mass denominators and the inverse density
+# `alt` collapse -> c2a = cpovcv*(pb+p)/alt -> singular -> the implicit-w solve
+# detonates (the Mont Blanc d01 blowup; downstream symptom is the Thompson Ni NaN).
+# Bound the per-substep drain so MUTS cannot fall below MIN_MUTS_FRACTION of the
+# stage MUT.  IDENTITY for every physical substep (an 18s/n_sound acoustic step
+# changes the ~9e4 Pa column mass by O(1-100) Pa, never tens of percent); engages
+# only in the pathological drain.
+MIN_MUTS_FRACTION = 0.5
+MIN_MUTS_PA = 1.0
+
+
+def _limit_mu_drain_scale(mut, mu_work_old, mu_tendency, dts):
+    """Scale in [0,1] bounding the per-substep MUTS drain (1.0 == identity).
+
+    Returns the fraction of the raw continuity tendency that keeps
+    MUTS = MUT + MU_work_new >= max(MIN_MUTS_PA, MIN_MUTS_FRACTION*MUT).  Only a
+    negative (draining) tendency is limited; a positive/zero tendency is identity.
+    A non-finite tendency is zeroed (scale 0) so a single bad cell cannot inject
+    Inf/NaN into the conserved continuity update.  Apply the SAME scale to every
+    continuity term (dmdt, dvdxi, mu_tend, the ww increments) so the limited step
+    stays self-consistent.
+    """
+
+    mut = jnp.asarray(mut)
+    mu_work_old = jnp.asarray(mu_work_old, dtype=mut.dtype)
+    mu_tendency = jnp.asarray(mu_tendency, dtype=mut.dtype)
+    floor = jnp.maximum(
+        jnp.asarray(MIN_MUTS_PA, mut.dtype),
+        jnp.asarray(MIN_MUTS_FRACTION, mut.dtype) * mut,
+    )
+    muts_old = mut + mu_work_old
+    raw_delta = jnp.asarray(float(dts), mut.dtype) * mu_tendency
+    allowed_loss = jnp.maximum(muts_old - floor, jnp.asarray(0.0, mut.dtype))
+    loss = -raw_delta
+    finite = jnp.isfinite(raw_delta) & jnp.isfinite(muts_old)
+    scale = jnp.where(
+        finite & (loss > allowed_loss),
+        allowed_loss / jnp.maximum(loss, jnp.asarray(1.0, mut.dtype)),
+        jnp.where(finite, jnp.asarray(1.0, mut.dtype), jnp.asarray(0.0, mut.dtype)),
+    )
+    return jnp.clip(scale, jnp.asarray(0.0, mut.dtype), jnp.asarray(1.0, mut.dtype))
+
+
 @dataclass(frozen=True)
 class AdvanceMuTInputs:
     """Arrays consumed by WRF ``module_small_step_em.F:969-1175``."""
@@ -312,13 +360,25 @@ def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp
         dvdxi_levels.append(dvdxi)
     dvdxi_active = jnp.stack(dvdxi_levels, axis=0)
     dmdt_active = jnp.sum(inputs.dnw[:nz, None, None] * dvdxi_active, axis=0)
-    dvdxi_full = inputs.theta[:nz] * 0.0
-    dvdxi_full = dvdxi_full.at[:, ys, xs].set(dvdxi_active)
-    dmdt_full = jnp.zeros_like(inputs.mu).at[ys, xs].set(dmdt_active)
 
     mu_work_old = inputs.muts[ys, xs] - inputs.mut[ys, xs]
     mu_save = inputs.mu[ys, xs] - mu_work_old
     mu_tendency = dmdt_active + inputs.mu_tend[ys, xs]
+    # Dry-mass positivity guard: scale the continuity tendency so MUTS stays >=
+    # MIN_MUTS_FRACTION of the stage MUT (identity for physical substeps).  The
+    # SAME scale multiplies every continuity term below (dmdt, dvdxi, mu_tend, the
+    # ww increments, and the returned dmdt/dvdxi diagnostics) so the limited
+    # acoustic mass update stays self-consistent.
+    mu_scale = _limit_mu_drain_scale(
+        inputs.mut[ys, xs], mu_work_old, mu_tendency, float(inputs.dts)
+    )
+    mu_tendency = mu_tendency * mu_scale
+    dmdt_active = dmdt_active * mu_scale
+    dvdxi_active = dvdxi_active * mu_scale[None, :, :]
+    mu_tend_active = inputs.mu_tend[ys, xs] * mu_scale
+    dvdxi_full = inputs.theta[:nz] * 0.0
+    dvdxi_full = dvdxi_full.at[:, ys, xs].set(dvdxi_active)
+    dmdt_full = jnp.zeros_like(inputs.mu).at[ys, xs].set(dmdt_active)
     mu_work_new = mu_work_old + float(inputs.dts) * mu_tendency
     mu_new_i = mu_save + mu_work_new
     mudf_i = mu_tendency
@@ -334,7 +394,7 @@ def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp
     for kk in range(1, nz):
         k = kk - 1
         increment = inputs.dnw[kk - 1] * (
-            inputs.c1h[k] * dmdt_active + dvdxi_active[kk - 1] + inputs.c1h[k] * inputs.mu_tend[ys, xs]
+            inputs.c1h[k] * dmdt_active + dvdxi_active[kk - 1] + inputs.c1h[k] * mu_tend_active
         ) / inputs.msfty[ys, xs]
         ww_rows.append(ww_rows[-1] - increment)
     ww_rows.append(inputs.ww[nz, ys, xs])

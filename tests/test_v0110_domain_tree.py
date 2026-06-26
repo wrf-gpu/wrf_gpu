@@ -378,9 +378,29 @@ def test_fusable_parent_rejects_when_feedback_enabled():
     assert _fusable_parent(tree, "d02") is None
 
 
-def test_fused_factory_default_on_and_gates_d02_only(monkeypatch):
+def test_fused_factory_default_on(monkeypatch):
+    """With no env flags the fused cascade is the runtime default."""
     monkeypatch.delenv("GPUWRF_BITWISE", raising=False)
     monkeypatch.delenv("GPUWRF_NESTED_FUSE", raising=False)
+    monkeypatch.delenv("GPUWRF_NESTED_DEFUSE_COMPILE", raising=False)
+    _FUSED_PROGRAM_CACHE.clear()
+    tree = _stub_all7_tree()
+    lookup = _operational_fused_cascade_factory(tree)
+    program = lookup("d02")
+    assert lookup("d01") is None
+    assert program is not None
+    assert callable(program)
+    assert lookup("d03") is None
+    assert lookup("d02") is program
+    _FUSED_PROGRAM_CACHE.clear()
+
+
+def test_fused_factory_forced_on_gates_d02_only(monkeypatch):
+    """Explicit GPUWRF_NESTED_FUSE=1 keeps the fused cascade; it still gates so
+    only the fusable parent (d02) gets a program and the result is cached."""
+    monkeypatch.delenv("GPUWRF_BITWISE", raising=False)
+    monkeypatch.delenv("GPUWRF_NESTED_DEFUSE_COMPILE", raising=False)
+    monkeypatch.setenv("GPUWRF_NESTED_FUSE", "1")
     _FUSED_PROGRAM_CACHE.clear()
     tree = _stub_all7_tree()
     lookup = _operational_fused_cascade_factory(tree)
