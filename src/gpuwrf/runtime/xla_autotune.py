@@ -19,6 +19,34 @@ This is the autotune-cache analogue of :mod:`gpuwrf.runtime.compile_cache`
   when the surrounding program differs, so partial / first-of-a-family compiles
   still skip the autotuner.
 
+WHEN THE SEPARATE AUTOTUNE CACHE ACTUALLY HELPS (vs the executable cache)
+------------------------------------------------------------------------
+The standard JAX persistent executable cache (``compile_cache``) ALREADY embeds
+the autotuner's results inside each cached executable. So for an *exact-same*
+program -- recompiling the identical HLO on the identical backend -- the
+executable cache is a full warm hit and this module adds NOTHING: the autotuner
+never reruns because the whole executable is served from disk.
+
+This separate per-fusion autotune cache earns its keep only when the executable
+cache MISSES but the work is internally similar -- i.e. a NEW-but-related HLO
+that shares fusions (GEMM/conv shapes) with something tuned before. Concretely
+for gpuwrf:
+
+* a first-of-a-family nest compile (e.g. d03 1km) whose fusions overlap an
+  already-tuned d02 program -- the executable differs so the executable cache
+  misses, but the shared fusions are served from the autotune cache instead of
+  re-running the (fp64-heavy) autotuner;
+* the same grid with a changed static flag/namelist (different whole-program
+  HLO, overlapping kernels);
+* incrementally warming a brand-new version-keyed dir, where many programs share
+  GEMM/conv shapes.
+
+It does NOT help a pure cold box with zero prior autotune entries (nothing to
+reuse) and does NOT replace the executable cache. B1 turns it on by default
+WHENEVER the executable cache is on so these partial-overlap cases stop paying
+the autotuner twice; it is a strict superset of value with no downside beyond a
+small extra cache dir.
+
 NUMERICS
 --------
 **Numerically inert.** Autotuning only selects *which* kernel implementation
@@ -27,30 +55,40 @@ The autotune *level* (``--xla_gpu_autotune_level``) is left at the XLA default
 (4 = on+init+reinit+check) for production so the picked kernels are still the
 fastest correct ones; only the *caching* of the result is added here.
 
-WHY THIS MODULE IS OFF BY DEFAULT (the v0.12.0 regression + its fix)
+DEFAULT-ON-WITH-COMPILE-CACHE (B1) + the v0.12.0 regression history
 -------------------------------------------------------------------
 An earlier version of this module injected ``--xla_gpu_*`` autotune-cache flags
-into ``XLA_FLAGS`` **at package import** whenever a GPU was merely *detected*.
-On the production GPU box the bundled jaxlib/XLA build did **not recognise**
-those particular flag names: XLA printed its flag-help text and **fatally
-aborted** the whole process before the first compile. That broke the default
-GPU path (the v0.12.0 gate aborted in ~3 s) and the merge was reverted
-(969d435).
+into ``XLA_FLAGS`` **at package import** whenever a GPU was merely *detected*,
+WITHOUT validating them. On the production GPU box the bundled jaxlib/XLA build
+did **not recognise** those particular flag names: XLA printed its flag-help
+text and **fatally aborted** the whole process before the first compile. That
+broke the default GPU path (the v0.12.0 gate aborted in ~3 s) and the merge was
+reverted (969d435). The fix that re-landed it was the per-flag SUBPROCESS PROBE
+(point 2 below) -- NOT the opt-in gate. The opt-in gate was belt-and-braces.
 
-This re-landed version is HARD-SAFE by construction:
+B1 keeps the probe (the actual safety mechanism) and now activates the cache BY
+DEFAULT when the executable compile cache is on, so a fresh user / paid run gets
+the autotune reuse without setting any env var. Tri-state on
+``GPUWRF_XLA_AUTOTUNE_CACHE``:
 
-1. **Explicit opt-in (default OFF).** The autotune cache does nothing unless the
-   operator explicitly sets ``GPUWRF_XLA_AUTOTUNE_CACHE`` to a truthy value
-   (``1``/``true``/``on``/``yes``/``force``). With the var unset or falsey this
-   module is a pure no-op and injects nothing -- so the default GPU path is
-   **byte-for-byte unchanged** from a build without this module. Detecting a GPU
-   is NOT sufficient to activate it.
-2. **Flag validation against the actual build (no blind inject).** Even when
-   opted in, every candidate ``--xla_gpu_*`` flag is first PROBED in an isolated
-   child process that tries to initialise the GPU backend with only that flag
-   set. If the child aborts / errors / the flag is unknown, the flag is dropped.
-   The probe runs in a SUBPROCESS so an XLA fatal-abort kills only the child,
-   never this process. Only flags the build provably accepts are injected.
+* truthy (``1``/``true``/``on``/``yes``/``force``) -> ON (explicit opt-in).
+* falsey (``0``/``false``/``off``/``no``)          -> OFF (explicit opt-out, kept).
+* UNSET -> ON when the compile cache is on (the import hook passes
+  ``default_on=True``); a *direct* call to :func:`configure_autotune_cache` with
+  no argument keeps the historical OFF default for callers that bypass the hook.
+
+This is HARD-SAFE by construction REGARDLESS of the default:
+
+1. **Opt-out always wins + platform guard.** ``GPUWRF_XLA_AUTOTUNE_CACHE=0`` is a
+   pure no-op, and the flags are NEVER injected on a CPU/TPU pin (where a CPU
+   jaxlib could fatally abort on an unknown ``--xla_gpu_*`` flag).
+2. **Flag validation against the actual build (no blind inject).** Every
+   candidate ``--xla_gpu_*`` flag is first PROBED in an isolated child process
+   that tries to initialise the GPU backend with only that flag set. If the
+   child aborts / errors / the flag is unknown, the flag is dropped. The probe
+   runs in a SUBPROCESS so an XLA fatal-abort kills only the child, never this
+   process. Only flags the build provably accepts are injected. This is what
+   makes default-on safe: an unknown flag can never abort the main process.
 3. **No-op + log on anything unsupported.** A rejected/unprobeable flag is
    recorded in :data:`AUTOTUNE_STATUS` and simply skipped; this module never
    raises and never aborts at import.
@@ -105,6 +143,8 @@ AUTOTUNE_STATUS: dict[str, object] = {
     "source": None,
     "reason": None,
     "opted_in": False,
+    # B1: "explicit-opt-in" vs "default-on-with-compile-cache" vs None (off).
+    "activation": None,
     "probed": None,
     "rejected_flags": None,
     "error": None,
@@ -123,6 +163,7 @@ def _reset_status() -> None:
             "source": None,
             "reason": None,
             "opted_in": False,
+            "activation": None,
             "probed": None,
             "rejected_flags": None,
             "error": None,
@@ -140,6 +181,8 @@ PARALLEL_COMPILE_STATUS: dict[str, object] = {
     "source": None,
     "reason": None,
     "opted_in": False,
+    # B2: "explicit-opt-in" vs "default-on-with-compile-cache" vs None (off).
+    "activation": None,
     "probed": None,
     "rejected_flags": None,
     "error": None,
@@ -155,6 +198,7 @@ def _reset_parallel_status() -> None:
             "source": None,
             "reason": None,
             "opted_in": False,
+            "activation": None,
             "probed": None,
             "rejected_flags": None,
             "error": None,
@@ -162,30 +206,55 @@ def _reset_parallel_status() -> None:
     )
 
 
-def _opt_in() -> bool:
-    """True only if the operator EXPLICITLY enabled the autotune cache.
+def _opt_in(default_on: bool = False) -> bool:
+    """Whether the autotune cache should activate.
 
-    Default is OFF: a merely-detected GPU does NOT activate this module. This is
-    the gate that makes the default GPU path byte-unchanged (regression fix d).
+    Tri-state on ``GPUWRF_XLA_AUTOTUNE_CACHE``:
+
+    * truthy (``1``/``true``/``on``/``yes``/``force``) -> ON (explicit opt-in).
+    * falsey (``0``/``false``/``off``/``no``)          -> OFF (explicit opt-out).
+    * UNSET -> ``default_on``.
+
+    B1 change: the import hook (compile cache) now calls this with
+    ``default_on=True`` AFTER the persistent compile cache is configured on, so
+    the autotune cache rides ON by default WHENEVER the executable cache is on
+    (preserving the ``=0`` opt-out). A *direct* call with no argument keeps the
+    historical default OFF, so unit tests / callers that hit this module without
+    the compile-cache hook stay byte-unchanged unless they explicitly opt in.
+
+    The v0.12.0 abort guard is UNCHANGED and still holds regardless of the
+    default: even when this returns True, every ``--xla_gpu_*`` flag is still
+    validated against the build in an isolated subprocess before injection, so an
+    unknown flag can never abort this process.
     """
-    return os.environ.get("GPUWRF_XLA_AUTOTUNE_CACHE", "").strip().lower() in _FORCE_VALUES
+    raw = os.environ.get("GPUWRF_XLA_AUTOTUNE_CACHE", "").strip().lower()
+    if raw in _FORCE_VALUES:
+        return True
+    if raw in _DISABLE_VALUES:
+        return False
+    return default_on
 
 
-def resolve_autotune_cache_dir() -> Path | None:
+def resolve_autotune_cache_dir(default_on: bool = False) -> Path | None:
     """Return the autotune-cache directory, or ``None`` if disabled / not opted in.
 
     Mirrors :func:`gpuwrf.runtime.compile_cache.resolve_cache_dir` precedence so
     the two caches sit side by side under one project cache root. Pure apart
-    from recording ``AUTOTUNE_STATUS['source']``.
-    """
+    from recording ``AUTOTUNE_STATUS['source']``. ``default_on`` controls the
+    UNSET case (see :func:`_opt_in`)."""
     flag = os.environ.get("GPUWRF_XLA_AUTOTUNE_CACHE", "").strip().lower()
     if flag in _DISABLE_VALUES:
         AUTOTUNE_STATUS["source"] = "disabled-by-GPUWRF_XLA_AUTOTUNE_CACHE"
         return None
-    if flag not in _FORCE_VALUES:
-        # Not opted in (default). Pure no-op; the JIT compile cache still applies.
+    if flag not in _FORCE_VALUES and not default_on:
+        # Unset AND not default-on (a direct call). Pure no-op; the JIT compile
+        # cache still applies.
         AUTOTUNE_STATUS["source"] = "not-opted-in"
         return None
+    # Activation reason for audits: explicit opt-in vs default-on-with-compile-cache.
+    AUTOTUNE_STATUS["activation"] = (
+        "explicit-opt-in" if flag in _FORCE_VALUES else "default-on-with-compile-cache"
+    )
 
     explicit = os.environ.get("GPUWRF_XLA_AUTOTUNE_CACHE_DIR", "").strip()
     if explicit:
@@ -316,25 +385,34 @@ def probe_flag_supported(flag: str, timeout_s: float = _PROBE_TIMEOUT_S) -> tupl
     return False, f"rejected:rc={proc.returncode}:{detail[:200]}"
 
 
-def configure_autotune_cache() -> dict[str, object]:
+def configure_autotune_cache(default_on: bool = False) -> dict[str, object]:
     """Inject build-validated persistent-autotune-cache + parallel-compile flags.
 
     Must be called BEFORE the first JAX/XLA compile (i.e. at package import,
     before any jitted fn is built). Idempotent, best-effort, never raises.
 
-    HARD-SAFE by construction (see the module docstring): does NOTHING unless the
-    operator explicitly opts in via ``GPUWRF_XLA_AUTOTUNE_CACHE`` truthy; even
-    then, every candidate ``--xla_gpu_*`` flag is validated against the installed
-    build in an isolated subprocess and dropped if the build rejects it (so XLA
-    can never abort this process on an unknown flag).
+    ``default_on`` (B1): when the persistent executable compile cache is
+    configured ON, the import hook calls this with ``default_on=True`` so the
+    autotune cache rides ON by default too (the executable cache already carries
+    autotune results for the SAME graph; this separate cache adds reuse across
+    DIFFERENT-but-similar graphs -- e.g. a first-of-a-family nest compile). The
+    ``GPUWRF_XLA_AUTOTUNE_CACHE=0`` opt-out is always honoured. A direct call
+    (``default_on`` left False) keeps the historical OFF-unless-opted-in default.
+
+    HARD-SAFE by construction (see the module docstring) REGARDLESS of the
+    default: every candidate ``--xla_gpu_*`` flag is validated against the
+    installed build in an isolated subprocess and dropped if the build rejects it
+    (so XLA can never abort this process on an unknown flag), and the flags are
+    never injected on a CPU/TPU pin. So default-on cannot reintroduce the v0.12.0
+    GPU abort.
 
     Returns :data:`AUTOTUNE_STATUS`.
     """
     _reset_status()
 
-    AUTOTUNE_STATUS["opted_in"] = _opt_in()
+    AUTOTUNE_STATUS["opted_in"] = _opt_in(default_on=default_on)
 
-    cache_dir = resolve_autotune_cache_dir()
+    cache_dir = resolve_autotune_cache_dir(default_on=default_on)
     if cache_dir is None:
         # Disabled or (default) not opted in. Pure no-op: XLA_FLAGS untouched.
         AUTOTUNE_STATUS["reason"] = AUTOTUNE_STATUS.get("source") or "disabled"
@@ -418,13 +496,27 @@ def configure_autotune_cache() -> dict[str, object]:
     return AUTOTUNE_STATUS
 
 
-def resolve_parallel_compile() -> int | None:
-    """Resolve the requested XLA compile-parallelism, or ``None`` if not opted in.
+def _default_parallelism() -> int:
+    """The default N-way compile thread count when parallel compile is on.
 
-    STANDALONE knob (default OFF), INDEPENDENT of the autotune cache. Precedence:
+    ``os.cpu_count()`` capped at 8 -- enough to overlap the many independent
+    fusion compiles of a cold nest compile (the ~40 min B200 case) without
+    oversubscribing a box that may be running nightly CPU-WRF in parallel. XLA's
+    ``--xla_gpu_force_compilation_parallelism`` parallelises HOST-side LLVM
+    codegen across these threads; it changes the compile-thread count only, never
+    the emitted executable (numerically inert).
+    """
+    return min(os.cpu_count() or 1, 8)
 
-    1. ``GPUWRF_XLA_PARALLEL_COMPILE`` -- the primary opt-in.
-       * falsey (``0``/``false``/``off``/``no``) -> disabled (``None``).
+
+def resolve_parallel_compile(default_on: bool = False) -> int | None:
+    """Resolve the requested XLA compile-parallelism, or ``None`` if disabled.
+
+    Tier-2 compile-speed knob. Precedence:
+
+    1. ``GPUWRF_XLA_PARALLEL_COMPILE`` -- the primary control.
+       * falsey (``0``/``false``/``off``/``no``) -> disabled (``None``); the
+         explicit opt-OUT, always honoured regardless of ``default_on``.
        * a positive integer -> that many parallel compile threads.
        * truthy (``1``/``true``/``on``/``yes``/``force``) without a number ->
          a default thread count taken from ``GPUWRF_XLA_COMPILE_PARALLELISM`` if
@@ -434,6 +526,15 @@ def resolve_parallel_compile() -> int | None:
        autotune-cache path) is honoured as an opt-in when ``GPUWRF_XLA_PARALLEL_COMPILE``
        is UNSET, so a deployment that only sets the parallelism count still gets
        parallel compile. (If both are set, ``GPUWRF_XLA_PARALLEL_COMPILE`` wins.)
+    3. ``default_on`` (B2): when BOTH vars are UNSET and the persistent compile
+       cache is on, the import hook calls this with ``default_on=True`` so N-way
+       parallel compile rides ON by default at :func:`_default_parallelism`
+       threads. The ``=0`` opt-out always wins. This is what slashes the cold
+       nest-compile wall (many independent fusions compiled in parallel) on a
+       fresh machine without the operator setting any env var. STILL HARD-SAFE:
+       the single ``--xla_gpu_*`` flag is subprocess-probed before injection and
+       never injected on a CPU/TPU pin, so default-on cannot reintroduce the
+       v0.12.0 GPU abort.
 
     Records the chosen ``source`` in :data:`PARALLEL_COMPILE_STATUS`. Returns the
     integer parallelism (>=1) or ``None`` when disabled / not opted in / invalid.
@@ -448,6 +549,12 @@ def resolve_parallel_compile() -> int | None:
     if raw == "":
         # Primary var unset: fall back to the legacy count-only var as an opt-in.
         if not legacy:
+            if default_on:
+                # B2 default-on: both vars unset + compile cache on -> default N.
+                n = _default_parallelism()
+                PARALLEL_COMPILE_STATUS["source"] = "default-on-with-compile-cache"
+                PARALLEL_COMPILE_STATUS["activation"] = "default-on-with-compile-cache"
+                return n
             PARALLEL_COMPILE_STATUS["source"] = "not-opted-in"
             return None
         try:
@@ -462,6 +569,7 @@ def resolve_parallel_compile() -> int | None:
             PARALLEL_COMPILE_STATUS["source"] = "disabled-by-GPUWRF_XLA_COMPILE_PARALLELISM<1"
             return None
         PARALLEL_COMPILE_STATUS["source"] = "env:GPUWRF_XLA_COMPILE_PARALLELISM"
+        PARALLEL_COMPILE_STATUS["activation"] = "explicit-opt-in"
         return n
 
     # Primary var present and truthy/numeric.
@@ -472,6 +580,7 @@ def resolve_parallel_compile() -> int | None:
             PARALLEL_COMPILE_STATUS["source"] = "disabled-by-GPUWRF_XLA_PARALLEL_COMPILE<1"
             return None
         PARALLEL_COMPILE_STATUS["source"] = "env:GPUWRF_XLA_PARALLEL_COMPILE(count)"
+        PARALLEL_COMPILE_STATUS["activation"] = "explicit-opt-in"
         return n
     except ValueError:
         pass
@@ -484,6 +593,7 @@ def resolve_parallel_compile() -> int | None:
         return None
 
     # Truthy keyword: derive the count from the legacy var or a capped cpu_count.
+    PARALLEL_COMPILE_STATUS["activation"] = "explicit-opt-in"
     if legacy:
         try:
             n = int(legacy)
@@ -492,28 +602,40 @@ def resolve_parallel_compile() -> int | None:
                 return n
         except ValueError:
             pass  # fall through to the cpu_count default
-    n = min(os.cpu_count() or 1, 8)
+    n = _default_parallelism()
     PARALLEL_COMPILE_STATUS["source"] = "default:cpu_count(<=8)"
     return n
 
 
-def configure_parallel_compile() -> dict[str, object]:
+def configure_parallel_compile(default_on: bool = False) -> dict[str, object]:
     """Inject the build-validated ``--xla_gpu_force_compilation_parallelism`` flag.
 
-    STANDALONE, default-OFF, GPU-only counterpart to the autotune cache. Must be
-    called BEFORE the first JAX/XLA compile. Idempotent, best-effort, never raises.
+    GPU-only Tier-2 compile-speed knob. Must be called BEFORE the first JAX/XLA
+    compile. Idempotent, best-effort, never raises.
 
-    HARD-SAFE by the same construction as :func:`configure_autotune_cache`:
+    ``default_on`` (B2): when the persistent executable compile cache is
+    configured ON, the import hook calls this with ``default_on=True`` so N-way
+    parallel XLA compile rides ON by default (at :func:`_default_parallelism`
+    threads) -- this is what slashes the cold nest-compile wall (the ~40 min B200
+    case) by overlapping the many independent fusion compiles. The
+    ``GPUWRF_XLA_PARALLEL_COMPILE=0`` opt-out is always honoured. A *direct* call
+    (``default_on`` left False) keeps the historical OFF-unless-opted-in default,
+    so unit tests / callers that bypass the compile-cache hook stay byte-unchanged
+    unless they opt in.
 
-    1. Does NOTHING unless the operator opts in via ``GPUWRF_XLA_PARALLEL_COMPILE``
-       (or the legacy ``GPUWRF_XLA_COMPILE_PARALLELISM`` count). A merely-detected
-       GPU never activates it -> default GPU path byte-unchanged.
+    HARD-SAFE by the same construction as :func:`configure_autotune_cache`
+    REGARDLESS of the default:
+
+    1. The ``GPUWRF_XLA_PARALLEL_COMPILE=0`` opt-out always wins; only an UNSET
+       var defers to ``default_on``.
     2. Respects the platform pin (never injects ``--xla_gpu_*`` on a cpu/tpu pin,
        where a CPU jaxlib could fatally abort on an unknown flag).
     3. The single candidate flag is PROBED in an isolated subprocess (the SAME
        :func:`probe_flag_supported` used by the autotune path) and dropped if the
        build rejects it -- so an unsupported flag can never abort this process
-       (this is the explicit guard against re-introducing the v0.12.0 GPU-abort).
+       (this is the explicit guard against re-introducing the v0.12.0 GPU-abort;
+       the bundled jaxlib aborts on an UNKNOWN ``--xla_gpu_*`` flag, so default-on
+       MUST keep this probe). This is precisely why default-on is safe.
     4. Never clobbers an operator-set ``--xla_gpu_force_compilation_parallelism``
        already in ``XLA_FLAGS``.
 
@@ -524,7 +646,7 @@ def configure_parallel_compile() -> dict[str, object]:
     """
     _reset_parallel_status()
 
-    parallelism = resolve_parallel_compile()
+    parallelism = resolve_parallel_compile(default_on=default_on)
     PARALLEL_COMPILE_STATUS["opted_in"] = parallelism is not None
     if parallelism is None:
         # Disabled / not opted in. Pure no-op: XLA_FLAGS untouched.
@@ -583,9 +705,10 @@ def configure_parallel_compile() -> dict[str, object]:
 def autotune_env_help() -> str:
     """One-line human summary of the env vars for ``--help`` / docs / logs."""
     return (
-        "Persistent XLA autotune cache env vars (GPU only, OFF by default): "
-        "GPUWRF_XLA_AUTOTUNE_CACHE=1 opts in (unset/0 = no-op, default GPU path "
-        "unchanged); "
+        "Persistent XLA autotune cache env vars (GPU only; ON by default when the "
+        "persistent compile cache is on -- B1): "
+        "GPUWRF_XLA_AUTOTUNE_CACHE=0 opts OUT (1/on forces on; unset = on-with-"
+        "compile-cache); "
         "GPUWRF_XLA_AUTOTUNE_CACHE_DIR sets the dir (default $GPUWRF_CACHE/autotune "
         "or $HOME/.cache/gpuwrf/autotune); "
         "GPUWRF_XLA_AUTOTUNE_CACHE_MODE=update|read; "
@@ -600,12 +723,14 @@ def autotune_env_help() -> str:
 def parallel_compile_env_help() -> str:
     """One-line human summary of the standalone parallel-compile env vars."""
     return (
-        "Parallel XLA compile env vars (GPU only, OFF by default, INDEPENDENT of "
-        "the autotune cache): GPUWRF_XLA_PARALLEL_COMPILE=1 opts in (default thread "
-        "count = GPUWRF_XLA_COMPILE_PARALLELISM if set else min(cpu_count,8)); "
-        "GPUWRF_XLA_PARALLEL_COMPILE=N opts in with N threads directly; "
-        "GPUWRF_XLA_PARALLEL_COMPILE=0 disables; GPUWRF_XLA_COMPILE_PARALLELISM=N "
-        "alone (without GPUWRF_XLA_PARALLEL_COMPILE) also opts in with N threads. "
+        "Parallel XLA compile env vars (GPU only; ON by default when the persistent "
+        "compile cache is on -- B2; INDEPENDENT of the autotune cache): "
+        "GPUWRF_XLA_PARALLEL_COMPILE=0 opts OUT (default thread count = "
+        "GPUWRF_XLA_COMPILE_PARALLELISM if set else min(cpu_count,8)); "
+        "GPUWRF_XLA_PARALLEL_COMPILE=N forces N threads directly; "
+        "GPUWRF_XLA_PARALLEL_COMPILE=1 forces on; GPUWRF_XLA_COMPILE_PARALLELISM=N "
+        "alone (without GPUWRF_XLA_PARALLEL_COMPILE) also opts in with N threads; "
+        "unset = on-with-compile-cache at min(cpu_count,8). "
         "The single --xla_gpu_force_compilation_parallelism flag is validated in an "
         "isolated subprocess (GPUWRF_XLA_AUTOTUNE_PROBE=0 to skip) and dropped if "
         "the build rejects it, so it can never abort the main process. Numerically "

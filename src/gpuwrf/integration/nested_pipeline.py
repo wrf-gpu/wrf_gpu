@@ -52,10 +52,13 @@ from gpuwrf.io.wrfout_writer import (
     prepare_wrfout_payload,
     write_wrfout_netcdf,
 )
+from gpuwrf.runtime.finite_state_guard import assert_state_finite_at_boundary
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
     DomainTree,
     DomainTreeResult,
+    maybe_prewarm_defused_nest,
+    nested_precompile_report,
     run_operational_domain_tree,
     with_live_child_boundary_config,
 )
@@ -130,6 +133,10 @@ def _dt_by_domain(run, names: tuple[str, ...]) -> dict[str, float]:
         root_dt = nml.get("time_control", {}).get("time_step")
     if root_dt is None:
         raise ValueError("namelist has no domains/time_control time_step for the root domain")
+    # WRF namelists may pack several params per line, so the parser can return a
+    # 1-element list for a scalar key (e.g. "time_step = 18, ..."); coerce to scalar.
+    if isinstance(root_dt, (list, tuple)):
+        root_dt = root_dt[0]
     dt: dict[str, float] = {names[0]: float(root_dt)}
     for name in names[1:]:
         grid = run.grid(name)
@@ -722,6 +729,9 @@ class _PerDomainWrfoutWriter:
         state = getattr(carry, "state", carry)
         lead_seconds = float(own_step) * float(self.dt_by_domain[name])
         lead_hours = lead_seconds / 3600.0
+        assert_state_finite_at_boundary(
+            state, domain=name, step=int(own_step), sim_time_s=lead_seconds
+        )
         valid_time = self.run_start + timedelta(seconds=lead_seconds)
         namelist = self.bundles[name].namelist
         grid = self.bundles[name].grid
@@ -963,6 +973,40 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
 
     feedback_enabled = bool(config.feedback)
     tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=feedback_enabled)
+
+    # CROSS-DOMAIN PARALLEL PRE-COMPILE (vNext de-fuse cold-wall win). When the
+    # de-fuse compile path is active (GPUWRF_NESTED_DEFUSE_COMPILE=1 /
+    # GPUWRF_NESTED_FUSE=0 / GPUWRF_BITWISE) the N independent per-domain
+    # _advance_chunk_fori modules would otherwise compile SEQUENTIALLY (~Sum(N)
+    # ~50 min). This warms the shared version-keyed (locked) cache CONCURRENTLY in
+    # spawned child processes BEFORE the integration loop, so the eager loop below
+    # warm-hits all N (cold wall ~max(one body) + pool overhead). No-op for the
+    # fused default and fully FAIL-OPEN (a failure just
+    # cold-compiles as today). Numerically inert. The two stderr markers below
+    # bracket the wall so a GPU A/B can time the cold-compile-wall precisely. The
+    # gate self-gates (no-op for the fused default / GPUWRF_NESTED_PARALLEL_COMPILE=0)
+    # so it is always safe to call here. De-fuse remains opt-in.
+    _pc_t0 = time.perf_counter()
+    sys.stderr.write("[parallel-compile] PREWARM_START de-fuse nest\n")
+    sys.stderr.flush()
+    _pc_status = maybe_prewarm_defused_nest(tree, carries=initial_carries)
+    _pc_dt = time.perf_counter() - _pc_t0
+    _pc_rep = _pc_status.get("report") or {}
+    sys.stderr.write(
+        "[parallel-compile] PREWARM_DONE active=%s source=%s workers=%s "
+        "wall_s=%.1f warm_all=%s error=%s\n"
+        % (
+            _pc_status.get("active"),
+            _pc_status.get("source"),
+            _pc_status.get("workers"),
+            _pc_dt,
+            _pc_rep.get("warm_all") if isinstance(_pc_rep, dict) else None,
+            _pc_status.get("error"),
+        )
+    )
+    sys.stderr.flush()
+    meta.setdefault("parallel_compile", {})["nested_precompile"] = nested_precompile_report()
+
     # Async history output (v0.20 host-bubble lever): when on, the per-domain
     # writer keeps the device->host materialization on the step thread but submits
     # the host payload to this single bounded-queue background writer thread, so
@@ -1044,6 +1088,14 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             # freed before the next segment allocates -- bounds peak VRAM to one
             # segment's working set regardless of forecast length.
             jax.block_until_ready(tuple(state.theta for state in result.states.values()))
+            for domain_name, state in result.states.items():
+                domain_step = int(result.own_steps.get(domain_name, own_steps.get(domain_name, 0)))
+                assert_state_finite_at_boundary(
+                    state,
+                    domain=domain_name,
+                    step=domain_step,
+                    sim_time_s=float(domain_step) * float(dt_by_domain[domain_name]),
+                )
             carries = result.carries
             own_steps = dict(result.own_steps)
             # Fold this segment's events into the running summary + bounded tail, then

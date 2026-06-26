@@ -16,11 +16,13 @@ single-domain entry, so the WRF scratch carry persists across nested substeps.
 from __future__ import annotations
 
 import os
+import sys
 import weakref
 
 from collections import Counter, deque
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace as dataclass_replace
+from pathlib import Path
 from typing import Any
 
 import jax
@@ -42,6 +44,7 @@ from gpuwrf.nesting.boundary_construction import (
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
     _advance_chunk,
+    _advance_chunk_fori,
     _initial_carry_for_run,
     _resolve_operational_suite,
     build_clock_base,
@@ -512,6 +515,44 @@ def run_domain_tree_callbacks(
     )
 
 
+def _nested_aot_enabled() -> bool:
+    """``GPUWRF_NESTED_AOT`` truthy? DEFAULT-ON (vNext cheap-key manifest).
+
+    Step C: when ON, the eager advance closure computes a metadata-only
+    ``cheap_key`` for the exact per-domain/per-shape call (NO lowering) and loads
+    the matching serialized ``_advance_chunk_fori`` blob in microseconds; on a
+    miss it compiles + serializes that exact variant (under both the cheap_key and
+    the hlo address). Identity-preserving + fail-open: any error falls back to the
+    normal jitted compile -- never wrong, only slower. Set ``GPUWRF_NESTED_AOT=0``
+    to disable. The version-fingerprint guard (target/jaxlib/SM/x64/XLA_FLAGS) is
+    re-checked on every load so a stale-target blob is never mis-executed."""
+    return os.environ.get("GPUWRF_NESTED_AOT", "1").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
+
+
+def _nested_aot_verify_enabled() -> bool:
+    """``GPUWRF_AOT_VERIFY`` truthy? (default OFF).
+
+    Verify-mode: on the FIRST cheap-key hit per (domain, cheap_key) per process,
+    do ONE confirmatory ``lower()`` and assert the lowered HLO digest equals the
+    blob's recorded ``meta.hlo_sha256``. PASS -> mark verified, never lower that
+    key again this process. FAIL -> fail-CLOSED for that key (discard the blob,
+    compile normally, loud stderr) so any missed cheap_key determinant becomes a
+    loud fallback instead of a silent wrong result. Cost = one lower per distinct
+    key per process (not per chunk). The manager runs this ON for the first
+    warm-start of each new version, then OFF in production."""
+    return os.environ.get("GPUWRF_AOT_VERIFY", "").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
+
+
+# Records the last AOT-load outcome per domain (diagnostics / GPU A/B). Maps
+# domain name -> {"loaded": bool, "source": str, "error": str|None, ...}.
+# Numerically inert.
+NESTED_AOT_STATUS: dict[str, object] = {"enabled": False, "domains": {}}
+
+
 def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
     # #91: one traced clock_base per domain namelist (built once, reused every chunk)
     # so each domain's compiled HLO is date-independent (cross-date cache hit).
@@ -519,21 +560,621 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
         name: build_clock_base(dom.namelist) for name, dom in tree.domains.items()
     }
 
+    # Step C: per-domain/per-HLO AOT-loaded advance callables. Integration can
+    # call one domain with multiple carry-shape variants; memoizing only by domain
+    # would load one blob and then false-fallback every sibling shape.
+    aot_on = _nested_aot_enabled()
+    aot_verify = _nested_aot_verify_enabled()
+    NESTED_AOT_STATUS["enabled"] = aot_on
+    NESTED_AOT_STATUS["verify"] = aot_verify
+    NESTED_AOT_STATUS["domains"] = {}
+    # Memo of loaded advance callables keyed by (domain, cheap_key). Integration
+    # can call one domain with multiple carry-shape variants, so memoizing only by
+    # domain would load one blob and then false-fallback every sibling shape.
+    _aot_calls: dict[tuple[str, str], Any] = {}
+    _aot_attempted: set[tuple[str, str]] = set()
+    # Verify-mode bookkeeping: keys whose blob HLO has been confirmed (lower-once)
+    # and keys proven to FAIL verification (fail-closed -> never load again).
+    _aot_verified: set[tuple[str, str]] = set()
+    _aot_verify_failed: set[tuple[str, str]] = set()
+
+    def _record_aot_status(name: str, status: dict[str, Any]) -> None:
+        try:
+            NESTED_AOT_STATUS["domains"][name] = dict(status)  # type: ignore[index]
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _log_aot_status(name: str, status: dict[str, Any]) -> None:
+        """Emit one stderr line per domain load/fallback for GPU gate visibility."""
+        try:
+            loaded = bool(status.get("loaded"))
+            source = status.get("source") or ("aot_blob" if loaded else "fallback:jit")
+            parts = [
+                f"[gpuwrf:nested-aot] domain={name}",
+                f"loaded={str(loaded).lower()}",
+                f"source={source}",
+            ]
+            blob_path = status.get("blob_path")
+            if blob_path:
+                parts.append(f"path={blob_path}")
+            hlo = status.get("hlo_sha256")
+            if hlo:
+                parts.append(f"hlo={str(hlo)[:12]}")
+            error = status.get("error")
+            if error:
+                parts.append(f"error={str(error).replace(chr(10), ' | ')}")
+            sys.stderr.write(" ".join(parts) + "\n")
+            sys.stderr.flush()
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _aot_fori_mode_enabled() -> bool:
+        mode = os.environ.get("GPUWRF_ADVANCE_CHUNK_LOOP", "fori").strip().lower()
+        return mode in {"", "fori", "fori_loop", "fori-loop"}
+
+    def _cheap_key_for(
+        carry: OperationalCarry,
+        namelist: OperationalNamelist,
+        start: Any,
+        clock_base: Any,
+        *,
+        n_steps: int,
+        cadence: int,
+    ) -> str | None:
+        """Compute the metadata-only cheap_key for this call (NO lowering).
+
+        Returns the key, or ``None`` on any error (caller falls back to the
+        lower-only path -> compile). This is the microsecond replacement for the
+        ~30-54 min ``_lower_advance_variant`` on the WARM path."""
+        try:
+            from gpuwrf.runtime import aot_cheap_key as _ck
+
+            return _ck.cheap_key(
+                _advance_chunk_fori,
+                (carry, namelist, start, clock_base),
+                {"n_steps": int(n_steps), "cadence": int(cadence)},
+                namelist,
+            )
+        except BaseException:  # noqa: BLE001 - fail-open to the lower path
+            return None
+
+    def _lower_advance_variant(
+        carry: OperationalCarry,
+        namelist: OperationalNamelist,
+        start: Any,
+        clock_base: Any,
+        *,
+        n_steps: int,
+        cadence: int,
+    ) -> tuple[Any | None, str | None, str | None]:
+        """Lower the exact Step-C call and return ``(lowered, hlo, error)``."""
+        try:
+            from gpuwrf.runtime import aot_executable as aotx
+
+            lowered = _advance_chunk_fori.lower(
+                carry,
+                namelist,
+                start,
+                clock_base,
+                n_steps=int(n_steps),
+                cadence=int(cadence),
+            )
+            hlo = aotx.hlo_sha256_from_lowered(lowered)
+            if not hlo:
+                return lowered, None, "lowered HLO digest unavailable"
+            return lowered, hlo, None
+        except BaseException as exc:  # noqa: BLE001 - fail-open to jitted path
+            return None, None, f"{type(exc).__name__}: {exc}"
+
+    def _verify_cheap_key_blob(
+        name: str,
+        ckey: str,
+        meta_hlo_sha256: str | None,
+        carry: OperationalCarry,
+        namelist: OperationalNamelist,
+        start: Any,
+        clock_base: Any,
+        *,
+        n_steps: int,
+        cadence: int,
+    ) -> bool:
+        """Verify a cheap-key-loaded blob lowers to its recorded HLO (lower-once).
+
+        Returns ``True`` (mark verified, never lower this key again) when the live
+        lowered HLO digest equals ``meta_hlo_sha256``; ``False`` (fail-CLOSED, loud
+        stderr) on ANY mismatch / missing digest / lower error so a missed cheap_key
+        determinant surfaces as a fallback rather than a silent wrong result. Cost =
+        one lower per distinct (domain, cheap_key) per process, not per chunk."""
+        ck_state = (name, ckey)
+        _, hlo_now, lower_error = _lower_advance_variant(
+            carry,
+            namelist,
+            start,
+            clock_base,
+            n_steps=int(n_steps),
+            cadence=int(cadence),
+        )
+        if lower_error or not hlo_now or not meta_hlo_sha256:
+            _aot_verify_failed.add(ck_state)
+            reason = lower_error or "missing HLO digest for verify"
+            status = {
+                "name": name,
+                "loaded": False,
+                "source": "fallback:verify-error",
+                "error": f"AOT verify could not confirm cheap_key blob: {reason}",
+                "cheap_key": ckey,
+            }
+            _record_aot_status(name, status)
+            _log_aot_status(name, status)
+            return False
+        if hlo_now != meta_hlo_sha256:
+            # CHEAP_KEY COLLISION: the blob this key located lowers to a DIFFERENT
+            # HLO -> the key missed a determinant. Fail CLOSED + loud, and POISON
+            # the (domain, cheap_key) on disk (P0-1) so NO process ever writes or
+            # serves a cheap-key blob for this ambiguous key again -- the next load
+            # fails OPEN to a fresh compile instead of overwriting/serving a sibling.
+            _aot_verify_failed.add(ck_state)
+            try:
+                from gpuwrf.runtime import aot_precompile as _aotp
+
+                _aotp.quarantine_cheap_key(
+                    name,
+                    ckey,
+                    reason="verify-mode HLO mismatch (cheap_key collision)",
+                    detail={
+                        "meta_hlo": str(meta_hlo_sha256),
+                        "live_hlo": str(hlo_now),
+                    },
+                )
+            except Exception:  # noqa: BLE001 - quarantine is best-effort/fail-open
+                pass
+            status = {
+                "name": name,
+                "loaded": False,
+                "source": "fallback:verify-MISMATCH",
+                "error": (
+                    "AOT VERIFY FAILED (cheap_key collision): blob meta hlo="
+                    f"{str(meta_hlo_sha256)[:12]} != live lowered hlo="
+                    f"{str(hlo_now)[:12]}; quarantining cheap_key + compiling fresh "
+                    "(cheap_key is missing an HLO determinant)"
+                ),
+                "cheap_key": ckey,
+            }
+            _record_aot_status(name, status)
+            _log_aot_status(name, status)
+            return False
+        _aot_verified.add(ck_state)
+        return True
+
+    def _aot_advance_by_cheap_key(name: str, ckey: str):
+        """Return ``(call, status)`` for ``name``/``cheap_key`` via metadata lookup.
+
+        Loads the cheap-key-addressed blob WITHOUT lowering (memoised per
+        (domain, cheap_key)). Fully fail-open: any error yields ``(None, status)``
+        and the caller compiles/captures. ``status`` carries ``meta_hlo_sha256``
+        so verify-mode can confirm the loaded blob lowers to the same HLO."""
+        key = (name, ckey)
+        status: dict[str, Any] = {
+            "name": name,
+            "loaded": False,
+            "source": "fallback:jit",
+            "error": None,
+            "cheap_key": ckey,
+        }
+        if key in _aot_attempted:
+            return _aot_calls.get(key), status
+        _aot_attempted.add(key)
+        call = None
+        try:
+            from gpuwrf.runtime import aot_precompile
+
+            loaded = aot_precompile.load_domain_blob(
+                name, cheap_key=ckey, return_status=True
+            )
+            if isinstance(loaded, tuple) and len(loaded) == 2:
+                call, loaded_status = loaded
+                if isinstance(loaded_status, dict):
+                    status.update(loaded_status)
+            else:  # back-compat monkeypatch returning a bare call/None
+                call = loaded
+                status.update(
+                    {
+                        "loaded": call is not None,
+                        "source": "aot_blob" if call is not None else "fallback:jit",
+                    }
+                )
+        except BaseException as exc:  # noqa: BLE001 - fail-open
+            call = None
+            status.update(
+                {
+                    "loaded": False,
+                    "source": "fallback:load-exception",
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
+        _aot_calls[key] = call
+        status["loaded"] = call is not None
+        # Surface the blob's recorded HLO as ``hlo_sha256`` too so the diagnostic
+        # log line / report still shows WHICH program loaded (cheap_key is the
+        # lookup address; the HLO is the program identity).
+        if status.get("hlo_sha256") is None and status.get("meta_hlo_sha256"):
+            status["hlo_sha256"] = status["meta_hlo_sha256"]
+        return call, status
+
+    def _aot_advance_for(name: str, hlo_sha256: str):
+        """Return a drop-in AOT advance callable for ``name``/``hlo`` or ``None``.
+
+        Loaded at most once per domain variant (memoised). Fully fail-open: any
+        error in the load path yields ``None`` and the caller compiles/captures."""
+        key = (name, hlo_sha256)
+        if key in _aot_attempted:
+            return _aot_calls.get(key)
+        _aot_attempted.add(key)
+        call = None
+        status: dict[str, Any] = {
+            "name": name,
+            "loaded": False,
+            "source": "fallback:jit",
+            "error": None,
+            "hlo_sha256": hlo_sha256,
+        }
+        try:
+            from gpuwrf.runtime import aot_precompile
+
+            loaded = aot_precompile.load_domain_blob(
+                name, hlo_sha256=hlo_sha256, return_status=True
+            )
+            if isinstance(loaded, tuple) and len(loaded) == 2:
+                call, loaded_status = loaded
+                if isinstance(loaded_status, dict):
+                    status.update(loaded_status)
+            else:
+                # Back-compat for tests/older monkeypatches that return just call/None.
+                call = loaded
+                status.update(
+                    {
+                        "loaded": call is not None,
+                        "source": "aot_blob" if call is not None else "fallback:jit",
+                    }
+                )
+        except BaseException as exc:  # noqa: BLE001 - fail-open
+            call = None
+            status.update(
+                {
+                    "loaded": False,
+                    "source": "fallback:load-exception",
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
+        _aot_calls[key] = call
+        status["loaded"] = call is not None
+        if call is not None and not status.get("source"):
+            status["source"] = "aot_blob"
+        _record_aot_status(name, status)
+        _log_aot_status(name, status)
+        return call
+
+    def _compile_capture_and_call(
+        name: str,
+        lowered: Any | None,
+        hlo_sha256: str | None,
+        carry: OperationalCarry,
+        namelist: OperationalNamelist,
+        start: Any,
+        clock_base: Any,
+        *,
+        n_steps: int,
+        cadence: int,
+        cheap_key: str | None = None,
+    ) -> OperationalCarry:
+        """Compile the exact variant, serialize it best-effort, then execute it.
+
+        On a cheap-key miss (or verify fail-closed) this compiles the lowered
+        program and serializes the blob under BOTH the cheap_key address (so the
+        next warm process locates it without lowering) and the hlo address."""
+        if lowered is None:
+            return _advance_chunk(
+                carry,
+                namelist,
+                start,
+                clock_base,
+                n_steps=int(n_steps),
+                cadence=cadence,
+            )
+        try:
+            compiled = lowered.compile()
+            if hlo_sha256:
+                _aot_attempted.add((name, hlo_sha256))
+                _aot_calls[(name, hlo_sha256)] = compiled
+            if cheap_key:
+                _aot_attempted.add((name, cheap_key))
+                _aot_calls[(name, cheap_key)] = compiled
+            capture_status: dict[str, Any] = {
+                "name": name,
+                "loaded": False,
+                "source": "fallback:jit-compiled",
+                "error": None,
+                "hlo_sha256": hlo_sha256,
+                "cheap_key": cheap_key,
+            }
+            if hlo_sha256 or cheap_key:
+                try:
+                    from gpuwrf.runtime import aot_precompile
+
+                    key_schema = None
+                    if cheap_key:
+                        try:
+                            from gpuwrf.runtime import aot_cheap_key as _ck
+
+                            key_schema = _ck.KEY_SCHEMA
+                        except Exception:  # noqa: BLE001
+                            key_schema = None
+                    ser = aot_precompile._serialize_domain_blob(
+                        name,
+                        compiled,
+                        None,
+                        hlo_sha256=hlo_sha256,
+                        # Thread the lowered object so serialize() can re-derive the
+                        # lower-only StableHLO digest even if hlo_sha256 came back
+                        # None on this backend -> persisted meta.hlo_sha256 is never
+                        # empty -> the cross-process cheap-key load + verify succeed.
+                        lowered=lowered,
+                        cheap_key=cheap_key,
+                        key_schema=key_schema,
+                    )
+                    capture_status.update(ser)
+                    if ser.get("aot_written"):
+                        capture_status["source"] = "fallback:jit-compiled+aot-captured"
+                    elif ser.get("aot_error"):
+                        capture_status["error"] = ser.get("aot_error")
+                except BaseException as exc:  # noqa: BLE001 - capture is best-effort
+                    capture_status["error"] = f"{type(exc).__name__}: {exc}"
+            _record_aot_status(name, capture_status)
+            _log_aot_status(name, capture_status)
+            return compiled(
+                carry,
+                namelist,
+                start,
+                clock_base,
+                n_steps=int(n_steps),
+                cadence=int(cadence),
+            )
+        except BaseException as exc:  # noqa: BLE001 - preserve legacy fallback
+            status = {
+                "name": name,
+                "loaded": False,
+                "source": "fallback:jit-compile-exception",
+                "error": f"{type(exc).__name__}: {exc}",
+                "hlo_sha256": hlo_sha256,
+                "cheap_key": cheap_key,
+            }
+            _record_aot_status(name, status)
+            _log_aot_status(name, status)
+            return _advance_chunk(
+                carry,
+                namelist,
+                start,
+                clock_base,
+                n_steps=int(n_steps),
+                cadence=cadence,
+            )
+
     def advance(name: str, carry: OperationalCarry, start_step: int, n_steps: int) -> OperationalCarry:
         namelist = tree.domains[name].namelist
         cadence = int(namelist.radiation_cadence_steps)
         if cadence <= 0:
             raise ValueError(f"{name}: radiation_cadence_steps must be positive")
+        start = jnp.asarray(int(start_step), dtype=jnp.int32)
+        clock_base = _clock_bases[name]
+
+        # Step C (vNext cheap-key manifest): locate the serialized executable for
+        # THIS exact per-domain/per-shape variant via a metadata-only cheap_key --
+        # NO lowering on the warm path. One domain may see multiple carry-shape
+        # variants during nested coupling segments, so the memo keys on
+        # (domain, cheap_key). The first cold miss lowers + compiles + serializes
+        # that variant (under both the cheap_key and the hlo address); every later
+        # warm process computes the cheap_key in microseconds and loads the blob.
+        # Any failure remains fail-open to the jitted path -- never wrong, slower.
+        if aot_on:
+            if not _aot_fori_mode_enabled():
+                status = {
+                    "name": name,
+                    "loaded": False,
+                    "source": "fallback:loop-mode",
+                    "error": "AOT Step C supports only the fori-loop advance mode",
+                    "hlo_sha256": None,
+                }
+                _record_aot_status(name, status)
+                _log_aot_status(name, status)
+            else:
+                # --- WARM PATH: metadata-only cheap_key, no lowering. ---
+                ckey = _cheap_key_for(
+                    carry,
+                    namelist,
+                    start,
+                    clock_base,
+                    n_steps=int(n_steps),
+                    cadence=int(cadence),
+                )
+                if ckey is not None:
+                    ck_state = (name, ckey)
+                    aot_call, ck_status = _aot_advance_by_cheap_key(name, ckey)
+                    if aot_call is not None and ck_state not in _aot_verify_failed:
+                        # Verify-mode: confirm the blob lowers to its recorded HLO
+                        # ONCE per key, fail-CLOSED on a mismatch (a missed cheap_key
+                        # determinant becomes a loud fallback, not a silent wrong).
+                        verified_ok = True
+                        if aot_verify and ck_state not in _aot_verified:
+                            verified_ok = _verify_cheap_key_blob(
+                                name,
+                                ckey,
+                                ck_status.get("meta_hlo_sha256"),
+                                carry,
+                                namelist,
+                                start,
+                                clock_base,
+                                n_steps=int(n_steps),
+                                cadence=int(cadence),
+                            )
+                        if verified_ok:
+                            ck_status["source"] = "aot_blob"
+                            ck_status["loaded"] = True
+                            _record_aot_status(name, ck_status)
+                            _log_aot_status(name, ck_status)
+                            try:
+                                return aot_call(
+                                    carry,
+                                    namelist,
+                                    start,
+                                    clock_base,
+                                    n_steps=int(n_steps),
+                                    cadence=int(cadence),
+                                )
+                            except BaseException as exc:  # noqa: BLE001 - fail-open
+                                _aot_calls[ck_state] = None
+                                status = {
+                                    "name": name,
+                                    "loaded": False,
+                                    "source": "fallback:jit(exec-error)",
+                                    "error": f"{type(exc).__name__}: {exc}",
+                                    "cheap_key": ckey,
+                                }
+                                _record_aot_status(name, status)
+                                _log_aot_status(name, status)
+                        else:
+                            # Verify FAILED: never load this key again; compile fresh.
+                            _aot_calls[ck_state] = None
+                    else:
+                        _record_aot_status(name, ck_status)
+                        _log_aot_status(name, ck_status)
+                    # MISS / exec-error / verify-fail: lower + compile + serialize
+                    # the exact variant (also writes the cheap-key-addressed blob).
+                    lowered, hlo_sha256, lower_error = _lower_advance_variant(
+                        carry,
+                        namelist,
+                        start,
+                        clock_base,
+                        n_steps=int(n_steps),
+                        cadence=int(cadence),
+                    )
+                    if lower_error:
+                        status = {
+                            "name": name,
+                            "loaded": False,
+                            "source": "fallback:lower-error",
+                            "error": lower_error,
+                            "hlo_sha256": hlo_sha256,
+                            "cheap_key": ckey,
+                        }
+                        _record_aot_status(name, status)
+                        _log_aot_status(name, status)
+                    else:
+                        return _compile_capture_and_call(
+                            name,
+                            lowered,
+                            hlo_sha256,
+                            carry,
+                            namelist,
+                            start,
+                            clock_base,
+                            n_steps=int(n_steps),
+                            cadence=int(cadence),
+                            cheap_key=ckey,
+                        )
+                    # lower-error -> drop through to the plain jitted path below.
+                    return _advance_chunk(
+                        carry,
+                        namelist,
+                        start,
+                        clock_base,
+                        n_steps=int(n_steps),
+                        cadence=cadence,
+                    )
+
+                # --- cheap_key unavailable: legacy lower-only fingerprint path. ---
+                lowered, hlo_sha256, lower_error = _lower_advance_variant(
+                    carry,
+                    namelist,
+                    start,
+                    clock_base,
+                    n_steps=int(n_steps),
+                    cadence=int(cadence),
+                )
+                if lower_error:
+                    status = {
+                        "name": name,
+                        "loaded": False,
+                        "source": "fallback:lower-error",
+                        "error": lower_error,
+                        "hlo_sha256": hlo_sha256,
+                    }
+                    _record_aot_status(name, status)
+                    _log_aot_status(name, status)
+                elif hlo_sha256:
+                    aot_call = _aot_advance_for(name, hlo_sha256)
+                    if aot_call is not None:
+                        try:
+                            return aot_call(
+                                carry,
+                                namelist,
+                                start,
+                                clock_base,
+                                n_steps=int(n_steps),
+                                cadence=int(cadence),
+                            )
+                        except BaseException as exc:  # noqa: BLE001 - fail-open
+                            _aot_calls[(name, hlo_sha256)] = None
+                            status = {
+                                "name": name,
+                                "loaded": False,
+                                "source": "fallback:jit(exec-error)",
+                                "error": f"{type(exc).__name__}: {exc}",
+                                "hlo_sha256": hlo_sha256,
+                            }
+                            _record_aot_status(name, status)
+                            _log_aot_status(name, status)
+                    return _compile_capture_and_call(
+                        name,
+                        lowered,
+                        hlo_sha256,
+                        carry,
+                        namelist,
+                        start,
+                        clock_base,
+                        n_steps=int(n_steps),
+                        cadence=int(cadence),
+                    )
+                else:
+                    status = {
+                        "name": name,
+                        "loaded": False,
+                        "source": "fallback:no-hlo-digest",
+                        "error": "lowered HLO digest unavailable",
+                        "hlo_sha256": None,
+                    }
+                    _record_aot_status(name, status)
+                    _log_aot_status(name, status)
+
         return _advance_chunk(
             carry,
             namelist,
-            jnp.asarray(int(start_step), dtype=jnp.int32),
-            _clock_bases[name],
+            start,
+            clock_base,
             n_steps=int(n_steps),
             cadence=cadence,
         )
 
     return advance
+
+
+def nested_aot_report() -> dict[str, object]:
+    """Snapshot of the last AOT-load outcome per domain (Step C diagnostics)."""
+    domains = NESTED_AOT_STATUS.get("domains") or {}
+    return {
+        "enabled": bool(NESTED_AOT_STATUS.get("enabled")),
+        "verify": bool(NESTED_AOT_STATUS.get("verify")),
+        "domains": dict(domains) if isinstance(domains, dict) else {},
+    }
 
 
 def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: OperationalCarry) -> OperationalCarry:
@@ -548,10 +1189,198 @@ def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: Operat
     return child.replace(state=forced_state)
 
 
-def _build_fused_cascade_program(
+@dataclass(frozen=True)
+class _FusedAuxNamelist:
+    """Namelist-like static carrier for the fused-cascade cheap-key.
+
+    ``aot_cheap_key.static_config_hash`` hashes ``tree_flatten()[1]``. The fused
+    jit closes over parent/child namelists and edge geometry rather than taking a
+    single ``OperationalNamelist`` argument, so this synthetic object exposes the
+    complete closure determinant set through the same static-aux channel.
+    """
+
+    aux: Any
+
+    def tree_flatten(self):
+        return (), self.aux
+
+
+def _namelist_static_aux(namelist: Any) -> Any:
+    flatten = getattr(namelist, "tree_flatten", None)
+    if callable(flatten):
+        _children, aux = flatten()
+        return aux
+    attrs: dict[str, Any] = {}
+    for cls in reversed(type(namelist).__mro__):
+        for name, value in vars(cls).items():
+            if not name.startswith("_") and not callable(value):
+                attrs[name] = value
+    if hasattr(namelist, "__dict__"):
+        attrs.update(
+            (name, value)
+            for name, value in vars(namelist).items()
+            if not name.startswith("_")
+        )
+    return (type(namelist).__module__, type(namelist).__qualname__, tuple(sorted(attrs.items())))
+
+
+def _fused_source_fingerprint() -> str:
+    """Conservative source digest for fused-only orchestration callees."""
+    try:
+        from gpuwrf.runtime import aot_cheap_key as _ck
+
+        files = [
+            Path(__file__).resolve(),
+            Path(build_child_boundary_package.__code__.co_filename).resolve(),
+        ]
+        payload = []
+        for path in files:
+            data = path.read_bytes()
+            payload.append((path.name, len(data), _ck.canonical_digest(data)))
+        return _ck.canonical_digest(("fused-source", tuple(payload)))
+    except Exception:  # noqa: BLE001 - fail-open to a stable marker
+        return "fused-source-unavailable"
+
+
+def _build_fused_aux_namelist(
     *,
     parent_namelist: OperationalNamelist,
     parent_cadence: int,
+    child_names: tuple[str, ...],
+    child_namelists: tuple[OperationalNamelist, ...],
+    child_weights: tuple[NestForceWeights, ...],
+    child_bdy_widths: tuple[int, ...],
+    child_ratios: tuple[int, ...],
+    child_cadences: tuple[int, ...],
+) -> _FusedAuxNamelist:
+    """Build the synthetic static aux that fully identifies a fused cascade."""
+    child_aux = []
+    for name, namelist, weights, bdy_width, ratio, cadence in zip(
+        child_names,
+        child_namelists,
+        child_weights,
+        child_bdy_widths,
+        child_ratios,
+        child_cadences,
+        strict=True,
+    ):
+        child_aux.append(
+            {
+                "name": str(name),
+                "namelist_static_aux": _namelist_static_aux(namelist),
+                "weights": weights,
+                "bdy_width": int(bdy_width),
+                "ratio": int(ratio),
+                "cadence": int(cadence),
+            }
+        )
+    return _FusedAuxNamelist(
+        (
+            "gpuwrf-fused-cascade-aot-v1",
+            {
+                "parent_namelist_static_aux": _namelist_static_aux(parent_namelist),
+                "parent_cadence": int(parent_cadence),
+                "child_count": len(child_aux),
+                "children": tuple(child_aux),
+                "fused_source": _fused_source_fingerprint(),
+            },
+        )
+    )
+
+
+def _fused_cascade_cheap_key(
+    fused_jit: Any,
+    fused_aux: _FusedAuxNamelist,
+    parent_carry: Any,
+    child_carries: tuple[Any, ...],
+    parent_start: int,
+    child_starts: tuple[int, ...],
+    parent_clock_base: Any,
+    child_clock_bases: tuple[Any, ...],
+) -> str | None:
+    """Metadata-only AOT key for a fused cascade call; ``None`` means fail-open."""
+    try:
+        from gpuwrf.runtime import aot_cheap_key as _ck
+
+        return _ck.cheap_key(
+            fused_jit,
+            (
+                parent_carry,
+                child_carries,
+                int(parent_start),
+                tuple(int(s) for s in child_starts),
+                parent_clock_base,
+                child_clock_bases,
+            ),
+            {},
+            fused_aux,
+        )
+    except BaseException:  # noqa: BLE001 - no key -> normal fused jit
+        return None
+
+
+def _record_nested_aot_status(name: str, status: dict[str, Any]) -> None:
+    try:
+        domains = NESTED_AOT_STATUS.setdefault("domains", {})
+        if isinstance(domains, dict):
+            domains[name] = dict(status)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _log_nested_aot_status(name: str, status: dict[str, Any]) -> None:
+    """Emit one stderr line per AOT load/fallback for GPU gate visibility."""
+    try:
+        loaded = bool(status.get("loaded"))
+        source = status.get("source") or ("aot_blob" if loaded else "fallback:jit")
+        parts = [
+            f"[gpuwrf:nested-aot] domain={name}",
+            f"loaded={str(loaded).lower()}",
+            f"source={source}",
+        ]
+        blob_path = status.get("blob_path")
+        if blob_path:
+            parts.append(f"path={blob_path}")
+        hlo = status.get("hlo_sha256") or status.get("meta_hlo_sha256")
+        if hlo:
+            parts.append(f"hlo={str(hlo)[:12]}")
+        ckey = status.get("cheap_key")
+        if ckey:
+            parts.append(f"cheap_key={str(ckey)[:12]}")
+        error = status.get("error")
+        if error:
+            parts.append(f"error={str(error).replace(chr(10), ' | ')}")
+        sys.stderr.write(" ".join(parts) + "\n")
+        sys.stderr.flush()
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _aval_signature(args: tuple[Any, ...]) -> tuple[tuple[tuple[int, ...], str, bool], ...]:
+    """Cheap runtime-arg aval signature for cached compiled executable reuse."""
+
+    sig: list[tuple[tuple[int, ...], str, bool]] = []
+    for leaf in jax.tree_util.tree_leaves(args):
+        try:
+            aval = jax.typeof(leaf)
+            shape = tuple(int(v) for v in getattr(aval, "shape", ()))
+            dtype = str(getattr(aval, "dtype", type(leaf).__name__))
+            weak_type = bool(getattr(aval, "weak_type", False))
+        except Exception:  # noqa: BLE001 - only a cache key; fail closed to unique-ish type
+            raw_shape = getattr(leaf, "shape", ())
+            shape = tuple(int(v) for v in raw_shape)
+            dtype = str(getattr(leaf, "dtype", type(leaf).__name__))
+            weak_type = False
+        sig.append((shape, dtype, weak_type))
+    return tuple(sig)
+
+
+def _build_fused_cascade_program(
+    *,
+    parent_name: str,
+    parent_namelist: OperationalNamelist,
+    parent_cadence: int,
+    child_names: tuple[str, ...],
     child_namelists: tuple[OperationalNamelist, ...],
     child_weights: tuple[NestForceWeights, ...],
     child_bdy_widths: tuple[int, ...],
@@ -562,6 +1391,21 @@ def _build_fused_cascade_program(
 
     parent_cad = int(parent_cadence)
     n_children = len(child_namelists)
+    aot_name = f"fused/{parent_name}"
+    aot_on = _nested_aot_enabled()
+    aot_verify = _nested_aot_verify_enabled()
+    NESTED_AOT_STATUS["enabled"] = bool(aot_on)
+    NESTED_AOT_STATUS["verify"] = bool(aot_verify)
+    fused_aux = _build_fused_aux_namelist(
+        parent_namelist=parent_namelist,
+        parent_cadence=parent_cadence,
+        child_names=tuple(str(name) for name in child_names),
+        child_namelists=child_namelists,
+        child_weights=child_weights,
+        child_bdy_widths=child_bdy_widths,
+        child_ratios=child_ratios,
+        child_cadences=child_cadences,
+    )
     # #91: per-run date scalars built ONCE on the host and passed into the jitted
     # cascade as TRACED arguments (parent_cb / child_cbs) so the fused HLO is
     # date-independent (cross-date compile-cache hit; numerically inert).
@@ -599,13 +1443,244 @@ def _build_fused_cascade_program(
             new_children.append(child_new)
         return parent_new, tuple(new_children)
 
+    cached_calls: dict[tuple[tuple[tuple[int, ...], str, bool], ...], tuple[Any, str | None]] = {}
+    max_cached_calls = 16
+    verified_keys: set[str] = set()
+    verify_failed_keys: set[str] = set()
+
+    def _args(parent_carry, child_carries, parent_start, child_starts):
+        return (
+            parent_carry,
+            tuple(child_carries),
+            int(parent_start),
+            tuple(int(s) for s in child_starts),
+            parent_clock_base,
+            child_clock_bases,
+        )
+
+    def _lower_fused(args: tuple[Any, ...]) -> tuple[Any | None, str | None, str | None]:
+        try:
+            from gpuwrf.runtime import aot_executable as _aotx
+
+            lowered = fused_jit.lower(*args)
+            hlo = _aotx.hlo_sha256_from_lowered(lowered)
+            if not hlo:
+                return lowered, None, "lowered HLO digest unavailable"
+            return lowered, hlo, None
+        except BaseException as exc:  # noqa: BLE001 - fail-open to normal fused jit
+            return None, None, f"{type(exc).__name__}: {exc}"
+
+    def _store_cached_call(
+        sig: tuple[tuple[tuple[int, ...], str, bool], ...],
+        call: Any,
+        ckey: str | None,
+    ) -> None:
+        if sig not in cached_calls and len(cached_calls) >= max_cached_calls:
+            cached_calls.pop(next(iter(cached_calls)), None)
+        cached_calls[sig] = (call, ckey)
+
+    def _compile_capture_and_call(
+        args: tuple[Any, ...],
+        ckey: str | None,
+        sig: tuple[tuple[tuple[int, ...], str, bool], ...],
+    ):
+        lowered, hlo_sha256, lower_error = _lower_fused(args)
+        if lower_error or lowered is None:
+            status = {
+                "name": aot_name,
+                "loaded": False,
+                "source": "fallback:fused-lower-error",
+                "error": lower_error,
+                "cheap_key": ckey,
+            }
+            _record_nested_aot_status(aot_name, status)
+            _log_nested_aot_status(aot_name, status)
+            return fused_jit(*args)
+        try:
+            compiled = lowered.compile()
+            _store_cached_call(sig, compiled, ckey)
+            status: dict[str, Any] = {
+                "name": aot_name,
+                "loaded": False,
+                "source": "fallback:fused-jit-compiled",
+                "error": None,
+                "hlo_sha256": hlo_sha256,
+                "cheap_key": ckey,
+            }
+            if ckey:
+                try:
+                    from gpuwrf.runtime import aot_cheap_key as _ck
+                    from gpuwrf.runtime import aot_precompile as _aotp
+
+                    ser = _aotp._serialize_domain_blob(
+                        aot_name,
+                        compiled,
+                        None,
+                        hlo_sha256=hlo_sha256,
+                        lowered=lowered,
+                        cheap_key=ckey,
+                        key_schema=_ck.KEY_SCHEMA,
+                    )
+                    status.update(ser)
+                    if ser.get("aot_written"):
+                        status["source"] = "fallback:fused-jit-compiled+aot-captured"
+                    elif ser.get("aot_error"):
+                        status["error"] = ser.get("aot_error")
+                except BaseException as exc:  # noqa: BLE001 - capture is best-effort
+                    status["error"] = f"{type(exc).__name__}: {exc}"
+            _record_nested_aot_status(aot_name, status)
+            _log_nested_aot_status(aot_name, status)
+            return compiled(*args)
+        except BaseException as exc:  # noqa: BLE001 - preserve normal fused fallback
+            cached_calls.pop(sig, None)
+            status = {
+                "name": aot_name,
+                "loaded": False,
+                "source": "fallback:fused-jit-compile-exception",
+                "error": f"{type(exc).__name__}: {exc}",
+                "hlo_sha256": hlo_sha256,
+                "cheap_key": ckey,
+            }
+            _record_nested_aot_status(aot_name, status)
+            _log_nested_aot_status(aot_name, status)
+            return fused_jit(*args)
+
+    def _verify_loaded_blob(args: tuple[Any, ...], ckey: str, meta_hlo: str | None) -> bool:
+        if ckey in verified_keys:
+            return True
+        if ckey in verify_failed_keys:
+            return False
+        _lowered, hlo_now, lower_error = _lower_fused(args)
+        if lower_error or not hlo_now or not meta_hlo:
+            verify_failed_keys.add(ckey)
+            status = {
+                "name": aot_name,
+                "loaded": False,
+                "source": "fallback:fused-verify-error",
+                "error": lower_error or "missing HLO digest for verify",
+                "cheap_key": ckey,
+            }
+            _record_nested_aot_status(aot_name, status)
+            _log_nested_aot_status(aot_name, status)
+            return False
+        if hlo_now != meta_hlo:
+            verify_failed_keys.add(ckey)
+            try:
+                from gpuwrf.runtime import aot_precompile as _aotp
+
+                _aotp.quarantine_cheap_key(
+                    aot_name,
+                    ckey,
+                    reason="fused verify-mode HLO mismatch",
+                    detail={"meta_hlo": str(meta_hlo), "live_hlo": str(hlo_now)},
+                )
+            except Exception:  # noqa: BLE001 - quarantine is best-effort
+                pass
+            status = {
+                "name": aot_name,
+                "loaded": False,
+                "source": "fallback:fused-verify-MISMATCH",
+                "error": (
+                    "AOT VERIFY FAILED for fused cascade: blob meta hlo="
+                    f"{str(meta_hlo)[:12]} != live lowered hlo={str(hlo_now)[:12]}"
+                ),
+                "cheap_key": ckey,
+            }
+            _record_nested_aot_status(aot_name, status)
+            _log_nested_aot_status(aot_name, status)
+            return False
+        verified_keys.add(ckey)
+        return True
+
     def fused(parent_carry, child_carries, parent_start, child_starts):
         # The traced clock bases ride as runtime jit arguments (NOT closed-over
         # constants), keeping the compiled cascade identical for every date.
-        return fused_jit(
-            parent_carry, child_carries, parent_start, child_starts,
-            parent_clock_base, child_clock_bases,
+        args = _args(parent_carry, child_carries, parent_start, child_starts)
+        if not aot_on:
+            return fused_jit(*args)
+
+        sig = _aval_signature(args)
+        cached = cached_calls.get(sig)
+        if cached is not None:
+            cached_call, cached_key = cached
+            try:
+                return cached_call(*args)
+            except BaseException as exc:  # noqa: BLE001 - shape drift or execute error
+                status = {
+                    "name": aot_name,
+                    "loaded": False,
+                    "source": "fallback:fused-cached-call-error",
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "cheap_key": cached_key,
+                }
+                _record_nested_aot_status(aot_name, status)
+                _log_nested_aot_status(aot_name, status)
+                cached_calls.pop(sig, None)
+
+        ckey = _fused_cascade_cheap_key(
+            fused_jit,
+            fused_aux,
+            parent_carry,
+            tuple(child_carries),
+            int(parent_start),
+            tuple(int(s) for s in child_starts),
+            parent_clock_base,
+            child_clock_bases,
         )
+        if ckey is None:
+            return fused_jit(*args)
+
+        try:
+            from gpuwrf.runtime import aot_precompile as _aotp
+
+            loaded = _aotp.load_domain_blob(aot_name, cheap_key=ckey, return_status=True)
+            if isinstance(loaded, tuple) and len(loaded) == 2:
+                call, status = loaded
+                if isinstance(status, dict):
+                    if status.get("hlo_sha256") is None and status.get("meta_hlo_sha256"):
+                        status["hlo_sha256"] = status["meta_hlo_sha256"]
+                    _record_nested_aot_status(aot_name, status)
+                    _log_nested_aot_status(aot_name, status)
+            else:
+                call = loaded
+                status = {
+                    "name": aot_name,
+                    "loaded": call is not None,
+                    "source": "aot_blob" if call is not None else "fallback:fused-jit",
+                    "cheap_key": ckey,
+                }
+                _record_nested_aot_status(aot_name, status)
+                _log_nested_aot_status(aot_name, status)
+            if call is not None and (
+                not aot_verify
+                or _verify_loaded_blob(args, ckey, status.get("meta_hlo_sha256"))
+            ):
+                try:
+                    out = call(*args)
+                    _store_cached_call(sig, call, ckey)
+                    return out
+                except BaseException as exc:  # noqa: BLE001 - fail-open to compile
+                    status = {
+                        "name": aot_name,
+                        "loaded": False,
+                        "source": "fallback:fused-aot-exec-error",
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "cheap_key": ckey,
+                    }
+                    _record_nested_aot_status(aot_name, status)
+                    _log_nested_aot_status(aot_name, status)
+        except BaseException as exc:  # noqa: BLE001 - fail-open to compile
+            status = {
+                "name": aot_name,
+                "loaded": False,
+                "source": "fallback:fused-load-exception",
+                "error": f"{type(exc).__name__}: {exc}",
+                "cheap_key": ckey,
+            }
+            _record_nested_aot_status(aot_name, status)
+            _log_nested_aot_status(aot_name, status)
+
+        return _compile_capture_and_call(args, ckey, sig)
 
     return fused
 
@@ -620,19 +1695,84 @@ def _env_flag(name: str) -> str | None:
     return None if value is None else value.strip().lower()
 
 
+# B2 de-fuse knob status (observability for tests / cache_report). Records why
+# the eager per-domain compile path was (or was not) selected on the last call to
+# :func:`_nested_fuse_default_enabled`. Numerically inert -- both paths are
+# bit-identical (see the eager opt-out that already exists for identity proofs).
+NESTED_DEFUSE_STATUS: dict[str, object] = {
+    "defused": False,
+    "source": None,
+}
+
+
+def _nested_defuse_for_compile_ram() -> bool:
+    """Whether to compile the nest PER-DOMAIN instead of one fused module (B2).
+
+    OPT-IN, default OFF. ``GPUWRF_NESTED_DEFUSE_COMPILE`` truthy
+    (``1``/``true``/``on``/``yes``) selects the eager per-domain advance path,
+    which compiles each domain's ``_advance_chunk`` as its OWN executable instead
+    of fusing the parent + all its leaves into one ``jax.jit`` cascade program.
+
+    WHY (compile-RAM, NOT numerics): a fused cascade lowers the parent advance and
+    every child advance into a SINGLE XLA module, so XLA holds the whole tower's
+    HLO + buffer-assignment live at once -- peak COMPILE-RAM scales with the fused
+    leaf count (the ~K-leaf nest is the worst case; this is what stressed the paid
+    B200 cold compile). The eager per-domain path compiles each domain
+    independently, so peak compile-RAM is ~that of the single LARGEST domain (≈ K×
+    lower for a K-leaf tower). The trade is runtime throughput (the fused cascade
+    keeps the GPU queue fuller), so this is an explicit low-host-RAM opt-in rather
+    than the runtime default. AOT cheap-key loading works on both the fused runtime
+    path and this de-fused fallback.
+
+    NUMERICALLY INERT: the eager per-domain path is the SAME path already used by
+    the ``GPUWRF_BITWISE`` / ``GPUWRF_NESTED_FUSE=0`` identity opt-outs (the fused
+    cascade is a fused-but-bit-identical rewrite of it), so de-fusing changes no
+    dispatched op, cadence, or float result -- only how XLA partitions the
+    compile. Distinct from those vars by INTENT: this one is a compile-RAM lever,
+    not an identity/debug switch, and is logged as such.
+    """
+    flag = _env_flag("GPUWRF_NESTED_DEFUSE_COMPILE")
+    return flag is not None and flag in _TRUEY_ENV
+
+
 def _nested_fuse_default_enabled() -> bool:
-    """Default-on fused mode, with explicit eager opt-outs for identity proofs."""
+    """Default-FUSED nest runtime, with explicit eager/de-fuse opt-outs.
+
+    The fused cascade is the runtime default because it is the measured
+    higher-throughput executable. ``GPUWRF_NESTED_DEFUSE_COMPILE=1`` remains an
+    explicit low-host-compile-RAM lever, and ``GPUWRF_NESTED_FUSE=0`` /
+    ``GPUWRF_BITWISE=1`` keep the eager per-domain identity/debug path.
+    """
+
+    # B2 compile-RAM de-fuse opt-in: force the eager per-domain compile path. Kept
+    # FIRST so it is honoured regardless of the identity vars below; recorded in
+    # NESTED_DEFUSE_STATUS for observability. Numerically inert (same eager path).
+    if _nested_defuse_for_compile_ram():
+        NESTED_DEFUSE_STATUS["defused"] = True
+        NESTED_DEFUSE_STATUS["source"] = "env:GPUWRF_NESTED_DEFUSE_COMPILE"
+        return False
 
     bitwise = _env_flag("GPUWRF_BITWISE")
     if bitwise is not None and bitwise not in _FALSEY_ENV:
+        NESTED_DEFUSE_STATUS["defused"] = True
+        NESTED_DEFUSE_STATUS["source"] = "env:GPUWRF_BITWISE"
         return False
     fuse = _env_flag("GPUWRF_NESTED_FUSE")
     if fuse is None:
+        NESTED_DEFUSE_STATUS["defused"] = False
+        NESTED_DEFUSE_STATUS["source"] = "default-fused"
         return True
     if fuse in _FALSEY_ENV:
+        NESTED_DEFUSE_STATUS["defused"] = True
+        NESTED_DEFUSE_STATUS["source"] = "env:GPUWRF_NESTED_FUSE=0"
         return False
     if fuse in _TRUEY_ENV:
+        NESTED_DEFUSE_STATUS["defused"] = False
+        NESTED_DEFUSE_STATUS["source"] = "env:GPUWRF_NESTED_FUSE=1"
         return True
+    # Malformed GPUWRF_NESTED_FUSE value: fall back to the fused runtime default.
+    NESTED_DEFUSE_STATUS["defused"] = False
+    NESTED_DEFUSE_STATUS["source"] = "default-fused"
     return True
 
 
@@ -697,8 +1837,10 @@ def _operational_fused_cascade_factory(tree: DomainTree) -> FusedCascadeLookup:
         program = tree_programs.get(str(parent_name))
         if program is None:
             program = _build_fused_cascade_program(
+                parent_name=str(parent_name),
                 parent_namelist=parent_namelist,
                 parent_cadence=parent_cadence,
+                child_names=tuple(edge.child for edge in edges),
                 child_namelists=child_namelists,
                 child_weights=tuple(edge.weights for edge in edges),
                 child_bdy_widths=tuple(int(tree.domains[edge.child].state.u_bdy.shape[2]) for edge in edges),
@@ -806,8 +1948,210 @@ __all__ = [
     "DomainEdge",
     "DomainTree",
     "DomainTreeResult",
+    "NESTED_AOT_STATUS",
+    "NESTED_DEFUSE_STATUS",
+    "NESTED_PRECOMPILE_STATUS",
     "build_live_nested_boundary_config",
+    "maybe_prewarm_defused_nest",
+    "nested_aot_report",
+    "nested_defuse_report",
+    "nested_precompile_report",
     "run_domain_tree_callbacks",
     "run_operational_domain_tree",
     "with_live_child_boundary_config",
 ]
+
+
+# vNext: cross-domain parallel-compile status (observability for the manager's
+# GPU A/B + tests). Records the outcome of the last
+# :func:`maybe_prewarm_defused_nest` call. Numerically inert -- prewarm only
+# POPULATES the shared cache that the unchanged eager loop warm-hits.
+NESTED_PRECOMPILE_STATUS: dict[str, object] = {
+    "attempted": False,
+    "active": False,
+    "source": None,
+    "workers": None,
+    "verify": None,
+    "report": None,
+    "error": None,
+}
+
+
+def _nested_parallel_compile_workers() -> int | None:
+    """Parse ``GPUWRF_NESTED_PARALLEL_COMPILE``.
+
+    Returns:
+      * ``0``    -> explicit opt-OUT (caller skips the parallel prewarm);
+      * ``N>0``  -> explicit worker-count override;
+      * ``None`` -> unset/auto (caller uses the RAM/CPU-derived default).
+    """
+    raw = os.environ.get("GPUWRF_NESTED_PARALLEL_COMPILE")
+    if raw is None or raw.strip() == "":
+        return None
+    try:
+        val = int(raw.strip())
+    except ValueError:
+        return None
+    return max(0, val)
+
+
+def _nested_parallel_verify_enabled() -> bool:
+    """Parse ``GPUWRF_NESTED_PARALLEL_VERIFY`` (default OFF).
+
+    Truthy values ``1/true/yes/on`` (case-insensitive) enable the parent-side
+    exact-key warm-hit verification pass in :func:`prewarm_defused_nest`. That
+    pass re-lowers all N huge ``_advance_chunk_fori`` modules sequentially (the
+    ~30 min re-lowering cost) and is therefore NET-NEGATIVE for wall-clock; it is
+    a DIAGNOSTIC only, so it is OFF by default. Anything else (unset, ``0``,
+    empty, junk) leaves it OFF."""
+    raw = os.environ.get("GPUWRF_NESTED_PARALLEL_VERIFY")
+    if raw is None:
+        return False
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+def maybe_prewarm_defused_nest(
+    tree: "DomainTree",
+    *,
+    carries: dict[str, Any] | None = None,
+) -> dict[str, object]:
+    """Gate + fire the cross-domain PARALLEL pre-compile for the de-fuse path.
+
+    No-op UNLESS the de-fuse compile path is active (``not
+    _nested_fuse_default_enabled()`` -- i.e. ``GPUWRF_NESTED_DEFUSE_COMPILE=1`` /
+    ``GPUWRF_NESTED_FUSE=0`` / ``GPUWRF_BITWISE``), because only then are the N
+    independent per-domain modules compiled, which is what parallelizes. The
+    fused DEFAULT compiles ONE module, so there is nothing to fan out.
+
+    Honors ``GPUWRF_NESTED_PARALLEL_COMPILE`` (=0 opt-out; =N worker override).
+    Calls :func:`aot_precompile.prewarm_defused_nest` to warm the shared
+    version-keyed cache, then records the report. ``carries`` should be the exact
+    runtime carry map the eager integration loop will use, after post-init scheme
+    seeding and device commit; this keeps the child cache key identical to the
+    parent eager key. FAILS OPEN: any exception is captured in
+    :data:`NESTED_PRECOMPILE_STATUS` and the function returns, so the integration
+    loop just cold-compiles sequentially as today (never wrong, never
+    non-bit-identical -- only loses the speedup). Numerically inert.
+
+    Returns a copy of :data:`NESTED_PRECOMPILE_STATUS`.
+    """
+    NESTED_PRECOMPILE_STATUS.update(
+        {
+            "attempted": True,
+            "active": False,
+            "source": None,
+            "workers": None,
+            "verify": None,
+            "report": None,
+            "error": None,
+        }
+    )
+    try:
+        # (a) only when de-fused.
+        if _nested_fuse_default_enabled():
+            NESTED_PRECOMPILE_STATUS["source"] = "skip:fused-default"
+            return dict(NESTED_PRECOMPILE_STATUS)
+
+        # (b) honor the opt-out / worker override.
+        #
+        # SPAWN-SAFETY: the parallel prewarm spawns
+        # child processes (multiprocessing "spawn" re-imports the entry module),
+        # which corrupts/recurses an UNGUARDED entry point (pytest, web UI,
+        # ad-hoc scripts with no ``if __name__ == "__main__"`` guard). Even when
+        # de-fuse is explicitly selected, the spawning parallel prewarm stays
+        # strictly OPT-IN: fire ONLY when GPUWRF_NESTED_PARALLEL_COMPILE is
+        # EXPLICITLY set to N>0. When it is unset (workers is None) we take the
+        # SEQUENTIAL no-spawn de-fuse sub-mode. =0 is the explicit opt-out.
+        # Numerically inert.
+        workers = _nested_parallel_compile_workers()
+        if workers == 0:
+            NESTED_PRECOMPILE_STATUS["source"] = "skip:GPUWRF_NESTED_PARALLEL_COMPILE=0"
+            return dict(NESTED_PRECOMPILE_STATUS)
+        if workers is None:
+            # Unset => sequential de-fuse sub-mode (no spawn). Parallel prewarm
+            # is opt-in via GPUWRF_NESTED_PARALLEL_COMPILE=N.
+            NESTED_PRECOMPILE_STATUS["source"] = "skip:defuse-sequential-no-parallel"
+            return dict(NESTED_PRECOMPILE_STATUS)
+
+        # (c) fire the parallel prewarm (its own driver is also fail-open). The
+        # parent-side warm-hit verification re-lowers all N modules (~30 min,
+        # NET-NEGATIVE for wall) and is OFF unless GPUWRF_NESTED_PARALLEL_VERIFY
+        # is explicitly truthy -- the eager loop warm-hits anyway.
+        from gpuwrf.runtime import aot_precompile
+
+        verify = _nested_parallel_verify_enabled()
+        report = aot_precompile.prewarm_defused_nest(
+            tree, carries=carries, max_workers=workers, verify=verify
+        )
+        NESTED_PRECOMPILE_STATUS["verify"] = verify
+        NESTED_PRECOMPILE_STATUS["active"] = True
+        # workers is now always an explicit N>0 here (unset takes the sequential
+        # no-spawn sub-mode above), so the source is always the explicit override.
+        NESTED_PRECOMPILE_STATUS["source"] = f"GPUWRF_NESTED_PARALLEL_COMPILE={workers}"
+        NESTED_PRECOMPILE_STATUS["workers"] = report.get("workers")
+        NESTED_PRECOMPILE_STATUS["report"] = report
+        if report.get("error"):
+            NESTED_PRECOMPILE_STATUS["error"] = report.get("error")
+    except BaseException as exc:  # noqa: BLE001 - the whole gate is fail-open
+        NESTED_PRECOMPILE_STATUS["error"] = f"{type(exc).__name__}: {exc}"
+    return dict(NESTED_PRECOMPILE_STATUS)
+
+
+def nested_precompile_report() -> dict[str, object]:
+    """Snapshot of the last cross-domain parallel-compile attempt (vNext)."""
+    return dict(NESTED_PRECOMPILE_STATUS)
+
+
+def nested_defuse_report() -> dict[str, object]:
+    """Snapshot of the nest fuse/de-fuse compile decision (B2).
+
+    Recomputes :func:`_nested_fuse_default_enabled` so the report reflects the
+    CURRENT environment (the env vars are read live), then returns a copy of
+    :data:`NESTED_DEFUSE_STATUS` plus the effective ``fused`` boolean. Pure /
+    side-effect-free apart from refreshing the status dict; never raises.
+    """
+    fused = _nested_fuse_default_enabled()
+    return {
+        "fused": fused,
+        "defused": bool(NESTED_DEFUSE_STATUS.get("defused")),
+        "source": NESTED_DEFUSE_STATUS.get("source"),
+        "env_help": nested_defuse_env_help(),
+    }
+
+
+def nested_defuse_env_help() -> str:
+    """One-line human summary of the nest de-fuse compile knob (B2)."""
+    return (
+        "Nest compile-fusion env vars: the DEFAULT is FUSED + AOT "
+        "(one fused cascade executable for safe flat leaf subtrees, higher runtime "
+        "throughput, warm-start by fused cheap-key executable load). "
+        "GPUWRF_NESTED_DEFUSE_COMPILE=1 / GPUWRF_NESTED_FUSE=0 / GPUWRF_BITWISE also "
+        "select the eager per-domain path -- useful as a low-host-compile-RAM or "
+        "bitwise/debug fallback, with documented runtime cost. "
+        "GPUWRF_NESTED_PARALLEL_COMPILE controls the cross-domain PARALLEL "
+        "pre-compile of the de-fuse path (=0 opt-out, =N worker count): when SET to "
+        "N>0 it compiles the N independent per-domain modules CONCURRENTLY in "
+        "SPAWNED processes to cut cold wall from Sum(N) toward max(one body). It is "
+        "OPT-IN: when UNSET the explicit de-fuse path stays SEQUENTIAL (no spawn) "
+        "so unguarded entry points (pytest/web/scripts) are spawn-safe. "
+        "Numerically inert (warms the shared cache the unchanged eager loop hits). "
+        "Requires the de-fuse path active. "
+        "GPUWRF_NESTED_PARALLEL_VERIFY=1 (default OFF) re-enables the diagnostic "
+        "parent-side exact-key warm-hit verification, which re-lowers all N "
+        "modules sequentially (~30 min, NET-NEGATIVE for wall); off by default "
+        "since the eager loop warm-hits each domain anyway. "
+        "GPUWRF_NESTED_AOT (DEFAULT-ON; set =0 to disable) enables AOT executable "
+        "serialization + the cheap-key manifest: the fused runtime serializes "
+        "fused/<parent> cascade executables under an edge-geometry-aware cheap key, "
+        "and the de-fuse path serializes each domain's _advance_chunk_fori under "
+        "<cache>/aot/<version_tag>/<domain>/k_<cheap_key>.xlaexec. Warm processes "
+        "compute metadata-only cheap keys (version+fn+static aux+carry-avals+"
+        "trace-env, NO lowering) to locate + DESERIALIZE + execute the matching "
+        "blob in seconds. Identity-preserving (the blob IS the cached executable), "
+        "version-fingerprint-guarded, and fail-open (cheap_key miss / fingerprint "
+        "mismatch / blob-integrity / corrupt -> compile+serialize, never wrong). "
+        "GPUWRF_AOT_VERIFY=1 (default OFF) lowers ONCE per (domain,cheap_key) per "
+        "process and asserts the loaded blob's HLO matches its recorded digest, "
+        "failing CLOSED (loud fallback + fresh compile) on any mismatch -- run it "
+        "for the first warm-start of each new version, then off in production."
+    )

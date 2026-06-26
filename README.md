@@ -56,6 +56,33 @@ NVL72-class).
   **stability/reliability**, and **energy efficiency** (see [Performance](#performance)).
 - **Not** DFI / FDDA / spectral-nudging / WRF-Chem / WRF-Fire / urban / lake.
 
+**The current release is v0.21.0** — a **stability + compile-cache-speed**
+release on top of the v0.20.x line. Its priority order is explicit: **stability >
+identity > speed > memory**. The two headline changes are a **dycore
+boundary-stability fix** (the all-7-island, 9-domain Canary nest now runs **finite
+through the divergence window that previously failed near step 67**) and the **AOT
+cheap-key cross-process warm-start** — after a one-time cold compile, a fresh
+process **loads the compiled GPU executable from disk via a cheap metadata key and
+skips the multi-tens-of-minutes re-lower** the old cache still paid. It also adds a
+**default-on fail-fast finite guard** and a **version-keyed compile cache**.
+
+**Read the scope of the speed win plainly.** v0.21.0 is faster at *getting a run
+started* (compile / warm-start time), **not** at running the forecast itself. Warm
+forecast throughput (seconds per forecast-hour) is **unchanged** from v0.20 and the
+default path is **byte-identical** — the warm start rides the same fused runtime
+executable, it just loads it from disk in seconds instead of re-lowering it. The
+fp64 default carries forward unchanged; v0.21.0 adds **no new physics** and does
+**not** claim the open 24–120 h forecast-skill gate is closed. The most-extreme
+1 km Mont-Blanc (~1042 m/cell) terrain is **not** fully stabilized (the fix
+*relocates* that failure rather than removing it) and is carried to v0.21.1. Full
+notes: [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md).
+
+*[MEASURED: v0.21.0 — 3-domain fused+AOT cold→warm gate byte-identical (REF_COMPARE equal, max_abs_diff 0), 0 re-lower, no runtime regression; 9-nest fused stress re-confirm both fused phases `source=aot_blob`, 0 re-lower, all 9 domains finite past step 67 (warm peak host RSS 16.4 GB). De-fuse measured +18.8% s/step ⇒ reverted; not the default.]*
+
+The rest of this section is the **v0.20.x capability narrative, carried forward**
+as the context v0.21.0 builds on — it still applies where v0.21.0 does not
+explicitly change it.
+
 **v0.20.0 is a correctness, stability, capability, and reliability release.** It
 is **bit-identical-safe by default** (the fp64 path is byte-for-byte unchanged)
 and adds an honest, modest nest speedup, an opt-in fp32 capability mode, and a
@@ -65,32 +92,45 @@ canonical all-7-island, 9-domain case the default fused nested path measures
 faster than v0.19** (713 s/forecast-hour) and **~1.53× faster than the 12-rank
 CPU-WRF baseline** (1020 s/forecast-hour) — and is **byte-identical to v0.19
 output (1926/1926 vars, maxΔ=0.000e+00)**, the gain coming entirely from a
-numerics-free CUDA stream-ordered allocator. v0.18 remains the
-feature-completeness baseline: every WRF v4 namelist scheme is classified and
-handled, with no silent substitution or skipped scheme. See the [Scheme
+numerics-free CUDA stream-ordered allocator. (v0.21.0 keeps this warm forecast
+throughput unchanged.) v0.18 remains the feature-completeness baseline: every WRF
+v4 namelist scheme is classified and handled, with no silent substitution or
+skipped scheme. See the [Scheme
 triage](#scheme-triage--every-wrf-v4-scheme-classified).
 
 *[MEASURED: COMBINED_SPEEDUP.md §5/§7 — ~668 / 1.07× / 1.53× / 1926-byte-identical.]*
 
-> ### First run is slow on purpose, then fast — and the cache "just works"
-> The first forecast **JIT-compiles the GPU kernels** — a **~8–12 min one-time cold
-> compile with no output before integration starts (on the n=1 reference system)**;
-> the large all-7 fused nested program is a separate, larger **one-time compile
-> (~41 min wall on the n=1 reference system for the all-7 case)**. It is compiling,
-> not hung.
+> ### First run is slow on purpose, then a seconds-fast warm start (new in v0.21.0)
+> The first forecast **JIT-compiles the GPU kernels** — a one-time **cold compile
+> with no output before integration starts**, scaling with grid size (roughly a
+> few minutes for an ordinary single-domain case; the large all-7 9-domain nest is
+> a separate, larger one-time compile of tens of minutes). It is compiling, not
+> hung. **That cold compile is still a real one-time cost.**
 >
 > A **persistent, per-user on-disk JIT cache is on by default with zero config** —
-> no flag, no setup. Every later run is a **fast cache read** (`cold ~147 s →
-> cache-hit ~29 s` on the d01 hour-1 wrapper), and the cached executable is
-> **bit-identical** to the cold one. **New in v0.20.0:** the cache now also **hits
-> across different forecast dates** — previously the date was baked into the
-> radiation/solar program, so every new date missed the cache and recompiled; now
-> the date is a runtime argument, so re-running the same configuration on a **new
-> date (and leap years) is a warm cache hit with 0 new cache entries**, while the
-> default RRTMG path stays **bit-identical** (64/64 State leaves byte-identical).
-> Set `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` for the eager bitwise/debug path.
+> no flag, no setup — and in v0.21.0 it is **version-keyed** (`gpuwrf` + JAX/JAXLIB
+> + backend), so a stale older-release cache is never mistaken for a warm one.
 >
-> *[MEASURED: JULDAY_CACHE_FIX_REPORT.md — cross-date HLO sha identical across 3 dates incl. leap; 0 new cache entries; 64/64 byte-identical.]*
+> **New in v0.21.0: a fresh process now warm-LOADS the compiled executable in
+> seconds.** Previously, even with a warm cache, a new process had to *re-lower*
+> (re-trace) the giant nested module — tens of minutes for the all-7 9-nest — just
+> to look up the right cached executable. v0.21.0 serializes the compiled GPU
+> executable to disk and indexes it by a **cheap metadata key computed without
+> lowering**, so a fresh process **loads it directly and skips the re-lower**. It is
+> **on by default on the fused runtime path**. MEASURED: the 9-nest fused stress
+> re-confirm has both fused phases load `source=aot_blob` cross-process with **0
+> re-lower** and all 9 domains finite (warm peak host RSS 16.4 GB); the 3-domain
+> cold→warm gate is **byte-identical to the cold compile** (`REF_COMPARE` equal,
+> max_abs_diff 0) with **no runtime regression**. A fresh load is numerically inert
+> — the cheap key only *locates* the blob, and the loaded executable is byte-for-byte
+> the cold one; a `GPUWRF_AOT_VERIFY=1` fail-closed backstop is available. The
+> v0.20 single-domain warm-cache read was already fast (`cold ~147 s → cache-hit
+> ~29 s` on the d01 hour-1 wrapper, bit-identical), and the cache also **hits across
+> forecast dates** (a new or leap-year date is a warm hit with 0 new cache entries,
+> default path bit-identical). Opt out of AOT with `GPUWRF_NESTED_AOT=0`; set
+> `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` for the eager bitwise/debug path.
+>
+> *[MEASURED: v0.21.0 9-nest AOT cold→warm re-confirm — 9/9 phases `source=aot_blob`, 0 re-lower, all finite, RSS 16.4 GB; 3-domain fused+AOT gate byte-identical (max_abs_diff 0), no runtime regression. v0.20 cross-date: JULDAY_CACHE_FIX_REPORT.md — cross-date HLO sha identical across 3 dates incl. leap; 0 new cache entries; 64/64 byte-identical.]*
 
 > ### Optional fp32 mixed-precision mode (capability + VRAM, opt-in)
 >
@@ -116,10 +156,14 @@ triage](#scheme-triage--every-wrf-v4-scheme-classified).
 >
 > *[MEASURED: FP32_INTEGRATION_REPORT.md §4.1/§4.2 — 963/963 byte-identical fp64; 19/19 fields 1h tolerance-green. V0200-STATE — −14.4% VRAM / 1.16× cells. INCONCLUSIVE on single-card speed: T2T3 R∞ ratio ≈0.91.]*
 
-**v0.20.1 is a reliability + I/O-readiness patch.** It does **not** add any
-single-card speedup — it makes the existing nested path **easier and safer to
-operate**, and the **fp64 default stays byte-identical to v0.20.0**. Four things
-change, all honest about their limits:
+**v0.20.1 is a reliability + I/O-readiness patch** (carried-forward context;
+v0.21.0 above is the current release). It does **not** add any single-card speedup
+— it makes the existing nested path **easier and safer to operate**, and the
+**fp64 default stays byte-identical to v0.20.0**. Four things change, all honest
+about their limits. *(Note for v0.21.0: the warm-cache narrative below is now
+superseded by the AOT cheap-key warm-start above — a fresh process no longer pays a
+multi-tens-of-minutes re-lower; the OOM mitigation here is still in force, now
+joined by the default-on finite guard and the dycore stability fix.)*
 
 - **The warm compile cache now also hits across forecast dates for the *nested*
   path.** v0.20.0 fixed this for single domains; the nested path still baked the
@@ -145,7 +189,13 @@ change, all honest about their limits:
   a **mitigation, not an OOM-proof guarantee** — solo `cuda_async` fragmentation
   can still OOM the full fp64 nest, and a reproducer
   (`scripts/rrtmg_transient_reproducer.py`) ships so the failure can be tracked.
-  No fp32-nest and no 24 h large-nest claim.
+  No fp32-nest and no 24 h large-nest claim. **v0.21.0 adds to this**, without
+  claiming OOM is solved: a **default-on fail-fast finite guard**
+  (`GPUWRF_FINITE_CHECK`) that aborts with the exact `{domain, field, level, step,
+  sim-time, index}` on the first non-finite prognostic, and a **dycore
+  boundary-stability fix** that takes the all-7 9-domain Canary nest **finite
+  through the step-67 divergence window** that previously failed. The long-horizon
+  9-nest can still hit a GPU-VRAM OOM around the ~90 min integration horizon.
 - **Paid-B200 I/O-readiness tooling (CPU-only).** A manifest/WRF-dimension
   validator and a block drain/resume/stop-pull tool (with read-back-verify-before-
   delete) so a large paid nest run can stream and verify training output safely.
@@ -180,6 +230,18 @@ dynamics/thermodynamics core cell-for-cell identical** (`r ≈ 0.99–1.00`). Th
 out-of-envelope field is a **bounded diagnostic, drawn red, never painted green**:
 accumulated precipitation `RAINNC`, which stays inside a bounded multiple of a
 tight 1.0 mm bound (see the framing below the plots).
+
+**24 h, nine nested domains — GPU vs 24-rank CPU-WRF v4 (MEASURED):**
+![24 h GPU↔CPU identity — nine nested domains](docs/assets/v021/fig_identity_24h.png)
+
+> *MEASURED 24 h, nine-domain GPU-vs-24-rank-CPU-WRF comparison: the **core fields
+> hold `r ≥ 0.99`** (T `r=0.9999`, RMSE 0.69 K; PH/PSFC `r=0.9997`) — the
+> dynamics/thermo core is the strong, exciting result. The **near-surface fields are
+> the disclosed weak point and grow with forecast lead** — more on the 1 km inner
+> nests than the 3 km outer (e.g. U10 `r≈0.86`, innermost-nest V10 as low as
+> `r≈0.48`). That is **solver-precision chaos** (different rounding realizations of
+> the same deterministic case) on the most-sensitive surface behavior, **not a solver
+> bug** — and it is exactly the open 24–120 h skill gate below, stated honestly.*
 
 **The v0.18 default Thompson microphysics is strictly more WRF-faithful than
 v0.17.** v0.18 adds Thompson cold-process fidelity (rci/sci cloud-ice collection,
@@ -396,6 +458,17 @@ at the milestone/decision level, not per-command.
 
 Measured on the reference RTX 5090 workstation vs same-box CPU-WRF.
 
+> **What v0.21.0 changed for performance.** v0.21.0 improves **compile and
+> warm-start time** (version-keyed cache + the default-on AOT cheap-key warm-start
+> that skips the multi-tens-of-minutes re-lower — MEASURED on the 9-nest fused
+> stress: both fused phases load `source=aot_blob` cross-process, 0 re-lower, all 9
+> domains finite) and **stability** (the 9-nest is now finite through the step-67
+> divergence window). It does **not** change warm forecast throughput — the
+> s/forecast-hour numbers below are the measured fused runtime numbers and remain
+> current for the default path, which stays byte-identical. De-fuse is an explicit
+> low-host-compile-RAM fallback with a documented runtime cost (+18.8% s/step,
+> measured), so it is **not** the default.
+
 - **v0.20.0 makes the all-7 nested fast path faster than v0.19 and CPU,
   byte-identically.** The default fused all-7-island, 9-domain run measures
   **~668 s/forecast-hour warm** (range 645–680) on the reference GPU versus
@@ -459,15 +532,27 @@ collective-halo foundation is bit-identity-validated on a fake/CPU mesh, but
 **real multi-GPU throughput is not benchmarked — no perfect-scaling claim**).
 Detail: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
-### Switzerland scaling benchmark (v0.20.0, reference RTX 5090)
+## Scaling, energy & capability — where this rewrite gets exciting (and where it doesn't yet)
 
-A controlled single-domain Switzerland sweep (3 km, 44 levels) tiled to increasing horizontal extent —
-**4 fp32 + 3 fp64 runs**. Read it by **throughput (cells/s)**, not raw wall-clock: that is what reveals the
-scaling law.
+The section above is the per-release performance summary; this one is the
+figure-driven scaling story behind it. There is a single physical story behind
+every number here: **a clean
+GPU-native dycore is overhead-dominated when the grid is tiny and
+roofline-dominated when the grid is large.** That one fact explains both the
+genuinely exciting part — *the bigger and higher-resolution you go, the more this
+architecture wins* — and the honest small print — *on a postage-stamp grid a
+24-rank CPU is still faster.* Everything below is labeled **MEASURED** (a real
+run / device counter) or **DERIVED** (a roofline fit or a timing-derived
+denominator), and no number is invented.
 
-![Swiss CPU-vs-GPU wallclock](docs/assets/v020/benchmark/plotA_swiss_wallclock.png)
-![Throughput (cells/s) vs grid size](docs/assets/v020/benchmark/plotC_cells_per_s.png)
-![Roofline: 1/throughput vs 1/C → R∞](docs/assets/v020/benchmark/plotD_roofline_linear.png)
+### The scaling law — the reason to be excited
+
+A controlled single-domain Switzerland sweep (3 km, 44 levels) tiled to
+increasing horizontal extent — **4 fp32 + 3 fp64 real runs** on the reference
+RTX 5090. Read it by **throughput (cells/s)**, not raw wall-clock: throughput is
+what reveals the law.
+
+![Single-domain warm scaling and the throughput roofline R∞](docs/assets/v021/fig_perf_scaling.png)
 
 | grid | cells | fp32 s/fc-h | fp64 s/fc-h | fp32 cells/s | fp64 cells/s | fp32 VRAM | fp64 VRAM |
 |---|---|---|---|---|---|---|---|
@@ -476,23 +561,91 @@ scaling law.
 | 384²×44 | 6.49 M | 232.6 | 237.5 | 1.00e7 | 9.83e6 | 9.8 / 22.0 GB | 9.2 / 21.1 GB |
 | 512²×44 | 11.53 M | 444.5 | OOM (~32 GB) | 9.34e6 | — | 16.2 / 29.8 GB | — |
 
-**How to read it (the scaling law, explained).** Wall-clock rises with grid size, but the meaningful
-metric is **throughput (cells/s)**, which climbs and **saturates at a hardware ceiling R∞ — fp64 ≈
-1.06×10⁷ cells/s, fp32 ≈ 9.6×10⁶ cells/s** (Plot D linearizes 1/throughput vs 1/C; the intercept is
-1/R∞). Small grids (≤128²) sit in the **launch/occupancy-bound regime** (throughput sub-linear) — so on a
-*tiny* single-domain grid the GPU can even trail a 24-rank CPU. That is **expected overhead-dominance, not
-a deficiency**: as the grid grows, per-cell overhead amortizes and throughput approaches R∞. In other
-words, **wrf_gpu's advantage is large grids, 1 km, and nested / multi-GPU scale** — exactly where
-operational high-resolution forecasting lives. The opt-in fp32 mode is precision-only (unchanged
-topology), so it tracks fp64 throughput (R∞ ratio ≈ 0.91) but **fits larger grids per card** (512² runs
-where fp64 OOMs near 32 GB) — a VRAM/capability win, not a single-card speedup.
+*(MEASURED: per-grid runtimes, throughput, VRAM, and the 512² fp64 OOM point.)*
 
-**The scaling runs are CPU-validated (normalized).** The throughput above is achieved without sacrificing fidelity — across the sweep the GPU fields track CPU-WRF v4, shown as a per-field normalized GPU-vs-CPU identity:
+Wall-clock rises with grid size — but throughput **climbs and saturates at a
+hardware ceiling R∞ (DERIVED from the roofline fit): fp64 ≈ 1.06×10⁷ cells/s,
+fp32 ≈ 9.6×10⁶ cells/s.** That ceiling is the headline: it says the device is
+busy doing real arithmetic, not waiting on launch overhead, once the grid is big
+enough. The opt-in fp32 mode is precision-only (unchanged topology), so it tracks
+fp64 throughput (R∞ ratio ≈ 0.91) but **fits a 512² / 11.5 M-cell grid where fp64
+OOMs near 32 GB** — a VRAM/capability win, not a single-card speedup.
 
-![Normalized GPU-vs-CPU identity across the Swiss sweep](docs/assets/v020/benchmark/plotB_identity.png)
+![Launch-bound → throughput-bound regimes (explanatory schematic)](docs/assets/v021/fig_scaling_regimes.png)
 
-*Larger-GPU scaling (B200-class, toward filling 180 GB VRAM, with kWh-per-cell energy efficiency) is being
-measured and will be added here.*
+*(Explanatory schematic — **not** a measurement.)* Small grids (≤128²) sit in the
+**launch/occupancy-bound regime** where per-cell overhead dominates, so a *tiny*
+single-domain grid can trail a 24-rank CPU. As the grid grows that overhead
+amortizes and throughput approaches R∞. In other words, **wrf_gpu's advantage is
+large grids, 1 km, and nested / multi-GPU scale** — exactly where operational
+high-resolution forecasting lives — and the small-grid deficit is overhead, not a
+flaw in the math.
+
+### Cross-platform anchors — and the bigger iron
+
+![Cross-platform speedup anchors, each labeled with its own denominator](docs/assets/v021/fig_perf_anchors.png)
+
+Every bar is labeled with its own denominator so nothing is mixed up:
+
+- **MEASURED:** a **B200 is ≈2.69× the RTX 5090** at the 128² anchor; and the
+  only *nested, real* speedup is the v0.19 fused all-7 9-domain path at **~1.53×
+  the same-box 12-rank CPU-WRF** (~1.43× in the v0.19 measurement), byte-identical
+  to v0.19.
+- **DERIVED:** the asymptotic-throughput ratio puts a **B200 at ≈3.53× the 5090**,
+  and ≈10.0× a timing-derived Swiss CPU-WRF throughput denominator.
+
+This is the multi-GPU / cluster path stated honestly: the *capability* (memory
+arithmetic, fake-mesh bit-identity) is proven, the bigger-iron throughput ratios
+are derived, and **real multi-GPU throughput is not yet benchmarked** — no
+single-card multi-× headline and no perfect-scaling claim.
+
+### Energy efficiency — order-of-magnitude at the device level (MEASURED), honest about scope
+
+![Device-level energy efficiency — kWh per cell-step](docs/assets/v021/fig_energy.png)
+
+**MEASURED (device/board power only):** on the scaling ladder the best B200 point
+is **4.83×10⁻¹² kWh per cell-step** (at 384²) versus a CPU RAPL package-power
+**sample** of **1.47×10⁻¹¹** — roughly an **order of magnitude fewer joules per
+cell-step** at the device level for large grids (≈3.05× at the best point, ≈2.81×
+ladder-aggregate). **DERIVED:** the CPU point applies a current package-power
+sample to the measured Swiss CPU-WRF wall time (not a historical same-run log).
+**Honest scope: whole-node / PSU energy is NOT measured (an open gap), and there
+is no same-large-grid CPU run.** The CPU baseline is a modern Zen-5 part, so this
+is not a legacy-CPU strawman.
+
+### Capability — a real 1 km Alpine domain on one card (MEASURED terrain)
+
+![Real 1 km Alpine inner nest — 897², Copernicus DEM GLO-30](docs/assets/v021/fig_capability_terrain.png)
+
+**MEASURED (terrain only).** A real **897² 1 km Alpine inner nest** built from
+Copernicus DEM GLO-30 (heights −8…4352 m — **+1046 m higher peaks and 3.25× finer
+relief** than the GMTED 5-arc-minute terrain usually used at this scale). This is
+a **capability** figure: it shows we have *built and can run* a grid of this
+class on a single card. It does **not** yet show a forecast wind field on this
+grid (an explicit, honest open gap), and the B200 annotation on the figure
+belongs to the separate tiled 1024² cost-proxy ladder, not to a run on this 897²
+nest.
+
+**The whole Earth at 1 km fits in a single rack (PROJECTED).** The global 1 km
+50-level state — ~25 billion cells, ~4.3 TB (≈13 TB with solver working memory) —
+fits in the HBM of one NVIDIA GB300 NVL72. This is **exact memory arithmetic, a
+"where this is going" note, not a near-term capability**: the multi-GPU
+domain-decomposition path is bit-identity-proven on a CPU fake mesh only, **real
+multi-GPU throughput is not yet shipped**, and a global wall-clock figure is
+**not claimed**.
+
+> **The limitations, kept in the same breath (do not skip these).** The exciting
+> scaling story does **not** erase the open gaps: (1) the **24–120 h
+> forecast-skill equivalence gate is OPEN** — the 24 h equivalence demo is
+> `NOT_EQUIVALENT`, dominated by lead-time wind divergence; (2) **tiny
+> single-domain grids are host/launch-bound** (~2.3× slower than 24-rank CPU at
+> 129²) and **fp32 cannot move that**; (3) **surface-layer winds on complex inner-
+> nest terrain spread** with lead time (innermost-nest 10 m winds as low as r≈0.48
+> — the most-sensitive surface field, not a solver bug); (4) **extreme terrain
+> (Mont-Blanc ~1042 m/cell) is not fully stabilized** (relocates → v0.21.1); and
+> (5) **v0.21.0 does not speed up the forecast itself** — its win is capability +
+> compile/warm-start + scale, with warm s/forecast-hour unchanged and
+> byte-identical on the default path.
 
 ### Apples-to-apples vs AceCAST (EXPECTATION / PROJECTED — not measured)
 
@@ -510,16 +663,17 @@ claim** — we do **not** claim parity with, or an advantage over, AceCAST. Reas
 and what would turn it into a measured claim:
 [`proofs/v018/acecast_reconciliation.md`](proofs/v018/acecast_reconciliation.md).
 
-**The whole Earth at 1 km fits in a single rack (PROJECTED).** The global 1 km
-50-level state — ~25 billion cells, ~4.3 TB (≈13 TB with solver working memory) —
-fits in the HBM of one **NVIDIA GB300 NVL72**. This is **exact memory arithmetic,
-a "where this is going" note, not a near-term capability**: the multi-GPU
-domain-decomposition path is bit-identity-proven on a **CPU fake mesh only**
-(`shard_map` + `lax.ppermute` halo); **real multi-GPU throughput is not yet
-shipped**, and a global wall-clock figure is **not claimed**.
-
 **Performance / identity env flags**:
 `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` (eager non-fused bitwise/debug path),
+`GPUWRF_NESTED_AOT=0` (opt out of the v0.21.0 AOT cheap-key warm-start, **on by
+default** on the fused path — a fresh load is numerically inert),
+`GPUWRF_AOT_VERIFY=1` (fail-closed lower-once + HLO-digest warm-load verification
+backstop, default off),
+`GPUWRF_FINITE_CHECK=0` (opt out of the **default-on** fail-fast finite guard —
+observational on finite states; opt out only for max-performance experiments),
+`GPUWRF_NESTED_DEFUSE_COMPILE=1` / `GPUWRF_NESTED_PARALLEL_COMPILE=N` (opt-in
+low-host-compile-RAM de-fuse path + optional parallel prewarm; **slower runtime**,
+not the default),
 `GPUWRF_NESTED_SYNC_MODE` (`root` default / `advance` / `segment`),
 `GPUWRF_EDGE_ONLY_BOUNDARY` (ring-only boundary, **default on, bit-identical**),
 `GPUWRF_JIT_BOUNDARY` (jit the boundary builder, default off),
@@ -540,9 +694,9 @@ Measured on the reference RTX 5090. Full detail: **[docs/resource-profile.md](do
 | Resource | What to expect |
 |---|---|
 | GPU / VRAM | The **1 km-NESTED all-island AC1_FIT case** (9/3/1, d03 520x280x45, ~145k columns) now fits the reference RTX 5090 at **~18.1 GiB peak VRAM**; before v0.18.2 it OOMed near **31.8/32 GiB**. Retained 72 h gate peaks: **22.9 GiB** (Switzerland d01) / **29.8 GiB** (Canary L2 d02, nested); d01 9 km standalone peaks **≈ 4.7 GiB**; the 1 km single domain fits in a fresh process at **18.25 GiB** (chunked BouLac). Peak is transient working memory, not persistent fp64 State; the v0.18.2 levers are bit-identical radiation/cold-start column tiling, with multi-GPU still the scale path. |
-| First-run compile | **~8–12 min** one-time cold JIT compile for ordinary single-domain/nested programs (no output during compile). The **persistent on-disk cache** (default on, zero config) turns later runs into a fast cache read (**cold ~147 s → cache-hit ~29 s** d01 hour-1 wrapper), **including across forecast dates** (v0.20: 0 new cache entries on a new/leap-year date); cached executable bit-identical. The all-7 fused program adds a separate **~41 min one-time** compile, cached after the first run. |
+| First-run compile / warm-start | A one-time cold JIT compile (no output during compile), scaling with grid size — a few minutes for ordinary single-domain/nested programs, tens of minutes for the large all-7 9-domain nest. **New in v0.21.0: a fresh process then warm-LOADS the compiled executable in seconds** via the default-on AOT cheap-key warm-start, which **skips the multi-tens-of-minutes re-lower** the old cache still paid (MEASURED: 9-nest fused stress — both fused phases `source=aot_blob`, 0 re-lower, warm peak host RSS 16.4 GB; 3-domain cold→warm gate byte-identical, no runtime regression). The **persistent on-disk cache** is default-on, zero config, and **version-keyed** (`gpuwrf` + JAX/JAXLIB + backend), so a stale older-release cache is never mistaken for warm; the v0.20 single-domain read was already fast (**cold ~147 s → cache-hit ~29 s** d01 hour-1 wrapper) and **hits across forecast dates** (0 new cache entries on a new/leap-year date), cached executable bit-identical. |
 | Scratch | A **real (non-tmpfs) NVMe scratch dir**, a few GiB free. Set via `--scratch-dir` / `$GPUWRF_SCRATCH`. Do **not** use a RAM disk. |
-| Throughput | **v0.20.0 all-7 nested fast path: ~668 s/forecast-hour warm (645–680) vs 713 for v0.19 and 1020 for 12-rank CPU-WRF — ~1.07× vs v0.19, ~1.53× vs CPU, byte-identical to v0.19 (1926/1926, maxΔ=0)**. On a tiny 129² single domain the GPU is ~2.3× slower than 24-rank CPU (host-bound); it pulls ahead at 1 km/large/nested scale. No multi-× single-card speedup is claimed. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md). |
+| Throughput | **Warm forecast throughput is unchanged in v0.21.0** (its speed win is compile/warm-start time, not the forecast itself). The measured fused runtime number stands: **v0.20.0 all-7 nested fast path: ~668 s/forecast-hour warm (645–680) vs 713 for v0.19 and 1020 for 12-rank CPU-WRF — ~1.07× vs v0.19, ~1.53× vs CPU, byte-identical to v0.19 (1926/1926, maxΔ=0)**. On a tiny 129² single domain the GPU is ~2.3× slower than 24-rank CPU (host-bound); it pulls ahead at 1 km/large/nested scale. No multi-× single-card speedup is claimed. See [docs/PERFORMANCE.md](docs/PERFORMANCE.md). |
 | Runtime data | The vendored `data/fixtures/` tables (~147 MiB: Thompson + RRTMG) are loaded at import; a minimal run install needs `src` + `data/fixtures` (see the source-only quickstart above). |
 | Toolchain | CUDA 13 + a JAX CUDA build that sees the GPU. |
 
@@ -553,6 +707,7 @@ Newest first. Full per-release evidence is under [`proofs/`](proofs/) and the
 
 | Version | Headline | Key proof / link |
 |---|---|---|
+| **v0.21.0** | **Stability + compile-cache-speed; warm forecast throughput unchanged + byte-identical on the default path.** Priority order **stability > identity > speed > memory**. **AOT cheap-key cross-process warm-start (default on, fused path):** after a one-time cold compile, a fresh process loads the compiled GPU executable from disk via a cheap metadata key (computed **without lowering**) and **skips the multi-tens-of-minutes re-lower** the old cache still paid (MEASURED: 3-domain cold→warm gate byte-identical, `REF_COMPARE` equal / max_abs_diff 0, no runtime regression; 9-nest fused stress both fused phases `source=aot_blob`, 0 re-lower, all 9 domains finite, warm peak host RSS 16.4 GB). **Dycore boundary-stability fix** takes the all-7 9-domain Canary nest **finite through the old step-67 divergence window** (mechanism fix, identity-preserving on the CPU regression baseline, zero new regressions). **Default-on fail-fast finite guard** (`GPUWRF_FINITE_CHECK`) reports the first non-finite prognostic `{domain, field, level, step, sim-time, index}`. **Version-keyed compile cache** + default-on autotune cache; opt-in steep-terrain GPU gate. **De-fuse is opt-in only** (low host-compile-RAM, measured **+18.8% s/step ⇒ reverted as default**); runtime default stays fused. **Carried:** most-extreme 1 km Mont-Blanc (~1042 m/cell) terrain not fully stabilized (relocates → v0.21.1); long-horizon 9-nest can still OOM around the ~90 min horizon; open 24–120 h skill gate not closed. No new physics. | [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md) |
 | **v0.20.1** | **Reliability + I/O-readiness patch; fp64 default byte-identical to v0.20.0.** No single-card speedup. The warm compile cache now **hits across forecast dates for the nested path too** (#114 — a new/leap date is a warm hit, the fused nest is not recompiled; saves the ~50 min cold compile, net ~30 min/date since you still pay a one-time module load/link — **warm, not "instant"**; bit-identical default path). Adds an **opt-in compact training-output mode** (`GPUWRF_TRAINING_OUTPUT_SUBSET`, 36-var subset + coordinates, lossless; **off by default**, default output byte-identical). **GPU OOM-hardening for the nested path (mitigation, not a blanket fix):** a `--max-dom > 1` CPU-side **VRAM-headroom preflight** that fails closed (exit 75) before the ~50 min compile, plus an RRTMG column-tile cap 2048→1024 that cuts the radiation transient's largest alloc **0.432 → 0.271 GiB (−37 %, GPU-measured), bit-identical (`max_abs = 0.0`)** — but solo `cuda_async` fragmentation **can still OOM the full fp64 nest** (reproducer shipped; **no OOM-proof / fp32-nest / 24 h large-nest claim**). Adds **CPU-only paid-B200 I/O tooling** (manifest/dimension validation + block drain/resume/stop-pull with read-back-verify-before-delete; tested on synthetic/local dry-runs only). **Honesty refresh** (perf framing, memory accounting, identity metric — inner-nest `TH2` low-`r` is a **low-variance Pearson artifact, not a bug**; now also reports variance-robust `nRMSE`), no fabricated numbers. Open 24–120 h skill gate carried, not closed. | [`RELEASE_NOTES_v0.20.1.md`](RELEASE_NOTES_v0.20.1.md), [`proofs/v013/rrtmg_column_tile.json`](proofs/v013/rrtmg_column_tile.json) |
 | **v0.20.0** | **Correctness + stability + capability + reliability; modest measured nest speedup.** Default fused all-7 9-domain nest is **~1.07× faster than v0.19 / ~1.53× faster than 12-rank CPU-WRF (~668 vs 713 vs 1020 s/forecast-hour), byte-identical to v0.19 (1926/1926, maxΔ=0)** — gain from a numerics-free `cuda_async` allocator (now default). Adds **opt-in fp32 mixed-precision** (`mixed_perturb_fp32_v020`) for **−14.4% VRAM / ~1.16× cell capability** (fp64 default byte-identical, 963/963 maxΔ=0; fp32 is **not** a single-card speedup, tolerance checked at 1 h only). **Compile cache now hits across forecast dates** (#91 — 0 new cache entries on new/leap dates, default path 64/64 byte-identical), zero config. GPU-vs-CPU all-7 24 h identity: **core EXCELLENT — T corr 0.9999 (RMSE 0.69 K), PH/PSFC 0.9997, U 0.991, V 0.968, QVAPOR 0.964; surface diagnostics looser (most parameterization-sensitive) — T2 0.944 (RMSE 0.78 K), TH2 0.878, U10 0.855, V10 0.852 mean corr; on the inner 1 km Alpine nests d06/d07 the 10 m winds spread to corr ~0.48–0.65 / RMSE ~4–5 m/s** — the expected most-sensitive field on complex terrain, **byte-identical to validated v0.19 (not a v0.20 regression)**, divergence grows with lead time; logged as v0.20.1 characterization item (#119). | `proofs/v020/lowhang/COMBINED_SPEEDUP.md`, `proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md`, `proofs/v020/julday_cache/JULDAY_CACHE_FIX_REPORT.md`, `proofs/v020/benchmark/T2T3_REPORT.md`, `proofs/v020/validation/identity/`, `RELEASE_NOTES_v0.20.0.md` |
 | **v0.19.0** | **Fast all-7 nested fusion + terrain-blend fidelity.** Default fused nesting plus the restored fast `_advance_chunk` loop body makes the all-7-island `max_dom=9` case **1.43x faster than the 12-rank CPU-WRF baseline** (713 vs 1020 s/forecast-hour; best segment 683). The one-time fused compile remains large (~41 min first segment, cached). The live-nest terrain/base-state fix closes the HGT/MUB/PB/PHB red-field class; all 9 domains write finite `wrfout` and the established grid comparator reports 102 fields/domain, 0 tolerance failures. | [`proofs/v019/release_prep/gate_summary.json`](proofs/v019/release_prep/gate_summary.json), [`proofs/v019/release_prep/grid_compare_summary.json`](proofs/v019/release_prep/grid_compare_summary.json), [`RELEASE_NOTES_v0.19.0.md`](RELEASE_NOTES_v0.19.0.md) |
@@ -798,7 +953,7 @@ tier.
 | See every WRF v4 scheme's classification | [Scheme triage](#scheme-triage--every-wrf-v4-scheme-classified), [`proofs/v018/scheme_count_no_clobber.json`](proofs/v018/scheme_count_no_clobber.json) |
 | Understand the project scope | [`PROJECT_CONSTITUTION.md`](PROJECT_CONSTITUTION.md), [`CHANGELOG.md`](CHANGELOG.md) |
 | See the WRF-v4 cell-identity proof + how to reproduce it | [`docs/IDENTITY_PROOF.md`](docs/IDENTITY_PROOF.md), `docs/assets/v018/identity_proof/`, [`proofs/v018/identity_proof/`](proofs/v018/identity_proof/) |
-| Understand the performance (v0.20 all-7 ~1.07× vs v0.19 / ~1.53× vs CPU + capability/cache) | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/v020/lowhang/COMBINED_SPEEDUP.md`](proofs/v020/lowhang/COMBINED_SPEEDUP.md), [`proofs/v020/benchmark/T2T3_REPORT.md`](proofs/v020/benchmark/T2T3_REPORT.md) |
+| Understand the performance (the scaling law, energy & capability figures; v0.21 compile/warm-start win; v0.20 runtime all-7 ~1.07× vs v0.19 / ~1.53× vs CPU) | [Scaling, energy & capability](#scaling-energy--capability--where-this-rewrite-gets-exciting-and-where-it-doesnt-yet) above, [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md), [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md), [`proofs/v020/lowhang/COMBINED_SPEEDUP.md`](proofs/v020/lowhang/COMBINED_SPEEDUP.md), [`proofs/v020/benchmark/T2T3_REPORT.md`](proofs/v020/benchmark/T2T3_REPORT.md) |
 | Read the AceCAST positioning (PROJECTED) | [`proofs/v018/acecast_reconciliation.md`](proofs/v018/acecast_reconciliation.md) |
 | Run & verify the GPU-vs-CPU equivalence demo | [`docs/equivalence-demo.md`](docs/equivalence-demo.md) — `scripts/equivalence_demo.py` |
 | Run long GPU validation reliably | [`docs/GPU_RUNBOOK.md`](docs/GPU_RUNBOOK.md) — `scripts/run_gpu_lowprio.sh` |
@@ -807,17 +962,22 @@ tier.
 | See the full WRF v4 gap inventory | [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md) |
 | See prior release proofs | [`proofs/`](proofs/) (`v019`, `v018`, `v017`, `v016`, `v015`, `v014`, `v013`, `v0120`, `v0110`, `v090`, `v0100`) |
 
-## Known issues (v0.20.1)
+## Known issues (v0.21.0)
 
 Full detail with symptom / ruled-out / workaround / follow-up in
 **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)**. The release carries only the
-items below; everything resolved in prior releases is dropped.
+items below; everything resolved in prior releases is dropped. Two former entries
+no longer apply in v0.21.0: the all-7 9-domain nest now runs **finite through the
+old step-67 divergence window** (dycore boundary-stability fix), and a warm start
+is no longer a multi-tens-of-minutes re-lower (the AOT cheap-key warm-start loads
+the compiled executable in seconds).
 
 | ID | Summary | Severity |
 |---|---|---|
-| **#123 solo-fragmentation OOM** | The **co-resident-headroom** OOM mode is **SOLVED** by the v0.20.1 launch-time VRAM preflight (GPU-validated fail-closed exit 75 + healthy-card happy path). The **solo `cuda_async` fragmentation** mode is **MITIGATED, not fixed**: the bit-identical 1024 RRTMG column-tile cap cuts the transient's largest allocation **0.432 → 0.271 GiB (−37 %, GPU-measured)**, but solo fragmentation **can still OOM the full fp64 nest** (a reproducer is shipped). **No OOM-proof / fp32-nest / 24 h large-nest claim.** | Mitigated + carried limitation |
+| **Extreme-terrain (Mont-Blanc ~1042 m/cell)** | The v0.21.0 dycore boundary-stability fix takes the standard all-7 9-domain Canary nest **finite past its step-67 divergence window**, but the most-extreme 1 km Mont-Blanc (~1042 m/cell) terrain is **not fully stabilized** — the fix **relocates** the failure rather than removing it. The deep boundary-stability fix for the extreme regime is **v0.21.1**. | Carried limitation |
+| **#123 solo-fragmentation OOM** | The **co-resident-headroom** OOM mode is **SOLVED** by the launch-time VRAM preflight (GPU-validated fail-closed exit 75 + healthy-card happy path). The **solo `cuda_async` fragmentation** mode is **MITIGATED, not fixed**: the bit-identical 1024 RRTMG column-tile cap cuts the transient's largest allocation **0.432 → 0.271 GiB (−37 %, GPU-measured)**, but solo fragmentation **can still OOM the full fp64 nest**, and the long-horizon 9-nest can still OOM around the ~90 min integration horizon (a reproducer is shipped). v0.21.0 adds a **default-on fail-fast finite guard** (`GPUWRF_FINITE_CHECK`) so a corrupted state aborts cleanly with `{domain, field, level, step, sim-time, index}` instead of propagating. **No OOM-proof / fp32-nest / 24 h large-nest claim.** | Mitigated + carried limitation |
 | **fp32 1 h-only fidelity** | The opt-in fp32 mode (`mixed_perturb_fp32_v020`) is tolerance-checked **only at the 1 h lead** (19/19 fields green) — real but **not stringent**; the **24–120 h skill gate is future work, out of scope**. fp64 stays the byte-identical default. | Documented scope |
-| **High resident host RAM (~36 GB)** | A run holds **~36 GB of host RAM** resident even at only ~9.6 GB VRAM, because the Noah-MP/physics constant tables are currently baked into the compiled executable (static aux) rather than passed as runtime arguments. This is **precision-independent** and **does not affect correctness, single-run stability, or results** — but it limits running two instances on a 64 GB box and reduces large-grid / pod-density headroom. Root-caused; the tables-as-runtime-args fix is **deferred (not in v0.20.1)**. | Root-caused, deferred |
+| **High resident host RAM (~36 GB)** | A run holds **~36 GB of host RAM** resident even at only ~9.6 GB VRAM, because the Noah-MP/physics constant tables are currently baked into the compiled executable (static aux) rather than passed as runtime arguments. This is **precision-independent** and **does not affect correctness, single-run stability, or results** — but it limits running two instances on a 64 GB box and reduces large-grid / pod-density headroom. Root-caused; the tables-as-runtime-args fix is **still deferred (not in v0.21.0)**. | Root-caused, deferred |
 | **fp32 mixed-precision OOMs on the deep all-7 nest** | The opt-in fp32 mode is **single-domain / capability-only**; on the full all-7 9-domain nest it can OOM on the recurring RRTMG radiation transient (allocator fragmentation) and is **~5× slower than fp64 there anyway**. The nest default is **fp64 + `cuda_async`**, which is bounded (~12.6 GB peak); the v0.20.1 preflight + 1024 RRTMG cap **reduce but do not eliminate** the solo-fragmentation OOM. fp32-on-nest remains **out of scope**. | Documented scope; fp64 nest unaffected |
 | **RAINNC residual** | Accumulated `RAINNC` is **5.22 mm RMSE vs the 1.0 mm bound** (class-c) on the Switzerland 72 h cell-identity proof — a bounded, derived accumulated-precip diagnostic with **no expected forecast-skill impact**; **no tolerance widening**, drawn red. Diffuse Thompson staging + coupled accumulated-precip propagation; no single bounded missing process. | Bounded acceptance |
 | **CLM4/CTSM boundary** | CLM4 (`sf_surface_physics=5`) / CTSM (`6`) are a **documented architecture boundary** — recognized, **fail-closed** with a named reason, **no oracle claimed**. A faithful port needs the CLM/CTSM column model; a v1.0 boundary. | Scope boundary |
@@ -825,7 +985,7 @@ items below; everything resolved in prior releases is dropped.
 | **Shin-Hong PBL11 TKE** | Shin-Hong (`bl_pbl_physics=11`) is operational despite a ~28.5 % diagnostic-TKE residual, source-traced as **non-driving** (dynamics tendencies never read it); TKE-oracle upgrade is a documented follow-up. | Documented follow-up |
 | **CPU suite xfail debt** | The full CPU test suite carries **38 documented non-strict xfail tests**, all **pre-existing** (each fails identically on tag `v0.17.0`; **zero v0.18-introduced regressions**, verified). They run and surface an XPASS if they start passing. Triage + per-test disposition: [`proofs/v018/suite_triage.md`](proofs/v018/suite_triage.md). | Carried test-debt |
 | **KI-9** | **The credibility gate.** Cell-identity proven (dynamics/thermo core cell-for-cell), but the broader **24 h/72 h forecast-skill equivalence** is open — equivalence demo 24 h d02 `NOT_EQUIVALENT`, dominated by **lead-time wind divergence** (3D V pooled RMSE 8.13 m/s). Hard dynamics-`ph'`/MYNN/`*_tendf` GPU work, no cheap knob. | Documented gap |
-| **Fused fast-path caveat** | v0.20 default fused all-7 nesting is **~1.53× faster than 12-rank CPU-WRF / ~1.07× faster than v0.19 (byte-identical to v0.19)** and all-fields tolerance-green, but it is tolerance-green rather than bitwise-vs-eager and pays a large one-time compile before cache warm. Use `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` for eager bitwise/debug comparisons. | Carried caveat |
+| **Fused fast-path caveat** | The default fused all-7 nesting is **~1.53× faster than 12-rank CPU-WRF / ~1.07× faster than v0.19 (byte-identical to v0.19)** and all-fields tolerance-green, but it is tolerance-green rather than bitwise-vs-eager and still pays a **one-time cold compile** on the very first run. In v0.21.0 a fresh process then warm-loads the compiled executable in seconds via the default-on AOT cheap-key warm-start (no multi-tens-of-minutes re-lower). Use `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` for eager bitwise/debug comparisons. | Carried caveat |
 | **KI-4** | d02 **U10** episodic final-lead under-prediction (8.06 m/s vs 7.5 m/s bar); within bar at all other leads, beats persistence 23/24. Tied to KI-9. | Documented residual |
 | **KI-3** | Operational `wrfout` is a focused **104-variable** subset (vs WRF's 375). | Scope boundary |
 | **KI-5** | Powered TOST campaign not run; **superseded by cell-identity as the primary gate**. No TOST PASS claimed. | Scope boundary |
