@@ -231,18 +231,6 @@ out-of-envelope field is a **bounded diagnostic, drawn red, never painted green*
 accumulated precipitation `RAINNC`, which stays inside a bounded multiple of a
 tight 1.0 mm bound (see the framing below the plots).
 
-**24 h, nine nested domains — GPU vs 24-rank CPU-WRF v4 (MEASURED):**
-![24 h GPU↔CPU identity — nine nested domains](docs/assets/v021/fig_identity_24h.png)
-
-> *MEASURED 24 h, nine-domain GPU-vs-24-rank-CPU-WRF comparison: the **core fields
-> hold `r ≥ 0.99`** (T `r=0.9999`, RMSE 0.69 K; PH/PSFC `r=0.9997`) — the
-> dynamics/thermo core is the strong, exciting result. The **near-surface fields are
-> the disclosed weak point and grow with forecast lead** — more on the 1 km inner
-> nests than the 3 km outer (e.g. U10 `r≈0.86`, innermost-nest V10 as low as
-> `r≈0.48`). That is **solver-precision chaos** (different rounding realizations of
-> the same deterministic case) on the most-sensitive surface behavior, **not a solver
-> bug** — and it is exactly the open 24–120 h skill gate below, stated honestly.*
-
 **The v0.18 default Thompson microphysics is strictly more WRF-faithful than
 v0.17.** v0.18 adds Thompson cold-process fidelity (rci/sci cloud-ice collection,
 cloud-water freezing, graupel-number diagnostics) and, during the v0.18 release
@@ -545,7 +533,7 @@ architecture wins* — and the honest small print — *on a postage-stamp grid a
 run / device counter) or **DERIVED** (a roofline fit or a timing-derived
 denominator), and no number is invented.
 
-### The scaling law — the reason to be excited
+### The scaling law 
 
 A controlled single-domain Switzerland sweep (3 km, 44 levels) tiled to
 increasing horizontal extent — **4 fp32 + 3 fp64 real runs** on the reference
@@ -561,7 +549,7 @@ what reveals the law.
 | 384²×44 | 6.49 M | 232.6 | 237.5 | 1.00e7 | 9.83e6 | 9.8 / 22.0 GB | 9.2 / 21.1 GB |
 | 512²×44 | 11.53 M | 444.5 | OOM (~32 GB) | 9.34e6 | — | 16.2 / 29.8 GB | — |
 
-*(MEASURED: per-grid runtimes, throughput, VRAM, and the 512² fp64 OOM point.)*
+*(MEASURED: per-grid runtimes on a RTX5090, throughput, VRAM, and the 512² fp64 OOM point.)*
 
 Wall-clock rises with grid size — but throughput **climbs and saturates at a
 hardware ceiling R∞ (DERIVED from the roofline fit): fp64 ≈ 1.06×10⁷ cells/s,
@@ -570,16 +558,6 @@ busy doing real arithmetic, not waiting on launch overhead, once the grid is big
 enough. The opt-in fp32 mode is precision-only (unchanged topology), so it tracks
 fp64 throughput (R∞ ratio ≈ 0.91) but **fits a 512² / 11.5 M-cell grid where fp64
 OOMs near 32 GB** — a VRAM/capability win, not a single-card speedup.
-
-![Launch-bound → throughput-bound regimes (explanatory schematic)](docs/assets/v021/fig_scaling_regimes.png)
-
-*(Explanatory schematic — **not** a measurement.)* Small grids (≤128²) sit in the
-**launch/occupancy-bound regime** where per-cell overhead dominates, so a *tiny*
-single-domain grid can trail a 24-rank CPU. As the grid grows that overhead
-amortizes and throughput approaches R∞. In other words, **wrf_gpu's advantage is
-large grids, 1 km, and nested / multi-GPU scale** — exactly where operational
-high-resolution forecasting lives — and the small-grid deficit is overhead, not a
-flaw in the math.
 
 ### Cross-platform anchors — and the bigger iron
 
