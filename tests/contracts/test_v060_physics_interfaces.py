@@ -37,11 +37,13 @@ _V018_TRUNK_BASE_SPEC_COUNT = 52
 _V018_HARVESTED_SPECS = 6
 _V018_PBL_FAMILY_SPECS = 4
 _V018_RA_TAIL_SPECS = 4
+_V022_F3_CAMUW_PBL_SPECS = 1
 _V018_EXPECTED_SPEC_COUNT = (
     _V018_TRUNK_BASE_SPEC_COUNT
     + _V018_HARVESTED_SPECS
     + _V018_PBL_FAMILY_SPECS
     + _V018_RA_TAIL_SPECS
+    + _V022_F3_CAMUW_PBL_SPECS
 )
 
 
@@ -187,7 +189,7 @@ def test_v060_namelist_accept_matrix_and_wrfout_forward_names() -> None:
             "physics": {
                 "mp_physics": [1, 2, 3, 4, 6, 8, 10, 16],
                 "cu_physics": [0, 1, 2, 3, 4, 5, 6, 14, 16, 93, 94, 95, 96, 99],
-                "bl_pbl_physics": [0, 1, 2, 3, 4, 5, 7, 10, 11, 12, 16, 17],
+                "bl_pbl_physics": [0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 12, 16, 17],
                 "sf_sfclay_physics": [0, 1, 2, 5, 7],
                 "sf_surface_physics": [0, 2, 3, 4, 7, 8],
                 "ra_sw_physics": [0, 1, 2, 4, 5, 99],

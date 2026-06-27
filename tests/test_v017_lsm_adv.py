@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import importlib
 import json
-import os
 from pathlib import Path
 
 import pytest
@@ -38,6 +37,7 @@ from gpuwrf.contracts.physics_registry import (
     SURFACE_SCHEMES,
     assert_registry_consistent,
 )
+from gpuwrf.config.paths import wrf_root
 from gpuwrf.coupling.physics_dispatch import (
     UnsupportedSchemeSelection,
     resolve_physics_suite,
@@ -160,9 +160,7 @@ def test_oracle_savepoints_are_real_non_self_compare_evidence(
     assert checks, f"missing WRF source checksum file under {sp_dir}"
     checksum_text = checks[0].read_text()
     assert src in checksum_text, f"{src} not recorded in {checks[0]}"
-    pristine = Path(
-        os.environ.get("GPUWRF_WRF_ROOT", "<USER_HOME>/src/wrf_pristine/WRF")
-    ) / "phys" / src
+    pristine = wrf_root() / "phys" / src
     if pristine.exists():
         import hashlib
 

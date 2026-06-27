@@ -6,7 +6,13 @@ SCRATCH="${ROOT}/data/scratch"
 OUT="${SCRATCH}/wrf_sfclay_harness"
 OBJ="${SCRATCH}/wrf_sfclay_harness.o"
 LOG="${SCRATCH}/wrf_sfclay_harness_build.log"
-WRF_ROOT="<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF"
+DEFAULT_WRF_ROOT="$(
+  PYTHONPATH="${ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}" python - <<'PY'
+from gpuwrf.config.paths import wrf_root
+print(wrf_root())
+PY
+)"
+WRF_ROOT="${WRF_ROOT:-${GPUWRF_WRF_ROOT:-${DEFAULT_WRF_ROOT}}}"
 WRF_MAIN="${WRF_ROOT}/main"
 WRF_SFCLAY_SRC="${WRF_ROOT}/phys/module_sf_sfclay.F"
 WRF_SFCLAY_OBJ="${WRF_ROOT}/phys/module_sf_sfclay.o"
@@ -14,9 +20,10 @@ WRF_SFCLAY_OBJ="${WRF_ROOT}/phys/module_sf_sfclay.o"
 mkdir -p "${SCRATCH}"
 : > "${LOG}"
 
-if [[ -f <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh ]]; then
+WRF_ENV="${WRF_ENV:-${GPUWRF_WRF_ENV:-${WRF_ROOT%/WRF}/env_wrf_gpu.sh}}"
+if [[ -f "${WRF_ENV}" ]]; then
   # shellcheck disable=SC1091
-  source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh >>"${LOG}" 2>&1 || true
+  source "${WRF_ENV}" >>"${LOG}" 2>&1 || true
 fi
 
 FC="${FC:-$(command -v nvfortran || true)}"

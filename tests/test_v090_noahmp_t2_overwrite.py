@@ -10,8 +10,6 @@ test validates the operational masking/plumbing on top of that.
 """
 from __future__ import annotations
 
-from pathlib import Path
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -20,11 +18,12 @@ import pytest
 jax.config.update("jax_enable_x64", True)
 
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
+from gpuwrf.config.paths import wrf_run_dir
 from gpuwrf.coupling.noahmp_surface_hook import overlay_noahmp_land_diagnostics
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
 
-TABLE_DIR = Path("<USER_HOME>/src/wrf_pristine/WRF/run")
+TABLE_DIR = wrf_run_dir()
 HAVE_TABLES = (TABLE_DIR / "MPTABLE.TBL").exists()
 P0_PA = 1.0e5
 R_D_OVER_CP = 287.0 / 1004.0

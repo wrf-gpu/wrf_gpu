@@ -6,7 +6,8 @@ These assert the v0.12.0 "no silent gaps" honesty contract:
 * the Smagorinsky-vs-constant-K dynamics path is classified honestly;
 * every recognized-but-unimplemented WRF scheme fails closed by name;
 * every out-of-scope feature (WRF-Chem, WRF-Fire, FDDA, stochastic physics,
-  moving nests, urban BEP/BEM) fails closed as a named scope decision;
+  moving nests) fails closed as a named scope decision;
+* urban BEP/BEM and lake are recognized future-port targets that fail closed;
 * the catalog's ``implemented`` set never over-claims a reference-only scheme
   and never drifts from the frozen accept-matrix.
 """
@@ -91,30 +92,19 @@ def test_implemented_suite_validates_ok() -> None:
 # Contract requirement (2): Smagorinsky / constant-K dynamics honesty.        #
 # --------------------------------------------------------------------------- #
 def test_smagorinsky_and_constant_k_classification_is_honest() -> None:
-    """diff_opt=1/km_opt=4 (2-D Smag) is an IMPLEMENTED operational path; the
-    3-D LES closures (km_opt=2/3/5) fail closed and the constant-K transition
-    recipe is surfaced in the message."""
+    """2-D Smag, constant-K, and the 3-D turbulence km_opt family are implemented."""
 
     # 2-D Smagorinsky horizontal diffusion is the wired real-data default.
     assert classify_scheme("diff_opt", 1).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("km_opt", 4).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("km_opt", 1).status is SupportStatus.IMPLEMENTED
+    for implemented in (2, 3, 5):
+        assert classify_scheme("km_opt", implemented).status is SupportStatus.IMPLEMENTED
     validate_namelist({"dynamics": {"diff_opt": 1, "km_opt": 4}})
     validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 1}})
-
-    # The 3-D TKE / 3-D Smagorinsky / SMS-3DTKE closures are NOT implemented and
-    # fail closed, naming the constant-K / 2-D-Smagorinsky alternative.
-    for unimplemented in (2, 3, 5):
-        support = classify_scheme("km_opt", unimplemented)
-        assert support.status is SupportStatus.RECOGNIZED_FAIL_CLOSED
-        assert "constant-K" in support.alternative or "Smagorinsky" in support.alternative
-
-    with pytest.raises(UnsupportedSchemeError) as excinfo:
-        validate_namelist({"dynamics": {"diff_opt": 1, "km_opt": 2}})
-    message = str(excinfo.value)
-    assert "km_opt" in message
-    # The transition recipe to a supported eddy-coefficient is named.
-    assert "diff_opt=1" in message or "constant-K" in message
+    validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 2}})
+    validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 3}})
+    validate_namelist({"dynamics": {"diff_opt": 2, "km_opt": 5}})
 
 
 # --------------------------------------------------------------------------- #
@@ -170,16 +160,20 @@ def test_out_of_scope_switch_off_passes() -> None:
     )
 
 
-def test_urban_bep_bem_is_out_of_scope() -> None:
-    """Multi-layer urban canopy (BEP=2 / BEM=3) is a documented scope decision."""
+def test_urban_bep_bem_is_recognized_fail_closed() -> None:
+    """Multi-layer urban canopy (BEP=2 / BEM=3) is a G3 fail-closed target."""
 
-    assert classify_scheme("sf_urban_physics", 2).status is SupportStatus.OUT_OF_SCOPE
-    assert classify_scheme("sf_urban_physics", 3).status is SupportStatus.OUT_OF_SCOPE
+    assert classify_scheme("sf_urban_physics", 2).status is SupportStatus.RECOGNIZED_FAIL_CLOSED
+    assert classify_scheme("sf_urban_physics", 3).status is SupportStatus.RECOGNIZED_FAIL_CLOSED
     assert classify_scheme("sf_urban_physics", 0).status is SupportStatus.IMPLEMENTED
 
     with pytest.raises(UnsupportedSchemeError) as excinfo:
         validate_namelist({"physics": {"sf_urban_physics": 2}})
     assert "BEP" in str(excinfo.value)
+
+    with pytest.raises(UnsupportedSchemeError) as excinfo2:
+        validate_namelist({"physics": {"sf_lake_physics": 1}})
+    assert "lake" in str(excinfo2.value).lower()
 
 
 # --------------------------------------------------------------------------- #
@@ -215,11 +209,10 @@ def test_reference_only_scheme_passes_namelist_layer() -> None:
     # operational scan still fail-closes until traceable JAX kernels land.
     for pbl in (4, 10, 16, 17):
         assert classify_scheme("bl_pbl_physics", pbl).status is SupportStatus.REFERENCE_ONLY
-    # CAM-UW is a proven CAM-family architecture endpoint, not a standalone PBL
-    # reference-only option in v0.18.
+    # CAM-UW is now an operationally scan-wired v0.22 endpoint, with full
+    # CAM-stack parity caveated in its proof object rather than fail-closed here.
     camuw = classify_scheme("bl_pbl_physics", 9)
-    assert camuw.status is SupportStatus.RECOGNIZED_FAIL_CLOSED
-    assert "CAM-family" in camuw.reason
+    assert camuw.status is SupportStatus.IMPLEMENTED
     # v0.13 Tier-3 batch2: GSFC/Goddard NUWRF longwave (ra_lw=5) is REFERENCE_ONLY
     # (fp64 pristine-WRF oracle staged; faithful JAX kernel = carry-over). It is
     # namelist-accepted (for a single-column reference comparison) and fail-closes

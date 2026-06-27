@@ -358,11 +358,11 @@ def test_gpu_lock_env_does_not_fragment_cheap_key():
         "GPUWRF_GPU_LOCK_FILE": "/tmp/wrf_gpu2_gpu.lock",
         "GPUWRF_GPU_LOCK_HOLDER_FILE": "/tmp/wrf_gpu2_gpu.lock.holder",
         "GPUWRF_GPU_LOCK_LABEL": "coldA",
-        "GPUWRF_GPU_LOCK_TOKEN": "gpuwrf-lock-111-222-333",
+        "GPUWRF_GPU_LOCK_TOKEN": "<LOCK_TOKEN_A>",
     }
     lock_b = dict(lock_a)
     lock_b["GPUWRF_GPU_LOCK_LABEL"] = "warmB"  # different invocation
-    lock_b["GPUWRF_GPU_LOCK_TOKEN"] = "gpuwrf-lock-444-555-666"  # unique token
+    lock_b["GPUWRF_GPU_LOCK_TOKEN"] = "<LOCK_TOKEN_B>"  # unique token
     key_none, _, _ = _lower_in_subprocess({})  # no lock env (the canonical key)
     key_a, _, _ = _lower_in_subprocess(lock_a)
     key_b, _, _ = _lower_in_subprocess(lock_b)
@@ -377,6 +377,18 @@ def test_gpu_lock_env_does_not_fragment_cheap_key():
     )
 
 
+def test_aot_prewarm_env_does_not_fragment_cheap_key():
+    """The AOT prewarm orchestration knob is not a lowered-HLO determinant."""
+
+    key_none, _, _ = _lower_in_subprocess({})
+    key_off, _, _ = _lower_in_subprocess({"GPUWRF_NESTED_AOT_PREWARM": "0"})
+    key_on, _, _ = _lower_in_subprocess({"GPUWRF_NESTED_AOT_PREWARM": "1"})
+    assert key_none == key_off == key_on, (
+        "GPUWRF_NESTED_AOT_PREWARM leaked into cheap_key despite being an AOT "
+        f"orchestration knob: none={key_none[:16]} off={key_off[:16]} on={key_on[:16]}"
+    )
+
+
 def test_gpu_lock_env_prefix_is_denylisted():
     """The lock bookkeeping vars are excluded by name AND by inert prefix."""
     import os as _os
@@ -388,7 +400,7 @@ def test_gpu_lock_env_prefix_is_denylisted():
         base = ck.global_trace_env_hash()
         # A NEW (not individually denylisted) var under the inert prefix must also
         # be excluded by the prefix guard, so a future lock var cannot re-break it.
-        _os.environ["GPUWRF_GPU_LOCK_TOKEN"] = "unique-per-run-xyz"
+        _os.environ["GPUWRF_GPU_LOCK_TOKEN"] = "<LOCK_TOKEN_C>"
         _os.environ["GPUWRF_GPU_LOCK_SOMETHING_NEW"] = "future-bookkeeping"
         assert ck.global_trace_env_hash() == base, (
             "a GPUWRF_GPU_LOCK_* var leaked into global_trace_env_hash (prefix "

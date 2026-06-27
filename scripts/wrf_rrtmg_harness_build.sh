@@ -12,9 +12,15 @@ OUT="${SCRATCH}/wrf_rrtmg_harness"
 OBJ="${SCRATCH}/wrf_rrtmg_harness.o"
 LOG="${SCRATCH}/wrf_rrtmg_harness_build.log"
 RUNTIME="${SCRATCH}/rrtmg_runtime"
-WRF_ROOT="${WRF_ROOT:-<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF}"
+DEFAULT_WRF_ROOT="$(
+  PYTHONPATH="${ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}" python - <<'PY'
+from gpuwrf.config.paths import wrf_root
+print(wrf_root())
+PY
+)"
+WRF_ROOT="${WRF_ROOT:-${GPUWRF_WRF_ROOT:-${DEFAULT_WRF_ROOT}}}"
 WRF_BUILD="${WRF_BUILD:-${WRF_ROOT}/_build_gen2_dmpar}"
-WRF_ENV="${WRF_ENV:-<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build}"
+WRF_ENV="${WRF_ENV:-${GPUWRF_WRF_ENV:-}}"
 MOD_DIR="${WRF_MOD_DIR:-${WRF_ROOT}/install_gen2_dmpar/modules}"
 SW_OBJ="${WRF_BUILD}/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o"
 LW_OBJ="${WRF_BUILD}/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o"
@@ -27,8 +33,9 @@ LW_DATA="${WRF_ROOT}/install_gen2_dmpar/run/RRTMG_LW_DATA"
 # and is a genuine (non-JAX) WRF Fortran oracle. It only lacks the WRF framework
 # error handler wrf_error_fatal3, which we satisfy with a tiny local stub.
 # All three are overridable for a different local WRF build.
-PRISTINE_PHYS="${WRF_PRISTINE_PHYS:-<USER_HOME>/src/wrf_pristine/WRF/phys}"
-PRISTINE_RUN="${WRF_PRISTINE_RUN:-<USER_HOME>/src/wrf_pristine/WRF/run}"
+PRISTINE_ROOT="${WRF_PRISTINE_ROOT:-${WRF_ROOT}}"
+PRISTINE_PHYS="${WRF_PRISTINE_PHYS:-${PRISTINE_ROOT}/phys}"
+PRISTINE_RUN="${WRF_PRISTINE_RUN:-${PRISTINE_ROOT}/run}"
 PRISTINE_FC="${WRF_PRISTINE_FC:-gfortran}"
 USE_PRISTINE=0
 if [[ ! -f "${SW_OBJ}" || ! -f "${LW_OBJ}" ]] \
@@ -40,6 +47,13 @@ if [[ ! -f "${SW_OBJ}" || ! -f "${LW_OBJ}" ]] \
   SW_DATA="${PRISTINE_RUN}/RRTMG_SW_DATA"
   LW_DATA="${PRISTINE_RUN}/RRTMG_LW_DATA"
   [[ -x "${PRISTINE_FC}" ]] && FC="${PRISTINE_FC}"
+fi
+
+if [[ ! -f "${SW_DATA}" && -f "${WRF_ROOT}/run/RRTMG_SW_DATA" ]]; then
+  SW_DATA="${WRF_ROOT}/run/RRTMG_SW_DATA"
+fi
+if [[ ! -f "${LW_DATA}" && -f "${WRF_ROOT}/run/RRTMG_LW_DATA" ]]; then
+  LW_DATA="${WRF_ROOT}/run/RRTMG_LW_DATA"
 fi
 
 mkdir -p "${SCRATCH}" "${RUNTIME}"
@@ -54,8 +68,10 @@ if [[ -x "${OUT}" && "${OUT}" -nt "${ROOT}/scripts/wrf_rrtmg_harness.f90" ]]; th
   exit 0
 fi
 
-FC="${FC:-${WRF_ENV}/bin/gfortran}"
-if [[ ! -x "${FC}" ]]; then
+if [[ -z "${FC:-}" && -n "${WRF_ENV}" && -x "${WRF_ENV}/bin/gfortran" ]]; then
+  FC="${WRF_ENV}/bin/gfortran"
+fi
+if [[ -z "${FC:-}" || ! -x "${FC}" ]]; then
   FC="$(command -v gfortran || true)"
 fi
 if [[ -z "${FC}" ]]; then

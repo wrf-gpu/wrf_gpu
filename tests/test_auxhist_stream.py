@@ -42,7 +42,7 @@ from gpuwrf.io.auxhist_stream import (
     AuxhistStreamConfig,
     auxhist_output_boundaries,
 )
-from gpuwrf.io.wrfout_writer import MINIMUM_WRFOUT_VARIABLES
+from gpuwrf.io.wrfout_writer import FULL_WRFOUT_VARIABLES, MINIMUM_WRFOUT_VARIABLES
 
 
 AUXHIST_VARS = ("U10", "V10", "T2", "Q2", "PSFC", "RAINNC", "SWDOWN")
@@ -150,6 +150,7 @@ def _run(
     hours: int,
     tag: str,
     async_output: bool = False,
+    full_wrfout_variables: bool = False,
 ):
     run_dir = tmp_path / f"run_{tag}"
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -162,6 +163,7 @@ def _run(
         refresh_land_state_hourly=False,
         async_output=async_output,
         auxhist=auxhist,
+        full_wrfout_variables=full_wrfout_variables,
     )
     return _run_forecast_sequence(
         config,
@@ -301,6 +303,30 @@ def test_auxhist_main_stream_keeps_full_field_set(tmp_path: Path) -> None:
     # The 30-min auxhist stream carries only the 2 requested vars (+ time coords).
     with Dataset(result.auxhist_files[0]) as ds:
         assert set(ds.variables) - {"Times", "XTIME"} == {"T2", "U10"}
+
+
+def test_full_wrfout_opt_in_pipeline_writes_full_main_and_auxhist(tmp_path: Path) -> None:
+    """A small-grid forecast run can opt into the full WRF history schema."""
+
+    aux = AuxhistStreamConfig(stream_id=1, interval_minutes=60, variables=FULL_WRFOUT_VARIABLES)
+    result = _run(
+        tmp_path,
+        auxhist=aux,
+        hours=1,
+        tag="full_wrfout",
+        full_wrfout_variables=True,
+    )
+    assert len(result.output_files) == 1
+    assert len(result.auxhist_files) == 1
+    stream_meta = result.metadata["auxhist_streams"][0]
+    assert stream_meta["prepared_full_variable_set"] is True
+    assert stream_meta["full_variable_count"] == 375
+
+    with Dataset(result.output_files[0]) as main, Dataset(result.auxhist_files[0]) as auxhist_ds:
+        assert list(main.variables) == list(FULL_WRFOUT_VARIABLES)
+        assert list(auxhist_ds.variables) == list(FULL_WRFOUT_VARIABLES)
+        assert len(main.variables) == 375
+        assert len(auxhist_ds.variables) == 375
 
 
 def test_auxhist_hourly_interval_matches_main_cadence(tmp_path: Path) -> None:

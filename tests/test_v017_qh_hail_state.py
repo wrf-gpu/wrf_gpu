@@ -57,11 +57,11 @@ def test_hail_leaves_appended_at_end_append_only() -> None:
     # original + 3 v0.6.0 (Nc/Nn/rainc_acc) + 4 v0.15 MYNN + 4 v0.17 hail
     # substrate (qh/Nh/qvolg/qvolh) + 2 v0.16 aerosol-aware Thompson (nwfa/nifa)
     # + 1 v0.17 hail surface accumulator (hail_acc) = 67, minus the 3 legacy
-    # p/ph/mu duplicate aliases removed in v0.20 S1 = 64, plus 7 v0.21.1 optional
+    # p/ph/mu duplicate aliases removed in v0.20 S1 = 64, plus 7 v0.22 optional
     # standalone wrfbdy scalar leaves = 71.
     assert len(State.__slots__) == 71
     # The four 3-D hail substrate leaves sit just before the v0.16 aerosol leaves
-    # and hail_acc, followed only by the v0.21.1 optional wrfbdy scalar leaves.
+    # and hail_acc, followed only by the v0.22 optional wrfbdy scalar leaves.
     assert State.__slots__[-14:-10] == HAIL_LEAVES
     assert STATE_FIELD_ORDER[-14:-10] == HAIL_LEAVES
     assert State.__slots__[-10:-7] == ("nwfa", "nifa", "hail_acc")

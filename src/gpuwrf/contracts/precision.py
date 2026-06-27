@@ -200,7 +200,7 @@ STATE_FIELD_ORDER = (
     "nifa",
     # --- v0.17 hail surface-precip accumulator (append-only historical tail) ---
     "hail_acc",
-    # --- v0.21.1 standalone wrfbdy scalar boundary leaves (optional) ---
+    # --- v0.22 standalone wrfbdy scalar boundary leaves (optional) ---
     "qc_bdy",
     "qr_bdy",
     "qi_bdy",

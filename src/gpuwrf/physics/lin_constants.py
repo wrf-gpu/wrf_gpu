@@ -11,7 +11,7 @@ All values mirror the pristine WRF source exactly:
   the ``ggamma`` 8-term Hastings polynomial gamma, reproduced verbatim so the
   JAX port's process coefficients are numerically identical to the Fortran.
 
-Verified against <USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_lin.F on
+Verified against /home/user/src/wrf_pristine/WRF/phys/module_mp_lin.F on
 2026-06-04 (sha256 in proofs/v060/savepoints_lin/wrf_source_checksums.txt).
 """
 

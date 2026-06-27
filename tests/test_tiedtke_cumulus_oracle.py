@@ -162,8 +162,9 @@ def test_tiedtke_savepoint_parity_report():
         rec["pass"] = not any(f"case {case} " in f for f in failures)
         case_records.append(rec)
 
-    wrf_tiedtke = Path("<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_tiedtke.F")
-    wrf_constants = Path("<USER_HOME>/src/wrf_pristine/WRF/share/module_model_constants.F")
+    wrf_root = Path(os.environ.get("GPUWRF_WRF_ROOT", "<DATA_ROOT>/src/wrf_pristine/WRF"))
+    wrf_tiedtke = wrf_root / "phys" / "module_cu_tiedtke.F"
+    wrf_constants = wrf_root / "share" / "module_model_constants.F"
     savepoint_files = sorted(SAVE.glob("tiedtke_case_*.json"))
     report = {
         "schema": "wrf-v060-tiedtke-savepoint-parity-report-v1",
@@ -213,7 +214,7 @@ def test_tiedtke_savepoint_parity_report():
         "known_limitations": [
             "The oracle is real WRF source at module level, not full wrf.exe.",
             "The implementation is not yet a jit/vmap GPU-resident production kernel.",
-            "cu_physics=16 New Tiedtke is interface-compatible but not separately gated by a distinct WRF source path in this report.",
+            "cu_physics=16 New Tiedtke has module-specific fp64 WRF oracle savepoints, but no faithful traceable JAX kernel or CU scan adapter is wired in this report.",
         ],
     }
     # The committed lane report is AUTHORITATIVE. By default this test ASSERTS the

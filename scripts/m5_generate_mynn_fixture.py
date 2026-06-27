@@ -15,6 +15,12 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from gpuwrf.config.paths import wrf_root
+
 FIXTURE_ID = "analytic-mynn-pbl-column-v1"
 SAMPLE = ROOT / "fixtures" / "samples" / f"{FIXTURE_ID}.npz"
 MANIFEST = ROOT / "fixtures" / "manifests" / f"{FIXTURE_ID}.yaml"
@@ -22,10 +28,11 @@ FULL = ROOT / "data" / "fixtures" / FIXTURE_ID / "full.npz"
 SCRATCH = ROOT / "data" / "scratch"
 BUILD_SCRIPT = ROOT / "scripts" / "wrf_mynn_harness_build.sh"
 HARNESS = SCRATCH / "wrf_mynn_harness"
-WRF_SOURCE = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/misc/module_bl_mynn.F90")
-WRF_EDMF_SOURCE = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/MYNN-EDMF/module_bl_mynnedmf.F90")
-WRF_EDMF_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf.o")
-WRF_EDMF_COMMON_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/phys/module_bl_mynnedmf_common.o")
+WRF_ROOT = wrf_root()
+WRF_SOURCE = WRF_ROOT / "phys" / "MYNN-EDMF" / "misc" / "module_bl_mynn.F90"
+WRF_EDMF_SOURCE = WRF_ROOT / "phys" / "MYNN-EDMF" / "module_bl_mynnedmf.F90"
+WRF_EDMF_OBJECT = WRF_ROOT / "phys" / "module_bl_mynnedmf.o"
+WRF_EDMF_COMMON_OBJECT = WRF_ROOT / "phys" / "module_bl_mynnedmf_common.o"
 
 INPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "p", "rho", "dz")
 OUTPUT_FIELDS = ("u", "v", "w", "theta", "qv", "tke", "km", "kh", "el")

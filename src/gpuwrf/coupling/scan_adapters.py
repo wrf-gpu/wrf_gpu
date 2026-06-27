@@ -48,8 +48,10 @@ rejects them loudly):
 * **Grell-Freitas (3) cumulus** -- faithful CPU-NumPy reference port
   (``gpu_runnable=False``); excluded from the GPU scan by design (GPU-batching of
   the sequential 16-member closure ensemble + beta-PDF gamma is a post-0.9.0 TODO).
-* **New-Tiedtke (16) cumulus** -- interface-compatible but NOT separately
-  savepoint-gated by a distinct WRF source path, so it stays fail-closed.
+* **New-Tiedtke (16) cumulus** -- module-specific fp64 WRF oracle savepoints are
+  staged under ``proofs/v013/savepoints/cumulus/ntiedtke_case_*.json`` from
+  ``phys/module_cu_ntiedtke.F``, but no faithful traceable JAX kernel or scan
+  adapter is wired yet, so it stays fail-closed.
 
   (NOTE: modified-Tiedtke ``cu=6`` IS wired -- it is the v0.6.0 GPU-batched jit/vmap
   ``tiedtke_adapter`` below, a stateless ``State -> State`` scan adapter in
@@ -104,6 +106,7 @@ from gpuwrf.physics.bl_mrf import mrf_columns
 from gpuwrf.physics.bl_gfs import gfs_columns
 from gpuwrf.physics.bl_gbm import gbm_columns
 from gpuwrf.physics.bl_shinhong import shinhong_columns
+from gpuwrf.physics.bl_camuw import TKE_MIN as CAMUW_TKE_MIN, camuw_columns
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
 from gpuwrf.physics.sfclay_old_mm5 import sfclay_old_mm5_columns
@@ -1404,6 +1407,54 @@ def gbm_pbl_adapter(state: State, dt: float, grid=None) -> State:
     )
 
 
+def camuw_pbl_adapter(state: State, dt: float, grid=None) -> State:
+    """bl_pbl=9 CAM-UW moist-turbulence PBL ``State -> State`` scan adapter.
+
+    The full WRF CAM-UW driver diffuses dry static energy plus moist/cloud
+    constituents with CAM ``compute_vdiff`` after UW diagnostic-TKE eddy
+    diffusivity. This adapter maps the operational State into the traceable
+    ``bl_camuw.camuw_columns`` endpoint and writes back the driving mass fields,
+    cloud liquid/ice, and the State.qke TKE storage used by the port's PBL lanes.
+    """
+
+    del grid
+    f = _pbl_surface_forcing(state, None)
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(f["ncol"], f["nz"])
+
+    out = camuw_columns(
+        f["u_cols"],
+        f["v_cols"],
+        f["T_cols"],
+        f["theta_cols"],
+        f["qv_cols"],
+        _cols(state.qc),
+        _cols(state.qi),
+        f["p_cols"],
+        f["pii_cols"],
+        f["dz_cols"],
+        f["z_cols"],
+        jnp.maximum(_cols(state.qke), CAMUW_TKE_MIN),
+        hfx=f["hfx"],
+        qfx=f["qfx"],
+        ust=f["ust"],
+        wspd=f["wspd"],
+        dt=float(dt),
+    )
+    next_state = _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
+
+    def _back3d(field2d):  # (ncol, nz) -> (nz, ny, nx)
+        return jnp.moveaxis(field2d.reshape(f["ny"], f["nx"], f["nz"]), -1, 0)
+
+    dt_f = float(dt)
+    return next_state.replace(
+        qc=(state.qc + dt_f * _back3d(out["qc"])).astype(_output_dtype(state, "qc")),
+        qi=(state.qi + dt_f * _back3d(out["qi"])).astype(_output_dtype(state, "qi")),
+        qke=_back3d(out["tke"]).astype(_output_dtype(state, "qke")),
+    )
+
+
 # --- dispatch tables ----------------------------------------------------------
 
 # Microphysics options whose State->State scan adapter is threaded into the GPU
@@ -1464,6 +1515,7 @@ CU_STATELESS_SCAN_ADAPTERS = {
 PBL_SCAN_ADAPTERS = {
     1: ysu_pbl_adapter,
     3: gfs_pbl_adapter,
+    9: camuw_pbl_adapter,
     11: shinhong_pbl_adapter,
     12: gbm_pbl_adapter,
     7: acm2_pbl_adapter,
@@ -1494,6 +1546,7 @@ __all__ = [
     "gfs_pbl_adapter",
     "shinhong_pbl_adapter",
     "gbm_pbl_adapter",
+    "camuw_pbl_adapter",
     "acm2_pbl_adapter",
     "boulac_pbl_adapter",
     "initial_kf_carry",

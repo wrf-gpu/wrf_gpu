@@ -203,7 +203,7 @@ def test_v060_pxsfclay_savepoint_parity_report() -> None:
         "fp64_precision_audit_pass": bool(fp64_pass),
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_sf_pxsfclay.F",
-            "wrf_sources": ["<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F"],
+            "wrf_sources": ["/home/user/src/wrf_pristine/WRF/phys/module_sf_pxsfclay.F"],
             "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
             "full_wrf_exe": False,
             "full_wrf_exe_note": (

@@ -22,6 +22,7 @@ jax.config.update("jax_enable_x64", True)
 
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
+from gpuwrf.config.paths import wrf_run_dir
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
 from gpuwrf.runtime.checkpoint import (
@@ -31,7 +32,7 @@ from gpuwrf.runtime.checkpoint import (
 )
 from gpuwrf.runtime.operational_mode import OperationalNamelist
 
-TABLE_DIR = Path("<USER_HOME>/src/wrf_pristine/WRF/run")
+TABLE_DIR = wrf_run_dir()
 HAVE_TABLES = (TABLE_DIR / "MPTABLE.TBL").exists()
 
 

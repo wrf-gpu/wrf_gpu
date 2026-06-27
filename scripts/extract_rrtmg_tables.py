@@ -9,12 +9,16 @@ import json
 import os
 import re
 import struct
+import sys
 from pathlib import Path
 
 import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
 
 def _central_wrf_root() -> Path | None:
@@ -49,10 +53,7 @@ def _resolve_wrf_root() -> Path:
       2. ``GPUWRF_WRF_ROOT`` via the central resolver ``config.paths.wrf_root()`` --
          the documented portable var that the classic RRTM path already honors, so
          rented-pod/H200 deploys need no ``data/wrf_pristine`` symlink surgery,
-      3. the historical workstation artifacts path (kept for the original layout),
-      4. the pristine WRF build (``<USER_HOME>/src/wrf_pristine/WRF``; project memory
-         "WRF ground truth BUILT 2026-05-29"),
-      5. a checkout-relative ``external/WRF``.
+      3. a checkout-relative ``external/WRF``.
     Returns the first that has ``phys/module_ra_rrtmg_lw.F``; falls back to the
     central resolver's path (so the default checkout-relative ``data/wrf_pristine``
     location -- which honors ``GPUWRF_WRF_ROOT`` -- names the error location).
@@ -65,13 +66,7 @@ def _resolve_wrf_root() -> Path:
     central = _central_wrf_root()
     if central is not None:
         candidates.append(central)
-    candidates.extend(
-        [
-            Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF"),
-            Path("<USER_HOME>/src/wrf_pristine/WRF"),
-            ROOT / "external" / "WRF",
-        ]
-    )
+    candidates.append(ROOT / "external" / "WRF")
     for cand in candidates:
         if (cand / "phys" / "module_ra_rrtmg_lw.F").is_file():
             return cand

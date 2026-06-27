@@ -582,7 +582,7 @@ class State:
         # hail_acc = accumulated grid-scale hail (mm; WRF HAILNC). It stays
         # ``None`` unless a hail MP scheme is selected.
         "hail_acc",
-        # v0.21.1 optional wrfbdy scalar boundary leaves.  These stay ``None`` unless
+        # v0.22 optional wrfbdy scalar boundary leaves.  These stay ``None`` unless
         # standalone/native lateral forcing provides the matching WRF scalar strips.
         "qc_bdy",
         "qr_bdy",
@@ -664,7 +664,7 @@ class State:
         nifa: jax.Array | None = None,
         # v0.17 hail surface-precip accumulator (append-only historical tail).
         hail_acc: jax.Array | None = None,
-        # v0.21.1 optional WRF scalar boundary leaves from wrfbdy.
+        # v0.22 optional WRF scalar boundary leaves from wrfbdy.
         qc_bdy: jax.Array | None = None,
         qr_bdy: jax.Array | None = None,
         qi_bdy: jax.Array | None = None,

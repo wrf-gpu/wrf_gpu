@@ -4,7 +4,7 @@ This module is the *full WRF v4 ARW enumeration* of the valid integer codes for
 the core physics namelist parameters, transcribed faithfully from the WRF v4
 namelist documentation:
 
-    <USER_HOME>/src/wrf_pristine/WRF/run/README.namelist  (verified 2026-06-04)
+    /home/user/src/wrf_pristine/WRF/run/README.namelist  (verified 2026-06-04)
 
 It is a pure-data, dependency-free reference table. It makes **no** claim about
 what the GPU port implements -- that is owned by
@@ -32,7 +32,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
-WRF_README_SOURCE = "<USER_HOME>/src/wrf_pristine/WRF/run/README.namelist (v4, audited 2026-06-04)"
+WRF_README_SOURCE = "/home/user/src/wrf_pristine/WRF/run/README.namelist (v4, audited 2026-06-04)"
 
 
 @dataclass(frozen=True)
@@ -250,6 +250,11 @@ WRF_SF_URBAN_PHYSICS: Mapping[int, WrfSchemeName] = {
     3: WrfSchemeName(3, "multi-layer BEM", "714"),
 }
 
+WRF_SF_LAKE_PHYSICS: Mapping[int, WrfSchemeName] = {
+    0: WrfSchemeName(0, "lake model off", "1073"),
+    1: WrfSchemeName(1, "WRF lake model", "1073"),
+}
+
 
 # Map every gated namelist key -> its full WRF v4 code catalog.
 WRF_SCHEME_CATALOG: Mapping[str, Mapping[int, WrfSchemeName]] = {
@@ -267,6 +272,7 @@ WRF_SCHEME_CATALOG: Mapping[str, Mapping[int, WrfSchemeName]] = {
     "rk_order": WRF_RK_ORD,
     "w_damping": WRF_W_DAMPING,
     "sf_urban_physics": WRF_SF_URBAN_PHYSICS,
+    "sf_lake_physics": WRF_SF_LAKE_PHYSICS,
 }
 
 # Human-readable parameter labels for error messages.
@@ -285,6 +291,7 @@ WRF_PARAM_LABEL: Mapping[str, str] = {
     "rk_order": "time-integration",
     "w_damping": "w-damping",
     "sf_urban_physics": "urban-canopy",
+    "sf_lake_physics": "lake-model",
 }
 
 
@@ -323,6 +330,7 @@ __all__ = [
     "WRF_RK_ORD",
     "WRF_W_DAMPING",
     "WRF_SF_URBAN_PHYSICS",
+    "WRF_SF_LAKE_PHYSICS",
     "WRF_SCHEME_CATALOG",
     "WRF_PARAM_LABEL",
     "wrf_scheme_name",

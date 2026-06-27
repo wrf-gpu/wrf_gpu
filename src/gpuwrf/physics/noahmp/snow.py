@@ -1,7 +1,7 @@
 """Noah-MP snow water / compaction / albedo aging (Sprint S3).
 
 Faithful JAX port of the pristine-WRF Noah-MP snow column
-(``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F``):
+(``/home/user/src/wrf_pristine/WRF/phys/module_sf_noahmplsm.F``):
 
   SNOWWATER  (:6398-6535)  driver: SNOWFALL -> COMPACT -> COMBINE -> DIVIDE ->
                            SNOWH2O, then empty-layer zeroing + ZSNSO/DZSNSO rebuild

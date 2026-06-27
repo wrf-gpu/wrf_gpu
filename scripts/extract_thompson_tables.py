@@ -17,16 +17,27 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-WRF_ROOT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF")
-ENV_SCRIPT = Path("<USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh")
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from gpuwrf.config.paths import wrf_root
+
+WRF_ROOT = wrf_root()
+ENV_SCRIPT = Path(
+    os.environ.get("GPUWRF_WRF_ENV")
+    or os.environ.get("WRF_ENV")
+    or str(WRF_ROOT.parent / "env_wrf_gpu.sh")
+).expanduser()
 WRF_SOURCE_CANDIDATES = (
+    WRF_ROOT / "phys" / "module_mp_thompson.F.pre",
+    WRF_ROOT / "phys" / "module_mp_thompson.F",
     ROOT.parent
     / "wrf_gpu"
     / "sidecar_reports"
     / "post13_thompson_first_divergence_20260508T224837Z"
     / "source_snapshots_pre"
     / "module_mp_thompson.F.pre",
-    Path("<USER_HOME>/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"),
 )
 SCRATCH = ROOT / "data" / "scratch" / "thompson_tables"
 DEFAULT_OUTPUT = ROOT / "data" / "fixtures" / "thompson-tables-v1.npz"

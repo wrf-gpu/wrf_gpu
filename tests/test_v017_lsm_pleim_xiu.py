@@ -194,9 +194,9 @@ def test_v017_pxlsm_savepoint_parity_report() -> None:
                 "module_sf_pxlsm.F (SURFPX + QFLUX), called per column"
             ),
             "wrf_sources": [
-                "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_pxlsm.F",
-                "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_pxlsm_data.F",
-                "<USER_HOME>/src/wrf_pristine/WRF/share/module_model_constants.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_sf_pxlsm.F",
+                "/home/user/src/wrf_pristine/WRF/phys/module_sf_pxlsm_data.F",
+                "/home/user/src/wrf_pristine/WRF/share/module_model_constants.F",
             ],
             "generation_command": (
                 "taskset -c 0-3 bash proofs/v017/oracle/pxlsm/pxlsm_build_and_run.sh"

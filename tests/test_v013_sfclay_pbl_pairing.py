@@ -13,8 +13,8 @@ True, presenting a different scheme's result as the requested one.
 WRF itself FATAL-ERRORs these pairings unless the surface layer satisfies the PBL's
 ``isfc`` requirement (``phys/module_physics_init.F`` ``pbl_select``; YSU/MRF need
 isfc==1). This codebase only threads the revised-MM5 (sf=1) forcing into those PBL
-adapters, so the honest, WRF-faithful contract is: bl in {1,7,8,99} is faithful ONLY
-with sf_sfclay_physics=1 -- any other pairing FAILS CLOSED.
+adapters, so the honest, WRF-faithful contract is: bl in {1,7,8,9,11,12,99} is
+faithful ONLY with sf_sfclay_physics=1 -- any other pairing FAILS CLOSED.
 
 These tests assert:
   * the resolver fail-closes every silent-substitution pairing (no gpu_gate_ready);
@@ -40,7 +40,7 @@ from gpuwrf.coupling.physics_dispatch import (
 )
 
 # PBLs whose forcing is re-derived from revised-MM5 (must pair with sf_sfclay=1).
-_REDERIVING_PBLS = (1, 7, 8, 99)
+_REDERIVING_PBLS = (1, 7, 8, 9, 11, 12, 99)
 # Surface layers that are NOT revised-MM5 (selecting them under a re-deriving PBL
 # would silently substitute revised-MM5 forcing). sf=2 is excluded -- it has its own
 # (MYJ-only) pairing rule already enforced.

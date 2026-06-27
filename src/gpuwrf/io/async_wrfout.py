@@ -15,8 +15,10 @@ hour N+1. The background thread writes the NetCDF while the GPU computes.
 DESIGN / SAFETY
 - One worker thread, ``maxsize``-bounded queue (default 2): bounds host RAM and
   guarantees back-pressure if the writer falls behind the GPU.
-- A single writer thread => writes are serialized => deterministic file ordering
-  and no NetCDF4 thread-safety hazard (no two Datasets open concurrently).
+- A single writer thread => writes are serialized => deterministic file ordering.
+  Callers that also read NetCDF during the integration loop must keep those reads
+  out of the async window (or use the synchronous fallback), because NetCDF4/HDF5
+  builds are not universally safe for concurrent handles across threads.
 - The device->host pull happens on the MAIN thread before submit, so the
   background thread never touches a device array that the GPU might reuse.
 - The NetCDF bytes are byte-for-byte identical to the synchronous path; only the

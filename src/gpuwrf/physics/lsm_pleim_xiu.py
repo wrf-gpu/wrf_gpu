@@ -35,7 +35,7 @@ The sub-step count ``ntsps = INT(DT/(DTPBLX+1e-6)+1)`` (DTPBLX = 40 s) depends
 only on the time step, so it is a Python-level static argument.
 
 All math is fp64.  Cited to
-``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_pxlsm.F`` (SURFPX 1059-1503,
+``/home/user/src/wrf_pristine/WRF/phys/module_sf_pxlsm.F`` (SURFPX 1059-1503,
 QFLUX 1505-1671, driver input prep 426-667) and
 ``share/module_model_constants.F`` for the thermodynamic constants.
 """

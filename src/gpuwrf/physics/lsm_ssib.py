@@ -27,7 +27,7 @@ SSiB land-carry state shape (:class:`SsibLandState`) the future port must thread
 so the interface/registry/dispatch/catalog freeze stays consistent. Calling the
 column kernel raises :class:`NotImplementedError` with a pointer to the oracle.
 
-Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_ssib.F``
+Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_sf_ssib.F``
 (``SSIB`` line 885; ``VEGOUT`` parameter tables line 1995; ``RADAB`` line 3047;
 ``STOMA1`` line 1910; ``STRES1`` line 4419; ``INTERC`` line 2457; ``TEMRS1``
 line 4544; ``TEMRS2`` line 4955; ``UPDAT1`` line 5668; ``NEWTON`` line 2906;
