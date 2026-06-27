@@ -913,6 +913,13 @@ _BOUNDARY_LEAF_FIELDS: tuple[str, ...] = (
     "pb_bdy",
     "phb_bdy",
     "mub_bdy",
+    "qc_bdy",
+    "qr_bdy",
+    "qi_bdy",
+    "qs_bdy",
+    "qg_bdy",
+    "Ni_bdy",
+    "Nr_bdy",
 )
 
 

@@ -43,6 +43,13 @@ def test_precision_matrix_gate_flags_match_adr007_boundary_classes():
         "v_bdy",
         "theta_bdy",
         "qv_bdy",
+        "qc_bdy",
+        "qr_bdy",
+        "qi_bdy",
+        "qs_bdy",
+        "qg_bdy",
+        "Ni_bdy",
+        "Nr_bdy",
         # v0.6.0 S0 additive WDM6 number concentrations (FP32_GATED like the
         # other hydrometeor number species). Added here to keep this contract
         # test in sync with the matrix (they were appended to PRECISION_MATRIX

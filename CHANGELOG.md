@@ -7,6 +7,32 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.21.1] - 2026-06-27
+
+Point release off `v0.21.0` for the Mont-Blanc-class extreme-terrain stability
+blocker. Full notes: [`RELEASE_NOTES_v0.21.1.md`](RELEASE_NOTES_v0.21.1.md).
+
+### Fixed
+- **Mont-Blanc-class specified-boundary vertical-velocity runaway.** The native-dt
+  two-domain Mont-Blanc fixture previously stayed finite while d01 physical `W`
+  diverged at the outer lateral-boundary corner (`44 -> 288 -> 2066 -> 14531 ->
+  99325 m/s` over the 2 h proof window). v0.21.1 restores WRF-specified boundary
+  behavior for standalone `wrfbdy` roots: specified-boundary cadence and edge
+  advection degradation, optional hydrometeor/number scalar `wrfbdy` leaves when
+  present, and WRF-faithful `zero_grad_bdy(W)` on the reconstructed physical `W`
+  with the correct corner source-index behavior. The fix is a boundary copy /
+  work-array representation correction, **not** a `W` mask, `nan_to_num`, finite
+  guard, or value clamp.
+
+### Validation
+- Mont-Blanc native-dt max-dom2 release gate: d01 max `|W|` remains bounded
+  below 5 m/s across the short release gate, with no exponential boundary-corner
+  growth.
+- Canary native-dt max-dom3 release no-regression gate is `PIPELINE_GREEN`;
+  20250121 max-dom3 remains manager-verified on the source branch.
+- CPU boundary/state contract tests cover the added optional scalar boundary
+  leaves and physical-`W` zero-gradient reconstruction.
+
 ## [0.21.0] - 2026-06-26
 
 Stability + compile-cache-speed release. Priority order: **STABILITY > IDENTITY >

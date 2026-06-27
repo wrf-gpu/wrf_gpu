@@ -184,8 +184,8 @@ STATE_FIELD_ORDER = (
     "qi_bl",
     "cldfra_bl",
     # --- v0.17 ADR-032 graupel/hail (qh) substrate leaves (append-only) ---
-    # Appended at the VERY END so every existing leaf keeps its pytree
-    # position. qh=hail mixing ratio (QHAIL), Nh=hail number (QNHAIL),
+    # Appended after the prior additive blocks so every existing leaf keeps its
+    # pytree position. qh=hail mixing ratio (QHAIL), Nh=hail number (QNHAIL),
     # qvolg/qvolh=predicted-density graupel/hail particle volume
     # (QVGRAUPEL/QVHAIL).
     "qh",
@@ -198,8 +198,16 @@ STATE_FIELD_ORDER = (
     # water-/ice-friendly aerosol number concentrations (kg^-1).
     "nwfa",
     "nifa",
-    # --- v0.17 hail surface-precip accumulator (append-only, at the VERY END) ---
+    # --- v0.17 hail surface-precip accumulator (append-only historical tail) ---
     "hail_acc",
+    # --- v0.21.1 standalone wrfbdy scalar boundary leaves (optional) ---
+    "qc_bdy",
+    "qr_bdy",
+    "qi_bdy",
+    "qs_bdy",
+    "qg_bdy",
+    "Ni_bdy",
+    "Nr_bdy",
 )
 
 
@@ -287,6 +295,13 @@ PRECISION_MATRIX = {
     "phb_bdy": (FP64, False),
     "mu_bdy": (FP64, False),
     "mub_bdy": (FP64, False),
+    "qc_bdy": (FP32_GATED, True),
+    "qr_bdy": (FP32_GATED, True),
+    "qi_bdy": (FP32_GATED, True),
+    "qs_bdy": (FP32_GATED, True),
+    "qg_bdy": (FP32_GATED, True),
+    "Ni_bdy": (FP32_GATED, True),
+    "Nr_bdy": (FP32_GATED, True),
     # --- v0.6.0 S0 additive physics leaves ---
     # WDM6 number concentrations follow the existing Thompson/Morrison number
     # species precision (FP32 gated). The cumulus precipitation accumulator is

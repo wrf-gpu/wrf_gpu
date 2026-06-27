@@ -2299,6 +2299,7 @@ def _acoustic_scan(
             # WIND-FIX: full model dt so the in-loop normal-momentum relaxation
             # weight is scaled to a per-substep increment.
             dt_full=float(namelist.dt_s),
+            normal_bdy_relax_strength=getattr(namelist.boundary_config, "normal_bdy_relax_strength", None),
             periodic_x=periodic_x,
             specified=specified,
             nested=nested,
@@ -2307,6 +2308,7 @@ def _acoustic_scan(
             spec_w_zero_grad=bool(
                 lead_seconds is not None and _specified_bdy_cadence_active(namelist)
             ),
+            spec_zone=int(namelist.boundary_config.spec_zone),
         )
 
         # v0.10.0 Wave-A (Opus#1 unroll):
@@ -3223,6 +3225,13 @@ def _coupled_core_extras(state: State) -> dict[str, jax.Array]:
         "qv_bdy": state.qv_bdy,
         "ph_bdy": state.ph_bdy,
         "mu_bdy": state.mu_bdy,
+        "qc_bdy": state.qc_bdy,
+        "qr_bdy": state.qr_bdy,
+        "qi_bdy": state.qi_bdy,
+        "qs_bdy": state.qs_bdy,
+        "qg_bdy": state.qg_bdy,
+        "Ni_bdy": state.Ni_bdy,
+        "Nr_bdy": state.Nr_bdy,
     }
 
 

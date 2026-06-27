@@ -54,7 +54,7 @@ def test_registry_self_check_and_state_append_order() -> None:
     #   + VOLUME_SPECIES (qvolg, qvolh [v0.17 ADR-032])
     #   + ACCUMULATORS_ADDITIVE (rainc_acc, hail_acc [v0.17 WSM7/WDM7 hail])
     # The State pytree appends the hail substrate, then the aerosol leaves, then
-    # the hail_acc accumulator at the very END of __slots__ (see state.py).
+    # the hail_acc accumulator before optional runtime-only boundary leaves.
     _expected_additive = (
         "Nc", "Nn", "Nh", "nwfa", "nifa", "qh", "qvolg", "qvolh", "rainc_acc", "hail_acc",
     )

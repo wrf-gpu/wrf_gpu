@@ -13,7 +13,7 @@ import jax
 from jax import config
 import numpy as np
 
-from gpuwrf.contracts.state import State
+from gpuwrf.contracts.state import SCALAR_BOUNDARY_OPTIONAL_LEAVES, State
 
 try:  # NoahMPLandState lives in the v0.2.0 land package; import is optional so a
     # pure-dycore checkout without the noahmp package can still read/write v1.
@@ -41,9 +41,10 @@ SUPPORTED_FORMAT_VERSIONS = (1, 2, 3)
 # restarts cold-start the new physics fields rather than failing closed.
 # v0.6.0 added Nc/Nn/rainc_acc; v0.15 the MYNN SGS-cloud leaves; v0.17 ADR-032
 # the graupel/hail substrate qh/Nh/qvolg/qvolh; v0.16 the aerosol-aware Thompson
-# leaves nwfa/nifa; v0.17 hail microphysics the hail_acc surface accumulator --
-# all are append-only physics tail leaves that legitimately cold-start at zero
-# from an older checkpoint.
+# leaves nwfa/nifa; v0.17 hail microphysics the hail_acc surface accumulator;
+# v0.21.1 added optional standalone wrfbdy scalar boundary leaves. All are
+# append-only/optional leaves that legitimately cold-start absent from older
+# checkpoints.
 ADDITIVE_STATE_LEAVES_SINCE_V2 = (
     "Nc",
     "Nn",
@@ -59,6 +60,7 @@ ADDITIVE_STATE_LEAVES_SINCE_V2 = (
     "nwfa",
     "nifa",
     "hail_acc",
+    *SCALAR_BOUNDARY_OPTIONAL_LEAVES,
 )
 
 # The frozen Noah-MP scope-options the land carry is valid under (tables.py mirror).

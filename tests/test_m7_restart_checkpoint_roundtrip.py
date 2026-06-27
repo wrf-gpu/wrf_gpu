@@ -10,7 +10,13 @@ import numpy as np
 
 from gpuwrf.contracts.grid import GridSpec
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
-from gpuwrf.contracts.state import CONDITIONAL_STATE_LEAVES, State, Tendencies, _state_field_shapes
+from gpuwrf.contracts.state import (
+    CONDITIONAL_STATE_LEAVES,
+    SCALAR_BOUNDARY_OPTIONAL_LEAVES,
+    State,
+    Tendencies,
+    _state_field_shapes,
+)
 from gpuwrf.runtime.checkpoint import read_checkpoint, read_checkpoint_with_runtime_state, write_checkpoint
 from gpuwrf.runtime.operational_mode import OperationalNamelist
 
@@ -64,15 +70,17 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
     # appended 4 MYNN SGS-cloud leaves (qsq, qc_bl, qi_bl, cldfra_bl), v0.17
     # ADR-032 appended the graupel/hail substrate (qh, Nh, qvolg, qvolh), v0.16
     # appended the aerosol-aware Thompson (mp=28) nwfa/nifa leaves, and the v0.17
-    # hail microphysics appended the hail surface accumulator (hail_acc) at the
-    # very END (append-only) to the original 53-leaf schema. The guard tracks the
+    # hail microphysics appended the hail surface accumulator (hail_acc), and v0.21.1
+    # appended optional wrfbdy scalar leaves. The guard tracks the
     # authoritative consolidated count (53 + 3 + 4 + 4 + 2 + 1 = 67), minus the 3
-    # legacy p/ph/mu duplicate aliases removed in v0.20 S1 = 64.
-    assert len(State.__slots__) == 64
-    assert State.__slots__[-14:] == (
+    # legacy p/ph/mu duplicate aliases removed in v0.20 S1 = 64, plus 7 optional
+    # scalar boundary leaves = 71.
+    assert len(State.__slots__) == 71
+    assert State.__slots__[-21:-7] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
         "qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc",
     )
+    assert State.__slots__[-7:] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
     assert restored_grid == grid
     assert restored_namelist.grid == restored_grid
     assert restored_namelist.dt_s == namelist.dt_s

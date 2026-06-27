@@ -484,6 +484,13 @@ STATE_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
     "phb_bdy": ("Time", "gpuwrf_phb_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top_stag", BDY_SIDE_INDEX),
     "mu_bdy": ("Time", "gpuwrf_mu_bdy_time", BDY_SIDE, BDY_WIDTH, BDY_SURFACE, BDY_SIDE_INDEX),
     "mub_bdy": ("Time", "gpuwrf_mub_bdy_time", BDY_SIDE, BDY_WIDTH, BDY_SURFACE, BDY_SIDE_INDEX),
+    "qc_bdy": ("Time", "gpuwrf_qc_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "qr_bdy": ("Time", "gpuwrf_qr_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "qi_bdy": ("Time", "gpuwrf_qi_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "qs_bdy": ("Time", "gpuwrf_qs_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "qg_bdy": ("Time", "gpuwrf_qg_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "Ni_bdy": ("Time", "gpuwrf_Ni_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
+    "Nr_bdy": ("Time", "gpuwrf_Nr_bdy_time", BDY_SIDE, BDY_WIDTH, "bottom_top", BDY_SIDE_INDEX),
 }
 
 CARRY_EXACT_DIMENSIONS: dict[str, tuple[str, ...]] = {
