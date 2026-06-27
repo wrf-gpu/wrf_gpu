@@ -142,6 +142,10 @@ class BoundaryConfig:
     nested_ph_relax: bool = False
     nested_w_relax: bool = False
     nested_ph_spec: bool = False
+    # In-acoustic normal-momentum relaxation strength. ``None`` preserves the
+    # legacy calibrated replay default (``NORMAL_BDY_RELAX_STRENGTH``). Native
+    # standalone wrfbdy roots set this to 1.0, WRF's own relax_bdy_dry strength.
+    normal_bdy_relax_strength: float | None = None
 
 
 DEFAULT_BOUNDARY_CONFIG = BoundaryConfig()
@@ -175,11 +179,12 @@ def apply_lateral_boundaries(
     """Apply the WRF specified outer zone + relaxation-zone nudging in-place.
 
     Reads the ``*_bdy`` leaves (shape ``(time, side, bdy_width, z, side_len)``)
-    and the corresponding interior fields; writes ``u,v,w,theta,qv`` and the
-    ``p/ph/mu`` total+perturbation triples in the boundary strip only. The
-    interior beyond ``relax_zone`` is untouched. Field dtypes are preserved, so
-    an fp64 (``force_fp64``) state stays fp64 and an operational fp32-gated
-    state stays fp32-gated.
+    and the corresponding interior fields; writes ``u,v,w,theta,qv`` plus any
+    optional hydrometeor/number scalar boundary leaves and the ``p/ph/mu``
+    total+perturbation triples in the boundary strip only. The interior beyond
+    ``relax_zone`` is untouched. Field dtypes are preserved, so an fp64
+    (``force_fp64``) state stays fp64 and an operational fp32-gated state stays
+    fp32-gated.
 
     ``metrics`` (the dycore :class:`DycoreMetrics`) is required ONLY for the
     nested ``force_geopotential=False`` branch, where the boundary-ring
@@ -188,6 +193,13 @@ def apply_lateral_boundaries(
     ``None`` (idealized / d02 self-replay callers) the geopotential ring is left
     exactly as before, so those paths stay bit-for-bit unchanged.
     """
+
+    def _apply_optional_scalar(field_name: str):
+        leaf = getattr(state, f"{field_name}_bdy", None)
+        field = getattr(state, field_name)
+        if leaf is None:
+            return field
+        return jnp.maximum(_apply_3d(field, leaf, lead_seconds, dt_s, config), 0.0)
 
     if dry_spec_only:
         # WRF SPECIFIED cadence (v0.14 stage3/wrapper sprint): the in-loop spec
@@ -207,6 +219,13 @@ def apply_lateral_boundaries(
         w = state.w
         theta = _spec3(state.theta, state.theta_bdy)
         qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
+        qc = _apply_optional_scalar("qc")
+        qr = _apply_optional_scalar("qr")
+        qi = _apply_optional_scalar("qi")
+        qs = _apply_optional_scalar("qs")
+        qg = _apply_optional_scalar("qg")
+        Ni = _apply_optional_scalar("Ni")
+        Nr = _apply_optional_scalar("Nr")
         mu_perturbation = _spec3(state.mu_perturbation[None, :, :], state.mu_bdy)[0]
         mub = _spec3(_base_mu(state)[None, :, :], state.mub_bdy)[0]
         ph_perturbation = _spec3(state.ph_perturbation, state.ph_bdy)
@@ -217,6 +236,13 @@ def apply_lateral_boundaries(
             w=w,
             theta=theta,
             qv=qv,
+            qc=qc,
+            qr=qr,
+            qi=qi,
+            qs=qs,
+            qg=qg,
+            Ni=Ni,
+            Nr=Nr,
             ph_total=phb + ph_perturbation,
             ph_perturbation=ph_perturbation,
             mu_total=mub + mu_perturbation,
@@ -228,6 +254,13 @@ def apply_lateral_boundaries(
     w = _apply_3d(state.w, state.w_bdy, lead_seconds, dt_s, config)
     theta = _apply_3d(state.theta, state.theta_bdy, lead_seconds, dt_s, config)
     qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
+    qc = _apply_optional_scalar("qc")
+    qr = _apply_optional_scalar("qr")
+    qi = _apply_optional_scalar("qi")
+    qs = _apply_optional_scalar("qs")
+    qg = _apply_optional_scalar("qg")
+    Ni = _apply_optional_scalar("Ni")
+    Nr = _apply_optional_scalar("Nr")
     p_perturbation = _apply_3d(state.p_perturbation, state.p_bdy, lead_seconds, dt_s, config)
     pb = _apply_3d(_base_pressure(state), state.pb_bdy, lead_seconds, dt_s, config)
     mu_perturbation = _apply_3d(state.mu_perturbation[None, :, :], state.mu_bdy, lead_seconds, dt_s, config)[0]
@@ -277,6 +310,13 @@ def apply_lateral_boundaries(
         w=w,
         theta=theta,
         qv=qv,
+        qc=qc,
+        qr=qr,
+        qi=qi,
+        qs=qs,
+        qg=qg,
+        Ni=Ni,
+        Nr=Nr,
         p_total=pb + p_perturbation,
         p_perturbation=p_perturbation,
         ph_total=ph_total,

@@ -179,6 +179,13 @@ def _state_from_acoustic(
         qv_bdy=_boundary_leaf(extras, "qv_bdy", nz, side_len, 0.010),
         ph_bdy=_boundary_leaf(extras, "ph_bdy", nz + 1, side_len, 0.0),
         mu_bdy=_boundary_leaf(extras, "mu_bdy", 1, side_len, 0.0),
+        qc_bdy=extras.get("qc_bdy"),
+        qr_bdy=extras.get("qr_bdy"),
+        qi_bdy=extras.get("qi_bdy"),
+        qs_bdy=extras.get("qs_bdy"),
+        qg_bdy=extras.get("qg_bdy"),
+        Ni_bdy=extras.get("Ni_bdy"),
+        Nr_bdy=extras.get("Nr_bdy"),
     )
 
 

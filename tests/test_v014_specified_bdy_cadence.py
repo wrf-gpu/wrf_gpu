@@ -27,6 +27,7 @@ from gpuwrf.coupling.boundary_apply import (
     tangential_bdy_work_target_u,
     tangential_bdy_work_target_v,
 )
+from gpuwrf.dynamics.core.acoustic import _specified_w_zero_grad_work
 from gpuwrf.dynamics.flux_advection import specified_flux_faces, _specified_div
 
 CFG = BoundaryConfig()  # spec_bdy_width=5, spec_zone=1, relax_zone=4, cadence 3600
@@ -221,6 +222,66 @@ def test_tangential_work_targets_reconstruct_leaf_winds():
             msfvx[:, col] * np.asarray(target_v)[:, :, col] + v_save[:, :, col] * mass_v_cur[:, :, col]
         ) / mass_v_stage[:, :, col]
         np.testing.assert_allclose(rebuilt, np.asarray(v_leaf[0, side, 0, :nz, : ny + 1]), rtol=1e-12)
+
+
+def test_specified_w_zero_grad_work_reconstructs_physical_zero_gradient():
+    rng = np.random.default_rng(13)
+    nzp1, ny, nx = 4, 8, 9
+    w_work = rng.normal(size=(nzp1, ny, nx))
+    w_save = rng.normal(size=(nzp1, ny, nx)) * 3.0
+    mut = 900.0 + rng.normal(size=(ny, nx))
+    muts = 905.0 + rng.normal(size=(ny, nx))
+    c1f = 0.9 + 0.01 * np.arange(nzp1)
+    c2f = 30.0 + np.arange(nzp1)
+    msfty = 1.0 + 0.001 * rng.normal(size=(ny, nx))
+
+    out = _specified_w_zero_grad_work(
+        jnp.asarray(w_work),
+        w_save=jnp.asarray(w_save),
+        mut=jnp.asarray(mut),
+        muts=jnp.asarray(muts),
+        c1f=jnp.asarray(c1f),
+        c2f=jnp.asarray(c2f),
+        msfty=jnp.asarray(msfty),
+        spec_zone=1,
+    )
+    mass_cur = c1f[:, None, None] * mut[None, :, :] + c2f[:, None, None]
+    mass_stage = c1f[:, None, None] * muts[None, :, :] + c2f[:, None, None]
+    physical_before = (msfty[None, :, :] * w_work + w_save * mass_cur) / mass_stage
+    physical = (msfty[None, :, :] * np.asarray(out) + w_save * mass_cur) / mass_stage
+
+    x_inner = np.asarray(
+        [min(max(i, CFG.spec_zone), nx - 1 - CFG.spec_zone) for i in range(nx)]
+    )
+    y_idx = np.arange(1, ny - 1)
+    y_inner = np.asarray(
+        [min(max(int(i), CFG.spec_zone), ny - 1 - CFG.spec_zone) for i in y_idx]
+    )
+    np.testing.assert_allclose(
+        physical[:, 0, :],
+        physical_before[:, CFG.spec_zone, x_inner],
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        physical[:, -1, :],
+        physical_before[:, ny - 1 - CFG.spec_zone, x_inner],
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        physical[:, 1:-1, 0],
+        physical_before[:, y_inner, CFG.spec_zone],
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        physical[:, 1:-1, -1],
+        physical_before[:, y_inner, nx - 1 - CFG.spec_zone],
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    assert not np.allclose(np.asarray(out)[:, 0, :], np.asarray(out)[:, 1, :])
 
 
 def _wrf_flux_face_mirror(field, vel, m, upstream):

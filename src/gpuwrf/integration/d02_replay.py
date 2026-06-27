@@ -19,6 +19,7 @@ from typing import Any, NamedTuple
 import jax
 from jax import config
 import jax.numpy as jnp
+from netCDF4 import Dataset
 import numpy as np
 
 from gpuwrf.config.paths import tmp_root, wrf_l3_root
@@ -39,7 +40,12 @@ from gpuwrf.dynamics.advection import compute_advection_tendencies, halo_spec
 from gpuwrf.dynamics.damping import RayleighConfig
 from gpuwrf.dynamics.metrics import load_wrfinput_metrics, terrain_slope_metrics
 from gpuwrf.dynamics.tendencies import add_scaled_tendencies
-from gpuwrf.io.boundary_replay import decode_wrfbdy, wrfbdy_path_for_run
+from gpuwrf.io.boundary_replay import (
+    WRFBDY_BASE_SUFFIXES,
+    WRFBDY_TENDENCY_SUFFIXES,
+    decode_wrfbdy,
+    wrfbdy_path_for_run,
+)
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.gen2_wrfout_loader import normalize_valid_time
 from gpuwrf.io.land_state import load_prescribed_land_state
@@ -1757,6 +1763,15 @@ def _wrf_mynn_coldstart_qke(
 _T0_K = P0_THETA_OFFSET_K
 _RVOVRD = 461.6 / 287.0
 _WRFBDY_SIDE_KEYS = {"W": "bxs", "E": "bxe", "S": "bys", "N": "bye"}
+_WRFBDY_SCALAR_BOUNDARY_VARS: tuple[tuple[str, str], ...] = (
+    ("qc", "QCLOUD"),
+    ("qr", "QRAIN"),
+    ("qi", "QICE"),
+    ("qs", "QSNOW"),
+    ("qg", "QGRAUP"),
+    ("Ni", "QNICE"),
+    ("Nr", "QNRAIN"),
+)
 
 
 def _wrfbdy_total_mass_strips(
@@ -1803,6 +1818,22 @@ def _wrfbdy_total_mass_strips(
         per_side = _field_sides_3d(field, width)  # (bdy_width, z, tan) per W/E/S/N
         strips[name] = per_side
     return strips
+
+
+def _available_wrfbdy_variables(path: Path, candidates: tuple[str, ...]) -> tuple[str, ...]:
+    """Return wrfbdy variables that carry all four side base/tendency arrays."""
+
+    with Dataset(path, "r") as dataset:
+        present = set(dataset.variables)
+    available: list[str] = []
+    for var in candidates:
+        if all(
+            f"{var}_{suffix}" in present
+            for side in SIDES
+            for suffix in (WRFBDY_BASE_SUFFIXES[side], WRFBDY_TENDENCY_SUFFIXES[side])
+        ):
+            available.append(var)
+    return tuple(available)
 
 
 def _broadcast_base_leaf_3d(field: np.ndarray, *, width: int, max_side: int, ntimes: int) -> np.ndarray:
@@ -1879,11 +1910,16 @@ def load_wrfbdy_boundary_leaves(
         out[:, :z_use] = coupled[:, :z_use] / safe
         return out
 
+    scalar_candidates = tuple(var for _field, var in _WRFBDY_SCALAR_BOUNDARY_VARS)
+    scalar_vars = _available_wrfbdy_variables(bdy_path, scalar_candidates)
+    scalar_field_for_var = {var: field for field, var in _WRFBDY_SCALAR_BOUNDARY_VARS if var in scalar_vars}
+
     # Per-interval decode: read the boundary VALUE at each wrfbdy time level (the
     # _BX* base term IS the specified value at that interval start; WRF advances it
     # with the _BT* tendency, but reading the per-interval base value is exact at
     # each interval boundary and the operational adapter interpolates between them).
     u_t, v_t, th_t, qv_t, ph_t, w_t, mu_t = ([] for _ in range(7))
+    scalar_t: dict[str, list[np.ndarray]] = {field: [] for field in scalar_field_for_var.values()}
     # The wrfbdy ``T`` strips force WRF's runtime prognostic theta: MOIST
     # theta_m under use_theta_m=1 (init/real_init/types.py use_theta_m note),
     # dry theta under use_theta_m=0. Operational State.theta is theta_m, so
@@ -1899,7 +1935,11 @@ def load_wrfbdy_boundary_leaves(
     # start (e.g. 66 h of a 72 h run).
     records = [(k, 0.0) for k in range(ntimes)] + [(ntimes - 1, interval_s)]
     for k, tend_adv_s in records:
-        dv = decode_wrfbdy(bdy_path, variables=("U", "V", "W", "T", "QVAPOR", "PH", "MU"), time_index=k)
+        dv = decode_wrfbdy(
+            bdy_path,
+            variables=("U", "V", "W", "T", "QVAPOR", "PH", "MU", *scalar_vars),
+            time_index=k,
+        )
         vars_k = dv["variables"]
 
         def _coupled_strip(var: str, side: str) -> np.ndarray:
@@ -1916,6 +1956,10 @@ def load_wrfbdy_boundary_leaves(
         per_ph = np.zeros((4, width, grid.nz + 1, max_side), dtype=np.float64)
         per_w = np.zeros((4, width, grid.nz + 1, max_side), dtype=np.float64)
         per_mu = np.zeros((4, width, 1, max_side), dtype=np.float64)
+        per_scalar = {
+            field: np.zeros((4, width, grid.nz, max_side), dtype=np.float64)
+            for field in scalar_field_for_var.values()
+        }
         for side in SIDES:
             si = SIDE_INDEX[side]
             u_s = _decoupled_strip(_coupled_strip("U", side), side, "mass_u")
@@ -1936,8 +1980,13 @@ def load_wrfbdy_boundary_leaves(
             per_ph[si, : ph_s.shape[0], : ph_s.shape[1], : ph_s.shape[2]] = ph_s
             per_w[si, : w_s.shape[0], : w_s.shape[1], : w_s.shape[2]] = w_s
             per_mu[si, : mu_s.shape[0], 0, : mu_s.shape[1]] = mu_s
+            for var, field in scalar_field_for_var.items():
+                scalar_s = np.maximum(_decoupled_strip(_coupled_strip(var, side), side, "mass_h"), 0.0)
+                per_scalar[field][si, : scalar_s.shape[0], : scalar_s.shape[1], : scalar_s.shape[2]] = scalar_s
         u_t.append(per_u); v_t.append(per_v); th_t.append(per_th)
         qv_t.append(per_qv); ph_t.append(per_ph); w_t.append(per_w); mu_t.append(per_mu)
+        for field, leaf in per_scalar.items():
+            scalar_t[field].append(leaf)
 
     leaves_np = {
         "u_bdy": np.stack(u_t, axis=0),
@@ -1948,6 +1997,7 @@ def load_wrfbdy_boundary_leaves(
         "w_bdy": np.stack(w_t, axis=0),
         "mu_bdy": np.stack(mu_t, axis=0),
     }
+    leaves_np.update({f"{field}_bdy": np.stack(values, axis=0) for field, values in scalar_t.items()})
     # Base-state lateral leaves: pb/phb/mub are STATIC (they never evolve), so the
     # operational ``apply_lateral_boundaries`` re-forces the boundary ring to the IC
     # base strips. p_bdy carries the perturbation-pressure forcing; wrfbdy has no
@@ -1976,7 +2026,8 @@ def load_wrfbdy_boundary_leaves(
         "padded_side_length": max_side,
         "schema": "wrfbdy-decoupled-leaf-v1",
         "coupling": "decoupled by IC hybrid dry-mass term (c1h*muT+c2h etc.)",
-        "variables": ["U", "V", "W", "T", "QVAPOR", "PH", "MU"],
+        "variables": ["U", "V", "W", "T", "QVAPOR", "PH", "MU", *sorted(scalar_vars)],
+        "scalar_boundary_variables": sorted(scalar_vars),
         "use_theta_m": int(use_theta_m),
         "theta_bdy_convention": "moist theta_m (matches operational State.theta)",
     }

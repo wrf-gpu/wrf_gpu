@@ -100,11 +100,13 @@ class AcousticCoreConfig:
     periodic_x: bool = True
     specified: bool = False
     nested: bool = False
+    normal_bdy_relax_strength: float | None = None
     # v0.14 SPECIFIED WRF cadence: apply WRF ``zero_grad_bdy`` to the w work
     # array's spec zone after advance_w every substep (solve_em.F:1601-1607,
     # specified domains copy the nearest interior w into the ring; nested uses
     # spec_bdyupdate instead).  Default OFF -> existing paths unchanged.
     spec_w_zero_grad: bool = False
+    spec_zone: int = 1
 
 
 @jax.tree_util.register_pytree_node_class
@@ -378,6 +380,144 @@ def _optional_or(value: jax.Array | None, default: jax.Array) -> jax.Array:
     return default if value is None else jnp.asarray(value, dtype=default.dtype)
 
 
+def _specified_w_zero_grad_work(
+    w_work: jax.Array,
+    *,
+    w_save: jax.Array | None,
+    mut: jax.Array,
+    muts: jax.Array,
+    c1f: jax.Array,
+    c2f: jax.Array,
+    msfty: jax.Array,
+    spec_zone: int,
+) -> jax.Array:
+    """Apply specified-domain zero-gradient to finished physical W via work space.
+
+    The acoustic carry stores the WRF small-step work variable.  The physical
+    state written by ``small_step_finish_wrf`` is reconstructed as
+
+      W = (msfty * w_work + w_save * (c1f*mut+c2f)) / (c1f*muts+c2f)
+
+    so copying only the work row does not copy the finished physical W when
+    ``w_save`` or dry mass differs between the outer row and the nearest
+    interior row.  WRF's specified-domain ``zero_grad_bdy`` is a boundary copy,
+    not a limiter; this helper computes the work value whose finish
+    reconstruction equals the nearest interior physical W.
+    """
+
+    def _source_index_array(indices, low: int, high: int):
+        return jnp.asarray(
+            [min(max(int(idx), low), high) for idx in indices],
+            dtype=jnp.int32,
+        )
+
+    if w_save is None:
+        out = w_work
+        y_len = int(w_work.shape[1])
+        x_len = int(w_work.shape[2])
+        for b in range(int(spec_zone)):
+            x_inner = _source_index_array(
+                range(x_len),
+                int(spec_zone),
+                x_len - 1 - int(spec_zone),
+            )
+            y_inner = _source_index_array(
+                range(b + 1, y_len - 1 - b),
+                int(spec_zone),
+                y_len - 1 - int(spec_zone),
+            )
+            out = out.at[:, b, :].set(out[:, int(spec_zone), x_inner])
+            out = out.at[:, y_len - 1 - b, :].set(
+                out[:, y_len - 1 - int(spec_zone), x_inner]
+            )
+            out = out.at[:, b + 1 : y_len - 1 - b, b].set(out[:, y_inner, int(spec_zone)])
+            out = out.at[:, b + 1 : y_len - 1 - b, x_len - 1 - b].set(
+                out[:, y_inner, x_len - 1 - int(spec_zone)]
+            )
+        return out
+
+    mass_cur = c1f[:, None, None] * mut[None, :, :] + c2f[:, None, None]
+    mass_stage = c1f[:, None, None] * muts[None, :, :] + c2f[:, None, None]
+    physical = (msfty[None, :, :] * w_work + w_save * mass_cur) / mass_stage
+
+    def _work_for_physical(
+        target_physical,
+        row_or_col_mass_stage,
+        row_or_col_w_save,
+        row_or_col_mass_cur,
+        map_factor,
+    ):
+        return (
+            target_physical * row_or_col_mass_stage
+            - row_or_col_w_save * row_or_col_mass_cur
+        ) / map_factor
+
+    out = w_work
+    y_len = int(w_work.shape[1])
+    x_len = int(w_work.shape[2])
+    for b in range(int(spec_zone)):
+        south = b
+        north = y_len - 1 - b
+        south_src = int(spec_zone)
+        north_src = y_len - 1 - int(spec_zone)
+        west = b
+        east = x_len - 1 - b
+        west_src = int(spec_zone)
+        east_src = x_len - 1 - int(spec_zone)
+        x_inner = _source_index_array(
+            range(x_len),
+            int(spec_zone),
+            x_len - 1 - int(spec_zone),
+        )
+
+        # Y sides own corners in WRF zero_grad_bdy and use the nearest interior
+        # source column at corners (module_bc.F zero_grad_bdy i_inner).
+        out = out.at[:, south, :].set(
+            _work_for_physical(
+                physical[:, south_src, x_inner],
+                mass_stage[:, south, :],
+                w_save[:, south, :],
+                mass_cur[:, south, :],
+                msfty[south, :][None, :],
+            )
+        )
+        out = out.at[:, north, :].set(
+            _work_for_physical(
+                physical[:, north_src, x_inner],
+                mass_stage[:, north, :],
+                w_save[:, north, :],
+                mass_cur[:, north, :],
+                msfty[north, :][None, :],
+            )
+        )
+
+        rows = slice(b + 1, y_len - 1 - b)
+        y_inner = _source_index_array(
+            range(b + 1, y_len - 1 - b),
+            int(spec_zone),
+            y_len - 1 - int(spec_zone),
+        )
+        out = out.at[:, rows, west].set(
+            _work_for_physical(
+                physical[:, y_inner, west_src],
+                mass_stage[:, rows, west],
+                w_save[:, rows, west],
+                mass_cur[:, rows, west],
+                msfty[rows, west][None, :],
+            )
+        )
+        out = out.at[:, rows, east].set(
+            _work_for_physical(
+                physical[:, y_inner, east_src],
+                mass_stage[:, rows, east],
+                w_save[:, rows, east],
+                mass_cur[:, rows, east],
+                msfty[rows, east][None, :],
+            )
+        )
+    return out
+
+
 def _maybe_sharded_x_edge_pair(
     field: jax.Array,
     left: jax.Array,
@@ -494,6 +634,7 @@ def advance_uv_wrf(
     top_lid: bool = False,
     emdiv: float = 0.0,
     dt_full: float | None = None,
+    normal_bdy_relax_strength: float | None = None,
 ) -> AcousticCoreState:
     """Advance coupled perturbation ``u/v`` like WRF ``advance_uv``.
 
@@ -625,6 +766,7 @@ def advance_uv_wrf(
             u, v, state.u_work_bdy, state.v_work_bdy,
             dts, float(dt_full) if dt_full is not None else dts,
             config=DEFAULT_BOUNDARY_CONFIG,
+            relax_strength=normal_bdy_relax_strength,
         )
     # v0.14 SPECIFIED WRF cadence: ring-0 TANGENTIAL momentum pins (WRF
     # spec_bdyupdate(u,'u') y-side rows / spec_bdyupdate(v,'v') x-side columns,
@@ -724,6 +866,7 @@ def acoustic_substep_core(
         top_lid=bool(cfg.top_lid),
         emdiv=float(emdiv),
         dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
+        normal_bdy_relax_strength=cfg.normal_bdy_relax_strength,
     )
     uv_state = _maybe_exchange_sharded_acoustic_halos(uv_state)
 
@@ -930,13 +1073,21 @@ def acoustic_substep_core(
     # WRF solve_em.F:1601-1607: for SPECIFIED domains the spec-zone w_2 copies
     # the nearest interior value every substep after advance_w (nested domains
     # use spec_bdyupdate instead).  The y-side rows own the corners (WRF y-side
-    # b_limit=0 full range; x-side trims j to [jds+1, jde-2]).  Applied to the
-    # coupled w work array, exactly WRF's w_2.  Default OFF.
+    # b_limit=0 full range; x-side trims j to [jds+1, jde-2]).  ``w_solved`` is
+    # the small-step work variable, so compute the work value whose
+    # small_step_finish reconstruction has the WRF zero-gradient physical W.
+    # Default OFF.
     if bool(cfg.spec_w_zero_grad):
-        w_solved = w_solved.at[:, 0, :].set(w_solved[:, 1, :])
-        w_solved = w_solved.at[:, -1, :].set(w_solved[:, -2, :])
-        w_solved = w_solved.at[:, 1:-1, 0].set(w_solved[:, 1:-1, 1])
-        w_solved = w_solved.at[:, 1:-1, -1].set(w_solved[:, 1:-1, -2])
+        w_solved = _specified_w_zero_grad_work(
+            w_solved,
+            w_save=state_for_w.w_save,
+            mut=state_for_w.mut,
+            muts=muts_new,
+            c1f=c1f_field,
+            c2f=c2f_field,
+            msfty=state_for_w.msfty,
+            spec_zone=int(cfg.spec_zone),
+        )
 
     # --- 4. sumflux accumulators (Sprint B consumer); WRF solve_em.F:4048-4093 ---
     state_for_pressure = state_for_w.replace(w=w_solved, ph=ph_next, t_2ave=t_2ave_next)

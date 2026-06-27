@@ -37,7 +37,25 @@ def _zeros(shape: tuple[int, ...], field: str, device: jax.Device) -> jax.Array:
 HAIL_MP_PHYSICS_OPTIONS: frozenset[int] = frozenset({7, 17, 18, 19, 21, 22, 24, 26, 27, 38})
 HAIL_CONDITIONAL_LEAVES: tuple[str, ...] = ("qh", "Nh", "qvolg", "qvolh", "hail_acc")
 AEROSOL_CONDITIONAL_LEAVES: tuple[str, ...] = ("nwfa", "nifa")
-CONDITIONAL_STATE_LEAVES: tuple[str, ...] = ("qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc")
+SCALAR_BOUNDARY_OPTIONAL_LEAVES: tuple[str, ...] = (
+    "qc_bdy",
+    "qr_bdy",
+    "qi_bdy",
+    "qs_bdy",
+    "qg_bdy",
+    "Ni_bdy",
+    "Nr_bdy",
+)
+CONDITIONAL_STATE_LEAVES: tuple[str, ...] = (
+    "qh",
+    "Nh",
+    "qvolg",
+    "qvolh",
+    "nwfa",
+    "nifa",
+    "hail_acc",
+    *SCALAR_BOUNDARY_OPTIONAL_LEAVES,
+)
 
 
 def conditional_state_leaves_for_mp(
@@ -546,9 +564,9 @@ class State:
         # Nh   = hail number concentration (kg^-1; WRF scalar QNHAIL)
         # qvolg = graupel particle volume (m^3 kg^-1; WRF scalar QVGRAUPEL)
         # qvolh = hail particle volume (m^3 kg^-1; WRF scalar QVHAIL)
-        # Appended at the VERY END so every existing leaf keeps its pytree
-        # position. They stay ``None`` unless a hail MP scheme is selected, so
-        # the default mp=8 path does not allocate their arrays.
+        # Appended after the prior additive blocks so every existing leaf keeps
+        # its pytree position. They stay ``None`` unless a hail MP scheme is
+        # selected, so the default mp=8 path does not allocate their arrays.
         "qh",
         "Nh",
         "qvolg",
@@ -560,10 +578,19 @@ class State:
         # ``None`` unless aerosol-aware Thompson (mp=28) is selected.
         "nwfa",
         "nifa",
-        # v0.17 hail surface-precip accumulator (append-only, at the VERY END).
+        # v0.17 hail surface-precip accumulator (append-only historical tail).
         # hail_acc = accumulated grid-scale hail (mm; WRF HAILNC). It stays
         # ``None`` unless a hail MP scheme is selected.
         "hail_acc",
+        # v0.21.1 optional wrfbdy scalar boundary leaves.  These stay ``None`` unless
+        # standalone/native lateral forcing provides the matching WRF scalar strips.
+        "qc_bdy",
+        "qr_bdy",
+        "qi_bdy",
+        "qs_bdy",
+        "qg_bdy",
+        "Ni_bdy",
+        "Nr_bdy",
     )
 
     def __init__(
@@ -635,8 +662,16 @@ class State:
         # --- v0.16 additive aerosol-aware Thompson (mp=28) leaves ---
         nwfa: jax.Array | None = None,
         nifa: jax.Array | None = None,
-        # v0.17 hail surface-precip accumulator (append-only, at the very END).
+        # v0.17 hail surface-precip accumulator (append-only historical tail).
         hail_acc: jax.Array | None = None,
+        # v0.21.1 optional WRF scalar boundary leaves from wrfbdy.
+        qc_bdy: jax.Array | None = None,
+        qr_bdy: jax.Array | None = None,
+        qi_bdy: jax.Array | None = None,
+        qs_bdy: jax.Array | None = None,
+        qg_bdy: jax.Array | None = None,
+        Ni_bdy: jax.Array | None = None,
+        Nr_bdy: jax.Array | None = None,
         # v0.20 S1: legacy total aliases accepted for call-site back-compat ONLY
         # (they are no longer pytree leaves; the read-only p/ph/mu properties below
         # re-expose the authoritative totals). A caller that still passes
@@ -758,6 +793,13 @@ class State:
         self.nwfa = None if nwfa is None else _as_dtype(nwfa, DEFAULT_DTYPES.dtype_for("nwfa"))
         self.nifa = None if nifa is None else _as_dtype(nifa, DEFAULT_DTYPES.dtype_for("nifa"))
         self.hail_acc = None if hail_acc is None else _as_dtype(hail_acc, DEFAULT_DTYPES.dtype_for("hail_acc"))
+        self.qc_bdy = None if qc_bdy is None else _as_dtype(qc_bdy, DEFAULT_DTYPES.dtype_for("qc_bdy"))
+        self.qr_bdy = None if qr_bdy is None else _as_dtype(qr_bdy, DEFAULT_DTYPES.dtype_for("qr_bdy"))
+        self.qi_bdy = None if qi_bdy is None else _as_dtype(qi_bdy, DEFAULT_DTYPES.dtype_for("qi_bdy"))
+        self.qs_bdy = None if qs_bdy is None else _as_dtype(qs_bdy, DEFAULT_DTYPES.dtype_for("qs_bdy"))
+        self.qg_bdy = None if qg_bdy is None else _as_dtype(qg_bdy, DEFAULT_DTYPES.dtype_for("qg_bdy"))
+        self.Ni_bdy = None if Ni_bdy is None else _as_dtype(Ni_bdy, DEFAULT_DTYPES.dtype_for("Ni_bdy"))
+        self.Nr_bdy = None if Nr_bdy is None else _as_dtype(Nr_bdy, DEFAULT_DTYPES.dtype_for("Nr_bdy"))
 
     # --- v0.20 S1 legacy total aliases (read-only properties; not pytree leaves) ---
     # ``p``/``ph``/``mu`` were bitwise-identical duplicates of the totals carried

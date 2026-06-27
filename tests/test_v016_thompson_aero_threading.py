@@ -25,6 +25,7 @@ from gpuwrf.contracts.state import (
     AEROSOL_CONDITIONAL_LEAVES,
     CONDITIONAL_STATE_LEAVES,
     HAIL_CONDITIONAL_LEAVES,
+    SCALAR_BOUNDARY_OPTIONAL_LEAVES,
     State,
     _state_field_shapes,
 )
@@ -112,14 +113,15 @@ def test_state_field_order_appends_nwfa_nifa_at_end() -> None:
     # v0.18 trunk canonical append-only tail (set-UNION of the v0.6.0/v0.15/v0.16
     # /v0.17 additive lanes): the v0.17 ADR-032 hail substrate (qh/Nh/qvolg/qvolh),
     # then the v0.16 aerosol-aware Thompson leaves (nwfa/nifa), then the v0.17 hail
-    # surface accumulator (hail_acc). nwfa/nifa sit at positions -3/-2 (before the
-    # final hail_acc accumulator), still after the v0.6.0 + v0.15 prefix.
-    assert STATE_FIELD_ORDER[-3:-1] == ("nwfa", "nifa")
-    assert State.__slots__[-3:-1] == ("nwfa", "nifa")
-    assert State.__slots__[-14:] == (
+    # surface accumulator (hail_acc). nwfa/nifa sit before the hail_acc accumulator,
+    # still after the v0.6.0 + v0.15 prefix and before the optional wrfbdy scalars.
+    assert STATE_FIELD_ORDER[-10:-8] == ("nwfa", "nifa")
+    assert State.__slots__[-10:-8] == ("nwfa", "nifa")
+    assert State.__slots__[-21:-7] == (
         "Nc", "Nn", "rainc_acc", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
         "qh", "Nh", "qvolg", "qvolh", "nwfa", "nifa", "hail_acc",
     )
+    assert State.__slots__[-7:] == SCALAR_BOUNDARY_OPTIONAL_LEAVES
     assert PRECISION_MATRIX["nwfa"] == (FP32_GATED, True)
     assert PRECISION_MATRIX["nifa"] == (FP32_GATED, True)
 
@@ -158,8 +160,8 @@ def test_state_pytree_round_trip_preserves_leaf_count_and_order() -> None:
     state = _tiny_state()
     leaves, treedef = jax.tree_util.tree_flatten(state)
     # mp=28 carries the base plus nwfa/nifa only; hail leaves remain None and are
-    # not JAX pytree leaves. v0.20 S1: base is 57 (-3 legacy p/ph/mu aliases) so
-    # 64 slots - 7 conditional + 2 aerosol = 59.
+    # not JAX pytree leaves. v0.20 S1/v0.21.1 optional suffix: base is still 57, so
+    # total slots - optional/conditional leaves + 2 aerosol = 59.
     assert len(leaves) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) + len(AEROSOL_CONDITIONAL_LEAVES) == 59
     assert state.active_field_names()[-2:] == AEROSOL_CONDITIONAL_LEAVES
     assert leaves[-2] is state.nwfa

@@ -264,7 +264,7 @@ def _make_namelist(
 def _root_boundary_cadence_override(
     namelist: OperationalNamelist, case_metadata: dict[str, Any]
 ) -> OperationalNamelist:
-    """Match the root-domain LBC interpolation cadence to its wrfbdy interval.
+    """Enable WRF-native specified-boundary handling for standalone roots.
 
     The standalone root's ``*_bdy`` leaves carry ONE time level per wrfbdy
     forcing interval (``interval_seconds``, e.g. 21600 s for 6-hourly AIFS/GFS),
@@ -276,6 +276,12 @@ def _root_boundary_cadence_override(
     ``_BT*`` tendency over bdyfrq == interval_seconds; linear interpolation
     between consecutive level values at that same cadence is the identical
     forcing.
+
+    Native wrfbdy roots also need the WRF specified-boundary timestep cadence:
+    per-stage dry relax/spec pins and specified-domain advection degradation at
+    the edge. Leaving those opt-in replay toggles off lets the root d01 boundary
+    behave like a periodic/high-order edge between end-of-step nudges, which is
+    dynamically fatal on the Mont-Blanc terrain fixture.
     """
 
     interval_s = (case_metadata.get("boundary") or {}).get("interval_seconds")
@@ -283,8 +289,12 @@ def _root_boundary_cadence_override(
         return namelist
     return dataclass_replace(
         namelist,
+        specified_bdy_cadence=True,
+        specified_adv_degrade=True,
         boundary_config=dataclass_replace(
-            namelist.boundary_config, update_cadence_s=float(interval_s)
+            namelist.boundary_config,
+            update_cadence_s=float(interval_s),
+            normal_bdy_relax_strength=1.0,
         ),
     )
 
