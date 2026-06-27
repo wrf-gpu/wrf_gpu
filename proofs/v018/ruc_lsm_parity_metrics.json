@@ -1,0 +1,242 @@
+{
+  "all_green": true,
+  "fields": {
+    "alb": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "dew": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "emiss": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "grdflx": {
+      "abs_tol": 0.0003,
+      "max_abs": 0.00023466049123754829,
+      "max_rel": 5.224806312526126e-06,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "hfx": {
+      "abs_tol": 0.0002,
+      "max_abs": 0.00015560465180897154,
+      "max_rel": 1.4044060008230632e-06,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "lai": {
+      "abs_tol": 1e-10,
+      "max_abs": 4.440892098500626e-16,
+      "max_rel": 7.906573419759072e-17,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "lh": {
+      "abs_tol": 0.0005,
+      "max_abs": 0.0002897803869483795,
+      "max_rel": 7.612217979025318e-07,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "mavail": {
+      "abs_tol": 1e-10,
+      "max_abs": 1.480765343675472e-08,
+      "max_rel": 1.480765343675472e-08,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qcg": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qfx": {
+      "abs_tol": 5e-10,
+      "max_abs": 1.1591215477867216e-10,
+      "max_rel": 7.612217978980686e-07,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qsfc": {
+      "abs_tol": 5e-08,
+      "max_abs": 2.0396072690151423e-08,
+      "max_rel": 1.166305740697434e-06,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qsg": {
+      "abs_tol": 5e-08,
+      "max_abs": 3.654186201719478e-08,
+      "max_rel": 1.2406772319042112e-06,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qvg": {
+      "abs_tol": 5e-08,
+      "max_abs": 2.072620476634146e-08,
+      "max_rel": 1.164457431764182e-06,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "sfcevp": {
+      "abs_tol": 5e-07,
+      "max_abs": 2.4489218770212817e-07,
+      "max_rel": 8.184099010482515e-07,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "sfcexc": {
+      "abs_tol": 1e-10,
+      "max_abs": 6.938893903907228e-18,
+      "max_rel": 2.334336427859777e-16,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "sfcrunoff": {
+      "abs_tol": 1e-08,
+      "max_abs": 4.72290651032381e-10,
+      "max_rel": 8.785845100868475e-11,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "sh2o": {
+      "abs_tol": 3e-05,
+      "max_abs": 2.2930633854056914e-05,
+      "max_rel": 5.960929348270716e-05,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "smavail": {
+      "abs_tol": 1e-10,
+      "max_abs": 6.037116691004485e-07,
+      "max_rel": 8.798116022740207e-10,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "smmax": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "snow": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "snowh": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "soilmois": {
+      "abs_tol": 3e-05,
+      "max_abs": 2.1160520392859983e-05,
+      "max_rel": 5.446313702154875e-05,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "soilt": {
+      "abs_tol": 2e-05,
+      "max_abs": 1.2795969553280884e-05,
+      "max_rel": 4.2045778467269054e-08,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "soilt1": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "tsnav": {
+      "abs_tol": 1e-10,
+      "max_abs": 3.552713678800501e-15,
+      "max_rel": 1.1154517044899526e-16,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "tso": {
+      "abs_tol": 2e-05,
+      "max_abs": 1.2795969553280884e-05,
+      "max_rel": 4.202832505532494e-08,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "udrunoff": {
+      "abs_tol": 1e-10,
+      "max_abs": 0.0,
+      "max_rel": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "znt": {
+      "abs_tol": 1e-10,
+      "max_abs": 2.7755575615628914e-17,
+      "max_rel": 1.5070037619482366e-16,
+      "pass": true,
+      "rel_tol": 0.0001
+    }
+  },
+  "n_columns": 5,
+  "n_steps": 6,
+  "oracle": "proofs/v017/savepoints/ruclsm/fp64/ruclsm_fp64.json",
+  "platform": "cpu",
+  "precision": "fp64",
+  "schema": "wrf-v018-ruc-lsm-parity-v1",
+  "tolerances": {
+    "default_abs_tol": 1e-10,
+    "field_abs_tol": {
+      "grdflx": 0.0003,
+      "hfx": 0.0002,
+      "lh": 0.0005,
+      "qfx": 5e-10,
+      "qsfc": 5e-08,
+      "qsg": 5e-08,
+      "qvg": 5e-08,
+      "sfcevp": 5e-07,
+      "sfcrunoff": 1e-08,
+      "sh2o": 3e-05,
+      "soilmois": 3e-05,
+      "soilt": 2e-05,
+      "tso": 2e-05
+    },
+    "rel_tol": 0.0001
+  },
+  "worst_abs": {
+    "abs_tol": 0.0005,
+    "field": "lh",
+    "max_abs": 0.0002897803869483795,
+    "max_rel": 7.612217979025318e-07,
+    "pass": true,
+    "rel_tol": 0.0001
+  },
+  "worst_rel": {
+    "abs_tol": 3e-05,
+    "field": "sh2o",
+    "max_abs": 2.2930633854056914e-05,
+    "max_rel": 5.960929348270716e-05,
+    "pass": true,
+    "rel_tol": 0.0001
+  }
+}

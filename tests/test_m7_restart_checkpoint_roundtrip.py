@@ -70,7 +70,7 @@ def test_checkpoint_roundtrip_preserves_all_state_fields_bitwise(tmp_path: Path)
     # appended 4 MYNN SGS-cloud leaves (qsq, qc_bl, qi_bl, cldfra_bl), v0.17
     # ADR-032 appended the graupel/hail substrate (qh, Nh, qvolg, qvolh), v0.16
     # appended the aerosol-aware Thompson (mp=28) nwfa/nifa leaves, and the v0.17
-    # hail microphysics appended the hail surface accumulator (hail_acc), and v0.21.1
+    # hail microphysics appended the hail surface accumulator (hail_acc), and v0.22
     # appended optional wrfbdy scalar leaves. The guard tracks the
     # authoritative consolidated count (53 + 3 + 4 + 4 + 2 + 1 = 67), minus the 3
     # legacy p/ph/mu duplicate aliases removed in v0.20 S1 = 64, plus 7 optional

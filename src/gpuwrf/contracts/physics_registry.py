@@ -7,7 +7,7 @@ physics menu so that scheme lanes, wrfout, restart, and nesting consume one
 field list instead of re-creating Thompson-era assumptions locally.
 
 WRF Registry lines verified against
-``<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON`` on
+``/home/user/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON`` on
 2026-06-02:
 
 * Kessler(1): ``moist:qv,qc,qr``.
@@ -42,10 +42,11 @@ WRF Registry lines verified against
   endpoints with fp64 pristine-WRF oracle savepoints staged under
   ``proofs/v018/savepoints_fp64``; accepted for isolated oracle comparison and
   fail-closed in the operational scan until traceable JAX kernels land.
-* CAM-UW(9): CAM5 vertical-diffusion stack, not accepted in the standalone
-  v0.18 PBL matrix. It requires CAM cloud/aerosol-number and sedimentation
-  state plus CAM residual-stress carry; endpoint classification is documented
-  in ``proofs/v018/camuw_pbl9_endpoint_classification.json``.
+* CAM-UW(9): CAM5 vertical-diffusion stack, v0.22 scan-wired as a traceable
+  UW diagnostic-TKE / implicit vertical-diffusion endpoint for the operational
+  State fields. Full CAM cloud-number/sedimentation/residual-stress parity
+  still requires a pristine-WRF CAM savepoint fixture and is documented in the
+  v0.22 proof object.
 * Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
 * Cumulus options KF(1), BMJ(2), Grell-Freitas(3), Tiedtke(6/16), and the
   reference-only long tail with real WRF oracle artifacts
@@ -88,7 +89,7 @@ class SchemeOption:
 
 
 ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97)
-ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 16, 17, 99)
+ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 16, 17, 99)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 14, 16, 93, 94, 95, 96, 99)
 ACCEPTED_SF_SURFACE_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 7, 8)
@@ -180,6 +181,12 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
     8: SchemeOption("bl_pbl_physics", 8, "BouLac", "boulacscheme", "accepted", "pbl"),
+    # CAM-UW(9): v0.22 JAX/vmap operational endpoint for the CAM5 UW
+    # diagnostic-TKE vertical-diffusion shape (dry static energy, qv/qc/qi,
+    # momentum, and qke diagnostics), scan-wired via
+    # coupling.scan_adapters.camuw_pbl_adapter. It is intentionally proof-gated
+    # as an idealized/source-present check, not full CAM-stack savepoint parity.
+    9: SchemeOption("bl_pbl_physics", 9, "CAM-UW", "camuwpblscheme", "implemented", "pbl"),
     # TEMF(10): v0.18 reference-only endpoint. A fp64 pristine-WRF single-column
     # oracle is staged (phys/module_bl_temf.F; proofs/v018/temf_pbl10_reference_oracle.json),
     # but no traceable JAX column kernel is scan-wired.
@@ -764,6 +771,10 @@ PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     5: ("qke",),
     7: (),
     8: ("qke",),
+    # CAM-UW carries previous-step TKE/K diagnostics and residual stresses in
+    # the WRF CAM wrapper. The operational adapter stores TKE in State.qke and
+    # currently recomputes K/residual terms each call until a full CAM carry lands.
+    9: ("tke_pbl", "kvm3d", "kvh3d", "tauresx", "tauresy"),
     # TEMF(10) carries the total-energy / mass-flux diagnostic state emitted by
     # phys/module_bl_temf.F. REFERENCE-ONLY in v0.18.
     10: (
@@ -799,6 +810,7 @@ PBL_DIAGNOSTIC_MEMBERS: Mapping[int, tuple[str, ...]] = {
     5: ("pblh", "tke_pbl", "sh3d", "sm3d", "tsq", "qsq", "cov", "el_pbl"),
     7: ("pblh",),
     8: ("pblh", "tke_pbl", "dlk", "exch_h", "exch_m"),
+    9: ("pblh", "kpbl", "tke_pbl", "kvh", "kvm", "turbtype", "smaw", "tpert", "qpert", "wpert"),
     10: ("pblh", "kpbl", "kh_temf", "km_temf", "te_temf", "mf_temf", "hd_temf", "hct_temf"),
     11: ("pblh", "kpbl", "tke_pbl", "el_pbl", "exch_h"),  # Shin-Hong scale-aware
     12: ("pblh", "kpbl", "tke_pbl", "el_pbl", "exch_tke"),  # GBM moist TKE
@@ -935,7 +947,7 @@ def nest_field_list(
                 continue
             entries.append(NestFieldEntry(leaf, NUMBER_WRFOUT_NAME[leaf], "scalar", "", True, True, False))
             seen.add(leaf)
-        if int(bl_pbl_physics) in (5, 8) and "qke" not in seen:
+        if int(bl_pbl_physics) in (5, 8, 9, 11, 12) and "qke" not in seen:
             entries.append(NestFieldEntry("qke", "QKE", "scalar", "", True, True, False))
 
     return tuple(entries)

@@ -58,9 +58,9 @@ cases:
       expected_wrfout_count_including_initial: 73
       observed_wrfout_count_including_initial: 20
       generation_command: >
-        taskset -c 0-3 bash -lc 'source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
+        taskset -c 0-3 bash -lc 'source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
         && cd <prepared-20260521-18z-l2-72h-run-directory>
-        && mpirun -np 28 <USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
+        && mpirun -np 28 /home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
     expected_variables: DEFAULT
     tolerance_class: EQUIVALENCE_LOOSE
     gpu:
@@ -84,9 +84,9 @@ cases:
       expected_forecast_hours: 1
       expected_wrfout_count_including_initial: 2
       generation_command: >
-        taskset -c 0-3 bash -lc 'source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
+        taskset -c 0-3 bash -lc 'source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
         && cd <prepared-WRF-em_quarter_ss-warm-bubble-run-directory>
-        && mpirun -np 4 <USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
+        && mpirun -np 4 /home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
     expected_variables:
       - theta
       - U
@@ -110,9 +110,9 @@ cases:
       expected_forecast_hours: 1
       expected_wrfout_count_including_initial: 2
       generation_command: >
-        taskset -c 0-3 bash -lc 'source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
+        taskset -c 0-3 bash -lc 'source /home/user/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh
         && cd <prepared-WRF-density-current-run-directory>
-        && mpirun -np 4 <USER_HOME>/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
+        && mpirun -np 4 /home/user/src/wrf_gpu/builds/stable_20260509T213321Z/wrf.exe'
     expected_variables:
       - theta
       - U

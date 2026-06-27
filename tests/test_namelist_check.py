@@ -32,6 +32,7 @@ def test_supported_physics_and_dynamics_config_passes() -> None:
             "ra_sw_physics": [4, 4],
             "ra_lw_physics": [4, 4],
             "sf_urban_physics": [0, 0],
+            "sf_lake_physics": [0, 0],
         },
         "dynamics": {
             "rk_order": 3,
@@ -81,7 +82,7 @@ def test_registry_records_supported_active_suite() -> None:
     # bl=3 GFS, bl=11 Shin-Hong, and bl=12 GBM are operational
     # (savepoint/reference-parity proven, scan-wired). bl=4/10/16/17 are v0.18
     # reference-only with real pristine-WRF module oracles.
-    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 16, 17, 99})
+    assert SUPPORTED_OPTIONS["bl_pbl_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 16, 17, 99})
     assert SUPPORTED_OPTIONS["sf_sfclay_physics"].supported_values == frozenset({0, 1, 2, 3, 5, 7, 91})
     assert SUPPORTED_OPTIONS["sf_surface_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 7, 8})
     assert SUPPORTED_OPTIONS["cu_physics"].supported_values == frozenset({0, 1, 2, 3, 4, 5, 6, 14, 16, 93, 94, 95, 96, 99})
@@ -98,6 +99,8 @@ def test_registry_records_supported_active_suite() -> None:
     # scan-wired no-kernel-change endpoint (savepoint-parity-proven against the
     # unmodified phys/module_ra_hs.F at fp64).
     assert SUPPORTED_OPTIONS["ra_lw_physics"].supported_values == frozenset({0, 1, 3, 4, 5, 7, 31, 99})
+    assert SUPPORTED_OPTIONS["sf_urban_physics"].supported_values == frozenset({0})
+    assert SUPPORTED_OPTIONS["sf_lake_physics"].supported_values == frozenset({0})
 
 
 def test_myj_janjic_pairing_is_enforced() -> None:
@@ -149,6 +152,8 @@ def test_catalog_spot_checks_against_wrf_readme() -> None:
     assert "QNSE" in wrf_scheme_name("bl_pbl_physics", 4).name
     assert "Noah-MP" in wrf_scheme_name("sf_surface_physics", 4).name
     assert "RUC" in wrf_scheme_name("sf_surface_physics", 3).name
+    assert "BEP" in wrf_scheme_name("sf_urban_physics", 2).name
+    assert "lake model" in wrf_scheme_name("sf_lake_physics", 1).name
     assert "RRTMG" in wrf_scheme_name("ra_lw_physics", 4).name
     assert "Dudhia" in wrf_scheme_name("ra_sw_physics", 1).name
     # Not WRF options:
@@ -169,6 +174,8 @@ def test_implemented_scheme_passes() -> None:
                 "sf_surface_physics": [4],
                 "ra_lw_physics": [4],
                 "ra_sw_physics": [4],
+                "sf_urban_physics": [0],
+                "sf_lake_physics": [0],
             }
         }
     )
@@ -183,8 +190,7 @@ def test_implemented_scheme_passes() -> None:
         ("mp_physics", 29, "Thompson"),
         ("mp_physics", 50, "P3"),
         # bl=4/10/16/17 are now reference-only with real pristine-WRF module
-        # oracles; bl=9 CAM-UW remains a named CAM-family fail-closed option.
-        ("bl_pbl_physics", 9, "UW"),
+        # oracles; bl=9 CAM-UW is operationally scan-wired in v0.22.
         ("cu_physics", 7, "Zhang-McFarlane"),
         # sf_surface=3 (RUC) + 8 (SSiB) are now v0.17 Tier-3 REFERENCE-ONLY
         # (namelist-accepted for a single-column reference comparison, fail-closed
@@ -289,13 +295,14 @@ def test_reference_failclosed_schemes_keep_specific_messages() -> None:
 
 
 def test_recognized_but_unimplemented_dynamics_option() -> None:
-    """diff_opt=1 / km_opt=4 (real-data WRF defaults) are now the wired 2-D
-    Smagorinsky horizontal-diffusion path, so they validate cleanly. An
-    unrecognized km_opt value still fails closed."""
+    """Wired diffusion/km_opt paths validate; unrecognized km_opt still fails."""
 
     # diff_opt=1/km_opt=4 is the v0.9.0 2-D Smagorinsky path (dynamics/explicit_diffusion.py,
     # parity proofs/v090/diffopt1_smagorinsky_parity.json) -- accepted, no raise.
     validate_supported_namelist({"dynamics": {"diff_opt": 1, "km_opt": 4}})
+    validate_supported_namelist({"dynamics": {"diff_opt": 2, "km_opt": 2}})
+    validate_supported_namelist({"dynamics": {"diff_opt": 2, "km_opt": 3}})
+    validate_supported_namelist({"dynamics": {"diff_opt": 2, "km_opt": 5}})
     # km_opt=99 is not a recognized WRF option.
     with pytest.raises(UnsupportedNamelistOption) as excinfo2:
         validate_supported_namelist({"dynamics": {"km_opt": 99}})
@@ -354,10 +361,10 @@ def test_operational_validator_passes_implemented_suite() -> None:
         ("cu_physics", 4, "Scale-aware GFS SAS", "cu_physics=1/2/3/6"),
         ("cu_physics", 93, "Grell-Devenyi", "cu_physics=3"),
         ("cu_physics", 99, "previous Kain-Fritsch", "cu_physics=1"),
-        ("bl_pbl_physics", 4, "QNSE", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
-        ("bl_pbl_physics", 10, "TEMF", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
-        ("bl_pbl_physics", 16, "epsilon", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
-        ("bl_pbl_physics", 17, "TPE", "bl_pbl_physics=0/1/2/3/5/7/8/11/12/99"),
+        ("bl_pbl_physics", 4, "QNSE", "bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99"),
+        ("bl_pbl_physics", 10, "TEMF", "bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99"),
+        ("bl_pbl_physics", 16, "epsilon", "bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99"),
+        ("bl_pbl_physics", 17, "TPE", "bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99"),
     ],
 )
 def test_operational_validator_rejects_reference_only_scheme(
@@ -522,7 +529,7 @@ def test_real_wrf_namelist_input_is_consumable() -> None:
     from pathlib import Path
 
     oracle = Path(
-        "<USER_HOME>/src/wrf_pristine/WRF/test/em_real/oracle_run/namelist.input"
+        "/home/user/src/wrf_pristine/WRF/test/em_real/oracle_run/namelist.input"
     )
     if oracle.is_file():
         from gpuwrf.io.namelist_check import _parse_wrf_namelist

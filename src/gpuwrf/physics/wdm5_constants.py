@@ -33,7 +33,7 @@ maxima.
 The gamma constants are reproduced from WRF's ``rgmma`` infinite-product
 function (10000 terms) evaluated in fp64 so the JAX port's init is numerically
 identical to the Fortran init to ~fp64 precision. Verified against
-<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_wdm5.F.
+/home/user/src/wrf_pristine/WRF/phys/module_mp_wdm5.F.
 """
 
 from __future__ import annotations

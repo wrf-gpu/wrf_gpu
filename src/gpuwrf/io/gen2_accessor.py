@@ -464,7 +464,7 @@ class Gen2Run:
             "source_citations": [
                 ".agent/references/cpu-wrf-baseline.md",
                 str(self.path / "namelist.input"),
-                "<USER_HOME>/src/canairy_meteo/Gen2/wrf-gpu.md",
+                "/home/user/src/canairy_meteo/Gen2/wrf-gpu.md",
             ],
         }
 

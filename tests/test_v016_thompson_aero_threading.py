@@ -160,7 +160,7 @@ def test_state_pytree_round_trip_preserves_leaf_count_and_order() -> None:
     state = _tiny_state()
     leaves, treedef = jax.tree_util.tree_flatten(state)
     # mp=28 carries the base plus nwfa/nifa only; hail leaves remain None and are
-    # not JAX pytree leaves. v0.20 S1/v0.21.1 optional suffix: base is still 57, so
+    # not JAX pytree leaves. v0.20 S1/v0.22 optional suffix: base is still 57, so
     # total slots - optional/conditional leaves + 2 aerosol = 59.
     assert len(leaves) == len(State.__slots__) - len(CONDITIONAL_STATE_LEAVES) + len(AEROSOL_CONDITIONAL_LEAVES) == 59
     assert state.active_field_names()[-2:] == AEROSOL_CONDITIONAL_LEAVES

@@ -46,6 +46,21 @@ from gpuwrf.nesting.scheduler import (
     run_host_tower,
     runtime_hook_spec,
 )
+from gpuwrf.nesting.moving import (
+    MovingNestBounds,
+    NestMove,
+    apply_move_to_edge,
+    planned_vortex_move,
+    shift_array_for_nest_move,
+    shift_state_for_nest_move,
+)
+from gpuwrf.nesting.adaptive_timestep import (
+    AdaptiveTimeStepConfig,
+    AdaptiveTimeStepResult,
+    AdaptiveTimeStepState,
+    adapt_timestep,
+    calc_dt_candidate,
+)
 
 __all__ = [
     "InterpWeights",
@@ -69,4 +84,15 @@ __all__ = [
     "forcedown_event_log",
     "run_host_tower",
     "runtime_hook_spec",
+    "MovingNestBounds",
+    "NestMove",
+    "apply_move_to_edge",
+    "planned_vortex_move",
+    "shift_array_for_nest_move",
+    "shift_state_for_nest_move",
+    "AdaptiveTimeStepConfig",
+    "AdaptiveTimeStepResult",
+    "AdaptiveTimeStepState",
+    "adapt_timestep",
+    "calc_dt_candidate",
 ]

@@ -56,8 +56,13 @@ AdvanceFn = Callable[[str, Any, int, int], Any]
 ForceFn = Callable[["DomainEdge", Any, Any], Any]
 FeedbackFn = Callable[["DomainEdge", Any, Any], Any]
 OutputFn = Callable[[str, int, Any], Any]
+AdaptiveDtFn = Callable[[str, Any, int], Any]
+MoveFn = Callable[["DomainEdge", Any, Any, int], Any]
 FusedSubstepFn = Callable[[Any, tuple[Any, ...], int, tuple[int, ...]], tuple[Any, tuple[Any, ...]]]
 FusedCascadeLookup = Callable[[str], "FusedSubstepFn | None"]
+AvalLeafSignature = tuple[tuple[int, ...], str, bool]
+AvalStructureToken = tuple[str, str, int]
+AvalSignature = tuple[AvalLeafSignature, ...] | tuple[AvalStructureToken, tuple[AvalLeafSignature, ...]]
 
 
 @dataclass(frozen=True)
@@ -303,6 +308,8 @@ def run_domain_tree_callbacks(
     feedback: FeedbackFn | None = None,
     root: str | None = None,
     feedback_enabled: bool = False,
+    adaptive_dt: AdaptiveDtFn | None = None,
+    move: MoveFn | None = None,
     output: OutputFn | None = None,
     output_cadence_steps: dict[str, int] | None = None,
     block_between: bool = True,
@@ -338,6 +345,14 @@ def run_domain_tree_callbacks(
     long call (rather than the segmented host loop) and want O(1) host RAM in
     forecast length.  The cap changes NO dispatched op, callback, or step clock --
     only how many host audit tuples are retained -- so numerics stay identical.
+
+    ``adaptive_dt`` and ``move`` are v0.22 G2 opt-in hooks.  The default ``None``
+    values preserve the fixed-geometry/fixed-dt path.  ``adaptive_dt`` may return
+    either an updated carry or ``(carry, dt_s)`` before a domain advance; the
+    latter records an audit ``("dt", ...)`` event.  ``move`` may return a moved
+    :class:`DomainEdge` or ``(edge, child_carry)`` before forcedown, matching WRF's
+    ``med_nest_move`` placement: after parent advance, before rebuilding child
+    boundary conditions.
     """
 
     root_name = root or hierarchy.roots()[0]
@@ -360,6 +375,77 @@ def run_domain_tree_callbacks(
             if name in own_steps:
                 own_steps[name] = int(value)
     output_cadence_steps = dict(output_cadence_steps or {})
+    dynamic_specs: dict[tuple[str, str], DomainNest] = {
+        (edge.parent, edge.child): edge for edge in hierarchy.nests
+    }
+
+    def children_for(parent: str) -> tuple[DomainNest, ...]:
+        return tuple(dynamic_specs[(edge.parent, edge.child)] for edge in hierarchy.children(parent))
+
+    def resolve_edge(spec: DomainNest) -> DomainEdge:
+        if edge_lookup is None:
+            return DomainEdge(spec, weights=None)  # type: ignore[arg-type]
+        edge = edge_lookup(spec)
+        if (
+            edge.spec.i_parent_start == spec.i_parent_start
+            and edge.spec.j_parent_start == spec.j_parent_start
+            and edge.spec.parent_grid_ratio == spec.parent_grid_ratio
+            and edge.spec.feedback == spec.feedback
+        ):
+            return edge
+        return DomainEdge(spec=spec, weights=edge.weights, feedback_weights=edge.feedback_weights)
+
+    def maybe_adapt_dt(name: str, start_step: int) -> None:
+        nonlocal out
+        if adaptive_dt is None:
+            return
+        result = adaptive_dt(name, out[name], int(start_step))
+        if result is None:
+            return
+        dt_value = None
+        if isinstance(result, tuple) and len(result) == 2:
+            out[name], dt_value = result
+        else:
+            out[name] = result
+            dt_value = getattr(result, "dt_s", None)
+        if dt_value is not None:
+            events.append(("dt", name, int(start_step), float(dt_value)))
+
+    def maybe_move_child(spec: DomainNest) -> DomainEdge:
+        nonlocal out
+        runtime_edge = resolve_edge(spec)
+        if move is None:
+            return runtime_edge
+        result = move(runtime_edge, out[spec.parent], out[spec.child], own_steps[spec.parent])
+        if result is None:
+            return runtime_edge
+        moved_edge: DomainEdge
+        if isinstance(result, tuple) and len(result) == 2:
+            moved_edge, out[spec.child] = result
+        else:
+            moved_edge = result
+        if not isinstance(moved_edge, DomainEdge):
+            raise TypeError("move callback must return DomainEdge, (DomainEdge, carry), or None")
+        old = runtime_edge.spec
+        new = moved_edge.spec
+        dynamic_specs[(old.parent, old.child)] = new
+        if (
+            old.i_parent_start != new.i_parent_start
+            or old.j_parent_start != new.j_parent_start
+        ):
+            events.append(
+                (
+                    "move",
+                    old.parent,
+                    old.child,
+                    own_steps[old.parent],
+                    old.i_parent_start,
+                    old.j_parent_start,
+                    new.i_parent_start,
+                    new.j_parent_start,
+                )
+            )
+        return moved_edge
 
     def maybe_output(name: str) -> None:
         cadence = int(output_cadence_steps.get(name, 0))
@@ -410,9 +496,10 @@ def run_domain_tree_callbacks(
 
     def integrate(name: str, n_steps: int, *, reset_clock: bool, depth: int = 0) -> None:
         del reset_clock  # step clocks are per-domain global clocks, not subcycle-local
-        children = hierarchy.children(name)
+        children = children_for(name)
         if not children:
             start_step = own_steps[name] + 1
+            maybe_adapt_dt(name, start_step)
             out[name] = advance(name, out[name], int(start_step), int(n_steps))
             own_steps[name] += int(n_steps)
             events.append(("advance", name, start_step, int(n_steps), own_steps[name]))
@@ -423,11 +510,12 @@ def run_domain_tree_callbacks(
                 _sync_all_domains()
             return
 
-        cascade = fused_cascade(name) if fused_cascade is not None else None
+        cascade = fused_cascade(name) if fused_cascade is not None and move is None and adaptive_dt is None else None
         if cascade is not None:
             child_specs = tuple(children)
             for local in range(1, int(n_steps) + 1):
                 parent_start = own_steps[name] + 1
+                maybe_adapt_dt(name, parent_start)
                 child_starts = tuple(own_steps[spec.child] + 1 for spec in child_specs)
                 new_parent, new_children = cascade(
                     out[name],
@@ -462,21 +550,24 @@ def run_domain_tree_callbacks(
             return
 
         for local in range(1, int(n_steps) + 1):
+            children = children_for(name)
             start_step = own_steps[name] + 1
+            maybe_adapt_dt(name, start_step)
             out[name] = advance(name, out[name], int(start_step), 1)
             own_steps[name] += 1
             events.append(("advance", name, start_step, 1, own_steps[name]))
             if per_advance_block and hasattr(_state_from_carry(out[name]), "theta"):
                 jax.block_until_ready(_state_from_carry(out[name]).theta)
             for spec in children:
-                runtime_edge = edge_lookup(spec) if edge_lookup is not None else DomainEdge(spec, weights=None)  # type: ignore[arg-type]
+                runtime_edge = maybe_move_child(spec)
                 if force is not None:
                     out[spec.child] = force(runtime_edge, out[spec.parent], out[spec.child])
-                events.append(("force", spec.parent, spec.child, own_steps[spec.parent]))
+                events.append(("force", runtime_edge.parent, runtime_edge.child, own_steps[runtime_edge.parent]))
             for spec in children:
-                integrate(spec.child, int(spec.parent_grid_ratio), reset_clock=False, depth=depth + 1)
-                if bool(feedback_enabled or spec.feedback) and feedback is not None:
-                    runtime_edge = edge_lookup(spec) if edge_lookup is not None else DomainEdge(spec, weights=None)  # type: ignore[arg-type]
+                current_spec = dynamic_specs[(spec.parent, spec.child)]
+                integrate(current_spec.child, int(current_spec.parent_grid_ratio), reset_clock=False, depth=depth + 1)
+                if bool(feedback_enabled or current_spec.feedback) and feedback is not None:
+                    runtime_edge = resolve_edge(current_spec)
                     out[spec.parent] = feedback(runtime_edge, out[spec.parent], out[spec.child])
                     events.append(("feedback", spec.child, spec.parent, own_steps[spec.parent]))
             maybe_output(name)
@@ -1356,11 +1447,59 @@ def _log_nested_aot_status(name: str, status: dict[str, Any]) -> None:
         pass
 
 
-def _aval_signature(args: tuple[Any, ...]) -> tuple[tuple[tuple[int, ...], str, bool], ...]:
-    """Cheap runtime-arg aval signature for cached compiled executable reuse."""
+def _aval_structure_token(
+    args: tuple[Any, ...],
+    treedef: Any,
+    leaf_count: int,
+) -> tuple[str, str, int]:
+    """Stable structure token for the fused runtime cache key.
 
-    sig: list[tuple[tuple[int, ...], str, bool]] = []
-    for leaf in jax.tree_util.tree_leaves(args):
+    The fused cached-call key must cover the same pytree-structure axis as the
+    AOT cheap_key. Shape/dtype-only leaf signatures can collide when two calls
+    have identical aval leaves under different pytrees.
+    """
+
+    try:
+        from gpuwrf.runtime import aot_cheap_key as _ck
+
+        placeholder = jax.tree_util.tree_unflatten(
+            treedef,
+            [b"\x00LEAF" for _ in range(int(leaf_count))],
+        )
+        return ("treedef", _ck.canonical_digest(placeholder), int(leaf_count))
+    except Exception:  # noqa: BLE001 - only a local cache key; fall back to JAX treedef
+        try:
+            return ("treedef", repr(treedef), int(leaf_count))
+        except Exception:  # noqa: BLE001
+            return ("treedef", type(args).__name__, int(leaf_count))
+
+
+def _strict_aval_signature_enabled() -> bool:
+    """Opt into treedef-aware fused executable reuse keys.
+
+    The legacy v0.21.1 default keys the in-process fused executable cache by leaf
+    avals only.  Treedef-aware signatures are safer for structurally different
+    pytrees, but they change the default nested AOT trajectory on the release
+    canary.  Keep the strict mode explicit until the release tier can bless that
+    numerical change.
+    """
+
+    return os.environ.get("GPUWRF_AOT_STRICT_AVAL_SIGNATURE", "0").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
+
+
+def _aval_signature(args: tuple[Any, ...]) -> AvalSignature:
+    """Cheap runtime-arg signature for compiled executable reuse."""
+
+    strict = _strict_aval_signature_enabled()
+    if strict:
+        leaves, treedef = jax.tree_util.tree_flatten(args)
+    else:
+        leaves = jax.tree_util.tree_leaves(args)
+        treedef = None
+    sig: list[AvalLeafSignature] = []
+    for leaf in leaves:
         try:
             aval = jax.typeof(leaf)
             shape = tuple(int(v) for v in getattr(aval, "shape", ()))
@@ -1372,7 +1511,10 @@ def _aval_signature(args: tuple[Any, ...]) -> tuple[tuple[tuple[int, ...], str, 
             dtype = str(getattr(leaf, "dtype", type(leaf).__name__))
             weak_type = False
         sig.append((shape, dtype, weak_type))
-    return tuple(sig)
+    leaf_sig = tuple(sig)
+    if strict:
+        return (_aval_structure_token(args, treedef, len(leaves)), leaf_sig)
+    return leaf_sig
 
 
 def _build_fused_cascade_program(
@@ -1443,7 +1585,7 @@ def _build_fused_cascade_program(
             new_children.append(child_new)
         return parent_new, tuple(new_children)
 
-    cached_calls: dict[tuple[tuple[tuple[int, ...], str, bool], ...], tuple[Any, str | None]] = {}
+    cached_calls: dict[AvalSignature, tuple[Any, str | None]] = {}
     max_cached_calls = 16
     verified_keys: set[str] = set()
     verify_failed_keys: set[str] = set()
@@ -1471,7 +1613,7 @@ def _build_fused_cascade_program(
             return None, None, f"{type(exc).__name__}: {exc}"
 
     def _store_cached_call(
-        sig: tuple[tuple[tuple[int, ...], str, bool], ...],
+        sig: AvalSignature,
         call: Any,
         ckey: str | None,
     ) -> None:
@@ -1482,7 +1624,7 @@ def _build_fused_cascade_program(
     def _compile_capture_and_call(
         args: tuple[Any, ...],
         ckey: str | None,
-        sig: tuple[tuple[tuple[int, ...], str, bool], ...],
+        sig: AvalSignature,
     ):
         lowered, hlo_sha256, lower_error = _lower_fused(args)
         if lower_error or lowered is None:
@@ -1880,6 +2022,8 @@ def run_operational_domain_tree(
     root_steps: int,
     root: str | None = None,
     feedback_enabled: bool | None = None,
+    adaptive_dt: AdaptiveDtFn | None = None,
+    move: MoveFn | None = None,
     output: OutputFn | None = None,
     output_cadence_steps: dict[str, int] | None = None,
     block_between: bool = True,
@@ -1932,6 +2076,8 @@ def run_operational_domain_tree(
         feedback=_operational_feedback,
         root=root,
         feedback_enabled=effective_feedback,
+        adaptive_dt=adaptive_dt,
+        move=move,
         output=output,
         output_cadence_steps=output_cadence_steps,
         block_between=block_between,

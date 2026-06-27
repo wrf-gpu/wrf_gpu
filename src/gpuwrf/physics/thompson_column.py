@@ -744,7 +744,9 @@ def _finish(state: ThompsonColumnState) -> ThompsonColumnState:
 
     ni_raw = jnp.maximum(R2 / rho, state.Ni)
     ri = jnp.maximum(qi * rho, R1)
-    xni = jnp.maximum(R2, ni_raw * rho)
+    # WRF caps xni at 999e3 BEFORE forming lami (module_mp_thompson.F:3043), making
+    # _finish idempotent against a large finite Ni (defense-in-depth).
+    xni = jnp.minimum(jnp.maximum(R2, ni_raw * rho), 999.0e3)
     lami = (AM_I * 6.0 * OIG1 * xni / ri) ** OBMI
     xdi = 4.0 / lami
     lami = jnp.where(xdi < 5.0e-6, CIE2 / 5.0e-6, lami)
@@ -884,7 +886,16 @@ def _warm_rain_collection(state: ThompsonColumnState, dt: float, tables: Thompso
     # Floor the post-process rain number at 0 (WRF carries nrten then re-floors at
     # MAX(R2/rho, ...) in _finish; a self-collection sink must not drive Nr<0).
     Nr_new = jnp.maximum(0.0, state.Nr + nr_gain - nr_rcr)
-    return state.replace(qc=state.qc - transfer, qr=state.qr + transfer, Nr=Nr_new)
+    new_state = state.replace(qc=state.qc - transfer, qr=state.qr + transfer, Nr=Nr_new)
+    # WRF re-balances the rain number to the mvd band EVERY step
+    # (module_mp_thompson.F:3070-3091): cap Nr at the number implied by the
+    # SMALLEST allowed mvd (D0r*0.75) for the current rain mass.  The autoconversion
+    # rain-number source (pnr_wau) was floored-only, leaving the upward Nr write
+    # unbounded -> Nr runaway -> overflow.  Bit-identical below the band max (same
+    # CRG2, ORG3, AM_R, D0R, R1 constants _finish uses).
+    _rr_cap = jnp.maximum(new_state.qr * new_state.rho, R1)
+    _nr_max = CRG2 * ORG3 * _rr_cap * ((3.0 + 0.672) / (D0R * 0.75)) ** 3.0 / AM_R / new_state.rho
+    return new_state.replace(Nr=jnp.maximum(0.0, jnp.minimum(new_state.Nr, _nr_max)))
 
 
 def _rain_evaporation(
@@ -966,7 +977,12 @@ def _instant_melt_freeze(state: ThompsonColumnState, dt: float) -> ThompsonColum
     return state.replace(
         qc=state.qc - qc_freeze,
         qi=state.qi + qc_freeze,
-        Ni=state.Ni + qc_freeze / XM0I,
+        # WRF caps ice number at 999e3 m^-3 (module_mp_thompson.F:3054-3055). The
+        # qc_freeze/XM0I number estimate (frozen mass / minimum crystal mass) is
+        # unbounded and can spike Ni far past the WRF ceiling on steep nest columns,
+        # leading to a non-finite Ni downstream. Enforce the WRF invariant here too
+        # (per-mass = 999e3/rho). No-op below the ceiling => bit-identical on finite cases.
+        Ni=jnp.minimum(state.Ni + qc_freeze / XM0I, 999.0e3 / state.rho),
         T=state.T + lfus2 * ocp * qc_freeze,
     )
 
@@ -1026,7 +1042,10 @@ def _ice_sources_with_process_flags(
         qc=state.qc - cloud_freeze,
         qi=state.qi + ice_freeze + cloud_freeze,
         qg=state.qg + graupel_freeze,
-        Ni=state.Ni + table_ni + fallback_ni + cloud_ni,
+        # Enforce the WRF 999e3 m^-3 ice-number ceiling (mp_thompson.F:3054-3055) on
+        # this freezing/nucleation update too (per-mass = 999e3/rho). No-op below the
+        # ceiling => bit-identical on already-finite cases.
+        Ni=jnp.minimum(state.Ni + table_ni + fallback_ni + cloud_ni, 999.0e3 / state.rho),
         Nr=jnp.maximum(0.0, state.Nr - nr_loss),
         T=state.T + lfus2 * ocp * (ice_freeze + graupel_freeze + cloud_freeze),
     )
@@ -1082,6 +1101,16 @@ def _ice_sources_with_process_flags(
         T=state.T - LFUS * ocp * (snow_melt + graupel_melt),
     )
     state = state.replace(rho=density_from_pressure_temperature(state.p, state.T, state.qv))
+    # WRF re-balances the rain number to the mvd band EVERY step
+    # (module_mp_thompson.F:3070-3091): nr is capped at the number implied by the
+    # SMALLEST allowed mvd (D0r*0.75) for the current rain mass.  The port only
+    # re-derived this in _finish, leaving the snow/graupel melt source
+    # (smo0/rs * 10**...) unbounded -> Nr runaway -> overflow on steep
+    # cold->warming nest columns.  Bit-identical below the band max (same CRG2,
+    # ORG3, AM_R, D0R, R1 constants _finish uses).
+    _rr_cap = jnp.maximum(state.qr * state.rho, R1)
+    _nr_max = CRG2 * ORG3 * _rr_cap * ((3.0 + 0.672) / (D0R * 0.75)) ** 3.0 / AM_R / state.rho
+    state = state.replace(Nr=jnp.maximum(0.0, jnp.minimum(state.Nr, _nr_max)))
 
     tempc, diffu, visco, tcond, lvap2, ocp, rhof, rhof2, vsc2 = _air_properties(state)
     qvsi = saturation_mixing_ratio_ice(state.p, state.T)
@@ -1211,13 +1240,24 @@ def _ice_sources_with_process_flags(
         qg=state.qg + graupel_deposition + prg_rci * float(dt) / state.rho,
         # WRF lines 2719-2727 update pni_ide only in sublimation; positive
         # deposition partitions mass but does not create new cloud-ice number.
-        Ni=jnp.maximum(
-            0.0,
-            state.Ni
-            + inu_number
-            + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), 0.0)
-            - ice_number_to_snow
-            - ice_number_collected,
+        # WRF (module_mp_thompson.F:3054-3055) also caps ice number at 999e3 m^-3
+        # AFTER summing all microphysics tendencies. The port had kept only the
+        # maximum(0.0,...) floor and dropped that upper ceiling on this per-step
+        # update, letting Ni run away on steep-terrain inner-nest (d03) columns ->
+        # float overflow -> NaN at ~step 720 (v0.21.1 root cause). Restore the WRF
+        # ceiling (per-mass = 999e3/rho, matching the saturation path ~line 752).
+        # The cap only fires above 999e3/rho, so already-finite cases are unchanged
+        # (bit-identical, no default regression) while the d03 runaway is prevented.
+        Ni=jnp.minimum(
+            jnp.maximum(
+                0.0,
+                state.Ni
+                + inu_number
+                + jnp.where(ice_deposition < 0.0, ice_deposition / jnp.maximum(xmi, XM0I), 0.0)
+                - ice_number_to_snow
+                - ice_number_collected,
+            ),
+            999.0e3 / state.rho,
         ),
         Nr=jnp.maximum(0.0, state.Nr - rain_number_collected),
         Ng=jnp.maximum(0.0, state.Ng + rain_number_collected),

@@ -2,17 +2,19 @@
 
 Writes the SAME synthetic case via the synchronous ``write_wrfout_netcdf`` and via
 ``prepare_wrfout_payload`` + ``AsyncWrfoutWriter`` (background thread), then asserts
-every wrfout variable is byte-for-byte identical. Confirms double-buffering changes
-only the wall-clock timing of the NetCDF write, not its content.
+the resulting wrfout files are byte-for-byte identical. Confirms double-buffering
+changes only the wall-clock timing of the NetCDF write, not its content.
 """
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+import threading
 
 import numpy as np
 from netCDF4 import Dataset
 
+import gpuwrf.io.async_wrfout as async_wrfout
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
 from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
@@ -52,6 +54,8 @@ def test_async_writer_byte_identical_to_sync(tmp_path: Path):
     p_sync = _write_sync(tmp_path, "sync.nc")
     p_async = _write_async(tmp_path, "async.nc")
 
+    assert p_sync.read_bytes() == p_async.read_bytes()
+
     with Dataset(p_sync) as ds_a, Dataset(p_async) as ds_b:
         assert sorted(ds_a.variables) == sorted(ds_b.variables)
         for name in ds_a.variables:
@@ -66,6 +70,53 @@ def test_async_writer_byte_identical_to_sync(tmp_path: Path):
         # all minimum variables present in both
         for name in MINIMUM_WRFOUT_VARIABLES:
             assert name in ds_b.variables
+
+
+def test_async_writer_overlaps_next_compute_step(monkeypatch, tmp_path: Path):
+    """submit() returns while the NetCDF write is still in flight.
+
+    The blocked fake write stands in for slow wrfout I/O; the main thread records
+    a synthetic next compute step before releasing that write. This proves the
+    writer creates real overlap instead of moving a synchronous write behind a
+    different call site.
+    """
+
+    write_started = threading.Event()
+    release_write = threading.Event()
+    events: list[tuple[str, int]] = []
+    events_lock = threading.Lock()
+    main_thread = threading.get_ident()
+
+    def fake_write(prepared, **kwargs):  # noqa: ANN001
+        del kwargs
+        with events_lock:
+            events.append(("write_start", threading.get_ident()))
+        write_started.set()
+        assert release_write.wait(timeout=2.0)
+        with events_lock:
+            events.append(("write_finish", threading.get_ident()))
+        return prepared.target
+
+    monkeypatch.setattr(async_wrfout, "write_prepared_wrfout", fake_write)
+
+    state, grid, namelist = synthetic_case()
+    prepared = prepare_wrfout_payload(
+        state, grid, namelist, tmp_path / "async.nc",
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18),
+    )
+
+    with AsyncWrfoutWriter(max_pending=2) as writer:
+        writer.submit(prepared)
+        assert write_started.wait(timeout=2.0)
+        with events_lock:
+            events.append(("compute_step", threading.get_ident()))
+        release_write.set()
+
+    labels = [label for label, _ in events]
+    assert labels == ["write_start", "compute_step", "write_finish"]
+    assert events[0][1] != main_thread
+    assert events[1][1] == main_thread
 
 
 def test_async_writer_multiple_hours_ordering(tmp_path: Path):

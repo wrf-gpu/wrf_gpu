@@ -34,6 +34,7 @@ from gpuwrf.contracts.noahmp_state import (  # noqa: E402
     NoahMPLandState,
     NoahMPStatic,
 )
+from gpuwrf.config.paths import wrf_run_path  # noqa: E402
 from gpuwrf.physics.noahmp.energy import (  # noqa: E402
     EnergyParams,
     noahmp_energy_canopy,
@@ -274,9 +275,7 @@ import sys  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 _PROOFS = Path(__file__).resolve().parent.parent / "proofs" / "noahmp"
-_HAVE_GATE = (_PROOFS / "savepoints_energy.json").exists() and Path(
-    "<USER_HOME>/src/wrf_pristine/WRF/run/MPTABLE.TBL"
-).exists()
+_HAVE_GATE = (_PROOFS / "savepoints_energy.json").exists() and wrf_run_path("MPTABLE.TBL").exists()
 
 
 @pytest.mark.skipif(not _HAVE_GATE, reason="WRF ENERGY savepoints / MPTABLE not present")

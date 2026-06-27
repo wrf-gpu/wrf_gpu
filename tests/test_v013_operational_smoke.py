@@ -67,6 +67,7 @@ from gpuwrf.contracts.physics_registry import (
     ACCEPTED_SF_SFCLAY_PHYSICS,
 )
 from gpuwrf.contracts.state import State, Tendencies, _state_field_shapes
+from gpuwrf.config.paths import wrf_run_dir
 from gpuwrf.coupling.scan_adapters import (
     CU_SCAN_ADAPTERS,
     CU_STATELESS_SCAN_ADAPTERS,
@@ -322,8 +323,8 @@ def test_microphysics_operational_runs_and_mutates(mp: int) -> None:
 #    mp/cumulus/radiation disabled so the u/v change is attributable to the PBL.
 #    bl=2 (MYJ) is mandatorily paired with sf=2 (Janjic Eta); covered as a pair.
 # ============================================================================
-_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 3: 1, 5: 5, 7: 1, 8: 1, 11: 1, 12: 1, 99: 1}
-_PBL_TKE_SCHEMES = {2, 5, 8, 11}  # also carry a prognostic TKE (qke) update
+_PBL_SFCLAY_PAIR = {1: 1, 2: 2, 3: 1, 5: 5, 7: 1, 8: 1, 9: 1, 11: 1, 12: 1, 99: 1}
+_PBL_TKE_SCHEMES = {2, 5, 8, 9, 11, 12}  # also carry a prognostic TKE (qke) update
 
 
 @pytest.mark.parametrize("bl", OPERATIONAL_BL)
@@ -536,7 +537,7 @@ def test_sw_and_lw_are_selected_independently() -> None:
 # 6. LAND SURFACE -- the two operational LSMs run through the EXACT coupler steps
 #    the scan invokes and advance their land carry + write finite surface fluxes.
 # ============================================================================
-_NOAHMP_TABLE_DIR = Path("<USER_HOME>/src/wrf_pristine/WRF/run")
+_NOAHMP_TABLE_DIR = wrf_run_dir()
 _HAVE_MPTABLE = (_NOAHMP_TABLE_DIR / "MPTABLE.TBL").exists()
 _NOAHCLASSIC_SAVEPOINTS = ROOT / "proofs" / "v060" / "savepoints_noahclassic.json"
 

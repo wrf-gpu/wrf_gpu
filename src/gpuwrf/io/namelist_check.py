@@ -90,7 +90,7 @@ class UnsupportedSchemeError(ValueError):
     This is the public ``validate_namelist`` failure type. It covers every
     fail-closed outcome -- a recognized-but-unimplemented WRF scheme, an invalid
     WRF option, a mandatory-pairing violation, and an out-of-scope feature
-    (WRF-Chem, WRF-Fire, FDDA, stochastic physics, moving nests, urban BEP/BEM).
+    (WRF-Chem, WRF-Fire, FDDA, stochastic physics, moving nests).
     """
 
     def __init__(self, selections: list[UnsupportedSelection]) -> None:
@@ -163,26 +163,29 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="bl_pbl_physics",
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
         implemented=(
-            "0=disabled, 1=YSU, 2=MYJ, 3=GFS, 5=MYNN, 7=ACM2, 8=BouLac, 11=Shin-Hong, 12=GBM, 99=MRF "
+            "0=disabled, 1=YSU, 2=MYJ, 3=GFS, 5=MYNN, 7=ACM2, 8=BouLac, "
+            "9=CAM-UW, 11=Shin-Hong, 12=GBM, 99=MRF "
             "(all GPU-operational, scan-wired); 2=MYJ is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired with "
             "sf_sfclay_physics=2 Janjic Eta), savepoint-parity-proven; 3=GFS is the v0.17 "
             "jit/vmap-traceable port of phys/module_bl_gfs.F, savepoint-parity-proven; 99=MRF is the "
             "v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F, savepoint-parity-proven. "
+            "9=CAM-UW is the v0.22 traceable CAM5 UW diagnostic-TKE / implicit "
+            "vertical-diffusion endpoint with idealized/source-present proof, "
+            "not full CAM-stack savepoint parity. "
             "11=Shin-Hong is the v0.18 JAX/vmap scale-aware PBL port; "
             "12=GBM is the v0.18 JAX/vmap moist prognostic-TKE PBL port, fp64 "
             "parity-green vs the pristine-WRF savepoint oracle. "
             "4=QNSE, 10=TEMF, 16=EEPS, and 17=KEPS are accepted/reference-only "
             "v0.18 fp64 pristine-WRF oracle endpoints and fail-close in the "
-            "operational GPU scan. 9=CAM-UW is proven CAM-family architecture "
-            "work, not accepted into the standalone PBL matrix"
+            "operational GPU scan."
         ),
         action=(
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for the operational GPU scan; 2=MYJ MUST "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for the operational GPU scan; 2=MYJ MUST "
             "pair with sf_sfclay_physics=2. "
             "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, GFS<->1, "
-            "Shin-Hong<->1, GBM<->1, MYJ<->2, MRF<->1). "
+            "CAM-UW<->1, Shin-Hong<->1, GBM<->1, MYJ<->2, MRF<->1). "
             "Use bl_pbl_physics=4/10/16/17 only for single-column oracle/reference "
-            "comparisons; PBL9 CAM-UW belongs to a future CAM-family sprint."
+            "comparisons."
         ),
     ),
     "sf_sfclay_physics": SupportedOption(
@@ -277,17 +280,20 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         key="diff_opt",
         supported_values=frozenset({0, 1, 2}),
         implemented="0=off, 1=coordinate-surface (eta) horizontal diffusion, "
-        "2=physical-level constant-K diffusion path",
+        "2=physical-level constant-K / 3-D LES turbulence diffusion path",
         action="Use diff_opt=1/km_opt=4 for the real-data default 2-D Smagorinsky, "
-        "diff_opt=2/km_opt=1 for the constant-K path, or 0.",
+        "diff_opt=2/km_opt=1 for constant-K, diff_opt=2/km_opt=2/3/5 for "
+        "3-D TKE/Smagorinsky/SMS turbulence, or 0.",
     ),
     "km_opt": SupportedOption(
         key="km_opt",
-        supported_values=frozenset({0, 1, 4}),
-        implemented="0=off, 1=constant-K coefficient, 4=2-D Smagorinsky horizontal "
-        "eddy viscosity (vertical mixing from the PBL scheme)",
+        supported_values=frozenset({0, 1, 2, 3, 4, 5}),
+        implemented="0=off, 1=constant-K coefficient, 2=prognostic 3-D TKE, "
+        "3=3-D Smagorinsky, 4=2-D Smagorinsky horizontal eddy viscosity, "
+        "5=SMS-3DTKE scale-adaptive closure",
         action="Use km_opt=4 with diff_opt=1 for the real-data default 2-D "
-        "Smagorinsky, km_opt=1 with diff_opt=2 for constant-K, or 0.",
+        "Smagorinsky, km_opt=1/2/3/5 with diff_opt=2 for physical-level "
+        "diffusion, or 0.",
     ),
     "w_damping": SupportedOption(
         key="w_damping",
@@ -304,8 +310,14 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     "sf_urban_physics": SupportedOption(
         key="sf_urban_physics",
         supported_values=frozenset({0}),
-        implemented="0=disabled; urban canopy physics is not implemented",
-        action="Set sf_urban_physics=0 for this branch.",
+        implemented="0=disabled; BEP/BEM urban canopy physics is recognized but fail-closed",
+        action="Set sf_urban_physics=0; G3 BEP/BEM requires the urban state/oracle/JAX-kernel port before use.",
+    ),
+    "sf_lake_physics": SupportedOption(
+        key="sf_lake_physics",
+        supported_values=frozenset({0}),
+        implemented="0=disabled; WRF lake model is recognized but fail-closed",
+        action="Set sf_lake_physics=0; G3 lake requires the lake state/oracle/JAX-kernel port before use.",
     ),
 }
 
@@ -356,7 +368,7 @@ def validate_namelist(config: Any) -> None:
     This is the public entrypoint. It runs the scheme/dynamics support check
     (recognized-but-unimplemented, invalid WRF options, mandatory pairings) AND
     the out-of-scope feature-switch check (WRF-Chem, WRF-Fire, WRF-Hydro, FDDA,
-    stochastic physics, moving nests, urban BEP/BEM, coupled ocean, SST update).
+    stochastic physics, moving nests, coupled ocean, SST update).
 
     ``config`` may be a flat mapping, a nested WRF-style mapping
     (``{"physics": {"mp_physics": [8, 8]}}``), an object/dataclass with matching

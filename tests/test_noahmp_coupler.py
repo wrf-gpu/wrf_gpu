@@ -22,14 +22,13 @@ import pytest
 jax.config.update("jax_enable_x64", True)
 
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
+from gpuwrf.config.paths import wrf_run_dir
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
 from gpuwrf.physics.noahmp_coupler import RVOVRD, assemble_noahmp_forcing, noahmp_surface_adapter
 from gpuwrf.physics.surface_constants import P0_PA, R_D_OVER_CP
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
-from pathlib import Path
-
-TABLE_DIR = Path("<USER_HOME>/src/wrf_pristine/WRF/run")
+TABLE_DIR = wrf_run_dir()
 HAVE_TABLES = (TABLE_DIR / "MPTABLE.TBL").exists()
 
 

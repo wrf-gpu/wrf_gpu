@@ -24,7 +24,7 @@ time step (static at trace time), so it is a Python-level static argument, not a
 data-dependent branch -- the kernel stays fully traceable while reproducing the
 WRF substep cadence bit-for-bit.
 
-Cited to ``<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_slab.F`` (SLAB1D,
+Cited to ``/home/user/src/wrf_pristine/WRF/phys/module_sf_slab.F`` (SLAB1D,
 lines 194-515) and the WRF call site
 ``phys/module_surface_driver.F:2659`` (dtbl, rcp, dtmin, ifsnow, radiation).
 """

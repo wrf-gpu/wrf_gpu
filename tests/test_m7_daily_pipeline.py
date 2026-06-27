@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +15,8 @@ from gpuwrf.integration.daily_pipeline import (
     execute_daily_pipeline,
     hour_steps,
     resolve_run_dir,
+    _run_forecast_sequence,
+    _daily_async_output_from_config,
 )
 
 
@@ -101,6 +104,65 @@ def test_resolve_run_dir_accepts_existing_path(tmp_path: Path) -> None:
 def test_hour_steps_matches_ten_second_operational_dt() -> None:
     assert hour_steps(1, 10.0) == 360
     assert hour_steps(24, 10.0) == 8640
+
+
+def test_daily_async_output_safe_default_for_replay_land_refresh(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.delenv("GPUWRF_DAILY_ASYNC_OUTPUT", raising=False)
+    case = _synthetic_case(tmp_path)
+    config = DailyPipelineConfig(refresh_land_state_hourly=True)
+    assert _daily_async_output_from_config(config, case) is True
+
+    replay_case = replace(
+        case,
+        metadata={
+            **case.metadata,
+            "source": "gpuwrf.integration.d02_replay.build_replay_case",
+        },
+    )
+    assert _daily_async_output_from_config(config, replay_case) is False
+
+    monkeypatch.setenv("GPUWRF_DAILY_ASYNC_OUTPUT", "1")
+    assert _daily_async_output_from_config(config, replay_case) is True
+
+    disabled = DailyPipelineConfig(refresh_land_state_hourly=True, async_output=False)
+    assert _daily_async_output_from_config(disabled, replay_case) is False
+
+
+def test_daily_async_output_byte_identical_to_sync(tmp_path: Path) -> None:
+    def run(tag: str, *, async_output: bool):
+        run_dir = tmp_path / f"run_{tag}"
+        run_dir.mkdir()
+
+        def forecast_fn(state: SimpleNamespace, namelist, hours: float) -> SimpleNamespace:
+            del namelist
+            state.t2 = state.t2 + np.float32(0.25 * float(hours))
+            state.theta = state.theta + np.float32(0.25 * float(hours))
+            return state
+
+        config = DailyPipelineConfig(
+            run_id=f"daily-async-{tag}",
+            hours=2,
+            output_dir=tmp_path / f"out_{tag}",
+            proof_dir=tmp_path / f"proof_{tag}",
+            score=False,
+            refresh_land_state_hourly=False,
+            async_output=async_output,
+        )
+        return _run_forecast_sequence(
+            config,
+            output_dir=config.output_dir,
+            forecast_fn=forecast_fn,
+            case_builder=lambda cfg: (_synthetic_case(run_dir), run_dir),
+        )
+
+    sync = run("sync", async_output=False)
+    async_result = run("async", async_output=True)
+
+    assert [p.name for p in sync.output_files] == [p.name for p in async_result.output_files]
+    for sync_path, async_path in zip(sync.output_files, async_result.output_files):
+        assert sync_path.read_bytes() == async_path.read_bytes()
 
 
 def test_execute_pipeline_writes_hourly_wrfouts_and_inventory(tmp_path: Path) -> None:

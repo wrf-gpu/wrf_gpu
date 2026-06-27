@@ -1,7 +1,7 @@
 """Noah-MP semi-implicit snow/soil temperature (Sprint S2).
 
 WRF-faithful port of the pure-thermal column step from pristine
-``<USER_HOME>/src/wrf_pristine/WRF/phys/noahmp/src/module_sf_noahmplsm.F`` for the
+``/home/user/src/wrf_pristine/WRF/phys/noahmp/src/module_sf_noahmplsm.F`` for the
 scoped configuration (``opt_stc=1`` semi-implicit, ``opt_tbot=2`` Noah deep-soil
 lower BC, ``opt_frz=1`` NY06 supercooled liquid). NSOIL=4, NSNOW=3, fp64.
 

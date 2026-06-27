@@ -17,6 +17,12 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from gpuwrf.config.paths import wrf_root
+
 SW_FIXTURE_ID = "analytic-rrtmg-sw-column-v1"
 LW_FIXTURE_ID = "analytic-rrtmg-lw-column-v1"
 SW_SAMPLE = ROOT / "fixtures" / "samples" / f"{SW_FIXTURE_ID}.npz"
@@ -32,8 +38,10 @@ SCRATCH = ROOT / "data" / "scratch"
 RRTMG_RUNTIME = SCRATCH / "rrtmg_runtime"
 BUILD_SCRIPT = ROOT / "scripts" / "wrf_rrtmg_harness_build.sh"
 HARNESS = SCRATCH / "wrf_rrtmg_harness"
-WRF_SW_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_sw.F.o")
-WRF_LW_OBJECT = Path("<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF/_build_gen2_dmpar/CMakeFiles/WRF_Core.dir/phys/module_ra_rrtmg_lw.F.o")
+WRF_ROOT = wrf_root()
+WRF_BUILD = Path(os.environ.get("WRF_BUILD", str(WRF_ROOT / "_build_gen2_dmpar"))).expanduser()
+WRF_SW_OBJECT = WRF_BUILD / "CMakeFiles" / "WRF_Core.dir" / "phys" / "module_ra_rrtmg_sw.F.o"
+WRF_LW_OBJECT = WRF_BUILD / "CMakeFiles" / "WRF_Core.dir" / "phys" / "module_ra_rrtmg_lw.F.o"
 
 INPUT_FIELDS = ("T", "p", "qv", "qc", "qi", "qs", "qg", "cloud_fraction", "dz", "rho")
 ORACLE_MARKER = b"#RRTMG_ORACLE_V1_BINARY\n"

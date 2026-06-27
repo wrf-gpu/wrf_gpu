@@ -1,0 +1,116 @@
+{
+  "schema": "OperationalRelaxedBands",
+  "schema_version": 1,
+  "contract_ref": ".agent/decisions/ADR-OPERATIONAL-RELAXED-TIER.md#3.4",
+  "status": "proposed_rev_b_from_adr",
+  "lead_hours": [24, 72, 120],
+  "surface_cpu_wrf_rmse_bands": {
+    "T2": {
+      "units": "K",
+      "lead_hours": {
+        "24": 3.0,
+        "72": 3.0,
+        "120": 3.0
+      },
+      "provenance": "Existing M7 relaxed surface validation band used by scripts/m7_l2_d02_replay.py."
+    },
+    "U10": {
+      "units": "m s-1",
+      "lead_hours": {
+        "24": 7.5,
+        "72": 7.5,
+        "120": 7.5
+      },
+      "provenance": "Existing M7 relaxed surface validation band used by scripts/m7_l2_d02_replay.py."
+    },
+    "V10": {
+      "units": "m s-1",
+      "lead_hours": {
+        "24": 7.5,
+        "72": 7.5,
+        "120": 7.5
+      },
+      "provenance": "Existing M7 relaxed surface validation band used by scripts/m7_l2_d02_replay.py."
+    }
+  },
+  "tier_o_surface_delta_bands": {
+    "T2": {
+      "delta_rmse_max": {
+        "24": 0.5,
+        "72": 1.0,
+        "120": 1.0
+      },
+      "pearson_min_vs_cpu_wrf": {
+        "24": 0.98,
+        "72": 0.95,
+        "120": 0.93
+      },
+      "nrmse_max_vs_cpu_wrf": {
+        "24": 0.2,
+        "72": null,
+        "120": null
+      }
+    },
+    "U10": {
+      "delta_rmse_max": {
+        "24": 0.7,
+        "72": 1.2,
+        "120": 1.8
+      },
+      "rmse_ratio_to_strict_max": 1.15,
+      "required_divergence_regime": "BOUNDED"
+    },
+    "V10": {
+      "delta_rmse_max": {
+        "24": 0.7,
+        "72": 1.2,
+        "120": 1.8
+      },
+      "rmse_ratio_to_strict_max": 1.15,
+      "required_divergence_regime": "BOUNDED"
+    }
+  },
+  "divergence_growth": {
+    "required_regime": "BOUNDED",
+    "bounded_growth_policy": "reject",
+    "envelope_factor": 5.0,
+    "late_slope_tol": 0.25,
+    "fields": ["T2", "U10", "V10"]
+  },
+  "hard_guards": {
+    "finite": {
+      "nan_max": 0,
+      "inf_max": 0
+    },
+    "conservation": {
+      "dry_mass_relative_residual_margin_vs_strict": 1.0e-6,
+      "water_relative_residual_margin_vs_strict": 1.0e-5,
+      "moist_static_energy_relative_residual_margin_vs_strict": 1.0e-5
+    },
+    "restart_equivalence": {
+      "max_abs": 0.0
+    },
+    "transfer_audit": {
+      "new_in_loop_transfers": 0
+    },
+    "clamp_limiter_audit": {
+      "allow_new_term_keys": false,
+      "allow_per_term_count_increase": false,
+      "allow_per_term_sum_magnitude_increase": false,
+      "allow_per_term_max_magnitude_increase": false
+    }
+  },
+  "precip_fss": {
+    "threshold_mm": [1.0, 5.0, 10.0],
+    "window_size_cells": {
+      "3km": 9,
+      "1km": 25,
+      "default": 9
+    },
+    "minimum": {
+      "24": [0.5, 0.4, 0.35],
+      "72": [0.5, 0.4, 0.35],
+      "120": [0.45, 0.35, 0.3]
+    }
+  }
+}

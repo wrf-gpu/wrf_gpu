@@ -23,9 +23,11 @@ Design contract (S0 ``V0.6.0-S0-PLAN.md``):
   stateless State->State, scan-wired ``CU_SCAN_ADAPTERS[3]``), savepoint-gated
   against unmodified ``module_cu_gf_*.F``
   (proofs/v060/gf_gpubatch_savepoint_parity.json). New Tiedtke (cu=16)
-  shares the Tiedtke kernel but is NOT separately savepoint-gated by a distinct
-  WRF source path, so it is flagged ``gpu_runnable=False`` and fail-closed in the
-  operational scan. The integrated GPU forecast gate excludes any combo
+  has module-specific fp64 WRF oracle savepoints under
+  ``proofs/v013/savepoints/cumulus/ntiedtke_case_*.json`` from
+  ``phys/module_cu_ntiedtke.F``, but no faithful traceable JAX kernel or scan
+  adapter is wired yet, so it is flagged ``gpu_runnable=False`` and fail-closed
+  in the operational scan. The integrated GPU forecast gate excludes any combo
   containing a non-GPU-runnable scheme.
 * ``cugd_*`` correction (S0 manager carry-note): the inert ``cugd_*`` carry for
   Grell-Freitas is NOT threaded as State; GF and Tiedtke are routed through the
@@ -79,7 +81,7 @@ DEFAULT_SF_SURFACE_PHYSICS = 4  # Noah-MP
 # writes HFX/QFX/BR/PSIM/PSIH/U10/V10/ZNT and pbl_driver reads those SAME fields
 # (dyn_em/module_first_rk_step_part1.F:594 -> :1113).
 #
-# In THIS reimplementation the YSU(1)/ACM2(7)/BouLac(8)/Shin-Hong(11)/GBM(12)/MRF(99) PBL scan adapters
+# In THIS reimplementation the YSU(1)/ACM2(7)/BouLac(8)/CAM-UW(9)/Shin-Hong(11)/GBM(12)/MRF(99) PBL scan adapters
 # (coupling.scan_adapters) re-derive the per-cell surface forcing they consume via
 # the REVISED-MM5 surface layer (``_pbl_surface_forcing`` ->
 # ``surface_layer.surface_layer_with_diagnostics``) because the frozen State carries
@@ -101,7 +103,7 @@ DEFAULT_SF_SURFACE_PHYSICS = 4  # Noah-MP
 # WRF's isfc==1 requirement for YSU/MRF (sf in {1,91}); we further restrict to {1}
 # because only the revised-MM5 forcing path is wired into these adapters (the old-MM5
 # sf=91 forcing is NOT separately threaded into the PBL re-derivation).
-_PBL_REQUIRES_REVISED_MM5_SFCLAY: frozenset[int] = frozenset({1, 7, 8, 11, 12, 99})
+_PBL_REQUIRES_REVISED_MM5_SFCLAY: frozenset[int] = frozenset({1, 7, 8, 9, 11, 12, 99})
 _REVISED_MM5_SFCLAY_OPTION = 1
 
 
@@ -212,6 +214,17 @@ _PBL_ENTRIES: dict[int, SchemeEntry] = {
                    "column_state", True,
                    reads_state=("u", "v", "theta", "qv", "qc", "qke"),
                    writes_state=("u", "v", "theta", "qv", "qc", "qke"), carry_members=("qke",)),
+    # CAM-UW(9): v0.22 CAM5 UW diagnostic-TKE / implicit vertical-diffusion
+    # endpoint, scan-wired as a State->State adapter. It consumes revised-MM5
+    # surface forcing and advances qc/qi plus qke diagnostics. Full CAM-stack
+    # savepoint parity is not claimed until the WRF oracle fixture lands.
+    9: SchemeEntry("pbl", 9, PBL_SCHEMES[9].name, "gpuwrf.coupling.scan_adapters", "camuw_pbl_adapter",
+                   "state_adapter", True,
+                   reads_state=("u", "v", "theta", "qv", "qc", "qi", "qke"),
+                   writes_state=("u", "v", "theta", "qv", "qc", "qi", "qke"),
+                   carry_members=("qke",),
+                   notes="Consumes revised-MM5 surface forcing (sf_sfclay_physics=1); "
+                   "idealized/source-present proof only, not full CAM savepoint parity."),
     # Shin-Hong(11): v0.18 JAX/vmap port of the scale-aware YSU-family PBL,
     # scan-wired as a State->State adapter. It consumes revised-MM5 surface
     # forcing and grid dx/dy for the scale-aware partition functions.
@@ -331,9 +344,11 @@ _CU_ENTRIES: dict[int, SchemeEntry] = {
                     reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
                     writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
                     tendency_members=CUMULUS_TENDENCY_MEMBERS[16], accumulators=("rainc_acc",),
-                    notes="New Tiedtke option spec; shares the Tiedtke kernel but is NOT separately "
-                    "savepoint-gated by a distinct WRF source path -- accepted/fail-closed in the "
-                    "operational GPU scan, NOT parity-proven for cu=16 specifically."),
+                    notes="New Tiedtke option spec; module-specific fp64 WRF oracle "
+                    "savepoints exist under proofs/v013/savepoints/cumulus/ntiedtke_case_*.json "
+                    "from phys/module_cu_ntiedtke.F, but no faithful traceable JAX "
+                    "kernel or scan adapter is wired -- accepted/fail-closed in the "
+                    "operational GPU scan."),
     93: SchemeEntry("cumulus", 93, CU_SCHEMES[93].name, "gpuwrf.physics.cumulus_grell_devenyi",
                     "step_grell_devenyi_column", "column_state", False,
                     reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs"),
@@ -592,7 +607,7 @@ def resolve_physics_suite(config: Any) -> PhysicsSuite:
     ):
         raise UnsupportedSchemeSelection(
             f"surface-layer/PBL pairing violation: bl_pbl_physics={pbl_opt} "
-            f"(YSU/ACM2/BouLac/Shin-Hong/GBM/MRF) re-derives its surface-layer forcing via the "
+            f"(YSU/ACM2/BouLac/CAM-UW/Shin-Hong/GBM/MRF) re-derives its surface-layer forcing via the "
             f"revised-MM5 surface layer, so it is faithful ONLY with "
             f"sf_sfclay_physics=1 (revised-MM5); selected sf_sfclay_physics="
             f"{sfclay_opt}. Running this pairing would SILENTLY substitute revised-MM5 "

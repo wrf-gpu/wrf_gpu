@@ -11,6 +11,7 @@ from gpuwrf.io.gen2_accessor import Gen2GridSpec, Gen2Run, LazyNetCDFArray
 from gpuwrf.io.validation import domain_mask, lead_time_slice, load_gen2_var, regrid, unit_convert
 from gpuwrf.io.wrfout_writer import (
     DOWNSTREAM_CRITICAL_VARIABLES,
+    FULL_WRFOUT_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
     OPERATIONAL_WRFOUT_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
@@ -33,6 +34,7 @@ __all__ = [
     "AuxhistStreamConfig",
     "Gen2GridSpec",
     "Gen2Run",
+    "FULL_WRFOUT_VARIABLES",
     "LazyNetCDFArray",
     "MINIMUM_WRFOUT_VARIABLES",
     "OPERATIONAL_WRFOUT_VARIABLES",

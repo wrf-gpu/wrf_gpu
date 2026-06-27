@@ -48,6 +48,7 @@ from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_par
 from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.gwdo_static import load_gwdo_statics
 from gpuwrf.io.wrfout_writer import (
+    FULL_WRFOUT_VARIABLES,
     MINIMAL_TRAINING_SET,
     prepare_wrfout_payload,
     write_wrfout_netcdf,
@@ -669,6 +670,16 @@ def _resolve_training_output_subset() -> tuple[str, ...] | None:
     return None
 
 
+def _resolve_full_wrfout_variables() -> bool:
+    """Resolve the OPT-IN 375-variable WRF history stream for nested output."""
+
+    for env_name in ("GPUWRF_FULL_WRFOUT_VARIABLES", "GPUWRF_FULL_WRFOUT"):
+        raw = os.environ.get(env_name, "").strip().lower()
+        if raw in {"1", "true", "yes", "on"}:
+            return True
+    return False
+
+
 class _PerDomainWrfoutWriter:
     """Output callback: write one wrfout per domain at history cadence.
 
@@ -710,6 +721,7 @@ class _PerDomainWrfoutWriter:
         self._async_writer = async_writer
         # Opt-in compact training output (#122): None => full byte-identical output.
         self._variable_subset = _resolve_training_output_subset()
+        self._full_variable_set = _resolve_full_wrfout_variables()
         self.written: dict[str, list[str]] = {name: [] for name in bundles}
         # Lazy imports kept off the module top-level so importing this module stays
         # light for non-GPU callers (mirrors daily_pipeline).
@@ -778,6 +790,7 @@ class _PerDomainWrfoutWriter:
                 lead_hours=float(lead_hours),
                 run_start=self.run_start,
                 diagnostics=diagnostics,
+                full_variable_set=self._full_variable_set,
             )
             if self._variable_subset is None:
                 self._async_writer.submit(prepared)
@@ -804,6 +817,7 @@ class _PerDomainWrfoutWriter:
                 variable_subset=self._variable_subset,
                 include_mandatory_coords=self._variable_subset is not None,
                 compress=self._variable_subset is not None,
+                full_variable_set=self._full_variable_set,
             )
         self.written[name].append(str(path))
         summary = self._finite_summary(state)
@@ -813,6 +827,8 @@ class _PerDomainWrfoutWriter:
             "own_step": int(own_step),
             "all_finite": bool(summary["all_finite"]),
             "wrfout": str(path),
+            "prepared_full_variable_set": bool(self._full_variable_set),
+            "full_variable_count": int(len(FULL_WRFOUT_VARIABLES)) if self._full_variable_set else None,
         }
 
 

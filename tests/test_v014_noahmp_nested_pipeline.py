@@ -273,6 +273,7 @@ def test_nested_async_output_byte_identical_to_sync(tmp_path):
     p_sync = Path(sync_result["wrfout"])
     p_async = Path(async_result["wrfout"])
     assert p_sync.exists() and p_async.exists()
+    assert p_sync.read_bytes() == p_async.read_bytes()
 
     with Dataset(p_sync) as ds_a, Dataset(p_async) as ds_b:
         assert sorted(ds_a.variables) == sorted(ds_b.variables)

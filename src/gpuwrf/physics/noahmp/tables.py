@@ -46,6 +46,8 @@ import jax.numpy as jnp
 import numpy as np
 from jax import config
 
+from gpuwrf.config.paths import wrf_run_dir
+
 configure_jax_x64()
 
 # WRF fixed dimensions (module_sf_noahmplsm.F).
@@ -328,7 +330,7 @@ def _color_band(block: dict, vis_key: str, nir_key: str) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def load_noahmp_parameters(
-    table_dir,
+    table_dir=None,
     *,
     scope_options: dict | None = None,
     dataset: str = DEFAULT_DATASET,
@@ -339,7 +341,7 @@ def load_noahmp_parameters(
     ----------
     table_dir
         Directory holding ``MPTABLE.TBL`` / ``SOILPARM.TBL`` / ``GENPARM.TBL``
-        (e.g. ``<USER_HOME>/src/wrf_pristine/WRF/run``).
+        (defaults to ``GPUWRF_WRF_ROOT/run`` via ``gpuwrf.config.paths``).
     scope_options
         Frozen iopt map recorded into the restart (ADR §5). Defaults to the
         Canary active set; a non-default map raises if it selects a CUT option
@@ -348,7 +350,7 @@ def load_noahmp_parameters(
         WRF land-use dataset identifier (wrfinput ``MMINLU``); selects the
         MPTABLE namelist block. Default ``MODIFIED_IGBP_MODIS_NOAH``.
     """
-    table_dir = Path(table_dir)
+    table_dir = wrf_run_dir() if table_dir is None else Path(table_dir)
     scope = dict(DEFAULT_SCOPE_OPTIONS if scope_options is None else scope_options)
     _check_scope(scope)
 

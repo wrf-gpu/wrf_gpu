@@ -194,8 +194,8 @@ def test_v060_acm2_savepoint_parity_report() -> None:
         "verdict": "PASS" if all(case["pass"] for case in cases) else "FAIL",
         "oracle": {
             "type": "single-column Fortran driver linked against unmodified WRF module_bl_acm.F",
-            "wrf_sources": ["<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_acm.F"],
-            "requested_source_path_absent": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_acm2.F",
+            "wrf_sources": ["/home/user/src/wrf_pristine/WRF/phys/module_bl_acm.F"],
+            "requested_source_path_absent": "/home/user/src/wrf_pristine/WRF/phys/module_bl_acm2.F",
             "generation_command": "taskset -c 0-3 bash proofs/v060/oracle/build_and_run.sh",
             "full_wrf_exe": False,
             "source_checksums_sha256": source_checksums,

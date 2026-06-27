@@ -2,13 +2,22 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WRF_ROOT="<DATA_ROOT>/canairy_meteo/artifacts/wrf_gpu_src/WRF"
+DEFAULT_WRF_ROOT="$(
+  PYTHONPATH="${ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}" python - <<'PY'
+from gpuwrf.config.paths import wrf_root
+print(wrf_root())
+PY
+)"
+WRF_ROOT="${WRF_ROOT:-${GPUWRF_WRF_ROOT:-${DEFAULT_WRF_ROOT}}}"
 SCRATCH="${ROOT}/data/scratch"
 OUT="${SCRATCH}/wrf_thompson_harness"
 OBJ="${SCRATCH}/wrf_thompson_harness.o"
-THOMPSON_SRC="${ROOT}/../wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"
+THOMPSON_SRC="${THOMPSON_SRC:-${WRF_ROOT}/phys/module_mp_thompson.F.pre}"
 if [[ ! -f "${THOMPSON_SRC}" ]]; then
-  THOMPSON_SRC="<USER_HOME>/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"
+  THOMPSON_SRC="${WRF_ROOT}/phys/module_mp_thompson.F"
+fi
+if [[ ! -f "${THOMPSON_SRC}" ]]; then
+  THOMPSON_SRC="${ROOT}/../wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"
 fi
 PATCHED_SRC="${SCRATCH}/module_mp_thompson_nosed.F90"
 PATCHED_OBJ="${SCRATCH}/module_mp_thompson_nosed.o"
@@ -17,9 +26,10 @@ LOG="${SCRATCH}/wrf_thompson_harness_build.log"
 mkdir -p "${SCRATCH}"
 : > "${LOG}"
 
-if [[ -f <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh ]]; then
+WRF_ENV="${WRF_ENV:-${GPUWRF_WRF_ENV:-${WRF_ROOT%/WRF}/env_wrf_gpu.sh}}"
+if [[ -f "${WRF_ENV}" ]]; then
   # shellcheck disable=SC1091
-  source <USER_HOME>/src/canairy_meteo/Gen2/artifacts/wrf_gpu_src/env_wrf_gpu.sh >>"${LOG}" 2>&1 || true
+  source "${WRF_ENV}" >>"${LOG}" 2>&1 || true
 fi
 
 if command -v gfortran >/dev/null 2>&1; then

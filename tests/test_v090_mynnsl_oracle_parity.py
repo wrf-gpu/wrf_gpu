@@ -21,7 +21,7 @@ import pytest
 
 PROOFS = Path(__file__).resolve().parents[1] / "proofs" / "v090"
 ORACLE_SHA = "86395534a6c9bfc79dcad50094bce290eff05756777a95794b2673795f9761c3"
-GF = "<USER_HOME>/miniconda3/envs/wrfbuild/bin/gfortran"
+GF = "/home/user/miniconda3/envs/wrfbuild/bin/gfortran"
 
 
 def _sha256(path: Path) -> str:

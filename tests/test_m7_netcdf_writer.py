@@ -10,10 +10,13 @@ from netCDF4 import Dataset, chartostring
 
 from gpuwrf.io.wrfout_writer import (
     DERIVED_DIAGNOSTIC_VARIABLES,
+    FULL_WRFOUT_VARIABLES,
     GRID_METRIC_EXTRA_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
     RADIATION_FLUX_DIAGNOSTIC_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
+    prepare_wrfout_payload,
+    write_prepared_wrfout,
     write_wrfout_netcdf,
 )
 
@@ -22,6 +25,11 @@ REFERENCE = Path(
     "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
     "20260525_18z_l3_24h_20260526T221207Z/"
     "wrfout_d02_2026-05-25_18:00:00"
+)
+FULL_REFERENCE = Path(
+    "<DATA_ROOT>/canairy_meteo/runs/wrf_l3/"
+    "20260428_18z_l3_24h_20260525T221139Z/"
+    "wrfout_d02_2026-04-28_19:00:00"
 )
 
 
@@ -169,6 +177,66 @@ def test_variable_specs_cover_minimum_set():
     # have a spec. P0-5a ADDS operational fields, so the spec dict is a SUPERSET
     # of the minimum set rather than exactly equal.
     assert set(MINIMUM_WRFOUT_VARIABLES) - {"Times"} <= set(WRFOUT_VARIABLE_SPECS)
+
+
+@pytest.mark.skipif(not FULL_REFERENCE.is_file(), reason="Gen2 full-reference wrfout unavailable")
+def test_full_wrfout_mode_matches_reference_variable_list_and_schema(tmp_path: Path):
+    state, grid, namelist = synthetic_case()
+    path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
+    write_wrfout_netcdf(
+        state,
+        grid,
+        namelist,
+        path,
+        valid_time=datetime(2026, 5, 25, 21),
+        lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18),
+        full_variable_set=True,
+    )
+
+    with Dataset(FULL_REFERENCE) as reference, Dataset(path) as candidate:
+        ref_names = list(reference.variables)
+        assert len(FULL_WRFOUT_VARIABLES) == 375
+        assert list(FULL_WRFOUT_VARIABLES) == ref_names
+        assert list(candidate.variables) == ref_names
+        for name in ref_names:
+            if name == "Times":
+                continue
+            ref_var = reference.variables[name]
+            out_var = candidate.variables[name]
+            assert tuple(out_var.dimensions) == tuple(ref_var.dimensions), name
+            assert np.dtype(out_var.dtype) == np.dtype(ref_var.dtype), name
+            assert np.isfinite(np.asarray(out_var[:])).all(), name
+
+
+def test_full_wrfout_mode_is_opt_in(tmp_path: Path):
+    path, _ = write_small(tmp_path)
+    with Dataset(path) as dataset:
+        assert "VAR_SSO" not in dataset.variables
+        assert list(dataset.variables) != list(FULL_WRFOUT_VARIABLES)
+
+
+def test_full_prepared_payload_can_write_auxhist_full_subset(tmp_path: Path):
+    state, grid, namelist = synthetic_case()
+    prepared = prepare_wrfout_payload(
+        state,
+        grid,
+        namelist,
+        tmp_path / "wrfout_d02_2026-05-25_21:00:00",
+        valid_time=datetime(2026, 5, 25, 21),
+        lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18),
+        full_variable_set=True,
+    )
+    aux_path = tmp_path / "auxhist1_d02_2026-05-25_21:00:00"
+    write_prepared_wrfout(
+        prepared,
+        variable_subset=FULL_WRFOUT_VARIABLES,
+        target_override=aux_path,
+    )
+    with Dataset(aux_path) as dataset:
+        assert list(dataset.variables) == list(FULL_WRFOUT_VARIABLES)
+        assert len(dataset.variables) == 375
 
 
 def _full_operational_case():

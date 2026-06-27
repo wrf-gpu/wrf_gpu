@@ -102,6 +102,14 @@ from gpuwrf.coupling.scan_adapters import (
     kf_adapter,
     tiedtke_adapter,
 )
+from gpuwrf.assimilation.data_assimilation import (
+    DigitalFilterConfig,
+    add_dry_physics_tendencies,
+    apply_nudging_rates,
+    data_assimilation_dry_tendencies,
+    data_assimilation_rates,
+    digital_filter_initialize,
+)
 from gpuwrf.physics.myj_adapters import (
     janjic_sfclay_adapter,
     myj_pbl_adapter,
@@ -111,11 +119,17 @@ from gpuwrf.dynamics.explicit_diffusion import (
     C_S_DEFAULT,
     constant_k_diffusion_tendency,
     conservative_constant_k_diffusion_tendency,
+    deformation_components_3d,
+    dry_brunt_vaisala_squared,
     horizontal_deformation_2d,
     horizontal_diffusion_coord_momentum_tendency,
     horizontal_diffusion_coord_scalar_tendency,
     sixth_order_diffusion_tendency,
     smag2d_horizontal_km,
+    smag3d_km,
+    tke3d_km,
+    tke_rhs_tendency,
+    vertical_diffusion_coord_scalar_tendency,
     wrf_deformation_momentum_tendency,
 )
 from gpuwrf.dynamics.flux_advection import (
@@ -463,8 +477,17 @@ class OperationalNamelist:
     khdif: float = 0.0
     kvdif: float = 0.0
     # Smagorinsky coefficient c_s (Registry default 0.25), used by the
-    # diff_opt=1/km_opt=4 2-D Smagorinsky horizontal-diffusion path (WRF smag2d_km).
+    # diff_opt=1/km_opt=4 2-D Smagorinsky horizontal-diffusion path (WRF smag2d_km)
+    # and diff_opt=2/km_opt=3/5 3-D Smagorinsky/SMS paths.
     c_s: float = C_S_DEFAULT
+    # WRF TKE/LES diffusion defaults (Registry.EM_COMMON c_k/mix_isotropic/
+    # mix_upper_bound/tke_upper_bound/tke_mix2_off).  These are static compile
+    # controls; the timestep loop consumes only device arrays and scalar literals.
+    c_k: float = 0.15
+    mix_isotropic: int = 0
+    mix_upper_bound: float = 0.1
+    tke_upper_bound: float = 1000.0
+    tke_mix2_off: bool = False
     diff_6th_opt: int = 0
     diff_6th_factor: float = 0.12
     # Constant eddy viscosity (Straka ν=75) on u, v, theta when > 0.
@@ -564,6 +587,12 @@ class OperationalNamelist:
     sf_sfclay_physics: int = 5
     cu_physics: int = 0
     sf_surface_physics: object = None
+    # G3 city/lake switches. Defaults are WRF's disabled path. Active BEP/BEM
+    # urban canopy and lake-model selections are recognized but fail-closed in
+    # _resolve_operational_suite until their state carry + WRF oracle + JAX
+    # kernels are implemented.
+    sf_urban_physics: int = 0
+    sf_lake_physics: int = 0
     # --- radiation-family selection (static aux) ----------------------------
     # ``ra_sw_physics`` selects the SHORTWAVE radiation scheme on the operational
     # scan: 0 = disabled, 4 = RRTMG SW (default, byte-unchanged), 1 = Dudhia
@@ -617,6 +646,12 @@ class OperationalNamelist:
     # a no-op when ``gwd_opt != 1`` OR ``gwdo_statics`` is None.
     gwd_opt: int = 0
     gwdo_statics: object = None
+    # --- v0.22 G1 data assimilation ----------------------------------------
+    # Optional resident analysis/obs/spectral nudging bundle.  The arrays ride
+    # as pytree CHILDREN, so FDDA targets can live on device and be consumed
+    # inside the timestep scan without host callbacks.  ``None`` is the default
+    # and leaves all historical programs byte-unchanged.
+    data_assimilation: object = None
     # --- v0.13 skill-closure #1: WRF-faithful radiation *_tendf (RTHRATEN) cadence ---
     # ``rad_rk_tendf`` (static aux) selects how the held radiative heating rate
     # RTHRATEN (K/s) is delivered to theta: 0 = the v0.9 SHIPPED single Euler step
@@ -678,6 +713,11 @@ class OperationalNamelist:
         khdif: float = 0.0,
         kvdif: float = 0.0,
         c_s: float = C_S_DEFAULT,
+        c_k: float = 0.15,
+        mix_isotropic: int = 0,
+        mix_upper_bound: float = 0.1,
+        tke_upper_bound: float = 1000.0,
+        tke_mix2_off: bool = False,
         diff_6th_opt: int = 0,
         diff_6th_factor: float = 0.12,
         const_nu_m2_s: float = 0.0,
@@ -693,6 +733,7 @@ class OperationalNamelist:
         topo_shadow_length_m: float = 25000.0,
         gwd_opt: int = 0,
         gwdo_statics: object = None,
+        data_assimilation: object = None,
         rad_rk_tendf: int = 0,
         acoustic_precision_mode: str = DEFAULT_ACOUSTIC_PRECISION_MODE,
         hypsometric_opt: int = 1,
@@ -734,6 +775,11 @@ class OperationalNamelist:
             khdif=khdif,
             kvdif=kvdif,
             c_s=c_s,
+            c_k=c_k,
+            mix_isotropic=mix_isotropic,
+            mix_upper_bound=mix_upper_bound,
+            tke_upper_bound=tke_upper_bound,
+            tke_mix2_off=tke_mix2_off,
             diff_6th_opt=diff_6th_opt,
             diff_6th_factor=diff_6th_factor,
             const_nu_m2_s=const_nu_m2_s,
@@ -749,6 +795,7 @@ class OperationalNamelist:
             topo_shadow_length_m=topo_shadow_length_m,
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
+            data_assimilation=data_assimilation,
             rad_rk_tendf=rad_rk_tendf,
             acoustic_precision_mode=acoustic_precision_mode,
             hypsometric_opt=hypsometric_opt,
@@ -765,7 +812,13 @@ class OperationalNamelist:
         # not tracers. They are wrapped in an identity-hashable holder so the jit
         # cache keys on per-run object identity (one run -> one compile). use_noahmp
         # + clock scalars are also static aux.
-        children = (self.tendencies, self.metrics, self.radiation_static, self.gwdo_statics)
+        children = (
+            self.tendencies,
+            self.metrics,
+            self.radiation_static,
+            self.gwdo_statics,
+            self.data_assimilation,
+        )
         aux = (
             self.grid,
             float(self.dt_s),
@@ -788,6 +841,11 @@ class OperationalNamelist:
             float(self.khdif),
             float(self.kvdif),
             float(self.c_s),
+            float(self.c_k),
+            int(self.mix_isotropic),
+            float(self.mix_upper_bound),
+            float(self.tke_upper_bound),
+            bool(self.tke_mix2_off),
             int(self.diff_6th_opt),
             float(self.diff_6th_factor),
             float(self.const_nu_m2_s),
@@ -823,6 +881,8 @@ class OperationalNamelist:
             int(self.sf_sfclay_physics),
             int(self.cu_physics),
             self.sf_surface_physics,
+            int(self.sf_urban_physics),
+            int(self.sf_lake_physics),
             _StaticHolder(self.noahclassic_static),
             _StaticHolder(self.noahclassic_land),
             _StaticHolder(self.noahclassic_rad),
@@ -846,7 +906,7 @@ class OperationalNamelist:
 
     @classmethod
     def tree_unflatten(cls, aux, children):
-        tendencies, metrics, radiation_static, gwdo_statics = children
+        tendencies, metrics, radiation_static, gwdo_statics, data_assimilation = children
         (
             grid,
             dt_s,
@@ -869,6 +929,11 @@ class OperationalNamelist:
             khdif,
             kvdif,
             c_s,
+            c_k,
+            mix_isotropic,
+            mix_upper_bound,
+            tke_upper_bound,
+            tke_mix2_off,
             diff_6th_opt,
             diff_6th_factor,
             const_nu_m2_s,
@@ -892,6 +957,8 @@ class OperationalNamelist:
             sf_sfclay_physics,
             cu_physics,
             sf_surface_physics,
+            sf_urban_physics,
+            sf_lake_physics,
             noahclassic_static_holder,
             noahclassic_land_holder,
             noahclassic_rad_holder,
@@ -953,6 +1020,11 @@ class OperationalNamelist:
             khdif=khdif,
             kvdif=kvdif,
             c_s=c_s,
+            c_k=c_k,
+            mix_isotropic=mix_isotropic,
+            mix_upper_bound=mix_upper_bound,
+            tke_upper_bound=tke_upper_bound,
+            tke_mix2_off=tke_mix2_off,
             diff_6th_opt=diff_6th_opt,
             diff_6th_factor=diff_6th_factor,
             const_nu_m2_s=const_nu_m2_s,
@@ -979,6 +1051,8 @@ class OperationalNamelist:
             sf_sfclay_physics=sf_sfclay_physics,
             cu_physics=cu_physics,
             sf_surface_physics=sf_surface_physics,
+            sf_urban_physics=sf_urban_physics,
+            sf_lake_physics=sf_lake_physics,
             noahclassic_static=noahclassic_static,
             noahclassic_land=noahclassic_land,
             noahclassic_rad=noahclassic_rad,
@@ -990,6 +1064,7 @@ class OperationalNamelist:
             px_rad=px_rad,
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
+            data_assimilation=data_assimilation,
             ra_sw_physics=ra_sw_physics,
             ra_lw_physics=ra_lw_physics,
             rad_rk_tendf=rad_rk_tendf,
@@ -2455,6 +2530,195 @@ def _specified_bdy_relax(
     )
 
 
+class _DiffOpt2TurbulenceFields(NamedTuple):
+    """Shared WRF diff_opt=2 turbulence closure fields for one RK stage."""
+
+    d11: jax.Array
+    d22: jax.Array
+    d33: jax.Array
+    d12: jax.Array
+    d13: jax.Array
+    d23: jax.Array
+    bn2: jax.Array
+    xkmh: jax.Array
+    xkmv: jax.Array
+    xkhh: jax.Array
+    xkhv: jax.Array
+    rdz: jax.Array
+    rdzw: jax.Array
+
+
+def _diffopt2_turbulence_fields(
+    haloed: State,
+    namelist: OperationalNamelist,
+    *,
+    dz: jax.Array,
+) -> _DiffOpt2TurbulenceFields:
+    """Build WRF ``diff_opt=2`` 3-D Smag/TKE coefficients for km_opt=2/3/5."""
+
+    grid = namelist.grid
+    dx = float(grid.projection.dx_m)
+    dy = float(grid.projection.dy_m)
+    rdzw = jnp.ones_like(haloed.theta) / dz
+    rdz = jnp.ones_like(haloed.w) / dz
+    d11, d22, d33, d12, d13, d23 = deformation_components_3d(
+        haloed.u,
+        haloed.v,
+        haloed.w,
+        dx_m=dx,
+        dy_m=dy,
+        rdz=rdz,
+        rdzw=rdzw,
+    )
+    bn2 = dry_brunt_vaisala_squared(haloed.theta, dz_m=dz)
+    km_opt = int(namelist.km_opt)
+    isotropic = int(namelist.mix_isotropic) != 0
+    if km_opt == 3:
+        xkmh, xkmv, xkhh, xkhv = smag3d_km(
+            d11,
+            d22,
+            d33,
+            d12,
+            d13,
+            d23,
+            bn2,
+            dx_m=dx,
+            dy_m=dy,
+            rdzw=rdzw,
+            dt_s=float(namelist.dt_s),
+            c_s=float(namelist.c_s),
+            mix_upper_bound=float(namelist.mix_upper_bound),
+            isotropic=isotropic,
+        )
+    elif km_opt in (2, 5):
+        smag_xkmh = None
+        smag_xkhh = None
+        if km_opt == 5:
+            smag_xkmh, smag_xkhh = smag2d_horizontal_km(
+                d11,
+                d22,
+                d12,
+                dx_m=dx,
+                dy_m=dy,
+                c_s=float(namelist.c_s),
+                diff_opt_for_slope=2,
+            )
+        xkmh, xkmv, xkhh, xkhv = tke3d_km(
+            haloed.qke,
+            haloed.theta,
+            bn2,
+            dx_m=dx,
+            dy_m=dy,
+            rdzw=rdzw,
+            dt_s=float(namelist.dt_s),
+            km_opt=km_opt,
+            c_k=float(namelist.c_k),
+            mix_upper_bound=float(namelist.mix_upper_bound),
+            isotropic=isotropic,
+            smag_xkmh=smag_xkmh,
+            smag_xkhh=smag_xkhh,
+        )
+    else:
+        raise ValueError(f"diff_opt=2 3-D turbulence does not support km_opt={km_opt}")
+    return _DiffOpt2TurbulenceFields(d11, d22, d33, d12, d13, d23, bn2, xkmh, xkmv, xkhh, xkhv, rdz, rdzw)
+
+
+def _xface_average_3d(field: jax.Array) -> jax.Array:
+    """Average mass-cell field to periodic u x-faces."""
+
+    west_faces = 0.5 * (field + jnp.roll(field, 1, axis=2))
+    return jnp.concatenate((west_faces, west_faces[:, :, :1]), axis=2)
+
+
+def _yface_average_3d(field: jax.Array) -> jax.Array:
+    """Average mass-cell field to periodic v y-faces."""
+
+    south_faces = 0.5 * (field + jnp.roll(field, 1, axis=1))
+    return jnp.concatenate((south_faces, south_faces[:, :1, :]), axis=1)
+
+
+def _wface_average_3d(field: jax.Array) -> jax.Array:
+    """Average mass-cell field to w z-faces, using nearest levels at lids."""
+
+    nz = int(field.shape[0])
+    face = jnp.zeros((nz + 1,) + tuple(field.shape[1:]), dtype=field.dtype)
+    if nz > 1:
+        face = face.at[1:nz, :, :].set(0.5 * (field[1:nz, :, :] + field[0 : nz - 1, :, :]))
+    face = face.at[0, :, :].set(field[0, :, :])
+    face = face.at[nz, :, :].set(field[nz - 1, :, :])
+    return face
+
+
+def _tke_coupled_tendency(
+    haloed: State,
+    namelist: OperationalNamelist,
+    turbulence: _DiffOpt2TurbulenceFields,
+    *,
+    mass_h: jax.Array,
+    dz: jax.Array,
+) -> jax.Array:
+    """Build WRF dry TKE coupled tendency for diff_opt=2/km_opt=2/5."""
+
+    grid = namelist.grid
+    dx = float(grid.projection.dx_m)
+    dy = float(grid.projection.dy_m)
+    qke_t = tke_rhs_tendency(
+        haloed.qke,
+        mass_h,
+        turbulence.d11,
+        turbulence.d22,
+        turbulence.d33,
+        turbulence.d12,
+        turbulence.d13,
+        turbulence.d23,
+        turbulence.bn2,
+        turbulence.xkmh,
+        turbulence.xkmv,
+        turbulence.xkhv,
+        dx_m=dx,
+        dy_m=dy,
+        rdzw=turbulence.rdzw,
+        dt_s=float(namelist.dt_s),
+        c_k=float(namelist.c_k),
+        km_opt=int(namelist.km_opt),
+    )
+    if (int(namelist.km_opt) == 2 and not bool(namelist.tke_mix2_off)) or int(namelist.km_opt) == 5:
+        qke_t = qke_t + horizontal_diffusion_coord_scalar_tendency(
+            haloed.qke,
+            turbulence.xkmh,
+            mass_h,
+            dx_m=dx,
+            dy_m=dy,
+        )
+    if int(namelist.km_opt) == 2:
+        qke_t = qke_t + vertical_diffusion_coord_scalar_tendency(
+            haloed.qke,
+            turbulence.xkmv,
+            mass_h,
+            dz_m=dz,
+        )
+    lower = -mass_h * jnp.maximum(jnp.asarray(0.0, dtype=haloed.qke.dtype), haloed.qke) / float(namelist.dt_s)
+    return jnp.maximum(qke_t, lower)
+
+
+def _apply_tke_large_step(
+    state: State,
+    step_origin: State,
+    *,
+    qke_tendency: jax.Array,
+    dt_rk: float,
+    metrics: DycoreMetrics,
+    tke_upper_bound: float,
+) -> State:
+    """WRF scalar update + ``bound_tke`` for the prognostic TKE carry."""
+
+    mass_old = metrics.c1h[:, None, None] * step_origin.mu_total[None, :, :] + metrics.c2h[:, None, None]
+    mass_new = metrics.c1h[:, None, None] * state.mu_total[None, :, :] + metrics.c2h[:, None, None]
+    qke_new = (mass_old * step_origin.qke + float(dt_rk) * qke_tendency) / mass_new
+    qke_new = jnp.minimum(jnp.maximum(qke_new, 0.0), float(tke_upper_bound))
+    return state.replace(qke=qke_new)
+
+
 def _augment_large_step_tendencies(
     haloed: State,
     tendencies: Tendencies,
@@ -2697,6 +2961,59 @@ def _augment_large_step_tendencies(
         u_t = u_t + du_s
         v_t = v_t + dv_s
         w_t = w_t + dw_s
+
+    # WRF diff_opt=2 / km_opt=2,3,5: 3-D LES/TKE turbulence closure.  The
+    # coefficient formulas are WRF's ``smag_km`` / ``tke_km`` periodic-interior
+    # reductions.  Momentum diffusion currently uses conservative variable-K
+    # scalar flux divergence on each staggered field; the deformation-stress
+    # momentum tensor is the remaining parity item called out in the proof report.
+    if int(namelist.diff_opt) == 2 and int(namelist.km_opt) in (2, 3, 5):
+        turb = _diffopt2_turbulence_fields(haloed, namelist, dz=dz)
+        theta_base = _theta_base_offset(haloed.theta) * jnp.ones_like(haloed.theta)
+        th_t = th_t + horizontal_diffusion_coord_scalar_tendency(
+            haloed.theta,
+            turb.xkhh,
+            mass_h,
+            dx_m=dx,
+            dy_m=dy,
+            base_3d=theta_base,
+        )
+        th_t = th_t + vertical_diffusion_coord_scalar_tendency(
+            haloed.theta,
+            turb.xkhv,
+            mass_h,
+            dz_m=dz,
+            base_3d=theta_base,
+        )
+        du_h, dv_h, dw_h = horizontal_diffusion_coord_momentum_tendency(
+            haloed.u,
+            haloed.v,
+            haloed.w,
+            turb.xkmh,
+            mass_u,
+            mass_v,
+            mass_f,
+            dx_m=dx,
+            dy_m=dy,
+        )
+        u_t = u_t + du_h + vertical_diffusion_coord_scalar_tendency(
+            haloed.u,
+            _xface_average_3d(turb.xkmv),
+            mass_u,
+            dz_m=dz,
+        )
+        v_t = v_t + dv_h + vertical_diffusion_coord_scalar_tendency(
+            haloed.v,
+            _yface_average_3d(turb.xkmv),
+            mass_v,
+            dz_m=dz,
+        )
+        w_t = w_t + dw_h + vertical_diffusion_coord_scalar_tendency(
+            haloed.w,
+            _wface_average_3d(turb.xkmv),
+            mass_f,
+            dz_m=dz,
+        )
 
     # WRF rk_tendency adds the large-step horizontal pressure-gradient force to
     # the *coupled* large-step ru/rv_tend (module_em.F:1325 ->
@@ -3077,6 +3394,27 @@ def _rk_scan_step(
             if moisture_advected
             else None
         )
+        tke_advected = int(namelist.diff_opt) == 2 and int(namelist.km_opt) in (2, 5)
+        if tke_advected:
+            ph = haloed.ph_total
+            dz_tke = jnp.maximum(
+                jnp.mean((ph[1:] - ph[:-1]) / GRAVITY_M_S2),
+                jnp.asarray(1.0, dtype=ph.dtype),
+            )
+            mass_h_tke = (
+                namelist.metrics.c1h[:, None, None] * haloed.mu_total[None, :, :]
+                + namelist.metrics.c2h[:, None, None]
+            )
+            turbulence_tke = _diffopt2_turbulence_fields(haloed, namelist, dz=dz_tke)
+            qke_tendency = _tke_coupled_tendency(
+                haloed,
+                namelist,
+                turbulence_tke,
+                mass_h=mass_h_tke,
+                dz=dz_tke,
+            )
+        else:
+            qke_tendency = None
         candidate = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         # v0.14 ACOUSTIC-SUBSTEP FIX (fresh stage omega): WRF rk_step_prep
         # RE-DIAGNOSES ``grid%ww`` from the STAGE u/v/mu at EVERY RK stage entry
@@ -3158,6 +3496,17 @@ def _rk_scan_step(
                     # above (core six for every wired scheme; + qh for WSM7 mp=24
                     # and the rest of the wired hail family; + nwfa/nifa for mp=28).
                     species=_advected_scalar_species(namelist),
+                )
+            )
+        if tke_advected:
+            stage_carry = stage_carry.replace(
+                state=_apply_tke_large_step(
+                    stage_carry.state,
+                    rk1_reference,
+                    qke_tendency=qke_tendency,
+                    dt_rk=float(stage.dt_rk),
+                    metrics=namelist.metrics,
+                    tke_upper_bound=float(namelist.tke_upper_bound),
                 )
             )
         stage_carry = stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
@@ -3479,9 +3828,10 @@ _SCAN_WIRED_OPTIONS = {
     # (v0.6.0 jax.lax.scan rewrites); 2 MYJ wired (v0.13 traceable MYJ+Janjic pair);
     # 3 GFS wired (v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F);
     # 99 MRF wired (v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F).
-    # 11 Shin-Hong is the v0.18 scale-aware JAX/vmap port; 12 GBM is the v0.18
-    # moist prognostic-TKE JAX/vmap port.
-    "bl_pbl_physics": (0, 1, 2, 3, DEFAULT_BL_PBL_PHYSICS, 7, 8, 11, 12, 99),
+    # 9 CAM-UW is the v0.22 CAM5 UW diagnostic-TKE / implicit vertical-diffusion
+    # endpoint; 11 Shin-Hong is the v0.18 scale-aware JAX/vmap port; 12 GBM is the
+    # v0.18 moist prognostic-TKE JAX/vmap port.
+    "bl_pbl_physics": (0, 1, 2, 3, DEFAULT_BL_PBL_PHYSICS, 7, 8, 9, 11, 12, 99),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired;
     # 2 Janjic Eta wired (v0.13, mandatorily paired with bl_pbl_physics=2 MYJ).
     # 3 NCEP-GFS surface layer + 91 old-MM5 surface layer wired (v0.13 Tier-3,
@@ -3518,7 +3868,9 @@ _SCAN_UNWIRED_REASON = {
     # intentionally absent here.
     # cu=3 (Grell-Freitas) and cu=6 (modified Tiedtke) are now GPU-batched +
     # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
-    "cu_physics=16": "New Tiedtke is interface-compatible but not separately savepoint-gated by a distinct WRF source path; GPU-batching/gating TODO",
+    "cu_physics=16": "New Tiedtke has a module-specific single-column fp64 pristine-WRF oracle staged (proofs/v013/savepoints/cumulus/ntiedtke_case_*.json from phys/module_cu_ntiedtke.F), but no faithful traceable JAX kernel or CU scan adapter is wired yet",
+    "mp_physics=18": "NSSL 2-moment (mp=18, phys/module_mp_nssl_2mom.F) is recognized but no local single-column WRF oracle artifact is present in this worktree; fail-closed until the oracle and qh/qnh/qvolg/qvolh/qnn state path are wired",
+    "mp_physics=40": "Morrison aerosol (mp=40, phys/module_mp_morr_two_moment_aero.F) is recognized but no local single-column WRF oracle artifact is present in this worktree; fail-closed until the aerosol/CCN state path and external aerosol-data dependency are wired",
     "cu_physics=4": "Scale-aware GFS SAS has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
     "cu_physics=94": "2015 GFS SAS / HWRF has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
     "cu_physics=95": "Previous GFS SAS / HWRF OSAS has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
@@ -3541,6 +3893,10 @@ _SCAN_UNWIRED_REASON = {
     # canopy/soil/snow solver), so both fail-close here.
     "sf_surface_physics=3": "RUC multi-layer soil/snow LSM has a single-column fp64 pristine-WRF oracle staged (proofs/v017/oracle/ruclsm, LSMRUC->SOILVEGIN->SFCTMP); traceable JAX column kernel is a Tier-3 carry-over (~7.5k-LOC soil/snow solver)",
     "sf_surface_physics=8": "SSiB SiB biophysical canopy/soil/snow LSM has a single-column fp64 pristine-WRF oracle staged (proofs/v017/oracle/ssib, the unmodified SSIB driver); traceable JAX column kernel is a Tier-3 carry-over (~6.6k-LOC coupled SiB solver)",
+    "sf_urban_physics=1": "single-layer UCM is recognized but no urban canopy state carry, pristine-WRF oracle, or faithful JAX kernel is wired into the operational scan",
+    "sf_urban_physics=2": "BEP urban canopy (phys/module_sf_bep.F:BEP) needs the Registry bepscheme carry, urban-map/static tables, pristine-WRF oracle, and faithful JAX kernel before scan wiring",
+    "sf_urban_physics=3": "BEP+BEM urban canopy/building-energy model (phys/module_sf_bep.F:BEP + module_sf_bem.F:BEM) needs the Registry bep_bemscheme carry, urban/BEM static tables, pristine-WRF oracle, and faithful JAX kernel before scan wiring",
+    "sf_lake_physics=1": "WRF lake model (phys/module_sf_lake.F:Lake/LakeMain/lakeini) needs lake-depth/category initialization, snow/ice/water carry, pristine-WRF oracle, and faithful JAX kernel before scan wiring",
     # ra_sw=1 (Dudhia), ra_sw=2 (GSFC/Chou-Suarez) and ra_sw=4 (RRTMG) are
     # scan-wired; v0.18 recognizes ra_sw=3/5/7/99 for real-WRF oracle/parity work
     # only and fail-closes them here.
@@ -3594,6 +3950,16 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
             tag = f"{key}={selected}"
             reason = _SCAN_UNWIRED_REASON.get(tag)
             not_wired.append(f"{tag} ({reason})" if reason else tag)
+    urban_opt = int(getattr(namelist, "sf_urban_physics", 0))
+    if urban_opt != 0:
+        tag = f"sf_urban_physics={urban_opt}"
+        reason = _SCAN_UNWIRED_REASON.get(tag, "urban canopy physics is not operationally wired")
+        not_wired.append(f"{tag} ({reason})")
+    lake_opt = int(getattr(namelist, "sf_lake_physics", 0))
+    if lake_opt != 0:
+        tag = f"sf_lake_physics={lake_opt}"
+        reason = _SCAN_UNWIRED_REASON.get(tag, "lake model is not operationally wired")
+        not_wired.append(f"{tag} ({reason})")
     tiedtke_lacks_rqvften = (
         int(getattr(namelist, "cu_physics", 0)) == 6
         and (
@@ -3651,7 +4017,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13/v0.17 scan-wired "
-            "schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,11,12,99}, "
+            "schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,9,11,12,99}, "
             "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land, ra_sw_physics in {0,1,2,4}, "
@@ -3980,6 +4346,38 @@ def _dry_physics_tendencies_from_state_delta(
     return DryPhysicsTendencies()
 
 
+def _apply_data_assimilation_forcing(
+    reference: State,
+    physics_state: State,
+    dry: DryPhysicsTendencies,
+    namelist: OperationalNamelist,
+    lead_seconds,
+) -> tuple[State, DryPhysicsTendencies, bool]:
+    """Add v0.22 G1 FDDA tendencies to the WRF RK tendency lanes.
+
+    WRF grid/spectral FDDA computes target-minus-state rates in ``fddagd`` /
+    ``spectral_nudging`` and then feeds u/v/theta/ph/mu through the same
+    ``*_tendf`` dry-tendency merge as the other non-timesplit physics sources.
+    The current port has no moist ``qv_tendf`` lane, so qv nudging is applied as a
+    non-dry state increment and later transferred by
+    ``_apply_physics_non_dry_updates``.
+    """
+
+    if namelist.data_assimilation is None:
+        return physics_state, dry, False
+    rates = data_assimilation_rates(reference, namelist.data_assimilation, lead_seconds)
+    da_dry = data_assimilation_dry_tendencies(reference, rates, namelist.metrics)
+    # qv has no DryPhysicsTendencies field in the current port; keep it resident
+    # and additive through the existing physics state-delta lane.
+    physics_state = apply_nudging_rates(
+        physics_state,
+        rates,
+        float(namelist.dt_s),
+        fields=("qv",),
+    )
+    return physics_state, add_dry_physics_tendencies(dry, da_dry), True
+
+
 def _apply_physics_non_dry_updates(
     dynamics_state: State,
     physics_reference: State,
@@ -4015,7 +4413,14 @@ def _physics_step_forcing(
     """Run non-timesplit physics at step entry and expose RK-fixed tendencies."""
 
     if not bool(namelist.run_physics):
-        return _PhysicsStepForcing(carry.state, carry, DryPhysicsTendencies(), False)
+        next_state, dry, da_enabled = _apply_data_assimilation_forcing(
+            carry.state,
+            carry.state,
+            DryPhysicsTendencies(),
+            namelist,
+            lead_seconds,
+        )
+        return _PhysicsStepForcing(next_state, carry, dry, da_enabled)
 
     before = carry.state
     next_state = before
@@ -4495,6 +4900,13 @@ def _physics_step_forcing(
         dry = _dry_physics_tendencies_from_state_delta(
             before, next_state, namelist, float(namelist.dt_s)
         )
+    next_state, dry, _da_enabled = _apply_data_assimilation_forcing(
+        before,
+        next_state,
+        dry,
+        namelist,
+        lead_seconds,
+    )
     next_carry = next_carry.replace(rthraten=held_rthraten)
 
     return _PhysicsStepForcing(next_state, next_carry, dry, True)
@@ -5106,6 +5518,65 @@ def run_forecast_operational(state: State, namelist: OperationalNamelist, hours:
     return _run_forecast_operational_jit(_dealias_pytree_buffers(state), namelist, hours)
 
 
+def dfi_initialize_operational_state(
+    state: State,
+    namelist: OperationalNamelist,
+    *,
+    half_window_steps: int = 3,
+    cutoff_s: float = 3600.0,
+    filter_id: int = 1,
+) -> State:
+    """Apply a forward digital-filter initialization launch.
+
+    This is the v0.22 G1 resident DFI path.  It uses the WRF ``dfcoef`` filter
+    family and accumulates filtered prognostic state samples on device.  The
+    current port exposes the practical forward-DFI half of WRF's
+    ``dfi_fwd_init``; the full backward+forward ``dfi_bck_init`` choreography
+    still needs reverse-time boundary/timekeeping support.
+    """
+
+    _resolve_operational_suite(namelist)
+    state = _operational_scan_state(state, namelist)
+    cfg = DigitalFilterConfig(
+        half_window_steps=int(half_window_steps),
+        dt_s=float(namelist.dt_s),
+        cutoff_s=float(cutoff_s),
+        filter_id=int(filter_id),
+    )
+    one_step_hours = float(namelist.dt_s) / 3600.0
+
+    def advance_one(sample: State) -> State:
+        return run_forecast_operational_segmented(
+            sample,
+            namelist,
+            one_step_hours,
+            segment_steps=1,
+        )
+
+    return digital_filter_initialize(state, advance_one, cfg)
+
+
+def run_forecast_operational_dfi(
+    state: State,
+    namelist: OperationalNamelist,
+    hours: float,
+    *,
+    half_window_steps: int = 3,
+    cutoff_s: float = 3600.0,
+    filter_id: int = 1,
+) -> State:
+    """DFI-initialize and then launch the normal operational forecast."""
+
+    initialized = dfi_initialize_operational_state(
+        state,
+        namelist,
+        half_window_steps=half_window_steps,
+        cutoff_s=cutoff_s,
+        filter_id=filter_id,
+    )
+    return run_forecast_operational(initialized, namelist, hours)
+
+
 @partial(jax.jit, static_argnames=("hours",), donate_argnums=(0,))
 def _run_forecast_operational_jit(state: State, namelist: OperationalNamelist, hours: float) -> State:
     """Run an operational forecast as one compiled, device-resident scan.
@@ -5411,6 +5882,8 @@ __all__ = [
     "compute_m9_diagnostics",
     "dealias_state_buffers",
     "run_forecast_operational",
+    "dfi_initialize_operational_state",
+    "run_forecast_operational_dfi",
     "run_forecast_operational_segmented",
     "run_forecast_operational_single_scan",
     "run_forecast_operational_debug",

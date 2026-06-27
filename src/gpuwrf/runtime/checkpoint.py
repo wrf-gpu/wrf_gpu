@@ -42,7 +42,7 @@ SUPPORTED_FORMAT_VERSIONS = (1, 2, 3)
 # v0.6.0 added Nc/Nn/rainc_acc; v0.15 the MYNN SGS-cloud leaves; v0.17 ADR-032
 # the graupel/hail substrate qh/Nh/qvolg/qvolh; v0.16 the aerosol-aware Thompson
 # leaves nwfa/nifa; v0.17 hail microphysics the hail_acc surface accumulator;
-# v0.21.1 added optional standalone wrfbdy scalar boundary leaves. All are
+# v0.22 added optional standalone wrfbdy scalar boundary leaves. All are
 # append-only/optional leaves that legitimately cold-start absent from older
 # checkpoints.
 ADDITIVE_STATE_LEAVES_SINCE_V2 = (

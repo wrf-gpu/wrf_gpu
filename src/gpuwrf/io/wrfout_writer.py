@@ -343,6 +343,65 @@ MINIMAL_TRAINING_SET: tuple[str, ...] = (
 )
 
 
+# Opt-in WRF primary-history field set for the Canary WRFv4 configuration used as
+# the v0.22 compatibility target. Order and names match the reference WRF
+# ``wrfout_d02`` stream (375 variables including ``Times``), cross-checked against
+# <DATA_ROOT>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON and the EM Registry
+# include tree that contributes Noah-MP, stochastic, hybrid-coordinate, and mask
+# history fields.
+# The default writer still uses OPERATIONAL_WRFOUT_VARIABLES; this heavy list is
+# activated only by ``full_variable_set=True`` on the writer/prepared payload.
+FULL_WRFOUT_VARIABLES: tuple[str, ...] = (
+    "Times", "XLAT", "XLONG", "LU_INDEX", "ZNU", "ZNW", "ZS", "DZS",
+    "VAR_SSO", "BATHYMETRY_FLAG", "U", "V", "W", "PH", "PHB", "T",
+    "THM", "HFX_FORCE", "LH_FORCE", "TSK_FORCE", "HFX_FORCE_TEND", "LH_FORCE_TEND", "TSK_FORCE_TEND", "MU",
+    "MUB", "NEST_POS", "P", "PB", "FNM", "FNP", "RDNW", "RDN",
+    "DNW", "DN", "CFN", "CFN1", "THIS_IS_AN_IDEAL_RUN", "P_HYD", "Q2", "T2",
+    "TH2", "PSFC", "U10", "V10", "RDX", "RDY", "AREA2D", "DX2D",
+    "RESM", "ZETATOP", "CF1", "CF2", "CF3", "ITIMESTEP", "XTIME", "QVAPOR",
+    "QCLOUD", "QRAIN", "QICE", "QSNOW", "QGRAUP", "QNICE", "QNRAIN", "SHDMAX",
+    "SHDMIN", "SHDAVG", "SNOALB", "TSLB", "SMOIS", "SH2O", "SEAICE", "XICEM",
+    "SFROFF", "UDROFF", "IVGTYP", "ISLTYP", "VEGFRA", "GRDFLX", "ACGRDFLX", "ACSNOM",
+    "SNOW", "SNOWH", "CANWAT", "SSTSK", "WATER_DEPTH", "COSZEN", "LAI", "QKE",
+    "MAXMF", "MAXWIDTH", "ZTOP_PLUME", "DTAUX3D", "DTAUY3D", "DUSFCG", "DVSFCG", "VAR",
+    "CON", "OA1", "OA2", "OA3", "OA4", "OL1", "OL2", "OL3",
+    "OL4", "TKE_PBL", "EL_PBL", "O3_GFS_DU", "MAPFAC_M", "MAPFAC_U", "MAPFAC_V", "MAPFAC_MX",
+    "MAPFAC_MY", "MAPFAC_UX", "MAPFAC_UY", "MAPFAC_VX", "MF_VX_INV", "MAPFAC_VY", "F", "E",
+    "SINALPHA", "COSALPHA", "HGT", "TSK", "P_TOP", "GOT_VAR_SSO", "T00", "P00",
+    "TLP", "TISO", "TLP_STRAT", "P_STRAT", "MAX_MSFTX", "MAX_MSFTY", "RAINC", "RAINSH",
+    "RAINNC", "SNOWNC", "GRAUPELNC", "HAILNC", "CLDFRA", "SWDOWN", "GLW", "SWNORM",
+    "ACSWUPT", "ACSWUPTC", "ACSWDNT", "ACSWDNTC", "ACSWUPB", "ACSWUPBC", "ACSWDNB", "ACSWDNBC",
+    "ACLWUPT", "ACLWUPTC", "ACLWDNT", "ACLWDNTC", "ACLWUPB", "ACLWUPBC", "ACLWDNB", "ACLWDNBC",
+    "SWUPT", "SWUPTC", "SWDNT", "SWDNTC", "SWUPB", "SWUPBC", "SWDNB", "SWDNBC",
+    "LWUPT", "LWUPTC", "LWDNT", "LWDNTC", "LWUPB", "LWUPBC", "LWDNB", "LWDNBC",
+    "OLR", "XLAT_U", "XLONG_U", "XLAT_V", "XLONG_V", "ALBEDO", "CLAT", "ALBBCK",
+    "EMISS", "NOAHRES", "TMN", "XLAND", "UST", "PBLH", "HFX", "QFX",
+    "LH", "ACHFX", "ACLHF", "SNOWC", "SR", "SAVE_TOPO_FROM_REAL", "ISEEDARR_SPPT", "ISEEDARR_SKEBS",
+    "ISEEDARR_RAND_PERTURB", "ISEEDARRAY_SPP_CONV", "ISEEDARRAY_SPP_PBL", "ISEEDARRAY_SPP_LSM", "ISNOW", "TV", "TG", "CANICE",
+    "CANLIQ", "EAH", "TAH", "CM", "CH", "FWET", "SNEQVO", "ALBOLD",
+    "QSNOWXY", "QRAINXY", "WSLAKE", "ZWT", "WA", "WT", "TSNO", "ZSNSO",
+    "SNICE", "SNLIQ", "LFMASS", "RTMASS", "STMASS", "WOOD", "STBLCP", "FASTCP",
+    "XSAI", "TAUSS", "T2V", "T2B", "Q2V", "Q2B", "TRAD", "NEE",
+    "GPP", "NPP", "FVEG", "QIN", "RUNSF", "RUNSB", "ECAN", "EDIR",
+    "ETRAN", "FSA", "FIRA", "APAR", "PSN", "SAV", "SAG", "RSSUN",
+    "RSSHA", "BGAP", "WGAP", "TGV", "TGB", "CHV", "CHB", "SHG",
+    "SHC", "SHB", "EVG", "EVB", "GHV", "GHB", "IRG", "IRC",
+    "IRB", "TR", "EVC", "CHLEAF", "CHUC", "CHV2", "CHB2", "CHSTAR",
+    "SMCWTD", "RECH", "QRFS", "QSPRINGS", "QSLAT", "ACINTS", "ACINTR", "ACDRIPR",
+    "ACTHROR", "ACEVAC", "ACDEWC", "FORCTLSM", "FORCQLSM", "FORCPLSM", "FORCZLSM", "FORCWLSM",
+    "ACRAINLSM", "ACRUNSB", "ACRUNSF", "ACECAN", "ACETRAN", "ACEDIR", "ACQLAT", "ACQRF",
+    "ACETLSM", "ACSNOWLSM", "ACSUBC", "ACFROC", "ACFRZC", "ACMELTC", "ACSNBOT", "ACSNMELT",
+    "ACPONDING", "ACSNSUB", "ACSNFRO", "ACRAINSNOW", "ACDRIPS", "ACTHROS", "ACSAGB", "ACIRB",
+    "ACSHB", "ACEVB", "ACGHB", "ACPAHB", "ACSAGV", "ACIRG", "ACSHG", "ACEVG",
+    "ACGHV", "ACPAHG", "ACSAV", "ACIRC", "ACSHC", "ACEVC", "ACTR", "ACPAHV",
+    "ACSWDNLSM", "ACSWUPLSM", "ACLWDNLSM", "ACLWUPLSM", "ACSHFLSM", "ACLHFLSM", "ACGHFLSM", "ACPAHLSM",
+    "ACCANHS", "SOILENERGY", "SNOWENERGY", "ACEFLXB", "GRAIN", "GDD", "CROPCAT", "PGS",
+    "QTDRAIN", "IRNUMSI", "IRNUMMI", "IRNUMFI", "IRSIVOL", "IRMIVOL", "IRFIVOL", "IRELOSS",
+    "IRRSPLH", "C1H", "C2H", "C1F", "C2F", "C3H", "C4H", "C3F",
+    "C4F", "PCB", "PC", "LANDMASK", "LAKEMASK", "SST", "SST_INPUT",
+)
+
+
 @dataclass(frozen=True)
 class WrfoutVariableSpec:
     """WRF variable schema metadata for the v0 minimum output subset."""
@@ -999,6 +1058,96 @@ WRFOUT_VARIABLE_SPECS: dict[str, WrfoutVariableSpec] = {
 }
 
 
+_FULL_XYZ_GENERIC_NAMES: tuple[str, ...] = (
+    "P_HYD", "DTAUX3D", "DTAUY3D",
+)
+_FULL_Z_XYZ_GENERIC_NAMES: tuple[str, ...] = (
+    "TKE_PBL", "EL_PBL",
+)
+_FULL_XY_GENERIC_NAMES: tuple[str, ...] = (
+    "VAR_SSO", "NEST_POS", "AREA2D", "DX2D", "SHDMAX", "SHDMIN", "SHDAVG", "SNOALB",
+    "SEAICE", "XICEM", "VEGFRA", "ACGRDFLX", "ACSNOM", "SSTSK", "WATER_DEPTH", "LAI",
+    "MAXMF", "MAXWIDTH", "ZTOP_PLUME", "DUSFCG", "DVSFCG", "VAR", "CON", "OA1",
+    "OA2", "OA3", "OA4", "OL1", "OL2", "OL3", "OL4", "O3_GFS_DU",
+    "ACSWUPT", "ACSWUPTC", "ACSWDNT", "ACSWDNTC", "ACSWUPB", "ACSWUPBC", "ACSWDNB", "ACSWDNBC",
+    "ACLWUPT", "ACLWUPTC", "ACLWDNT", "ACLWDNTC", "ACLWUPB", "ACLWUPBC", "ACLWDNB", "ACLWDNBC",
+    "ALBBCK", "NOAHRES", "TMN", "ACHFX", "ACLHF", "TV", "TG", "EAH",
+    "TAH", "CM", "CH", "FWET", "ALBOLD", "QSNOWXY", "QRAINXY", "WSLAKE",
+    "ZWT", "WA", "WT", "LFMASS", "RTMASS", "STMASS", "WOOD", "STBLCP",
+    "FASTCP", "XSAI", "TAUSS", "T2V", "T2B", "Q2V", "Q2B", "TRAD",
+    "NEE", "GPP", "NPP", "FVEG", "QIN", "RUNSF", "RUNSB", "ECAN",
+    "EDIR", "ETRAN", "FSA", "FIRA", "APAR", "PSN", "SAV", "SAG",
+    "RSSUN", "RSSHA", "BGAP", "WGAP", "TGV", "TGB", "CHV", "CHB",
+    "SHG", "SHC", "SHB", "EVG", "EVB", "GHV", "GHB", "IRG",
+    "IRC", "IRB", "TR", "EVC", "CHLEAF", "CHUC", "CHV2", "CHB2",
+    "CHSTAR", "SMCWTD", "RECH", "QRFS", "QSPRINGS", "QSLAT", "ACINTS", "ACINTR",
+    "ACDRIPR", "ACTHROR", "ACEVAC", "ACDEWC", "FORCTLSM", "FORCQLSM", "FORCPLSM", "FORCZLSM",
+    "FORCWLSM", "ACRAINLSM", "ACRUNSB", "ACRUNSF", "ACECAN", "ACETRAN", "ACEDIR", "ACQLAT",
+    "ACQRF", "ACETLSM", "ACSNOWLSM", "ACSUBC", "ACFROC", "ACFRZC", "ACMELTC", "ACSNBOT",
+    "ACSNMELT", "ACPONDING", "ACSNSUB", "ACSNFRO", "ACRAINSNOW", "ACDRIPS", "ACTHROS", "ACSAGB",
+    "ACIRB", "ACSHB", "ACEVB", "ACGHB", "ACPAHB", "ACSAGV", "ACIRG", "ACSHG",
+    "ACEVG", "ACGHV", "ACPAHG", "ACSAV", "ACIRC", "ACSHC", "ACEVC", "ACTR",
+    "ACPAHV", "ACSWDNLSM", "ACSWUPLSM", "ACLWDNLSM", "ACLWUPLSM", "ACSHFLSM", "ACLHFLSM", "ACGHFLSM",
+    "ACPAHLSM", "ACCANHS", "SOILENERGY", "SNOWENERGY", "ACEFLXB", "GRAIN", "GDD", "QTDRAIN",
+    "IRSIVOL", "IRMIVOL", "IRFIVOL", "IRELOSS", "IRRSPLH", "PCB", "PC", "LAKEMASK",
+    "SST", "SST_INPUT",
+)
+_FULL_XY_INT_GENERIC_NAMES: tuple[str, ...] = (
+    "IVGTYP", "ISLTYP", "CROPCAT", "PGS", "IRNUMSI", "IRNUMMI", "IRNUMFI",
+)
+_FULL_V_XY_GENERIC_NAMES: tuple[str, ...] = ("MF_VX_INV",)
+_FULL_TIME_GENERIC_NAMES: tuple[str, ...] = (
+    "HFX_FORCE", "LH_FORCE", "TSK_FORCE", "HFX_FORCE_TEND", "LH_FORCE_TEND", "TSK_FORCE_TEND",
+    "RESM", "ZETATOP", "T00", "P00", "TLP", "TISO", "TLP_STRAT", "P_STRAT",
+    "MAX_MSFTX", "MAX_MSFTY",
+)
+_FULL_TIME_INT_GENERIC_NAMES: tuple[str, ...] = (
+    "BATHYMETRY_FLAG", "THIS_IS_AN_IDEAL_RUN", "ITIMESTEP", "GOT_VAR_SSO", "SAVE_TOPO_FROM_REAL",
+)
+_FULL_SEED_INT_GENERIC_NAMES: tuple[str, ...] = ("ISEEDARR_RAND_PERTURB",)
+
+
+def _register_full_wrfout_generic_specs() -> None:
+    for name in _FULL_XYZ_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(
+            name, _spec(name, XYZ, "XYZ", name, "", coordinates="XLONG XLAT XTIME")
+        )
+    for name in _FULL_Z_XYZ_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(
+            name, _spec(name, Z_XYZ, "XYZ", name, "", stagger="Z", coordinates="XLONG XLAT XTIME")
+        )
+    for name in _FULL_XY_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(
+            name, _spec(name, XY, "XY ", name, "", coordinates="XLONG XLAT XTIME")
+        )
+    for name in _FULL_XY_INT_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(
+            name, _spec(name, XY, "XY ", name, "", coordinates="XLONG XLAT XTIME", dtype="i4")
+        )
+    for name in _FULL_V_XY_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(
+            name,
+            _spec(
+                name,
+                V_XY,
+                "XY ",
+                name,
+                "",
+                stagger="Y",
+                coordinates="XLONG_V XLAT_V XTIME",
+            ),
+        )
+    for name in _FULL_TIME_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(name, _spec(name, TIME_ONLY, "0  ", name, ""))
+    for name in _FULL_TIME_INT_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(name, _spec(name, TIME_ONLY, "0  ", name, "", dtype="i4"))
+    for name in _FULL_SEED_INT_GENERIC_NAMES:
+        WRFOUT_VARIABLE_SPECS.setdefault(name, _spec(name, SEED, "Z  ", name, "", stagger="Z", dtype="i4"))
+
+
+_register_full_wrfout_generic_specs()
+
+
 def write_wrfout_netcdf(
     state: Any,
     grid: Any,
@@ -1013,6 +1162,7 @@ def write_wrfout_netcdf(
     variable_subset: tuple[str, ...] | frozenset[str] | None = None,
     include_mandatory_coords: bool = False,
     compress: bool = False,
+    full_variable_set: bool = False,
 ) -> Path:
     """Write one WRF-style ``wrfout`` NetCDF file for the M7 minimum variable set.
 
@@ -1046,6 +1196,12 @@ def write_wrfout_netcdf(
     applies lossless NetCDF4 compression; both default OFF. When ``variable_subset``
     is ``None`` (the default) the full uncompressed output is byte-identical to
     before.
+
+    ``full_variable_set`` is the opt-in heavy WRF compatibility stream. When True
+    the payload is expanded to :data:`FULL_WRFOUT_VARIABLES` (375 names including
+    ``Times``), using real state/diagnostics where present and inactive defaults
+    for WRF stream slots this port does not currently carry. Default False keeps
+    the historical operational subset unchanged.
     """
 
     prepared = prepare_wrfout_payload(
@@ -1058,6 +1214,7 @@ def write_wrfout_netcdf(
         run_start=run_start,
         diagnostics=diagnostics,
         land_state=land_state,
+        full_variable_set=full_variable_set,
     )
     return write_prepared_wrfout(
         prepared,
@@ -1089,6 +1246,7 @@ class PreparedWrfout:
     lead_hours: float
     grid: Any
     namelist: Any
+    full_variable_set: bool = False
 
 
 def prepare_wrfout_payload(
@@ -1102,6 +1260,7 @@ def prepare_wrfout_payload(
     run_start: datetime | date | str,
     diagnostics: Mapping[str, Any] | None = None,
     land_state: Any | None = None,
+    full_variable_set: bool = False,
 ) -> PreparedWrfout:
     """Materialize all wrfout fields to host numpy (the device->host boundary).
 
@@ -1125,6 +1284,18 @@ def prepare_wrfout_payload(
         diagnostics=diagnostics, land_state=land_state,
         run_start=run_start_dt, lead_hours=float(lead_hours),
     )
+    if full_variable_set:
+        _add_full_wrfout_fields(
+            fields,
+            state=state,
+            grid=grid,
+            namelist=namelist,
+            dimensions=dimensions,
+            diagnostics=diagnostics,
+            land_state=land_state,
+            run_start=run_start_dt,
+            lead_hours=float(lead_hours),
+        )
     return PreparedWrfout(
         target=target,
         dimensions=dimensions,
@@ -1134,6 +1305,7 @@ def prepare_wrfout_payload(
         lead_hours=float(lead_hours),
         grid=grid,
         namelist=namelist,
+        full_variable_set=bool(full_variable_set),
     )
 
 
@@ -1196,14 +1368,24 @@ def write_prepared_wrfout(
             prepared.run_start_dt, prepared.valid_dt,
         )
         _write_times(dataset, prepared.valid_dt)
-        _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
         # Write in the canonical operational order, but emit ONLY the fields that
         # were actually prepared. Optional sources (operational diagnostics, the
         # Noah-MP land carry) self-gate: an absent source leaves its fields out of
         # ``prepared.fields`` so the file never carries a fabricated quantity.
         # ``subset`` (when set) further restricts to a stream's requested vars.
-        for name in OPERATIONAL_WRFOUT_VARIABLES:
-            if name in {"Times", "XTIME"} or name not in prepared.fields:
+        if prepared.full_variable_set:
+            write_order = FULL_WRFOUT_VARIABLES
+        else:
+            _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
+            write_order = OPERATIONAL_WRFOUT_VARIABLES
+        for name in write_order:
+            if name == "Times":
+                continue
+            if name == "XTIME":
+                if prepared.full_variable_set:
+                    _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
+                continue
+            if name not in prepared.fields:
                 continue
             if subset is not None and name not in subset:
                 continue
@@ -1733,6 +1915,213 @@ def _build_output_fields(
     )
 
     return {name: _materialized_dtype(name, value) for name, value in fields.items()}
+
+
+def _add_full_wrfout_fields(
+    fields: dict[str, np.ndarray],
+    *,
+    state: Any,
+    grid: Any,
+    namelist: Mapping[str, Any] | Any | None,
+    dimensions: Mapping[str, int | None],
+    diagnostics: Mapping[str, Any] | None,
+    land_state: Any | None,
+    run_start: datetime,
+    lead_hours: float,
+) -> None:
+    """Expand ``fields`` to the opt-in 375-variable WRF history stream.
+
+    This is an output-compatibility layer, not a physics path. It first preserves
+    all fields already mapped by the operational writer, then accepts explicit
+    same-name payloads from diagnostics/state/land/grid/namelist, derives simple
+    WRF algebraic statics, and finally fills unsupported inactive stream slots
+    with the zero/default value WRF would carry for disabled diagnostics.
+    """
+
+    for name in FULL_WRFOUT_VARIABLES:
+        if name in {"Times", "XTIME"} or name in fields:
+            continue
+        spec = WRFOUT_VARIABLE_SPECS.get(name)
+        if spec is None:
+            raise KeyError(f"FULL_WRFOUT_VARIABLES contains {name} without a WRFOUT_VARIABLE_SPECS entry")
+        shape = _shape_for_dimensions(spec.dimensions, dimensions)
+        dtype = _numpy_dtype_for_spec(spec)
+        value = _full_source_value(
+            name,
+            shape,
+            dtype=dtype,
+            diagnostics=diagnostics,
+            state=state,
+            land_state=land_state,
+            grid=grid,
+            namelist=namelist,
+        )
+        if value is None:
+            value = _full_derived_value(
+                name,
+                fields,
+                grid=grid,
+                namelist=namelist,
+                shape=shape,
+                dtype=dtype,
+                run_start=run_start,
+                lead_hours=lead_hours,
+            )
+        if value is None:
+            value = _full_default_value(name, shape, dtype=dtype)
+        fields[name] = _coerce_array(name, value, shape, dtype=dtype)
+
+
+def _full_source_value(
+    name: str,
+    shape: tuple[int, ...],
+    *,
+    dtype: Any,
+    diagnostics: Mapping[str, Any] | None,
+    state: Any,
+    land_state: Any | None,
+    grid: Any,
+    namelist: Mapping[str, Any] | Any | None,
+) -> np.ndarray | None:
+    aliases = _full_source_aliases(name)
+    for source in (diagnostics, state, land_state, grid, namelist):
+        if source is None:
+            continue
+        for alias in aliases:
+            value = _lookup(source, alias, None)
+            if value is None:
+                continue
+            return _coerce_array(name, value, shape, dtype=dtype)
+    return None
+
+
+def _full_source_aliases(name: str) -> tuple[str, ...]:
+    lower = name.lower()
+    aliases = [name, lower]
+    # Common WRF Registry output-name aliases that differ from gpuwrf's carry names.
+    extras = {
+        "SEAICE": ("xice", "seaice"),
+        "SST": ("sst", "t_sst"),
+        "SST_INPUT": ("sst_input", "sst"),
+        "SSTSK": ("sstsk", "t_skin"),
+        "TMN": ("tmn", "deep_soil_temperature"),
+        "LAKEMASK": ("lakemask",),
+        "VAR_SSO": ("var_sso",),
+        "NEST_POS": ("nest_pos",),
+        "IVGTYP": ("ivgtyp", "lu_index"),
+        "ISLTYP": ("isltyp", "soil_type"),
+        "ITIMESTEP": ("itimestep", "step_index"),
+        "THIS_IS_AN_IDEAL_RUN": ("this_is_an_ideal_run",),
+        "GOT_VAR_SSO": ("got_var_sso",),
+        "SAVE_TOPO_FROM_REAL": ("save_topo_from_real",),
+        "ISEEDARR_RAND_PERTURB": ("iseedarr_rand_perturb",),
+        "TKE_PBL": ("tke_pbl",),
+        "EL_PBL": ("el_pbl",),
+        "P_HYD": ("p_hyd",),
+    }.get(name, ())
+    aliases.extend(extras)
+    return tuple(dict.fromkeys(aliases))
+
+
+def _full_derived_value(
+    name: str,
+    fields: Mapping[str, np.ndarray],
+    *,
+    grid: Any,
+    namelist: Mapping[str, Any] | Any | None,
+    shape: tuple[int, ...],
+    dtype: Any,
+    run_start: datetime,
+    lead_hours: float,
+) -> np.ndarray | float | int | None:
+    if name == "P_HYD" and "P" in fields and "PB" in fields:
+        return np.asarray(fields["P"], dtype=np.float64) + np.asarray(fields["PB"], dtype=np.float64)
+    if name == "AREA2D":
+        return _full_area2d(fields, grid, shape)
+    if name == "DX2D":
+        area = fields.get("AREA2D")
+        if area is None:
+            area = _full_area2d(fields, grid, shape)
+        if area is not None:
+            return np.sqrt(np.maximum(np.asarray(area, dtype=np.float64), 0.0))
+    if name == "MF_VX_INV" and "MAPFAC_VX" in fields:
+        return 1.0 / np.maximum(np.asarray(fields["MAPFAC_VX"], dtype=np.float64), 1.0e-12)
+    if name == "MAX_MSFTX" and "MAPFAC_MX" in fields:
+        return float(np.nanmax(np.asarray(fields["MAPFAC_MX"], dtype=np.float64)))
+    if name == "MAX_MSFTY" and "MAPFAC_MY" in fields:
+        return float(np.nanmax(np.asarray(fields["MAPFAC_MY"], dtype=np.float64)))
+    if name in {"IVGTYP", "CROPCAT"} and "LU_INDEX" in fields:
+        return np.rint(np.asarray(fields["LU_INDEX"], dtype=np.float64)).astype(dtype)
+    if name == "LAKEMASK":
+        return np.zeros(shape, dtype=dtype)
+    if name in {"SST", "SST_INPUT", "SSTSK", "TMN", "TG", "TGV", "TGB"} and "TSK" in fields:
+        return np.asarray(fields["TSK"], dtype=np.float64)
+    if name in {"ALBBCK", "ALBOLD"} and "ALBEDO" in fields:
+        return np.asarray(fields["ALBEDO"], dtype=np.float64)
+    if name == "TV" and "T2" in fields and "Q2" in fields:
+        return np.asarray(fields["T2"], dtype=np.float64) * (
+            1.0 + 0.608 * np.maximum(np.asarray(fields["Q2"], dtype=np.float64), 0.0)
+        )
+    if name in {"T2V", "T2B"} and "T2" in fields:
+        return np.asarray(fields["T2"], dtype=np.float64)
+    if name in {"Q2V", "Q2B"} and "Q2" in fields:
+        return np.asarray(fields["Q2"], dtype=np.float64)
+    if name == "QSNOWXY" and "QSNOW" in fields:
+        return np.sum(np.asarray(fields["QSNOW"], dtype=np.float64), axis=0)
+    if name == "QRAINXY" and "QRAIN" in fields:
+        return np.sum(np.asarray(fields["QRAIN"], dtype=np.float64), axis=0)
+    if name == "ITIMESTEP":
+        dt_s = _lookup(namelist, "dt_s", _lookup(namelist, "time_step", None))
+        if dt_s not in (None, 0):
+            return int(round(float(lead_hours) * 3600.0 / float(dt_s)))
+        return int(round(float(lead_hours) * 60.0))
+    if name == "THIS_IS_AN_IDEAL_RUN":
+        return int(bool(_lookup(namelist, "this_is_an_ideal_run", False)))
+    if name == "GOT_VAR_SSO":
+        return int(any(k in fields for k in ("VAR", "CON", "OA1", "OL1", "VAR_SSO")))
+    if name == "T00":
+        return float(_lookup(namelist, "t00", P0_THETA_OFFSET_K))
+    if name == "P00":
+        return float(_lookup(namelist, "p00", P0_PA))
+    if name == "TLP":
+        return float(_lookup(namelist, "tlp", 50.0))
+    if name == "TISO":
+        return float(_lookup(namelist, "tiso", 200.0))
+    if name == "P_STRAT":
+        return float(_lookup(namelist, "p_strat", 0.0))
+    if name == "TLP_STRAT":
+        return float(_lookup(namelist, "tlp_strat", 0.0))
+    if name == "ZETATOP":
+        return float(_lookup(namelist, "zetatop", 0.0))
+    if name == "RESM":
+        return float(_lookup(namelist, "resm", 0.0))
+    if name in {"HFX_FORCE", "LH_FORCE", "TSK_FORCE", "HFX_FORCE_TEND", "LH_FORCE_TEND", "TSK_FORCE_TEND"}:
+        return 0.0
+    if name == "SAVE_TOPO_FROM_REAL":
+        return int(bool(_lookup(namelist, "save_topo_from_real", False)))
+    if name == "BATHYMETRY_FLAG":
+        return int(bool(_lookup(namelist, "bathymetry_flag", False)))
+    del run_start  # currently only lead_hours contributes to derived full fields.
+    return None
+
+
+def _full_area2d(fields: Mapping[str, np.ndarray], grid: Any, shape: tuple[int, ...]) -> np.ndarray | None:
+    projection = _lookup(grid, "projection")
+    dx_m = _lookup(projection, "dx_m", _lookup(grid, "dx", None))
+    dy_m = _lookup(projection, "dy_m", _lookup(grid, "dy", dx_m))
+    if dx_m is None or dy_m is None:
+        return None
+    area = float(dx_m) * float(dy_m)
+    if "MAPFAC_MX" in fields and "MAPFAC_MY" in fields:
+        mapx = np.maximum(np.asarray(fields["MAPFAC_MX"], dtype=np.float64), 1.0e-12)
+        mapy = np.maximum(np.asarray(fields["MAPFAC_MY"], dtype=np.float64), 1.0e-12)
+        return area / (mapx * mapy)
+    return np.full(shape, area, dtype=np.float64)
+
+
+def _full_default_value(name: str, shape: tuple[int, ...], *, dtype: Any) -> np.ndarray:
+    del name
+    return np.zeros(shape, dtype=dtype)
 
 
 def _add_derived_diagnostic_fields(

@@ -1365,6 +1365,375 @@ def horizontal_diffusion_coord_momentum_tendency(
     return du, dv, dw
 
 
+def dry_brunt_vaisala_squared(
+    theta: jax.Array,
+    *,
+    dz_m: jax.Array | float,
+    gravity: float = GRAVITY_M_S2,
+) -> jax.Array:
+    """Dry WRF-style ``BN2`` on mass levels for idealized diffusion gates.
+
+    WRF's ``calculate_N2`` includes moist virtual-temperature terms.  The current
+    dycore diffusion path has no resident moist thermodynamic oracle at this
+    layer, so the LES/turbulence gate uses the dry reduction
+    ``N^2 = g/theta * dtheta/dz``.  It is exact for the dry idealized fixtures and
+    remains a physically signed stability term for real states until the moist
+    ``calculate_N2`` savepoint is threaded in.
+    """
+
+    nz = int(theta.shape[0])
+    if nz < 2:
+        return jnp.zeros_like(theta)
+    dz = jnp.asarray(dz_m, dtype=theta.dtype)
+    dthdz = jnp.zeros_like(theta)
+    dthdz = dthdz.at[0, :, :].set((theta[1, :, :] - theta[0, :, :]) / dz)
+    dthdz = dthdz.at[nz - 1, :, :].set((theta[nz - 1, :, :] - theta[nz - 2, :, :]) / dz)
+    if nz > 2:
+        dthdz = dthdz.at[1 : nz - 1, :, :].set((theta[2:, :, :] - theta[:-2, :, :]) / (2.0 * dz))
+    return float(gravity) * dthdz / theta
+
+
+def _mass_average_from_d12(d12: jax.Array) -> jax.Array:
+    """Average WRF corner ``D12`` to mass cells."""
+
+    return 0.25 * (
+        d12
+        + jnp.roll(d12, -1, axis=1)
+        + jnp.roll(d12, -1, axis=2)
+        + jnp.roll(jnp.roll(d12, -1, axis=1), -1, axis=2)
+    )
+
+
+def _mass_average_from_d13(d13: jax.Array) -> jax.Array:
+    """Average WRF x/z ``D13`` faces to mass cells."""
+
+    nz = int(d13.shape[0]) - 1
+    return 0.25 * (
+        d13[0:nz]
+        + d13[1 : nz + 1]
+        + jnp.roll(d13[0:nz], -1, axis=2)
+        + jnp.roll(d13[1 : nz + 1], -1, axis=2)
+    )
+
+
+def _mass_average_from_d23(d23: jax.Array) -> jax.Array:
+    """Average WRF y/z ``D23`` faces to mass cells."""
+
+    nz = int(d23.shape[0]) - 1
+    return 0.25 * (
+        d23[0:nz]
+        + d23[1 : nz + 1]
+        + jnp.roll(d23[0:nz], -1, axis=1)
+        + jnp.roll(d23[1 : nz + 1], -1, axis=1)
+    )
+
+
+def smag3d_km(
+    d11: jax.Array,
+    d22: jax.Array,
+    d33: jax.Array,
+    d12: jax.Array,
+    d13: jax.Array,
+    d23: jax.Array,
+    bn2: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    rdzw: jax.Array | float,
+    dt_s: float,
+    c_s: float = C_S_DEFAULT,
+    prandtl: float = PRANDTL,
+    mix_upper_bound: float = 0.1,
+    isotropic: bool = False,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
+    """WRF ``smag_km`` 3-D Smagorinsky eddy viscosity (``km_opt=3``).
+
+    Returns ``(xkmh, xkmv, xkhh, xkhv)`` on mass cells.  This is a literal
+    interior/periodic transcription of ``module_diffusion_em.F:smag_km``:
+    full 3-D deformation invariant, buoyancy reduction ``def2 - BN2/pr``, WRF
+    lower diffusivity floor ``1e-6*l^2``, and the Registry
+    ``mix_upper_bound`` explicit-stability cap.
+    """
+
+    dx = float(dx_m)
+    dy = float(dy_m)
+    dt = float(dt_s)
+    cs2 = float(c_s) * float(c_s)
+    pr = float(prandtl)
+    mub = float(mix_upper_bound)
+    dtype = d11.dtype
+    msftx_m = _mass_metric_or_one(msftx, d11)
+    msfty_m = _mass_metric_or_one(msfty, d11)
+    rdzw_m = _mass3_or_one(rdzw, d11)
+
+    d12_m = _mass_average_from_d12(d12)
+    d13_m = _mass_average_from_d13(d13)
+    d23_m = _mass_average_from_d23(d23)
+    def2 = (
+        0.5 * (d11 * d11 + d22 * d22 + d33 * d33)
+        + d12_m * d12_m
+        + d13_m * d13_m
+        + d23_m * d23_m
+    )
+    strain = jnp.sqrt(jnp.maximum(jnp.asarray(0.0, dtype=dtype), def2 - bn2 / pr))
+    mlen_h2 = (dx / msftx_m[None, :, :]) * (dy / msfty_m[None, :, :])
+    mlen_h = jnp.sqrt(mlen_h2)
+    mlen_v = 1.0 / rdzw_m
+    mlen_v2 = mlen_v * mlen_v
+    cap_h = mub * mlen_h2 / dt
+    cap_v = mub * mlen_v2 / dt
+
+    if bool(isotropic):
+        deltas2 = (mlen_h2 * mlen_v) ** (2.0 / 3.0)
+        base = jnp.maximum(cs2 * deltas2 * strain, 1.0e-6 * deltas2)
+        xkmh = jnp.minimum(base, cap_h)
+        # WRF assigns xkmv from the capped xkmh and then applies the vertical cap.
+        xkmv = jnp.minimum(xkmh, cap_v)
+    else:
+        xkmh = jnp.maximum(cs2 * mlen_h2 * strain, 1.0e-6 * mlen_h2)
+        xkmh = jnp.minimum(xkmh, cap_h)
+        xkmv = jnp.maximum(cs2 * mlen_v2 * strain, 1.0e-6 * mlen_v2)
+        xkmv = jnp.minimum(xkmv, cap_v)
+
+    xkhh = jnp.minimum(xkmh / pr, cap_h)
+    xkhv = jnp.minimum(xkmv / pr, cap_v)
+    return xkmh, xkmv, xkhh, xkhv
+
+
+def _stable_tke_length(
+    tke: jax.Array,
+    bn2: jax.Array,
+    base_length: jax.Array,
+    *,
+    tke_seed: float = 1.0e-6,
+) -> jax.Array:
+    """Deardorff stable length limiter used by WRF TKE diffusion."""
+
+    tmp = jnp.sqrt(jnp.maximum(tke, jnp.asarray(float(tke_seed), dtype=tke.dtype)))
+    stable_length = 0.76 * tmp / jnp.sqrt(jnp.maximum(jnp.abs(bn2), jnp.asarray(1.0e-20, dtype=tke.dtype)))
+    return jnp.where(bn2 > 0.0, jnp.minimum(base_length, stable_length), base_length)
+
+
+def _pthl(d: jax.Array, h: jax.Array) -> jax.Array:
+    """WRF SMS partial function for heat flux (``module_diffusion_em.F:pthl``)."""
+
+    a1, a2, a3 = 1.000, 0.870, -0.913
+    a4, a5, a6, a7 = 1.000, 0.153, 0.278, 0.280
+    doh = d / jnp.where(h != 0.0, h, jnp.ones_like(h))
+    num = a1 * doh**2.0 + a2 * doh**0.5 + a3
+    den = a4 * doh**2.0 + a5 * doh**0.5 + a6
+    value = jnp.where(h != 0.0, a7 * num / den + (1.0 - a7), 1.0)
+    value = jnp.minimum(jnp.maximum(value, 0.0), 1.0)
+    return jnp.where(d <= 100.0, 0.0, value)
+
+
+def _pu(d: jax.Array, h: jax.Array) -> jax.Array:
+    """WRF SMS partial function for momentum flux (``module_diffusion_em.F:pu``)."""
+
+    a1, a2, a3, a4, a5 = 1.0, 0.070, 1.0, 0.142, 0.071
+    doh = d / jnp.where(h != 0.0, h, jnp.ones_like(h))
+    num = a1 * doh**2.0 + a2 * doh**0.6666667
+    den = a3 * doh**2.0 + a4 * doh**0.6666667 + a5
+    value = jnp.where(h != 0.0, num / den, 1.0)
+    value = jnp.minimum(jnp.maximum(value, 0.0), 1.0)
+    return jnp.where(d <= 100.0, 0.0, value)
+
+
+def tke3d_km(
+    tke: jax.Array,
+    theta: jax.Array,
+    bn2: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    rdzw: jax.Array | float,
+    dt_s: float,
+    km_opt: int = 2,
+    c_k: float = 0.15,
+    prandtl: float = PRANDTL,
+    mix_upper_bound: float = 0.1,
+    isotropic: bool = False,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+    smag_xkmh: jax.Array | None = None,
+    smag_xkhh: jax.Array | None = None,
+    hpbl: jax.Array | None = None,
+    dlk: jax.Array | None = None,
+    tke_seed: float = 1.0e-6,
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
+    """WRF TKE-based eddy viscosity for ``km_opt=2`` and SMS ``km_opt=5``.
+
+    The ``km_opt=2`` branch follows ``tke_km`` for the dry, interior periodic
+    case.  ``km_opt=5`` adds the WRF SMS blend of 2-D Smagorinsky horizontal K
+    and TKE vertical K using ``pthl``/``pu``; when no PBL height/mesoscale length
+    is supplied the caller gets a deterministic idealized fallback, not a host
+    callback or disabled branch.
+    """
+
+    del theta  # BN2 already carries the dry stability information in this layer.
+    dx = float(dx_m)
+    dy = float(dy_m)
+    dt = float(dt_s)
+    ck = float(c_k)
+    pr = float(prandtl)
+    mub = float(mix_upper_bound)
+    msftx_m = _mass_metric_or_one(msftx, tke)
+    msfty_m = _mass_metric_or_one(msfty, tke)
+    rdzw_m = _mass3_or_one(rdzw, tke)
+    mlen_h2 = (dx / msftx_m[None, :, :]) * (dy / msfty_m[None, :, :])
+    mlen_h = jnp.sqrt(mlen_h2)
+    deltas = 1.0 / rdzw_m
+    tmp = jnp.sqrt(jnp.maximum(tke, jnp.asarray(float(tke_seed), dtype=tke.dtype)))
+
+    if bool(isotropic):
+        base_len = (mlen_h2 * deltas) ** (1.0 / 3.0)
+        l_scale = _stable_tke_length(tke, bn2, base_len, tke_seed=tke_seed)
+        xkmh = jnp.minimum(ck * tmp * l_scale, mub * mlen_h2 / dt)
+        xkmv = jnp.minimum(ck * tmp * l_scale, mub * deltas * deltas / dt)
+        pr_inv = 1.0 + 2.0 * l_scale / base_len
+        xkhh = jnp.minimum(xkmh * pr_inv, mub * mlen_h2 / dt)
+        xkhv = jnp.minimum(xkmv * pr_inv, mub * deltas * deltas / dt)
+    else:
+        mlen_v = _stable_tke_length(tke, bn2, deltas, tke_seed=tke_seed)
+        xkmh = jnp.maximum(ck * tmp * mlen_h, 1.0e-6 * mlen_h2)
+        xkmh = jnp.minimum(xkmh, mub * mlen_h2 / dt)
+        xkmv = jnp.maximum(ck * tmp * mlen_v, 1.0e-6 * deltas * deltas)
+        xkmv = jnp.minimum(xkmv, mub * deltas * deltas / dt)
+        xkhh = xkmh / pr
+        xkhv = xkmv * (1.0 + 2.0 * mlen_v / deltas)
+
+    if int(km_opt) == 5:
+        if smag_xkmh is None or smag_xkhh is None:
+            raise ValueError("km_opt=5 requires smag_xkmh and smag_xkhh")
+        hpbl2d = (
+            jnp.full(tke.shape[1:], 1000.0, dtype=tke.dtype)
+            if hpbl is None
+            else jnp.asarray(hpbl, dtype=tke.dtype)
+        )
+        dlk3d = jnp.full_like(tke, jnp.mean(deltas)) if dlk is None else jnp.asarray(dlk, dtype=tke.dtype)
+        delxy = mlen_h
+        pth1 = _pthl(delxy, hpbl2d[None, :, :])
+        pu1 = _pu(delxy, hpbl2d[None, :, :])
+        mlen_v = _stable_tke_length(tke, bn2, deltas, tke_seed=tke_seed)
+        xkmh_t = ck * tmp * mlen_h
+        xkmv_meso = 0.4 * tmp * dlk3d
+        xkmv_les = ck * tmp * mlen_v
+        xkmv = (1.0 - pu1) * xkmv_les + pu1 * xkmv_meso
+        xkmv = jnp.minimum(xkmv, 1000.0)
+        pr_inv_v_les = 1.0 + 2.0 * mlen_v / deltas
+        xkhh_t = xkmh_t / pr
+        xkhv = xkmv * (1.0 - pth1) * pr_inv_v_les + pth1 * xkmv
+        xkhv = jnp.minimum(xkhv, 1000.0)
+        xkmh = pth1 * smag_xkmh + (1.0 - pth1) * xkmh_t
+        xkhh = pth1 * smag_xkhh + (1.0 - pth1) * xkhh_t
+    elif int(km_opt) != 2:
+        raise ValueError("tke3d_km supports km_opt=2 or km_opt=5")
+
+    return xkmh, xkmv, xkhh, xkhv
+
+
+def vertical_diffusion_coord_scalar_tendency(
+    field: jax.Array,
+    xkhv: jax.Array,
+    mass: jax.Array,
+    *,
+    dz_m: jax.Array | float,
+    base_3d: jax.Array | None = None,
+) -> jax.Array:
+    """Mass-coupled variable-K vertical scalar diffusion with zero boundary flux.
+
+    This is the flat-grid interior reduction of WRF ``vertical_diffusion_s``.
+    It returns a coupled tendency on ``field``'s own grid.  ``xkhv`` may live on
+    mass levels or, for a z-face field, may already be averaged to the face grid.
+    """
+
+    diff_field = field if base_3d is None else (field - base_3d)
+    dz = jnp.asarray(dz_m, dtype=field.dtype)
+    nz = int(field.shape[0])
+    tend = jnp.zeros_like(field)
+    if nz < 3:
+        return tend
+    k_arr = jnp.asarray(xkhv, dtype=field.dtype)
+    if int(k_arr.shape[0]) == nz - 1:
+        k_face = k_arr
+    else:
+        k_face = 0.5 * (k_arr[:-1, :, :] + k_arr[1:, :, :])
+    mass_face = 0.5 * (mass[:-1, :, :] + mass[1:, :, :])
+    flux = mass_face * k_face * (diff_field[1:, :, :] - diff_field[:-1, :, :]) / dz
+    full_flux = jnp.zeros((nz + 1,) + tuple(field.shape[1:]), dtype=field.dtype)
+    full_flux = full_flux.at[1:nz, :, :].set(flux)
+    return tend + (full_flux[1 : nz + 1, :, :] - full_flux[0:nz, :, :]) / dz
+
+
+def tke_rhs_tendency(
+    tke: jax.Array,
+    mass: jax.Array,
+    d11: jax.Array,
+    d22: jax.Array,
+    d33: jax.Array,
+    d12: jax.Array,
+    d13: jax.Array,
+    d23: jax.Array,
+    bn2: jax.Array,
+    xkmh: jax.Array,
+    xkmv: jax.Array,
+    xkhv: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    rdzw: jax.Array | float,
+    dt_s: float,
+    c_k: float = 0.15,
+    km_opt: int = 2,
+    tke_seed: float = 1.0e-6,
+) -> jax.Array:
+    """WRF ``tke_rhs`` dry interior production/buoyancy/dissipation tendency.
+
+    Surface drag/heat flux and moist nonlocal flux terms are intentionally absent
+    here; zero-flux idealized fixtures use exactly this reduction.  The returned
+    tendency is mass-coupled, matching WRF ``tke_tend`` and the scalar large-step
+    update.
+    """
+
+    d12_m = _mass_average_from_d12(d12)
+    d13_m = _mass_average_from_d13(d13)
+    d23_m = _mass_average_from_d23(d23)
+    shear = mass * (
+        0.5 * xkmh * d11 * d11
+        + 0.5 * xkmh * d22 * d22
+        + 0.5 * xkmv * d33 * d33
+        + xkmh * d12_m * d12_m
+        + xkmv * d13_m * d13_m
+        + xkmv * d23_m * d23_m
+    )
+    buoyancy = -mass * xkhv * bn2
+
+    dx = float(dx_m)
+    dy = float(dy_m)
+    rdzw_m = _mass3_or_one(rdzw, tke)
+    deltas = ((dx * dy) / rdzw_m) ** (1.0 / 3.0)
+    l_scale = _stable_tke_length(tke, bn2, deltas, tke_seed=tke_seed)
+    ce1 = (float(c_k) / 0.10) * 0.19
+    ce2 = max(0.0, 0.93 - ce1)
+    nz = int(tke.shape[0])
+    k_index = jnp.arange(nz, dtype=tke.dtype)[:, None, None]
+    boundary = (k_index == 0) | (k_index == nz - 1)
+    coefc = jnp.where(boundary, 3.9, ce1 + ce2 * l_scale / deltas)
+    if int(km_opt) == 5:
+        # WRF km_opt=5 routes dissipation through an implicit l_diss solve.  The
+        # explicit idealized gate uses the same TKE sink family with a gentler SMS
+        # coefficient to keep the tendency physically signed until that implicit
+        # solve is ported.
+        coefc = jnp.where(boundary, 3.9, jnp.minimum(coefc, 0.3))
+    tketmp = jnp.maximum(tke, jnp.asarray(float(tke_seed), dtype=tke.dtype))
+    dissip = -mass * coefc * (tketmp ** 1.5) / l_scale
+    tendency = shear + buoyancy + dissip
+    lower = -mass * jnp.maximum(jnp.asarray(0.0, dtype=tke.dtype), tke) / float(dt_s)
+    return jnp.maximum(tendency, lower)
+
+
 __all__ = [
     "sixth_order_diffusion_tendency",
     "constant_k_diffusion_tendency",
@@ -1377,6 +1746,11 @@ __all__ = [
     "C_S_DEFAULT",
     "horizontal_deformation_2d",
     "smag2d_horizontal_km",
+    "dry_brunt_vaisala_squared",
+    "smag3d_km",
+    "tke3d_km",
+    "vertical_diffusion_coord_scalar_tendency",
+    "tke_rhs_tendency",
     "horizontal_diffusion_coord_scalar_tendency",
     "horizontal_diffusion_coord_momentum_tendency",
 ]

@@ -13,7 +13,7 @@ invented.  A wrong land-surface static is a silently-wrong forecast, which the
 project forbids, so the ISBA-soil-constant path is falsifiably checked against the
 pristine-WRF PX oracle savepoints in ``tests/test_v018_lsm_static_extract.py``.
 
-Pristine WRF sources (``<USER_HOME>/src/wrf_pristine/WRF``):
+Pristine WRF sources (``/home/user/src/wrf_pristine/WRF``):
   * SLAB THC/EMISS/Z0/MAVAIL = THERIN/SFEM/SFZ0/SLMO[LU_INDEX, ISN] / scale --
     ``phys/module_physics_init.F:1958-1972`` (landuse_init), with the season index
     ISN from ``phys/module_physics_init.F:1833-1835``:
@@ -52,10 +52,9 @@ from gpuwrf.coupling.pleim_xiu_surface_hook import PleimXiuStaticBundle
 from gpuwrf.coupling.slab_surface_hook import SlabStaticBundle
 from gpuwrf.physics.lsm_pleim_xiu import PleimXiuStatic
 
-# Default pristine WRF tree (the dycore arbiter build). Env-overridable via
-# GPUWRF_WRF_ROOT (config.paths.wrf_root); the explicit ``pristine_wrf=``
-# argument still takes precedence, and an embedded table copy is used when the
-# tree is unavailable.
+# Import-time compatibility snapshot. Public extractors re-resolve wrf_root()
+# when ``pristine_wrf`` is omitted, so a late GPUWRF_WRF_ROOT assignment still
+# wins; an explicit ``pristine_wrf=`` argument takes precedence.
 PRISTINE_WRF = wrf_root()
 LANDUSE_BLOCK = "MODIFIED_IGBP_MODIS_NOAH"
 # MODIFIED_IGBP_MODIS_NOAH water category (no-data IS=0 remaps here):
@@ -95,6 +94,10 @@ SLAB_ZS = np.array([0.005, 0.02, 0.05, 0.11, 0.23], dtype=np.float64)
 # oracle savepoint (proofs/v017/savepoints/pxlsm/fp64/pxlsm_case_*.json DS1/DS2).
 PX_DS1 = 0.01
 PX_DS2 = 0.99
+
+
+def _resolve_pristine_wrf(pristine_wrf: Path | None) -> Path:
+    return Path(pristine_wrf) if pristine_wrf is not None else wrf_root()
 
 # Verified embedded MODIFIED_IGBP_MODIS_NOAH LANDUSE.TBL columns (run/LANDUSE.TBL,
 # transcribed + checked against the file in the tests).  cat -> (SFEM, SFZ0, THERIN)
@@ -377,7 +380,7 @@ def extract_slab_static(
     *,
     season: int | None = None,
     ifsnow: int = 0,
-    pristine_wrf: Path = PRISTINE_WRF,
+    pristine_wrf: Path | None = None,
 ) -> SlabStaticBundle:
     """Extract the slab (sf=1) ``SlabStaticBundle`` from a real ``wrfinput``.
 
@@ -388,6 +391,7 @@ def extract_slab_static(
     (overridable via ``season``).  ZS/DZS/TMN/SNOWC come straight from wrfinput.
     """
 
+    pristine_wrf = _resolve_pristine_wrf(pristine_wrf)
     lu = _load(run, domain, "LU_INDEX")
     if lu is None:
         raise KeyError(f"wrfinput {domain} lacks LU_INDEX (required for slab THC/EMISS)")
@@ -449,7 +453,7 @@ def extract_pleim_xiu_static(
     *,
     season: int | None = None,
     ifsnow: int = 0,
-    pristine_wrf: Path = PRISTINE_WRF,
+    pristine_wrf: Path | None = None,
 ) -> PleimXiuStaticBundle:
     """Extract the Pleim-Xiu (sf=7) ``PleimXiuStaticBundle`` from a real ``wrfinput``.
 
@@ -461,6 +465,7 @@ def extract_pleim_xiu_static(
     default 0 (the PX-only input fields are absent -> "no impact", per LANDUSE.TBL).
     """
 
+    pristine_wrf = _resolve_pristine_wrf(pristine_wrf)
     lu = _load(run, domain, "LU_INDEX")
     if lu is None:
         raise KeyError(f"wrfinput {domain} lacks LU_INDEX (required for PX emissi/znt/rstmin)")

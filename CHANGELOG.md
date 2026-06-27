@@ -7,6 +7,31 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.22.0] - 2026-06-27
+
+Default-safe feature integration on top of `v0.21.1`. The default fp64
+fused+AOT forecast path remains bit-identical to v0.21.1; all new runtime
+behavior is opt-in, validation-only, or fail-closed. Full notes:
+[`RELEASE_NOTES_v0.22.0.md`](RELEASE_NOTES_v0.22.0.md).
+
+### Added
+- **Validated opt-in feature rows.** v0.22.0 lands G0 two-way nesting feedback,
+  F1 3-D TKE / Smagorinsky, G2 375-variable output, G1 data assimilation, and
+  the E validation harness as explicit opt-in or validation-only capabilities.
+- **Default-safe release hygiene.** The release includes opt-in K2
+  `time_step` / `n_sound` tuning support, AOT signature hardening, portable
+  WRF-root lookup, async wrfout support, and corrected default bit-identity
+  framing.
+- **Public tests for v0.22 gates.** CPU tests cover the new feature paths,
+  fail-closed scaffold selections, WRF-root portability, async output, and
+  boundary/state contract preservation.
+
+### Changed
+- **Fail-closed scaffolds are explicit.** F2 cumulus+microphysics+LSM, F3
+  CAM-UW PBL, G2 moving-nests/adaptive/global nesting, and G3 urban/lake are
+  recognized as partial scaffolds. They remain default-off and are not claimed
+  as WRF-faithful operational implementations.
+
 ## [0.21.1] - 2026-06-27
 
 Point release off `v0.21.0` for the Mont-Blanc-class extreme-terrain stability

@@ -15,6 +15,12 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from gpuwrf.config.paths import wrf_phys_path
+
 FIXTURE_ID = "analytic-thompson-column-v1"
 SAMPLE = ROOT / "fixtures" / "samples" / f"{FIXTURE_ID}.npz"
 MANIFEST = ROOT / "fixtures" / "manifests" / f"{FIXTURE_ID}.yaml"
@@ -23,13 +29,14 @@ BUILD_SCRIPT = ROOT / "scripts" / "wrf_thompson_harness_build.sh"
 HARNESS = SCRATCH / "wrf_thompson_harness"
 TABLE_ASSET = ROOT / "data" / "fixtures" / "thompson-tables-v1.npz"
 WRF_SOURCE_CANDIDATES = (
+    wrf_phys_path("module_mp_thompson.F.pre"),
+    wrf_phys_path("module_mp_thompson.F"),
     ROOT.parent
     / "wrf_gpu"
     / "sidecar_reports"
     / "post13_thompson_first_divergence_20260508T224837Z"
     / "source_snapshots_pre"
     / "module_mp_thompson.F.pre",
-    Path("<USER_HOME>/src/wrf_gpu/sidecar_reports/post13_thompson_first_divergence_20260508T224837Z/source_snapshots_pre/module_mp_thompson.F.pre"),
 )
 WRF_SOURCE = next((path for path in WRF_SOURCE_CANDIDATES if path.exists()), WRF_SOURCE_CANDIDATES[0])
 

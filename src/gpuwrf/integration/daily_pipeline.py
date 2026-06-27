@@ -36,6 +36,7 @@ from gpuwrf.io.auxhist_stream import (
     coerce_auxhist_streams,
 )
 from gpuwrf.io.wrfout_writer import (
+    FULL_WRFOUT_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
     prepare_wrfout_payload,
     write_prepared_wrfout,
@@ -70,6 +71,8 @@ RUN_ROOT = paths.wrf_l3_root()
 DEFAULT_RUN_ID = "20260521_18z_l3_24h_20260522T133443Z"
 DEFAULT_OUTPUT_ROOT = Path("/tmp/m7_pipeline_runs/20260521")
 DT_S = 10.0
+_ASYNC_TRUE_TOKENS = {"1", "true", "on", "yes"}
+_ASYNC_FALSE_TOKENS = {"0", "false", "off", "no"}
 CPU_TIMING_RE = re.compile(
     r"Timing for main: time "
     r"(?P<stamp>\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2}) "
@@ -126,6 +129,9 @@ class DailyPipelineConfig:
     # ->host pull still happens synchronously on the main thread; only the NetCDF
     # write is overlapped, so output bytes/ordering are unchanged. Set False to
     # restore the fully-synchronous writer (e.g. for an A/B wall-clock baseline).
+    # Safe-default guard: CPU-WRF replay with hourly land refresh opens reference
+    # NetCDF during the next hour, so that case falls back to sync unless
+    # GPUWRF_DAILY_ASYNC_OUTPUT=1 explicitly opts into the thread overlap.
     async_output: bool = True
     # Optional WRF auxiliary-history (``auxhist``) secondary output streams. WRF
     # drives up to 24 INDEPENDENT auxhist streams (auxhist1..auxhist24), each with
@@ -142,6 +148,11 @@ class DailyPipelineConfig:
     #                                    GPU output at its lead, never interpolated.
     # Use ``auxhist_streams`` for the normalized tuple. See gpuwrf.io.auxhist_stream.
     auxhist: AuxhistStreamConfig | Sequence[AuxhistStreamConfig] | None = None
+    # Opt-in heavy WRF compatibility stream: main wrfout and auxhist prepared
+    # payloads contain the exact 375-variable WRF history list. Default False keeps
+    # the existing operational subset unchanged. Also enabled by
+    # GPUWRF_FULL_WRFOUT_VARIABLES=1 / GPUWRF_FULL_WRFOUT=1.
+    full_wrfout_variables: bool = False
 
     @property
     def auxhist_streams(self) -> tuple[AuxhistStreamConfig, ...]:
@@ -744,6 +755,50 @@ def _auxhist_substeps_per_hour(config: DailyPipelineConfig) -> int:
     return auxhist_substeps_per_hour(config.auxhist_streams)
 
 
+def _daily_replay_land_refresh_reads_netcdf(
+    config: DailyPipelineConfig, case: DailyCase
+) -> bool:
+    return (
+        bool(config.refresh_land_state_hourly)
+        and case.metadata.get("source") == "gpuwrf.integration.d02_replay.build_replay_case"
+        and not bool(case.metadata.get("standalone_native_init"))
+    )
+
+
+def _daily_async_output_from_config(
+    config: DailyPipelineConfig, case: DailyCase
+) -> bool:
+    """Resolve async wrfout output for the single-domain daily pipeline.
+
+    The async writer is byte-identical because the live state is materialized to a
+    host-only ``PreparedWrfout`` before submit. The remaining safety concern is
+    NetCDF4/HDF5 thread concurrency: CPU-WRF replay land refresh reads reference
+    wrfout history in the main thread while a previous output write may still be
+    active. That case stays synchronous by default and requires an explicit
+    ``GPUWRF_DAILY_ASYNC_OUTPUT=1`` opt-in.
+    """
+
+    if not bool(config.async_output):
+        return False
+    raw = os.environ.get("GPUWRF_DAILY_ASYNC_OUTPUT", "").strip().lower()
+    if raw in _ASYNC_FALSE_TOKENS:
+        return False
+    force_async = raw in _ASYNC_TRUE_TOKENS
+    if _daily_replay_land_refresh_reads_netcdf(config, case) and not force_async:
+        return False
+    return True
+
+
+def _full_wrfout_variables_enabled(config: DailyPipelineConfig) -> bool:
+    if bool(config.full_wrfout_variables):
+        return True
+    for env_name in ("GPUWRF_FULL_WRFOUT_VARIABLES", "GPUWRF_FULL_WRFOUT"):
+        raw = os.environ.get(env_name, "").strip().lower()
+        if raw in _ASYNC_TRUE_TOKENS:
+            return True
+    return False
+
+
 def _emit_auxhist_frame(
     *,
     stream: AuxhistStreamConfig,
@@ -755,6 +810,7 @@ def _emit_auxhist_frame(
     diagnostics: Mapping[str, Any] | None,
     writer: AsyncWrfoutWriter | None,
     prepared: Any | None = None,
+    full_variable_set: bool = False,
 ) -> Path | None:
     """Write one frame for ``stream`` if ``lead_minutes`` is its output boundary.
 
@@ -782,6 +838,7 @@ def _emit_auxhist_frame(
             lead_hours=float(lead_minutes) / 60.0,
             run_start=case.run_start,
             diagnostics=output_diagnostics,
+            full_variable_set=full_variable_set,
         )
     subset = stream.variable_subset
     if writer is not None:
@@ -1106,6 +1163,7 @@ def _run_forecast_sequence(
     # interval; multiple streams may fire at the same boundary (e.g. a 15-min and a
     # 60-min stream both fire at :00) and then share ONE device->host pull.
     streams = config.auxhist_streams
+    full_variable_set = _full_wrfout_variables_enabled(config)
     # Sub-hour stepping granularity. 1 segment/hour (a full-hour advance) unless an
     # auxhist stream needs finer cadence, in which case the hour is advanced in
     # equal gcd(60, intervals)-minute segments so each auxhist frame is GENUINE
@@ -1120,7 +1178,7 @@ def _run_forecast_sequence(
     # thread while the GPU advances hour N+1. The device->host pull stays on the
     # main thread (prepare_wrfout_payload) so no device buffer is read off-thread;
     # only the NetCDF write is overlapped. join()ed below before any wrfout is read.
-    writer = AsyncWrfoutWriter() if bool(config.async_output) else None
+    writer = AsyncWrfoutWriter() if _daily_async_output_from_config(config, case) else None
 
     def _flush_writer() -> None:
         # Drain/join the background writer so all submitted wrfouts are on disk
@@ -1157,12 +1215,14 @@ def _run_forecast_sequence(
                 lead_hours=float(lead_minutes) / 60.0,
                 run_start=case.run_start,
                 diagnostics=_merge_output_diagnostics(case.writer_diagnostics, diagnostics),
+                full_variable_set=full_variable_set,
             )
         for stream in firing:
             aux_path = _emit_auxhist_frame(
                 stream=stream, config=config, state=cur_state, case=case,
                 output_dir=output_dir, lead_minutes=lead_minutes,
                 diagnostics=diagnostics, writer=writer, prepared=shared,
+                full_variable_set=full_variable_set,
             )
             if aux_path is not None:
                 auxhist_files.append(aux_path)
@@ -1274,6 +1334,7 @@ def _run_forecast_sequence(
                 lead_hours=float(hour),
                 run_start=case.run_start,
                 diagnostics=diagnostics,
+                full_variable_set=full_variable_set,
             )
             writer.submit(prepared)
         else:
@@ -1286,6 +1347,7 @@ def _run_forecast_sequence(
                 lead_hours=float(hour),
                 run_start=case.run_start,
                 diagnostics=diagnostics,
+                full_variable_set=full_variable_set,
             )
         files.append(wrfout)
 
@@ -1336,6 +1398,8 @@ def _run_forecast_sequence(
                 "io_form": int(s.io_form),
                 "outname_pattern": s.outname_pattern,
                 "variables": list(s.variables),
+                "prepared_full_variable_set": bool(full_variable_set),
+                "full_variable_count": int(len(FULL_WRFOUT_VARIABLES)) if full_variable_set else None,
                 "frame_count": int(len(auxhist_files_by_stream[int(s.stream_id)])),
                 "files": [str(path) for path in auxhist_files_by_stream[int(s.stream_id)]],
             }

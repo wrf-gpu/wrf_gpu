@@ -56,7 +56,7 @@ def _var_values(path: Path) -> dict[str, np.ndarray]:
         return {k: np.asarray(ds.variables[k][:]) for k in ds.variables}
 
 
-# --- the 36-name training set is well-formed --------------------------------
+# --- the 39-name training set is well-formed --------------------------------
 
 def test_minimal_training_set_is_39_known_specs():
     assert len(MINIMAL_TRAINING_SET) == 39

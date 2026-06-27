@@ -2,7 +2,7 @@
 
 This module answers, for *every* WRF v4 option of the common physics/dynamics
 namelist groups (plus the major feature switches such as WRF-Chem, WRF-Fire,
-FDDA, urban BEP/BEM, moving nests and stochastic physics), the single question a
+FDDA, moving nests and stochastic physics), the single question a
 WRF developer evaluating this port cares about:
 
     "If I set this in my namelist, does the GPU port run it, refuse it with a
@@ -42,8 +42,8 @@ Every option resolves to exactly one :class:`SupportStatus`:
                                stay ``RECOGNIZED_FAIL_CLOSED``.
 * ``OUT_OF_SCOPE``          -- a documented design decision NOT to port this
                                capability (coupled chemistry, wildfire, hydrology,
-                               multi-layer urban canopy, moving/vortex-following
-                               nests, FDDA/4DVAR nudging, stochastic physics).
+                               moving/vortex-following nests, FDDA/4DVAR
+                               nudging, stochastic physics).
                                Selecting it fails closed with the scope decision
                                and the reason.
 
@@ -165,11 +165,14 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # bl=3 GFS is the v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F
     # (BL_GFS -> MONINP, savepoint-parity gated, proofs/v017/gfs_oracle.py ~1e-13);
     # nonlocal-K, consumes the revised-MM5 surface layer (sf_sfclay=1).
+    # bl=9 CAM-UW is the v0.22 CAM5 UW diagnostic-TKE / implicit vertical-
+    # diffusion endpoint. It is operationally scan-wired with an idealized
+    # source-present proof, not full pristine-WRF CAM-stack savepoint parity.
     # bl=11 Shin-Hong is the v0.18 JAX/vmap scale-aware PBL port: dynamics-green
     # operational, with explicit non-driving TKE/EL diagnostic caveat vs the v090
     # PARTIAL reference (TKE rel ~=0.285, EL rel ~=0.013). bl=12 GBM is the
     # v0.18 JAX/vmap moist prognostic-TKE PBL port.
-    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 11, 12, 99}),
+    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 9, 11, 12, 99}),
     # sf_sfclay 3 (NCEP-GFS) + 91 (old-MM5) are v0.13 Tier-3 scan-wired surface
     # layers (coupling.scan_adapters.{gfs_sfclay_adapter,sfclay_old_mm5_adapter};
     # fp64 pristine-WRF oracle-validated; B2 kinematic flux handles).
@@ -239,9 +242,10 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "Tiedtke also requires active flux-form moisture advection for RQVFTEN).",
         ),
         16: (
-            "New Tiedtke is interface-compatible but not separately savepoint-"
-            "gated by a distinct WRF source path; GPU-batching/gating is TODO, so "
-            "it is fail-closed in the operational GPU scan.",
+            "New Tiedtke has module-specific v0.13 single-column fp64 pristine-WRF "
+            "savepoints from phys/module_cu_ntiedtke.F, but no faithful traceable "
+            "JAX kernel or CU scan adapter is wired yet, so it is fail-closed in "
+            "the operational GPU scan.",
             "Use cu_physics=6 (modified Tiedtke with active flux-form moisture "
             "advection for RQVFTEN) or 1/3.",
         ),
@@ -389,7 +393,7 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "proofs/v018/qnse_pbl4_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
             "proofs/v018/run_qnse_pbl4_oracle_check.py for QNSE oracle comparisons.",
         ),
         10: (
@@ -398,7 +402,7 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "proofs/v018/temf_pbl10_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
             "proofs/v018/run_temf_pbl10_oracle_check.py for TEMF oracle comparisons.",
         ),
         16: (
@@ -407,7 +411,7 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "proofs/v018/eeps_pbl16_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
             "proofs/v018/run_eeps_pbl16_oracle_check.py for EEPS oracle comparisons.",
         ),
         17: (
@@ -416,7 +420,7 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "proofs/v018/keps_pbl17_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
             "proofs/v018/run_keps_pbl17_oracle_check.py for KEPS oracle comparisons.",
         ),
     },
@@ -424,9 +428,9 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
     # (host-NumPy savepoint kernels); they are now operationally scan-wired as a
     # mandatory pair via the JAX-traceable physics.bl_myj / physics.sf_myj rewrites
     # (IMPLEMENTED above), so they are no longer listed here. bl=3 GFS is IMPLEMENTED.
-    # bl_pbl_physics=9 (CAM-UW) is NOT reference-only here: the v0.18 endpoint
-    # classification proves it belongs to the CAM physics-family stack rather
-    # than the standalone PBL matrix, so it stays recognized/fail-closed by name.
+    # bl_pbl_physics=9 (CAM-UW) is now IMPLEMENTED as a v0.22 operational
+    # scaffold with WRF-source/idealized proof; full CAM-stack parity remains a
+    # named caveat in its proof object rather than a REFERENCE_ONLY status here.
     # ra_lw_physics=1 (classic RRTM LW) was REFERENCE_ONLY (host-NumPy kernel); it
     # is now operationally scan-wired via the JAX-traceable physics.ra_lw_rrtm_jax
     # rewrite (IMPLEMENTED above), so it is no longer listed here.
@@ -448,11 +452,10 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "3=Grell-Freitas, 6=Tiedtke requires active flux-form moisture advection "
     "for RQVFTEN). Reference-only cumulus options 4/5/14/16/93/94/95/96/99 "
     "fail-close in the operational scan.",
-    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 (5=MYNN, 1=YSU, 2=MYJ "
-    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 11=Shin-Hong, "
-    "12=GBM, 99=MRF). PBL4/10/16/17 are accepted reference-only and fail-close "
-    "in the operational scan; PBL9 CAM-UW is a CAM-family architecture endpoint, "
-    "not part of the standalone PBL operational matrix.",
+    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 (5=MYNN, 1=YSU, 2=MYJ "
+    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 9=CAM-UW, "
+    "11=Shin-Hong, 12=GBM, 99=MRF). PBL4/10/16/17 are accepted reference-only and "
+    "fail-close in the operational scan.",
     "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/3/5/7/91 (5=MYNN-SL, "
     "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 3=NCEP-GFS, "
     "7=Pleim-Xiu, 91=old-MM5).",
@@ -462,14 +465,15 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "ra_lw_physics": "Use ra_lw_physics=4 (RRTMG) or 1 (classic RRTM); 3/5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
     "ra_sw_physics": "Use ra_sw_physics=4 (RRTMG), 1 (Dudhia) or 2 (GSFC/Chou-Suarez); 3/5/7/99 are reference-only, 14/24 are compiled-out in this WRF build.",
     "diff_opt": "Use diff_opt=0/1/2 (1+km_opt=4 = 2-D Smagorinsky real-data "
-    "default; 2+km_opt=1 = constant-K).",
-    "km_opt": "Use km_opt=0/1/4 (4 with diff_opt=1 = 2-D Smagorinsky; 1 with "
-    "diff_opt=2 = constant-K).",
+    "default; 2+km_opt=1/2/3/5 = constant-K / 3-D turbulence closures).",
+    "km_opt": "Use km_opt=0/1/2/3/4/5 (4 with diff_opt=1 = 2-D Smagorinsky; "
+    "1/2/3/5 with diff_opt=2 = constant-K / 3-D TKE / 3-D Smagorinsky / SMS-3DTKE).",
     "damp_opt": "Use damp_opt=0 (off) or 3 (upper-level w-Rayleigh).",
     "diff_6th_opt": "Use diff_6th_opt=0 (off) or 2 (monotonic 6th-order filter).",
     "rk_order": "Use rk_order=3 (WRF RK3).",
     "w_damping": "Use w_damping=0 or 1.",
-    "sf_urban_physics": "Set sf_urban_physics=0 (urban canopy is not ported).",
+    "sf_urban_physics": "Set sf_urban_physics=0; BEP/BEM need the G3 urban state/oracle port before they can run.",
+    "sf_lake_physics": "Set sf_lake_physics=0; the WRF lake column/state/oracle port is not operationally wired.",
 }
 
 
@@ -480,25 +484,49 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
 # --------------------------------------------------------------------------- #
 _DYNAMICS_IMPLEMENTED: Mapping[str, frozenset[int]] = {
     "diff_opt": frozenset({0, 1, 2}),
-    "km_opt": frozenset({0, 1, 4}),
+    "km_opt": frozenset({0, 1, 2, 3, 4, 5}),
     "damp_opt": frozenset({0, 3}),
     "diff_6th_opt": frozenset({0, 2}),
     "rk_order": frozenset({3}),
     "w_damping": frozenset({0, 1}),
-    # Urban canopy: only "off" (0) is a real path; 1/2/3 are out_of_scope below.
+    # Urban/lake feature switches: only "off" (0) is a real path; active codes
+    # are recognized G3 targets that fail closed with source/oracle reasons.
     "sf_urban_physics": frozenset({0}),
+    "sf_lake_physics": frozenset({0}),
 }
 
 # Dynamics options that ARE valid WRF codes but are fail-closed by the port,
-# with an explicit reason + transition recipe. km_opt 2/3/5 (3-D TKE / 3-D
-# Smagorinsky / SMS-3DTKE) are the notable real-data-LES selections the port
-# does not implement; the operational horizontal-mixing path is the 2-D
-# Smagorinsky (diff_opt=1/km_opt=4) or constant-K (diff_opt=2/km_opt=1).
+# with an explicit reason + transition recipe.
 # Per-(key, code) fail-closed reason override for RECOGNIZED_FAIL_CLOSED schemes.
 # Despite the historical name, this is consulted for ANY namelist key in
 # classify_scheme (not only dynamics): it supplies a specific reason in place of
 # the generic "NOT YET IMPLEMENTED" string when the truth is more precise.
 _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
+    "sf_urban_physics": {
+        1: "G3 URBAN fail-closed scaffold: WRF single-layer UCM is recognized, "
+        "but this sprint targets BEP/BEM and no UCM oracle/kernel/state carry is "
+        "operationally wired. The GPU port keeps urban effects limited to land-use "
+        "categories until a source-specific urban canopy port lands.",
+        2: "G3 URBAN fail-closed scaffold: WRF BEP (phys/module_sf_bep.F:BEP, "
+        "~3.5k LOC) needs the Registry bepscheme state package, urban mapping "
+        "tables, vertical urban-grid carry, and a pristine-WRF single-column "
+        "oracle before any GPU scan wiring. No faithful JAX BEP kernel is shipped "
+        "in this one-pass attempt.",
+        3: "G3 URBAN fail-closed scaffold: WRF BEP+BEM combines "
+        "phys/module_sf_bep.F:BEP with phys/module_sf_bem.F:BEM (~6.2k LOC total) "
+        "and the Registry bep_bemscheme state package (building energy, HVAC, PV, "
+        "green-roof, drainage and multi-layer urban-grid fields). No source-"
+        "specific pristine-WRF oracle or faithful JAX kernel is shipped in this "
+        "one-pass attempt.",
+    },
+    "sf_lake_physics": {
+        1: "G3 LAKE fail-closed scaffold: WRF lake model "
+        "(phys/module_sf_lake.F:Lake/LakeMain/lakeini, ~5.4k LOC) needs lake "
+        "depth/category initialization, snow/ice/water column carry, tridiagonal "
+        "thermal solves, hydrology, Monin-Obukhov fluxes and a pristine-WRF "
+        "single-column oracle before GPU scan wiring. No faithful JAX lake kernel "
+        "is shipped in this one-pass attempt.",
+    },
     # mp=24 WSM7 was fail-closed before v0.17 (it carries a separate precipitating
     # hail class qh the operational moist-state pytree did not hold). v0.17 added
     # the qh hail State substrate (ADR-032) + the hail surface accumulator and
@@ -562,13 +590,12 @@ _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
         "IMPLEMENTED as a separate GPU scheme; MP18 is the reference-oracle-"
         "backed exact NSSL target and carries the qh/qnh/qvolg/qvolh-style "
         "state/oracle work.",
-        18: "REFERENCE-WITH-REAL-ORACLE / fail-closed: NSSL 2-moment 4-ice "
-        "with predicted CCN has active pristine-WRF full-model oracle artifacts "
-        "under proofs/v018/mp_oracles/wrf_full_model/mp18 for "
-        "phys/module_mp_nssl_2mom.F selected by mp_physics=18. The JAX endpoint "
-        "is NOT YET IMPLEMENTED: it is the non-legacy NSSL target and needs "
-        "NSSL number/hail-volume state, qvolg/qvolh-style carry, and CCN "
-        "controls before operational scan wiring.",
+        18: "ORACLE-ABSENT / fail-closed: NSSL 2-moment 4-ice with predicted "
+        "CCN is recognized from phys/module_mp_nssl_2mom.F and the WRF Registry "
+        "nssl_2mom package (mp_physics=18), but no local single-column WRF oracle "
+        "artifact is present in this worktree. The JAX endpoint is NOT YET "
+        "IMPLEMENTED: it needs NSSL number/hail-volume state (qh/qnh/qvolg/qvolh), "
+        "qnn CCN controls, and a source-specific oracle before scan wiring.",
         19: "PROVEN-IRRELEVANT / SUPERSEDED legacy NSSL option: "
         "phys/module_mp_nssl_2mom.F recognizes it, but doc/README.NSSLmp maps it "
         "to mp_physics=18 with nssl_2moment_on=0 and nssl_ccn_on=1. It is NOT "
@@ -611,12 +638,13 @@ _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
         "phys/module_mp_full_sbm.F and requires full spectral-bin-state and "
         "external SBM lookup-table architecture. It is NOT YET IMPLEMENTED as an "
         "operational bulk-scheme adapter.",
-        40: "REFERENCE-WITH-REAL-ORACLE / fail-closed: Morrison aerosol "
-        "microphysics has active pristine-WRF full-model oracle artifacts under "
-        "proofs/v018/mp_oracles/wrf_full_model/mp40 for "
-        "phys/module_mp_morr_two_moment_aero.F selected by mp_physics=40. The "
-        "JAX endpoint is NOT YET IMPLEMENTED: it extends Morrison with aerosol "
-        "activation/effectiveness and CCN state fields that are not in the "
+        40: "ORACLE-ABSENT / fail-closed: Morrison aerosol microphysics is "
+        "recognized from phys/module_mp_morr_two_moment_aero.F selected by "
+        "mp_physics=40 (the aerosol-coupled extension of Morrison "
+        "module_mp_morr_two_moment.F), but no local single-column WRF oracle "
+        "artifact is present in this worktree. The JAX endpoint is NOT YET "
+        "IMPLEMENTED: it extends Morrison with aerosol activation/effectiveness, "
+        "CCN diagnostics, and the CESM_RCP4.5 aerosol-data dependency beyond the "
         "current operational mp=10 interface.",
         50: "REFERENCE-WITH-REAL-ORACLE / fail-closed: P3 1-category "
         "microphysics has active pristine-WRF full-model oracle artifacts under "
@@ -689,12 +717,6 @@ _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
         "stub; pristine configure.wrf sets -DBUILD_RRTMG_FAST=0), so it cannot "
         "run even in unmodified WRF -- selecting it hits the driver default abort.",
     },
-    "km_opt": {
-        2: "1.5-order 3-D TKE closure is not implemented (the port mixes "
-        "vertically via the PBL scheme, not a prognostic 3-D TKE field).",
-        3: "3-D Smagorinsky first-order closure is not implemented.",
-        5: "SMS-3DTKE scale-adaptive LES/PBL closure is not implemented.",
-    },
     "damp_opt": {
         1: "Diffusive upper-level damping is not implemented.",
         2: "Rayleigh damping (idealized-only) is not implemented; the real-data "
@@ -709,18 +731,7 @@ _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
     },
 }
 
-_SCHEME_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
-    "bl_pbl_physics": {
-        9: (
-            "UW (CAM5) PBL is a recognized WRF v4 PBL option but is NOT YET "
-            "IMPLEMENTED in the standalone GPU PBL matrix. v0.18 classified it "
-            "as a CAM-family architecture endpoint: phys/module_bl_camuwpbl_driver.F "
-            "requires CAM cloud-number/sedimentation inputs, CAMMGMP coupling, "
-            "and CAM residual-stress/cloud carry state, so it is fail-closed "
-            "until a CAM-family sprint owns the full vertical-diffusion stack."
-        ),
-    },
-}
+_SCHEME_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {}
 
 
 # Physics options that ARE valid WRF v4 codes but are documented v0.18->v1.0
@@ -873,32 +884,10 @@ OUT_OF_SCOPE_FEATURES: tuple[OutOfScopeFeature, ...] = (
     ),
 )
 
-# A small set of integer-enumerated keys whose NON-zero option codes are
-# out_of_scope even though they appear in the WRF catalog: urban canopy 1/2/3.
-# (Single-layer UCM and multi-layer BEP/BEM are all out of scope; only "no urban
-# canopy" = 0 is supported.)
-_OUT_OF_SCOPE_CODES: Mapping[str, dict[int, OutOfScopeFeature]] = {
-    "sf_urban_physics": {
-        1: OutOfScopeFeature(
-            "sf_urban_physics", "single-layer urban canopy (UCM)",
-            "The single-layer urban canopy model (UCM) is out of scope.",
-            "Set sf_urban_physics=0 (urban is treated through the land-surface "
-            "scheme's urban land-use categories).",
-        ),
-        2: OutOfScopeFeature(
-            "sf_urban_physics", "multi-layer urban canopy (BEP)",
-            "The multi-layer Building Effect Parameterization (BEP) urban canopy "
-            "is out of scope.",
-            "Set sf_urban_physics=0.",
-        ),
-        3: OutOfScopeFeature(
-            "sf_urban_physics", "multi-layer urban canopy + building energy (BEM)",
-            "The multi-layer BEP+BEM (Building Energy Model) urban canopy is out "
-            "of scope.",
-            "Set sf_urban_physics=0.",
-        ),
-    },
-}
+# Integer-enumerated out-of-scope codes live here when a recognized WRF code is a
+# permanent product boundary rather than a future-port target. G3 moves urban
+# BEP/BEM from out-of-scope to recognized fail-closed scaffold, so this is empty.
+_OUT_OF_SCOPE_CODES: Mapping[str, dict[int, OutOfScopeFeature]] = {}
 
 OUT_OF_SCOPE_FEATURE_KEYS: frozenset[str] = frozenset(
     f.key.lower() for f in OUT_OF_SCOPE_FEATURES
@@ -1382,7 +1371,7 @@ def classify_scheme(key: str, code: int) -> SchemeSupport:
 
     code = int(code)
 
-    # 1) Out-of-scope enumerated codes (urban BEP/BEM, single-layer UCM).
+    # 1) Out-of-scope enumerated codes, if any.
     oos_codes = _OUT_OF_SCOPE_CODES.get(key)
     if oos_codes is not None and code in oos_codes:
         feat = oos_codes[code]

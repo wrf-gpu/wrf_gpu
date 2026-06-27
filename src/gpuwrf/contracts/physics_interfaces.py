@@ -466,6 +466,27 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
     ),
     PhysicsStepSpec(
         family="pbl",
+        option=9,
+        name="CAM-UW",
+        wrf_slot="first_rk_pbl_driver",
+        owner_module="src/gpuwrf/physics/bl_camuw.py",
+        oracle="v0.22 source-present CAM-UW oracle/idealized finite gate vs "
+        "phys/module_bl_camuwpbl_driver.F + CAM eddy/diffusion modules. Full CAM-stack "
+        "savepoint parity is not claimed until a pristine-WRF CAM fixture exists.",
+        reads_state=("u", "v", "theta", "qv", "qc", "qi", "qke", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
+        writes_state=("u", "v", "theta", "qv", "qc", "qi", "qke"),
+        reads_carry=PBL_CARRY_MEMBERS[9],
+        writes_carry=PBL_CARRY_MEMBERS[9],
+        diagnostics=PBL_DIAGNOSTIC_MEMBERS[9],
+        notes="v0.22 OPERATIONAL scaffold: JAX/vmap CAM-UW diagnostic-TKE and "
+        "implicit vertical diffusion endpoint, scan-wired via "
+        "coupling.scan_adapters.camuw_pbl_adapter -> PBL_SCAN_ADAPTERS[9]. "
+        "Consumes revised-MM5 surface forcing (sf_sfclay=1). The proof is an "
+        "idealized finite/plausible gate with WRF source hashes, not full "
+        "module_bl_camuwpbl_driver.F savepoint parity.",
+    ),
+    PhysicsStepSpec(
+        family="pbl",
         option=10,
         name="TEMF",
         wrf_slot="first_rk_pbl_driver",
@@ -687,7 +708,10 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="New Tiedtke",
         wrf_slot="first_rk_cumulus_driver",
         owner_module="src/gpuwrf/physics/cumulus_tiedtke.py",
-        oracle="M20 physics-oracle factory savepoint at module_cumulus_driver.F:New Tiedtke",
+        oracle="v0.13 single-column fp64 pristine-WRF savepoints from unmodified "
+        "phys/module_cu_ntiedtke.F (proofs/v013/savepoints/cumulus/"
+        "ntiedtke_case_*.json); reference-only until a faithful traceable JAX "
+        "kernel and CU scan adapter land",
         reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
         writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
         returns_accumulators=("rainc_acc",),

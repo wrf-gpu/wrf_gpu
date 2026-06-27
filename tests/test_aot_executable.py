@@ -442,6 +442,55 @@ def _fused_like_key(aux, child_count=1):
     )
 
 
+def test_aval_signature_default_keeps_v0211_leaf_aval_key(monkeypatch):
+    """Default fused cache key stays v0.21.1-compatible for release bit identity."""
+
+    a = jnp.ones((2,), dtype=jnp.float32)
+    b = jnp.zeros((2,), dtype=jnp.float32)
+
+    tuple_state = ((a, b),)
+    dict_state = ({"a": a, "b": b},)
+    fewer_leaves_state = ((a,),)
+
+    monkeypatch.delenv("GPUWRF_AOT_STRICT_AVAL_SIGNATURE", raising=False)
+    tuple_sig = dt._aval_signature(tuple_state)
+    dict_sig = dt._aval_signature(dict_state)
+    fewer_leaves_sig = dt._aval_signature(fewer_leaves_state)
+
+    assert tuple_sig == dict_sig
+    assert tuple_sig != fewer_leaves_sig
+
+
+def test_aval_signature_strict_mode_includes_treedef_and_leaf_count(monkeypatch):
+    """Opt-in strict mode splits identical aval leaves under different pytrees."""
+
+    a = jnp.ones((2,), dtype=jnp.float32)
+    b = jnp.zeros((2,), dtype=jnp.float32)
+
+    tuple_state = ((a, b),)
+    same_tuple_state = (
+        (
+            jnp.full((2,), 3.0, dtype=jnp.float32),
+            jnp.full((2,), 4.0, dtype=jnp.float32),
+        ),
+    )
+    dict_state = ({"a": a, "b": b},)
+    fewer_leaves_state = ((a,),)
+
+    monkeypatch.setenv("GPUWRF_AOT_STRICT_AVAL_SIGNATURE", "1")
+    tuple_sig = dt._aval_signature(tuple_state)
+    dict_sig = dt._aval_signature(dict_state)
+    fewer_leaves_sig = dt._aval_signature(fewer_leaves_state)
+    assert tuple_sig == dt._aval_signature(same_tuple_state)
+    assert tuple_sig[1] == dict_sig[1]
+    assert tuple_sig[0] != dict_sig[0]
+    assert tuple_sig != dict_sig
+    assert tuple_sig != fewer_leaves_sig
+    assert tuple_sig[0][0] == "treedef"
+    assert tuple_sig[0][2] == 2
+    assert fewer_leaves_sig[0][2] == 1
+
+
 def _lower_compile_serialize_variant(name, carry, namelist, cache_dir, advance_like):
     from gpuwrf.runtime import aot_cheap_key as ck
 

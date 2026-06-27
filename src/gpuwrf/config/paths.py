@@ -2,7 +2,7 @@
 
 Historically the runnable path hardcoded a single workstation layout rooted at
 ``<DATA_ROOT>/canairy_meteo`` (the Canary Gen2 / CPU-WRF backfill corpus) and a few
-``<USER_HOME>`` build paths. That makes a clean clone un-runnable: a naive agent
+``/home/user`` build paths. That makes a clean clone un-runnable: a naive agent
 following ``README.md`` only has no such directories.
 
 This module centralizes every such location behind a small set of environment
@@ -36,7 +36,7 @@ Environment variables
     ``SOILPARM.TBL`` / ``GENPARM.TBL`` (``sf_surface_physics=4``) and the classic
     RRTM longwave ``run/RRTM_DATA[_DBL]`` + ``phys/module_ra_rrtm.F``
     (``ra_lw_physics=1``). Default: ``<repo>/data/wrf_pristine/WRF``. On the
-    workstation set it to e.g. ``<USER_HOME>/<you>/src/wrf_pristine/WRF``.
+    workstation set it to e.g. ``/home/<you>/src/wrf_pristine/WRF``.
 ``GPUWRF_AIFS_VTABLE``
     Path to the ``Vtable.AIFS_PURE`` GRIB2 Vtable (only needed by the AIFS GRIB
     ingest). Default: ``<canairy_root>/Gen2/configs/Vtable.AIFS_PURE``.
@@ -63,7 +63,11 @@ __all__ = [
     "mpirun_path",
     "wrf_exe_path",
     "wrf_root",
+    "wrf_path",
     "wrf_run_dir",
+    "wrf_run_path",
+    "wrf_phys_dir",
+    "wrf_phys_path",
     "aifs_vtable_path",
     "tmp_root",
 ]
@@ -152,6 +156,26 @@ def wrf_run_dir() -> Path:
     return wrf_root() / "run"
 
 
+def wrf_path(*parts: str | os.PathLike[str]) -> Path:
+    """Path inside the pristine WRF source/run tree."""
+    return wrf_root().joinpath(*parts)
+
+
+def wrf_run_path(*parts: str | os.PathLike[str]) -> Path:
+    """Path inside the pristine WRF ``run/`` table directory."""
+    return wrf_run_dir().joinpath(*parts)
+
+
+def wrf_phys_dir() -> Path:
+    """Pristine WRF ``phys/`` source directory."""
+    return wrf_path("phys")
+
+
+def wrf_phys_path(*parts: str | os.PathLike[str]) -> Path:
+    """Path inside the pristine WRF ``phys/`` source directory."""
+    return wrf_phys_dir().joinpath(*parts)
+
+
 def aifs_vtable_path() -> Path:
     """``Vtable.AIFS_PURE`` GRIB2 Vtable used by the AIFS ingest.
 
@@ -167,6 +191,6 @@ def tmp_root() -> Path:
     """Scratch root for replay traces / cached outputs.
 
     ``GPUWRF_TMPDIR`` overrides; default is ``~/.cache/gpuwrf`` so a fresh clone
-    never writes scratch into a private hardcoded ``<USER_HOME>/<name>`` path.
+    never writes scratch into a private hardcoded ``/home/<name>`` path.
     """
     return _env_path("GPUWRF_TMPDIR") or (Path.home() / ".cache" / "gpuwrf")

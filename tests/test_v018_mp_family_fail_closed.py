@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import re
 from pathlib import Path
 from typing import Any
@@ -19,11 +18,12 @@ from typing import Any
 import pytest
 
 from gpuwrf.contracts.physics_registry import ACCEPTED_MP_PHYSICS
+from gpuwrf.config.paths import wrf_root
 from gpuwrf.io.namelist_check import UnsupportedSchemeError, validate_namelist
 from gpuwrf.io.scheme_catalog import SupportStatus, classify_scheme
 
 
-WRF_ROOT = Path(os.environ.get("GPUWRF_WRF_ROOT", "<USER_HOME>/src/wrf_pristine/WRF"))
+WRF_ROOT = wrf_root()
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = REPO_ROOT / "proofs/v018/mp_endpoint_manifest.json"
 STATUS_PATH = REPO_ROOT / "proofs/v018/mp_family_status.json"
