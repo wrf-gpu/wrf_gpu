@@ -7,6 +7,49 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.22.2] - 2026-06-28
+
+Nested host-bound GPU-idle reduction point release on top of `v0.22.1`. The
+default path keeps full wrfout semantics and byte-identical output while cutting
+host work at nested output boundaries; the larger overlap levers remain opt-in
+until the manager-scheduled 0:2 GPU idle / VRAM validation run. Full notes:
+[`RELEASE_NOTES_v0.22.2.md`](RELEASE_NOTES_v0.22.2.md).
+
+### Changed
+- **Default-on byte-identical host-work cuts.** Nested output no longer performs
+  the redundant second full-state `finite_summary`; wrfout payload preparation
+  batches device-to-host materialization; the finite guard uses a one-shot
+  batched device-side check; and training-subset preparation materializes only
+  requested variables when `GPUWRF_TRAINING_OUTPUT_SUBSET` is enabled.
+- **M9-only RRTMG radiation tile cap tightened.** The per-output M9 radiation
+  diagnostic re-solve now uses a 512-column scoped override to cap the
+  output-boundary VRAM transient while preserving the existing bit-identical
+  tiled-solver contract. The main forecast radiation default stays at the #123
+  1024-column cap, and `GPUWRF_RRTMG_COLUMN_TILE_COLS` plus per-physics overrides
+  remain authoritative for non-M9 calls.
+
+### Added
+- **Env-gated output-boundary timers.** `GPUWRF_NEST_PERF_TIMERS=1` emits
+  finite-guard / M9 / prepare / queue / write / join timing records; default is
+  off.
+- **Opt-in structural output pipeline.** `GPUWRF_NEST_OUTPUT_PIPELINE=1` moves
+  finite guard, M9 diagnostics, payload materialization, and writer handoff onto
+  a bounded materialize stage so they can overlap the next GPU segment. Default
+  off pending the 0:2 GPU validation.
+- **Opt-in radiation-from-carry output source.**
+  `GPUWRF_NESTED_M9_RADIATION_FROM_CARRY=1` skips the per-output RRTMG
+  diagnostic re-solve for nested Noah-MP output and emits only carry-backed
+  surface diagnostics. Default off because the carry does not hold all
+  output-time upwelling / TOA radiation flux slices.
+
+### Validation
+- CPU byte-identity gates cover async wrfout, nested output pipeline, training
+  subset env behavior, root-sync orchestration, and the S2 Noah-MP radiation
+  source default/opt-in split.
+- GPU idle reduction, warm full-run default byte identity, and overlapped VRAM
+  high-water validation are explicitly pending the manager-scheduled 0:2 run;
+  no GPU run was launched for this release-prep commit.
+
 ## [0.22.1] - 2026-06-27
 
 Pod-data-quality point release on top of `v0.22.0`. Default behavior remains

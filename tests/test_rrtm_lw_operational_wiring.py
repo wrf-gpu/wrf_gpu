@@ -18,6 +18,7 @@ These tests cover the WIRING (not the kernel parity -- that is
 from __future__ import annotations
 
 import dataclasses
+from types import SimpleNamespace
 
 import jax
 import jax.numpy as jnp
@@ -38,6 +39,7 @@ from gpuwrf.coupling.physics_couplers import (
     rrtmg_lw_theta_tendency,
     rrtmg_theta_tendency,
 )
+from gpuwrf.runtime import operational_mode
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
     UnsupportedSchemeSelection,
@@ -243,6 +245,51 @@ def test_disabled_sw_and_lw_zero_m9_radiation_diagnostics() -> None:
         arr = np.asarray(getattr(diag, name))
         assert np.array_equal(arr, np.zeros_like(arr)), name
     assert np.all(np.isfinite(np.asarray(diag.coszen)))
+
+
+def test_m9_rrtmg_diagnostic_uses_scoped_512_tile_cap(monkeypatch) -> None:
+    grid = _grid()
+    state = _state(grid)
+    nml = _namelist(grid)
+    surface = jnp.zeros((grid.ny, grid.nx), dtype=jnp.float64)
+    surf_diag = SimpleNamespace(
+        hfx=surface,
+        lh=surface,
+        pblh=surface,
+        t2=surface + 290.0,
+        u10=surface,
+        v10=surface,
+    )
+    rad_diag = SimpleNamespace(
+        swdown=surface,
+        swnorm=surface,
+        swup=surface,
+        glw=surface,
+        glw_up=surface,
+        sw_toa_down=surface,
+        sw_toa_up=surface,
+        lw_toa_down=surface,
+        lw_toa_up=surface,
+        coszen=surface,
+    )
+    captured: dict[str, int | None] = {}
+
+    def fake_rrtmg_radiation_diagnostics(*args, column_tile_cols=None, **kwargs):
+        del args, kwargs
+        captured["column_tile_cols"] = column_tile_cols
+        return rad_diag
+
+    monkeypatch.setattr(operational_mode, "surface_layer_diagnostics", lambda *_args: surf_diag)
+    monkeypatch.setattr(
+        operational_mode,
+        "rrtmg_radiation_diagnostics",
+        fake_rrtmg_radiation_diagnostics,
+    )
+
+    diag = operational_mode.compute_m9_diagnostics(state, nml, 0.0)
+
+    assert captured["column_tile_cols"] == 512
+    assert np.array_equal(np.asarray(diag.swdown), np.zeros((grid.ny, grid.nx)))
 
 
 def test_sw_and_lw_selected_independently() -> None:

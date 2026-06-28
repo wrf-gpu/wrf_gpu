@@ -35,7 +35,9 @@ from datetime import datetime, timedelta, timezone
 import math
 import os
 from pathlib import Path
+import queue
 import sys
+import threading
 import time
 from typing import Any
 
@@ -52,7 +54,7 @@ from gpuwrf.io.wrfout_writer import (
     FULL_WRFOUT_VARIABLES,
     MINIMAL_TRAINING_SET,
     prepare_wrfout_payload,
-    write_wrfout_netcdf,
+    write_prepared_wrfout,
 )
 from gpuwrf.runtime.finite_state_guard import assert_state_finite_at_boundary
 from gpuwrf.runtime.domain_tree import (
@@ -601,6 +603,121 @@ def _load_domains(
     return hierarchy, bundles, meta, run_start, dt_by_domain, initial_carries
 
 
+def _nested_m9_radiation_from_carry_from_env() -> bool:
+    """Opt in to the nested Noah-MP carry-backed M9 output shortcut.
+
+    Default is OFF because the carry is not a byte-identical replacement for the
+    full output-time RRTMG diagnostic solve: it holds only SOLDN/LWDN/COSZ at the
+    WRF radiation-held time, not the instantaneous upwelling / TOA flux slices.
+    """
+
+    raw = os.environ.get("GPUWRF_NESTED_M9_RADIATION_FROM_CARRY")
+    return raw is not None and raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _noahmp_surface_diagnostics_from_held_radiation(
+    state: Any,
+    namelist: OperationalNamelist,
+    run_start: datetime,
+    *,
+    lead_seconds: float,
+    noahmp_land: Any,
+    noahmp_rad: Any,
+) -> dict[str, np.ndarray] | None:
+    """Build nested output diagnostics from the resident Noah-MP radiation carry.
+
+    This is intentionally opt-in and not a full ``M9Diagnostics`` replacement.
+    ``carry.noahmp_rad`` contains only held WRF-cadence ``(SOLDN, LWDN, COSZ)``.
+    It can back SWDOWN/GLW, Noah-MP land HFX/LH/TSK/T2, and the directly
+    equivalent bottom-down diagnostics, but it cannot provide SWUPB/LWUPB or any
+    TOA flux. Those unavailable fields are omitted so the writer skips them
+    instead of fabricating values.
+    """
+
+    if noahmp_rad is None:
+        return None
+
+    import jax  # noqa: PLC0415 -- lazy: keeps module import light.
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    from gpuwrf.integration.daily_pipeline import _M9_OUTPUT_FIELDS  # noqa: PLC0415
+    from gpuwrf.runtime.operational_mode import (  # noqa: PLC0415
+        _NoahMPClock,
+        _NoahMPRadiation,
+        _noahmp_params,
+        _psfc_from_state,
+        build_clock_base,
+        overlay_noahmp_land_diagnostics,
+        surface_layer_diagnostics,
+    )
+
+    clock_namelist = namelist
+    if getattr(namelist, "time_utc", None) is None:
+        clock_namelist = dataclass_replace(namelist, time_utc=run_start)
+    clock_base = build_clock_base(clock_namelist)
+    surf = surface_layer_diagnostics(state, clock_namelist.grid)
+
+    sw_enabled = int(clock_namelist.ra_sw_physics) != 0
+    lw_enabled = int(clock_namelist.ra_lw_physics) != 0
+    soldn = jnp.asarray(noahmp_rad[0], dtype=jnp.float64)
+    lwdn = jnp.asarray(noahmp_rad[1], dtype=jnp.float64)
+    cosz = jnp.asarray(noahmp_rad[2], dtype=jnp.float64)
+    if not sw_enabled:
+        soldn = jnp.zeros_like(soldn)
+    if not lw_enabled:
+        lwdn = jnp.zeros_like(lwdn)
+
+    clock = _NoahMPClock(julian=clock_base.noahmp_julian, yearlen=clock_base.noahmp_yearlen)
+    ep, rp = _noahmp_params(clock_namelist)
+    hfx, lh, tsk, t2 = overlay_noahmp_land_diagnostics(
+        state,
+        noahmp_land,
+        clock_namelist.noahmp_static,
+        surf.hfx,
+        surf.lh,
+        state.t_skin,
+        float(clock_namelist.dt_s),
+        bulk_t2=surf.t2,
+        radiation=_NoahMPRadiation(soldn, lwdn, cosz),
+        clock=clock,
+        energy_params=ep,
+        rad_params=rp,
+    )
+
+    values: dict[str, Any] = {
+        "T2": t2,
+        "U10": surf.u10,
+        "V10": surf.v10,
+        "Q2": getattr(surf, "q2", None),
+        "PSFC": _psfc_from_state(state, clock_namelist.metrics),
+        "SWDOWN": soldn,
+        "GLW": lwdn,
+        "PBLH": surf.pblh,
+        "TSK": tsk,
+        "HFX": hfx,
+        "LH": lh,
+        "LWDNB": lwdn,
+        "SWNORM": soldn,
+    }
+    if int(clock_namelist.slope_rad) != 1:
+        values["SWDNB"] = soldn
+
+    out: dict[str, Any] = {
+        # _M9_OUTPUT_FIELDS historically omits HFX/LH, but the carry-backed path
+        # has the Noah-MP overlay result in hand. Returning them here lets the
+        # writer override its raw fallback in the opt-in stream only.
+        "HFX": hfx,
+        "LH": lh,
+    }
+    for wrf_name, _attr in _M9_OUTPUT_FIELDS:
+        value = values.get(wrf_name)
+        if value is None:
+            continue
+        out[wrf_name] = value
+    host_out = jax.device_get(out)
+    return {name: np.asarray(value) for name, value in host_out.items()} or None
+
+
 def _noahmp_surface_diagnostics_for_output(
     state: Any,
     namelist: OperationalNamelist,
@@ -621,6 +738,16 @@ def _noahmp_surface_diagnostics_for_output(
     the writer's raw lowest-level fallbacks (which would resurrect the frozen
     land-surface record this sprint removes).
     """
+
+    if _nested_m9_radiation_from_carry_from_env() and noahmp_rad is not None:
+        return _noahmp_surface_diagnostics_from_held_radiation(
+            state,
+            namelist,
+            run_start,
+            lead_seconds=lead_seconds,
+            noahmp_land=noahmp_land,
+            noahmp_rad=noahmp_rad,
+        )
 
     import jax  # noqa: PLC0415 -- lazy: keeps module import light (mirrors writer).
 
@@ -685,6 +812,296 @@ def _resolve_full_wrfout_variables() -> bool:
     return False
 
 
+def _nested_perf_timers_from_env() -> bool:
+    raw = os.environ.get("GPUWRF_NEST_PERF_TIMERS", "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
+def _nested_output_pipeline_from_env() -> bool:
+    """Resolve whether the structural async output pipeline (Phase 2 / S1) is on.
+
+    DEFAULT = OFF.  When ``GPUWRF_NEST_OUTPUT_PIPELINE`` is truthy
+    (``1``/``true``/``yes``/``on``), the per-domain output callback no longer runs
+    the finite guard, the M9 surface re-solve, and the ~70-leaf device->host pull
+    INLINE on the step thread between two GPU compute bursts.  Instead the callback
+    captures the post-step device state (by immutable reference -- the nested
+    advance/cascade path does NOT donate the carry, so the captured leaves stay
+    byte-identical and VRAM-resident until drained) and enqueues a small
+    :class:`OutputSnapshot`; a single background MATERIALIZE thread runs the finite
+    check + M9 + ``prepare_wrfout_payload`` (the D2H + host field build) and hands
+    the host payload to the existing #101 :class:`AsyncWrfoutWriter` thread.  The
+    GPU's next segment is dispatched immediately, so the host materialization
+    overlaps the next compute instead of idling the GPU at every output boundary.
+
+    The written NetCDF bytes, the finite-guard verdict, and the per-domain write
+    order are byte-for-byte identical to the OFF (legacy) path -- the pipeline moves
+    only WHICH THREAD and WHEN the same pure operations run, never the operations or
+    their inputs (see ``PHASE2_ASYNC_PIPELINE_DESIGN.md`` Sec.3).  A finite error or
+    a build/write error is surfaced fail-closed: it is re-raised on the next output
+    boundary's step-thread call (before the next frame is committed) and again at
+    ``join()`` (segment/run end), so a NaN can never escape into a green run or land
+    a corrupt frame on disk (Invariant F).  The per-segment device finite guard
+    (kept unconditionally below) is the synchronous backstop.
+
+    OFF by default until the GPU A/B + VRAM gate (0:2's run) confirms the
+    idle-reduction win and the VRAM bound on live geometry.
+    """
+
+    raw = os.environ.get("GPUWRF_NEST_OUTPUT_PIPELINE", "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
+def _nested_output_pipeline_depth_from_env(default: int = 1) -> int:
+    """Resolve the snapshot-queue depth (``GPUWRF_NEST_OUTPUT_PIPELINE_DEPTH``).
+
+    Bounds how many output frames' device snapshots may be in flight (pinning the
+    captured carry leaves + the overlapped M9 radiation transient in VRAM) before
+    the step thread blocks on ``snapshot_queue.put`` -- the device-memory analogue
+    of #101's host-RAM backpressure.  Default ``1`` (one output frame in flight)
+    keeps peak VRAM to baseline + ~one radiation transient; raise only after the
+    VRAM A/B gate confirms headroom.  Values < 1 are clamped to 1.
+    """
+
+    raw = os.environ.get("GPUWRF_NEST_OUTPUT_PIPELINE_DEPTH", "").strip()
+    if not raw:
+        return int(default)
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return int(default)
+
+
+class _NestedOutputPerfTimers:
+    """Env-gated wall timers for the nested output boundary."""
+
+    def __init__(self, *, enabled: bool) -> None:
+        self.enabled = bool(enabled)
+        self._lock = threading.Lock()
+        self._totals: dict[str, float] = {}
+        self._counts: Counter = Counter()
+        self._max_s: dict[str, float] = {}
+        self._records: list[dict[str, Any]] = []
+
+    @classmethod
+    def from_env(cls) -> "_NestedOutputPerfTimers":
+        return cls(enabled=_nested_perf_timers_from_env())
+
+    @classmethod
+    def disabled(cls) -> "_NestedOutputPerfTimers":
+        return cls(enabled=False)
+
+    def start(self) -> float:
+        return time.perf_counter() if self.enabled else 0.0
+
+    def stop(self, phase: str, started: float, **context: Any) -> None:
+        if not self.enabled:
+            return
+        self.add(phase, time.perf_counter() - float(started), **context)
+
+    def add(self, phase: str, seconds: float, **context: Any) -> None:
+        if not self.enabled:
+            return
+        record: dict[str, Any] = {
+            "phase": str(phase),
+            "seconds": float(seconds),
+        }
+        for key, value in context.items():
+            if value is None:
+                continue
+            record[key] = str(value) if isinstance(value, Path) else value
+        with self._lock:
+            name = str(phase)
+            value = float(seconds)
+            self._totals[name] = self._totals.get(name, 0.0) + value
+            self._counts[name] += 1
+            self._max_s[name] = max(self._max_s.get(name, 0.0), value)
+            self._records.append(record)
+
+    def record_writer_write(self, path: Path, seconds: float) -> None:
+        self.add("writer_write", seconds, path=path)
+
+    def summary(self) -> dict[str, Any] | None:
+        if not self.enabled:
+            return None
+        with self._lock:
+            totals = dict(self._totals)
+            counts = dict(self._counts)
+            max_s = dict(self._max_s)
+            records = list(self._records)
+        return {
+            "schema": "NestedOutputBoundaryPerfTimers",
+            "schema_version": 1,
+            "enabled_env": "GPUWRF_NEST_PERF_TIMERS",
+            "totals_s": totals,
+            "counts": counts,
+            "mean_s": {
+                name: totals[name] / counts[name]
+                for name in totals
+                if counts.get(name, 0) > 0
+            },
+            "max_s": max_s,
+            "records": records,
+        }
+
+
+@dataclass(frozen=True)
+class OutputSnapshot:
+    """Step-thread -> materialize-thread handle for one output frame (S1).
+
+    Captures the post-step ``carry`` BY IMMUTABLE REFERENCE (not by copy). A
+    ``jax.Array`` is an immutable value: ``integrate`` REBINDS ``out[name]`` to a
+    fresh array each advance, it never mutates the old one, and the nested
+    advance/cascade path does NOT donate the threaded carry (audited: no
+    ``donate_argnums`` on ``_advance_chunk`` / ``_advance_chunk_fori`` / the fused
+    cascade). So holding this reference keeps the captured leaves byte-identical and
+    VRAM-resident until the materialize thread drains them -- the immutable handle
+    IS the snapshot, no device double-buffer needed (design Sec.2.2). Everything
+    else here is host metadata (datetimes / floats / a deterministic Path), safe to
+    read on the materialize thread.
+    """
+
+    writer: "_PerDomainWrfoutWriter"
+    name: str
+    own_step: int
+    carry: Any
+    valid_time: datetime
+    lead_seconds: float
+    lead_hours: float
+    path: Path
+
+
+class OutputPipeline:
+    """Three-stage async output pipeline (Phase 2 / S1).
+
+    STEP thread (the per-domain callback) only captures the post-step device state
+    into an :class:`OutputSnapshot` and ``submit``s it -- no finite guard, no M9
+    re-solve, no device->host pull on the step thread, so the GPU's next segment is
+    dispatched immediately. A single MATERIALIZE thread drains the bounded snapshot
+    queue and, per frame in order, runs the finite guard + M9 + ``prepare_wrfout_
+    payload`` (the D2H + host field build) and hands the host payload to the existing
+    #101 :class:`AsyncWrfoutWriter` (the WRITE stage). The materialization overlaps
+    the next GPU segment's compute.
+
+    Stage separation (snapshot queue vs the writer's own queue) decouples VRAM
+    lifetime (the snapshot pins device leaves until the D2H lands -- early in
+    materialize) from disk latency (the writer holds only a host ``PreparedWrfout``).
+    A SINGLE materialize thread serializes the per-frame host work so device
+    snapshots are released in output order -> deterministic VRAM high-water mark.
+
+    Fail-closed (Invariant F): a finite/build error in MATERIALIZE (or a write error)
+    is stored in ``_error``; the stage stops materializing and DRAINS its input queue
+    (releasing any step-thread producer blocked on ``put``). ``submit`` re-raises the
+    stored error on the NEXT output boundary's step-thread call (before that frame is
+    committed) and ``join`` re-raises it at segment/run end -- so a NaN never escapes
+    into a green run and never lands a later committed frame.
+    """
+
+    def __init__(
+        self,
+        async_writer: AsyncWrfoutWriter,
+        *,
+        max_snapshots: int = 1,
+        perf_timers: _NestedOutputPerfTimers | None = None,
+    ) -> None:
+        if max_snapshots < 1:
+            raise ValueError("max_snapshots must be >= 1")
+        self._async_writer = async_writer
+        self._perf_timers = perf_timers or _NestedOutputPerfTimers.disabled()
+        self._queue: "queue.Queue[OutputSnapshot | None]" = queue.Queue(
+            maxsize=max_snapshots
+        )
+        self._error: BaseException | None = None
+        self._error_lock = threading.Lock()
+        self._closed = False
+        self._thread = threading.Thread(
+            target=self._worker, name="wrfout-materialize", daemon=True
+        )
+        self._thread.start()
+
+    def _worker(self) -> None:
+        while True:
+            snapshot = self._queue.get()
+            try:
+                if snapshot is None:  # sentinel: shut down
+                    return
+                # Skip new materializations once an earlier frame failed; still drain
+                # the queue so a step-thread producer blocked on put() is released.
+                with self._error_lock:
+                    failed = self._error is not None
+                if not failed:
+                    try:
+                        snapshot.writer._materialize_and_submit(
+                            name=snapshot.name,
+                            own_step=int(snapshot.own_step),
+                            carry=snapshot.carry,
+                            valid_time=snapshot.valid_time,
+                            lead_seconds=float(snapshot.lead_seconds),
+                            lead_hours=float(snapshot.lead_hours),
+                            path=snapshot.path,
+                        )
+                    except BaseException as exc:  # noqa: BLE001 - record & keep draining
+                        with self._error_lock:
+                            if self._error is None:
+                                self._error = exc
+            finally:
+                self._queue.task_done()
+
+    def submit(self, snapshot: OutputSnapshot) -> None:
+        """Enqueue a snapshot for background materialization + write.
+
+        Blocks (device-memory backpressure) if ``max_snapshots`` frames are already
+        in flight. Re-raises a prior materialize/finite/write error PROMPTLY so the
+        run fails closed before this frame is committed (Invariant F).
+        """
+
+        if self._closed:
+            raise RuntimeError("OutputPipeline is closed")
+        self._raise_if_failed()
+        t0 = self._perf_timers.start()
+        try:
+            self._queue.put(snapshot)
+        finally:
+            self._perf_timers.stop(
+                "queue_put",
+                t0,
+                domain=snapshot.name,
+                own_step=int(snapshot.own_step),
+                path=snapshot.path,
+            )
+
+    def _raise_if_failed(self) -> None:
+        with self._error_lock:
+            err = self._error
+        if err is not None:
+            raise err
+
+    def join(self) -> None:
+        """Drain materialize -> write in order; re-raise the first error.
+
+        Idempotent. Drains the snapshot queue (finishing all in-flight
+        materializations), then the writer queue (flushing all writes), then
+        re-raises the FIRST error from either stage. Must be called before reading
+        the produced wrfouts / the output-present check.
+        """
+
+        if not self._closed:
+            self._queue.put(None)  # sentinel
+            self._closed = True
+        self._thread.join()
+        # Flush the downstream writer (all materialized payloads on disk) and
+        # surface its first error.
+        writer_error: BaseException | None = None
+        try:
+            self._async_writer.join()
+        except BaseException as exc:  # noqa: BLE001 - record, prefer materialize error
+            writer_error = exc
+        # Prefer the earliest fault: a materialize/finite error (upstream) wins over
+        # a writer error so the true root cause is surfaced.
+        self._raise_if_failed()
+        if writer_error is not None:
+            raise writer_error
+
+
 class _PerDomainWrfoutWriter:
     """Output callback: write one wrfout per domain at history cadence.
 
@@ -711,6 +1128,8 @@ class _PerDomainWrfoutWriter:
         output_cadence_steps: dict[str, int],
         dt_by_domain: dict[str, float],
         async_writer: AsyncWrfoutWriter | None = None,
+        perf_timers: _NestedOutputPerfTimers | None = None,
+        output_pipeline: "OutputPipeline | None" = None,
     ) -> None:
         self.output_dir = output_dir
         self.run_start = run_start
@@ -724,6 +1143,15 @@ class _PerDomainWrfoutWriter:
         # both cases; ``self.written`` records the deterministic output path at
         # submit time so the output-present check below stays valid either way.
         self._async_writer = async_writer
+        # Phase 2 (S1): when set, the STEP THREAD only captures the post-step device
+        # state (by immutable reference -- the nested advance/cascade path does NOT
+        # donate the carry, so the leaves stay byte-identical + resident) and enqueues
+        # a snapshot; this :class:`OutputPipeline`'s single MATERIALIZE thread runs the
+        # finite guard + M9 + device->host pull + field build (overlapping the next
+        # GPU segment) and hands the host payload to ``async_writer``.  When None the
+        # legacy synchronous step-thread materialization runs (default).
+        self._output_pipeline = output_pipeline
+        self._perf_timers = perf_timers or _NestedOutputPerfTimers.disabled()
         # Opt-in compact training output (#122): None => full byte-identical output.
         self._variable_subset = _resolve_training_output_subset()
         self._full_variable_set = _resolve_full_wrfout_variables()
@@ -734,13 +1162,11 @@ class _PerDomainWrfoutWriter:
             _load_static_latlon_writer_diagnostics,
             _merge_output_diagnostics,
             _surface_diagnostics_for_output,
-            finite_summary,
         )
         from gpuwrf.io.gen2_accessor import Gen2Run
 
         self._surface_diagnostics_for_output = _surface_diagnostics_for_output
         self._merge_output_diagnostics = _merge_output_diagnostics
-        self._finite_summary = finite_summary
         run = Gen2Run(input_dir)
         self.writer_diagnostics: dict[str, dict[str, Any]] = {}
         self.writer_static_latlon_metadata: dict[str, Any] = {}
@@ -753,64 +1179,129 @@ class _PerDomainWrfoutWriter:
                 self.writer_diagnostics[domain] = diagnostics
 
     def __call__(self, name: str, own_step: int, carry: Any) -> dict[str, Any]:
-        state = getattr(carry, "state", carry)
+        """Output-boundary callback (``name, own_step, carry) -> result dict``.
+
+        Step-thread entry. Computes the deterministic output ``path`` (host-only,
+        cheap) and records it into ``self.written`` so the output-present check
+        stays valid + order-deterministic. Then EITHER:
+
+        * **pipeline path** (S1, ``self._output_pipeline`` set): capture the
+          post-step ``carry`` by immutable reference into an :class:`OutputSnapshot`
+          and enqueue it -- NO finite guard / M9 / D2H on the step thread. A prior
+          frame's finite/build/write error is re-raised here (fail-closed, before
+          this frame is committed). Returns immediately so the GPU resumes compute.
+        * **legacy path** (default): run the finite guard + M9 + device->host pull
+          + write/submit synchronously on the step thread (unchanged behaviour).
+
+        The returned dict + the written bytes are identical in both paths.
+        """
+
         lead_seconds = float(own_step) * float(self.dt_by_domain[name])
         lead_hours = lead_seconds / 3600.0
-        assert_state_finite_at_boundary(
-            state, domain=name, step=int(own_step), sim_time_s=lead_seconds
-        )
         valid_time = self.run_start + timedelta(seconds=lead_seconds)
+        path = _wrfout_path(self.output_dir, name, valid_time)
+        # Record the deterministic path NOW (step thread, before any background
+        # work) so ``self.written`` is order-deterministic and the output-present
+        # count is valid regardless of when the materialize/write lands.
+        self.written[name].append(str(path))
+
+        if self._output_pipeline is not None:
+            # S1: hand the post-step carry (device leaves by reference) + host
+            # metadata to the materialize stage and return. ``submit`` re-raises a
+            # prior-frame error fail-closed before enqueuing -> Invariant F.
+            self._output_pipeline.submit(
+                OutputSnapshot(
+                    writer=self,
+                    name=name,
+                    own_step=int(own_step),
+                    carry=carry,
+                    valid_time=valid_time,
+                    lead_seconds=float(lead_seconds),
+                    lead_hours=float(lead_hours),
+                    path=path,
+                )
+            )
+        else:
+            self._materialize_and_submit(
+                name=name,
+                own_step=int(own_step),
+                carry=carry,
+                valid_time=valid_time,
+                lead_seconds=float(lead_seconds),
+                lead_hours=float(lead_hours),
+                path=path,
+            )
+        return {
+            "domain": name,
+            "lead_hours": float(lead_hours),
+            "own_step": int(own_step),
+            "all_finite": True,
+            "wrfout": str(path),
+            "prepared_full_variable_set": bool(self._full_variable_set),
+            "full_variable_count": int(len(FULL_WRFOUT_VARIABLES)) if self._full_variable_set else None,
+        }
+
+    def _materialize_and_submit(
+        self,
+        *,
+        name: str,
+        own_step: int,
+        carry: Any,
+        valid_time: datetime,
+        lead_seconds: float,
+        lead_hours: float,
+        path: Path,
+    ) -> None:
+        """Device->host materialization + finite guard + write/submit.
+
+        Runs on the STEP THREAD in the legacy path, or on the single background
+        MATERIALIZE thread in the S1 pipeline path. Pure-function of its inputs +
+        the captured immutable device state, so the produced bytes are identical
+        regardless of which thread runs it. Raises :class:`NonFiniteStateError`
+        (caught by the guard) if the boundary-K state is non-finite -- in the
+        pipeline path that error is recorded into the pipeline's fail-closed slot
+        and surfaced before the next commit (Invariant F).
+        """
+
+        perf_timers = getattr(self, "_perf_timers", _NestedOutputPerfTimers.disabled())
+        state = getattr(carry, "state", carry)
+        t0 = perf_timers.start()
+        try:
+            assert_state_finite_at_boundary(
+                state, domain=name, step=int(own_step), sim_time_s=lead_seconds
+            )
+        finally:
+            perf_timers.stop(
+                "finite_guard", t0, domain=name, own_step=int(own_step)
+            )
         namelist = self.bundles[name].namelist
         grid = self.bundles[name].grid
         noahmp_land = getattr(carry, "noahmp_land", None)
-        if bool(getattr(namelist, "use_noahmp", False)) and noahmp_land is not None:
-            surface_diagnostics = _noahmp_surface_diagnostics_for_output(
-                state,
-                namelist,
-                self.run_start,
-                lead_seconds=lead_seconds,
-                noahmp_land=noahmp_land,
-                noahmp_rad=getattr(carry, "noahmp_rad", None),
-            )
-        else:
-            surface_diagnostics = self._surface_diagnostics_for_output(
-                state, namelist, self.run_start, lead_seconds=lead_seconds
-            )
-        diagnostics = self._merge_output_diagnostics(
-            self.writer_diagnostics.get(name), surface_diagnostics
-        )
-        path = _wrfout_path(self.output_dir, name, valid_time)
-        if self._async_writer is not None:
-            # Keep the device->host pull on the step thread (so no off-thread
-            # touch of a device buffer the GPU may reuse), then submit the
-            # host-only payload to the background writer and resume compute. The
-            # deterministic output path is recorded NOW (at submit time) so the
-            # output-present check stays valid; join() runs before that check.
-            prepared = prepare_wrfout_payload(
-                state,
-                grid,
-                namelist,
-                path,
-                valid_time=valid_time,
-                lead_hours=float(lead_hours),
-                run_start=self.run_start,
-                diagnostics=diagnostics,
-                full_variable_set=self._full_variable_set,
-            )
-            if self._variable_subset is None:
-                self._async_writer.submit(prepared)
-            else:
-                # Compact training stream: same host payload, subset + mandatory
-                # coords + lossless compression (self-contained, ~10 GB/day target).
-                self._async_writer.submit_subset(
-                    prepared,
-                    variable_subset=self._variable_subset,
-                    target=path,
-                    include_mandatory_coords=True,
-                    compress=True,
+        t0 = perf_timers.start()
+        try:
+            if bool(getattr(namelist, "use_noahmp", False)) and noahmp_land is not None:
+                surface_diagnostics = _noahmp_surface_diagnostics_for_output(
+                    state,
+                    namelist,
+                    self.run_start,
+                    lead_seconds=lead_seconds,
+                    noahmp_land=noahmp_land,
+                    noahmp_rad=getattr(carry, "noahmp_rad", None),
                 )
-        else:
-            write_wrfout_netcdf(
+            else:
+                surface_diagnostics = self._surface_diagnostics_for_output(
+                    state, namelist, self.run_start, lead_seconds=lead_seconds
+                )
+            diagnostics = self._merge_output_diagnostics(
+                self.writer_diagnostics.get(name), surface_diagnostics
+            )
+        finally:
+            perf_timers.stop(
+                "M9-diag", t0, domain=name, own_step=int(own_step)
+            )
+        t0 = perf_timers.start()
+        try:
+            prepared = prepare_wrfout_payload(
                 state,
                 grid,
                 namelist,
@@ -821,20 +1312,67 @@ class _PerDomainWrfoutWriter:
                 diagnostics=diagnostics,
                 variable_subset=self._variable_subset,
                 include_mandatory_coords=self._variable_subset is not None,
-                compress=self._variable_subset is not None,
                 full_variable_set=self._full_variable_set,
             )
-        self.written[name].append(str(path))
-        summary = self._finite_summary(state)
-        return {
-            "domain": name,
-            "lead_hours": float(lead_hours),
-            "own_step": int(own_step),
-            "all_finite": bool(summary["all_finite"]),
-            "wrfout": str(path),
-            "prepared_full_variable_set": bool(self._full_variable_set),
-            "full_variable_count": int(len(FULL_WRFOUT_VARIABLES)) if self._full_variable_set else None,
-        }
+        finally:
+            perf_timers.stop(
+                "prepare_payload", t0, domain=name, own_step=int(own_step), path=path
+            )
+        if self._async_writer is not None:
+            # Keep the device->host pull on the step thread (so no off-thread
+            # touch of a device buffer the GPU may reuse), then submit the
+            # host-only payload to the background writer and resume compute. The
+            # deterministic output path is recorded NOW (at submit time) so the
+            # output-present check stays valid; join() runs before that check.
+            t0 = perf_timers.start()
+            if self._variable_subset is None:
+                try:
+                    self._async_writer.submit(prepared)
+                finally:
+                    perf_timers.stop(
+                        "queue_put",
+                        t0,
+                        domain=name,
+                        own_step=int(own_step),
+                        path=path,
+                    )
+            else:
+                # Compact training stream: same host payload, subset + mandatory
+                # coords + lossless compression (self-contained, ~10 GB/day target).
+                try:
+                    self._async_writer.submit_subset(
+                        prepared,
+                        variable_subset=self._variable_subset,
+                        target=path,
+                        include_mandatory_coords=True,
+                        compress=True,
+                    )
+                finally:
+                    perf_timers.stop(
+                        "queue_put",
+                        t0,
+                        domain=name,
+                        own_step=int(own_step),
+                        path=path,
+                    )
+        else:
+            t0 = perf_timers.start()
+            try:
+                write_prepared_wrfout(
+                    prepared,
+                    variable_subset=self._variable_subset,
+                    include_mandatory_coords=self._variable_subset is not None,
+                    compress=self._variable_subset is not None,
+                )
+            finally:
+                perf_timers.stop(
+                    "writer_write",
+                    t0,
+                    domain=name,
+                    own_step=int(own_step),
+                    path=path,
+                    async_writer=False,
+                )
 
 
 def _finite_stats_host(state: Any) -> dict[str, Any]:
@@ -1047,7 +1585,32 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # queued 9-domain PreparedWrfout host RAM. join()ed below before the output-
     # present check / pipeline exit so a failed background write fails the run.
     async_output_enabled = _nested_async_output_from_env()
-    async_writer = AsyncWrfoutWriter(max_pending=2) if async_output_enabled else None
+    perf_timers = _NestedOutputPerfTimers.from_env()
+    async_writer = (
+        AsyncWrfoutWriter(
+            max_pending=2, write_timing_callback=perf_timers.record_writer_write
+        )
+        if async_output_enabled
+        else None
+    )
+    # Phase 2 (S1) structural async output pipeline. OFF by default
+    # (GPUWRF_NEST_OUTPUT_PIPELINE=1 enables it); requires the async writer (it
+    # wraps it as the WRITE stage). When on, the per-domain callback only captures
+    # the post-step device state into an OutputSnapshot and enqueues it; a single
+    # background MATERIALIZE thread runs the finite guard + M9 + device->host pull +
+    # field build and submits to async_writer, overlapping the next GPU segment.
+    # Default-output bytes + the finite verdict + the write order are byte-identical
+    # to the OFF path (only the thread + timing of the same pure ops change). join()ed
+    # below (drains snapshot -> materialize -> write) before the output-present check.
+    output_pipeline = (
+        OutputPipeline(
+            async_writer,
+            max_snapshots=_nested_output_pipeline_depth_from_env(),
+            perf_timers=perf_timers,
+        )
+        if (async_writer is not None and _nested_output_pipeline_from_env())
+        else None
+    )
     writer = _PerDomainWrfoutWriter(
         output_dir=config.output_dir,
         input_dir=Path(config.input_dir),
@@ -1056,6 +1619,8 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         output_cadence_steps=output_cadence,
         dt_by_domain=dt_by_domain,
         async_writer=async_writer,
+        perf_timers=perf_timers,
+        output_pipeline=output_pipeline,
     )
     for domain, latlon_meta in writer.writer_static_latlon_metadata.items():
         meta.setdefault("domains", {}).setdefault(domain, {})["writer_static_latlon"] = latlon_meta
@@ -1101,6 +1666,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # The per-segment block below is ALWAYS kept (peak-VRAM bound between hours).
     nested_block_between, nested_root_sync_cadence = _nested_sync_mode_from_env()
     start = 0
+    async_writer_joined = False
     try:
         while start < root_steps:
             seg = min(root_seg_steps, root_steps - start)
@@ -1142,23 +1708,56 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             start += seg
         jax.block_until_ready(tuple(state.theta for state in final_states.values()))
         forecast_wall_s = time.perf_counter() - forecast_start
-        # Drain the background wrfout writer: all submitted output groups must be
-        # on disk (and any writer error surfaced -- join() re-raises, failing the
-        # run) before the output-present check below reads writer.written. The
-        # writes overlapped GPU compute, so this join only waits on the last
-        # in-flight write and is outside the forecast_wall_s timing. Idempotent /
-        # no-op when async output is disabled (async_writer is None).
-        if async_writer is not None:
-            async_writer.join()
-    finally:
-        # Fail-closed: if the forecast loop above raised (NaN/OOM/etc.), still
-        # drain the background writer so the daemon thread cannot outlive the run
-        # and any in-flight write is flushed -- but do NOT mask the body's
-        # exception with a secondary writer error. join() is idempotent, so on the
-        # success path this is a no-op.
-        if async_writer is not None:
+        # Drain the background output stages: every submitted output frame must be
+        # materialized + on disk (and the first stage error surfaced -- join()
+        # re-raises, failing the run) before the output-present check below reads
+        # writer.written. With the S1 pipeline ``output_pipeline.join()`` drains
+        # snapshot -> materialize -> write IN ORDER (re-raising the FIRST error from
+        # either stage); without it ``async_writer.join()`` drains the single writer
+        # stage. Both are idempotent / no-op when async output is disabled. The
+        # background work overlapped GPU compute, so this join only waits on the last
+        # in-flight frame and is outside ``forecast_wall_s``.
+        if output_pipeline is not None:
+            t0 = perf_timers.start()
+            try:
+                output_pipeline.join()
+            finally:
+                perf_timers.stop(
+                    "join",
+                    t0,
+                    context="success",
+                    submitted_paths=sum(len(paths) for paths in writer.written.values()),
+                )
+            async_writer_joined = True
+        elif async_writer is not None:
+            t0 = perf_timers.start()
             try:
                 async_writer.join()
+            finally:
+                perf_timers.stop(
+                    "join",
+                    t0,
+                    context="success",
+                    submitted_paths=sum(len(paths) for paths in writer.written.values()),
+                )
+            async_writer_joined = True
+    finally:
+        # Fail-closed: if the forecast loop above raised (NaN/OOM/etc.), still drain
+        # the background stages so no daemon thread outlives the run and any in-flight
+        # frame is flushed -- but do NOT mask the body's exception with a secondary
+        # stage error. join() is idempotent, so on the success path this is a no-op.
+        if not async_writer_joined and (
+            output_pipeline is not None or async_writer is not None
+        ):
+            try:
+                t0 = perf_timers.start()
+                try:
+                    if output_pipeline is not None:
+                        output_pipeline.join()
+                    else:
+                        async_writer.join()
+                finally:
+                    perf_timers.stop("join", t0, context="finally")
             except BaseException:
                 if sys.exc_info()[0] is None:
                     raise
@@ -1196,6 +1795,9 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         }
 
     total_wall_s = time.perf_counter() - overall_start
+    perf_timer_summary = perf_timers.summary()
+    if perf_timer_summary is not None:
+        meta["nested_output_perf_timers"] = perf_timer_summary
     verdict = "PIPELINE_GREEN" if (all_finite and all_output_present) else "PIPELINE_PARTIAL"
 
     payload: dict[str, Any] = {

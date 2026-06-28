@@ -77,6 +77,12 @@ PROGNOSTIC_STATE_FIELDS: tuple[str, ...] = (
 _LEGACY_TOTAL_ALIASES = {"p": "p_total", "ph": "ph_total", "mu": "mu_total"}
 
 
+@jax.jit
+def _jax_all_finite_flags(values: tuple[Any, ...]) -> jax.Array:
+    checks = tuple(jnp.all(jnp.isfinite(value)) for value in values)
+    return jnp.stack(checks)
+
+
 @dataclass(frozen=True)
 class NonFiniteLocation:
     """First detected non-finite prognostic value."""
@@ -134,23 +140,29 @@ def first_nonfinite_state_location(
 ) -> NonFiniteLocation | None:
     """Return the first non-finite prognostic field location, or ``None``.
 
-    The success path performs one device-side ``isfinite(...).all()`` reduction
-    per floating field and transfers only scalar booleans. If a field fails, only
+    The success path performs one batched device-side finite check across the
+    floating JAX fields and transfers one boolean vector. If a field fails, only
     that field's first bad flat index is transferred for the diagnostic.
     """
 
-    seen: set[str] = set()
-    for field in fields:
-        alias_target = _LEGACY_TOTAL_ALIASES.get(field)
-        if alias_target is not None and alias_target in seen and hasattr(state, alias_target):
-            continue
-        if field in seen or not hasattr(state, field):
-            continue
-        seen.add(field)
-        value = getattr(state, field)
-        if value is None or not _is_floating_array(value):
-            continue
-        if _all_finite(value):
+    candidates = _finite_check_candidates(state, fields)
+    if not candidates:
+        return None
+
+    ok_by_field: dict[str, bool] = {}
+    jax_candidates = [(field, value) for field, value in candidates if isinstance(value, jax.Array)]
+    if jax_candidates:
+        values = tuple(value for _, value in jax_candidates)
+        flags = np.asarray(_jax_all_finite_flags(values), dtype=bool)
+        for (field, _), ok in zip(jax_candidates, flags):
+            ok_by_field[field] = bool(ok)
+
+    for field, value in candidates:
+        if field not in ok_by_field:
+            ok_by_field[field] = _all_finite_host(value)
+
+    for field, value in candidates:
+        if ok_by_field[field]:
             continue
         index = _first_bad_index(value)
         level = index[0] if len(index) >= 3 else None
@@ -197,11 +209,35 @@ def _is_floating_array(value: Any) -> bool:
     return bool(np.issubdtype(np.dtype(dtype), np.inexact))
 
 
+def _finite_check_candidates(
+    state: Any, fields: tuple[str, ...]
+) -> list[tuple[str, Any]]:
+    candidates: list[tuple[str, Any]] = []
+    seen: set[str] = set()
+    for field in fields:
+        alias_target = _LEGACY_TOTAL_ALIASES.get(field)
+        if alias_target is not None and alias_target in seen and hasattr(state, alias_target):
+            continue
+        if field in seen or not hasattr(state, field):
+            continue
+        seen.add(field)
+        value = getattr(state, field)
+        if value is None or not _is_floating_array(value):
+            continue
+        candidates.append((field, value))
+    return candidates
+
+
 def _all_finite(value: Any) -> bool:
     if isinstance(value, jax.Array):
-        return bool(np.asarray(jnp.all(jnp.isfinite(value))))
+        return bool(np.asarray(_jax_all_finite_flags((value,)))[0])
+    return _all_finite_host(value)
+
+
+def _all_finite_host(value: Any) -> bool:
     array = np.asarray(value)
     return bool(np.isfinite(array).all())
+
 
 
 def _first_bad_index(value: Any) -> tuple[int, ...]:

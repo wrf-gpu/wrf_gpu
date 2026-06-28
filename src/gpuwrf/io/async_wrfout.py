@@ -32,6 +32,8 @@ from __future__ import annotations
 
 import queue
 import threading
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -69,7 +71,12 @@ class AsyncWrfoutWriter:
         # __exit__ joins outstanding writes and re-raises any writer error.
     """
 
-    def __init__(self, max_pending: int = 2) -> None:
+    def __init__(
+        self,
+        max_pending: int = 2,
+        *,
+        write_timing_callback: Callable[[Path, float], None] | None = None,
+    ) -> None:
         if max_pending < 1:
             raise ValueError("max_pending must be >= 1")
         self._queue: "queue.Queue[Optional[_WriteJob]]" = queue.Queue(maxsize=max_pending)
@@ -77,6 +84,7 @@ class AsyncWrfoutWriter:
         self._error_lock = threading.Lock()
         self._written: list[Path] = []
         self._written_lock = threading.Lock()
+        self._write_timing_callback = write_timing_callback
         self._closed = False
         self._thread = threading.Thread(
             target=self._worker, name="wrfout-writer", daemon=True
@@ -95,6 +103,7 @@ class AsyncWrfoutWriter:
                     failed = self._error is not None
                 if not failed:
                     try:
+                        t0 = time.perf_counter()
                         path = write_prepared_wrfout(
                             item.prepared,
                             variable_subset=item.variable_subset,
@@ -102,6 +111,9 @@ class AsyncWrfoutWriter:
                             include_mandatory_coords=item.include_mandatory_coords,
                             compress=item.compress,
                         )
+                        write_s = time.perf_counter() - t0
+                        if self._write_timing_callback is not None:
+                            self._write_timing_callback(path, write_s)
                         with self._written_lock:
                             self._written.append(path)
                     except BaseException as exc:  # noqa: BLE001 - record & keep draining

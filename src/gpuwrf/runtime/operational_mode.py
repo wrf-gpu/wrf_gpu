@@ -5105,6 +5105,9 @@ class M9Diagnostics(NamedTuple):
     coszen: jax.Array
 
 
+_M9_RRTMG_COLUMN_TILE_COLS = 512
+
+
 def _psfc_from_state(state: State, metrics: DycoreMetrics) -> jax.Array:
     """Surface pressure (Pa) = WRF runtime PSFC = moist hydrostatic p_hyd_w(kts).
 
@@ -5186,6 +5189,7 @@ def compute_m9_diagnostics(
         slope_rad=int(namelist.slope_rad),
         shadow_length_m=float(namelist.topo_shadow_length_m),
         land_state=radiation_land,
+        column_tile_cols=_M9_RRTMG_COLUMN_TILE_COLS,
     )
     hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
     if bool(namelist.use_noahmp) and noahmp_land is not None:

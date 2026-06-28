@@ -56,15 +56,32 @@ NVL72-class).
   **stability/reliability**, and **energy efficiency** (see [Performance](#performance)).
 - **Not** DFI / FDDA / spectral-nudging / WRF-Chem / WRF-Fire / urban / lake.
 
-**The current release is v0.21.0** — a **stability + compile-cache-speed**
-release on top of the v0.20.x line. Its priority order is explicit: **stability >
-identity > speed > memory**. The two headline changes are a **dycore
-boundary-stability fix** (the all-7-island, 9-domain Canary nest now runs **finite
-through the divergence window that previously failed near step 67**) and the **AOT
-cheap-key cross-process warm-start** — after a one-time cold compile, a fresh
-process **loads the compiled GPU executable from disk via a cheap metadata key and
-skips the multi-tens-of-minutes re-lower** the old cache still paid. It also adds a
-**default-on fail-fast finite guard** and a **version-keyed compile cache**.
+**The current release is v0.22.2** — a **nested-grid wall-clock** release. Its
+priority order is explicit: **stability > identity > speed > memory**. v0.22.2
+reduces the host-bound GPU-idle at the nested output boundary: default-on,
+**byte-identical** host-work cuts measured **~9% faster nested steady-state**
+(789 vs 865 s/fc-h on a 384² 2-nest, output byte-identical to v0.22.1), plus a
+default-on, **bit-identical** RRTMG radiation tile-cap that **halves the
+per-output VRAM transient** (a 433² 2-nest now peaks 28.1 GiB < 32 GiB over the
+afternoon-convection window with no OOM, where v0.22.1 OOMed). An **opt-in**
+async output overlap goes further. The fp64 default stays byte-identical and
+adds **no new physics**; the open 24–120 h forecast-skill gate is **not** claimed
+closed.
+
+The v0.22.x line builds on the v0.21 fused+AOT foundation: **v0.22.0**
+(default-safe hygiene + opt-in performance lever + ADR ratification), **v0.22.1**
+(pod-data-quality: nested output `history_interval` cadence fix + opt-in
+`GPUWRF_COLONFREE_OUTPUT` colon-free wrfout names), **v0.22.2** (nested wall-clock,
+above).
+
+The **v0.21.0** stability + compile-cache-speed foundation this builds on: a
+**dycore boundary-stability fix** (the all-7-island, 9-domain Canary nest now runs
+**finite through the divergence window that previously failed near step 67**) and
+the **AOT cheap-key cross-process warm-start** — after a one-time cold compile, a
+fresh process **loads the compiled GPU executable from disk via a cheap metadata
+key and skips the multi-tens-of-minutes re-lower** the old cache still paid. It
+also adds a **default-on fail-fast finite guard** and a **version-keyed compile
+cache**.
 
 **Read the scope of the speed win plainly.** v0.21.0 is faster at *getting a run
 started* (compile / warm-start time), **not** at running the forecast itself. Warm
