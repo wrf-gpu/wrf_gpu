@@ -159,6 +159,99 @@ def test_child_start_steps_are_domain_global_not_subcycle_local():
     ]
 
 
+def _run_history20_scheduler_shape(
+    order: tuple[str, ...],
+    edges: tuple[DomainNest, ...],
+    *,
+    root_steps: int,
+) -> dict[str, list[int]]:
+    """Scheduler-only proxy for time_step=18, ratio=3, history_interval=20."""
+
+    hierarchy = DomainHierarchy.from_edges(order, edges, max_dom=len(order))
+
+    def advance(name, carry, start_step, n_steps):
+        del name, start_step
+        return _Carry(carry.value + int(n_steps))
+
+    def force(edge, parent, child):
+        del edge, parent
+        return child
+
+    result = run_domain_tree_callbacks(
+        hierarchy,
+        {name: _Carry(0) for name in order},
+        root_steps=root_steps,
+        advance=advance,
+        force=force,
+        output=lambda name, step, state: (name, step, state.value),
+        # Equivalent to history_interval=20 with dt(d01,d02,d03+)=18,6,2 s.
+        output_cadence_steps={"d01": 67, "d02": 200, **{name: 600 for name in order[2:]}},
+        block_between=False,
+    )
+    return {name: [step for domain, step, _value in result.outputs if domain == name] for name in order}
+
+
+def test_leaf_child_history20_output_fires_when_parent_chunk_crosses_alarm():
+    """Regression for the B200 max_dom=2 path: d02 is a leaf advanced 3 steps at a time."""
+
+    outputs = _run_history20_scheduler_shape(
+        ("d01", "d02"),
+        (DomainNest("d01", "d02", 3, 30, 20),),
+        root_steps=234,  # just past three rounded d01 20-minute output alarms
+    )
+
+    assert outputs["d01"] == [67, 134, 201]
+    assert outputs["d02"] == [200, 400, 600]
+    assert len(outputs["d02"]) == len(outputs["d01"])
+
+
+def test_canary_internal_child_history20_path_sustains_multiple_outputs():
+    """The 9-domain canary d02 is an internal parent, so it already saw every d02 step."""
+
+    order = tuple(f"d{i:02d}" for i in range(1, 10))
+    edges = (DomainNest("d01", "d02", 3, 30, 20),) + tuple(
+        DomainNest("d02", child, 3, 10, 10) for child in order[2:]
+    )
+
+    outputs = _run_history20_scheduler_shape(order, edges, root_steps=200)
+
+    assert outputs["d02"] == [200, 400, 600]
+    assert outputs["d03"] == [600, 1200, 1800]
+    assert outputs["d09"] == [600, 1200, 1800]
+
+
+def test_leaf_child_hourly_exact_cadence_is_unchanged():
+    """Default hourly cadence is exactly divisible by the 3-step child chunks."""
+
+    hierarchy = DomainHierarchy.from_edges(
+        ("d01", "d02"),
+        (DomainNest("d01", "d02", 3, 30, 20),),
+        max_dom=2,
+    )
+
+    def advance(name, carry, start_step, n_steps):
+        del name, start_step
+        return _Carry(carry.value + int(n_steps))
+
+    result = run_domain_tree_callbacks(
+        hierarchy,
+        {"d01": _Carry(0), "d02": _Carry(0)},
+        root_steps=400,
+        advance=advance,
+        force=lambda edge, parent, child: child,
+        output=lambda name, step, state: (name, step, state.value),
+        output_cadence_steps={"d01": 200, "d02": 600},
+        block_between=False,
+    )
+
+    assert result.outputs == (
+        ("d02", 600, 600),
+        ("d01", 200, 200),
+        ("d02", 1200, 1200),
+        ("d01", 400, 400),
+    )
+
+
 def _run_canary_tree_recorded(**runner_kwargs):
     """Run the 5-domain canary tree with deterministic recording callbacks.
 
@@ -344,6 +437,71 @@ def test_fused_cascade_is_scheduler_and_value_identical_to_eager_all7():
     assert sum(1 for event in events if event[0] == "force") == 44
     assert sum(1 for event in events if event[0] == "force" and event[1] == "d02") == 42
     assert sum(1 for event in events if event[0] == "force" and event[1] == "d01") == 2
+
+
+def test_fused_leaf_divisible_history_cadence_keeps_fused_fast_path():
+    hierarchy = _all7_shaped_hierarchy()
+    calls: list[str] = []
+    fused_lookup = _python_d02_fused_lookup(hierarchy)
+
+    def recording_lookup(parent_name: str):
+        program = fused_lookup(parent_name)
+        if program is not None:
+            calls.append(parent_name)
+        return program
+
+    eager = _run_all7_recorded(fused_cascade=None)
+    fused = _run_all7_recorded(fused_cascade=recording_lookup)
+
+    assert fused == eager
+    assert calls == ["d02", "d02"]
+
+
+def test_fused_leaf_nondivisible_history_cadence_falls_back_to_eager_alarms():
+    hierarchy = DomainHierarchy.from_edges(
+        ("d01", "d02", "d03"),
+        (
+            DomainNest("d01", "d02", 3, 30, 20),
+            DomainNest("d02", "d03", 3, 52, 20),
+        ),
+    )
+    fused_calls: list[str] = []
+
+    def advance(name, carry, start_step, n_steps):
+        del name, start_step
+        return _Carry(carry.value + int(n_steps))
+
+    def force(edge, parent, child):
+        return _Carry(child.value + parent.value * 1000)
+
+    def fused_lookup(parent_name: str):
+        if parent_name != "d02":
+            return None
+        fused_calls.append(parent_name)
+
+        def fused(parent_carry, child_carries, parent_start, child_starts):
+            del parent_carry, child_carries, parent_start, child_starts
+            raise AssertionError("non-divisible leaf cadence must run the eager split path")
+
+        return fused
+
+    result = run_domain_tree_callbacks(
+        hierarchy,
+        {"d01": _Carry(0), "d02": _Carry(0), "d03": _Carry(0)},
+        root_steps=2,
+        advance=advance,
+        force=force,
+        output=lambda name, step, state: (name, step, state.value),
+        output_cadence_steps={"d01": 1, "d02": 3, "d03": 5},
+        block_between=False,
+        fused_cascade=fused_lookup,
+    )
+
+    assert fused_calls == []
+    assert result.own_steps == {"d01": 2, "d02": 6, "d03": 18}
+    d03_steps = [step for name, step, _value in result.outputs if name == "d03"]
+    assert d03_steps == [5, 10, 15]
+    assert len(d03_steps) == len(set(d03_steps))
 
 
 def test_fused_cascade_none_lookup_is_eager_byte_identical():

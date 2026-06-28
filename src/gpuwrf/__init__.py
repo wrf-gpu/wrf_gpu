@@ -4,7 +4,7 @@
 # version-keys its cache dir by ``gpuwrf.__version__`` (B1), so the attribute
 # must already exist when ``configure_compilation_cache()`` runs at import. (It
 # is re-exported via ``__all__`` at the foot of the module.)
-__version__ = "0.22.0"
+__version__ = "0.22.1"
 
 # ADR-002: the dynamical core + physics are validated in float64.  JAX defaults
 # to float32 and SILENTLY canonicalises float64->float32 unless x64 is enabled

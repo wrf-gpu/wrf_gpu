@@ -1,0 +1,47 @@
+{
+  "all_files_all_float_values_finite": true,
+  "checks": {
+    "d01": [
+      {
+        "all_float_values_finite": true,
+        "bad_variables": [],
+        "checked_float_variables": 106,
+        "file": "wrfout_d01_2026-04-28_18:20:06"
+      },
+      {
+        "all_float_values_finite": true,
+        "bad_variables": [],
+        "checked_float_variables": 106,
+        "file": "wrfout_d01_2026-04-28_18:40:12"
+      },
+      {
+        "all_float_values_finite": true,
+        "bad_variables": [],
+        "checked_float_variables": 106,
+        "file": "wrfout_d01_2026-04-28_19:00:18"
+      }
+    ],
+    "d02": [
+      {
+        "all_float_values_finite": true,
+        "bad_variables": [],
+        "checked_float_variables": 106,
+        "file": "wrfout_d02_2026-04-28_18:20:00"
+      },
+      {
+        "all_float_values_finite": true,
+        "bad_variables": [],
+        "checked_float_variables": 106,
+        "file": "wrfout_d02_2026-04-28_18:40:00"
+      },
+      {
+        "all_float_values_finite": true,
+        "bad_variables": [],
+        "checked_float_variables": 106,
+        "file": "wrfout_d02_2026-04-28_19:00:00"
+      }
+    ]
+  },
+  "run_root": "<DATA_ROOT>/wrf_gpu_validation/v0221_d02_cadence_release_20260627T214844Z",
+  "schema": "gpuwrf.v0221.d02_cadence_netcdf_finite_scan.v1"
+}

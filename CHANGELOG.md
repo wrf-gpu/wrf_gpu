@@ -7,6 +7,32 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.22.1] - 2026-06-27
+
+Pod-data-quality point release on top of `v0.22.0`. Default behavior remains
+bit-identical / convention-preserving: no numerics, masking, clamp, or schema
+change; WRF-standard wrfout names with `HH:MM:SS` remain the default. Full
+notes: [`RELEASE_NOTES_v0.22.1.md`](RELEASE_NOTES_v0.22.1.md).
+
+### Fixed
+- **Nested d02 output cadence.** Leaf-domain advance now splits at history
+  alarms, and the default fused flat-leaf path routes non-parent-ratio-aligned
+  leaf cadence cases to that eager split path. A child domain honors its own
+  `history_interval` even when that cadence is not divisible by the parent-ratio
+  chunk. The B200 two-domain `history_interval=20,20` path now writes d02 at
+  20-minute cadence instead of collapsing to hourly output.
+- **Opt-in colon-free wrfout names.** `GPUWRF_COLONFREE_OUTPUT=1` writes the
+  time portion as `HH-MM-SS` for RunPod-S3 / network-volume drains. The default
+  stays WRF-standard `HH:MM:SS`.
+
+### Validation
+- GPU NetCDF cadence gate: d01 and d02 both wrote the expected three frames at
+  20-minute cadence over the smoke window, with finite floating-point fields.
+- CPU colon-free naming unit: default colon and opt-in dash modes both covered.
+- Canary-vs-leaf diagnostic: the max_dom=9 canary exercises the nested cascade
+  path, while the B200 max_dom=2 failure was localized to the leaf-domain
+  cadence split.
+
 ## [0.22.0] - 2026-06-27
 
 Default-safe feature integration on top of `v0.21.1`. The default fp64
