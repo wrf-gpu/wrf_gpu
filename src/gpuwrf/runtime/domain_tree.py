@@ -382,6 +382,20 @@ def run_domain_tree_callbacks(
     def children_for(parent: str) -> tuple[DomainNest, ...]:
         return tuple(dynamic_specs[(edge.parent, edge.child)] for edge in hierarchy.children(parent))
 
+    def fused_leaf_outputs_are_parent_ratio_aligned(children: tuple[DomainNest, ...]) -> bool:
+        if output is None:
+            return True
+        for spec in children:
+            if children_for(spec.child):
+                continue
+            cadence = int(output_cadence_steps.get(spec.child, 0))
+            if cadence <= 0:
+                continue
+            ratio = int(spec.parent_grid_ratio)
+            if ratio <= 0 or cadence % ratio != 0 or int(own_steps[spec.child]) % ratio != 0:
+                return False
+        return True
+
     def resolve_edge(spec: DomainNest) -> DomainEdge:
         if edge_lookup is None:
             return DomainEdge(spec, weights=None)  # type: ignore[arg-type]
@@ -449,7 +463,8 @@ def run_domain_tree_callbacks(
 
     def maybe_output(name: str) -> None:
         cadence = int(output_cadence_steps.get(name, 0))
-        if output is None or cadence <= 0 or own_steps[name] % cadence != 0:
+        current_step = int(own_steps[name])
+        if output is None or cadence <= 0 or current_step <= 0 or current_step % cadence != 0:
             return
         # Output callbacks that must read carry-resident physics state (e.g. the
         # evolved Noah-MP land carry for writer-side land diagnostics) opt in via
@@ -460,9 +475,9 @@ def run_domain_tree_callbacks(
             if getattr(output, "wants_carry", False)
             else _state_from_carry(out[name])
         )
-        value = output(name, own_steps[name], payload)
+        value = output(name, current_step, payload)
         outputs.append(value)
-        events.append(("output", name, own_steps[name]))
+        events.append(("output", name, current_step))
 
     # ---- Host-sync granularity (v0.17 nested GPU-idle fix) -------------------
     # The legacy nested path blocked on the device after EVERY single domain
@@ -498,19 +513,38 @@ def run_domain_tree_callbacks(
         del reset_clock  # step clocks are per-domain global clocks, not subcycle-local
         children = children_for(name)
         if not children:
-            start_step = own_steps[name] + 1
-            maybe_adapt_dt(name, start_step)
-            out[name] = advance(name, out[name], int(start_step), int(n_steps))
-            own_steps[name] += int(n_steps)
-            events.append(("advance", name, start_step, int(n_steps), own_steps[name]))
-            if per_advance_block and hasattr(_state_from_carry(out[name]), "theta"):
-                jax.block_until_ready(_state_from_carry(out[name]).theta)
-            maybe_output(name)
+            remaining = int(n_steps)
+            while remaining > 0:
+                chunk = remaining
+                cadence = int(output_cadence_steps.get(name, 0))
+                if output is not None and cadence > 0:
+                    # Leaf children advance in parent-ratio chunks; split only
+                    # when a history alarm falls inside this chunk.
+                    next_alarm = ((int(own_steps[name]) // cadence) + 1) * cadence
+                    steps_to_alarm = next_alarm - int(own_steps[name])
+                    if 0 < steps_to_alarm <= remaining:
+                        chunk = steps_to_alarm
+                start_step = own_steps[name] + 1
+                maybe_adapt_dt(name, start_step)
+                out[name] = advance(name, out[name], int(start_step), int(chunk))
+                own_steps[name] += int(chunk)
+                events.append(("advance", name, start_step, int(chunk), own_steps[name]))
+                if per_advance_block and hasattr(_state_from_carry(out[name]), "theta"):
+                    jax.block_until_ready(_state_from_carry(out[name]).theta)
+                maybe_output(name)
+                remaining -= int(chunk)
             if depth == 0 and root_cadence:
                 _sync_all_domains()
             return
 
-        cascade = fused_cascade(name) if fused_cascade is not None and move is None and adaptive_dt is None else None
+        cascade = (
+            fused_cascade(name)
+            if fused_cascade is not None
+            and move is None
+            and adaptive_dt is None
+            and fused_leaf_outputs_are_parent_ratio_aligned(tuple(children))
+            else None
+        )
         if cascade is not None:
             child_specs = tuple(children)
             for local in range(1, int(n_steps) + 1):

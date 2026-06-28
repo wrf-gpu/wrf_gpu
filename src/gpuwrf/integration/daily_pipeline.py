@@ -24,7 +24,7 @@ from netCDF4 import Dataset
 
 from gpuwrf.config import paths
 from gpuwrf.integration.d02_replay import build_replay_case
-from gpuwrf.io.data_inventory import parse_wrfout_valid_time
+from gpuwrf.io.data_inventory import parse_wrfout_valid_time, wrfout_name
 from gpuwrf.io.gen2_accessor import Gen2Run
 from gpuwrf.io.land_state import load_hourly_land_state
 from gpuwrf.io.radiation_static import load_radiation_static
@@ -737,7 +737,7 @@ def finite_guard_summary(state: Any) -> dict[str, Any]:
 
 
 def _wrfout_name(valid_time: datetime, domain: str) -> str:
-    return f"wrfout_{domain}_{valid_time:%Y-%m-%d_%H:%M:%S}"
+    return wrfout_name(domain, valid_time)
 
 
 def _auxhist_substeps_per_hour(config: DailyPipelineConfig) -> int:

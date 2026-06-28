@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import json
+import os
 from pathlib import Path
 import re
 from typing import Any, Iterable
@@ -18,11 +19,13 @@ DEFAULT_GEN2_WRF_L3_ROOT = GEN2_READ_ONLY_ROOT / "runs" / "wrf_l3"
 DEFAULT_DOMAIN = "d02"
 DEFAULT_COMPLETE_MIN_HOURS = 24
 WRFOUT_TIME_RE = re.compile(
-    r"^wrfout_(?P<domain>d\d{2})_(?P<stamp>\d{4}-\d{2}-\d{2}_\d{2}:\d{2}:\d{2})$"
+    r"^wrfout_(?P<domain>d\d{2})_"
+    r"(?P<stamp>\d{4}-\d{2}-\d{2}_\d{2}(?P<time_sep>[:\-])\d{2}(?P=time_sep)\d{2})$"
 )
 RUN_ID_RE = re.compile(
     r"^(?P<ymd>\d{8})_(?P<hour>\d{2})z_l(?P<level>\d+)_(?P<hours>\d+)h_(?P<created>\d{8}T\d{6}Z)$"
 )
+_TRUE_ENV_TOKENS = {"1", "true", "on", "yes"}
 
 
 def utc_now_iso() -> str:
@@ -78,7 +81,22 @@ def parse_wrfout_valid_time(path: str | Path) -> datetime:
     match = WRFOUT_TIME_RE.match(Path(path).name)
     if match is None:
         raise ValueError(f"not a WRF history filename with valid time: {path}")
-    return datetime.strptime(match.group("stamp"), "%Y-%m-%d_%H:%M:%S").replace(tzinfo=timezone.utc)
+    fmt = "%Y-%m-%d_%H:%M:%S" if match.group("time_sep") == ":" else "%Y-%m-%d_%H-%M-%S"
+    return datetime.strptime(match.group("stamp"), fmt).replace(tzinfo=timezone.utc)
+
+
+def colonfree_output_enabled() -> bool:
+    return os.environ.get("GPUWRF_COLONFREE_OUTPUT", "").strip().lower() in _TRUE_ENV_TOKENS
+
+
+def wrfout_time_label(valid_time: datetime, *, colonfree: bool | None = None) -> str:
+    use_colonfree = colonfree_output_enabled() if colonfree is None else bool(colonfree)
+    fmt = "%Y-%m-%d_%H-%M-%S" if use_colonfree else "%Y-%m-%d_%H:%M:%S"
+    return valid_time.strftime(fmt)
+
+
+def wrfout_name(domain: str, valid_time: datetime, *, colonfree: bool | None = None) -> str:
+    return f"wrfout_{domain}_{wrfout_time_label(valid_time, colonfree=colonfree)}"
 
 
 def _decode_times_variable(dataset: Dataset) -> list[str]:
@@ -407,6 +425,7 @@ __all__ = [
     "DEFAULT_GEN2_WRF_L3_ROOT",
     "build_gen2_d02_inventory",
     "build_subset_manifest",
+    "colonfree_output_enabled",
     "discover_gen2_run_dirs",
     "filter_inventory_runs",
     "inventory_run",
@@ -419,4 +438,6 @@ __all__ = [
     "validate_gen2_d02_inventory",
     "validate_subset_manifest",
     "write_json",
+    "wrfout_name",
+    "wrfout_time_label",
 ]

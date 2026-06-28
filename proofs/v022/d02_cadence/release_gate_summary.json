@@ -1,0 +1,50 @@
+{
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "input_dir": "<DATA_ROOT>/wrf_gpu_validation/v0221_d02_cadence_release_20260627T214844Z/input_history20",
+  "output_dir": "<DATA_ROOT>/wrf_gpu_validation/v0221_d02_cadence_release_20260627T214844Z/output",
+  "per_domain": {
+    "d01": {
+      "dt_s": 18.0,
+      "expected_wrfout_count": 3,
+      "files": [
+        "wrfout_d01_2026-04-28_18:20:06",
+        "wrfout_d01_2026-04-28_18:40:12",
+        "wrfout_d01_2026-04-28_19:00:18"
+      ],
+      "final_state_finite": true,
+      "history_interval_min": 20.0,
+      "netcdf_open_ok": true,
+      "own_steps": 240,
+      "times": [
+        "2026-04-28_18:20:06",
+        "2026-04-28_18:40:12",
+        "2026-04-28_19:00:18"
+      ],
+      "wrfout_count": 3
+    },
+    "d02": {
+      "dt_s": 6.0,
+      "expected_wrfout_count": 3,
+      "files": [
+        "wrfout_d02_2026-04-28_18:20:00",
+        "wrfout_d02_2026-04-28_18:40:00",
+        "wrfout_d02_2026-04-28_19:00:00"
+      ],
+      "final_state_finite": true,
+      "history_interval_min": 20.0,
+      "netcdf_open_ok": true,
+      "own_steps": 720,
+      "times": [
+        "2026-04-28_18:20:00",
+        "2026-04-28_18:40:00",
+        "2026-04-28_19:00:00"
+      ],
+      "wrfout_count": 3
+    }
+  },
+  "proof": "<DATA_ROOT>/wrf_gpu_validation/v0221_d02_cadence_release_20260627T214844Z/proof/nested_pipeline_run.json",
+  "run_root": "<DATA_ROOT>/wrf_gpu_validation/v0221_d02_cadence_release_20260627T214844Z",
+  "schema": "gpuwrf.v0221.d02_cadence_release_gate.v1",
+  "verdict": "PIPELINE_GREEN"
+}

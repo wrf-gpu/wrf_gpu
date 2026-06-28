@@ -44,6 +44,7 @@ import numpy as np
 from gpuwrf.contracts.grid import DomainHierarchy, DomainNest
 from gpuwrf.integration.d02_replay import build_replay_case
 from gpuwrf.io.async_wrfout import AsyncWrfoutWriter
+from gpuwrf.io.data_inventory import wrfout_name
 from gpuwrf.io.noahmp_land_init import build_noahmp_land_state, build_noahmp_params
 from gpuwrf.io.radiation_static import load_radiation_static
 from gpuwrf.io.gwdo_static import load_gwdo_statics
@@ -106,6 +107,10 @@ def domain_names_for(max_dom: int) -> tuple[str, ...]:
     if int(max_dom) < 1:
         raise ValueError(f"max_dom must be >= 1, got {max_dom}")
     return tuple(f"d{i:02d}" for i in range(1, int(max_dom) + 1))
+
+
+def _wrfout_path(output_dir: Path, domain: str, valid_time: datetime) -> Path:
+    return output_dir / wrfout_name(domain, valid_time)
 
 
 def _coerce_run_start(value: str) -> datetime:
@@ -774,7 +779,7 @@ class _PerDomainWrfoutWriter:
         diagnostics = self._merge_output_diagnostics(
             self.writer_diagnostics.get(name), surface_diagnostics
         )
-        path = self.output_dir / f"wrfout_{name}_{valid_time:%Y-%m-%d_%H:%M:%S}"
+        path = _wrfout_path(self.output_dir, name, valid_time)
         if self._async_writer is not None:
             # Keep the device->host pull on the step thread (so no off-thread
             # touch of a device buffer the GPU may reuse), then submit the
