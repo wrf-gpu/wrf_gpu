@@ -33,6 +33,8 @@ from gpuwrf.integration.nested_pipeline import (
     _SUPPORTED_NESTED_LAND_OPTIONS,
     _domain_sf_surface_physics,
     _nested_async_output_from_env,
+    _nested_m9_radiation_from_carry_from_env,
+    _noahmp_surface_diagnostics_for_output,
     _wrf_julian_yearlen,
 )
 from gpuwrf.runtime.domain_tree import run_domain_tree_callbacks
@@ -193,6 +195,149 @@ def test_nested_async_output_enable_tokens(monkeypatch, value):
     assert _nested_async_output_from_env() is True
 
 
+def test_nested_m9_radiation_from_carry_env_is_opt_in(monkeypatch):
+    monkeypatch.delenv("GPUWRF_NESTED_M9_RADIATION_FROM_CARRY", raising=False)
+    assert _nested_m9_radiation_from_carry_from_env() is False
+
+    for falsy in ("", "0", "false", "no", "off", "garbage"):
+        monkeypatch.setenv("GPUWRF_NESTED_M9_RADIATION_FROM_CARRY", falsy)
+        assert _nested_m9_radiation_from_carry_from_env() is False
+
+    for truthy in ("1", "true", "TRUE", "Yes", "on"):
+        monkeypatch.setenv("GPUWRF_NESTED_M9_RADIATION_FROM_CARRY", truthy)
+        assert _nested_m9_radiation_from_carry_from_env() is True
+
+
+def _dummy_noahmp_namelist(run_start):
+    return SimpleNamespace(
+        grid="grid",
+        metrics="metrics",
+        time_utc=run_start,
+        use_noahmp=True,
+        noahmp_static="noahmp-static",
+        noahmp_energy_params="energy-params",
+        noahmp_rad_params="rad-params",
+        dt_s=30.0,
+        noahmp_julian=120.75,
+        noahmp_yearlen=365.0,
+        ra_sw_physics=4,
+        ra_lw_physics=4,
+        slope_rad=0,
+    )
+
+
+def test_nested_noahmp_default_keeps_output_time_m9_resolve(monkeypatch):
+    """Default full wrfout keeps the existing M9/RRTMG diagnostic solve."""
+    import gpuwrf.runtime.operational_mode as operational_mode
+
+    monkeypatch.delenv("GPUWRF_NESTED_M9_RADIATION_FROM_CARRY", raising=False)
+    run_start = datetime(2026, 5, 25, 18, tzinfo=timezone.utc)
+    namelist = _dummy_noahmp_namelist(run_start)
+    state = SimpleNamespace(t_skin=np.array([[280.0]]))
+    calls = {"m9": 0}
+
+    def fake_build_clock_base(_namelist):
+        return SimpleNamespace(noahmp_julian=1.0, noahmp_yearlen=365.0)
+
+    def fake_m9(*_args, **_kwargs):
+        calls["m9"] += 1
+        return SimpleNamespace(
+            t2=np.array([[290.0]]),
+            u10=np.array([[1.0]]),
+            v10=np.array([[2.0]]),
+            psfc=np.array([[100000.0]]),
+            swdown=np.array([[42.0]]),
+            glw=np.array([[300.0]]),
+            pblh=np.array([[500.0]]),
+            tsk=np.array([[285.0]]),
+            hfx=np.array([[12.0]]),
+            lh=np.array([[13.0]]),
+            swdnb=np.array([[43.0]]),
+            lwdnb=np.array([[301.0]]),
+        )
+
+    def fake_surface(_state, _grid):
+        return SimpleNamespace(q2=np.array([[0.010]]))
+
+    monkeypatch.setattr(operational_mode, "build_clock_base", fake_build_clock_base)
+    monkeypatch.setattr(operational_mode, "compute_m9_diagnostics", fake_m9)
+    monkeypatch.setattr(operational_mode, "surface_layer_diagnostics", fake_surface)
+
+    out = _noahmp_surface_diagnostics_for_output(
+        state,
+        namelist,
+        run_start,
+        lead_seconds=3600.0,
+        noahmp_land=object(),
+        noahmp_rad=(np.array([[7.0]]), np.array([[8.0]]), np.array([[0.5]])),
+    )
+
+    assert calls == {"m9": 1}
+    assert np.array_equal(out["SWDOWN"], np.array([[42.0]]))
+    assert np.array_equal(out["Q2"], np.array([[0.010]]))
+
+
+def test_nested_noahmp_opt_in_uses_carry_and_omits_unavailable_fluxes(monkeypatch):
+    """Opt-in carry mode avoids M9/RRTMG and never fabricates missing TOA/up fluxes."""
+    import gpuwrf.runtime.operational_mode as operational_mode
+
+    monkeypatch.setenv("GPUWRF_NESTED_M9_RADIATION_FROM_CARRY", "1")
+    run_start = datetime(2026, 5, 25, 18, tzinfo=timezone.utc)
+    namelist = _dummy_noahmp_namelist(run_start)
+    state = SimpleNamespace(t_skin=np.array([[280.0]]))
+
+    def fake_build_clock_base(_namelist):
+        return SimpleNamespace(noahmp_julian=1.0, noahmp_yearlen=365.0)
+
+    def fail_m9(*_args, **_kwargs):
+        raise AssertionError("opt-in carry path must not run compute_m9_diagnostics")
+
+    def fake_surface(_state, _grid):
+        return SimpleNamespace(
+            hfx=np.array([[1.0]]),
+            lh=np.array([[2.0]]),
+            pblh=np.array([[500.0]]),
+            t2=np.array([[289.0]]),
+            u10=np.array([[3.0]]),
+            v10=np.array([[4.0]]),
+            q2=np.array([[0.011]]),
+        )
+
+    def fake_overlay(*_args, **_kwargs):
+        return (
+            np.array([[11.0]]),
+            np.array([[12.0]]),
+            np.array([[286.0]]),
+            np.array([[291.0]]),
+        )
+
+    monkeypatch.setattr(operational_mode, "build_clock_base", fake_build_clock_base)
+    monkeypatch.setattr(operational_mode, "compute_m9_diagnostics", fail_m9)
+    monkeypatch.setattr(operational_mode, "surface_layer_diagnostics", fake_surface)
+    monkeypatch.setattr(operational_mode, "_psfc_from_state", lambda *_args: np.array([[100100.0]]))
+    monkeypatch.setattr(operational_mode, "_noahmp_params", lambda _namelist: ("ep", "rp"))
+    monkeypatch.setattr(operational_mode, "overlay_noahmp_land_diagnostics", fake_overlay)
+
+    out = _noahmp_surface_diagnostics_for_output(
+        state,
+        namelist,
+        run_start,
+        lead_seconds=3600.0,
+        noahmp_land=object(),
+        noahmp_rad=(np.array([[7.0]]), np.array([[300.0]]), np.array([[0.5]])),
+    )
+
+    assert np.array_equal(out["SWDOWN"], np.array([[7.0]]))
+    assert np.array_equal(out["GLW"], np.array([[300.0]]))
+    assert np.array_equal(out["SWDNB"], np.array([[7.0]]))
+    assert np.array_equal(out["LWDNB"], np.array([[300.0]]))
+    assert np.array_equal(out["HFX"], np.array([[11.0]]))
+    assert np.array_equal(out["T2"], np.array([[291.0]]))
+    assert "SWUPB" not in out
+    assert "LWUPT" not in out
+    assert "OLR" not in out
+
+
 def _make_nested_writer(*, async_writer):
     """Build a _PerDomainWrfoutWriter without its Gen2Run-dependent __init__.
 
@@ -212,6 +357,7 @@ def _make_nested_writer(*, async_writer):
     writer.writer_diagnostics = {}
     writer.writer_static_latlon_metadata = {}
     writer._async_writer = async_writer
+    writer._output_pipeline = None  # Phase 2 (S1) pipeline OFF unless set by test
     writer._variable_subset = None  # full byte-identical default output
     writer._full_variable_set = False
     writer.written = {"d01": []}

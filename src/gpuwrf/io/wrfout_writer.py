@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import contextvars
+from contextlib import contextmanager
+from dataclasses import dataclass, fields as dataclass_fields, is_dataclass
 from datetime import date, datetime
 from math import cos, pi
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 
 import numpy as np
 from netCDF4 import Dataset
@@ -28,6 +30,9 @@ DEFAULT_SOIL_LAYERS = 4
 DEFAULT_SNOW_LAYERS = 3
 DEFAULT_SNSO_LAYERS = 7
 DEFAULT_SEED_DIM = 8
+_WRFOUT_HOST_ARRAYS: contextvars.ContextVar["_WrfoutHostArrays | None"] = (
+    contextvars.ContextVar("_WRFOUT_HOST_ARRAYS", default=None)
+)
 
 
 DOWNSTREAM_CRITICAL_VARIABLES: tuple[str, ...] = (
@@ -1214,6 +1219,8 @@ def write_wrfout_netcdf(
         run_start=run_start,
         diagnostics=diagnostics,
         land_state=land_state,
+        variable_subset=variable_subset,
+        include_mandatory_coords=include_mandatory_coords,
         full_variable_set=full_variable_set,
     )
     return write_prepared_wrfout(
@@ -1249,6 +1256,267 @@ class PreparedWrfout:
     full_variable_set: bool = False
 
 
+@dataclass(frozen=True)
+class _WrfoutHostArrays:
+    by_id: Mapping[int, Any]
+
+    def host_value(self, value: Any) -> Any:
+        return self.by_id.get(id(value), value)
+
+
+@contextmanager
+def _batched_wrfout_device_get(
+    *,
+    state: Any,
+    grid: Any,
+    diagnostics: Mapping[str, Any] | None,
+    land_state: Any | None,
+    requested_names: frozenset[str] | None = None,
+) -> Iterator[None]:
+    """Materialize device leaves once for one wrfout payload build."""
+
+    context = _build_wrfout_host_arrays(
+        state,
+        grid,
+        diagnostics,
+        land_state,
+        requested_names=requested_names,
+    )
+    token = _WRFOUT_HOST_ARRAYS.set(context)
+    try:
+        yield
+    finally:
+        _WRFOUT_HOST_ARRAYS.reset(token)
+
+
+def _build_wrfout_host_arrays(
+    *sources: Any, requested_names: frozenset[str] | None = None
+) -> _WrfoutHostArrays:
+    try:
+        import jax
+    except Exception:  # pragma: no cover - JAX is a project dependency.
+        return _WrfoutHostArrays({})
+
+    array_type = getattr(jax, "Array", ())
+    if not array_type:
+        return _WrfoutHostArrays({})
+
+    leaves: list[Any] = []
+    seen_objects: set[int] = set()
+    seen_arrays: set[int] = set()
+
+    def visit(value: Any) -> None:
+        if value is None or isinstance(
+            value, (str, bytes, bool, int, float, complex, date, datetime, Path)
+        ):
+            return
+        if isinstance(value, array_type):
+            value_id = id(value)
+            if value_id not in seen_arrays:
+                seen_arrays.add(value_id)
+                leaves.append(value)
+            return
+        if isinstance(value, np.ndarray):
+            return
+        value_id = id(value)
+        if value_id in seen_objects:
+            return
+        seen_objects.add(value_id)
+        if isinstance(value, Mapping):
+            for item in value.values():
+                visit(item)
+            return
+        if isinstance(value, (tuple, list, set, frozenset)):
+            for item in value:
+                visit(item)
+            return
+        if is_dataclass(value) and not isinstance(value, type):
+            for field in dataclass_fields(value):
+                visit(getattr(value, field.name, None))
+            return
+        namespace = getattr(value, "__dict__", None)
+        if namespace:
+            for item in namespace.values():
+                visit(item)
+
+    scan_sources = sources
+    if requested_names is not None:
+        state, grid, diagnostics, land_state = sources
+        scan_sources = tuple(
+            _requested_wrfout_source_values(
+                state=state,
+                grid=grid,
+                diagnostics=diagnostics,
+                land_state=land_state,
+                requested_names=requested_names,
+            )
+        )
+    for source in scan_sources:
+        visit(source)
+    if not leaves:
+        return _WrfoutHostArrays({})
+    host_leaves = jax.device_get(tuple(leaves))
+    return _WrfoutHostArrays(
+        {id(device_value): host_value for device_value, host_value in zip(leaves, host_leaves)}
+    )
+
+
+def _host_materialized_value(value: Any) -> Any:
+    context = _WRFOUT_HOST_ARRAYS.get()
+    if context is None:
+        return value
+    return context.host_value(value)
+
+
+def _prepare_requested_names(
+    variable_subset: tuple[str, ...] | frozenset[str] | None,
+    *,
+    include_mandatory_coords: bool,
+) -> frozenset[str] | None:
+    if variable_subset is None:
+        return None
+    requested = set(variable_subset)
+    if include_mandatory_coords:
+        requested.update(MANDATORY_WRFOUT_COORDINATES)
+    requested.discard("Times")
+    requested.discard("XTIME")
+    return frozenset(requested)
+
+
+_STATE_SOURCE_ALIASES: Mapping[str, tuple[str, ...]] = {
+    "U": ("U", "u"),
+    "V": ("V", "v"),
+    "W": ("W", "w"),
+    "T": ("theta", "THETA"),
+    "THM": ("theta", "THETA"),
+    "QVAPOR": ("QVAPOR", "qv", "qvapor"),
+    "QCLOUD": ("QCLOUD", "qc", "qcloud"),
+    "QICE": ("QICE", "qi", "qice"),
+    "QRAIN": ("QRAIN", "qr", "qrain"),
+    "QSNOW": ("QSNOW", "qs", "qsnow"),
+    "QGRAUP": ("QGRAUP", "qg", "qgraup"),
+    "QKE": ("QKE", "qke"),
+    "CLDFRA": ("CLDFRA", "cldfra", "cloud_fraction"),
+    "P": ("p_perturbation", "P"),
+    "PB": ("pb", "p_base", "PB"),
+    "PH": ("ph_perturbation", "PH"),
+    "PHB": ("phb", "ph_base", "PHB"),
+    "MU": ("mu_perturbation", "MU"),
+    "MUB": ("mub", "mu_base", "MUB"),
+    "U10": ("U10", "u10"),
+    "V10": ("V10", "v10"),
+    "T2": ("T2", "t2"),
+    "Q2": ("Q2", "q2"),
+    "PSFC": ("PSFC", "psfc"),
+    "RAINC": ("RAINC", "rainc", "rainc_acc"),
+    "RAINNC": ("RAINNC", "rainnc", "rain_acc"),
+    "RAINSH": ("RAINSH", "rainsh"),
+    "SWDOWN": ("SWDOWN", "swdown"),
+    "GLW": ("GLW", "glw"),
+    "PBLH": ("PBLH", "pblh"),
+    "UST": ("UST", "ustar"),
+    "HFX": ("HFX", "hfx"),
+    "LH": ("LH", "lh"),
+    "TSK": ("TSK", "tsk", "t_skin"),
+    "HGT": ("HGT", "hgt", "terrain_height"),
+    "LANDMASK": ("LANDMASK", "landmask"),
+    "LU_INDEX": ("LU_INDEX", "lu_index", "ivgtyp"),
+    "XLAT": ("XLAT", "xlat", "lat"),
+    "XLONG": ("XLONG", "xlong", "lon"),
+    "XLAT_U": ("XLAT_U", "xlat_u", "lat_u"),
+    "XLONG_U": ("XLONG_U", "xlong_u", "lon_u"),
+    "XLAT_V": ("XLAT_V", "xlat_v", "lat_v"),
+    "XLONG_V": ("XLONG_V", "xlong_v", "lon_v"),
+}
+
+
+def _requested_wrfout_source_values(
+    *,
+    state: Any,
+    grid: Any,
+    diagnostics: Mapping[str, Any] | None,
+    land_state: Any | None,
+    requested_names: frozenset[str],
+) -> list[Any]:
+    del land_state
+    values: list[Any] = []
+
+    def add(value: Any) -> None:
+        if value is not None:
+            values.append(value)
+
+    def add_aliases(source: Any, aliases: tuple[str, ...]) -> None:
+        for alias in aliases:
+            add(_lookup_raw(source, alias, None))
+
+    names = _expand_requested_source_names(requested_names)
+    for name in names:
+        aliases = _STATE_SOURCE_ALIASES.get(name, (name, name.lower()))
+        add_aliases(state, aliases)
+        add_aliases(diagnostics, aliases)
+
+    # Total/base aliases used by _perturbation_base_pair fallbacks.
+    if names & {"P", "PB", "PSFC", "T2", "TSK", "HFX", "LH"}:
+        add_aliases(state, ("p_total", "p", "P_total"))
+    if names & {"PH", "PHB", "PSFC", "HFX", "LH"}:
+        add_aliases(state, ("ph_total", "ph", "PH_total"))
+    if names & {"MU", "MUB", "PSFC"}:
+        add_aliases(state, ("mu_total", "mu", "MU_total"))
+
+    if names & {"HGT"}:
+        add_aliases(grid, ("HGT", "hgt", "terrain_height"))
+    if names & {"XLAT", "XLONG", "XLAT_U", "XLONG_U", "XLAT_V", "XLONG_V"}:
+        for coord in ("XLAT", "XLONG", "XLAT_U", "XLONG_U", "XLAT_V", "XLONG_V"):
+            add_aliases(diagnostics, _STATE_SOURCE_ALIASES[coord])
+            add_aliases(state, _STATE_SOURCE_ALIASES[coord])
+
+    if names & {"ZNU", "ZNW"}:
+        add(_lookup_raw(grid, "eta_levels", None))
+
+    metrics = _lookup_raw(grid, "metrics", None)
+    metric_attrs = {
+        "MAPFAC_M": ("msftx",),
+        "MAPFAC_U": ("msfux",),
+        "MAPFAC_V": ("msfvx",),
+        "SINALPHA": ("sina",),
+        "COSALPHA": ("cosa",),
+        "F": ("f",),
+        "E": ("e",),
+    }
+    if "PSFC" in names:
+        metric_attrs.setdefault("PSFC", ())
+        for attr in ("c1h", "c2h", "dnw", "p_top"):
+            add(_lookup_raw(metrics, attr, None))
+    for name, attrs in metric_attrs.items():
+        if name in names:
+            for attr in attrs:
+                add(_lookup_raw(metrics, attr, None))
+    return values
+
+
+def _expand_requested_source_names(requested_names: frozenset[str]) -> set[str]:
+    names = set(requested_names)
+    if names & {"T", "THM", "T2", "TSK", "HFX", "LH"}:
+        names.update({"T", "QVAPOR", "P", "PB"})
+    if names & {"PSFC"}:
+        names.update({"P", "PB", "PH", "PHB", "MU", "MUB", "QVAPOR", "QCLOUD", "QICE", "QSNOW", "QGRAUP"})
+    if names & {"CLDFRA"}:
+        names.update({"QCLOUD", "QICE", "QRAIN"})
+    if names & {"U10", "HFX", "LH"}:
+        names.add("U")
+    if names & {"V10", "HFX", "LH"}:
+        names.add("V")
+    if names & {"HFX", "LH"}:
+        names.update({"HGT", "LANDMASK", "TSK", "Q2", "UST"})
+    if names & {"LU_INDEX"}:
+        names.add("LANDMASK")
+    if names & {"RAINNC"}:
+        names.update({"QSNOW", "QGRAUP"})
+    if names & {"OLR"}:
+        names.add("LWUPT")
+    return names
+
+
 def prepare_wrfout_payload(
     state: Any,
     grid: Any,
@@ -1260,6 +1528,8 @@ def prepare_wrfout_payload(
     run_start: datetime | date | str,
     diagnostics: Mapping[str, Any] | None = None,
     land_state: Any | None = None,
+    variable_subset: tuple[str, ...] | frozenset[str] | None = None,
+    include_mandatory_coords: bool = False,
     full_variable_set: bool = False,
 ) -> PreparedWrfout:
     """Materialize all wrfout fields to host numpy (the device->host boundary).
@@ -1277,25 +1547,46 @@ def prepare_wrfout_payload(
     valid_dt = _coerce_datetime(valid_time)
     nx, ny, nz = _grid_extent(grid)
     dimensions = _dimension_sizes(nx=nx, ny=ny, nz=nz, namelist=namelist)
-    # The single device->host boundary: _build_output_fields returns host
-    # np.float32 arrays, so PreparedWrfout holds no device references.
-    fields = _build_output_fields(
-        state, grid, namelist, dimensions,
-        diagnostics=diagnostics, land_state=land_state,
-        run_start=run_start_dt, lead_hours=float(lead_hours),
+    requested_names = _prepare_requested_names(
+        variable_subset,
+        include_mandatory_coords=include_mandatory_coords,
     )
-    if full_variable_set:
-        _add_full_wrfout_fields(
-            fields,
-            state=state,
-            grid=grid,
-            namelist=namelist,
-            dimensions=dimensions,
-            diagnostics=diagnostics,
-            land_state=land_state,
-            run_start=run_start_dt,
-            lead_hours=float(lead_hours),
-        )
+    # The single device->host boundary: materialize all reachable device leaves in
+    # one jax.device_get call, then let the existing field builder coerce host
+    # arrays in its historical order.
+    with _batched_wrfout_device_get(
+        state=state,
+        grid=grid,
+        diagnostics=diagnostics,
+        land_state=land_state,
+        requested_names=requested_names,
+    ):
+        if requested_names is None:
+            fields = _build_output_fields(
+                state, grid, namelist, dimensions,
+                diagnostics=diagnostics, land_state=land_state,
+                run_start=run_start_dt, lead_hours=float(lead_hours),
+            )
+        else:
+            fields = _build_subset_output_fields(
+                state, grid, namelist, dimensions,
+                requested_names=requested_names,
+                diagnostics=diagnostics, land_state=land_state,
+                run_start=run_start_dt, lead_hours=float(lead_hours),
+            )
+        if full_variable_set:
+            _add_full_wrfout_fields(
+                fields,
+                state=state,
+                grid=grid,
+                namelist=namelist,
+                dimensions=dimensions,
+                diagnostics=diagnostics,
+                land_state=land_state,
+                run_start=run_start_dt,
+                lead_hours=float(lead_hours),
+                requested_names=requested_names,
+            )
     return PreparedWrfout(
         target=target,
         dimensions=dimensions,
@@ -1527,6 +1818,314 @@ def _write_global_attrs(
     }
     for name, value in attrs.items():
         dataset.setncattr(name, value)
+
+
+def _build_subset_output_fields(
+    state: Any,
+    grid: Any,
+    namelist: Mapping[str, Any] | Any | None,
+    dimensions: Mapping[str, int | None],
+    *,
+    requested_names: frozenset[str],
+    diagnostics: Mapping[str, Any] | None = None,
+    land_state: Any | None = None,
+    run_start: datetime | None = None,
+    lead_hours: float = 0.0,
+) -> dict[str, np.ndarray]:
+    del land_state, run_start, lead_hours
+    shape_xy = _shape_for_dimensions(XY, dimensions)
+    shape_xyz = _shape_for_dimensions(XYZ, dimensions)
+    shape_u = _shape_for_dimensions(U_XYZ, dimensions)
+    shape_v = _shape_for_dimensions(V_XYZ, dimensions)
+    shape_w = _shape_for_dimensions(W_XYZ, dimensions)
+    shape_u_xy = _shape_for_dimensions(U_XY, dimensions)
+    shape_v_xy = _shape_for_dimensions(V_XY, dimensions)
+    shape_z = _shape_for_dimensions(Z_XYZ, dimensions)
+
+    fields: dict[str, np.ndarray] = {}
+    requested = set(requested_names)
+
+    def want(name: str) -> bool:
+        return name in requested
+
+    need_u = bool(requested & {"U", "U10", "HFX", "LH"})
+    need_v = bool(requested & {"V", "V10", "HFX", "LH"})
+    need_w = want("W")
+    need_theta = bool(requested & {"T", "THM", "T2", "TSK", "HFX", "LH"})
+    need_qv = bool(requested & {"T", "THM", "QVAPOR", "Q2", "T2", "TSK", "HFX", "LH", "PSFC"})
+    need_qc = bool(requested & {"QCLOUD", "CLDFRA", "PSFC"})
+    need_qi = bool(requested & {"QICE", "CLDFRA", "PSFC"})
+    need_qr = bool(requested & {"QRAIN", "CLDFRA"})
+    need_pressure = bool(requested & {"P", "PB", "T2", "TSK", "PSFC", "HFX", "LH"})
+    need_geopotential = bool(requested & {"PH", "PHB", "PSFC", "HFX", "LH"})
+    need_mu = want("PSFC")
+
+    u = _field_array(state, ("U", "u"), shape_u) if need_u else None
+    v = _field_array(state, ("V", "v"), shape_v) if need_v else None
+    w = _field_array(state, ("W", "w"), shape_w) if need_w else None
+    theta = (
+        _field_array(state, ("theta", "THETA"), shape_xyz, default=300.0)
+        if need_theta
+        else None
+    )
+    qv = _field_array(state, ("QVAPOR", "qv", "qvapor"), shape_xyz) if need_qv else None
+    qc = _field_array(state, ("QCLOUD", "qc", "qcloud"), shape_xyz) if need_qc else None
+    qi = _field_array(state, ("QICE", "qi", "qice"), shape_xyz) if need_qi else None
+    qr = _field_array(state, ("QRAIN", "qr", "qrain"), shape_xyz) if need_qr else None
+    if theta is not None and qv is not None:
+        theta_dry = theta / (1.0 + RVOVRD * np.maximum(qv, 0.0))
+    else:
+        theta_dry = theta
+
+    p_pert = p_base = None
+    if need_pressure:
+        p_pert, p_base = _perturbation_base_pair(
+            state,
+            total_names=("p_total", "p", "P_total"),
+            perturbation_names=("p_perturbation", "P"),
+            base_names=("pb", "p_base", "PB"),
+            shape=shape_xyz,
+        )
+    ph_pert = ph_base = None
+    if need_geopotential:
+        ph_pert, ph_base = _perturbation_base_pair(
+            state,
+            total_names=("ph_total", "ph", "PH_total"),
+            perturbation_names=("ph_perturbation", "PH"),
+            base_names=("phb", "ph_base", "PHB"),
+            shape=shape_z,
+        )
+    mu_pert = mu_base = None
+    if need_mu:
+        mu_pert, mu_base = _perturbation_base_pair(
+            state,
+            total_names=("mu_total", "mu", "MU_total"),
+            perturbation_names=("mu_perturbation", "MU"),
+            base_names=("mub", "mu_base", "MUB"),
+            shape=shape_xy,
+        )
+
+    if want("U") and u is not None:
+        fields["U"] = u
+    if want("V") and v is not None:
+        fields["V"] = v
+    if want("W") and w is not None:
+        fields["W"] = w
+    if want("T") and theta_dry is not None:
+        fields["T"] = theta_dry - P0_THETA_OFFSET_K
+    if want("THM") and theta is not None:
+        fields["THM"] = theta - P0_THETA_OFFSET_K
+    if want("QVAPOR") and qv is not None:
+        fields["QVAPOR"] = qv
+    if want("QCLOUD") and qc is not None:
+        fields["QCLOUD"] = qc
+    if want("QICE") and qi is not None:
+        fields["QICE"] = qi
+    if want("QRAIN") and qr is not None:
+        fields["QRAIN"] = qr
+    for wrf_name, state_names in (
+        ("QSNOW", ("QSNOW", "qs", "qsnow")),
+        ("QGRAUP", ("QGRAUP", "qg", "qgraup")),
+        ("QKE", ("QKE", "qke")),
+    ):
+        if want(wrf_name):
+            value = _optional_field_array(state, state_names, shape_xyz)
+            if value is not None:
+                fields[wrf_name] = value
+    if want("CLDFRA"):
+        cldfra_default = None
+        if qc is not None and qi is not None and qr is not None:
+            cldfra_default = np.where((qc + qi + qr) > 1.0e-8, 1.0, 0.0)
+        fields["CLDFRA"] = _field_array(
+            state,
+            ("CLDFRA", "cldfra", "cloud_fraction"),
+            shape_xyz,
+            default=0.0 if cldfra_default is None else cldfra_default,
+        )
+
+    if want("P") and p_pert is not None:
+        fields["P"] = p_pert
+    if want("PB") and p_base is not None:
+        fields["PB"] = p_base
+    if want("PH") and ph_pert is not None:
+        fields["PH"] = ph_pert
+    if want("PHB") and ph_base is not None:
+        fields["PHB"] = ph_base
+    if want("MU") and mu_pert is not None:
+        fields["MU"] = mu_pert
+    if want("MUB") and mu_base is not None:
+        fields["MUB"] = mu_base
+
+    if requested & {"XLAT", "XLONG"}:
+        xlat, xlong = _latlon_fields(state, grid, namelist, shape_xy, diagnostics=diagnostics)
+        if want("XLAT"):
+            fields["XLAT"] = xlat
+        if want("XLONG"):
+            fields["XLONG"] = xlong
+    if requested & {"XLAT_U", "XLONG_U"}:
+        xlat_u, xlong_u = _latlon_fields(
+            state, grid, namelist, shape_u_xy, suffix="_u", diagnostics=diagnostics
+        )
+        if want("XLAT_U"):
+            fields["XLAT_U"] = xlat_u
+        if want("XLONG_U"):
+            fields["XLONG_U"] = xlong_u
+    if requested & {"XLAT_V", "XLONG_V"}:
+        xlat_v, xlong_v = _latlon_fields(
+            state, grid, namelist, shape_v_xy, suffix="_v", diagnostics=diagnostics
+        )
+        if want("XLAT_V"):
+            fields["XLAT_V"] = xlat_v
+        if want("XLONG_V"):
+            fields["XLONG_V"] = xlong_v
+
+    terrain = None
+    if requested & {"HGT", "HFX", "LH"}:
+        terrain = _grid_or_state_array(state, grid, ("HGT", "hgt", "terrain_height"), shape_xy)
+        if want("HGT"):
+            fields["HGT"] = terrain
+    landmask = None
+    if requested & {"LANDMASK", "LU_INDEX", "HFX", "LH"}:
+        landmask = _landmask(state, shape_xy)
+        if want("LANDMASK"):
+            fields["LANDMASK"] = landmask
+    if want("LU_INDEX"):
+        default_lu = 17.0 if landmask is None else np.where(landmask > 0.5, 2.0, 17.0)
+        fields["LU_INDEX"] = _field_array(
+            state, ("LU_INDEX", "lu_index", "ivgtyp"), shape_xy, default=default_lu
+        )
+
+    if want("U10") and u is not None:
+        fields["U10"] = _field_array(state, ("U10", "u10"), shape_xy, default=_unstagger_x(u)[0])
+    if want("V10") and v is not None:
+        fields["V10"] = _field_array(state, ("V10", "v10"), shape_xy, default=_unstagger_y(v)[0])
+    if want("Q2") and qv is not None:
+        fields["Q2"] = _field_array(state, ("Q2", "q2"), shape_xy, default=qv[0])
+    if want("T2") and theta_dry is not None and p_pert is not None and p_base is not None:
+        t_default = theta_dry[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP
+        fields["T2"] = _field_array(state, ("T2", "t2"), shape_xy, default=t_default)
+    if want("TSK") and theta_dry is not None and p_pert is not None and p_base is not None:
+        tsk_default = theta_dry[0] * (np.maximum(p_pert[0] + p_base[0], 1.0) / P0_PA) ** R_D_OVER_CP
+        fields["TSK"] = _field_array(state, ("TSK", "tsk", "t_skin"), shape_xy, default=tsk_default)
+    if want("PSFC"):
+        psfc_default = 0.0
+        if p_pert is not None and p_base is not None and ph_pert is not None and ph_base is not None:
+            p_total = p_pert + p_base
+            phi = ph_pert + ph_base
+            phi0 = phi[0]
+            phi1 = 0.5 * (phi[0] + phi[1])
+            phi2 = 0.5 * (phi[1] + phi[2])
+            weight = (phi0 - phi2) / (phi1 - phi2)
+            psfc_default = weight * p_total[0] + (1.0 - weight) * p_total[1]
+        fields["PSFC"] = _field_array(state, ("PSFC", "psfc"), shape_xy, default=psfc_default)
+
+    for name, aliases in (
+        ("RAINC", ("RAINC", "rainc", "rainc_acc")),
+        ("RAINSH", ("RAINSH", "rainsh")),
+        ("SWDOWN", ("SWDOWN", "swdown")),
+        ("GLW", ("GLW", "glw")),
+        ("PBLH", ("PBLH", "pblh")),
+        ("UST", ("UST", "ustar")),
+        ("HFX", ("HFX", "hfx")),
+        ("LH", ("LH", "lh")),
+    ):
+        if want(name):
+            fields[name] = _field_array(state, aliases, shape_xy)
+    if want("RAINNC"):
+        rain_acc = _optional_field_array(state, ("rain_acc", "RAINNC"), shape_xy)
+        snow_acc = _optional_field_array(state, ("snow_acc", "SNOWNC"), shape_xy)
+        ice_acc = _optional_field_array(state, ("ice_acc",), shape_xy)
+        graupel_acc = _optional_field_array(state, ("graupel_acc", "GRAUPELNC"), shape_xy)
+        hail_acc = _optional_field_array(state, ("hail_acc", "HAILNC"), shape_xy)
+        if any(a is not None for a in (snow_acc, graupel_acc, ice_acc, hail_acc)):
+            def _zero_xy(a: np.ndarray | None) -> np.ndarray:
+                return np.asarray(a, dtype=np.float64) if a is not None else np.zeros(shape_xy, dtype=np.float64)
+
+            rainnc_total = (
+                _zero_xy(rain_acc)
+                + _zero_xy(snow_acc)
+                + _zero_xy(graupel_acc)
+                + _zero_xy(ice_acc)
+                + _zero_xy(hail_acc)
+            )
+            fields["RAINNC"] = _coerce_array("RAINNC", rainnc_total, shape_xy)
+        else:
+            fields["RAINNC"] = _field_array(state, ("RAINNC", "rainnc", "rain_acc"), shape_xy)
+
+    if requested & {"ZNU", "ZNW", "MAPFAC_M", "SINALPHA", "COSALPHA"}:
+        _add_subset_grid_fields(fields, grid, dimensions, requested_names=requested_names, shape_xy=shape_xy)
+
+    _apply_subset_diagnostics(fields, diagnostics, requested_names=requested_names, shape_xy=shape_xy)
+
+    ordered: dict[str, np.ndarray] = {}
+    for name in OPERATIONAL_WRFOUT_VARIABLES:
+        if name in fields and name in requested:
+            ordered[name] = _materialized_dtype(name, fields[name])
+    for name, value in fields.items():
+        if name in requested and name not in ordered:
+            ordered[name] = _materialized_dtype(name, value)
+    return ordered
+
+
+def _add_subset_grid_fields(
+    fields: dict[str, np.ndarray],
+    grid: Any,
+    dimensions: Mapping[str, int | None],
+    *,
+    requested_names: frozenset[str],
+    shape_xy: tuple[int, int],
+) -> None:
+    nz = int(dimensions["bottom_top"])
+    eta = _lookup(grid, "eta_levels")
+    if eta is not None and ({"ZNU", "ZNW"} & requested_names):
+        eta_host = np.asarray(eta, dtype=np.float64)
+        if eta_host.shape == (nz + 1,):
+            if "ZNW" in requested_names:
+                fields["ZNW"] = _coerce_array("ZNW", eta_host, (nz + 1,))
+            if "ZNU" in requested_names:
+                fields["ZNU"] = _coerce_array("ZNU", 0.5 * (eta_host[:-1] + eta_host[1:]), (nz,))
+
+    metrics = _lookup(grid, "metrics")
+    if metrics is None:
+        return
+    for wrf_name, attr in (
+        ("MAPFAC_M", "msftx"),
+        ("SINALPHA", "sina"),
+        ("COSALPHA", "cosa"),
+    ):
+        if wrf_name not in requested_names:
+            continue
+        value = _lookup(metrics, attr)
+        if value is not None:
+            fields[wrf_name] = _coerce_array(wrf_name, np.asarray(value), shape_xy)
+
+
+def _apply_subset_diagnostics(
+    fields: dict[str, np.ndarray],
+    diagnostics: Mapping[str, Any] | None,
+    *,
+    requested_names: frozenset[str],
+    shape_xy: tuple[int, int],
+) -> None:
+    if diagnostics is None:
+        return
+    diagnostic_surface_fields = {
+        "T2", "U10", "V10", "Q2", "PSFC", "SWDOWN", "GLW", "PBLH", "UST",
+        "HFX", "LH", "TSK", "QFX", "GRDFLX",
+        "SWDNB", "SWUPB", "LWDNB", "LWUPB",
+        "SWDNT", "SWUPT", "LWDNT", "LWUPT", "SWNORM",
+        "SWDNBC", "SWUPBC", "LWDNBC", "LWUPBC",
+        "SWDNTC", "SWUPTC", "LWDNTC", "LWUPTC",
+        "OLR",
+    }
+    for name in requested_names & diagnostic_surface_fields:
+        value = diagnostics.get(name)
+        if value is not None:
+            fields[name] = _coerce_array(name, value, shape_xy)
+    if "OLR" in requested_names and "OLR" not in fields:
+        lwupt = diagnostics.get("LWUPT")
+        if lwupt is not None:
+            fields["OLR"] = _coerce_array("OLR", lwupt, shape_xy)
 
 
 def _build_output_fields(
@@ -1928,6 +2527,7 @@ def _add_full_wrfout_fields(
     land_state: Any | None,
     run_start: datetime,
     lead_hours: float,
+    requested_names: frozenset[str] | None = None,
 ) -> None:
     """Expand ``fields`` to the opt-in 375-variable WRF history stream.
 
@@ -1939,6 +2539,8 @@ def _add_full_wrfout_fields(
     """
 
     for name in FULL_WRFOUT_VARIABLES:
+        if requested_names is not None and name not in requested_names:
+            continue
         if name in {"Times", "XTIME"} or name in fields:
             continue
         spec = WRFOUT_VARIABLE_SPECS.get(name)
@@ -2604,7 +3206,7 @@ def _numpy_dtype_for_spec(spec: WrfoutVariableSpec) -> Any:
 
 
 def _coerce_array(name: str, value: Any, shape: tuple[int, ...], *, dtype: Any = np.float32) -> np.ndarray:
-    array = np.asarray(value, dtype=dtype)
+    array = np.asarray(_host_materialized_value(value), dtype=dtype)
     if array.shape == (1, *shape):
         array = array[0]
     if array.shape == shape:
@@ -2636,6 +3238,10 @@ def _grid_extent(grid: Any) -> tuple[int, int, int]:
 
 
 def _lookup(obj: Any, name: str, default: Any = None) -> Any:
+    return _host_materialized_value(_lookup_raw(obj, name, default))
+
+
+def _lookup_raw(obj: Any, name: str, default: Any = None) -> Any:
     if obj is None:
         return default
     if isinstance(obj, Mapping):

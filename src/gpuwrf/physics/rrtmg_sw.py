@@ -395,10 +395,11 @@ def _column_count(leading_shape: tuple[int, ...]) -> int:
     return int(np.prod(leading_shape, dtype=np.int64)) if leading_shape else 1
 
 
-def _effective_sw_column_tile_cols(ncol: int) -> int:
+def _effective_sw_column_tile_cols(ncol: int, column_tile_cols: int | None = None) -> int:
     """Return the bounded SW tile width for a flattened column batch."""
 
-    return min(max(int(_SW_COLUMN_TILE_COLS), 1), int(ncol))
+    cap = _SW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
+    return min(max(int(cap), 1), int(ncol))
 
 
 def _flatten_layer_field(arr, leading_shape: tuple[int, ...], ncol: int):
@@ -2292,15 +2293,17 @@ def _shortwave_column_tiled_impl(
     debug: bool,
     topography: RRTMGSWTopographyState | None = None,
     with_clear_sky: bool = False,
+    column_tile_cols: int | None = None,
 ) -> RRTMGSWColumnResult:
     """Runs the SW solve over fixed-size flattened column tiles."""
 
-    if not _SW_COLUMN_TILING or _SW_COLUMN_TILE_COLS <= 0:
+    configured_tile_cols = _SW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
+    if not _SW_COLUMN_TILING or configured_tile_cols <= 0:
         return _shortwave_impl(state, tables, debug, topography, with_clear_sky)
 
     leading_shape = state.p.shape[:-1]
     ncol = _column_count(leading_shape)
-    tile_cols = _effective_sw_column_tile_cols(ncol)
+    tile_cols = _effective_sw_column_tile_cols(ncol, configured_tile_cols)
     n_tiles = (ncol + tile_cols - 1) // tile_cols
     padded_ncol = n_tiles * tile_cols
     nlayers = state.p.shape[-1]
@@ -2506,7 +2509,7 @@ def compute_rrtmg_sw_intermediates(
     )
 
 
-@partial(jax.jit, static_argnames=("debug", "with_clear_sky"))
+@partial(jax.jit, static_argnames=("debug", "with_clear_sky", "column_tile_cols"))
 def solve_rrtmg_sw_column(
     state: RRTMGSWColumnState,
     tables: RRTMGTableBundle = RRTMG_TABLES,
@@ -2514,6 +2517,7 @@ def solve_rrtmg_sw_column(
     debug: bool = False,
     topography: RRTMGSWTopographyState | None = None,
     with_clear_sky: bool = False,
+    column_tile_cols: int | None = None,
 ) -> RRTMGSWColumnResult:
     """Computes one fused shortwave column radiation call.
 
@@ -2523,7 +2527,14 @@ def solve_rrtmg_sw_column(
     main all-sky flux outputs are byte-identical regardless of this flag.
     """
 
-    return _shortwave_column_tiled_impl(state, tables, debug, topography, with_clear_sky)
+    return _shortwave_column_tiled_impl(
+        state,
+        tables,
+        debug,
+        topography,
+        with_clear_sky,
+        column_tile_cols,
+    )
 
 
 @jax.jit

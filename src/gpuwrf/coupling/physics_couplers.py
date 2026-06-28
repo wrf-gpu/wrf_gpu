@@ -2197,6 +2197,7 @@ def rrtmg_radiation_diagnostics(
     shadow_length_m: float = 25000.0,
     land_state=None,
     with_clear_sky: bool = False,
+    column_tile_cols: int | None = None,
 ) -> RRTMGRadiationDiagnostics:
     """Return surface RRTMG radiation diagnostics without changing State.
 
@@ -2221,8 +2222,19 @@ def rrtmg_radiation_diagnostics(
         shadow_length_m=shadow_length_m,
         land_state=land_state,
     )
-    sw = solve_rrtmg_sw_column(sw_state, debug=False, topography=topography, with_clear_sky=with_clear_sky)
-    lw = solve_rrtmg_lw_column(lw_state, debug=False, with_clear_sky=with_clear_sky)
+    sw = solve_rrtmg_sw_column(
+        sw_state,
+        debug=False,
+        topography=topography,
+        with_clear_sky=with_clear_sky,
+        column_tile_cols=column_tile_cols,
+    )
+    lw = solve_rrtmg_lw_column(
+        lw_state,
+        debug=False,
+        with_clear_sky=with_clear_sky,
+        column_tile_cols=column_tile_cols,
+    )
     shadow_mask = (
         jnp.zeros_like(surface_albedo, dtype=jnp.int32)
         if topography is None
