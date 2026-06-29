@@ -608,18 +608,37 @@ sample to the measured Swiss CPU-WRF wall time (not a historical same-run log).
 is no same-large-grid CPU run.** The CPU baseline is a modern Zen-5 part, so this
 is not a legacy-CPU strawman.
 
-### Capability — a real 1 km Alpine domain on one card (MEASURED terrain)
+### Capability — a real 1 km Alpine forecast on one professional GPU (MEASURED)
 
-![Real 1 km Alpine inner nest — 897², Copernicus DEM GLO-30](docs/assets/v021/fig_capability_terrain.png)
+![Real 1 km Alpine forecast — nested d02, 1023² @ 1 km, on a single NVIDIA B200](docs/assets/v022/fig_capability_b200_1km_alpine.png)
 
-**MEASURED (terrain only).** A real **897² 1 km Alpine inner nest** built from
-Copernicus DEM GLO-30 (heights −8…4352 m — **+1046 m higher peaks and 3.25× finer
-relief** than the GMTED 5-arc-minute terrain usually used at this scale). This is
-a **capability** figure: it shows we have *built and can run* a grid of this
-class on a single card. It does **not** yet show a forecast wind field on this
-grid (an explicit, honest open gap), and the B200 annotation on the figure
-belongs to the separate tiled 1024² cost-proxy ladder, not to a run on this 897²
-nest.
+**MEASURED — a real forecast, not just terrain.** A live **1023 × 1023 @ 1 km
+nested inner domain (d02)** — the whole Alpine arc at ~**1023 km × 1023 km,
+1.05 M cells × 44 levels** — run as a real 3 km→1 km nested forecast on a
+**single NVIDIA B200**. The panels are a genuine forecast frame (valid
+2024-08-06 13:00 UTC): the 1 km terrain with the 10 m wind field and flow
+streamlines, and the 1 km 2 m-temperature field. It runs the **full operational
+physics** — Thompson microphysics, RRTMG long- and short-wave radiation, MYNN
+PBL + surface layer, Noah-MP land — with **explicit convection at 1 km (no
+cumulus parameterization)**, and the output carries the **cloud-relevant fields**
+(`QCLOUD`, `QICE`, `QRAIN`, `QSNOW`, `QGRAUP`, `CLDFRA`) among its 47 variables.
+
+This whole alpine-wide 1 km state fits in **well under a third of a single
+B200's 180 GB** (≈58 GB at fp64 — a design-anchor estimate; this production run
+did not log a peak-VRAM trace), and the full nested cascade advances in the
+**tens-of-minutes-of-wall-clock-per-forecast-hour** range (a precise warm
+throughput benchmark on this grid awaits a dedicated B200 timing run; this frame
+predates the v0.22.2 output-path speedups). **Multi-GPU distribution is possible
+by kernel design** — the domain-decomposition path is bit-identity-proven on a
+CPU fake mesh, but **real multi-GPU throughput is untested**.
+
+The point is plain: even a **standard single-GPU system** can now compute
+**almost continent-sized grids at 1 km** with this port (and the opt-in fp32
+mode stretches that further), and we have run **real forecasts on a real
+professional GPU** to prove it — not just held the terrain in memory.
+
+*(Forecast frame from the v0.21.1 B200 production run; the default fp64 forecast
+is byte-identical through the current v0.22.2.)*
 
 **The whole Earth at 1 km fits in a single rack (PROJECTED).** The global 1 km
 50-level state — ~25 billion cells, ~4.3 TB (≈13 TB with solver working memory) —
@@ -636,11 +655,16 @@ multi-GPU throughput is not yet shipped**, and a global wall-clock figure is
 > single-domain grids are host/launch-bound** (~2.3× slower than 24-rank CPU at
 > 129²) and **fp32 cannot move that**; (3) **surface-layer winds on complex inner-
 > nest terrain spread** with lead time (innermost-nest 10 m winds as low as r≈0.48
-> — the most-sensitive surface field, not a solver bug); (4) **extreme terrain
-> (Mont-Blanc ~1042 m/cell) is not fully stabilized** (relocates → v0.21.1); and
-> (5) **v0.21.0 does not speed up the forecast itself** — its win is capability +
-> compile/warm-start + scale, with warm s/forecast-hour unchanged and
-> byte-identical on the default path.
+> — the most-sensitive surface field, not a solver bug); (4) **terrain above
+> ~6000 m is outside the current stable envelope** — the Alpine/Mont-Blanc
+> extreme-terrain class is now stable (fixed in v0.21.1), but a 2-nest at
+> ~8000 m (Karakoram) still diverges to a non-finite state the fail-closed finite
+> guard catches (and WRF's own `real.exe` also fails there without a lowered
+> `etac`); the deep > 6000 m fix is a future dycore-boundary milestone; and
+> (5) **the nested wall-clock wins are real but modest** (v0.22.2 cuts host-bound
+> output idle ~9 %, byte-identical) — this is **not** a multi-× single-card
+> speedup; the win is capability + compile/warm-start + scale, byte-identical on
+> the default path.
 
 ### Apples-to-apples vs AceCAST (EXPECTATION / PROJECTED — not measured)
 
@@ -702,6 +726,10 @@ Newest first. Full per-release evidence is under [`proofs/`](proofs/) and the
 
 | Version | Headline | Key proof / link |
 |---|---|---|
+| **v0.22.2** | **Nested-grid wall-clock — host-bound GPU-idle reduction; default byte-identical.** Cuts the host work at the nested output boundary. Default-on, **byte-identical** host-work reductions (one redundant full finite-summary removed, the per-leaf device→host pulls and the finite guard batched, subset-aware payload build) measure **~9 % faster nested steady-state** (789 vs 865 s/forecast-hour on a 384² 2-nest, output **byte-identical** to v0.22.1). A default-on **bit-identical** RRTMG column-tile cap on the per-output radiation re-solve **halves its VRAM transient** (~5.1 → ~2.6 GiB), fixing a convection-peak OOM on larger grids — the main-forecast radiation cap is unchanged. Opt-in `GPUWRF_NEST_OUTPUT_PIPELINE=1` overlaps the output materialization; `GPUWRF_NESTED_M9_RADIATION_FROM_CARRY=1` skips the re-solve (lossy). **No new physics; the open 24–120 h skill gate is not claimed closed.** | [`RELEASE_NOTES_v0.22.2.md`](RELEASE_NOTES_v0.22.2.md) |
+| **v0.22.1** | **Nested d02 output-cadence fix + opt-in colon-free wrfout names; bit-identical.** Point release for B200 pod output-path defects: leaf children now honor their own `history_interval` on both the eager and the default fused paths (a fused flat leaf subtree falls back to the eager split when a child cadence is not parent-ratio aligned), restoring the intended training-frame yield. `GPUWRF_COLONFREE_OUTPUT=1` writes `HH-MM-SS` names for S3 / network drains; the default stays WRF-standard `HH:MM:SS`. No numerics, masking, clamp, or schema change. | [`RELEASE_NOTES_v0.22.1.md`](RELEASE_NOTES_v0.22.1.md) |
+| **v0.22.0** | **Default-safe hygiene + opt-in K2 lever + ADR release; default forecast behavior unchanged from v0.21.1.** Adds opt-in AOT-signature hardening (treedef / leaf-count token), `GPUWRF_WRF_ROOT` data-root portability, and byte-identical async wrfout. Documents `time_step` / `n_sound` (K2) as an **opt-in single-domain** CFL-gated lever (1.80× on a Switzerland-128 short gate; no nested / default speed claim), corrects the compile-wall story (compile *time*, not host RAM, is the wall; 3-domain sound peak RSS ≈ 22.3 GiB), and ratifies the operational-relaxed acceptance-tier ADR. | [`RELEASE_NOTES_v0.22.0.md`](RELEASE_NOTES_v0.22.0.md) |
+| **v0.21.1** | **Mont-Blanc extreme-terrain boundary-stability fix.** Point release off v0.21.0: restores standalone-root specified-boundary cadence and WRF-faithful physical-`W` zero-gradient boundary semantics. d01 max `|W|` bounded over the 2 h proof window — **no masking / `nan_to_num` / finite guard / clamp**. | [`RELEASE_NOTES_v0.21.1.md`](RELEASE_NOTES_v0.21.1.md) |
 | **v0.21.0** | **Stability + compile-cache-speed; warm forecast throughput unchanged + byte-identical on the default path.** Priority order **stability > identity > speed > memory**. **AOT cheap-key cross-process warm-start (default on, fused path):** after a one-time cold compile, a fresh process loads the compiled GPU executable from disk via a cheap metadata key (computed **without lowering**) and **skips the multi-tens-of-minutes re-lower** the old cache still paid (MEASURED: 3-domain cold→warm gate byte-identical, `REF_COMPARE` equal / max_abs_diff 0, no runtime regression; 9-nest fused stress both fused phases `source=aot_blob`, 0 re-lower, all 9 domains finite, warm peak host RSS 16.4 GB). **Dycore boundary-stability fix** takes the all-7 9-domain Canary nest **finite through the old step-67 divergence window** (mechanism fix, identity-preserving on the CPU regression baseline, zero new regressions). **Default-on fail-fast finite guard** (`GPUWRF_FINITE_CHECK`) reports the first non-finite prognostic `{domain, field, level, step, sim-time, index}`. **Version-keyed compile cache** + default-on autotune cache; opt-in steep-terrain GPU gate. **De-fuse is opt-in only** (low host-compile-RAM, measured **+18.8% s/step ⇒ reverted as default**); runtime default stays fused. **Carried:** most-extreme 1 km Mont-Blanc (~1042 m/cell) terrain not fully stabilized (relocates → v0.21.1); long-horizon 9-nest can still OOM around the ~90 min horizon; open 24–120 h skill gate not closed. No new physics. | [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md) |
 | **v0.20.1** | **Reliability + I/O-readiness patch; fp64 default byte-identical to v0.20.0.** No single-card speedup. The warm compile cache now **hits across forecast dates for the nested path too** (#114 — a new/leap date is a warm hit, the fused nest is not recompiled; saves the ~50 min cold compile, net ~30 min/date since you still pay a one-time module load/link — **warm, not "instant"**; bit-identical default path). Adds an **opt-in compact training-output mode** (`GPUWRF_TRAINING_OUTPUT_SUBSET`, 36-var subset + coordinates, lossless; **off by default**, default output byte-identical). **GPU OOM-hardening for the nested path (mitigation, not a blanket fix):** a `--max-dom > 1` CPU-side **VRAM-headroom preflight** that fails closed (exit 75) before the ~50 min compile, plus an RRTMG column-tile cap 2048→1024 that cuts the radiation transient's largest alloc **0.432 → 0.271 GiB (−37 %, GPU-measured), bit-identical (`max_abs = 0.0`)** — but solo `cuda_async` fragmentation **can still OOM the full fp64 nest** (reproducer shipped; **no OOM-proof / fp32-nest / 24 h large-nest claim**). Adds **CPU-only paid-B200 I/O tooling** (manifest/dimension validation + block drain/resume/stop-pull with read-back-verify-before-delete; tested on synthetic/local dry-runs only). **Honesty refresh** (perf framing, memory accounting, identity metric — inner-nest `TH2` low-`r` is a **low-variance Pearson artifact, not a bug**; now also reports variance-robust `nRMSE`), no fabricated numbers. Open 24–120 h skill gate carried, not closed. | [`RELEASE_NOTES_v0.20.1.md`](RELEASE_NOTES_v0.20.1.md), [`proofs/v013/rrtmg_column_tile.json`](proofs/v013/rrtmg_column_tile.json) |
 | **v0.20.0** | **Correctness + stability + capability + reliability; modest measured nest speedup.** Default fused all-7 9-domain nest is **~1.07× faster than v0.19 / ~1.53× faster than 12-rank CPU-WRF (~668 vs 713 vs 1020 s/forecast-hour), byte-identical to v0.19 (1926/1926, maxΔ=0)** — gain from a numerics-free `cuda_async` allocator (now default). Adds **opt-in fp32 mixed-precision** (`mixed_perturb_fp32_v020`) for **−14.4% VRAM / ~1.16× cell capability** (fp64 default byte-identical, 963/963 maxΔ=0; fp32 is **not** a single-card speedup, tolerance checked at 1 h only). **Compile cache now hits across forecast dates** (#91 — 0 new cache entries on new/leap dates, default path 64/64 byte-identical), zero config. GPU-vs-CPU all-7 24 h identity: **core EXCELLENT — T corr 0.9999 (RMSE 0.69 K), PH/PSFC 0.9997, U 0.991, V 0.968, QVAPOR 0.964; surface diagnostics looser (most parameterization-sensitive) — T2 0.944 (RMSE 0.78 K), TH2 0.878, U10 0.855, V10 0.852 mean corr; on the inner 1 km Alpine nests d06/d07 the 10 m winds spread to corr ~0.48–0.65 / RMSE ~4–5 m/s** — the expected most-sensitive field on complex terrain, **byte-identical to validated v0.19 (not a v0.20 regression)**, divergence grows with lead time; logged as v0.20.1 characterization item (#119). | `proofs/v020/lowhang/COMBINED_SPEEDUP.md`, `proofs/v020/fp32_integration/FP32_INTEGRATION_REPORT.md`, `proofs/v020/julday_cache/JULDAY_CACHE_FIX_REPORT.md`, `proofs/v020/benchmark/T2T3_REPORT.md`, `proofs/v020/validation/identity/`, `RELEASE_NOTES_v0.20.0.md` |
@@ -969,7 +997,7 @@ the compiled executable in seconds).
 
 | ID | Summary | Severity |
 |---|---|---|
-| **Extreme-terrain (Mont-Blanc ~1042 m/cell)** | The v0.21.0 dycore boundary-stability fix takes the standard all-7 9-domain Canary nest **finite past its step-67 divergence window**, but the most-extreme 1 km Mont-Blanc (~1042 m/cell) terrain is **not fully stabilized** — the fix **relocates** the failure rather than removing it. The deep boundary-stability fix for the extreme regime is **v0.21.1**. | Carried limitation |
+| **Extreme-terrain ceiling (> ~6000 m)** | The Alpine / Mont-Blanc extreme-terrain boundary instability is **fixed in v0.21.1** (standalone-root specified-boundary cadence + WRF-faithful zero-gradient physical-`W`; d01 max `|W|` bounded over the proof window, no masking). The **remaining ceiling is ~6000 m**: a 2-nest over ~8000 m terrain (Karakoram) still diverges to a non-finite state that the **default-on finite guard catches and fails closed** (0 bad frames written), and WRF's own `real.exe` likewise fails on this terrain without a lowered `etac`. The deep > 6000 m fix is a **future dycore-boundary milestone**, not a point patch; the production envelope is steep real-world terrain up to ~6000 m. | Documented terrain ceiling |
 | **#123 solo-fragmentation OOM** | The **co-resident-headroom** OOM mode is **SOLVED** by the launch-time VRAM preflight (GPU-validated fail-closed exit 75 + healthy-card happy path). The **solo `cuda_async` fragmentation** mode is **MITIGATED, not fixed**: the bit-identical 1024 RRTMG column-tile cap cuts the transient's largest allocation **0.432 → 0.271 GiB (−37 %, GPU-measured)**, but solo fragmentation **can still OOM the full fp64 nest**, and the long-horizon 9-nest can still OOM around the ~90 min integration horizon (a reproducer is shipped). v0.21.0 adds a **default-on fail-fast finite guard** (`GPUWRF_FINITE_CHECK`) so a corrupted state aborts cleanly with `{domain, field, level, step, sim-time, index}` instead of propagating. **No OOM-proof / fp32-nest / 24 h large-nest claim.** | Mitigated + carried limitation |
 | **fp32 1 h-only fidelity** | The opt-in fp32 mode (`mixed_perturb_fp32_v020`) is tolerance-checked **only at the 1 h lead** (19/19 fields green) — real but **not stringent**; the **24–120 h skill gate is future work, out of scope**. fp64 stays the byte-identical default. | Documented scope |
 | **High resident host RAM (~36 GB)** | A run holds **~36 GB of host RAM** resident even at only ~9.6 GB VRAM, because the Noah-MP/physics constant tables are currently baked into the compiled executable (static aux) rather than passed as runtime arguments. This is **precision-independent** and **does not affect correctness, single-run stability, or results** — but it limits running two instances on a 64 GB box and reduces large-grid / pod-density headroom. Root-caused; the tables-as-runtime-args fix is **still deferred (not in v0.21.0)**. | Root-caused, deferred |
