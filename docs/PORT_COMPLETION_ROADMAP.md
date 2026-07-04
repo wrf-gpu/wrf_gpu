@@ -213,6 +213,7 @@ non-RK3 `rk_order`, and higher `w_damping` variants — each a bounded dycore ta
 | Moving / vortex-following nests (`vortex_interval`, `num_moves`) | opt-in driver (v0.23) | validate the moving-nest path against CPU-WRF; adaptive re-mesh |
 | Adaptive time-step (`use_adaptive_time_step`) | ⚫ out-of-scope | port the CFL-driven Δt controller |
 | Global / periodic nests | ⚫ out-of-scope | polar/periodic BC + global grid |
+| **Wide open-boundary 3 km-nest stability** (Ni boundary-NaN class, KI-7) | 🔴 open dycore-boundary | Large open-ocean lateral boundaries (nx≈160+, e.g. all-islands 268×118) can drive Thompson `Ni` non-finite in the boundary-relaxation zone beyond ~14–20 h (finite guard catches it, 0 bad frames). Root-cause the boundary-zone acoustic mass-pump for this geometry class (same family as the Canary-d03 fix, re-exposed by new geometry); levers `GPUWRF_NORMAL_BDY_RELAX_STRENGTH` / `GPUWRF_SPECIFIED_ADV_DEGRADE` are diagnostics, not a validated fix. Reproducer: CPU-vs-GPU at the crash window. |
 
 ## Data assimilation
 
