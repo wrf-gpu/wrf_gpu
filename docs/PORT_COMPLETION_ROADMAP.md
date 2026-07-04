@@ -253,6 +253,14 @@ plausibly **v1.0** boundaries). All fail closed with a named reason and a disabl
 | Auxiliary history streams (`auxhist*`) | ⚫ out-of-scope | port the aux stream writers |
 | Map projections | Lambert / Mercator / Polar + hybrid-eta C-grid | add rotated-lat-lon / Cassini / global |
 
+## Throughput — batched ensemble
+
+| Capability | Status | To close |
+|---|---|---|
+| Replicated batch (same input, B lanes) | 🟢 operational | — |
+| **Same-date, distinct-IC** batch (`GPUWRF_BATCH_INPUT_DIRS`) | 🟢 operational (v0.23.2) | — |
+| **Multi-date** batch (different `start_date` per lane) | 🔴 not supported | Thread the date/time as a **per-lane runtime leaf** instead of namelist static-aux, so distinct dates share one `vmap` program (today the date is part of the compiled-program key → lanes with different dates fail the homogeneity gate `namelist/static treedef differs`). Requires a numerics-preserving re-plumb + validation. Until then, run multi-day sequentially. |
+
 ## The meta-gate — forecast-skill equivalence (KI-9)
 
 Closing the columns above makes the **coverage** complete; it does **not** by itself close the

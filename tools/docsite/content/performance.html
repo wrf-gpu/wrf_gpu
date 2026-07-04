@@ -90,33 +90,46 @@ unset / <code>=1</code>) is byte-identical.</p>
 parallel-in-time multi-day chunks — on small operational domains where one case leaves the GPU
 underused. Set the count with <code>GPUWRF_BATCH_ENSEMBLE=4</code>.</p>
 
-<h3 id="batched-ensemble-distinct-init">Distinct-init batches (different days)</h3>
+<h3 id="batched-ensemble-distinct-init">Distinct-init batches (same date, different ICs)</h3>
 <p>By default the batch <strong>replicates</strong> the single <code>--input-dir</code> across all
-<code>B</code> lanes (useful for perturbation / bit-identity work). To batch <strong>distinct
-initial conditions</strong> — e.g. <code>B</code> different forecast days of the same domain —
-list exactly <code>B</code> input directories in <code>GPUWRF_BATCH_INPUT_DIRS</code>. The batched
-ensemble runs on the <strong>nested path (<code>--max-dom&nbsp;&gt;&nbsp;1</code>), one-way</strong>;
-every directory must be the <strong>same grid, physics suite and timestep</strong> (only the
-initial/boundary <em>data</em> differs — a heterogeneous lane fails closed with a named reason).</p>
-<div class="admon note">
-  <div class="admon-title">The distinct-init CLI contract</div>
-  <p><code>GPUWRF_BATCH_INPUT_DIRS</code> is a list of <strong>exactly <code>B</code></strong> dirs,
-  separated by a <strong>comma</strong> (or <code>:</code>). A wrong count — or a natural
-  comma/space slip that older builds mis-parsed — fails closed with an actionable message that
-  names the separators and shows an example.</p>
+<code>B</code> lanes. To batch <strong>distinct initial conditions</strong> — e.g. an
+initial-condition / perturbation ensemble for the <strong>same forecast date</strong> — list
+exactly <code>B</code> input directories in <code>GPUWRF_BATCH_INPUT_DIRS</code> (comma- or
+<code>:</code>-separated). The batched ensemble runs on the <strong>nested path
+(<code>--max-dom&nbsp;&gt;&nbsp;1</code>), one-way</strong>; every lane must be
+<strong>homogeneous</strong> — same grid, physics suite, timestep <strong>and forecast
+date/time</strong> — with only the initial/boundary <em>data values</em> differing.</p>
+<div class="admon warn">
+  <div class="admon-title">Different forecast dates are not batchable (yet)</div>
+  <p>The date/time is baked into the namelist's static-aux (part of the compiled program's key),
+  so lanes with <strong>different start dates</strong> fail closed with
+  <code>batch lane N d01: namelist/static treedef differs</code> — even if only
+  <code>start_day</code>/<code>end_day</code> differ. Batching stacks lanes under one
+  <code>jax.vmap</code>, which needs one shared program; different dates compile to different
+  programs. <strong>For multi-day throughput, run the days sequentially</strong> (each is its own
+  warm-cache hit). True multi-date batching (threading the date as a per-lane runtime input) is a
+  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/PORT_COMPLETION_ROADMAP.md">v0.24 roadmap</a> item.</p>
 </div>
-<pre><code><span class="c"># B=4 distinct days of the same 3 km→1 km nest, run concurrently</span>
+<pre><code><span class="c"># B=4 IC/perturbation members, SAME date, run concurrently</span>
 export GPUWRF_BATCH_ENSEMBLE=4
-export GPUWRF_BATCH_INPUT_DIRS="/cases/2025-01-21,/cases/2025-01-22,/cases/2025-01-23,/cases/2025-01-24"
+export GPUWRF_BATCH_INPUT_DIRS="/case/2025-01-21/mem1,/case/2025-01-21/mem2,/case/2025-01-21/mem3,/case/2025-01-21/mem4"
 python -m gpuwrf.cli run \
-    --input-dir   /cases/2025-01-21 \
-    --output-dir  runs/alisios_batch \
+    --input-dir   /case/2025-01-21/mem1 \
+    --output-dir  runs/ic_ensemble \
     --max-dom     3 \
     --hours       24 \
     --scratch-dir /fast/nvme/scratch</code></pre>
 <p>Each lane writes its own <code>wrfout</code> set under <code>--output-dir</code>; the run
 payload records the resolved <code>input_dirs</code> and per-lane <code>run_starts</code>. Since
 v0.23.2 the separator accepts commas (the older <code>:</code>-only contract still works).</p>
+<div class="admon note">
+  <div class="admon-title">Does it fit in VRAM?</div>
+  <p>Batching stacks <code>B</code> lanes, so peak VRAM grows roughly with <code>B</code>. The win
+  is on <strong>small, launch-bound grids that leave VRAM headroom</strong> (a Tenerife 3→1 km
+  nest is ~9.4 GiB at B=1 → 18.3 GiB at B=4 on a 32 GiB card). A larger fp64 nest that already
+  peaks in the ~20–30 GiB range does <strong>not</strong> leave room for B&gt;1 on a 32 GiB card —
+  there, run sequentially or use a bigger card.</p>
+</div>
 
 <h2 id="fp32">Optional fp32 mixed-precision mode</h2>
 <p>The default path is pure fp64 and byte-identical. The opt-in
