@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.1</span>
+          <span class="brand-sub">User's Guide · v0.23.2</span>
         </span>
       </a>
       <div class="search-box">
@@ -147,7 +147,7 @@ byte-identical to the validated reference; the opt-ins are for speed, capability
 <tbody>
 <tr><td><code>GPUWRF_ACOUSTIC_PRECISION_MODE</code></td><td><code>fp64_default</code></td><td>Acoustic-step precision. <code>fp64_default</code> is the byte-identical default; <code>mixed_perturb_fp32_v020</code> opts into the validated mixed-precision fp32 perturbation path (<a href="performance.html#fp32">fp32 mode</a>). An unrecognized value <strong>fails closed</strong> with the list of accepted modes.</td></tr>
 <tr><td><code>GPUWRF_BATCH_ENSEMBLE</code></td><td>unset (<code>=1</code>)</td><td>Set to a positive integer <code>B</code> to run <code>B</code> independent, same-geometry forecasts concurrently under one outer <code>jax.vmap</code> — the v0.23 <a href="performance.html#batched-ensemble">batched ensemble</a> that fills a launch-bound small-grid GPU. The default (unset / <code>1</code>) is byte-identical; a non-integer or <code>&lt;1</code> value is rejected.</td></tr>
-<tr><td><code>GPUWRF_BATCH_INPUT_DIRS</code></td><td>unset</td><td>An <code>os.pathsep</code>-separated list of exactly <code>B</code> input directories, one per ensemble member (used only when <code>GPUWRF_BATCH_ENSEMBLE&gt;1</code>). If unset, all members reuse the single <code>--input-dir</code>. A count mismatch fails closed.</td></tr>
+<tr><td><code>GPUWRF_BATCH_INPUT_DIRS</code></td><td>unset</td><td>A <strong>comma-</strong> (or <code>:</code>-) separated list of <strong>exactly <code>B</code></strong> input directories, one per ensemble member — for a <strong>distinct-init</strong> batch (e.g. B different forecast days of the same domain). Used only when <code>GPUWRF_BATCH_ENSEMBLE&gt;1</code>; if unset, all members reuse the single <code>--input-dir</code> (a replicated batch). Every dir must be the <strong>same grid + physics + dt</strong> (only the initial/boundary data differs); a count mismatch or a heterogeneous lane fails closed with a named reason. See <a href="performance.html#batched-ensemble">Batched ensemble</a>.</td></tr>
 <tr><td><code>GPUWRF_NESTED_FUSE</code></td><td>on (fused)</td><td>The nested runtime default is the fused cascade (measured higher-throughput executable). <code>=0</code> selects the eager per-domain path, which is bit-identical to the fused path — used for identity/debug comparisons.</td></tr>
 <tr><td><code>GPUWRF_BITWISE</code></td><td>off</td><td><code>=1</code> forces the eager, non-fused per-domain path for bitwise/debug comparison against a reference. Same eager path as <code>GPUWRF_NESTED_FUSE=0</code>.</td></tr>
 <tr><td><code>GPUWRF_FINITE_CHECK</code></td><td>on</td><td>Default-on fail-fast finite guard: on the first non-finite prognostic value the run aborts with the exact <code>{domain, field, level, step, sim-time, index}</code> instead of propagating a NaN. Set <code>=0</code> to opt out. There is no masking/clamping — see <a href="validation.html">Validation</a>.</td></tr>

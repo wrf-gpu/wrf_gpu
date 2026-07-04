@@ -7,6 +7,20 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.23.2] - 2026-07-04
+
+Operational ergonomics fix for the F1 batched-ensemble distinct-init path. **No
+dynamics, no physics, no default numerical change** (the batched math is unchanged).
+
+- `GPUWRF_BATCH_INPUT_DIRS` now accepts a **comma** (or newline, or `:`) between the `B`
+  distinct-init dirs — the old `:`-only contract mis-parsed a natural comma list as one
+  dir and failed with a confusing error (forced an operational fallback to sequential
+  segments). The count-mismatch error is now actionable (names the separators + example).
+- Documents + verifies the distinct-init CLI contract (nested one-way, exactly `B`
+  same-geometry dirs, only the day differs). New CPU unit tests.
+
+Full notes: [`RELEASE_NOTES_v0.23.2.md`](release_notes/RELEASE_NOTES_v0.23.2.md).
+
 ## [0.23.1] - 2026-07-04
 
 Usability + AI-native onboarding release on top of `v0.23.0`. **No dynamics, no

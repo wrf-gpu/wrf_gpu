@@ -639,15 +639,25 @@ def _resolve_batch_input_dirs(config: NestedPipelineConfig, batch_size: int) -> 
         return (Path(config.input_dir),)
     raw = os.environ.get("GPUWRF_BATCH_INPUT_DIRS", "").strip()
     if raw:
-        paths = tuple(Path(item) for item in raw.split(os.pathsep) if item)
+        # The B distinct-init dirs may be separated by a comma, a newline, or the OS
+        # path separator (":"). Operators reach for commas first, so accept all three
+        # (this stays backward-compatible with the original ":"-only contract).
+        import re  # noqa: PLC0415
+
+        sep = r"[,\n" + re.escape(os.pathsep) + r"]"
+        items = [item.strip() for item in re.split(sep, raw) if item.strip()]
+        paths = tuple(Path(item) for item in items)
     elif config.batch_input_dirs is not None:
         paths = tuple(Path(path) for path in config.batch_input_dirs)
     else:
         paths = tuple(Path(config.input_dir) for _ in range(int(batch_size)))
     if len(paths) != int(batch_size):
         raise ValueError(
-            f"GPUWRF_BATCH_ENSEMBLE={int(batch_size)} requires {int(batch_size)} "
-            f"input dirs, got {len(paths)}"
+            f"GPUWRF_BATCH_ENSEMBLE={int(batch_size)} requires exactly {int(batch_size)} "
+            f"input dirs in GPUWRF_BATCH_INPUT_DIRS (separate them with ',' or ':'), "
+            f"but parsed {len(paths)}: {[str(p) for p in paths]}. Example: "
+            f"GPUWRF_BATCH_INPUT_DIRS='/case/day1,/case/day2,...' — one dir per lane, "
+            f"all the same grid/physics (only the initial/boundary day differs)."
         )
     return paths
 

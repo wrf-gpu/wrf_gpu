@@ -90,6 +90,34 @@ unset / <code>=1</code>) is byte-identical.</p>
 parallel-in-time multi-day chunks — on small operational domains where one case leaves the GPU
 underused. Set the count with <code>GPUWRF_BATCH_ENSEMBLE=4</code>.</p>
 
+<h3 id="batched-ensemble-distinct-init">Distinct-init batches (different days)</h3>
+<p>By default the batch <strong>replicates</strong> the single <code>--input-dir</code> across all
+<code>B</code> lanes (useful for perturbation / bit-identity work). To batch <strong>distinct
+initial conditions</strong> — e.g. <code>B</code> different forecast days of the same domain —
+list exactly <code>B</code> input directories in <code>GPUWRF_BATCH_INPUT_DIRS</code>. The batched
+ensemble runs on the <strong>nested path (<code>--max-dom&nbsp;&gt;&nbsp;1</code>), one-way</strong>;
+every directory must be the <strong>same grid, physics suite and timestep</strong> (only the
+initial/boundary <em>data</em> differs — a heterogeneous lane fails closed with a named reason).</p>
+<div class="admon note">
+  <div class="admon-title">The distinct-init CLI contract</div>
+  <p><code>GPUWRF_BATCH_INPUT_DIRS</code> is a list of <strong>exactly <code>B</code></strong> dirs,
+  separated by a <strong>comma</strong> (or <code>:</code>). A wrong count — or a natural
+  comma/space slip that older builds mis-parsed — fails closed with an actionable message that
+  names the separators and shows an example.</p>
+</div>
+<pre><code><span class="c"># B=4 distinct days of the same 3 km→1 km nest, run concurrently</span>
+export GPUWRF_BATCH_ENSEMBLE=4
+export GPUWRF_BATCH_INPUT_DIRS="/cases/2025-01-21,/cases/2025-01-22,/cases/2025-01-23,/cases/2025-01-24"
+python -m gpuwrf.cli run \
+    --input-dir   /cases/2025-01-21 \
+    --output-dir  runs/alisios_batch \
+    --max-dom     3 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/scratch</code></pre>
+<p>Each lane writes its own <code>wrfout</code> set under <code>--output-dir</code>; the run
+payload records the resolved <code>input_dirs</code> and per-lane <code>run_starts</code>. Since
+v0.23.2 the separator accepts commas (the older <code>:</code>-only contract still works).</p>
+
 <h2 id="fp32">Optional fp32 mixed-precision mode</h2>
 <p>The default path is pure fp64 and byte-identical. The opt-in
 <code>GPUWRF_ACOUSTIC_PRECISION_MODE=mixed_perturb_fp32_v020</code> mode is

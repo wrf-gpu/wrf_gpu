@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.1</span>
+          <span class="brand-sub">User's Guide · v0.23.2</span>
         </span>
       </a>
       <div class="search-box">
@@ -89,6 +89,7 @@ releases unless a change is proven value-preserving. Full per-release notes live
 <table>
 <thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
 <tbody>
+<tr><td><strong>v0.23.2</strong></td><td><strong>Batched-ensemble distinct-init CLI ergonomics.</strong> <code>GPUWRF_BATCH_INPUT_DIRS</code> now accepts a <strong>comma</strong>-separated list of the B distinct-day input dirs (the old <code>:</code>-only separator still works), with an actionable count-mismatch error. Fixes an operational fallback where a natural comma list parsed as one dir. Documents the <a href="performance.html#batched-ensemble-distinct-init">distinct-init contract</a> (nested one-way, exactly B same-geometry dirs). No dynamics/physics change; the batched math is unchanged.</td><td>Numerically identical to v0.23.1</td></tr>
 <tr><td><strong>v0.23.1</strong></td><td><strong>Usability &amp; AI-native onboarding.</strong> A full HTML <a href="index.html">User's Guide</a>; an <a href="ai-quickstart.html">AI operator skill</a> (<code>AI_OPERATOR.md</code> + a Claude Code skill) so an agent can run a case for you; and WRF-parity CLI ergonomics — forecast length and root domain now default from <code>namelist.input</code> when the flags are omitted, plus a <code>namelist-support</code> subcommand and a <code>--dry-run</code> preflight. No dycore/physics change.</td><td>Numerically identical to v0.23.0</td></tr>
 <tr><td>v0.23.0</td><td>Opt-in <a href="performance.html#batched-ensemble">batched ensemble</a> (<code>GPUWRF_BATCH_ENSEMBLE=B</code>) fills the launch-bound small-grid GPU (Tenerife 3/1 km reaches ~97 % of the large-grid ceiling at B=4). Value-preserving default-path work reductions (P0 radiation flux-slice, P3 flat-2-dom fusion). Extended physics — New-Tiedtke cumulus + Morrison-aerosol ported; NSSL / CAM-UW / urban / lake reference-only; moving nests opt-in. fp32 foundation laid (separate milestone).</td><td>Numerically equivalent to v0.22.2</td></tr>
 </tbody>
