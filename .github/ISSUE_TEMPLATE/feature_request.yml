@@ -1,0 +1,51 @@
+name: 💡 Feature request
+description: Suggest a WRF scheme, capability, or improvement for wrf_gpu
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement to **wrf_gpu**! No email or personal data needed — this
+        lands in the repository's [Issues](https://github.com/wrf-gpu/wrf_gpu/issues) tab.
+        Before filing, a quick look at the [User's Guide](https://wrf-gpu.github.io/wrf_gpu/) and the
+        [port-completion roadmap](https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/PORT_COMPLETION_ROADMAP.md)
+        may show the feature is already planned or available.
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like?
+      description: The feature, WRF scheme, or capability you'd like to see.
+      placeholder: 'e.g. "Wire the RUC LSM (sf_surface_physics=3)" or "Support km_opt=2 (3-D TKE)"'
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why / use-case
+      description: What are you trying to do? Which region or case does this matter for?
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area (optional)
+      options:
+        - Physics scheme (microphysics / cumulus / PBL / radiation / land / surface)
+        - Dynamics / diffusion (e.g. 3-D TKE, 3-D Smagorinsky, SMS-3DTKE)
+        - Nesting
+        - Data assimilation
+        - Output / I-O
+        - CLI / usability
+        - Performance / GPU / scaling
+        - Documentation
+        - Other
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Links, references, WRF namelist snippet, or context that helps.
+    validations:
+      required: false

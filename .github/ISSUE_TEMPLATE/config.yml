@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📖 User's Guide
+    url: https://wrf-gpu.github.io/wrf_gpu/
+    about: Read the docs first — the capability may already exist or be documented.
+  - name: 🗺️ Port-completion roadmap
+    url: https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/PORT_COMPLETION_ROADMAP.md
+    about: See what is already planned (every reference-only / fail-closed scheme, toward v0.24).

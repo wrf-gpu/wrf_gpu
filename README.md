@@ -14,6 +14,12 @@ history file.
 > see [Quickstart using AI](#quickstart-using-ai-clone---ask-an-agent) and
 > [`AI_OPERATOR.md`](AI_OPERATOR.md).
 
+> 💡 **Ideas or feature requests?** Open a
+> [**feature request**](https://github.com/wrf-gpu/wrf_gpu/issues/new?template=feature_request.yml)
+> — no email needed, just a free GitHub account. Requests are collected in the repo's
+> [Issues](https://github.com/wrf-gpu/wrf_gpu/issues) tab (see the
+> [port-completion roadmap](docs/PORT_COMPLETION_ROADMAP.md) for what's already planned).
+
 It is **not** a port of legacy WRF Fortran. It is a clean JAX rewrite that
 targets the GPU memory hierarchy from day one and validates against WRF as an
 **oracle** — proving cell-for-cell identity to CPU-WRF v4 rather than inheriting
