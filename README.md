@@ -61,13 +61,11 @@ NVL72-class).
   (see [Boundaries](#boundaries--what-is-not-claimed)).
 - **Not a blanket single-card speedup story.** On tiny standalone geometries the
   GPU can still be launch/occupancy-bound — on a single-domain 129² grid it is
-  **~2.3× SLOWER** than 24-rank CPU-WRF (host/launch-bound). The GPU advantage
-  **grows with scale**: the v0.20.0 all-7-island 1 km nested fast path is
-  **MEASURED ~1.07× faster than v0.19** and **~1.53× faster than the same-box
-  12-rank CPU-WRF baseline**, byte-identical to v0.19 (1926/1926 vars,
-  maxΔ=0). The broader value remains **capability** (1 km + scale), **fidelity**,
+  **~2.3× SLOWER** than 24-rank CPU-WRF (host/launch-bound). There are several measures to increase tiny grid perfromance implement as shown in the [User's Guide](https://wrf-gpu.github.io/wrf_gpu/). The GPU advantage
+  **grows with scale**: the v0.20.0 all-7-island 1 km nested identity test and benchmark is still
+  **~1.53× faster on a RTX5090 (terrible card for fp64 actually) than the same-box 12-rank CPU-WRF baseline**. The broader value remains **large grid capability**, **fidelity**,
   **stability/reliability**, and **energy efficiency** (see [Performance](#performance)).
-- **Not** DFI / FDDA / spectral-nudging / WRF-Chem / WRF-Fire / urban / lake.
+- **Not** DFI / FDDA / spectral-nudging / WRF-Chem / WRF-Fire / urban / lake. (See [port-completion roadmap](docs/PORT_COMPLETION_ROADMAP.md) and [**feature request**](https://github.com/wrf-gpu/wrf_gpu/issues/new?template=feature_request.yml) ) 
 
 **Current release — v0.23.1** (usability + AI-native onboarding): a full
 [User's Guide](https://wrf-gpu.github.io/wrf_gpu/), an [AI operator skill](AI_OPERATOR.md) so an agent can run a
