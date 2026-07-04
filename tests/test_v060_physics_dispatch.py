@@ -95,21 +95,33 @@ def test_myj_pairing_enforced_by_dispatcher_resolution() -> None:
 
 
 def test_cumulus_gpu_readiness_flags() -> None:
-    # KF (cu=1), BMJ (cu=2), Grell-Freitas (cu=3), and Tiedtke (cu=6) are
-    # operational GPU cumulus options (scan-wired) -> gate-ready. GF (cu=3) is the
+    # KF (cu=1), BMJ (cu=2), Grell-Freitas (cu=3), Tiedtke (cu=6), and
+    # New-Tiedtke (cu=16, v0.23 F2 machine-precision fp64 port) are operational
+    # GPU cumulus options (scan-wired) -> gate-ready. GF (cu=3) is the
     # v0.9.0 GPU-batched jit/vmap scale-aware adapter (CU_SCAN_ADAPTERS[3]).
-    for cu in (1, 2, 3, 6):
+    for cu in (1, 2, 3, 6, 16):
         suite = resolve_physics_suite({"cu_physics": cu})
         assert suite.gpu_gate_ready is True
         assert suite.cumulus.gpu_runnable is True
-    # Reference-only cumulus options (New-Tiedtke cu=16, v0.17 SAS-family
-    # 4/94/95/96, Grell-Devenyi cu=93, previous Kain-Fritsch cu=99) are accepted
+    # Reference-only cumulus options (v0.17 SAS-family 4/94/95/96,
+    # Grell-Devenyi cu=93, previous Kain-Fritsch cu=99) are accepted
     # at dispatch but fail-closed from the GPU gate until their distinct WRF source
     # paths pass parity.
-    for cu in (4, 16, 93, 94, 95, 96, 99):
+    for cu in (4, 93, 94, 95, 96, 99):
         suite = resolve_physics_suite({"cu_physics": cu})
         assert suite.gpu_gate_ready is False
         assert suite.cumulus.gpu_runnable is False
+
+
+def test_camuw_is_reference_only_not_gpu_ready() -> None:
+    suite = resolve_physics_suite({"bl_pbl_physics": 9, "sf_sfclay_physics": 1})
+
+    assert suite.pbl.option == 9
+    assert suite.pbl.name == "CAM-UW"
+    assert suite.pbl.gpu_runnable is False
+    assert suite.gpu_gate_ready is False
+    assert "bl_pbl_physics=9 (CAM-UW)" in suite.non_gpu_schemes
+    assert "REFERENCE_ONLY" in suite.pbl.notes
 
 
 def test_kf_is_implemented_and_scan_wired() -> None:

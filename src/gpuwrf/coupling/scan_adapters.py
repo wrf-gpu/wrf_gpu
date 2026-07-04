@@ -48,9 +48,9 @@ rejects them loudly):
 * **Grell-Freitas (3) cumulus** -- faithful CPU-NumPy reference port
   (``gpu_runnable=False``); excluded from the GPU scan by design (GPU-batching of
   the sequential 16-member closure ensemble + beta-PDF gamma is a post-0.9.0 TODO).
-* **New-Tiedtke (16) cumulus** -- module-specific fp64 WRF oracle savepoints are
-  staged under ``proofs/v013/savepoints/cumulus/ntiedtke_case_*.json`` from
-  ``phys/module_cu_ntiedtke.F``, but no faithful traceable JAX kernel or scan
+* **New-Tiedtke (16) cumulus** -- v0.23 F2 OPERATIONAL: faithful traceable JAX
+  kernel (``cumulus_ntiedtke_jax``, machine-precision vs the fp64 WRF oracle
+  savepoints ``proofs/v013/savepoints/cumulus/ntiedtke_case_*.json``) wired via
   adapter is wired yet, so it stays fail-closed.
 
   (NOTE: modified-Tiedtke ``cu=6`` IS wired -- it is the v0.6.0 GPU-batched jit/vmap
@@ -98,6 +98,7 @@ from gpuwrf.physics.microphysics_wsm7 import wsm7_physics_tendency
 from gpuwrf.physics.cumulus_bmj import initial_bmj_cldefi, step_bmj_column
 from gpuwrf.physics.cumulus_kf import step_kf_column
 from gpuwrf.physics.cumulus_tiedtke_jax import tiedtke_column_jax
+from gpuwrf.physics.cumulus_ntiedtke_jax import ntiedtke_column_jax
 from gpuwrf.physics._gf_jax import gfdrv_batched
 from gpuwrf.physics.pbl_acm2 import acm2_columns
 from gpuwrf.physics.pbl_boulac import TEMIN as BOULAC_TKE_MIN, boulac_columns
@@ -106,7 +107,7 @@ from gpuwrf.physics.bl_mrf import mrf_columns
 from gpuwrf.physics.bl_gfs import gfs_columns
 from gpuwrf.physics.bl_gbm import gbm_columns
 from gpuwrf.physics.bl_shinhong import shinhong_columns
-from gpuwrf.physics.bl_camuw import TKE_MIN as CAMUW_TKE_MIN, camuw_columns
+from gpuwrf.physics.bl_camuw import CAMUW_REFERENCE_ONLY_REASON, CamUwReferenceOnlyError
 from gpuwrf.physics.sfclay_pleim_xiu import step_pxsfclay_column
 from gpuwrf.physics.sfclay_revised_mm5 import step_sfclay_revised_mm5_column
 from gpuwrf.physics.sfclay_old_mm5 import sfclay_old_mm5_columns
@@ -849,6 +850,137 @@ def tiedtke_adapter(
     return next_state
 
 
+def ntiedtke_adapter(
+    state: State,
+    dt: float,
+    grid=None,
+    *,
+    stepcu: int = 1,
+    qvften: jax.Array | None = None,
+    thften: jax.Array | None = None,
+) -> State:
+    """cu=16 New-Tiedtke cumulus ``State -> State`` scan adapter.
+
+    New-Tiedtke is a per-column kernel
+    (``cumulus_ntiedtke_jax.ntiedtke_column_jax``, machine-precision-proven vs
+    the fp64 WRF oracle savepoints); the adapter vmaps it over the ``(ny*nx)``
+    grid columns. Like modified Tiedtke (cu=6) it carries NO persistent cumulus
+    state, so this is a plain ``State -> State`` adapter.
+
+    Tendencies are applied ``state += dt*tend``; ``RAINCV`` (mm/step)
+    accumulates into ``rainc_acc``. ``stepcu=1``: the cumulus slot runs every
+    dynamics step (the kernel multiplies dt by stepcu internally, mirroring
+    WRF's cadence contract exactly as the cu=6 adapter does).
+
+    WRF-driver coupling (module_cumulus_driver.F CASE(NTIEDTKESCHEME)):
+      * ``QVFTEN`` = WRF RQVFTEN (advective + PBL moisture forcing): threaded
+        by the operational runtime as flux-form qv-advection diagnostic + the
+        PBL-slot qv increment. Zero when omitted (isolated kernel tests only).
+      * ``THFTEN`` = WRF RTHFTEN (theta-space forcing): threaded as the
+        accumulated non-convective physics theta forcing of this step
+        (radiation + surface + PBL slots). NAMED COUPLING CAVEAT: WRF's
+        RTHFTEN additionally contains the advective theta tendency; this
+        port's dycore does not expose a step-entry theta-advection
+        diagnostic, so that component is absent here (closure-modulating
+        only -- the convective tendencies themselves are oracle-proven).
+      * ``HFX``/``QFX`` from the B2 kinematic flux handles
+        (``rhosfc*CP_DRY*theta_flux`` / ``rhosfc*qv_flux``), the same
+        reconstruction the GF adapter uses.
+      * ``DX`` from ``grid.projection.dx_m`` (the kernel's scale-aware
+        closure factor); ``itimestep=2`` semantics (forcing active) -- WRF
+        zeroes the forcing only on the very first model step.
+    """
+
+    nz, ny, nx = state.theta.shape
+    rho = _rho_from_state(state)
+    T = _temperature_from_theta(state.theta, state.p)
+    pii = _exner_columns(state.p)
+    interface_z = state.ph.astype(jnp.float64) / GRAVITY_M_S2
+    dz_full = jnp.maximum(interface_z[1:] - interface_z[:-1], 1.0)  # (nz, ny, nx)
+
+    p = state.p.astype(jnp.float64)
+    p_int_interior = 0.5 * (p[:-1] + p[1:])  # (nz-1, ny, nx)
+    p8w = jnp.concatenate([p[:1], p_int_interior, p[-1:]], axis=0)  # (nz+1, ny, nx)
+
+    # W on (nz+1) interfaces (state.w is C-grid w; mass-level fallback pads top).
+    w_int = jnp.asarray(state.w, jnp.float64)
+    if w_int.shape[0] == nz:
+        w_int = jnp.concatenate([w_int, w_int[-1:]], axis=0)
+
+    rhosfc = jnp.asarray(state.rhosfc, jnp.float64)
+    theta_flux = jnp.asarray(state.theta_flux, jnp.float64)  # K m s^-1
+    qv_flux = jnp.asarray(state.qv_flux, jnp.float64)        # kg kg^-1 m s^-1
+    hfx_2d = rhosfc * CP_DRY * theta_flux                    # W m^-2
+    qfx_2d = rhosfc * qv_flux                                # kg m^-2 s^-1
+    xland_2d = jnp.asarray(state.xland, jnp.float64)
+    dx = float(grid.projection.dx_m) if grid is not None else 3000.0
+
+    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz)
+
+    def _cols1(field3d):  # (nz+1, ny, nx) -> (ncol, nz+1)
+        return jnp.moveaxis(field3d, 0, -1).reshape(ny * nx, nz + 1)
+
+    T_c = _cols(T)
+    qv_c = _cols(jnp.maximum(state.qv, 0.0))
+    qc_c = _cols(jnp.maximum(state.qc, 0.0))
+    qi_c = _cols(jnp.maximum(state.qi, 0.0))
+    p_c = _cols(p)
+    p8w_c = _cols1(p8w)
+    dz_c = _cols(dz_full)
+    rho_c = _cols(rho)
+    pii_c = _cols(pii)
+    u_c = _cols(_u_mass(state))
+    v_c = _cols(_v_mass(state))
+    w_c = _cols1(w_int)
+    qvften_c = _cols(
+        jnp.zeros_like(state.qv) if qvften is None else jnp.asarray(qvften, jnp.float64)
+    )
+    thften_c = _cols(
+        jnp.zeros_like(state.theta) if thften is None else jnp.asarray(thften, jnp.float64)
+    )
+    qfx_c = qfx_2d.reshape(ny * nx)
+    hfx_c = hfx_2d.reshape(ny * nx)
+    xland_c = xland_2d.reshape(ny * nx)
+    dt_f = float(dt)
+
+    def _one(T0, QV0, QC0, QI0, P0, P8W0, DZ0, RHO0, PI0, U0, V0, W0,
+             QVF0, THF0, QFX0, HFX0, XL0):
+        out = ntiedtke_column_jax(
+            T0, QV0, QC0, QI0, P0, P8W0, DZ0, RHO0, PI0, U0, V0, W0,
+            QVF0, THF0, QFX0, HFX0, XL0, dx, dt_f,
+            stepcu=int(stepcu), itimestep=2,
+        )
+        return (out["RTHCUTEN"], out["RQVCUTEN"], out["RQCCUTEN"],
+                out["RQICUTEN"], out["RUCUTEN"], out["RVCUTEN"], out["RAINCV"])
+
+    (rth, rqv, rqc, rqi, ru, rv, raincv) = jax.vmap(_one)(
+        T_c, qv_c, qc_c, qi_c, p_c, p8w_c, dz_c, rho_c, pii_c, u_c, v_c, w_c,
+        qvften_c, thften_c, qfx_c, hfx_c, xland_c,
+    )
+
+    def _back(field2d):  # (ncol, nz) -> (nz, ny, nx)
+        return jnp.moveaxis(field2d.reshape(ny, nx, nz), -1, 0)
+
+    du_mass = dt_f * _back(ru)
+    dv_mass = dt_f * _back(rv)
+    u_new = _add_a2c_u_increment(state.u, du_mass).astype(_output_dtype(state, "u"))
+    v_new = _add_a2c_v_increment(state.v, dv_mass).astype(_output_dtype(state, "v"))
+
+    next_state = state.replace(
+        u=u_new,
+        v=v_new,
+        theta=(state.theta + dt_f * _back(rth)).astype(_output_dtype(state, "theta")),
+        qv=(state.qv + dt_f * _back(rqv)).astype(_output_dtype(state, "qv")),
+        qc=(state.qc + dt_f * _back(rqc)).astype(_output_dtype(state, "qc")),
+        qi=(state.qi + dt_f * _back(rqi)).astype(_output_dtype(state, "qi")),
+        rainc_acc=(
+            jnp.asarray(state.rainc_acc, jnp.float64) + raincv.reshape(ny, nx)
+        ).astype(_output_dtype(state, "rainc_acc")),
+    )
+    return next_state
+
+
 def _kpbl_bulk_richardson(thv_c: jax.Array, z_mass_c: jax.Array) -> jax.Array:
     """Diagnose the PBL-top mass level (1-based, GF convention) per column.
 
@@ -1408,51 +1540,10 @@ def gbm_pbl_adapter(state: State, dt: float, grid=None) -> State:
 
 
 def camuw_pbl_adapter(state: State, dt: float, grid=None) -> State:
-    """bl_pbl=9 CAM-UW moist-turbulence PBL ``State -> State`` scan adapter.
+    """bl_pbl=9 CAM-UW reference-only adapter stub."""
 
-    The full WRF CAM-UW driver diffuses dry static energy plus moist/cloud
-    constituents with CAM ``compute_vdiff`` after UW diagnostic-TKE eddy
-    diffusivity. This adapter maps the operational State into the traceable
-    ``bl_camuw.camuw_columns`` endpoint and writes back the driving mass fields,
-    cloud liquid/ice, and the State.qke TKE storage used by the port's PBL lanes.
-    """
-
-    del grid
-    f = _pbl_surface_forcing(state, None)
-
-    def _cols(field3d):  # (nz, ny, nx) -> (ncol, nz)
-        return jnp.moveaxis(field3d, 0, -1).reshape(f["ncol"], f["nz"])
-
-    out = camuw_columns(
-        f["u_cols"],
-        f["v_cols"],
-        f["T_cols"],
-        f["theta_cols"],
-        f["qv_cols"],
-        _cols(state.qc),
-        _cols(state.qi),
-        f["p_cols"],
-        f["pii_cols"],
-        f["dz_cols"],
-        f["z_cols"],
-        jnp.maximum(_cols(state.qke), CAMUW_TKE_MIN),
-        hfx=f["hfx"],
-        qfx=f["qfx"],
-        ust=f["ust"],
-        wspd=f["wspd"],
-        dt=float(dt),
-    )
-    next_state = _apply_pbl_increment(state, dt, out, ny=f["ny"], nx=f["nx"], nz=f["nz"])
-
-    def _back3d(field2d):  # (ncol, nz) -> (nz, ny, nx)
-        return jnp.moveaxis(field2d.reshape(f["ny"], f["nx"], f["nz"]), -1, 0)
-
-    dt_f = float(dt)
-    return next_state.replace(
-        qc=(state.qc + dt_f * _back3d(out["qc"])).astype(_output_dtype(state, "qc")),
-        qi=(state.qi + dt_f * _back3d(out["qi"])).astype(_output_dtype(state, "qi")),
-        qke=_back3d(out["tke"]).astype(_output_dtype(state, "qke")),
-    )
+    del state, dt, grid
+    raise CamUwReferenceOnlyError(CAMUW_REFERENCE_ONLY_REASON)
 
 
 # --- dispatch tables ----------------------------------------------------------
@@ -1497,6 +1588,8 @@ CU_SCAN_ADAPTERS = {
     2: bmj_adapter,
     3: gf_adapter,
     6: tiedtke_adapter,
+    # v0.23 F2: New-Tiedtke, machine-precision-proven column kernel.
+    16: ntiedtke_adapter,
 }
 
 # Cumulus options that carry NO persistent cumulus state (plain State->State, like
@@ -1506,16 +1599,17 @@ CU_SCAN_ADAPTERS = {
 CU_STATELESS_SCAN_ADAPTERS = {
     3: gf_adapter,
     6: tiedtke_adapter,
+    16: ntiedtke_adapter,
 }
 
 # PBL options whose scan adapter is threaded (bl=5 MYNN is the existing
 # physics_couplers.mynn_adapter; bl=0 disables). YSU(1)/ACM2(7)/BouLac(8) are
 # v0.6.0 jax.lax.scan-traceable rewrites; MRF(99) is the v0.13 jit/vmap-traceable
 # port of phys/module_bl_mrf.F (savepoint-parity gated, proofs/v013/mrf_oracle.py).
+# CAM-UW(9) is reference-only after F3 and is deliberately absent.
 PBL_SCAN_ADAPTERS = {
     1: ysu_pbl_adapter,
     3: gfs_pbl_adapter,
-    9: camuw_pbl_adapter,
     11: shinhong_pbl_adapter,
     12: gbm_pbl_adapter,
     7: acm2_pbl_adapter,

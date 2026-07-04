@@ -389,6 +389,15 @@ class RRTMGLWColumnResult(NamedTuple):
     clear_flux_up: jnp.ndarray | None = None
 
 
+class RRTMGLWM9FluxResult(NamedTuple):
+    """M9 wrfout LW flux slices without prognostic heating-rate outputs."""
+
+    toa_down: jnp.ndarray
+    toa_up: jnp.ndarray
+    surface_down: jnp.ndarray
+    surface_up: jnp.ndarray
+
+
 class RRTMGLWIntermediateState(NamedTuple):
     """LW solver-entry state exposed for M5-S3.z WRF intermediate-oracle checks."""
 
@@ -994,6 +1003,18 @@ def _zero_lw_column_result(total_cols: int, nlayers: int, dtype, with_clear_sky:
     )
 
 
+def _zero_lw_m9_flux_result(total_cols: int, dtype) -> RRTMGLWM9FluxResult:
+    """Allocates the M9-only LW tiled scan carry."""
+
+    column = jnp.zeros((total_cols,), dtype=dtype)
+    return RRTMGLWM9FluxResult(
+        toa_down=column,
+        toa_up=column,
+        surface_down=column,
+        surface_up=column,
+    )
+
+
 def _update_tile(carry, tile, start):
     """Scatters one fixed-size tile into a padded scan-carry field."""
 
@@ -1001,6 +1022,19 @@ def _update_tile(carry, tile, start):
     starts = [zero] * carry.ndim
     starts[0] = start
     return lax.dynamic_update_slice(carry, tile, starts)
+
+
+def _scatter_lw_m9_flux_result(
+    carry: RRTMGLWM9FluxResult, tile: RRTMGLWM9FluxResult, start
+) -> RRTMGLWM9FluxResult:
+    """Scatters one M9-only LW tile result into the padded result carry."""
+
+    return RRTMGLWM9FluxResult(
+        toa_down=_update_tile(carry.toa_down, tile.toa_down, start),
+        toa_up=_update_tile(carry.toa_up, tile.toa_up, start),
+        surface_down=_update_tile(carry.surface_down, tile.surface_down, start),
+        surface_up=_update_tile(carry.surface_up, tile.surface_up, start),
+    )
 
 
 def _scatter_lw_result(carry: RRTMGLWColumnResult, tile: RRTMGLWColumnResult, start) -> RRTMGLWColumnResult:
@@ -1020,6 +1054,23 @@ def _scatter_lw_result(carry: RRTMGLWColumnResult, tile: RRTMGLWColumnResult, st
         surface_emission=_update_tile(carry.surface_emission, tile.surface_emission, start),
         clear_flux_down=clear_down,
         clear_flux_up=clear_up,
+    )
+
+
+def _unflatten_lw_m9_flux_result(
+    result: RRTMGLWM9FluxResult, leading_shape: tuple[int, ...], ncol: int
+) -> RRTMGLWM9FluxResult:
+    """Restores M9-only LW result fields from flat columns."""
+
+    def restore(arr):
+        arr = arr[:ncol]
+        return jnp.reshape(arr, leading_shape + arr.shape[1:])
+
+    return RRTMGLWM9FluxResult(
+        toa_down=restore(result.toa_down),
+        toa_up=restore(result.toa_up),
+        surface_down=restore(result.surface_down),
+        surface_up=restore(result.surface_up),
     )
 
 
@@ -2622,8 +2673,12 @@ def _lw_solver_fluxes(
 
 
 def _longwave_impl(
-    state: RRTMGLWColumnState, tables: RRTMGTableBundle, debug: bool, with_clear_sky: bool = False
-) -> RRTMGLWColumnResult:
+    state: RRTMGLWColumnState,
+    tables: RRTMGTableBundle,
+    debug: bool,
+    with_clear_sky: bool = False,
+    m9_flux_only: bool = False,
+) -> RRTMGLWColumnResult | RRTMGLWM9FluxResult:
     """Unjitted LW implementation shared by production and stripped paths."""
 
     if with_clear_sky:
@@ -2634,6 +2689,15 @@ def _longwave_impl(
         state, flux_down_model, flux_up_model, original_layers, layer_mass = _lw_solver_fluxes(state, tables)
         clear_flux_down = None
         clear_flux_up = None
+    if m9_flux_only:
+        flux_down = assert_physical_bounds(flux_down_model, 0.0, 2000.0, "rrtmg_lw.flux_down", enabled=debug)
+        flux_up = assert_physical_bounds(flux_up_model, 0.0, 2000.0, "rrtmg_lw.flux_up", enabled=debug)
+        return RRTMGLWM9FluxResult(
+            toa_down=flux_down[..., -1],
+            toa_up=flux_up[..., -1],
+            surface_down=flux_down[..., 0],
+            surface_up=flux_up[..., 0],
+        )
     net_down = flux_down_model - flux_up_model
     layer_net_heating = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     heating_rate = layer_net_heating / (layer_mass * CP_AIR)
@@ -2665,12 +2729,13 @@ def _longwave_column_tiled_impl(
     debug: bool,
     with_clear_sky: bool = False,
     column_tile_cols: int | None = None,
-) -> RRTMGLWColumnResult:
+    m9_flux_only: bool = False,
+) -> RRTMGLWColumnResult | RRTMGLWM9FluxResult:
     """Runs the LW solve over fixed-size flattened column tiles."""
 
     configured_tile_cols = _LW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
     if not _LW_COLUMN_TILING or configured_tile_cols <= 0:
-        return _longwave_impl(state, tables, debug, with_clear_sky)
+        return _longwave_impl(state, tables, debug, with_clear_sky, m9_flux_only)
 
     leading_shape = state.p.shape[:-1]
     ncol = _column_count(leading_shape)
@@ -2682,6 +2747,20 @@ def _longwave_column_tiled_impl(
 
     flat_state = _flatten_lw_state(state, leading_shape, ncol)
     padded_state = _pad_lw_state(flat_state, ncol, padded_ncol)
+    if m9_flux_only:
+        init = _zero_lw_m9_flux_result(padded_ncol, out_dtype)
+
+        def body(carry, tile_index):
+            start = tile_index * tile_cols
+            tile_state = _slice_lw_state(padded_state, start, tile_cols, padded_ncol)
+            tile_result = _longwave_impl(
+                tile_state, tables, debug, with_clear_sky, m9_flux_only=True
+            )
+            return _scatter_lw_m9_flux_result(carry, tile_result, start), None
+
+        tiled, _ = lax.scan(body, init, jnp.arange(n_tiles, dtype=jnp.int32))
+        return _unflatten_lw_m9_flux_result(tiled, leading_shape, ncol)
+
     init = _zero_lw_column_result(padded_ncol, nlayers, out_dtype, with_clear_sky)
 
     def body(carry, tile_index):
@@ -2727,6 +2806,26 @@ def solve_rrtmg_lw_column(
         debug,
         with_clear_sky,
         column_tile_cols,
+    )
+
+
+@partial(jax.jit, static_argnames=("debug", "column_tile_cols"))
+def solve_rrtmg_lw_m9_flux_slices(
+    state: RRTMGLWColumnState,
+    tables: RRTMGTableBundle = RRTMG_TABLES,
+    *,
+    debug: bool = False,
+    column_tile_cols: int | None = None,
+) -> RRTMGLWM9FluxResult:
+    """Computes only the LW surface/TOA flux slices consumed by M9 wrfout."""
+
+    return _longwave_column_tiled_impl(
+        state,
+        tables,
+        debug,
+        False,
+        column_tile_cols,
+        m9_flux_only=True,
     )
 
 

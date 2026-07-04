@@ -160,20 +160,19 @@ def test_out_of_scope_switch_off_passes() -> None:
     )
 
 
-def test_urban_bep_bem_is_recognized_fail_closed() -> None:
-    """Multi-layer urban canopy (BEP=2 / BEM=3) is a G3 fail-closed target."""
+def test_urban_bep_bem_and_lake_are_reference_only_fail_closed_operationally() -> None:
+    """G3 BEP/BEM and lake are accepted for reference work, not operational runs."""
 
-    assert classify_scheme("sf_urban_physics", 2).status is SupportStatus.RECOGNIZED_FAIL_CLOSED
-    assert classify_scheme("sf_urban_physics", 3).status is SupportStatus.RECOGNIZED_FAIL_CLOSED
+    assert classify_scheme("sf_urban_physics", 2).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("sf_urban_physics", 3).status is SupportStatus.REFERENCE_ONLY
+    assert classify_scheme("sf_lake_physics", 1).status is SupportStatus.REFERENCE_ONLY
     assert classify_scheme("sf_urban_physics", 0).status is SupportStatus.IMPLEMENTED
 
-    with pytest.raises(UnsupportedSchemeError) as excinfo:
-        validate_namelist({"physics": {"sf_urban_physics": 2}})
-    assert "BEP" in str(excinfo.value)
+    validate_namelist({"physics": {"sf_urban_physics": [2, 3], "sf_lake_physics": [1]}})
 
-    with pytest.raises(UnsupportedSchemeError) as excinfo2:
-        validate_namelist({"physics": {"sf_lake_physics": 1}})
-    assert "lake" in str(excinfo2.value).lower()
+    with pytest.raises(UnsupportedSchemeError) as excinfo:
+        validate_namelist({"physics": {"sf_urban_physics": 1}})
+    assert "UCM" in str(excinfo.value)
 
 
 # --------------------------------------------------------------------------- #
@@ -197,7 +196,9 @@ def test_reference_only_scheme_passes_namelist_layer() -> None:
     NOTE: classic RRTM LW (ra_lw=1), Dudhia SW (ra_sw=1), and the v0.13 MYJ pair
     (bl=2 / sf=2) are now operationally scan-wired (IMPLEMENTED)."""
 
-    assert classify_scheme("cu_physics", 16).status is SupportStatus.REFERENCE_ONLY
+    # v0.23 F2: cu=16 graduated to IMPLEMENTED (machine-precision kernel +
+    # ntiedtke_adapter scan wiring); the SAS family remains reference-only.
+    assert classify_scheme("cu_physics", 16).status is SupportStatus.IMPLEMENTED
     for cu in (4, 93, 94, 95, 96, 99):
         assert classify_scheme("cu_physics", cu).status is SupportStatus.REFERENCE_ONLY
     assert classify_scheme("ra_lw_physics", 1).status is SupportStatus.IMPLEMENTED
@@ -205,14 +206,12 @@ def test_reference_only_scheme_passes_namelist_layer() -> None:
     # v0.13: the MYJ PBL + Janjic Eta surface layer pair is now IMPLEMENTED.
     assert classify_scheme("bl_pbl_physics", 2).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_sfclay_physics", 2).status is SupportStatus.IMPLEMENTED
-    # v0.18 PBL reference endpoints: real pristine-WRF module oracles staged,
-    # operational scan still fail-closes until traceable JAX kernels land.
-    for pbl in (4, 10, 16, 17):
+    # PBL reference endpoints: real WRF oracle evidence staged, operational scan
+    # still fail-closes until traceable JAX kernels land. CAM-UW(9) is the F3
+    # RED oracle case: namelist-accepted for future faithful-port comparisons,
+    # but explicitly not operational.
+    for pbl in (4, 9, 10, 16, 17):
         assert classify_scheme("bl_pbl_physics", pbl).status is SupportStatus.REFERENCE_ONLY
-    # CAM-UW is now an operationally scan-wired v0.22 endpoint, with full
-    # CAM-stack parity caveated in its proof object rather than fail-closed here.
-    camuw = classify_scheme("bl_pbl_physics", 9)
-    assert camuw.status is SupportStatus.IMPLEMENTED
     # v0.13 Tier-3 batch2: GSFC/Goddard NUWRF longwave (ra_lw=5) is REFERENCE_ONLY
     # (fp64 pristine-WRF oracle staged; faithful JAX kernel = carry-over). It is
     # namelist-accepted (for a single-column reference comparison) and fail-closes
@@ -233,7 +232,7 @@ def test_reference_only_scheme_passes_namelist_layer() -> None:
         assert classify_scheme("ra_lw_physics", code).status is SupportStatus.REFERENCE_ONLY
     validate_namelist({"physics": {"cu_physics": [16, 4, 93, 94, 95, 96, 99]}})
     validate_namelist({"physics": {"bl_pbl_physics": [2], "sf_sfclay_physics": [2]}})
-    validate_namelist({"physics": {"bl_pbl_physics": [4, 10, 16, 17]}})
+    validate_namelist({"physics": {"bl_pbl_physics": [4, 9, 10, 16, 17]}})
     validate_namelist({"physics": {"ra_lw_physics": [5]}})
     validate_namelist({"physics": {"sf_surface_physics": [3]}})
     validate_namelist({"physics": {"sf_surface_physics": [8]}})

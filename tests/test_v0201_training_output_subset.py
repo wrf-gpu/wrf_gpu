@@ -244,3 +244,18 @@ def test_training_output_subset_env_opt_in(monkeypatch):
     for truthy in ("1", "true", "TRUE", "Yes", "on"):
         monkeypatch.setenv("GPUWRF_TRAINING_OUTPUT_SUBSET", truthy)
         assert _resolve_training_output_subset() == MINIMAL_TRAINING_SET, f"{truthy!r} should opt in"
+
+
+def test_m9_subset_attrs_expand_only_requested_radiation_dependencies():
+    from gpuwrf.integration.daily_pipeline import (
+        _M9_SW_ATTRS,
+        _byte_identical_selected_m9_attrs,
+        _m9_attrs_for_requested_names,
+        _requested_m9_output_names,
+    )
+
+    requested = _requested_m9_output_names(("T2", "SWDNB", "OLR"))
+    assert requested == frozenset({"T2", "SWDNB", "OLR", "LWUPT"})
+    assert _m9_attrs_for_requested_names(requested) == ("t2", "swdnb", "lwupt")
+    assert _byte_identical_selected_m9_attrs(requested) is None
+    assert _byte_identical_selected_m9_attrs(frozenset({"SWDNB"})) == _M9_SW_ATTRS

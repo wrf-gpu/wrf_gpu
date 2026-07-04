@@ -42,11 +42,12 @@ WRF Registry lines verified against
   endpoints with fp64 pristine-WRF oracle savepoints staged under
   ``proofs/v018/savepoints_fp64``; accepted for isolated oracle comparison and
   fail-closed in the operational scan until traceable JAX kernels land.
-* CAM-UW(9): CAM5 vertical-diffusion stack, v0.22 scan-wired as a traceable
-  UW diagnostic-TKE / implicit vertical-diffusion endpoint for the operational
-  State fields. Full CAM cloud-number/sedimentation/residual-stress parity
-  still requires a pristine-WRF CAM savepoint fixture and is documented in the
-  v0.22 proof object.
+* CAM-UW(9): F3 reference-only CAM5 vertical-diffusion stack. The standalone
+  WRF-Fortran CAM-UW column oracle is staged under
+  ``proofs/v023/feature_sprints/camuw_oracle`` and proved the previous JAX
+  scaffold RED vs WRF-Fortran. It remains accepted for oracle comparisons but
+  fail-closed in operational routing until a dedicated faithful-port milestone
+  lands.
 * Noah classic(2): ``state:flx4,fvb,fbur,fgsn,smcrel,xlaidyn``.
 * Cumulus options KF(1), BMJ(2), Grell-Freitas(3), Tiedtke(6/16), and the
   reference-only long tail with real WRF oracle artifacts
@@ -88,7 +89,7 @@ class SchemeOption:
     owner_family: str
 
 
-ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97)
+ACCEPTED_MP_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 18, 24, 26, 28, 40, 97)
 ACCEPTED_BL_PBL_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 16, 17, 99)
 ACCEPTED_SF_SFCLAY_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 5, 7, 91)
 ACCEPTED_CU_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 14, 16, 93, 94, 95, 96, 99)
@@ -113,6 +114,8 @@ ACCEPTED_RA_SW_PHYSICS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 7, 99)
 # proven against the unmodified WRF source at fp64 (proofs/v017/
 # held_suarez_lw_savepoint_parity.json) and scan-wired via held_suarez_theta_tendency.
 ACCEPTED_RA_LW_PHYSICS: tuple[int, ...] = (0, 1, 3, 4, 5, 7, 31, 99)
+ACCEPTED_SF_URBAN_PHYSICS: tuple[int, ...] = (0, 2, 3)
+ACCEPTED_SF_LAKE_PHYSICS: tuple[int, ...] = (0, 1)
 
 ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
     "mp_physics": ACCEPTED_MP_PHYSICS,
@@ -122,6 +125,8 @@ ACCEPTED_NAMELIST_OPTIONS: Mapping[str, tuple[int, ...]] = {
     "sf_surface_physics": ACCEPTED_SF_SURFACE_PHYSICS,
     "ra_sw_physics": ACCEPTED_RA_SW_PHYSICS,
     "ra_lw_physics": ACCEPTED_RA_LW_PHYSICS,
+    "sf_urban_physics": ACCEPTED_SF_URBAN_PHYSICS,
+    "sf_lake_physics": ACCEPTED_SF_LAKE_PHYSICS,
 }
 
 MP_SCHEMES: Mapping[int, SchemeOption] = {
@@ -135,6 +140,11 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     10: SchemeOption("mp_physics", 10, "Morrison two-moment", "morr_two_moment", "accepted", "microphysics"),
     13: SchemeOption("mp_physics", 13, "SBU-YLin", "sbu_ylinscheme", "implemented", "microphysics"),
     14: SchemeOption("mp_physics", 14, "WDM5", "wdm5scheme", "accepted", "microphysics"),
+    # v0.23 F2: NSSL 2-moment + Morrison-aerosol are REFERENCE-ONLY (namelist-
+    # accepted for single-column oracle comparison, fail-closed in the scan):
+    # real single-column WRF oracles live at proofs/v022/f2_oracles/{nssl_2mom,
+    # morrison_aero}/ (fp32+fp64, 6 regimes, checksummed pristine sources).
+    18: SchemeOption("mp_physics", 18, "NSSL 2-moment", "nssl_2mom", "accepted", "microphysics"),
     16: SchemeOption("mp_physics", 16, "WDM6", "wdm6scheme", "accepted", "microphysics"),
     # v0.17: WSM6 single-moment + a separate precipitating HAIL class (qh). GPU
     # scan-wired (coupling.scan_adapters.wsm7_adapter), savepoint-parity-proven
@@ -150,6 +160,7 @@ MP_SCHEMES: Mapping[int, SchemeOption] = {
     # (proofs/v016/thompson_aero_savepoint_parity.json) and wired through
     # coupling.physics_couplers.thompson_aero_adapter (mirrors mp=8).
     28: SchemeOption("mp_physics", 28, "Thompson aerosol-aware", "thompson_aero", "implemented", "microphysics"),
+    40: SchemeOption("mp_physics", 40, "Morrison aerosol-aware", "morr_tm_aero", "accepted", "microphysics"),
     # Goddard GCE (97): v0.17 single-moment 3-ice graupel scheme, faithful
     # column port of phys/module_mp_gsfcgce.F:gsfcgce (ihail=0/ice2=0/itaobraun=1/
     # new_ice_sat=2). Uses ONLY the existing moist substrate (qv,qc,qr,qi,qs,qg)
@@ -181,12 +192,11 @@ PBL_SCHEMES: Mapping[int, SchemeOption] = {
     5: SchemeOption("bl_pbl_physics", 5, "MYNN", "mynnpblscheme", "implemented", "pbl"),
     7: SchemeOption("bl_pbl_physics", 7, "ACM2", "acmpblscheme", "implemented", "pbl"),
     8: SchemeOption("bl_pbl_physics", 8, "BouLac", "boulacscheme", "accepted", "pbl"),
-    # CAM-UW(9): v0.22 JAX/vmap operational endpoint for the CAM5 UW
-    # diagnostic-TKE vertical-diffusion shape (dry static energy, qv/qc/qi,
-    # momentum, and qke diagnostics), scan-wired via
-    # coupling.scan_adapters.camuw_pbl_adapter. It is intentionally proof-gated
-    # as an idealized/source-present check, not full CAM-stack savepoint parity.
-    9: SchemeOption("bl_pbl_physics", 9, "CAM-UW", "camuwpblscheme", "implemented", "pbl"),
+    # CAM-UW(9): F3 reference-only. A WRF-Fortran CAM-UW oracle is preserved in
+    # proofs/v023/feature_sprints/camuw_oracle, and that oracle proved the former
+    # JAX scaffold RED vs WRF-Fortran. Accepted for oracle work; fail-closed in
+    # the operational scan until the dedicated faithful-port milestone lands.
+    9: SchemeOption("bl_pbl_physics", 9, "CAM-UW", "camuwpblscheme", "accepted", "pbl"),
     # TEMF(10): v0.18 reference-only endpoint. A fp64 pristine-WRF single-column
     # oracle is staged (phys/module_bl_temf.F; proofs/v018/temf_pbl10_reference_oracle.json),
     # but no traceable JAX column kernel is scan-wired.
@@ -360,11 +370,16 @@ MP_MOIST_MEMBERS: Mapping[int, tuple[str, ...]] = {
     13: ("qv", "qc", "qr", "qi", "qs"),
     14: ("qv", "qc", "qr", "qi", "qs"),
     16: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    # v0.23 F2: NSSL 2-moment: WRF moist qg carries NSSL graupel (QH) and WRF
+    # qh carries NSSL hail (QHL); Registry package nssl_2mom.
+    18: ("qv", "qc", "qr", "qi", "qs", "qg", "qh"),
     # v0.17 WSM7 = WSM6 six-class + a separate precipitating hail class (qh).
     24: ("qv", "qc", "qr", "qi", "qs", "qg", "qh"),
     # v0.17 WDM7 = WDM6 six-class + a separate precipitating hail class (qh).
     26: ("qv", "qc", "qr", "qi", "qs", "qg", "qh"),
     28: ("qv", "qc", "qr", "qi", "qs", "qg"),
+    # v0.23 F2: Morrison-aerosol = base Morrison six-class moist set.
+    40: ("qv", "qc", "qr", "qi", "qs", "qg"),
     97: ("qv", "qc", "qr", "qi", "qs", "qg"),
 }
 
@@ -436,6 +451,10 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     13: (),
     14: ("Nn", "Nc", "Nr"),
     16: ("Nn", "Nc", "Nr"),
+    # v0.23 F2: NSSL 2-moment Registry scalar package nssl2mconc =
+    # qnn(CCN)/qndrop/qnr/qni/qns/qng/qnh; the qvolg/qvolh graupel/hail volume
+    # scalars have NO State substrate yet (part of why mp=18 stays scan-unwired).
+    18: ("Nn", "Nc", "Nr", "Ni", "Ns", "Ng", "Nh"),
     # v0.17 WSM7 is single-moment (no prognostic number concentrations).
     24: (),
     # v0.17 WDM7 = WDM6 double-moment warm rain (Nn CCN, Nc, Nr); hail is
@@ -443,6 +462,10 @@ MP_NUMBER_MEMBERS: Mapping[int, tuple[str, ...]] = {
     26: ("Nn", "Nc", "Nr"),
     # WRF Registry package thompsonaero: scalar:qnc,qnr,qni,qnwfa,qnifa.
     28: ("Ni", "Nr", "Nc", "nwfa", "nifa"),
+    # v0.23 F2: Morrison-aerosol = base Morrison numbers + prognostic droplet
+    # number (aercu_opt=2 INUM=0); the 10-species prescribed AEROCU aerosol
+    # inputs have NO State substrate yet (part of why mp=40 stays scan-unwired).
+    40: ("Ni", "Ns", "Nr", "Ng", "Nc"),
     97: (),
 }
 
@@ -772,8 +795,8 @@ PBL_CARRY_MEMBERS: Mapping[int, tuple[str, ...]] = {
     7: (),
     8: ("qke",),
     # CAM-UW carries previous-step TKE/K diagnostics and residual stresses in
-    # the WRF CAM wrapper. The operational adapter stores TKE in State.qke and
-    # currently recomputes K/residual terms each call until a full CAM carry lands.
+    # the WRF CAM wrapper. F3 leaves it reference-only/fail-closed; this documents
+    # the carry a future faithful port must thread.
     9: ("tke_pbl", "kvm3d", "kvh3d", "tauresx", "tauresy"),
     # TEMF(10) carries the total-energy / mass-flux diagnostic state emitted by
     # phys/module_bl_temf.F. REFERENCE-ONLY in v0.18.
@@ -1029,6 +1052,8 @@ __all__ = [
     "ACCEPTED_SF_SURFACE_PHYSICS",
     "ACCEPTED_RA_SW_PHYSICS",
     "ACCEPTED_RA_LW_PHYSICS",
+    "ACCEPTED_SF_URBAN_PHYSICS",
+    "ACCEPTED_SF_LAKE_PHYSICS",
     "ACCEPTED_NAMELIST_OPTIONS",
     "MP_SCHEMES",
     "PBL_SCHEMES",

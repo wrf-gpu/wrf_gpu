@@ -21,8 +21,10 @@ from gpuwrf.contracts.physics_registry import (
     ACCEPTED_MP_PHYSICS,
     ACCEPTED_RA_LW_PHYSICS,
     ACCEPTED_RA_SW_PHYSICS,
+    ACCEPTED_SF_LAKE_PHYSICS,
     ACCEPTED_SF_SFCLAY_PHYSICS,
     ACCEPTED_SF_SURFACE_PHYSICS,
+    ACCEPTED_SF_URBAN_PHYSICS,
 )
 from gpuwrf.io.scheme_catalog import (
     APPROXIMATED_CONTROL_KEYS,
@@ -164,27 +166,28 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
         supported_values=frozenset(ACCEPTED_BL_PBL_PHYSICS),
         implemented=(
             "0=disabled, 1=YSU, 2=MYJ, 3=GFS, 5=MYNN, 7=ACM2, 8=BouLac, "
-            "9=CAM-UW, 11=Shin-Hong, 12=GBM, 99=MRF "
-            "(all GPU-operational, scan-wired); 2=MYJ is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired with "
+            "11=Shin-Hong, 12=GBM, 99=MRF "
+            "(GPU-operational, scan-wired); 2=MYJ is the v0.13 jit/vmap-traceable MYJ pair (mandatorily paired with "
             "sf_sfclay_physics=2 Janjic Eta), savepoint-parity-proven; 3=GFS is the v0.17 "
             "jit/vmap-traceable port of phys/module_bl_gfs.F, savepoint-parity-proven; 99=MRF is the "
             "v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F, savepoint-parity-proven. "
-            "9=CAM-UW is the v0.22 traceable CAM5 UW diagnostic-TKE / implicit "
-            "vertical-diffusion endpoint with idealized/source-present proof, "
-            "not full CAM-stack savepoint parity. "
             "11=Shin-Hong is the v0.18 JAX/vmap scale-aware PBL port; "
             "12=GBM is the v0.18 JAX/vmap moist prognostic-TKE PBL port, fp64 "
             "parity-green vs the pristine-WRF savepoint oracle. "
+            "9=CAM-UW is F3 REFERENCE-ONLY: a WRF-Fortran CAM-UW oracle is "
+            "preserved under proofs/v023/feature_sprints/camuw_oracle, and the "
+            "former JAX scaffold is proven RED vs oracle; it fail-closes in the "
+            "operational GPU scan until the dedicated faithful-port milestone. "
             "4=QNSE, 10=TEMF, 16=EEPS, and 17=KEPS are accepted/reference-only "
             "v0.18 fp64 pristine-WRF oracle endpoints and fail-close in the "
             "operational GPU scan."
         ),
         action=(
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for the operational GPU scan; 2=MYJ MUST "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for the operational GPU scan; 2=MYJ MUST "
             "pair with sf_sfclay_physics=2. "
             "Pair with the matching surface layer (MYNN<->5, ACM2<->7/1, YSU<->1, GFS<->1, "
-            "CAM-UW<->1, Shin-Hong<->1, GBM<->1, MYJ<->2, MRF<->1). "
-            "Use bl_pbl_physics=4/10/16/17 only for single-column oracle/reference "
+            "Shin-Hong<->1, GBM<->1, MYJ<->2, MRF<->1). "
+            "Use bl_pbl_physics=4/9/10/16/17 only for single-column oracle/reference "
             "comparisons."
         ),
     ),
@@ -309,15 +312,30 @@ SUPPORTED_OPTIONS: dict[str, SupportedOption] = {
     ),
     "sf_urban_physics": SupportedOption(
         key="sf_urban_physics",
-        supported_values=frozenset({0}),
-        implemented="0=disabled; BEP/BEM urban canopy physics is recognized but fail-closed",
-        action="Set sf_urban_physics=0; G3 BEP/BEM requires the urban state/oracle/JAX-kernel port before use.",
+        supported_values=frozenset(ACCEPTED_SF_URBAN_PHYSICS),
+        implemented=(
+            "0=disabled; 2=BEP and 3=BEP+BEM are G3 REFERENCE-ONLY "
+            "(WRF source/object/Registry oracle inventory present, no faithful "
+            "JAX kernel or numerical WRF single-column parity claim)"
+        ),
+        action=(
+            "Use sf_urban_physics=0 for operational runs; use 2/3 only for "
+            "reference/oracle development until the urban state carry and faithful "
+            "BEP/BEM kernels land."
+        ),
     ),
     "sf_lake_physics": SupportedOption(
         key="sf_lake_physics",
-        supported_values=frozenset({0}),
-        implemented="0=disabled; WRF lake model is recognized but fail-closed",
-        action="Set sf_lake_physics=0; G3 lake requires the lake state/oracle/JAX-kernel port before use.",
+        supported_values=frozenset(ACCEPTED_SF_LAKE_PHYSICS),
+        implemented=(
+            "0=disabled; 1=WRF lake model is G3 REFERENCE-ONLY "
+            "(WRF source/object/Registry oracle inventory present, no faithful "
+            "JAX kernel or numerical WRF single-column parity claim)"
+        ),
+        action=(
+            "Use sf_lake_physics=0 for operational runs; use 1 only for "
+            "reference/oracle development until the lake carry and faithful kernel land."
+        ),
     ),
 }
 
@@ -527,7 +545,7 @@ def _reference_only_failures(config: Any) -> list[UnsupportedSelection]:
                     supported_values=_operationally_wired_values(key),
                     implemented=(
                         f"REFERENCE-ONLY (oracle-backed, NOT operationally wired): "
-                        f"{support.wrf_name or key}"
+                        f"{support.reason}"
                     ),
                     action=support.alternative,
                     domain_index=idx + 1 if len(values) > 1 else None,
@@ -860,6 +878,7 @@ def _format_selection(item: UnsupportedSelection) -> str:
         return (
             f"- {item.location}{domain}={item.value} ({scheme}): oracle-backed WRF v4 "
             f"{label} scheme, but NOT operationally wired into the GPU forecast scan. "
+            f"Reason: {item.implemented}. "
             f"Running it would SILENTLY use a DIFFERENT scheme than requested "
             f"(the operational {label} path runs the implemented scheme instead) "
             f"or route through a missing kernel -- "

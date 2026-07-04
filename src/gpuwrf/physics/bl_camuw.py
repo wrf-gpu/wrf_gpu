@@ -1,4 +1,4 @@
-"""CAM-UW moist-turbulence PBL column endpoint (``bl_pbl_physics=9``).
+"""Reference-only CAM-UW PBL marker (``bl_pbl_physics=9``).
 
 WRF's CAM-UW driver (``phys/module_bl_camuwpbl_driver.F``) is a wrapper around
 CAM5 vertical diffusion:
@@ -10,12 +10,10 @@ CAM5 vertical diffusion:
 * diffuse momentum, dry static energy, water vapor, cloud liquid, and cloud ice;
 * carry residual stresses plus previous-step ``kvm``/``kvh`` and TKE diagnostics.
 
-This module implements the same operational shape in a traceable JAX column
-kernel: CAM-style diagnostic TKE/K profiles, implicit diffusion of the driving
-fields, and the CAM bottom-flux conventions.  It is intentionally not advertised
-as bitwise/source-parity with the full CAM stack until a pristine-WRF CAM-UW
-savepoint fixture exists for the CAM cloud-number/sedimentation/residual-stress
-state.
+F3 built a standalone WRF-Fortran CAM-UW column oracle and proved the previous
+JAX scaffold was not close to that oracle. CAM-UW is therefore accepted for
+reference/oracle work only and fails closed in operational routing until a
+dedicated faithful-port milestone lands.
 """
 
 from __future__ import annotations
@@ -36,6 +34,18 @@ K_MAX = 1000.0
 K_BACKGROUND = 0.01
 TKE_MIN = 1.0e-4
 SMAW_MAX = 4.964
+
+CAMUW_REFERENCE_ONLY_REASON = (
+    "bl_pbl_physics=9 CAM-UW is REFERENCE_ONLY/fail-closed: F3 built the "
+    "WRF-Fortran CAM-UW oracle and measured the previous JAX scaffold RED "
+    "against it (worst pblh max_abs=1384.6212005615234 m). The full faithful "
+    "CAM-UW port is a separate milestone; this endpoint must not be used for "
+    "operational forecasts."
+)
+
+
+class CamUwReferenceOnlyError(RuntimeError):
+    """Raised when the reference-only CAM-UW scaffold is called as a kernel."""
 
 
 def _solve_tridiagonal_1d(
@@ -287,12 +297,15 @@ def camuw_columns(
     wspd: jax.Array,
     dt: float,
 ) -> dict[str, jax.Array]:
-    """Run one CAM-UW-style PBL column batch.
+    """Fail closed for the reference-only CAM-UW endpoint.
 
-    Inputs and outputs use the project PBL convention: bottom-up arrays shaped
-    ``(ncol, nlev)`` and tendencies in per-second units. ``u``/``v`` are mass-grid
-    winds; the scan adapter maps increments back to C-grid faces.
+    F3 intentionally leaves the old numerical scaffold unreachable because it
+    failed the WRF-Fortran CAM-UW oracle. The preserved oracle artifacts under
+    ``proofs/v023/feature_sprints/camuw_oracle`` are the gate for the future
+    faithful-port milestone.
     """
+
+    raise CamUwReferenceOnlyError(CAMUW_REFERENCE_ONLY_REASON)
 
     diag = _diagnose_camuw_diffusivity(
         u, v, theta, t, qv, qc, qi, p, dz, z_mid, tke_initial, hfx, qfx, ust, wspd, dt
@@ -358,4 +371,9 @@ def camuw_columns(
     }
 
 
-__all__ = ["TKE_MIN", "camuw_columns"]
+__all__ = [
+    "CAMUW_REFERENCE_ONLY_REASON",
+    "CamUwReferenceOnlyError",
+    "TKE_MIN",
+    "camuw_columns",
+]

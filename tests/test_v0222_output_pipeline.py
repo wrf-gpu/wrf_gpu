@@ -141,6 +141,7 @@ def test_materialize_stage_honours_radiation_carry_source_flag(monkeypatch, tmp_
 
     monkeypatch.setenv("GPUWRF_NESTED_M9_RADIATION_FROM_CARRY", "1")
     writer = _make_writer(async_writer=None)
+    writer._variable_subset = ("SWDOWN",)
     namelist = SimpleNamespace(use_noahmp=True)
     writer.output_dir = tmp_path
     writer.run_start = RUN_START
@@ -150,10 +151,12 @@ def test_materialize_stage_honours_radiation_carry_source_flag(monkeypatch, tmp_
 
     def fake_surface_from_carry(*_args, **_kwargs):
         seen["carry_helper_called"] = True
+        seen["carry_helper_variable_subset"] = _kwargs.get("variable_subset")
         return {"SWDOWN": np.array([[7.0]]), "GLW": np.array([[300.0]])}
 
     def fake_prepare(*_args, diagnostics=None, **_kwargs):
         seen["diagnostics"] = diagnostics
+        seen["prepare_variable_subset"] = _kwargs.get("variable_subset")
         return "prepared"
 
     monkeypatch.setattr(nested_pipeline_module, "assert_state_finite_at_boundary", lambda *a, **k: None)
@@ -186,6 +189,8 @@ def test_materialize_stage_honours_radiation_carry_source_flag(monkeypatch, tmp_
     )
 
     assert seen["carry_helper_called"] is True
+    assert seen["carry_helper_variable_subset"] == ("SWDOWN",)
+    assert seen["prepare_variable_subset"] == ("SWDOWN",)
     assert np.array_equal(seen["diagnostics"]["SWDOWN"], np.array([[7.0]]))
     assert seen["written"] == "prepared"
 

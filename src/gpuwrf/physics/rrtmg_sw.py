@@ -246,6 +246,18 @@ class RRTMGSWColumnResult(NamedTuple):
     clear_flux_up: jnp.ndarray | None = None
 
 
+class RRTMGSWM9FluxResult(NamedTuple):
+    """M9 wrfout SW flux slices without prognostic heating-rate outputs."""
+
+    toa_down: jnp.ndarray
+    toa_up: jnp.ndarray
+    surface_down: jnp.ndarray
+    surface_up: jnp.ndarray
+    topographic_correction_factor: jnp.ndarray
+    surface_down_topographic: jnp.ndarray
+    surface_up_topographic: jnp.ndarray
+
+
 class RRTMGSWTopographyState(NamedTuple):
     """WRF `TOPO_RAD_ADJ` geometry fields for terrain-adjusted SW flux."""
 
@@ -593,6 +605,21 @@ def _zero_sw_column_result(total_cols: int, nlayers: int, dtype, with_clear_sky:
     )
 
 
+def _zero_sw_m9_flux_result(total_cols: int, dtype) -> RRTMGSWM9FluxResult:
+    """Allocates the M9-only SW tiled scan carry."""
+
+    column = jnp.zeros((total_cols,), dtype=dtype)
+    return RRTMGSWM9FluxResult(
+        toa_down=column,
+        toa_up=column,
+        surface_down=column,
+        surface_up=column,
+        topographic_correction_factor=column,
+        surface_down_topographic=column,
+        surface_up_topographic=column,
+    )
+
+
 def _update_tile(carry, tile, start):
     """Scatters one fixed-size tile into a padded scan-carry field."""
 
@@ -600,6 +627,28 @@ def _update_tile(carry, tile, start):
     starts = [zero] * carry.ndim
     starts[0] = start
     return lax.dynamic_update_slice(carry, tile, starts)
+
+
+def _scatter_sw_m9_flux_result(
+    carry: RRTMGSWM9FluxResult, tile: RRTMGSWM9FluxResult, start
+) -> RRTMGSWM9FluxResult:
+    """Scatters one M9-only SW tile result into the padded result carry."""
+
+    return RRTMGSWM9FluxResult(
+        toa_down=_update_tile(carry.toa_down, tile.toa_down, start),
+        toa_up=_update_tile(carry.toa_up, tile.toa_up, start),
+        surface_down=_update_tile(carry.surface_down, tile.surface_down, start),
+        surface_up=_update_tile(carry.surface_up, tile.surface_up, start),
+        topographic_correction_factor=_update_tile(
+            carry.topographic_correction_factor, tile.topographic_correction_factor, start
+        ),
+        surface_down_topographic=_update_tile(
+            carry.surface_down_topographic, tile.surface_down_topographic, start
+        ),
+        surface_up_topographic=_update_tile(
+            carry.surface_up_topographic, tile.surface_up_topographic, start
+        ),
+    )
 
 
 def _scatter_sw_result(carry: RRTMGSWColumnResult, tile: RRTMGSWColumnResult, start) -> RRTMGSWColumnResult:
@@ -626,6 +675,26 @@ def _scatter_sw_result(carry: RRTMGSWColumnResult, tile: RRTMGSWColumnResult, st
         surface_absorbed_topographic=_update_tile(carry.surface_absorbed_topographic, tile.surface_absorbed_topographic, start),
         clear_flux_down=clear_down,
         clear_flux_up=clear_up,
+    )
+
+
+def _unflatten_sw_m9_flux_result(
+    result: RRTMGSWM9FluxResult, leading_shape: tuple[int, ...], ncol: int
+) -> RRTMGSWM9FluxResult:
+    """Restores M9-only SW result fields from flat columns."""
+
+    def restore(arr):
+        arr = arr[:ncol]
+        return jnp.reshape(arr, leading_shape + arr.shape[1:])
+
+    return RRTMGSWM9FluxResult(
+        toa_down=restore(result.toa_down),
+        toa_up=restore(result.toa_up),
+        surface_down=restore(result.surface_down),
+        surface_up=restore(result.surface_up),
+        topographic_correction_factor=restore(result.topographic_correction_factor),
+        surface_down_topographic=restore(result.surface_down_topographic),
+        surface_up_topographic=restore(result.surface_up_topographic),
     )
 
 
@@ -1838,6 +1907,54 @@ def _sw_band_scan_fluxes(
     return flux_down_model, flux_up_model, direct_down_model
 
 
+def _sw_assemble_m9_flux_result(
+    state,
+    debug: bool,
+    topography: RRTMGSWTopographyState | None,
+    out_dtype,
+    flux_down,
+    flux_up,
+    direct_down,
+) -> RRTMGSWM9FluxResult:
+    """Assemble only the SW slices consumed by M9 wrfout diagnostics."""
+
+    flux_down = assert_physical_bounds(flux_down, 0.0, 2000.0, "rrtmg_sw.flux_down", enabled=debug)
+    flux_up = assert_physical_bounds(flux_up, 0.0, 2000.0, "rrtmg_sw.flux_up", enabled=debug)
+    surface_down = flux_down[..., 0]
+    surface_up = flux_up[..., 0]
+    if topography is None:
+        topographic_correction_factor = jnp.ones_like(surface_down)
+        surface_down_topographic = surface_down
+        surface_up_topographic = surface_up
+    else:
+        surface_direct = direct_down[..., 0]
+        surface_diffuse = surface_down - surface_direct
+        surface_diffuse_fraction = jnp.where(
+            surface_down > 0.001, jnp.minimum(surface_diffuse / surface_down, 1.0), 0.0
+        ).astype(out_dtype)
+        surface_absorbed = surface_down - surface_up
+        topographic = apply_wrf_topographic_sw_adjustment(
+            surface_down=surface_down,
+            surface_up=surface_up,
+            surface_absorbed=surface_absorbed,
+            coszen=state.coszen.astype(out_dtype),
+            diffuse_fraction=surface_diffuse_fraction,
+            topography=topography,
+        )
+        topographic_correction_factor = topographic.correction_factor.astype(out_dtype)
+        surface_down_topographic = topographic.surface_down.astype(out_dtype)
+        surface_up_topographic = topographic.surface_up.astype(out_dtype)
+    return RRTMGSWM9FluxResult(
+        toa_down=flux_down[..., -1],
+        toa_up=flux_up[..., -1],
+        surface_down=surface_down,
+        surface_up=surface_up,
+        topographic_correction_factor=topographic_correction_factor,
+        surface_down_topographic=surface_down_topographic,
+        surface_up_topographic=surface_up_topographic,
+    )
+
+
 def _sw_assemble_result(
     state, debug, topography, out_dtype,
     heating_rate, flux_down, flux_up, column_absorbed_total, surface_absorbed,
@@ -2070,7 +2187,8 @@ def _shortwave_impl(
     debug: bool,
     topography: RRTMGSWTopographyState | None = None,
     with_clear_sky: bool = False,
-) -> RRTMGSWColumnResult:
+    m9_flux_only: bool = False,
+) -> RRTMGSWColumnResult | RRTMGSWM9FluxResult:
     """Unjitted SW implementation shared by production and stripped paths."""
 
     state = _clip_state(state)
@@ -2146,6 +2264,11 @@ def _shortwave_impl(
             flux_down_model, flux_up_model, direct_down_model = scan_out
             clear_flux_down = None
             clear_flux_up = None
+        if m9_flux_only:
+            return _sw_assemble_m9_flux_result(
+                state, debug, topography, out_dtype,
+                flux_down_model, flux_up_model, direct_down_model,
+            )
         net_down = flux_down_model - flux_up_model
         column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
         column_absorbed_total = net_down[..., -1] - net_down[..., 0]
@@ -2267,6 +2390,11 @@ def _shortwave_impl(
         flux_down_model, flux_up_model, direct_down_model = scan_out
         clear_flux_down = None
         clear_flux_up = None
+    if m9_flux_only:
+        return _sw_assemble_m9_flux_result(
+            state, debug, topography, out_dtype,
+            flux_down_model, flux_up_model, direct_down_model,
+        )
     net_down = flux_down_model - flux_up_model
     column_absorbed_layers = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     column_absorbed_total = net_down[..., -1] - net_down[..., 0]
@@ -2294,12 +2422,13 @@ def _shortwave_column_tiled_impl(
     topography: RRTMGSWTopographyState | None = None,
     with_clear_sky: bool = False,
     column_tile_cols: int | None = None,
-) -> RRTMGSWColumnResult:
+    m9_flux_only: bool = False,
+) -> RRTMGSWColumnResult | RRTMGSWM9FluxResult:
     """Runs the SW solve over fixed-size flattened column tiles."""
 
     configured_tile_cols = _SW_COLUMN_TILE_COLS if column_tile_cols is None else int(column_tile_cols)
     if not _SW_COLUMN_TILING or configured_tile_cols <= 0:
-        return _shortwave_impl(state, tables, debug, topography, with_clear_sky)
+        return _shortwave_impl(state, tables, debug, topography, with_clear_sky, m9_flux_only)
 
     leading_shape = state.p.shape[:-1]
     ncol = _column_count(leading_shape)
@@ -2313,6 +2442,21 @@ def _shortwave_column_tiled_impl(
     flat_topography = _flatten_sw_topography(topography, leading_shape, ncol)
     padded_state = _pad_sw_state(flat_state, ncol, padded_ncol)
     padded_topography = _pad_sw_topography(flat_topography, ncol, padded_ncol)
+    if m9_flux_only:
+        init = _zero_sw_m9_flux_result(padded_ncol, out_dtype)
+
+        def body(carry, tile_index):
+            start = tile_index * tile_cols
+            tile_state = _slice_sw_state(padded_state, start, tile_cols, padded_ncol)
+            tile_topography = _slice_sw_topography(padded_topography, start, tile_cols, padded_ncol)
+            tile_result = _shortwave_impl(
+                tile_state, tables, debug, tile_topography, with_clear_sky, m9_flux_only=True
+            )
+            return _scatter_sw_m9_flux_result(carry, tile_result, start), None
+
+        tiled, _ = lax.scan(body, init, jnp.arange(n_tiles, dtype=jnp.int32))
+        return _unflatten_sw_m9_flux_result(tiled, leading_shape, ncol)
+
     init = _zero_sw_column_result(padded_ncol, nlayers, out_dtype, with_clear_sky)
 
     def body(carry, tile_index):
@@ -2534,6 +2678,28 @@ def solve_rrtmg_sw_column(
         topography,
         with_clear_sky,
         column_tile_cols,
+    )
+
+
+@partial(jax.jit, static_argnames=("debug", "column_tile_cols"))
+def solve_rrtmg_sw_m9_flux_slices(
+    state: RRTMGSWColumnState,
+    tables: RRTMGTableBundle = RRTMG_TABLES,
+    *,
+    debug: bool = False,
+    topography: RRTMGSWTopographyState | None = None,
+    column_tile_cols: int | None = None,
+) -> RRTMGSWM9FluxResult:
+    """Computes only the SW surface/TOA flux slices consumed by M9 wrfout."""
+
+    return _shortwave_column_tiled_impl(
+        state,
+        tables,
+        debug,
+        topography,
+        False,
+        column_tile_cols,
+        m9_flux_only=True,
     )
 
 

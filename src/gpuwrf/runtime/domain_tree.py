@@ -378,6 +378,14 @@ def run_domain_tree_callbacks(
     dynamic_specs: dict[tuple[str, str], DomainNest] = {
         (edge.parent, edge.child): edge for edge in hierarchy.nests
     }
+    # Moved-edge registry (v0.23 G2).  When the ``move`` callback returns a
+    # repositioned :class:`DomainEdge` its gather/feedback weights were REBUILT
+    # for the new ``i/j_parent_start``; every later ``resolve_edge`` for that
+    # pair must reuse THAT edge.  The pre-v0.23 fallback (pair the moved spec
+    # with the static tree's weights) silently forced/fed back through gather
+    # plans built for the ORIGINAL nest position.  Empty (and therefore inert)
+    # unless a move callback returns an edge.
+    dynamic_edges: dict[tuple[str, str], DomainEdge] = {}
 
     def children_for(parent: str) -> tuple[DomainNest, ...]:
         return tuple(dynamic_specs[(edge.parent, edge.child)] for edge in hierarchy.children(parent))
@@ -397,6 +405,9 @@ def run_domain_tree_callbacks(
         return True
 
     def resolve_edge(spec: DomainNest) -> DomainEdge:
+        moved = dynamic_edges.get((spec.parent, spec.child))
+        if moved is not None:
+            return moved
         if edge_lookup is None:
             return DomainEdge(spec, weights=None)  # type: ignore[arg-type]
         edge = edge_lookup(spec)
@@ -443,6 +454,7 @@ def run_domain_tree_callbacks(
         old = runtime_edge.spec
         new = moved_edge.spec
         dynamic_specs[(old.parent, old.child)] = new
+        dynamic_edges[(old.parent, old.child)] = moved_edge
         if (
             old.i_parent_start != new.i_parent_start
             or old.j_parent_start != new.j_parent_start
@@ -1955,9 +1967,10 @@ def _nested_fuse_default_enabled() -> bool:
 def _fusable_parent(tree: DomainTree, name: str) -> tuple[DomainEdge, ...] | None:
     """Return edges for a safe fused parent, otherwise fail closed to eager."""
 
-    if name == tree.hierarchy.roots()[0]:
-        return None
     children = tree.hierarchy.children(name)
+    is_root = name == tree.hierarchy.roots()[0]
+    if is_root and (len(tree.hierarchy.order) != 2 or len(children) != 1):
+        return None
     if not children:
         return None
     edges: list[DomainEdge] = []

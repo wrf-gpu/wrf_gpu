@@ -140,10 +140,9 @@ def test_run_unsupported_namelist_fails_closed(
 @pytest.mark.parametrize(
     "section, alt_substring",
     [
-        # Both radiation options ra_sw=1 (Dudhia) and ra_lw=1 (classic RRTM) are now
-        # operationally scan-wired; cu=16 (New-Tiedtke) is the remaining parity-
-        # proven-but-not-wired scheme exercising the pre-JAX fail-closed path.
-        ("&physics\n cu_physics = 16,\n/\n", "cu_physics=6"),
+        # cu=16 (New-Tiedtke) graduated to IMPLEMENTED in v0.23 F2; cu=4
+        # (scale-aware SAS, reference-only) exercises the pre-JAX fail-closed path.
+        ("&physics\n cu_physics = 4,\n/\n", "cu_physics=1/2/3/6"),
     ],
 )
 def test_run_rejects_reference_only_radiation_pre_jax(

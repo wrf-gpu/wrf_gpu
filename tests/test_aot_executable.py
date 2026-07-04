@@ -250,6 +250,7 @@ def test_aot_verify_gate_default_off(monkeypatch):
 
 def test_env_help_documents_aot_knob():
     assert "GPUWRF_NESTED_AOT" in dt.nested_defuse_env_help()
+    assert "GPUWRF_FUSED_CASCADE_LOW_EFFORT" in dt.nested_defuse_env_help()
 
 
 def test_nested_aot_report_shape():
@@ -552,6 +553,40 @@ def test_fused_cheap_key_folds_edge_geometry():
     assert changed_count != base
 
 
+def _fused_low_effort_config_values():
+    return {
+        name: getattr(jax.config, name)
+        for name, _value in dt._FUSED_CASCADE_LOW_EFFORT_CONFIG
+    }
+
+
+def test_fused_low_effort_context_default_off_is_inert(monkeypatch):
+    """Default fused cold compiles use the ambient JAX compile config."""
+
+    monkeypatch.delenv("GPUWRF_FUSED_CASCADE_LOW_EFFORT", raising=False)
+    before = _fused_low_effort_config_values()
+    with dt._fused_cascade_low_effort_compile_context() as applied:
+        assert applied == ()
+        assert _fused_low_effort_config_values() == before
+    assert _fused_low_effort_config_values() == before
+
+
+def test_fused_low_effort_context_changes_exec_env_hash(monkeypatch):
+    """The opt-in compile profile is folded into the AOT executable key."""
+
+    from gpuwrf.runtime import aot_cheap_key as ck
+
+    monkeypatch.setenv("GPUWRF_FUSED_CASCADE_LOW_EFFORT", "1")
+    before = _fused_low_effort_config_values()
+    baseline_hash = ck.exec_env_hash()
+    with dt._fused_cascade_low_effort_compile_context() as applied:
+        applied_values = dict(applied)
+        assert applied_values == dict(dt._FUSED_CASCADE_LOW_EFFORT_CONFIG)
+        assert _fused_low_effort_config_values() == applied_values
+        assert ck.exec_env_hash() != baseline_hash
+    assert _fused_low_effort_config_values() == before
+
+
 def test_fused_cascade_uses_loaded_aot_blob(monkeypatch):
     """Fused AOT warm path calls the loaded fused/<parent> executable."""
     monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
@@ -669,6 +704,83 @@ def test_fused_cascade_captures_aot_blob_on_load_miss(monkeypatch):
     assert captured["key_schema"]
     assert np.asarray(out_parent.state).shape == (1,)
     assert len(out_children) == 1
+
+
+def test_fused_cascade_low_effort_wraps_cold_compile(monkeypatch):
+    """Opt-in low effort is active while the fused miss compiles and serializes."""
+
+    monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
+    monkeypatch.setenv("GPUWRF_FUSED_CASCADE_LOW_EFFORT", "1")
+    monkeypatch.delenv("GPUWRF_AOT_VERIFY", raising=False)
+    before_config = _fused_low_effort_config_values()
+    parent_nl = _aot_namelist()
+    child_nl = _aot_namelist()
+    parent = _FusedCarry(jnp.asarray([1.0], dtype=jnp.float64))
+    child = _FusedCarry(jnp.asarray([2.0], dtype=jnp.float64))
+
+    def fake_advance(carry, namelist, start, clock_base, *, n_steps, cadence):
+        del namelist, clock_base, n_steps, cadence
+        return carry.replace(state=carry.state + jnp.asarray(start, dtype=carry.state.dtype))
+
+    def fake_force(child_state, parent_state, weights, *, bdy_width):
+        del weights, bdy_width
+        return child_state + parent_state
+
+    monkeypatch.setattr(dt, "_advance_chunk", fake_advance)
+    monkeypatch.setattr(dt, "build_child_boundary_package", fake_force)
+    monkeypatch.setattr(
+        aot,
+        "load_domain_blob",
+        lambda name, *args, **kwargs: (
+            None,
+            {
+                "name": name,
+                "loaded": False,
+                "source": "fallback:missing",
+                "cheap_key": kwargs.get("cheap_key"),
+            },
+        ),
+    )
+    captured = {}
+
+    def fake_serialize(name, compiled, cache_dir, **kwargs):
+        del compiled, cache_dir
+        captured.update(
+            {
+                "name": name,
+                "compile_config": _fused_low_effort_config_values(),
+                **kwargs,
+            }
+        )
+        return {
+            "aot_written": True,
+            "aot_blob_bytes": 123,
+            "aot_path": "/tmp/fused-low-effort.xlaexec",
+            "hlo_sha256": kwargs.get("hlo_sha256"),
+            "cheap_key": kwargs.get("cheap_key"),
+        }
+
+    monkeypatch.setattr(aot, "_serialize_domain_blob", fake_serialize)
+    program = dt._build_fused_cascade_program(
+        parent_name="d02",
+        parent_namelist=parent_nl,
+        parent_cadence=7,
+        child_names=("d03",),
+        child_namelists=(child_nl,),
+        child_weights=(jnp.asarray([1.0], dtype=jnp.float64),),
+        child_bdy_widths=(5,),
+        child_ratios=(1,),
+        child_cadences=(7,),
+    )
+
+    out_parent, out_children = program(parent, (child,), 4, (12,))
+    assert captured["name"] == "fused/d02"
+    assert captured["compile_config"] == dict(dt._FUSED_CASCADE_LOW_EFFORT_CONFIG)
+    assert captured["cheap_key"]
+    assert captured["hlo_sha256"]
+    assert np.asarray(out_parent.state).shape == (1,)
+    assert len(out_children) == 1
+    assert _fused_low_effort_config_values() == before_config
 
 
 def test_fused_cascade_cached_calls_are_keyed_by_aval_signature(monkeypatch, capsys):

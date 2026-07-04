@@ -156,7 +156,7 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # State->State on the existing moist substrate), savepoint-parity-proven against
     # unmodified phys/module_mp_gsfcgce.F (proofs/v090/goddard_mp_r2_savepoint_parity.json).
     "mp_physics": frozenset({0, 1, 2, 3, 4, 6, 8, 10, 13, 14, 16, 24, 26, 28, 97}),
-    "cu_physics": frozenset({0, 1, 2, 3, 6}),
+    "cu_physics": frozenset({0, 1, 2, 3, 6, 16}),
     # bl=2 MYJ + sf=2 Janjic Eta are the v0.13 traceable MYJ pair (operationally
     # scan-wired via physics.myj_adapters + runtime.operational_mode; mandatory pair).
     # bl=99 MRF is the v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F
@@ -165,14 +165,13 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
     # bl=3 GFS is the v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F
     # (BL_GFS -> MONINP, savepoint-parity gated, proofs/v017/gfs_oracle.py ~1e-13);
     # nonlocal-K, consumes the revised-MM5 surface layer (sf_sfclay=1).
-    # bl=9 CAM-UW is the v0.22 CAM5 UW diagnostic-TKE / implicit vertical-
-    # diffusion endpoint. It is operationally scan-wired with an idealized
-    # source-present proof, not full pristine-WRF CAM-stack savepoint parity.
     # bl=11 Shin-Hong is the v0.18 JAX/vmap scale-aware PBL port: dynamics-green
     # operational, with explicit non-driving TKE/EL diagnostic caveat vs the v090
     # PARTIAL reference (TKE rel ~=0.285, EL rel ~=0.013). bl=12 GBM is the
     # v0.18 JAX/vmap moist prognostic-TKE PBL port.
-    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 9, 11, 12, 99}),
+    # bl=9 CAM-UW is F3 REFERENCE_ONLY: the WRF-Fortran oracle exists, but the
+    # previous JAX scaffold was RED vs oracle and is not operationally wired.
+    "bl_pbl_physics": frozenset({0, 1, 2, 3, 5, 7, 8, 11, 12, 99}),
     # sf_sfclay 3 (NCEP-GFS) + 91 (old-MM5) are v0.13 Tier-3 scan-wired surface
     # layers (coupling.scan_adapters.{gfs_sfclay_adapter,sfclay_old_mm5_adapter};
     # fp64 pristine-WRF oracle-validated; B2 kinematic flux handles).
@@ -211,6 +210,80 @@ _IMPLEMENTED: Mapping[str, frozenset[int]] = {
 # operational run). Some entries are GREEN; some are RED and say so in the reason.
 # reason = the named scan-unwired reason; alternative = the operational swap.
 _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
+    # v0.23 F2: NSSL 2-moment (18) and Morrison-aerosol (40) now have REAL
+    # single-column pristine-WRF oracles (fp32 + fp64, 6 regimes, checksummed
+    # unmodified sources) at proofs/v022/f2_oracles/{nssl_2mom,morrison_aero}/
+    # built by proofs/v023/oracle/{nssl2mom,morraero}/. They are REFERENCE_ONLY:
+    # namelist-accepted for single-column oracle comparison, fail-closed in the
+    # operational GPU scan (never silently wrong).
+    "mp_physics": {
+        18: (
+            "NSSL 2-moment has v0.23 single-column fp32+fp64 pristine-WRF "
+            "oracle savepoints (proofs/v022/f2_oracles/nssl_2mom, unmodified "
+            "phys/module_mp_nssl_2mom.F, default mp=18 config per "
+            "module_check_a_mundo/module_physics_init; hail-process rates "
+            "unexercised by the current seeds -- documented), but the faithful "
+            "traceable JAX kernel is not yet ported and the qvolg/qvolh volume "
+            "scalars have no State substrate, so it is fail-closed in the "
+            "operational GPU scan.",
+            "Use mp_physics=8/28 (Thompson) or 10 (Morrison) operationally; "
+            "compare single columns vs proofs/v022/f2_oracles/nssl_2mom.",
+        ),
+        40: (
+            "Morrison-aerosol (aercu_opt=2) has v0.23 single-column fp32+fp64 "
+            "pristine-WRF oracle savepoints (proofs/v022/f2_oracles/"
+            "morrison_aero, unmodified phys/module_mp_morr_two_moment_aero.F) "
+            "AND a faithful fp64 JAX column kernel proven to machine precision "
+            "against them (physics.microphysics_morrison_aero, worst field rel "
+            "~2e-13; tests/savepoint/test_morrison_aero_parity.py), but the "
+            "prescribed 10-species AEROCU aerosol inputs and prognostic droplet "
+            "number have no operational State substrate, so it is fail-closed "
+            "in the operational GPU scan.",
+            "Use mp_physics=10 (base Morrison, GPU-operational) or 28 "
+            "(aerosol-aware Thompson); compare single columns vs "
+            "proofs/v022/f2_oracles/morrison_aero.",
+        ),
+    },
+    # v0.23 G3: urban BEP/BEM (sf_urban=2/3) and WRF lake (sf_lake=1) are
+    # REFERENCE_ONLY (namelist-accepted for oracle/reference work, fail-closed in
+    # the operational GPU scan; default sf_urban_physics/sf_lake_physics=0). The
+    # faithful ports are their own milestone (see G3 report).
+    "sf_urban_physics": {
+        2: (
+            "G3 BEP urban canopy is REFERENCE_ONLY: pristine-WRF source/object "
+            "inventory and Registry carry metadata are staged for "
+            "phys/module_sf_bep.F:BEP, but no numerical WRF single-column parity "
+            "fixture or faithful JAX kernel is shipped. It is accepted only for "
+            "oracle/reference development and fail-closed in the operational GPU scan.",
+            "Use sf_urban_physics=0 for operational runs; carry BEP as its own "
+            "urban-canopy milestone with Registry bepscheme state, urban static "
+            "tables, and a numerical WRF oracle before scan wiring.",
+        ),
+        3: (
+            "G3 BEP+BEM urban canopy is REFERENCE_ONLY: pristine-WRF source/object "
+            "inventory and Registry carry metadata are staged for "
+            "phys/module_sf_bep.F:BEP plus phys/module_sf_bem.F:BEM, but no "
+            "numerical WRF single-column parity fixture or faithful JAX kernel is "
+            "shipped. It is accepted only for oracle/reference development and "
+            "fail-closed in the operational GPU scan.",
+            "Use sf_urban_physics=0 for operational runs; carry BEP+BEM as its own "
+            "urban-canopy milestone with bep_bemscheme state, BEM static tables, "
+            "and a numerical WRF oracle before scan wiring.",
+        ),
+    },
+    "sf_lake_physics": {
+        1: (
+            "G3 WRF lake model is REFERENCE_ONLY: pristine-WRF source/object "
+            "inventory and Registry carry metadata are staged for "
+            "phys/module_sf_lake.F:Lake/LakeMain/lakeini, but no numerical WRF "
+            "single-column parity fixture or faithful JAX kernel is shipped. It "
+            "is accepted only for oracle/reference development and fail-closed in "
+            "the operational GPU scan.",
+            "Use sf_lake_physics=0 for operational runs; carry the WRF lake model "
+            "as its own milestone with lakeini/state carry, lake-column numerics, "
+            "and a numerical WRF oracle before scan wiring.",
+        ),
+    },
     "cu_physics": {
         # v0.17 SAS family: all four requested codes now have fp64 pristine-WRF
         # single-column savepoints, but the shared JAX endpoint is still RED
@@ -241,14 +314,10 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "Use cu_physics=1/2/3/6 (Kain-Fritsch / BMJ / Grell-Freitas / Tiedtke; "
             "Tiedtke also requires active flux-form moisture advection for RQVFTEN).",
         ),
-        16: (
-            "New Tiedtke has module-specific v0.13 single-column fp64 pristine-WRF "
-            "savepoints from phys/module_cu_ntiedtke.F, but no faithful traceable "
-            "JAX kernel or CU scan adapter is wired yet, so it is fail-closed in "
-            "the operational GPU scan.",
-            "Use cu_physics=6 (modified Tiedtke with active flux-form moisture "
-            "advection for RQVFTEN) or 1/3.",
-        ),
+        # cu=16 New-Tiedtke graduated to IMPLEMENTED in v0.23 F2: faithful fp64
+        # kernel machine-precision-proven vs the v0.13 oracle savepoints
+        # (cumulus_ntiedtke + cumulus_ntiedtke_jax), scan-wired via
+        # coupling.scan_adapters.ntiedtke_adapter.
         93: (
             "Grell-Devenyi ensemble is recognized for v0.17 oracle work, but no "
             "source-specific traceable JAX column endpoint has passed parity "
@@ -387,13 +456,23 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
         ),
     },
     "bl_pbl_physics": {
+        9: (
+            "CAM-UW PBL has an F3 standalone WRF-Fortran CAM-UW column oracle "
+            "(proofs/v023/feature_sprints/camuw_oracle), and that oracle proved "
+            "the previous JAX scaffold RED vs WRF-Fortran (worst pblh max_abs="
+            "1384.6212005615234 m). The faithful CAM-UW port is a separate "
+            "milestone, so bl_pbl_physics=9 is fail-closed in the operational "
+            "GPU scan.",
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
+            "proofs/v023/feature_sprints/camuw_oracle for CAM-UW oracle comparisons.",
+        ),
         4: (
             "QNSE-EDMF PBL has a v0.18 fp64 pristine-WRF single-column oracle "
             "staged (unmodified phys/module_bl_qnsepbl.F; "
             "proofs/v018/qnse_pbl4_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
             "proofs/v018/run_qnse_pbl4_oracle_check.py for QNSE oracle comparisons.",
         ),
         10: (
@@ -402,7 +481,7 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "proofs/v018/temf_pbl10_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
             "proofs/v018/run_temf_pbl10_oracle_check.py for TEMF oracle comparisons.",
         ),
         16: (
@@ -411,7 +490,7 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "proofs/v018/eeps_pbl16_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
             "proofs/v018/run_eeps_pbl16_oracle_check.py for EEPS oracle comparisons.",
         ),
         17: (
@@ -420,7 +499,7 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
             "proofs/v018/keps_pbl17_reference_oracle.json), but no traceable JAX "
             "column kernel is scan-wired, so it is fail-closed in the operational "
             "GPU scan.",
-            "Use bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 for operational runs; use "
+            "Use bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 for operational runs; use "
             "proofs/v018/run_keps_pbl17_oracle_check.py for KEPS oracle comparisons.",
         ),
     },
@@ -428,9 +507,9 @@ _REFERENCE_ONLY: Mapping[str, dict[int, tuple[str, str]]] = {
     # (host-NumPy savepoint kernels); they are now operationally scan-wired as a
     # mandatory pair via the JAX-traceable physics.bl_myj / physics.sf_myj rewrites
     # (IMPLEMENTED above), so they are no longer listed here. bl=3 GFS is IMPLEMENTED.
-    # bl_pbl_physics=9 (CAM-UW) is now IMPLEMENTED as a v0.22 operational
-    # scaffold with WRF-source/idealized proof; full CAM-stack parity remains a
-    # named caveat in its proof object rather than a REFERENCE_ONLY status here.
+    # bl_pbl_physics=9 (CAM-UW) is F3 REFERENCE_ONLY: the WRF-Fortran oracle is
+    # preserved, but the former JAX scaffold is proven RED and the faithful port
+    # is a separate milestone.
     # ra_lw_physics=1 (classic RRTM LW) was REFERENCE_ONLY (host-NumPy kernel); it
     # is now operationally scan-wired via the JAX-traceable physics.ra_lw_rrtm_jax
     # rewrite (IMPLEMENTED above), so it is no longer listed here.
@@ -452,9 +531,9 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "3=Grell-Freitas, 6=Tiedtke requires active flux-form moisture advection "
     "for RQVFTEN). Reference-only cumulus options 4/5/14/16/93/94/95/96/99 "
     "fail-close in the operational scan.",
-    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/9/11/12/99 (5=MYNN, 1=YSU, 2=MYJ "
-    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 9=CAM-UW, "
-    "11=Shin-Hong, 12=GBM, 99=MRF). PBL4/10/16/17 are accepted reference-only and "
+    "bl_pbl_physics": "Use one of bl_pbl_physics=0/1/2/3/5/7/8/11/12/99 (5=MYNN, 1=YSU, 2=MYJ "
+    "[pair with sf_sfclay_physics=2], 3=GFS, 7=ACM2, 8=BouLac, 11=Shin-Hong, "
+    "12=GBM, 99=MRF). PBL4/9/10/16/17 are accepted reference-only and "
     "fail-close in the operational scan.",
     "sf_sfclay_physics": "Use one of sf_sfclay_physics=0/1/2/3/5/7/91 (5=MYNN-SL, "
     "1=revised-MM5, 2=Janjic Eta [pair with bl_pbl_physics=2], 3=NCEP-GFS, "
@@ -472,8 +551,8 @@ _DEFAULT_ALTERNATIVE: Mapping[str, str] = {
     "diff_6th_opt": "Use diff_6th_opt=0 (off) or 2 (monotonic 6th-order filter).",
     "rk_order": "Use rk_order=3 (WRF RK3).",
     "w_damping": "Use w_damping=0 or 1.",
-    "sf_urban_physics": "Set sf_urban_physics=0; BEP/BEM need the G3 urban state/oracle port before they can run.",
-    "sf_lake_physics": "Set sf_lake_physics=0; the WRF lake column/state/oracle port is not operationally wired.",
+    "sf_urban_physics": "Set sf_urban_physics=0 for operational runs; BEP/BEM are G3 reference-only until the urban state/oracle port lands.",
+    "sf_lake_physics": "Set sf_lake_physics=0 for operational runs; the WRF lake model is G3 reference-only until the lake column/state/oracle port lands.",
 }
 
 
@@ -590,12 +669,6 @@ _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
         "IMPLEMENTED as a separate GPU scheme; MP18 is the reference-oracle-"
         "backed exact NSSL target and carries the qh/qnh/qvolg/qvolh-style "
         "state/oracle work.",
-        18: "ORACLE-ABSENT / fail-closed: NSSL 2-moment 4-ice with predicted "
-        "CCN is recognized from phys/module_mp_nssl_2mom.F and the WRF Registry "
-        "nssl_2mom package (mp_physics=18), but no local single-column WRF oracle "
-        "artifact is present in this worktree. The JAX endpoint is NOT YET "
-        "IMPLEMENTED: it needs NSSL number/hail-volume state (qh/qnh/qvolg/qvolh), "
-        "qnn CCN controls, and a source-specific oracle before scan wiring.",
         19: "PROVEN-IRRELEVANT / SUPERSEDED legacy NSSL option: "
         "phys/module_mp_nssl_2mom.F recognizes it, but doc/README.NSSLmp maps it "
         "to mp_physics=18 with nssl_2moment_on=0 and nssl_ccn_on=1. It is NOT "
@@ -638,14 +711,6 @@ _PER_CODE_FAIL_CLOSED_REASON: Mapping[str, dict[int, str]] = {
         "phys/module_mp_full_sbm.F and requires full spectral-bin-state and "
         "external SBM lookup-table architecture. It is NOT YET IMPLEMENTED as an "
         "operational bulk-scheme adapter.",
-        40: "ORACLE-ABSENT / fail-closed: Morrison aerosol microphysics is "
-        "recognized from phys/module_mp_morr_two_moment_aero.F selected by "
-        "mp_physics=40 (the aerosol-coupled extension of Morrison "
-        "module_mp_morr_two_moment.F), but no local single-column WRF oracle "
-        "artifact is present in this worktree. The JAX endpoint is NOT YET "
-        "IMPLEMENTED: it extends Morrison with aerosol activation/effectiveness, "
-        "CCN diagnostics, and the CESM_RCP4.5 aerosol-data dependency beyond the "
-        "current operational mp=10 interface.",
         50: "REFERENCE-WITH-REAL-ORACLE / fail-closed: P3 1-category "
         "microphysics has active pristine-WRF full-model oracle artifacts under "
         "proofs/v018/mp_oracles/wrf_full_model/mp50 for phys/module_mp_p3.F "

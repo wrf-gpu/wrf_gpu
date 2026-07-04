@@ -15,7 +15,7 @@ from gpuwrf.runtime.finite_state_guard import (
 
 
 class _StateLike:
-    __slots__ = ("theta", "qv", "u", "xland")
+    __slots__ = ("theta", "qv", "u", "xland", "mu_total")
 
     def __init__(self, *, theta, qv=None, u=None, xland=None):
         self.theta = theta
@@ -75,6 +75,43 @@ def test_inf_reports_first_available_prognostic_field() -> None:
     assert loc.index == (1, 0, 4)
 
 
+def test_mixed_shape_jax_fields_use_one_success_reduction() -> None:
+    theta = jnp.ones((2, 3, 4), dtype=jnp.float32)
+    qv = jnp.ones((2, 3, 4), dtype=jnp.float32) * 0.01
+    mu_total = jnp.ones((3, 4), dtype=jnp.float32)
+    state = _StateLike(theta=theta, qv=qv)
+    state.mu_total = mu_total
+
+    loc = first_nonfinite_state_location(
+        state,
+        domain="d01",
+        step=7,
+        fields=("theta", "qv", "mu_total"),
+    )
+
+    assert loc is None
+
+
+def test_mixed_shape_jax_failure_reports_first_bad_field() -> None:
+    theta = jnp.ones((2, 3, 4), dtype=jnp.float32)
+    qv = jnp.ones((2, 3, 4), dtype=jnp.float32) * 0.01
+    mu_total = jnp.ones((3, 4), dtype=jnp.float32).at[2, 1].set(jnp.nan)
+    state = _StateLike(theta=theta, qv=qv)
+    state.mu_total = mu_total
+
+    loc = first_nonfinite_state_location(
+        state,
+        domain="d01",
+        step=8,
+        fields=("theta", "qv", "mu_total"),
+    )
+
+    assert loc is not None
+    assert loc.field == "mu_total"
+    assert loc.level is None
+    assert loc.index == (2, 1)
+
+
 def test_opt_out_env_disables_guard(monkeypatch) -> None:
     monkeypatch.setenv("GPUWRF_FINITE_CHECK", "0")
     theta = jnp.ones((3, 4, 5), dtype=jnp.float32).at[0, 0, 0].set(jnp.nan)
@@ -83,4 +120,3 @@ def test_opt_out_env_disables_guard(monkeypatch) -> None:
     assert_state_finite_at_boundary(
         state, domain="d02", step=1, environ={"GPUWRF_FINITE_CHECK": "0"}
     )
-

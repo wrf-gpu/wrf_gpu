@@ -229,7 +229,14 @@ def _target_report(target: dict[str, Any]) -> dict[str, Any]:
     scan_reason = _SCAN_UNWIRED_REASON.get(f"{key}={code}")
     oracle = _oracle_report(target)
 
-    if oracle["present"]:
+    if support.status is SupportStatus.IMPLEMENTED and scan_wired:
+        # v0.23 F2: a bundle scheme that graduated to a faithful, oracle-proven
+        # kernel wired into the operational scan. Honesty gate: it must be
+        # accepted AND still carry its oracle evidence (no evidence, no wiring).
+        expected_status = SupportStatus.IMPLEMENTED
+        coverage = "implemented_scan_wired"
+        gate_ok = accepted and oracle["present"]
+    elif oracle["present"]:
         expected_status = SupportStatus.REFERENCE_ONLY
         coverage = "reference_only_oracle_present"
         gate_ok = (

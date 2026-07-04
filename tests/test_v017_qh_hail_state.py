@@ -233,7 +233,11 @@ def test_hail_mp_family_unwired_members_stay_fail_closed() -> None:
     wired = HAIL_MP_FAMILY & set(MP_SCAN_ADAPTERS)
     assert 24 in wired, "WSM7 (mp=24) must be scan-wired in v0.17"
     for mp in sorted(HAIL_MP_FAMILY - wired):
-        assert mp not in ACCEPTED_MP_PHYSICS, mp
+        # v0.23 F2: NSSL mp=18 gained a real single-column oracle
+        # (proofs/v022/f2_oracles/nssl_2mom) and is REFERENCE-ONLY: namelist-
+        # accepted for oracle comparison but still NEVER scan-wired.
+        if mp != 18:
+            assert mp not in ACCEPTED_MP_PHYSICS, mp
         assert mp not in _SCAN_WIRED_OPTIONS["mp_physics"], mp
     # Every wired hail scheme IS accepted + scan-wired.
     for mp in sorted(wired):

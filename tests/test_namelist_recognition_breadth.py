@@ -385,9 +385,9 @@ def test_genuine_wrong_substitutions_still_fail_closed() -> None:
     * (b) moist_adv_opt=3 (WENO -- a still-unimplemented advection scheme) RAISES
       (the positive-definite=1 / monotonic=2 limiters ARE now wired, so the
       genuine-wrong-substitution example must use an UNWIRED value, WENO);
-    * (c) cu_physics=16 (New-Tiedtke, reference-only -> would silently become a
-      different cumulus scheme on the operational scan) RAISES on the operational
-      path (ra_lw=1/ra_sw=1 are now wired, so cumulus drives this check);
+    * (c) cu_physics=4 (scale-aware SAS, reference-only -> would silently become
+      a different cumulus scheme on the operational scan) RAISES on the
+      operational path (cu=16 New-Tiedtke graduated to IMPLEMENTED in v0.23 F2);
     * (d) grid_fdda=1 (out-of-scope feature) RAISES.
     """
 
@@ -402,7 +402,7 @@ def test_genuine_wrong_substitutions_still_fail_closed() -> None:
 
     # (c) reference-only scheme -> operational run still fail closed.
     with pytest.raises(UnsupportedSchemeError) as exc_c:
-        validate_operational_namelist({"physics": {"cu_physics": [16]}})
+        validate_operational_namelist({"physics": {"cu_physics": [4]}})
     assert any(s.key == "cu_physics" for s in exc_c.value.selections)
 
     # (d) out-of-scope feature -> still fail closed.

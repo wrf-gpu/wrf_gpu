@@ -412,7 +412,9 @@ def test_myj_pairing_fails_closed_when_unpaired(bl: int, sf: int) -> None:
 # The operational runtime now threads RQVFTEN from the flux-form qv-advection
 # diagnostic and RQVBLTEN from the PBL qv increment; selecting cu=6 without the
 # flux-form path fails closed instead of advertising an inert scheme.
-_CU_TRIGGERING = tuple(o for o in OPERATIONAL_CU if o != 6)
+# cu=16 (New-Tiedtke, v0.23 F2) shares the Tiedtke-family flux-form
+# moisture-advection requirement, so it also gets its own dedicated test below.
+_CU_TRIGGERING = tuple(o for o in OPERATIONAL_CU if o not in (6, 16))
 
 
 @pytest.mark.parametrize("cu", _CU_TRIGGERING)
@@ -454,6 +456,50 @@ def test_cumulus_tiedtke_operational_triggers_with_real_qvften() -> None:
     assert _all_finite(after), "cu=6 produced a non-finite field"
     assert _maxabs(after.rainc_acc) > 0.0, "cu=6 did not trigger (no convective precip)"
     assert _changed(after.theta, state.theta), "cu=6 did not apply a convective tendency"
+
+
+def test_cumulus_ntiedtke_operational_triggers_with_real_forcing() -> None:
+    """cu=16 (New-Tiedtke, v0.23 F2) runs through the operational physics step
+    with real WRF-style RQVFTEN forcing (flux-form qv-advection diagnostic +
+    PBL increment) and RTHFTEN (accumulated physics theta forcing) -- the
+    machine-precision-proven kernel driven end-to-end, no synthetic injection."""
+
+    grid = _grid()
+    state = _convective_state(grid)
+    nml = _namelist(
+        grid,
+        dt_s=900.0,
+        mp_physics=0,
+        bl_pbl_physics=0,
+        sf_sfclay_physics=0,
+        cu_physics=16,
+        use_flux_advection=True,
+        moist_adv_opt=2,
+    )
+    _resolve_operational_suite(nml)
+    carry = initial_operational_carry(state)
+    forcing = _physics_step_forcing(carry, nml, 0.0, run_radiation=False)
+    after = forcing.state
+    assert _all_finite(after), "cu=16 produced a non-finite field"
+    assert _maxabs(after.rainc_acc) > 0.0, "cu=16 did not trigger (no convective precip)"
+    assert _changed(after.theta, state.theta), "cu=16 did not apply a convective tendency"
+
+
+def test_cumulus_ntiedtke_requires_qvften_source() -> None:
+    """cu=16 must fail closed when the operational scan cannot diagnose RQVFTEN."""
+
+    grid = _grid()
+    nml = _namelist(
+        grid,
+        dt_s=900.0,
+        mp_physics=0,
+        bl_pbl_physics=0,
+        sf_sfclay_physics=0,
+        cu_physics=16,
+        use_flux_advection=False,
+    )
+    with pytest.raises(UnsupportedSchemeSelection):
+        _resolve_operational_suite(nml)
 
 
 def test_cumulus_tiedtke_requires_qvften_source() -> None:

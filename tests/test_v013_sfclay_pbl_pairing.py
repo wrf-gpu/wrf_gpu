@@ -40,7 +40,12 @@ from gpuwrf.coupling.physics_dispatch import (
 )
 
 # PBLs whose forcing is re-derived from revised-MM5 (must pair with sf_sfclay=1).
-_REDERIVING_PBLS = (1, 7, 8, 9, 11, 12, 99)
+# CAM-UW (9) was in this set until v0.23 F3 made it REFERENCE_ONLY/fail-closed
+# (proved RED vs the pristine-WRF CAM-UW column oracle): it now resolves to a
+# non-gate-ready suite for every surface-layer pairing (never operationally wired),
+# so the operational revised-MM5 pairing guard no longer applies to it. Its
+# reference-only fail-closed contract is covered by the F3 CAM-UW tests.
+_REDERIVING_PBLS = (1, 7, 8, 11, 12, 99)
 # Surface layers that are NOT revised-MM5 (selecting them under a re-deriving PBL
 # would silently substitute revised-MM5 forcing). sf=2 is excluded -- it has its own
 # (MYJ-only) pairing rule already enforced.

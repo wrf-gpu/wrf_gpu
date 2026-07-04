@@ -14,6 +14,10 @@ from gpuwrf.contracts.precision import (
 from gpuwrf.contracts.state import Tendencies
 from gpuwrf.runtime.operational_mode import OperationalNamelist
 from gpuwrf.runtime.operational_mode import _DateClockAux, _StaticHolder
+from gpuwrf.integration.nested_pipeline import (
+    _canonicalize_batch_namelist_static,
+    batch_ensemble_size_from_env,
+)
 
 
 def _cpu_tendencies(grid: GridSpec) -> Tendencies:
@@ -53,6 +57,42 @@ def test_static_holder_real_bundle_hashes_by_identity():
     assert same == again
     assert hash(same) == hash(again)
     assert same != different
+
+
+def test_batch_namelist_static_canonicalization_shares_equal_static_objects():
+    grid = GridSpec.canary_3km_template()
+    left = dataclasses.replace(
+        OperationalNamelist.from_grid(grid, tendencies=_cpu_tendencies(grid)),
+        noahmp_static={"veg": jnp.asarray([1, 2, 3], dtype=jnp.int32)},
+        noahmp_energy_params={"soil": jnp.asarray([0.25], dtype=jnp.float64)},
+    )
+    right = dataclasses.replace(
+        OperationalNamelist.from_grid(grid, tendencies=_cpu_tendencies(grid)),
+        noahmp_static={"veg": jnp.asarray([1, 2, 3], dtype=jnp.int32)},
+        noahmp_energy_params={"soil": jnp.asarray([0.25], dtype=jnp.float64)},
+    )
+
+    assert right.noahmp_static is not left.noahmp_static
+    assert jax.tree_util.tree_structure(right) != jax.tree_util.tree_structure(left)
+
+    canonical = _canonicalize_batch_namelist_static(left, right)
+
+    assert canonical.noahmp_static is left.noahmp_static
+    assert canonical.noahmp_energy_params is left.noahmp_energy_params
+    assert jax.tree_util.tree_structure(canonical) == jax.tree_util.tree_structure(left)
+
+
+def test_batch_ensemble_size_accepts_larger_positive_integer(monkeypatch):
+    monkeypatch.setenv("GPUWRF_BATCH_ENSEMBLE", "8")
+    assert batch_ensemble_size_from_env() == 8
+
+
+def test_batch_ensemble_size_rejects_nonpositive(monkeypatch):
+    monkeypatch.setenv("GPUWRF_BATCH_ENSEMBLE", "0")
+    assert batch_ensemble_size_from_env() == 1
+    monkeypatch.setenv("GPUWRF_BATCH_ENSEMBLE", "-1")
+    with pytest.raises(ValueError, match="positive integer"):
+        batch_ensemble_size_from_env()
 
 
 def test_acoustic_precision_mode_default_label_roundtrips_as_static_aux():

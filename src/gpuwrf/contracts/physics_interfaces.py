@@ -324,6 +324,29 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         diagnostics=("re_cloud", "re_ice", "re_snow"),
         accumulators=("rain_acc", "snow_acc", "graupel_acc", "ice_acc", "hail_acc"),
     ),
+    _mp_spec(
+        18,
+        "NSSL 2-moment",
+        "src/gpuwrf/physics/microphysics_nssl2mom.py",
+        "v0.23 F2 REFERENCE-ONLY: real single-column fp32+fp64 pristine-WRF "
+        "oracle savepoints vs unmodified phys/module_mp_nssl_2mom.F (default mp=18 "
+        "config; proofs/v022/f2_oracles/nssl_2mom, drivers at "
+        "proofs/v023/oracle/nssl2mom). Traceable JAX kernel is a documented "
+        "carry-over; qvolg/qvolh volume scalars have no State substrate; "
+        "operational scan fail-closes.",
+        accumulators=("rain_acc", "snow_acc", "graupel_acc", "ice_acc", "hail_acc"),
+    ),
+    _mp_spec(
+        40,
+        "Morrison aerosol-aware",
+        "src/gpuwrf/physics/microphysics_morrison_aero.py",
+        "v0.23 F2 REFERENCE-ONLY: real single-column fp32+fp64 pristine-WRF "
+        "oracle savepoints vs unmodified phys/module_mp_morr_two_moment_aero.F "
+        "(aercu_opt=2; proofs/v022/f2_oracles/morrison_aero, drivers at "
+        "proofs/v023/oracle/morraero). Prescribed AEROCU aerosol inputs / "
+        "prognostic droplet number have no operational State substrate; "
+        "operational scan fail-closes.",
+    ),
     PhysicsStepSpec(
         family="pbl",
         option=1,
@@ -470,20 +493,22 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         name="CAM-UW",
         wrf_slot="first_rk_pbl_driver",
         owner_module="src/gpuwrf/physics/bl_camuw.py",
-        oracle="v0.22 source-present CAM-UW oracle/idealized finite gate vs "
-        "phys/module_bl_camuwpbl_driver.F + CAM eddy/diffusion modules. Full CAM-stack "
-        "savepoint parity is not claimed until a pristine-WRF CAM fixture exists.",
+        oracle="F3 standalone WRF-Fortran CAM-UW column oracle under "
+        "proofs/v023/feature_sprints/camuw_oracle -- not a pristine-WRF savepoint "
+        "parity gate (no CAM-UW savepoint fixture exists yet; savepoint parity is "
+        "not claimed). The oracle proved the "
+        "previous JAX scaffold RED vs WRF-Fortran (worst pblh max_abs="
+        "1384.6212005615234 m). Full faithful CAM-UW port is a separate "
+        "milestone.",
         reads_state=("u", "v", "theta", "qv", "qc", "qi", "qke", "p", "pb", "ph", "mu", "ustar", "theta_flux", "qv_flux"),
         writes_state=("u", "v", "theta", "qv", "qc", "qi", "qke"),
         reads_carry=PBL_CARRY_MEMBERS[9],
         writes_carry=PBL_CARRY_MEMBERS[9],
         diagnostics=PBL_DIAGNOSTIC_MEMBERS[9],
-        notes="v0.22 OPERATIONAL scaffold: JAX/vmap CAM-UW diagnostic-TKE and "
-        "implicit vertical diffusion endpoint, scan-wired via "
-        "coupling.scan_adapters.camuw_pbl_adapter -> PBL_SCAN_ADAPTERS[9]. "
-        "Consumes revised-MM5 surface forcing (sf_sfclay=1). The proof is an "
-        "idealized finite/plausible gate with WRF source hashes, not full "
-        "module_bl_camuwpbl_driver.F savepoint parity.",
+        notes="F3 REFERENCE_ONLY/fail-closed: namelist-accepted for oracle "
+        "comparison, but not operationally scan-wired. The adapter and "
+        "camuw_columns endpoint raise CamUwReferenceOnlyError so the broken "
+        "scaffold cannot be silently used.",
     ),
     PhysicsStepSpec(
         family="pbl",
@@ -707,18 +732,22 @@ SCHEME_STEP_SPECS: tuple[PhysicsStepSpec, ...] = (
         option=16,
         name="New Tiedtke",
         wrf_slot="first_rk_cumulus_driver",
-        owner_module="src/gpuwrf/physics/cumulus_tiedtke.py",
+        owner_module="src/gpuwrf/physics/cumulus_ntiedtke_jax.py",
         oracle="v0.13 single-column fp64 pristine-WRF savepoints from unmodified "
-        "phys/module_cu_ntiedtke.F (proofs/v013/savepoints/cumulus/"
-        "ntiedtke_case_*.json); reference-only until a faithful traceable JAX "
-        "kernel and CU scan adapter land",
-        reads_state=("u", "v", "w", "theta", "qv", "qc", "qr", "qi", "qs", "p", "pb", "ph", "mu"),
-        writes_state=("theta", "qv", "qc", "qr", "qi", "qs"),
+        "phys/module_cu_ntiedtke.F + physics_mmm/cu_ntiedtke.F90 "
+        "(proofs/v013/savepoints/cumulus/ntiedtke_case_*.json); v0.23 F2 faithful "
+        "fp64 port at machine precision (RAINCV bit-identical, tendencies "
+        "<=1e-15 abs; tests/test_ntiedtke_cumulus_oracle.py + "
+        "tests/test_ntiedtke_jax_parity.py)",
+        reads_state=("u", "v", "w", "theta", "qv", "qc", "qi", "p", "pb", "ph", "mu"),
+        writes_state=("theta", "qv", "qc", "qi"),
         returns_accumulators=("rainc_acc",),
         diagnostics=("raincv", *CUMULUS_TENDENCY_MEMBERS[16]),
-        notes="v0.13 Tier-3 reference-only: single-column fp64 pristine-WRF oracle "
-        "staged (proofs/v013/oracle/cumulus/ntiedtke_*); traceable JAX kernel is a "
-        "carry-over (fail-closed in the operational scan).",
+        notes="v0.23 F2 OPERATIONAL: NumPy reference (cumulus_ntiedtke) + traceable "
+        "jit/vmap kernel (cumulus_ntiedtke_jax), scan-wired via "
+        "coupling.scan_adapters.ntiedtke_adapter with WRF RQVFTEN (flux-form qv "
+        "advection + PBL forcing) and RTHFTEN (accumulated physics theta forcing; "
+        "the advective-theta component is a named coupling caveat).",
     ),
     PhysicsStepSpec(
         family="cumulus",

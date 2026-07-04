@@ -39,7 +39,6 @@ REQUESTED_FAIL_CLOSED: dict[int, tuple[str, ...]] = {
     9: ("Milbrandt-Yau", "module_mp_milbrandt2mom.F", "qnh", "NOT YET IMPLEMENTED"),
     11: ("CAM 5.1", "module_mp_cammgmp_driver.F", "CAM-specific", "NOT YET IMPLEMENTED"),
     17: ("NSSL", "module_mp_nssl_2mom.F", "qvolg", "NOT YET IMPLEMENTED"),
-    18: ("NSSL", "module_mp_nssl_2mom.F", "CCN", "NOT YET IMPLEMENTED"),
     19: ("NSSL", "module_mp_nssl_2mom.F", "qvolg", "NOT YET IMPLEMENTED"),
     21: ("NSSL", "module_mp_nssl_2mom.F", "qvolg", "NOT YET IMPLEMENTED"),
     22: ("NSSL", "module_mp_nssl_2mom.F", "qvolg", "NOT YET IMPLEMENTED"),
@@ -47,7 +46,6 @@ REQUESTED_FAIL_CLOSED: dict[int, tuple[str, ...]] = {
     29: ("RCON", "module_mp_rcon.F", "cloudnc", "NOT YET IMPLEMENTED"),
     30: ("HUJI fast", "module_mp_fast_sbm.F", "bin-state", "NOT YET IMPLEMENTED"),
     32: ("HUJI full", "module_mp_full_sbm.F", "bin-state", "NOT YET IMPLEMENTED"),
-    40: ("Morrison aerosol", "module_mp_morr_two_moment_aero.F", "CCN", "NOT YET IMPLEMENTED"),
     50: ("P3", "module_mp_p3.F", "qir/qib", "NOT YET IMPLEMENTED"),
     51: ("P3", "module_mp_p3.F", "qnc/qir/qib", "NOT YET IMPLEMENTED"),
     52: ("P3", "module_mp_p3.F", "qi2", "NOT YET IMPLEMENTED"),
@@ -57,6 +55,10 @@ REQUESTED_FAIL_CLOSED: dict[int, tuple[str, ...]] = {
 }
 
 REFERENCE_WITH_ORACLE = {5, 7, 9, 18, 27, 29, 38, 40, 50, 51, 52, 53, 56, 95}
+# v0.23 F2: NSSL(18) + Morrison-aerosol(40) gained REAL standalone single-column
+# oracles (proofs/v022/f2_oracles/) and flipped to REFERENCE_ONLY: namelist-
+# accepted for oracle comparison, still NEVER scan-wired.
+V023_REFERENCE_ONLY_MP = {18, 40}
 PROVEN_IRRELEVANT = {11, 17, 19, 21, 22, 30, 32, 55, 96}
 STILL_OPEN: set[int] = set()
 STANDALONE_ORACLE = {5, 7, 38, 95}
@@ -111,7 +113,9 @@ REGISTRY_PACKAGES = {
 def test_v018_mp_operational_set_is_preserved() -> None:
     """The batch does not clobber existing scan-wired microphysics schemes."""
 
-    assert set(ACCEPTED_MP_PHYSICS) == OPERATIONAL_MP
+    # v0.23 F2: accepted = operational + the two reference-only oracle-backed
+    # MP options (18 NSSL, 40 Morrison-aero); only OPERATIONAL_MP is scan-wired.
+    assert set(ACCEPTED_MP_PHYSICS) == OPERATIONAL_MP | V023_REFERENCE_ONLY_MP
     for mp in sorted(OPERATIONAL_MP):
         assert classify_scheme("mp_physics", mp).status is SupportStatus.IMPLEMENTED
 
@@ -187,9 +191,10 @@ def _walk_numbers(value: Any) -> list[float]:
 def test_v018_endpoint_manifest_covers_every_requested_mp_code() -> None:
     manifest = _manifest()
     entries = _manifest_entries()
-    expected = OPERATIONAL_MP | set(REQUESTED_FAIL_CLOSED)
+    expected = OPERATIONAL_MP | set(REQUESTED_FAIL_CLOSED) | V023_REFERENCE_ONLY_MP
     assert set(entries) == expected
-    assert REFERENCE_WITH_ORACLE | PROVEN_IRRELEVANT | STILL_OPEN == set(REQUESTED_FAIL_CLOSED)
+    assert (REFERENCE_WITH_ORACLE | PROVEN_IRRELEVANT | STILL_OPEN
+            == set(REQUESTED_FAIL_CLOSED) | V023_REFERENCE_ONLY_MP)
     assert REFERENCE_WITH_ORACLE.isdisjoint(PROVEN_IRRELEVANT)
     assert REFERENCE_WITH_ORACLE.isdisjoint(STILL_OPEN)
     assert PROVEN_IRRELEVANT.isdisjoint(STILL_OPEN)
@@ -208,6 +213,16 @@ def test_v018_endpoint_manifest_matches_catalog_status() -> None:
             assert entry["bar_met"] is True
             assert mp in OPERATIONAL_MP
             assert support.status is SupportStatus.IMPLEMENTED
+            continue
+
+        if entry["endpoint"] == "reference_only_accepted":
+            # v0.23 F2: real single-column oracles -> namelist-accepted
+            # REFERENCE_ONLY; the operational scan still fail-closes.
+            assert entry["bar_met"] is True
+            assert mp in V023_REFERENCE_ONLY_MP
+            assert mp in ACCEPTED_MP_PHYSICS
+            assert support.status is SupportStatus.REFERENCE_ONLY
+            assert "oracle" in support.reason.lower()
             continue
 
         assert mp not in ACCEPTED_MP_PHYSICS
@@ -237,8 +252,11 @@ def test_v018_closer_status_has_no_still_open_schemes() -> None:
 
 def test_v018_exact_oracle_artifacts_are_module_specific_and_nontrivial() -> None:
     entries = _manifest_entries()
-    assert {entries[mp]["endpoint"] for mp in REFERENCE_WITH_ORACLE} == {
+    assert {entries[mp]["endpoint"] for mp in REFERENCE_WITH_ORACLE - V023_REFERENCE_ONLY_MP} == {
         "ref_with_oracle_fail_closed"
+    }
+    assert {entries[mp]["endpoint"] for mp in V023_REFERENCE_ONLY_MP} == {
+        "reference_only_accepted"
     }
 
     expected_modules = {

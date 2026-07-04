@@ -100,6 +100,7 @@ from gpuwrf.coupling.scan_adapters import (
     initial_bmj_carry,
     initial_kf_carry,
     kf_adapter,
+    ntiedtke_adapter,
     tiedtke_adapter,
 )
 from gpuwrf.assimilation.data_assimilation import (
@@ -3828,10 +3829,10 @@ _SCAN_WIRED_OPTIONS = {
     # (v0.6.0 jax.lax.scan rewrites); 2 MYJ wired (v0.13 traceable MYJ+Janjic pair);
     # 3 GFS wired (v0.17 jit/vmap-traceable port of phys/module_bl_gfs.F);
     # 99 MRF wired (v0.13 jit/vmap-traceable port of phys/module_bl_mrf.F).
-    # 9 CAM-UW is the v0.22 CAM5 UW diagnostic-TKE / implicit vertical-diffusion
-    # endpoint; 11 Shin-Hong is the v0.18 scale-aware JAX/vmap port; 12 GBM is the
-    # v0.18 moist prognostic-TKE JAX/vmap port.
-    "bl_pbl_physics": (0, 1, 2, 3, DEFAULT_BL_PBL_PHYSICS, 7, 8, 9, 11, 12, 99),
+    # 11 Shin-Hong is the v0.18 scale-aware JAX/vmap port; 12 GBM is the v0.18
+    # moist prognostic-TKE JAX/vmap port. 9 CAM-UW is F3 reference-only and is
+    # deliberately not scan-wired.
+    "bl_pbl_physics": (0, 1, 2, 3, DEFAULT_BL_PBL_PHYSICS, 7, 8, 11, 12, 99),
     # sf_sfclay=0 off, 5 MYNN-sfclay (existing); 1 revised-MM5 / 7 Pleim-Xiu wired;
     # 2 Janjic Eta wired (v0.13, mandatorily paired with bl_pbl_physics=2 MYJ).
     # 3 NCEP-GFS surface layer + 91 old-MM5 surface layer wired (v0.13 Tier-3,
@@ -3841,9 +3842,12 @@ _SCAN_WIRED_OPTIONS = {
     # cu=0 no cumulus, 1 KF, 2 BMJ (fp64 savepoint-parity carry-threaded adapter),
     # 3 Grell-Freitas (v0.9.0 GPU-batched jit/vmap stateless adapter), 6 modified-
     # Tiedtke (v0.6.0 GPU-batched jit/vmap adapter; requires active flux-form
-    # moisture advection so the scan can diagnose WRF RQVFTEN). New-Tiedtke(16)
-    # and SAS-family 4/94/95/96 are reference-only / not wired.
-    "cu_physics": (0, 1, 2, 3, 6),
+    # moisture advection so the scan can diagnose WRF RQVFTEN). 16 New-Tiedtke
+    # (v0.23 F2: machine-precision fp64 kernel vs the WRF oracle savepoints,
+    # scan-wired via coupling.scan_adapters.ntiedtke_adapter; same flux-form
+    # moisture-advection requirement as cu=6). SAS-family 4/94/95/96 are
+    # reference-only / not wired.
+    "cu_physics": (0, 1, 2, 3, 6, 16),
     # ra_sw=0 disabled, 4 RRTMG SW (default), 1 Dudhia SW (Stephens-1984, scan-wired held-rate
     # theta tendency via dudhia_sw_theta_tendency), 2 GSFC/Chou-Suarez SW
     # (multi-band delta-Eddington, scan-wired held-rate theta tendency via
@@ -3868,9 +3872,9 @@ _SCAN_UNWIRED_REASON = {
     # intentionally absent here.
     # cu=3 (Grell-Freitas) and cu=6 (modified Tiedtke) are now GPU-batched +
     # scan-wired (in _SCAN_WIRED_OPTIONS), so they are intentionally absent here.
-    "cu_physics=16": "New Tiedtke has a module-specific single-column fp64 pristine-WRF oracle staged (proofs/v013/savepoints/cumulus/ntiedtke_case_*.json from phys/module_cu_ntiedtke.F), but no faithful traceable JAX kernel or CU scan adapter is wired yet",
-    "mp_physics=18": "NSSL 2-moment (mp=18, phys/module_mp_nssl_2mom.F) is recognized but no local single-column WRF oracle artifact is present in this worktree; fail-closed until the oracle and qh/qnh/qvolg/qvolh/qnn state path are wired",
-    "mp_physics=40": "Morrison aerosol (mp=40, phys/module_mp_morr_two_moment_aero.F) is recognized but no local single-column WRF oracle artifact is present in this worktree; fail-closed until the aerosol/CCN state path and external aerosol-data dependency are wired",
+    "mp_physics=18": "NSSL 2-moment (mp=18, phys/module_mp_nssl_2mom.F) has real v0.23 single-column fp32+fp64 pristine-WRF oracles (proofs/v022/f2_oracles/nssl_2mom), but the faithful traceable JAX kernel is not yet ported and the qvolg/qvolh volume-scalar state path is not wired; fail-closed in the operational scan",
+    "mp_physics=40": "Morrison aerosol (mp=40, phys/module_mp_morr_two_moment_aero.F) has real v0.23 single-column fp32+fp64 pristine-WRF oracles (proofs/v022/f2_oracles/morrison_aero) and a machine-precision-proven fp64 JAX column kernel (microphysics_morrison_aero), but the prescribed AEROCU aerosol inputs / prognostic droplet number have no operational State substrate; fail-closed in the operational scan",
+    "bl_pbl_physics=9": "CAM-UW is F3 REFERENCE_ONLY: a standalone WRF-Fortran CAM-UW oracle exists under proofs/v023/feature_sprints/camuw_oracle and proved the previous JAX scaffold RED vs oracle (pblh max_abs=1384.6212005615234 m); faithful CAM-UW port is a separate milestone",
     "cu_physics=4": "Scale-aware GFS SAS has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
     "cu_physics=94": "2015 GFS SAS / HWRF has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
     "cu_physics=95": "Previous GFS SAS / HWRF OSAS has v0.17 fp64 pristine-WRF savepoints, but the shared JAX endpoint is RED vs oracle (proofs/v017/sas_family_parity.json); operational GPU scan wiring is blocked",
@@ -3961,7 +3965,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
         reason = _SCAN_UNWIRED_REASON.get(tag, "lake model is not operationally wired")
         not_wired.append(f"{tag} ({reason})")
     tiedtke_lacks_rqvften = (
-        int(getattr(namelist, "cu_physics", 0)) == 6
+        int(getattr(namelist, "cu_physics", 0)) in (6, 16)
         and (
             not bool(namelist.use_flux_advection)
             or int(getattr(namelist, "moist_adv_opt", 0)) == 0
@@ -3969,7 +3973,8 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     )
     if tiedtke_lacks_rqvften:
         not_wired.append(
-            "cu_physics=6 (modified-Tiedtke requires use_flux_advection=True and "
+            f"cu_physics={int(getattr(namelist, 'cu_physics', 0))} "
+            "(the Tiedtke-family schemes require use_flux_advection=True and "
             "moist_adv_opt=1/2 so the operational scan can diagnose WRF RQVFTEN "
             "moisture-convergence forcing)"
         )
@@ -4017,7 +4022,7 @@ def _resolve_operational_suite(namelist: OperationalNamelist):
     if not_wired:
         raise UnsupportedSchemeSelection(
             "operational scan supports the v0.2.0 suite + the v0.6.0/v0.13/v0.17 scan-wired "
-            "schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,9,11,12,99}, "
+            "schemes (mp_physics in {0,1,2,3,4,6,8,10,13,14,16,24,26,28,97}, bl_pbl_physics in {0,1,2,3,5,7,8,11,12,99}, "
             "sf_sfclay_physics in {0,1,2,3,5,7,91}, cu_physics in {0,1,2,3,6}, Noah-MP via "
             "use_noahmp, explicit Noah-classic via sf_surface_physics=2 plus "
             "noahclassic_static/noahclassic_land, ra_sw_physics in {0,1,2,4}, "
@@ -4661,6 +4666,25 @@ def _physics_step_forcing(
             qvften=qvften,
             qvpblten=qvpblten,
         )
+    elif cu_opt == 16:
+        # New-Tiedtke: WRF RQVFTEN = advective + PBL moisture forcing; WRF
+        # RTHFTEN = the accumulated non-convective physics theta forcing of
+        # this step (radiation + surface + PBL slots; the advective-theta
+        # component is a named coupling caveat -- see ntiedtke_adapter).
+        qvften16 = (
+            _tiedtke_qvften_from_flux_advection(next_state, namelist) + qvpblten
+        )
+        thften16 = (
+            jnp.asarray(next_state.theta, jnp.float64)
+            - jnp.asarray(before.theta, jnp.float64)
+        ) / float(namelist.dt_s)
+        next_state = ntiedtke_adapter(
+            next_state,
+            float(namelist.dt_s),
+            namelist.grid,
+            qvften=qvften16,
+            thften=thften16,
+        )
     elif cu_opt in CU_STATELESS_SCAN_ADAPTERS:
         next_state = CU_STATELESS_SCAN_ADAPTERS[cu_opt](
             next_state, float(namelist.dt_s), namelist.grid
@@ -5190,6 +5214,7 @@ def compute_m9_diagnostics(
         shadow_length_m=float(namelist.topo_shadow_length_m),
         land_state=radiation_land,
         column_tile_cols=_M9_RRTMG_COLUMN_TILE_COLS,
+        _m9_flux_slices_only=True,
     )
     hfx, lh, tsk, t2 = surf.hfx, surf.lh, state.t_skin, surf.t2
     if bool(namelist.use_noahmp) and noahmp_land is not None:
@@ -5277,6 +5302,32 @@ def compute_m9_diagnostics(
         swnorm=swnorm,
         coszen=rad.coszen,
     )
+
+
+@partial(jax.jit, static_argnames=("attrs",))
+def compute_m9_selected_diagnostics(
+    state: State,
+    namelist: OperationalNamelist,
+    lead_seconds,
+    clock_base,
+    attrs: tuple[str, ...],
+    *,
+    noahmp_land=None,
+    noahmp_rad=None,
+    noahclassic_land=None,
+) -> tuple[jax.Array, ...]:
+    """Compute only selected M9 leaves so output-subset HLO can DCE the rest."""
+
+    diag = compute_m9_diagnostics(
+        state,
+        namelist,
+        lead_seconds,
+        noahmp_land=noahmp_land,
+        noahmp_rad=noahmp_rad,
+        noahclassic_land=noahclassic_land,
+        clock_base=clock_base,
+    )
+    return tuple(getattr(diag, attr) for attr in attrs)
 
 
 def _advance_chunk_loop_mode() -> str:
@@ -5884,6 +5935,7 @@ __all__ = [
     "OperationalNamelist",
     "M9Diagnostics",
     "compute_m9_diagnostics",
+    "compute_m9_selected_diagnostics",
     "dealias_state_buffers",
     "run_forecast_operational",
     "dfi_initialize_operational_state",

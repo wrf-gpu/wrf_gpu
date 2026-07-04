@@ -56,6 +56,7 @@ from gpuwrf.io.wrfout_writer import (
     prepare_wrfout_payload,
     write_prepared_wrfout,
 )
+from gpuwrf.nesting.boundary_construction import build_child_boundary_package
 from gpuwrf.runtime.finite_state_guard import assert_state_finite_at_boundary
 from gpuwrf.runtime.domain_tree import (
     DomainBundle,
@@ -63,13 +64,17 @@ from gpuwrf.runtime.domain_tree import (
     DomainTreeResult,
     maybe_prewarm_defused_nest,
     nested_precompile_report,
+    run_domain_tree_callbacks,
     run_operational_domain_tree,
     with_live_child_boundary_config,
 )
 from gpuwrf.runtime.operational_mode import (
     OperationalNamelist,
+    _advance_chunk,
     _commit_to_operational_device,
     _initial_carry_for_run,
+    _resolve_operational_suite,
+    build_clock_base,
     noahmp_initial_rad,
 )
 
@@ -83,6 +88,28 @@ __all__ = [
 # Half-hour radiation update target (radt = dt_s * radiation_cadence_steps == 1800 s),
 # matching the daily pipeline / v0.11.0 nesting proof radiation cadence selection.
 _RADT_TARGET_S = 1800.0
+_FALSEY_BATCH_ENV = {"0", "false", "off", "no", ""}
+def _batch_ensemble_size_from_env() -> int:
+    raw = os.environ.get("GPUWRF_BATCH_ENSEMBLE")
+    if raw is None or raw.strip().lower() in _FALSEY_BATCH_ENV:
+        return 1
+    try:
+        size = int(raw)
+    except ValueError as exc:
+        raise ValueError(
+            "GPUWRF_BATCH_ENSEMBLE must be a positive integer; got "
+            f"{raw!r}"
+        ) from exc
+    if size < 1:
+        raise ValueError(
+            "GPUWRF_BATCH_ENSEMBLE must be a positive integer; "
+            f"got {size}"
+        )
+    return size
+
+
+def batch_ensemble_size_from_env() -> int:
+    return _batch_ensemble_size_from_env()
 
 
 @dataclass(frozen=True)
@@ -101,6 +128,10 @@ class NestedPipelineConfig:
     # Defaults to False to preserve the v0.11.0/v0.12.0-validated one-way wiring;
     # opt in for the two-way path.
     feedback: bool = False
+    # Optional F1 homogeneous ensemble inputs.  Used only when
+    # GPUWRF_BATCH_ENSEMBLE is a fixed supported B; unset repeats ``input_dir``
+    # for all lanes (useful for bit-identity/perturbation gates).
+    batch_input_dirs: tuple[Path, ...] | None = None
 
 
 def domain_names_for(max_dom: int) -> tuple[str, ...]:
@@ -603,6 +634,458 @@ def _load_domains(
     return hierarchy, bundles, meta, run_start, dt_by_domain, initial_carries
 
 
+def _resolve_batch_input_dirs(config: NestedPipelineConfig, batch_size: int) -> tuple[Path, ...]:
+    if int(batch_size) <= 1:
+        return (Path(config.input_dir),)
+    raw = os.environ.get("GPUWRF_BATCH_INPUT_DIRS", "").strip()
+    if raw:
+        paths = tuple(Path(item) for item in raw.split(os.pathsep) if item)
+    elif config.batch_input_dirs is not None:
+        paths = tuple(Path(path) for path in config.batch_input_dirs)
+    else:
+        paths = tuple(Path(config.input_dir) for _ in range(int(batch_size)))
+    if len(paths) != int(batch_size):
+        raise ValueError(
+            f"GPUWRF_BATCH_ENSEMBLE={int(batch_size)} requires {int(batch_size)} "
+            f"input dirs, got {len(paths)}"
+        )
+    return paths
+
+
+def _leaf_signature(tree: Any) -> tuple[tuple[tuple[int, ...], str], ...]:
+    import jax  # noqa: PLC0415
+
+    sig = []
+    for leaf in jax.tree_util.tree_leaves(tree):
+        shape = tuple(int(v) for v in getattr(leaf, "shape", ()))
+        dtype = str(getattr(leaf, "dtype", type(leaf).__name__))
+        sig.append((shape, dtype))
+    return tuple(sig)
+
+
+def _grid_shape_signature(grid: Any) -> tuple[Any, ...]:
+    return (
+        int(getattr(grid, "nx", 0)),
+        int(getattr(grid, "ny", 0)),
+        int(getattr(grid, "nz", 0)),
+        int(getattr(grid, "halo_width", 0)),
+        getattr(getattr(grid, "projection", None), "kind", None),
+        float(getattr(getattr(grid, "projection", None), "dx_m", 0.0)),
+        float(getattr(getattr(grid, "projection", None), "dy_m", 0.0)),
+    )
+
+
+def _namelist_homogeneous_signature(namelist: Any) -> tuple[Any, ...]:
+    fields = (
+        "dt_s",
+        "acoustic_substeps",
+        "rk_order",
+        "radiation_cadence_steps",
+        "mp_physics",
+        "bl_pbl_physics",
+        "sf_sfclay_physics",
+        "cu_physics",
+        "sf_surface_physics",
+        "ra_sw_physics",
+        "ra_lw_physics",
+        "use_noahmp",
+        "gwd_opt",
+        "rad_rk_tendf",
+        "acoustic_precision_mode",
+    )
+    return tuple(getattr(namelist, field, None) for field in fields)
+
+
+_BATCH_CANONICAL_NAMELIST_FIELDS = (
+    "grid",
+    "tendencies",
+    "metrics",
+    "radiation_static",
+    "gwdo_statics",
+    "data_assimilation",
+    "noahmp_static",
+    "noahmp_energy_params",
+    "noahmp_rad_params",
+    "noahmp_land",
+    "noahclassic_static",
+    "noahclassic_land",
+    "noahclassic_rad",
+    "slab_static",
+    "slab_land",
+    "slab_rad",
+    "px_static",
+    "px_land",
+    "px_rad",
+)
+
+
+def _same_static_value(left: Any, right: Any) -> bool:
+    if left is right:
+        return True
+    if left is None or right is None:
+        return left is None and right is None
+    try:
+        from gpuwrf.runtime.aot_cheap_key import canonical_digest
+
+        return canonical_digest(left) == canonical_digest(right)
+    except Exception:  # noqa: BLE001 - leave uncanonicalized so the assertion fails closed.
+        return False
+
+
+def _canonicalize_batch_namelist_static(
+    reference: OperationalNamelist,
+    candidate: OperationalNamelist,
+) -> OperationalNamelist:
+    """Share reference static objects when a lane's values are byte-identical.
+
+    JAX treedef equality keys static aux by Python equality.  Some production
+    static bundles deliberately use identity equality inside ``_StaticHolder`` to
+    keep normal jit cache keys conservative, so two separately loaded identical
+    lanes otherwise fail the raw treedef check.  Canonicalize only after a
+    deterministic by-value digest match; genuine static differences stay distinct
+    and the downstream treedef assertion remains fail-closed.
+    """
+
+    updates: dict[str, Any] = {}
+    for field in _BATCH_CANONICAL_NAMELIST_FIELDS:
+        ref_value = getattr(reference, field, None)
+        cand_value = getattr(candidate, field, None)
+        if ref_value is cand_value:
+            continue
+        if _same_static_value(ref_value, cand_value):
+            updates[field] = ref_value
+    if not updates:
+        return candidate
+    return dataclass_replace(candidate, **updates)
+
+
+def _canonicalize_batch_bundles(
+    *,
+    names: tuple[str, ...],
+    reference: dict[str, DomainBundle],
+    candidate: dict[str, DomainBundle],
+) -> dict[str, DomainBundle]:
+    updated = dict(candidate)
+    for name in names:
+        bundle = candidate[name]
+        namelist = _canonicalize_batch_namelist_static(
+            reference[name].namelist,
+            bundle.namelist,
+        )
+        if namelist is not bundle.namelist:
+            updated[name] = dataclass_replace(bundle, namelist=namelist)
+    return updated
+
+
+def _assert_homogeneous_batch(
+    *,
+    names: tuple[str, ...],
+    reference: tuple[DomainHierarchy, dict[str, DomainBundle], dict[str, float], dict[str, Any]],
+    candidate: tuple[DomainHierarchy, dict[str, DomainBundle], dict[str, float], dict[str, Any]],
+    lane: int,
+) -> None:
+    import jax  # noqa: PLC0415
+
+    ref_hierarchy, ref_bundles, ref_dt, ref_carries = reference
+    hierarchy, bundles, dt_by_domain, carries = candidate
+    if hierarchy != ref_hierarchy:
+        raise ValueError(f"batch lane {lane}: domain hierarchy/nesting differs")
+    if set(dt_by_domain) != set(ref_dt):
+        raise ValueError(f"batch lane {lane}: dt domain set differs")
+    for name in names:
+        if float(dt_by_domain[name]) != float(ref_dt[name]):
+            raise ValueError(f"batch lane {lane} {name}: dt differs")
+        if _grid_shape_signature(bundles[name].grid) != _grid_shape_signature(ref_bundles[name].grid):
+            raise ValueError(f"batch lane {lane} {name}: grid shape/projection differs")
+        if jax.tree_util.tree_structure(bundles[name].namelist) != jax.tree_util.tree_structure(
+            ref_bundles[name].namelist
+        ):
+            raise ValueError(f"batch lane {lane} {name}: namelist/static treedef differs")
+        if _namelist_homogeneous_signature(bundles[name].namelist) != _namelist_homogeneous_signature(
+            ref_bundles[name].namelist
+        ):
+            raise ValueError(f"batch lane {lane} {name}: physics suite/cadence differs")
+        if jax.tree_util.tree_structure(carries[name]) != jax.tree_util.tree_structure(ref_carries[name]):
+            raise ValueError(f"batch lane {lane} {name}: carry treedef differs")
+        if _leaf_signature(carries[name]) != _leaf_signature(ref_carries[name]):
+            raise ValueError(f"batch lane {lane} {name}: carry leaf shapes/dtypes differ")
+
+
+def _stack_batched_tree(*items: Any) -> Any:
+    import jax  # noqa: PLC0415
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    return jax.tree_util.tree_map(lambda *xs: jnp.stack(xs, axis=0), *items)
+
+
+def _slice_batched_tree(tree: Any, lane: int) -> Any:
+    import jax  # noqa: PLC0415
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    def take(leaf: Any) -> Any:
+        if hasattr(leaf, "shape") and len(getattr(leaf, "shape", ())) > 0:
+            return jnp.asarray(leaf)[int(lane)]
+        return leaf
+
+    return jax.tree_util.tree_map(take, tree)
+
+
+def _load_batched_domains(
+    config: NestedPipelineConfig,
+    names: tuple[str, ...],
+    *,
+    batch_size: int,
+) -> tuple[
+    DomainHierarchy,
+    dict[str, DomainBundle],
+    dict[str, Any],
+    datetime,
+    dict[str, float],
+    dict[str, Any],
+    dict[str, tuple[OperationalNamelist, ...]],
+    tuple[Path, ...],
+    tuple[datetime, ...],
+]:
+    input_dirs = _resolve_batch_input_dirs(config, batch_size)
+    loaded = []
+    loaded_by_path = {}
+    for path in input_dirs:
+        resolved_path = Path(path).resolve()
+        if resolved_path not in loaded_by_path:
+            lane_config = dataclass_replace(config, input_dir=Path(path), batch_input_dirs=None)
+            loaded_by_path[resolved_path] = _load_domains(lane_config, names)
+        loaded.append(loaded_by_path[resolved_path])
+
+    ref_hierarchy, ref_bundles, ref_meta, ref_run_start, ref_dt, ref_carries = loaded[0]
+    canonical_loaded = [loaded[0]]
+    for lane, (hierarchy, bundles, meta, run_start, dt_by_domain, carries) in enumerate(
+        loaded[1:], start=1
+    ):
+        bundles = _canonicalize_batch_bundles(
+            names=names,
+            reference=ref_bundles,
+            candidate=bundles,
+        )
+        _assert_homogeneous_batch(
+            names=names,
+            reference=(ref_hierarchy, ref_bundles, ref_dt, ref_carries),
+            candidate=(hierarchy, bundles, dt_by_domain, carries),
+            lane=lane,
+        )
+        canonical_loaded.append((hierarchy, bundles, meta, run_start, dt_by_domain, carries))
+    loaded = canonical_loaded
+
+    batched_carries = {
+        name: _stack_batched_tree(*(lane[5][name] for lane in loaded))
+        for name in names
+    }
+    batch_namelists = {
+        name: tuple(lane[1][name].namelist for lane in loaded)
+        for name in names
+    }
+    meta = dict(ref_meta)
+    meta["batch_ensemble"] = {
+        "enabled": True,
+        "batch_size": int(batch_size),
+        "input_dirs": [str(path) for path in input_dirs],
+        "run_starts": [lane[3].isoformat() for lane in loaded],
+        "mode": "homogeneous_outer_vmap",
+    }
+    return (
+        ref_hierarchy,
+        ref_bundles,
+        meta,
+        ref_run_start,
+        ref_dt,
+        batched_carries,
+        batch_namelists,
+        input_dirs,
+        tuple(lane[3] for lane in loaded),
+    )
+
+
+def _clock_bases_for_batch_domain(
+    *,
+    tree: DomainTree,
+    name: str,
+    batch_namelists: dict[str, tuple[OperationalNamelist, ...]],
+    batch_size: int,
+) -> Any:
+    if int(batch_size) <= 1:
+        return build_clock_base(tree.domains[name].namelist)
+    namelists = batch_namelists.get(name)
+    if namelists is None:
+        raise ValueError(f"{name}: missing batch namelists for B={int(batch_size)}")
+    if len(namelists) != int(batch_size):
+        raise ValueError(
+            f"{name}: expected {int(batch_size)} batched namelists, got {len(namelists)}"
+        )
+    return _stack_batched_tree(*(build_clock_base(namelist) for namelist in namelists))
+
+
+def _batched_advance_factory(
+    *,
+    tree: DomainTree,
+    batch_namelists: dict[str, tuple[OperationalNamelist, ...]],
+    batch_size: int,
+):
+    import jax  # noqa: PLC0415
+    import jax.numpy as jnp  # noqa: PLC0415
+
+    clock_bases = {
+        name: _clock_bases_for_batch_domain(
+            tree=tree,
+            name=name,
+            batch_namelists=batch_namelists,
+            batch_size=int(batch_size),
+        )
+        for name in tree.domains
+    }
+
+    def advance(name: str, carry: Any, start_step: int, n_steps: int) -> Any:
+        namelist = tree.domains[name].namelist
+        cadence = int(namelist.radiation_cadence_steps)
+        start = jnp.asarray(int(start_step), dtype=jnp.int32)
+        if int(batch_size) <= 1:
+            return _advance_chunk(
+                carry,
+                namelist,
+                start,
+                clock_bases[name],
+                n_steps=int(n_steps),
+                cadence=cadence,
+            )
+        return jax.vmap(
+            lambda lane_carry, lane_clock_base: _advance_chunk(
+                lane_carry,
+                namelist,
+                start,
+                lane_clock_base,
+                n_steps=int(n_steps),
+                cadence=cadence,
+            ),
+            in_axes=(0, 0),
+            out_axes=0,
+        )(carry, clock_bases[name])
+
+    return advance
+
+
+def _batched_force(edge, parent: Any, child: Any, *, batch_size: int) -> Any:
+    import jax  # noqa: PLC0415
+
+    child_state = child.state
+    if int(batch_size) <= 1:
+        bdy_width = int(child_state.u_bdy.shape[2])
+        forced_state = build_child_boundary_package(
+            child_state,
+            parent.state,
+            edge.weights,
+            bdy_width=bdy_width,
+        )
+    else:
+        bdy_width = int(child_state.u_bdy.shape[3])
+        forced_state = jax.vmap(
+            lambda lane_child_state, lane_parent_state: build_child_boundary_package(
+                lane_child_state,
+                lane_parent_state,
+                edge.weights,
+                bdy_width=bdy_width,
+            ),
+            in_axes=(0, 0),
+            out_axes=0,
+        )(child_state, parent.state)
+    return child.replace(state=forced_state)
+
+
+def run_batched_operational_domain_tree(
+    tree: DomainTree,
+    *,
+    batch_namelists: dict[str, tuple[OperationalNamelist, ...]],
+    batch_size: int,
+    root_steps: int,
+    root: str | None = None,
+    feedback_enabled: bool | None = None,
+    adaptive_dt: Any | None = None,
+    move: Any | None = None,
+    output: Any | None = None,
+    output_cadence_steps: dict[str, int] | None = None,
+    block_between: bool = True,
+    root_sync_cadence: int | None = None,
+    carries: dict[str, Any] | None = None,
+    initial_own_steps: dict[str, int] | None = None,
+    max_event_tail: int | None = None,
+) -> DomainTreeResult:
+    """Run the opt-in F1 B>1 vmap path without changing the B=1 runtime."""
+
+    if int(batch_size) <= 1:
+        return run_operational_domain_tree(
+            tree,
+            root_steps=root_steps,
+            root=root,
+            feedback_enabled=feedback_enabled,
+            adaptive_dt=adaptive_dt,
+            move=move,
+            output=output,
+            output_cadence_steps=output_cadence_steps,
+            block_between=block_between,
+            root_sync_cadence=root_sync_cadence,
+            carries=carries,
+            initial_own_steps=initial_own_steps,
+            max_event_tail=max_event_tail,
+        )
+    if carries is None:
+        raise ValueError("B>1 run requires pre-stacked batched carries from _load_batched_domains")
+
+    for name, bundle in tree.domains.items():
+        _resolve_operational_suite(bundle.namelist)
+        if int(bundle.namelist.rk_order) != 3:
+            raise ValueError(f"{name}: operational nesting currently supports RK3 only")
+
+    effective_feedback = tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled)
+    if effective_feedback:
+        raise ValueError("GPUWRF_BATCH_ENSEMBLE>1 currently supports one-way nesting only")
+
+    edge_by_pair = {
+        (edge.parent, edge.child): edge
+        for edges in tree.edges.values()
+        for edge in edges
+    }
+
+    def lookup(spec):
+        return edge_by_pair[(spec.parent, spec.child)]
+
+    return run_domain_tree_callbacks(
+        tree.hierarchy,
+        dict(carries),
+        root_steps=int(root_steps),
+        advance=_batched_advance_factory(
+            tree=tree,
+            batch_namelists=batch_namelists,
+            batch_size=int(batch_size),
+        ),
+        force=lambda edge, parent, child: _batched_force(
+            edge,
+            parent,
+            child,
+            batch_size=int(batch_size),
+        ),
+        feedback=None,
+        root=root,
+        feedback_enabled=False,
+        adaptive_dt=adaptive_dt,
+        move=move,
+        output=output,
+        output_cadence_steps=output_cadence_steps,
+        block_between=block_between,
+        root_sync_cadence=root_sync_cadence,
+        edge_lookup=lookup,
+        fused_cascade=None,
+        initial_own_steps=initial_own_steps,
+        max_event_tail=max_event_tail,
+    )
+
+
 def _nested_m9_radiation_from_carry_from_env() -> bool:
     """Opt in to the nested Noah-MP carry-backed M9 output shortcut.
 
@@ -623,6 +1106,7 @@ def _noahmp_surface_diagnostics_from_held_radiation(
     lead_seconds: float,
     noahmp_land: Any,
     noahmp_rad: Any,
+    variable_subset: tuple[str, ...] | frozenset[str] | None = None,
 ) -> dict[str, np.ndarray] | None:
     """Build nested output diagnostics from the resident Noah-MP radiation carry.
 
@@ -640,7 +1124,10 @@ def _noahmp_surface_diagnostics_from_held_radiation(
     import jax  # noqa: PLC0415 -- lazy: keeps module import light.
     import jax.numpy as jnp  # noqa: PLC0415
 
-    from gpuwrf.integration.daily_pipeline import _M9_OUTPUT_FIELDS  # noqa: PLC0415
+    from gpuwrf.integration.daily_pipeline import (  # noqa: PLC0415
+        _M9_OUTPUT_FIELDS,
+        _requested_m9_output_names,
+    )
     from gpuwrf.runtime.operational_mode import (  # noqa: PLC0415
         _NoahMPClock,
         _NoahMPRadiation,
@@ -714,6 +1201,11 @@ def _noahmp_surface_diagnostics_from_held_radiation(
         if value is None:
             continue
         out[wrf_name] = value
+    requested = _requested_m9_output_names(variable_subset)
+    if requested is not None:
+        requested_with_fluxes = set(requested)
+        requested_with_fluxes.update({"HFX", "LH"} & set(variable_subset or ()))
+        out = {name: value for name, value in out.items() if name in requested_with_fluxes}
     host_out = jax.device_get(out)
     return {name: np.asarray(value) for name, value in host_out.items()} or None
 
@@ -726,6 +1218,7 @@ def _noahmp_surface_diagnostics_for_output(
     lead_seconds: float,
     noahmp_land: Any,
     noahmp_rad: Any,
+    variable_subset: tuple[str, ...] | frozenset[str] | None = None,
 ) -> dict[str, np.ndarray] | None:
     """Writer surface map with the ACTIVE Noah-MP carry threaded into the overlay.
 
@@ -747,37 +1240,72 @@ def _noahmp_surface_diagnostics_for_output(
             lead_seconds=lead_seconds,
             noahmp_land=noahmp_land,
             noahmp_rad=noahmp_rad,
+            variable_subset=variable_subset,
         )
 
     import jax  # noqa: PLC0415 -- lazy: keeps module import light (mirrors writer).
 
-    from gpuwrf.integration.daily_pipeline import _M9_OUTPUT_FIELDS  # noqa: PLC0415
+    from gpuwrf.integration.daily_pipeline import (  # noqa: PLC0415
+        _M9_OUTPUT_FIELDS,
+        _byte_identical_selected_m9_attrs,
+        _m9_attrs_for_requested_names,
+        _requested_m9_output_names,
+    )
     from gpuwrf.runtime.operational_mode import (  # noqa: PLC0415
         build_clock_base,
         compute_m9_diagnostics,
+        compute_m9_selected_diagnostics,
         surface_layer_diagnostics,
     )
 
     clock_namelist = namelist
     if getattr(namelist, "time_utc", None) is None:
         clock_namelist = dataclass_replace(namelist, time_utc=run_start)
-    # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
-    m9 = compute_m9_diagnostics(
-        state,
-        clock_namelist,
-        lead_seconds,
-        noahmp_land=noahmp_land,
-        noahmp_rad=noahmp_rad,
-        clock_base=build_clock_base(clock_namelist),
-    )
+    requested_names = _requested_m9_output_names(variable_subset)
+    selected_attrs = _byte_identical_selected_m9_attrs(requested_names)
+    attrs = selected_attrs or _m9_attrs_for_requested_names(requested_names)
+    m9_by_attr: dict[str, Any] = {}
+    if attrs:
+        # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
+        clock_base = build_clock_base(clock_namelist)
+        if selected_attrs is not None:
+            values = compute_m9_selected_diagnostics(
+                state,
+                clock_namelist,
+                lead_seconds,
+                clock_base,
+                selected_attrs,
+                noahmp_land=noahmp_land,
+                noahmp_rad=noahmp_rad,
+            )
+            m9_by_attr = dict(zip(selected_attrs, values, strict=True))
+        else:
+            m9 = compute_m9_diagnostics(
+                state,
+                clock_namelist,
+                lead_seconds,
+                noahmp_land=noahmp_land,
+                noahmp_rad=noahmp_rad,
+                clock_base=clock_base,
+            )
+            m9_by_attr = {attr: getattr(m9, attr, None) for attr in attrs}
     # Q2 stays the bulk surface-layer diagnostic (matches the single-domain path).
-    try:
-        q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
-    except Exception:  # noqa: BLE001 -- Q2 is auxiliary; the writer keeps its default.
-        q2 = None
+    q2 = None
+    if requested_names is None or "Q2" in requested_names:
+        try:
+            q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
+        except Exception:  # noqa: BLE001 -- Q2 is auxiliary; the writer keeps its default.
+            q2 = None
     out: dict[str, np.ndarray] = {}
     for wrf_name, attr in _M9_OUTPUT_FIELDS:
-        value = q2 if wrf_name == "Q2" else (getattr(m9, attr, None) if attr else None)
+        if requested_names is not None and wrf_name not in requested_names:
+            continue
+        if wrf_name == "Q2":
+            value = q2
+        elif attr is not None:
+            value = m9_by_attr.get(attr)
+        else:
+            value = None
         if value is None:
             continue
         out[wrf_name] = np.asarray(jax.device_get(value))
@@ -1287,10 +1815,15 @@ class _PerDomainWrfoutWriter:
                     lead_seconds=lead_seconds,
                     noahmp_land=noahmp_land,
                     noahmp_rad=getattr(carry, "noahmp_rad", None),
+                    variable_subset=self._variable_subset,
                 )
             else:
                 surface_diagnostics = self._surface_diagnostics_for_output(
-                    state, namelist, self.run_start, lead_seconds=lead_seconds
+                    state,
+                    namelist,
+                    self.run_start,
+                    lead_seconds=lead_seconds,
+                    variable_subset=self._variable_subset,
                 )
             diagnostics = self._merge_output_diagnostics(
                 self.writer_diagnostics.get(name), surface_diagnostics
@@ -1373,6 +1906,37 @@ class _PerDomainWrfoutWriter:
                     path=path,
                     async_writer=False,
                 )
+
+
+class _BatchedPerDomainWrfoutWriter:
+    """Debatch an F1 ensemble carry and feed the existing writer per lane."""
+
+    wants_carry = True
+
+    def __init__(self, writers: tuple[_PerDomainWrfoutWriter, ...]) -> None:
+        if not writers:
+            raise ValueError("batched writer requires at least one lane writer")
+        self.writers = tuple(writers)
+        self.batch_size = len(self.writers)
+        domains = self.writers[0].written.keys()
+        self.written: dict[str, list[str]] = {name: [] for name in domains}
+        self.writer_static_latlon_metadata = self.writers[0].writer_static_latlon_metadata
+
+    def __call__(self, name: str, own_step: int, carry: Any) -> dict[str, Any]:
+        lane_results = []
+        for lane, writer in enumerate(self.writers):
+            lane_carry = _slice_batched_tree(carry, lane)
+            result = writer(name, int(own_step), lane_carry)
+            lane_results.append(result)
+            wrfout = result.get("wrfout") if isinstance(result, dict) else None
+            if wrfout is not None:
+                self.written.setdefault(name, []).append(str(wrfout))
+        return {
+            "domain": name,
+            "own_step": int(own_step),
+            "batch_size": int(self.batch_size),
+            "lanes": tuple(lane_results),
+        }
 
 
 def _finite_stats_host(state: Any) -> dict[str, Any]:
@@ -1520,9 +2084,27 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         raise ValueError("hours must be positive")
 
     overall_start = time.perf_counter()
-    hierarchy, bundles, meta, run_start, dt_by_domain, initial_carries = _load_domains(
-        config, names
-    )
+    batch_size = _batch_ensemble_size_from_env()
+    batch_namelists: dict[str, tuple[OperationalNamelist, ...]] = {}
+    batch_input_dirs: tuple[Path, ...] = (Path(config.input_dir),)
+    batch_run_starts: tuple[datetime, ...] = ()
+    if batch_size > 1:
+        (
+            hierarchy,
+            bundles,
+            meta,
+            run_start,
+            dt_by_domain,
+            initial_carries,
+            batch_namelists,
+            batch_input_dirs,
+            batch_run_starts,
+        ) = _load_batched_domains(config, names, batch_size=batch_size)
+    else:
+        hierarchy, bundles, meta, run_start, dt_by_domain, initial_carries = _load_domains(
+            config, names
+        )
+        batch_run_starts = (run_start,)
 
     root = names[0]
     root_dt = dt_by_domain[root]
@@ -1558,7 +2140,16 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     _pc_t0 = time.perf_counter()
     sys.stderr.write("[parallel-compile] PREWARM_START de-fuse nest\n")
     sys.stderr.flush()
-    _pc_status = maybe_prewarm_defused_nest(tree, carries=initial_carries)
+    if batch_size > 1:
+        _pc_status = {
+            "active": False,
+            "source": "skip:batch-ensemble-vmap",
+            "workers": 0,
+            "report": {},
+            "error": None,
+        }
+    else:
+        _pc_status = maybe_prewarm_defused_nest(tree, carries=initial_carries)
     _pc_dt = time.perf_counter() - _pc_t0
     _pc_rep = _pc_status.get("report") or {}
     sys.stderr.write(
@@ -1611,17 +2202,37 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         if (async_writer is not None and _nested_output_pipeline_from_env())
         else None
     )
-    writer = _PerDomainWrfoutWriter(
-        output_dir=config.output_dir,
-        input_dir=Path(config.input_dir),
-        run_start=run_start,
-        bundles=bundles,
-        output_cadence_steps=output_cadence,
-        dt_by_domain=dt_by_domain,
-        async_writer=async_writer,
-        perf_timers=perf_timers,
-        output_pipeline=output_pipeline,
-    )
+    if batch_size > 1:
+        lane_writers = []
+        for lane, input_dir in enumerate(batch_input_dirs):
+            lane_output_dir = config.output_dir / f"case{lane:03d}"
+            lane_output_dir.mkdir(parents=True, exist_ok=True)
+            lane_writers.append(
+                _PerDomainWrfoutWriter(
+                    output_dir=lane_output_dir,
+                    input_dir=Path(input_dir),
+                    run_start=batch_run_starts[lane],
+                    bundles=bundles,
+                    output_cadence_steps=output_cadence,
+                    dt_by_domain=dt_by_domain,
+                    async_writer=async_writer,
+                    perf_timers=perf_timers,
+                    output_pipeline=output_pipeline,
+                )
+            )
+        writer = _BatchedPerDomainWrfoutWriter(tuple(lane_writers))
+    else:
+        writer = _PerDomainWrfoutWriter(
+            output_dir=config.output_dir,
+            input_dir=Path(config.input_dir),
+            run_start=run_start,
+            bundles=bundles,
+            output_cadence_steps=output_cadence,
+            dt_by_domain=dt_by_domain,
+            async_writer=async_writer,
+            perf_timers=perf_timers,
+            output_pipeline=output_pipeline,
+        )
     for domain, latlon_meta in writer.writer_static_latlon_metadata.items():
         meta.setdefault("domains", {}).setdefault(domain, {})["writer_static_latlon"] = latlon_meta
 
@@ -1670,7 +2281,16 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     try:
         while start < root_steps:
             seg = min(root_seg_steps, root_steps - start)
-            result = run_operational_domain_tree(
+            run_tree = (
+                run_batched_operational_domain_tree
+                if int(batch_size) > 1
+                else run_operational_domain_tree
+            )
+            run_kwargs = {}
+            if int(batch_size) > 1:
+                run_kwargs["batch_namelists"] = batch_namelists
+                run_kwargs["batch_size"] = int(batch_size)
+            result = run_tree(
                 tree,
                 root_steps=seg,
                 feedback_enabled=feedback_enabled,
@@ -1680,6 +2300,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
                 root_sync_cadence=nested_root_sync_cadence,
                 carries=carries,
                 initial_own_steps=own_steps,
+                **run_kwargs,
             )
             # Block so this segment's device scratch (incl. the RRTMG transient) is
             # freed before the next segment allocates -- bounds peak VRAM to one
@@ -1781,18 +2402,22 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         finite_ok = bool(final_finite[name]["all_finite"])
         total_steps = int(math.floor(float(config.hours) * 3600.0 / float(dt_by_domain[name])))
         expected_outputs = int(total_steps // int(output_cadence[name]))
-        output_ok = len(outputs) == expected_outputs
+        expected_output_files = expected_outputs * int(batch_size)
+        output_ok = len(outputs) == expected_output_files
         all_finite = all_finite and finite_ok
         all_output_present = all_output_present and output_ok
         per_domain[name] = {
             "final_state_finite": finite_ok,
             "wrfout_count": len(outputs),
-            "expected_wrfout_count": expected_outputs,
+            "expected_wrfout_count": expected_output_files,
             "wrfout_files": outputs,
             "dt_s": float(dt_by_domain[name]),
             "history_interval_min": float(history_interval_minutes[name]),
             "own_steps": int(result.own_steps.get(name, 0)),
         }
+        if batch_size > 1:
+            per_domain[name]["batch_size"] = int(batch_size)
+            per_domain[name]["expected_wrfout_count_per_lane"] = int(expected_outputs)
 
     total_wall_s = time.perf_counter() - overall_start
     perf_timer_summary = perf_timers.summary()
@@ -1817,6 +2442,12 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         "device": visible_gpu_name(),
         "cpu_affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
         "run_start_utc": run_start.isoformat(),
+        "batch_ensemble": {
+            "enabled": bool(batch_size > 1),
+            "batch_size": int(batch_size),
+            "input_dirs": [str(path.resolve()) for path in batch_input_dirs],
+            "run_starts_utc": [dt.isoformat() for dt in batch_run_starts],
+        },
         "wall_clock_total_s": float(total_wall_s),
         "wall_clock_forecast_only_s": float(forecast_wall_s),
         "wrfout_files": [path for name in names for path in writer.written.get(name, [])],

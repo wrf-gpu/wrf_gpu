@@ -49,6 +49,7 @@ from gpuwrf.runtime.operational_mode import (
     _commit_to_operational_device,
     build_clock_base,
     compute_m9_diagnostics,
+    compute_m9_selected_diagnostics,
     dealias_state_buffers,
     run_forecast_operational,
     run_forecast_operational_segmented,
@@ -877,7 +878,7 @@ def _segmented_forecast_fn(state: Any, namelist: Any, hours: float) -> Any:
 # Surface fields the operational M9 diagnostics supply to the wrfout writer.
 # Each entry maps a wrfout variable name to its M9Diagnostics attribute. The
 # writer keeps its own default for any field omitted or returned as None.
-_M9_OUTPUT_FIELDS: tuple[tuple[str, str], ...] = (
+_M9_OUTPUT_FIELDS: tuple[tuple[str, str | None], ...] = (
     ("T2", "t2"),
     ("U10", "u10"),
     ("V10", "v10"),
@@ -903,10 +904,58 @@ _M9_OUTPUT_FIELDS: tuple[tuple[str, str], ...] = (
     ("LWUPT", "lwupt"),
     ("SWNORM", "swnorm"),
 )
+_M9_SW_OUTPUT_NAMES = frozenset({"SWDOWN", "SWDNB", "SWUPB", "SWDNT", "SWUPT", "SWNORM"})
+_M9_SW_ATTRS = ("swdown", "swdnb", "swupb", "swdnt", "swupt", "swnorm")
+
+
+def _requested_m9_output_names(
+    variable_subset: tuple[str, ...] | frozenset[str] | None,
+) -> frozenset[str] | None:
+    """Return wrfout M9 names needed by a subset, or ``None`` for full output."""
+
+    if variable_subset is None:
+        return None
+    requested = set(variable_subset)
+    if "OLR" in requested:
+        requested.add("LWUPT")
+    return frozenset(requested)
+
+
+def _m9_attrs_for_requested_names(requested_names: frozenset[str] | None) -> tuple[str, ...]:
+    attrs: list[str] = []
+    for wrf_name, attr in _M9_OUTPUT_FIELDS:
+        if attr is None:
+            continue
+        if requested_names is not None and wrf_name not in requested_names:
+            continue
+        attrs.append(attr)
+    return tuple(attrs)
+
+
+def _byte_identical_selected_m9_attrs(requested_names: frozenset[str] | None) -> tuple[str, ...] | None:
+    """Return the proven DCE-safe M9 subset, or ``None`` for the full solver path."""
+
+    if requested_names is None:
+        return None
+    requested_m9_names = {
+        wrf_name
+        for wrf_name, attr in _M9_OUTPUT_FIELDS
+        if attr is not None and wrf_name in requested_names
+    }
+    if requested_m9_names and requested_m9_names <= _M9_SW_OUTPUT_NAMES:
+        # Keep the complete SW family together. Narrowing to an individual SW leaf
+        # lets XLA reorder enough surrounding work to lose byte identity.
+        return _M9_SW_ATTRS
+    return None
 
 
 def _surface_diagnostics_for_output(
-    state: Any, namelist: Any, run_start: Any, *, lead_seconds: float
+    state: Any,
+    namelist: Any,
+    run_start: Any,
+    *,
+    lead_seconds: float,
+    variable_subset: tuple[str, ...] | frozenset[str] | None = None,
 ) -> dict[str, np.ndarray] | None:
     """Recompute the operational surface map for the wrfout writer.
 
@@ -929,27 +978,55 @@ def _surface_diagnostics_for_output(
     clock_namelist = namelist
     if getattr(namelist, "time_utc", None) is None and hasattr(namelist, "__dataclass_fields__"):
         clock_namelist = replace(namelist, time_utc=run_start)
-    try:
-        # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
-        m9 = compute_m9_diagnostics(
-            state, clock_namelist, lead_seconds, clock_base=build_clock_base(clock_namelist)
-        )
-    except Exception:  # noqa: BLE001 -- diagnostics are best-effort; never block output.
-        return None
+    requested_names = _requested_m9_output_names(variable_subset)
+    selected_attrs = _byte_identical_selected_m9_attrs(requested_names)
+    attrs = selected_attrs or _m9_attrs_for_requested_names(requested_names)
+    m9_by_attr: dict[str, Any] = {}
+    if attrs:
+        try:
+            # #91: traced per-run date scalars so the M9 diagnostic HLO is date-independent.
+            clock_base = build_clock_base(clock_namelist)
+            if selected_attrs is not None:
+                values = compute_m9_selected_diagnostics(
+                    state,
+                    clock_namelist,
+                    lead_seconds,
+                    clock_base,
+                    selected_attrs,
+                )
+                m9_by_attr = dict(zip(selected_attrs, values, strict=True))
+            else:
+                m9 = compute_m9_diagnostics(
+                    state,
+                    clock_namelist,
+                    lead_seconds,
+                    clock_base=clock_base,
+                )
+                m9_by_attr = {attr: getattr(m9, attr, None) for attr in attrs}
+        except Exception:  # noqa: BLE001 -- diagnostics are best-effort; never block output.
+            return None
 
     # Q2 (2-m mixing ratio) is a surface-layer field; M9Diagnostics does not
     # expose it, so source it directly from surface_layer_diagnostics.
     q2 = None
-    try:
-        from gpuwrf.runtime.operational_mode import surface_layer_diagnostics
+    if requested_names is None or "Q2" in requested_names:
+        try:
+            from gpuwrf.runtime.operational_mode import surface_layer_diagnostics
 
-        q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
-    except Exception:  # noqa: BLE001
-        q2 = None
+            q2 = getattr(surface_layer_diagnostics(state, clock_namelist.grid), "q2", None)
+        except Exception:  # noqa: BLE001
+            q2 = None
 
     out: dict[str, np.ndarray] = {}
     for wrf_name, attr in _M9_OUTPUT_FIELDS:
-        value = q2 if wrf_name == "Q2" else (getattr(m9, attr, None) if attr else None)
+        if requested_names is not None and wrf_name not in requested_names:
+            continue
+        if wrf_name == "Q2":
+            value = q2
+        elif attr is not None:
+            value = m9_by_attr.get(attr)
+        else:
+            value = None
         if value is None:
             continue
         out[wrf_name] = np.asarray(jax.device_get(value))

@@ -7,6 +7,48 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.23.0] - 2026-07-04
+
+Performance + capability release on top of `v0.22.2`. The default forecast is
+**numerically equivalent to v0.22.2** (see "Default numerics" in
+`RELEASE_NOTES_v0.23.0.md`): the default-on P0/P3 work-reductions are value-preserving
+(CPU bit-identical) and the GPU default matches v0.22.2 within the XLA autotune floor —
+self-control-verified (v0.23-vs-v0.22.2 field diffs are indistinguishable from v0.22.2
+differing from its own second cold compile). No masking / clamps / `nan_to_num`.
+
+### Added
+- **F1 batched-ensemble** (`GPUWRF_BATCH_ENSEMBLE=B`, opt-in): B same-geometry forecasts
+  under one outer `jax.vmap`; fills the launch-bound small-grid GPU. Measured Tenerife
+  3/1 km 2-nest: 4.51→5.63 M cells/s (B=1→4) = 97 % of the 5.81 M large-grid ceiling;
+  B_max=5 VRAM-capped on the 5090. Default (`unset`/`=1`) byte-identical.
+- **F2** New-Tiedtke cumulus (`cu=16`) + Morrison-aerosol MP (`mp=40`) ported to machine
+  precision vs pristine-WRF oracles; RUC-LSM integrated; NSSL 2-moment (`mp=18`)
+  reference-only (verified oracle; faithful port = milestone).
+- **G2** operational moving-nest driver + adaptive-Δt (opt-in; static path byte-identical).
+
+### Changed (default path, value-preserving)
+- **P0** M9 radiation flux-slice reduction (compute only the flux slices the writer
+  consumes; CPU bit-identical 17/17; forecast radiation untouched).
+- **P3** flat 2-domain root fusion (3→1 entry programs; fail-closed for all other
+  topologies; CPU sha256 fused==eager).
+- **P1/P2/P4/P6/P7b** launch/compile-count reductions (default-inert / opt-in).
+
+### Reference-only / fail-closed (default untouched)
+- **F3** CAM-UW moist PBL (`bl_pbl_physics=9`) — scaffold proved RED vs a WRF-Fortran
+  CAM-UW column oracle; walled off, faithful port = milestone. Default MYNN untouched.
+- **G3** urban BEP/BEM (`sf_urban=2/3`) + WRF lake (`sf_lake=1`) — inventory staged;
+  numerical oracle + port = milestone. Default `sf_urban/sf_lake=0`.
+
+### Notes
+- **M1 fp32-operational** foundation laid (the 3-version "compile pathology" proven a
+  measurement artifact; 24 h Swiss real-case proof ≤ 1.003× vs CPU-WRF truth, −14…−19 %
+  VRAM) but **NOT enabled in the v0.23 default** — full rollout is its own milestone
+  (ADR-031). fp64 default byte-identical.
+- Canary benchmark (mandatory): 3-dom `canary_all7` 1 h warm — 407 s / 11619 MiB vs
+  v0.22.2 411 s / 11566 MiB (no regression).
+- Deferred post-tag credibility follow-ups: 24–120 h skill gate; GPU perf confirmations of
+  the P-bundle launch/compile-count wins.
+
 ## [0.22.2] - 2026-06-28
 
 Nested host-bound GPU-idle reduction point release on top of `v0.22.1`. The
@@ -78,28 +120,61 @@ notes: [`RELEASE_NOTES_v0.22.1.md`](RELEASE_NOTES_v0.22.1.md).
 
 ## [0.22.0] - 2026-06-27
 
-Default-safe feature integration on top of `v0.21.1`. The default fp64
-fused+AOT forecast path remains bit-identical to v0.21.1; all new runtime
-behavior is opt-in, validation-only, or fail-closed. Full notes:
+Default-safe hygiene, opt-in validated features, and fail-closed scaffolds on
+top of `v0.21.1`. The default forecast path remains bit-identical to v0.21.1;
+all new runtime behavior is opt-in or validation-only. Full notes:
 [`RELEASE_NOTES_v0.22.0.md`](RELEASE_NOTES_v0.22.0.md).
 
 ### Added
-- **Validated opt-in feature rows.** v0.22.0 lands G0 two-way nesting feedback,
-  F1 3-D TKE / Smagorinsky, G2 375-variable output, G1 data assimilation, and
-  the E validation harness as explicit opt-in or validation-only capabilities.
-- **Default-safe release hygiene.** The release includes opt-in K2
-  `time_step` / `n_sound` tuning support, AOT signature hardening, portable
-  WRF-root lookup, async wrfout support, and corrected default bit-identity
-  framing.
-- **Public tests for v0.22 gates.** CPU tests cover the new feature paths,
-  fail-closed scaffold selections, WRF-root portability, async output, and
-  boundary/state contract preservation.
+- **Authoritative v0.22 feature-push table.** LANDED, validated, opt-in rows:
+  G0 two-way nesting feedback; F1 3-D TKE / Smagorinsky; G2 375-variable output;
+  G1 data assimilation; E validation harness; plus the base release line (K2
+  opt-in, ADRs, compile-wall correction, corrected paired-baseline gate).
+- **#136 AOT signature hardening, opt-in strict mode.** The v0.21.1-compatible
+  default fused-call signature remains leaf-aval-only for release bit identity.
+  Operators and tests can opt into treedef/leaf-count structural splitting with
+  `GPUWRF_AOT_STRICT_AVAL_SIGNATURE=1` when investigating structurally distinct
+  pytree cache risks.
+- **#115 portable physics data roots.** Physics `.F` / `.TBL` / oracle lookups
+  honor `GPUWRF_WRF_ROOT` when set and fall back to the existing bundled/default
+  roots when unset.
+- **#101 async wrfout history output.** History writes can overlap with the next
+  compute step while preserving byte-identical output content versus the
+  synchronous path.
+- **K2 dt / n_sound opt-in lever.** The normal namelist `time_step` / `n_sound`
+  configuration is documented as a CFL-gated single-domain lever. The measured
+  Switzerland-128 short gate found `18 s / 7` at `19.25 s/fc-h` versus `34.67
+  s/fc-h` for `10 s / 10` (1.80x), finite/bounded and within the short operational
+  band. Defaults are unchanged; no nested speedup is claimed.
 
 ### Changed
-- **Fail-closed scaffolds are explicit.** F2 cumulus+microphysics+LSM, F3
-  CAM-UW PBL, G2 moving-nests/adaptive/global nesting, and G3 urban/lake are
-  recognized as partial scaffolds. They remain default-off and are not claimed
-  as WRF-faithful operational implementations.
+- **Fail-closed v0.22 scaffolds are explicit.** F2 cumulus+microphysics+LSM
+  targets, F3 CAM-UW PBL, G2 moving-nests/adaptive/global nesting, and G3
+  urban/lake are recognized as partial/experimental scaffolds. They are
+  default-off and not claimed WRF-faithful; unsupported operational selections
+  fail closed with named reasons pending v0.22.x follow-up.
+- **Compile-wall correction.** v0.22 documents that the compile wall is compile
+  time, not a 60 GB memory premise: the sound 3-domain harness measured about
+  22.32 GiB peak RSS, while AOT warm-start remains the practical answer and was
+  validated at about 39x on that harness.
+- **Operational-relaxed ADR ratified.** `ADR-OPERATIONAL-RELAXED-TIER.md` §9 is
+  ratified for the non-lossless opt-in tier, including the
+  1 km Alpine surface-wind case and the rule that `BOUNDED_GROWTH` is a hard
+  reject, not a pass.
+- **K4 fp32-operational plan included.** `ADR-031-FP32-OPERATIONAL-EXECUTION-PLAN.md`
+  remains planning/inventory only; v0.22 ships no fp32 default or partial precision
+  change.
+
+### Validation
+- CPU hygiene tests cover the #136 default legacy signature plus opt-in
+  structure-token signature split, #115 relocated `GPUWRF_WRF_ROOT` lookup, and
+  #101 wrfout byte-identity.
+- Corrected release canary gate: fresh matched v0.21.1 digest
+  `9709039c...` equals v0.22.0 default digest `9709039c...`; the old hardcoded
+  `519cd3e5...` reference is documented as a stale cold-compile/autotune artifact,
+  not a source regression. See
+  `proofs/v022/release_prep/V0220_CORRECTED_CANARY_GATE.md`.
+- Feature integration verdict: `proofs/v022/feature_push/V022_INTEGRATION_VERDICT.md`.
 
 ## [0.21.1] - 2026-06-27
 
@@ -194,14 +269,16 @@ Full notes: [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md).
   the v0.20.2 known-red baseline. 3-domain de-fuse CPU tol-match worst T2 2.96 K /
   1.03%.
 
-### Carried limitations
-- **Most-extreme 1 km Mont-Blanc (~1042 m/cell) terrain not fully stabilized.** The
-  dycore fix stabilizes the standard 9-nest Canary gate-case but relocates the failure
-  on the extreme case → deep boundary-stability fix is **v0.21.1**.
+### Historical limitations at release
+- **Most-extreme 1 km Mont-Blanc (~1042 m/cell) terrain needed the v0.21.1
+  point release.** The v0.21.0 dycore fix stabilized the standard 9-nest Canary
+  gate-case but relocated the failure on the extreme case; v0.21.1 fixed the
+  standalone-root specified-boundary `W` representation without masking or clamps.
 - **#123 long-horizon 9-nest GPU-VRAM OOM mitigated-not-eliminated.** In de-fuse mode
   the single-card 32 GB run can still OOM around the ~90 min integration horizon
   (mitigated by the RRTMG-transient cap + fail-closed preflight). For VRAM-bound long
-  integration use `GPUWRF_NESTED_FUSE=1`. B200 / fp32 / VRAM work is v0.21.1+.
+  integration use `GPUWRF_NESTED_FUSE=1`. B200 / fp32 / VRAM work remains future
+  milestone work.
 - The ≥1 h-finite + all-fields CPU-match Canary gate is a **local** gate, not a default
   v0.21.0 claim. No new physics features (per `proofs/v021/WRF_V4_FEATURE_AUDIT.md`).
 

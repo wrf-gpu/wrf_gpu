@@ -149,8 +149,9 @@ Each row is one accepted namelist option: code -> WRF scheme name -> status ->
 one-line note. `[OPERATIONAL]` runs under `gpuwrf run`; `[REFERENCE-ONLY]` is
 accepted for a single-column / reference comparison but **refused operationally**
 (it would silently run a different scheme). Codes not listed for a parameter are
-`recognized_fail_closed` (valid WRF options the port does not implement) or, for
-`sf_urban_physics` 1/2/3, `out_of_scope`.
+`recognized_fail_closed` (valid WRF options the port does not implement).
+`sf_urban_physics=2/3` and `sf_lake_physics=1` are G3 `reference_only`
+selections; see `proofs/v023/feature_sprints/G3_REPORT.md`.
 
 ### Microphysics — `mp_physics`
 
@@ -260,6 +261,8 @@ RRTMG-derived regardless of which SW/LW θ-tendency scheme is active.
 | `sf_surface_physics` | 3 | 1 |
 | `ra_sw_physics`      | 4 | 2 |
 | `ra_lw_physics`      | 3 | 2 |
+| `sf_urban_physics`   | 1 | 2 |
+| `sf_lake_physics`    | 1 | 1 |
 
 (Counts include the `0`/disabled option, which is operationally wired.)
 
@@ -267,8 +270,11 @@ RRTMG-derived regardless of which SW/LW θ-tendency scheme is active.
 
 `rk_order=3` (RK3 only); `diff_opt` 0/1/2; `km_opt` 0/1/4; `diff_6th_opt` 0/2
 (2 = monotonic 6th-order filter, no up-gradient flux); `damp_opt` 0/3 (3 =
-upper-level w-Rayleigh); `w_damping` 0/1; `sf_urban_physics=0` only. The 3-D
-closures `km_opt=2/3/5` fail closed (transition: constant-K `diff_opt=2`/`km_opt=1`).
+upper-level w-Rayleigh); `w_damping` 0/1. Urban/lake defaults remain
+`sf_urban_physics=0` and `sf_lake_physics=0`; BEP/BEM (`sf_urban_physics=2/3`)
+and Lake (`sf_lake_physics=1`) are accepted only as G3 reference-only
+selections and are rejected operationally. The 3-D closures `km_opt=2/3/5` fail
+closed (transition: constant-K `diff_opt=2`/`km_opt=1`).
 
 ### Mandatory WRF pairing enforced
 
@@ -330,7 +336,7 @@ ignored:
 | FDDA analysis/obs/surface nudging          | `grid_fdda`, `obs_nudge_opt`, `grid_sfdda` | `=0` |
 | Stochastic physics                         | `sppt`, `skebs`, `spp`, `rand_perturb`, `stoch_force_opt` | `=0` |
 | Moving / vortex-following nests            | `vortex_interval`, `num_moves`      | static nest only |
-| Multi-layer urban canopy (UCM/BEP/BEM)     | `sf_urban_physics` 1/2/3            | `sf_urban_physics=0` |
+| Single-layer urban canopy (UCM)            | `sf_urban_physics=1`                | `sf_urban_physics=0` |
 | Wind-farm / turbine-drag parameterization  | `windfarm_opt`                      | `windfarm_opt=0` |
 | Coupled ocean mixed-layer / 3-D ocean      | `sf_ocean_physics`                  | `sf_ocean_physics=0` |
 | Time-varying SST lower-boundary update     | `sst_update`                        | `sst_update=0` |
@@ -347,7 +353,7 @@ To run an existing real-data WRF `namelist.input` on the port today:
   `cu=14`, New-Tiedtke `cu=16`, Grell-Devenyi `cu=93`, previous-KF `cu=99`,
   RUC `sf_surface=3`, SSiB `sf_surface=8`, Shin-Hong `bl=11`, GBM `bl=12`,
   GSFC/Goddard LW `ra_lw=5`, Goddard SW `ra_sw=5`, GFDL-Eta `ra_lw=99` /
-  `ra_sw=99`) is **rejected by
+  `ra_sw=99`, BEP/BEM `sf_urban_physics=2/3`, Lake `sf_lake_physics=1`) is **rejected by
   `gpuwrf run`** — it is for reference comparisons only; the error names the
   operational swap.
 * Turbulence/diffusion: WRF's recommended real-data defaults `diff_opt=1`,
@@ -355,7 +361,9 @@ To run an existing real-data WRF `namelist.input` on the port today:
   use a 3-D closure (`km_opt=2/3/5`), switch to **constant-K: `diff_opt=2`,
   `km_opt=1`** (or `diff_opt=0`).
 * Turn off any out-of-scope switch in the table above (`chem_opt=0`,
-  `grid_fdda=0`, `sppt=0`, `sf_urban_physics=0`, `sf_ocean_physics=0`, ...).
+  `grid_fdda=0`, `sppt=0`, `sf_ocean_physics=0`, ...). For operational runs,
+  also keep G3 reference-only Urban/Lake disabled (`sf_urban_physics=0`,
+  `sf_lake_physics=0`).
 
 ## Known compatibility limitations (honest)
 

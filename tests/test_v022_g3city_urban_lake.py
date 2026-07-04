@@ -14,14 +14,14 @@ from types import SimpleNamespace
 import pytest
 
 from gpuwrf.coupling.physics_dispatch import UnsupportedSchemeSelection
-from gpuwrf.io.namelist_check import UnsupportedSchemeError, validate_namelist
+from gpuwrf.io.namelist_check import NotOperationallyWiredError, validate_namelist, validate_operational_namelist
 from gpuwrf.io.scheme_catalog import SupportStatus, assert_catalog_consistent, classify_scheme
 from gpuwrf.io.wrf_scheme_catalog import is_recognized_wrf_option, wrf_scheme_name
 from gpuwrf.physics import lake_model, urban_bep_bem
 from gpuwrf.runtime.operational_mode import _SCAN_UNWIRED_REASON, _resolve_operational_suite
 
 
-def test_g3_catalog_recognizes_urban_and_lake_fail_closed() -> None:
+def test_g3_catalog_recognizes_urban_and_lake_reference_only() -> None:
     assert_catalog_consistent()
     assert classify_scheme("sf_urban_physics", 0).status is SupportStatus.IMPLEMENTED
     assert classify_scheme("sf_lake_physics", 0).status is SupportStatus.IMPLEMENTED
@@ -33,18 +33,19 @@ def test_g3_catalog_recognizes_urban_and_lake_fail_closed() -> None:
     ):
         assert is_recognized_wrf_option(key, code)
         support = classify_scheme(key, code)
-        assert support.status is SupportStatus.RECOGNIZED_FAIL_CLOSED
+        assert support.status is SupportStatus.REFERENCE_ONLY
         assert name.lower() in (support.reason + support.alternative + (support.wrf_name or "")).lower()
 
 
-def test_g3_namelist_validator_rejects_active_urban_lake_by_name() -> None:
+def test_g3_namelist_accepts_reference_only_but_operational_rejects_by_name() -> None:
     for key, code, expected in (
         ("sf_urban_physics", 2, "BEP"),
         ("sf_urban_physics", 3, "BEM"),
         ("sf_lake_physics", 1, "lake"),
     ):
-        with pytest.raises(UnsupportedSchemeError) as excinfo:
-            validate_namelist({"physics": {key: [code]}})
+        validate_namelist({"physics": {key: [code]}})
+        with pytest.raises(NotOperationallyWiredError) as excinfo:
+            validate_operational_namelist({"physics": {key: [code]}})
         text = str(excinfo.value)
         assert key in text
         assert expected.lower() in text.lower()
@@ -90,8 +91,8 @@ def test_g3_proof_gate_reports_partial_scaffold_honestly() -> None:
 
     for piece in ("bep", "bem", "lake"):
         entry = report["pieces"][piece]
-        assert entry["catalog_status"] == SupportStatus.RECOGNIZED_FAIL_CLOSED.value
-        assert entry["oracle_status"] == "absent_fail_closed"
+        assert entry["catalog_status"] == SupportStatus.REFERENCE_ONLY.value
+        assert entry["oracle_status"] in {"reference_only_inventory", "absent_fail_closed"}
         assert entry["stub_raises"] is True
         assert entry["landed"] is False
         assert entry["scaffold"] is True
@@ -117,7 +118,7 @@ def _minimal_operational_namelist(**overrides) -> SimpleNamespace:
 
 
 def _load_gate_module():
-    path = Path(__file__).resolve().parents[1] / "proofs/v022/g3city_urban_lake_gate.py"
+    path = Path(__file__).resolve().parents[1] / "proofs/v023/feature_sprints/g3_urban_lake_oracle_check.py"
     spec = importlib.util.spec_from_file_location("g3city_urban_lake_gate", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

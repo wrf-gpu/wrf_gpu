@@ -121,17 +121,20 @@ def test_operational_scan_fails_closed_with_named_reason(opt, name, _mod, _ep, _
 
 
 @pytest.mark.parametrize("opt, name, mod, ep, _sp, _src", _REF_LSMS)
-def test_kernel_stub_raises_not_silent(opt, name, mod, ep, _sp, _src) -> None:
-    """The JAX column-kernel stub raises NotImplementedError (carry-over) rather
-    than silently returning a wrong land state, and the dispatch entrypoint
-    resolves to it."""
+def test_column_entrypoint_state_shape_and_fail_closed_stub(opt, name, mod, ep, _sp, _src) -> None:
+    """The dispatch entrypoint resolves to the module.  SSiB remains a
+    reference-only stub; RUC now has a v0.18 CPU parity port but is still
+    registry-fail-closed until the integration owner wires land carry."""
 
     entry = scheme_entry("land_surface", opt)
     assert entry.owner_module == mod and entry.entrypoint == ep
     module = importlib.import_module(mod)
     fn = getattr(module, ep)
-    with pytest.raises(NotImplementedError, match="REFERENCE-ONLY"):
-        fn()
+    if opt == 8:
+        with pytest.raises(NotImplementedError, match="REFERENCE-ONLY"):
+            fn()
+    else:
+        assert callable(fn)
     # The kernel's frozen land-carry NamedTuple fields match the registry carry.
     carry_cls = next(
         getattr(module, n)

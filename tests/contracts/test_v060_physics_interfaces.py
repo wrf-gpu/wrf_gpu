@@ -38,12 +38,16 @@ _V018_HARVESTED_SPECS = 6
 _V018_PBL_FAMILY_SPECS = 4
 _V018_RA_TAIL_SPECS = 4
 _V022_F3_CAMUW_PBL_SPECS = 1
+# v0.23 F2: mp=18 NSSL 2-moment + mp=40 Morrison-aerosol reference-only specs
+# (real single-column oracles at proofs/v022/f2_oracles/, scan fail-closed).
+_V023_F2_MP_REFERENCE_SPECS = 2
 _V018_EXPECTED_SPEC_COUNT = (
     _V018_TRUNK_BASE_SPEC_COUNT
     + _V018_HARVESTED_SPECS
     + _V018_PBL_FAMILY_SPECS
     + _V018_RA_TAIL_SPECS
     + _V022_F3_CAMUW_PBL_SPECS
+    + _V023_F2_MP_REFERENCE_SPECS
 )
 
 

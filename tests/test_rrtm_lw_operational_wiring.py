@@ -272,11 +272,12 @@ def test_m9_rrtmg_diagnostic_uses_scoped_512_tile_cap(monkeypatch) -> None:
         lw_toa_up=surface,
         coszen=surface,
     )
-    captured: dict[str, int | None] = {}
+    captured: dict[str, object] = {}
 
     def fake_rrtmg_radiation_diagnostics(*args, column_tile_cols=None, **kwargs):
-        del args, kwargs
+        del args
         captured["column_tile_cols"] = column_tile_cols
+        captured["m9_flux_slices_only"] = kwargs.get("_m9_flux_slices_only")
         return rad_diag
 
     monkeypatch.setattr(operational_mode, "surface_layer_diagnostics", lambda *_args: surf_diag)
@@ -289,6 +290,7 @@ def test_m9_rrtmg_diagnostic_uses_scoped_512_tile_cap(monkeypatch) -> None:
     diag = operational_mode.compute_m9_diagnostics(state, nml, 0.0)
 
     assert captured["column_tile_cols"] == 512
+    assert captured["m9_flux_slices_only"] is True
     assert np.array_equal(np.asarray(diag.swdown), np.zeros((grid.ny, grid.nx)))
 
 

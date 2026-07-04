@@ -111,6 +111,93 @@ def _expected_b_top(mut: np.ndarray, metrics: DycoreMetrics, *, dt: float, epssm
     return 1.0 + 2.0 * cof * rdnw[nz - 1] ** 2 * 1.0 / denom_b
 
 
+def _legacy_calc_coef_w_loop1(
+    mut,
+    metrics: DycoreMetrics,
+    *,
+    dt: float,
+    epssm: float,
+    top_lid: bool,
+    cqw,
+    c2a,
+):
+    """Pre-P4 Loop-1 form: Python loop for independent interior ``a`` rows."""
+
+    mut = jnp.asarray(mut, dtype=jnp.float64)
+    nz = int(metrics.c1h.shape[0])
+    field_shape = (nz + 1,) + tuple(mut.shape)
+
+    mass_h = metrics.c1h[:, None, None] * mut[None, :, :] + metrics.c2h[:, None, None]
+    mass_f = metrics.c1f[:, None, None] * mut[None, :, :] + metrics.c2f[:, None, None]
+    rdn = metrics.rdn[:, None, None]
+    rdnw = metrics.rdnw[:, None, None]
+
+    cof = (0.5 * float(dt) * 9.81 * (1.0 + float(epssm))) ** 2
+    lid_flag = 0.0 if bool(top_lid) else 1.0
+    a = jnp.zeros(field_shape, dtype=mut.dtype)
+    alpha = jnp.ones(field_shape, dtype=mut.dtype)
+    gamma = jnp.zeros(field_shape, dtype=mut.dtype)
+
+    top_denom_a = mass_h[nz - 1] * mass_f[nz - 1]
+    top_denom_b = mass_h[nz - 1] * mass_f[nz]
+    a = a.at[1, :, :].set(0.0)
+    a = a.at[nz, :, :].set(-2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] * lid_flag / top_denom_a)
+    gamma = gamma.at[0, :, :].set(0.0)
+
+    for kk in range(2, nz):
+        k = kk - 1
+        denom = mass_h[k] * mass_f[k]
+        a = a.at[kk, :, :].set(-cqw[kk] * cof * rdn[kk] * rdnw[kk - 1] * c2a[kk - 1] / denom)
+
+    for k in range(1, nz):
+        denom_upper = mass_h[k] * mass_f[k]
+        denom_lower = mass_h[k - 1] * mass_f[k]
+        denom_c = mass_h[k] * mass_f[k + 1]
+        b = 1.0 + cqw[k] * cof * rdn[k] * (
+            rdnw[k] * c2a[k] / denom_upper + rdnw[k - 1] * c2a[k - 1] / denom_lower
+        )
+        c = -cqw[k] * cof * rdn[k] * rdnw[k] * c2a[k] / denom_c
+        alpha_k = 1.0 / (b - a[k] * gamma[k - 1])
+        alpha = alpha.at[k, :, :].set(alpha_k)
+        gamma = gamma.at[k, :, :].set(c * alpha_k)
+
+    b_top = 1.0 + 2.0 * cof * rdnw[nz - 1] ** 2 * c2a[nz - 1] / top_denom_b
+    alpha = alpha.at[nz, :, :].set(1.0 / (b_top - a[nz] * gamma[nz - 1]))
+    gamma = gamma.at[nz, :, :].set(0.0)
+    return a, alpha, gamma
+
+
+def test_loop1_vectorization_is_bitwise_identical_to_legacy_loop():
+    rng = np.random.default_rng(23)
+    nz, ny, nx = 8, 2, 3
+    metrics = _synthetic_metrics(nz=nz, ny=ny, nx=nx)
+    mut = jnp.asarray(90_000.0 + 250.0 * rng.standard_normal((ny, nx)), dtype=jnp.float64)
+    cqw = jnp.asarray(1.0 + 0.01 * rng.standard_normal((nz + 1, ny, nx)), dtype=jnp.float64)
+    c2a = jnp.asarray(1.0 + 0.01 * rng.standard_normal((nz, ny, nx)), dtype=jnp.float64)
+
+    actual = calc_coef_w_wrf_coefficients(
+        mut,
+        metrics,
+        dt=6.0,
+        epssm=0.1,
+        top_lid=False,
+        cqw=cqw,
+        c2a=c2a,
+    )
+    expected = _legacy_calc_coef_w_loop1(
+        mut,
+        metrics,
+        dt=6.0,
+        epssm=0.1,
+        top_lid=False,
+        cqw=cqw,
+        c2a=c2a,
+    )
+
+    for got, want in zip(actual, expected, strict=True):
+        assert np.array_equal(np.asarray(got), np.asarray(want))
+
+
 def test_top_a_row_uses_c1f_at_nz_minus_one():
     """``a[nz]`` must match the WRF :626 formula (uses ``c1f[nz-1]``).
 

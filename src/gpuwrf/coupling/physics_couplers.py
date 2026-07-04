@@ -40,6 +40,7 @@ from gpuwrf.physics.ra_sw_gsfc import (
     solve_gsfc_sw_column,
 )
 from gpuwrf.physics.rrtmg_lw import RRTMGLWColumnState, solve_rrtmg_lw_column
+from gpuwrf.physics.rrtmg_lw import solve_rrtmg_lw_m9_flux_slices
 from gpuwrf.physics.ra_lw_rrtm import RRTMLWColumnState
 from gpuwrf.physics.ra_lw_rrtm_jax import solve_rrtm_lw_column_jax
 from gpuwrf.physics.ra_lw_hs import (
@@ -50,6 +51,7 @@ from gpuwrf.physics.rrtmg_sw import (
     RRTMGSWColumnState,
     RRTMGSWTopographyState,
     solve_rrtmg_sw_column,
+    solve_rrtmg_sw_m9_flux_slices,
 )
 from gpuwrf.physics.thompson_column import (
     ThompsonColumnState,
@@ -2198,6 +2200,7 @@ def rrtmg_radiation_diagnostics(
     land_state=None,
     with_clear_sky: bool = False,
     column_tile_cols: int | None = None,
+    _m9_flux_slices_only: bool = False,
 ) -> RRTMGRadiationDiagnostics:
     """Return surface RRTMG radiation diagnostics without changing State.
 
@@ -2208,6 +2211,10 @@ def rrtmg_radiation_diagnostics(
     When ``with_clear_sky`` is True the SW/LW solvers also run the WRF clear-sky
     (cloud-free) radiative-transfer pass and the ``...C`` clear-sky surface/TOA
     fluxes are populated.  The all-sky outputs are byte-identical either way.
+
+    ``_m9_flux_slices_only`` is an internal wrfout-output fast path: it computes
+    only the all-sky surface/TOA flux slices consumed by ``M9Diagnostics`` and
+    leaves prognostic heating-rate outputs out of the tiled scan carry.
     """
 
     sw_state, lw_state, surface_albedo, surface_emissivity, geometry, topography = _rrtmg_column_inputs(
@@ -2222,19 +2229,34 @@ def rrtmg_radiation_diagnostics(
         shadow_length_m=shadow_length_m,
         land_state=land_state,
     )
-    sw = solve_rrtmg_sw_column(
-        sw_state,
-        debug=False,
-        topography=topography,
-        with_clear_sky=with_clear_sky,
-        column_tile_cols=column_tile_cols,
-    )
-    lw = solve_rrtmg_lw_column(
-        lw_state,
-        debug=False,
-        with_clear_sky=with_clear_sky,
-        column_tile_cols=column_tile_cols,
-    )
+    if _m9_flux_slices_only:
+        if with_clear_sky:
+            raise ValueError("M9 flux-slices path does not produce clear-sky flux diagnostics")
+        sw = solve_rrtmg_sw_m9_flux_slices(
+            sw_state,
+            debug=False,
+            topography=topography,
+            column_tile_cols=column_tile_cols,
+        )
+        lw = solve_rrtmg_lw_m9_flux_slices(
+            lw_state,
+            debug=False,
+            column_tile_cols=column_tile_cols,
+        )
+    else:
+        sw = solve_rrtmg_sw_column(
+            sw_state,
+            debug=False,
+            topography=topography,
+            with_clear_sky=with_clear_sky,
+            column_tile_cols=column_tile_cols,
+        )
+        lw = solve_rrtmg_lw_column(
+            lw_state,
+            debug=False,
+            with_clear_sky=with_clear_sky,
+            column_tile_cols=column_tile_cols,
+        )
     shadow_mask = (
         jnp.zeros_like(surface_albedo, dtype=jnp.int32)
         if topography is None
