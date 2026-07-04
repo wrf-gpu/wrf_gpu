@@ -778,6 +778,14 @@ below.
 
 ## Roadmap — remaining work toward a complete WRF v4 port
 
+> 🗺️ **Full port-completion roadmap:** every scheme/feature still reference-only,
+> fail-closed, or out-of-scope — the 25 reference-only + 32 fail-closed physics codes, the
+> 3-D turbulence closures (`km_opt=2/3/5` = 3-D TKE / 3-D Smagorinsky / SMS-3DTKE), data
+> assimilation, coupled models, and output/grid gaps — is enumerated with a per-item "how to
+> close it" in [`docs/PORT_COMPLETION_ROADMAP.md`](docs/PORT_COMPLETION_ROADMAP.md). Its
+> explicit target is to drive the reference-only and fail-closed columns to zero. Regenerate the
+> live status with `python -m gpuwrf.cli namelist-support`.
+
 v0.18 is **feature-complete on scheme classification** — every WRF v4 namelist
 scheme is operational, reference-only-with-oracle, or documented-boundary. What
 remains is **fidelity, robustness, statistical closure, and performance/scale**, not

@@ -74,5 +74,13 @@ the repository. The current release carries these:</p>
 </tbody>
 </table>
 </div>
-<p>A code-grounded, prioritized inventory of the remaining gap to a complete WRF v4 replacement
-lives in <code>docs/GPU_PORT_GAPS_TODO.md</code>, and the roadmap in the repository README.</p>
+<h2 id="completion-roadmap">Roadmap to a complete port</h2>
+<p>Every item that is currently reference-only, fail-closed, or out-of-scope — every WRF v4
+scheme not yet wired (including the 3-D turbulence closures <code>km_opt=2/3/5</code> = 3-D TKE /
+3-D Smagorinsky / SMS-3DTKE), plus data assimilation, coupled models, and output/grid gaps — is
+enumerated with a per-item "how to close it" in the
+<a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/PORT_COMPLETION_ROADMAP.md">port-completion
+roadmap</a>. Its explicit goal is to drive the reference-only and fail-closed columns to zero.
+You can regenerate the live status any time with <code>python -m gpuwrf.cli namelist-support</code>
+(see <a href="running.html#namelist-support">Running the Model</a>). A code-task inventory also lives
+in <code>docs/GPU_PORT_GAPS_TODO.md</code>.</p>

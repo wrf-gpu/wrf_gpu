@@ -9,6 +9,10 @@ The baseline: standard WRF runs as `wrf.exe` with `namelist.input` as the primar
 runtime contract — forecast length (`run_days`, `run_hours`, …), domain count
 (`max_dom`), and per-domain arrays are all read from the namelist.
 
+> This file is about *usage/ergonomics* parity. For *feature/scheme coverage* parity — every
+> scheme still reference-only or fail-closed, the 3-D turbulence closures, data assimilation,
+> coupled models — see [`PORT_COMPLETION_ROADMAP.md`](PORT_COMPLETION_ROADMAP.md).
+
 ## Landed in v0.23.1
 
 These backward-compatible CLI improvements shipped in v0.23.1 (an explicit flag
