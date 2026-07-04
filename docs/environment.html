@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Environment Variables — wrf_gpu User's Guide</title>
+  <meta name="description" content="Reference for the GPUWRF_* environment variables: paths, output, performance and precision modes, caching, nesting, and debugging.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="active" href="environment.html">Environment Variables</a>
+<div class="subnav">
+<a href="environment.html#paths-and-data">Paths &amp; data</a>
+<a href="environment.html#compile-cache-and-warm-start">Compile cache &amp; warm-start</a>
+<a href="environment.html#runtime-path-and-precision">Runtime path &amp; precision</a>
+<a href="environment.html#output">Output</a>
+<a href="environment.html#memory-and-vram-preflight">Memory / VRAM preflight</a>
+<a href="environment.html#nesting">Nesting</a>
+</div>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Configuration › Environment Variables</div>
+        <h1>Environment Variables</h1>
+
+<p class="lead">wrf_gpu is configured mainly through your WRF <code>namelist.input</code> and the
+<code>gpuwrf run</code> command line. A small set of <code>GPUWRF_*</code> environment
+variables tune paths, the compile cache, the runtime path, output, and GPU-memory
+preflight. Most users only need the runtime-table path for their physics suite
+(typically <code>GPUWRF_WRF_ROOT</code>) plus ordinary CLI flags such as
+<code>--input-dir</code> and <code>--output-dir</code>.</p>
+
+<div class="admon note">
+  <div class="admon-title">Precedence &amp; naming</div>
+  <p>Everywhere a variable overlaps a command-line argument, precedence is
+  <strong>explicit CLI argument &gt; environment variable &gt; built-in default</strong>. Booleans
+  accept <code>1</code>/<code>true</code>/<code>yes</code>/<code>on</code> (and their
+  <code>0</code>/<code>false</code>/<code>off</code>/<code>no</code> opposites), case-insensitive.
+  Paths expand <code>~</code>. See <a href="running.html">Running the Model</a> for the CLI,
+  <a href="performance.html">Performance &amp; GPU Modes</a> for the cache/precision levers, and
+  <a href="output.html">Output</a> for the history-file knobs.</p>
+</div>
+
+<h2 id="paths-and-data">Paths &amp; data<a class="headerlink" href="#paths-and-data" aria-label="Permalink">¶</a></h2>
+<p>These point the model at its runtime tables and sample data without a hardcoded workstation
+layout. In an editable checkout they default to repository-relative paths, but those paths may be
+empty in a source-only clone; set them to your own WRF/corpus trees when the selected physics or
+validation path needs them.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Default</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_WRF_ROOT</code></td><td><code>&lt;repo&gt;/data/wrf_pristine/WRF</code></td><td>Root of a pristine WRF v4 source/run tree. wrf_gpu parses a few <em>unmodified</em> WRF runtime tables from it at startup — Noah-MP <code>run/MPTABLE.TBL</code>/<code>SOILPARM.TBL</code>/<code>GENPARM.TBL</code> (for <code>sf_surface_physics=4</code>) and the classic RRTM longwave <code>run/RRTM_DATA</code> (for <code>ra_lw_physics=1</code>). See <a href="installation.html">Installation</a>.</td></tr>
+<tr><td><code>GPUWRF_CANAIRY_ROOT</code></td><td><code>&lt;repo&gt;/data/canairy_meteo</code></td><td>Root of the bundled sample / CPU-WRF corpus. Also the base for the default L2/L3 run roots. Set it to keep an existing corpus layout working.</td></tr>
+<tr><td><code>GPUWRF_AEMET_ROOT</code></td><td><code>&lt;canairy_root&gt;/artifacts/datasets/aemet_stations</code></td><td>Station-observation data. Only needed for the optional <code>gpuwrf run --score</code> verification against AEMET stations.</td></tr>
+<tr><td><code>GPUWRF_SCRATCH</code></td><td><code>&lt;output-dir&gt;/.scratch</code></td><td>A <strong>real (non-tmpfs) NVMe</strong> scratch directory with a few GiB free — never a RAM disk. Precedence: <code>--scratch-dir</code> &gt; <code>$GPUWRF_SCRATCH</code> &gt; <code>&lt;output-dir&gt;/.scratch</code>. Cleaned up on exit.</td></tr>
+<tr><td><code>GPUWRF_TMPDIR</code></td><td><code>~/.cache/gpuwrf</code></td><td>Scratch root for replay traces / cached intermediate outputs, so a clean clone never writes into a hardcoded home path. The CLI also points this at the resolved run scratch directory for the current run.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="admon note">
+  <div class="admon-title">Output location is a CLI argument</div>
+  <p>The history-file destination is set with <code>gpuwrf run --output-dir runs/&lt;case&gt;</code>,
+  not an environment variable. Proof JSON defaults to <code>&lt;output-dir&gt;/proofs</code>
+  (override with <code>--proof-dir</code>).</p>
+</div>
+
+<h2 id="compile-cache-and-warm-start">Compile cache &amp; warm-start<a class="headerlink" href="#compile-cache-and-warm-start" aria-label="Permalink">¶</a></h2>
+<p>The first run of a given geometry pays a one-time cold XLA compile; later runs reuse it.
+These variables place and control the caches. Full background is on
+<a href="performance.html#warm-cache">Performance &amp; GPU Modes</a>.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Default</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_JAX_CACHE_DIR</code><br>(alias <code>JAX_COMPILATION_CACHE_DIR</code>)</td><td><code>&lt;repo&gt;/.gpuwrf-cache/jax</code></td><td>XLA JIT compilation-cache directory. The two names are equivalent (the standard JAX name is honoured too); setting either keeps the multi-minute cold compile off subsequent runs. A version mismatch under an explicit directory is warned about, not silently reused.</td></tr>
+<tr><td><code>GPUWRF_CACHE</code></td><td>unset</td><td>Parent cache <em>root</em>. When set, the JIT cache lives under <code>&lt;root&gt;/jit/&lt;version-tag&gt;</code> and the autotune cache under <code>&lt;root&gt;/autotune</code> — one root for both, version-keyed so different builds never share a directory.</td></tr>
+<tr><td><code>GPUWRF_NESTED_AOT</code></td><td><code>1</code> (on)</td><td>Ahead-of-time cheap-key cross-process warm-start for the nested path: a fresh process computes a metadata-only key <em>without lowering</em> and loads the matching serialized executable in microseconds, skipping the tens-of-minutes re-lower. Identity-preserving and fail-open (any error falls back to a normal JIT compile). Set <code>=0</code> to disable.</td></tr>
+<tr><td><code>GPUWRF_AOT_VERIFY</code></td><td>off</td><td>On the first cheap-key hit per key per process, do one confirmatory <code>lower()</code> and assert the HLO digest matches the loaded blob; <strong>fail-closed</strong> on mismatch. A diagnostic to run <em>on</em> for the first warm-start of a new version, then <em>off</em> in production (it costs one lower per distinct key).</td></tr>
+<tr><td><code>GPUWRF_NESTED_PARALLEL_COMPILE</code></td><td>unset (auto)</td><td>Worker count for the de-fuse cold-compile pre-warm pool. <code>0</code> opts out; <code>N&gt;0</code> overrides the RAM/CPU-derived worker count; unset uses the auto default. Only relevant on the de-fuse compile path below.</td></tr>
+<tr><td><code>GPUWRF_XLA_AUTOTUNE_CACHE</code></td><td>on (with the compile cache)</td><td>Caches XLA GPU autotuning results alongside the JIT cache. Rides with the compile cache by default; a truthy value forces it on, a falsey value (<code>0</code>/<code>off</code>) disables it. The unknown-flag abort guard is unaffected.</td></tr>
+<tr><td><code>GPUWRF_NESTED_DEFUSE_COMPILE</code></td><td>off</td><td><code>=1</code> compiles each domain's advance as its <em>own</em> executable instead of fusing the parent + leaves into one XLA module, cutting peak compile-RAM to roughly the single largest domain. <strong>Numerically inert</strong> (same eager path as the identity switches); it trades some runtime throughput for compile-RAM, so it is an opt-in low-host-RAM lever, not the runtime default.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="admon note">
+  <div class="admon-title">Disabling the cache</div>
+  <p>Set <code>GPUWRF_JAX_CACHE=0</code> (or <code>off</code>) to disable the JIT compile cache
+  entirely for a run — useful for a clean cold-compile measurement.</p>
+</div>
+
+<h2 id="runtime-path-and-precision">Runtime path &amp; precision<a class="headerlink" href="#runtime-path-and-precision" aria-label="Permalink">¶</a></h2>
+<p>These select which numerical/execution path runs. The defaults keep the model
+byte-identical to the validated reference; the opt-ins are for speed, capability, or debugging.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Default</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_ACOUSTIC_PRECISION_MODE</code></td><td><code>fp64_default</code></td><td>Acoustic-step precision. <code>fp64_default</code> is the byte-identical default; <code>mixed_perturb_fp32_v020</code> opts into the validated mixed-precision fp32 perturbation path (<a href="performance.html#fp32">fp32 mode</a>). An unrecognized value <strong>fails closed</strong> with the list of accepted modes.</td></tr>
+<tr><td><code>GPUWRF_BATCH_ENSEMBLE</code></td><td>unset (<code>=1</code>)</td><td>Set to a positive integer <code>B</code> to run <code>B</code> independent, same-geometry forecasts concurrently under one outer <code>jax.vmap</code> — the v0.23 <a href="performance.html#batched-ensemble">batched ensemble</a> that fills a launch-bound small-grid GPU. The default (unset / <code>1</code>) is byte-identical; a non-integer or <code>&lt;1</code> value is rejected.</td></tr>
+<tr><td><code>GPUWRF_BATCH_INPUT_DIRS</code></td><td>unset</td><td>An <code>os.pathsep</code>-separated list of exactly <code>B</code> input directories, one per ensemble member (used only when <code>GPUWRF_BATCH_ENSEMBLE&gt;1</code>). If unset, all members reuse the single <code>--input-dir</code>. A count mismatch fails closed.</td></tr>
+<tr><td><code>GPUWRF_NESTED_FUSE</code></td><td>on (fused)</td><td>The nested runtime default is the fused cascade (measured higher-throughput executable). <code>=0</code> selects the eager per-domain path, which is bit-identical to the fused path — used for identity/debug comparisons.</td></tr>
+<tr><td><code>GPUWRF_BITWISE</code></td><td>off</td><td><code>=1</code> forces the eager, non-fused per-domain path for bitwise/debug comparison against a reference. Same eager path as <code>GPUWRF_NESTED_FUSE=0</code>.</td></tr>
+<tr><td><code>GPUWRF_FINITE_CHECK</code></td><td>on</td><td>Default-on fail-fast finite guard: on the first non-finite prognostic value the run aborts with the exact <code>{domain, field, level, step, sim-time, index}</code> instead of propagating a NaN. Set <code>=0</code> to opt out. There is no masking/clamping — see <a href="validation.html">Validation</a>.</td></tr>
+<tr><td><code>GPUWRF_K2_EXPERIMENTAL</code></td><td>off</td><td><code>=1</code> (alias <code>GPUWRF_K2_ENABLED=1</code>) dispatches to the opt-in sharded, multi-GPU runner. <span class="pill optin">Experimental</span> lab-only; the default single-GPU forecast path never touches it. Not a supported production mode.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="output">Output<a class="headerlink" href="#output" aria-label="Permalink">¶</a></h2>
+<p>Knobs for what the <code>wrfout</code> history file contains and how it is named/written. All
+of these keep the default output byte-identical unless you opt in. See
+<a href="output.html">Output</a>.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Default</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_TRAINING_OUTPUT_SUBSET</code></td><td>off</td><td><code>=1</code> writes a focused 39-variable training subset plus mandatory coordinates instead of the full variable set — smaller files for ML training. Lossless subset; default output is byte-identical.</td></tr>
+<tr><td><code>GPUWRF_FULL_WRFOUT</code><br>(alias <code>GPUWRF_FULL_WRFOUT_VARIABLES</code>)</td><td>off</td><td><code>=1</code> emits the full 375-variable WRF history stream for nested output instead of the focused default variable set.</td></tr>
+<tr><td><code>GPUWRF_COLONFREE_OUTPUT</code></td><td>off</td><td><code>=1</code> writes colon-free <code>HH-MM-SS</code> wrfout timestamps (for S3 / network drains that dislike <code>:</code>); the default stays WRF-standard <code>HH:MM:SS</code>.</td></tr>
+<tr><td><code>GPUWRF_NESTED_ASYNC_OUTPUT</code></td><td>on</td><td>Writes history files on a background writer thread so the GPU is not stalled by disk I/O. Set <code>=0</code> to force the legacy synchronous write (for A/B measurement or fully-on-thread byte-identity proofs). Written bytes are identical either way.</td></tr>
+<tr><td><code>GPUWRF_NEST_OUTPUT_PIPELINE</code></td><td>off</td><td><code>=1</code> enables the structural async output pipeline: the finite check, M9 surface re-solve, and device&#8594;host pull run on a background thread that overlaps the next compute burst instead of inline at the output boundary. Byte-identical to the off path; opt-in pending its VRAM gate. (Companion <code>GPUWRF_NEST_OUTPUT_PIPELINE_DEPTH</code>, default <code>1</code>, bounds in-flight frames.)</td></tr>
+<tr><td><code>GPUWRF_NESTED_M9_RADIATION_FROM_CARRY</code></td><td>off</td><td><code>=1</code> backs nested M9 surface-output diagnostics from the resident Noah-MP radiation carry (held <code>SOLDN</code>/<code>LWDN</code>/<code>COSZ</code>). <strong>Not byte-identical</strong>: it omits the instantaneous upwelling / TOA flux slices (<code>SWUPB</code>/<code>LWUPB</code>) rather than fabricating them, so it is an explicit opt-in shortcut.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="memory-and-vram-preflight">Memory / VRAM preflight<a class="headerlink" href="#memory-and-vram-preflight" aria-label="Permalink">¶</a></h2>
+<p>Nested runs (<code>--max-dom &gt; 1</code>) run a CPU-side free-VRAM preflight that fails closed
+before the long compile if the card is too full, and select the GPU allocator. See
+<a href="performance.html#vram">Performance &amp; GPU Modes</a>.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Default</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_MIN_FREE_VRAM_FRACTION</code></td><td><code>0.50</code></td><td>Card-relative free-VRAM floor for the nested preflight. The threshold is <code>max(absolute floor, fraction &times; total VRAM)</code>, so it scales with the card. Clamped to <code>[0, 1]</code>.</td></tr>
+<tr><td><code>GPUWRF_MIN_FREE_VRAM_GIB</code></td><td>unset</td><td>Explicit absolute free-VRAM threshold in GiB. When set it overrides the fractional rule (the absolute floor otherwise defaults to 24 GiB).</td></tr>
+<tr><td><code>GPUWRF_FORCE_GPU_RUN</code></td><td>off</td><td><code>=1</code> bypasses the nested GPU lock / free-VRAM preflight for a deliberate operator override. Equivalent to the <code>--force-gpu-run</code> CLI flag. Prefer the threshold variables above for tuning; use this only to force a run.</td></tr>
+<tr><td><code>GPUWRF_ALLOCATOR</code></td><td><code>cuda_async</code> (nested)</td><td>Selects the XLA GPU allocator for nested runs: <code>cuda_async</code> (stream-ordered pool, default), <code>platform</code> (no-fragment <code>cudaMalloc</code> fallback for fragmentation OOMs), or <code>bfc</code> (XLA's default arena). An explicit <code>XLA_PYTHON_CLIENT_ALLOCATOR</code> always wins and is left untouched.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="nesting">Nesting<a class="headerlink" href="#nesting" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Default</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_GWD_NESTED</code></td><td><code>1</code> (on)</td><td>Gravity-wave drag (<code>gwd_opt=1</code>) is default-on on the nested 1 km path. Set <code>=0</code> to force it off. See <a href="nesting.html">Nesting</a> and <a href="physics.html">Physics Options</a>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon honest">
+  <div class="admon-title">Not the whole surface</div>
+  <p>The source defines many more <code>GPUWRF_*</code> flags — per-scheme kernel-tiling and
+  unroll knobs, cache-locking and GPU-lock bookkeeping injected by helper scripts, and internal
+  probes. Those are <strong>advanced/internal</strong> and are <strong>not part of the supported
+  user surface</strong>; they may change or be removed without notice. The variables documented
+  above are the ones intended for users.</p>
+</div>
+
+        <nav class="page-nav">
+<a class="prev" href="physics.html"><span class="pn-dir">← Previous</span><span class="pn-title">Physics Options</span></a>
+<a class="next" href="output.html"><span class="pn-dir">Next →</span><span class="pn-title">Output Files</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

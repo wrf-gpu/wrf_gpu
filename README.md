@@ -7,6 +7,12 @@ forcing (no `real.exe`, no CPU-WRF dependency), integrates a nonhydrostatic
 split-explicit ARW dycore on the GPU, and writes a WRF-compatible `wrfout`
 history file.
 
+> 📖 **User's Guide:** a full, searchable HTML guide lives in [`docs/`](docs/index.html)
+> (patterned after the WRF Users' Guide) and is published with GitHub Pages. New in
+> v0.23.1: you can also just **clone the repo and ask an AI agent to run your case** —
+> see [Quickstart using AI](#quickstart-using-ai-clone---ask-an-agent) and
+> [`AI_OPERATOR.md`](AI_OPERATOR.md).
+
 It is **not** a port of legacy WRF Fortran. It is a clean JAX rewrite that
 targets the GPU memory hierarchy from day one and validates against WRF as an
 **oracle** — proving cell-for-cell identity to CPU-WRF v4 rather than inheriting
@@ -56,188 +62,21 @@ NVL72-class).
   **stability/reliability**, and **energy efficiency** (see [Performance](#performance)).
 - **Not** DFI / FDDA / spectral-nudging / WRF-Chem / WRF-Fire / urban / lake.
 
-**The current release is v0.23.0** — a **performance + capability** release on the
-v0.22.2 nested-grid wall-clock line. Its priority order is explicit:
-**stability > identity > speed > memory**. The headline is an **opt-in batched
-ensemble** (`GPUWRF_BATCH_ENSEMBLE=B`): B independent, same-geometry forecasts run
-concurrently under one outer `jax.vmap` and **fill the otherwise-idle small-grid
-GPU** — a Tenerife 3 km→1 km 2-nest climbs to **~97 % of the large-grid throughput
-ceiling** at B=4 on one RTX 5090, with no dycore change and no precision compromise.
-The default path adds **value-preserving** launch/compile-count reductions (P0
-M9-radiation flux-slice, P3 flat-2-domain fusion — both CPU bit-identical, dycore
-untouched) and a wave of extended physics/nesting schemes that are **opt-in or
-reference-only / fail-closed** (New-Tiedtke + Morrison-aerosol ported; NSSL, CAM-UW,
-urban/lake reference-only; moving nests opt-in), so the **default forecast is
-numerically equivalent to v0.22.2** (bit-identical with XLA autotune held fixed;
-within the autotune floor across fresh compiles, self-control-verified). The
-**fp32-operational (M1) foundation** is laid but is a separate milestone, **not**
-enabled by default. **No new default physics; the open 24–120 h forecast-skill gate
-is not claimed closed.** Full notes:
-[`release_notes/RELEASE_NOTES_v0.23.0.md`](release_notes/RELEASE_NOTES_v0.23.0.md).
+**Current release — v0.23.1** (usability + AI-native onboarding): a full
+[User's Guide](docs/index.html), an [AI operator skill](AI_OPERATOR.md) so an agent can run a
+case for you, and backward-compatible **WRF-parity CLI ergonomics** (forecast length and root
+domain default from `namelist.input`; a `namelist-support` subcommand; a `--dry-run` preflight).
+It changes **no dynamics, no physics, no default numerical result** — numerically identical to
+**v0.23.0**, the performance base, whose headline is an opt-in **batched ensemble**
+(`GPUWRF_BATCH_ENSEMBLE=B`) that fills the otherwise-idle small-grid GPU (a Tenerife 3&nbsp;km&rarr;1&nbsp;km
+nest reaches ~97&nbsp;% of the large-grid throughput ceiling at B=4). Priority order, always:
+**stability > identity > speed > memory**; no masking or clamps; the open 24&ndash;72&nbsp;h
+forecast-skill gate is not claimed closed.
 
-The v0.22.x line builds on the v0.21 fused+AOT foundation: **v0.22.0**
-(default-safe hygiene + opt-in performance lever + ADR ratification), **v0.22.1**
-(pod-data-quality: nested output `history_interval` cadence fix + opt-in
-`GPUWRF_COLONFREE_OUTPUT` colon-free wrfout names), **v0.22.2** (nested wall-clock,
-above).
-
-The **v0.21.0** stability + compile-cache-speed foundation this builds on: a
-**dycore boundary-stability fix** (the all-7-island, 9-domain Canary nest now runs
-**finite through the divergence window that previously failed near step 67**) and
-the **AOT cheap-key cross-process warm-start** — after a one-time cold compile, a
-fresh process **loads the compiled GPU executable from disk via a cheap metadata
-key and skips the multi-tens-of-minutes re-lower** the old cache still paid. It
-also adds a **default-on fail-fast finite guard** and a **version-keyed compile
-cache**.
-
-**Read the scope of the speed win plainly.** v0.21.0 is faster at *getting a run
-started* (compile / warm-start time), **not** at running the forecast itself. Warm
-forecast throughput (seconds per forecast-hour) is **unchanged** from v0.20 and the
-default path is **byte-identical** — the warm start rides the same fused runtime
-executable, it just loads it from disk in seconds instead of re-lowering it. The
-fp64 default carries forward unchanged; v0.21.0 adds **no new physics** and does
-**not** claim the open 24–120 h forecast-skill gate is closed. The most-extreme
-1 km Mont-Blanc (~1042 m/cell) terrain is **not** fully stabilized (the fix
-*relocates* that failure rather than removing it) and is carried to v0.21.1. Full
-notes: [`RELEASE_NOTES_v0.21.0.md`](release_notes/RELEASE_NOTES_v0.21.0.md).
-
-*[MEASURED: v0.21.0 — 3-domain fused+AOT cold→warm gate byte-identical (REF_COMPARE equal, max_abs_diff 0), 0 re-lower, no runtime regression; 9-nest fused stress re-confirm both fused phases `source=aot_blob`, 0 re-lower, all 9 domains finite past step 67 (warm peak host RSS 16.4 GB). De-fuse measured +18.8% s/step ⇒ reverted; not the default.]*
-
-The rest of this section is the **v0.20.x capability narrative, carried forward**
-as the context v0.21.0 builds on — it still applies where v0.21.0 does not
-explicitly change it.
-
-**v0.20.0 is a correctness, stability, capability, and reliability release.** It
-is **bit-identical-safe by default** (the fp64 path is byte-for-byte unchanged)
-and adds an honest, modest nest speedup, an opt-in fp32 capability mode, and a
-compile cache that **just works across runs and across forecast dates**. On the
-canonical all-7-island, 9-domain case the default fused nested path measures
-**~668 s/forecast-hour warm** (range 645–680) on the reference GPU — **~1.07×
-faster than v0.19** (713 s/forecast-hour) and **~1.53× faster than the 12-rank
-CPU-WRF baseline** (1020 s/forecast-hour) — and is **byte-identical to v0.19
-output (1926/1926 vars, maxΔ=0.000e+00)**, the gain coming entirely from a
-numerics-free CUDA stream-ordered allocator. (v0.21.0 keeps this warm forecast
-throughput unchanged.) v0.18 remains the feature-completeness baseline: every WRF
-v4 namelist scheme is classified and handled, with no silent substitution or
-skipped scheme. See the [Scheme
-triage](#scheme-triage--every-wrf-v4-scheme-classified).
-
-*[MEASURED: COMBINED_SPEEDUP.md §5/§7 — ~668 / 1.07× / 1.53× / 1926-byte-identical.]*
-
-> ### First run is slow on purpose, then a seconds-fast warm start (new in v0.21.0)
-> The first forecast **JIT-compiles the GPU kernels** — a one-time **cold compile
-> with no output before integration starts**, scaling with grid size (roughly a
-> few minutes for an ordinary single-domain case; the large all-7 9-domain nest is
-> a separate, larger one-time compile of tens of minutes). It is compiling, not
-> hung. **That cold compile is still a real one-time cost.**
->
-> A **persistent, per-user on-disk JIT cache is on by default with zero config** —
-> no flag, no setup — and in v0.21.0 it is **version-keyed** (`gpuwrf` + JAX/JAXLIB
-> + backend), so a stale older-release cache is never mistaken for a warm one.
->
-> **New in v0.21.0: a fresh process now warm-LOADS the compiled executable in
-> seconds.** Previously, even with a warm cache, a new process had to *re-lower*
-> (re-trace) the giant nested module — tens of minutes for the all-7 9-nest — just
-> to look up the right cached executable. v0.21.0 serializes the compiled GPU
-> executable to disk and indexes it by a **cheap metadata key computed without
-> lowering**, so a fresh process **loads it directly and skips the re-lower**. It is
-> **on by default on the fused runtime path**. MEASURED: the 9-nest fused stress
-> re-confirm has both fused phases load `source=aot_blob` cross-process with **0
-> re-lower** and all 9 domains finite (warm peak host RSS 16.4 GB); the 3-domain
-> cold→warm gate is **byte-identical to the cold compile** (`REF_COMPARE` equal,
-> max_abs_diff 0) with **no runtime regression**. A fresh load is numerically inert
-> — the cheap key only *locates* the blob, and the loaded executable is byte-for-byte
-> the cold one; a `GPUWRF_AOT_VERIFY=1` fail-closed backstop is available. The
-> v0.20 single-domain warm-cache read was already fast (`cold ~147 s → cache-hit
-> ~29 s` on the d01 hour-1 wrapper, bit-identical), and the cache also **hits across
-> forecast dates** (a new or leap-year date is a warm hit with 0 new cache entries,
-> default path bit-identical). Opt out of AOT with `GPUWRF_NESTED_AOT=0`; set
-> `GPUWRF_BITWISE=1` or `GPUWRF_NESTED_FUSE=0` for the eager bitwise/debug path.
->
-> *[MEASURED: v0.21.0 9-nest AOT cold→warm re-confirm — 9/9 phases `source=aot_blob`, 0 re-lower, all finite, RSS 16.4 GB; 3-domain fused+AOT gate byte-identical (max_abs_diff 0), no runtime regression. v0.20 cross-date: JULDAY_CACHE_FIX_REPORT.md — cross-date HLO sha identical across 3 dates incl. leap; 0 new cache entries; 64/64 byte-identical.]*
-
-> ### Optional fp32 mixed-precision mode (capability + VRAM, opt-in)
->
-> v0.20.0 adds an **opt-in** perturbation-authoritative fp32 mode
-> (`GPUWRF_ACOUSTIC_PRECISION_MODE=mixed_perturb_fp32_v020`). **The default stays
-> fp64 (`fp64_default`) and is byte-for-byte unchanged** — the GPU all-7 9-domain
-> fp64 output is **963/963 vars maxΔ=0.000e+00, byte-identical** across all 9
-> domain files, and warm fp64 speed is unchanged (within noise).
->
-> The value of fp32 is **capability + VRAM headroom + stability, NOT single-card
-> speed**: it cuts whole-run VRAM by **−14.4%** (aggressive mode) and extends
-> full-physics cell capability **~1.16×** (fits a 700² grid where fp64 caps at
-> 650²; in a dynamics-only stress fp64 OOMs at 1M columns where fp32 still fits).
-> On the single RTX 5090 it is **NOT a speedup** — the fp32/fp64 throughput-ceiling
-> ratio is **≈0.91 (≈1, not ≈2)** and there is **no peak-VRAM win on small
-> single domains** (peak is radiation-transient-bounded below ~384²).
->
-> **Honest scope of the fp32 fidelity check:** the fp32 tolerance bands are checked
-> at the **1 h forecast lead** (19/19 fields green) — real, but **NOT stringent**
-> (it sits 2–3 orders of magnitude inside the eventual 24 h skill bands). fp32 is
-> only truly stressed by the **24–120 h skill gate, which is future work, out of
-> v0.20 scope**. Do not read the 1 h pass as 24–120 h skill proof.
->
-> *[MEASURED: FP32_INTEGRATION_REPORT.md §4.1/§4.2 — 963/963 byte-identical fp64; 19/19 fields 1h tolerance-green. V0200-STATE — −14.4% VRAM / 1.16× cells. INCONCLUSIVE on single-card speed: T2T3 R∞ ratio ≈0.91.]*
-
-**v0.20.1 is a reliability + I/O-readiness patch** (carried-forward context;
-v0.21.0 above is the current release). It does **not** add any single-card speedup
-— it makes the existing nested path **easier and safer to operate**, and the
-**fp64 default stays byte-identical to v0.20.0**. Four things change, all honest
-about their limits. *(Note for v0.21.0: the warm-cache narrative below is now
-superseded by the AOT cheap-key warm-start above — a fresh process no longer pays a
-multi-tens-of-minutes re-lower; the OOM mitigation here is still in force, now
-joined by the default-on finite guard and the dycore stability fix.)*
-
-- **The warm compile cache now also hits across forecast dates for the *nested*
-  path.** v0.20.0 fixed this for single domains; the nested path still baked the
-  date into the program and paid the full **~50 min cold compile** on every new
-  date. Now the date is a runtime argument, so a new (or leap-year) date is a warm
-  cache hit and the fused nest is **not re-compiled**. *Warm is faster, not
-  "instant"*: you still pay a one-time **module load + link** of the cached
-  executable, so the net saving is **~30 min per new date**, not zero. The change
-  is **bit-identical** on the default nested path.
-- **An opt-in compact training-output mode.** Set
-  `GPUWRF_TRAINING_OUTPUT_SUBSET` to write a focused **36-variable training set**
-  (plus mandatory coordinates) with lossless compression instead of the full
-  variable list — much smaller `wrfout` files for building training corpora. The
-  kept variables are **bit-for-bit identical**, just fewer of them. **Off by
-  default**, and the default output stays byte-identical to v0.20.0.
-- **GPU out-of-memory hardening for the nested path (mitigation, not a blanket
-  fix).** For `--max-dom > 1` the CLI now runs a fast **CPU-side preflight** that
-  checks free VRAM headroom *before* the ~50 min nested compile and **fails closed
-  (exit 75)** instead of OOMing tens of minutes in. The RRTMG radiation
-  column-tile cap is also lowered (2048 → 1024), which cuts the radiation
-  transient's largest single allocation **0.432 → 0.271 GiB (−37 %, GPU-measured)**
-  while staying **bit-identical** (`max_abs = 0.0`). *Read this honestly:* this is
-  a **mitigation, not an OOM-proof guarantee** — solo `cuda_async` fragmentation
-  can still OOM the full fp64 nest, and a reproducer
-  (`scripts/rrtmg_transient_reproducer.py`) ships so the failure can be tracked.
-  No fp32-nest and no 24 h large-nest claim. **v0.21.0 adds to this**, without
-  claiming OOM is solved: a **default-on fail-fast finite guard**
-  (`GPUWRF_FINITE_CHECK`) that aborts with the exact `{domain, field, level, step,
-  sim-time, index}` on the first non-finite prognostic, and a **dycore
-  boundary-stability fix** that takes the all-7 9-domain Canary nest **finite
-  through the step-67 divergence window** that previously failed. The long-horizon
-  9-nest can still hit a GPU-VRAM OOM around the ~90 min integration horizon.
-- **Paid-B200 I/O-readiness tooling (CPU-only).** A manifest/WRF-dimension
-  validator and a block drain/resume/stop-pull tool (with read-back-verify-before-
-  delete) so a large paid nest run can stream and verify training output safely.
-  *Tested on synthetic/local dry-runs only* — the real S3 read-back/delete path
-  has not yet been exercised end-to-end, so the first paid run must do a disposable
-  dry-run first.
-
-v0.20.1 also applies an **honesty refresh** to the public claims (perf-headline
-framing, memory accounting, and an identity-metric clarification — the inner-nest
-`TH2` "low correlation" is a **low-variance Pearson-metric artifact, not a bug**;
-identity reporting now also carries a variance-robust `nRMSE` next to Pearson `r`)
-with **no fabricated numbers**. The open 24–120 h forecast-skill gate remains
-future work and is **not** claimed closed. See
-[RELEASE_NOTES_v0.20.1.md](release_notes/RELEASE_NOTES_v0.20.1.md).
-
-*[MEASURED: RELEASE_NOTES_v0.20.1.md — #114 cold→warm cross-date cache_delta = 2 (nest not re-traced); #123 RRTMG cap 0.432 → 0.271 GiB (−37 %), bit-identical max_abs = 0.0; preflight fail-closed exit 75. CPU tests: cache-key 9/9, training-subset 10/10, OOM-hardening 9/9, B200 I/O 22/22.]*
-
----
+Operational detail (the one-time cold compile, the seconds-fast warm-start cache, the opt-in fp32
+mode, VRAM sizing) now lives in the **[User's Guide](docs/index.html)**. The full,
+release-by-release history is the [Version history](#version-history) table below &mdash; each row
+links its complete notes in [`release_notes/`](release_notes/).
 
 ## WRF-v4 identity — proven cell-for-cell against CPU-WRF v4
 
@@ -332,6 +171,19 @@ taskset -c 0-3 python3 scripts/build_identity_proof_plots.py \
 > "TOST PASS" / "statistically-proven equivalence" is claimed.**
 
 ---
+
+## Quickstart using AI (clone -> ask an agent)
+
+If you want to run a forecast rather than develop the port, you can clone this
+repo, open an AI coding agent in the checkout, and say: "Here is my input, get it
+running." The repo ships an operator runbook, [AI_OPERATOR.md](AI_OPERATOR.md),
+plus a Claude Code skill at `.claude/skills/run-wrf-gpu/`, so agents can load the
+right instructions: set up Python/JAX, check the GPU, run the bundled Switzerland
+smoke test, then run your case with the real `gpuwrf run` CLI.
+
+The AI path keeps the same honesty as this README: unsupported namelist options
+fail closed, the default is fp64, opt-in modes stay opt-in, and the broader
+24 h/72 h forecast-skill gate is not claimed closed by a successful run.
 
 ## Quickstart
 
@@ -733,6 +585,7 @@ Newest first. Full per-release evidence is under [`proofs/`](proofs/) and the
 
 | Version | Headline | Key proof / link |
 |---|---|---|
+| **v0.23.1** | **Usability + AI-native onboarding; no dynamics/physics/default-numeric change (numerically identical to v0.23.0).** Ships a full static HTML **[User's Guide](docs/index.html)** (GitHub-Pages-ready, searchable) and an **[AI operator skill](AI_OPERATOR.md)** (`AI_OPERATOR.md` + a Claude Code skill + `AGENTS.md`/`CLAUDE.md` routing) so an agent can clone → set up → run a user's case, narrating each step. Backward-compatible **WRF-parity CLI**: `--hours` and `--domain` default from `namelist.input` (`&time_control`; root domain `d01`) when omitted (explicit flags always win); new `--domains-from-namelist`, `gpuwrf namelist-support` (offline), `--dry-run`; clearer `GPUWRF_WRF_ROOT` errors; effective-values in the run payload. Doc-accuracy fixes (init = `wrfinput`/`wrfbdy`; 39-var training subset). CLI covered by CPU unit tests; forecast pipeline unchanged. | [`RELEASE_NOTES_v0.23.1.md`](release_notes/RELEASE_NOTES_v0.23.1.md), [`docs/WRF_PARITY_ROADMAP.md`](docs/WRF_PARITY_ROADMAP.md) |
 | **v0.23.0** | **Batched-ensemble GPU saturation on small grids + default-path launch/compile-count reductions + extended physics (opt-in / reference-only); default numerically equivalent to v0.22.2.** A new **opt-in batched ensemble** (`GPUWRF_BATCH_ENSEMBLE=B`) runs B independent, same-geometry forecasts concurrently under one outer `jax.vmap` wrapped around the unbatched orchestration, filling the launch/occupancy-bound small-grid GPU: measured Tenerife 3 km→1 km 2-nest warm total throughput climbs **4.51 → 5.63 M cells-in-flight/s (B=1→4) = ~97 % of the 5.81 M large-grid (Alps 433²@1 km, compute-bound) saturation ceiling** on one RTX 5090 (B_max=5 is VRAM-capped at ~26 GiB; a larger card batches further). The default (`unset`/`=1`) is byte-identical. Default-path **value-preserving** work reductions: **P0** M9 radiation flux-slice reduction (computes only the surface/TOA flux slices the wrfout writer consumes; CPU bit-identical 17/17) and **P3** flat-2-domain root fusion (3→1 entry programs; fail-closed for every other topology; CPU sha256 fused==eager) — the dynamical core is untouched (net dynamics diff vs v0.22.2 = **0 lines**). Extended physics, all namelist-gated: **New-Tiedtke cumulus (`cu_physics=16`)** and **Morrison-aerosol microphysics (`mp_physics=40`)** ported and validated to machine precision vs pristine-WRF single-column oracles, **RUC-LSM** integrated; **NSSL 2-moment (`mp=18`), CAM-UW PBL (`bl_pbl_physics=9`), urban BEP/BEM (`sf_urban=2/3`) and the WRF lake model (`sf_lake=1`) are reference-only / fail-closed** (verified oracles; faithful ports are their own milestones). An **opt-in operational moving-nest driver** is added (static-nest path byte-identical). **Default = numerically equivalent to v0.22.2**: with XLA autotune held fixed the default path is bit-identical (`max_abs 0.0`, 0/178 leaves), and across two independent cold compiles it matches v0.22.2 within the autotune floor — self-control-verified (v0.23-vs-v0.22.2 field diffs over the 1 h canary are indistinguishable from v0.22.2 differing from its own recompile). Canary benchmark 407 vs 411 s/forecast-hour, no regression. **fp32-operational (M1) foundation is laid but NOT enabled by default (its own milestone); the open 24–120 h skill gate is not claimed closed.** No masking / clamps / `nan_to_num`. | [`RELEASE_NOTES_v0.23.0.md`](release_notes/RELEASE_NOTES_v0.23.0.md) |
 | **v0.22.2** | **Nested-grid wall-clock — host-bound GPU-idle reduction; default byte-identical.** Cuts the host work at the nested output boundary. Default-on, **byte-identical** host-work reductions (one redundant full finite-summary removed, the per-leaf device→host pulls and the finite guard batched, subset-aware payload build) measure **~9 % faster nested steady-state** (789 vs 865 s/forecast-hour on a 384² 2-nest, output **byte-identical** to v0.22.1). A default-on **bit-identical** RRTMG column-tile cap on the per-output radiation re-solve **halves its VRAM transient** (~5.1 → ~2.6 GiB), fixing a convection-peak OOM on larger grids — the main-forecast radiation cap is unchanged. Opt-in `GPUWRF_NEST_OUTPUT_PIPELINE=1` overlaps the output materialization; `GPUWRF_NESTED_M9_RADIATION_FROM_CARRY=1` skips the re-solve (lossy). **No new physics; the open 24–120 h skill gate is not claimed closed.** | [`RELEASE_NOTES_v0.22.2.md`](release_notes/RELEASE_NOTES_v0.22.2.md) |
 | **v0.22.1** | **Nested d02 output-cadence fix + opt-in colon-free wrfout names; bit-identical.** Point release for B200 pod output-path defects: leaf children now honor their own `history_interval` on both the eager and the default fused paths (a fused flat leaf subtree falls back to the eager split when a child cadence is not parent-ratio aligned), restoring the intended training-frame yield. `GPUWRF_COLONFREE_OUTPUT=1` writes `HH-MM-SS` names for S3 / network drains; the default stays WRF-standard `HH:MM:SS`. No numerics, masking, clamp, or schema change. | [`RELEASE_NOTES_v0.22.1.md`](release_notes/RELEASE_NOTES_v0.22.1.md) |
@@ -1003,7 +856,7 @@ tier.
 | See the full WRF v4 gap inventory | [`docs/GPU_PORT_GAPS_TODO.md`](docs/GPU_PORT_GAPS_TODO.md) |
 | See prior release proofs | [`proofs/`](proofs/) (`v019`, `v018`, `v017`, `v016`, `v015`, `v014`, `v013`, `v0120`, `v0110`, `v090`, `v0100`) |
 
-## Known issues (current as of v0.23.0)
+## Known issues (current as of v0.23.1)
 
 Full detail with symptom / ruled-out / workaround / follow-up in
 **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)**. The release carries only the

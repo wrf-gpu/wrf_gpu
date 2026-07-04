@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overview — wrf_gpu User's Guide</title>
+  <meta name="description" content="wrf_gpu is a GPU-native, WRF-compatible regional weather model — an AI-written JAX rewrite validated against WRF as an oracle.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="active" href="index.html">Overview</a>
+<div class="subnav">
+<a href="index.html#start-here">Start here</a>
+<a href="index.html#what-it-is">What it is good for</a>
+<a href="index.html#what-it-is-not">What it is NOT</a>
+<a href="index.html#scope-at-a-glance">Scope at a glance</a>
+</div>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb">wrf_gpu User's Guide</div>
+        <div class="hero">
+  <img src="_assets/logo.svg" alt="wrf_gpu logo — a smiling storm cloud whose lightning is a GPU circuit, built by a Claude-clay and a GPT-green robot">
+  <div>
+    <h1 style="margin-bottom:.2rem;">wrf_gpu User's Guide</h1>
+    <p class="hero-tag">A GPU-native, WRF-compatible regional weather model · v0.23.1</p>
+  </div>
+</div>
+
+<p class="lead">wrf_gpu runs a standalone WRF&nbsp;v4 ARW forecast end-to-end on a single GPU.
+It reads a standard WRF <code>namelist.input</code>, initializes from WRF real-data
+artifacts (<code>wrfinput_*</code> and <code>wrfbdy_d01</code>; no CPU-WRF
+<code>wrfout</code> dependency), integrates a nonhydrostatic split-explicit ARW dynamical
+core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</p>
+
+<div class="wrf-credit">
+  <strong>Built on the shoulders of WRF.</strong> This project is an independent,
+  <strong>AI-written re-implementation</strong> of the same physics solver, GPU-optimized and
+  <strong>validated cell-for-cell against WRF as the result oracle</strong>. It is <em>not</em> a
+  port of the WRF Fortran source and is <strong>not affiliated with or endorsed by
+  UCAR/NCAR</strong>. The Weather Research and Forecasting (WRF) model is developed and
+  maintained by <a href="https://www.mmm.ucar.edu/models/wrf">NCAR/UCAR and the WRF community</a>;
+  please cite and credit them. See <a href="credits.html">Credits, License &amp; Citation</a>.
+</div>
+
+<div class="admon honest">
+  <div class="admon-title">Read this first — what this software is</div>
+  <p>wrf_gpu is a <strong>transparent research artifact</strong>: a clean JAX rewrite whose
+  dynamics/thermodynamics core is proven <strong>cell-for-cell identical to CPU-WRF v4</strong>
+  over 72&nbsp;h. It is honest about its edges — the broader 24–72&nbsp;h forecast-<em>skill</em>
+  equivalence is an <strong>open credibility gate, not yet claimed closed</strong>. Priority order,
+  in every design decision: <strong>stability&nbsp;&gt;&nbsp;identity&nbsp;&gt;&nbsp;speed&nbsp;&gt;&nbsp;memory</strong>.
+  There is no masking, clamping, or <code>nan_to_num</code> anywhere on the result path.</p>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">✨ New — run it by just asking an AI</div>
+  <p>Clone the repo, open an AI coding agent (Claude Code / Codex / OpenCode), and say
+  <em>"here is my input, get it running."</em> The repo ships an operator skill the agent
+  auto-loads — it sets up the environment, checks your GPU, smoke-tests, and runs your case,
+  narrating each step and its ETA. See <a href="ai-quickstart.html">Quickstart with an AI Agent</a>.</p>
+</div>
+
+<h2 id="start-here">Start here<a class="headerlink" href="#start-here" aria-label="Permalink">¶</a></h2>
+<div class="card-grid">
+  <a class="card" href="ai-quickstart.html">
+    <div class="card-title">✨ Quickstart with an AI Agent →</div>
+    <div class="card-desc">Clone → open an agent → "get my case running." It does the rest.</div>
+  </a>
+  <a class="card" href="installation.html">
+    <div class="card-title">Installation &amp; Requirements →</div>
+    <div class="card-desc">GPU, CUDA 13, JAX, Python, and the runtime-table prerequisites.</div>
+  </a>
+  <a class="card" href="quickstart.html">
+    <div class="card-title">Quickstart →</div>
+    <div class="card-desc">Run the bundled Switzerland 3 km case and read your first <code>wrfout</code>.</div>
+  </a>
+  <a class="card" href="running.html">
+    <div class="card-title">Running the Model →</div>
+    <div class="card-desc">The <code>gpuwrf run</code> command: single-domain, nested, restart.</div>
+  </a>
+  <a class="card" href="physics.html">
+    <div class="card-title">Physics Options →</div>
+    <div class="card-desc">The GPU-operational scheme menu with WRF namelist numbers.</div>
+  </a>
+  <a class="card" href="performance.html">
+    <div class="card-title">Performance &amp; GPU Modes →</div>
+    <div class="card-desc">Cold compile, warm cache, batched ensembles, fp32, VRAM.</div>
+  </a>
+  <a class="card" href="validation.html">
+    <div class="card-title">Validation &amp; WRF Identity →</div>
+    <div class="card-desc">How the port is proven against WRF as an oracle.</div>
+  </a>
+</div>
+
+<h2 id="what-it-is">What it is good for<a class="headerlink" href="#what-it-is" aria-label="Permalink">¶</a></h2>
+<ul>
+  <li><strong>Running real regional ARW forecasts on a GPU</strong> from a standard WRF
+  namelist — single-domain or live-nested (d01→d02→d03, down to a 1&nbsp;km nest), with native
+  init, restart, and a WRF-compatible <code>wrfout</code>.</li>
+  <li><strong>Capability the CPU stack cannot reach on one box.</strong> A 1&nbsp;km single
+  domain fits one RTX&nbsp;5090 bit-identically, and the all-7-island 1&nbsp;km nested case runs
+  end-to-end on one card.</li>
+  <li><strong>Throughput at scale and on many cases.</strong> The GPU advantage grows with grid
+  size; the opt-in <a href="performance.html#batched-ensemble">batched ensemble</a> fills an
+  otherwise-idle small-grid GPU by running many same-geometry cases at once.</li>
+  <li><strong>A forkable, auditable artifact.</strong> Every claim has a proof object on disk;
+  every architecture decision has a cross-model-reviewed ADR.</li>
+</ul>
+
+<h2 id="what-it-is-not">What it is NOT<a class="headerlink" href="#what-it-is-not" aria-label="Permalink">¶</a></h2>
+<ul>
+  <li><strong>Not a universal WRF v4.</strong> It covers the common operational ARW subset (the
+  <a href="physics.html">wired physics menu</a>). Every unsupported namelist option
+  <strong>fails closed before any compute</strong> with a named reason — it never silently
+  substitutes a scheme. See <a href="namelist.html">Namelist Compatibility</a>.</li>
+  <li><strong>Not proven for full 24 h/72 h forecast-skill equivalence.</strong> The
+  dynamics/thermodynamics core is cell-for-cell identical to CPU-WRF; broader T2/U10/V10 skill
+  equivalence is the open gate (<a href="validation.html#skill-gate">details</a>).</li>
+  <li><strong>Not a blanket single-card speedup.</strong> On tiny geometries the GPU can be
+  launch/occupancy-bound and slower than multi-rank CPU-WRF; the advantage grows with scale.</li>
+  <li><strong>Not</strong> WPS/<code>real.exe</code>, DFI, FDDA/nudging, WRF-Chem, WRF-Fire,
+  urban (BEP/BEM) or lake. See <a href="limitations.html">Boundaries &amp; Known Issues</a>.</li>
+</ul>
+
+<h2 id="scope-at-a-glance">Scope at a glance<a class="headerlink" href="#scope-at-a-glance" aria-label="Permalink">¶</a></h2>
+<p>What runs, what is recognized-but-refused (loudly, before any compute), and what is a
+deliberate boundary. Full detail on the <a href="namelist.html">Namelist Compatibility</a> and
+<a href="physics.html">Physics Options</a> pages.</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Area</th><th>Implemented (runs)</th><th>Fail-closed (refused with a named reason)</th><th>Out of scope</th></tr></thead>
+<tbody>
+<tr><td><strong>Init</strong></td><td>Standalone init from <code>wrfinput</code>/<code>wrfbdy</code> real-data artifacts; WRF restart</td><td>Raw <code>met_em</code>-only CLI input</td><td>WPS (geogrid/ungrib/metgrid)</td></tr>
+<tr><td><strong>Dynamics</strong></td><td>Nonhydrostatic ARW, RK3 + split-explicit acoustic, flux-form advection, constant-K + 2-D Smagorinsky diffusion</td><td>3-D TKE / full Smagorinsky (<code>km_opt=2/3/5</code>)</td><td>Global nests</td></tr>
+<tr><td><strong>Microphysics</strong></td><td>Kessler, Purdue-Lin, WSM3/5/6/7, Thompson (+aerosol-aware), Morrison, SBU-YLin, WDM5/6/7, Goddard GCE</td><td>Morrison-aerosol (mp=40), NSSL, MP tail</td><td>WRF-Chem coupling</td></tr>
+<tr><td><strong>PBL / sfc</strong></td><td>YSU, MYJ, MYNN-EDMF, ACM2, BouLac, GFS, GBM-TKE, MRF, Shin-Hong; MYNN-SL, revised-MM5, Pleim-Xiu, Janjic, GFS sfclay</td><td>CAM-UW (bl=9); reference-only PBL tail</td><td>—</td></tr>
+<tr><td><strong>Cumulus</strong></td><td>Kain-Fritsch, BMJ, Tiedtke, New-Tiedtke, Grell-Freitas</td><td>Reference-only / documented-boundary CU tail</td><td>—</td></tr>
+<tr><td><strong>Radiation</strong></td><td>RRTMG SW+LW (topo shading + slope), Dudhia SW + RRTM LW</td><td>Reference-only RA tail</td><td>—</td></tr>
+<tr><td><strong>Land</strong></td><td>Noah, Noah-MP, Pleim-Xiu LSM, thermal-diffusion slab</td><td>RUC LSM (reference-only); CLM4/CTSM (boundary)</td><td>—</td></tr>
+<tr><td><strong>Nesting</strong></td><td>One-way live d01→d02→d03, sub-cycling, restart; GWD default-on nested</td><td>—</td><td>Global nests</td></tr>
+<tr><td><strong>Output</strong></td><td>Focused 104-variable WRF-compatible <code>wrfout</code>; opt-in 375-variable stream</td><td>—</td><td>CLI-exposed auxhist streams</td></tr>
+<tr><td><strong>Other</strong></td><td>Lateral-BC relaxation; opt-in two-way &amp; moving nests</td><td>Urban (BEP/BEM), lake (reference-only)</td><td>DFI, FDDA/nudging, WRF-Chem/Fire/Hydro</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">New to the workflow?</div>
+  <p>If you already run WRF, the biggest change is that wrf_gpu replaces
+  <code>wrf.exe</code> with a single command, <code>python -m gpuwrf.cli run</code>, and
+  initializes from the same <code>wrfinput_*</code>/<code>wrfbdy_d01</code> artifacts a
+  WRF real-data case already uses. Keep your <code>namelist.input</code> and current
+  preprocessing chain for producing those artifacts. Start with the
+  <a href="quickstart.html">Quickstart</a>, then read
+  <a href="input-data.html">Input Data &amp; Initialization</a>.</p>
+</div>
+
+        <nav class="page-nav">
+<span></span>
+<a class="next" href="concepts.html"><span class="pn-dir">Next →</span><span class="pn-title">How wrf_gpu Works</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

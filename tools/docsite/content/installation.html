@@ -1,0 +1,171 @@
+<h1>Installation &amp; Requirements</h1>
+
+<p class="lead">wrf_gpu is a JAX/CUDA application: a CUDA-capable NVIDIA GPU, a
+CUDA&nbsp;13 JAX build, and Python. This page covers the hardware you need, the
+full and the minimal (source-only) install, how to verify the GPU is visible, and
+the runtime-table environment variable that table-using physics schemes require
+before a run.</p>
+
+<div class="admon note">
+  <div class="admon-title">The short version</div>
+  <p><code>pip install --upgrade "jax[cuda13]"</code>, then <code>pip install -e .</code>
+  (or <code>pip install -e ".[cuda]"</code>), then <code>python -c "import jax;
+  print(jax.devices())"</code> to confirm a CUDA device. Set
+  <code>GPUWRF_WRF_ROOT</code> before running any case that selects Noah-MP or
+  classic RRTM. Jump straight to the <a href="quickstart.html">Quickstart</a> once
+  <code>jax.devices()</code> lists your GPU.</p>
+</div>
+
+<h2 id="gpu-and-vram">GPU &amp; VRAM sizing</h2>
+
+<p>The reference machine is a single <strong>RTX&nbsp;5090 (32&nbsp;GiB)</strong>
+workstation; the numbers below are <span class="pill op">Measured</span> on it. Peak
+VRAM is <em>transient working memory</em> (largest during the radiation transient and
+the cold start), not the persistent fp64 model state — so it scales with grid size
+and physics, not with forecast length.</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Case</th><th>Peak VRAM</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>d01 9&nbsp;km single domain</td><td>≈&nbsp;4.7&nbsp;GiB</td><td>Bundled-class single-domain forecast.</td></tr>
+<tr><td>1&nbsp;km single domain</td><td>18.25&nbsp;GiB</td><td>Fits one RTX&nbsp;5090 bit-identically (chunked BouLac cold start).</td></tr>
+<tr><td>1&nbsp;km all-island nested (9/3/1; d03 520×280×45, ~145k columns)</td><td>~18.1&nbsp;GiB</td><td>Fits the reference card; earlier releases OOMed near 31.8/32&nbsp;GiB.</td></tr>
+<tr><td>Switzerland d01, 72&nbsp;h identity gate</td><td>22.9&nbsp;GiB</td><td>Retained 72&nbsp;h validation run.</td></tr>
+<tr><td>Canary L2 d02, nested 72&nbsp;h identity gate</td><td>29.8&nbsp;GiB</td><td>Retained 72&nbsp;h nested validation run.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>As a rule of thumb, a 3&nbsp;km d02 fp64 case wants <strong>≥&nbsp;26&nbsp;GiB
+free VRAM</strong>. Nested runs (<code>--max-dom&nbsp;&gt;&nbsp;1</code>) additionally
+run a launch-time VRAM preflight and fail closed unless the card has at least
+<code>max(24&nbsp;GiB, 0.50&nbsp;×&nbsp;total&nbsp;VRAM)</code> free — see
+<a href="running.html#vram-preflight">the VRAM preflight</a>.</p>
+
+<div class="admon honest">
+  <div class="admon-title">High resident host RAM (~36 GB)</div>
+  <p>A run currently holds about <strong>36&nbsp;GB of host (CPU) RAM resident</strong>,
+  even when VRAM use is only ~9.6&nbsp;GB, because the Noah-MP / physics constant
+  tables are baked into the compiled executable rather than passed as runtime
+  arguments. This is <strong>precision-independent</strong> and does <strong>not</strong>
+  affect correctness, single-run stability, or results — but it limits running two
+  instances on a 64&nbsp;GB box and reduces large-grid / pod-density headroom. It is
+  root-caused; the tables-as-runtime-args fix is deferred.</p>
+</div>
+
+<h3 id="other-resources">Other resources</h3>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Resource</th><th>What to expect</th></tr></thead>
+<tbody>
+<tr><td>Toolchain</td><td>CUDA&nbsp;13 and a JAX CUDA build that sees the GPU.</td></tr>
+<tr><td>Scratch</td><td>A <strong>real, non-tmpfs</strong> NVMe scratch directory with a few GiB free. Set it with <code>--scratch-dir</code> / <code>$GPUWRF_SCRATCH</code>. Do <strong>not</strong> use a RAM disk (<code>/tmp</code> tmpfs).</td></tr>
+<tr><td>Runtime data tables</td><td>The vendored <code>data/fixtures/</code> tables (~147&nbsp;MiB: Thompson&nbsp;+&nbsp;RRTMG) are loaded at import. Some selected physics also reads small WRF runtime tables from <code>GPUWRF_WRF_ROOT</code>.</td></tr>
+<tr><td>First-run compile</td><td>A one-time cold JIT compile (no output during compile), then a fast warm start from the persistent on-disk cache. See <a href="performance.html">Performance</a>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="install">Full install</h2>
+
+<p>Use an isolated environment. <strong>Python&nbsp;3.11</strong> is the reference
+interpreter; the package requires <strong>Python&nbsp;≥&nbsp;3.10</strong>. Install
+the CUDA build of JAX <em>first</em>, then the package.</p>
+
+<pre><code>git clone https://github.com/wrf-gpu/wrf_gpu.git
+cd wrf_gpu
+
+# Isolated environment (venv or conda both work):
+python -m venv .venv &amp;&amp; . .venv/bin/activate
+# or:  conda create -n wrfgpu python=3.11 &amp;&amp; conda activate wrfgpu
+
+# 1. GPU build of JAX (CUDA 13 wheels):
+pip install --upgrade "jax[cuda13]"
+
+# 2. wrf_gpu itself (pulls numpy, netCDF4, xarray, PyYAML, zarr, ...):
+pip install -e .
+
+# 3. Verify JAX sees the GPU (should list a cuda device):
+python -c "import jax; print(jax.devices())"</code></pre>
+
+<p>Equivalently, the <code>cuda</code> extra pins the CUDA&nbsp;13 jaxlib for you:</p>
+<pre><code>pip install -e ".[cuda]"</code></pre>
+
+<div class="admon note">
+  <div class="admon-title">CUDA 12 host, or a resolver miss</div>
+  <p>On a CUDA&nbsp;12 host use <code>jax[cuda12]</code> instead of
+  <code>jax[cuda13]</code>. If the stable CUDA wheel does not resolve for your
+  CUDA/driver combination, the JAX <strong>nightly</strong> CUDA wheel is the
+  documented fallback. A plain <code>pip install -e .</code> pulls in <em>CPU</em>
+  JAX, so the import and namelist-validation paths work without a GPU — but GPU
+  execution needs the CUDA jaxlib.</p>
+</div>
+
+<h2 id="source-only">Minimal source-only install</h2>
+
+<p>You do <strong>not</strong> need the whole repository (proofs, agent
+infrastructure, validation corpora) just to <em>run</em> wrf_gpu. A cone
+sparse-checkout of <code>src</code> plus the vendored runtime data tables is enough;
+this path was verified end-to-end on a clean machine.</p>
+
+<pre><code># Shallow, no-checkout clone, then cone-sparse-checkout only what `run` needs:
+git clone --depth 1 --no-checkout \
+    https://github.com/wrf-gpu/wrf_gpu.git wrf_gpu &amp;&amp; cd wrf_gpu
+git sparse-checkout init --cone
+# In cone mode the root files (pyproject.toml, README.md, LICENSE_NOTES.md) come
+# automatically; add the source package and the vendored runtime data tables
+# (the Thompson/RRTMG tables are loaded at import -- `src` alone is not enough):
+git sparse-checkout set src data/fixtures
+git checkout
+
+# Install (CPU import works without a GPU; add the CUDA jaxlib to run on GPU):
+python -m venv .venv &amp;&amp; . .venv/bin/activate
+pip install -e .                  # CPU import-check; or:
+pip install -e ".[cuda]"          # GPU execution (CUDA 13 jaxlib)
+
+# Verify:
+python -c "import gpuwrf; print('wrf_gpu', gpuwrf.__version__)"
+python -m gpuwrf.cli run --help   # the CLI is the entrypoint</code></pre>
+
+<p>The <code>data/fixtures/</code> tables (~147&nbsp;MiB) are required at import, so
+the sparse checkout must include them alongside <code>src</code>.</p>
+
+<h2 id="prerequisite-env">Prerequisite environment variables</h2>
+
+<p>Table-using schemes (Noah-MP and classic RRTM, plus WRF-table-dependent options)
+load lookup tables from a pristine WRF&nbsp;v4 install at runtime, so their paths must
+be set before you run a case that selects them. Without <code>GPUWRF_WRF_ROOT</code>, those schemes <strong>fail
+closed with a clear named error before any compute</strong> — they never silently
+substitute a scheme. Cases whose physics menu does not use those schemes run without
+it.</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Required for</th><th>What it points to</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_WRF_ROOT</code></td><td>Noah-MP, classic RRTM, WRF-table-dependent options</td><td>Root of a pristine WRF&nbsp;v4 source/run tree — provides the classic RRTM <code>.F</code> source and <code>run/</code> tables (including Noah-MP tables and <code>run/CCN_ACTIVATE.BIN</code> for aerosol-aware Thompson).</td></tr>
+<tr><td><code>GPUWRF_CANAIRY_ROOT</code></td><td>The validation corpus</td><td>The <code>met_em</code> / run-corpus root for the validation cases (run inputs + CPU-WRF reference). Not needed for the bundled example.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Two optional paths (both defaulted) tune performance and scratch:</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Variable</th><th>Default</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_JAX_CACHE_DIR</code></td><td>per-user cache</td><td>Persistent JIT-cache location. The standard JAX <code>JAX_COMPILATION_CACHE_DIR</code> is honored as an alias.</td></tr>
+<tr><td><code>GPUWRF_TMPDIR</code></td><td><code>~/.cache/gpuwrf</code></td><td>Scratch root for transient files.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">Next steps</div>
+  <p>The full list of tuning and identity flags lives on
+  <a href="environment.html">Environment Variables</a>. Once
+  <code>jax.devices()</code> lists your GPU and <code>GPUWRF_WRF_ROOT</code> is set,
+  run your first forecast in the <a href="quickstart.html">Quickstart</a>.</p>
+</div>

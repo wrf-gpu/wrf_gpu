@@ -1,0 +1,96 @@
+<h1>Dynamical Core</h1>
+
+<p class="lead">wrf_gpu integrates a <strong>nonhydrostatic, split-explicit ARW dynamical core</strong> on
+the GPU — the same architecture as WRF's Advanced Research WRF core, re-implemented in JAX and
+validated cell-for-cell against CPU-WRF as the oracle. The dynamics/thermodynamics core is proven
+cell-for-cell identical to CPU-WRF v4; the priority order in every design decision is
+<strong>stability&nbsp;&gt;&nbsp;identity&nbsp;&gt;&nbsp;speed&nbsp;&gt;&nbsp;memory</strong>, with no
+masking, clamping, or <code>nan_to_num</code> on the result path.</p>
+
+<h2 id="time-integration">Time integration: RK3 + acoustic sub-stepping</h2>
+<p>The core uses WRF's split-explicit time scheme. A third-order <strong>Runge-Kutta (RK3) large
+step</strong> advances the slow (meteorologically significant) modes, while the fast acoustic and
+gravity-wave modes are integrated with smaller <strong>acoustic sub-steps</strong> inside each RK3
+stage. Only <code>rk_order=3</code> is supported.</p>
+
+<h2 id="advection">Flux-form advection</h2>
+<p>Prognostic variables are advanced with <strong>flux-form advection</strong>. The advection orders
+are frozen to the WRF real-data default (5th-order horizontal, 3rd-order vertical). Optional moisture
+flux-advection into RK3 is available and gated:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Key</th><th>Accepted values</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><code>moist_adv_opt</code></td><td>0 (standard), 1 (positive-definite), 2 (monotonic)</td><td>Opt-in; default-off = byte-identical. WENO variants (3/4) not wired.</td></tr>
+<tr><td><code>scalar_adv_opt</code></td><td>0 / 1 / 2</td><td>As above.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Active flux-form moisture advection makes WRF's <code>RQVFTEN</code> available, which the Tiedtke
+and New-Tiedtke cumulus schemes require (see <a href="physics.html">Physics Options</a>).</p>
+
+<div class="admon note">
+  <div class="admon-title">Default-off means byte-identical</div>
+  <p>The moisture/scalar flux-advection levers are opt-in and default-off; with them off the forecast
+  is byte-for-byte identical to the baseline. They move toward the open 24&nbsp;h forecast-skill gap
+  but do not close it (see <a href="validation.html">Validation</a>).</p>
+</div>
+
+<h2 id="precision">fp64 by default</h2>
+<p>The dynamical core runs in <strong>fp64</strong> by default. Double precision is needed around the
+<strong>pressure-gradient / buoyancy cancellation</strong>, where the difference of two large,
+nearly-equal terms would lose accuracy in single precision. The fp64 path is the validated,
+byte-identical default.</p>
+
+<div class="admon honest">
+  <div class="admon-title">fp32 is opt-in and capability-only</div>
+  <p>An opt-in mixed-precision fp32 mode exists, but it buys VRAM (−14.4%) and cell capability
+  (~1.16×), <strong>not</strong> single-card speed (throughput ratio ≈0.91), and its fidelity is
+  verified only at the 1&nbsp;h lead. The default remains pure fp64. See
+  <a href="performance.html">Performance</a>.</p>
+</div>
+
+<h2 id="diffusion">Horizontal diffusion</h2>
+<p>The port implements and operationally wires two horizontal-diffusion closures; the 3-D closures
+fail closed with a transition recipe:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Closure</th><th>Setting</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Constant-K</td><td><code>diff_opt=2</code>, <code>km_opt=1</code> (or <code>diff_opt=0</code>)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td>2-D Smagorinsky (horizontal)</td><td><code>diff_opt=1</code>, <code>km_opt=4</code></td><td><span class="pill op">Operational</span> — WRF's recommended real-data default; includes terrain-slope and map-factor deformation terms (WRF-formula parity)</td></tr>
+<tr><td>3-D TKE / 3-D Smagorinsky / SMS-3DTKE</td><td><code>km_opt=2 / 3 / 5</code></td><td><span class="pill closed">Fail-closed</span> — not implemented</td></tr>
+</tbody>
+</table>
+</div>
+<p>If your namelist uses a 3-D closure (<code>km_opt=2/3/5</code>), switch to
+<strong>constant-K <code>diff_opt=2</code> / <code>km_opt=1</code></strong> (vertical mixing then comes
+from the PBL scheme). Other numerics knobs: <code>diff_6th_opt</code> 0/2 (2 = monotonic 6th-order
+filter, no up-gradient flux), <code>damp_opt</code> 0/3 (3 = upper-level <em>w</em>-Rayleigh damping),
+and <code>w_damping</code> 0/1.</p>
+
+<h2 id="gwd">Gravity-wave drag</h2>
+<p>Orographic gravity-wave drag with flow blocking (<code>gwd_opt=1</code>) is wired and
+<strong>default-ON on the nested 1&nbsp;km path</strong>. It requires the sub-grid orography statics in
+<code>wrfinput</code>. Set <code>GPUWRF_GWD_NESTED=0</code> to force it off for a memory-tighter
+config. The GSL drag suite (<code>gwd_opt=3</code>) is not wired.</p>
+
+<h2 id="boundaries">Lateral boundaries and free-running stability</h2>
+<p>Limited-area runs are forced through <strong>lateral-boundary relaxation</strong> from the boundary
+tendencies (<code>wrfbdy</code> for the root; the parent supplies each nested child's boundary live —
+see <a href="nesting.html">Nesting</a>). This is the validated operational path.</p>
+
+<div class="admon warn">
+  <div class="admon-title">Free-running open boundaries can go unstable (KI-7)</div>
+  <p>Running <strong>free (no lateral-boundary relaxation)</strong> on <strong>wide domains
+  (nx&nbsp;≈&nbsp;160+)</strong> can go non-finite beyond approximately forecast hour&nbsp;<strong>14</strong>.
+  The validated operational path uses boundary forcing; keep boundary relaxation on for wide-domain
+  runs.</p>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">See also</div>
+  <p><a href="nesting.html">Nesting</a> for live nested boundaries and sub-cycling,
+  <a href="physics.html">Physics Options</a> for the scheme menu that couples into the core, and
+  <a href="performance.html">Performance</a> for the fp64/fp32 throughput and VRAM story.</p>
+</div>

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quickstart with an AI Agent — wrf_gpu User's Guide</title>
+  <meta name="description" content="Clone the repo, open an AI coding agent, and say &#x27;here is my input, get it running&#x27; — the repo ships an operator skill the agent auto-loads.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="active" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<div class="subnav">
+<a href="ai-quickstart.html#how-it-works">How the AI-native quickstart works</a>
+<a href="ai-quickstart.html#use-it">Using it</a>
+<a href="ai-quickstart.html#what-the-agent-does">What the agent does — and narrates</a>
+<a href="ai-quickstart.html#honesty">The agent stays honest</a>
+</div>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Getting started › Quickstart with an AI Agent</div>
+        <h1>Quickstart with an AI Agent</h1>
+
+<p class="lead">wrf_gpu is designed to be <strong>driven by an AI coding agent</strong>. Clone the
+repo, open Claude Code / Codex / OpenCode (or any agent that reads a project's instruction files),
+and simply say: <em>"Here is my input, this is what I need — get it running."</em> The agent
+auto-loads an operator runbook that ships in the repo and does the rest, narrating each step.</p>
+
+<div class="admon note">
+  <div class="admon-title">Two front doors</div>
+  <p>This page is the human-facing explanation. The <strong>agent-facing</strong> instructions live
+  in the repo as <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/AI_OPERATOR.md"><code>AI_OPERATOR.md</code></a>
+  and a Claude Code skill at <code>.claude/skills/run-wrf-gpu/</code>. You do not read those — your
+  agent does. If you prefer to run the commands yourself, use the manual
+  <a href="quickstart.html">Quickstart</a> instead.</p>
+</div>
+
+<h2 id="how-it-works">How the AI-native quickstart works<a class="headerlink" href="#how-it-works" aria-label="Permalink">¶</a></h2>
+<p>The repository ships a small set of files that common agents load automatically when they open
+the checkout:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>File</th><th>Loaded by</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td><code>AI_OPERATOR.md</code></td><td>Any agent (referenced from the auto-load files)</td><td>The authoritative end-user operator runbook the agent follows.</td></tr>
+<tr><td><code>.claude/skills/run-wrf-gpu/</code></td><td>Claude Code</td><td>A native skill that triggers when you ask to run/set up a forecast, and dispatches to the runbook.</td></tr>
+<tr><td><code>AGENTS.md</code> / <code>CLAUDE.md</code> banner</td><td>Codex, OpenCode, Claude Code, …</td><td>A routing banner at the top that sends an agent helping an <em>end user</em> to <code>AI_OPERATOR.md</code> (the rest of those files is the port's internal dev protocol).</td></tr>
+</tbody>
+</table>
+</div>
+<p>Because the instructions are in the repo, the agent gets accurate, version-matched knowledge of
+the real CLI, the required environment, the physics support matrix, and the honest limits — without
+you having to teach it.</p>
+
+<h2 id="use-it">Using it<a class="headerlink" href="#use-it" aria-label="Permalink">¶</a></h2>
+<pre><code><span class="c"># 1. Clone and open an AI coding agent in the checkout</span>
+git clone https://github.com/wrf-gpu/wrf_gpu.git &amp;&amp; cd wrf_gpu
+<span class="c"># open Claude Code / Codex / OpenCode here</span>
+
+<span class="c"># 2. Tell the agent, in your own words:</span>
+<span class="c">#    "Here is my case in ./my_case (namelist.input + wrfinput/wrfbdy).</span>
+<span class="c">#     Run a 24 h forecast and get me the wrfout. Set everything up."</span></code></pre>
+<p>The agent then works through the operator runbook and keeps you informed at every step.</p>
+
+<h2 id="what-the-agent-does">What the agent does — and narrates<a class="headerlink" href="#what-the-agent-does" aria-label="Permalink">¶</a></h2>
+<p>The runbook is an explicit, ordered playbook. A good agent will tell you what it is doing and how
+long each wait should take, roughly like this:</p>
+<ol>
+  <li><strong>Understand the request</strong> — detects your case directory, forecast length,
+  single-domain vs nested (<code>--max-dom</code>), and output location.</li>
+  <li><strong>Environment</strong> — "creating a Python 3.11 venv, installing the CUDA build of JAX
+  and the package…"</li>
+  <li><strong>GPU / driver check</strong> — "running <code>nvidia-smi</code> and
+  <code>jax.devices()</code> to confirm the GPU is visible…"</li>
+  <li><strong>Smoke test</strong> — "running the bundled Switzerland 1-hour case first to prove the
+  toolchain before touching your data…"</li>
+  <li><strong>Prepare your case</strong> — "setting <code>GPUWRF_WRF_ROOT</code> for the physics
+  tables; validating your namelist (it fails closed on anything unsupported, with a named reason)…"</li>
+  <li><strong>Run &amp; narrate</strong> — "JAX is compiling the GPU kernels — for this grid that's a
+  one-time ~N minutes with no output, it's compiling, not hung… now integrating at ~X s per
+  forecast-hour, so ~Y minutes for your 24 h run…"</li>
+  <li><strong>Deliver &amp; verify</strong> — "your <code>wrfout</code> is in <code>runs/…</code>;
+  here's the <code>ncdump -h</code> header."</li>
+</ol>
+<div class="admon note">
+  <div class="admon-title">Time estimates the agent will quote</div>
+  <p>One-time cold compile (no output): ~½–2 min single-domain, ~8–12 min nested, tens of minutes
+  for the big all-7 nest; later runs hit the warm cache and start in seconds. Warm nested throughput
+  is on the order of hundreds of seconds per forecast-hour (grid-dependent) — the agent refines the
+  ETA from observed progress. See <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
+</div>
+
+<h2 id="honesty">The agent stays honest<a class="headerlink" href="#honesty" aria-label="Permalink">¶</a></h2>
+<p>The operator runbook instructs the agent to relay the same honesty this guide holds:</p>
+<ul>
+  <li>the default path is <strong>fp64</strong> and byte-identical; opt-in modes stay opt-in;</li>
+  <li>unsupported namelist options <strong>fail closed</strong> — the agent will not silently swap a
+  scheme, and will ask you before changing your physics;</li>
+  <li>a successful run does <strong>not</strong> close the open 24–72 h forecast-skill gate — this
+  is a research artifact, not a validated operational WRF replacement;</li>
+  <li>there is no masking or clamping; if the finite guard aborts, the agent reports the exact
+  failure rather than hiding it.</li>
+</ul>
+
+<div class="admon honest">
+  <div class="admon-title">Why ship an operator skill at all?</div>
+  <p>We think this is where user documentation is heading: the human-readable guide you are reading
+  now is one half; the other half is a repository an AI can operate <em>for</em> you. The operator
+  skill turns "read the docs, install the stack, remember the flags, watch the compile" into
+  "describe your goal in plain language and let the agent execute it" — while keeping every honest
+  caveat intact.</p>
+</div>
+
+        <nav class="page-nav">
+<a class="prev" href="quickstart.html"><span class="pn-dir">← Previous</span><span class="pn-title">Quickstart</span></a>
+<a class="next" href="running.html"><span class="pn-dir">Next →</span><span class="pn-title">Running the Model</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

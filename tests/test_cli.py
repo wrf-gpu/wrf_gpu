@@ -31,8 +31,10 @@ def test_build_parser_has_run_subcommand() -> None:
         ]
     )
     assert args.command == "run"
-    assert args.hours == 1
-    assert args.domain == "d02"
+    # v0.23.1 WRF-parity: --hours/--domain now default to None and are resolved
+    # inside _cmd_run (hours from the namelist &time_control -> 1; domain -> d01).
+    assert args.hours is None
+    assert args.domain is None
     assert args.score is False
 
 

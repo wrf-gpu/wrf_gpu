@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Output Files — wrf_gpu User's Guide</title>
+  <meta name="description" content="The WRF-compatible wrfout history file, the focused training subset, full output, colon-free naming, and restart files.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="active" href="output.html">Output Files</a>
+<div class="subnav">
+<a href="output.html#wrfout">The wrfout history file</a>
+<a href="output.html#filenames">History filenames and per-domain cadence</a>
+<a href="output.html#subset">Opt-in training subset</a>
+<a href="output.html#full-wrfout">Opt-in full WRF variable set</a>
+<a href="output.html#async">Asynchronous and pipelined output</a>
+<a href="output.html#restart">Restart files (wrfrst)</a>
+</div>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Configuration › Output Files</div>
+        <h1>Output Files</h1>
+
+<p class="lead">wrf_gpu writes a <strong>WRF-compatible <code>wrfout</code> history file</strong>: standard
+NetCDF, WRF variable names, dimensions, and staggering, one frame per output time. If you already
+post-process WRF <code>wrfout</code>, your tools read wrf_gpu output the same way. A
+<code>wrfrst</code>-equivalent restart file lets you continue a run bit-for-bit.</p>
+
+<h2 id="wrfout">The wrfout history file<a class="headerlink" href="#wrfout" aria-label="Permalink">¶</a></h2>
+<p>The operational writer emits a <strong>focused 104-variable</strong> <code>wrfout</code> covering
+the core meteorology (winds, temperature, pressure/geopotential, moisture species), spatial and
+vertical coordinates, soil state, radiation fluxes, and Noah-MP snow-layer fields. This is a
+<strong>documented scope boundary</strong> against WRF's full 375-variable stream — the subset a
+downstream user or learner typically needs — not a hidden gap.</p>
+
+<div class="admon honest">
+  <div class="admon-title">104 vs 375 — a documented boundary</div>
+  <p>The default <code>wrfout</code> is a focused 104-variable subset of WRF's 375-variable history
+  stream (tracked as KI-3). Every emitted field is a real WRF variable at its correct name,
+  dimensions, and staggering; a field whose source is absent from a given run is silently skipped —
+  never fabricated. Auxiliary history streams (<code>auxhist</code>) are not written. If you need the
+  full WRF variable coverage, opt in below.</p>
+</div>
+
+<p>Inspect a history file with the standard NetCDF tools, exactly as for WRF:</p>
+<pre><code>ncdump -h runs/&lt;case&gt;/wrfout_d01_*        # header: dims, variables, attrs
+ncdump -v T2 runs/&lt;case&gt;/wrfout_d01_*      # dump a single variable</code></pre>
+
+<h2 id="filenames">History filenames and per-domain cadence<a class="headerlink" href="#filenames" aria-label="Permalink">¶</a></h2>
+<p>History files follow WRF naming: <code>wrfout_&lt;domain&gt;_&lt;YYYY-MM-DD_HH:MM:SS&gt;</code>
+(for example <code>wrfout_d02_2023-01-15_06:00:00</code>). In a nested run each domain writes its own
+stream (<code>wrfout_d01_…</code>, <code>wrfout_d02_…</code>, …).</p>
+
+<h3 id="cadence">history_interval is honored per domain<a class="headerlink" href="#cadence" aria-label="Permalink">¶</a></h3>
+<p>The namelist <code>history_interval</code> sets the output cadence, and <strong>each domain honors
+its own value</strong> — including leaf children of a nest, on both the eager and the default fused
+integration paths. (A fused flat-leaf subtree falls back to the eager split when a child cadence is
+not parent-ratio aligned, so the intended training-frame yield is preserved.) Earlier versions
+hard-coded hourly nested output; that is fixed.</p>
+
+<h3 id="colonfree">Colon-free filenames<a class="headerlink" href="#colonfree" aria-label="Permalink">¶</a></h3>
+<p>Some object stores and network drains dislike the <code>:</code> in the WRF timestamp. Set
+<code>GPUWRF_COLONFREE_OUTPUT=1</code> to write <code>HH-MM-SS</code> instead of <code>HH:MM:SS</code>
+(for example <code>wrfout_d02_2023-01-15_06-00-00</code>). The <strong>default is the WRF-standard
+<code>HH:MM:SS</code></strong>; only the filename changes, never the file contents. See
+<a href="environment.html">Environment Variables</a>.</p>
+
+<h2 id="subset">Opt-in training subset<a class="headerlink" href="#subset" aria-label="Permalink">¶</a></h2>
+<p>For building downstream training datasets, set
+<code>GPUWRF_TRAINING_OUTPUT_SUBSET=1</code> to write a compact
+<strong>39-variable training subset</strong> (the model fields a learner needs — 3-D prognostics,
+2-D surface and cloud-validation diagnostics, static geography, and wind-rotation / map-factor
+fields) instead of the full operational output. The writer also force-emits the mandatory
+time/coordinate variables (<code>Times</code>, <code>XTIME</code>, eta levels, and staggered
+lat/lon coordinates) so each frame is self-describing.</p>
+
+<div class="admon measured">
+  <div class="admon-title">Kept variables are bit-identical</div>
+  <p>The subset is <strong>opt-in and lossless for the fields it keeps</strong>: every retained
+  variable is byte-for-byte identical to the default full output. A name whose source is absent from a
+  given run is silently skipped, never fabricated. The default output (flag unset) is unchanged and
+  byte-identical.</p>
+</div>
+
+<h2 id="full-wrfout">Opt-in full WRF variable set<a class="headerlink" href="#full-wrfout" aria-label="Permalink">¶</a></h2>
+<p>To emit the exact <strong>375-variable WRF history list</strong> (names and order matching a
+reference WRF <code>wrfout</code> stream), set <code>GPUWRF_FULL_WRFOUT_VARIABLES=1</code> (or the
+shorter alias <code>GPUWRF_FULL_WRFOUT=1</code>). This heavy compatibility stream is off by default;
+the default writer keeps the focused operational subset. The opt-in stream is a compatibility
+surface: it uses real state/diagnostics where present and inactive defaults for WRF stream slots the
+port does not currently carry.</p>
+
+<h2 id="async">Asynchronous and pipelined output<a class="headerlink" href="#async" aria-label="Permalink">¶</a></h2>
+<p>Writing a frame is host work that would otherwise idle the GPU. wrf_gpu overlaps it:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Env var</th><th>Default</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_NESTED_ASYNC_OUTPUT</code></td><td><span class="pill op">ON</span></td><td>Hands the host payload to a single bounded-queue background writer thread; the step loop resumes GPU compute immediately while the write overlaps. Set <code>=0</code> (also <code>false</code>/<code>off</code>/<code>no</code>) to force the legacy synchronous write for A/B measurement or byte-identity proofs.</td></tr>
+<tr><td><code>GPUWRF_NEST_OUTPUT_PIPELINE</code></td><td><span class="pill optin">OFF</span></td><td>When truthy, moves the finite guard, the M9 surface re-solve, and the device→host pull off the step thread onto a background materialize thread, so host materialization overlaps the next compute burst instead of idling the GPU at every output boundary.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">Overlap changes timing, not bytes</div>
+  <p>Both levers move <em>which thread and when</em> the same pure operations run — the written NetCDF
+  bytes, the finite-guard verdict, and the per-domain write order are byte-for-byte identical to the
+  synchronous path. A finite error or a failed background write is surfaced fail-closed (re-raised at
+  the next output boundary and again at run end), so a NaN can never escape into a "green" run or land
+  a corrupt frame on disk.</p>
+</div>
+
+<h2 id="restart">Restart files (wrfrst)<a class="headerlink" href="#restart" aria-label="Permalink">¶</a></h2>
+<p>wrf_gpu writes a WRF-compatible <code>wrfrst</code>-equivalent restart file — a bit-continuation
+snapshot of the full operational physics carry. Reloading it and continuing the forecast reproduces
+the state <strong>byte-for-byte</strong> (write → read → compare bit-identity is a validation gate).
+Restart is available on both single-domain and nested runs.</p>
+
+<div class="admon note">
+  <div class="admon-title">See also</div>
+  <p>Run commands and the cold-compile / warm-cache behavior are on
+  <a href="running.html">Running the Model</a>; all output-related environment variables are collected
+  on <a href="environment.html">Environment Variables</a>.</p>
+</div>
+
+        <nav class="page-nav">
+<a class="prev" href="environment.html"><span class="pn-dir">← Previous</span><span class="pn-title">Environment Variables</span></a>
+<a class="next" href="dynamics.html"><span class="pn-dir">Next →</span><span class="pn-title">Dynamical Core</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

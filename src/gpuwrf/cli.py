@@ -11,7 +11,7 @@ Usage::
         --namelist  <input-dir>/namelist.input \\
         --input-dir <CPU-WRF/Gen2 run dir> \\
         --output-dir runs/my_forecast \\
-        --domain d02 \\
+        --domain d01 \\
         --hours 1 \\
         --compare-cpu-dir <input-dir>
 
@@ -186,9 +186,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument(
         "--domain",
-        default="d02",
-        help="Domain id to run for a SINGLE-domain run (e.g. d02). Ignored when "
-        "the run is nested (max_dom > 1): all domains d01..dN are run together.",
+        default=None,
+        help="Domain id to run for a SINGLE-domain run (e.g. d01). Ignored when "
+        "the run is nested (max_dom > 1): all domains d01..dN are run together. "
+        "When omitted, defaults to d01 (WRF's root domain).",
     )
     run.add_argument(
         "--max-dom",
@@ -197,13 +198,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="Number of nested domains to run (d01..dN). Defaults to 1 "
         "(SINGLE domain = --domain). Set >1 to run the STANDALONE LIVE-NESTED driver "
         "(parent feeds each child's lateral boundary live; no CPU-WRF wrfout). "
-        "1 runs the single-domain path on --domain.",
+        "1 runs the single-domain path on --domain. Use --domains-from-namelist to "
+        "take this count from the namelist &domains max_dom instead.",
+    )
+    run.add_argument(
+        "--domains-from-namelist",
+        action="store_true",
+        help="WRF-parity: resolve --max-dom from the namelist &domains max_dom so "
+        "every domain the namelist declares (d01..dN) is run. Mutually exclusive "
+        "with --max-dom.",
     )
     run.add_argument(
         "--hours",
         type=int,
-        default=1,
-        help="Number of forecast hours to advance.",
+        default=None,
+        help="Number of forecast hours to advance. When omitted, the forecast "
+        "length is read from the namelist &time_control "
+        "(run_days*24 + run_hours + run_minutes/60 + run_seconds/3600), rounded "
+        "DOWN to whole hours but never below 1; if the namelist declares no "
+        "positive duration it falls back to 1. An explicit --hours always wins.",
+    )
+    run.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate the namelist, detect the input mode, resolve "
+        "hours/domain/max_dom + scratch, print the effective run plan as JSON, and "
+        "exit 0 WITHOUT running the forecast (no heavy JAX/GPU pipeline import).",
     )
     run.add_argument(
         "--proof-dir",
@@ -244,6 +264,26 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.set_defaults(func=_cmd_run)
 
+    # --- namelist-support: offline scheme-support registry (no JAX / no GPU). ---
+    support = subparsers.add_parser(
+        "namelist-support",
+        help="print which physics schemes are operational / reference-only / "
+        "fail-closed / out-of-scope (offline; no JAX, no GPU)",
+        description=(
+            "Print the operational scheme-support registry for the gated physics "
+            "namelist keys (mp_physics, cu_physics, bl_pbl_physics, "
+            "sf_sfclay_physics, sf_surface_physics, ra_lw_physics, ra_sw_physics). "
+            "Reads the physics registry only; imports no JAX and allocates no GPU."
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    support.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the registry as JSON instead of a readable table.",
+    )
+    support.set_defaults(func=_cmd_namelist_support)
+
     return parser
 
 
@@ -265,6 +305,272 @@ def _namelist_max_dom(namelist: Path) -> int:
         return max(1, int(raw))
     except (TypeError, ValueError):
         return 1
+
+
+def _namelist_forecast_hours(namelist: Path) -> int | None:
+    """Total forecast hours from ``&time_control`` run_days/hours/minutes/seconds.
+
+    Cheap, pre-JAX. Computes ``run_days*24 + run_hours + run_minutes/60 +
+    run_seconds/3600`` and rounds DOWN to whole hours (``int()`` floor of a
+    positive value) but never below 1. Returns ``None`` when the namelist
+    declares none of those keys or they sum to a non-positive duration, so the
+    caller falls back to the historical default of 1 hour.
+    """
+    from gpuwrf.io.gen2_accessor import parse_namelist
+
+    parsed = parse_namelist(namelist)
+    time_control = parsed.get("time_control", {})
+
+    def _first_number(key: str) -> float:
+        value = time_control.get(key)
+        if isinstance(value, (list, tuple)):
+            value = value[0] if value else None
+        try:
+            return float(value)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return 0.0
+
+    total_hours = (
+        _first_number("run_days") * 24.0
+        + _first_number("run_hours")
+        + _first_number("run_minutes") / 60.0
+        + _first_number("run_seconds") / 3600.0
+    )
+    if total_hours <= 0:
+        return None
+    # Round DOWN to whole hours, but a positive sub-hour duration still runs >=1h.
+    return max(1, int(total_hours))
+
+
+def _effective_max_dom(args: argparse.Namespace) -> int:
+    """Resolve the domain count import-light for the allocator/preflight gates.
+
+    Mirrors the authoritative resolution in :func:`_cmd_run` (``--max-dom`` >
+    ``--domains-from-namelist`` > default 1) but is defensive: it never raises,
+    so it is safe to call before ``--input-dir``/``--namelist`` are validated.
+    """
+    if bool(getattr(args, "domains_from_namelist", False)):
+        namelist = (
+            args.namelist
+            if args.namelist is not None
+            else (args.input_dir / "namelist.input")
+        )
+        try:
+            if Path(namelist).is_file():
+                return _namelist_max_dom(Path(namelist))
+        except Exception:  # noqa: BLE001 - defensive; real errors surface in _cmd_run
+            return 1
+        return 1
+    if args.max_dom is not None:
+        try:
+            return int(args.max_dom)
+        except (TypeError, ValueError):
+            return 1
+    return 1
+
+
+def _detect_init_mode_light(input_dir: Path, domain: str, max_dom: int) -> str:
+    """Import-light replica of ``daily_pipeline.detect_init_mode`` for --dry-run.
+
+    A nested run (max_dom > 1) is always the standalone live-nested driver; a
+    single-domain run dir with >=2 ``wrfout_<domain>`` history files is CPU-WRF
+    replay, otherwise standalone native-init. Kept in lockstep with
+    ``daily_pipeline.detect_init_mode`` (same glob) but imports no JAX pipeline.
+    """
+    if max_dom > 1:
+        return "standalone_native_init_nested"
+    run_dir = Path(input_dir).expanduser()
+    wrfout_count = len(sorted(run_dir.glob(f"wrfout_{domain}_*")))
+    return "cpu_wrf_replay" if wrfout_count >= 2 else "standalone_native_init"
+
+
+# WRF runtime tables that gpuwrf reads from ``$GPUWRF_WRF_ROOT/run`` at startup.
+# Only these two selected schemes actually load from the pristine WRF tree in
+# this port (RRTMG/Thompson tables ship as bundled fixture assets); the preflight
+# note therefore keys on exactly them to avoid false alarms.
+_WRF_ROOT_TABLE_SCHEMES: tuple[tuple[str, int, str, tuple[str, ...], bool], ...] = (
+    # (key, code, scheme label, required run/ files, require_all)
+    (
+        "sf_surface_physics",
+        4,
+        "Noah-MP land surface (sf_surface_physics=4)",
+        ("MPTABLE.TBL", "SOILPARM.TBL", "GENPARM.TBL"),
+        True,
+    ),
+    (
+        "ra_lw_physics",
+        1,
+        "classic RRTM longwave (ra_lw_physics=1)",
+        ("RRTM_DATA_DBL", "RRTM_DATA"),
+        False,
+    ),
+)
+
+
+def _namelist_scheme_codes(physics: dict[str, Any], key: str) -> set[int]:
+    """Integer codes selected for ``key`` (handles scalars, per-domain lists and
+    Fortran ``N*M`` repeat tokens)."""
+    raw = physics.get(key)
+    if raw is None:
+        return set()
+    items = raw if isinstance(raw, (list, tuple)) else [raw]
+    codes: set[int] = set()
+    for item in items:
+        try:
+            codes.add(int(item))
+            continue
+        except (TypeError, ValueError):
+            pass
+        text = str(item)
+        if "*" in text:  # Fortran repeat count, e.g. "3*8" -> value 8
+            _, _, value = text.partition("*")
+            try:
+                codes.add(int(value.strip()))
+            except ValueError:
+                pass
+    return codes
+
+
+def _wrf_root_preflight_note(namelist: Path) -> str | None:
+    """Pre-JAX UX note when a $GPUWRF_WRF_ROOT table-loading scheme is selected
+    but the pristine WRF runtime tables are missing.
+
+    Non-fatal and advisory: the physics table loader still fail-closes later.
+    Returns ``None`` when no such scheme is selected or the tables are present.
+    """
+    import os
+
+    try:
+        from gpuwrf.io.gen2_accessor import parse_namelist
+
+        parsed = parse_namelist(namelist)
+    except Exception:  # noqa: BLE001 - advisory only
+        return None
+    physics = parsed.get("physics", {})
+
+    from gpuwrf.config.paths import wrf_root, wrf_run_dir
+
+    run_dir = wrf_run_dir()
+    missing: list[tuple[str, tuple[str, ...]]] = []
+    for key, code, label, files, require_all in _WRF_ROOT_TABLE_SCHEMES:
+        if code not in _namelist_scheme_codes(physics, key):
+            continue
+        present = (
+            all((run_dir / f).is_file() for f in files)
+            if require_all
+            else any((run_dir / f).is_file() for f in files)
+        )
+        if not present:
+            missing.append((label, files))
+    if not missing:
+        return None
+
+    root = wrf_root()
+    env_set = bool(os.environ.get("GPUWRF_WRF_ROOT", "").strip())
+    lines = [
+        "gpuwrf: note: a namelist scheme needs the unmodified WRF runtime tables, "
+        "but they were not found where gpuwrf searched:",
+    ]
+    for label, files in missing:
+        lines.append(f"  - {label} reads {', '.join(files)} from {run_dir}")
+    lines.append(
+        "  Why: gpuwrf parses these UNMODIFIED WRF tables at startup; without a "
+        "valid pristine WRF v4 tree the run will fail-closed when the scheme "
+        "initializes."
+    )
+    if env_set:
+        lines.append(
+            f"  Fix: GPUWRF_WRF_ROOT={root} is set but its run/ dir lacks the tables "
+            "above -- point it at a real pristine WRF v4 checkout: "
+            "export GPUWRF_WRF_ROOT=/path/to/WRF"
+        )
+    else:
+        lines.append(
+            f"  Fix: GPUWRF_WRF_ROOT is unset, so the default {root} was searched. "
+            "Set it to your pristine WRF v4 checkout: "
+            "export GPUWRF_WRF_ROOT=/path/to/WRF"
+        )
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------------- #
+# namelist-support subcommand (offline; no JAX, no GPU)                        #
+# --------------------------------------------------------------------------- #
+# Ordered physics keys shown in the support registry (the operational gate).
+_NAMELIST_SUPPORT_KEYS: tuple[str, ...] = (
+    "mp_physics",
+    "cu_physics",
+    "bl_pbl_physics",
+    "sf_sfclay_physics",
+    "sf_surface_physics",
+    "ra_lw_physics",
+    "ra_sw_physics",
+)
+
+# SupportStatus.value -> user-facing bucket used by the task ("operational /
+# reference-only / fail-closed / disabled/out-of-scope").
+_SUPPORT_STATUS_LABEL: dict[str, str] = {
+    "implemented": "operational",
+    "reference_only": "reference-only",
+    "recognized_approximated": "approximated",
+    "recognized_fail_closed": "fail-closed",
+    "out_of_scope": "out-of-scope",
+}
+
+
+def _namelist_support_registry() -> dict[str, Any]:
+    """Build the offline scheme-support registry (no JAX / no GPU import)."""
+    from gpuwrf.io.scheme_catalog import classify_scheme
+    from gpuwrf.io.wrf_scheme_catalog import WRF_PARAM_LABEL, WRF_SCHEME_CATALOG
+
+    keys: dict[str, Any] = {}
+    for key in _NAMELIST_SUPPORT_KEYS:
+        options = []
+        for code in sorted(WRF_SCHEME_CATALOG.get(key, ())):
+            support = classify_scheme(key, code)
+            options.append(
+                {
+                    "code": code,
+                    "status": support.status.value,
+                    "status_label": _SUPPORT_STATUS_LABEL.get(
+                        support.status.value, support.status.value
+                    ),
+                    "wrf_name": support.wrf_name,
+                    "reason": support.reason,
+                    "alternative": support.alternative,
+                }
+            )
+        keys[key] = {"label": WRF_PARAM_LABEL.get(key, key), "options": options}
+    return {
+        "schema": "GpuwrfNamelistSupport",
+        "schema_version": 1,
+        "keys": keys,
+    }
+
+
+def _cmd_namelist_support(args: argparse.Namespace) -> int:
+    registry = _namelist_support_registry()
+    if bool(getattr(args, "json", False)):
+        print(json.dumps(registry, indent=2, sort_keys=True, default=str))
+        return 0
+
+    lines = [
+        "GPU-WRF operational scheme support",
+        "==================================",
+        "operational   = GPU scan-wired (runs normally)",
+        "reference-only = oracle-backed, NOT operational (fail-closed in a real run)",
+        "fail-closed    = recognized WRF option, refused with a named reason",
+        "out-of-scope   = a deliberate design decision not to port this option",
+    ]
+    for key, info in registry["keys"].items():
+        lines.append("")
+        lines.append(f"{key} ({info['label']})")
+        lines.append(f"  {'code':>4}  {'status':<14}  scheme")
+        for opt in info["options"]:
+            name = opt["wrf_name"] or ""
+            lines.append(f"  {opt['code']:>4}  {opt['status_label']:<14}  {name}")
+    print("\n".join(lines))
+    return 0
 
 
 # --------------------------------------------------------------------------- #
@@ -385,7 +691,9 @@ def _maybe_reexec_for_nested_allocator(args: argparse.Namespace) -> None:
     import os
     import sys
 
-    if not (args.max_dom is not None and int(args.max_dom) > 1):
+    if bool(getattr(args, "dry_run", False)):
+        return  # --dry-run never touches the GPU allocator.
+    if _effective_max_dom(args) <= 1:
         return
     allocator = _resolve_nested_allocator()
     if allocator is None:
@@ -412,23 +720,23 @@ def _maybe_reexec_for_nested_allocator(args: argparse.Namespace) -> None:
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
+    dry_run = bool(getattr(args, "dry_run", False))
+
+    # Domain-count selectors are mutually exclusive (cheap check, pre-anything).
+    if bool(getattr(args, "domains_from_namelist", False)) and args.max_dom is not None:
+        return _fail(
+            "--max-dom and --domains-from-namelist are mutually exclusive: pass "
+            "--max-dom N to set the domain count explicitly, or "
+            "--domains-from-namelist to take it from the namelist &domains max_dom, "
+            "not both."
+        )
+
     # NESTED-OOM FIX: ensure the cuda_async GPU allocator for live-nested runs by
     # re-exec'ing with it set in the environment (see the helper docstring). MUST
     # run before any jax device op; the nested pipeline also setdefaults it.
+    # (Skipped for --dry-run, which never touches the GPU.)
     _maybe_reexec_for_nested_allocator(args)
     gpu_preflight: dict[str, Any] | None = None
-    if args.max_dom is not None and int(args.max_dom) > 1:
-        try:
-            from gpuwrf.runtime.gpu_preflight import (
-                GpuPreflightError,
-                run_nested_gpu_preflight,
-            )
-
-            gpu_preflight = run_nested_gpu_preflight(
-                force=bool(getattr(args, "force_gpu_run", False))
-            )
-        except GpuPreflightError as exc:
-            return _fail(str(exc), code=75)
 
     input_dir: Path = args.input_dir
     output_dir: Path = args.output_dir
@@ -443,7 +751,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
             f"--namelist file not found: {namelist} "
             "(pass --namelist or place namelist.input in --input-dir)"
         )
-    if args.hours <= 0:
+    # An EXPLICIT --hours must be positive; an omitted --hours (None) is resolved
+    # from the namelist &time_control below.
+    if args.hours is not None and args.hours <= 0:
         return _fail(f"--hours must be a positive integer, got {args.hours}")
 
     compare_dir: Path | None = args.compare_cpu_dir
@@ -493,24 +803,134 @@ def _cmd_run(args: argparse.Namespace) -> int:
     for _warning in collect_namelist_warnings(namelist):
         print(f"gpuwrf: warning: {_warning}", file=sys.stderr)
 
-    # --- Resolve the domain count. Nested is OPT-IN via --max-dom > 1; the
-    # default is SINGLE-domain (--domain). This keeps CPU-wrfout REPLAY and
-    # single-domain standalone runs on a multi-domain (max_dom>1) namelist from
-    # being silently turned into a live-nested run. ----------------------------
+    # --- Resolve the domain count. Nested is OPT-IN via --max-dom > 1 (or the
+    # WRF-parity --domains-from-namelist); the default is SINGLE-domain
+    # (--domain). This keeps CPU-wrfout REPLAY and single-domain standalone runs
+    # on a multi-domain (max_dom>1) namelist from being silently turned into a
+    # live-nested run. ---------------------------------------------------------
     try:
         namelist_max_dom = _namelist_max_dom(namelist)
     except Exception:  # noqa: BLE001 - default to single-domain if max_dom unreadable
         namelist_max_dom = 1
-    max_dom = int(args.max_dom) if args.max_dom is not None else 1
+    if bool(getattr(args, "domains_from_namelist", False)):
+        max_dom = namelist_max_dom
+        maxdom_source = "namelist"
+    elif args.max_dom is not None:
+        max_dom = int(args.max_dom)
+        maxdom_source = "flag"
+    else:
+        max_dom = 1
+        maxdom_source = "default"
     if max_dom < 1:
         return _fail(f"--max-dom must be >= 1, got {max_dom}")
-    if args.max_dom is None and namelist_max_dom > 1:
+
+    # --- Resolve the single-domain id. WRF's root domain d01 is the default
+    # (the historical d02 default surprised WRF users). An explicit --domain wins;
+    # it is ignored for nested runs (all domains d01..dN run together). ---------
+    if args.domain is not None:
+        effective_domain = str(args.domain)
+        domain_source = "flag"
+    else:
+        effective_domain = "d01"
+        domain_source = "default"
+
+    # --- Resolve the forecast length. An explicit --hours wins; otherwise it is
+    # computed from the namelist &time_control, falling back to 1 hour. ---------
+    if args.hours is not None:
+        effective_hours = int(args.hours)
+        hours_source = "flag"
+        hours_source_phrase = "--hours override"
+    else:
+        namelist_hours = _namelist_forecast_hours(namelist)
+        if namelist_hours is not None:
+            effective_hours = namelist_hours
+            hours_source = "namelist"
+            hours_source_phrase = "namelist &time_control"
+        else:
+            effective_hours = 1
+            hours_source = "default"
+            hours_source_phrase = "default"
+
+    # Announce the resolved forecast length + domain(s) so the user always sees
+    # what will run and where each value came from.
+    print(
+        f"gpuwrf: forecast length = {effective_hours} h (source: {hours_source_phrase})",
+        file=sys.stderr,
+    )
+    if max_dom > 1:
         print(
-            f"gpuwrf: note: namelist max_dom={namelist_max_dom} but running a SINGLE "
-            f"domain ({args.domain}) by default; pass --max-dom {namelist_max_dom} to "
-            f"run the standalone live-nested forecast (d01..d{namelist_max_dom:02d}).",
+            f"gpuwrf: domains = d01..d{max_dom:02d} (source: {maxdom_source}); "
+            "--domain is ignored for nested runs",
             file=sys.stderr,
         )
+    else:
+        print(
+            f"gpuwrf: domain = {effective_domain} (source: {domain_source})",
+            file=sys.stderr,
+        )
+    if maxdom_source == "default" and namelist_max_dom > 1:
+        print(
+            f"gpuwrf: note: namelist max_dom={namelist_max_dom} but running a SINGLE "
+            f"domain ({effective_domain}) by default; pass --max-dom {namelist_max_dom} "
+            f"(or --domains-from-namelist) to run the standalone live-nested forecast "
+            f"(d01..d{namelist_max_dom:02d}).",
+            file=sys.stderr,
+        )
+
+    # --- WRF_ROOT table preflight (pre-JAX UX aid; non-fatal). ----------------
+    wrf_root_note = _wrf_root_preflight_note(namelist)
+    if wrf_root_note:
+        print(wrf_root_note, file=sys.stderr)
+
+    # --- Effective-values metadata carried into the run payload / dry-run plan.
+    run_metadata: dict[str, Any] = {
+        "namelist_path": str(namelist),
+        "namelist_max_dom": namelist_max_dom,
+        "effective_max_dom": max_dom,
+        "effective_domain": effective_domain,
+        "effective_hours": effective_hours,
+        "override_sources": {
+            "hours": hours_source,
+            "domain": domain_source,
+            "max_dom": maxdom_source,
+        },
+    }
+
+    # --- DRY RUN: print the effective plan as JSON and exit WITHOUT importing
+    # the heavy JAX/GPU forecast pipeline or allocating a GPU. -----------------
+    if dry_run:
+        plan = {
+            "schema": "GpuwrfRunPlan",
+            "schema_version": 1,
+            "dry_run": True,
+            "run_type": "nested_live" if max_dom > 1 else "single_domain",
+            "init_mode": _detect_init_mode_light(input_dir, effective_domain, max_dom),
+            "input_dir": str(input_dir),
+            "output_dir": str(output_dir),
+            "proof_dir": str(proof_dir),
+            "scratch_dir": str(scratch_dir),
+            "compare_cpu_dir": str(compare_dir) if compare_dir is not None else None,
+            "feedback": bool(getattr(args, "feedback", False)),
+            "score": bool(getattr(args, "score", False)),
+            "wrf_root_preflight": wrf_root_note,
+            **run_metadata,
+        }
+        print(json.dumps(plan, indent=2, sort_keys=True, default=str))
+        return 0
+
+    # --- Nested GPU preflight (nested runs only; skipped above for --dry-run).
+    if max_dom > 1:
+        try:
+            from gpuwrf.runtime.gpu_preflight import (
+                GpuPreflightError,
+                run_nested_gpu_preflight,
+            )
+
+            gpu_preflight = run_nested_gpu_preflight(
+                force=bool(getattr(args, "force_gpu_run", False))
+            )
+        except GpuPreflightError as exc:
+            return _fail(str(exc), code=75)
 
     # --- Nested (max_dom > 1): STANDALONE LIVE-NESTED driver. -----------------
     # The parent advances, builds each child's lateral boundary LIVE, and recurses
@@ -538,7 +958,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
         print(
             f"gpuwrf: init mode = standalone_native_init_nested -- STANDALONE "
             f"LIVE-NESTED (d01..d{max_dom:02d}; parent feeds each child LBC live; "
-            f"no CPU-WRF wrfout); hours={args.hours}; scratch={scratch_dir}",
+            f"no CPU-WRF wrfout); hours={effective_hours}; scratch={scratch_dir}",
             file=sys.stderr,
         )
         try:
@@ -556,7 +976,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
             input_dir=input_dir,
             output_dir=output_dir,
             proof_dir=proof_dir,
-            hours=int(args.hours),
+            hours=int(effective_hours),
             max_dom=int(max_dom),
             scratch_dir=scratch_dir,
             feedback=bool(getattr(args, "feedback", False)),
@@ -580,6 +1000,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
                 shutil.rmtree(scratch_dir, ignore_errors=True)
 
         payload["scratch_dir"] = str(scratch_dir)
+        payload.update(run_metadata)
         if gpu_preflight is not None:
             payload["gpu_preflight"] = gpu_preflight
         # Persist the run payload alongside the single-domain pipeline artifact name.
@@ -608,10 +1029,10 @@ def _cmd_run(args: argparse.Namespace) -> int:
     config = DailyPipelineConfig(
         run_id=str(input_dir.resolve()),
         run_root=input_dir.parent,
-        hours=int(args.hours),
+        hours=int(effective_hours),
         output_dir=output_dir,
         proof_dir=proof_dir,
-        domain=args.domain,
+        domain=effective_domain,
         score=bool(args.score),
         restart_at_hour=None,
         repeat=False,
@@ -625,8 +1046,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
         else "CPU-WRF REPLAY (IC + LBC from existing wrfout history)"
     )
     print(
-        f"gpuwrf: init mode = {init_mode} -- {mode_label}; domain={args.domain} "
-        f"hours={args.hours}; scratch={scratch_dir}",
+        f"gpuwrf: init mode = {init_mode} -- {mode_label}; domain={effective_domain} "
+        f"hours={effective_hours}; scratch={scratch_dir}",
         file=sys.stderr,
     )
 
@@ -647,6 +1068,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
     payload["init_mode"] = init_mode
     payload["scratch_dir"] = str(scratch_dir)
+    payload.update(run_metadata)
 
     verdict = str(payload.get("verdict", "UNKNOWN"))
     exit_code = 0 if verdict == "PIPELINE_GREEN" else 1

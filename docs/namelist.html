@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Namelist Compatibility — wrf_gpu User's Guide</title>
+  <meta name="description" content="Which WRF namelist options run, which fail closed with a named reason, and the scheme-triage classification.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="active" href="namelist.html">Namelist Compatibility</a>
+<div class="subnav">
+<a href="namelist.html#fail-closed">The fail-closed philosophy</a>
+<a href="namelist.html#scheme-triage">Scheme triage — every WRF v4 scheme classified</a>
+<a href="namelist.html#which-knobs-matter">Which knobs matter</a>
+<a href="namelist.html#out-of-scope">Out-of-scope features</a>
+</div>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Configuration › Namelist Compatibility</div>
+        <h1>Namelist Compatibility</h1>
+
+<p class="lead">wrf_gpu reads a <strong>standard Fortran WRF&nbsp;v4 ARW <code>namelist.input</code></strong>
+— all the usual groups (<code>&amp;time_control</code>, <code>&amp;domains</code>,
+<code>&amp;physics</code>, <code>&amp;dynamics</code>, <code>&amp;bdy_control</code>, …).
+Bring your existing namelist. Before any expensive JAX import or compile, the port
+validates every gated physics/dynamics selection <strong>fail-closed</strong>: each option
+is either implemented, loudly refused with a named reason, or a documented out-of-scope
+decision. You never get a silent wrong answer from selecting a scheme the port has not
+wired.</p>
+
+<div class="admon honest">
+  <div class="admon-title">The no-silent-gaps contract</div>
+  <p>Every unsupported namelist option is <strong>rejected before any compute</strong>, with a
+  specific named reason and the operational swap to use — the port <strong>never silently
+  substitutes or skips a scheme</strong>. These are boundaries and a roadmap, not hidden gaps.
+  This is a WRF-compatible reimplementation validated against WRF as an oracle, not a bit-true
+  Fortran port: expect operational (RMSE-class) agreement, not byte equality.</p>
+</div>
+
+<h2 id="fail-closed">The fail-closed philosophy<a class="headerlink" href="#fail-closed" aria-label="Permalink">¶</a></h2>
+<p>The <code>gpuwrf run</code> CLI calls the operational namelist validator
+<em>before any heavy import</em>. A machine-readable catalog classifies <em>every</em> WRF&nbsp;v4
+code of the gated parameters — <code>mp_physics</code>, <code>cu_physics</code>,
+<code>bl_pbl_physics</code>, <code>sf_sfclay_physics</code>, <code>sf_surface_physics</code>,
+<code>ra_lw_physics</code>, <code>ra_sw_physics</code>, and the dynamics options
+<code>diff_opt</code>, <code>km_opt</code>, <code>damp_opt</code>, <code>diff_6th_opt</code>,
+<code>rk_order</code>, <code>w_damping</code>, <code>sf_urban_physics</code> — against the full
+WRF&nbsp;v4 enumeration. Each selection resolves to exactly one of five honest statuses:</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Status</th><th>Behavior under <code>gpuwrf run</code></th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><span class="pill op">Operational</span> (<code>implemented</code>)</td><td>Runs</td><td>Wired into the operational GPU forecast scan and consumed normally. The only status that runs an actual forecast.</td></tr>
+<tr><td><span class="pill ref">Reference-only</span> (<code>reference_only</code>)</td><td>Refused, before any JAX import</td><td>A recognized WRF scheme with an oracle-backed reference path (GREEN parity where claimed, or an explicitly measured RED gap), <strong>not</strong> wired into the operational scan. Accepted by the base validator so you can run a single-column / reference comparison, but refused operationally — otherwise it would silently run a different scheme than requested.</td></tr>
+<tr><td>Recognized-approximated (<code>recognized_approximated</code>)</td><td>Runs, with a warning</td><td>A recognized WRF cadence control (<code>cudt</code>/<code>bldt</code>) whose value is a documented conservative approximation — the port calls cumulus/PBL every dynamics step. Never used for a wrong-scheme substitution.</td></tr>
+<tr><td><span class="pill closed">Fail-closed</span> (<code>recognized_fail_closed</code>)</td><td>Fail closed, specific message</td><td>A valid WRF&nbsp;v4 option the port does not implement. (A value that is not a WRF option at all fails closed with a "not a recognized WRF&nbsp;v4 …" message.)</td></tr>
+<tr><td><span class="pill oos">Out of scope</span> (<code>out_of_scope</code>)</td><td>Fail closed, named scope decision</td><td>A WRF capability the port deliberately does not port; the error names the scope decision and the disable/alternative recipe.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">Operational vs Reference-only — the distinction that matters</div>
+  <p>A <span class="pill ref">Reference-only</span> scheme is a real, oracle-backed WRF scheme, but
+  it is <strong>never part of an operational forecast</strong>. The base validation layer accepts it
+  (for single-column / reference comparisons); the operational layer additionally rejects it. Refusing
+  is the honest behavior: the operational scan cannot actually select it and would otherwise route
+  through a missing kernel or run a different scheme than you asked for.</p>
+</div>
+
+<h3 id="named-reason">What a refusal looks like<a class="headerlink" href="#named-reason" aria-label="Permalink">¶</a></h3>
+<p>Refusals are specific and actionable. For example, running <code>gpuwrf run</code> with
+<code>ra_lw_physics=5</code> (GSFC/Goddard NUWRF longwave, a reference-only scheme):</p>
+<pre><code>physics.ra_lw_physics=5 (GSFC/Goddard NUWRF longwave): WRF v4
+longwave-radiation scheme accepted only for reference/oracle work, but NOT
+operationally wired into the GPU forecast scan. Running it would SILENTLY
+use a DIFFERENT scheme than requested or route through a missing kernel --
+refusing rather than producing a silent wrong-scheme run.
+Operationally-wired ra_lw_physics values: 0, 1, 4. Action: Use
+ra_lw_physics=4 (RRTMG, GPU-operational default) or 1 (classic RRTM).</code></pre>
+<p>Multi-domain columns (<code>mp_physics = 8, 28</code>) and the Fortran repeat-count syntax
+(<code>mp_physics = 3*8</code> = three domains of <code>8</code>) are both handled.</p>
+
+<h2 id="scheme-triage">Scheme triage — every WRF v4 scheme classified<a class="headerlink" href="#scheme-triage" aria-label="Permalink">¶</a></h2>
+<p>Every WRF&nbsp;v4 namelist scheme is classified into one of three buckets with no scheme silently
+dropped. The current source catalog also classifies non-scheme controls and feature switches, so
+the table below separates current scheme-code counts from the broader catalog.</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Class</th><th>Count</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><span class="pill op">Operational</span></td><td><strong>51 scheme codes</strong></td><td>Scan-wired into the GPU forecast loop, WRF-oracle-gated. (mp&nbsp;15, cu&nbsp;6, bl&nbsp;10, sfclay&nbsp;7, sf_surface&nbsp;5, ra_lw&nbsp;4, ra_sw&nbsp;4)</td></tr>
+<tr><td><span class="pill ref">Reference-only</span> with real oracle</td><td><strong>28 scheme / feature codes</strong></td><td>A real WRF&nbsp;v4 scheme or feature, validated or inventoried for oracle/reference work, <strong>not</strong> scan-wired; selecting it operationally fails closed with a named reason.</td></tr>
+<tr><td><span class="pill closed">Recognized fail-closed</span> / boundary</td><td><strong>37 catalog entries</strong></td><td>Recognized WRF option or control value, fail-closed as not yet implemented, compiled-out, or a documented architecture boundary.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="v023-updates">v0.23 updates to the classification<a class="headerlink" href="#v023-updates" aria-label="Permalink">¶</a></h3>
+<p>v0.23 extends the classification and is reflected in the current counts above:</p>
+<ul>
+  <li><strong>New-Tiedtke cumulus (<code>cu_physics=16</code>)</strong> graduates to
+  <span class="pill op">Operational</span> — machine-precision JAX kernel vs a pristine-WRF
+  single-column oracle. (Like Tiedtke <code>cu=6</code>, it needs active flux-form moisture
+  advection so WRF <code>RQVFTEN</code> is available; see <a href="dynamics.html#advection">Dynamics</a>.)</li>
+  <li><strong>Morrison-aerosol microphysics (<code>mp_physics=40</code>)</strong> joins
+  <span class="pill ref">Reference-only</span> with real oracle — the fp64 column kernel is proven
+  to machine precision, but the prescribed AEROCU aerosol inputs have no operational State substrate yet.</li>
+  <li><strong>NSSL 2-moment (<code>mp_physics=18</code>), CAM-UW PBL (<code>bl_pbl_physics=9</code>),
+  urban BEP/BEM (<code>sf_urban_physics=2/3</code>) and the WRF lake model
+  (<code>sf_lake_physics=1</code>)</strong> are <span class="pill ref">Reference-only</span> /
+  <span class="pill closed">Fail-closed</span> with staged oracles; their faithful ports are tracked
+  as their own milestones.</li>
+</ul>
+<p>For the per-family option numbers of the operational menu, see
+<a href="physics.html">Physics Options</a>. The <strong>full per-code support table</strong> (every
+WRF&nbsp;v4 code → scheme name → status → note) lives in the repository at
+<code>docs/namelist-compatibility.md</code>.</p>
+
+<h2 id="which-knobs-matter">Which knobs matter<a class="headerlink" href="#which-knobs-matter" aria-label="Permalink">¶</a></h2>
+<p>If you are adapting an existing WRF namelist, these are the selections the port gates on — set
+them from the operational menu and the rest of your namelist is passed through:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Key</th><th>Group</th><th>What it selects</th></tr></thead>
+<tbody>
+<tr><td><code>max_dom</code></td><td><code>&amp;domains</code></td><td>Number of nested domains; nesting is opt-in via <code>--max-dom N</code> (see <a href="nesting.html">Nesting</a>).</td></tr>
+<tr><td><code>mp_physics</code></td><td><code>&amp;physics</code></td><td>Microphysics scheme (default <code>8</code> Thompson).</td></tr>
+<tr><td><code>bl_pbl_physics</code></td><td><code>&amp;physics</code></td><td>PBL scheme (default <code>5</code> MYNN-EDMF; MYJ <code>2</code> mandatorily paired with <code>sf_sfclay_physics=2</code>).</td></tr>
+<tr><td><code>cu_physics</code></td><td><code>&amp;physics</code></td><td>Cumulus scheme (default <code>0</code>, grid-scale only).</td></tr>
+<tr><td><code>ra_sw_physics</code> / <code>ra_lw_physics</code></td><td><code>&amp;physics</code></td><td>Shortwave / longwave radiation, selected and dispatched independently (default <code>4</code>/<code>4</code> RRTMG).</td></tr>
+<tr><td><code>sf_surface_physics</code></td><td><code>&amp;physics</code></td><td>Land-surface model (default <code>4</code> Noah-MP, <code>use_noahmp=True</code>).</td></tr>
+<tr><td><code>diff_opt</code> / <code>km_opt</code></td><td><code>&amp;dynamics</code></td><td>Horizontal diffusion closure (see <a href="dynamics.html#diffusion">Dynamics</a>; 3-D closures fail closed).</td></tr>
+<tr><td><code>history_interval</code></td><td><code>&amp;time_control</code></td><td>Output cadence, honored per domain (see <a href="output.html#cadence">Output</a>).</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">Operational default suite</div>
+  <p>When a namelist does not pin a physics option, the dispatcher resolves to the validated
+  baseline: <code>mp_physics=8</code> (Thompson), <code>bl_pbl_physics=5</code> (MYNN),
+  <code>sf_sfclay_physics=5</code> (MYNN surface layer), <code>cu_physics=0</code> (no cumulus),
+  <code>sf_surface_physics=4</code> (Noah-MP). Radiation has no dispatcher default; the operational
+  slot runs the selected SW + LW (default <code>ra_sw_physics=4</code> / <code>ra_lw_physics=4</code>,
+  RRTMG).</p>
+</div>
+
+<h3 id="mandatory-pairing">Mandatory WRF pairing enforced<a class="headerlink" href="#mandatory-pairing" aria-label="Permalink">¶</a></h3>
+<p>MYJ PBL (<code>bl_pbl_physics=2</code>) ↔ Janjic-Eta surface layer (<code>sf_sfclay_physics=2</code>)
+must be selected together (or neither as 2). Selecting exactly one as 2 fails closed both at
+validation and in the dispatcher.</p>
+
+<h2 id="out-of-scope">Out-of-scope features<a class="headerlink" href="#out-of-scope" aria-label="Permalink">¶</a></h2>
+<p>These WRF capabilities are deliberately not ported. Selecting a truthy value for the switch fails
+closed with a scope decision and the disable/alternative recipe — never silently ignored:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Feature</th><th>Switch(es)</th><th>Disable with</th></tr></thead>
+<tbody>
+<tr><td>WRF-Chem coupled chemistry/aerosols</td><td><code>chem_opt</code></td><td><code>chem_opt=0</code></td></tr>
+<tr><td>WRF-Fire (SFIRE) wildfire spread</td><td><code>ifire</code></td><td><code>ifire=0</code></td></tr>
+<tr><td>WRF-Hydro hydrological coupling</td><td><code>wrf_hydro</code></td><td>disable coupler</td></tr>
+<tr><td>FDDA analysis/obs/surface nudging</td><td><code>grid_fdda</code>, <code>obs_nudge_opt</code>, <code>grid_sfdda</code></td><td><code>=0</code></td></tr>
+<tr><td>Stochastic physics</td><td><code>sppt</code>, <code>skebs</code>, <code>spp</code>, <code>rand_perturb</code>, <code>stoch_force_opt</code></td><td><code>=0</code></td></tr>
+<tr><td>Single-layer urban canopy (UCM)</td><td><code>sf_urban_physics=1</code></td><td><code>sf_urban_physics=0</code></td></tr>
+<tr><td>Wind-farm / turbine-drag</td><td><code>windfarm_opt</code></td><td><code>windfarm_opt=0</code></td></tr>
+<tr><td>Coupled ocean mixed-layer / 3-D ocean</td><td><code>sf_ocean_physics</code></td><td><code>sf_ocean_physics=0</code></td></tr>
+<tr><td>Time-varying SST lower-boundary update</td><td><code>sst_update</code></td><td><code>sst_update=0</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon warn">
+  <div class="admon-title">The validator checks selections, not completeness</div>
+  <p>The catalog validates the <em>selected</em> physics/dynamics options. It does not (yet) validate
+  non-physics consistency such as timestep CFL, domain ratios, or IO intervals — those remain your
+  responsibility. See also <a href="dynamics.html">Dynamical Core</a> for the numerics options and
+  <a href="physics.html">Physics Options</a> for the full operational scheme menu.</p>
+</div>
+
+        <nav class="page-nav">
+<a class="prev" href="input-data.html"><span class="pn-dir">← Previous</span><span class="pn-title">Input Data &amp; Initialization</span></a>
+<a class="next" href="physics.html"><span class="pn-dir">Next →</span><span class="pn-title">Physics Options</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

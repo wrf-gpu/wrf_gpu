@@ -1,0 +1,80 @@
+<h1>Nesting</h1>
+
+<p class="lead">wrf_gpu runs <strong>one-way live nesting</strong> — <code>d01&nbsp;→&nbsp;d02&nbsp;→&nbsp;d03</code>,
+down to a 1&nbsp;km inner nest — entirely on the GPU. The parent domain advances and
+<strong>builds each child's lateral boundary live</strong> during the run, so you do
+<strong>not</strong> need a pre-supplied <code>wrfbdy_d02</code>. The child's initial condition comes
+from its own <code>wrfinput_d0N</code>; only <code>wrfbdy_d01</code> forces the root. There is no
+CPU-WRF <code>wrfout</code> dependency.</p>
+
+<h2 id="how-it-works">How live nesting works</h2>
+<p>The nested driver is a standalone recursion faithful to WRF's <code>module_integrate</code>
+sub-cycling: the parent advances one step, constructs each child's lateral-boundary package from its
+own freshly-advanced state, and recurses into the child, which sub-cycles to catch up to the parent's
+clock. Each child's boundary update cadence is its parent's timestep. This is the validated
+<strong>one-way</strong> wiring (parent → child; the child does not modify the parent).</p>
+
+<h3 id="ratios">Grid and time sub-cycling ratios</h3>
+<p>The nest refinement is set by the WRF <code>&amp;domains</code> key <code>parent_grid_ratio</code>
+(the spatial refinement, e.g. 3), read from the domain metadata. In this port
+<code>parent_grid_ratio</code> is <strong>both the spatial and the temporal sub-cycle ratio</strong>:
+a child takes <code>parent_grid_ratio</code> steps for every one parent step (WRF sub-cycling), which
+matches WRF's usual configuration where <code>parent_time_step_ratio</code> equals
+<code>parent_grid_ratio</code>.</p>
+
+<h2 id="enable">Enabling a nested run</h2>
+<p>Nesting is <strong>opt-in</strong> via <code>--max-dom N</code> on <code>gpuwrf run</code>. With
+<code>--max-dom 1</code> (the default) you get the single-domain path on <code>--domain</code>; with
+<code>--max-dom&nbsp;N&nbsp;&gt;&nbsp;1</code> all domains <code>d01..dN</code> run together as the live-nested
+forecast.</p>
+
+<pre><code>python -m gpuwrf.cli run --input-dir my_case --output-dir runs/nested \
+    --max-dom 3 --hours 24 --scratch-dir /fast/nvme/gpuwrf_scratch</code></pre>
+
+<div class="admon note">
+  <div class="admon-title">A namelist max_dom is not auto-run</div>
+  <p>If your namelist declares <code>max_dom&nbsp;&gt;&nbsp;1</code> but you omit <code>--max-dom</code>,
+  the CLI runs a <strong>single</strong> domain (<code>--domain</code>) by default and prints a note
+  telling you to pass <code>--max-dom N</code> to run the standalone live-nested forecast. Nesting is
+  never entered implicitly. Remember the one-time cold compile on the first run (a large nested case
+  can take several minutes) — later runs read the persistent JIT cache; see
+  <a href="running.html">Running the Model</a> and <a href="performance.html">Performance</a>.</p>
+</div>
+
+<h2 id="gwd">Gravity-wave drag on nests</h2>
+<p>Orographic gravity-wave drag (<code>gwd_opt=1</code>) is <strong>default-ON on the nested 1&nbsp;km
+path</strong>. Set <code>GPUWRF_GWD_NESTED=0</code> to force it off for a memory-tighter config. See
+<a href="dynamics.html#gwd">Dynamical Core</a>.</p>
+
+<h2 id="restart">Restart</h2>
+<p>Nested runs support the <code>wrfrst</code>-equivalent restart: the full per-domain physics carry
+is snapshotted and reloads bit-for-bit to continue the forecast. See
+<a href="output.html#restart">Output Files</a>.</p>
+
+<h2 id="two-way">Opt-in two-way feedback</h2>
+<p>Two-way nesting is <strong>opt-in</strong> via the <code>--feedback</code> flag (nested runs only).
+After each child finishes its sub-cycle, its interior is fed back onto the overlapping parent cells
+using WRF's <strong><code>copy_fcn</code> area-average</strong> plus the
+<strong><code>sm121</code> feedback-zone smoother</strong>. The default is off (one-way nesting, the
+validated wiring).</p>
+
+<div class="admon warn">
+  <div class="admon-title">Two-way equivalence is untested (KI-11)</div>
+  <p>The two-way feedback path is <strong>finite and stable</strong>, but its 24&nbsp;h real-GPU
+  equivalence versus CPU-WRF is <strong>untested</strong>. One-way live nesting is proven over a
+  24–72&nbsp;h window; two-way is opt-in and not yet validated for equivalence. Use it deliberately.</p>
+</div>
+
+<h2 id="moving-nests">Opt-in moving nests</h2>
+<p>An <strong>opt-in operational moving-nest driver</strong> is available. The
+<strong>static-nest path is byte-identical</strong> — enabling the moving-nest capability does not
+change results for a fixed nest. Vortex-following / adaptive-move configuration beyond this remains
+outside the validated operational default.</p>
+
+<div class="admon note">
+  <div class="admon-title">See also</div>
+  <p><a href="running.html">Running the Model</a> for the full <code>gpuwrf run</code> command,
+  <a href="dynamics.html">Dynamical Core</a> for the sub-cycling and lateral-boundary numerics, and
+  <a href="performance.html">Performance</a> for the nested-run compile, VRAM, and throughput
+  behavior.</p>
+</div>

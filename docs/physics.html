@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Physics Options — wrf_gpu User's Guide</title>
+  <meta name="description" content="The GPU-operational physics menu — microphysics, cumulus, PBL, surface layer, radiation, land surface — with option numbers and status.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="active" href="physics.html">Physics Options</a>
+<div class="subnav">
+<a href="physics.html#microphysics">Microphysics — mp_physics</a>
+<a href="physics.html#cumulus">Cumulus — cu_physics</a>
+<a href="physics.html#pbl">Planetary boundary layer — bl_pbl_physics</a>
+<a href="physics.html#surface-layer">Surface layer — sf_sfclay_physics</a>
+<a href="physics.html#radiation">Radiation — ra_lw_physics / ra_sw_physics</a>
+<a href="physics.html#land-surface">Land surface — sf_surface_physics</a>
+<a href="physics.html#also-wired">Diffusion, gravity-wave drag &amp; urban/lake</a>
+<a href="physics.html#scheme-triage">Every WRF v4 scheme is classified</a>
+</div>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Configuration › Physics Options</div>
+        <h1>Physics Options</h1>
+
+<p class="lead">wrf_gpu dispatches a wired menu of WRF physics schemes, selected exactly as in WRF —
+by the same <code>namelist.input</code> integer keys (<code>mp_physics</code>,
+<code>bl_pbl_physics</code>, <code>cu_physics</code>, <code>ra_lw_physics</code> /
+<code>ra_sw_physics</code>, <code>sf_sfclay_physics</code>, <code>sf_surface_physics</code>).
+Anything outside the wired menu <strong>fails closed before any compute</strong> with a named
+reason — it is never silently swapped for something else.</p>
+
+<div class="admon note">
+  <div class="admon-title">How to read the status</div>
+  <p><span class="pill op">Operational</span> = scan-wired into the GPU forecast loop and
+  WRF-oracle-gated. <span class="pill ref">Reference-only</span> = a real WRF scheme with a
+  validated oracle, but not wired — selecting it operationally
+  <span class="pill closed">fails closed</span>. <span class="pill oos">Out of scope</span> = a
+  documented architecture boundary. The wiring lives in
+  <code>src/gpuwrf/runtime/operational_mode.py</code> and
+  <code>src/gpuwrf/coupling/scan_adapters.py</code>; the accepted matrix in
+  <code>src/gpuwrf/contracts/physics_registry.py</code>.</p>
+</div>
+
+<h2 id="microphysics">Microphysics — <code>mp_physics</code><a class="headerlink" href="#microphysics" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Value</th><th>Scheme</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>0</code></td><td>Passive / disabled slot</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>1</code></td><td>Kessler warm-rain</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>2</code></td><td>Purdue-Lin</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>3</code></td><td>WSM3</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>4</code></td><td>WSM5</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>6</code></td><td>WSM6</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>8</code></td><td><strong>Thompson</strong> (default; strictly WRF-faithful cold + warm process)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>10</code></td><td>Morrison 2-moment</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>13</code></td><td>SBU-YLin</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>14</code></td><td>WDM5</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>16</code></td><td>WDM6</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>24</code></td><td>WSM7</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>26</code></td><td>WDM7</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>28</code></td><td>Aerosol-aware Thompson (QNWFA/QNIFA prognostics)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>97</code></td><td>Goddard GCE</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>40</code></td><td>Morrison-aerosol (fp64 column proven to machine precision; no operational aerosol State substrate yet)</td><td><span class="pill ref">Reference-only</span></td></tr>
+<tr><td><code>18</code></td><td>NSSL 2-moment (verified oracle; faithful port is its own milestone)</td><td><span class="pill ref">Reference-only</span></td></tr>
+</tbody>
+</table>
+</div>
+<p>The default <strong>Thompson</strong> scheme is cell-level bit-exact against the WRF mass
+oracle on the warm process; see <a href="validation.html">Validation</a>. The vendored Thompson +
+RRTMG lookup tables (~147&nbsp;MiB) ship in the repo and load at import.</p>
+
+<h2 id="cumulus">Cumulus — <code>cu_physics</code><a class="headerlink" href="#cumulus" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Value</th><th>Scheme</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>0</code></td><td>Disabled (use at convection-permitting Δx, e.g. 1 km)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>1</code></td><td>Kain-Fritsch</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>2</code></td><td>Betts-Miller-Janjić (BMJ, fp64)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>3</code></td><td>Grell-Freitas (scale-aware)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>6</code></td><td>Tiedtke</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>16</code></td><td><strong>New-Tiedtke</strong> (v0.23; machine-precision JAX kernel vs pristine-WRF oracle)</td><td><span class="pill op">Operational</span></td></tr>
+</tbody>
+</table>
+</div>
+<div class="admon warn">
+  <div class="admon-title">Tiedtke / New-Tiedtke prerequisite</div>
+  <p><code>cu_physics=6</code> and <code>16</code> need active <strong>flux-form moisture
+  advection</strong> for the <code>RQVFTEN</code> tendency — enable the opt-in
+  <code>moist_adv_opt</code> path (see <a href="dynamics.html#advection">Dynamical Core →
+  Advection</a>).</p>
+</div>
+
+<h2 id="pbl">Planetary boundary layer — <code>bl_pbl_physics</code><a class="headerlink" href="#pbl" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Value</th><th>Scheme</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>0</code></td><td>Disabled</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>1</code></td><td>YSU</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>2</code></td><td>MYJ (mandatory Janjić surface-layer pairing)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>3</code></td><td>GFS (hybrid EDMF)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>5</code></td><td><strong>MYNN-EDMF</strong> (default; DMP mass flux + cloud-aware moist thermodynamics)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>7</code></td><td>ACM2</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>8</code></td><td>BouLac</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>11</code></td><td>Shin-Hong (operational; diagnostic-TKE follow-up, see note)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>12</code></td><td>GBM-TKE</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>99</code></td><td>MRF</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>9</code></td><td>CAM-UW moist PBL (verified oracle; faithful port is its own milestone)</td><td><span class="pill ref">Reference-only</span></td></tr>
+</tbody>
+</table>
+</div>
+<div class="admon note">
+  <div class="admon-title">Shin-Hong (11) TKE diagnostic</div>
+  <p>Shin-Hong is operational despite a ~28.5 % residual in its <em>diagnostic</em> TKE field,
+  which was source-traced as <strong>non-driving</strong> (the dynamics tendencies never read it).
+  The TKE-oracle upgrade is a documented follow-up, not a masked failure.</p>
+</div>
+
+<h2 id="surface-layer">Surface layer — <code>sf_sfclay_physics</code><a class="headerlink" href="#surface-layer" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Value</th><th>Scheme</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>0</code></td><td>Disabled</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>1</code></td><td>Revised MM5</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>2</code></td><td>Janjić-Eta (paired with MYJ)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>3</code></td><td>NCEP GFS</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>5</code></td><td>MYNN surface layer</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>7</code></td><td>Pleim-Xiu</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>91</code></td><td>Old MM5</td><td><span class="pill op">Operational</span></td></tr>
+</tbody>
+</table>
+</div>
+<p>Some PBL schemes require a specific surface-layer pairing (e.g. MYJ ↔ Janjić-Eta). Mismatched
+pairings are rejected by the namelist check; see <a href="namelist.html">Namelist Compatibility</a>.</p>
+
+<h2 id="radiation">Radiation — <code>ra_lw_physics</code> / <code>ra_sw_physics</code><a class="headerlink" href="#radiation" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Selection</th><th>Scheme</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>ra_lw=0</code> / <code>ra_sw=0</code></td><td>Radiation disabled</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>ra_lw=4</code> / <code>ra_sw=4</code></td><td><strong>RRTMG</strong> LW + SW, with topographic shading (<code>topo_shading=1</code>) and slope-corrected surface radiation (<code>slope_rad=1</code>)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>ra_sw=1</code></td><td>Dudhia short-wave</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>ra_sw=2</code></td><td>GSFC / Chou-Suarez short-wave</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>ra_lw=1</code></td><td>Classic RRTM long-wave</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>ra_lw=31</code></td><td>Held-Suarez idealized radiation</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td>—</td><td>Clear-sky <code>…C</code> flux diagnostics (OLR, downward fluxes)</td><td><span class="pill optin">Opt-in</span></td></tr>
+<tr><td><code>ra_*=14,24</code></td><td>Compiled-out in WRF too (build-gated)</td><td><span class="pill oos">Out of scope</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="land-surface">Land surface — <code>sf_surface_physics</code><a class="headerlink" href="#land-surface" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Value</th><th>Scheme</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>0</code></td><td>Disabled</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>1</code></td><td>Thermal-diffusion (5-layer slab)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>2</code></td><td>Noah LSM (classic)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>4</code></td><td>Noah-MP (prognostic; <code>use_noahmp=True</code>)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>7</code></td><td>Pleim-Xiu LSM</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>3</code></td><td>RUC LSM (integrated; reference-only, oracle staged)</td><td><span class="pill ref">Reference-only</span></td></tr>
+<tr><td><code>8</code></td><td>SSiB LSM (reference-only, oracle staged)</td><td><span class="pill ref">Reference-only</span></td></tr>
+<tr><td><code>5</code> / <code>6</code></td><td>CLM4 / CTSM — documented architecture boundary, no oracle claimed</td><td><span class="pill closed">Fail-closed</span></td></tr>
+</tbody>
+</table>
+</div>
+<div class="admon warn">
+  <div class="admon-title">Table-loading schemes need <code>GPUWRF_WRF_ROOT</code></div>
+  <p>Noah-MP, classic RRTM, and WRF-table-dependent options load lookup tables from a pristine
+  WRF v4 tree at run time. Point <code>GPUWRF_WRF_ROOT</code> at that tree before selecting them,
+  or they fail closed with a clear named error. Cases whose menu does not use those schemes run without it. See
+  <a href="installation.html#prerequisite-env">Installation → Prerequisites</a>.</p>
+</div>
+
+<h2 id="also-wired">Diffusion, gravity-wave drag &amp; urban/lake<a class="headerlink" href="#also-wired" aria-label="Permalink">¶</a></h2>
+<ul>
+  <li><strong>Horizontal diffusion</strong> (<code>diff_opt</code>, <code>km_opt</code>):
+  constant-K and 2-D Smagorinsky including terrain-slope and map-factor deformation terms (WRF
+  formula parity, max residual <code>3.78e-15</code>). 3-D TKE / full Smagorinsky
+  (<code>km_opt=2/3/5</code>) is <span class="pill closed">fail-closed</span> — use
+  <code>km_opt=1</code> or <code>4</code>. See <a href="dynamics.html#diffusion">Dynamical Core</a>.</li>
+  <li><strong>Gravity-wave drag</strong> (<code>gwd_opt=1</code>): default-<strong>on</strong> on
+  the nested 1 km path (<code>GPUWRF_GWD_NESTED=0</code> forces it off).</li>
+  <li><strong>Urban</strong> (<code>sf_urban_physics=2/3</code>, BEP/BEM) and <strong>lake</strong>
+  (<code>sf_lake_physics=1</code>): <span class="pill ref">Reference-only</span> /
+  <span class="pill closed">fail-closed</span> with staged oracles (default
+  <code>sf_urban_physics/sf_lake_physics=0</code>).</li>
+</ul>
+
+<h2 id="scheme-triage">Every WRF v4 scheme is classified<a class="headerlink" href="#scheme-triage" aria-label="Permalink">¶</a></h2>
+<p>No WRF v4 scheme is silently dropped. Every one is classified into exactly one bucket — the
+integrity of this partition (State = 67 leaves, no clobber) is itself a proof object:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Class</th><th>Count</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><span class="pill op">Operational</span></td><td><strong>51 scheme codes</strong></td><td>Scan-wired into the GPU forecast loop, WRF-oracle-gated (mp&nbsp;15, cu&nbsp;6, bl&nbsp;10, sfclay&nbsp;7, sf_surface&nbsp;5, ra_lw&nbsp;4, ra_sw&nbsp;4).</td></tr>
+<tr><td><span class="pill ref">Reference-only + real oracle</span></td><td><strong>28 scheme / feature codes</strong></td><td>A real WRF scheme or feature validated or inventoried for oracle/reference work, not wired; selecting it operationally fails closed with a named reason.</td></tr>
+<tr><td><span class="pill oos">Recognized fail-closed / boundary</span></td><td><strong>37 catalog entries</strong></td><td>Recognized WRF option or control value, fail-closed as not yet implemented, compiled-out, or an architecture boundary.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The full per-code support table is <code>docs/namelist-compatibility.md</code> in the
+repository; see <a href="namelist.html">Namelist Compatibility</a> for the summary and the
+fail-closed contract.</p>
+
+        <nav class="page-nav">
+<a class="prev" href="namelist.html"><span class="pn-dir">← Previous</span><span class="pn-title">Namelist Compatibility</span></a>
+<a class="next" href="environment.html"><span class="pn-dir">Next →</span><span class="pn-title">Environment Variables</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

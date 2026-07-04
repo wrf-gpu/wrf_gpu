@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nesting — wrf_gpu User's Guide</title>
+  <meta name="description" content="One-way live nesting, domain ratios and sub-cycling, opt-in two-way feedback, moving nests, and gravity-wave drag on nests.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="active" href="nesting.html">Nesting</a>
+<div class="subnav">
+<a href="nesting.html#how-it-works">How live nesting works</a>
+<a href="nesting.html#enable">Enabling a nested run</a>
+<a href="nesting.html#gwd">Gravity-wave drag on nests</a>
+<a href="nesting.html#restart">Restart</a>
+<a href="nesting.html#two-way">Opt-in two-way feedback</a>
+<a href="nesting.html#moving-nests">Opt-in moving nests</a>
+</div>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › The model › Nesting</div>
+        <h1>Nesting</h1>
+
+<p class="lead">wrf_gpu runs <strong>one-way live nesting</strong> — <code>d01&nbsp;→&nbsp;d02&nbsp;→&nbsp;d03</code>,
+down to a 1&nbsp;km inner nest — entirely on the GPU. The parent domain advances and
+<strong>builds each child's lateral boundary live</strong> during the run, so you do
+<strong>not</strong> need a pre-supplied <code>wrfbdy_d02</code>. The child's initial condition comes
+from its own <code>wrfinput_d0N</code>; only <code>wrfbdy_d01</code> forces the root. There is no
+CPU-WRF <code>wrfout</code> dependency.</p>
+
+<h2 id="how-it-works">How live nesting works<a class="headerlink" href="#how-it-works" aria-label="Permalink">¶</a></h2>
+<p>The nested driver is a standalone recursion faithful to WRF's <code>module_integrate</code>
+sub-cycling: the parent advances one step, constructs each child's lateral-boundary package from its
+own freshly-advanced state, and recurses into the child, which sub-cycles to catch up to the parent's
+clock. Each child's boundary update cadence is its parent's timestep. This is the validated
+<strong>one-way</strong> wiring (parent → child; the child does not modify the parent).</p>
+
+<h3 id="ratios">Grid and time sub-cycling ratios<a class="headerlink" href="#ratios" aria-label="Permalink">¶</a></h3>
+<p>The nest refinement is set by the WRF <code>&amp;domains</code> key <code>parent_grid_ratio</code>
+(the spatial refinement, e.g. 3), read from the domain metadata. In this port
+<code>parent_grid_ratio</code> is <strong>both the spatial and the temporal sub-cycle ratio</strong>:
+a child takes <code>parent_grid_ratio</code> steps for every one parent step (WRF sub-cycling), which
+matches WRF's usual configuration where <code>parent_time_step_ratio</code> equals
+<code>parent_grid_ratio</code>.</p>
+
+<h2 id="enable">Enabling a nested run<a class="headerlink" href="#enable" aria-label="Permalink">¶</a></h2>
+<p>Nesting is <strong>opt-in</strong> via <code>--max-dom N</code> on <code>gpuwrf run</code>. With
+<code>--max-dom 1</code> (the default) you get the single-domain path on <code>--domain</code>; with
+<code>--max-dom&nbsp;N&nbsp;&gt;&nbsp;1</code> all domains <code>d01..dN</code> run together as the live-nested
+forecast.</p>
+
+<pre><code>python -m gpuwrf.cli run --input-dir my_case --output-dir runs/nested \
+    --max-dom 3 --hours 24 --scratch-dir /fast/nvme/gpuwrf_scratch</code></pre>
+
+<div class="admon note">
+  <div class="admon-title">A namelist max_dom is not auto-run</div>
+  <p>If your namelist declares <code>max_dom&nbsp;&gt;&nbsp;1</code> but you omit <code>--max-dom</code>,
+  the CLI runs a <strong>single</strong> domain (<code>--domain</code>) by default and prints a note
+  telling you to pass <code>--max-dom N</code> to run the standalone live-nested forecast. Nesting is
+  never entered implicitly. Remember the one-time cold compile on the first run (a large nested case
+  can take several minutes) — later runs read the persistent JIT cache; see
+  <a href="running.html">Running the Model</a> and <a href="performance.html">Performance</a>.</p>
+</div>
+
+<h2 id="gwd">Gravity-wave drag on nests<a class="headerlink" href="#gwd" aria-label="Permalink">¶</a></h2>
+<p>Orographic gravity-wave drag (<code>gwd_opt=1</code>) is <strong>default-ON on the nested 1&nbsp;km
+path</strong>. Set <code>GPUWRF_GWD_NESTED=0</code> to force it off for a memory-tighter config. See
+<a href="dynamics.html#gwd">Dynamical Core</a>.</p>
+
+<h2 id="restart">Restart<a class="headerlink" href="#restart" aria-label="Permalink">¶</a></h2>
+<p>Nested runs support the <code>wrfrst</code>-equivalent restart: the full per-domain physics carry
+is snapshotted and reloads bit-for-bit to continue the forecast. See
+<a href="output.html#restart">Output Files</a>.</p>
+
+<h2 id="two-way">Opt-in two-way feedback<a class="headerlink" href="#two-way" aria-label="Permalink">¶</a></h2>
+<p>Two-way nesting is <strong>opt-in</strong> via the <code>--feedback</code> flag (nested runs only).
+After each child finishes its sub-cycle, its interior is fed back onto the overlapping parent cells
+using WRF's <strong><code>copy_fcn</code> area-average</strong> plus the
+<strong><code>sm121</code> feedback-zone smoother</strong>. The default is off (one-way nesting, the
+validated wiring).</p>
+
+<div class="admon warn">
+  <div class="admon-title">Two-way equivalence is untested (KI-11)</div>
+  <p>The two-way feedback path is <strong>finite and stable</strong>, but its 24&nbsp;h real-GPU
+  equivalence versus CPU-WRF is <strong>untested</strong>. One-way live nesting is proven over a
+  24–72&nbsp;h window; two-way is opt-in and not yet validated for equivalence. Use it deliberately.</p>
+</div>
+
+<h2 id="moving-nests">Opt-in moving nests<a class="headerlink" href="#moving-nests" aria-label="Permalink">¶</a></h2>
+<p>An <strong>opt-in operational moving-nest driver</strong> is available. The
+<strong>static-nest path is byte-identical</strong> — enabling the moving-nest capability does not
+change results for a fixed nest. Vortex-following / adaptive-move configuration beyond this remains
+outside the validated operational default.</p>
+
+<div class="admon note">
+  <div class="admon-title">See also</div>
+  <p><a href="running.html">Running the Model</a> for the full <code>gpuwrf run</code> command,
+  <a href="dynamics.html">Dynamical Core</a> for the sub-cycling and lateral-boundary numerics, and
+  <a href="performance.html">Performance</a> for the nested-run compile, VRAM, and throughput
+  behavior.</p>
+</div>
+
+        <nav class="page-nav">
+<a class="prev" href="dynamics.html"><span class="pn-dir">← Previous</span><span class="pn-title">Dynamical Core</span></a>
+<a class="next" href="performance.html"><span class="pn-dir">Next →</span><span class="pn-title">Performance &amp; GPU Modes</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

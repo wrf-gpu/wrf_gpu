@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glossary — wrf_gpu User's Guide</title>
+  <meta name="description" content="Definitions of WRF, NWP and wrf_gpu-specific terms used throughout the guide.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="active" href="glossary.html">Glossary</a>
+<div class="subnav">
+<a href="glossary.html#wrf-and-nwp-terms">WRF &amp; NWP terms</a>
+<a href="glossary.html#wrf-gpu-concepts">wrf_gpu concepts</a>
+</div>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Reference › Glossary</div>
+        <h1>Glossary</h1>
+
+<p class="lead">Short definitions of the WRF/NWP terms and the wrf_gpu-specific concepts used
+throughout this guide. If you already run WRF, the first table should feel familiar; the second
+covers vocabulary particular to this GPU re-implementation.</p>
+
+<h2 id="wrf-and-nwp-terms">WRF &amp; NWP terms<a class="headerlink" href="#wrf-and-nwp-terms" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Term</th><th>Definition</th></tr></thead>
+<tbody>
+<tr><td><strong>ARW</strong></td><td>Advanced Research WRF — the nonhydrostatic, mass-coordinate WRF dynamical core that wrf_gpu re-implements on the GPU.</td></tr>
+<tr><td><strong><code>met_em</code></strong></td><td>WPS <em>metgrid</em> output files: meteorological forcing interpolated onto the model grid. In the current public CLI they are part of the upstream preprocessing chain that produces <code>wrfinput</code>/<code>wrfbdy</code>; the run path consumes those WRF real-data artifacts. See <a href="input-data.html">Input Data</a>.</td></tr>
+<tr><td><strong><code>wrfinput</code></strong></td><td>The initial-condition file for a domain — the atmospheric and land state at forecast hour&nbsp;0. The current standalone path reads it directly.</td></tr>
+<tr><td><strong><code>wrfbdy</code></strong></td><td>The lateral boundary-condition file for the outermost domain: time-varying values that force the domain edges through the forecast.</td></tr>
+<tr><td><strong><code>wrfout</code></strong></td><td>The WRF history output file (NetCDF) holding model fields at each output time. wrf_gpu writes a WRF-compatible <code>wrfout</code>. See <a href="output.html">Output</a>.</td></tr>
+<tr><td><strong><code>wrfrst</code></strong></td><td>A WRF restart file — a full model-state checkpoint used to resume a forecast from a saved time. wrf_gpu reads and writes restarts.</td></tr>
+<tr><td><strong><code>namelist.input</code></strong></td><td>The WRF run-configuration file (domains, timestep, physics options, output cadence). wrf_gpu reads the same file; see <a href="namelist.html">Namelist Compatibility</a>.</td></tr>
+<tr><td><strong>RK3</strong></td><td>The third-order Runge-Kutta integrator that advances the slow, meteorologically significant terms within each ARW timestep.</td></tr>
+<tr><td><strong>acoustic sub-step</strong></td><td>A short sub-step inside each RK3 stage that advances the fast acoustic and gravity-wave modes; many acoustic sub-steps run per RK3 stage.</td></tr>
+<tr><td><strong>split-explicit</strong></td><td>The ARW time-integration strategy: slow modes on the large RK3 step, fast acoustic modes on smaller explicit sub-steps — avoiding a globally tiny timestep.</td></tr>
+<tr><td><strong>nonhydrostatic</strong></td><td>A dynamical core that solves the full vertical momentum equation (no hydrostatic approximation), required for realistic kilometre-scale flow.</td></tr>
+<tr><td><strong>nesting (one-way / two-way)</strong></td><td>Running a finer child domain inside a coarser parent. <em>One-way</em>: the parent forces the child only. <em>Two-way</em>: the child additionally feeds its solution back onto the overlapping parent cells. See <a href="nesting.html">Nesting</a>.</td></tr>
+<tr><td><strong>MYNN</strong></td><td>The MYNN-EDMF planetary-boundary-layer scheme (turbulent vertical mixing) — one of the GPU-operational PBL options.</td></tr>
+<tr><td><strong>Thompson</strong></td><td>The Thompson bulk microphysics scheme for cloud and precipitation, including an aerosol-aware variant.</td></tr>
+<tr><td><strong>RRTMG</strong></td><td>The RRTMG longwave-plus-shortwave radiation scheme (with topographic shading and slope effects in wrf_gpu).</td></tr>
+<tr><td><strong>Noah-MP</strong></td><td>The Noah Multi-Physics land-surface model, evolving soil and vegetation state (<code>sf_surface_physics=4</code>). See <a href="physics.html">Physics Options</a>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="wrf-gpu-concepts">wrf_gpu concepts<a class="headerlink" href="#wrf-gpu-concepts" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Term</th><th>Definition</th></tr></thead>
+<tbody>
+<tr><td><strong>cell-identity proof</strong></td><td>Evidence that wrf_gpu's field values match CPU-WRF cell-for-cell to a stated tolerance — the identity claim for the dynamics/thermodynamics core. See <a href="validation.html">Validation</a>.</td></tr>
+<tr><td><strong>oracle</strong></td><td>The trusted reference that judges correctness — CPU-WRF v4 output, or an analytic solution — that wrf_gpu is validated against. wrf_gpu is validated <em>against</em> WRF as an oracle; it is not derived from the WRF source.</td></tr>
+<tr><td><strong>cold compile</strong></td><td>The one-time XLA compilation of a given geometry on its first run (minutes). See <a href="performance.html">Performance</a>.</td></tr>
+<tr><td><strong>warm cache</strong></td><td>Reuse of a previously compiled executable on later runs, skipping the cold compile.</td></tr>
+<tr><td><strong>AOT cheap-key</strong></td><td>The default-on ahead-of-time warm-start: a metadata-only key computed <em>without</em> lowering locates and loads the matching compiled executable across processes in microseconds. Fail-open — any miss falls back to a normal compile.</td></tr>
+<tr><td><strong>fused runtime</strong></td><td>The default nested execution path that lowers a parent and its child domains into one XLA program for higher GPU throughput; bit-identical to the eager per-domain path.</td></tr>
+<tr><td><strong>batched ensemble</strong></td><td>Running <code>B</code> independent, same-geometry forecasts at once under one outer <code>jax.vmap</code> to fill an otherwise launch-bound small-grid GPU. Opt-in via <a href="environment.html#runtime-path-and-precision"><code>GPUWRF_BATCH_ENSEMBLE</code></a>.</td></tr>
+<tr><td><strong>fp32 mixed-precision</strong></td><td>An opt-in acoustic-step path that carries perturbation quantities in fp32 for capability and lower VRAM. It is its own milestone; the default stays fp64 and byte-identical.</td></tr>
+<tr><td><strong>fail-closed</strong></td><td>When an unsupported option is requested, the run stops <em>before any compute</em> with a named reason — it never silently substitutes a different scheme. See <a href="limitations.html">Boundaries</a>.</td></tr>
+<tr><td><strong>reference-only</strong></td><td>A scheme present in the source for reference or comparison but not GPU-operational; it is refused (fail-closed) on the run path rather than executed.</td></tr>
+<tr><td><strong>tolerance manifest</strong></td><td>The declared per-field acceptance tolerances that a validation run must meet against the oracle.</td></tr>
+<tr><td><strong>proof object</strong></td><td>A test result, profiler artifact, ADR, fixture comparison, or reproducible command that supports a claim. Every claim in this project has one on disk.</td></tr>
+<tr><td><strong>whole-state GPU residency</strong></td><td>The design property that high-frequency model state stays on the GPU across timestep loops, with no host round-trips inside the loop.</td></tr>
+<tr><td><strong>WRF-compatible</strong></td><td>Compatible where it matters — variables, fixtures, namelist mapping, and validation behavior — with WRF, without being a Fortran port.</td></tr>
+<tr><td><strong>physics-identical-enough</strong></td><td>Statistically and physically consistent with trusted WRF or analytic references under documented tolerances.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">See also</div>
+  <p>Cross-references: <a href="concepts.html">Concepts &amp; Architecture</a>,
+  <a href="validation.html">Validation &amp; WRF Identity</a>,
+  <a href="performance.html">Performance &amp; GPU Modes</a>, and the
+  <a href="environment.html">Environment Variables</a> that toggle several of the concepts above.</p>
+</div>
+
+        <nav class="page-nav">
+<a class="prev" href="credits.html"><span class="pn-dir">← Previous</span><span class="pn-title">Credits, License &amp; Citation</span></a>
+<span></span>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

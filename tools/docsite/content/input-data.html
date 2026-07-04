@@ -1,0 +1,113 @@
+<h1>Input Data &amp; Initialization</h1>
+
+<p class="lead">wrf_gpu keeps the WRF run artifacts you already know:
+<code>namelist.input</code>, <code>wrfinput_*</code>, and <code>wrfbdy_d01</code>.
+It integrates those real-data inputs on the GPU with no CPU-WRF <code>wrfout</code>
+dependency, and auto-detects a legacy replay path when CPU-WRF <code>wrfout</code>
+history is present.</p>
+
+<div class="admon note">
+  <div class="admon-title">Usage parity with WRF</div>
+  <p>If you already run WRF, the biggest change is that wrf_gpu replaces
+  <code>wrf.exe</code> with a single command, <code>python -m gpuwrf.cli run</code>.
+  You keep your WRF real-data case directory and <code>namelist.input</code>; the
+  supported namelist matrix runs as-is, and anything unsupported fails closed with a
+  named reason.</p>
+</div>
+
+<h2 id="native-init">Standalone native-init inputs</h2>
+
+<p><span class="pill op">Operational</span> The primary path is
+<strong>standalone native-init</strong>. The current CLI reads the model's initial state
+from <code>wrfinput_&lt;domain&gt;</code> and the root lateral-boundary forcing from
+<code>wrfbdy_d01</code>. There is <strong>no CPU-WRF <code>wrfout</code> replay in the
+loop</strong>; the forecast state is advanced by wrf_gpu on the GPU.</p>
+
+<p>A standalone case directory looks like a normal WRF real-data case:</p>
+
+<pre><code>my_case/
+├── namelist.input        # standard WRF v4 ARW namelist (bring your own)
+├── wrfinput_d01          # initial state (one per domain you run)
+├── wrfinput_d02
+├── wrfbdy_d01            # lateral boundaries for the outer domain
+└── met_em.d0*.*.nc       # met_em-stage forcing (metgrid output)</code></pre>
+
+<p>You produce these with any standard WRF preprocessing chain (WPS +
+<code>real.exe</code>) or use a bundled case that already contains them. For a
+<strong>live-nested</strong> run
+(<code>--max-dom&nbsp;N</code>) the parent builds each child's lateral boundary
+<strong>live</strong>, so you only need a per-domain <code>wrfinput_d0N</code> and
+<code>wrfbdy_d01</code> for the outer domain — <strong>no pre-supplied
+<code>wrfbdy_d02</code></strong>. See <a href="nesting.html">Nesting</a>.</p>
+
+<h2 id="replay-mode">Replay mode (auto-detected)</h2>
+
+<p><span class="pill ref">Legacy path</span> When the case directory already contains
+CPU-WRF <code>wrfout</code> history files (≥&nbsp;2 <code>wrfout_&lt;domain&gt;</code>
+files), <code>run</code> auto-detects <strong>replay mode</strong>: it takes the
+initial state and boundaries from that existing CPU-WRF history rather than building
+them natively. This is the validated skill-comparison harness — coupled-skill
+validation against CPU-WRF is run through it, not from a from-scratch native init.</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Input dir contains…</th><th>Detected mode</th><th>Initial / boundary source</th></tr></thead>
+<tbody>
+<tr><td><code>wrfinput_&lt;domain&gt;</code> + <code>wrfbdy_d01</code>, no CPU <code>wrfout</code></td><td>standalone native-init</td><td>IC from <code>wrfinput</code>, LBC from <code>wrfbdy</code> — built and integrated on the GPU, no CPU-WRF</td></tr>
+<tr><td>≥&nbsp;2 CPU-WRF <code>wrfout_&lt;domain&gt;</code> files</td><td>CPU-WRF replay</td><td>IC + LBC from the existing CPU-WRF <code>wrfout</code> history</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Detection and the mode banner are described in
+<a href="running.html#init-modes">Running the Model</a>.</p>
+
+<h2 id="namelist-role">The role of <code>namelist.input</code></h2>
+
+<p>Your <code>namelist.input</code> is the source of truth for the physics menu and
+many domain/output settings. The current CLI still uses a few explicit run-control
+flags, so it is not yet identical to <code>wrf.exe</code>'s "just read the namelist"
+ergonomics. wrf_gpu reads the namelist directly:</p>
+
+<ul>
+  <li>It is <strong>validated fail-closed before any compute</strong>: an unsupported
+  scheme is refused with a named reason, never silently substituted (see
+  <a href="namelist.html">Namelist Compatibility</a>).</li>
+  <li><code>&amp;domains&nbsp;max_dom</code> is read to know how many domains the case
+  describes, but a nested <em>run</em> is opt-in via <code>--max-dom</code> — a
+  multi-domain namelist run without <code>--max-dom</code> executes a single domain
+  and prints a reminder.</li>
+  <li>Some cadence keys are approximated with a named, non-fatal warning: the cumulus
+  / PBL cadence keys (<code>cudt</code>, <code>bldt&nbsp;&gt;&nbsp;0</code>) are not
+  honored verbatim — the GPU port runs those physics every dynamics step (a
+  conservative approximation), so a real WRF namelist (e.g. <code>cudt=5</code>) is
+  accepted with a warning rather than rejected.</li>
+</ul>
+
+<p>By default <code>run</code> uses <code>&lt;input-dir&gt;/namelist.input</code>;
+pass <code>--namelist</code> to point elsewhere.</p>
+
+<h2 id="restart">Restart files</h2>
+
+<p>wrf_gpu supports the standard <strong>WRF restart</strong> mechanism — restart is
+bit-identity-validated, and the nested per-domain-subcycling path supports it too.
+Restart output cadence follows the usual namelist keys (<code>restart</code>,
+<code>restart_interval</code>). A restart file carries the WRF-faithful model state
+— including the 1&nbsp;km inner-nest <code>qke</code> cold-start seed that the native
+init and the WRF-restart path both provide — so a restarted forecast resumes
+consistently.</p>
+
+<h2 id="output">What comes out</h2>
+
+<p>Initialization feeds the forecast, and the forecast writes a WRF-compatible
+<code>wrfout</code> NetCDF history file (plus a run-payload JSON) under
+<code>--output-dir</code>. Dimensions and variables match WRF's conventions; details
+and the variable subset are on the <a href="output.html">Output</a> page.</p>
+
+<div class="admon note">
+  <div class="admon-title">Related</div>
+  <p><a href="running.html">Running the Model</a> — the <code>run</code> command and
+  its flags. <a href="namelist.html">Namelist Compatibility</a> — which options run
+  and which fail closed. <a href="nesting.html">Nesting</a> — how live boundaries are
+  built for child domains.</p>
+</div>

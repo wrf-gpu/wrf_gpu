@@ -7,6 +7,28 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.23.1] - 2026-07-04
+
+Usability + AI-native onboarding release on top of `v0.23.0`. **No dynamics, no
+physics, no default numerical change** — the default forecast is numerically
+identical to v0.23.0 (the compute/dispatch path is untouched).
+
+- **Full HTML User's Guide** in `docs/` (static, searchable, GitHub-Pages-ready),
+  patterned after the WRF Users' Guide.
+- **AI-native onboarding**: an `AI_OPERATOR.md` operator runbook + a Claude Code
+  skill (`.claude/skills/run-wrf-gpu/`) + an auto-load banner on `AGENTS.md`/`CLAUDE.md`,
+  so an agent can clone → set up → run a user's case, narrating each step.
+- **WRF-parity CLI ergonomics** (backward-compatible; explicit flags always win):
+  `--hours` and `--domain` default from `namelist.input` when omitted (root domain
+  `d01`, forecast length from `&time_control`); new `--domains-from-namelist`,
+  `gpuwrf namelist-support`, and `--dry-run`; clearer `GPUWRF_WRF_ROOT` errors;
+  effective-values recorded in the run payload.
+- **Doc-accuracy fixes**: init described as `wrfinput`/`wrfbdy` (no `real.exe`/CPU-WRF
+  dependency); training subset = 39 variables; `*=0` disabled slots marked accepted.
+
+Full notes: [`RELEASE_NOTES_v0.23.1.md`](release_notes/RELEASE_NOTES_v0.23.1.md).
+Parity plan: [`docs/WRF_PARITY_ROADMAP.md`](docs/WRF_PARITY_ROADMAP.md).
+
 ## [0.23.0] - 2026-07-04
 
 Performance + capability release on top of `v0.22.2`. The default forecast is

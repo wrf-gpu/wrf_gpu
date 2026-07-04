@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boundaries &amp; Known Issues — wrf_gpu User's Guide</title>
+  <meta name="description" content="What wrf_gpu does and does not claim: the forecast-skill gate, the terrain ceiling, out-of-scope schemes, and the known-issues list.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="active" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="subnav">
+<a href="limitations.html#not-claimed">What is NOT claimed</a>
+<a href="limitations.html#terrain-ceiling">The extreme-terrain ceiling (~6000 m)</a>
+<a href="limitations.html#free-running">Free-running open-boundary stability</a>
+<a href="limitations.html#oom">Out-of-memory behavior</a>
+<a href="limitations.html#known-issues">Known-issues summary</a>
+</div>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Performance &amp; validation › Boundaries &amp; Known Issues</div>
+        <h1>Boundaries &amp; Known Issues</h1>
+
+<p class="lead">wrf_gpu is deliberately explicit about its edges. Nothing here is a hidden gap: every
+unsupported namelist selection is refused before any compute with a named reason, and every open
+item is tracked with a proof object. This page is the honest map of what is and is not claimed.</p>
+
+<h2 id="not-claimed">What is NOT claimed<a class="headerlink" href="#not-claimed" aria-label="Permalink">¶</a></h2>
+<ul>
+  <li><strong>Not a universal WRF v4.</strong> Standard regional ARW configs and the common
+  operational subset only. Every other scheme is classified (reference-only-with-oracle or
+  documented-boundary) and <span class="pill closed">fails closed</span> with a named reason. See
+  <a href="physics.html#scheme-triage">Physics → Scheme triage</a>.</li>
+  <li><strong>24 h/72 h forecast-skill equivalence is open</strong> — the credibility gate. The
+  dynamics/thermo core is cell-for-cell identical, but the 24 h equivalence demo is
+  <code>NOT_EQUIVALENT</code>, dominated by lead-time wind divergence. This is the gate for any
+  "operational replacement" claim. See <a href="validation.html#skill-gate">Validation</a>.</li>
+  <li><strong>Single-card speedup is modest and scale-dependent</strong> — the GPU is
+  host/launch-bound and slower than CPU on tiny geometries; ≥2–3× is not single-card reachable and
+  fp32 cannot move it. See <a href="performance.html">Performance</a>.</li>
+  <li><strong>Multi-GPU throughput is projected, not measured</strong> (one physical RTX 5090
+  here). No per-watt / per-kWh at-scale claim; no head-to-head competitive benchmark.</li>
+  <li><strong>fp32 is opt-in, capability/VRAM-only</strong>, with fidelity checked only at the 1 h
+  lead. <strong>Two-way nesting</strong> is finite/stable but its 24 h equivalence is untested.
+  <strong>K2 multi-GPU</strong> is experimental / default-off / lab-only (periodic-BC bit-exact,
+  specified-BC not yet faithful — not for production).</li>
+  <li><strong>Not</strong> WPS, DFI, FDDA / grid / obs / spectral nudging, WRF-Chem, WRF-Fire,
+  WRF-Hydro, urban (BEP/BEM) or lake (the last two are reference-only / fail-closed). Aerosol-coupled
+  Morrison (<code>mp=40</code>) and NSSL fail closed.</li>
+</ul>
+
+<h2 id="terrain-ceiling">The extreme-terrain ceiling (~6000 m)<a class="headerlink" href="#terrain-ceiling" aria-label="Permalink">¶</a></h2>
+<p>The Alpine / Mont-Blanc extreme-terrain boundary instability is fixed (WRF-faithful
+zero-gradient physical <code>W</code> + specified-boundary cadence, no masking). The
+<strong>remaining ceiling is ~6000 m</strong>: a nest over ~8000 m terrain (Karakoram) still
+diverges to a non-finite state — which the <strong>default-on finite guard catches and fails
+closed</strong> (0 bad frames written), and on which WRF's own <code>real.exe</code> likewise fails
+without a lowered <code>etac</code>. The deep &gt; 6000 m fix is a future dycore-boundary
+milestone; the validated production envelope is steep real-world terrain up to ~6000 m.</p>
+
+<h2 id="free-running">Free-running open-boundary stability<a class="headerlink" href="#free-running" aria-label="Permalink">¶</a></h2>
+<p>Free-running without lateral-boundary relaxation on wide domains (nx ≈ 160+) can go unstable
+beyond ~14 h. The validated operational path uses boundary forcing (KI-7). See
+<a href="dynamics.html#boundaries">Dynamical Core → Boundaries</a>.</p>
+
+<h2 id="oom">Out-of-memory behavior<a class="headerlink" href="#oom" aria-label="Permalink">¶</a></h2>
+<p>The co-resident-headroom OOM mode is solved by the launch-time VRAM preflight (fail-closed exit
+75). The solo <code>cuda_async</code> fragmentation mode is <strong>mitigated, not fixed</strong>:
+a bit-identical RRTMG column-tile cap cuts the radiation transient's largest allocation −37 %, but
+solo fragmentation can still OOM the full fp64 nest, and the long-horizon 9-nest can OOM around the
+~90 min integration horizon (a reproducer ships). The default-on finite guard aborts cleanly with
+<code>{domain, field, level, step, sim-time, index}</code> rather than propagating a corrupted
+state. No OOM-proof guarantee is made.</p>
+
+<h2 id="known-issues">Known-issues summary<a class="headerlink" href="#known-issues" aria-label="Permalink">¶</a></h2>
+<p>Full detail (symptom / ruled-out / workaround / follow-up) is in <code>KNOWN_ISSUES.md</code> in
+the repository. The current release carries these:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>ID</th><th>Summary</th><th>Class</th></tr></thead>
+<tbody>
+<tr><td><strong>KI-9</strong></td><td>The credibility gate: 24–72 h forecast-skill equivalence open (cell-identity proven); 24 h demo <code>NOT_EQUIVALENT</code>, wind-divergence dominated.</td><td>Documented gap</td></tr>
+<tr><td>Terrain ceiling</td><td>&gt; ~6000 m terrain diverges; finite guard fails closed. Deep fix is a future milestone.</td><td>Documented ceiling</td></tr>
+<tr><td>#123</td><td>Solo <code>cuda_async</code> fragmentation OOM mitigated, not fixed; co-resident mode solved by preflight.</td><td>Mitigated / carried</td></tr>
+<tr><td>Host RAM</td><td>~36 GB resident (physics tables baked as static-aux); precision-independent, no result impact; fix deferred.</td><td>Root-caused, deferred</td></tr>
+<tr><td>fp32 scope</td><td>Opt-in fp32 checked only at 1 h lead; single-domain / capability-only; OOMs on the deep nest.</td><td>Documented scope</td></tr>
+<tr><td>RAINNC</td><td>Accumulated precip 5.22 mm vs 1.0 mm bound (derived diagnostic, no skill impact); drawn red, no tolerance widening.</td><td>Bounded acceptance</td></tr>
+<tr><td>KI-3</td><td>Default operational <code>wrfout</code> is a focused 104-variable subset; a 375-variable name/order compatibility stream is opt-in.</td><td>Scope boundary</td></tr>
+<tr><td>KI-4</td><td>d02 U10 episodic final-lead under-prediction; within bar at other leads; tied to KI-9.</td><td>Documented residual</td></tr>
+<tr><td>KI-7</td><td>Free-running wide domains (nx≈160+) can go unstable beyond ~14 h without boundary forcing.</td><td>Robustness edge</td></tr>
+<tr><td>KI-11</td><td>Two-way nesting equivalence vs CPU-WRF untested (only finite/stable proven).</td><td>Scope boundary</td></tr>
+<tr><td>Shin-Hong TKE</td><td>PBL 11 operational despite ~28.5 % diagnostic-TKE residual (source-traced non-driving); oracle upgrade is a follow-up.</td><td>Documented follow-up</td></tr>
+<tr><td>CLM4/CTSM</td><td><code>sf_surface_physics=5/6</code> documented architecture boundary, fail-closed, no oracle claimed.</td><td>Scope boundary</td></tr>
+<tr><td>K2 multi-GPU</td><td>Experimental, default-off, lab-only: periodic-BC bit-exact, specified-BC not yet faithful.</td><td>Experimental</td></tr>
+</tbody>
+</table>
+</div>
+<p>A code-grounded, prioritized inventory of the remaining gap to a complete WRF v4 replacement
+lives in <code>docs/GPU_PORT_GAPS_TODO.md</code>, and the roadmap in the repository README.</p>
+
+        <nav class="page-nav">
+<a class="prev" href="validation.html"><span class="pn-dir">← Previous</span><span class="pn-title">Validation &amp; WRF Identity</span></a>
+<a class="next" href="version-history.html"><span class="pn-dir">Next →</span><span class="pn-title">Version History</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

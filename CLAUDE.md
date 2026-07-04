@@ -1,3 +1,10 @@
+# AI operator routing
+
+If you are Claude helping an END USER run a forecast with `wrf_gpu` (not
+developing the port), stop and follow `AI_OPERATOR.md` or the
+`.claude/skills/run-wrf-gpu` skill. The rest of this file is the port's internal
+development protocol.
+
 # Claude Project Instructions
 
 @AGENTS.md

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Running the Model — wrf_gpu User's Guide</title>
+  <meta name="description" content="The gpuwrf run command reference: replay vs native-init, single-domain and nested forecasts, restart, and two-way nesting.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="active" href="running.html">Running the Model</a>
+<div class="subnav">
+<a href="running.html#cli-reference">The gpuwrf run command</a>
+<a href="running.html#namelist-support">Check scheme support offline — gpuwrf namelist-support</a>
+<a href="running.html#init-modes">Replay vs. standalone native-init (auto-detected)</a>
+<a href="running.html#single-vs-nested">Single-domain vs. nested</a>
+<a href="running.html#restart">Restart</a>
+<a href="running.html#two-way-nesting">Two-way nesting (--feedback)</a>
+<a href="running.html#scoring">Station scoring (--score)</a>
+<a href="running.html#vram-preflight">VRAM preflight &amp; --force-gpu-run</a>
+<a href="running.html#examples">Example invocations</a>
+</div>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="" href="validation.html">Validation &amp; WRF Identity</a>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Getting started › Running the Model</div>
+        <h1>Running the Model</h1>
+
+<p class="lead">Everything a forecast needs goes through one command:
+<code>python -m gpuwrf.cli run</code>. It validates your namelist fail-closed,
+auto-detects whether to run standalone native-init or CPU-WRF replay, advances the
+forecast on the GPU, and writes WRF-compatible <code>wrfout</code> history plus a
+run-payload JSON. This page is the complete flag reference and the mode map.</p>
+
+<h2 id="cli-reference">The <code>gpuwrf run</code> command<a class="headerlink" href="#cli-reference" aria-label="Permalink">¶</a></h2>
+
+<p>Run <code>python -m gpuwrf.cli run --help</code> for the authoritative list on
+your build. Every flag:</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Flag</th><th>Default</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>--input-dir</code></td><td><em>required</em></td><td>Run directory holding the case inputs. <strong>Standalone native-init</strong> when it has <code>wrfinput_&lt;domain&gt;</code> + <code>wrfbdy_d01</code> but no CPU-WRF <code>wrfout</code>; <strong>CPU-WRF replay</strong> when it has ≥&nbsp;2 <code>wrfout_&lt;domain&gt;</code> history files (auto-detected).</td></tr>
+<tr><td><code>--output-dir</code></td><td><em>required</em></td><td>Directory for the generated <code>wrfout</code> files and the run payload.</td></tr>
+<tr><td><code>--namelist</code></td><td><code>&lt;input-dir&gt;/namelist.input</code></td><td>WRF <code>namelist.input</code> to validate fail-closed before the run. Defaults to the case's own namelist.</td></tr>
+<tr><td><code>--domain</code></td><td>namelist → <code>d01</code></td><td>Domain id for a <strong>single-domain</strong> run. <strong>New in v0.23.1:</strong> when omitted it resolves to the root domain <code>d01</code> (WRF's default) instead of the old <code>d02</code>; an explicit value always wins. Ignored when the run is nested (<code>max_dom&nbsp;&gt;&nbsp;1</code>): all domains d01..dN run together.</td></tr>
+<tr><td><code>--max-dom</code></td><td><code>1</code></td><td>Number of nested domains to run (d01..dN). <code>1</code> = single-domain on <code>--domain</code>. Set <code>&gt;&nbsp;1</code> to run the standalone <strong>live-nested</strong> driver (parent feeds each child's lateral boundary live; no CPU-WRF <code>wrfout</code>).</td></tr>
+<tr><td><code>--domains-from-namelist</code></td><td>off</td><td><strong>New in v0.23.1.</strong> Run all domains the namelist declares (its <code>max_dom</code>) — the explicit WRF-parity nested path. Conflicts with <code>--max-dom</code>.</td></tr>
+<tr><td><code>--hours</code></td><td>namelist → <code>1</code></td><td>Forecast hours to advance. <strong>New in v0.23.1:</strong> when omitted it is read from the namelist <code>&amp;time_control</code> (<code>run_days</code>/<code>run_hours</code>/<code>run_minutes</code>/<code>run_seconds</code>), falling back to 1 if absent; an explicit value always wins and is announced.</td></tr>
+<tr><td><code>--dry-run</code></td><td>off</td><td><strong>New in v0.23.1.</strong> Validate the namelist, detect the input mode, resolve hours/domain/max_dom/scratch, print the effective plan, and exit <strong>without</strong> compiling or running.</td></tr>
+<tr><td><code>--scratch-dir</code></td><td><code>&lt;output-dir&gt;/.scratch</code></td><td>Disk-backed scratch for transient NetCDF/diagnostics — <strong>never</strong> <code>/tmp</code> tmpfs. <code>$GPUWRF_SCRATCH</code> overrides. Cleaned up on exit.</td></tr>
+<tr><td><code>--proof-dir</code></td><td><code>&lt;output-dir&gt;/proofs</code></td><td>Directory for the proof JSON.</td></tr>
+<tr><td><code>--compare-cpu-dir</code></td><td>none</td><td>CPU-WRF reference directory for a <em>dimension</em> compare. If omitted, no dimension compare runs. Writes <code>&lt;proof-dir&gt;/dimension_compare.json</code>.</td></tr>
+<tr><td><code>--score</code></td><td>off</td><td>Also score against AEMET station observations (needs <code>GPUWRF_AEMET_ROOT</code>; not part of the README runnability gate).</td></tr>
+<tr><td><code>--feedback</code></td><td>off</td><td>Nested runs only: enable <strong>two-way</strong> nesting. Default off (one-way).</td></tr>
+<tr><td><code>--force-gpu-run</code></td><td>off</td><td>Nested runs only: bypass the GPU lock / free-VRAM preflight. Also available as <code>GPUWRF_FORCE_GPU_RUN=1</code>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The command prints one JSON payload to stdout and exits non-zero on any
+blocked/partial/dimension-fail result (and exit&nbsp;75 when the nested VRAM
+preflight fails closed).</p>
+
+<div class="admon note">
+  <div class="admon-title">WRF-parity defaults (v0.23.1)</div>
+  <p>Like WRF's <code>wrf.exe</code>, omitted runtime choices are read from
+  <code>namelist.input</code>: forecast length from <code>&amp;time_control</code> and the
+  single-domain <code>--domain</code> from the root domain <code>d01</code>. The resolved
+  values (and whether each came from a flag, the namelist, or a default) are printed and
+  recorded in the run payload (<code>effective_hours</code>, <code>effective_domain</code>,
+  <code>effective_max_dom</code>, <code>override_sources</code>). An explicit flag always
+  overrides. Use <code>--dry-run</code> to preview the effective plan before compiling.
+  See <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/WRF_PARITY_ROADMAP.md">the
+  WRF-parity roadmap</a>.</p>
+</div>
+
+<h2 id="namelist-support">Check scheme support offline — <code>gpuwrf namelist-support</code><a class="headerlink" href="#namelist-support" aria-label="Permalink">¶</a></h2>
+<p><strong>New in v0.23.1.</strong> Print which namelist scheme values are operational,
+reference-only, fail-closed, or disabled — <strong>without</strong> importing JAX or touching
+the GPU, so it is instant:</p>
+<pre><code>python -m gpuwrf.cli namelist-support          # human-readable table
+python -m gpuwrf.cli namelist-support --json    # machine-readable</code></pre>
+<p>Use it to check whether your <code>namelist.input</code> physics selections will run before
+you start a forecast. See <a href="namelist.html">Namelist Compatibility</a> and
+<a href="physics.html">Physics Options</a>.</p>
+
+<h2 id="init-modes">Replay vs. standalone native-init (auto-detected)<a class="headerlink" href="#init-modes" aria-label="Permalink">¶</a></h2>
+
+<p>You never pick the init mode by hand — <code>run</code> detects it from the
+<code>--input-dir</code> contents and announces which path ran:</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Detected when the input dir has…</th><th>Mode</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>WRF real-data artifacts — <code>wrfinput_&lt;domain&gt;</code> + <code>wrfbdy_d01</code>, <strong>no</strong> CPU <code>wrfout</code></td><td><span class="pill op">standalone native-init</span></td><td>Loads the initial state from <code>wrfinput</code>, lateral boundaries from <code>wrfbdy</code>, and integrates on the GPU — <strong>no CPU-WRF <code>wrfout</code> dependency</strong>. The primary path.</td></tr>
+<tr><td>≥&nbsp;2 CPU-WRF <code>wrfout_&lt;domain&gt;</code> history files</td><td><span class="pill ref">CPU-WRF replay</span></td><td>Takes the initial state and boundaries from the existing CPU-WRF history — the legacy skill-comparison path.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>See <a href="input-data.html">Input Data &amp; Initialization</a> for how each
+mode reads its inputs.</p>
+
+<h2 id="single-vs-nested">Single-domain vs. nested<a class="headerlink" href="#single-vs-nested" aria-label="Permalink">¶</a></h2>
+
+<p>Nesting is <strong>explicit opt-in</strong> via <code>--max-dom&nbsp;N</code>. A
+multi-domain namelist (<code>max_dom&nbsp;&gt;&nbsp;1</code>) does <em>not</em>
+silently become a nested run: without <code>--max-dom</code>, <code>run</code>
+executes a single domain (<code>--domain</code>) and prints a note reminding you to
+pass <code>--max-dom&nbsp;N</code> for the live-nested forecast. With
+<code>--max-dom&nbsp;&gt;&nbsp;1</code>, the standalone live-nested driver runs
+d01..dN together, the parent building each child's lateral boundary live (no
+pre-supplied <code>wrfbdy_d02</code>). Mechanics: <a href="nesting.html">Nesting</a>.</p>
+
+<h2 id="restart">Restart<a class="headerlink" href="#restart" aria-label="Permalink">¶</a></h2>
+
+<p>wrf_gpu supports the standard <strong>WRF restart</strong> mechanism as part of
+its initialization path — restart is bit-identity-validated, and the per-domain
+subcycling nested path supports it as well. Restart cadence is governed by the usual
+<code>namelist.input</code> keys (<code>restart</code>,
+<code>restart_interval</code>); the restart file carries the WRF-faithful state (for
+example the 1&nbsp;km inner-nest <code>qke</code> cold-start seed) so a restarted run
+picks up where it left off.</p>
+
+<h2 id="two-way-nesting">Two-way nesting (<code>--feedback</code>)<a class="headerlink" href="#two-way-nesting" aria-label="Permalink">¶</a></h2>
+
+<p><span class="pill optin">Opt-in</span> For nested runs, <code>--feedback</code>
+enables two-way nesting: after each child finishes its subcycle, its interior is fed
+back onto the overlapping parent cells (WRF <code>copy_fcn</code> area-average plus
+the <code>sm121</code> feedback-zone smoother). The default is <strong>one-way</strong>
+nesting — the validated wiring. Two-way feedback is finite and stable but its 24&nbsp;h
+skill equivalence is untested, so it is off by default.</p>
+
+<h2 id="scoring">Station scoring (<code>--score</code>)<a class="headerlink" href="#scoring" aria-label="Permalink">¶</a></h2>
+
+<p><code>--score</code> additionally scores the forecast against AEMET station
+observations. It requires <code>GPUWRF_AEMET_ROOT</code> and is not part of the
+README runnability gate — leave it off for a plain forecast.</p>
+
+<h2 id="vram-preflight">VRAM preflight &amp; <code>--force-gpu-run</code><a class="headerlink" href="#vram-preflight" aria-label="Permalink">¶</a></h2>
+
+<p>For nested runs (<code>--max-dom&nbsp;&gt;&nbsp;1</code>) the CLI runs a fast,
+CPU-side <strong>VRAM-headroom preflight before the (multi-minute) compile</strong>
+and <strong>fails closed with exit&nbsp;75</strong> instead of OOMing tens of minutes
+in. The default free-VRAM threshold is card-relative:
+<code>max(24&nbsp;GiB, GPUWRF_MIN_FREE_VRAM_FRACTION&nbsp;×&nbsp;total&nbsp;VRAM)</code>
+with <code>GPUWRF_MIN_FREE_VRAM_FRACTION=0.50</code>. Tune it with:</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Knob</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>GPUWRF_MIN_FREE_VRAM_FRACTION</code></td><td>Card-relative threshold (default <code>0.50</code>).</td></tr>
+<tr><td><code>GPUWRF_MIN_FREE_VRAM_GIB</code></td><td>Explicit GiB threshold override.</td></tr>
+<tr><td><code>--force-gpu-run</code> / <code>GPUWRF_FORCE_GPU_RUN=1</code></td><td>Deliberate operator override — bypass the lock/preflight entirely.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="admon warn">
+  <div class="admon-title">Prefer thresholds over the bypass</div>
+  <p>The preflight exists to stop co-resident JAX/GPU jobs from shrinking the RRTMG
+  radiation-transient headroom at launch. Prefer the threshold knobs for tuning;
+  reserve <code>--force-gpu-run</code> for a deliberate operator override.</p>
+</div>
+
+<h2 id="examples">Example invocations<a class="headerlink" href="#examples" aria-label="Permalink">¶</a></h2>
+
+<p><strong>1. Bundled single-domain Switzerland case</strong> (see the
+<a href="quickstart.html">Quickstart</a>):</p>
+<pre><code>export GPUWRF_WRF_ROOT=/path/to/WRF
+python -m gpuwrf.cli run \
+    --input-dir   examples/switzerland_d01 \
+    --output-dir  runs/switzerland_d01 \
+    --domain      d01 \
+    --hours       1 \
+    --scratch-dir /fast/nvme/scratch</code></pre>
+
+<p><strong>2. Your own single-domain case, explicit namelist and domain:</strong></p>
+<pre><code>python -m gpuwrf.cli run \
+    --namelist    /path/to/case/namelist.input \
+    --input-dir   /path/to/case \
+    --output-dir  runs/my_forecast \
+    --domain      d02 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/scratch</code></pre>
+
+<p><strong>3. Live-nested d01→d02→d03, 24&nbsp;h:</strong></p>
+<pre><code>python -m gpuwrf.cli run \
+    --input-dir   /path/to/case \
+    --output-dir  runs/nested \
+    --max-dom     3 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/scratch</code></pre>
+
+<p><strong>4. Replay + dimension-compare against a CPU-WRF reference:</strong></p>
+<pre><code>python -m gpuwrf.cli run \
+    --namelist        /path/to/case/namelist.input \
+    --input-dir       /path/to/case \
+    --output-dir      runs/cmp \
+    --domain          d02 \
+    --hours           1 \
+    --compare-cpu-dir /path/to/case</code></pre>
+<p>This writes <code>runs/cmp/proofs/dimension_compare.json</code> and exits&nbsp;0
+only on a clean pipeline <em>and</em> a dimension PASS.</p>
+
+<div class="admon note">
+  <div class="admon-title">Related</div>
+  <p><a href="namelist.html">Namelist Compatibility</a> — which options run and which
+  fail closed. <a href="nesting.html">Nesting</a> — the live-nested driver and
+  feedback. <a href="output.html">Output</a> — the <code>wrfout</code> the run
+  writes.</p>
+</div>
+
+        <nav class="page-nav">
+<a class="prev" href="ai-quickstart.html"><span class="pn-dir">← Previous</span><span class="pn-title">Quickstart with an AI Agent</span></a>
+<a class="next" href="input-data.html"><span class="pn-dir">Next →</span><span class="pn-title">Input Data &amp; Initialization</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

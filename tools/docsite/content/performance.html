@@ -1,0 +1,169 @@
+<h1>Performance &amp; GPU Modes</h1>
+
+<p class="lead">wrf_gpu's value is <strong>capability, fidelity, stability and energy efficiency at
+scale</strong> — not a blanket single-card speedup. This page explains the one-time compile and
+the seconds-fast warm start, the opt-in throughput modes, VRAM sizing, and exactly which
+performance claims are measured versus projected.</p>
+
+<div class="admon honest">
+  <div class="admon-title">The honest one-paragraph summary</div>
+  <p>On <em>tiny</em> single-domain grids the GPU is launch/occupancy-bound and can be
+  <strong>slower</strong> than multi-rank CPU-WRF (~2.3× slower at 129²). The advantage
+  <strong>grows with scale</strong>: the all-7-island 1 km nested fast path measures
+  <strong>~1.53× faster than same-box 12-rank CPU-WRF</strong> and is byte-identical to the prior
+  release. Big multiples (≥2–3×) are <strong>not</strong> reachable on one card and fp32 does not
+  change that. The scale levers are algorithmic + multi-GPU + batching, and are honestly labelled
+  measured or projected below.</p>
+</div>
+
+<h2 id="cold-compile">First run is slow on purpose — the cold compile</h2>
+<p>The first forecast <strong>JIT-compiles the GPU kernels</strong>: a one-time cold compile with
+<strong>no output before integration starts</strong>. It is compiling, not hung. Compile time
+scales with grid size:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Case</th><th>One-time cold compile</th></tr></thead>
+<tbody>
+<tr><td>Bundled single-domain d01 (3 km)</td><td>~½–2 min</td></tr>
+<tr><td>Ordinary nested case</td><td>~8–12 min</td></tr>
+<tr><td>All-7-island 9-domain nest</td><td>tens of minutes (a separate, larger compile)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="warm-cache">Warm cache &amp; seconds-fast warm start</h2>
+<p>A persistent, per-user on-disk JIT cache is <strong>on by default with zero config</strong>. It
+is <strong>version-keyed</strong> (<code>gpuwrf</code> + JAX/JAXLIB + backend) so a stale
+older-release cache is never mistaken for a warm one, and it <strong>hits across forecast
+dates</strong> (a new or leap-year date is a warm hit — the date is a runtime argument, not baked
+into the program).</p>
+<p>On the fused nested path, a fresh process then <strong>warm-loads the compiled GPU executable
+in seconds</strong> via an <strong>AOT cheap-key</strong>: the executable is serialized to disk
+and indexed by a metadata key computed <em>without lowering</em>, so a new process loads it
+directly and skips the multi-tens-of-minutes re-lower the old cache still paid.</p>
+<div class="admon measured">
+  <div class="admon-title">Measured</div>
+  <p>The 9-nest fused stress re-confirm has both fused phases load <code>source=aot_blob</code>
+  cross-process with <strong>0 re-lower</strong>, all 9 domains finite (warm peak host RSS
+  16.4&nbsp;GB); the 3-domain cold→warm gate is <strong>byte-identical</strong> to the cold compile
+  (<code>max_abs_diff 0</code>) with no runtime regression. A warm load is numerically inert — the
+  key only <em>locates</em> the blob.</p>
+</div>
+<p>Opt out with <code>GPUWRF_NESTED_AOT=0</code>; add the fail-closed backstop
+<code>GPUWRF_AOT_VERIFY=1</code>; use <code>GPUWRF_BITWISE=1</code> or
+<code>GPUWRF_NESTED_FUSE=0</code> for the eager bitwise/debug path. See
+<a href="environment.html#compile-cache-and-warm-start">Environment Variables</a>.</p>
+<div class="admon note">
+  <div class="admon-title">Scope of the compile-cache win</div>
+  <p>The warm start is faster at <em>getting a run started</em>, <strong>not</strong> at running
+  the forecast itself. Warm forecast throughput (seconds per forecast-hour) is unchanged from v0.20
+  and the default path is byte-identical — the warm start rides the same fused runtime executable,
+  it just loads it from disk in seconds instead of re-lowering it.</p>
+</div>
+
+<h2 id="batched-ensemble">Batched ensemble — filling the small-grid GPU (v0.23)</h2>
+<p>A single small operational nest under-uses the GPU: it is launch/occupancy-bound, so the card
+sits mostly idle. The opt-in batched ensemble runs <strong>B independent, same-geometry forecasts
+concurrently under one outer <code>jax.vmap</code></strong> wrapped around the unbatched
+orchestration. The dynamical core is untouched; the default (<code>GPUWRF_BATCH_ENSEMBLE</code>
+unset / <code>=1</code>) is byte-identical.</p>
+<div class="admon measured">
+  <div class="admon-title">Measured — Tenerife 3 km→1 km 2-nest, one RTX 5090, warm</div>
+  <div class="table-scroll">
+  <table>
+  <thead><tr><th>B (concurrent cases)</th><th>Total throughput</th><th>% of large-grid ceiling</th><th>Peak VRAM</th></tr></thead>
+  <tbody>
+  <tr><td>1</td><td>4.51 M cells/s</td><td>78 %</td><td>9.4 GiB</td></tr>
+  <tr><td>2</td><td>4.62 M cells/s</td><td>79 %</td><td>10.8 GiB</td></tr>
+  <tr><td>3</td><td>5.24 M cells/s</td><td>90 %</td><td>15.4 GiB</td></tr>
+  <tr><td><strong>4</strong></td><td><strong>5.63 M cells/s</strong></td><td><strong>97 %</strong></td><td>18.3 GiB</td></tr>
+  <tr><td>5</td><td>5.62 M cells/s (plateau)</td><td>97 %</td><td>~26 GiB (cap)</td></tr>
+  </tbody>
+  </table>
+  </div>
+  <p>The large-grid saturation ceiling is <strong>5.81 M cells/s</strong>, measured on a
+  compute-bound Alps 433²@1 km case on the same card. Batching the tiny Tenerife grid reaches
+  <strong>≈97 % of that ceiling</strong> at B=4. <code>B_max=5</code> is VRAM-capped at ~26 GiB on
+  the 5090; a larger card batches further.</p>
+</div>
+<p><strong>Use it for</strong> many-case throughput — ensembles, parameter sweeps,
+parallel-in-time multi-day chunks — on small operational domains where one case leaves the GPU
+underused. Set the count with <code>GPUWRF_BATCH_ENSEMBLE=4</code>.</p>
+
+<h2 id="fp32">Optional fp32 mixed-precision mode</h2>
+<p>The default path is pure fp64 and byte-identical. The opt-in
+<code>GPUWRF_ACOUSTIC_PRECISION_MODE=mixed_perturb_fp32_v020</code> mode is
+<strong>capability/VRAM-only</strong>, not a speedup:</p>
+<ul>
+  <li>cuts whole-run VRAM by <strong>−14.4 %</strong> (aggressive mode) and extends full-physics
+  cell capability <strong>~1.16×</strong> (fits a 700² grid where fp64 caps near 650²);</li>
+  <li>on a single RTX 5090 it is <strong>not</strong> faster — the fp32/fp64 throughput-ceiling
+  ratio is <strong>≈0.91</strong>, and there is no peak-VRAM win on small single domains
+  (radiation-transient-bounded below ~384²).</li>
+</ul>
+<div class="admon honest">
+  <div class="admon-title">Honest scope of the fp32 fidelity check</div>
+  <p>fp32 tolerance bands are checked only at the <strong>1 h forecast lead</strong> (19/19 fields
+  green) — real, but <strong>not stringent</strong> (2–3 orders of magnitude inside the eventual
+  24 h skill bands). fp32 is only truly stressed by the 24–120 h skill gate, which is future work.
+  fp32 is single-domain / capability-only: on the deep all-7 9-domain nest it can OOM on the RRTMG
+  transient and is ~5× slower than fp64 there anyway. Do not read the 1 h pass as a 24–120 h skill
+  proof.</p>
+</div>
+
+<h2 id="vram">VRAM &amp; host memory sizing</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Case</th><th>Peak VRAM</th></tr></thead>
+<tbody>
+<tr><td>d01 9 km standalone</td><td>≈ 4.7 GiB</td></tr>
+<tr><td>1 km single domain (chunked BouLac)</td><td>≈ 18.25 GiB (fits one RTX 5090 bit-identically)</td></tr>
+<tr><td>All-island 9/3/1 km nested (AC1_FIT)</td><td>≈ 18.1 GiB peak</td></tr>
+<tr><td>Switzerland d01 72 h gate</td><td>≈ 22.9 GiB</td></tr>
+<tr><td>Canary L2 d02 72 h nested gate</td><td>≈ 29.8 GiB</td></tr>
+</tbody>
+</table>
+</div>
+<p>Peak VRAM is transient working memory (radiation transients dominate), not persistent fp64
+State. A <code>--max-dom&nbsp;&gt;&nbsp;1</code> run performs a CPU-side <strong>VRAM-headroom
+preflight</strong> that fails closed (exit 75) <em>before</em> the long compile rather than OOMing
+mid-run; tune it with <code>GPUWRF_MIN_FREE_VRAM_FRACTION</code> /
+<code>GPUWRF_MIN_FREE_VRAM_GIB</code> or bypass with <code>--force-gpu-run</code>.</p>
+<div class="admon warn">
+  <div class="admon-title">High resident host RAM (~36 GB)</div>
+  <p>A run currently holds ~36 GB of host RAM resident even at low VRAM, because the Noah-MP /
+  physics constant tables are baked into the compiled executable rather than passed as runtime
+  arguments. This is precision-independent and does <strong>not</strong> affect correctness or
+  results, but it limits running two instances on a 64 GB box. Root-caused; the fix is deferred.</p>
+</div>
+
+<h2 id="default-path-perf">Default-path work reductions (v0.23)</h2>
+<p>v0.23 adds two <strong>value-preserving</strong> default-on reductions that cut work without
+changing results: <strong>P0</strong> computes only the radiation flux slices the
+<code>wrfout</code> writer consumes (CPU bit-identical, 17/17 fields), and <strong>P3</strong>
+fuses a flat 2-domain parent+child cascade into one program (fail-closed for every other
+topology, CPU sha256 fused==eager). The dynamical core is untouched (net dynamics diff vs v0.22.2
+= 0 lines). The mandatory canary benchmark measures <strong>407 vs 411 s/forecast-hour</strong>
+(3-domain, 1 h, warm) — no regression. See <a href="validation.html#default-numerics">Validation →
+Default numerics</a>.</p>
+
+<h2 id="scaling-energy">Scaling &amp; energy — measured vs projected</h2>
+<div class="admon measured">
+  <div class="admon-title">Measured</div>
+  <p>A real 1 km Alpine forecast runs on one professional GPU (full physics, convection-permitting).
+  The device-bound fp64 kernel is near-roofline. The single-workstation energy-efficiency story is
+  not yet an at-scale benchmark; per-kWh and cluster-level efficiency remain projected below.</p>
+</div>
+<div class="admon warn">
+  <div class="admon-title">Projected — not yet benchmarked at scale</div>
+  <p>This workstation has one physical RTX 5090. A multi-GPU <code>shard_map</code> +
+  collective-halo (<code>lax.ppermute</code>) foundation exists and is bit-identity-validated on a
+  fake/CPU mesh, and the scaling harness lifts to bigger GPUs — but real multi-GPU throughput,
+  NVLink/NCCL bandwidth, and per-kWh figures at cluster scale are <strong>unmeasured and
+  projected</strong>. No competitive benchmark (e.g. vs AceCAST) has been run; that positioning is
+  an expectation, not a measurement.</p>
+</div>
+<p>Cross-version note: single-card <em>nested</em> forecast throughput is essentially flat across
+v0.17→v0.23 at the ~674 s/forecast-hour compute floor. Do not read the version history as a
+per-card nest-speed multiplier; the wins are capability, compile/warm-start, byte-identical
+work-reductions, and batching.</p>

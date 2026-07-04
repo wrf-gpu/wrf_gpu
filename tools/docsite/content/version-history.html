@@ -1,0 +1,79 @@
+<h1>Version History</h1>
+
+<p class="lead">A release-by-release summary. Because <code>stability &gt; identity</code> is the top
+priority, the default (fp64, no-env) forecast stays byte-identical or numerically equivalent across
+releases unless a change is proven value-preserving. Full per-release notes live in the
+<code>release_notes/</code> folder of the repository.</p>
+
+<div class="admon note">
+  <div class="admon-title">Reading the "default numerics" column</div>
+  <p><strong>Byte-identical</strong> = same compiled program, bit-for-bit output vs the prior
+  release. <strong>Numerically equivalent</strong> = value-preserving change to the program (proven
+  CPU bit-identical + within the GPU autotune floor). New capability is almost always
+  <strong>opt-in</strong> and inert by default.</p>
+</div>
+
+<h2 id="current">v0.23 line — batched-ensemble throughput &amp; usability</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
+<tbody>
+<tr><td><strong>v0.23.1</strong></td><td><strong>Usability &amp; AI-native onboarding.</strong> A full HTML <a href="index.html">User's Guide</a>; an <a href="ai-quickstart.html">AI operator skill</a> (<code>AI_OPERATOR.md</code> + a Claude Code skill) so an agent can run a case for you; and WRF-parity CLI ergonomics — forecast length and root domain now default from <code>namelist.input</code> when the flags are omitted, plus a <code>namelist-support</code> subcommand and a <code>--dry-run</code> preflight. No dycore/physics change.</td><td>Numerically identical to v0.23.0</td></tr>
+<tr><td>v0.23.0</td><td>Opt-in <a href="performance.html#batched-ensemble">batched ensemble</a> (<code>GPUWRF_BATCH_ENSEMBLE=B</code>) fills the launch-bound small-grid GPU (Tenerife 3/1 km reaches ~97 % of the large-grid ceiling at B=4). Value-preserving default-path work reductions (P0 radiation flux-slice, P3 flat-2-dom fusion). Extended physics — New-Tiedtke cumulus + Morrison-aerosol ported; NSSL / CAM-UW / urban / lake reference-only; moving nests opt-in. fp32 foundation laid (separate milestone).</td><td>Numerically equivalent to v0.22.2</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="v022">v0.22 line — nested wall-clock &amp; features</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
+<tbody>
+<tr><td>v0.22.2</td><td>Nested-grid wall-clock: cuts host work at the nested output boundary (~9 % faster nested steady state) + bit-identical RRTMG tile cap fixing a convection-peak OOM.</td><td>Byte-identical to v0.22.1</td></tr>
+<tr><td>v0.22.1</td><td>Pod-data-quality: nested <code>history_interval</code> output-cadence fix + opt-in colon-free <code>wrfout</code> filenames.</td><td>Byte-identical</td></tr>
+<tr><td>v0.22.0</td><td>Big stability + feature release: opt-in two-way nesting, 3-D TKE, data-assimilation hooks, extended output; operational-relaxed ADR ratified.</td><td>Byte-identical to v0.21.1</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="v021">v0.21 line — stability + compile-cache speed</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
+<tbody>
+<tr><td>v0.21.1</td><td>Mont-Blanc extreme-terrain boundary fix (WRF-faithful zero-gradient <code>W</code>; no masking).</td><td>Byte-identical</td></tr>
+<tr><td>v0.21.0</td><td><a href="performance.html#warm-cache">AOT cheap-key cross-process warm-start</a> (seconds-fast, skips the re-lower); dycore boundary-stability fix (all-7 9-domain nest finite through the old step-67 window); default-on finite guard; version-keyed cache. Warm forecast throughput unchanged.</td><td>Byte-identical</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="v020">v0.20 line — correctness, capability, fp32</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
+<tbody>
+<tr><td>v0.20.1</td><td>Reliability + I/O patch: warm cache hits across forecast dates for the nested path; opt-in training-output subset (currently 39 model variables plus mandatory coordinates); nested VRAM-OOM hardening.</td><td>Byte-identical to v0.20.0</td></tr>
+<tr><td>v0.20.0</td><td>Correctness / stability / capability / reliability. Opt-in <a href="performance.html#fp32">fp32</a> mode; cache that just works across runs and dates. All-7 nest ~1.07× faster than v0.19 / ~1.53× faster than 12-rank CPU-WRF, byte-identical to v0.19.</td><td>Byte-identical to v0.19 (fp64 default)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="v018-earlier">v0.19 and earlier — foundation</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Version</th><th>Highlights</th></tr></thead>
+<tbody>
+<tr><td>v0.19.1</td><td>Fixes a 24 h VRAM leak (a self-referential recursive closure); VRAM flat over a full day.</td></tr>
+<tr><td>v0.19.0</td><td>Fused cascade default-on beats CPU (1.43×); all-fields tolerance-green; the nested 7-island 9-domain goal reached (fast + 24 h VRAM-stable).</td></tr>
+<tr><td>v0.18.3</td><td>max_dom=9 compile fix + nested <code>history_interval</code> cadence fix, bit-identical.</td></tr>
+<tr><td>v0.18.2</td><td>1 km nested VRAM-efficiency fix (OOM near 31.8 → 18.1 GiB), bit-identical.</td></tr>
+<tr><td>v0.18.0</td><td>Feature-completeness + <a href="physics.html#scheme-triage">scheme triage</a>: every WRF v4 scheme classified under the then-current registry, no scheme dropped. Thompson strictly more WRF-faithful.</td></tr>
+<tr><td>v0.16.0</td><td>Stability + 1 km unlock: 1 km single domain fits one RTX 5090 bit-identically (chunked BouLac); aerosol-aware Thompson; fp32 make-or-break concluded.</td></tr>
+<tr><td>v0.15.0</td><td>The project's final fp64 GPU kernel (adversarially confirmed device-bound); re-closes both 72 h gates 9/10 within frozen tolerance.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p style="margin-top:1.4rem;">The complete, unabridged notes for every release are in the
+<a href="https://github.com/wrf-gpu/wrf_gpu/tree/main/release_notes">release_notes/</a> folder and
+<code>CHANGELOG.md</code> of the repository.</p>

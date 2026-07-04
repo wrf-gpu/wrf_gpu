@@ -1,0 +1,99 @@
+<h1>How wrf_gpu Works</h1>
+
+<p class="lead">wrf_gpu is a clean-room JAX rewrite of the WRF-ARW forecast model that targets the
+GPU memory hierarchy from day one. It reproduces the same physics solver WRF implements, but
+its architecture, execution model, and validation strategy are built for the GPU — not
+inherited from the WRF Fortran source.</p>
+
+<h2 id="not-a-port">A rewrite, not a port</h2>
+<p>wrf_gpu is <strong>not</strong> a line-by-line translation of WRF Fortran and it is not a
+CUDA-annotated copy of the WRF codebase. It is an independent implementation of the WRF-ARW
+equations and physics, written in <a href="https://jax.readthedocs.io/">JAX</a> and compiled to
+the GPU through XLA. It reads the same inputs as WRF and writes WRF-compatible output, but the
+solver in between is its own code, held to WRF's numerical behavior by validation rather than by
+shared source.</p>
+<div class="admon honest">
+  <div class="admon-title">Why this matters for you</div>
+  <p>Because it is a rewrite validated against an oracle, wrf_gpu can be honest and precise about
+  <em>exactly</em> which parts match WRF and how well. The dynamics/thermodynamics core is proven
+  <strong>cell-for-cell identical</strong> to CPU-WRF v4; the broader forecast-<em>skill</em>
+  equivalence over 24–72&nbsp;h is a separate, still-open gate. The guide never blurs those two.
+  See <a href="validation.html">Validation &amp; WRF Identity</a>.</p>
+</div>
+
+<h2 id="gpu-native">GPU-native architecture</h2>
+<p>The design follows a small set of immutable principles:</p>
+<ul>
+  <li><strong>Whole-state device residency.</strong> After initialization the full model state
+  lives on the GPU. There are <strong>no host↔device transfers inside the timestep loop</strong>
+  (any exception requires an architecture decision record).</li>
+  <li><strong>Fused, timestep-scale kernels.</strong> The integrator compiles into a few large
+  fused programs rather than a storm of tiny kernel launches, so the GPU stays busy instead of
+  waiting on launch overhead.</li>
+  <li><strong>fp64 dynamical core.</strong> The core integrates in double precision, which the
+  pressure-gradient / buoyancy cancellation in a nonhydrostatic model requires for stability and
+  identity. An <a href="performance.html#fp32">opt-in fp32 mode</a> exists for capability/VRAM,
+  not as the default.</li>
+  <li><strong>No masking on the result path.</strong> There is no clamping, no
+  <code>nan_to_num</code>, and no silent substitution of a scheme. If state goes non-finite, a
+  default-on guard aborts with the exact location instead of hiding it.</li>
+</ul>
+<p>The forecast loop, physics dispatch, and I/O live under
+<code>src/gpuwrf/runtime/</code>, <code>src/gpuwrf/coupling/</code>,
+<code>src/gpuwrf/physics/</code> and <code>src/gpuwrf/io/</code>; the frozen State, grid, and
+physics registry are in <code>src/gpuwrf/contracts/</code>.</p>
+
+<h2 id="native-init">Standalone initialization</h2>
+<p>In a standard WRF workflow you run WPS (geogrid → ungrib → metgrid) to produce
+<code>met_em</code> files, then <code>real.exe</code> to turn them into
+<code>wrfinput</code>/<code>wrfbdy</code>, then <code>wrf.exe</code> to integrate. The current
+public CLI keeps the WRF real-data artifacts (<code>wrfinput_*</code> and
+<code>wrfbdy_d01</code>) plus your <code>namelist.input</code>, and replaces
+<code>wrf.exe</code> with GPU integration. It does <strong>not</strong> need CPU-WRF
+<code>wrfout</code> history files for a standalone forecast.</p>
+<p>The single entrypoint <code>python -m gpuwrf.cli run</code> auto-detects the case:</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Input directory contains…</th><th>Mode</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>wrfinput_&lt;domain&gt;</code> + <code>wrfbdy_d01</code>, no CPU <code>wrfout</code></td><td><strong>Standalone native-init</strong></td><td>Loads the initial state and boundary forcing from WRF real-data artifacts and integrates on the GPU — the normal operational path.</td></tr>
+<tr><td>≥2 CPU-WRF <code>wrfout_&lt;domain&gt;</code> history files</td><td><strong>Replay</strong></td><td>Runs from a CPU-WRF case for direct GPU↔CPU comparison / validation.</td></tr>
+</tbody>
+</table>
+</div>
+<p>See <a href="input-data.html">Input Data &amp; Initialization</a> for details.</p>
+
+<h2 id="validation-philosophy">Validation against WRF, not bitwise reproducibility</h2>
+<p>wrf_gpu does not aim to be bit-for-bit identical to a specific WRF build (which is impossible
+across compilers and core counts anyway). Instead it validates against WRF as an <strong>oracle</strong>
+through a tiered pyramid, strongest evidence first:</p>
+<ol>
+  <li><strong>Micro-fixture / savepoint parity</strong> — individual physics kernels checked
+  against pristine-WRF single-column oracles to machine precision.</li>
+  <li><strong>Physical invariants</strong> — conservation and boundedness checks.</li>
+  <li><strong>Short-run / convergence</strong> — behavior over the first forecast hours.</li>
+  <li><strong>Cell-identity proof</strong> — a full GPU <code>wrfout</code> compared to a CPU-WRF
+  <code>wrfout</code> over <em>all</em> grid cells, all forecast leads, and all core prognostics,
+  against a <strong>frozen tolerance manifest</strong> that is read before comparison and never
+  tuned.</li>
+</ol>
+<p>Every claim in this guide has a proof object on disk in the repository (<code>proofs/</code>),
+and every architecture decision has a cross-model-reviewed ADR. Read the method and reproduce
+commands on the <a href="validation.html">Validation</a> page.</p>
+
+<h2 id="priority-order">The priority order</h2>
+<p>When two goals conflict, wrf_gpu resolves them in a fixed order:</p>
+<p style="font-size:1.15rem;text-align:center;font-family:var(--mono);margin:1rem 0;">
+  stability&nbsp; &gt; &nbsp;identity&nbsp; &gt; &nbsp;speed&nbsp; &gt; &nbsp;memory</p>
+<p>A result is never destabilized or altered to go faster or fit in less memory. This is why the
+default path stays fp64 and byte-identical across releases, and why performance features
+(batched ensembles, fp32, fused warm-start) are <strong>opt-in or value-preserving</strong> — they
+never move the default numbers. See <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
+
+<h2 id="agent-driven">Agent-driven development</h2>
+<p>wrf_gpu is built and extended by an AI manager agent that dispatches implementer and critic
+models, reviews every diff, runs the acceptance gates, and merges. The two AI systems credited on
+the logo — an Anthropic <strong>Claude</strong> model and an OpenAI <strong>GPT</strong> model —
+are the primary authors and reviewers. This is why the repository is unusually proof-dense: the
+development process itself requires a falsifiable artifact for every claim. See
+<a href="credits.html">Credits</a>.</p>

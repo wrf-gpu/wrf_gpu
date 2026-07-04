@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en" data-base="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Validation &amp; WRF Identity — wrf_gpu User's Guide</title>
+  <meta name="description" content="How wrf_gpu is validated against WRF as an oracle: the cell-for-cell identity proof, the frozen tolerance manifest, and the open skill gate.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
+  <link rel="stylesheet" href="_assets/style.css">
+</head>
+<body>
+  <div class="scrim"></div>
+  <header class="topbar">
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <img src="_assets/logo.svg" alt="">
+    <span class="brand-name">wrf_gpu</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="_assets/logo.svg" alt="wrf_gpu logo">
+        <span class="brand-text">
+          <span class="brand-name">wrf_gpu</span>
+          <span class="brand-sub">User's Guide · v0.23.1</span>
+        </span>
+      </a>
+      <div class="search-box">
+        <input id="search-input" type="search" placeholder="Search the guide…"
+               autocomplete="off" spellcheck="false" aria-label="Search the guide">
+        <span class="search-kbd">/</span>
+        <div id="search-results" role="listbox"></div>
+      </div>
+      <nav class="toc">
+<div class="group-title">Introduction</div>
+<a class="" href="index.html">Overview</a>
+<a class="" href="concepts.html">How wrf_gpu Works</a>
+<div class="group-title">Getting started</div>
+<a class="" href="installation.html">Installation &amp; Requirements</a>
+<a class="" href="quickstart.html">Quickstart</a>
+<a class="" href="ai-quickstart.html">Quickstart with an AI Agent</a>
+<a class="" href="running.html">Running the Model</a>
+<a class="" href="input-data.html">Input Data &amp; Initialization</a>
+<div class="group-title">Configuration</div>
+<a class="" href="namelist.html">Namelist Compatibility</a>
+<a class="" href="physics.html">Physics Options</a>
+<a class="" href="environment.html">Environment Variables</a>
+<a class="" href="output.html">Output Files</a>
+<div class="group-title">The model</div>
+<a class="" href="dynamics.html">Dynamical Core</a>
+<a class="" href="nesting.html">Nesting</a>
+<div class="group-title">Performance &amp; validation</div>
+<a class="" href="performance.html">Performance &amp; GPU Modes</a>
+<a class="active" href="validation.html">Validation &amp; WRF Identity</a>
+<div class="subnav">
+<a href="validation.html#method">The cell-identity method</a>
+<a href="validation.html#result">The result: 9/10 with one bounded miss</a>
+<a href="validation.html#rainnc">The one red field — RAINNC — in plain terms</a>
+<a href="validation.html#skill-gate">The open credibility gate — 24–72 h forecast skill</a>
+<a href="validation.html#default-numerics">Default numerics across releases</a>
+<a href="validation.html#reproduce">Reproduce it yourself</a>
+</div>
+<a class="" href="limitations.html">Boundaries &amp; Known Issues</a>
+<div class="group-title">Reference</div>
+<a class="" href="version-history.html">Version History</a>
+<a class="" href="credits.html">Credits, License &amp; Citation</a>
+<a class="" href="glossary.html">Glossary</a>
+</nav>
+    </aside>
+    <div class="content-wrap">
+      <main>
+        <div class="breadcrumb"><a href="index.html">User's Guide</a> › Performance &amp; validation › Validation &amp; WRF Identity</div>
+        <h1>Validation &amp; WRF Identity</h1>
+
+<p class="lead">wrf_gpu is validated by a reproducible, CPU-only identity-proof system that compares a
+GPU <code>wrfout</code> against a CPU-WRF <code>wrfout</code> from the same initialization, over
+<strong>all grid cells, all forecast leads, and all core prognostic variables</strong>, against a
+<strong>frozen tolerance manifest</strong> that is read before comparison and never tuned. WRF is
+the oracle; this is the project's primary fidelity gate.</p>
+
+<h2 id="method">The cell-identity method<a class="headerlink" href="#method" aria-label="Permalink">¶</a></h2>
+<p>Cell-identity is a per-cell, per-lead, per-variable proof — not an aggregate station-RMSE
+summary. For a matching GPU/CPU pair it scores every field at every grid cell and every forecast
+hour against a limit fixed in advance. A field is <strong>green</strong> only if it stays inside
+its frozen tolerance everywhere; a field that breaches is drawn <strong>red</strong> and carried
+honestly — the limit is never widened to paint it green. Full method and reproduce commands are in
+<code>docs/IDENTITY_PROOF.md</code> in the repository.</p>
+
+<div class="admon note">
+  <div class="admon-title">Why not bitwise equality?</div>
+  <p>Bit-for-bit reproduction of a specific WRF build is impossible across compilers and MPI rank
+  counts (WRF is not bit-identical to itself under those changes). wrf_gpu instead proves
+  cell-for-cell agreement within a frozen physical tolerance — a stronger, more meaningful claim
+  for a rewrite than chasing one compiler's rounding.</p>
+</div>
+
+<h2 id="result">The result: 9/10 with one bounded miss<a class="headerlink" href="#result" aria-label="Permalink">¶</a></h2>
+<p>On the Switzerland 72 h cell-identity proof, wrf_gpu closes with <strong>9 of 10 hard-gate
+fields within frozen tolerance and the full dynamics/thermodynamics core cell-for-cell
+identical</strong> (<code>r ≈ 0.99–1.00</code>). On the nested Canary L2 d02 8 h proof it is
+<strong>10/10 within frozen tolerance</strong>.</p>
+
+<figure style="margin:1.2rem 0;">
+  <img src="assets/v018/identity_proof/switzerland_d01/identity_dashboard.png"
+       alt="GPU↔CPU cell-identity dashboard for Switzerland d01 over 72 hours (v0.18): 9 of 10 fields within frozen tolerance"
+       style="max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px;">
+  <figcaption style="font-size:.82rem;color:var(--fg-soft);margin-top:.4rem;">
+    Switzerland d01 — 72 h. 10 fields scored, 9 within frozen tolerance; the single miss is
+    accumulated <code>RAINNC</code>. Dynamics/thermodynamics core cell-for-cell identical.
+  </figcaption>
+</figure>
+<figure style="margin:1.2rem 0;">
+  <img src="assets/v018/identity_proof/canary_l2_d02/identity_dashboard.png"
+       alt="GPU↔CPU cell-identity dashboard for Canary L2 d02 over 8 hours (v0.18): 10 of 10 fields within frozen tolerance"
+       style="max-width:100%;height:auto;border:1px solid var(--border);border-radius:8px;">
+  <figcaption style="font-size:.82rem;color:var(--fg-soft);margin-top:.4rem;">
+    Canary L2 d02 — 8 h nested. 10/10 fields within frozen tolerance (worst field QVAPOR at 0.57×
+    its limit).
+  </figcaption>
+</figure>
+
+<h2 id="rainnc">The one red field — RAINNC — in plain terms<a class="headerlink" href="#rainnc" aria-label="Permalink">¶</a></h2>
+<p>The single out-of-envelope field is <strong>accumulated precipitation <code>RAINNC</code></strong>
+(5.22 mm vs a tight 1.0 mm bound over 72 h). Its <em>physics</em> is correct — the individual
+rain / ice / snow processes match WRF to ~1e-7 (oracle-green). What does not close to the 1.0 mm
+bound is the <em>accumulated total</em>: precipitation placement is the most chaotically-sensitive
+field in any weather model, so legitimate differences down to floating-point operation order move a
+shower a grid cell over, and summed over 72 h that grows to a few-mm cell-by-cell difference.
+<code>RAINNC</code> is a derived running counter that does <strong>not</strong> feed back into the
+forecast; the prognostic fields that drive skill — wind, temperature, and moisture (QVAPOR, which
+passes) — are all within tolerance. It is drawn red and carried, not painted green.</p>
+
+<h2 id="skill-gate">The open credibility gate — 24–72 h forecast skill<a class="headerlink" href="#skill-gate" aria-label="Permalink">¶</a></h2>
+<div class="admon honest">
+  <div class="admon-title">Not claimed closed</div>
+  <p>Cell-identity of the dynamics/thermo core is proven. The broader <strong>24 h/72 h
+  forecast-<em>skill</em> equivalence (T2/U10/V10) vs CPU-WRF is the credibility gate and is NOT
+  claimed closed.</strong> On the runnable 24 h d02 equivalence demo the verdict is
+  <code>NOT_EQUIVALENT</code>: short-lead fields track within tolerance, but by 24 h the run
+  diverges, dominated by lead-time wind divergence (3-D V pooled RMSE 8.13 m s⁻¹ vs a 1.8 m s⁻¹
+  bar). This is hard dynamics-<code>ph'</code> / MYNN / <code>*_tendf</code> GPU work, with no
+  cheap knob — it is the gate for any "operational replacement" claim. See
+  <code>docs/equivalence-demo.md</code> (KI-9) and <a href="limitations.html">Boundaries</a>.</p>
+</div>
+<p>Earlier statistical-equivalence (TOST) framing is <strong>superseded</strong> by this per-cell
+identity proof; no "TOST PASS" / "statistically-proven equivalence" is claimed.</p>
+
+<h2 id="default-numerics">Default numerics across releases<a class="headerlink" href="#default-numerics" aria-label="Permalink">¶</a></h2>
+<p>The <code>stability &gt; identity</code> priority means the default (fp64, no-env) forecast does
+not change across releases except where a change is proven value-preserving. For v0.23 the default
+is <strong>numerically equivalent to v0.22.2</strong>:</p>
+<ol>
+  <li>The dynamical core is untouched — net dynamics diff v0.22.2→v0.23 is <strong>0 lines</strong>.</li>
+  <li>The only default-on changes to the compiled program (P0 radiation flux-slice, P3 flat-2-dom
+  fusion) are proven <strong>CPU bit-identical</strong> (sha256 before==after).</li>
+  <li>With XLA autotune held fixed (same-cache control) the default path is <strong>bit-identical</strong>
+  to v0.22.2 (<code>max_abs 0.0</code>, 0/178 leaves).</li>
+  <li>Across two independent cold compiles it matches v0.22.2 within the autotune floor — a
+  self-control confirms the v0.23-vs-v0.22.2 field differences over the 1 h canary are
+  indistinguishable from v0.22.2 differing from its own second cold compile.</li>
+</ol>
+<p>The only difference is the same run-to-run GPU autotune nondeterminism v0.22.2 already exhibits
+against itself. No masking, clamps, or <code>nan_to_num</code>.</p>
+
+<h2 id="reproduce">Reproduce it yourself<a class="headerlink" href="#reproduce" aria-label="Permalink">¶</a></h2>
+<p>The identity proof is CPU-only and never touches the GPU. Given a matching CPU/GPU
+<code>wrfout</code> pair:</p>
+<pre><code>python3 scripts/build_identity_proof_plots.py \
+  --cpu-dir "$CPU_DIR" --gpu-dir "$GPU_DIR" \
+  --domain d01 --init "2023-01-15T00:00:00+00:00" \
+  --case-id switzerland_d01_72h --region-label "Switzerland d01 72h" \
+  --tolerance-json proofs/v014/grid_delta_atlas/tolerance_manifest_candidate.json \
+  --proof-dir  proofs/&lt;case&gt;/identity_proof \
+  --asset-dir  docs/assets/&lt;case&gt;/identity_proof</code></pre>
+<p>Every claim on this page has a proof object under <code>proofs/</code> in the repository, and
+the equivalence demo (<code>scripts/equivalence_demo.py</code>) and reproducibility harness
+(<code>scripts/verify_reproducibility.sh</code>) run on CPU. See also <code>docs/VALIDATION.md</code>
+and <code>docs/REPRODUCIBILITY.md</code>.</p>
+
+        <nav class="page-nav">
+<a class="prev" href="performance.html"><span class="pn-dir">← Previous</span><span class="pn-title">Performance &amp; GPU Modes</span></a>
+<a class="next" href="limitations.html"><span class="pn-dir">Next →</span><span class="pn-title">Boundaries &amp; Known Issues</span></a>
+</nav>
+      </main>
+      <footer class="site-foot">
+        <p><strong>wrf_gpu</strong> · a GPU-native, WRF-compatible regional weather model ·
+           an AI-written rewrite validated against <a href="https://www2.mmm.ucar.edu/wrf/users/">WRF</a> as an oracle.<br>
+           WRF is developed at <a href="https://www.mmm.ucar.edu/">NCAR/UCAR</a>. This project is not affiliated with or endorsed by UCAR/NCAR.
+           · <a href="https://github.com/wrf-gpu/wrf_gpu">Source on GitHub</a></p>
+      </footer>
+    </div>
+  </div>
+  <script src="_assets/app.js"></script>
+</body>
+</html>

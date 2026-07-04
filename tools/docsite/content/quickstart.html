@@ -1,0 +1,124 @@
+<h1>Quickstart: Your First Forecast</h1>
+
+<p class="lead">Run the <strong>bundled Switzerland 3&nbsp;km case</strong> — real
+GFS-initialized inputs that ship in the repo — end-to-end on your GPU in three
+commands, then read the WRF-compatible <code>wrfout</code> it writes. No external
+data download, no local <code>real.exe</code> step, no CPU-WRF run required.</p>
+
+<div class="admon note">
+  <div class="admon-title">Before you start</div>
+  <p>You need wrf_gpu installed with a GPU-visible JAX
+  (<a href="installation.html">Installation &amp; Requirements</a>). The bundled case
+  selects RRTMG radiation and Noah-MP land; Noah-MP reads WRF lookup tables, so set
+  <code>GPUWRF_WRF_ROOT</code> to a pristine WRF&nbsp;v4 tree first. This case needs
+  <strong>only</strong> <code>GPUWRF_WRF_ROOT</code> —
+  <code>GPUWRF_CANAIRY_ROOT</code> is for the larger validation corpus, not this
+  case.</p>
+</div>
+
+<h2 id="three-steps">Three steps</h2>
+
+<pre><code># 1. Point at a pristine WRF v4 source/run tree (for the RRTMG + Noah-MP tables):
+export GPUWRF_WRF_ROOT=/path/to/WRF
+
+# 2. Run one forecast hour of the bundled Switzerland 3 km case on the GPU:
+python -m gpuwrf.cli run \
+    --input-dir   examples/switzerland_d01 \
+    --output-dir  runs/switzerland_d01 \
+    --domain      d01 \
+    --hours       1 \
+    --scratch-dir /fast/nvme/scratch          # any real (non-tmpfs) fast disk
+
+# 3. Read the WRF-compatible history file:
+ncdump -h runs/switzerland_d01/wrfout_d01_*</code></pre>
+
+<p>Raise <code>--hours</code> for a longer forecast — the bundled namelist window
+covers 24&nbsp;h.</p>
+
+<h2 id="the-case">The bundled case</h2>
+
+<p><code>examples/switzerland_d01/</code> is a small, self-contained real-data case:</p>
+
+<div class="table-scroll">
+<table>
+<thead><tr><th>Property</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Domain</td><td>42 × 42 mass points, 44 vertical levels, Δx&nbsp;=&nbsp;Δy&nbsp;=&nbsp;3&nbsp;km, single domain</td></tr>
+<tr><td>Initialization</td><td>2023-01-15 00:00&nbsp;UTC; 3-hourly boundary interval</td></tr>
+<tr><td>Physics menu</td><td><code>mp_physics=8</code> (Thompson), <code>ra_lw/sw=4</code> (RRTMG), <code>sf_surface_physics=4</code> (Noah-MP), <code>bl_pbl_physics=5</code>&nbsp;/&nbsp;<code>sf_sfclay_physics=5</code> (MYNN), <code>cu_physics=0</code></td></tr>
+<tr><td>Provenance</td><td>Derived from public-domain NCEP&nbsp;GFS analysis via the standard WPS&nbsp;/&nbsp;<code>real.exe</code> chain — freely redistributable</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="what-just-happened">What just happened</h2>
+
+<ol>
+  <li><strong>Fail-closed namelist check</strong> — instant, no GPU. The
+  case's <code>namelist.input</code> is validated before any heavy import; an
+  unsupported scheme is refused here with a named reason (see
+  <a href="namelist.html">Namelist Compatibility</a>).</li>
+  <li><strong>Init-mode auto-detect</strong> — the case has no CPU-WRF
+  <code>wrfout</code>, so <code>run</code> announces
+  <em>standalone native-init</em>: it assembles the initial and boundary state and
+  integrates entirely on the GPU, with no CPU-WRF dependency. See
+  <a href="input-data.html">Input Data &amp; Initialization</a>.</li>
+  <li><strong>Cold compile, then integrate</strong> — the first run pays a one-time
+  JIT compile (details below), then advances the forecast and writes output.</li>
+  <li><strong>Output</strong> — a WRF-compatible <code>wrfout_d01_*</code> history
+  file plus a run-payload JSON land under <code>--output-dir</code>. The writer emits
+  a focused 104-variable subset of WRF's fields (see
+  <a href="output.html">Output</a>).</li>
+</ol>
+
+<div class="admon warn">
+  <div class="admon-title">The first run is slow on purpose</div>
+  <p>The first forecast JIT-compiles the GPU kernels — a one-time <strong>cold
+  compile with no output</strong> before integration starts. It is compiling, not
+  hung. Compile time <strong>scales with domain size</strong>: roughly
+  <strong>½–2&nbsp;min</strong> for this single-domain d01 case, and up to
+  <strong>~8–12&nbsp;min</strong> for a large nested case. A persistent, per-user
+  on-disk JIT cache is <strong>on by default with zero config</strong>, so later runs
+  hit the warm cache and start in seconds. Full detail on
+  <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
+</div>
+
+<h2 id="nested">A live-nested forecast (down to 1 km)</h2>
+
+<p>For a multi-domain run (d01→d02→d03, including a 1&nbsp;km nest), add
+<code>--max-dom&nbsp;N</code> instead of <code>--domain</code>. This is explicit
+opt-in and defaults to 1 (single-domain). The parent advances and builds
+<strong>each child's lateral boundary live</strong>, so you only need a per-domain
+<code>wrfinput_d0N</code> and <code>wrfbdy_d01</code> for the outer domain — no
+CPU-WRF <code>wrfout</code> and no pre-supplied <code>wrfbdy_d02</code>:</p>
+
+<pre><code>python -m gpuwrf.cli run \
+    --input-dir   /path/to/case \
+    --output-dir  runs/nested \
+    --max-dom     3 \
+    --hours       24 \
+    --scratch-dir /fast/nvme/scratch</code></pre>
+
+<p>This writes a synchronized <code>wrfout_d01_*</code>, <code>wrfout_d02_*</code>,
+and <code>wrfout_d03_*</code> set. The larger fused nest is a bigger one-time cold
+compile (the ~8–12&nbsp;min range above), cached thereafter. See
+<a href="running.html">Running the Model</a> for the full CLI and
+<a href="nesting.html">Nesting</a> for the mechanics.</p>
+
+<h2 id="reading-output">Reading the output</h2>
+
+<p>The output is a standard WRF-compatible NetCDF history file — inspect it with any
+WRF tooling:</p>
+
+<pre><code>ncdump -h runs/switzerland_d01/wrfout_d01_*
+python -c "import xarray as xr; print(xr.open_dataset('runs/switzerland_d01/wrfout_d01_...'))"</code></pre>
+
+<div class="admon note">
+  <div class="admon-title">Where to go next</div>
+  <p><a href="running.html">Running the Model</a> — the full <code>gpuwrf run</code>
+  CLI reference (single-domain, nested, replay, two-way).
+  <a href="input-data.html">Input Data &amp; Initialization</a> — how wrf_gpu uses
+  <code>wrfinput</code> and <code>wrfbdy</code> real-data artifacts.
+  <a href="performance.html">Performance &amp; GPU Modes</a> — cold compile, warm
+  cache, VRAM, and batched ensembles.</p>
+</div>

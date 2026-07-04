@@ -1,3 +1,9 @@
+# AI operator routing
+
+If you are an AI assistant helping an END USER run a forecast with `wrf_gpu`
+(not developing the port), stop and follow `AI_OPERATOR.md`. The rest of this
+file is the port's internal development protocol.
+
 # Agent Instructions
 
 Read order:
