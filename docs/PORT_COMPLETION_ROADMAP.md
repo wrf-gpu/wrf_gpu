@@ -23,6 +23,34 @@ SMS-3DTKE), and every out-of-scope feature — so that successive releases can d
 | 🔴 **Fail-closed** | 32 codes | Recognized WRF option, refused with a named reason; **needs oracle + kernel + wiring** | shrink hard |
 | ⚫ **Out-of-scope** | features | Whole subsystems deliberately not ported (Chem/Fire/Hydro/DA/…) | scope decisions per subsystem |
 
+## v0.24 roadmap at a glance (top level)
+
+Effort: **S** ≈ 1–2 sprints · **M** ≈ 3–5 · **L** ≈ 5–10 · **XL** ≈ 10+. Full per-scheme detail
+is in the [physics-scheme tables](#physics-schemes-not-yet-operational-the-full-list) and the
+sections below.
+
+| # | Area | Non-operational now | Close it by | Tier | Effort |
+|---|---|---|---|---|---|
+| 1 | **Microphysics** `mp_physics` | 🟡2 + 🔴21 = 23 | Wire mp=18 (NSSL), mp=40 (Morrison-aero) — oracles exist; then the deep families (P3 50–53, Milbrandt-Yau 9, HUJI SBM 30/32, Jensen-ISHMAEL 55, NTU 56, …) | A→C | L–XL |
+| 2 | **Cumulus** `cu_physics` | 🟡8 + 🔴3 = 11 | Wire the SAS family (4/94/95/96/14), Grell 3D/GD (5/93) — oracles exist; then Zhang-McFarlane 7, MSKF 10/11 | A→C | M–L |
+| 3 | **PBL** `bl_pbl_physics` | 🟡5 | Wire QNSE 4, UW/CAM5 9, TEMF 10, TKE-eps 16/17 (oracles exist); pair 4/10 with their surface layers | A | M each |
+| 4 | **Surface layer** `sf_sfclay_physics` | 🔴2 | Stage oracle + port QNSE (4) & TEMF (10); graduate with their PBLs | A | M |
+| 5 | **Land surface** `sf_surface_physics` | 🟡2 + 🔴2 = 4 | Wire RUC 3, SSiB 8 (oracles exist); CLM4 5 / CTSM 6 = architecture boundary (needs the CLM/CTSM column model) | A / D | M / XL |
+| 6 | **Longwave radiation** `ra_lw_physics` | 🟡4 + 🔴2 | Wire CAM 3, Goddard 5, FLG 7, GFDL 99 (oracles exist); RRTMG-K 14 / fast-RRTMG 24 build-gated in WRF too (low prio) | A | M–L |
+| 7 | **Shortwave radiation** `ra_sw_physics` | 🟡4 + 🔴2 | Same as longwave (CAM/Goddard/FLG/GFDL wire; 14/24 build-gated) | A | M–L |
+| 8 | **Dynamics — 3-D closures** | 🔴 `km_opt=2/3/5` | Port **3-D TKE** (km_opt=2), **3-D Smagorinsky** (km_opt=3), **SMS-3DTKE** (km_opt=5) — self-contained dycore, no tables | B | M each |
+| 9 | **Nesting** | two-way / moving / global / adaptive-Δt | Prove two-way 24 h equivalence (KI-11); validate the moving-nest driver; global/periodic BC; CFL adaptive-Δt | B / D | M–XL |
+| 10 | **Data assimilation** | DFI, FDDA (grid/obs/surface), spectral nudging | Port the nudging tendencies + DFI integrator (only lateral-BC relaxation exists today) | D | L–XL |
+| 11 | **Coupled subsystems** | Chem, Fire, Hydro, urban (UCM/BEP/BEM), lake, ocean, wind-farm, stochastic, SST-update | Scope decisions per subsystem; urban BEP/BEM + lake are 🟡 (v0.23 oracles); several plausibly **v1.0** | D | XL |
+| 12 | **Output & grids** | full 375-var wrfout (🟡 opt-in), auxhist, projections | Make the 375-var stream a validated option (KI-3); aux stream writers; add rotated/global projections | C | M |
+| 13 | **Meta-gate — forecast skill (KI-9)** | 24–72 h T2/U10/V10 equivalence | Hard dynamics-`ph'` / MYNN / `*_tendf` work — **gates any "complete port" claim** even after the columns are green | meta | L |
+
+**How to read it:** Tier A (rows 1–7 reference-only) is the cheapest, highest-value wave — the
+WRF oracles are already staged, so each is "port the JAX kernel + scan-wire it." Tier B (row 8 +
+parts of 9) is bounded dycore work. Tiers C/D are the deep multi-moment microphysics and the
+coupled subsystems (several = v1.0). Row 13 is the honest caveat: an all-green matrix is
+necessary but not sufficient — the skill gate is the real credibility bar.
+
 ## The closure recipe (how a gap graduates)
 
 Every scheme follows the project's validation pyramid; nothing is wired without an oracle.
