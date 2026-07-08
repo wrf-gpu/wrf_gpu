@@ -7,6 +7,21 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.23.3] - 2026-07-08
+
+Reliability point-release: fix a false-negative in the nested-GPU VRAM preflight
+under the default `cuda_async` allocator. **No dynamics, no physics, no numerical
+change** — results are identical to v0.23.2.
+
+- **Fixed:** `cuda_async` reserves its device memory pool during XLA backend init,
+  *before* the preflight reads free VRAM via `nvidia-smi`, so the preflight saw its
+  own pool as "used" and killed nested runs with `rc=75 "free VRAM below threshold"`
+  on an otherwise-empty card. Under a verifiably-held `with_gpu_lock` (exclusive +
+  pre-launch VRAM-checked), a low reading is now an **advisory**, not a failure; the
+  hard gate is unchanged when no lock is held, and a genuinely-oversized pool still
+  OOMs honestly at allocation. Restores the faster `cuda_async` allocator for locked
+  runs. Full notes: `RELEASE_NOTES_v0.23.3.md`.
+
 ## [0.23.2] - 2026-07-04
 
 Operational ergonomics fix for the F1 batched-ensemble distinct-init path. **No

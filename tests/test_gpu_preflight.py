@@ -110,19 +110,38 @@ def test_preflight_passes_with_lock_and_headroom(tmp_path, capsys):
     assert "nested GPU preflight PASS" in capsys.readouterr().err
 
 
-def test_preflight_fails_below_headroom(tmp_path):
+def test_preflight_lock_held_low_vram_is_advisory_not_fatal(tmp_path, capsys):
+    # cuda_async reserves its device pool during backend init -- BEFORE this
+    # nvidia-smi read -- so a low free-VRAM reading while we hold the exclusive GPU
+    # lock is our OWN pool, not contention. It must be an advisory, not rc=75.
+    # (Regression guard for the 20260707_18z production incident: 5 chunks rc=75
+    # "free VRAM 3.23 GiB < 24 GiB" on an empty card under GPUWRF_ALLOCATOR=cuda_async.)
     env, fd, _lock_file, _holder_file = _locked_env(tmp_path)
     env["GPUWRF_MIN_FREE_VRAM_GIB"] = "24"
     try:
-        with pytest.raises(GpuPreflightError) as raised:
-            run_nested_gpu_preflight(
-                environ=env,
-                holder_file=_holder_file,
-                lock_file=_lock_file,
-                query_memory=lambda: VramSnapshot("0", "RTX Test", 20 * 1024, 32 * 1024, 12 * 1024),
-            )
+        payload = run_nested_gpu_preflight(
+            environ=env,
+            holder_file=_holder_file,
+            lock_file=_lock_file,
+            query_memory=lambda: VramSnapshot("0", "RTX Test", 3 * 1024, 32 * 1024, 29 * 1024),
+        )
     finally:
         os.close(fd)
+    assert payload["status"] == "PASS"
+    assert payload.get("advisories")
+    assert "below resolved threshold" in payload["advisories"][0]
+    err = capsys.readouterr().err
+    assert "ADVISORY" in err
+    assert "nested GPU preflight PASS" in err
+
+
+def test_preflight_fails_below_headroom_without_lock():
+    # No GPU lock held -> a low free-VRAM reading is genuine contention -> FAIL.
+    with pytest.raises(GpuPreflightError) as raised:
+        run_nested_gpu_preflight(
+            environ={"GPUWRF_MIN_FREE_VRAM_GIB": "24"},
+            query_memory=lambda: VramSnapshot("0", "RTX Test", 20 * 1024, 32 * 1024, 12 * 1024),
+        )
     assert "below resolved threshold" in str(raised.value)
     assert raised.value.payload["status"] == "FAIL"
 

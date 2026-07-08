@@ -405,16 +405,38 @@ def run_nested_gpu_preflight(
         ),
     }
 
+    lock_held = bool(lock.get("ok"))
     failures: list[str] = []
-    if not bool(lock.get("ok")):
+    advisories: list[str] = []
+    if not lock_held:
         failures.append(str(lock.get("reason") or "GPU lock is not held"))
     if snapshot is None:
         failures.append(f"could not query free VRAM before the run ({memory_error})")
     elif snapshot.free_gib < threshold.min_free_gib:
-        failures.append(
+        vram_msg = (
             f"free VRAM {snapshot.free_gib:.2f} GiB is below "
             f"resolved threshold {threshold.min_free_gib:.2f} GiB ({threshold.source})"
         )
+        # cuda_async (and any preallocating XLA allocator) reserves its device pool
+        # during backend init -- BEFORE this nvidia-smi reading -- so the "used" VRAM
+        # we observe is OUR OWN pool, not another process. When the GPU lock is
+        # verifiably held, with_gpu_lock.sh exclusively owns the card and already
+        # checked free VRAM *pre-launch* (before this process allocated its pool); a
+        # low reading here is therefore a false-negative, not real contention.
+        # Downgrade it to an advisory so cuda_async runs are not spuriously killed
+        # rc=75. (If the pool is genuinely too large for the run, allocation fails
+        # later with a real OOM -- surfaced honestly at that point, not pre-empted.)
+        if lock_held:
+            advisories.append(
+                vram_msg
+                + " -- advisory only: GPU lock held (exclusive); reading reflects our"
+                " own allocator pool, not contention"
+            )
+        else:
+            failures.append(vram_msg)
+
+    if advisories:
+        payload["advisories"] = advisories
 
     if failures and not force:
         payload["status"] = "FAIL"
@@ -428,6 +450,12 @@ def run_nested_gpu_preflight(
         payload["failures"] = failures
         print(f"gpuwrf: WARNING: forcing nested GPU run despite preflight failures: {'; '.join(failures)}", file=err)
     else:
+        if advisories:
+            print(
+                "gpuwrf: nested GPU preflight ADVISORY (lock held, not fatal): "
+                + "; ".join(advisories),
+                file=err,
+            )
         print(f"gpuwrf: nested GPU preflight PASS: {_format_status(payload)}", file=err)
     return payload
 
