@@ -223,13 +223,14 @@ Runtime ETA framing:
 - Once progress is visible, refine the estimate from observed throughput.
 - Many same-geometry cases can be batched with `GPUWRF_BATCH_ENSEMBLE=B` to fill
   a small-grid GPU.
-- **As of v0.23.4 (prepared, not yet tagged): disclose a domain-count-dependent
+- **As of v0.23.4: disclose a domain-count-dependent
   performance caveat before running.** Single-domain and 2-domain (`d01`+`d02`)
   cases are fully validated with no measured performance regression versus
   v0.23.3. **3-domain (`--max-dom 3`) and 9-domain (`--max-dom 9`) cases that
   activate `d03` are a real, measured ~51.67% slower wall-clock than v0.23.3**
-  (root-caused to the FCT flux-limiter kernel's own memory-traffic cost;
-  performance/profiler investigation remains active and unresolved). Tell
+  (hardware-measured as occupancy/latency-bound, not bandwidth-bound; the
+  investigation is closed, and this ships as a known, understood limitation,
+  not an open question). Tell
   the user this before starting a 3+/9-domain run so their time estimate is
   honest — do not silently use the pre-v0.23.4 674 s/forecast-hour figure for a
   `d03`-activating case without this caveat. Correctness is unaffected either
