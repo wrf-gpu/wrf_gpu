@@ -4,7 +4,9 @@
 Pure Python standard library (no deps). Reads HTML content fragments from
 ``content/<id>.html``, wraps each in ``template.html`` with a generated sidebar,
 breadcrumb and prev/next nav, and emits the built site plus a client-side
-``search-index.json`` into the output directory (default: repo ``docs/``).
+``search-index.json`` into the output directory and its ``_assets`` directory
+(default: repo ``docs/``). The root copy preserves the historical public
+artifact; the browser loads the asset copy.
 
 Usage:
     python3 tools/docsite/build.py            # build into ../../docs
@@ -21,7 +23,7 @@ import shutil
 from html.parser import HTMLParser
 from pathlib import Path
 
-VERSION = "0.23.2"
+VERSION = "0.23.4"
 
 # ---- site structure: ordered groups -> pages -------------------------------
 # Each page: (id, nav_title, <title>, meta-description)
@@ -70,7 +72,7 @@ SITE = [
     ]),
     ("Reference", [
         ("version-history", "Version History",          "Version History",
-         "Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.23 batched-ensemble release."),
+         "Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.23.4 nine-nest correctness release."),
         ("credits",      "Credits, License & Citation", "Credits, License & Citation",
          "Credit to the WRF/NCAR/UCAR team, the AI authorship of this rewrite, licensing notes, and how to cite the project."),
         ("glossary",     "Glossary",                    "Glossary",
@@ -275,7 +277,9 @@ def build(out_dir: Path):
             .replace("__PREVNEXT__", ""))
     (out_dir / "search.html").write_text(page)
 
-    (assets_out / "search-index.json").write_text(json.dumps(search_index, ensure_ascii=False))
+    search_payload = json.dumps(search_index, ensure_ascii=False)
+    (assets_out / "search-index.json").write_text(search_payload)
+    (out_dir / "search-index.json").write_text(search_payload)
 
     print(f"Built {len(FLAT)} pages + search.html into {out_dir}")
     print(f"Search index: {len(search_index)} entries")

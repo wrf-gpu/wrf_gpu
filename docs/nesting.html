@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.2</span>
+          <span class="brand-sub">User's Guide · v0.23.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -72,8 +72,8 @@
         <div class="breadcrumb"><a href="index.html">User's Guide</a> › The model › Nesting</div>
         <h1>Nesting</h1>
 
-<p class="lead">wrf_gpu runs <strong>one-way live nesting</strong> — <code>d01&nbsp;→&nbsp;d02&nbsp;→&nbsp;d03</code>,
-down to a 1&nbsp;km inner nest — entirely on the GPU. The parent domain advances and
+<p class="lead">wrf_gpu runs <strong>one-way live nesting</strong> — validated through
+<code>d01&nbsp;→&nbsp;…&nbsp;→&nbsp;d09</code> in v0.23.4 — entirely on the GPU. The parent domain advances and
 <strong>builds each child's lateral boundary live</strong> during the run, so you do
 <strong>not</strong> need a pre-supplied <code>wrfbdy_d02</code>. The child's initial condition comes
 from its own <code>wrfinput_d0N</code>; only <code>wrfbdy_d01</code> forces the root. There is no
@@ -113,6 +113,14 @@ forecast.</p>
   <a href="running.html">Running the Model</a> and <a href="performance.html">Performance</a>.</p>
 </div>
 
+<div class="admon warn">
+  <div class="admon-title">Nested radiation controls are not yet fully namelist-faithful</div>
+  <p>The nested runtime currently targets a fixed 30-minute radiation interval rather than
+  arbitrary namelist <code>radt</code>. It also binds <code>topo_shading</code> and
+  <code>slope_rad</code> disabled. These are disclosed v0.23.4 limitations; do not infer that a
+  differing requested cadence or terrain-radiation option was honored.</p>
+</div>
+
 <h2 id="gwd">Gravity-wave drag on nests<a class="headerlink" href="#gwd" aria-label="Permalink">¶</a></h2>
 <p>Orographic gravity-wave drag (<code>gwd_opt=1</code>) is <strong>default-ON on the nested 1&nbsp;km
 path</strong>. Set <code>GPUWRF_GWD_NESTED=0</code> to force it off for a memory-tighter config. See
@@ -133,8 +141,9 @@ validated wiring).</p>
 <div class="admon warn">
   <div class="admon-title">Two-way equivalence is untested (KI-11)</div>
   <p>The two-way feedback path is <strong>finite and stable</strong>, but its 24&nbsp;h real-GPU
-  equivalence versus CPU-WRF is <strong>untested</strong>. One-way live nesting is proven over a
-  24–72&nbsp;h window; two-way is opt-in and not yet validated for equivalence. Use it deliberately.</p>
+  equivalence versus CPU-WRF is <strong>untested</strong>. One-way live nesting is accepted for
+  the v0.23.4 one-hour nine-domain fixture and a separate 24-hour SP2 chain; broad 24–72 h
+  equivalence remains open. Two-way is opt-in and not yet validated for equivalence.</p>
 </div>
 
 <h2 id="moving-nests">Opt-in moving nests<a class="headerlink" href="#moving-nests" aria-label="Permalink">¶</a></h2>

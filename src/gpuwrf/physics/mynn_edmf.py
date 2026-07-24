@@ -203,6 +203,21 @@ def _condensation_edmf(qt, thl, p, zagl, niter=None):
     return thv, qc
 
 
+def _wrf_superadiabatic_gate(thv0, ts, qv0, dz0, is_water, fltv2):
+    """WRF ``DMP_mf`` surface activation predicate (F90:5892-5918)."""
+    tvs = ts * (1.0 + P608 * qv0)
+    dthvdz0 = (thv0 - tvs) / (0.5 * dz0)
+    hux0 = jnp.where(is_water, -0.001, -0.003)
+    source_gate = dthvdz0 < hux0
+    return jnp.where(ts > 0.0, source_gate, fltv2 > 0.0)
+
+
+def _wrf_first_level_plume_survival(first_level_w):
+    """WRF's shared ``NUP2`` gate after the first integrated plume level."""
+
+    return jnp.all(first_level_w > 0.0)
+
+
 def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
                           p, exner, rho, dz, zw, ust, flt, fltv, flq, flqv,
                           pblh, ts, xland, psig_shcu, *, dx, dt):
@@ -255,10 +270,9 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     # detects. This avoids fabricating a skin temperature from an underdetermined
     # kinematic-flux/ustar relation (which needs the surface exchange coefficient
     # ch we don't carry in the standalone column).
-    tvs = ts * (1.0 + P608 * qv1[0])
-    dthvdz0 = (thv[0] - tvs) / (0.5 * dz[0])
-    hux0 = jnp.where(is_water, -0.001, -0.003)
-    superad = jnp.where(ts > 0.0, dthvdz0 < hux0, fltv2 > 0.0)
+    superad = _wrf_superadiabatic_gate(
+        thv[0], ts, qv1[0], dz[0], is_water, fltv2
+    )
 
     # ---- plume widths (lines 5933-5975) ----
     maxwidth_dx = jnp.minimum(dx * DCUT, LMAX)
@@ -422,6 +436,16 @@ def _single_column_dmp_mf(sqw, sqv, sqc, u, v, w, th, thl, thv, tk, qke,
     EA_s, EW_s, EQT_s, EQC_s, ETHL_s, EU_s, EV_s = jax.vmap(plume_scan)(
         l_per_plume, upa0, upw0, upthl0, upqt0, upqc0, upu0, upv0)
     # *_s shape (NUP, nz-2) for levels K=1..nz-2 (0-based).
+
+    # WRF's first-level failure is a COLUMN-GLOBAL veto, not a per-plume
+    # truncation.  In DMP_mf (module_bl_mynnedmf.F90:6242-6247), any plume
+    # with Wn==0 at k==kts+1 sets the shared NUP2=0.  The later
+    # ``IF (nup2 > 0)`` guard (:6359) then suppresses every s_aw* flux in the
+    # column, including otherwise surviving plumes.  Keeping the survivors
+    # here was the first source-authorized divergence behind the v0234
+    # port-only mass-flux activation split.
+    first_level_survives = _wrf_first_level_plume_survival(EW_s[:, 0])
+    active = active & first_level_survives
 
     # Prepend the surface updraft (WRF UPW(1,ip)=upw0) at 0-based level K=0, and
     # append a zero top level -> full UP arrays length nz (index = WRF level K).

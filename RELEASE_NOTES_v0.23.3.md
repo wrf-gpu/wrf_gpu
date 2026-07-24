@@ -4,8 +4,8 @@
 change** — every forecast is byte-for-byte identical to v0.23.2. This release only
 changes *when the nested-GPU preflight fails*.
 
-## The bug
-Nested GPU chunks of an overnight production run died immediately with
+## The bug (production incident 20260707_18z)
+All 5 nested GPU chunks of the overnight run died immediately with
 `rc=75: nested GPU preflight failed: free VRAM 3.23 GiB is below resolved threshold
 24.00 GiB` — on an **empty card** (the `with_gpu_lock` wrapper read 27.9 GiB free at
 the same moment). This was the first night on the new `GPUWRF_ALLOCATOR=cuda_async`

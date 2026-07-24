@@ -10,7 +10,7 @@ import numpy as np
 
 from gpuwrf.io.wrfout_writer import MANDATORY_WRFOUT_COORDINATES, prepare_wrfout_payload
 from gpuwrf.runtime import finite_state_guard
-from test_m7_netcdf_writer import synthetic_case
+from test_m7_netcdf_writer import synthetic_case, writer_authority
 
 
 def _jaxify_arrays(value: Any) -> Any:
@@ -44,6 +44,7 @@ def test_prepare_wrfout_payload_batches_device_get(monkeypatch, tmp_path):
         grid,
         namelist,
         tmp_path / "wrfout_d01_2026-05-25_19:00:00",
+        domain="d01", domain_authority=writer_authority(grid, "d01"),
         valid_time=datetime(2026, 5, 25, 19),
         lead_hours=1.0,
         run_start=datetime(2026, 5, 25, 18),
@@ -101,6 +102,7 @@ def test_prepare_subset_limits_payload_before_device_get(monkeypatch, tmp_path):
         grid,
         namelist,
         tmp_path / "wrfout_d01_2026-05-25_19:00:00",
+        domain="d01", domain_authority=writer_authority(grid, "d01"),
         valid_time=datetime(2026, 5, 25, 19),
         lead_hours=1.0,
         run_start=datetime(2026, 5, 25, 18),

@@ -18,6 +18,7 @@ CPU-only (no GPU). 0:2's GPU smoketest is the LATER joint acceptance gate.
 """
 from __future__ import annotations
 
+from dataclasses import replace
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -36,7 +37,7 @@ from gpuwrf.io.wrfout_writer import (
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from test_m7_netcdf_writer import synthetic_case  # type: ignore  # noqa: E402
+from test_m7_netcdf_writer import synthetic_case, writer_authority  # type: ignore  # noqa: E402
 
 
 _VALID = datetime(2026, 5, 25, 21)
@@ -47,6 +48,7 @@ def _prepared(tmp_path: Path, name: str = "wrfout.nc"):
     state, grid, namelist = synthetic_case()
     return prepare_wrfout_payload(
         state, grid, namelist, tmp_path / name,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=_VALID, lead_hours=3.0, run_start=_START,
     )
 
@@ -89,7 +91,9 @@ def test_subset_restricts_to_named_set_plus_mandatory_coords(tmp_path):
     prepared = _prepared(tmp_path)
     out = tmp_path / "subset.nc"
     write_prepared_wrfout(
-        prepared, variable_subset=MINIMAL_TRAINING_SET, target_override=out,
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority,
+        variable_subset=MINIMAL_TRAINING_SET, target_override=out,
         include_mandatory_coords=True, compress=True,
     )
 
@@ -124,7 +128,9 @@ def test_subset_force_includes_available_mandatory_coords(tmp_path):
     out = tmp_path / "coords.nc"
     # A subset of ONLY 2D surface fields -- mandatory coords must still appear.
     write_prepared_wrfout(
-        prepared, variable_subset=("T2", "U10"), target_override=out,
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority,
+        variable_subset=("T2", "U10"), target_override=out,
         include_mandatory_coords=True,
     )
     written = set(_var_values(out))
@@ -142,7 +148,9 @@ def test_subset_skips_unknown_requested_name(tmp_path):
     # A name not present in the payload (and not even a real var) must be skipped,
     # never fabricated, and must not raise.
     write_prepared_wrfout(
-        prepared, variable_subset=("T2", "NOT_A_REAL_VARIABLE"), target_override=out
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority,
+        variable_subset=("T2", "NOT_A_REAL_VARIABLE"), target_override=out
     )
     written = set(_var_values(out))
     assert "T2" in written
@@ -157,11 +165,16 @@ def test_default_none_output_is_value_identical(tmp_path):
     legacy = tmp_path / "legacy.nc"
     write_wrfout_netcdf(
         state, grid, namelist, legacy,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=_VALID, lead_hours=3.0, run_start=_START,
     )
     prepared = _prepared(tmp_path, "prepared.nc")
     default = tmp_path / "default.nc"
-    write_prepared_wrfout(prepared, variable_subset=None, target_override=default)
+    write_prepared_wrfout(
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority,
+        variable_subset=None, target_override=default,
+    )
 
     a, b = _var_values(legacy), _var_values(default)
     assert sorted(a) == sorted(b)
@@ -174,7 +187,11 @@ def test_default_full_output_is_uncompressed(tmp_path):
     """The default path leaves filters off so its on-disk bytes are unchanged."""
     prepared = _prepared(tmp_path)
     out = tmp_path / "full.nc"
-    write_prepared_wrfout(prepared, variable_subset=None, target_override=out)
+    write_prepared_wrfout(
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority,
+        variable_subset=None, target_override=out,
+    )
     with Dataset(out) as ds:
         for name, var in ds.variables.items():
             filt = var.filters() or {}
@@ -187,7 +204,9 @@ def test_subset_stream_is_compressed_and_lossless(tmp_path):
     prepared = _prepared(tmp_path)
     out = tmp_path / "compressed.nc"
     write_prepared_wrfout(
-        prepared, variable_subset=MINIMAL_TRAINING_SET, target_override=out,
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority,
+        variable_subset=MINIMAL_TRAINING_SET, target_override=out,
         include_mandatory_coords=True, compress=True,
     )
 
@@ -219,6 +238,7 @@ def test_write_wrfout_netcdf_threads_subset(tmp_path):
     out = tmp_path / "direct_subset.nc"
     write_wrfout_netcdf(
         state, grid, namelist, out,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=_VALID, lead_hours=3.0, run_start=_START,
         variable_subset=MINIMAL_TRAINING_SET,
         include_mandatory_coords=True, compress=True,
@@ -259,3 +279,39 @@ def test_m9_subset_attrs_expand_only_requested_radiation_dependencies():
     assert _m9_attrs_for_requested_names(requested) == ("t2", "swdnb", "lwupt")
     assert _byte_identical_selected_m9_attrs(requested) is None
     assert _byte_identical_selected_m9_attrs(frozenset({"SWDNB"})) == _M9_SW_ATTRS
+
+
+def test_subset_boundary_rejects_fully_rehashed_prepared_cosubstitution(tmp_path):
+    prepared = _prepared(tmp_path)
+    original = prepared.domain_authority
+    substituted = replace(
+        prepared, domain="d03", domain_authority=writer_authority(prepared.grid, "d03")
+    )
+    target = tmp_path / "subset-cosub.nc"
+    with pytest.raises(ValueError, match="WRFOUT_PREPARED_AUTHORITY_SUBSTITUTION"):
+        write_prepared_wrfout(
+            substituted,
+            expected_domain="d02",
+            expected_domain_authority=original,
+            variable_subset=("T2",),
+            target_override=target,
+        )
+    assert not target.exists()
+
+
+def test_subset_boundary_rejects_existing_target_without_truncation(tmp_path):
+    prepared = _prepared(tmp_path)
+    target = tmp_path / "subset-existing.nc"
+    with Dataset(target, "w") as dataset:
+        dataset.setncattr("GRID_ID", np.int32(2))
+        dataset.setncattr("SENTINEL", "subset-preserve")
+    before = target.read_bytes()
+    with pytest.raises(FileExistsError, match="WRFOUT_TARGET_EXISTS"):
+        write_prepared_wrfout(
+            prepared,
+            expected_domain="d02",
+            expected_domain_authority=prepared.domain_authority,
+            variable_subset=("T2",),
+            target_override=target,
+        )
+    assert target.read_bytes() == before

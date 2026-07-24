@@ -38,6 +38,8 @@ from gpuwrf.io.auxhist_stream import (
 from gpuwrf.io.wrfout_writer import (
     FULL_WRFOUT_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
+    WrfoutDomainAuthority,
+    bind_wrfout_domain_authority,
     prepare_wrfout_payload,
     write_prepared_wrfout,
     write_wrfout_netcdf,
@@ -173,6 +175,7 @@ class DailyCase:
     namelist: Any
     run_start: datetime
     metadata: dict[str, Any]
+    writer_domain_authority: WrfoutDomainAuthority
     writer_diagnostics: Mapping[str, Any] | None = None
 
 
@@ -614,6 +617,9 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
         if replay.metadata.get("standalone_native_init", False)
         else "cpu_wrf_replay",
     }
+    writer_domain_authority = bind_wrfout_domain_authority(
+        config.domain, replay.run.grid(config.domain), replay.grid
+    )
     return (
         DailyCase(
             state=state,
@@ -622,6 +628,7 @@ def _build_real_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             run_start=run_start,
             metadata=metadata,
             writer_diagnostics=writer_diagnostics,
+            writer_domain_authority=writer_domain_authority,
         ),
         run_dir,
     )
@@ -835,6 +842,8 @@ def _emit_auxhist_frame(
             case.grid,
             case.namelist,
             aux_path,
+            domain=config.domain,
+            domain_authority=case.writer_domain_authority,
             valid_time=valid_time,
             lead_hours=float(lead_minutes) / 60.0,
             run_start=case.run_start,
@@ -843,9 +852,21 @@ def _emit_auxhist_frame(
         )
     subset = stream.variable_subset
     if writer is not None:
-        writer.submit_subset(prepared, variable_subset=subset, target=aux_path)
+        writer.submit_subset(
+            prepared,
+            expected_domain=config.domain,
+            expected_domain_authority=case.writer_domain_authority,
+            variable_subset=subset,
+            target=aux_path,
+        )
     else:
-        write_prepared_wrfout(prepared, variable_subset=subset, target_override=aux_path)
+        write_prepared_wrfout(
+            prepared,
+            expected_domain=config.domain,
+            expected_domain_authority=case.writer_domain_authority,
+            variable_subset=subset,
+            target_override=aux_path,
+        )
     return aux_path
 
 
@@ -1288,6 +1309,8 @@ def _run_forecast_sequence(
                 case.grid,
                 case.namelist,
                 output_dir / firing[0].filename(valid_time, config.domain),
+                domain=config.domain,
+                domain_authority=case.writer_domain_authority,
                 valid_time=valid_time,
                 lead_hours=float(lead_minutes) / 60.0,
                 run_start=case.run_start,
@@ -1407,19 +1430,27 @@ def _run_forecast_sequence(
                 case.grid,
                 case.namelist,
                 wrfout,
+                domain=config.domain,
+                domain_authority=case.writer_domain_authority,
                 valid_time=valid_time,
                 lead_hours=float(hour),
                 run_start=case.run_start,
                 diagnostics=diagnostics,
                 full_variable_set=full_variable_set,
             )
-            writer.submit(prepared)
+            writer.submit(
+                prepared,
+                expected_domain=config.domain,
+                expected_domain_authority=case.writer_domain_authority,
+            )
         else:
             write_wrfout_netcdf(
                 state,
                 case.grid,
                 case.namelist,
                 wrfout,
+                domain=config.domain,
+                domain_authority=case.writer_domain_authority,
                 valid_time=valid_time,
                 lead_hours=float(hour),
                 run_start=case.run_start,

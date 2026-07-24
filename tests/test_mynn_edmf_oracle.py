@@ -76,7 +76,9 @@ def _dmp_result(column, *, xland=None):
         A("p"), A("exner"), A("rho"), A("dz"), zw,
         ust=s1(su["ust"]), flt=s1(su["flt"]), fltv=s1(su["fltv"]),
         flq=s1(su["flq"]), flqv=s1(su["flqv"]),
-        pblh=s1(su["pblh"]), ts=s1(su["tsk"]),
+        # The real WRF driver passes th_sfc=TSK/exner(kts) to DMP_mf's
+        # misleadingly named ``ts`` argument.
+        pblh=s1(su["pblh"]), ts=s1(su["th_sfc"]),
         dx=su["dx"], xland=s1(su["xland"] if xland is None else xland),
         dt=c["config"]["delt"])
 
@@ -119,6 +121,17 @@ def test_dmp_mf_returns_momentum_fluxes_for_wrf_default(column):
     assert float(res["active"][0]) == 1.0
     assert np.max(np.abs(np.asarray(res["s_awu"][0]))) > 0.0
     assert np.max(np.abs(np.asarray(res["s_awv"][0]))) > 0.0
+
+
+def test_dmp_mf_first_level_plume_failure_vetoes_the_whole_column():
+    """WRF NUP2=0 suppresses all fluxes if any plume fails at kts+1."""
+    from gpuwrf.physics.mynn_edmf import _wrf_first_level_plume_survival
+
+    survivors = jnp.array([0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])
+    one_failed = survivors.at[0].set(0.0)
+
+    assert bool(_wrf_first_level_plume_survival(survivors))
+    assert not bool(_wrf_first_level_plume_survival(one_failed))
 
 
 def test_edmf_changes_qv_solve_and_no_regression_when_off(column):

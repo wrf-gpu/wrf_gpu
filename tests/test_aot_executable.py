@@ -706,6 +706,75 @@ def test_fused_cascade_captures_aot_blob_on_load_miss(monkeypatch):
     assert len(out_children) == 1
 
 
+def test_fused_cheap_miss_reuses_same_hlo_alias_before_compile(
+    monkeypatch, _isolate_cache
+):
+    """A second fused cheap key loads the first program's exact-HLO alias."""
+    monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
+    monkeypatch.delenv("GPUWRF_AOT_VERIFY", raising=False)
+    parent_nl = _aot_namelist()
+    child_nl = _aot_namelist()
+    parent = _FusedCarry(jnp.asarray([1.0], dtype=jnp.float64))
+    child = _FusedCarry(jnp.asarray([2.0], dtype=jnp.float64))
+
+    def fake_advance(carry, namelist, start, clock_base, *, n_steps, cadence):
+        del clock_base
+        inc = jnp.asarray(start + n_steps + cadence, dtype=carry.state.dtype)
+        inc = inc + jnp.asarray(namelist.scale, dtype=carry.state.dtype)
+        return carry.replace(state=carry.state + inc)
+
+    def fake_force(child_state, parent_state, weights, *, bdy_width):
+        return child_state + parent_state + jnp.sum(weights) + float(bdy_width)
+
+    monkeypatch.setattr(dt, "_advance_chunk", fake_advance)
+    monkeypatch.setattr(dt, "build_child_boundary_package", fake_force)
+    active_key = ["fused-a" + "0" * 57]
+    monkeypatch.setattr(
+        dt,
+        "_fused_cascade_cheap_key",
+        lambda *args, **kwargs: active_key[0],
+    )
+    real_serialize = aot._serialize_domain_blob
+    serializes = {"n": 0}
+
+    def counting_serialize(*args, **kwargs):
+        serializes["n"] += 1
+        return real_serialize(*args, **kwargs)
+
+    monkeypatch.setattr(aot, "_serialize_domain_blob", counting_serialize)
+
+    def build():
+        return dt._build_fused_cascade_program(
+            parent_name="d02",
+            parent_namelist=parent_nl,
+            parent_cadence=7,
+            child_names=("d03",),
+            child_namelists=(child_nl,),
+            child_weights=(jnp.asarray([1.0], dtype=jnp.float64),),
+            child_bdy_widths=(5,),
+            child_ratios=(3,),
+            child_cadences=(7,),
+        )
+
+    first = build()
+    first_parent, _ = first(parent, (child,), 4, (12,))
+    assert serializes["n"] == 1
+    first_status = dt.nested_aot_report()["domains"]["fused/d02"]
+    assert first_status["aot_addresses"] == ["hlo", "cheap_key"]
+
+    active_key[0] = "fused-b" + "0" * 57
+    second = build()
+    second_parent, _ = second(parent, (child,), 4, (12,))
+    assert serializes["n"] == 1, "same HLO was recompiled/captured under a new key"
+    assert np.array_equal(
+        np.asarray(second_parent.state), np.asarray(first_parent.state)
+    )
+    second_status = dt.nested_aot_report()["domains"]["fused/d02"]
+    assert second_status["loaded"] is True, second_status
+    assert second_status["source"] == "aot_blob", second_status
+    assert second_status["address"] == "hlo", second_status
+
+
 def test_fused_cascade_low_effort_wraps_cold_compile(monkeypatch):
     """Opt-in low effort is active while the fused miss compiles and serializes."""
 
@@ -851,7 +920,7 @@ def test_fused_cascade_cached_calls_are_keyed_by_aval_signature(monkeypatch, cap
     assert np.asarray(out_a1.state).shape == (1,)
     assert np.asarray(out_b.state).shape == (1,)
     assert np.asarray(out_a2.state).shape == (1,)
-    assert len(loads) == 2
+    assert len(loads) == 4
     assert len(serializes) == 2
     assert serializes[0] != serializes[1]
     assert "fallback:fused-cached-call-error" not in capsys.readouterr().err
@@ -877,7 +946,7 @@ def test_advance_falls_back_to_jit_when_aot_off(monkeypatch):
     assert dt.nested_aot_report()["enabled"] is False
 
 
-def test_advance_uses_aot_call_when_loaded(monkeypatch):
+def test_advance_uses_aot_call_when_loaded(monkeypatch, capsys):
     """AOT on + a load returns a callable => the advance closure uses it (drop-in)."""
     monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
     advance_like = _make_aot_advance_like()
@@ -899,18 +968,38 @@ def test_advance_uses_aot_call_when_loaded(monkeypatch):
         assert isinstance(n_steps, int) and isinstance(cadence, int)
         return ("AOT_RESULT", carry)
 
-    monkeypatch.setattr(
-        aot, "load_domain_blob", lambda name, *a, **k: _fake_aot_call
-    )
+    loads = {"n": 0}
+
+    def _fake_load(_name, *args, **kwargs):
+        del args, kwargs
+        loads["n"] += 1
+        return _fake_aot_call
+
+    monkeypatch.setattr(aot, "load_domain_blob", _fake_load)
     advance = dt._operational_advance_factory(_fake_tree(namelist))
     out = advance("d01", carry, start_step=2, n_steps=5)
     assert out == ("AOT_RESULT", carry)
     # memoised: a second advance does not re-load
     advance("d01", carry, start_step=3, n_steps=5)
     assert calls["n"] == 2
+    assert loads["n"] == 1
     rep = dt.nested_aot_report()
     assert rep["enabled"] is True
+    assert rep["load_count"] == 1
+    assert rep["cache_hit_count"] == 1
     assert rep["domains"]["d01"]["loaded"] is True
+    domain = rep["domains"]["d01"]
+    assert domain["load_count"] == 1
+    assert domain["load_wall_seconds"] >= 0.0
+    assert domain["cache_hit_count"] == 1
+    assert len(domain["keys"]) == 1
+    key = next(iter(domain["keys"].values()))
+    assert key["load_count"] == 1
+    assert key["cache_hit_count"] == 1
+    # The cached second call is accounted separately and emits no second
+    # real-load record, which makes stderr load-set counts operationally usable.
+    err = capsys.readouterr().err
+    assert err.count("real_load=true") == 1
 
 
 def test_advance_captures_variant_when_aot_load_returns_none(monkeypatch, _isolate_cache):
@@ -931,6 +1020,56 @@ def test_advance_captures_variant_when_aot_load_returns_none(monkeypatch, _isola
     assert status["source"] == "fallback:jit-compiled+aot-captured"
     assert status["aot_written"] is True
     assert Path(status["aot_path"]).is_file()
+
+
+def test_eager_cheap_miss_reuses_same_hlo_alias_before_compile(
+    monkeypatch, _isolate_cache
+):
+    """A different cheap key with identical HLO loads the exact alias."""
+    from gpuwrf.runtime import aot_cheap_key as ck
+
+    monkeypatch.setenv("GPUWRF_NESTED_AOT", "1")
+    advance_like = _make_aot_advance_like()
+    namelist = _aot_namelist()
+    carry = _aot_carry(1)
+    hlo, captured = _lower_compile_serialize_variant(
+        "d01", carry, namelist, _isolate_cache, advance_like
+    )
+    assert captured["aot_addresses"] == ["hlo", "cheap_key"]
+
+    alternate_key = "alternate" + "0" * 55
+    assert alternate_key != captured["cheap_key"]
+    monkeypatch.setattr(ck, "cheap_key", lambda *args, **kwargs: alternate_key)
+    lowerings = {"n": 0}
+
+    class CountingAdvance:
+        def __call__(self, *args, **kwargs):
+            return advance_like(*args, **kwargs)
+
+        def lower(self, *args, **kwargs):
+            lowerings["n"] += 1
+            return advance_like.lower(*args, **kwargs)
+
+    monkeypatch.setattr(dt, "_advance_chunk_fori", CountingAdvance())
+    advance = dt._operational_advance_factory(_fake_tree(namelist))
+    out = advance("d01", carry, start_step=2, n_steps=5)
+    first_status = dt.nested_aot_report()["domains"]["d01"]
+    out_again = advance("d01", carry, start_step=3, n_steps=5)
+
+    assert np.array_equal(np.asarray(out["state"]), np.asarray(carry["state"]))
+    assert np.array_equal(
+        np.asarray(out_again["state"]), np.asarray(carry["state"])
+    )
+    assert lowerings["n"] == 1, "in-process cheap-key alias paid repeated lowering"
+    status = dt.nested_aot_report()["domains"]["d01"]
+    assert first_status["loaded"] is True, first_status
+    assert first_status["source"] == "aot_blob", first_status
+    assert first_status["address"] == "hlo", first_status
+    assert first_status["hlo_sha256"] == hlo, first_status
+    assert status["loaded"] is True, status
+    assert status["source"] == "aot_memory_cache", status
+    assert status["cached"] is True, status
+    assert status["cheap_key"] == alternate_key, status
 
 
 def test_advance_falls_back_when_aot_call_raises(monkeypatch):
@@ -1072,7 +1211,9 @@ def test_step_c_captures_and_warm_loads_multiple_shape_variants(
     assert hlo2 and hlo2 != hlo1
     assert Path(second["aot_path"]).is_file()
     variant_blobs = sorted((aot.aot_dir(_isolate_cache) / "d01").glob("*.xlaexec"))
-    assert len(variant_blobs) == 2
+    assert len(variant_blobs) == 4
+    assert len([path for path in variant_blobs if path.name.startswith("k_")]) == 2
+    assert len([path for path in variant_blobs if not path.name.startswith("k_")]) == 2
 
     # Fresh Step-C factory: no in-memory compiled callables are carried over.
     # Both shape variants should AOT-load from disk; serialize must not be called.

@@ -27,6 +27,7 @@ CPU-jax dev path: JAX_PLATFORMS=cpu PYTHONPATH=src taskset -c 0-3 pytest ...
 
 from __future__ import annotations
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -89,7 +90,7 @@ def _moisture_species(nz, ny, nx):
     return tuple(jnp.asarray(q) for q in (qv, qc, qr, qi, qs, qg))
 
 
-def _moist_loop(fields, fields_old, s, *, opt, final):
+def _moist_loop(fields, fields_old, s, *, opt, final, batch_width=1):
     return advect_moisture_scalars(
         fields,
         fields_old,
@@ -106,6 +107,7 @@ def _moist_loop(fields, fields_old, s, *, opt, final):
         fzm=s["fzm"],
         fzp=s["fzp"],
         dt=s["dt"],
+        species_batch_width=batch_width,
     )
 
 
@@ -324,3 +326,202 @@ def test_length_mismatch_raises():
             mut=s["mu"], mu_old=s["mu"], c1=s["c1"], c2=s["c2"], rdx=s["rdx"], rdy=s["rdy"],
             rdzw=s["rdzw"], fzm=s["fzm"], fzp=s["fzp"], dt=s["dt"],
         )
+
+
+def test_mixed_dtype_tuple_keeps_per_species_reference_path():
+    """Batching must not promote heterogeneous public-helper inputs."""
+
+    nz, ny, nx = 4, 8, 8
+    s = _uniform_flow_setup(
+        nz, ny, nx, u_const=1.0, v_const=1.0, dx=1000.0, dt=1.0
+    )
+    q64 = _moisture_species(nz, ny, nx)[0]
+    q32 = _moisture_species(nz, ny, nx)[1].astype(jnp.float32)
+    actual = _moist_loop(
+        (q64, q32),
+        (q64, q32),
+        s,
+        opt=1,
+        final=True,
+        batch_width=2,
+    )
+    for field, tendency in zip((q64, q32), actual, strict=True):
+        reference = advect_scalar_flux_limited(
+            field,
+            field,
+            s["vel"],
+            scalar_adv_opt=1,
+            mut=s["mu"],
+            mu_old=s["mu"],
+            c1=s["c1"],
+            c2=s["c2"],
+            rdx=s["rdx"],
+            rdy=s["rdy"],
+            rdzw=s["rdzw"],
+            fzm=s["fzm"],
+            fzp=s["fzp"],
+            dt=s["dt"],
+        )
+        np.testing.assert_array_equal(np.asarray(tendency), np.asarray(reference))
+
+
+def test_pair_batch_keeps_singleton_remainder_on_scalar_reference():
+    nz, ny, nx = 4, 8, 8
+    s = _uniform_flow_setup(
+        nz, ny, nx, u_const=1.0, v_const=1.0, dx=1000.0, dt=1.0
+    )
+    fields = _moisture_species(nz, ny, nx)[:3]
+    actual = _moist_loop(
+        fields, fields, s, opt=1, final=True, batch_width=2
+    )
+    reference = tuple(
+        _moist_loop((field,), (field,), s, opt=1, final=True)[0]
+        for field in fields
+    )
+    for batched, scalar in zip(actual, reference, strict=True):
+        np.testing.assert_array_equal(np.asarray(batched), np.asarray(scalar))
+
+
+def test_invalid_species_batch_width_raises():
+    nz, ny, nx = 4, 8, 8
+    s = _uniform_flow_setup(
+        nz, ny, nx, u_const=1.0, v_const=1.0, dx=1000.0, dt=1.0
+    )
+    fields = _moisture_species(nz, ny, nx)[:2]
+    with pytest.raises(ValueError, match="species_batch_width must be >= 1"):
+        _moist_loop(fields, fields, s, opt=1, final=True, batch_width=0)
+
+
+@pytest.mark.parametrize(
+    ("opt", "final"), ((0, False), (0, True), (1, False), (2, False))
+)
+def test_plain_batch_request_never_reaches_vmap_under_jit(monkeypatch, opt, final):
+    """The mapped plain path is unreachable, including during enclosing-jit trace."""
+
+    nz, ny, nx = 4, 8, 10
+    s = _uniform_flow_setup(
+        nz, ny, nx, u_const=3.0, v_const=-2.0, dx=1000.0, dt=2.0
+    )
+    fields = _moisture_species(nz, ny, nx)
+
+    def forbidden_vmap(*args, **kwargs):
+        del args, kwargs
+        raise AssertionError("plain scalar transport attempted mapped dispatch")
+
+    monkeypatch.setattr(jax, "vmap", forbidden_vmap)
+    compiled = jax.jit(
+        lambda current: _moist_loop(
+            current,
+            fields,
+            s,
+            opt=opt,
+            final=final,
+            batch_width=8,
+        )
+    )
+    actual = compiled(fields)
+    # Compare like with like: the discovery itself proved enclosing JIT can
+    # change last bits versus eager dispatch even for the same scalar graph.
+    # The policy question is width-requested JIT versus width-1 JIT.
+    scalar_compiled = jax.jit(
+        lambda current: _moist_loop(
+            current,
+            fields,
+            s,
+            opt=opt,
+            final=final,
+            batch_width=1,
+        )
+    )
+    reference = scalar_compiled(fields)
+    for got, expected in zip(actual, reference, strict=True):
+        np.testing.assert_array_equal(np.asarray(got), np.asarray(expected))
+
+
+@pytest.mark.parametrize("opt", (0, 1, 2))
+@pytest.mark.parametrize("final", (False, True))
+def test_specified_batch_exactly_matches_per_species_reference(opt, final):
+    """Limited stages batch exactly; plain stages ignore the batch request."""
+
+    nz, ny, nx = 6, 12, 18
+    z, y, x = np.indices((nz, ny, nx), dtype=np.float64)
+    mu = jnp.asarray(8.0e4 + 2.0e3 * np.sin(0.19 * y[0] + 0.13 * x[0]))
+    mu_old = jnp.asarray(np.asarray(mu) * (1.0 + 0.003 * np.cos(0.27 * y[0])))
+    c1 = jnp.asarray(np.linspace(0.4, 1.0, nz))
+    c2 = jnp.asarray(np.linspace(3.0e3, 0.0, nz))
+    ru = jnp.asarray(3.0e4 + 2.0e4 * np.sin(0.11 * x + 0.07 * y + 0.03 * z))
+    rv = jnp.asarray(-1.0e4 + 1.5e4 * np.cos(0.09 * x - 0.13 * y + 0.05 * z))
+    rom = np.zeros((nz + 1, ny, nx), dtype=np.float64)
+    rom[1:nz] = 0.7 * np.sin(
+        0.17 * np.arange(1, nz)[:, None, None]
+        + 0.11 * x[: nz - 1]
+        - 0.15 * y[: nz - 1]
+    )
+    vel = CoupledVelocities(
+        ru=ru,
+        rv=rv,
+        rom=jnp.asarray(rom),
+        msftx=jnp.asarray(1.0 + 0.02 * np.cos(0.23 * y[0] + 0.17 * x[0])),
+        specified=True,
+    )
+    fields = _moisture_species(nz, ny, nx)
+    fields_old = tuple(field * 0.97 + 1.0e-7 for field in fields)
+    rdzw = jnp.asarray(np.linspace(1.0e-4, 3.0e-4, nz))
+    fzm = jnp.asarray(np.linspace(0.4, 0.6, nz))
+    fzp = jnp.asarray(np.linspace(0.6, 0.4, nz))
+    dt = 4.0
+    actual = advect_moisture_scalars(
+        fields,
+        fields_old,
+        vel,
+        moist_adv_opt=opt,
+        is_final_rk_stage=final,
+        mut=mu,
+        mu_old=mu_old,
+        c1=c1,
+        c2=c2,
+        rdx=1.0 / 1000.0,
+        rdy=1.0 / 900.0,
+        rdzw=rdzw,
+        fzm=fzm,
+        fzp=fzp,
+        dt=dt,
+        species_batch_width=2,
+    )
+    use_limiter = opt in (1, 2) and final
+    references = []
+    for field, field_old in zip(fields, fields_old, strict=True):
+        if use_limiter:
+            reference = advect_scalar_flux_limited(
+                field,
+                field_old,
+                vel,
+                scalar_adv_opt=opt,
+                mut=mu,
+                mu_old=mu_old,
+                c1=c1,
+                c2=c2,
+                rdx=1.0 / 1000.0,
+                rdy=1.0 / 900.0,
+                rdzw=rdzw,
+                fzm=fzm,
+                fzp=fzp,
+                dt=dt,
+            )
+        else:
+            reference = advect_scalar_flux(
+                field,
+                vel,
+                mut=mu,
+                c1=c1,
+                rdx=1.0 / 1000.0,
+                rdy=1.0 / 900.0,
+                rdzw=rdzw,
+                fzm=fzm,
+                fzp=fzp,
+            )
+        references.append(reference)
+
+    assert max(float(jnp.max(jnp.abs(tendency))) for tendency in actual) > 0.0
+    for batched, reference in zip(actual, references, strict=True):
+        np.testing.assert_array_equal(np.asarray(batched), np.asarray(reference))

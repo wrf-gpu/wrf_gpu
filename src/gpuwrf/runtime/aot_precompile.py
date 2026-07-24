@@ -604,6 +604,43 @@ def _atomic_write_bytes(path: Path, data: bytes) -> None:
                 pass
 
 
+def _atomic_link_or_copy(source: Path, destination: Path, data: bytes) -> str:
+    """Atomically alias ``source`` at ``destination``; copy if links are unavailable.
+
+    The exact-HLO and cheap-key addresses name the same executable bytes. A hard
+    link keeps the second address effectively free even for multi-hundred-MiB
+    blobs. The temporary link plus ``os.replace`` gives readers the same complete-
+    old-or-complete-new guarantee as :func:`_atomic_write_bytes`. Filesystems that
+    reject hard links fail open to one atomic byte copy.
+    """
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".link", dir=destination.parent
+    )
+    os.close(fd)
+    tmp = Path(tmp_name)
+    try:
+        tmp.unlink()
+        os.link(source, tmp)
+        os.replace(str(tmp), str(destination))
+        return "hardlink"
+    except OSError:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+        _atomic_write_bytes(destination, data)
+        return "copy"
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
 def _serialize_domain_blob(
     name: str,
     compiled: Any,
@@ -616,10 +653,11 @@ def _serialize_domain_blob(
 ) -> dict[str, Any]:
     """Serialize ``compiled`` to the version-keyed AOT dir (Step B). Fail-open.
 
-    When ``cheap_key`` is supplied the blob is ALSO written under the cheap-key
-    address (``k_<cheap_key>``) so a fresh warm process can locate it by metadata
-    hashing WITHOUT lowering. The legacy hlo-addressed blob is still written when
-    no cheap_key is given (back-compat). ``lowered`` (when available) lets
+    When both ``cheap_key`` and the exact lowered-HLO digest are available, the
+    blob is published at BOTH addresses. The cheap-key address is normally an
+    atomic hard-link alias of the exact-HLO blob (atomic-copy fallback), so a
+    fresh process can locate it without lowering while a same-HLO/different-key
+    process can reuse it after lowering. ``lowered`` (when available) lets
     :func:`aot_executable.serialize` re-derive the lower-only StableHLO digest if
     the caller's ``hlo_sha256`` came back ``None`` -- the persisted
     ``meta.hlo_sha256`` MUST be that lower digest or the cross-process cheap-key
@@ -693,24 +731,71 @@ def _serialize_domain_blob(
                 out["cheap_key_quarantined"] = True
                 out["cheap_key_quarantine_reason"] = collision_reason
 
-        # Address by cheap_key when SAFE, else fall back to the hlo digest. If the
-        # key was quarantined, write_cheap_key is None so the hlo-addressed blob is
-        # written instead (keyed by the exact HLO -> never ambiguous).
-        paths = _aot_blob_paths(
-            name, cache_dir, cheap_key=write_cheap_key, hlo_sha256=meta.hlo_sha256
+        # Publish the exact-HLO address on EVERY write for which the lowered
+        # digest exists. A safe cheap key is an alias to those same executable
+        # bytes, not an either/or precedence choice. This lets a later lowering
+        # with a different cheap key reuse the exact HLO without recompiling.
+        hlo_paths = (
+            _aot_blob_paths(name, cache_dir, hlo_sha256=meta.hlo_sha256)
+            if meta.hlo_sha256
+            else None
         )
-        if paths is None:
+        cheap_paths = (
+            _aot_blob_paths(name, cache_dir, cheap_key=write_cheap_key)
+            if write_cheap_key
+            else None
+        )
+        legacy_paths = (
+            _aot_blob_paths(name, cache_dir)
+            if hlo_paths is None and cheap_paths is None
+            else None
+        )
+        if hlo_paths is None and cheap_paths is None and legacy_paths is None:
             out["aot_error"] = "cache disabled; AOT blob not written"
             return out
-        blob_path, meta_path = paths
+
         # Pickle the AotMeta (treedefs + kept_var_idx + fingerprint + hlo hash +
         # cheap_key + blob_sha256).
-        _atomic_write_bytes(blob_path, blob)
-        _atomic_write_bytes(meta_path, _pickle.dumps(meta, protocol=_pickle.HIGHEST_PROTOCOL))
+        meta_bytes = _pickle.dumps(meta, protocol=_pickle.HIGHEST_PROTOCOL)
+        written: list[str] = []
+        alias_mode = None
+        primary_paths = legacy_paths
+        if legacy_paths is not None:
+            legacy_blob_path, legacy_meta_path = legacy_paths
+            _atomic_write_bytes(legacy_blob_path, blob)
+            _atomic_write_bytes(legacy_meta_path, meta_bytes)
+            written.append("legacy")
+        if hlo_paths is not None:
+            hlo_blob_path, hlo_meta_path = hlo_paths
+            _atomic_write_bytes(hlo_blob_path, blob)
+            _atomic_write_bytes(hlo_meta_path, meta_bytes)
+            written.append("hlo")
+            out["aot_hlo_path"] = str(hlo_blob_path)
+            out["aot_hlo_meta_path"] = str(hlo_meta_path)
+            primary_paths = hlo_paths
+        if cheap_paths is not None:
+            cheap_blob_path, cheap_meta_path = cheap_paths
+            if hlo_paths is not None:
+                alias_mode = _atomic_link_or_copy(
+                    hlo_paths[0], cheap_blob_path, blob
+                )
+            else:
+                _atomic_write_bytes(cheap_blob_path, blob)
+                alias_mode = "standalone"
+            _atomic_write_bytes(cheap_meta_path, meta_bytes)
+            written.append("cheap_key")
+            out["aot_cheap_path"] = str(cheap_blob_path)
+            out["aot_cheap_meta_path"] = str(cheap_meta_path)
+            primary_paths = cheap_paths
+
+        assert primary_paths is not None
+        blob_path, meta_path = primary_paths
         out["aot_written"] = True
         out["aot_blob_bytes"] = len(blob)
         out["aot_path"] = str(blob_path)
         out["aot_meta_path"] = str(meta_path)
+        out["aot_addresses"] = written
+        out["aot_alias_mode"] = alias_mode
         out["hlo_sha256"] = meta.hlo_sha256
         # Report the cheap_key actually WRITTEN (None when quarantined -> only the
         # hlo-addressed fallback exists), so callers do not believe a cheap-key blob
@@ -761,6 +846,7 @@ def load_domain_blob(
         "cheap_key": cheap_key,
         "hlo_sha256": hlo_sha256,
         "meta_hlo_sha256": None,
+        "address": "cheap_key" if cheap_key else ("hlo" if hlo_sha256 else "legacy"),
     }
 
     def _done(call: Any | None) -> Any:

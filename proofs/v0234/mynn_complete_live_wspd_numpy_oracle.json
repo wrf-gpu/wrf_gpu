@@ -1,0 +1,50 @@
+{
+  "schema": "gpuwrf.v0234.mynn-complete-live-wspd-numpy-oracle.v1",
+  "contract": {
+    "path": ".agent/sprints/2026-07-14-v0234-final-ni-fable5/contract-amendment-43.json",
+    "sha256": "76aaa660d35247db7e51d88c3fd4082daa4c2b44181b50b1ae8055d15c63a784"
+  },
+  "pristine_wrf_v4_7_1": {
+    "surface_equation": "WSPD=sqrt(U1D^2+V1D^2+WSTAR^2+VSGD^2)",
+    "surface_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_mynn.F",
+    "surface_source_sha256": "86395534a6c9bfc79dcad50094bce290eff05756777a95794b2673795f9761c3",
+    "pbl_equation": "bottom_drag=RHOSFC*UST**2/WSPD",
+    "pbl_source": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_mynnedmf.F",
+    "pbl_source_sha256": "6e4a7d5b35ce46f01591f2c1d58e545380d546e654b4a59ee1bcf99cfbce2d72"
+  },
+  "carry_reconstruction": {
+    "hfx": "theta_flux*rhosfc*1004*(1+0.84*qv0)",
+    "qfx": "qv_flux*rhosfc",
+    "dx": "grid.projection.dx_m",
+    "pblh": "existing device-side literal GET_PBLH transcription from the live column",
+    "new_persistent_leaves": 0,
+    "host_transfers": 0
+  },
+  "authenticated_retained_state": {
+    "carry_path": "<DATA_ROOT>/wrf_downscale/artifacts/cpu_oracles/tenerife_operational_v2_fullbuffer_111x93/20250228_18z/corrected_ni_rca_max_22c2bd7a/nested_stage_omega_transport_470e6111_full18h_toolingrepair2/checkpoints/authenticated-d03-step-8800.pkl",
+    "carry_sha256": "3cdf748f41163ed20c86214a45cfb5825b9666773761cecf7b38d4c475475147",
+    "step": 8800,
+    "valid_time": "2025-03-01T14:40:00Z"
+  },
+  "live_input_oracle": {
+    "sea_hfx_mean_w_m2": 14.087290512151414,
+    "sea_qfx_mean_kg_m2_s": 3.4902017009877155e-05,
+    "diagnosed_sea_pblh_mean_m": 802.5065832,
+    "retained_stage_sea_pblh_mean_m": 802.5065827,
+    "diagnosed_vs_retained_pblh_rmse_m": 2.04e-05,
+    "source_equation_sea_wstar_mean_m_s": 0.9348013418530604,
+    "augmented_over_raw_wspd_sea_mean": 1.0251208603,
+    "augmented_over_raw_wspd_sea_p95": 1.05027731,
+    "live_inputs_nonzero": true
+  },
+  "algebraic_identity": {
+    "stress": "tau=(-UST^2*U/WSPD,-UST^2*V/WSPD)",
+    "recovery": "hypot(tau_u,tau_v)/hypot(U,V)=UST^2/WSPD for nonzero raw wind",
+    "exact_calm_policy": "retain the prior finite UST^2/max(raw_wind,0.2) fallback",
+    "synthetic_oracle_green": true
+  },
+  "interpretation": "The complete live handoff closes a real source discrepancy and activates the intended WSTAR-dependent drag algebra. Source fidelity alone does not establish incident direction; the retained live-carry A/B is the binding discriminator.",
+  "gpu_commands": 0,
+  "gpu_queries": 0,
+  "verdict": "MYNN_COMPLETE_LIVE_WSPD_SOURCE_AND_ALGEBRA_ORACLE_GREEN"
+}

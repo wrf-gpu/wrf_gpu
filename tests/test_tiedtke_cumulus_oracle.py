@@ -162,7 +162,7 @@ def test_tiedtke_savepoint_parity_report():
         rec["pass"] = not any(f"case {case} " in f for f in failures)
         case_records.append(rec)
 
-    wrf_root = Path(os.environ.get("GPUWRF_WRF_ROOT", "<DATA_ROOT>/src/wrf_pristine/WRF"))
+    wrf_root = Path(os.environ.get("GPUWRF_WRF_ROOT", "<USER_HOME>/src/wrf_pristine/WRF"))
     wrf_tiedtke = wrf_root / "phys" / "module_cu_tiedtke.F"
     wrf_constants = wrf_root / "share" / "module_model_constants.F"
     savepoint_files = sorted(SAVE.glob("tiedtke_case_*.json"))

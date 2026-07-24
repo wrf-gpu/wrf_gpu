@@ -2,9 +2,10 @@
 
 This module reproduces the WRF v4 specified + relaxation-zone lateral boundary
 update (``spec_bdytend`` / ``relax_bdytend`` in ``share/module_bc.F`` and the
-weight table ``lbc_fcx_gcx`` in ``dyn_em/module_bc_em.F``) as a pure
-``State -> State`` adapter, applied once per operational/replay timestep after
-the dycore + physics block.
+weight table ``lbc_fcx_gcx`` in ``dyn_em/module_bc_em.F``).  Released root/replay
+paths retain their post-step ``State -> State`` adapter.  The default-off live
+nested bundle instead builds frozen dry/scalar tendencies for the ordinary RK
+and acoustic consumers, with no candidate-on post-step prognostic overwrite.
 
 WRF subtleties faithfully reproduced here
 ------------------------------------------
@@ -32,16 +33,15 @@ WRF subtleties faithfully reproduced here
   ``spec_exp`` sponge multiplies both). We fold WRF's per-RK ``dt`` factor into
   the weights so a single per-step value update equals one WRF tendency step.
 
-Known, documented departure from bit-exact WRF
-----------------------------------------------
-WRF relaxes the *mass-coupled* variables (``ru = c1*mu*u``, ``t = mu*theta``,
-mass-weighted ``ph``/``w``). The Gen2 replay forces with *decoupled* wrfout
-side-history (raw ``U``/``V``/``T``/...), so we relax the decoupled fields
-against the decoupled boundary leaves. For the slowly-varying outer strip this
-is an O(mu') approximation, not bit-exact WRF. It is the honest choice for a
-side-history replay whose boundary data are themselves decoupled wrfout fields;
-the residual it introduces is bounded by the column-mass perturbation and is
-quantified in ``proofs/b4/``.
+Boundary-record conventions
+---------------------------
+Released root/replay callers provide decoupled wrfout side-history and retain
+their original step-start-mass approximation exactly.  A live nested child with
+``nested_frozen_wrf_boundary_bundle`` instead receives the coupled records left
+by pristine WRF forcedown: U/V include dry mass and map factors, W includes dry
+mass and ``msfty``, and T/PH/scalars include their half/full-level dry mass.
+The candidate paths below consume those records directly and never mass-couple
+them a second time.
 """
 
 from __future__ import annotations
@@ -142,6 +142,12 @@ class BoundaryConfig:
     nested_ph_relax: bool = False
     nested_w_relax: bool = False
     nested_ph_spec: bool = False
+    # v0.23.4 bounded candidate: one coherent WRF nested-boundary cadence
+    # bundle.  This is deliberately a single static switch rather than a set of
+    # independently sweepable coefficients: the time clock, frozen RK1 relax,
+    # ring-0 walks, end-step ownership, and mudf cadence are one source-backed
+    # mechanism.  Default False preserves every released path exactly.
+    nested_frozen_wrf_boundary_bundle: bool = False
     # In-acoustic normal-momentum relaxation strength. ``None`` preserves the
     # legacy calibrated replay default (``NORMAL_BDY_RELAX_STRENGTH``). Native
     # standalone wrfbdy roots set this to 1.0, WRF's own relax_bdy_dry strength.
@@ -164,6 +170,35 @@ def _apply_3d_spec_only(field, boundary, lead_seconds, config: BoundaryConfig):
     out = field
     for side in SIDES:
         out = _apply_side_spec(out, forcing, side, config)
+    return out
+
+
+def _apply_3d_spec_only_wrf_owned(field, boundary, lead_seconds, config: BoundaryConfig):
+    """Ring-0 sync with WRF's Y-side corner ownership.
+
+    ``spec_bdyupdate`` writes the S/N rows across their full staggered extent;
+    the later W/E loops trim ``b_dist + 1`` cells at both tangential ends.  Each
+    active cell is consequently written exactly once.  This helper is used only
+    by the opt-in nested frozen-boundary bundle; the released sync remains
+    untouched in :func:`_apply_3d_spec_only`.
+    """
+
+    forcing = interpolate_boundary_leaf(boundary, lead_seconds, config.update_cadence_s)
+    out = field
+    z_len, y_len, x_len = field.shape
+    for b_dist in range(int(config.spec_zone)):
+        # Y sides own every corner (and the full staggered x extent).
+        out = out.at[:, b_dist, :].set(_strip(forcing, "S", b_dist, z_len, x_len))
+        out = out.at[:, y_len - 1 - b_dist, :].set(_strip(forcing, "N", b_dist, z_len, x_len))
+        # X sides exclude the rows already owned by Y.
+        start = b_dist + 1
+        end = y_len - b_dist - 1
+        out = out.at[:, start:end, b_dist].set(
+            _strip(forcing, "W", b_dist, z_len, y_len)[:, start:end]
+        )
+        out = out.at[:, start:end, x_len - 1 - b_dist].set(
+            _strip(forcing, "E", b_dist, z_len, y_len)[:, start:end]
+        )
     return out
 
 
@@ -211,12 +246,29 @@ def apply_lateral_boundaries(
         # rk_update_scalar, which this codebase still applies end-of-step).
         # The diagnostic p'/pb are NEVER forced (WRF does not force p; ring
         # values stay the last calc_p_rho EOS diagnosis of the pinned fields).
-        _spec3 = lambda field, leaf: _apply_3d_spec_only(field, leaf, lead_seconds, config)
+        # The bundle is a live-child mechanism.  ``force_geopotential`` is the
+        # existing static split between specified/root and the live nested
+        # child in this boundary layer, so a manually-present flag must still
+        # leave root/self-replay end-sync semantics untouched.
+        nested_frozen = bool(
+            getattr(config, "nested_frozen_wrf_boundary_bundle", False)
+        ) and not bool(config.force_geopotential)
+        if nested_frozen:
+            # Pristine WRF has no end-of-step dry value overwrite.  The acoustic
+            # spec pins and frozen RK1 relax tendencies already own U/V/W/T/PH/MU.
+            # Moist/scalar spec+relax is likewise consumed inside rk_update_scalar;
+            # there is no post-step value nudge or positivity clamp in WRF.
+            return state
+        _spec3 = (
+            (lambda field, leaf: _apply_3d_spec_only_wrf_owned(field, leaf, lead_seconds, config))
+            if nested_frozen
+            else (lambda field, leaf: _apply_3d_spec_only(field, leaf, lead_seconds, config))
+        )
         u = _spec3(state.u, state.u_bdy)
         v = _spec3(state.v, state.v_bdy)
         # WRF specified domains do not leaf-pin w at end-of-step; zero_grad_bdy
         # inside the acoustic loop owns the specified w ring.
-        w = state.w
+        w = _spec3(state.w, state.w_bdy) if nested_frozen else state.w
         theta = _spec3(state.theta, state.theta_bdy)
         qv = jnp.maximum(_apply_3d(state.qv, state.qv_bdy, lead_seconds, dt_s, config), 0.0)
         qc = _apply_optional_scalar("qc")
@@ -227,9 +279,20 @@ def apply_lateral_boundaries(
         Ni = _apply_optional_scalar("Ni")
         Nr = _apply_optional_scalar("Nr")
         mu_perturbation = _spec3(state.mu_perturbation[None, :, :], state.mu_bdy)[0]
-        mub = _spec3(_base_mu(state)[None, :, :], state.mub_bdy)[0]
+        # A live WRF child walks perturbation mu/ph; its child base state is not
+        # replaced by interpolated parent base leaves.  Keep the released root
+        # behavior byte-identical when the candidate is off.
+        mub = (
+            _base_mu(state)
+            if nested_frozen
+            else _spec3(_base_mu(state)[None, :, :], state.mub_bdy)[0]
+        )
         ph_perturbation = _spec3(state.ph_perturbation, state.ph_bdy)
-        phb = _spec3(_base_geopotential(state), state.phb_bdy)
+        phb = (
+            _base_geopotential(state)
+            if nested_frozen
+            else _spec3(_base_geopotential(state), state.phb_bdy)
+        )
         return state.replace(
             u=u,
             v=v,
@@ -727,14 +790,22 @@ def _wrf_relax_weights(b_dist: int, dt_s: float, config: BoundaryConfig) -> tupl
 
 
 def normal_bdy_work_target_u(
-    u_bdy_strip, u_save, mass_u_cur, mass_u_stage, msfuy, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+    u_bdy_strip,
+    u_save,
+    mass_u_cur,
+    mass_u_stage,
+    msfuy,
+    *,
+    config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
+    coupled_boundary_leaves: bool = False,
 ):
     """Coupled work-array target for the W/E normal face (whole ``(z, ny, nx+1)``).
 
     Only the ``spec_zone + relax_zone`` outer columns at W and E are meaningful;
     interior columns stay zero (the caller only reads the boundary columns).
-    ``u_bdy_strip`` is the time-interpolated decoupled boundary leaf for u
-    (``(side, bdy_width, z, side_len)``).
+    ``u_bdy_strip`` is the time-interpolated boundary leaf.  The default released
+    convention is decoupled velocity.  Under exact nested forcedown it is already
+    WRF coupled momentum ``mass*u/msfuy`` and is used directly.
     """
 
     z_len, y_len, x_len = u_save.shape  # x_len == nx+1
@@ -747,15 +818,26 @@ def normal_bdy_work_target_u(
         ce = x_len - 1 - b_dist
         # msfuy is (ny, nx+1); the W/E column ``c`` map factor is msfuy[:, c] (ny,),
         # broadcast against the (nz, ny) column slice.
-        tw = (w_strip * mass_u_stage[:, :, cw] - u_save[:, :, cw] * mass_u_cur[:, :, cw]) / msfuy[:, cw][None, :]
-        te = (e_strip * mass_u_stage[:, :, ce] - u_save[:, :, ce] * mass_u_cur[:, :, ce]) / msfuy[:, ce][None, :]
+        if bool(coupled_boundary_leaves):
+            tw = w_strip - u_save[:, :, cw] * mass_u_cur[:, :, cw] / msfuy[:, cw][None, :]
+            te = e_strip - u_save[:, :, ce] * mass_u_cur[:, :, ce] / msfuy[:, ce][None, :]
+        else:
+            tw = (w_strip * mass_u_stage[:, :, cw] - u_save[:, :, cw] * mass_u_cur[:, :, cw]) / msfuy[:, cw][None, :]
+            te = (e_strip * mass_u_stage[:, :, ce] - u_save[:, :, ce] * mass_u_cur[:, :, ce]) / msfuy[:, ce][None, :]
         target = target.at[:, :, cw].set(tw)
         target = target.at[:, :, ce].set(te)
     return target
 
 
 def normal_bdy_work_target_v(
-    v_bdy_strip, v_save, mass_v_cur, mass_v_stage, msfvx, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+    v_bdy_strip,
+    v_save,
+    mass_v_cur,
+    mass_v_stage,
+    msfvx,
+    *,
+    config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
+    coupled_boundary_leaves: bool = False,
 ):
     """Coupled work-array target for the S/N normal face (whole ``(z, ny+1, nx)``)."""
 
@@ -769,8 +851,12 @@ def normal_bdy_work_target_v(
         rn = y_len - 1 - b_dist
         # msfvx is (ny+1, nx); the S/N row ``r`` map factor is msfvx[r, :] (nx,),
         # broadcast against the (nz, nx) row slice.
-        ts = (s_strip * mass_v_stage[:, rs, :] - v_save[:, rs, :] * mass_v_cur[:, rs, :]) / msfvx[rs, :][None, :]
-        tn = (n_strip * mass_v_stage[:, rn, :] - v_save[:, rn, :] * mass_v_cur[:, rn, :]) / msfvx[rn, :][None, :]
+        if bool(coupled_boundary_leaves):
+            ts = s_strip - v_save[:, rs, :] * mass_v_cur[:, rs, :] / msfvx[rs, :][None, :]
+            tn = n_strip - v_save[:, rn, :] * mass_v_cur[:, rn, :] / msfvx[rn, :][None, :]
+        else:
+            ts = (s_strip * mass_v_stage[:, rs, :] - v_save[:, rs, :] * mass_v_cur[:, rs, :]) / msfvx[rs, :][None, :]
+            tn = (n_strip * mass_v_stage[:, rn, :] - v_save[:, rn, :] * mass_v_cur[:, rn, :]) / msfvx[rn, :][None, :]
         target = target.at[:, rs, :].set(ts)
         target = target.at[:, rn, :].set(tn)
     return target
@@ -796,7 +882,17 @@ def normal_bdy_work_target_v(
 NORMAL_BDY_RELAX_STRENGTH = float(os.environ.get("GPUWRF_NORMAL_BDY_RELAX_STRENGTH", "20.0"))
 
 
-def _normal_relax_weights_u(z_len, y_len, x_len, sub_ratio, config: BoundaryConfig, dtype):
+def _normal_relax_weights_u(
+    z_len,
+    y_len,
+    x_len,
+    sub_ratio,
+    config: BoundaryConfig,
+    dtype,
+    *,
+    relax_rows: bool = True,
+    wrf_single_owner: bool = False,
+):
     """Static per-substep convex-blend weight mask for the W/E NORMAL u face.
 
     Built with numpy at trace time (shapes + config are static), so the whole
@@ -816,19 +912,37 @@ def _normal_relax_weights_u(z_len, y_len, x_len, sub_ratio, config: BoundaryConf
     relax_zone = int(config.relax_zone)
     w = _np.zeros((y_len, x_len), dtype=_np.float64)
     for b_dist in range(spec_zone):
-        w[:, b_dist] = 1.0
-        w[:, x_len - 1 - b_dist] = 1.0
-    for b_dist in range(spec_zone, relax_zone):
-        loop_1based = b_dist + 1
-        linear = max(0.0, (spec_zone + relax_zone - loop_1based) / float(relax_zone - 1)) if relax_zone > 1 else 0.0
-        weight = min(1.0, max(0.0, sub_ratio * 0.1 * linear))
-        start, end = b_dist + 1, y_len - b_dist - 1  # WRF tangential corner trim
-        w[start:end, b_dist] = weight
-        w[start:end, x_len - 1 - b_dist] = weight
+        if bool(wrf_single_owner):
+            # WRF's X-side u loop excludes the corners; the S/N tangential-u
+            # update owns them.  The released moving-residual path wrote the
+            # full column and was later overwritten at corners.
+            start, end = b_dist + 1, y_len - b_dist - 1
+            w[start:end, b_dist] = 1.0
+            w[start:end, x_len - 1 - b_dist] = 1.0
+        else:
+            w[:, b_dist] = 1.0
+            w[:, x_len - 1 - b_dist] = 1.0
+    if bool(relax_rows):
+        for b_dist in range(spec_zone, relax_zone):
+            loop_1based = b_dist + 1
+            linear = max(0.0, (spec_zone + relax_zone - loop_1based) / float(relax_zone - 1)) if relax_zone > 1 else 0.0
+            weight = min(1.0, max(0.0, sub_ratio * 0.1 * linear))
+            start, end = b_dist + 1, y_len - b_dist - 1  # WRF tangential corner trim
+            w[start:end, b_dist] = weight
+            w[start:end, x_len - 1 - b_dist] = weight
     return jnp.asarray(w[None, :, :], dtype=dtype)
 
 
-def _normal_relax_weights_v(z_len, y_len, x_len, sub_ratio, config: BoundaryConfig, dtype):
+def _normal_relax_weights_v(
+    z_len,
+    y_len,
+    x_len,
+    sub_ratio,
+    config: BoundaryConfig,
+    dtype,
+    *,
+    relax_rows: bool = True,
+):
     """Static per-substep convex-blend weight mask for the S/N NORMAL v face.
 
     Relax rows use WRF's Y-boundary tangential corner trim ``i in [b_dist,
@@ -843,13 +957,14 @@ def _normal_relax_weights_v(z_len, y_len, x_len, sub_ratio, config: BoundaryConf
     for b_dist in range(spec_zone):
         w[b_dist, :] = 1.0
         w[y_len - 1 - b_dist, :] = 1.0
-    for b_dist in range(spec_zone, relax_zone):
-        loop_1based = b_dist + 1
-        linear = max(0.0, (spec_zone + relax_zone - loop_1based) / float(relax_zone - 1)) if relax_zone > 1 else 0.0
-        weight = min(1.0, max(0.0, sub_ratio * 0.1 * linear))
-        start, end = b_dist, x_len - b_dist  # WRF tangential corner trim
-        w[b_dist, start:end] = weight
-        w[y_len - 1 - b_dist, start:end] = weight
+    if bool(relax_rows):
+        for b_dist in range(spec_zone, relax_zone):
+            loop_1based = b_dist + 1
+            linear = max(0.0, (spec_zone + relax_zone - loop_1based) / float(relax_zone - 1)) if relax_zone > 1 else 0.0
+            weight = min(1.0, max(0.0, sub_ratio * 0.1 * linear))
+            start, end = b_dist, x_len - b_dist  # WRF tangential corner trim
+            w[b_dist, start:end] = weight
+            w[y_len - 1 - b_dist, start:end] = weight
     return jnp.asarray(w[None, :, :], dtype=dtype)
 
 
@@ -863,6 +978,8 @@ def apply_normal_bdy_work(
     *,
     config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
     relax_strength: float | None = None,
+    relax_rows: bool = True,
+    wrf_single_owner: bool = False,
 ):
     """Apply WRF spec-freeze + relaxation to the NORMAL momentum work arrays.
 
@@ -893,11 +1010,22 @@ def apply_normal_bdy_work(
     sub_ratio = strength * (float(dts) / float(dt_full) if float(dt_full) != 0.0 else 0.0)
 
     zu, yu, xu = u_work.shape
-    wu = _normal_relax_weights_u(zu, yu, xu, sub_ratio, config, u_work.dtype)
+    wu = _normal_relax_weights_u(
+        zu,
+        yu,
+        xu,
+        sub_ratio,
+        config,
+        u_work.dtype,
+        relax_rows=relax_rows,
+        wrf_single_owner=wrf_single_owner,
+    )
     u = u_work + wu * (u_target - u_work)
 
     zv, yv, xv = v_work.shape
-    wv = _normal_relax_weights_v(zv, yv, xv, sub_ratio, config, v_work.dtype)
+    wv = _normal_relax_weights_v(
+        zv, yv, xv, sub_ratio, config, v_work.dtype, relax_rows=relax_rows
+    )
     v = v_work + wv * (v_target - v_work)
 
     return u, v
@@ -942,9 +1070,6 @@ def apply_normal_bdy_work(
 # the IC -- so the parent leaf is the correct WRF-faithful target.
 
 
-SPEC_PLUS_RELAX_WIDTH = int(DEFAULT_BOUNDARY_CONFIG.spec_zone + DEFAULT_BOUNDARY_CONFIG.relax_zone)
-
-
 def _full_ring_target_from_leaf(leaf, z_len, y_len, x_len, dtype):
     """Scatter the time-interpolated boundary strip ``leaf`` into a full ring field.
 
@@ -957,7 +1082,7 @@ def _full_ring_target_from_leaf(leaf, z_len, y_len, x_len, dtype):
     """
 
     target = jnp.zeros((z_len, y_len, x_len), dtype=dtype)
-    for b_dist in range(SPEC_PLUS_RELAX_WIDTH):
+    for b_dist in range(int(leaf.shape[1])):
         w_strip = _strip(leaf, "W", b_dist, z_len, y_len).astype(dtype)  # (z, y)
         e_strip = _strip(leaf, "E", b_dist, z_len, y_len).astype(dtype)
         s_strip = _strip(leaf, "S", b_dist, z_len, x_len).astype(dtype)  # (z, x)
@@ -1042,6 +1167,177 @@ def _scatter_relax_tendency(field_coupled, target_coupled, dt_full: float, confi
     return tend
 
 
+# Pristine WRF Registry order represented by the current State boundary
+# interface.  Every member uses the same ``relax_bdy_scalar`` /
+# ``spec_bdy_scalar`` cadence (solve_em.F:2260-2324 and the analogous scalar
+# loop); the order is static and is not a user-facing mechanism knob.
+NESTED_BOUNDARY_SCALAR_SPECIES = (
+    "qv",
+    "qc",
+    "qr",
+    "qi",
+    "qs",
+    "qg",
+    "Ni",
+    "Nr",
+)
+
+
+def boundary_tendency_leaf(boundary, lead_seconds, cadence_s: float):
+    """Return WRF's retained ``*_bdy_tend`` for the active record interval.
+
+    Live forcedown stores ``[bdy, bdy + cdt*bdy_tend]``.  At an exact interval
+    endpoint WRF still consumes the interval tendency during the just-completing
+    step, hence ``ceil(lead/cadence)-1`` rather than the value interpolator's
+    lower bracket.  A one-record constant fixture has a zero tendency.
+    """
+
+    nrec = int(boundary.shape[0])
+    if nrec < 2:
+        return jnp.zeros_like(boundary[0])
+    lead_index = jnp.asarray(lead_seconds, dtype=jnp.float64) / float(cadence_s)
+    lower = jnp.clip(
+        jnp.ceil(lead_index).astype(jnp.int32) - 1,
+        0,
+        nrec - 2,
+    )
+    upper = lower + 1
+    return (
+        (jnp.take(boundary, upper, axis=0) - jnp.take(boundary, lower, axis=0))
+        / jnp.asarray(float(cadence_s), dtype=boundary.dtype)
+    ).astype(boundary.dtype)
+
+
+def _scatter_spec_scalar_tendency(
+    boundary_tendency,
+    *,
+    z_len: int,
+    y_len: int,
+    x_len: int,
+    dtype,
+    config: BoundaryConfig,
+):
+    """Source-literal ``spec_bdytend(...,'q')`` scatter with corner ownership.
+
+    Tracked ``share/module_bc.F:1430-1546`` writes S/N first over
+    ``i=b_dist .. nx-1-b_dist`` and W/E second with the Fortran
+    ``j=b_dist+1 .. ny-2-b_dist`` trim.  Thus Y sides own corners and each scalar
+    spec cell receives exactly the boundary-record time tendency.
+    """
+
+    out = jnp.zeros((int(z_len), int(y_len), int(x_len)), dtype=dtype)
+    leaf = boundary_tendency.astype(dtype)
+    for b_dist in range(int(config.spec_zone)):
+        x_start, x_stop = b_dist, int(x_len) - b_dist
+        south = _strip(leaf, "S", b_dist, int(z_len), int(x_len))
+        north = _strip(leaf, "N", b_dist, int(z_len), int(x_len))
+        out = out.at[:, b_dist, x_start:x_stop].set(south[:, x_start:x_stop])
+        out = out.at[:, int(y_len) - 1 - b_dist, x_start:x_stop].set(
+            north[:, x_start:x_stop]
+        )
+
+        y_start, y_stop = b_dist + 1, int(y_len) - b_dist - 1
+        west = _strip(leaf, "W", b_dist, int(z_len), int(y_len))
+        east = _strip(leaf, "E", b_dist, int(z_len), int(y_len))
+        out = out.at[:, y_start:y_stop, b_dist].set(west[:, y_start:y_stop])
+        out = out.at[:, y_start:y_stop, int(x_len) - 1 - b_dist].set(
+            east[:, y_start:y_stop]
+        )
+    return out
+
+
+def specified_boundary_tendency(
+    boundary,
+    lead_seconds,
+    cadence_s: float,
+    *,
+    z_len: int,
+    y_len: int,
+    x_len: int,
+    dtype,
+    config: BoundaryConfig,
+):
+    """Scatter pristine-WRF ``spec_bdytend`` from a two-record boundary leaf.
+
+    The routine is deliberately field-generic: the supplied extents encode the
+    U/V staggering, while :func:`_scatter_spec_scalar_tendency` reproduces
+    ``module_bc.F``'s Y-side corner ownership and X-side tangential trim.  Live
+    nested leaves are already in WRF's coupled boundary-record convention, so
+    no mass or map-factor conversion belongs here.
+    """
+
+    return _scatter_spec_scalar_tendency(
+        boundary_tendency_leaf(boundary, lead_seconds, float(cadence_s)),
+        z_len=int(z_len),
+        y_len=int(y_len),
+        x_len=int(x_len),
+        dtype=dtype,
+        config=config,
+    )
+
+
+def nested_scalar_boundary_tendencies(
+    reference: State,
+    lead_seconds,
+    metrics: DycoreMetrics,
+    dt_full: float,
+    config: BoundaryConfig,
+) -> tuple[jax.Array, ...]:
+    """Build/freeze pristine-WRF nested scalar boundary tendencies at RK1.
+
+    This is ``relax_bdy_scalar`` followed by ``spec_bdy_scalar`` for every
+    represented moist/number family.  The live candidate's boundary records are
+    already mass-coupled by forcedown, so only the reference scalar is weighted
+    by ``c1h*mut+c2h``.  Relaxation uses the endpoint value
+    ``bdy + dtbc*bdy_tend``; the spec zone is overwritten by the retained
+    ``bdy_tend`` itself.  The returned coupled tendencies are frozen once per
+    large step and contain no observer or new carry leaf.
+    """
+
+    dtype = reference.mu_total.dtype
+    mass_h = (
+        metrics.c1h.astype(dtype)[:, None, None]
+        * reference.mu_total.astype(dtype)[None, :, :]
+        + metrics.c2h.astype(dtype)[:, None, None]
+    )
+    nz, ny, nx = (int(value) for value in reference.qv.shape)
+    cadence = float(config.update_cadence_s)
+    tendencies: list[jax.Array] = []
+    for name in NESTED_BOUNDARY_SCALAR_SPECIES:
+        field = getattr(reference, name)
+        boundary = getattr(reference, f"{name}_bdy", None)
+        if boundary is None:
+            tendencies.append(jnp.zeros_like(field, dtype=dtype))
+            continue
+        value_leaf = interpolate_boundary_leaf(boundary, lead_seconds, cadence)
+        target = _full_ring_target_from_leaf(
+            value_leaf,
+            nz,
+            ny,
+            nx,
+            dtype,
+        )
+        coupled_reference = field.astype(dtype) * mass_h
+        tendency = _scatter_relax_tendency(
+            coupled_reference,
+            target,
+            float(dt_full),
+            config,
+        )
+        spec_tendency = _scatter_spec_scalar_tendency(
+            boundary_tendency_leaf(boundary, lead_seconds, cadence),
+            z_len=nz,
+            y_len=ny,
+            x_len=nx,
+            dtype=dtype,
+            config=config,
+        )
+        # Relaxation and specified bands are disjoint by source construction;
+        # addition is the exact relax-then-spec result.
+        tendencies.append(tendency + spec_tendency)
+    return tuple(tendencies)
+
+
 def nested_ph_relax_tendency(ph_perturbation, ph_bdy_leaf, mut, msfty, c1f, c2f, dt_full: float, config: BoundaryConfig):
     """Relaxation-zone ``ph_tend`` contribution for the nested boundary (WRF-faithful).
 
@@ -1122,9 +1418,9 @@ def nested_w_relax_tendency(w, w_bdy_leaf, mut, msfty, c1f, c2f, dt_full: float,
 #     full moisture handling, dropping the once-per-step relax-zone value nudge
 #     (replaced by the per-stage tendencies above) and the p'/pb forcing.
 #
-# Approximation kept from the existing helpers (documented, O(ring mu drift)):
-# our leaves store DECOUPLED values, so relax residuals couple BOTH sides with
-# the step-start reference mass instead of WRF's file-coupled bdy values.
+# Released root/replay leaves remain decoupled and therefore use the historical
+# step-start mass on both residual operands.  Live-nest candidate leaves are
+# coupled before SINT and are consumed in that exact WRF representation.
 
 
 @dataclass(frozen=True)
@@ -1143,6 +1439,10 @@ class SpecifiedRelaxTendencies:
     t: jax.Array
     ph: jax.Array
     mu: jax.Array
+    # WRF relaxes mass-weighted w only for nested domains
+    # (module_bc_em.F:320-345).  None preserves the released specified-root
+    # bundle and its generated program.
+    w: jax.Array | None = None
 
 
 def specified_relax_dry_tendencies(
@@ -1151,12 +1451,17 @@ def specified_relax_dry_tendencies(
     metrics,
     dt_full: float,
     config: BoundaryConfig,
+    *,
+    include_nested_w: bool = False,
+    coupled_boundary_leaves: bool = False,
 ):
     """Build the WRF ``relax_bdy_dry`` tendency bundle from the step-start state.
 
     ``reference`` is the step-start (rk1 reference) :class:`State`; targets are
-    the time-interpolated decoupled boundary leaves at the step-start lead
-    (WRF evaluates ``bdy + dtbc*bdy_tend`` at the rk_step==1 call).  All five
+    the time-interpolated boundary leaves at the step-start lead (WRF evaluates
+    ``bdy + dtbc*bdy_tend`` at the rk_step==1 call).  Released callers use
+    decoupled leaves; ``coupled_boundary_leaves=True`` selects the exact
+    live-nest coupled convention.  All five
     relax stencils reuse :func:`_scatter_relax_tendency` (the exact WRF
     relax_bdytend_core port with corner trims); the staggered u/v shapes flow
     through unchanged because the stencil indexes the last two axes generically,
@@ -1195,15 +1500,27 @@ def specified_relax_dry_tendencies(
     t_leaf = interpolate_boundary_leaf(reference.theta_bdy, lead_seconds, cadence)
     ph_leaf = interpolate_boundary_leaf(reference.ph_bdy, lead_seconds, cadence)
     mu_leaf = interpolate_boundary_leaf(reference.mu_bdy, lead_seconds, cadence)
+    w_leaf = (
+        interpolate_boundary_leaf(reference.w_bdy, lead_seconds, cadence)
+        if bool(include_nested_w)
+        else None
+    )
 
     u_target = _full_ring_target_from_leaf(u_leaf, z_u, y_u, x_u, dtype)
     v_target = _full_ring_target_from_leaf(v_leaf, z_v, y_v, x_v, dtype)
     t_target = _full_ring_target_from_leaf(t_leaf, nz, ny, nx, dtype)
     ph_target = _full_ring_target_from_leaf(ph_leaf, nzp1, ny, nx, dtype)
     mu_target = _full_ring_target_from_leaf(mu_leaf, 1, ny, nx, dtype)[0]
+    w_target = (
+        _full_ring_target_from_leaf(w_leaf, nzp1, ny, nx, dtype)
+        if w_leaf is not None
+        else None
+    )
 
-    # COUPLED residual space (couple_momentum / mass_weight); both sides use the
-    # step-start reference mass (decoupled-leaf approximation, see block comment).
+    # COUPLED residual space (couple_momentum / mass_weight).  Released/root
+    # leaves are physical and therefore use the step-start mass on both sides.
+    # Exact live-nest leaves already contain pristine-WRF coupled values and must
+    # NOT be coupled a second time.
     mass_u = c1h * muu[None, :, :] + c2h
     mass_v = c1h * muv[None, :, :] + c2h
     mass_h = c1h * mu_total[None, :, :] + c2h
@@ -1212,32 +1529,63 @@ def specified_relax_dry_tendencies(
     msfvx = metrics.msfvx.astype(dtype)[None, :, :]
     msfty = metrics.msfty.astype(dtype)[None, :, :]
 
-    ru_relax = _scatter_relax_tendency(
-        mass_u * reference.u.astype(dtype) / msfuy,
-        mass_u * u_target / msfuy,
-        float(dt_full),
-        config,
-    )
-    rv_relax = _scatter_relax_tendency(
-        mass_v * reference.v.astype(dtype) / msfvx,
-        mass_v * v_target / msfvx,
-        float(dt_full),
-        config,
-    )
-    # theta: same mass couples both sides, so the WRF t0=300 offset cancels in
-    # the residual and the full-theta leaf convention can be used directly.
-    t_relax = _scatter_relax_tendency(
-        mass_h * reference.theta.astype(dtype),
-        mass_h * t_target,
-        float(dt_full),
-        config,
-    ) / msfty
-    ph_relax = _scatter_relax_tendency(
-        mass_f * reference.ph_perturbation.astype(dtype),
-        mass_f * ph_target,
-        float(dt_full),
-        config,
-    ) / msfty
+    if bool(coupled_boundary_leaves):
+        ru_relax = _scatter_relax_tendency(
+            mass_u * reference.u.astype(dtype) / msfuy,
+            u_target,
+            float(dt_full),
+            config,
+        )
+        rv_relax = _scatter_relax_tendency(
+            mass_v * reference.v.astype(dtype) / msfvx,
+            v_target,
+            float(dt_full),
+            config,
+        )
+        t_relax = _scatter_relax_tendency(
+            mass_h
+            * (
+                reference.theta.astype(dtype)
+                - jnp.asarray(_THETA_BASE_OFFSET, dtype=dtype)
+            ),
+            t_target,
+            float(dt_full),
+            config,
+        ) / msfty
+        ph_relax = _scatter_relax_tendency(
+            mass_f * reference.ph_perturbation.astype(dtype),
+            ph_target,
+            float(dt_full),
+            config,
+        ) / msfty
+    else:
+        # Preserve the released operation graph exactly.  Full-theta is safe only
+        # here because the same child mass multiplies both operands and the 300 K
+        # offset therefore cancels in the residual.
+        ru_relax = _scatter_relax_tendency(
+            mass_u * reference.u.astype(dtype) / msfuy,
+            mass_u * u_target / msfuy,
+            float(dt_full),
+            config,
+        )
+        rv_relax = _scatter_relax_tendency(
+            mass_v * reference.v.astype(dtype) / msfvx,
+            mass_v * v_target / msfvx,
+            float(dt_full),
+            config,
+        )
+        t_relax = _scatter_relax_tendency(
+            mass_h * reference.theta.astype(dtype),
+            mass_h * t_target,
+            float(dt_full),
+            config,
+        ) / msfty
+        ph_relax = _scatter_relax_tendency(
+            mass_f * reference.ph_perturbation.astype(dtype),
+            mass_f * ph_target,
+            float(dt_full),
+            config,
+        ) / msfty
     mu_relax = _scatter_relax_tendency(
         reference.mu_perturbation.astype(dtype)[None, :, :],
         mu_target[None, :, :],
@@ -1245,11 +1593,38 @@ def specified_relax_dry_tendencies(
         config,
     )[0]
 
-    return SpecifiedRelaxTendencies(ru=ru_relax, rv=rv_relax, t=t_relax, ph=ph_relax, mu=mu_relax)
+    # ``rw_tendf`` is formed from mass_weight(w, mut, c1f, c2f), then
+    # rk_addtend_dry divides it by msfty before advance_w consumes it.  This is
+    # nested-only in pristine WRF; specified roots retain w=None.
+    w_relax = None
+    if w_target is not None:
+        w_coupled_target = w_target if bool(coupled_boundary_leaves) else mass_f * w_target
+        w_relax = _scatter_relax_tendency(
+            mass_f * reference.w.astype(dtype),
+            w_coupled_target,
+            float(dt_full),
+            config,
+        ) / msfty
+
+    return SpecifiedRelaxTendencies(
+        ru=ru_relax,
+        rv=rv_relax,
+        t=t_relax,
+        ph=ph_relax,
+        mu=mu_relax,
+        w=w_relax,
+    )
 
 
 def tangential_bdy_work_target_u(
-    u_bdy_strip, u_save, mass_u_cur, mass_u_stage, msfuy, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+    u_bdy_strip,
+    u_save,
+    mass_u_cur,
+    mass_u_stage,
+    msfuy,
+    *,
+    config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
+    coupled_boundary_leaves: bool = False,
 ):
     """Coupled work-array ring-0 target for the TANGENTIAL u rows (S/N edges).
 
@@ -1266,15 +1641,26 @@ def tangential_bdy_work_target_u(
         n_strip = _strip(u_bdy_strip, "N", b_dist, z_len, x_len)
         rs = b_dist
         rn = y_len - 1 - b_dist
-        ts = (s_strip * mass_u_stage[:, rs, :] - u_save[:, rs, :] * mass_u_cur[:, rs, :]) / msfuy[rs, :][None, :]
-        tn = (n_strip * mass_u_stage[:, rn, :] - u_save[:, rn, :] * mass_u_cur[:, rn, :]) / msfuy[rn, :][None, :]
+        if bool(coupled_boundary_leaves):
+            ts = s_strip - u_save[:, rs, :] * mass_u_cur[:, rs, :] / msfuy[rs, :][None, :]
+            tn = n_strip - u_save[:, rn, :] * mass_u_cur[:, rn, :] / msfuy[rn, :][None, :]
+        else:
+            ts = (s_strip * mass_u_stage[:, rs, :] - u_save[:, rs, :] * mass_u_cur[:, rs, :]) / msfuy[rs, :][None, :]
+            tn = (n_strip * mass_u_stage[:, rn, :] - u_save[:, rn, :] * mass_u_cur[:, rn, :]) / msfuy[rn, :][None, :]
         target = target.at[:, rs, :].set(ts)
         target = target.at[:, rn, :].set(tn)
     return target
 
 
 def tangential_bdy_work_target_v(
-    v_bdy_strip, v_save, mass_v_cur, mass_v_stage, msfvx, *, config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG
+    v_bdy_strip,
+    v_save,
+    mass_v_cur,
+    mass_v_stage,
+    msfvx,
+    *,
+    config: BoundaryConfig = DEFAULT_BOUNDARY_CONFIG,
+    coupled_boundary_leaves: bool = False,
 ):
     """Coupled work-array ring-0 target for the TANGENTIAL v columns (W/E edges).
 
@@ -1289,8 +1675,12 @@ def tangential_bdy_work_target_v(
         e_strip = _strip(v_bdy_strip, "E", b_dist, z_len, y_len)
         cw = b_dist
         ce = x_len - 1 - b_dist
-        tw = (w_strip * mass_v_stage[:, :, cw] - v_save[:, :, cw] * mass_v_cur[:, :, cw]) / msfvx[:, cw][None, :]
-        te = (e_strip * mass_v_stage[:, :, ce] - v_save[:, :, ce] * mass_v_cur[:, :, ce]) / msfvx[:, ce][None, :]
+        if bool(coupled_boundary_leaves):
+            tw = w_strip - v_save[:, :, cw] * mass_v_cur[:, :, cw] / msfvx[:, cw][None, :]
+            te = e_strip - v_save[:, :, ce] * mass_v_cur[:, :, ce] / msfvx[:, ce][None, :]
+        else:
+            tw = (w_strip * mass_v_stage[:, :, cw] - v_save[:, :, cw] * mass_v_cur[:, :, cw]) / msfvx[:, cw][None, :]
+            te = (e_strip * mass_v_stage[:, :, ce] - v_save[:, :, ce] * mass_v_cur[:, :, ce]) / msfvx[:, ce][None, :]
         target = target.at[:, :, cw].set(tw)
         target = target.at[:, :, ce].set(te)
     return target
@@ -1340,6 +1730,76 @@ def spec_bdyupdate_ph_inloop(
     return out
 
 
+def spec_bdyupdate_ph_tendency_inloop(
+    ph_advanced,
+    ph_work_before_advance,
+    ph_tend,
+    ph_save,
+    mu_tend,
+    muts,
+    c1f,
+    c2f,
+    dts: float,
+    config: BoundaryConfig,
+    *,
+    spec_zone: int | None = None,
+):
+    """Exact nested ``spec_bdyupdate_ph`` from retained boundary tendencies.
+
+    WRF updates ``grid%ph_2`` IN PLACE: ``advance_w`` advances the interior
+    (its specified/nested loop bounds exclude only the outer ring,
+    ``module_small_step_em.F:1274-1282``) and ``spec_bdyupdate_ph``
+    (``module_bc_em.F:17``) then rewrites ONLY the spec-zone ring from the
+    ring's pre-``advance_w`` value, which the exclusion left equal to the
+    previous substep's walked value.  The functional form therefore requires
+    BOTH operands: ``ph_advanced`` (the ``advance_w`` output, kept everywhere
+    outside the ring) and ``ph_work_before_advance`` (the loop-carried
+    pre-advance array, the ring walk's base).  Collapsing both onto the
+    pre-advance array discards every interior ``advance_w`` geopotential
+    update and freezes the interior ``ph`` for the whole run (the v0.23.4
+    step-200 d03 Ni blocker).  ``ph_tend`` and ``mu_tend`` are the coupled
+    record tendencies written by ``spec_bdy_dry``.  The ring equation is the
+    literal vector form of ``dyn_em/module_bc_em.F::spec_bdyupdate_ph`` and
+    preserves its coupled geopotential conservation identity at every acoustic
+    substep.
+    """
+
+    dtype = ph_advanced.dtype
+    dts_value = jnp.asarray(float(dts), dtype=dtype)
+    muts_value = muts.astype(dtype)
+    mu_tend_value = mu_tend.astype(dtype)
+    c1 = c1f.astype(dtype)[:, None, None]
+    c2 = c2f.astype(dtype)[:, None, None]
+    mass_new = c1 * muts_value[None, :, :] + c2
+    mass_old = c1 * (
+        muts_value - dts_value * mu_tend_value
+    )[None, :, :] + c2
+    ratio = mass_old / mass_new
+    target = (
+        ph_work_before_advance.astype(dtype) * ratio
+        + dts_value * ph_tend.astype(dtype) / mass_new
+        + ph_save.astype(dtype) * (ratio - jnp.asarray(1.0, dtype=dtype))
+    )
+
+    active_spec_zone = int(config.spec_zone if spec_zone is None else spec_zone)
+    out = ph_advanced
+    z_len, y_len, x_len = out.shape
+    del z_len
+    for b_dist in range(active_spec_zone):
+        # X sides trim the corners; S/N writes last and owns them, matching
+        # module_bc_em.F's b_limit loops.
+        rows = slice(b_dist + 1, y_len - 1 - b_dist)
+        out = out.at[:, rows, b_dist].set(target[:, rows, b_dist])
+        out = out.at[:, rows, x_len - 1 - b_dist].set(
+            target[:, rows, x_len - 1 - b_dist]
+        )
+        out = out.at[:, b_dist, :].set(target[:, b_dist, :])
+        out = out.at[:, y_len - 1 - b_dist, :].set(
+            target[:, y_len - 1 - b_dist, :]
+        )
+    return out
+
+
 __all__ = [
     "BoundaryConfig",
     "DEFAULT_BOUNDARY_CONFIG",
@@ -1352,7 +1812,12 @@ __all__ = [
     "apply_normal_bdy_work",
     "nested_ph_relax_tendency",
     "nested_w_relax_tendency",
+    "NESTED_BOUNDARY_SCALAR_SPECIES",
+    "boundary_tendency_leaf",
+    "specified_boundary_tendency",
+    "nested_scalar_boundary_tendencies",
     "spec_bdyupdate_ph_inloop",
+    "spec_bdyupdate_ph_tendency_inloop",
     "SpecifiedRelaxTendencies",
     "specified_relax_dry_tendencies",
     "tangential_bdy_work_target_u",

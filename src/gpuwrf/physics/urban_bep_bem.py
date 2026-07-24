@@ -16,9 +16,9 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-BEP_SOURCE = "<DATA_ROOT>/src/wrf_pristine/WRF/phys/module_sf_bep.F"
-BEM_SOURCE = "<DATA_ROOT>/src/wrf_pristine/WRF/phys/module_sf_bem.F"
-REGISTRY_SOURCE = "<DATA_ROOT>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON"
+BEP_SOURCE = "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.F"
+BEM_SOURCE = "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bem.F"
+REGISTRY_SOURCE = "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON"
 
 BEP_REGISTRY_STATE = (
     "a_u_bep",

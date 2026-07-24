@@ -15,9 +15,10 @@ also produces uncoupled tendencies):
    density-current reference solution is *defined* with constant ν = 75 m²/s on
    u, v, θ, so this is part of the test definition, not a masking clamp.
 
-Periodic-x/-y only (the idealized + audit configuration).  The original slab
-helpers keep unit-map-factor defaults; the WRF terrain-following deformation
-helpers below accept real map factors and ``zx``/``zy`` slope metrics.
+The original slab helpers keep periodic unit-map-factor defaults.  The WRF
+terrain-following deformation and scalar-diffusion helpers below also accept
+real map factors, ``zx``/``zy`` slope metrics, and explicit non-periodic
+specified/nested ownership.
 """
 
 from __future__ import annotations
@@ -101,6 +102,41 @@ def _wface3_or_one(metric: jax.Array | None, *, nz: int, ny: int, nx: int, refer
     return arr
 
 
+def wrf_nonperiodic_diffusion_metrics(
+    ph_total: jax.Array,
+    *,
+    dx_m: float,
+    dy_m: float,
+    gravity: float = GRAVITY_M_S2,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """WRF ``compute_diff_metrics`` for a full non-periodic domain.
+
+    ``ph_total`` is ``ph+phb`` on z faces.  WRF derives mass-level ``rdzw``
+    directly from adjacent z faces and the terrain-following ``zx``/``zy``
+    slopes from same-level geopotential differences.  At a specified, open, or
+    nested physical edge the normal slope is zero; physical-BC halo copies then
+    extend that value outside the owned domain.  This array-only form returns
+    the owned ``(zx, zy, rdzw)`` values and performs no host observation.
+
+    Source: ``module_diffusion_em.F::compute_diff_metrics``.  There is no
+    safety clamp: non-positive layer thickness is an invalid model state and is
+    allowed to fail the ordinary finite gate.
+    """
+
+    geopotential = jnp.asarray(ph_total)
+    z_at_w = geopotential / float(gravity)
+    rdzw = 1.0 / (z_at_w[1:, :, :] - z_at_w[:-1, :, :])
+    zx = jnp.zeros_like(z_at_w)
+    zy = jnp.zeros_like(z_at_w)
+    zx = zx.at[:, :, 1:].set(
+        (z_at_w[:, :, 1:] - z_at_w[:, :, :-1]) / float(dx_m)
+    )
+    zy = zy.at[:, 1:, :].set(
+        (z_at_w[:, 1:, :] - z_at_w[:, :-1, :]) / float(dy_m)
+    )
+    return zx, zy, rdzw
+
+
 def _vertical_face_average_pair(
     left: jax.Array,
     right: jax.Array,
@@ -157,7 +193,10 @@ def _vertical_face_average_pair(
     return face
 
 
-def _dflux6(field: jax.Array, axis: int) -> tuple[jax.Array, jax.Array]:
+def _dflux6(
+    field: jax.Array,
+    axis: int,
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
     """WRF 6th-order diffusive flux pair (Xue eq. 3) at faces p0 (i) and p1 (i+1).
 
     ``dflux_p0 = 10*(f(i)-f(i-1)) - 5*(f(i+1)-f(i-2)) + (f(i+2)-f(i-3))`` located
@@ -224,6 +263,253 @@ def sixth_order_diffusion_tendency(
         # surfaces; vertical 6th-order is not part of diff_6th_opt.  Kept off.
         pass
     return tend
+
+
+def wrf_sixth_order_scalar_tendf(
+    field: jax.Array,
+    mu_total: jax.Array,
+    *,
+    c1: jax.Array,
+    c2: jax.Array,
+    msftx: jax.Array,
+    msfty: jax.Array,
+    dt: float,
+    diff_6th_factor: float,
+    monotonic: bool = True,
+    specified_or_nested: bool = False,
+) -> jax.Array:
+    """Return pristine WRF's mass-coupled scalar ``t_tendf`` contribution.
+
+    This is the literal ``name != u/v/w`` branch of
+    ``module_big_step_utilities_em.F::sixth_order_diffusion`` with the canonical
+    ``diff_6th_slopeopt=0``.  Unlike :func:`sixth_order_diffusion_tendency`, this
+    routine preserves the adjacent-face ``c1*mut+c2`` masses and map factors and
+    returns the *coupled* forward tendency.  ``rk_addtend_dry`` divides this
+    result by ``msfty`` before ``advance_mu_t`` consumes it.
+
+    WRF cannot read a three-cell stencil from outside a specified/nested physical
+    domain.  In that mode its scalar loop is exactly ``ids+3:ide-4`` by
+    ``jds+3:jde-4`` (zero-based rings 3 and deeper); rings 0--2 therefore receive
+    no sixth-order contribution.  The rolls below are only a compact way to form
+    the stencil: the ownership mask guarantees every retained value reads solely
+    from in-domain neighbours, so no wrapped value can enter the result.
+    """
+
+    field = jnp.asarray(field)
+    dtype = field.dtype
+    mut = jnp.asarray(mu_total, dtype=dtype)
+    c1v = jnp.asarray(c1, dtype=dtype)[:, None, None]
+    c2v = jnp.asarray(c2, dtype=dtype)[:, None, None]
+    mass = c1v * mut[None, :, :] + c2v
+    mx = jnp.asarray(msftx, dtype=dtype)[None, :, :]
+    my = jnp.asarray(msfty, dtype=dtype)[None, :, :]
+    coef = float(diff_6th_factor) * 0.015625 / (2.0 * float(dt))
+
+    dfx0, dfx1, gx0, gx1 = _dflux6(field, axis=2)
+    dfy0, dfy1, gy0, gy1 = _dflux6(field, axis=1)
+    if bool(monotonic):
+        dfx0 = jnp.where(dfx0 * gx0 <= 0.0, 0.0, dfx0)
+        dfx1 = jnp.where(dfx1 * gx1 <= 0.0, 0.0, dfx1)
+        dfy0 = jnp.where(dfy0 * gy0 <= 0.0, 0.0, dfy0)
+        dfy1 = jnp.where(dfy1 * gy1 <= 0.0, 0.0, dfy1)
+
+    mass_x0 = 0.5 * (mass + jnp.roll(mass, 1, axis=2))
+    mass_x1 = 0.5 * (mass + jnp.roll(mass, -1, axis=2))
+    mass_y0 = 0.5 * (mass + jnp.roll(mass, 1, axis=1))
+    mass_y1 = 0.5 * (mass + jnp.roll(mass, -1, axis=1))
+    tendency = float(coef) * (
+        mx * (mass_x1 * dfx1 - mass_x0 * dfx0)
+        + my * (mass_y1 * dfy1 - mass_y0 * dfy0)
+    )
+
+    if bool(specified_or_nested):
+        ny = int(field.shape[1])
+        nx = int(field.shape[2])
+        yy = jnp.arange(ny).reshape(1, ny, 1)
+        xx = jnp.arange(nx).reshape(1, 1, nx)
+        owned = (yy >= 3) & (yy <= ny - 4) & (xx >= 3) & (xx <= nx - 4)
+        tendency = jnp.where(owned, tendency, jnp.zeros_like(tendency))
+    return tendency
+
+
+def _shift_m1(arr: jax.Array, axis: int) -> jax.Array:
+    """``arr[i-1]`` at position ``i`` (edge value duplicated at index 0).
+
+    Only used to build face masses whose unowned boundary rows are discarded
+    by the WRF ownership mask, so the duplicated edge never reaches a result.
+    """
+
+    lead = [slice(None)] * arr.ndim
+    lead[axis] = slice(0, 1)
+    stacked = jnp.concatenate([arr[tuple(lead)], arr], axis=axis)
+    take = [slice(None)] * arr.ndim
+    take[axis] = slice(0, arr.shape[axis])
+    return stacked[tuple(take)]
+
+
+def _shift_p1(arr: jax.Array, axis: int) -> jax.Array:
+    """``arr[i+1]`` at position ``i`` (edge value duplicated at the end)."""
+
+    tail = [slice(None)] * arr.ndim
+    tail[axis] = slice(arr.shape[axis] - 1, arr.shape[axis])
+    stacked = jnp.concatenate([arr, arr[tuple(tail)]], axis=axis)
+    take = [slice(None)] * arr.ndim
+    take[axis] = slice(1, arr.shape[axis] + 1)
+    return stacked[tuple(take)]
+
+
+def _owned_mask(shape: tuple[int, int]) -> jax.Array:
+    """WRF specified/nested ownership rectangle [3, size-4] per horizontal dim.
+
+    The staggered dimension's WRF 1-based bound (ide-3 on ide faces) and the
+    mass dimension's (ide-4 on ide-1 cells) both collapse to [3, size-4] in the
+    0-based frame of each array's own extent.
+    """
+
+    ny, nx = shape
+    jj = jnp.arange(ny).reshape(1, ny, 1)
+    ii = jnp.arange(nx).reshape(1, 1, nx)
+    return (jj >= 3) & (jj <= ny - 4) & (ii >= 3) & (ii <= nx - 4)
+
+
+def wrf_sixth_order_uvw_tendf(
+    u: jax.Array,
+    v: jax.Array,
+    w: jax.Array,
+    mu_total: jax.Array,
+    *,
+    c1h: jax.Array,
+    c2h: jax.Array,
+    c1f: jax.Array,
+    c2f: jax.Array,
+    msfux: jax.Array,
+    msfuy: jax.Array,
+    msfvx: jax.Array,
+    msfvy: jax.Array,
+    msftx: jax.Array,
+    msfty: jax.Array,
+    dt: float,
+    diff_6th_factor: float,
+    monotonic: bool = True,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """Pristine WRF momentum sixth-order diffusion for a specified/nested domain.
+
+    Literal ``module_big_step_utilities_em.F::sixth_order_diffusion`` 'u'/'v'/'w'
+    branches (v4.7.1, ``:6321-6633``) with the canonical ``diff_6th_slopeopt=0``,
+    called by ``module_em.F::rk_tendency`` at ``rk_step==1`` only (``:882-916``)
+    with ``grid%dt`` and the time-t fields, into ``ru_tendf/rv_tendf/rw_tendf``.
+    Returns the *effective* tendencies already folded per ``rk_addtend_dry``
+    (``module_em.F:1041-1067``): ``/msfuy`` for u, ``*1/msfvx`` for v, ``/msfty``
+    for w — the same convention as the frozen theta bundle, so callers add them
+    directly to the coupled large-step tendencies at every RK stage.
+
+    Ownership (specified/nested; 1-based WRF -> 0-based here):
+      u: i in [3, nxs-4] of the nxs=nx+1 faces, j in [3, ny-4], all half levels;
+      v: i in [3, nx-4],  j in [3, nys-4] of the nys=ny+1 faces, all half levels;
+      w: i in [3, nx-4],  j in [3, ny-4], k in [1, nzf-2] of the nzf full levels.
+    Rings 0-2 receive exactly zero: WRF owns no stencil there.  The ``jnp.roll``
+    stencils below are only a compact gather; every retained (owned) value reads
+    solely in-domain neighbours, so no wrapped value can enter the result.
+    Adjacent-face masses: u-x single-point ``c1h*MUT(i-1,j)+c2h`` /
+    ``c1h*MUT(i,j)+c2h``; u-y 4-point averages; v mirrored; w 2-point with
+    ``c1f/c2f``.  Per-direction map factors multiply each directional flux
+    difference exactly as in the Fortran.
+    """
+
+    dtype = u.dtype
+    mut = jnp.asarray(mu_total, dtype=dtype)
+    coef = float(diff_6th_factor) * 0.015625 / (2.0 * float(dt))
+
+    def limited(field: jax.Array, axis: int):
+        df0, df1, g0, g1 = _dflux6(field, axis)
+        if bool(monotonic):
+            df0 = jnp.where(df0 * g0 <= 0.0, 0.0, df0)
+            df1 = jnp.where(df1 * g1 <= 0.0, 0.0, df1)
+        return df0, df1
+
+    def mass3(c1: jax.Array, c2: jax.Array) -> jax.Array:
+        return (
+            jnp.asarray(c1, dtype=dtype)[:, None, None] * mut[None, :, :]
+            + jnp.asarray(c2, dtype=dtype)[:, None, None]
+        )
+
+    def face_pair_x(m3: jax.Array, nxs: int) -> tuple[jax.Array, jax.Array]:
+        # mass cells i-1 / i at x-face i (edge dummies masked by ownership).
+        p0 = jnp.concatenate([m3[:, :, :1], m3], axis=2)[:, :, :nxs]
+        p1 = jnp.concatenate([m3, m3[:, :, -1:]], axis=2)[:, :, :nxs]
+        return p0, p1
+
+    def face_pair_y(m3: jax.Array, nys: int) -> tuple[jax.Array, jax.Array]:
+        p0 = jnp.concatenate([m3[:, :1, :], m3], axis=1)[:, :nys, :]
+        p1 = jnp.concatenate([m3, m3[:, -1:, :]], axis=1)[:, :nys, :]
+        return p0, p1
+
+    # ---- u ('u' branch): x single-point masses + msfux; y 4-point + msfuy ----
+    m_h = mass3(c1h, c2h)
+    nxs_u = int(u.shape[2])
+    dfx0, dfx1 = limited(u, 2)
+    mu_x_p0, mu_x_p1 = face_pair_x(m_h, nxs_u)
+    tend_x = coef * jnp.asarray(msfux, dtype=dtype)[None, :, :] * (
+        mu_x_p1 * dfx1 - mu_x_p0 * dfx0
+    )
+    dfy0, dfy1 = limited(u, 1)
+    mx = 0.5 * (mu_x_p0 + mu_x_p1)
+    mu_y_p0 = 0.5 * (_shift_m1(mx, 1) + mx)
+    mu_y_p1 = 0.5 * (mx + _shift_p1(mx, 1))
+    tend_y = coef * jnp.asarray(msfuy, dtype=dtype)[None, :, :] * (
+        mu_y_p1 * dfy1 - mu_y_p0 * dfy0
+    )
+    u_tendf = jnp.where(
+        _owned_mask((int(u.shape[1]), nxs_u)),
+        tend_x + tend_y,
+        jnp.zeros_like(u),
+    )
+    u_eff = u_tendf / jnp.asarray(msfuy, dtype=dtype)[None, :, :]
+
+    # ---- v ('v' branch): y single-point masses + msfvy; x 4-point + msfvx ----
+    nys_v = int(v.shape[1])
+    dfy0, dfy1 = limited(v, 1)
+    mu_y_p0, mu_y_p1 = face_pair_y(m_h, nys_v)
+    tend_y = coef * jnp.asarray(msfvy, dtype=dtype)[None, :, :] * (
+        mu_y_p1 * dfy1 - mu_y_p0 * dfy0
+    )
+    dfx0, dfx1 = limited(v, 2)
+    my = 0.5 * (mu_y_p0 + mu_y_p1)
+    mu_x_p0 = 0.5 * (_shift_m1(my, 2) + my)
+    mu_x_p1 = 0.5 * (my + _shift_p1(my, 2))
+    tend_x = coef * jnp.asarray(msfvx, dtype=dtype)[None, :, :] * (
+        mu_x_p1 * dfx1 - mu_x_p0 * dfx0
+    )
+    v_tendf = jnp.where(
+        _owned_mask((nys_v, int(v.shape[2]))),
+        tend_x + tend_y,
+        jnp.zeros_like(v),
+    )
+    v_eff = v_tendf * (1.0 / jnp.asarray(msfvx, dtype=dtype)[None, :, :])
+
+    # ---- w (default branch): 2-point masses (c1f/c2f), msftx/msfty ----------
+    m_f = mass3(c1f, c2f)
+    nzf = int(w.shape[0])
+    dfx0, dfx1 = limited(w, 2)
+    mw_x_p0 = 0.5 * (_shift_m1(m_f, 2) + m_f)
+    mw_x_p1 = 0.5 * (m_f + _shift_p1(m_f, 2))
+    tend_x = coef * jnp.asarray(msftx, dtype=dtype)[None, :, :] * (
+        mw_x_p1 * dfx1 - mw_x_p0 * dfx0
+    )
+    dfy0, dfy1 = limited(w, 1)
+    mw_y_p0 = 0.5 * (_shift_m1(m_f, 1) + m_f)
+    mw_y_p1 = 0.5 * (m_f + _shift_p1(m_f, 1))
+    tend_y = coef * jnp.asarray(msfty, dtype=dtype)[None, :, :] * (
+        mw_y_p1 * dfy1 - mw_y_p0 * dfy0
+    )
+    kk = jnp.arange(nzf).reshape(nzf, 1, 1)
+    w_owned = _owned_mask((int(w.shape[1]), int(w.shape[2]))) & (
+        (kk >= 1) & (kk <= nzf - 2)
+    )
+    w_tendf = jnp.where(w_owned, tend_x + tend_y, jnp.zeros_like(w))
+    w_eff = w_tendf / jnp.asarray(msfty, dtype=dtype)[None, :, :]
+
+    return u_eff, v_eff, w_eff
 
 
 def _laplacian_axis_periodic(field: jax.Array, axis: int, spacing: float) -> jax.Array:
@@ -1237,6 +1523,13 @@ def _hdiff_coord_scalar(
     *,
     dx_m: float,
     dy_m: float,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+    msfux: jax.Array | None = None,
+    msfuy: jax.Array | None = None,
+    msfvx: jax.Array | None = None,
+    msfvy: jax.Array | None = None,
+    nonperiodic_owned: bool = False,
 ) -> jax.Array:
     """diff_opt=1 coordinate-surface variable-K flux divergence (scalar branch).
 
@@ -1253,7 +1546,13 @@ def _hdiff_coord_scalar(
 
     ``mass`` is the dry-column mass ``c1*MUT+c2`` on mass cells (WRF MUT coupling).
     ``xkmhd`` is the per-field horizontal eddy diffusivity (xkmhd for momentum,
-    xkhh for heat).  All fields are ``(nz, ny, nx)`` on mass cells; periodic x/y.
+    xkhh for heat).  All fields are ``(nz, ny, nx)`` on mass cells.
+
+    The no-metric/default branch below is intentionally kept as the literal
+    released unit-map periodic expression.  Supplying all map factors selects
+    WRF's general scalar expression.  ``nonperiodic_owned`` additionally applies
+    the WRF specified/nested loop ownership ``ids+1:ide-2`` /
+    ``jds+1:jde-2``; ring zero receives no diffusion tendency.
     """
 
     rdx = 1.0 / float(dx_m)
@@ -1263,9 +1562,48 @@ def _hdiff_coord_scalar(
     k_w = 0.5 * (xkmhd + jnp.roll(xkmhd, 1, axis=2))   # K at west face i-1/2
     m_e = 0.5 * (jnp.roll(mass, -1, axis=2) + mass)    # mass at east face
     m_w = 0.5 * (mass + jnp.roll(mass, 1, axis=2))     # mass at west face
-    mkrdxp = k_e * m_e * rdx
-    mkrdxm = k_w * m_w * rdx
-    tend = rdx * (
+    if (
+        msftx is None
+        and msfty is None
+        and msfux is None
+        and msfuy is None
+        and msfvx is None
+        and msfvy is None
+        and not bool(nonperiodic_owned)
+    ):
+        mkrdxp = k_e * m_e * rdx
+        mkrdxm = k_w * m_w * rdx
+        tend = rdx * (
+            mkrdxp * (jnp.roll(field, -1, axis=2) - field)
+            - mkrdxm * (field - jnp.roll(field, 1, axis=2))
+        )
+
+        if field.shape[1] > 1:
+            k_n = 0.5 * (jnp.roll(xkmhd, -1, axis=1) + xkmhd)
+            k_s = 0.5 * (xkmhd + jnp.roll(xkmhd, 1, axis=1))
+            m_n = 0.5 * (jnp.roll(mass, -1, axis=1) + mass)
+            m_s = 0.5 * (mass + jnp.roll(mass, 1, axis=1))
+            mkrdyp = k_n * m_n * rdy
+            mkrdym = k_s * m_s * rdy
+            tend = tend + rdy * (
+                mkrdyp * (jnp.roll(field, -1, axis=1) - field)
+                - mkrdym * (field - jnp.roll(field, 1, axis=1))
+            )
+        return tend
+
+    nx = int(field.shape[-1])
+    ny = int(field.shape[-2])
+    msftx_m = _mass_metric_or_one(msftx, field)
+    msfty_m = _mass_metric_or_one(msfty, field)
+    msfux_u = _x_metric_or_one(msfux, nx=nx, reference=field)
+    msfuy_u = _x_metric_or_one(msfuy, nx=nx, reference=field)
+    msfvx_v = _y_metric_or_one(msfvx, ny=ny, reference=field)
+    msfvy_v = _y_metric_or_one(msfvy, ny=ny, reference=field)
+    ratio_u = msfux_u / msfuy_u
+    ratio_v = msfvy_v / msfvx_v
+    mkrdxp = jnp.roll(ratio_u, -1, axis=1)[None, :, :] * k_e * m_e * rdx
+    mkrdxm = ratio_u[None, :, :] * k_w * m_w * rdx
+    tend = (msftx_m * msfty_m)[None, :, :] * rdx * (
         mkrdxp * (jnp.roll(field, -1, axis=2) - field)
         - mkrdxm * (field - jnp.roll(field, 1, axis=2))
     )
@@ -1275,12 +1613,22 @@ def _hdiff_coord_scalar(
         k_s = 0.5 * (xkmhd + jnp.roll(xkmhd, 1, axis=1))
         m_n = 0.5 * (jnp.roll(mass, -1, axis=1) + mass)
         m_s = 0.5 * (mass + jnp.roll(mass, 1, axis=1))
-        mkrdyp = k_n * m_n * rdy
-        mkrdym = k_s * m_s * rdy
-        tend = tend + rdy * (
+        mkrdyp = jnp.roll(ratio_v, -1, axis=0)[None, :, :] * k_n * m_n * rdy
+        mkrdym = ratio_v[None, :, :] * k_s * m_s * rdy
+        tend = tend + (msftx_m * msfty_m)[None, :, :] * rdy * (
             mkrdyp * (jnp.roll(field, -1, axis=1) - field)
             - mkrdym * (field - jnp.roll(field, 1, axis=1))
         )
+    if bool(nonperiodic_owned):
+        y_index = jnp.arange(ny).reshape(1, ny, 1)
+        x_index = jnp.arange(nx).reshape(1, 1, nx)
+        owned = (
+            (y_index >= 1)
+            & (y_index <= ny - 2)
+            & (x_index >= 1)
+            & (x_index <= nx - 2)
+        )
+        tend = jnp.where(owned, tend, 0.0)
     return tend
 
 
@@ -1292,6 +1640,13 @@ def horizontal_diffusion_coord_scalar_tendency(
     dx_m: float,
     dy_m: float,
     base_3d: jax.Array | None = None,
+    msftx: jax.Array | None = None,
+    msfty: jax.Array | None = None,
+    msfux: jax.Array | None = None,
+    msfuy: jax.Array | None = None,
+    msfvx: jax.Array | None = None,
+    msfvy: jax.Array | None = None,
+    nonperiodic_owned: bool = False,
 ) -> jax.Array:
     """diff_opt=1 coordinate-surface scalar (theta) horizontal diffusion.
 
@@ -1305,7 +1660,20 @@ def horizontal_diffusion_coord_scalar_tendency(
     """
 
     diff_field = field if base_3d is None else (field - base_3d)
-    return _hdiff_coord_scalar(diff_field, xkhh, mass, dx_m=dx_m, dy_m=dy_m)
+    return _hdiff_coord_scalar(
+        diff_field,
+        xkhh,
+        mass,
+        dx_m=dx_m,
+        dy_m=dy_m,
+        msftx=msftx,
+        msfty=msfty,
+        msfux=msfux,
+        msfuy=msfuy,
+        msfvx=msfvx,
+        msfvy=msfvy,
+        nonperiodic_owned=nonperiodic_owned,
+    )
 
 
 def horizontal_diffusion_coord_momentum_tendency(
@@ -1362,6 +1730,231 @@ def horizontal_diffusion_coord_momentum_tendency(
         du = jnp.concatenate((du, du[:, :, :1]), axis=2)
     if v.shape[1] == ny + 1:
         dv = jnp.concatenate((dv, dv[:, :1, :]), axis=1)
+    return du, dv, dw
+
+
+def wrf_nested_horizontal_diffusion_momentum_tendency(
+    u: jax.Array,
+    v: jax.Array,
+    w: jax.Array,
+    xkmhd: jax.Array,
+    mut: jax.Array,
+    *,
+    c1h: jax.Array,
+    c2h: jax.Array,
+    c1f: jax.Array,
+    c2f: jax.Array,
+    msfux: jax.Array,
+    msfuy: jax.Array,
+    msfvx: jax.Array,
+    msfvy: jax.Array,
+    msftx: jax.Array,
+    msfty: jax.Array,
+    dx_m: float,
+    dy_m: float,
+) -> tuple[jax.Array, jax.Array, jax.Array]:
+    """Literal nested/specified WRF diffopt1 U/V/W horizontal diffusion.
+
+    This is the three momentum branches of pristine WRF v4.7.1
+    ``horizontal_diffusion`` (``module_big_step_utilities_em.F:2779-2909``).
+    Unlike :func:`horizontal_diffusion_coord_momentum_tendency`, this path keeps
+    the real map factors, exact target-stagger coefficient/mass averages, and
+    physical ownership of a nested domain. ``xkmhd`` is the mass-point momentum
+    viscosity produced by the same ``cal_deform_and_div -> smag2d_km`` call as
+    WRF. Returned arrays are the coupled ``ru/rv/rw_tendf`` increments.
+
+    The unusual absence of a mass multiplier from WRF's V y-direction
+    ``mkrdym/mkrdyp`` expressions is retained literally (:2854-2855). No
+    periodic padding or wrap face is synthesized here.
+    """
+
+    u = jnp.asarray(u)
+    v = jnp.asarray(v)
+    w = jnp.asarray(w)
+    xkmhd = jnp.asarray(xkmhd, dtype=u.dtype)
+    mut = jnp.asarray(mut, dtype=u.dtype)
+    c1h = jnp.asarray(c1h, dtype=u.dtype)
+    c2h = jnp.asarray(c2h, dtype=u.dtype)
+    c1f = jnp.asarray(c1f, dtype=u.dtype)
+    c2f = jnp.asarray(c2f, dtype=u.dtype)
+    msfux = jnp.asarray(msfux, dtype=u.dtype)
+    msfuy = jnp.asarray(msfuy, dtype=u.dtype)
+    msfvx = jnp.asarray(msfvx, dtype=u.dtype)
+    msfvy = jnp.asarray(msfvy, dtype=u.dtype)
+    msftx = jnp.asarray(msftx, dtype=u.dtype)
+    msfty = jnp.asarray(msfty, dtype=u.dtype)
+    rdx = jnp.asarray(1.0 / float(dx_m), dtype=u.dtype)
+    rdy = jnp.asarray(1.0 / float(dy_m), dtype=u.dtype)
+
+    mass_h = c1h[:, None, None] * mut[None, :, :] + c2h[:, None, None]
+
+    # U target: k=all mass levels, j=1:ny-2, i-face=1:nx-1.
+    u0 = u[:, 1:-1, 1:-1]
+    mass_u_w = mass_h[:, 1:-1, :-1]
+    mass_u_e = mass_h[:, 1:-1, 1:]
+    k_u_w = xkmhd[:, 1:-1, :-1]
+    k_u_e = xkmhd[:, 1:-1, 1:]
+    ratio_t = msftx / msfty
+    mkrdxm_u = ratio_t[None, 1:-1, :-1] * mass_u_w * k_u_w * rdx
+    mkrdxp_u = ratio_t[None, 1:-1, 1:] * mass_u_e * k_u_e * rdx
+    mrdx_u = (msfux * msfuy)[None, 1:-1, 1:-1] * rdx
+
+    mass_u_s = 0.25 * (
+        mass_h[:, 1:-1, 1:]
+        + mass_h[:, :-2, 1:]
+        + mass_h[:, :-2, :-1]
+        + mass_h[:, 1:-1, :-1]
+    )
+    mass_u_n = 0.25 * (
+        mass_h[:, 1:-1, 1:]
+        + mass_h[:, 2:, 1:]
+        + mass_h[:, 2:, :-1]
+        + mass_h[:, 1:-1, :-1]
+    )
+    k_u_s = 0.25 * (
+        xkmhd[:, 1:-1, 1:]
+        + xkmhd[:, :-2, 1:]
+        + xkmhd[:, :-2, :-1]
+        + xkmhd[:, 1:-1, :-1]
+    )
+    k_u_n = 0.25 * (
+        xkmhd[:, 1:-1, 1:]
+        + xkmhd[:, 2:, 1:]
+        + xkmhd[:, 2:, :-1]
+        + xkmhd[:, 1:-1, :-1]
+    )
+    ratio_u_s = (
+        msfuy[1:-1, 1:-1] + msfuy[:-2, 1:-1]
+    ) / (msfux[1:-1, 1:-1] + msfux[:-2, 1:-1])
+    ratio_u_n = (
+        msfuy[1:-1, 1:-1] + msfuy[2:, 1:-1]
+    ) / (msfux[1:-1, 1:-1] + msfux[2:, 1:-1])
+    mkrdym_u = ratio_u_s[None, :, :] * mass_u_s * k_u_s * rdy
+    mkrdyp_u = ratio_u_n[None, :, :] * mass_u_n * k_u_n * rdy
+    mrdy_u = (msfux * msfuy)[None, 1:-1, 1:-1] * rdy
+    u_owned = mrdx_u * (
+        mkrdxp_u * (u[:, 1:-1, 2:] - u0)
+        - mkrdxm_u * (u0 - u[:, 1:-1, :-2])
+    ) + mrdy_u * (
+        mkrdyp_u * (u[:, 2:, 1:-1] - u0)
+        - mkrdym_u * (u0 - u[:, :-2, 1:-1])
+    )
+    du = jnp.zeros_like(u).at[:, 1:-1, 1:-1].set(u_owned)
+
+    # V target: k=all mass levels, j-face=1:ny-1, i=1:nx-2.
+    v0 = v[:, 1:-1, 1:-1]
+    mass_v_w = 0.25 * (
+        mass_h[:, 1:, 1:-1]
+        + mass_h[:, :-1, 1:-1]
+        + mass_h[:, :-1, :-2]
+        + mass_h[:, 1:, :-2]
+    )
+    mass_v_e = 0.25 * (
+        mass_h[:, 1:, 1:-1]
+        + mass_h[:, :-1, 1:-1]
+        + mass_h[:, :-1, 2:]
+        + mass_h[:, 1:, 2:]
+    )
+    k_v_w = 0.25 * (
+        xkmhd[:, 1:, 1:-1]
+        + xkmhd[:, :-1, 1:-1]
+        + xkmhd[:, :-1, :-2]
+        + xkmhd[:, 1:, :-2]
+    )
+    k_v_e = 0.25 * (
+        xkmhd[:, 1:, 1:-1]
+        + xkmhd[:, :-1, 1:-1]
+        + xkmhd[:, :-1, 2:]
+        + xkmhd[:, 1:, 2:]
+    )
+    ratio_v_w = (
+        msfvx[1:-1, 1:-1] + msfvx[1:-1, :-2]
+    ) / (msfvy[1:-1, 1:-1] + msfvy[1:-1, :-2])
+    ratio_v_e = (
+        msfvx[1:-1, 1:-1] + msfvx[1:-1, 2:]
+    ) / (msfvy[1:-1, 1:-1] + msfvy[1:-1, 2:])
+    mkrdxm_v = ratio_v_w[None, :, :] * mass_v_w * k_v_w * rdx
+    mkrdxp_v = ratio_v_e[None, :, :] * mass_v_e * k_v_e * rdx
+    mrdx_v = (msfvx * msfvy)[None, 1:-1, 1:-1] * rdx
+    ratio_m = msfty / msftx
+    mkrdym_v = ratio_m[None, :-1, 1:-1] * xkmhd[:, :-1, 1:-1] * rdy
+    mkrdyp_v = ratio_m[None, 1:, 1:-1] * xkmhd[:, 1:, 1:-1] * rdy
+    mrdy_v = (msfvx * msfvy)[None, 1:-1, 1:-1] * rdy
+    v_owned = mrdx_v * (
+        mkrdxp_v * (v[:, 1:-1, 2:] - v0)
+        - mkrdxm_v * (v0 - v[:, 1:-1, :-2])
+    ) + mrdy_v * (
+        mkrdyp_v * (v[:, 2:, 1:-1] - v0)
+        - mkrdym_v * (v0 - v[:, :-2, 1:-1])
+    )
+    dv = jnp.zeros_like(v).at[:, 1:-1, 1:-1].set(v_owned)
+
+    # W target: k-face=1:nz-1 and mass-interior horizontal columns.
+    mass_f = c1f[:, None, None] * mut[None, :, :] + c2f[:, None, None]
+    w0 = w[1:-1, 1:-1, 1:-1]
+    mass_w_c = mass_f[1:-1, 1:-1, 1:-1]
+    mass_w_w = mass_f[1:-1, 1:-1, :-2]
+    mass_w_e = mass_f[1:-1, 1:-1, 2:]
+    mass_w_s = mass_f[1:-1, :-2, 1:-1]
+    mass_w_n = mass_f[1:-1, 2:, 1:-1]
+    k_w_xm = 0.25 * (
+        xkmhd[1:, 1:-1, 1:-1]
+        + xkmhd[1:, 1:-1, :-2]
+        + xkmhd[:-1, 1:-1, 1:-1]
+        + xkmhd[:-1, 1:-1, :-2]
+    )
+    k_w_xp = 0.25 * (
+        xkmhd[1:, 1:-1, 2:]
+        + xkmhd[1:, 1:-1, 1:-1]
+        + xkmhd[:-1, 1:-1, 2:]
+        + xkmhd[:-1, 1:-1, 1:-1]
+    )
+    k_w_ym = 0.25 * (
+        xkmhd[1:, 1:-1, 1:-1]
+        + xkmhd[1:, :-2, 1:-1]
+        + xkmhd[:-1, 1:-1, 1:-1]
+        + xkmhd[:-1, :-2, 1:-1]
+    )
+    k_w_yp = 0.25 * (
+        xkmhd[1:, 2:, 1:-1]
+        + xkmhd[1:, 1:-1, 1:-1]
+        + xkmhd[:-1, 2:, 1:-1]
+        + xkmhd[:-1, 1:-1, 1:-1]
+    )
+    mkrdxm_w = (
+        (msfux / msfuy)[None, 1:-1, 1:-2]
+        * (0.5 * (mass_w_c + mass_w_w))
+        * k_w_xm
+        * rdx
+    )
+    mkrdxp_w = (
+        (msfux / msfuy)[None, 1:-1, 2:-1]
+        * (0.5 * (mass_w_e + mass_w_c))
+        * k_w_xp
+        * rdx
+    )
+    mrdx_w = (msftx * msfty)[None, 1:-1, 1:-1] * rdx
+    mkrdym_w = (
+        (msfvy / msfvx)[None, 1:-2, 1:-1]
+        * (0.5 * (mass_w_c + mass_w_s))
+        * k_w_ym
+        * rdy
+    )
+    mkrdyp_w = (
+        (msfvy / msfvx)[None, 2:-1, 1:-1]
+        * (0.5 * (mass_w_n + mass_w_c))
+        * k_w_yp
+        * rdy
+    )
+    mrdy_w = (msftx * msfty)[None, 1:-1, 1:-1] * rdy
+    w_owned = mrdx_w * (
+        mkrdxp_w * (w[1:-1, 1:-1, 2:] - w0)
+        - mkrdxm_w * (w0 - w[1:-1, 1:-1, :-2])
+    ) + mrdy_w * (
+        mkrdyp_w * (w[1:-1, 2:, 1:-1] - w0)
+        - mkrdym_w * (w0 - w[1:-1, :-2, 1:-1])
+    )
+    dw = jnp.zeros_like(w).at[1:-1, 1:-1, 1:-1].set(w_owned)
     return du, dv, dw
 
 
@@ -1736,6 +2329,7 @@ def tke_rhs_tendency(
 
 __all__ = [
     "sixth_order_diffusion_tendency",
+    "wrf_sixth_order_scalar_tendf",
     "constant_k_diffusion_tendency",
     "conservative_constant_k_diffusion_tendency",
     "constant_k_deformation_momentum_tendency",
@@ -1745,6 +2339,7 @@ __all__ = [
     "PRANDTL",
     "C_S_DEFAULT",
     "horizontal_deformation_2d",
+    "wrf_nonperiodic_diffusion_metrics",
     "smag2d_horizontal_km",
     "dry_brunt_vaisala_squared",
     "smag3d_km",
@@ -1753,4 +2348,5 @@ __all__ = [
     "tke_rhs_tendency",
     "horizontal_diffusion_coord_scalar_tendency",
     "horizontal_diffusion_coord_momentum_tendency",
+    "wrf_nested_horizontal_diffusion_momentum_tendency",
 ]

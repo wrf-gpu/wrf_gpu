@@ -120,7 +120,7 @@ pairings are rejected by the namelist check; see <a href="namelist.html">Namelis
 <thead><tr><th>Selection</th><th>Scheme</th><th>Status</th></tr></thead>
 <tbody>
 <tr><td><code>ra_lw=0</code> / <code>ra_sw=0</code></td><td>Radiation disabled</td><td><span class="pill op">Operational</span></td></tr>
-<tr><td><code>ra_lw=4</code> / <code>ra_sw=4</code></td><td><strong>RRTMG</strong> LW + SW, with topographic shading (<code>topo_shading=1</code>) and slope-corrected surface radiation (<code>slope_rad=1</code>)</td><td><span class="pill op">Operational</span></td></tr>
+<tr><td><code>ra_lw=4</code> / <code>ra_sw=4</code></td><td><strong>RRTMG</strong> LW + SW. Nested caveat: cadence is fixed at 30 minutes and <code>topo_shading</code>/<code>slope_rad</code> currently bind disabled.</td><td><span class="pill op">Operational with disclosed nested limits</span></td></tr>
 <tr><td><code>ra_sw=1</code></td><td>Dudhia short-wave</td><td><span class="pill op">Operational</span></td></tr>
 <tr><td><code>ra_sw=2</code></td><td>GSFC / Chou-Suarez short-wave</td><td><span class="pill op">Operational</span></td></tr>
 <tr><td><code>ra_lw=1</code></td><td>Classic RRTM long-wave</td><td><span class="pill op">Operational</span></td></tr>

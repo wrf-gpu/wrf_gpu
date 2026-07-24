@@ -53,6 +53,7 @@ import numpy as np
 
 from gpuwrf.physics.thompson_column import (
     _air_properties,
+    _balance_ice_number,
     _clamp_rain_number,
     _fall_speeds,
     _graupel_distribution,
@@ -1088,7 +1089,11 @@ def _sedimentation_aero(state: ThompsonAeroColumnState, dt: float, aero: Thompso
 
     Nr_sed = _clamp_rain_number(state.qr, state.Nr, rho)
     qr, Nr, ppt_rain = _sed_one_species(state.qr, Nr_sed, vt_r_mass, vt_r_num, dz, rho, dt, nstep_r)
-    qi, Ni, ppt_ice = _sed_one_species(state.qi, state.Ni, vt_i_mass, vt_i_num, dz, rho, dt, nstep_i)
+    # Same WRF working-number discipline as mp=8 (see _balance_ice_number): the
+    # size-balanced ice number is what the fall speeds above were built from and
+    # what the upwind flux advects.
+    Ni_sed = _balance_ice_number(state.qi, state.Ni, rho)
+    qi, Ni, ppt_ice = _sed_one_species(state.qi, Ni_sed, vt_i_mass, vt_i_num, dz, rho, dt, nstep_i)
     qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt, nstep_s)
     qg, Ng, ppt_graupel = _sed_one_species(state.qg, state.Ng, vt_g_mass, vt_g_num, dz, rho, dt, nstep_g)
 

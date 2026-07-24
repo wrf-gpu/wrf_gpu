@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Version History — wrf_gpu User's Guide</title>
-  <meta name="description" content="Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.23 batched-ensemble release.">
+  <meta name="description" content="Release-by-release history of wrf_gpu from the fp64 kernel line through the v0.23.4 nine-nest correctness release.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" type="image/svg+xml" href="_assets/logo.svg">
   <link rel="stylesheet" href="_assets/style.css">
@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.2</span>
+          <span class="brand-sub">User's Guide · v0.23.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -56,7 +56,8 @@
 <div class="group-title">Reference</div>
 <a class="active" href="version-history.html">Version History</a>
 <div class="subnav">
-<a href="version-history.html#current">v0.23 line — batched-ensemble throughput &amp; usability</a>
+<a href="version-history.html#current">v0.23.4 candidate — nine-nest correctness closure, d03 performance regression understood</a>
+<a href="version-history.html#v023">v0.23 line — batched-ensemble throughput &amp; usability</a>
 <a href="version-history.html#v022">v0.22 line — nested wall-clock &amp; features</a>
 <a href="version-history.html#v021">v0.21 line — stability + compile-cache speed</a>
 <a href="version-history.html#v020">v0.20 line — correctness, capability, fp32</a>
@@ -71,9 +72,9 @@
         <div class="breadcrumb"><a href="index.html">User's Guide</a> › Reference › Version History</div>
         <h1>Version History</h1>
 
-<p class="lead">A release-by-release summary. Because <code>stability &gt; identity</code> is the top
-priority, the default (fp64, no-env) forecast stays byte-identical or numerically equivalent across
-releases unless a change is proven value-preserving. Full per-release notes live in the
+<p class="lead">A release-by-release summary. <code>stability &gt; identity</code> is the top
+priority, but a proven correctness repair may intentionally change results and require a
+rebaseline, as v0.23.4 does. Full per-release notes live in the
 <code>release_notes/</code> folder of the repository.</p>
 
 <div class="admon note">
@@ -84,11 +85,22 @@ releases unless a change is proven value-preserving. Full per-release notes live
   <strong>opt-in</strong> and inert by default.</p>
 </div>
 
-<h2 id="current">v0.23 line — batched-ensemble throughput &amp; usability<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
+<h2 id="current">v0.23.4 candidate — nine-nest correctness closure, d03 performance regression understood<a class="headerlink" href="#current" aria-label="Permalink">¶</a></h2>
 <div class="table-scroll">
 <table>
 <thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
 <tbody>
+<tr><td><strong>v0.23.4 candidate (prepared)</strong></td><td><strong>Correctness-complete; d03 performance regression measured, root-caused, investigation closed.</strong> Closes the SP2 mass-flux seam, S2 boundary retention, V/V10 moist/scalar ordering, and Thompson late-Ni balance in one linear chain. The one-hour all-physics d01-d09 replay lands 27/27 outputs, all 177,497,511 numeric values finite, and 9 × 102 fields within the frozen gates. Dispatch-level scalar batching is validated for <strong>2-domain (d01+d02): no measured regression (0.960–1.018×)</strong>. <strong>3-domain/9-domain configurations using d03 carry a real 51.67% regression</strong> vs v0.23.3. Every quick-fix candidate (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll substitution) was falsified or rejected with evidence; a Nsight Compute hardware measurement confirmed the kernel is occupancy/latency-bound, not bandwidth-bound (DRAM 20.3% of peak, occupancy 15.6%), identifying concurrent sibling-domain scheduling as the mapped next lever (design-scoped, unimplemented). Ships as a known, understood limitation. Fixed 30-minute nested radiation cadence remains disclosed.</td><td>Intentional WRF-fidelity corrections; d01/d02 performance-neutral, d03 correct but slower; rebaseline ice-sensitive trajectories</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="v023">v0.23 line — batched-ensemble throughput &amp; usability<a class="headerlink" href="#v023" aria-label="Permalink">¶</a></h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Version</th><th>Highlights</th><th>Default numerics</th></tr></thead>
+<tbody>
+<tr><td><strong>v0.23.3</strong></td><td><strong><code>cuda_async</code> preflight reliability fix.</strong> A verified lock-held allocator pool is advisory rather than a false low-VRAM failure; unlocked checks still fail closed.</td><td>No dynamics/physics change</td></tr>
 <tr><td><strong>v0.23.2</strong></td><td><strong>Batched-ensemble distinct-init CLI ergonomics.</strong> <code>GPUWRF_BATCH_INPUT_DIRS</code> now accepts a <strong>comma</strong>-separated list of the B distinct-day input dirs (the old <code>:</code>-only separator still works), with an actionable count-mismatch error. Fixes an operational fallback where a natural comma list parsed as one dir. Documents the <a href="performance.html#batched-ensemble-distinct-init">distinct-init contract</a> (nested one-way, exactly B same-geometry dirs). No dynamics/physics change; the batched math is unchanged.</td><td>Numerically identical to v0.23.1</td></tr>
 <tr><td><strong>v0.23.1</strong></td><td><strong>Usability &amp; AI-native onboarding.</strong> A full HTML <a href="index.html">User's Guide</a>; an <a href="ai-quickstart.html">AI operator skill</a> (<code>AI_OPERATOR.md</code> + a Claude Code skill) so an agent can run a case for you; and WRF-parity CLI ergonomics — forecast length and root domain now default from <code>namelist.input</code> when the flags are omitted, plus a <code>namelist-support</code> subcommand and a <code>--dry-run</code> preflight. No dycore/physics change.</td><td>Numerically identical to v0.23.0</td></tr>
 <tr><td>v0.23.0</td><td>Opt-in <a href="performance.html#batched-ensemble">batched ensemble</a> (<code>GPUWRF_BATCH_ENSEMBLE=B</code>) fills the launch-bound small-grid GPU (Tenerife 3/1 km reaches ~97 % of the large-grid ceiling at B=4). Value-preserving default-path work reductions (P0 radiation flux-slice, P3 flat-2-dom fusion). Extended physics — New-Tiedtke cumulus + Morrison-aerosol ported; NSSL / CAM-UW / urban / lake reference-only; moving nests opt-in. fp32 foundation laid (separate milestone).</td><td>Numerically equivalent to v0.22.2</td></tr>

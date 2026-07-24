@@ -103,7 +103,7 @@ Live context + sub-agent reviews are NOT durable. Keeping the goal, sprints, and
 
 **Identity plots + run-data retention (principal 2026-06-16):** every LARGER validation run (72h field-parity gates, coupled-family gates, big benchmarks) must **retain its paired GPU+CPU wrfout + proof data** so identity-proof dashboards are buildable later — and **generate the identity dashboard at the time** where feasible (`scripts/build_identity_proof_plots.py`, CPU-only). The v0.17 README could not build a needed plot because that run's data was not retained — do not repeat. **Every release's README refresh (a dedicated cleanup+refresh worker) MUST update + include ALL current identity plots for the larger runs** — never ship stale or missing plots.
 
-## Version & remote sync (MANDATORY — Enric 2026-06-21)
+## Version & remote sync (MANDATORY — owner-directed 2026-06-21)
 The **local checkout, the local-project git (`origin`, private), and the organization git
 (`wrfgpu`, public) must ALWAYS carry the SAME version** and be kept in sync, documented in
 CHANGELOG / RELEASE_NOTES + the ledger. After EVERY release/tag:

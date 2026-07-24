@@ -24,8 +24,13 @@ jax.config.update("jax_enable_x64", True)
 from gpuwrf.contracts.noahmp_state import NSNOW, NSOIL, NoahMPLandState, NoahMPStatic
 from gpuwrf.config.paths import wrf_run_dir
 from gpuwrf.physics.noahmp.tables import load_noahmp_parameters
-from gpuwrf.physics.noahmp_coupler import RVOVRD, assemble_noahmp_forcing, noahmp_surface_adapter
-from gpuwrf.physics.surface_constants import P0_PA, R_D_OVER_CP
+from gpuwrf.physics.noahmp_coupler import (
+    RVOVRD,
+    _mynn_pbl_surface_density,
+    assemble_noahmp_forcing,
+    noahmp_surface_adapter,
+)
+from gpuwrf.physics.surface_constants import P0_PA, P608, R_D, R_D_OVER_CP
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
 TABLE_DIR = wrf_run_dir()
@@ -123,6 +128,25 @@ def _build():
     return state, land, static, _Rad(), _Clock()
 
 
+def test_mynn_pbl_density_is_the_exact_wrf_mean_solver_expression():
+    """Keep MYNN's PSFC/TK/QV density separate from sfclay's RHO3D."""
+
+    qv_mixing_ratio = jnp.asarray([[0.0125, 0.004]], dtype=jnp.float64)
+
+    class _Forcing:
+        psfc = jnp.asarray([[101325.0, 91234.0]], dtype=jnp.float64)
+        sfctmp = jnp.asarray([[299.25, 281.75]], dtype=jnp.float64)
+        qair = qv_mixing_ratio / (1.0 + qv_mixing_ratio)
+
+    expected = _Forcing.psfc / (
+        R_D * (_Forcing.sfctmp + P608 * qv_mixing_ratio)
+    )
+    np.testing.assert_array_equal(
+        np.asarray(_mynn_pbl_surface_density(_Forcing(), qv_mixing_ratio)),
+        np.asarray(expected),
+    )
+
+
 @pytest.mark.skipif(not HAVE_TABLES, reason="pristine WRF MPTABLE not available")
 def test_ocean_path_unchanged_and_land_blend():
     state, land, static, rad, clock = _build()
@@ -152,6 +176,18 @@ def test_ocean_path_unchanged_and_land_blend():
                                np.asarray(sf_ref.ustar).reshape(-1), rtol=0, atol=1e-12)
     np.testing.assert_allclose(np.asarray(blended.tau_u).reshape(-1),
                                np.asarray(sf_ref.tau_u).reshape(-1), rtol=0, atol=1e-12)
+
+    # WRF MYNN recomputes its mean-tendency boundary density from PSFC/T/QV
+    # (module_bl_mynnedmf.F90:3960), independently of the RHO3D value sfclay
+    # used to construct the kinematic fluxes.  The water-flux equalities above
+    # prove that the conversion still uses RHO3D; this checks the distinct PBL
+    # handoff value.
+    forcing = assemble_noahmp_forcing(state, static, rad, clock, 90.0)
+    expected_pbl_density = np.asarray(
+        forcing.psfc / (R_D * (forcing.sfctmp + P608 * forcing.qair))
+    )
+    np.testing.assert_array_equal(np.asarray(blended.rhosfc), expected_pbl_density)
+    assert not np.array_equal(np.asarray(blended.rhosfc), np.asarray(sf_ref.rhosfc))
 
     # 3. LAND blend differs from the sfclay water-baseline on the land columns
     #    (Noah-MP HFX replaced the sfclay HFX there).

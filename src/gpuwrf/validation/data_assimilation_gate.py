@@ -212,7 +212,7 @@ def run_gate(*, output: str | Path | None = None) -> dict[str, Any]:
         "schema_version": 1,
         "verdict": "PASS" if pass_gate else "FAIL",
         "wrf_reference": {
-            "root": "<DATA_ROOT>/src/wrf_pristine",
+            "root": "<USER_HOME>/src/wrf_pristine",
             "fdda_driver": "WRF/phys/module_fddagd_driver.F::fddagd_driver",
             "analysis_nudging": "WRF/phys/module_fdda_psufddagd.F::fddagd",
             "spectral_nudging": "WRF/phys/module_fdda_spnudging.F::spectral_nudging",

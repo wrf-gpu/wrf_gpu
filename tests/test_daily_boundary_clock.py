@@ -146,6 +146,7 @@ def _boundary_case(run_dir: Path, hours: int) -> DailyCase:
         namelist=namelist,
         run_start=datetime(2026, 5, 21, 18, tzinfo=timezone.utc),
         metadata={"run_id": "lbc-clock-proof", "run_dir": str(run_dir), "source": "synthetic"},
+        writer_domain_authority=base.writer_domain_authority,
     )
 
 

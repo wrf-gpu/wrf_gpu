@@ -212,7 +212,7 @@ def run_gate(*, output: str | Path | None = None) -> dict[str, Any]:
         "schema_version": 1,
         "verdict": "PASS" if pass_gate else "FAIL",
         "wrf_reference": {
-            "root": "<DATA_ROOT>/src/wrf_pristine",
+            "root": "<USER_HOME>/src/wrf_pristine",
             "moving_driver": "WRF/share/mediation_nest_move.F::med_nest_move/time_for_move2",
             "state_shift": "WRF/dyn_em/shift_domain_em.F::shift_domain_em",
             "domain_dims": "WRF/frame/module_domain.F::adjust_domain_dims_for_move",

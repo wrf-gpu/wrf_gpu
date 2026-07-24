@@ -7,11 +7,13 @@ changes only the wall-clock timing of the NetCDF write, not its content.
 """
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 import threading
 
 import numpy as np
+import pytest
 from netCDF4 import Dataset
 
 import gpuwrf.io.async_wrfout as async_wrfout
@@ -22,7 +24,7 @@ from gpuwrf.io.wrfout_writer import (
     write_wrfout_netcdf,
 )
 
-from test_m7_netcdf_writer import synthetic_case
+from test_m7_netcdf_writer import synthetic_case, writer_authority
 
 
 def _write_sync(tmp_path: Path, name: str):
@@ -30,6 +32,7 @@ def _write_sync(tmp_path: Path, name: str):
     path = tmp_path / name
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18),
     )
@@ -42,10 +45,14 @@ def _write_async(tmp_path: Path, name: str):
     with AsyncWrfoutWriter(max_pending=2) as writer:
         prepared = prepare_wrfout_payload(
             state, grid, namelist, path,
+            domain="d02", domain_authority=writer_authority(grid),
             valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
             run_start=datetime(2026, 5, 25, 18),
         )
-        writer.submit(prepared)
+        writer.submit(
+            prepared, expected_domain="d02",
+            expected_domain_authority=prepared.domain_authority,
+        )
         # leaving the context joins/flushes the background write
     return path
 
@@ -102,12 +109,16 @@ def test_async_writer_overlaps_next_compute_step(monkeypatch, tmp_path: Path):
     state, grid, namelist = synthetic_case()
     prepared = prepare_wrfout_payload(
         state, grid, namelist, tmp_path / "async.nc",
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18),
     )
 
     with AsyncWrfoutWriter(max_pending=2) as writer:
-        writer.submit(prepared)
+        writer.submit(
+            prepared, expected_domain="d02",
+            expected_domain_authority=prepared.domain_authority,
+        )
         assert write_started.wait(timeout=2.0)
         with events_lock:
             events.append(("compute_step", threading.get_ident()))
@@ -128,10 +139,14 @@ def test_async_writer_multiple_hours_ordering(tmp_path: Path):
             path = tmp_path / f"wrfout_h{hour}.nc"
             prepared = prepare_wrfout_payload(
                 state, grid, namelist, path,
+                domain="d02", domain_authority=writer_authority(grid),
                 valid_time=datetime(2026, 5, 25, 18 + hour), lead_hours=float(hour),
                 run_start=datetime(2026, 5, 25, 18),
             )
-            writer.submit(prepared)
+            writer.submit(
+                prepared, expected_domain="d02",
+                expected_domain_authority=prepared.domain_authority,
+            )
             paths.append(path)
     for path in paths:
         assert path.exists(), f"{path} not written after join"
@@ -152,10 +167,56 @@ def test_async_writer_surfaces_write_error(tmp_path: Path):
         with AsyncWrfoutWriter(max_pending=2) as writer:
             prepared = prepare_wrfout_payload(
                 state, grid, namelist, bad_path,
+                domain="d02", domain_authority=writer_authority(grid),
                 valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
                 run_start=datetime(2026, 5, 25, 18),
             )
-            writer.submit(prepared)
+            writer.submit(
+                prepared, expected_domain="d02",
+                expected_domain_authority=prepared.domain_authority,
+            )
     except (OSError, RuntimeError, Exception):  # noqa: BLE001
         raised = True
     assert raised, "writer error was not surfaced at join"
+
+
+def test_async_writer_rejects_fully_rehashed_prepared_cosubstitution(tmp_path: Path):
+    state, grid, namelist = synthetic_case()
+    original = writer_authority(grid, "d02")
+    prepared = prepare_wrfout_payload(
+        state, grid, namelist, tmp_path / "async-cosub.nc",
+        domain="d02", domain_authority=original,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18),
+    )
+    substituted = replace(
+        prepared, domain="d03", domain_authority=writer_authority(grid, "d03")
+    )
+    writer = AsyncWrfoutWriter(max_pending=1)
+    writer.submit(
+        substituted, expected_domain="d02", expected_domain_authority=original
+    )
+    with pytest.raises(ValueError, match="WRFOUT_PREPARED_AUTHORITY_SUBSTITUTION"):
+        writer.join()
+    assert not (tmp_path / "async-cosub.nc").exists()
+
+
+def test_async_writer_rejects_existing_target_without_truncation(tmp_path: Path):
+    state, grid, namelist = synthetic_case()
+    target = tmp_path / "async-existing.nc"
+    with Dataset(target, "w") as dataset:
+        dataset.setncattr("GRID_ID", np.int32(2))
+        dataset.setncattr("SENTINEL", "async-preserve")
+    before = target.read_bytes()
+    authority = writer_authority(grid, "d02")
+    prepared = prepare_wrfout_payload(
+        state, grid, namelist, target,
+        domain="d02", domain_authority=authority,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18),
+    )
+    writer = AsyncWrfoutWriter(max_pending=1)
+    writer.submit(prepared, expected_domain="d02", expected_domain_authority=authority)
+    with pytest.raises(FileExistsError, match="WRFOUT_TARGET_EXISTS"):
+        writer.join()
+    assert target.read_bytes() == before

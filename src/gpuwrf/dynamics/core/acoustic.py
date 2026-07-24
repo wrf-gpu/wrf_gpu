@@ -17,7 +17,7 @@ from __future__ import annotations
 from gpuwrf._x64_config import configure_jax_x64
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, NamedTuple
 
 import jax
 from jax import config
@@ -38,9 +38,14 @@ from gpuwrf.coupling.boundary_apply import (
     DEFAULT_BOUNDARY_CONFIG,
     apply_normal_bdy_work,
     spec_bdyupdate_ph_inloop,
+    spec_bdyupdate_ph_tendency_inloop,
 )
 from gpuwrf.dynamics.core.calc_p_rho import calc_p_rho_step
-from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
+from gpuwrf.dynamics.mu_t_advance import (
+    AdvanceMuTInputs,
+    advance_mu_t_wrf,
+    advance_mu_t_wrf_observed,
+)
 from gpuwrf.dynamics.tridiag_solve import thomas_solve_scan
 
 
@@ -101,6 +106,10 @@ class AcousticCoreConfig:
     specified: bool = False
     nested: bool = False
     normal_bdy_relax_strength: float | None = None
+    # Static internal projection of BoundaryConfig's single opt-in nested
+    # bundle.  It removes the released moving-residual relax rows while keeping
+    # WRF-owned ring-0 pins and selects single-owner corner scatters.
+    nested_frozen_wrf_boundary_bundle: bool = False
     # v0.14 SPECIFIED WRF cadence: apply WRF ``zero_grad_bdy`` to the w work
     # array's spec zone after advance_w every substep (solve_em.F:1601-1607,
     # specified domains copy the nearest interior w into the ring; nested uses
@@ -231,15 +240,14 @@ class AcousticCoreState:
     # there is no multi-substep rectification to expose).
     php_stage: jax.Array | None = None
     # v0.14 SPECIFIED-domain WRF cadence (stage3/wrapper sprint): in-loop
-    # spec-zone (ring-0) pins applied AFTER advance_mu_t every acoustic substep
+    # spec-zone (ring-0) updates applied AFTER advance_mu_t every acoustic substep
     # (WRF spec_bdyupdate for t_2/mu_2/muts, solve_em.F:1462-1490; WRF's
     # advance_mu_t excludes the ring, then the spec update walks it along the
-    # wrfbdy trajectory).  Targets are the STAGE-END interpolated leaf values in
-    # each array's own work convention:
-    #   mu_spec_target     physical mu' carry pin (= leaf mu')
-    #   muts_spec_target   mub + leaf mu'
-    #   muave_spec_target  pinned mu work delta (muts_pin - mut)
-    #   theta_spec_target  coupled work theta pin (mass_pin*theta'_t - mass_cur*t_save)
+    # wrfbdy trajectory).  Released SPECIFIED callers retain their historical
+    # stage-end absolute targets in each array's work convention.  The
+    # nested frozen bundle reuses these internal leaves for exact coupled record
+    # TENDENCIES: mu/muts receive dts*mu_bt, theta receives dts*t_bt, and muave
+    # is deliberately untouched (pristine solve_em has no spec update for it).
     # All None unless the specified WRF-cadence flag is on -> every other path
     # is byte-for-byte unchanged.
     mu_spec_target: jax.Array | None = None
@@ -252,6 +260,9 @@ class AcousticCoreState:
     # the y-side rows own the corners (WRF b_limit convention).
     u_spec_tan_target: jax.Array | None = None
     v_spec_tan_target: jax.Array | None = None
+    # Nested-only ring-0 vertical-momentum boundary tendency.  None preserves
+    # specified zero-gradient and every released non-candidate path.
+    w_spec_target: jax.Array | None = None
 
     @classmethod
     def from_mapping(cls, values: dict[str, object]) -> "AcousticCoreState":
@@ -376,8 +387,38 @@ def advance_mu_t_core(state: AcousticCoreState, cfg: AcousticCoreConfig) -> dict
     return advance_mu_t_wrf(_advance_inputs(state, cfg))
 
 
+def _advance_mu_t_core_observed(
+    state: AcousticCoreState, cfg: AcousticCoreConfig,
+) -> dict[str, jax.Array]:
+    """Static recording-only mass primitive; ordinary callers never trace it."""
+
+    return advance_mu_t_wrf_observed(_advance_inputs(state, cfg))
+
+
 def _optional_or(value: jax.Array | None, default: jax.Array) -> jax.Array:
     return default if value is None else jnp.asarray(value, dtype=default.dtype)
+
+
+def _pin_spec_ring_wrf_owned(
+    field: jax.Array, target: jax.Array, *, spec_zone: int
+) -> jax.Array:
+    """Pin a WRF spec ring exactly once, with S/N owning the corners."""
+
+    out = field
+    y_len = int(field.shape[-2])
+    x_len = int(field.shape[-1])
+    for b in range(int(spec_zone)):
+        # share/module_bc.F spec_bdyupdate: Y sides cover the full staggered
+        # x extent; X sides trim b+1 tangential rows at each end.
+        out = out.at[..., b, :].set(target[..., b, :])
+        out = out.at[..., y_len - 1 - b, :].set(target[..., y_len - 1 - b, :])
+        start = b + 1
+        end = y_len - b - 1
+        out = out.at[..., start:end, b].set(target[..., start:end, b])
+        out = out.at[..., start:end, x_len - 1 - b].set(
+            target[..., start:end, x_len - 1 - b]
+        )
+    return out
 
 
 def _specified_w_zero_grad_work(
@@ -623,6 +664,22 @@ def _y_face_pressure_dpn(state: AcousticCoreState, top_lid: bool) -> jax.Array:
     return jnp.concatenate([bottom[None, :, :], interior, top[None, :, :]], axis=0)
 
 
+class AdvanceUvObservation(NamedTuple):
+    """Actual large-step and small-step PGF operands/results for one UV call."""
+
+    pre_u: jax.Array
+    pre_v: jax.Array
+    large_u_tend: jax.Array
+    large_v_tend: jax.Array
+    pre_p: jax.Array
+    pre_al: jax.Array
+    pre_ph: jax.Array
+    small_dpx: jax.Array
+    small_dpy: jax.Array
+    post_u: jax.Array
+    post_v: jax.Array
+
+
 def advance_uv_wrf(
     state: AcousticCoreState,
     prep: object | None = None,
@@ -635,7 +692,11 @@ def advance_uv_wrf(
     emdiv: float = 0.0,
     dt_full: float | None = None,
     normal_bdy_relax_strength: float | None = None,
-) -> AcousticCoreState:
+    normal_bdy_relax_rows: bool = True,
+    wrf_single_owner: bool = False,
+    spec_zone: int = int(DEFAULT_BOUNDARY_CONFIG.spec_zone),
+    observe_uv_primitive: bool = False,
+) -> AcousticCoreState | tuple[AcousticCoreState, AdvanceUvObservation]:
     """Advance coupled perturbation ``u/v`` like WRF ``advance_uv``.
 
     Source: WRF ``dyn_em/module_small_step_em.F:654-942``.  The routine adds
@@ -651,10 +712,27 @@ def advance_uv_wrf(
     dts = 0.0 if dts_rk is None else float(dts_rk)
     u_tend = state.u_tend if state.u_tend is not None else getattr(large_step_tend, "u", None)
     v_tend = state.v_tend if state.v_tend is not None else getattr(large_step_tend, "v", None)
-    u = state.u + dts * _optional_or(u_tend, jnp.zeros_like(state.u))
-    v = state.v + dts * _optional_or(v_tend, jnp.zeros_like(state.v))
+    u_tend_value = _optional_or(u_tend, jnp.zeros_like(state.u))
+    v_tend_value = _optional_or(v_tend, jnp.zeros_like(state.v))
+    u = state.u + dts * u_tend_value
+    v = state.v + dts * v_tend_value
     if state.p_base is None or state.ph_base is None or state.al is None or state.alt is None:
-        return state.replace(u=u, v=v)
+        result = state.replace(u=u, v=v)
+        if bool(observe_uv_primitive):
+            return result, AdvanceUvObservation(
+                pre_u=state.u,
+                pre_v=state.v,
+                large_u_tend=u_tend_value,
+                large_v_tend=v_tend_value,
+                pre_p=state.p,
+                pre_al=jnp.zeros_like(state.p),
+                pre_ph=state.ph,
+                small_dpx=jnp.zeros_like(state.u),
+                small_dpy=jnp.zeros_like(state.v),
+                post_u=result.u,
+                post_v=result.v,
+            )
+        return result
 
     # v0.20 S2 intrinsic fp64-island lock: the horizontal PGF brackets below take
     # differences of large nearly-equal pressure / geopotential columns (p, ph,
@@ -762,12 +840,30 @@ def advance_uv_wrf(
     # no boundary target is staged (idealized/oracle/bare-core), so those paths and
     # the idealized dycore gates are byte-for-byte unaffected.
     if state.u_work_bdy is not None and state.v_work_bdy is not None:
-        u, v = apply_normal_bdy_work(
-            u, v, state.u_work_bdy, state.v_work_bdy,
-            dts, float(dt_full) if dt_full is not None else dts,
-            config=DEFAULT_BOUNDARY_CONFIG,
-            relax_strength=normal_bdy_relax_strength,
-        )
+        if bool(wrf_single_owner):
+            # Exact live-nest cadence: advance_uv excludes the complete spec
+            # ring, then spec_bdyupdate advances the PRE-SUBSTEP work value by
+            # dts*ru/rv boundary tendency.  The staged arrays are already the
+            # coupled WRF record tendencies and cover normal + tangential sides.
+            u = _pin_spec_ring_wrf_owned(
+                u,
+                state.u + dts * state.u_work_bdy,
+                spec_zone=int(spec_zone),
+            )
+            v = _pin_spec_ring_wrf_owned(
+                v,
+                state.v + dts * state.v_work_bdy,
+                spec_zone=int(spec_zone),
+            )
+        else:
+            u, v = apply_normal_bdy_work(
+                u, v, state.u_work_bdy, state.v_work_bdy,
+                dts, float(dt_full) if dt_full is not None else dts,
+                config=DEFAULT_BOUNDARY_CONFIG,
+                relax_strength=normal_bdy_relax_strength,
+                relax_rows=normal_bdy_relax_rows,
+                wrf_single_owner=wrf_single_owner,
+            )
     # v0.14 SPECIFIED WRF cadence: ring-0 TANGENTIAL momentum pins (WRF
     # spec_bdyupdate(u,'u') y-side rows / spec_bdyupdate(v,'v') x-side columns,
     # solve_em.F:1346-1364 inside the small-step loop).  Applied AFTER the
@@ -783,7 +879,22 @@ def advance_uv_wrf(
             u = u.at[:, ny_u - 1 - b, :].set(state.u_spec_tan_target[:, ny_u - 1 - b, :])
             v = v.at[:, 1:-1, b].set(state.v_spec_tan_target[:, 1:-1, b])
             v = v.at[:, 1:-1, v.shape[2] - 1 - b].set(state.v_spec_tan_target[:, 1:-1, v.shape[2] - 1 - b])
-    return state.replace(u=u, v=v)
+    result = state.replace(u=u, v=v)
+    if bool(observe_uv_primitive):
+        return result, AdvanceUvObservation(
+            pre_u=state.u,
+            pre_v=state.v,
+            large_u_tend=u_tend_value,
+            large_v_tend=v_tend_value,
+            pre_p=state.p,
+            pre_al=state.al,
+            pre_ph=state.ph,
+            small_dpx=dpx,
+            small_dpy=dpy,
+            post_u=result.u,
+            post_v=result.v,
+        )
+    return result
 
 
 def w_solve_core(
@@ -834,6 +945,87 @@ def _decouple_theta_for_finish(state: AcousticCoreState, theta_mass: jax.Array, 
 _decouple_theta_after_advance = _decouple_theta_for_finish
 
 
+class MassPrimitiveObservation(NamedTuple):
+    """Actual pre/post-limiter leaves from one production advance_mu_t call."""
+
+    pre_uv_u: jax.Array
+    pre_uv_v: jax.Array
+    large_u_tend: jax.Array
+    large_v_tend: jax.Array
+    pre_p: jax.Array
+    pre_al: jax.Array
+    pre_ph: jax.Array
+    small_dpx: jax.Array
+    small_dpy: jax.Array
+    uv_u: jax.Array
+    uv_v: jax.Array
+    raw_dvdxi: jax.Array
+    raw_dmdt: jax.Array
+    raw_mu_tendency: jax.Array
+    mu_scale: jax.Array
+    limited_dvdxi: jax.Array
+    limited_dmdt: jax.Array
+    limited_mu_tendency: jax.Array
+    output_mudf: jax.Array
+    stage_mut: jax.Array
+    old_mu_work: jax.Array
+    old_muts: jax.Array
+    new_mu_work: jax.Array
+    new_muts: jax.Array
+    dts: jax.Array
+
+
+PHASE_TAP_SCRATCH_FIELDS = (
+    "t_2ave",
+    "ww",
+    "mudf",
+    "muave",
+    "muts",
+)
+PHASE_TAP_SUMMARY_METRICS = (
+    "nonfinite_count",
+    "first_nonfinite_flat_index",
+    "max_abs_finite",
+    "max_abs_finite_flat_index",
+)
+
+
+class AcousticPhaseTapSummary(NamedTuple):
+    """Bounded summaries at the two authorized acoustic phase boundaries."""
+
+    post_advance_mu_t: jax.Array
+    post_advance_w: jax.Array
+
+
+def _phase_tap_array_summary(value: jax.Array) -> jax.Array:
+    """Return four fp64 scalars without exposing the intermediate array."""
+
+    flat = jnp.ravel(jnp.asarray(value, dtype=jnp.float64))
+    finite = jnp.isfinite(flat)
+    nonfinite = jnp.logical_not(finite)
+    nonfinite_count = jnp.sum(nonfinite, dtype=jnp.int64)
+    first_nonfinite = jnp.where(nonfinite_count > 0, jnp.argmax(nonfinite), -1)
+    finite_abs = jnp.where(finite, jnp.abs(flat), -jnp.inf)
+    max_abs_index = jnp.argmax(finite_abs)
+    max_abs = finite_abs[max_abs_index]
+    return jnp.asarray(
+        (nonfinite_count, first_nonfinite, max_abs, max_abs_index),
+        dtype=jnp.float64,
+    )
+
+
+def _phase_tap_scratch_summary(state: AcousticCoreState) -> jax.Array:
+    """Summarize exactly the five first-bad output scratch families."""
+
+    return jnp.stack(
+        tuple(
+            _phase_tap_array_summary(getattr(state, name))
+            for name in PHASE_TAP_SCRATCH_FIELDS
+        ),
+        axis=0,
+    )
+
+
 def acoustic_substep_core(
     state: AcousticCoreState,
     *,
@@ -844,7 +1036,13 @@ def acoustic_substep_core(
     cqw: jax.Array | None = None,
     emdiv: float = 0.01,
     smdiv: float = 0.1,
-) -> AcousticCoreState:
+    observe_mass_primitive: bool = False,
+    capture_phase_tap: bool = False,
+) -> (
+    AcousticCoreState
+    | tuple[AcousticCoreState, MassPrimitiveObservation]
+    | tuple[AcousticCoreState, AcousticPhaseTapSummary]
+):
     """Compose one WRF-faithful acoustic substep.
 
     WRF cadence (``solve_em.F:3065-4206``): ``advance_uv`` -> ``advance_mu_t``
@@ -855,19 +1053,42 @@ def acoustic_substep_core(
     ``c2a``/``cqw``.
     """
 
+    if bool(observe_mass_primitive) and bool(capture_phase_tap):
+        raise ValueError("mass-primitive observation and phase tap are mutually exclusive")
+
     state = _maybe_exchange_sharded_acoustic_halos(state)
 
     # --- 1. advance_uv (with external-mode divergence damping) ---
-    uv_state = advance_uv_wrf(
-        state,
-        dts_rk=float(cfg.dt),
-        dx=float(cfg.dx),
-        dy=float(cfg.dy),
-        top_lid=bool(cfg.top_lid),
-        emdiv=float(emdiv),
-        dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
-        normal_bdy_relax_strength=cfg.normal_bdy_relax_strength,
-    )
+    uv_primitive = None
+    if bool(observe_mass_primitive):
+        uv_state, uv_primitive = advance_uv_wrf(
+            state,
+            dts_rk=float(cfg.dt),
+            dx=float(cfg.dx),
+            dy=float(cfg.dy),
+            top_lid=bool(cfg.top_lid),
+            emdiv=float(emdiv),
+            dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
+            normal_bdy_relax_strength=cfg.normal_bdy_relax_strength,
+            normal_bdy_relax_rows=not bool(cfg.nested_frozen_wrf_boundary_bundle),
+            wrf_single_owner=bool(cfg.nested_frozen_wrf_boundary_bundle),
+            spec_zone=int(cfg.spec_zone),
+            observe_uv_primitive=True,
+        )
+    else:
+        uv_state = advance_uv_wrf(
+            state,
+            dts_rk=float(cfg.dt),
+            dx=float(cfg.dx),
+            dy=float(cfg.dy),
+            top_lid=bool(cfg.top_lid),
+            emdiv=float(emdiv),
+            dt_full=(float(cfg.dt_full) if cfg.dt_full is not None else float(cfg.dt)),
+            normal_bdy_relax_strength=cfg.normal_bdy_relax_strength,
+            normal_bdy_relax_rows=not bool(cfg.nested_frozen_wrf_boundary_bundle),
+            wrf_single_owner=bool(cfg.nested_frozen_wrf_boundary_bundle),
+            spec_zone=int(cfg.spec_zone),
+        )
     uv_state = _maybe_exchange_sharded_acoustic_halos(uv_state)
 
     # --- 2. advance_mu_t (coupled theta + mu/muts/muave/mudf/ww) ---
@@ -884,35 +1105,95 @@ def acoustic_substep_core(
     # 1/acoustic_substeps).  Advance the carried ``theta_coupled_work`` instead so
     # the work theta accumulates across substeps exactly as WRF ``t_2``.
     coupled_state = uv_state.replace(theta=uv_state.theta_coupled_work)
-    advanced = advance_mu_t_core(coupled_state, cfg)
+    if bool(observe_mass_primitive):
+        advanced = _advance_mu_t_core_observed(coupled_state, cfg)
+    else:
+        advanced = advance_mu_t_core(coupled_state, cfg)
     theta_coupled = advanced["theta"]
     ww_new = advanced["ww"]
     muave_new = advanced["muave"]
     muts_new = advanced["muts"]
     mu_new = advanced["mu"]
     mudf_new = advanced["mudf"]
+    mass_observation = None
+    if bool(observe_mass_primitive):
+        assert uv_primitive is not None
+        old_mu_work = coupled_state.muts - coupled_state.mut
+        mass_observation = MassPrimitiveObservation(
+            pre_uv_u=uv_primitive.pre_u,
+            pre_uv_v=uv_primitive.pre_v,
+            large_u_tend=uv_primitive.large_u_tend,
+            large_v_tend=uv_primitive.large_v_tend,
+            pre_p=uv_primitive.pre_p,
+            pre_al=uv_primitive.pre_al,
+            pre_ph=uv_primitive.pre_ph,
+            small_dpx=uv_primitive.small_dpx,
+            small_dpy=uv_primitive.small_dpy,
+            uv_u=uv_state.u,
+            uv_v=uv_state.v,
+            raw_dvdxi=advanced["raw_dvdxi"],
+            raw_dmdt=advanced["raw_dmdt"],
+            raw_mu_tendency=advanced["raw_mu_tendency"],
+            mu_scale=advanced["mu_scale"],
+            limited_dvdxi=advanced["dvdxi"],
+            limited_dmdt=advanced["dmdt"],
+            limited_mu_tendency=advanced["limited_mu_tendency"],
+            output_mudf=advanced["mudf"],
+            stage_mut=coupled_state.mut,
+            old_mu_work=old_mu_work,
+            old_muts=coupled_state.muts,
+            new_mu_work=advanced["muts"] - coupled_state.mut,
+            new_muts=advanced["muts"],
+            dts=jnp.asarray(float(cfg.dt), dtype=coupled_state.mut.dtype),
+        )
 
-    # v0.14 SPECIFIED WRF cadence: spec-zone (ring-0) mass/theta pins (WRF
+    # v0.14 SPECIFIED WRF cadence: spec-zone (ring-0) mass/theta updates (WRF
     # spec_bdyupdate for t_2/mu_2/muts after advance_mu_t, solve_em.F:1462-1490;
     # WRF's advance_mu_t excludes the ring -- _advance_mu_t_specified_or_nested
     # already mirrors that -- and the spec update then walks the ring along the
-    # wrfbdy trajectory).  ``muave`` is pinned to the steady pinned work delta
-    # (the epssm-weighted average of a constant).  None targets (every path
-    # except the specified-cadence flag) leave all four arrays untouched.
+    # wrfbdy trajectory).  None targets leave all arrays untouched.
     if state.mu_spec_target is not None:
-        def _pin_ring(field, target):
-            out = field
-            for b in range(int(DEFAULT_BOUNDARY_CONFIG.spec_zone)):
-                out = out.at[..., b, :].set(target[..., b, :])
-                out = out.at[..., field.shape[-2] - 1 - b, :].set(target[..., field.shape[-2] - 1 - b, :])
-                out = out.at[..., :, b].set(target[..., :, b])
-                out = out.at[..., :, field.shape[-1] - 1 - b].set(target[..., :, field.shape[-1] - 1 - b])
-            return out
+        if bool(cfg.nested_frozen_wrf_boundary_bundle):
+            def _pin_ring(field, target):
+                return _pin_spec_ring_wrf_owned(
+                    field, target, spec_zone=int(cfg.spec_zone)
+                )
 
-        mu_new = _pin_ring(mu_new, state.mu_spec_target)
-        muts_new = _pin_ring(muts_new, state.muts_spec_target)
-        muave_new = _pin_ring(muave_new, state.muave_spec_target)
-        theta_coupled = _pin_ring(theta_coupled, state.theta_spec_target)
+            dts_value = jnp.asarray(float(cfg.dt), dtype=mu_new.dtype)
+            # Use the pre-substep ring values, not the freely advanced JAX ring:
+            # pristine advance_mu_t excludes ring 0.  muave is intentionally
+            # retained from advance_mu_t because solve_em updates only t_2,
+            # mu_2, and muts with spec_bdyupdate.
+            mu_new = _pin_ring(
+                mu_new,
+                state.mu.astype(mu_new.dtype)
+                + dts_value * state.mu_spec_target.astype(mu_new.dtype),
+            )
+            muts_new = _pin_ring(
+                muts_new,
+                state.muts.astype(muts_new.dtype)
+                + dts_value * state.muts_spec_target.astype(muts_new.dtype),
+            )
+            theta_coupled = _pin_ring(
+                theta_coupled,
+                state.theta_coupled_work.astype(theta_coupled.dtype)
+                + dts_value * state.theta_spec_target.astype(theta_coupled.dtype),
+            )
+        else:
+            # Preserve the released specified-domain scatter byte-for-byte.
+            def _pin_ring(field, target):
+                out = field
+                for b in range(int(DEFAULT_BOUNDARY_CONFIG.spec_zone)):
+                    out = out.at[..., b, :].set(target[..., b, :])
+                    out = out.at[..., field.shape[-2] - 1 - b, :].set(target[..., field.shape[-2] - 1 - b, :])
+                    out = out.at[..., :, b].set(target[..., :, b])
+                    out = out.at[..., :, field.shape[-1] - 1 - b].set(target[..., :, field.shape[-1] - 1 - b])
+                return out
+
+            mu_new = _pin_ring(mu_new, state.mu_spec_target)
+            muts_new = _pin_ring(muts_new, state.muts_spec_target)
+            muave_new = _pin_ring(muave_new, state.muave_spec_target)
+            theta_coupled = _pin_ring(theta_coupled, state.theta_spec_target)
 
     # Refresh advance_uv divergence damping bookkeeping field after advance_mu_t
     # (mudf was used by THIS substep's advance_uv from the previous mudf state).
@@ -926,6 +1207,11 @@ def acoustic_substep_core(
     muts_new = state_for_w.muts
     mu_new = state_for_w.mu
     mudf_new = state_for_w.mudf
+    post_advance_mu_t_summary = (
+        _phase_tap_scratch_summary(state_for_w)
+        if bool(capture_phase_tap)
+        else None
+    )
 
     # --- 3. advance_w (implicit w + geopotential), real RHS ---
     nz = int(state_for_w.theta.shape[0])
@@ -1050,26 +1336,57 @@ def acoustic_substep_core(
     # WRF applies spec_bdyupdate_ph to the COUPLED ph_2 in the outermost spec_zone
     # row every acoustic substep AFTER advance_w and BEFORE calc_p_rho
     # (solve_em.F:1587-1597).  Our ph work array (``ph_next``) is the uncoupled
-    # perturbation-delta ``ph'_ref - ph'``; the spec-zone delta is pinned so the
-    # reconstructed spec-zone ph' equals the parent boundary leaf.  The relaxation
-    # zone is owned by the ``ph_tend`` path inside advance_w above (it has already
-    # been folded into the carried tendency once per RK stage).  Skipped (None
-    # targets) for idealized / d02 self-replay / bare-core callers, leaving those
-    # paths byte-for-byte unchanged.
+    # perturbation-delta ``ph'_ref - ph'``.  The corrected nested path keeps the
+    # freshly advanced ``ph_next`` everywhere outside the ring (WRF advance_w
+    # updates the interior in place) and rewrites only the spec-zone ring with
+    # the literal mass-reweighted boundary-tendency equation from the
+    # pre-advance ring value ``state_for_w.ph`` (WRF's loop-bound exclusion
+    # leaves the ring at the previous substep's walked value); released
+    # specified callers retain their absolute-target helper.  The relaxation
+    # zone is owned by the ``ph_tend`` path inside advance_w above.  None
+    # operands leave idealized / bare-core callers byte-for-byte unchanged.
     if state_for_w.ph_bdy_target is not None and state_for_w.ph_save_for_spec is not None:
-        ph_next = spec_bdyupdate_ph_inloop(
-            ph_next,
-            state_for_w.ph_bdy_target,
-            state_for_w.ph_save_for_spec,
-            mu_tend=None,
-            muts=muts_new,
-            c1f=c1f_field,
-            c2f=c2f_field,
-            dts=float(cfg.dt),
-            config=DEFAULT_BOUNDARY_CONFIG,
+        if bool(cfg.nested_frozen_wrf_boundary_bundle):
+            ph_next = spec_bdyupdate_ph_tendency_inloop(
+                ph_next,
+                state_for_w.ph,
+                state_for_w.ph_bdy_target,
+                state_for_w.ph_save_for_spec,
+                state_for_w.mu_spec_target,
+                muts_new,
+                c1f_field,
+                c2f_field,
+                float(cfg.dt),
+                DEFAULT_BOUNDARY_CONFIG,
+                spec_zone=int(cfg.spec_zone),
+            )
+        else:
+            ph_next = spec_bdyupdate_ph_inloop(
+                ph_next,
+                state_for_w.ph_bdy_target,
+                state_for_w.ph_save_for_spec,
+                mu_tend=None,
+                muts=muts_new,
+                c1f=c1f_field,
+                c2f=c2f_field,
+                dts=float(cfg.dt),
+                config=DEFAULT_BOUNDARY_CONFIG,
+            )
+
+    # --- 3c. NESTED w spec-zone boundary walk (WRF spec_bdyupdate) ---
+    # The staged target is already expressed in the coupled small-step work
+    # convention whose finish reconstructs the parent leaf velocity.  WRF's Y
+    # sides own corners; every ring cell is written once.
+    if state_for_w.w_spec_target is not None:
+        w_solved = _pin_spec_ring_wrf_owned(
+            w_solved,
+            state_for_w.w
+            + jnp.asarray(float(cfg.dt), dtype=w_solved.dtype)
+            * state_for_w.w_spec_target.astype(w_solved.dtype),
+            spec_zone=int(cfg.spec_zone),
         )
 
-    # --- 3c. SPECIFIED w spec-zone zero-gradient (WRF zero_grad_bdy) ---
+    # --- 3d. SPECIFIED w spec-zone zero-gradient (WRF zero_grad_bdy) ---
     # WRF solve_em.F:1601-1607: for SPECIFIED domains the spec-zone w_2 copies
     # the nearest interior value every substep after advance_w (nested domains
     # use spec_bdyupdate instead).  The y-side rows own the corners (WRF y-side
@@ -1095,6 +1412,11 @@ def acoustic_substep_core(
     w_solved = state_for_pressure.w
     ph_next = state_for_pressure.ph
     t_2ave_next = state_for_pressure.t_2ave
+    post_advance_w_summary = (
+        _phase_tap_scratch_summary(state_for_pressure)
+        if bool(capture_phase_tap)
+        else None
+    )
 
     ru_m = state_for_pressure.ru_m if state_for_pressure.ru_m is not None else jnp.zeros_like(state_for_pressure.u)
     rv_m = state_for_pressure.rv_m if state_for_pressure.rv_m is not None else jnp.zeros_like(state_for_pressure.v)
@@ -1147,7 +1469,18 @@ def acoustic_substep_core(
         rv_m=rv_m,
         ww_m=ww_m,
     )
-    return _maybe_exchange_sharded_acoustic_halos(result)
+    result = _maybe_exchange_sharded_acoustic_halos(result)
+    if bool(observe_mass_primitive):
+        assert mass_observation is not None
+        return result, mass_observation
+    if bool(capture_phase_tap):
+        assert post_advance_mu_t_summary is not None
+        assert post_advance_w_summary is not None
+        return result, AcousticPhaseTapSummary(
+            post_advance_mu_t_summary,
+            post_advance_w_summary,
+        )
+    return result
 
 
 def snapshot_full_state(state: AcousticCoreState) -> dict[str, jax.Array]:
@@ -1199,6 +1532,11 @@ __all__ = [
     "FULL_STATE_FIELDS",
     "AcousticCoreConfig",
     "AcousticCoreState",
+    "AdvanceUvObservation",
+    "MassPrimitiveObservation",
+    "PHASE_TAP_SCRATCH_FIELDS",
+    "PHASE_TAP_SUMMARY_METRICS",
+    "AcousticPhaseTapSummary",
     "AcousticLoopConfig",
     "AcousticLoopState",
     "_advance_inputs",

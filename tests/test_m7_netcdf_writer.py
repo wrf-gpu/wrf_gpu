@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-from datetime import datetime
+from dataclasses import replace
+from datetime import datetime, timezone
+import hashlib
+import importlib.util
 from pathlib import Path
+import shutil
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
 from netCDF4 import Dataset, chartostring
 
+from gpuwrf.io.gen2_accessor import Gen2GridSpec
 from gpuwrf.io.wrfout_writer import (
     DERIVED_DIAGNOSTIC_VARIABLES,
     FULL_WRFOUT_VARIABLES,
@@ -15,6 +20,12 @@ from gpuwrf.io.wrfout_writer import (
     MINIMUM_WRFOUT_VARIABLES,
     RADIATION_FLUX_DIAGNOSTIC_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
+    WrfoutDomainAuthority,
+    _domain_authority_payload,
+    _domain_authority_sha256,
+    _set_wrfout_grid_id_attr,
+    _write_global_attrs,
+    bind_wrfout_domain_authority,
     prepare_wrfout_payload,
     write_prepared_wrfout,
     write_wrfout_netcdf,
@@ -101,6 +112,42 @@ def synthetic_case(nx: int = 5, ny: int = 4, nz: int = 3):
     return state, grid, namelist
 
 
+def authenticated_source_grid(grid, domain: str = "d02") -> Gen2GridSpec:
+    projection = getattr(grid, "projection", SimpleNamespace(dx_m=3000.0, dy_m=3000.0))
+    return Gen2GridSpec(
+        id=domain,
+        dx_m=float(getattr(projection, "dx_m", 3000.0)),
+        dy_m=float(getattr(projection, "dy_m", 3000.0)),
+        e_we=int(grid.nx) + 1,
+        e_sn=int(grid.ny) + 1,
+        e_vert=int(grid.nz) + 1,
+        mass_nx=int(grid.nx),
+        mass_ny=int(grid.ny),
+        mass_nz=int(grid.nz),
+        grid_proj="lambert",
+        map_proj_id=1,
+        cen_lat=28.3,
+        cen_lon=-16.1,
+        truelat1=25.0,
+        truelat2=30.0,
+        stand_lon=-16.4,
+        parent_id=1,
+        parent_grid_ratio=1 if domain == "d01" else 3,
+        i_parent_start=1,
+        j_parent_start=1,
+        znu=tuple(float(i) for i in range(int(grid.nz))),
+        znw=tuple(float(i) for i in range(int(grid.nz) + 1)),
+        top_pressure_pa=5000.0,
+        source_wrfout="authenticated-test-source",
+        source_namelist="authenticated-test-namelist",
+    )
+
+
+def writer_authority(grid, domain: str = "d02") -> WrfoutDomainAuthority:
+    source_grid = authenticated_source_grid(grid, domain)
+    return bind_wrfout_domain_authority(domain, source_grid, grid)
+
+
 def write_small(tmp_path: Path) -> tuple[Path, SimpleNamespace]:
     state, grid, namelist = synthetic_case()
     path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
@@ -109,6 +156,8 @@ def write_small(tmp_path: Path) -> tuple[Path, SimpleNamespace]:
         grid,
         namelist,
         path,
+        domain="d02",
+        domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21),
         lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18),
@@ -188,6 +237,8 @@ def test_full_wrfout_mode_matches_reference_variable_list_and_schema(tmp_path: P
         grid,
         namelist,
         path,
+        domain="d02",
+        domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21),
         lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18),
@@ -223,6 +274,8 @@ def test_full_prepared_payload_can_write_auxhist_full_subset(tmp_path: Path):
         grid,
         namelist,
         tmp_path / "wrfout_d02_2026-05-25_21:00:00",
+        domain="d02",
+        domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21),
         lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18),
@@ -231,6 +284,8 @@ def test_full_prepared_payload_can_write_auxhist_full_subset(tmp_path: Path):
     aux_path = tmp_path / "auxhist1_d02_2026-05-25_21:00:00"
     write_prepared_wrfout(
         prepared,
+        expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority,
         variable_subset=FULL_WRFOUT_VARIABLES,
         target_override=aux_path,
     )
@@ -308,6 +363,7 @@ def test_grid_metric_and_derived_diagnostics_present_and_finite(tmp_path: Path):
     path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18), land_state=land,
     )
@@ -356,6 +412,7 @@ def test_rainnc_is_wrf_all_phase_total(tmp_path: Path):
     path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18), land_state=land,
     )
@@ -379,6 +436,7 @@ def test_existing_variables_unchanged_when_metrics_added(tmp_path: Path):
     path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18), land_state=land,
     )
@@ -431,6 +489,7 @@ def test_noahmp_snow_canopy_diagnostics_match_reference_schema(tmp_path: Path):
     path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18), land_state=land,
     )
@@ -506,6 +565,7 @@ def test_snow_canopy_diagnostics_self_gate_without_carry(tmp_path: Path):
     path = tmp_path / "wrfout_d02_2026-05-25_21:00:00"
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
         run_start=datetime(2026, 5, 25, 18), land_state=None,
     )
@@ -599,6 +659,7 @@ def test_radiation_flux_diagnostics_match_reference_schema(tmp_path: Path):
     path = tmp_path / "wrfout_d02_2026-04-28_19:00:00"
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 4, 28, 19), lead_hours=1.0,
         run_start=datetime(2026, 4, 28, 18), diagnostics=diagnostics,
     )
@@ -672,6 +733,7 @@ def test_radiation_flux_diagnostics_self_gate_without_diagnostics(tmp_path: Path
     path = tmp_path / "wrfout_d02_2026-04-28_19:00:00"
     write_wrfout_netcdf(
         state, grid, namelist, path,
+        domain="d02", domain_authority=writer_authority(grid),
         valid_time=datetime(2026, 4, 28, 19), lead_hours=1.0,
         run_start=datetime(2026, 4, 28, 18), diagnostics=None,
     )
@@ -680,3 +742,300 @@ def test_radiation_flux_diagnostics_self_gate_without_diagnostics(tmp_path: Path
             assert name not in dataset.variables, f"{name} fabricated without diagnostics"
         for name in RADIATION_FLUX_SKIPPED_CLEARSKY:
             assert name not in dataset.variables, f"{name} clear-sky fabricated"
+
+
+# --------------------------------------------------------------------------
+# v0.23.4 authenticated global GRID_ID metadata repair
+# --------------------------------------------------------------------------
+
+
+def _prepare_grid_id_case(tmp_path: Path, domain: str = "d02"):
+    state, grid, namelist = synthetic_case()
+    authority = writer_authority(grid, domain)
+    prepared = prepare_wrfout_payload(
+        state, grid, namelist, tmp_path / "shape_and_filename_are_not_authority.nc",
+        domain=domain, domain_authority=authority,
+        valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+        run_start=datetime(2026, 5, 25, 18),
+    )
+    return prepared, authority
+
+
+def _value_bytes(value):
+    array = np.ma.asarray(value)
+    return (
+        str(array.dtype), tuple(array.shape),
+        np.ascontiguousarray(np.ma.getdata(array)).tobytes(),
+        np.ascontiguousarray(np.ma.getmaskarray(array)).tobytes(),
+    )
+
+
+def _attr_bytes(value):
+    return ("str", value) if isinstance(value, str) else _value_bytes(value)
+
+
+def _assert_netcdf_equal_except_grid_id(before: Path, after: Path) -> None:
+    with Dataset(before) as left, Dataset(after) as right:
+        assert list(left.dimensions) == list(right.dimensions)
+        for name in left.dimensions:
+            assert len(left.dimensions[name]) == len(right.dimensions[name])
+            assert left.dimensions[name].isunlimited() == right.dimensions[name].isunlimited()
+        assert list(left.variables) == list(right.variables)
+        for name in left.variables:
+            lvar, rvar = left.variables[name], right.variables[name]
+            assert np.dtype(lvar.dtype) == np.dtype(rvar.dtype), name
+            assert lvar.dimensions == rvar.dimensions, name
+            assert lvar.shape == rvar.shape, name
+            assert lvar.ncattrs() == rvar.ncattrs(), name
+            for attr in lvar.ncattrs():
+                assert _attr_bytes(lvar.getncattr(attr)) == _attr_bytes(rvar.getncattr(attr)), (name, attr)
+            assert _value_bytes(lvar[:]) == _value_bytes(rvar[:]), name
+        assert "GRID_ID" not in left.ncattrs()
+        assert int(right.getncattr("GRID_ID")) == 2
+        assert [name for name in right.ncattrs() if name != "GRID_ID"] == left.ncattrs()
+        for attr in left.ncattrs():
+            assert _attr_bytes(left.getncattr(attr)) == _attr_bytes(right.getncattr(attr)), attr
+
+
+def test_grid_id_is_only_semantic_change_for_every_written_variable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import gpuwrf.io.wrfout_writer as writer_module
+
+    prepared, _ = _prepare_grid_id_case(tmp_path)
+    before, after = tmp_path / "before.nc", tmp_path / "after.nc"
+    original = writer_module._write_global_attrs
+
+    def legacy_global_attrs(dataset, grid, namelist, dimensions, run_start, valid_time, _authority):
+        return original(dataset, grid, namelist, dimensions, run_start, valid_time, None)
+
+    monkeypatch.setattr(writer_module, "_write_global_attrs", legacy_global_attrs)
+    write_prepared_wrfout(
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority, target_override=before
+    )
+    monkeypatch.setattr(writer_module, "_write_global_attrs", original)
+    write_prepared_wrfout(
+        prepared, expected_domain="d02",
+        expected_domain_authority=prepared.domain_authority, target_override=after
+    )
+    _assert_netcdf_equal_except_grid_id(before, after)
+
+
+@pytest.mark.parametrize(("domain", "expected"), (("d01", 1), ("d02", 2), ("d03", 3)))
+def test_exact_domain_authority_writes_exact_grid_id_despite_path_spoof(
+    tmp_path: Path, domain: str, expected: int
+):
+    prepared, _ = _prepare_grid_id_case(tmp_path, domain)
+    target = tmp_path / f"wrfout_d{(expected % 3) + 1:02d}_spoofed_shape_name"
+    write_prepared_wrfout(
+        prepared, expected_domain=domain,
+        expected_domain_authority=prepared.domain_authority, target_override=target
+    )
+    with Dataset(target) as dataset:
+        assert type(dataset.getncattr("GRID_ID")) is np.int32
+        assert int(dataset.getncattr("GRID_ID")) == expected
+
+
+def test_missing_wrong_rehashed_and_extent_substituted_authority_fail_closed(tmp_path: Path):
+    state, grid, namelist = synthetic_case()
+    authority = writer_authority(grid, "d02")
+    common = dict(valid_time=datetime(2026, 5, 25, 21), lead_hours=3.0,
+                  run_start=datetime(2026, 5, 25, 18))
+    with pytest.raises(ValueError, match="WRFOUT_DOMAIN_AUTHORITY_MISSING_OR_TYPE"):
+        prepare_wrfout_payload(state, grid, namelist, tmp_path / "missing",
+                               domain="d02", domain_authority=None, **common)
+    with pytest.raises(ValueError, match="WRFOUT_DOMAIN_AUTHORITY_GRID_ID_MISMATCH"):
+        prepare_wrfout_payload(state, grid, namelist, tmp_path / "wrong",
+                               domain="d02", domain_authority=replace(authority, grid_id=3), **common)
+
+    substituted_payload = _domain_authority_payload(
+        domain="d03", grid_id=3, mass_nx=grid.nx, mass_ny=grid.ny, mass_nz=grid.nz,
+        e_we=grid.nx + 1, e_sn=grid.ny + 1, e_vert=grid.nz + 1,
+    )
+    rehashed = WrfoutDomainAuthority(
+        **substituted_payload, authority_sha256=_domain_authority_sha256(substituted_payload)
+    )
+    with pytest.raises(ValueError, match="WRFOUT_DOMAIN_AUTHORITY_DOMAIN_MISMATCH"):
+        prepare_wrfout_payload(state, grid, namelist, tmp_path / "wrfout_d03_spoof",
+                               domain="d02", domain_authority=rehashed, **common)
+
+    rehashed_grid_id_payload = _domain_authority_payload(
+        domain="d02", grid_id=3, mass_nx=grid.nx, mass_ny=grid.ny, mass_nz=grid.nz,
+        e_we=grid.nx + 1, e_sn=grid.ny + 1, e_vert=grid.nz + 1,
+    )
+    rehashed_grid_id = WrfoutDomainAuthority(
+        **rehashed_grid_id_payload,
+        authority_sha256=_domain_authority_sha256(rehashed_grid_id_payload),
+    )
+    with pytest.raises(ValueError, match="WRFOUT_DOMAIN_AUTHORITY_GRID_ID_MISMATCH"):
+        prepare_wrfout_payload(state, grid, namelist, tmp_path / "rehashed_grid_id",
+                               domain="d02", domain_authority=rehashed_grid_id, **common)
+
+    extent_payload = _domain_authority_payload(
+        domain="d02", grid_id=2, mass_nx=grid.nx + 1, mass_ny=grid.ny, mass_nz=grid.nz,
+        e_we=grid.nx + 2, e_sn=grid.ny + 1, e_vert=grid.nz + 1,
+    )
+    extent_rehashed = WrfoutDomainAuthority(
+        **extent_payload, authority_sha256=_domain_authority_sha256(extent_payload)
+    )
+    with pytest.raises(ValueError, match="WRFOUT_DOMAIN_AUTHORITY_OUTPUT_GRID_MISMATCH"):
+        prepare_wrfout_payload(state, grid, namelist, tmp_path / "shape_spoof",
+                               domain="d02", domain_authority=extent_rehashed, **common)
+
+    stagger_payload = _domain_authority_payload(
+        domain="d02", grid_id=2, mass_nx=grid.nx, mass_ny=grid.ny, mass_nz=grid.nz,
+        e_we=grid.nx + 2, e_sn=grid.ny + 1, e_vert=grid.nz + 1,
+    )
+    stagger_rehashed = WrfoutDomainAuthority(
+        **stagger_payload, authority_sha256=_domain_authority_sha256(stagger_payload)
+    )
+    with pytest.raises(ValueError, match="WRFOUT_DOMAIN_AUTHORITY_EXTENT_RELATION"):
+        prepare_wrfout_payload(
+            state, grid, namelist, tmp_path / "stagger_spoof",
+            domain="d02", domain_authority=stagger_rehashed, **common,
+        )
+
+
+def test_public_sync_rejects_fully_rehashed_domain_authority_cosubstitution(tmp_path: Path):
+    prepared, original = _prepare_grid_id_case(tmp_path, "d02")
+    d03 = writer_authority(prepared.grid, "d03")
+    substituted = replace(prepared, domain="d03", domain_authority=d03)
+    target = tmp_path / "cosubstitution-must-not-publish.nc"
+    with pytest.raises(ValueError, match="WRFOUT_PREPARED_AUTHORITY_SUBSTITUTION"):
+        write_prepared_wrfout(
+            substituted,
+            expected_domain="d02",
+            expected_domain_authority=original,
+            target_override=target,
+        )
+    assert not target.exists()
+
+
+@pytest.mark.parametrize("existing", (2, 3))
+def test_public_sync_rejects_existing_equal_or_conflicting_target_without_truncation(
+    tmp_path: Path, existing: int
+):
+    prepared, authority = _prepare_grid_id_case(tmp_path, "d02")
+    target = tmp_path / f"public-existing-{existing}.nc"
+    with Dataset(target, "w") as dataset:
+        dataset.setncattr("GRID_ID", np.int32(existing))
+        dataset.setncattr("SENTINEL", "preserve-exactly")
+    before = target.read_bytes()
+    with pytest.raises(FileExistsError, match="WRFOUT_TARGET_EXISTS"):
+        write_prepared_wrfout(
+            prepared,
+            expected_domain="d02",
+            expected_domain_authority=authority,
+            target_override=target,
+        )
+    assert target.read_bytes() == before
+    with Dataset(target) as dataset:
+        assert int(dataset.getncattr("GRID_ID")) == existing
+        assert dataset.getncattr("SENTINEL") == "preserve-exactly"
+
+
+def test_publication_race_is_noreplace_and_cleans_private_temporary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import gpuwrf.io.wrfout_writer as writer_module
+
+    prepared, authority = _prepare_grid_id_case(tmp_path, "d02")
+    target = tmp_path / "publication-race.nc"
+    real_publish = writer_module._publish_wrfout_noreplace
+
+    def racing_publish(temporary, final_target):
+        assert final_target == target
+        with Dataset(final_target, "w") as dataset:
+            dataset.setncattr("GRID_ID", np.int32(3))
+            dataset.setncattr("SENTINEL", "racer-won")
+        return real_publish(temporary, final_target)
+
+    monkeypatch.setattr(writer_module, "_publish_wrfout_noreplace", racing_publish)
+    with pytest.raises(FileExistsError, match="WRFOUT_TARGET_EXISTS"):
+        write_prepared_wrfout(
+            prepared,
+            expected_domain="d02",
+            expected_domain_authority=authority,
+            target_override=target,
+        )
+    with Dataset(target) as dataset:
+        assert int(dataset.getncattr("GRID_ID")) == 3
+        assert dataset.getncattr("SENTINEL") == "racer-won"
+    assert list(tmp_path.glob(f".{target.name}.grid-id-*.tmp")) == []
+
+
+def test_source_grid_substitution_and_missing_identity_fail_before_writer():
+    _, grid, _ = synthetic_case()
+    with pytest.raises(ValueError, match="SOURCE_TYPE"):
+        bind_wrfout_domain_authority(
+            "d03", SimpleNamespace(mass_nx=grid.nx, mass_ny=grid.ny, mass_nz=grid.nz), grid
+        )
+    with pytest.raises(ValueError, match="SOURCE_ID_MISMATCH"):
+        bind_wrfout_domain_authority(
+            "d03", replace(authenticated_source_grid(grid, "d03"), id="d02"), grid
+        )
+    with pytest.raises(ValueError, match="OUTPUT_GRID_MISMATCH"):
+        bind_wrfout_domain_authority(
+            "d03", replace(authenticated_source_grid(grid, "d03"),
+                           mass_nx=grid.nx + 1, e_we=grid.nx + 2), grid
+        )
+    with pytest.raises(ValueError, match="SOURCE_EXTENT_RELATION"):
+        bind_wrfout_domain_authority(
+            "d03", replace(authenticated_source_grid(grid, "d03"), e_we=999,
+                           e_sn=888, e_vert=777), grid
+        )
+
+
+@pytest.mark.parametrize("existing", (2, 3))
+def test_duplicate_or_conflicting_grid_id_is_never_overwritten(tmp_path: Path, existing: int):
+    _, grid, namelist = synthetic_case()
+    authority = writer_authority(grid, "d02")
+    path = tmp_path / f"duplicate-{existing}.nc"
+    with Dataset(path, "w") as dataset:
+        dataset.setncattr("GRID_ID", np.int32(existing))
+        with pytest.raises(ValueError, match="WRFOUT_GRID_ID_DUPLICATE_OR_CONFLICT"):
+            _write_global_attrs(
+                dataset, grid, namelist,
+                {"west_east_stag": 6, "south_north_stag": 5, "bottom_top_stag": 4},
+                datetime(2026, 5, 25, 18), datetime(2026, 5, 25, 21), authority,
+            )
+        assert int(dataset.getncattr("GRID_ID")) == existing
+        assert dataset.ncattrs() == ["GRID_ID"]
+
+
+def _load_corrected_gate_module():
+    path = Path(__file__).parents[1] / "scripts" / "v0234_corrected_fullbuffer_gate.py"
+    spec = importlib.util.spec_from_file_location("v0234_corrected_gate_grid_id_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_retained_retry3_frame_reproduces_frame_grid_then_temp_copy_passes(tmp_path: Path):
+    retained = Path(
+        "<DATA_ROOT>/wrf_downscale/artifacts/cpu_oracles/"
+        "tenerife_operational_v2_fullbuffer_111x93/20250228_18z/"
+        "gpu_validation_8d82220d_retry3/gpu-output/"
+        "wrfout_d03_2025-03-01_00:20:00"
+    )
+    if not retained.is_file():
+        pytest.skip("immutable retained retry3 frame is unavailable")
+    expected_sha = "0f01fd8dde586572318b6fa87654f9893e35ba590fdc029520a252a904f4fe54"
+    assert hashlib.sha256(retained.read_bytes()).hexdigest() == expected_sha
+    gate = _load_corrected_gate_module()
+    valid_time = datetime(2025, 3, 1, 0, 20, tzinfo=timezone.utc)
+    with pytest.raises(gate.GateError, match="FRAME_GRID"):
+        gate.qa_d03_frame(retained, valid_time)
+
+    repaired = tmp_path / retained.name
+    shutil.copyfile(retained, repaired)
+    authority = writer_authority(SimpleNamespace(nx=111, ny=93, nz=44), "d03")
+    with Dataset(repaired, "r+") as dataset:
+        _set_wrfout_grid_id_attr(dataset, authority)
+    result = gate.qa_d03_frame(repaired, valid_time)
+    assert result["valid_time"] == valid_time.isoformat()
+    with Dataset(repaired) as dataset:
+        assert int(dataset.getncattr("GRID_ID")) == 3
+    assert hashlib.sha256(retained.read_bytes()).hexdigest() == expected_sha

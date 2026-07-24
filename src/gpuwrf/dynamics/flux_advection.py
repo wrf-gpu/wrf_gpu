@@ -1016,6 +1016,7 @@ def advect_moisture_scalars(
     fzm: jax.Array,
     fzp: jax.Array,
     dt: float,
+    species_batch_width: int = 1,
 ) -> tuple[jax.Array, ...]:
     """WRF moisture-species flux-form advection loop (h=5/v=3), per species.
 
@@ -1042,6 +1043,15 @@ def advect_moisture_scalars(
     default moisture transport is BYTE-FOR-BYTE the plain h5/v3 path (the limiter
     function is never even traced).
 
+    ``species_batch_width`` is a STATIC execution policy, not a physics option.
+    The default value 1 preserves the canonical per-species WRF loop. Values
+    greater than 1 map only fixed-width, same-shape/same-dtype chunks in the
+    final-stage limiter path; a final singleton remainder uses the scalar path.
+    Plain/non-final transport is forced to width 1. A real-grid enclosing-JIT
+    proof found mapped plain transport both slower and non-bit-exact even though
+    isolated small-shape calls matched, while limited transport passed the same
+    stricter proof. This keeps the optimization on its proven path only.
+
     Mass conservation: each species is limited independently by the same
     flux-renormalization that conserves theta mass (every flux is a face quantity
     differenced as ``flux(i+1)-flux(i)``; scaling a face value scales the same
@@ -1056,14 +1066,37 @@ def advect_moisture_scalars(
         and fields_old is not None
     )
 
+    requested_batch_width = int(species_batch_width)
+    if requested_batch_width < 1:
+        raise ValueError(
+            "advect_moisture_scalars: species_batch_width must be >= 1, "
+            f"got {requested_batch_width}"
+        )
+    batch_width = requested_batch_width if use_limiter else 1
+
+    # WRF's scalar loop applies the identical stencil independently to every
+    # represented species. Preserve that equation while presenting only small,
+    # explicitly opted-in chunks to XLA as mapped lanes. The scalar default and
+    # heterogeneous tuples retain the canonical reference graph.
+    stackable = batch_width > 1 and len(fields) > 1 and all(
+        field.shape == fields[0].shape and field.dtype == fields[0].dtype
+        for field in fields[1:]
+    )
+
     if use_limiter:
-        if len(fields_old) != len(fields):  # type: ignore[arg-type]
+        assert fields_old is not None
+        if len(fields_old) != len(fields):
             raise ValueError(
                 "advect_moisture_scalars: fields_old must match fields length "
-                f"({len(fields_old)} vs {len(fields)}) when the limiter is active."  # type: ignore[arg-type]
+                f"({len(fields_old)} vs {len(fields)}) when the limiter is active."
             )
-        return tuple(
-            advect_scalar_flux_limited(
+        old_stackable = stackable and all(
+            field_old.shape == field.shape and field_old.dtype == field.dtype
+            for field, field_old in zip(fields, fields_old, strict=True)
+        )
+
+        def limited_one(field: jax.Array, field_old: jax.Array) -> jax.Array:
+            return advect_scalar_flux_limited(
                 field,
                 field_old,
                 vel,
@@ -1079,13 +1112,32 @@ def advect_moisture_scalars(
                 fzp=fzp,
                 dt=dt,
             )
-            for field, field_old in zip(fields, fields_old)  # type: ignore[arg-type]
+
+        if old_stackable:
+            outputs: list[jax.Array] = []
+            for start in range(0, len(fields), batch_width):
+                stop = min(start + batch_width, len(fields))
+                if stop - start == 1:
+                    outputs.append(limited_one(fields[start], fields_old[start]))
+                    continue
+                stacked = jax.vmap(limited_one)(
+                    jnp.stack(fields[start:stop], axis=0),
+                    jnp.stack(fields_old[start:stop], axis=0),
+                )
+                outputs.extend(stacked[index] for index in range(stop - start))
+            return tuple(outputs)
+
+        return tuple(
+            limited_one(field, field_old)
+            for field, field_old in zip(fields, fields_old, strict=True)
         )
 
-    # Plain h5/v3 path (moist_adv_opt == 0, or a non-final RK stage): byte-for-byte
-    # identical to the unlimited scalar advection used before this sprint.
-    return tuple(
-        advect_scalar_flux(
+    # Plain h5/v3 path (moist_adv_opt == 0, or a non-final RK stage): always keep
+    # the canonical per-species calls. Mapped plain transport changed bits under
+    # a real-shape enclosing jit and was 1.28--1.35x slower in the same bounded
+    # CPU discriminator, so no mapped branch is reachable here.
+    def plain_one(field: jax.Array) -> jax.Array:
+        return advect_scalar_flux(
             field,
             vel,
             mut=mut,
@@ -1096,8 +1148,8 @@ def advect_moisture_scalars(
             fzm=fzm,
             fzp=fzp,
         )
-        for field in fields
-    )
+
+    return tuple(plain_one(field) for field in fields)
 
 
 # --- flux-form momentum advection (advect_u / advect_v / advect_w, h=5/v=3) ---

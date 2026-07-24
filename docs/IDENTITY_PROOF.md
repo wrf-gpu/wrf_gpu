@@ -117,6 +117,6 @@ paired and Canary MUB/PB boundary-frame statics are fixed.
 ## Embedding in the release README
 
 ```markdown
-![GPU↔CPU identity proof — Switzerland d01](docs/assets/v015/identity_proof/switzerland_d01/identity_dashboard.png)
-![GPU↔CPU identity proof — Canary L2 d02](docs/assets/v015/identity_proof/canary_l2_d02/identity_dashboard.png)
+![GPU↔CPU identity proof — Switzerland d01](assets/v015/identity_proof/switzerland_d01/identity_dashboard.png)
+![GPU↔CPU identity proof — Canary L2 d02](assets/v015/identity_proof/canary_l2_d02/identity_dashboard.png)
 ```

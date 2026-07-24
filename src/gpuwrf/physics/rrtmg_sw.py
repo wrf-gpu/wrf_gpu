@@ -143,6 +143,12 @@ class RRTMGSWColumnState:
         "dz",
         "rho",
         "solar_source_scale",
+        "pressure_interfaces",
+        "temperature_interfaces",
+        "ozone_vmr",
+        "co2_vmr",
+        "n2o_vmr",
+        "ch4_vmr",
     )
 
     def __init__(
@@ -160,6 +166,12 @@ class RRTMGSWColumnState:
         dz,
         rho,
         solar_source_scale=1.0,
+        pressure_interfaces=None,
+        temperature_interfaces=None,
+        co2_vmr: float | None = None,
+        n2o_vmr: float | None = None,
+        ch4_vmr: float | None = None,
+        ozone_vmr=None,
     ) -> None:
         self.T = T
         self.p = p
@@ -174,6 +186,48 @@ class RRTMGSWColumnState:
         self.dz = dz
         self.rho = rho
         self.solar_source_scale = jnp.asarray(solar_source_scale)
+        if (pressure_interfaces is None) != (temperature_interfaces is None):
+            raise ValueError(
+                "pressure_interfaces and temperature_interfaces must be supplied together"
+            )
+        if pressure_interfaces is not None:
+            expected = tuple(p.shape[:-1]) + (int(p.shape[-1]) + 1,)
+            if tuple(pressure_interfaces.shape) != expected:
+                raise ValueError(
+                    "pressure_interfaces must have column-interface shape "
+                    f"{expected}, got {tuple(pressure_interfaces.shape)}"
+                )
+            if tuple(temperature_interfaces.shape) != expected:
+                raise ValueError(
+                    "temperature_interfaces must have column-interface shape "
+                    f"{expected}, got {tuple(temperature_interfaces.shape)}"
+                )
+        # WRF supplies hydrostatic P8W and phy_prep T8W explicitly to RRTMG-SW.
+        # None retains the established midpoint reconstruction exactly for bare
+        # and historical fixture callers.
+        self.pressure_interfaces = pressure_interfaces
+        self.temperature_interfaces = temperature_interfaces
+        if ozone_vmr is not None and tuple(ozone_vmr.shape) != tuple(p.shape):
+            raise ValueError(
+                "ozone_vmr must have the column-layer shape "
+                f"{tuple(p.shape)}, got {tuple(ozone_vmr.shape)}"
+            )
+        # WRF o3input=2 supplies O3RAD on model mass layers.  None preserves
+        # the historical INIRAD/O3DATA profile exactly.
+        self.ozone_vmr = ozone_vmr
+        gases = (co2_vmr, n2o_vmr, ch4_vmr)
+        if any(value is None for value in gases) and not all(
+            value is None for value in gases
+        ):
+            raise ValueError("SW greenhouse-gas VMR metadata must be all supplied or all None")
+        resolved_gases = tuple(
+            None if value is None else float(value) for value in gases
+        )
+        if not all(value is None for value in resolved_gases) and any(
+            not np.isfinite(value) or value <= 0.0 for value in resolved_gases
+        ):
+            raise ValueError("SW greenhouse-gas VMR metadata must be finite and positive")
+        self.co2_vmr, self.n2o_vmr, self.ch4_vmr = resolved_gases
 
     def replace(self, **updates) -> "RRTMGSWColumnState":
         """Returns a same-layout state with named fields replaced."""
@@ -185,25 +239,48 @@ class RRTMGSWColumnState:
     def tree_flatten(self):
         """Presents all state arrays as JAX leaves."""
 
-        return tuple(getattr(self, name) for name in self.__slots__), None
+        children = tuple(getattr(self, name) for name in self.__slots__[:16])
+        static = tuple(getattr(self, name) for name in self.__slots__[16:])
+        return children, static
 
     @classmethod
     def tree_unflatten(cls, aux, children):
         """Rebuilds the state after JAX transforms."""
 
-        del aux
-        return cls(*children)
+        return cls(
+            *children[:13],
+            pressure_interfaces=children[13],
+            temperature_interfaces=children[14],
+            ozone_vmr=children[15],
+            co2_vmr=aux[0],
+            n2o_vmr=aux[1],
+            ch4_vmr=aux[2],
+        )
 
     def __eq__(self, other: object) -> bool:
         """Implements array-aware equality outside JIT for tests."""
 
         if not isinstance(other, RRTMGSWColumnState):
             return NotImplemented
-        return all(
-            left.shape == right.shape
-            and left.dtype == right.dtype
-            and np.array_equal(np.asarray(left), np.asarray(right))
-            for left, right in zip(_leaves(self), _leaves(other), strict=True)
+
+        def leaf_equal(left, right) -> bool:
+            if left is None or right is None:
+                return left is right
+            return (
+                left.shape == right.shape
+                and left.dtype == right.dtype
+                and np.array_equal(np.asarray(left), np.asarray(right))
+            )
+
+        return tuple(getattr(self, name) for name in self.__slots__[16:]) == tuple(
+            getattr(other, name) for name in self.__slots__[16:]
+        ) and all(
+            leaf_equal(left, right)
+            for left, right in zip(
+                (getattr(self, name) for name in self.__slots__[:16]),
+                (getattr(other, name) for name in self.__slots__[:16]),
+                strict=True,
+            )
         )
 
     def __hash__(self) -> int:
@@ -211,8 +288,14 @@ class RRTMGSWColumnState:
 
         parts = []
         for leaf in _leaves(self):
+            if leaf is None:
+                parts.append(None)
+                continue
             host = np.asarray(leaf)
             parts.append((tuple(host.shape), str(host.dtype), host.tobytes()))
+        parts.append(
+            tuple((name, getattr(self, name)) for name in self.__slots__[16:])
+        )
         return hash(tuple(parts))
 
 
@@ -371,7 +454,7 @@ def _setcoef_state_dtype(coef: _SWSetCoefState, dtype) -> _SWSetCoefState:
 def _leaves(state: RRTMGSWColumnState):
     """Centralizes leaf iteration for equality and hashing."""
 
-    return (getattr(state, name) for name in RRTMGSWColumnState.__slots__)
+    return (getattr(state, name) for name in RRTMGSWColumnState.__slots__[:16])
 
 
 def _clip_state(state: RRTMGSWColumnState) -> RRTMGSWColumnState:
@@ -391,6 +474,16 @@ def _clip_state(state: RRTMGSWColumnState) -> RRTMGSWColumnState:
         dz=jnp.maximum(state.dz, 1.0),
         rho=jnp.maximum(state.rho, MIN_LAYER_MASS),
         solar_source_scale=jnp.maximum(state.solar_source_scale, 0.0),
+    )
+
+
+def _sw_gas_vmr(state: RRTMGSWColumnState):
+    """Resolve optional static CLWRF gases without changing legacy callers."""
+
+    return (
+        CO2_VMR if state.co2_vmr is None else state.co2_vmr,
+        N2O_VMR if state.n2o_vmr is None else state.n2o_vmr,
+        CH4_VMR if state.ch4_vmr is None else state.ch4_vmr,
     )
 
 
@@ -474,6 +567,21 @@ def _flatten_sw_state(state: RRTMGSWColumnState, leading_shape: tuple[int, ...],
         surface_albedo=_flatten_surface_field(state.surface_albedo, leading_shape, ncol),
         coszen=_flatten_surface_field(state.coszen, leading_shape, ncol),
         solar_source_scale=_flatten_surface_field(state.solar_source_scale, leading_shape, ncol),
+        pressure_interfaces=(
+            None
+            if state.pressure_interfaces is None
+            else _flatten_layer_field(state.pressure_interfaces, leading_shape, ncol)
+        ),
+        temperature_interfaces=(
+            None
+            if state.temperature_interfaces is None
+            else _flatten_layer_field(state.temperature_interfaces, leading_shape, ncol)
+        ),
+        ozone_vmr=(
+            None
+            if state.ozone_vmr is None
+            else _flatten_layer_field(state.ozone_vmr, leading_shape, ncol)
+        ),
     )
 
 
@@ -494,6 +602,21 @@ def _pad_sw_state(state: RRTMGSWColumnState, ncol: int, padded_ncol: int) -> RRT
         dz=_pad_leading_columns(state.dz, ncol, padded_ncol),
         rho=_pad_leading_columns(state.rho, ncol, padded_ncol),
         solar_source_scale=_pad_leading_columns(state.solar_source_scale, ncol, padded_ncol),
+        pressure_interfaces=(
+            None
+            if state.pressure_interfaces is None
+            else _pad_leading_columns(state.pressure_interfaces, ncol, padded_ncol)
+        ),
+        temperature_interfaces=(
+            None
+            if state.temperature_interfaces is None
+            else _pad_leading_columns(state.temperature_interfaces, ncol, padded_ncol)
+        ),
+        ozone_vmr=(
+            None
+            if state.ozone_vmr is None
+            else _pad_leading_columns(state.ozone_vmr, ncol, padded_ncol)
+        ),
     )
 
 
@@ -514,6 +637,27 @@ def _slice_sw_state(state: RRTMGSWColumnState, start, tile_cols: int, padded_nco
         dz=_slice_leading_columns(state.dz, start, tile_cols, padded_ncol),
         rho=_slice_leading_columns(state.rho, start, tile_cols, padded_ncol),
         solar_source_scale=_slice_leading_columns(state.solar_source_scale, start, tile_cols, padded_ncol),
+        pressure_interfaces=(
+            None
+            if state.pressure_interfaces is None
+            else _slice_leading_columns(
+                state.pressure_interfaces, start, tile_cols, padded_ncol
+            )
+        ),
+        temperature_interfaces=(
+            None
+            if state.temperature_interfaces is None
+            else _slice_leading_columns(
+                state.temperature_interfaces, start, tile_cols, padded_ncol
+            )
+        ),
+        ozone_vmr=(
+            None
+            if state.ozone_vmr is None
+            else _slice_leading_columns(
+                state.ozone_vmr, start, tile_cols, padded_ncol
+            )
+        ),
     )
 
 
@@ -832,6 +976,42 @@ def _pressure_layer_mass(p):
     return jnp.maximum((interfaces[..., :nz] - interfaces[..., 1 : nz + 1]) / GRAVITY, MIN_LAYER_MASS)
 
 
+def _sw_extended_profiles(state: RRTMGSWColumnState):
+    """Build WRF SW model interfaces plus the single model-top-to-TOA layer.
+
+    WRF passes hydrostatic P8W and ``phy_prep`` T8W to RRTMG-SW.  Its wrapper
+    appends one layer whose mass pressure is half the model-top interface,
+    whose temperature is the model-top T8W value, and whose upper interface is
+    1e-5 mb.  Optional explicit interfaces select that path; None preserves the
+    historical midpoint-pressure and top-mass-temperature reconstruction.
+    """
+
+    original_interfaces = (
+        _pressure_interfaces(state.p)
+        if state.pressure_interfaces is None
+        else jnp.asarray(state.pressure_interfaces, dtype=state.p.dtype)
+    )
+    top_pressure = 0.5 * original_interfaces[..., -1:]
+    pressure_interfaces = jnp.concatenate(
+        (original_interfaces, jnp.full_like(top_pressure, 1.0e-3)), axis=-1
+    )
+    p_ext = jnp.concatenate((state.p, top_pressure), axis=-1)
+    t_ext = (
+        _extend_with_wrf_top_layer(state.T)
+        if state.temperature_interfaces is None
+        else jnp.concatenate(
+            (
+                state.T,
+                jnp.asarray(state.temperature_interfaces, dtype=state.T.dtype)[
+                    ..., -1:
+                ],
+            ),
+            axis=-1,
+        )
+    )
+    return original_interfaces, pressure_interfaces, p_ext, t_ext
+
+
 _O3SUM = jnp.asarray(
     (
         5.297e-8,
@@ -1013,6 +1193,20 @@ def _wrf_o3_vmr(pressure_interfaces_pa):
     return (o3_mmr * jnp.float32(0.603461)).astype(jnp.float64)
 
 
+def _sw_o3_vmr_for_state(state: RRTMGSWColumnState, pressure_interfaces_pa):
+    """Build WRF ``o3input=2`` model O3 plus its shifted single TOA layer."""
+
+    if state.ozone_vmr is None:
+        return None
+    climatology = _wrf_o3_vmr(pressure_interfaces_pa)
+    model = jnp.asarray(state.ozone_vmr, dtype=pressure_interfaces_pa.dtype)
+    shift = model[..., -1] - climatology[..., model.shape[-1] - 1]
+    top_climatology = climatology[..., model.shape[-1] :]
+    shifted = top_climatology + shift[..., None]
+    top = jnp.where(shifted <= 0.0, top_climatology, shifted)
+    return jnp.concatenate((model, top), axis=-1)
+
+
 def _extend_with_wrf_top_layer(values, top_values=None):
     """Adds WRF's isothermal extra top layer used by the RRTMG wrapper."""
 
@@ -1043,9 +1237,23 @@ def _take_rows(table, idx):
     return jnp.take(table, clipped, axis=0)
 
 
-def _sw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle) -> _SWSetCoefState:
+def _sw_setcoef(
+    qv,
+    p_pa,
+    t_k,
+    pressure_interfaces_pa,
+    tables: RRTMGTableBundle,
+    *,
+    o3_vmr=None,
+    co2_vmr=None,
+    n2o_vmr=None,
+    ch4_vmr=None,
+) -> _SWSetCoefState:
     """Ports WRF `setcoef_sw` pressure/temperature interpolation factors."""
 
+    co2_vmr = CO2_VMR if co2_vmr is None else co2_vmr
+    n2o_vmr = N2O_VMR if n2o_vmr is None else n2o_vmr
+    ch4_vmr = CH4_VMR if ch4_vmr is None else ch4_vmr
     dtype = jnp.float32
     qv = qv.astype(dtype)
     p_pa = p_pa.astype(dtype)
@@ -1098,13 +1306,17 @@ def _sw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     fac11 = fp * ft1
     fac01 = fp * (1.0 - ft1)
 
-    o3_vmr = _wrf_o3_vmr(pressure_interfaces_pa)
+    o3_vmr = (
+        _wrf_o3_vmr(pressure_interfaces_pa)
+        if o3_vmr is None
+        else jnp.asarray(o3_vmr, dtype=dtype)
+    )
     scale = jnp.asarray(1.0e-20, dtype=dtype)
     colh2o = scale * coldry * h2ovmr
-    colco2 = scale * coldry * jnp.asarray(CO2_VMR, dtype=dtype)
+    colco2 = scale * coldry * jnp.asarray(co2_vmr, dtype=dtype)
     colo3 = scale * coldry * o3_vmr.astype(dtype)
-    coln2o = scale * coldry * jnp.asarray(N2O_VMR, dtype=dtype)
-    colch4 = scale * coldry * jnp.asarray(CH4_VMR, dtype=dtype)
+    coln2o = scale * coldry * jnp.asarray(n2o_vmr, dtype=dtype)
+    colch4 = scale * coldry * jnp.asarray(ch4_vmr, dtype=dtype)
     colo2 = scale * coldry * jnp.asarray(O2_VMR, dtype=dtype)
     colmol = scale * coldry + colh2o
 
@@ -1456,18 +1668,27 @@ def _sw_sfluxzen(coef: _SWSetCoefState, tables: RRTMGTableBundle):
     return jnp.stack(sources, axis=-2)
 
 
-def _rrtmg_column_amounts(qv, pressure_interfaces):
+def _rrtmg_column_amounts(
+    qv,
+    pressure_interfaces,
+    co2_vmr=None,
+    n2o_vmr=None,
+    ch4_vmr=None,
+):
     """Computes RRTMG-style scaled molecular columns from WRF interface pressure."""
 
+    co2_vmr = CO2_VMR if co2_vmr is None else co2_vmr
+    n2o_vmr = N2O_VMR if n2o_vmr is None else n2o_vmr
+    ch4_vmr = CH4_VMR if ch4_vmr is None else ch4_vmr
     h2ovmr = qv * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
     amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
     dp_mb = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) * 0.01, 1.0e-8)
     coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
     colh2o = 1.0e-20 * coldry * h2ovmr
-    colco2 = 1.0e-20 * coldry * CO2_VMR
+    colco2 = 1.0e-20 * coldry * co2_vmr
     colo3 = 1.0e-20 * coldry * O3_BACKGROUND_VMR
-    coln2o = 1.0e-20 * coldry * N2O_VMR
-    colch4 = 1.0e-20 * coldry * CH4_VMR
+    coln2o = 1.0e-20 * coldry * n2o_vmr
+    colch4 = 1.0e-20 * coldry * ch4_vmr
     colo2 = 1.0e-20 * coldry * O2_VMR
     colmol = 1.0e-20 * coldry + colh2o
     absorber = colh2o + 0.02 * colco2 + 0.02 * colch4 + 0.01 * coln2o + 0.0002 * colo2 + 0.5 * colo3
@@ -2192,6 +2413,7 @@ def _shortwave_impl(
     """Unjitted SW implementation shared by production and stripped paths."""
 
     state = _clip_state(state)
+    co2_vmr, n2o_vmr, ch4_vmr = _sw_gas_vmr(state)
     # Precision boundary (ADR-007 / Phase-B coupler_interface §5): WRF RRTMG cloud
     # optics + the reftra/vrtqdr two-stream are single precision in
     # `module_ra_rrtmg_sw.F`, and we keep that internally for WRF fidelity
@@ -2201,24 +2423,42 @@ def _shortwave_impl(
     # fp64-locked pressure input and cast result fields at the kernel boundary.
     out_dtype = jnp.result_type(state.p.dtype, jnp.float32)
     original_layers = state.p.shape[-1]
-    original_interfaces = _pressure_interfaces(state.p)
-    top_pressure = 0.5 * original_interfaces[..., -1:]
-    pressure_interfaces = jnp.concatenate((original_interfaces, jnp.full_like(top_pressure, 1.0e-3)), axis=-1)
-    p_ext = jnp.concatenate((state.p, top_pressure), axis=-1)
+    original_interfaces, pressure_interfaces, p_ext, t_ext = _sw_extended_profiles(
+        state
+    )
+    o3_vmr_ext = _sw_o3_vmr_for_state(state, pressure_interfaces)
     qv_ext = _extend_with_wrf_top_layer(state.qv)
     qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
     qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
     qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
     qg_ext = jnp.concatenate((state.qg, jnp.zeros_like(state.qg[..., -1:])), axis=-1)
     cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
-    layer_mass = _pressure_layer_mass(state.p)
+    layer_mass = (
+        _pressure_layer_mass(state.p)
+        if state.pressure_interfaces is None
+        else jnp.maximum(
+            (original_interfaces[..., :-1] - original_interfaces[..., 1:])
+            / GRAVITY,
+            MIN_LAYER_MASS,
+        )
+    )
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
     cloud_dtype = jnp.float32
     liquid_path_g = (qc_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
     ice_path_g = (qi_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
     snow_path_g = (0.99 * qs_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
 
-    coef = _sw_setcoef(qv_ext, p_ext, _extend_with_wrf_top_layer(state.T), pressure_interfaces, tables)
+    coef = _sw_setcoef(
+        qv_ext,
+        p_ext,
+        t_ext,
+        pressure_interfaces,
+        tables,
+        o3_vmr=o3_vmr_ext,
+        co2_vmr=co2_vmr,
+        n2o_vmr=n2o_vmr,
+        ch4_vmr=ch4_vmr,
+    )
     sfluxzen = _sw_sfluxzen(coef, tables)
     mask = tables.sw_gpoint_mask.astype(cloud_dtype)
 
@@ -2477,12 +2717,12 @@ def compute_rrtmg_sw_intermediates(
     """Returns JAX SW state compared to WRF `setcoef_sw`/`taumol_sw`/`spcvmc_sw` oracles."""
 
     state = _clip_state(state)
-    original_interfaces = _pressure_interfaces(state.p)
-    top_pressure = 0.5 * original_interfaces[..., -1:]
-    pressure_interfaces = jnp.concatenate((original_interfaces, jnp.full_like(top_pressure, 1.0e-3)), axis=-1)
-    p_ext = jnp.concatenate((state.p, top_pressure), axis=-1)
+    co2_vmr, n2o_vmr, ch4_vmr = _sw_gas_vmr(state)
+    _original_interfaces, pressure_interfaces, p_ext, t_ext = _sw_extended_profiles(
+        state
+    )
+    o3_vmr_ext = _sw_o3_vmr_for_state(state, pressure_interfaces)
     qv_ext = _extend_with_wrf_top_layer(state.qv)
-    t_ext = _extend_with_wrf_top_layer(state.T)
     qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
     qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
     qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
@@ -2492,7 +2732,17 @@ def compute_rrtmg_sw_intermediates(
     liquid_path_g = (qc_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
     ice_path_g = (qi_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
     snow_path_g = (0.99 * qs_ext * layer_mass_ext * 1000.0).astype(cloud_dtype)
-    coef = _sw_setcoef(qv_ext, p_ext, t_ext, pressure_interfaces, tables)
+    coef = _sw_setcoef(
+        qv_ext,
+        p_ext,
+        t_ext,
+        pressure_interfaces,
+        tables,
+        o3_vmr=o3_vmr_ext,
+        co2_vmr=co2_vmr,
+        n2o_vmr=n2o_vmr,
+        ch4_vmr=ch4_vmr,
+    )
     tau_gas, tau_rayleigh = _sw_taumol_fused(coef, tables)
     sfluxzen = _sw_sfluxzen(coef, tables)
 

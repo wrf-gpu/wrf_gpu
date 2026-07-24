@@ -29,6 +29,16 @@ always wins; only *omitted* flags gained the new WRF-faithful defaults):
 | 7 | **Effective-values in the run payload** — `namelist_path`, `namelist_max_dom`, `effective_max_dom`, `effective_domain`, `effective_hours`, and `override_sources`. | ✅ v0.23.1 |
 | — | **AI-native onboarding** — an `AI_OPERATOR.md` runbook + a Claude Code skill so an agent can clone → set up → run a case for a user, narrating each step. | ✅ v0.23.1 |
 
+## Landed in v0.23.4
+
+The explicit nested CLI path is now correctness-accepted through `max_dom=9`
+on the sealed one-hour all-physics fixture. This validates d01-d09 dispatch,
+subcycling, boundaries, and output as a concrete capability; it does not make
+deep nesting the implicit default or claim every namelist control is honored.
+The README initialization wording is also reconciled with the shipped CLI:
+standalone execution consumes prepared `wrfinput_*`/`wrfbdy_d01` artifacts; it
+does not accept raw `met_em` as the direct run input.
+
 ## Planned / candidate (later)
 
 | # | Item | Severity | Type | Difficulty |
@@ -37,7 +47,10 @@ always wins; only *omitted* flags gained the new WRF-faithful defaults):
 | 4 | A **one-command WRF-style invocation** (`gpuwrf run` inside a case directory with `namelist.input` present, deriving input/output/duration/domain), matching WRF's "run in the case dir" habit. | major | code+docs | M |
 | 8 | **WRF-style restart ergonomics** (`restart`, `restart_interval`) surfaced through the CLI/namelist, not just the internal config. | minor | code+docs | M |
 | 9 | **Honor or explicitly report more `&time_control` output-cadence keys** (frames-per-file, etc.) at run start, failing loud on accepted-but-not-honored keys. | minor | code+docs | M |
-| — | **Reconcile the README init wording** (`met_em` vs the CLI's `wrfinput`/`wrfbdy` contract) so the marketing text matches the shipped CLI exactly. | minor | docs | S |
+| — | **Honor nested `radt`** instead of the current fixed 30-minute target, and surface the effective cadence before compile. The v0.23.4 fixture requests `radt=9`, so this is a real disclosed usage/fidelity mismatch. | major | code+docs+physics validation | M |
+| — | **Bind nested `topo_shading` / `slope_rad` faithfully** instead of accepting them while the runtime uses disabled values. | major | code+docs+oracle | M |
+| — | **Honor `moist_adv_opt` / `scalar_adv_opt` in the single-domain daily pipeline.** It currently drops requested values and runs `0/0`; the accepted nested path already binds them. Surface effective values and add WRF-oracle coverage. | major | code+docs+oracle | M |
+| — | **Reconcile omitted `time_step_sound` semantics and residual dry-mass behavior.** The runtime currently selects 10 acoustic substeps where pristine WRF derives 4 on the tracked fixture; a four-substep discriminator improved initial interior U/V but did not close the terminal gate. | major | code+docs+dycore validation | M–L |
 
 ## Principles for parity changes
 

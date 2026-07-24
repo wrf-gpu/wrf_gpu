@@ -44,7 +44,7 @@ from gpuwrf.integration.nested_pipeline import (
 from gpuwrf.runtime.finite_state_guard import NonFiniteStateError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from test_m7_netcdf_writer import synthetic_case  # type: ignore  # noqa: E402
+from test_m7_netcdf_writer import synthetic_case, writer_authority  # type: ignore  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -121,6 +121,7 @@ def _make_writer(*, async_writer, output_pipeline=None):
     writer._variable_subset = None  # full byte-identical default output
     writer._full_variable_set = False
     writer.written = {"d01": []}
+    writer.domain_authorities = {}
     return writer
 
 
@@ -132,6 +133,7 @@ def _bind_case(writer, *, output_dir, dt_s, run_start, state=None):
     writer.output_dir = output_dir
     writer.run_start = run_start
     writer.bundles = {"d01": bundle}
+    writer.domain_authorities = {"d01": writer_authority(grid, "d01")}
     writer.dt_by_domain = {"d01": dt_s}
     return state_case if state is None else state
 
@@ -146,6 +148,7 @@ def test_materialize_stage_honours_radiation_carry_source_flag(monkeypatch, tmp_
     writer.output_dir = tmp_path
     writer.run_start = RUN_START
     writer.bundles = {"d01": SimpleNamespace(namelist=namelist, grid="grid")}
+    writer.domain_authorities = {"d01": "test-authority"}
     writer.dt_by_domain = {"d01": DT_S}
     seen: dict[str, Any] = {}
 
@@ -157,6 +160,8 @@ def test_materialize_stage_honours_radiation_carry_source_flag(monkeypatch, tmp_
     def fake_prepare(*_args, diagnostics=None, **_kwargs):
         seen["diagnostics"] = diagnostics
         seen["prepare_variable_subset"] = _kwargs.get("variable_subset")
+        seen["domain"] = _kwargs.get("domain")
+        seen["domain_authority"] = _kwargs.get("domain_authority")
         return "prepared"
 
     monkeypatch.setattr(nested_pipeline_module, "assert_state_finite_at_boundary", lambda *a, **k: None)
@@ -191,6 +196,8 @@ def test_materialize_stage_honours_radiation_carry_source_flag(monkeypatch, tmp_
     assert seen["carry_helper_called"] is True
     assert seen["carry_helper_variable_subset"] == ("SWDOWN",)
     assert seen["prepare_variable_subset"] == ("SWDOWN",)
+    assert seen["domain"] == "d01"
+    assert seen["domain_authority"] == "test-authority"
     assert np.array_equal(seen["diagnostics"]["SWDOWN"], np.array([[7.0]]))
     assert seen["written"] == "prepared"
 

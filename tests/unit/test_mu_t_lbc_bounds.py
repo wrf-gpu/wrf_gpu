@@ -5,7 +5,11 @@ import jax.numpy as jnp
 
 from gpuwrf.dynamics.core.coupled import CoupledCoreConfig
 from gpuwrf.dynamics.core.dycore import DycoreCoreConfig
-from gpuwrf.dynamics.mu_t_advance import AdvanceMuTInputs, advance_mu_t_wrf
+from gpuwrf.dynamics.mu_t_advance import (
+    AdvanceMuTInputs,
+    advance_mu_t_wrf,
+    advance_mu_t_wrf_observed,
+)
 
 
 def _inputs(*, periodic_x: bool = True, specified: bool = False, nested: bool = False) -> AdvanceMuTInputs:
@@ -107,6 +111,40 @@ def test_legacy_periodic_path_still_advances_edge_mass_cells():
         float(np.max(np.abs(np.asarray(out["mu"])[:, -1] - np.asarray(inp.mu)[:, -1]))),
     )
     assert edge_delta > 0.0
+
+
+def test_recording_lane_preserves_periodic_outputs_and_closes_mass_primitive():
+    inp = _inputs()
+    canonical = advance_mu_t_wrf(inp)
+    observed = advance_mu_t_wrf_observed(inp)
+
+    for name, value in canonical.items():
+        np.testing.assert_array_equal(np.asarray(observed[name]), np.asarray(value))
+    np.testing.assert_array_equal(
+        np.asarray(observed["raw_mu_tendency"] * observed["mu_scale"]),
+        np.asarray(observed["limited_mu_tendency"]),
+    )
+    np.testing.assert_array_equal(
+        np.asarray(observed["limited_mu_tendency"]), np.asarray(observed["mudf"]),
+    )
+
+
+def test_recording_lane_preserves_nested_outputs_and_closes_active_interior():
+    inp = _inputs(periodic_x=False, nested=True)
+    canonical = advance_mu_t_wrf(inp)
+    observed = advance_mu_t_wrf_observed(inp)
+
+    for name, value in canonical.items():
+        np.testing.assert_array_equal(np.asarray(observed[name]), np.asarray(value))
+    interior = np.s_[1:-1, 1:-1]
+    np.testing.assert_array_equal(
+        np.asarray(observed["raw_mu_tendency"] * observed["mu_scale"])[interior],
+        np.asarray(observed["limited_mu_tendency"])[interior],
+    )
+    np.testing.assert_array_equal(
+        np.asarray(observed["limited_mu_tendency"])[interior],
+        np.asarray(observed["mudf"])[interior],
+    )
 
 
 def test_shared_core_configs_thread_lbc_flags_to_acoustic_config():

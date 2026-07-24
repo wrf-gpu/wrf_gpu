@@ -3,6 +3,11 @@
 from __future__ import annotations
 
 import contextvars
+import hashlib
+import json
+import os
+import re
+import secrets
 from contextlib import contextmanager
 from dataclasses import dataclass, fields as dataclass_fields, is_dataclass
 from datetime import date, datetime
@@ -33,6 +38,179 @@ DEFAULT_SEED_DIM = 8
 _WRFOUT_HOST_ARRAYS: contextvars.ContextVar["_WrfoutHostArrays | None"] = (
     contextvars.ContextVar("_WRFOUT_HOST_ARRAYS", default=None)
 )
+
+WRFOUT_DOMAIN_AUTHORITY_SCHEMA = "gpuwrf.wrfout-domain-authority.v1"
+_WRF_DOMAIN_RE = re.compile(r"d([0-9]{2})\Z")
+
+
+@dataclass(frozen=True)
+class WrfoutDomainAuthority:
+    """Immutable binding from authenticated run-grid metadata to WRF ``GRID_ID``.
+
+    ``domain`` is supplied independently by the integration scheduler.  The
+    source grid is the domain metadata loaded from the already-authenticated run,
+    while ``mass_*`` binds that authority to the actual output ``GridSpec``.  No
+    output filename/path or field shape participates in selecting the ID.
+    """
+
+    schema: str
+    domain: str
+    grid_id: int
+    mass_nx: int
+    mass_ny: int
+    mass_nz: int
+    e_we: int
+    e_sn: int
+    e_vert: int
+    authority_sha256: str
+
+
+def _domain_authority_payload(
+    *,
+    domain: str,
+    grid_id: int,
+    mass_nx: int,
+    mass_ny: int,
+    mass_nz: int,
+    e_we: int,
+    e_sn: int,
+    e_vert: int,
+) -> dict[str, Any]:
+    return {
+        "schema": WRFOUT_DOMAIN_AUTHORITY_SCHEMA,
+        "domain": domain,
+        "grid_id": grid_id,
+        "mass_nx": mass_nx,
+        "mass_ny": mass_ny,
+        "mass_nz": mass_nz,
+        "e_we": e_we,
+        "e_sn": e_sn,
+        "e_vert": e_vert,
+    }
+
+
+def _domain_authority_sha256(payload: Mapping[str, Any]) -> str:
+    encoded = json.dumps(
+        dict(payload), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _strict_wrf_domain_id(domain: Any) -> int:
+    if type(domain) is not str:  # bool/int coercion is not domain authority.
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_DOMAIN_TYPE")
+    match = _WRF_DOMAIN_RE.fullmatch(domain)
+    if match is None:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_DOMAIN_FORMAT")
+    grid_id = int(match.group(1))
+    if grid_id < 1:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_GRID_ID_RANGE")
+    return grid_id
+
+
+def bind_wrfout_domain_authority(
+    domain: str,
+    authenticated_grid: Any,
+    output_grid: Any,
+) -> WrfoutDomainAuthority:
+    """Bind scheduler domain + authenticated run grid to an output grid.
+
+    ``authenticated_grid`` must expose the exact domain ID and mass extents from
+    run authority (``Gen2GridSpec`` in production).  There is deliberately no
+    fallback to the target name, path, output arrays, or a default domain.
+    """
+
+    # Exact type is intentional: a duck-typed object can self-assert arbitrary
+    # extents and is not the authenticated run-grid record.
+    from gpuwrf.io.gen2_accessor import Gen2GridSpec
+
+    if type(authenticated_grid) is not Gen2GridSpec:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_SOURCE_TYPE")
+    grid_id = _strict_wrf_domain_id(domain)
+    if authenticated_grid.id != domain:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_SOURCE_ID_MISMATCH")
+    source_extents = (
+        getattr(authenticated_grid, "mass_nx", None),
+        getattr(authenticated_grid, "mass_ny", None),
+        getattr(authenticated_grid, "mass_nz", None),
+    )
+    if any(type(value) is not int or value < 1 for value in source_extents):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_SOURCE_EXTENTS")
+    staggered_extents = (
+        authenticated_grid.e_we,
+        authenticated_grid.e_sn,
+        authenticated_grid.e_vert,
+    )
+    if any(type(value) is not int or value < 2 for value in staggered_extents):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_SOURCE_STAGGERED_EXTENTS")
+    expected_staggered = tuple(value + 1 for value in source_extents)
+    if staggered_extents != expected_staggered:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_SOURCE_EXTENT_RELATION")
+    output_extents = _grid_extent(output_grid)
+    if tuple(source_extents) != tuple(output_extents):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_OUTPUT_GRID_MISMATCH")
+    payload = _domain_authority_payload(
+        domain=domain,
+        grid_id=grid_id,
+        mass_nx=source_extents[0],
+        mass_ny=source_extents[1],
+        mass_nz=source_extents[2],
+        e_we=staggered_extents[0],
+        e_sn=staggered_extents[1],
+        e_vert=staggered_extents[2],
+    )
+    return WrfoutDomainAuthority(
+        **payload, authority_sha256=_domain_authority_sha256(payload)
+    )
+
+
+def _validate_wrfout_domain_authority(
+    authority: WrfoutDomainAuthority | None,
+    *,
+    expected_domain: str | None,
+    output_grid: Any,
+    dimensions: Mapping[str, int | None] | None = None,
+) -> WrfoutDomainAuthority:
+    if type(authority) is not WrfoutDomainAuthority:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_MISSING_OR_TYPE")
+    expected_id = _strict_wrf_domain_id(expected_domain)
+    if authority.schema != WRFOUT_DOMAIN_AUTHORITY_SCHEMA:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_SCHEMA")
+    if authority.domain != expected_domain:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_DOMAIN_MISMATCH")
+    if type(authority.grid_id) is not int or authority.grid_id != expected_id:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_GRID_ID_MISMATCH")
+    extents = (authority.mass_nx, authority.mass_ny, authority.mass_nz)
+    if any(type(value) is not int or value < 1 for value in extents):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_EXTENTS")
+    staggered = (authority.e_we, authority.e_sn, authority.e_vert)
+    if any(type(value) is not int or value < 2 for value in staggered):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_STAGGERED_EXTENTS")
+    if staggered != tuple(value + 1 for value in extents):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_EXTENT_RELATION")
+    if extents != _grid_extent(output_grid):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_OUTPUT_GRID_MISMATCH")
+    if dimensions is not None:
+        written_staggered = (
+            dimensions.get("west_east_stag"),
+            dimensions.get("south_north_stag"),
+            dimensions.get("bottom_top_stag"),
+        )
+        if written_staggered != staggered:
+            raise ValueError("WRFOUT_DOMAIN_AUTHORITY_OUTPUT_DIMENSION_MISMATCH")
+    payload = _domain_authority_payload(
+        domain=authority.domain,
+        grid_id=authority.grid_id,
+        mass_nx=authority.mass_nx,
+        mass_ny=authority.mass_ny,
+        mass_nz=authority.mass_nz,
+        e_we=authority.e_we,
+        e_sn=authority.e_sn,
+        e_vert=authority.e_vert,
+    )
+    if authority.authority_sha256 != _domain_authority_sha256(payload):
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_SHA256")
+    return authority
 
 
 DOWNSTREAM_CRITICAL_VARIABLES: tuple[str, ...] = (
@@ -329,7 +507,8 @@ _SUBSET_STREAM_COMPRESSION: dict[str, object] = {"zlib": True, "complevel": 4}
 # is self-describing. Every name is a real entry of WRFOUT_VARIABLE_SPECS; a name
 # whose source is absent from a given run is silently skipped (never fabricated).
 # OPT-IN ONLY -- selected via the GPUWRF_TRAINING_OUTPUT_SUBSET env flag on the
-# nest output path; the default full output is unchanged and byte-identical.
+# nest output path; the default numerical/variable payload is unchanged (the
+# authenticated global GRID_ID metadata is common to every output mode).
 MINIMAL_TRAINING_SET: tuple[str, ...] = (
     # 3D prognostic / diagnostic (16)
     "U", "V", "W", "T", "P", "PB", "PH", "PHB",
@@ -351,7 +530,7 @@ MINIMAL_TRAINING_SET: tuple[str, ...] = (
 # Opt-in WRF primary-history field set for the Canary WRFv4 configuration used as
 # the v0.22 compatibility target. Order and names match the reference WRF
 # ``wrfout_d02`` stream (375 variables including ``Times``), cross-checked against
-# <DATA_ROOT>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON and the EM Registry
+# <USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON and the EM Registry
 # include tree that contributes Noah-MP, stochastic, hybrid-coordinate, and mask
 # history fields.
 # The default writer still uses OPERATIONAL_WRFOUT_VARIABLES; this heavy list is
@@ -1159,6 +1338,8 @@ def write_wrfout_netcdf(
     namelist: Mapping[str, Any] | Any | None,
     path: str | Path,
     *,
+    domain: str,
+    domain_authority: WrfoutDomainAuthority,
     valid_time: datetime | date | str,
     lead_hours: float,
     run_start: datetime | date | str,
@@ -1175,6 +1356,10 @@ def write_wrfout_netcdf(
     ``State``/``GridSpec`` objects. Device arrays, if passed after an operational
     run, are converted only at this output boundary.
 
+    ``domain`` and ``domain_authority`` are mandatory and independent of the
+    target path. They bind the emitted integer global ``GRID_ID`` to the
+    authenticated run-grid metadata before any field is materialized.
+
     ``diagnostics`` optionally carries host-only output diagnostics/metadata.
     Static latitude/longitude payloads (``XLAT``/``XLONG`` and staggered variants)
     are selected from this map before the legacy State/projection lookup, so real
@@ -1185,8 +1370,9 @@ def write_wrfout_netcdf(
     name is present there, it OVERRIDES the state/default for that output field --
     the writer otherwise falls back to raw lowest-level fields which are
     physically wrong over terrain (e.g. raw level-1 wind/theta read far too
-    strong/warm at a high summit). When ``diagnostics`` is ``None`` the behaviour
-    is byte-for-byte identical to the legacy path, so no other caller regresses.
+    strong/warm at a high summit). When ``diagnostics`` is ``None`` the numerical
+    and variable payload is identical to the legacy path; only the separately
+    required authenticated global ``GRID_ID`` metadata is added.
 
     ``land_state`` optionally carries the prognostic Noah-MP land carry
     (``NoahMPLandState``: 4-layer ``tslb``/``smois``/``sh2o``, bulk snow, canopy
@@ -1199,8 +1385,8 @@ def write_wrfout_netcdf(
     subset -- the compact training-output path (#122). ``include_mandatory_coords``
     additionally force-emits the geometry/eta/lat-lon coordinates and ``compress``
     applies lossless NetCDF4 compression; both default OFF. When ``variable_subset``
-    is ``None`` (the default) the full uncompressed output is byte-identical to
-    before.
+    is ``None`` (the default) the full uncompressed variable payload and IEEE
+    values are unchanged; the global ``GRID_ID`` insertion is intentional.
 
     ``full_variable_set`` is the opt-in heavy WRF compatibility stream. When True
     the payload is expanded to :data:`FULL_WRFOUT_VARIABLES` (375 names including
@@ -1214,6 +1400,8 @@ def write_wrfout_netcdf(
         grid,
         namelist,
         path,
+        domain=domain,
+        domain_authority=domain_authority,
         valid_time=valid_time,
         lead_hours=lead_hours,
         run_start=run_start,
@@ -1225,6 +1413,8 @@ def write_wrfout_netcdf(
     )
     return write_prepared_wrfout(
         prepared,
+        expected_domain=domain,
+        expected_domain_authority=domain_authority,
         variable_subset=variable_subset,
         include_mandatory_coords=include_mandatory_coords,
         compress=compress,
@@ -1240,9 +1430,9 @@ class PreparedWrfout:
     (the device->host pull happened in :func:`prepare_wrfout_payload` while the
     GPU result was still resident). This object can therefore be handed to a
     background writer thread while the GPU advances the next forecast hour, with
-    no risk of racing a donated/reused device buffer. The NetCDF bytes written are
-    byte-for-byte identical to the synchronous path -- only the wall-clock timing
-    of the write changes.
+    no risk of racing a donated/reused device buffer. The NetCDF arrays and
+    metadata written are identical to the synchronous path -- only the wall-clock
+    timing of the write changes.
     """
 
     target: Path
@@ -1253,6 +1443,8 @@ class PreparedWrfout:
     lead_hours: float
     grid: Any
     namelist: Any
+    domain: str
+    domain_authority: WrfoutDomainAuthority
     full_variable_set: bool = False
 
 
@@ -1523,6 +1715,8 @@ def prepare_wrfout_payload(
     namelist: Mapping[str, Any] | Any | None,
     path: str | Path,
     *,
+    domain: str,
+    domain_authority: WrfoutDomainAuthority,
     valid_time: datetime | date | str,
     lead_hours: float,
     run_start: datetime | date | str,
@@ -1546,6 +1740,9 @@ def prepare_wrfout_payload(
     run_start_dt = _coerce_datetime(run_start)
     valid_dt = _coerce_datetime(valid_time)
     nx, ny, nz = _grid_extent(grid)
+    bound_authority = _validate_wrfout_domain_authority(
+        domain_authority, expected_domain=domain, output_grid=grid
+    )
     dimensions = _dimension_sizes(nx=nx, ny=ny, nz=nz, namelist=namelist)
     requested_names = _prepare_requested_names(
         variable_subset,
@@ -1596,6 +1793,8 @@ def prepare_wrfout_payload(
         lead_hours=float(lead_hours),
         grid=grid,
         namelist=namelist,
+        domain=domain,
+        domain_authority=bound_authority,
         full_variable_set=bool(full_variable_set),
     )
 
@@ -1603,6 +1802,8 @@ def prepare_wrfout_payload(
 def write_prepared_wrfout(
     prepared: PreparedWrfout,
     *,
+    expected_domain: str,
+    expected_domain_authority: WrfoutDomainAuthority,
     variable_subset: tuple[str, ...] | frozenset[str] | None = None,
     target_override: Path | None = None,
     include_mandatory_coords: bool = False,
@@ -1611,14 +1812,14 @@ def write_prepared_wrfout(
     """Write a :class:`PreparedWrfout` to NetCDF. Pure host work; thread-safe.
 
     Contains NO device-array access, so it is safe to run on a background writer
-    thread while the GPU advances. The bytes are identical to the synchronous
+    thread while the GPU advances. The arrays and metadata are identical to the synchronous
     :func:`write_wrfout_netcdf` path.
 
     ``variable_subset`` optionally restricts the emitted variables to the named
     subset -- a stream-generic hook for a secondary WRF ``auxhist`` history stream
     (e.g. a surface-only set). When ``None`` (the default) EVERY prepared field is
-    written exactly as before, so the main wrfout stream is byte-for-byte
-    unchanged. The ``Times``/``XTIME`` time coordinates and the global attributes
+    written exactly as before, apart from required authenticated ``GRID_ID``
+    metadata. The ``Times``/``XTIME`` time coordinates and the global attributes
     are ALWAYS written regardless of the subset (a stream-valid WRF history frame
     always carries its time stamp -- matching how WRF stamps every auxhist frame).
     A name in ``variable_subset`` that is absent from the prepared payload is
@@ -1633,56 +1834,122 @@ def write_prepared_wrfout(
 
     ``compress`` (#122 training output): apply lossless NetCDF4 zlib compression to
     the written variables (shrinking the ~10 GB/day training target). OFF by default
-    so every existing caller's on-disk bytes are unchanged; compression is lossless
+    so existing callers keep the same variable encoding; compression is lossless
     so values read back are bit-identical regardless.
+
+    ``expected_domain`` and ``expected_domain_authority`` are supplied separately
+    by the scheduler/writer owner at this final boundary. They must exactly match
+    the prepared binding, so replacing both fields inside ``PreparedWrfout`` does
+    not replace the trusted expectation.
 
     ``target_override`` writes the same host payload to a different path without a
     second device->host pull -- used by the auxhist stream, which reuses the main
     stream's already-materialized :class:`PreparedWrfout`.
     """
 
+    bound_authority = _validate_wrfout_domain_authority(
+        expected_domain_authority,
+        expected_domain=expected_domain,
+        output_grid=prepared.grid,
+        dimensions=prepared.dimensions,
+    )
+    if prepared.domain != expected_domain or prepared.domain_authority != bound_authority:
+        raise ValueError("WRFOUT_PREPARED_AUTHORITY_SUBSTITUTION")
     target = Path(target_override) if target_override is not None else prepared.target
     target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        os.lstat(target)
+    except FileNotFoundError:
+        pass
+    else:
+        raise FileExistsError(f"WRFOUT_TARGET_EXISTS:{target}")
     subset = None if variable_subset is None else frozenset(variable_subset)
     if subset is not None and include_mandatory_coords:
         # Self-contained training frame: also emit the coordinate/dimension vars (a
         # coord still absent from the payload is skipped below, never fabricated).
         subset = subset | MANDATORY_WRFOUT_COORDINATES
     # Lossless NetCDF4 zlib compression, opt-in (#122 training stream). Default OFF
-    # keeps every existing caller's on-disk bytes unchanged.
+    # keeps every existing caller's variable encoding unchanged.
     compression = _SUBSET_STREAM_COMPRESSION if compress else None
     dimensions = prepared.dimensions
-    with Dataset(target, "w", format="NETCDF4") as dataset:
-        _create_dimensions(dataset, dimensions)
-        _write_global_attrs(
-            dataset, prepared.grid, prepared.namelist, dimensions,
-            prepared.run_start_dt, prepared.valid_dt,
-        )
-        _write_times(dataset, prepared.valid_dt)
-        # Write in the canonical operational order, but emit ONLY the fields that
-        # were actually prepared. Optional sources (operational diagnostics, the
-        # Noah-MP land carry) self-gate: an absent source leaves its fields out of
-        # ``prepared.fields`` so the file never carries a fabricated quantity.
-        # ``subset`` (when set) further restricts to a stream's requested vars.
-        if prepared.full_variable_set:
-            write_order = FULL_WRFOUT_VARIABLES
-        else:
-            _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
-            write_order = OPERATIONAL_WRFOUT_VARIABLES
-        for name in write_order:
-            if name == "Times":
-                continue
-            if name == "XTIME":
-                if prepared.full_variable_set:
-                    _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
-                continue
-            if name not in prepared.fields:
-                continue
-            if subset is not None and name not in subset:
-                continue
-            spec = WRFOUT_VARIABLE_SPECS[name]
-            _write_float_variable(dataset, spec, prepared.fields[name], dimensions, compression)
+    temporary_fd, temporary = _create_wrfout_temporary(target)
+    os.close(temporary_fd)
+    try:
+        with Dataset(temporary, "w", format="NETCDF4") as dataset:
+            _create_dimensions(dataset, dimensions)
+            _write_global_attrs(
+                dataset, prepared.grid, prepared.namelist, dimensions,
+                prepared.run_start_dt, prepared.valid_dt, bound_authority,
+            )
+            _write_times(dataset, prepared.valid_dt)
+            # Write in the canonical operational order, but emit ONLY the fields
+            # actually prepared. Optional sources self-gate; ``subset`` further
+            # restricts to a stream's requested variables.
+            if prepared.full_variable_set:
+                write_order = FULL_WRFOUT_VARIABLES
+            else:
+                _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
+                write_order = OPERATIONAL_WRFOUT_VARIABLES
+            for name in write_order:
+                if name == "Times":
+                    continue
+                if name == "XTIME":
+                    if prepared.full_variable_set:
+                        _write_xtime(dataset, prepared.run_start_dt, prepared.lead_hours)
+                    continue
+                if name not in prepared.fields:
+                    continue
+                if subset is not None and name not in subset:
+                    continue
+                spec = WRFOUT_VARIABLE_SPECS[name]
+                _write_float_variable(
+                    dataset, spec, prepared.fields[name], dimensions, compression
+                )
+        with temporary.open("rb") as stream:
+            os.fsync(stream.fileno())
+        _publish_wrfout_noreplace(temporary, target)
+    finally:
+        temporary.unlink(missing_ok=True)
     return target
+
+
+def _publish_wrfout_noreplace(temporary: Path, target: Path) -> None:
+    """Atomically publish one completed frame without replacing any directory entry."""
+
+    if temporary.parent != target.parent:
+        raise ValueError("WRFOUT_PUBLICATION_DIRECTORY_MISMATCH")
+    directory_fd = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        try:
+            os.link(
+                temporary.name,
+                target.name,
+                src_dir_fd=directory_fd,
+                dst_dir_fd=directory_fd,
+                follow_symlinks=False,
+            )
+        except FileExistsError as exc:
+            raise FileExistsError(f"WRFOUT_TARGET_EXISTS:{target}") from exc
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+
+
+def _create_wrfout_temporary(target: Path) -> tuple[int, Path]:
+    """Create an unpredictable same-directory file exclusively, respecting umask."""
+
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    for _ in range(128):
+        temporary = target.parent / (
+            f".{target.name}.grid-id-{secrets.token_hex(16)}.tmp"
+        )
+        try:
+            return os.open(temporary, flags, 0o666), temporary
+        except FileExistsError:
+            continue
+    raise FileExistsError("WRFOUT_TEMPORARY_NAME_EXHAUSTED")
 
 
 def _dimension_sizes(*, nx: int, ny: int, nz: int, namelist: Mapping[str, Any] | Any | None) -> dict[str, int | None]:
@@ -1750,7 +2017,7 @@ def _write_float_variable(
     expected_shape = _shape_for_dimensions(spec.dimensions, dimensions)
     array = _coerce_array(spec.name, data, expected_shape, dtype=_numpy_dtype_for_spec(spec))
     # ``compression`` (zlib/complevel) is passed ONLY for subset streams; the
-    # default full-output path leaves it None so the uncompressed bytes are
+    # default full-output path leaves it None so the variable encoding is
     # unchanged for existing callers. Compression is lossless, so values read back
     # are bit-identical regardless.
     kwargs = dict(compression) if compression else {}
@@ -1779,7 +2046,13 @@ def _write_global_attrs(
     dimensions: Mapping[str, int | None],
     run_start: datetime,
     valid_time: datetime,
+    domain_authority: WrfoutDomainAuthority | None = None,
 ) -> None:
+    # ``None`` is retained only for the separate wrfrst compatibility writer,
+    # which imports this common-attribute helper. Every wrfout entry point
+    # validates and supplies a domain authority before opening its Dataset.
+    if domain_authority is not None and "GRID_ID" in dataset.ncattrs():
+        raise ValueError("WRFOUT_GRID_ID_DUPLICATE_OR_CONFLICT")
     projection = _lookup(grid, "projection")
     lat_0 = float(_lookup(projection, "lat_0", _lookup(namelist, "cen_lat", 0.0)))
     lon_0 = float(_lookup(projection, "lon_0", _lookup(namelist, "cen_lon", 0.0)))
@@ -1818,6 +2091,20 @@ def _write_global_attrs(
     }
     for name, value in attrs.items():
         dataset.setncattr(name, value)
+    if domain_authority is not None:
+        _set_wrfout_grid_id_attr(dataset, domain_authority)
+
+
+def _set_wrfout_grid_id_attr(
+    dataset: Dataset, domain_authority: WrfoutDomainAuthority
+) -> None:
+    """Insert the one writer-owned global attribute without overwrite semantics."""
+
+    if type(domain_authority) is not WrfoutDomainAuthority:
+        raise ValueError("WRFOUT_DOMAIN_AUTHORITY_MISSING_OR_TYPE")
+    if "GRID_ID" in dataset.ncattrs():
+        raise ValueError("WRFOUT_GRID_ID_DUPLICATE_OR_CONFLICT")
+    dataset.setncattr("GRID_ID", np.int32(domain_authority.grid_id))
 
 
 def _build_subset_output_fields(

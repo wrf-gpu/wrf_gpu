@@ -7,6 +7,40 @@ WRF v4 GPU port — see [`PROJECT_PLAN.md`](PROJECT_PLAN.md)).
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.23.4] - UNRELEASED
+
+**Correctness release, prepared but NOT tagged.** Gated on this project's standing release rule:
+no tag until every known issue is solved-green, proven unsolvable, or proven irrelevant. Full
+notes: `RELEASE_NOTES_v0.23.4.md`.
+
+- **Fixed (correctness, all GREEN, 3× independent Opus review):** the nine-nest (`max_dom=9`)
+  correctness chain closes end to end. **V10** wake-displacement — the nested GPU path silently
+  ran `moist_adv_opt`/`scalar_adv_opt=0/0` against a `1/1` namelist; fix restores WRF-faithful
+  scalar transport (`V`/`V10` RMSE 0.9308/1.9509, both inside gate). **Late-Ni** — Thompson ice
+  sedimentation allowed an unphysical fall velocity up to 856.956 m/s (WRF-faithful: 0.63917 m/s);
+  fixed via a missing pre-sedimentation ice mass/number balance. **Not baseline-neutral**: changes
+  ice fall speed in 98.1% of ice-bearing cells — prior ice-carrying evidence needs re-baselining.
+  **Nine-nest replay** — full all-seven-island `max_dom=9` real-fixture replay: 27/27 outputs
+  exact, 177,497,511 values finite, zero tolerance failures across all nine domains.
+- **Fixed (performance, partial, validated):** the V10 fix made 8-species scalar transport
+  genuinely active where it was previously a silent no-op — expensive under d03's subcycling. An
+  early short-call canary measured a 2.12× `maxdom3` regression, but that measurement was later
+  superseded by a production-faithful methodology fix (see below); the definitive figure is 51.67%.
+  A size-thresholded `jax.vmap` species batch (limited/final-RK-stage path only) fixes this **for
+  2-domain (d01+d02) configurations**: MEASURED ratio 0.960–1.018 vs v0.23.3, no regression.
+  Long-horizon WRF-fidelity gate PASS (d01/d02 bit-exact; worst d03 field 9.17e-12 of its envelope).
+- **KNOWN, UNFIXED (performance — investigation closed, regression not fixed):** 3-domain
+  (`maxdom3`) and 9-domain configurations that engage d03 have a real, measured **51.67%
+  regression** vs v0.23.3 (definitive production-faithful methodology; 79.95% of the added cost is
+  inside the FCT flux-limiter's flux-renormalization computation). Every quick-fix candidate
+  (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll substitution) was
+  falsified or rejected with evidence — roll substitution specifically failed the production
+  exact-output gate and still measured 38.9% slower than v0.23.3. A Nsight Compute hardware
+  measurement of the isolated dominant kernel then confirmed it is **occupancy/latency-bound, not
+  bandwidth-bound** (DRAM 20.3% of peak, occupancy 15.6%), ruling out a reduced-precision fix and
+  identifying concurrent sibling-domain scheduling as the mechanistically-mapped next lever
+  (design-scoped, not implemented). **This regression ships as a known, understood limitation.**
+
 ## [0.23.3] - 2026-07-08
 
 Reliability point-release: fix a false-negative in the nested-GPU VRAM preflight
@@ -16,11 +50,12 @@ change** — results are identical to v0.23.2.
 - **Fixed:** `cuda_async` reserves its device memory pool during XLA backend init,
   *before* the preflight reads free VRAM via `nvidia-smi`, so the preflight saw its
   own pool as "used" and killed nested runs with `rc=75 "free VRAM below threshold"`
-  on an otherwise-empty card. Under a verifiably-held `with_gpu_lock` (exclusive +
-  pre-launch VRAM-checked), a low reading is now an **advisory**, not a failure; the
-  hard gate is unchanged when no lock is held, and a genuinely-oversized pool still
-  OOMs honestly at allocation. Restores the faster `cuda_async` allocator for locked
-  runs. Full notes: `RELEASE_NOTES_v0.23.3.md`.
+  on an otherwise-empty card (production incident 20260707_18z: 5/5 chunks). Under a
+  verifiably-held `with_gpu_lock` (exclusive + pre-launch VRAM-checked), a low
+  reading is now an **advisory**, not a failure; the hard gate is unchanged when no
+  lock is held, and a genuinely-oversized pool still OOMs honestly at allocation.
+  Restores the faster `cuda_async` allocator for locked production runs. Full notes:
+  `RELEASE_NOTES_v0.23.3.md`.
 
 ## [0.23.2] - 2026-07-04
 
@@ -28,13 +63,13 @@ Operational ergonomics fix for the F1 batched-ensemble distinct-init path. **No
 dynamics, no physics, no default numerical change** (the batched math is unchanged).
 
 - `GPUWRF_BATCH_INPUT_DIRS` now accepts a **comma** (or newline, or `:`) between the `B`
-  distinct-init dirs — the old `:`-only contract mis-parsed a natural comma list as one
-  dir and failed with a confusing error (forced an operational fallback to sequential
-  segments). The count-mismatch error is now actionable (names the separators + example).
+  distinct-init dirs; the old `:`-only contract mis-parsed a natural comma list as one dir
+  and failed with a confusing error (forced an operational fallback to sequential segments).
+  The count-mismatch error is now actionable (names the separators + example).
 - Documents + verifies the distinct-init CLI contract (nested one-way, exactly `B`
   same-geometry dirs, only the day differs). New CPU unit tests.
 
-Full notes: [`RELEASE_NOTES_v0.23.2.md`](release_notes/RELEASE_NOTES_v0.23.2.md).
+Full notes: [`RELEASE_NOTES_v0.23.2.md`](RELEASE_NOTES_v0.23.2.md).
 
 ## [0.23.1] - 2026-07-04
 
@@ -46,16 +81,15 @@ identical to v0.23.0 (the compute/dispatch path is untouched).
   patterned after the WRF Users' Guide.
 - **AI-native onboarding**: an `AI_OPERATOR.md` operator runbook + a Claude Code
   skill (`.claude/skills/run-wrf-gpu/`) + an auto-load banner on `AGENTS.md`/`CLAUDE.md`,
-  so an agent can clone → set up → run a user's case, narrating each step.
+  so an agent can clone -> set up -> run a user's case, narrating each step.
 - **WRF-parity CLI ergonomics** (backward-compatible; explicit flags always win):
-  `--hours` and `--domain` default from `namelist.input` when omitted (root domain
-  `d01`, forecast length from `&time_control`); new `--domains-from-namelist`,
-  `gpuwrf namelist-support`, and `--dry-run`; clearer `GPUWRF_WRF_ROOT` errors;
-  effective-values recorded in the run payload.
-- **Doc-accuracy fixes**: init described as `wrfinput`/`wrfbdy` (no `real.exe`/CPU-WRF
-  dependency); training subset = 39 variables; `*=0` disabled slots marked accepted.
+  `--hours`/`--domain` default from `namelist.input` (root domain `d01`, forecast
+  length from `&time_control`); new `--domains-from-namelist`, `gpuwrf namelist-support`,
+  `--dry-run`; clearer `GPUWRF_WRF_ROOT` errors; effective-values in the run payload.
+- **Doc-accuracy fixes**: init = `wrfinput`/`wrfbdy` (no `real.exe`/CPU-WRF dependency);
+  training subset = 39 variables; `*=0` disabled slots marked accepted.
 
-Full notes: [`RELEASE_NOTES_v0.23.1.md`](release_notes/RELEASE_NOTES_v0.23.1.md).
+Full notes: [`RELEASE_NOTES_v0.23.1.md`](RELEASE_NOTES_v0.23.1.md).
 Parity plan: [`docs/WRF_PARITY_ROADMAP.md`](docs/WRF_PARITY_ROADMAP.md).
 
 ## [0.23.0] - 2026-07-04
@@ -106,7 +140,7 @@ Nested host-bound GPU-idle reduction point release on top of `v0.22.1`. The
 default path keeps full wrfout semantics and byte-identical output while cutting
 host work at nested output boundaries; the larger overlap levers remain opt-in
 until the manager-scheduled 0:2 GPU idle / VRAM validation run. Full notes:
-[`RELEASE_NOTES_v0.22.2.md`](release_notes/RELEASE_NOTES_v0.22.2.md).
+[`RELEASE_NOTES_v0.22.2.md`](RELEASE_NOTES_v0.22.2.md).
 
 ### Changed
 - **Default-on byte-identical host-work cuts.** Nested output no longer performs
@@ -148,7 +182,7 @@ until the manager-scheduled 0:2 GPU idle / VRAM validation run. Full notes:
 Pod-data-quality point release on top of `v0.22.0`. Default behavior remains
 bit-identical / convention-preserving: no numerics, masking, clamp, or schema
 change; WRF-standard wrfout names with `HH:MM:SS` remain the default. Full
-notes: [`RELEASE_NOTES_v0.22.1.md`](release_notes/RELEASE_NOTES_v0.22.1.md).
+notes: [`RELEASE_NOTES_v0.22.1.md`](RELEASE_NOTES_v0.22.1.md).
 
 ### Fixed
 - **Nested d02 output cadence.** Leaf-domain advance now splits at history
@@ -174,7 +208,7 @@ notes: [`RELEASE_NOTES_v0.22.1.md`](release_notes/RELEASE_NOTES_v0.22.1.md).
 Default-safe hygiene, opt-in validated features, and fail-closed scaffolds on
 top of `v0.21.1`. The default forecast path remains bit-identical to v0.21.1;
 all new runtime behavior is opt-in or validation-only. Full notes:
-[`RELEASE_NOTES_v0.22.0.md`](release_notes/RELEASE_NOTES_v0.22.0.md).
+[`RELEASE_NOTES_v0.22.0.md`](RELEASE_NOTES_v0.22.0.md).
 
 ### Added
 - **Authoritative v0.22 feature-push table.** LANDED, validated, opt-in rows:
@@ -230,7 +264,7 @@ all new runtime behavior is opt-in or validation-only. Full notes:
 ## [0.21.1] - 2026-06-27
 
 Point release off `v0.21.0` for the Mont-Blanc-class extreme-terrain stability
-blocker. Full notes: [`RELEASE_NOTES_v0.21.1.md`](release_notes/RELEASE_NOTES_v0.21.1.md).
+blocker. Full notes: [`RELEASE_NOTES_v0.21.1.md`](RELEASE_NOTES_v0.21.1.md).
 
 ### Fixed
 - **Mont-Blanc-class specified-boundary vertical-velocity runaway.** The native-dt
@@ -258,7 +292,7 @@ blocker. Full notes: [`RELEASE_NOTES_v0.21.1.md`](release_notes/RELEASE_NOTES_v0
 Stability + compile-cache-speed release. Priority order: **STABILITY > IDENTITY >
 SPEED > MEMORY**. The fp64 default path stays byte-identical and warm forecast
 throughput is unchanged from v0.20; the speed win is **compile / warm-start time**.
-Full notes: [`RELEASE_NOTES_v0.21.0.md`](release_notes/RELEASE_NOTES_v0.21.0.md).
+Full notes: [`RELEASE_NOTES_v0.21.0.md`](RELEASE_NOTES_v0.21.0.md).
 
 ### Added
 - **AOT cheap-key cross-process warm-start of the FUSED cascade (default on).** After a
@@ -353,7 +387,7 @@ mitigated and carried), makes the nested compile cache hit across forecast dates
 adds an opt-in compact training-output mode, lands the paid-B200 I/O readiness
 tooling, and applies a no-fabrication honesty refresh to the public claims. The
 fp64 default path stays byte-for-byte unchanged. Full notes:
-[`RELEASE_NOTES_v0.20.1.md`](release_notes/RELEASE_NOTES_v0.20.1.md).
+[`RELEASE_NOTES_v0.20.1.md`](RELEASE_NOTES_v0.20.1.md).
 
 - **#114 — cross-date warm NEST compile cache (bit-identical). CONFIRMED.** The
   nested path carried a residual baked date scalar in the pytree treedef; it is now
@@ -642,7 +676,7 @@ nested 1 km path; re-landed GPU-validated compile-speed infra; wired MYJ PBL +
 Janjic-Eta surface layer to operational; added clear-sky radiation diagnostics,
 moisture flux-advection into RK3 (opt-in), and `shard_map` fake-mesh multi-GPU
 sharding; hardened reproducibility + community validation. Full notes:
-[`RELEASE_NOTES_v0.13.0.md`](release_notes/RELEASE_NOTES_v0.13.0.md).
+[`RELEASE_NOTES_v0.13.0.md`](RELEASE_NOTES_v0.13.0.md).
 
 ## [0.12.0] — Standalone out-of-box CLI
 
@@ -650,24 +684,24 @@ Made wrf_gpu a true out-of-the-box standalone GPU forecast system: standalone
 native-init + live-nested `--max-dom` CLI (no CPU-WRF `wrfout` dependency),
 persistent JIT cache (on by default), fail-closed scheme catalog, WRF-faithful
 PSFC fix, and a runnable GPU-vs-CPU equivalence demo. Full notes:
-[`RELEASE_NOTES_v0.12.0.md`](release_notes/RELEASE_NOTES_v0.12.0.md).
+[`RELEASE_NOTES_v0.12.0.md`](RELEASE_NOTES_v0.12.0.md).
 
 ## [0.11.0] — Live nesting, restart, conservation
 
 Live multi-domain nesting (d01→d02→d03, one-way), bit-identical WRF restart,
 closed conservation budgets, MYNN-EDMF mass flux, topographic/slope radiation,
 terrain-slope diffusion, and KF/BMJ/Tiedtke/Grell-Freitas cumulus. Full notes:
-[`RELEASE_NOTES_v0.11.0.md`](release_notes/RELEASE_NOTES_v0.11.0.md).
+[`RELEASE_NOTES_v0.11.0.md`](RELEASE_NOTES_v0.11.0.md).
 
 ## [0.10.0]
 
 Removed one faithful Thompson sedimentation inefficiency. Full notes:
-[`RELEASE_NOTES_v0.10.0.md`](release_notes/RELEASE_NOTES_v0.10.0.md).
+[`RELEASE_NOTES_v0.10.0.md`](RELEASE_NOTES_v0.10.0.md).
 
 ## [0.9.0] — Standalone forecast system
 
 Consolidated native real-init + the operational physics menu into a standalone
-forecast system. Full notes: [`RELEASE_NOTES_v0.9.0.md`](release_notes/RELEASE_NOTES_v0.9.0.md).
+forecast system. Full notes: [`RELEASE_NOTES_v0.9.0.md`](RELEASE_NOTES_v0.9.0.md).
 
 ## [0.4.0]
 
@@ -686,4 +720,4 @@ The stable paper-claims baseline. Accessible via the `v0.2.0` git tag.
 
 Single-domain replay path consuming CPU-WRF/Gen2 artifacts for initialization;
 Coriolis-corrected 3 km d02 validated against nightly CPU-WRF over real days.
-Full notes: [`RELEASE_NOTES_v0.1.0.md`](release_notes/RELEASE_NOTES_v0.1.0.md).
+Full notes: [`RELEASE_NOTES_v0.1.0.md`](RELEASE_NOTES_v0.1.0.md).

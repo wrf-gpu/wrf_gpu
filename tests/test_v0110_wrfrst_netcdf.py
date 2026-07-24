@@ -12,7 +12,7 @@ from gpuwrf.contracts.noahmp_state import NoahMPLandState
 from gpuwrf.contracts.precision import DEFAULT_DTYPES
 from gpuwrf.contracts.state import State, _state_field_shapes
 from gpuwrf.coupling.noahclassic_surface_hook import NoahClassicLandState, NoahClassicRadiation
-from gpuwrf.io.wrfout_writer import write_wrfout_netcdf
+from gpuwrf.io.wrfout_writer import bind_wrfout_domain_authority, write_wrfout_netcdf
 from gpuwrf.io.wrfrst_netcdf import (
     CARRY_ARRAY_FIELDS,
     SCHEMA_VERSION,
@@ -32,6 +32,7 @@ from gpuwrf.io.wrfrst_netcdf import (
     write_wrfrst_state,
 )
 from gpuwrf.runtime.operational_state import initial_operational_carry
+from test_m7_netcdf_writer import authenticated_source_grid
 
 
 def _pattern(shape: tuple[int, ...], dtype, offset: int):
@@ -329,6 +330,12 @@ def test_wrfout_writes_ki3_snow_snso_and_seed_dimensions(tmp_path: Path) -> None
         grid,
         {},
         path,
+        domain="d01",
+        domain_authority=bind_wrfout_domain_authority(
+            "d01",
+            authenticated_source_grid(grid, "d01"),
+            grid,
+        ),
         valid_time="2026-06-03_00:00:00",
         lead_hours=0.0,
         run_start="2026-06-03_00:00:00",

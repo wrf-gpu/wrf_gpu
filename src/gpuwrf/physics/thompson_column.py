@@ -459,6 +459,60 @@ def _ice_distribution(qi, Ni, rho):
     return ri, ni, lami, ilami, xdi, xmi, qi > R1
 
 
+def _balance_ice_number(qi, Ni, rho):
+    """WRF working-ice-number size balance (module_mp_thompson.F:3033-3055).
+
+    The ice analogue of :func:`_clamp_rain_number`.  WRF re-balances cloud-ice
+    mass against number BEFORE the working ``ri``/``ni`` pair is formed
+    (3226-3234) and therefore before ice fall speeds (3678-3691) and the
+    adaptive sedimentation substep count (3693-3697) are built from it.  The
+    balance keeps the mass-weighted mean ice diameter inside 5-300 um and the
+    number below 999e3 m^-3.
+
+    WRF writes the balance as a tendency correction
+    ``niten = (xni - ni1d*rho)*odts*orho``; since ``odts = 1/dtsave`` the
+    post-tendency number density is exactly ``xni``, so returning ``xni`` is an
+    exact restatement of the source, not an approximation.
+
+    Why this is load-bearing and not cosmetic: ``lami`` is built from the
+    number/mass ratio, so an active layer carrying ice mass with a near-zero
+    number implies an enormous mean diameter and hence an enormous terminal
+    fall speed.  WRF's ``vtik(k)=vtik(k+1)`` fill-down then carries that speed
+    down into the thin near-surface layers, where ``nstep = INT(DT/(dzq/vt)+1)``
+    explodes.  Balancing FIRST is what stops the unphysical speed from ever
+    being formed -- the port previously applied this same algebra only in
+    ``_finish``, i.e. AFTER sedimentation had already run on the raw pair.
+
+    This is a WORKING-number balance (it never changes the ice MASS); the
+    prognostic ice number is re-derived from the same band in ``_finish``
+    (WRF 4023-4038).  Returns the balanced ice number (per-kg), byte-unchanged
+    wherever the (qi, Ni) pair is already inside the band.
+    """
+
+    ri = jnp.maximum(qi * rho, R1)
+    ni = jnp.maximum(Ni * rho, R2)
+    # WRF's `if (xri .gt. R1)` test is on the mass DENSITY xri = MAX(R1, qi*rho).
+    active = ri > R1
+    lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
+    xdi = CIE2 / lami
+    too_small = xdi < 5.0e-6
+    too_large = xdi > 300.0e-6
+    # cig(1) = Gamma(mu_i+1) = 1 and bm_i = 3, written as literals to match the
+    # surrounding ice code (_ice_distribution, _finish).
+    ni_small = jnp.minimum(999.0e3, OIG2 * ri / AM_I * (CIE2 / 5.0e-6) ** 3.0)
+    ni_large = OIG2 * ri / AM_I * (CIE2 / 300.0e-6) ** 3.0
+    ni_bal = jnp.where(too_small, ni_small, jnp.where(too_large, ni_large, ni))
+    # Trailing number ceiling, WRF 3053-3055.
+    over_ceiling = ni_bal > 999.0e3
+    ni_bal = jnp.where(over_ceiling, 999.0e3, ni_bal)
+    # Only rebuild where the band was actually violated, so in-band columns keep
+    # their exact prognostic Ni (no *rho -> /rho round-trip).  WRF's inactive
+    # branch (`niten = -ni1d*odts`, and the 999e3 cap on inactive layers) is
+    # already carried by ``_finish``, which zeroes Ni wherever qi <= R1.
+    rebuilt = active & (too_small | too_large | over_ceiling)
+    return jnp.where(rebuilt, ni_bal / rho, Ni)
+
+
 def _lookup_digit_index(values, first_power: int, size: int):
     """Matches WRF's decade/digit table indexes without a search loop."""
 
@@ -1592,10 +1646,19 @@ def _ice_sources(state: ThompsonColumnState, dt: float, tables: ThompsonTableBun
 # Cap sizing: explicit-upwind stability needs nstep >= vt*DT/dz.  The v0.10.0
 # d02/d03 wet-column scan found max nstep=2 and zero clips at cap=16, so 16 is an
 # 8x margin over the observed active corpus while still covering severe-column
-# estimates (~8-12).  If a pathological column ever needs nstep > NSED_MAX the
-# substep is silently capped at NSED_MAX (same behavior as the old cap=64 path,
-# stable but slightly under-resolved) and counted as a sed-clip fallback by the
-# validation harness.  ``GPUWRF_THOMPSON_NSED`` overrides the cap.
+# estimates (~8-12).  ``GPUWRF_THOMPSON_NSED`` overrides the cap.
+#
+# WARNING -- clipping is NOT a safe fallback.  An earlier version of this note
+# claimed a capped column stayed "stable but slightly under-resolved"; that is
+# false and it hid a real failure.  Clipping nstep below vt*DT/dz breaks the
+# explicit upwind CFL outright, and the scheme then AMPLIFIES rather than
+# under-resolves.  v0234 d01 native step 1148 needed nstep=911, was silently
+# clipped to 16, and created 7.93e13x the column ice mass in a single step
+# (.agent/sprints/2026-07-21-v0234-opus-late-ni-fix/).  The root cause there was
+# an unphysical 856.96 m/s ice fall speed from an unbalanced ice number, fixed at
+# source in ``_balance_ice_number`` so the speed is never formed -- but the cap
+# itself remains a SILENT corruption path for any future column that exceeds it.
+# Raising the cap is not a fix; a fail-closed check is the open follow-up.
 def _nsed_substeps() -> int:
     try:
         return max(1, int(os.environ.get("GPUWRF_THOMPSON_NSED", "16")))
@@ -1810,7 +1873,11 @@ def _fall_speeds(state: ThompsonColumnState, vts_boost=None):
 
     act_i = state.qi > R1
     ri = jnp.maximum(state.qi * rho, R1)
-    ni = jnp.maximum(state.Ni * rho, R2)
+    # WRF forms the ice fall speeds from the SIZE-BALANCED working number
+    # ``ni(k)`` built at module_mp_thompson.F:3226-3234 out of the tendencies
+    # that line 3033-3055 already re-balanced into the 5-300 um band -- NOT from
+    # the raw prognostic Ni.  Same working-number discipline as rain above.
+    ni = jnp.maximum(_balance_ice_number(state.qi, state.Ni, rho) * rho, R2)
     # cig(2) = Gamma(bm_i+mu_i+1) = Gamma(4) = 6 (WRF module_mp_thompson.F:695).
     lami = (AM_I * 6.0 * OIG1 * ni / ri) ** OBMI
     ilami = 1.0 / lami
@@ -2029,7 +2096,11 @@ def _sedimentation(state: ThompsonColumnState, dt: float, vts_boost=None):
     # prognostic (re-balanced to the same band in ``_finish``, WRF 4046-4055).
     Nr_sed = _clamp_rain_number(state.qr, state.Nr, rho)
     qr, Nr, ppt_rain = _sed_one_species(state.qr, Nr_sed, vt_r_mass, vt_r_num, dz, rho, dt, nstep_r)
-    qi, Ni, ppt_ice = _sed_one_species(state.qi, state.Ni, vt_i_mass, vt_i_num, dz, rho, dt, nstep_i)
+    # Ice follows the same rule: WRF sediments the size-balanced working number
+    # ``ni(k)`` (3033-3055 -> 3226-3234 -> the 3840-3869 ice fall loop), and the
+    # result is re-balanced to the same band by ``_finish`` (WRF 4023-4038).
+    Ni_sed = _balance_ice_number(state.qi, state.Ni, rho)
+    qi, Ni, ppt_ice = _sed_one_species(state.qi, Ni_sed, vt_i_mass, vt_i_num, dz, rho, dt, nstep_i)
     # Snow: number tracks mass (diagnostic Ns).  Use the mass speed for both.
     qs, Ns, ppt_snow = _sed_one_species(state.qs, state.Ns, vt_s_mass, vt_s_mass, dz, rho, dt, nstep_s)
     qg, Ng, ppt_graupel = _sed_one_species(state.qg, state.Ng, vt_g_mass, vt_g_num, dz, rho, dt, nstep_g)

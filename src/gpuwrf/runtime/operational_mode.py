@@ -32,12 +32,15 @@ from gpuwrf.contracts.halo import apply_halo
 from gpuwrf.coupling.boundary_apply import (
     BoundaryConfig,
     DEFAULT_BOUNDARY_CONFIG,
+    NESTED_BOUNDARY_SCALAR_SPECIES,
     apply_lateral_boundaries,
     interpolate_boundary_leaf,
     normal_bdy_work_target_u,
     normal_bdy_work_target_v,
     nested_ph_relax_tendency,
+    nested_scalar_boundary_tendencies,
     nested_w_relax_tendency,
+    specified_boundary_tendency,
     specified_relax_dry_tendencies,
     SpecifiedRelaxTendencies,
     tangential_bdy_work_target_u,
@@ -132,12 +135,15 @@ from gpuwrf.dynamics.explicit_diffusion import (
     tke_rhs_tendency,
     vertical_diffusion_coord_scalar_tendency,
     wrf_deformation_momentum_tendency,
+    wrf_nonperiodic_diffusion_metrics,
+    wrf_nested_horizontal_diffusion_momentum_tendency,
+    wrf_sixth_order_scalar_tendf,
+    wrf_sixth_order_uvw_tendf,
 )
 from gpuwrf.dynamics.flux_advection import (
     CoupledVelocities,
     advect_moisture_scalars,
     advect_scalar_flux,
-    advect_scalar_flux_limited,
     advect_u_flux,
     advect_v_flux,
     advect_w_flux,
@@ -147,13 +153,24 @@ from gpuwrf.dynamics.flux_advection import (
 )
 from gpuwrf.dynamics.acoustic_wrf import (
     CPOVCV,
+    CVPM,
+    P0_PA,
+    R_D,
     _inverse_density_from_theta_pressure,
     calc_coef_w_wrf_coefficients,
     diagnose_pressure_al_alt,
     horizontal_pressure_gradient,
     moisture_coupling_factors,
 )
-from gpuwrf.dynamics.core.acoustic import AcousticCoreConfig, AcousticCoreState, acoustic_substep_core
+from gpuwrf.dynamics.core.acoustic import (
+    AcousticCoreConfig,
+    AcousticCoreState,
+    AcousticPhaseTapSummary,
+    MassPrimitiveObservation,
+    PHASE_TAP_SCRATCH_FIELDS,
+    PHASE_TAP_SUMMARY_METRICS,
+    acoustic_substep_core,
+)
 from gpuwrf.dynamics.core.advance_w import (
     GRAVITY_M_S2,
     dry_cqw,
@@ -167,6 +184,7 @@ from gpuwrf.dynamics.core.coupled import CoupledCoreConfig, coupled_timestep_cor
 from gpuwrf.dynamics.core.rk_addtend_dry import (
     DryPhysicsTendencies,
     large_step_coriolis,
+    large_step_horizontal_curvature,
     large_step_horizontal_pgf,
     rk_addtend_dry,
 )
@@ -406,6 +424,329 @@ class _PreHaloCaptureResult(NamedTuple):
 
     carry: OperationalCarry
     pre_halo_state: State
+
+
+class CorrectedNiPhaseTapResult(NamedTuple):
+    """Complete ordinary carry plus the bounded option-2 acoustic summary."""
+
+    carry: OperationalCarry
+    summary: AcousticPhaseTapSummary
+
+
+class FirstIntervalMomentumRecord(NamedTuple):
+    """Diagnostic-only first-interval momentum savepoints (v0234).
+
+    Raw A-grid MYNN PBL momentum tendencies (RUBLTEN/RVBLTEN, exactly as the
+    adapter returns them before any mass coupling) plus the assembled WRF
+    ``update_phy_ten`` momentum tendencies (mass-coupled, face-mapped
+    ru_tendf/rv_tendf).  Captured only by the proof-only
+    ``advance_one_step_with_first_interval_capture`` entry point; never part
+    of the production step program.
+    """
+
+    rublten: jax.Array
+    rvblten: jax.Array
+    ru_tendf: jax.Array
+    rv_tendf: jax.Array
+
+
+class FirstIntervalStepResult(NamedTuple):
+    """Complete ordinary carry plus the first-interval momentum record."""
+
+    carry: OperationalCarry
+    record: FirstIntervalMomentumRecord
+
+
+class FirstIntervalLadderRecord(NamedTuple):
+    """Diagnostic-only d03 step suboperator-ladder savepoints (v0234).
+
+    Source-bound before/after states spanning the dry-dycore/nest region
+    between the assembled physics tendencies (SP3) and the end-of-step exit
+    (SP4), aligned 1:1 with the WRF-side ladder dumps:
+
+    * ``rk1_tend_u/v``: RK1 merged large-step coupled momentum tendency
+      (WRF ``grid%ru_tend/rv_tend`` after ``rk_addtend_dry``/``spec_bdy_dry``,
+      ``solve_em.F`` after ``BENCH_END(relax_bdy_dry_tim)``).
+    * ``rk1_relax_u/v``: step-constant boundary-relax bundle
+      (WRF ``grid%u_save/v_save`` after rk1-only ``relax_bdy_dry``).
+    * ``rk{1,2,3}_fin_u/v``: per-RK-stage finished momentum
+      (WRF ``grid%u_2/v_2`` after ``small_step_finish``).
+    * ``pre_bdry_u/v``: state just before the end-of-step boundary pass
+      (WRF ``grid%u_2/v_2`` immediately before ``spec_bdy_final``).
+
+    Captured only by the proof-only
+    ``advance_one_step_with_first_interval_ladder`` entry point; never part
+    of the production step program.
+    """
+
+    rk1_tend_u: jax.Array
+    rk1_tend_v: jax.Array
+    rk1_relax_u: jax.Array
+    rk1_relax_v: jax.Array
+    rk1_fin_u: jax.Array
+    rk1_fin_v: jax.Array
+    rk2_fin_u: jax.Array
+    rk2_fin_v: jax.Array
+    rk3_fin_u: jax.Array
+    rk3_fin_v: jax.Array
+    pre_bdry_u: jax.Array
+    pre_bdry_v: jax.Array
+
+
+class FirstIntervalLadderStepResult(NamedTuple):
+    """Complete ordinary carry plus the first-interval and ladder records."""
+
+    carry: OperationalCarry
+    record: FirstIntervalMomentumRecord
+    ladder: FirstIntervalLadderRecord
+
+
+class _RkLadderResult(NamedTuple):
+    """Internal carrier for the RK-scan leg of the ladder capture."""
+
+    carry: OperationalCarry
+    rk1_tend_u: jax.Array
+    rk1_tend_v: jax.Array
+    rk1_relax_u: jax.Array
+    rk1_relax_v: jax.Array
+    rk1_fin_u: jax.Array
+    rk1_fin_v: jax.Array
+    rk2_fin_u: jax.Array
+    rk2_fin_v: jax.Array
+    rk3_fin_u: jax.Array
+    rk3_fin_v: jax.Array
+
+
+RCA_HEALTH_METRICS = (
+    "nonfinite_count",
+    "first_nonfinite_flat_index",
+    "max_abs_finite",
+    "max_abs_flat_index",
+    "value_at_max_abs",
+    "min_finite",
+    "min_finite_flat_index",
+    "max_finite",
+)
+RCA_ACOUSTIC_FIELDS = (
+    "pre_uv_u",
+    "pre_uv_v",
+    "large_u_tend",
+    "large_v_tend",
+    "pre_p",
+    "pre_al",
+    "pre_ph",
+    "small_dpx",
+    "small_dpy",
+    "uv_u",
+    "uv_v",
+    "raw_dvdxi",
+    "raw_dmdt",
+    "raw_mu_tendency",
+    "mu_scale",
+    "limited_dvdxi",
+    "limited_dmdt",
+    "output_mudf",
+    "new_muts",
+    "post_w",
+    "post_ph",
+    "post_p",
+    "post_al",
+    "post_theta",
+    "post_u",
+    "post_v",
+    "post_mu",
+    "post_ww",
+)
+RCA_STATE_FIELDS = (
+    "u", "v", "w", "theta", "qv",
+    "p_total", "p_perturbation", "ph_total", "ph_perturbation",
+    "mu_total", "mu_perturbation",
+    "qc", "qr", "qi", "qs", "qg",
+    "Ni", "Nr", "Ns", "Ng", "Nc", "Nn",
+    "qke", "qsq", "qc_bl", "qi_bl", "cldfra_bl",
+    "ustar", "theta_flux", "qv_flux", "tau_u", "tau_v", "rhosfc", "fltv",
+    "t_skin", "soil_moisture", "roughness_m",
+    "rain_acc", "rainc_acc", "snow_acc", "graupel_acc", "ice_acc",
+)
+RCA_BOUNDARY_FIELDS = (
+    "u_bdy", "v_bdy", "w_bdy", "theta_bdy", "qv_bdy",
+    "p_bdy", "pb_bdy", "ph_bdy", "phb_bdy", "mu_bdy", "mub_bdy",
+)
+RCA_STATE_PHASES = (
+    "step_entry",
+    "physics_output",
+    "post_rk_pre_non_dry",
+    "post_non_dry",
+    "post_guard",
+    "post_boundary",
+    "post_precision",
+)
+RCA_TARGET_K = 1
+RCA_TARGET_Y = 48
+RCA_TARGET_X = 78
+
+
+class _RcaAcousticScanResult(NamedTuple):
+    carry: OperationalCarry
+    health: jax.Array
+    target: jax.Array
+
+
+class _RcaRkResult(NamedTuple):
+    carry: OperationalCarry
+    acoustic_health: jax.Array
+    acoustic_target: jax.Array
+
+
+class RcaStepRecord(NamedTuple):
+    acoustic_health: jax.Array
+    acoustic_target: jax.Array
+    state_health: jax.Array
+    state_target: jax.Array
+    boundary_health: jax.Array
+
+
+class _RcaStepResult(NamedTuple):
+    carry: OperationalCarry
+    record: RcaStepRecord
+
+
+class RcaChunkResult(NamedTuple):
+    carry: OperationalCarry
+    records: RcaStepRecord
+
+
+def _rca_array_health(value: jax.Array) -> jax.Array:
+    """Eight-scalar finite/range/location summary with no host callback."""
+
+    array = jnp.asarray(value, dtype=jnp.float64)
+    flat = jnp.ravel(array)
+    finite = jnp.isfinite(flat)
+    bad = jnp.logical_not(finite)
+    bad_count = jnp.sum(bad, dtype=jnp.int64)
+    first_bad = jnp.where(bad_count > 0, jnp.argmax(bad), -1)
+    finite_abs = jnp.where(finite, jnp.abs(flat), -jnp.inf)
+    max_abs_index = jnp.argmax(finite_abs)
+    max_abs = finite_abs[max_abs_index]
+    value_at_max = flat[max_abs_index]
+    finite_values = jnp.where(finite, flat, jnp.inf)
+    min_index = jnp.argmin(finite_values)
+    minimum = finite_values[min_index]
+    maximum = jnp.max(jnp.where(finite, flat, -jnp.inf))
+    return jnp.asarray(
+        (
+            bad_count, first_bad, max_abs, max_abs_index, value_at_max,
+            minimum, min_index, maximum,
+        ),
+        dtype=jnp.float64,
+    )
+
+
+def _rca_acoustic_health(
+    result: AcousticCoreState,
+    observation: MassPrimitiveObservation,
+) -> jax.Array:
+    values = (
+        observation.pre_uv_u,
+        observation.pre_uv_v,
+        observation.large_u_tend,
+        observation.large_v_tend,
+        observation.pre_p,
+        observation.pre_al,
+        observation.pre_ph,
+        observation.small_dpx,
+        observation.small_dpy,
+        observation.uv_u,
+        observation.uv_v,
+        observation.raw_dvdxi,
+        observation.raw_dmdt,
+        observation.raw_mu_tendency,
+        observation.mu_scale,
+        observation.limited_dvdxi,
+        observation.limited_dmdt,
+        observation.output_mudf,
+        observation.new_muts,
+        result.w,
+        result.ph,
+        result.p,
+        result.al,
+        result.theta,
+        result.u,
+        result.v,
+        result.mu,
+        result.ww,
+    )
+    return jnp.stack(tuple(_rca_array_health(value) for value in values), axis=0)
+
+
+def _rca_target_value(value: jax.Array) -> jax.Array:
+    """Return the corrected Ni-cell scalar (shape-clamped for tiny unit grids)."""
+
+    array = jnp.asarray(value, dtype=jnp.float64)
+    y = min(RCA_TARGET_Y, int(array.shape[-2]) - 1)
+    x = min(RCA_TARGET_X, int(array.shape[-1]) - 1)
+    if array.ndim >= 3:
+        k = min(RCA_TARGET_K, int(array.shape[-3]) - 1)
+        return array[(Ellipsis, k, y, x)]
+    return array[(Ellipsis, y, x)]
+
+
+def _rca_acoustic_target(
+    result: AcousticCoreState,
+    observation: MassPrimitiveObservation,
+) -> jax.Array:
+    values = (
+        observation.pre_uv_u,
+        observation.pre_uv_v,
+        observation.large_u_tend,
+        observation.large_v_tend,
+        observation.pre_p,
+        observation.pre_al,
+        observation.pre_ph,
+        observation.small_dpx,
+        observation.small_dpy,
+        observation.uv_u,
+        observation.uv_v,
+        observation.raw_dvdxi,
+        observation.raw_dmdt,
+        observation.raw_mu_tendency,
+        observation.mu_scale,
+        observation.limited_dvdxi,
+        observation.limited_dmdt,
+        observation.output_mudf,
+        observation.new_muts,
+        result.w,
+        result.ph,
+        result.p,
+        result.al,
+        result.theta,
+        result.u,
+        result.v,
+        result.mu,
+        result.ww,
+    )
+    return jnp.stack(tuple(_rca_target_value(value) for value in values), axis=0)
+
+
+def _rca_state_health(state: State) -> jax.Array:
+    return jnp.stack(
+        tuple(_rca_array_health(getattr(state, name)) for name in RCA_STATE_FIELDS),
+        axis=0,
+    )
+
+
+def _rca_state_target(state: State) -> jax.Array:
+    return jnp.stack(
+        tuple(_rca_target_value(getattr(state, name)) for name in RCA_STATE_FIELDS),
+        axis=0,
+    )
+
+
+def _rca_boundary_health(state: State) -> jax.Array:
+    return jnp.stack(
+        tuple(_rca_array_health(getattr(state, name)) for name in RCA_BOUNDARY_FIELDS),
+        axis=0,
+    )
 
 
 @jax.tree_util.register_pytree_node_class
@@ -1693,6 +2034,10 @@ def _acoustic_core_state_from_prep(
     """Build the acoustic work-state directly from WRF ``small_step_prep``."""
 
     state = prep.entry_state
+    nested_frozen_bundle = _nested_frozen_wrf_boundary_active(namelist)
+    # ``lead_seconds`` is the candidate package endpoint.  The corrected nested
+    # path consumes its retained record tendency directly; released specified
+    # callers retain their historical stage-end target clock below.
     theta_pert = (state.theta - prep.theta_offset).astype(jnp.float64)
     ph_base = prep.phb
     # F7H: WRF builds the large-step vertical PGF/buoyancy ``rw_tend`` ONCE per RK
@@ -1874,9 +2219,10 @@ def _acoustic_core_state_from_prep(
         top_lid=bool(namelist.top_lid),
     )
 
-    # WIND-FIX: stage-constant coupled WORK-array boundary targets for the NORMAL
-    # momentum, consumed by ``advance_uv_wrf`` inside the acoustic loop.  Built
-    # once per RK stage from the time-interpolated decoupled wrfbdy leaf so that
+    # WIND-FIX: stage coupled boundary operands for momentum, consumed by
+    # ``advance_uv_wrf`` inside the acoustic loop.  Released paths retain the
+    # historical absolute work targets.  The corrected nested path stages the
+    # exact coupled ``spec_bdytend`` arrays for the complete ring.
     # ``small_step_finish_wrf`` reconstructs the boundary velocity ``u_bdy``:
     #     u = (msf*u_work + u_save*mass_cur)/mass_stage
     #  => u_work_bdy = (u_bdy*mass_stage - u_save*mass_cur)/msf .
@@ -1885,23 +2231,56 @@ def _acoustic_core_state_from_prep(
     u_work_bdy = None
     v_work_bdy = None
     if bool(namelist.run_boundary) and lead_seconds is not None:
-        c1h = namelist.metrics.c1h[:, None, None]
-        c2h = namelist.metrics.c2h[:, None, None]
-        mass_u_cur = c1h * prep.muu[None, :, :] + c2h
-        mass_u_stage = c1h * prep.muus[None, :, :] + c2h
-        mass_v_cur = c1h * prep.muv[None, :, :] + c2h
-        mass_v_stage = c1h * prep.muvs[None, :, :] + c2h
         cadence = float(namelist.boundary_config.update_cadence_s)
-        u_bdy_strip = interpolate_boundary_leaf(state.u_bdy, lead_seconds, cadence)
-        v_bdy_strip = interpolate_boundary_leaf(state.v_bdy, lead_seconds, cadence)
-        u_work_bdy = normal_bdy_work_target_u(
-            u_bdy_strip, prep.u_save, mass_u_cur, mass_u_stage, namelist.metrics.msfuy,
-            config=namelist.boundary_config,
-        )
-        v_work_bdy = normal_bdy_work_target_v(
-            v_bdy_strip, prep.v_save, mass_v_cur, mass_v_stage, namelist.metrics.msfvx,
-            config=namelist.boundary_config,
-        )
+        if nested_frozen_bundle:
+            u_work_bdy = specified_boundary_tendency(
+                state.u_bdy,
+                lead_seconds,
+                cadence,
+                z_len=int(state.u.shape[0]),
+                y_len=int(state.u.shape[1]),
+                x_len=int(state.u.shape[2]),
+                dtype=state.u.dtype,
+                config=namelist.boundary_config,
+            )
+            v_work_bdy = specified_boundary_tendency(
+                state.v_bdy,
+                lead_seconds,
+                cadence,
+                z_len=int(state.v.shape[0]),
+                y_len=int(state.v.shape[1]),
+                x_len=int(state.v.shape[2]),
+                dtype=state.v.dtype,
+                config=namelist.boundary_config,
+            )
+        else:
+            c1h = namelist.metrics.c1h[:, None, None]
+            c2h = namelist.metrics.c2h[:, None, None]
+            mass_u_cur = c1h * prep.muu[None, :, :] + c2h
+            # small_step_finish uses the stage-frozen muus/muvs face masses.
+            mass_u_stage = c1h * prep.muus[None, :, :] + c2h
+            mass_v_cur = c1h * prep.muv[None, :, :] + c2h
+            mass_v_stage = c1h * prep.muvs[None, :, :] + c2h
+            u_bdy_strip = interpolate_boundary_leaf(state.u_bdy, lead_seconds, cadence)
+            v_bdy_strip = interpolate_boundary_leaf(state.v_bdy, lead_seconds, cadence)
+            u_work_bdy = normal_bdy_work_target_u(
+                u_bdy_strip,
+                prep.u_save,
+                mass_u_cur,
+                mass_u_stage,
+                namelist.metrics.msfuy,
+                config=namelist.boundary_config,
+                coupled_boundary_leaves=False,
+            )
+            v_work_bdy = normal_bdy_work_target_v(
+                v_bdy_strip,
+                prep.v_save,
+                mass_v_cur,
+                mass_v_stage,
+                namelist.metrics.msfvx,
+                config=namelist.boundary_config,
+                coupled_boundary_leaves=False,
+            )
 
     # P0-6 (2026-06-01): NESTED-child ph'/w boundary forcing (d03 T2 Exner bias).
     # Active ONLY for the nested replay path (run_boundary, lateral boundary active,
@@ -1924,6 +2303,7 @@ def _acoustic_core_state_from_prep(
         bool(namelist.run_boundary)
         and lead_seconds is not None
         and not bool(namelist.boundary_config.force_geopotential)
+        and not nested_frozen_bundle
     ):
         cfg_b = namelist.boundary_config
         cadence = float(cfg_b.update_cadence_s)
@@ -1982,8 +2362,10 @@ def _acoustic_core_state_from_prep(
     theta_spec_target = None
     u_spec_tan_target = None
     v_spec_tan_target = None
+    w_spec_target = None
     _spec_cadence = lead_seconds is not None and _specified_bdy_cadence_active(namelist)
-    if _spec_cadence:
+    _nested_cadence = lead_seconds is not None and nested_frozen_bundle
+    if _spec_cadence or _nested_cadence:
         cfg_b = namelist.boundary_config
         cadence = float(cfg_b.update_cadence_s)
         dtype_s = state.ph_perturbation.dtype
@@ -1994,52 +2376,119 @@ def _acoustic_core_state_from_prep(
         # reference, step-constant) -> flows through advance_w every substep.
         if bdy_relax is not None:
             ph_tend_stage = ph_tend_stage + bdy_relax.ph
-        # (b) spec-zone ring-0 targets at the STAGE-END lead: WRF's ring lands
-        # on the linear wrfbdy trajectory at the end of each RK stage (the
-        # within-stage linearisation difference is <= dt_stage/cadence of the
-        # interval increment).
-        lead_stage = lead_seconds + float(prep.dt_rk)
-        ph_strip_stage = interpolate_boundary_leaf(state.ph_bdy, lead_stage, cadence)
-        ph_bdy_target_full = _full_ring_target_from_leaf(
-            ph_strip_stage,
-            int(state.ph_perturbation.shape[0]),
-            ny_m,
-            nx_m,
-            dtype_s,
-        )
-        ph_save_for_spec = prep.ph_save
-        mu_strip = interpolate_boundary_leaf(state.mu_bdy, lead_stage, cadence)
-        mu_pin = _full_ring_target_from_leaf(mu_strip, 1, ny_m, nx_m, dtype_s)[0]
-        muts_pin = prep.mub + mu_pin
-        th_strip = interpolate_boundary_leaf(state.theta_bdy, lead_stage, cadence)
-        th_pin = _full_ring_target_from_leaf(th_strip, nz_m, ny_m, nx_m, dtype_s)
-        _c1h = namelist.metrics.c1h[:, None, None]
-        _c2h = namelist.metrics.c2h[:, None, None]
-        mass_pin = _c1h * muts_pin[None, :, :] + _c2h
-        mass_cur = _c1h * prep.mut[None, :, :] + _c2h
-        mu_spec_target = mu_pin
-        muts_spec_target = muts_pin
-        muave_spec_target = muts_pin - prep.mut
-        # coupled work-theta pin: small_step_finish reconstructs
-        # theta' = (work + t_save*mass_cur)/mass_stage -> theta'_leaf when the
-        # ring muts is pinned to muts_pin.
-        theta_spec_target = mass_pin * (th_pin - prep.theta_offset) - mass_cur * prep.t_save
-        # (c) TANGENTIAL ring-0 wind work pins (u S/N rows, v W/E columns) --
-        # the WIND-FIX normal targets only cover the normal faces.
-        _c1h3 = namelist.metrics.c1h[:, None, None]
-        _c2h3 = namelist.metrics.c2h[:, None, None]
-        mass_u_cur_t = _c1h3 * prep.muu[None, :, :] + _c2h3
-        mass_u_stage_t = _c1h3 * prep.muus[None, :, :] + _c2h3
-        mass_v_cur_t = _c1h3 * prep.muv[None, :, :] + _c2h3
-        mass_v_stage_t = _c1h3 * prep.muvs[None, :, :] + _c2h3
-        u_strip_stage = interpolate_boundary_leaf(state.u_bdy, lead_stage, cadence)
-        v_strip_stage = interpolate_boundary_leaf(state.v_bdy, lead_stage, cadence)
-        u_spec_tan_target = tangential_bdy_work_target_u(
-            u_strip_stage, prep.u_save, mass_u_cur_t, mass_u_stage_t, namelist.metrics.msfuy, config=cfg_b
-        )
-        v_spec_tan_target = tangential_bdy_work_target_v(
-            v_strip_stage, prep.v_save, mass_v_cur_t, mass_v_stage_t, namelist.metrics.msfvx, config=cfg_b
-        )
+        if _nested_cadence:
+            # Exact pristine-WRF live-nest ring cadence.  spec_bdy_dry writes
+            # the coupled boundary-record tendencies once per RK stage;
+            # spec_bdyupdate then consumes the same arrays after every acoustic
+            # primitive.  No stage-end absolute target or muave operand exists.
+            mu_spec_target = specified_boundary_tendency(
+                state.mu_bdy,
+                lead_seconds,
+                cadence,
+                z_len=1,
+                y_len=ny_m,
+                x_len=nx_m,
+                dtype=dtype_s,
+                config=cfg_b,
+            )[0]
+            muts_spec_target = mu_spec_target
+            theta_spec_target = specified_boundary_tendency(
+                state.theta_bdy,
+                lead_seconds,
+                cadence,
+                z_len=nz_m,
+                y_len=ny_m,
+                x_len=nx_m,
+                dtype=dtype_s,
+                config=cfg_b,
+            )
+            ph_bdy_target_full = specified_boundary_tendency(
+                state.ph_bdy,
+                lead_seconds,
+                cadence,
+                z_len=int(state.ph_perturbation.shape[0]),
+                y_len=ny_m,
+                x_len=nx_m,
+                dtype=dtype_s,
+                config=cfg_b,
+            )
+            ph_save_for_spec = prep.ph_save
+            w_spec_target = specified_boundary_tendency(
+                state.w_bdy,
+                lead_seconds,
+                cadence,
+                z_len=int(state.w.shape[0]),
+                y_len=ny_m,
+                x_len=nx_m,
+                dtype=dtype_s,
+                config=cfg_b,
+            )
+        else:
+            # Preserve the released SPECIFIED-domain stage-end program exactly.
+            lead_stage = lead_seconds + float(prep.dt_rk)
+            ph_strip_stage = interpolate_boundary_leaf(
+                state.ph_bdy, lead_stage, cadence
+            )
+            ph_bdy_target_full = _full_ring_target_from_leaf(
+                ph_strip_stage,
+                int(state.ph_perturbation.shape[0]),
+                ny_m,
+                nx_m,
+                dtype_s,
+            )
+            ph_save_for_spec = prep.ph_save
+            mu_strip = interpolate_boundary_leaf(state.mu_bdy, lead_stage, cadence)
+            mu_pin = _full_ring_target_from_leaf(mu_strip, 1, ny_m, nx_m, dtype_s)[0]
+            muts_pin = prep.mub + mu_pin
+            th_strip = interpolate_boundary_leaf(
+                state.theta_bdy, lead_stage, cadence
+            )
+            th_pin = _full_ring_target_from_leaf(
+                th_strip, nz_m, ny_m, nx_m, dtype_s
+            )
+            _c1h = namelist.metrics.c1h[:, None, None]
+            _c2h = namelist.metrics.c2h[:, None, None]
+            mass_pin = _c1h * muts_pin[None, :, :] + _c2h
+            mass_cur = _c1h * prep.mut[None, :, :] + _c2h
+            mu_spec_target = mu_pin
+            muts_spec_target = muts_pin
+            muave_spec_target = muts_pin - prep.mut
+            theta_spec_target = (
+                mass_pin * (th_pin - prep.theta_offset)
+                - mass_cur * prep.t_save
+            )
+            # TANGENTIAL ring-0 wind work pins; normal targets cover W/E u and
+            # S/N v only on this released path.
+            _c1h3 = namelist.metrics.c1h[:, None, None]
+            _c2h3 = namelist.metrics.c2h[:, None, None]
+            mass_u_cur_t = _c1h3 * prep.muu[None, :, :] + _c2h3
+            mass_u_stage_t = _c1h3 * prep.muus[None, :, :] + _c2h3
+            mass_v_cur_t = _c1h3 * prep.muv[None, :, :] + _c2h3
+            mass_v_stage_t = _c1h3 * prep.muvs[None, :, :] + _c2h3
+            u_strip_stage = interpolate_boundary_leaf(
+                state.u_bdy, lead_stage, cadence
+            )
+            v_strip_stage = interpolate_boundary_leaf(
+                state.v_bdy, lead_stage, cadence
+            )
+            u_spec_tan_target = tangential_bdy_work_target_u(
+                u_strip_stage,
+                prep.u_save,
+                mass_u_cur_t,
+                mass_u_stage_t,
+                namelist.metrics.msfuy,
+                config=cfg_b,
+                coupled_boundary_leaves=False,
+            )
+            v_spec_tan_target = tangential_bdy_work_target_v(
+                v_strip_stage,
+                prep.v_save,
+                mass_v_cur_t,
+                mass_v_stage_t,
+                namelist.metrics.msfvx,
+                config=cfg_b,
+                coupled_boundary_leaves=False,
+            )
 
     return AcousticCoreState(
         # v0.14: the small-step omega work array starts from the FRESH stage
@@ -2062,7 +2511,14 @@ def _acoustic_core_state_from_prep(
         muts=prep.muts.astype(jnp.float64),
         muu=prep.muu,
         muv=prep.muv,
-        mudf=carry.mudf.astype(jnp.float64),
+        # Pristine small_step_prep zeroes mudf at RK1 before the first
+        # advance_uv; it is then recurrent only within/across later RK stages.
+        # Candidate child only: do not import cross-step divergence memory.
+        mudf=_stage_entry_mudf(
+            carry.mudf,
+            rk_step=int(prep.rk_step),
+            nested_frozen_bundle=nested_frozen_bundle,
+        ),
         theta=theta_pert,
         theta_1=prep.t_save,
         # F7G: stage-entry small-step WORK-theta average is ZERO (the coupled work
@@ -2159,6 +2615,7 @@ def _acoustic_core_state_from_prep(
         theta_spec_target=theta_spec_target,
         u_spec_tan_target=u_spec_tan_target,
         v_spec_tan_target=v_spec_tan_target,
+        w_spec_target=w_spec_target,
         # SPLIT-EXPLICIT FIX (v0.4.0 r5): WRF ``php`` is built ONCE per RK stage in
         # rk_step_prep (calc_php) and held STAGE-CONSTANT through the acoustic loop;
         # thread the frozen stage array so advance_uv's 4th PGF term does NOT
@@ -2312,6 +2769,77 @@ def _maybe_exchange_sharded_carry_halos(carry: OperationalCarry) -> OperationalC
     return carry.replace(**updates) if updates else carry
 
 
+class _TimeAveragedScalarMassFluxes(NamedTuple):
+    """WRF ``sumflux`` result retained only inside one RK-stage trace."""
+
+    ru_full: jax.Array
+    rv_full: jax.Array
+    ww: jax.Array
+
+
+class _AcousticScalarTransportResult(NamedTuple):
+    """Finished acoustic result and its scalar-transport mass fluxes."""
+
+    result: object
+    mass_fluxes: _TimeAveragedScalarMassFluxes
+
+
+def _finalize_time_averaged_scalar_mass_fluxes(
+    acoustic: AcousticCoreState,
+    prep: SmallStepPrepState,
+    *,
+    number_of_small_timesteps: int,
+) -> _TimeAveragedScalarMassFluxes:
+    """Finish pristine-WRF ``sumflux`` for moisture/other scalars.
+
+    The acoustic core accumulates the live coupled work arrays after every
+    sound step.  WRF divides those accumulators by the number of sound steps
+    and adds the stage-entry linear/save flux before ``rk_scalar_tend``
+    (``solve_em.F:1566-1581`` and ``module_small_step_em.F:1559-1628``).
+    The bundle stays internal to this RK-stage trace; it is not an operational
+    carry or executable-result leaf.
+    """
+
+    n = int(number_of_small_timesteps)
+    if n < 1:
+        raise ValueError("sumflux requires at least one acoustic substep")
+    if acoustic.ru_m is None or acoustic.rv_m is None or acoustic.ww_m is None:
+        raise ValueError("sumflux accumulators are absent from the acoustic state")
+
+    c1h = prep.c1h[:, None, None]
+    c2h = prep.c2h[:, None, None]
+    ru_full = acoustic.ru_m / n + (
+        (c1h * prep.muu[None, :, :] + c2h)
+        * prep.u_save
+        / prep.msfuy[None, :, :]
+    )
+    rv_full = acoustic.rv_m / n + (
+        (c1h * prep.muv[None, :, :] + c2h)
+        * prep.v_save
+        / prep.msfvx[None, :, :]
+    )
+    ww = acoustic.ww_m / n + prep.ww_save
+    return _TimeAveragedScalarMassFluxes(ru_full, rv_full, ww)
+
+
+def _scalar_transport_velocities_from_sumflux(
+    stage_velocities: CoupledVelocities,
+    mass_fluxes: _TimeAveragedScalarMassFluxes,
+) -> CoupledVelocities:
+    """Replace only scalar transport fluxes with WRF's acoustic average."""
+
+    nx = int(stage_velocities.ru.shape[-1])
+    ny = int(stage_velocities.rv.shape[-2])
+    return dataclasses.replace(
+        stage_velocities,
+        ru=mass_fluxes.ru_full[..., :nx],
+        rv=mass_fluxes.rv_full[:, :ny, :],
+        rom=mass_fluxes.ww,
+        ru_full=(mass_fluxes.ru_full if bool(stage_velocities.specified) else None),
+        rv_full=(mass_fluxes.rv_full if bool(stage_velocities.specified) else None),
+    )
+
+
 def _acoustic_scan(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -2322,8 +2850,19 @@ def _acoustic_scan(
     tendencies: Tendencies,
     lead_seconds=None,
     capture_pre_halo: bool = False,
+    capture_rca: bool = False,
+    capture_phase_tap: bool = False,
+    return_scalar_transport: bool = False,
     bdy_relax: SpecifiedRelaxTendencies | None = None,
-) -> OperationalCarry | _PreHaloCaptureResult:
+) -> (
+    OperationalCarry
+    | _PreHaloCaptureResult
+    | _RcaAcousticScanResult
+    | CorrectedNiPhaseTapResult
+    | _AcousticScalarTransportResult
+):
+    if sum(bool(value) for value in (capture_pre_halo, capture_rca, capture_phase_tap)) > 1:
+        raise ValueError("pre-halo, RCA, and phase-tap captures are mutually exclusive")
     acoustic = _acoustic_core_state_from_prep(
         carry, prep, pressure, namelist, tendencies, lead_seconds=lead_seconds,
         bdy_relax=bdy_relax,
@@ -2376,6 +2915,9 @@ def _acoustic_scan(
             # weight is scaled to a per-substep increment.
             dt_full=float(namelist.dt_s),
             normal_bdy_relax_strength=getattr(namelist.boundary_config, "normal_bdy_relax_strength", None),
+            nested_frozen_wrf_boundary_bundle=_nested_frozen_wrf_boundary_active(
+                namelist
+            ),
             periodic_x=periodic_x,
             specified=specified,
             nested=nested,
@@ -2406,25 +2948,106 @@ def _acoustic_scan(
                 cqw=cqw_field,
             ), None
 
-        acoustic, _ = jax.lax.scan(
-            body,
-            acoustic,
-            xs=None,
-            length=int(stage.number_of_small_timesteps),
-            unroll=_acoustic_unroll(),
+        acoustic_health = None
+        acoustic_target = None
+        phase_tap_summary = None
+        if capture_phase_tap:
+            acoustic, phase_tap_summary = acoustic_substep_core(
+                acoustic,
+                a=a,
+                alpha=alpha,
+                gamma=gamma,
+                cfg=stage_cfg,
+                cqw=cqw_field,
+                capture_phase_tap=True,
+            )
+            remaining_substeps = int(stage.number_of_small_timesteps) - 1
+            if remaining_substeps:
+                acoustic, _ = jax.lax.scan(
+                    body,
+                    acoustic,
+                    xs=None,
+                    length=remaining_substeps,
+                    unroll=_acoustic_unroll(),
+                )
+        elif capture_rca:
+            def observed_body(scan_acoustic: AcousticCoreState, _):
+                next_acoustic, observation = acoustic_substep_core(
+                    scan_acoustic,
+                    a=a,
+                    alpha=alpha,
+                    gamma=gamma,
+                    cfg=stage_cfg,
+                    cqw=cqw_field,
+                    observe_mass_primitive=True,
+                )
+                return next_acoustic, (
+                    _rca_acoustic_health(next_acoustic, observation),
+                    _rca_acoustic_target(next_acoustic, observation),
+                )
+
+            acoustic, (acoustic_health, acoustic_target) = jax.lax.scan(
+                observed_body,
+                acoustic,
+                xs=None,
+                length=int(stage.number_of_small_timesteps),
+                unroll=_acoustic_unroll(),
+            )
+        else:
+            acoustic, _ = jax.lax.scan(
+                body,
+                acoustic,
+                xs=None,
+                length=int(stage.number_of_small_timesteps),
+                unroll=_acoustic_unroll(),
+            )
+        scalar_mass_fluxes = (
+            _finalize_time_averaged_scalar_mass_fluxes(
+                acoustic,
+                prep,
+                number_of_small_timesteps=int(stage.number_of_small_timesteps),
+            )
+            if bool(return_scalar_transport)
+            else None
         )
         next_carry = _carry_from_finished_stage(carry, prep, acoustic, namelist)
         next_carry = _maybe_exchange_sharded_carry_halos(next_carry)
         post_halo_carry = next_carry.replace(state=apply_halo(next_carry.state, halo_spec(namelist.grid)))
         if capture_pre_halo:
-            return _PreHaloCaptureResult(post_halo_carry, next_carry.state)
-        return post_halo_carry
+            result = _PreHaloCaptureResult(post_halo_carry, next_carry.state)
+        elif capture_rca:
+            assert acoustic_health is not None
+            assert acoustic_target is not None
+            result = _RcaAcousticScanResult(
+                post_halo_carry, acoustic_health, acoustic_target,
+            )
+        elif capture_phase_tap:
+            assert phase_tap_summary is not None
+            result = CorrectedNiPhaseTapResult(post_halo_carry, phase_tap_summary)
+        else:
+            result = post_halo_carry
+        if bool(return_scalar_transport):
+            assert scalar_mass_fluxes is not None
+            return _AcousticScalarTransportResult(result, scalar_mass_fluxes)
+        return result
 
     del tendencies
+    if bool(return_scalar_transport):
+        raise ValueError("WRF sumflux scalar transport requires the vertical acoustic solver")
     next_carry = _maybe_exchange_sharded_carry_halos(_with_save_family(carry, carry.state))
     if capture_pre_halo:
         return _PreHaloCaptureResult(next_carry, next_carry.state)
+    if capture_rca:
+        raise ValueError("RCA capture requires the vertical acoustic solver")
+    if capture_phase_tap:
+        raise ValueError("phase-tap capture requires the vertical acoustic solver")
     return next_carry
+
+
+def _stage_transport_omega_ownership_enabled() -> bool:
+    """Bind pristine WRF's single ``calc_ww_cp`` owner for stage transport."""
+
+    return True
 
 
 def _stage_transport_velocities(
@@ -2472,7 +3095,40 @@ def _stage_transport_velocities(
             msfuy=metrics.msfuy,
             msfvx=metrics.msfvx,
         )
-        vel = dataclasses.replace(vel, specified=True, ru_full=ru_full, rv_full=rv_full)
+        # Pristine rk_step_prep/calc_ww_cp constructs ONE stage ``ww`` from the
+        # real, non-periodic staggered faces.  That same array is the ``rom``
+        # operand of every stage advection call and the acoustic ``ww_save``.
+        # The retained path corrected the latter but accidentally left vertical
+        # flux advection on couple_velocities_periodic().rom, so one RK stage had
+        # two incompatible omega fields at its physical boundary.  Route the
+        # already source/oracle-closed edge-faithful construction into the shared
+        # CoupledVelocities object; no new carry leaf or transfer is introduced.
+        if _stage_transport_omega_ownership_enabled():
+            rom = stage_omega_specified(
+                haloed.u,
+                haloed.v,
+                haloed.mu_total,
+                c1h=metrics.c1h,
+                c2h=metrics.c2h,
+                dnw=metrics.dnw,
+                rdx=1.0 / float(grid.projection.dx_m),
+                rdy=1.0 / float(grid.projection.dy_m),
+                msfuy=metrics.msfuy,
+                msfvx=metrics.msfvx,
+                msftx=metrics.msftx,
+            )
+            vel = dataclasses.replace(
+                vel,
+                specified=True,
+                ru_full=ru_full,
+                rv_full=rv_full,
+                rom=rom,
+            )
+        else:
+            # Exact retained trace surface for the authenticated CPU A arm.
+            vel = dataclasses.replace(
+                vel, specified=True, ru_full=ru_full, rv_full=rv_full
+            )
     return vel
 
 
@@ -2492,14 +3148,94 @@ def _specified_bdy_cadence_active(namelist: OperationalNamelist) -> bool:
     return bool(_spec) and bool(namelist.boundary_config.force_geopotential)
 
 
+def _nested_frozen_wrf_boundary_active(namelist: OperationalNamelist) -> bool:
+    """Static gate for the coherent v0.23.4 live-child boundary bundle."""
+
+    if not bool(
+        getattr(
+            namelist.boundary_config,
+            "nested_frozen_wrf_boundary_bundle",
+            False,
+        )
+    ):
+        return False
+    if not bool(namelist.run_boundary):
+        return False
+    _per_x, _spec, nested = _acoustic_lateral_bc_flags(namelist)
+    return bool(nested) and not bool(namelist.boundary_config.force_geopotential)
+
+
+def nested_boundary_package_endpoint_seconds(
+    completed_child_step,
+    *,
+    child_dt_s: float,
+    parent_cadence_s: float,
+):
+    """Return WRF ``dtbc`` endpoint within the current parent subcycle.
+
+    Child positions are explicitly the integers ``1..parent_ratio``.  The last
+    child step maps to ``parent_cadence_s`` (the exact parent boundary), and the
+    following step maps back to ``child_dt_s`` in the newly forced two-record
+    package.  This avoids both absolute-lead two-leaf saturation and the fragile
+    ``fmod == 0`` special case.
+    """
+
+    child_dt = float(child_dt_s)
+    parent_dt = float(parent_cadence_s)
+    if child_dt <= 0.0 or parent_dt <= 0.0:
+        raise ValueError("nested boundary child/parent timesteps must be positive")
+    ratio_float = parent_dt / child_dt
+    ratio = int(round(ratio_float))
+    if ratio < 1 or abs(ratio_float - float(ratio)) > 1.0e-12:
+        raise ValueError(
+            "nested boundary parent cadence must be an integer child-dt multiple"
+        )
+    step = jnp.asarray(completed_child_step, dtype=jnp.int32)
+    position = jnp.mod(step - jnp.asarray(1, dtype=step.dtype), ratio) + 1
+    return position.astype(jnp.float64) * child_dt
+
+
+def nested_boundary_stage_seconds(
+    package_endpoint_seconds,
+    *,
+    child_dt_s: float,
+    rk_dt_s: float,
+):
+    """Direct spec target time for one RK stage inside a child step."""
+
+    return (
+        jnp.asarray(package_endpoint_seconds, dtype=jnp.float64)
+        - float(child_dt_s)
+        + float(rk_dt_s)
+    )
+
+
+def _stage_entry_mudf(
+    carried_mudf,
+    *,
+    rk_step: int,
+    nested_frozen_bundle: bool,
+):
+    """Mirror pristine RK1 ``mudf=0`` without changing released paths."""
+
+    if bool(nested_frozen_bundle) and int(rk_step) == 1:
+        return jnp.zeros_like(carried_mudf, dtype=jnp.float64)
+    return carried_mudf.astype(jnp.float64)
+
+
 def _specified_adv_degrade_active(namelist: OperationalNamelist) -> bool:
     """Static gate for the v0.14 SPECIFIED-boundary advection degradation.
 
-    Same domain conditions as the boundary cadence (real specified lateral
-    boundary, not the nested force_geopotential=False child), own flag so the
-    two mechanisms remain A/B-attributable at the venting gate.
+    Pristine ``module_advect_em.F`` selects its degraded horizontal stencils
+    for ``config_flags%specified .or. config_flags%nested``.  The coherent
+    frozen-WRF live-child bundle therefore selects this already-implemented
+    branch without relying on the legacy root-only experiment flag.  Released
+    children with that bundle off and the legacy specified-root path retain
+    their prior gates exactly.
     """
 
+    if _nested_frozen_wrf_boundary_active(namelist):
+        return True
     if not bool(getattr(namelist, "specified_adv_degrade", False)):
         return False
     if not bool(namelist.run_boundary):
@@ -2528,6 +3264,26 @@ def _specified_bdy_relax(
         namelist.metrics,
         float(namelist.dt_s),
         namelist.boundary_config,
+    )
+
+
+def _nested_frozen_bdy_relax(
+    reference: State,
+    namelist: OperationalNamelist,
+    endpoint_seconds,
+) -> SpecifiedRelaxTendencies | None:
+    """Construct the live-child RK1 frozen dry relax bundle exactly once."""
+
+    if endpoint_seconds is None or not _nested_frozen_wrf_boundary_active(namelist):
+        return None
+    return specified_relax_dry_tendencies(
+        reference,
+        endpoint_seconds,
+        namelist.metrics,
+        float(namelist.dt_s),
+        namelist.boundary_config,
+        include_nested_w=True,
+        coupled_boundary_leaves=True,
     )
 
 
@@ -2720,6 +3476,214 @@ def _apply_tke_large_step(
     return state.replace(qke=qke_new)
 
 
+def _diffopt1_dry_forward_tendencies(
+    haloed: State,
+    namelist: OperationalNamelist,
+    *,
+    base_state: BaseState | None = None,
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
+    """Build WRF's RK1-frozen dry horizontal-diffusion ``*_tendf`` bundle.
+
+    Pristine ``module_first_rk_step_part2.F`` computes the Smagorinsky
+    coefficients from the time-t fields, then ``module_em.F::rk_tendency``
+    places all diff_opt=1 dry diffusion inside ``forward_step: IF (rk_step ==
+    1)``.  ``rk_addtend_dry`` reuses ``ru/rv/rw/t_tendf`` in RK1, RK2, and
+    RK3.  The released momentum operator remains unchanged.  For
+    specified/nested real domains the theta branch additionally follows WRF's
+    live ``compute_diff_metrics -> cal_deform_and_div -> smag2d_km ->
+    horizontal_diffusion_3dmp`` sequence, including physical-edge ownership.
+    This deliberately isolates the scalar repair from the already-positive
+    momentum discriminator.
+    """
+
+    metrics = namelist.metrics
+    dx = float(namelist.grid.projection.dx_m)
+    dy = float(namelist.grid.projection.dy_m)
+    mu_total = haloed.mu_total
+    muu = _u_face_average_2d(mu_total)
+    muv = _v_face_average_2d(mu_total)
+    mass_u = metrics.c1h[:, None, None] * muu[None, :, :] + metrics.c2h[:, None, None]
+    mass_v = metrics.c1h[:, None, None] * muv[None, :, :] + metrics.c2h[:, None, None]
+    mass_h = (
+        metrics.c1h[:, None, None] * mu_total[None, :, :]
+        + metrics.c2h[:, None, None]
+    )
+    mass_f = metrics.c1f[:, None, None] * mu_total[None, :, :] + metrics.c2f[:, None, None]
+    # Periodic idealized programs retain the released flat coefficient/operator.
+    # Specified/nested domains replace this below with the literal real-map WRF
+    # coefficient and U/V/W target-stagger operator.
+    d11, d22, d12 = horizontal_deformation_2d(
+        haloed.u,
+        haloed.v,
+        dx_m=dx,
+        dy_m=dy,
+    )
+    xkmh, xkhh = smag2d_horizontal_km(
+        d11,
+        d22,
+        d12,
+        dx_m=dx,
+        dy_m=dy,
+        c_s=float(namelist.c_s),
+    )
+    _, specified, nested = _acoustic_lateral_bc_flags(namelist)
+    source_scalar_path = bool(specified or nested)
+    if source_scalar_path:
+        zx, zy, rdzw = wrf_nonperiodic_diffusion_metrics(
+            haloed.ph_total,
+            dx_m=dx,
+            dy_m=dy,
+        )
+        scalar_d11, scalar_d22, scalar_d12 = horizontal_deformation_2d(
+            haloed.u,
+            haloed.v,
+            dx_m=dx,
+            dy_m=dy,
+            msftx=metrics.msftx,
+            msfty=metrics.msfty,
+            msfux=metrics.msfux,
+            msfuy=metrics.msfuy,
+            msfvx=metrics.msfvx,
+            msfvy=metrics.msfvy,
+            zx=zx,
+            zy=zy,
+            rdzw=rdzw,
+            fnm=metrics.fnm,
+            fnp=metrics.fnp,
+            cf1=metrics.cf1,
+            cf2=metrics.cf2,
+            cf3=metrics.cf3,
+            dn=metrics.dn,
+            dnw=metrics.dnw,
+        )
+        xkmh, xkhh = smag2d_horizontal_km(
+            scalar_d11,
+            scalar_d22,
+            scalar_d12,
+            dx_m=dx,
+            dy_m=dy,
+            c_s=float(namelist.c_s),
+            msftx=metrics.msftx,
+            msfty=metrics.msfty,
+        )
+        # smag2d_km owns ids+1:ide-2 / jds+1:jde-2 for both specified
+        # and nested domains.  xkhh is an initialized work array in WRF, so
+        # the unowned physical ring remains exactly zero before phy_bc copies
+        # values only into the external memory halo.
+        for coefficient_name, coefficient in (("xkmh", xkmh), ("xkhh", xkhh)):
+            coefficient = coefficient.at[:, 0, :].set(0.0)
+            coefficient = coefficient.at[:, -1, :].set(0.0)
+            coefficient = coefficient.at[:, :, 0].set(0.0)
+            coefficient = coefficient.at[:, :, -1].set(0.0)
+            if coefficient_name == "xkmh":
+                xkmh = coefficient
+            else:
+                xkhh = coefficient
+    # WRF passes ``t_init`` to horizontal_diffusion_3dmp and diffuses
+    # ``t - t_init``.  State.theta is the full (moist when use_theta_m=1)
+    # potential temperature while BaseState.theta_base is ``t0+t_init``;
+    # subtracting the latter is the identical full-theta representation.  A
+    # 106-leaf operational carry has no explicit BaseState, so the alternate
+    # branch reconstructs that same profile from its resident base components.
+    if base_state is not None:
+        theta_base = jnp.asarray(base_state.theta_base, dtype=haloed.theta.dtype)
+    else:
+        # The released fp64 carry deliberately has no explicit BaseState leaf
+        # (d03 remains the authenticated 106-leaf interface).  Recover WRF's
+        # exact t0+t_init profile from the invariant base components already in
+        # State.  This is the device transcription of
+        # d02_replay._wrf_base_theta_from_loaded_state and inverts WRF's
+        # discrete base hydrostatic relation.  WRF uses the linear pressure
+        # depth for hypsometric_opt=1 and the LOG-pressure depth for option 2;
+        # both close the same EOS
+        #   alb = (R_d/p0)*theta_base*(pb/p0)**cvpm.
+        pb = haloed.p_total - haloed.p_perturbation
+        phb = haloed.ph_total - haloed.ph_perturbation
+        mub = haloed.mu_total - haloed.mu_perturbation
+        dphb = phb[1:, :, :] - phb[:-1, :, :]
+        if int(namelist.hypsometric_opt) == 2:
+            p_top = jnp.reshape(metrics.p_top, ()).astype(pb.dtype)
+            mub_column = mub[None, :, :]
+            pfu = (
+                metrics.c3f[1:, None, None] * mub_column
+                + metrics.c4f[1:, None, None]
+                + p_top
+            )
+            pfd = (
+                metrics.c3f[:-1, None, None] * mub_column
+                + metrics.c4f[:-1, None, None]
+                + p_top
+            )
+            phm = (
+                metrics.c3h[:, None, None] * mub_column
+                + metrics.c4h[:, None, None]
+                + p_top
+            )
+            alb = dphb / (phm * jnp.log(pfd / pfu))
+        elif int(namelist.hypsometric_opt) == 1:
+            base_mass_h = (
+                metrics.c1h[:, None, None] * mub[None, :, :]
+                + metrics.c2h[:, None, None]
+            )
+            denominator = metrics.dnw[:, None, None] * base_mass_h
+            alb = -dphb / denominator
+        else:
+            raise ValueError(
+                "diff_opt=1 theta base reconstruction supports "
+                f"hypsometric_opt 1 or 2, got {namelist.hypsometric_opt}"
+            )
+        pressure_ratio = (pb / P0_PA) ** CVPM
+        theta_base = alb * (P0_PA / R_D) / pressure_ratio
+    theta_diffusion = horizontal_diffusion_coord_scalar_tendency(
+        haloed.theta,
+        xkhh,
+        mass_h,
+        dx_m=dx,
+        dy_m=dy,
+        base_3d=theta_base,
+        msftx=metrics.msftx if source_scalar_path else None,
+        msfty=metrics.msfty if source_scalar_path else None,
+        msfux=metrics.msfux if source_scalar_path else None,
+        msfuy=metrics.msfuy if source_scalar_path else None,
+        msfvx=metrics.msfvx if source_scalar_path else None,
+        msfvy=metrics.msfvy if source_scalar_path else None,
+        nonperiodic_owned=source_scalar_path,
+    )
+    if source_scalar_path:
+        du, dv, dw = wrf_nested_horizontal_diffusion_momentum_tendency(
+            haloed.u,
+            haloed.v,
+            haloed.w,
+            xkmh,
+            mu_total,
+            c1h=metrics.c1h,
+            c2h=metrics.c2h,
+            c1f=metrics.c1f,
+            c2f=metrics.c2f,
+            msfux=metrics.msfux,
+            msfuy=metrics.msfuy,
+            msfvx=metrics.msfvx,
+            msfvy=metrics.msfvy,
+            msftx=metrics.msftx,
+            msfty=metrics.msfty,
+            dx_m=dx,
+            dy_m=dy,
+        )
+    else:
+        du, dv, dw = horizontal_diffusion_coord_momentum_tendency(
+            haloed.u,
+            haloed.v,
+            haloed.w,
+            xkmh,
+            mass_u,
+            mass_v,
+            mass_f,
+            dx_m=dx,
+            dy_m=dy,
+        )
+    return du, dv, dw, theta_diffusion
+
+
 def _augment_large_step_tendencies(
     haloed: State,
     tendencies: Tendencies,
@@ -2731,6 +3695,10 @@ def _augment_large_step_tendencies(
     transport_velocities: CoupledVelocities | None = None,
     bdy_relax: SpecifiedRelaxTendencies | None = None,
     base_state: BaseState | None = None,
+    frozen_diffopt1_tendencies: tuple[jax.Array, jax.Array, jax.Array, jax.Array]
+    | None = None,
+    frozen_diff6_theta_tendency: jax.Array | None = None,
+    frozen_diff6_uvw_tendencies: tuple[jax.Array, jax.Array, jax.Array] | None = None,
 ) -> Tendencies:
     """Add WRF explicit diffusion + flux-form scalar advection to the large step.
 
@@ -2741,13 +3709,13 @@ def _augment_large_step_tendencies(
     * constant-K diffusion (Straka ν) -- ``:2999-3234``.
     * flux-form theta advection -- ``module_advect_em.F:3029-4359`` (h=5/v=3).
 
-    ``step_origin`` is the START-OF-STEP haloed state (the WRF ``_1`` reference /
-    ``scalar_old`` / ``mu_old``).  It is consumed ONLY by the positive-definite /
-    monotonic scalar-advection limiter (``scalar_adv_opt`` 1/2), which WRF applies
-    on the final RK3 stage alone (module_em.F:1265 ``rk_step == rk_order``).  When
-    ``scalar_adv_opt == 0`` (the default) or it is not the final stage, the plain
-    ``advect_scalar_flux`` path runs and ``step_origin`` is ignored, so the
-    default dynamics path is byte-for-byte unchanged.
+    ``step_origin`` remains in this helper's frozen call interface for the other
+    RK consumers.  Theta itself does not use it: pristine WRF ``rk_tendency``
+    always calls ordinary ``advect_scalar`` for potential temperature when the
+    currently wired ``scalar_adv_opt`` is 0, 1, or 2.  The final-RK3
+    positive-definite/monotonic selection belongs only to the separate moist and
+    other-scalar loops (``rk_scalar_tend``), whose helpers consume
+    ``step_origin`` independently below.
     """
 
     metrics = namelist.metrics
@@ -2819,51 +3787,24 @@ def _augment_large_step_tendencies(
         )
         # --- scalar theta: WRF advect_scalar (h=5/v=3) ---
         theta_offset = _theta_base_offset(haloed.theta)
-        # WRF selects the positive-definite (scalar_adv_opt=1) / monotonic (=2)
-        # flux limiter ONLY on the final RK3 stage (module_em.F:1265
-        # ``rk_step == rk_order``), using the start-of-step scalar/mass; every
-        # other stage and ``scalar_adv_opt == 0`` use the plain h5/v3 path.  The
-        # branch is a STATIC Python condition (rk_step and scalar_adv_opt are
-        # compile-time constants), so the default path emits the identical XLA
-        # program and stays bit-for-bit unchanged.
-        use_limiter = (
-            int(namelist.scalar_adv_opt) in (1, 2)
-            and int(rk_step) == int(namelist.rk_order)
-            and step_origin is not None
+        # Pristine module_em.F::rk_tendency does NOT send theta through
+        # advect_scalar_pd/mono for scalar_adv_opt 1/2.  Those limiters are for
+        # the separate moist/scalar families in rk_scalar_tend.  Applying the PD
+        # tracer limiter here was additionally ill-posed because WRF T is a
+        # signed perturbation (the operational d03 initial field contains
+        # negative values).  For all currently wired options 0/1/2, theta uses
+        # the same ordinary h5/v3 advect_scalar call at every RK stage.
+        coupled_tend = advect_scalar_flux(
+            haloed.theta - theta_offset,
+            vel,
+            mut=mu_total,
+            c1=metrics.c1h,
+            rdx=1.0 / dx,
+            rdy=1.0 / dy,
+            rdzw=metrics.rdnw,
+            fzm=metrics.fnm,
+            fzp=metrics.fnp,
         )
-        if use_limiter:
-            # field_old / mu_old = the WRF start-of-step ``scalar_old`` / ``mu_old``
-            # (grid%mu_1); mut = the current stage total dry mass.  dt = the full
-            # model step (on the final RK3 stage WRF's ``dt_step`` recovers the
-            # full dt: dt_step*(rk_order-rk_step+1) with rk_step==rk_order == dt).
-            coupled_tend = advect_scalar_flux_limited(
-                haloed.theta - theta_offset,
-                step_origin.theta - theta_offset,
-                vel,
-                scalar_adv_opt=int(namelist.scalar_adv_opt),
-                mut=mu_total,
-                mu_old=step_origin.mu_total,
-                c1=metrics.c1h,
-                c2=metrics.c2h,
-                rdx=1.0 / dx,
-                rdy=1.0 / dy,
-                rdzw=metrics.rdnw,
-                fzm=metrics.fnm,
-                fzp=metrics.fnp,
-                dt=float(namelist.dt_s),
-            )
-        else:
-            coupled_tend = advect_scalar_flux(
-                haloed.theta - theta_offset,
-                vel,
-                mut=mu_total,
-                c1=metrics.c1h,
-                rdx=1.0 / dx,
-                rdy=1.0 / dy,
-                rdzw=metrics.rdnw,
-                fzm=metrics.fnm,
-                fzp=metrics.fnp,
-            )
         # tendencies.theta carries the base zero; replace the advective theta part
         # with the flux-form coupled tendency.
         th_t = namelist.tendencies.theta * mass_h + coupled_tend
@@ -2871,10 +3812,39 @@ def _augment_large_step_tendencies(
     if int(namelist.diff_6th_opt) != 0:
         f = float(namelist.diff_6th_factor)
         dt_diff = float(namelist.dt_s)
-        u_t = u_t + mass_u * sixth_order_diffusion_tendency(haloed.u, dt=dt_diff, diff_6th_factor=f)
-        v_t = v_t + mass_v * sixth_order_diffusion_tendency(haloed.v, dt=dt_diff, diff_6th_factor=f)
-        w_t = w_t + mass_f * sixth_order_diffusion_tendency(haloed.w, dt=dt_diff, diff_6th_factor=f)
-        th_t = th_t + mass_h * sixth_order_diffusion_tendency(haloed.theta, dt=dt_diff, diff_6th_factor=f)
+        if frozen_diff6_uvw_tendencies is not None:
+            # Pristine WRF momentum sixth-order diffusion lives in the RK1-only
+            # ``ru/rv/rw_tendf`` bundle (module_em.F:882-916) and reaches
+            # ``ru_tend`` through rk_addtend_dry's per-field map division at
+            # every stage.  The live nested child supplies that already-divided
+            # step-persistent bundle here (S1 attribution sprint 2026-07-18:
+            # the per-stage periodic form below wrapped opposite-boundary
+            # values into rings 0-2 and carried point-mass/no-msf algebra —
+            # 97.8% of the frozen S1 nonspec SSE).  The periodic path remains
+            # byte-identical for idealized/released programs.
+            du6, dv6, dw6 = frozen_diff6_uvw_tendencies
+            u_t = u_t + du6
+            v_t = v_t + dv6
+            w_t = w_t + dw6
+        else:
+            u_t = u_t + mass_u * sixth_order_diffusion_tendency(haloed.u, dt=dt_diff, diff_6th_factor=f)
+            v_t = v_t + mass_v * sixth_order_diffusion_tendency(haloed.v, dt=dt_diff, diff_6th_factor=f)
+            w_t = w_t + mass_f * sixth_order_diffusion_tendency(haloed.w, dt=dt_diff, diff_6th_factor=f)
+        if frozen_diff6_theta_tendency is None:
+            th_t = th_t + mass_h * sixth_order_diffusion_tendency(
+                haloed.theta,
+                dt=dt_diff,
+                diff_6th_factor=f,
+            )
+        else:
+            # Pristine WRF evaluates scalar sixth-order diffusion only inside
+            # ``forward_step`` (RK1), stores the mass/map-coupled result in
+            # ``t_tendf``, and reuses it in RK2/RK3 through
+            # ``rk_addtend_dry(t_tendf/msfty)``.  The live-child candidate
+            # supplies that already-divided, immutable effective tendency here.
+            # U/V/W intentionally retain their prior bytes so this remains the
+            # bounded T/scalar discriminator independent of 2c13b731's wind fix.
+            th_t = th_t + frozen_diff6_theta_tendency
 
     nu = float(namelist.const_nu_m2_s)
     if nu > 0.0:
@@ -2945,20 +3915,18 @@ def _augment_large_step_tendencies(
     # bl_pbl_physics==0), so this path adds no vertical diffusion -- the operational
     # MYNN PBL provides vertical mixing in the coupled runs.
     if int(namelist.diff_opt) == 1 and int(namelist.km_opt) == 4:
-        # Smagorinsky eddy viscosity from the horizontal deformation of (u, v).
-        d11, d22, d12 = horizontal_deformation_2d(haloed.u, haloed.v, dx_m=dx, dy_m=dy)
-        xkmh, xkhh = smag2d_horizontal_km(
-            d11, d22, d12, dx_m=dx, dy_m=dy, c_s=float(namelist.c_s),
-        )
-        # theta (perturbation vs the WRF 300 K reference base) -- horizontal_diffusion_3dmp.
-        theta_base = _theta_base_offset(haloed.theta) * jnp.ones_like(haloed.theta)
-        th_t = th_t + horizontal_diffusion_coord_scalar_tendency(
-            haloed.theta, xkhh, mass_h, dx_m=dx, dy_m=dy, base_3d=theta_base,
-        )
-        # momentum (u, v, w) -- horizontal_diffusion 'u'/'v'/'w' branches with xkmh.
-        du_s, dv_s, dw_s = horizontal_diffusion_coord_momentum_tendency(
-            haloed.u, haloed.v, haloed.w, xkmh, mass_u, mass_v, mass_f, dx_m=dx, dy_m=dy,
-        )
+        # WRF computes this complete dry bundle once at RK1 and retains it in
+        # ru/rv/rw/t_tendf.  Direct helper callers without the operational
+        # hoist retain the historical current-state construction.
+        if frozen_diffopt1_tendencies is None:
+            du_s, dv_s, dw_s, theta_diffusion = _diffopt1_dry_forward_tendencies(
+                haloed,
+                namelist,
+                base_state=base_state,
+            )
+        else:
+            du_s, dv_s, dw_s, theta_diffusion = frozen_diffopt1_tendencies
+        th_t = th_t + theta_diffusion
         u_t = u_t + du_s
         v_t = v_t + dv_s
         w_t = w_t + dw_s
@@ -3058,6 +4026,22 @@ def _augment_large_step_tendencies(
     u_t = u_t + ru_cor
     v_t = v_t + rv_cor
 
+    # WRF calls normal-map curvature immediately after Coriolis
+    # (module_em.F:773-781; module_big_step_utilities_em.F:4239-4446). The
+    # source correction is intentionally bound to the authenticated
+    # specified/nested path; periodic idealized programs retain their prior
+    # bytes under the contract amendment.
+    if bool(namelist.run_boundary):
+        ru_curv, rv_curv = large_step_horizontal_curvature(
+            haloed,
+            metrics,
+            dx_m=dx,
+            dy_m=dy,
+            specified=True,
+        )
+        u_t = u_t + ru_curv
+        v_t = v_t + rv_curv
+
     tendencies = tendencies.replace(u=u_t, v=v_t, w=w_t, theta=th_t)
 
     # WRF rk_addtend_dry per-stage merge (module_em.F:1711-1786): field-specific
@@ -3085,12 +4069,23 @@ def _augment_large_step_tendencies(
     # operational ph tendency lane is rhs_ph, not tendencies.ph).
     if bdy_relax is not None:
         mu_aug = merged.mu + bdy_relax.mu if int(rk_step) == 1 else merged.mu
-        merged = merged.replace(
-            u=merged.u + bdy_relax.ru,
-            v=merged.v + bdy_relax.rv,
-            theta=merged.theta + bdy_relax.t,
-            mu=mu_aug,
-        )
+        if bdy_relax.w is None:
+            # Released specified-root program: preserve the exact replacement
+            # surface when the nested-only w lane is absent.
+            merged = merged.replace(
+                u=merged.u + bdy_relax.ru,
+                v=merged.v + bdy_relax.rv,
+                theta=merged.theta + bdy_relax.t,
+                mu=mu_aug,
+            )
+        else:
+            merged = merged.replace(
+                u=merged.u + bdy_relax.ru,
+                v=merged.v + bdy_relax.rv,
+                w=merged.w + bdy_relax.w,
+                theta=merged.theta + bdy_relax.t,
+                mu=mu_aug,
+            )
     return merged
 
 
@@ -3099,6 +4094,33 @@ def _augment_large_step_tendencies(
 # solve_em.F:2282-2408).  The condensates that exist as State leaves in this port
 # are qc/qr/qi/qs/qg; qv is index P_QV.
 _MOISTURE_SPECIES = ("qv", "qc", "qr", "qi", "qs", "qg")
+
+# A mapped species lane is beneficial only in the small-grid regime. Key the
+# policy on CELLS, not bytes: release d02 has 797,940 cells and must remain scalar
+# in fp64 AND fp32, while d03/d08 have 309,672/378,972 cells. A byte threshold
+# would silently move fp32 d02 back onto the failed batched path. Keep the choice
+# trace-static and conservative; width selection is finalized by ADR-033.
+_NESTED_SCALAR_BATCH_MAX_FIELD_CELLS = 524_288
+_NESTED_SCALAR_BATCH_WIDTH = 2
+
+
+def _nested_scalar_species_batch_width(
+    field: jax.Array, *, use_limiter: bool = True
+) -> int:
+    """Static limited-stage batch width; plain stages always use reference width 1."""
+
+    if not bool(use_limiter):
+        return 1
+
+    cells = 1
+    for extent in field.shape:
+        cells *= int(extent)
+    return (
+        _NESTED_SCALAR_BATCH_WIDTH
+        if cells <= _NESTED_SCALAR_BATCH_MAX_FIELD_CELLS
+        else 1
+    )
+
 
 # v0.17 ADR-032 hail microphysics family (mp_physics ids). When one of these is
 # selected WRF carries the additional hail/predicted-density scalars
@@ -3160,28 +4182,31 @@ def _advected_scalar_species(namelist: "OperationalNamelist") -> tuple[str, ...]
     return _MOISTURE_SPECIES
 
 
-def _moisture_coupled_tendencies(
+def _scalar_transport_coupled_tendencies(
     haloed: State,
     namelist: OperationalNamelist,
     *,
     rk_step: int,
     step_origin: State | None,
+    species: tuple[str, ...],
+    advection_opt: int,
     transport_velocities: CoupledVelocities | None = None,
+    species_batch_width: int = 1,
 ) -> tuple[jax.Array, ...]:
-    """WRF moisture-species coupled large-step tendency ``d(mu*q)/dt`` per stage.
+    """WRF scalar-loop coupled large-step tendency ``d(mu*q)/dt`` per stage.
 
-    Source: ``solve_em.F:2282-2408`` ``moist_variable_loop`` ->
-    ``rk_scalar_tend(im, im, ..., config_flags%moist_adv_opt, ...)``.  Each moist
-    species is flux-advected by the SAME high-order flux-form scalar advection
-    (h=5/v=3) used for theta, with the PD/monotonic limiter (moist_adv_opt 1/2)
-    applied ONLY on the final RK3 stage (the start-of-step ``step_origin``
-    moisture / ``mu_old`` feed the FCT bound) -- identical cadence to the theta
-    ``scalar_adv_opt`` wiring in ``_augment_large_step_tendencies``.
+    Both pristine ``solve_em.F`` loops call ``rk_scalar_tend`` with the same
+    transport equation: the moist loop selects ``moist_adv_opt`` and the other
+    scalar loop (including Thompson QNI/QNR) selects ``scalar_adv_opt``.  Keeping
+    the static species and option explicit also lets equal-option source loops
+    share bounded species chunks without changing their WRF equations or
+    ordering. ``species_batch_width`` is a static dispatch policy; its default
+    1 retains the canonical scalar loop.
 
     Reuses the EXACT same ``vel`` / ``mu_total`` / ``metrics`` build as the theta
     flux advection so the transporting velocity field is bit-consistent with the
     momentum/theta advection of the same stage.  Returns a tuple of COUPLED
-    tendencies ``d(mu*q)/dt`` in ``_MOISTURE_SPECIES`` order, consumed by the WRF
+    tendencies ``d(mu*q)/dt`` in ``species`` order, consumed by the WRF
     scalar large-step update ``q_new = (mu_old*q_old + dt_rk*tend)/mu_new`` AFTER
     the acoustic loop (NOT inside the acoustic substeps).
     """
@@ -3196,20 +4221,13 @@ def _moisture_coupled_tendencies(
         if transport_velocities is not None
         else _stage_transport_velocities(haloed, namelist)
     )
-    # Static species selection (ADR-032): core six moist species, plus the hail
-    # family's extra transported scalars when a hail scheme is selected (WSM7
-    # mp=24 adds ``qh`` so resolved-wind transport advects hail like graupel),
-    # and the aerosol-aware Thompson (mp=28) nwfa/nifa scalars when that scheme
-    # is selected. For every other currently-wired scheme this is exactly
-    # ``_MOISTURE_SPECIES``.
-    species = _advected_scalar_species(namelist)
     fields = tuple(getattr(haloed, name) for name in species)
-    # The limiter (moist_adv_opt 1/2) is the final-RK3-stage FCT; it needs the
+    # The limiter (advection option 1/2) is the final-RK3-stage FCT; it needs the
     # start-of-step moisture (WRF ``moist_old``) and ``mu_old`` (grid%mu_1).  The
     # selection inside advect_moisture_scalars is STATIC, so on opt==0 / non-final
     # stages the plain h5/v3 path is emitted and ``fields_old`` is ignored.
     use_limiter = (
-        int(namelist.moist_adv_opt) in (1, 2)
+        int(advection_opt) in (1, 2)
         and int(rk_step) == int(namelist.rk_order)
         and step_origin is not None
     )
@@ -3223,7 +4241,7 @@ def _moisture_coupled_tendencies(
         fields,
         fields_old,
         vel,
-        moist_adv_opt=int(namelist.moist_adv_opt),
+        moist_adv_opt=int(advection_opt),
         is_final_rk_stage=(int(rk_step) == int(namelist.rk_order)),
         mut=mu_total,
         mu_old=mu_old,
@@ -3235,6 +4253,94 @@ def _moisture_coupled_tendencies(
         fzm=metrics.fnm,
         fzp=metrics.fnp,
         dt=float(namelist.dt_s),
+        species_batch_width=int(species_batch_width),
+    )
+
+
+def _moisture_coupled_tendencies(
+    haloed: State,
+    namelist: OperationalNamelist,
+    *,
+    rk_step: int,
+    step_origin: State | None,
+    transport_velocities: CoupledVelocities | None = None,
+) -> tuple[jax.Array, ...]:
+    """Released WRF moist-loop coupled tendencies in its existing order."""
+
+    return _scalar_transport_coupled_tendencies(
+        haloed,
+        namelist,
+        rk_step=int(rk_step),
+        step_origin=step_origin,
+        species=_advected_scalar_species(namelist),
+        advection_opt=int(namelist.moist_adv_opt),
+        transport_velocities=transport_velocities,
+    )
+
+
+def _nested_number_scalar_coupled_tendencies(
+    haloed: State,
+    namelist: OperationalNamelist,
+    *,
+    rk_step: int,
+    step_origin: State,
+    transport_velocities: CoupledVelocities,
+) -> tuple[jax.Array, ...]:
+    """Candidate-only pristine ``other_scalar_advance`` for QNI and QNR.
+
+    Thompson's Registry package declares both fields in the ``scalar`` family.
+    ``solve_em.F:2774-2869`` therefore transports them with ``scalar_adv_opt``
+    before adding the same RK1-frozen boundary tendency and calling
+    ``rk_update_scalar``.  The production State already carries both fields;
+    this adds no interface leaf or loop transfer.
+    """
+
+    return _scalar_transport_coupled_tendencies(
+        haloed,
+        namelist,
+        rk_step=int(rk_step),
+        step_origin=step_origin,
+        species=("Ni", "Nr"),
+        advection_opt=int(namelist.scalar_adv_opt),
+        transport_velocities=transport_velocities,
+    )
+
+
+def _nested_scalar_sixth_order_tendencies(
+    step_origin: State,
+    namelist: OperationalNamelist,
+) -> tuple[jax.Array, ...]:
+    """Pristine WRF's RK1-frozen moist/other-scalar ``sc_tend`` bundle.
+
+    ``solve_em.F`` calls ``rk_scalar_tend`` for every active moist and other
+    scalar.  In ``module_em.F`` the sixth-order contribution is formed only at
+    RK1, with that stage's ``dt_step`` (``dt/3`` for the operational RK3), and
+    remains in ``moist_tend``/``scalar_tend`` for all three calls to
+    ``rk_update_scalar``.  The returned values are already mass/map-coupled
+    ``sc_tend`` quantities: unlike advection, ``rk_update_scalar`` does not
+    multiply them by ``msfty``.
+
+    The canonical Thompson nest represents the six moist members plus QNI/QNR
+    in exactly ``NESTED_BOUNDARY_SCALAR_SPECIES`` order.  Computing the static
+    tuple outside ``advance_stage`` adds no carry leaf or loop transfer.
+    """
+
+    metrics = namelist.metrics
+    rk1_dt = float(namelist.dt_s) / float(namelist.rk_order)
+    return tuple(
+        wrf_sixth_order_scalar_tendf(
+            getattr(step_origin, name),
+            step_origin.mu_total,
+            c1=metrics.c1h,
+            c2=metrics.c2h,
+            msftx=metrics.msftx,
+            msfty=metrics.msfty,
+            dt=rk1_dt,
+            diff_6th_factor=float(namelist.diff_6th_factor),
+            monotonic=(int(namelist.diff_6th_opt) == 2),
+            specified_or_nested=True,
+        )
+        for name in NESTED_BOUNDARY_SCALAR_SPECIES
     )
 
 
@@ -3317,6 +4423,78 @@ def _apply_moisture_large_step(
     return state.replace(**updates)
 
 
+def _nested_scalar_stage_tendencies(
+    advected_tendencies: tuple[jax.Array, ...] | None,
+    advected_species: tuple[str, ...],
+    frozen_boundary_tendencies: tuple[jax.Array, ...],
+    config: BoundaryConfig,
+    msfty: jax.Array,
+) -> tuple[tuple[str, ...], tuple[jax.Array, ...]]:
+    """Merge evolving scalar advection with RK1-frozen WRF boundary tendency.
+
+    ``rk_update_scalar`` multiplies the raw scalar advection by ``msfty``,
+    excludes the outer ``spec_zone`` from that advection, adds the frozen
+    ``sc_tend`` unscaled everywhere, and integrates every stage from the
+    step-start scalar/mass.  The live nested path is always non-periodic in this
+    runtime, matching pristine WRF's four-sided limits.  Optional advected
+    species without a represented boundary record retain the same map-scaled
+    advection semantics.
+    """
+
+    advected = {
+        name: tendency
+        for name, tendency in zip(
+            advected_species,
+            advected_tendencies or (),
+            strict=True,
+        )
+    }
+    frozen = dict(
+        zip(
+            NESTED_BOUNDARY_SCALAR_SPECIES,
+            frozen_boundary_tendencies,
+            strict=True,
+        )
+    )
+    species = tuple(advected_species) + tuple(
+        name
+        for name in NESTED_BOUNDARY_SCALAR_SPECIES
+        if name not in advected
+    )
+    merged: list[jax.Array] = []
+    spec_zone = int(config.spec_zone)
+    for name in species:
+        adv = advected.get(name)
+        bdy = frozen.get(name)
+        if adv is not None:
+            # module_em.F::rk_update_scalar uses
+            #   advect_tend(i,k,j) * msfty(i,j) + sc_tend(i,k,j)
+            # inside the advection rectangle.  sc_tend is already the coupled
+            # WRF boundary tendency and must not receive the map factor.
+            map_factor = jnp.asarray(msfty, dtype=adv.dtype)[None, :, :]
+            adv = adv * map_factor
+        if adv is not None and bdy is not None and spec_zone > 0:
+            # module_em.F rk_update_scalar: advection rectangle excludes the
+            # specified rows/columns, while sc_tend covers the full mass grid.
+            interior = jnp.zeros_like(adv)
+            y_stop = int(adv.shape[-2]) - spec_zone
+            x_stop = int(adv.shape[-1]) - spec_zone
+            interior = interior.at[
+                ...,
+                spec_zone:y_stop,
+                spec_zone:x_stop,
+            ].set(adv[..., spec_zone:y_stop, spec_zone:x_stop])
+            adv = interior
+        if adv is None:
+            assert bdy is not None
+            merged.append(bdy)
+        elif bdy is None:
+            merged.append(adv)
+        else:
+            merged.append(adv + bdy)
+    return species, tuple(merged)
+
+
 def _rk_scan_step(
     carry: OperationalCarry,
     namelist: OperationalNamelist,
@@ -3325,16 +4503,139 @@ def _rk_scan_step(
     lead_seconds=None,
     physics_tendencies: DryPhysicsTendencies | None = None,
     capture_pre_halo: bool = False,
-) -> OperationalCarry | _PreHaloCaptureResult:
+    capture_rca: bool = False,
+    capture_phase_tap: bool = False,
+    capture_ladder: bool = False,
+) -> OperationalCarry | _PreHaloCaptureResult | _RcaRkResult | CorrectedNiPhaseTapResult | _RkLadderResult:
+    if sum(bool(value) for value in (capture_pre_halo, capture_rca, capture_phase_tap, capture_ladder)) > 1:
+        raise ValueError("pre-halo, RCA, phase-tap, and ladder captures are mutually exclusive")
     origin = apply_halo(carry.state, halo_spec(namelist.grid))
     rk1_reference = origin
+    nested_frozen_bundle = _nested_frozen_wrf_boundary_active(namelist)
+    # WRF first_rk_step_part2 builds diff_opt=1 coefficients from the time-t
+    # fields and module_em.F::rk_tendency adds the dry diffusion only inside
+    # ``forward_step`` (rk_step == 1).  rk_addtend_dry then reuses the complete
+    # ru/rv/rw/t_tendf bundle in all three RK stages.  Hoist that immutable
+    # device bundle beside the other step-origin forcing; no carry leaf or
+    # host/device transfer is introduced.
+    rk1_forward_diffopt1 = (
+        _diffopt1_dry_forward_tendencies(
+            rk1_reference,
+            namelist,
+            base_state=carry.base_state,
+        )
+        if int(namelist.diff_opt) == 1 and int(namelist.km_opt) == 4
+        else None
+    )
+    # Canonical real-data nests select diff_6th_opt=2.  WRF builds theta's
+    # sixth-order contribution once from the time-t/RK1 field into ``t_tendf``;
+    # the previous operational path rebuilt a periodic, cell-mass approximation
+    # in all three stages, including physical rings where WRF owns no stencil.
+    # Keep this correction behind the coherent live-child bundle so every
+    # released/candidate-off program remains byte-identical.
+    rk1_forward_diff6_theta = None
+    if nested_frozen_bundle and int(namelist.diff_6th_opt) != 0:
+        theta_tendf = wrf_sixth_order_scalar_tendf(
+            rk1_reference.theta - _theta_base_offset(rk1_reference.theta),
+            rk1_reference.mu_total,
+            c1=namelist.metrics.c1h,
+            c2=namelist.metrics.c2h,
+            msftx=namelist.metrics.msftx,
+            msfty=namelist.metrics.msfty,
+            dt=float(namelist.dt_s),
+            diff_6th_factor=float(namelist.diff_6th_factor),
+            monotonic=(int(namelist.diff_6th_opt) == 2),
+            specified_or_nested=True,
+        )
+        rk1_forward_diff6_theta = (
+            theta_tendf
+            / namelist.metrics.msfty.astype(theta_tendf.dtype)[None, :, :]
+        )
+    # Momentum shares theta's rk1-only tendf cadence (module_em.F:882-916):
+    # WRF forms u/v/w sixth-order diffusion once from the time-t fields with
+    # the specified/nested ownership rings, adjacent-face masses, and
+    # per-direction map factors, and reuses the folded result at every stage.
+    # S1 attribution (sprint 2026-07-18-v0234-s1-dyn-attribution-fable5):
+    # the prior per-stage periodic form explained 97.8% of the frozen 8105x
+    # rk_tendency nonspec residual (relax band 98.05%, corr 0.992).
+    rk1_forward_diff6_uvw = None
+    if nested_frozen_bundle and int(namelist.diff_6th_opt) != 0:
+        rk1_forward_diff6_uvw = wrf_sixth_order_uvw_tendf(
+            rk1_reference.u,
+            rk1_reference.v,
+            rk1_reference.w,
+            rk1_reference.mu_total,
+            c1h=namelist.metrics.c1h,
+            c2h=namelist.metrics.c2h,
+            c1f=namelist.metrics.c1f,
+            c2f=namelist.metrics.c2f,
+            msfux=namelist.metrics.msfux,
+            msfuy=namelist.metrics.msfuy,
+            msfvx=namelist.metrics.msfvx,
+            msfvy=namelist.metrics.msfvy,
+            msftx=namelist.metrics.msftx,
+            msfty=namelist.metrics.msfty,
+            dt=float(namelist.dt_s),
+            diff_6th_factor=float(namelist.diff_6th_factor),
+            monotonic=(int(namelist.diff_6th_opt) == 2),
+        )
+    # Pristine relax_bdy_dry runs at RK1 and stores *_tendf for reuse.  Hoist the
+    # candidate child's construction outside advance_stage so it is traced once
+    # from the immutable step-start fields.  The released specified path remains
+    # in its historical per-stage Python construction below for inactive-path
+    # JAXPR/HLO identity.
+    nested_frozen_relax = (
+        _nested_frozen_bdy_relax(rk1_reference, namelist, lead_seconds)
+        if nested_frozen_bundle
+        else None
+    )
+    # solve_em.F builds scalar relax/spec tendencies only at RK1 and leaves the
+    # resulting sc_tend resident for RK2/RK3.  Hoist the candidate bundle beside
+    # the dry tendf bundle so every stage consumes identical boundary forcing.
+    nested_frozen_scalar = (
+        nested_scalar_boundary_tendencies(
+            rk1_reference,
+            lead_seconds,
+            namelist.metrics,
+            float(namelist.dt_s),
+            namelist.boundary_config,
+        )
+        if nested_frozen_bundle and lead_seconds is not None
+        else None
+    )
+    # WRF's moist/other-scalar sixth-order lane shares the same step-persistent
+    # sc_tend arrays as the RK1 boundary tendency above.  Form it once from the
+    # time-t fields with dt/3, then add it without map rescaling before all three
+    # scalar updates.  Rings 0--2 remain exact zero by source ownership.
+    if nested_frozen_scalar is not None and int(namelist.diff_6th_opt) != 0:
+        rk1_forward_diff6_scalar = _nested_scalar_sixth_order_tendencies(
+            rk1_reference,
+            namelist,
+        )
+        nested_frozen_scalar = tuple(
+            boundary + diffusion
+            for boundary, diffusion in zip(
+                nested_frozen_scalar,
+                rk1_forward_diff6_scalar,
+                strict=True,
+            )
+        )
 
     def advance_stage(
         stage_carry: OperationalCarry,
         stage: _RKStageDescriptor,
         *,
         capture_stage_pre_halo: bool = False,
-    ) -> OperationalCarry | _PreHaloCaptureResult:
+        capture_stage_rca: bool = False,
+        capture_stage_phase_tap: bool = False,
+        capture_stage_ladder: bool = False,
+    ) -> (
+        OperationalCarry
+        | _PreHaloCaptureResult
+        | _RcaAcousticScanResult
+        | CorrectedNiPhaseTapResult
+        | tuple[OperationalCarry, tuple[jax.Array, jax.Array], tuple[jax.Array, jax.Array]]
+    ):
         haloed = apply_halo(stage_carry.state, halo_spec(namelist.grid))
         # WRF rk_tendency builds the per-stage large-step tendencies (advection,
         # diffusion, and the LARGE-STEP horizontal PGF; module_em.F:1325) and
@@ -3360,7 +4661,11 @@ def _rk_scan_step(
         # v0.14 SPECIFIED WRF boundary cadence: the step-constant relax_bdy_dry
         # bundle from the rk1 reference (identical values at every stage; WRF
         # computes it once at rk_step==1 and folds it into the *_tendf lane).
-        bdy_relax = _specified_bdy_relax(rk1_reference, namelist, lead_seconds)
+        bdy_relax = (
+            nested_frozen_relax
+            if nested_frozen_bundle
+            else _specified_bdy_relax(rk1_reference, namelist, lead_seconds)
+        )
         tendencies = _augment_large_step_tendencies(
             haloed,
             tendencies,
@@ -3371,30 +4676,70 @@ def _rk_scan_step(
             transport_velocities=stage_velocities,
             bdy_relax=bdy_relax,
             base_state=stage_carry.base_state,
+            frozen_diffopt1_tendencies=rk1_forward_diffopt1,
+            frozen_diff6_theta_tendency=rk1_forward_diff6_theta,
+            frozen_diff6_uvw_tendencies=rk1_forward_diff6_uvw,
         )
-        # WRF advances moisture in the LARGE step (NOT the acoustic substeps):
-        # build the coupled moisture tendency d(mu*q)/dt for THIS stage from the
-        # stage-entry haloed state (same transporting ``vel`` as theta/momentum),
-        # then apply the WRF scalar update q_new=(mu_old*q_old+dt_rk*tend)/mu_new
-        # AFTER the acoustic loop has advanced ``mu``.  The branch is a STATIC
-        # Python condition (moist_adv_opt and use_flux_advection are compile-time
-        # constants), so when moisture advection is OFF (the default) the new code
-        # path is never traced and the operational program is byte-for-byte
-        # unchanged.  Source: solve_em.F:2282-2408 moist_variable_loop.
+        # WRF advances moisture/other scalars after acoustic integration and
+        # constructs their tendencies with ``sumflux`` -- the time-average of
+        # live acoustic ru/rv/ww plus the saved linear stage flux.  The released
+        # nested 0/0 program already transported QNI/QNR from the stage-entry
+        # operands, however.  Preserve that exact compatibility control when
+        # BOTH scalar options are off; activating either source option selects
+        # the coherent post-acoustic path for both WRF scalar loops.  Source:
+        # solve_em.F:1566-1581, :2282-2317, and :2855-2883.
         moisture_advected = (
             bool(namelist.use_flux_advection) and int(namelist.moist_adv_opt) != 0
         )
-        q_tendencies = (
-            _moisture_coupled_tendencies(
-                haloed,
-                namelist,
-                rk_step=int(stage.rk_step),
-                step_origin=rk1_reference,
-                transport_velocities=stage_velocities,
+        if nested_frozen_bundle:
+            # WRF's separate ``other_scalar_advance`` always transports the
+            # represented Thompson QNI/QNR fields when flux advection is active;
+            # option 0 means its ordinary (unlimited) stencil, not no transport.
+            number_scalars_advected = bool(namelist.use_flux_advection)
+            moist_species = _advected_scalar_species(namelist) if moisture_advected else ()
+            post_acoustic_scalar_transport = bool(
+                moisture_advected
+                or (
+                    number_scalars_advected
+                    and int(namelist.scalar_adv_opt) != 0
+                )
             )
-            if moisture_advected
-            else None
-        )
+            if post_acoustic_scalar_transport:
+                q_species = ()
+                q_tendencies = ()
+            else:
+                # C1 compatibility arm: this is the exact pre-candidate 0/0
+                # nested QNI/QNR construction.  It intentionally keeps the
+                # stage-entry state/flux operands so the control remains a
+                # byte-identical released program rather than a mixed candidate.
+                if number_scalars_advected:
+                    assert stage_velocities is not None
+                    number_tendencies = _nested_number_scalar_coupled_tendencies(
+                        haloed,
+                        namelist,
+                        rk_step=int(stage.rk_step),
+                        step_origin=rk1_reference,
+                        transport_velocities=stage_velocities,
+                    )
+                else:
+                    number_tendencies = ()
+                advected_species = (
+                    ("Ni", "Nr") if number_scalars_advected else ()
+                )
+                assert nested_frozen_scalar is not None
+                q_species, q_tendencies = _nested_scalar_stage_tendencies(
+                    number_tendencies,
+                    advected_species,
+                    nested_frozen_scalar,
+                    namelist.boundary_config,
+                    namelist.metrics.msfty,
+                )
+        else:
+            number_scalars_advected = False
+            q_species = _advected_scalar_species(namelist)
+            moist_species = q_species if moisture_advected else ()
+            q_tendencies = None
+            post_acoustic_scalar_transport = bool(moisture_advected)
         tke_advected = int(namelist.diff_opt) == 2 and int(namelist.km_opt) in (2, 5)
         if tke_advected:
             ph = haloed.ph_total
@@ -3477,15 +4822,119 @@ def _rk_scan_step(
             tendencies=tendencies,
             lead_seconds=lead_seconds,
             capture_pre_halo=capture_stage_pre_halo,
+            capture_rca=capture_stage_rca,
+            capture_phase_tap=capture_stage_phase_tap,
+            return_scalar_transport=post_acoustic_scalar_transport,
             bdy_relax=bdy_relax,
         )
+        scalar_transport_velocities = None
+        if post_acoustic_scalar_transport:
+            assert isinstance(acoustic_result, _AcousticScalarTransportResult)
+            assert stage_velocities is not None
+            scalar_transport_velocities = _scalar_transport_velocities_from_sumflux(
+                stage_velocities,
+                acoustic_result.mass_fluxes,
+            )
+            acoustic_result = acoustic_result.result
         captured_pre_halo_state = None
+        captured_rca_health = None
+        captured_rca_target = None
+        captured_phase_tap_summary = None
         if capture_stage_pre_halo:
             captured_pre_halo_state = acoustic_result.pre_halo_state
             stage_carry = acoustic_result.carry
+        elif capture_stage_rca:
+            captured_rca_health = acoustic_result.health
+            captured_rca_target = acoustic_result.target
+            stage_carry = acoustic_result.carry
+        elif capture_stage_phase_tap:
+            captured_phase_tap_summary = acoustic_result.summary
+            stage_carry = acoustic_result.carry
         else:
             stage_carry = acoustic_result
-        if moisture_advected:
+        # The scalar fields themselves do not change in the sound-step loop,
+        # while the coupled dry mass and transporting fluxes do.  Match WRF's
+        # post-``small_step_finish`` ownership and construct every represented
+        # scalar tendency from that state and the finalized acoustic average.
+        if post_acoustic_scalar_transport:
+            if nested_frozen_bundle:
+                advected_species = moist_species + (
+                    ("Ni", "Nr") if number_scalars_advected else ()
+                )
+                limiter_stage = (
+                    int(namelist.moist_adv_opt) in (1, 2)
+                    and int(stage.rk_step) == int(namelist.rk_order)
+                    and rk1_reference is not None
+                )
+                species_batch_width = _nested_scalar_species_batch_width(
+                    getattr(stage_carry.state, advected_species[0]),
+                    use_limiter=limiter_stage,
+                )
+                if (
+                    moisture_advected
+                    and number_scalars_advected
+                    and int(namelist.moist_adv_opt)
+                    == int(namelist.scalar_adv_opt)
+                    and species_batch_width > 1
+                ):
+                    # Pristine WRF owns these as two source loops, but their
+                    # final-stage limiter equation and static option are
+                    # identical. Static pair chunks preserve every per-field
+                    # operation while reducing graph width on the smallest,
+                    # most-subcycled nest. Plain stages stay as the original
+                    # two scalar loops: mapped plain transport failed the
+                    # enclosing-jit exactness and performance discriminator.
+                    scalar_tendencies = _scalar_transport_coupled_tendencies(
+                        stage_carry.state,
+                        namelist,
+                        rk_step=int(stage.rk_step),
+                        step_origin=rk1_reference,
+                        species=advected_species,
+                        advection_opt=int(namelist.moist_adv_opt),
+                        transport_velocities=scalar_transport_velocities,
+                        species_batch_width=species_batch_width,
+                    )
+                else:
+                    moist_tendencies = (
+                        _moisture_coupled_tendencies(
+                            stage_carry.state,
+                            namelist,
+                            rk_step=int(stage.rk_step),
+                            step_origin=rk1_reference,
+                            transport_velocities=scalar_transport_velocities,
+                        )
+                        if moisture_advected
+                        else ()
+                    )
+                    number_tendencies = (
+                        _nested_number_scalar_coupled_tendencies(
+                            stage_carry.state,
+                            namelist,
+                            rk_step=int(stage.rk_step),
+                            step_origin=rk1_reference,
+                            transport_velocities=scalar_transport_velocities,
+                        )
+                        if number_scalars_advected
+                        else ()
+                    )
+                    scalar_tendencies = moist_tendencies + number_tendencies
+                assert nested_frozen_scalar is not None
+                q_species, q_tendencies = _nested_scalar_stage_tendencies(
+                    scalar_tendencies,
+                    advected_species,
+                    nested_frozen_scalar,
+                    namelist.boundary_config,
+                    namelist.metrics.msfty,
+                )
+            else:
+                q_tendencies = _moisture_coupled_tendencies(
+                    stage_carry.state,
+                    namelist,
+                    rk_step=int(stage.rk_step),
+                    step_origin=rk1_reference,
+                    transport_velocities=scalar_transport_velocities,
+                )
+        if moisture_advected or nested_frozen_bundle:
             stage_carry = stage_carry.replace(
                 state=_apply_moisture_large_step(
                     stage_carry.state,
@@ -3496,7 +4945,7 @@ def _rk_scan_step(
                     # ADR-032: same static species as the coupled-tendency build
                     # above (core six for every wired scheme; + qh for WSM7 mp=24
                     # and the rest of the wired hail family; + nwfa/nifa for mp=28).
-                    species=_advected_scalar_species(namelist),
+                    species=q_species,
                 )
             )
         if tke_advected:
@@ -3513,6 +4962,23 @@ def _rk_scan_step(
         stage_carry = stage_carry.replace(state=apply_halo(stage_carry.state, halo_spec(namelist.grid)))
         if capture_stage_pre_halo:
             return _PreHaloCaptureResult(stage_carry, captured_pre_halo_state)
+        if capture_stage_rca:
+            assert captured_rca_health is not None
+            assert captured_rca_target is not None
+            return _RcaAcousticScanResult(
+                stage_carry, captured_rca_health, captured_rca_target,
+            )
+        if capture_stage_phase_tap:
+            assert captured_phase_tap_summary is not None
+            return CorrectedNiPhaseTapResult(stage_carry, captured_phase_tap_summary)
+        if capture_stage_ladder:
+            relax_u = (
+                bdy_relax.ru if bdy_relax is not None else jnp.zeros_like(tendencies.u)
+            )
+            relax_v = (
+                bdy_relax.rv if bdy_relax is not None else jnp.zeros_like(tendencies.v)
+            )
+            return stage_carry, (tendencies.u, tendencies.v), (relax_u, relax_v)
         return stage_carry
 
     # Static RK sequencing avoids per-stage scalar dispatch inside the profiled
@@ -3530,6 +4996,38 @@ def _rk_scan_step(
         _RKStageDescriptor(3, dt, dt / float(configured_sound_steps), configured_sound_steps),
     )
     carry = carry.replace(state=origin)
+    if capture_rca:
+        stage1 = advance_stage(carry, stages[0], capture_stage_rca=True)
+        stage2 = advance_stage(stage1.carry, stages[1], capture_stage_rca=True)
+        stage3 = advance_stage(stage2.carry, stages[2], capture_stage_rca=True)
+        return _RcaRkResult(
+            stage3.carry,
+            jnp.concatenate((stage1.health, stage2.health, stage3.health), axis=0),
+            jnp.concatenate((stage1.target, stage2.target, stage3.target), axis=0),
+        )
+    if capture_phase_tap:
+        carry = advance_stage(carry, stages[0])
+        carry = advance_stage(carry, stages[1])
+        return advance_stage(carry, stages[2], capture_stage_phase_tap=True)
+    if capture_ladder:
+        stage1, rk1_tend, rk1_relax = advance_stage(
+            carry, stages[0], capture_stage_ladder=True,
+        )
+        stage2 = advance_stage(stage1, stages[1])
+        stage3 = advance_stage(stage2, stages[2])
+        return _RkLadderResult(
+            stage3,
+            rk1_tend_u=rk1_tend[0],
+            rk1_tend_v=rk1_tend[1],
+            rk1_relax_u=rk1_relax[0],
+            rk1_relax_v=rk1_relax[1],
+            rk1_fin_u=stage1.state.u,
+            rk1_fin_v=stage1.state.v,
+            rk2_fin_u=stage2.state.u,
+            rk2_fin_v=stage2.state.v,
+            rk3_fin_u=stage3.state.u,
+            rk3_fin_v=stage3.state.v,
+        )
     carry = advance_stage(carry, stages[0])
     carry = advance_stage(carry, stages[1])
     return advance_stage(carry, stages[2], capture_stage_pre_halo=capture_pre_halo)
@@ -4414,10 +5912,15 @@ def _physics_step_forcing(
     run_radiation: bool,
     first_timestep=False,
     clock_base=None,
-) -> _PhysicsStepForcing:
+    capture_first_interval: bool = False,
+) -> _PhysicsStepForcing | tuple[_PhysicsStepForcing, FirstIntervalMomentumRecord]:
     """Run non-timesplit physics at step entry and expose RK-fixed tendencies."""
 
     if not bool(namelist.run_physics):
+        if capture_first_interval:
+            raise ValueError(
+                "first-interval momentum capture requires run_physics=True"
+            )
         next_state, dry, da_enabled = _apply_data_assimilation_forcing(
             carry.state,
             carry.state,
@@ -4933,7 +6436,25 @@ def _physics_step_forcing(
     )
     next_carry = next_carry.replace(rthraten=held_rthraten)
 
-    return _PhysicsStepForcing(next_state, next_carry, dry, True)
+    forcing = _PhysicsStepForcing(next_state, next_carry, dry, True)
+    if capture_first_interval:
+        if (
+            rublten is None
+            or rvblten is None
+            or dry.ru_tendf is None
+            or dry.rv_tendf is None
+        ):
+            raise ValueError(
+                "first-interval momentum capture requires the MYNN source-leaf "
+                "PBL path (rad_rk_tendf=1 with raw RUBLTEN/RVBLTEN)"
+            )
+        return forcing, FirstIntervalMomentumRecord(
+            rublten=jnp.asarray(rublten, jnp.float64),
+            rvblten=jnp.asarray(rvblten, jnp.float64),
+            ru_tendf=jnp.asarray(dry.ru_tendf, jnp.float64),
+            rv_tendf=jnp.asarray(dry.rv_tendf, jnp.float64),
+        )
+    return forcing
 
 
 def _physics_boundary_step_with_limiter_diagnostics(
@@ -4944,33 +6465,99 @@ def _physics_boundary_step_with_limiter_diagnostics(
     run_radiation: bool,
     debug: bool = False,
     clock_base=None,
-) -> tuple[OperationalCarry, dict[str, jax.Array]]:
+    capture_rca: bool = False,
+    capture_phase_tap: bool = False,
+    capture_first_interval: bool = False,
+    capture_ladder: bool = False,
+) -> (
+    tuple[OperationalCarry, dict[str, jax.Array]]
+    | _RcaStepResult
+    | CorrectedNiPhaseTapResult
+    | FirstIntervalStepResult
+    | FirstIntervalLadderStepResult
+):
+    if bool(capture_rca) and bool(capture_phase_tap):
+        raise ValueError("RCA and phase-tap captures are mutually exclusive")
+    if bool(capture_first_interval) and (bool(capture_rca) or bool(capture_phase_tap)):
+        raise ValueError("first-interval capture is mutually exclusive with RCA/phase-tap")
+    if bool(capture_ladder) and (bool(capture_rca) or bool(capture_phase_tap)):
+        raise ValueError("ladder capture is mutually exclusive with RCA/phase-tap")
     physical_origin = carry.state
+    state_health = [_rca_state_health(physical_origin)] if capture_rca else None
+    state_target = [_rca_state_target(physical_origin)] if capture_rca else None
+    boundary_health = _rca_boundary_health(physical_origin) if capture_rca else None
     # Forecast clock for this step (traced scalar). Hoisted above the dycore so the
     # in-acoustic-loop NORMAL-momentum boundary targets are interpolated at the
     # step-start lead (matching WRF, which fixes ru_tend/rv_tend at the step start);
     # also reused below by rrtmg + the end-of-step lateral boundary nudge.
     lead_seconds = step_index.astype(jnp.float64) * float(namelist.dt_s)
-    physics_forcing = _physics_step_forcing(
-        carry,
-        namelist,
-        lead_seconds,
-        run_radiation=run_radiation,
-        first_timestep=jnp.equal(step_index, 1),
-        clock_base=clock_base,
-    )
+    boundary_lead_seconds = lead_seconds
+    if _nested_frozen_wrf_boundary_active(namelist):
+        boundary_lead_seconds = nested_boundary_package_endpoint_seconds(
+            step_index,
+            child_dt_s=float(namelist.dt_s),
+            parent_cadence_s=float(namelist.boundary_config.update_cadence_s),
+        )
+    if capture_first_interval:
+        physics_forcing, first_interval_record = _physics_step_forcing(
+            carry,
+            namelist,
+            lead_seconds,
+            run_radiation=run_radiation,
+            first_timestep=jnp.equal(step_index, 1),
+            clock_base=clock_base,
+            capture_first_interval=True,
+        )
+    else:
+        physics_forcing = _physics_step_forcing(
+            carry,
+            namelist,
+            lead_seconds,
+            run_radiation=run_radiation,
+            first_timestep=jnp.equal(step_index, 1),
+            clock_base=clock_base,
+        )
+        first_interval_record = None
+    if capture_rca:
+        state_health.append(_rca_state_health(physics_forcing.state))
+        state_target.append(_rca_state_target(physics_forcing.state))
     carry = physics_forcing.carry
-    carry = _rk_scan_step(
+    rk_result = _rk_scan_step(
         carry,
         namelist,
         debug=debug,
-        lead_seconds=lead_seconds,
+        lead_seconds=boundary_lead_seconds,
         physics_tendencies=physics_forcing.dry_tendencies,
+        capture_rca=capture_rca,
+        capture_phase_tap=capture_phase_tap,
+        capture_ladder=capture_ladder,
     )
+    acoustic_health = None
+    acoustic_target = None
+    phase_tap_summary = None
+    ladder_partial = None
+    if capture_rca:
+        acoustic_health = rk_result.acoustic_health
+        acoustic_target = rk_result.acoustic_target
+        carry = rk_result.carry
+    elif capture_phase_tap:
+        phase_tap_summary = rk_result.summary
+        carry = rk_result.carry
+    elif capture_ladder:
+        ladder_partial = rk_result
+        carry = rk_result.carry
+    else:
+        carry = rk_result
     next_state = carry.state
+    if capture_rca:
+        state_health.append(_rca_state_health(next_state))
+        state_target.append(_rca_state_target(next_state))
     if bool(physics_forcing.enabled):
         next_state = _apply_physics_non_dry_updates(next_state, physical_origin, physics_forcing.state)
         carry = carry.replace(state=next_state)
+    if capture_rca:
+        state_health.append(_rca_state_health(next_state))
+        state_target.append(_rca_state_target(next_state))
     limiter_diagnostics = _empty_theta_limiter_diagnostics(next_state.theta)
     if not bool(namelist.disable_guards):
         next_state, limiter_diagnostics = _limit_guarded_dynamics_state_with_diagnostics(next_state, physical_origin)
@@ -4982,14 +6569,25 @@ def _physics_boundary_step_with_limiter_diagnostics(
             qs=_valid_mixing_ratio(next_state.qs, physical_origin.qs),
             qg=_valid_mixing_ratio(next_state.qg, physical_origin.qg),
         )
+    if capture_rca:
+        state_health.append(_rca_state_health(next_state))
+        state_target.append(_rca_state_target(next_state))
+    if capture_ladder:
+        # WRF L5 rung: state immediately before the end-of-step boundary pass
+        # (solve_em.F immediately before the spec_bdy_final IF block).
+        pre_bdry_u = next_state.u
+        pre_bdry_v = next_state.v
     if bool(namelist.run_boundary):
-        # v0.14 SPECIFIED WRF cadence: the in-loop spec pins + per-stage relax
-        # tendencies own the dry boundary band; the end-of-step pass keeps only
-        # the ring-0 spec re-sync + full moisture handling (WRF has no
-        # end-of-step dry relax write and never forces p'/pb).
+        # WRF cadence: in-loop pins + frozen RK1 relax own the dry boundary band.
+        # Released specified/replay paths retain their ring-0 end sync.  The
+        # exact live-nest candidate performs no dry end-step overwrite and only
+        # consumes the coupled moist/scalar records (WRF never forces p'/pb).
         bounded = apply_lateral_boundaries(
-            next_state, lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics,
-            dry_spec_only=_specified_bdy_cadence_active(namelist),
+            next_state, boundary_lead_seconds, float(namelist.dt_s), namelist.boundary_config, namelist.metrics,
+            dry_spec_only=(
+                _specified_bdy_cadence_active(namelist)
+                or _nested_frozen_wrf_boundary_active(namelist)
+            ),
         )
         if bool(namelist.disable_guards):
             next_state = bounded
@@ -5008,13 +6606,60 @@ def _physics_boundary_step_with_limiter_diagnostics(
                 ph_perturbation=_finite_or_origin(bounded.ph_perturbation, physical_origin.ph_perturbation),
             )
             next_state = _limit_guarded_mass_state(next_state, physical_origin)
+    if capture_rca:
+        state_health.append(_rca_state_health(next_state))
+        state_target.append(_rca_state_target(next_state))
     next_state = _enforce_operational_precision(
         next_state,
         force_fp64=bool(namelist.force_fp64),
         acoustic_precision_mode=namelist.acoustic_precision_mode,
         base_state=carry.base_state,
     )
-    return _maybe_exchange_sharded_carry_halos(carry.replace(state=next_state)), limiter_diagnostics
+    final_carry = _maybe_exchange_sharded_carry_halos(carry.replace(state=next_state))
+    if capture_rca:
+        state_health.append(_rca_state_health(next_state))
+        state_target.append(_rca_state_target(next_state))
+        assert acoustic_health is not None
+        assert acoustic_target is not None
+        assert boundary_health is not None
+        return _RcaStepResult(
+            final_carry,
+            RcaStepRecord(
+                acoustic_health,
+                acoustic_target,
+                jnp.stack(tuple(state_health), axis=0),
+                jnp.stack(tuple(state_target), axis=0),
+                boundary_health,
+            ),
+        )
+    if capture_phase_tap:
+        assert phase_tap_summary is not None
+        return CorrectedNiPhaseTapResult(final_carry, phase_tap_summary)
+    if capture_first_interval and capture_ladder:
+        assert first_interval_record is not None
+        assert ladder_partial is not None
+        return FirstIntervalLadderStepResult(
+            final_carry,
+            first_interval_record,
+            FirstIntervalLadderRecord(
+                rk1_tend_u=ladder_partial.rk1_tend_u,
+                rk1_tend_v=ladder_partial.rk1_tend_v,
+                rk1_relax_u=ladder_partial.rk1_relax_u,
+                rk1_relax_v=ladder_partial.rk1_relax_v,
+                rk1_fin_u=ladder_partial.rk1_fin_u,
+                rk1_fin_v=ladder_partial.rk1_fin_v,
+                rk2_fin_u=ladder_partial.rk2_fin_u,
+                rk2_fin_v=ladder_partial.rk2_fin_v,
+                rk3_fin_u=ladder_partial.rk3_fin_u,
+                rk3_fin_v=ladder_partial.rk3_fin_v,
+                pre_bdry_u=pre_bdry_u,
+                pre_bdry_v=pre_bdry_v,
+            ),
+        )
+    if capture_first_interval:
+        assert first_interval_record is not None
+        return FirstIntervalStepResult(final_carry, first_interval_record)
+    return final_carry, limiter_diagnostics
 
 
 def _physics_boundary_step(
@@ -5035,6 +6680,72 @@ def _physics_boundary_step(
         clock_base=clock_base,
     )
     return next_carry
+
+
+def _physics_boundary_step_with_rca(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    *,
+    run_radiation: bool,
+    clock_base=None,
+) -> _RcaStepResult:
+    """Run one normal step while returning bounded device-only RCA summaries."""
+
+    result = _physics_boundary_step_with_limiter_diagnostics(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        debug=False,
+        clock_base=clock_base,
+        capture_rca=True,
+    )
+    return result
+
+
+def _physics_boundary_step_with_phase_tap(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    *,
+    run_radiation: bool,
+    clock_base=None,
+) -> CorrectedNiPhaseTapResult:
+    """Run one normal step with only the authorized RK3/substep-1 phase tap."""
+
+    result = _physics_boundary_step_with_limiter_diagnostics(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        debug=False,
+        clock_base=clock_base,
+        capture_phase_tap=True,
+    )
+    return result
+
+
+def _physics_boundary_step_with_first_interval(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    *,
+    run_radiation: bool,
+    clock_base=None,
+) -> FirstIntervalStepResult:
+    """Run one normal step with the first-interval momentum savepoint capture."""
+
+    result = _physics_boundary_step_with_limiter_diagnostics(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        debug=False,
+        clock_base=clock_base,
+        capture_first_interval=True,
+    )
+    return result
 
 
 def _scan_forecast_segment(
@@ -5446,6 +7157,155 @@ def _advance_chunk(
     return _advance_chunk_fori(
         carry, namelist, start_step, clock_base, n_steps=n_steps, cadence=cadence
     )
+
+
+@jax.jit
+def advance_one_step_with_corrected_ni_phase_tap(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    clock_base=None,
+    *,
+    cadence: int,
+) -> CorrectedNiPhaseTapResult:
+    """Proof-only one-step option-2 tap with the ordinary radiation predicate."""
+
+    step_index = jnp.asarray(step_index, dtype=jnp.int32)
+    cadence = jnp.asarray(cadence, dtype=jnp.int32)
+    if bool(namelist.run_physics):
+        run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+    else:
+        run_radiation = False
+    return _physics_boundary_step_with_phase_tap(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        clock_base=clock_base,
+    )
+
+
+@jax.jit
+def advance_one_step_with_first_interval_capture(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    clock_base=None,
+    *,
+    cadence: int,
+) -> FirstIntervalStepResult:
+    """Proof-only one-step first-interval momentum savepoint capture.
+
+    Diagnostic-only entry point for the v0234 first-interval momentum
+    isolation sprint: executes the ordinary step and additionally returns the
+    raw MYNN RUBLTEN/RVBLTEN and the assembled ru_tendf/rv_tendf physics
+    momentum tendencies.  It is a separate jit program; the production
+    one-step program is untouched and byte-identical.
+    """
+
+    step_index = jnp.asarray(step_index, dtype=jnp.int32)
+    cadence = jnp.asarray(cadence, dtype=jnp.int32)
+    if bool(namelist.run_physics):
+        run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+    else:
+        run_radiation = False
+    return _physics_boundary_step_with_first_interval(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        clock_base=clock_base,
+    )
+
+
+def _physics_boundary_step_with_first_interval_ladder(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    *,
+    run_radiation: bool,
+    clock_base=None,
+) -> FirstIntervalLadderStepResult:
+    """Run one normal step with the first-interval + suboperator-ladder capture."""
+
+    return _physics_boundary_step_with_limiter_diagnostics(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        debug=False,
+        clock_base=clock_base,
+        capture_first_interval=True,
+        capture_ladder=True,
+    )
+
+
+@jax.jit
+def advance_one_step_with_first_interval_ladder(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    step_index,
+    clock_base=None,
+    *,
+    cadence: int,
+) -> FirstIntervalLadderStepResult:
+    """Proof-only one-step d03 dry-dycore/nest suboperator-ladder capture.
+
+    Diagnostic-only entry point for the v0234 dycore-suboperator sprint:
+    executes the ordinary step and additionally returns the first-interval
+    momentum record plus the source-bound ladder record (RK1 merged tendency,
+    RK1 boundary-relax bundle, per-RK-stage finished momentum, and the state
+    just before the end-of-step boundary pass).  It is a separate jit
+    program; the production one-step program is untouched and byte-identical.
+    """
+
+    step_index = jnp.asarray(step_index, dtype=jnp.int32)
+    cadence = jnp.asarray(cadence, dtype=jnp.int32)
+    if bool(namelist.run_physics):
+        run_radiation = jnp.equal(jnp.mod(step_index, cadence), 0)
+    else:
+        run_radiation = False
+    return _physics_boundary_step_with_first_interval_ladder(
+        carry,
+        namelist,
+        step_index,
+        run_radiation=run_radiation,
+        clock_base=clock_base,
+    )
+
+
+@partial(jax.jit, static_argnames=("n_steps", "cadence"))
+def advance_chunk_with_corrected_ni_rca(
+    carry: OperationalCarry,
+    namelist: OperationalNamelist,
+    start_step,
+    clock_base=None,
+    *,
+    n_steps: int,
+    cadence: int,
+) -> RcaChunkResult:
+    """Proof-only chunk: canonical step outputs plus bounded on-device records."""
+
+    run_physics = bool(namelist.run_physics)
+    start_step = jnp.asarray(start_step, dtype=jnp.int32)
+    indices = start_step + jnp.arange(int(n_steps), dtype=jnp.int32)
+
+    def body(scan_carry: OperationalCarry, step_index):
+        if run_physics:
+            run_radiation = jnp.equal(jnp.mod(step_index, int(cadence)), 0)
+        else:
+            run_radiation = False
+        result = _physics_boundary_step_with_rca(
+            scan_carry,
+            namelist,
+            step_index,
+            run_radiation=run_radiation,
+            clock_base=clock_base,
+        )
+        return result.carry, result.record
+
+    next_carry, records = jax.lax.scan(body, carry, indices)
+    return RcaChunkResult(next_carry, records)
 
 
 @jax.jit
@@ -5934,6 +7794,21 @@ def run_forecast_operational_debug(state: State, namelist: OperationalNamelist, 
 __all__ = [
     "OperationalNamelist",
     "M9Diagnostics",
+    "PHASE_TAP_SCRATCH_FIELDS",
+    "PHASE_TAP_SUMMARY_METRICS",
+    "CorrectedNiPhaseTapResult",
+    "RCA_HEALTH_METRICS",
+    "RCA_ACOUSTIC_FIELDS",
+    "RCA_STATE_FIELDS",
+    "RCA_BOUNDARY_FIELDS",
+    "RCA_STATE_PHASES",
+    "RCA_TARGET_K",
+    "RCA_TARGET_Y",
+    "RCA_TARGET_X",
+    "RcaChunkResult",
+    "RcaStepRecord",
+    "advance_one_step_with_corrected_ni_phase_tap",
+    "advance_chunk_with_corrected_ni_rca",
     "compute_m9_diagnostics",
     "compute_m9_selected_diagnostics",
     "dealias_state_buffers",

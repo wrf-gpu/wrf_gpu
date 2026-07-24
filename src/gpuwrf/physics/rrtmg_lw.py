@@ -47,6 +47,7 @@ from gpuwrf.physics.rrtmg_tables import RRTMGTableBundle, RRTMG_TABLES, TABLE_AS
 configure_jax_x64()
 
 O3_MMR_TO_VMR = 0.603461
+_LW_BUFFER_DELTAP_MB = 4.0
 _O3SUM = (
     5.297e-8,
     5.852e-8,
@@ -309,9 +310,54 @@ _LW_BUFFER_TPROF = (
 class RRTMGLWColumnState:
     """Pytree for independent longwave radiation columns on mass levels."""
 
-    __slots__ = ("T", "p", "qv", "qc", "qi", "qs", "qg", "cloud_fraction", "surface_temperature", "surface_emissivity", "dz", "rho")
+    __slots__ = (
+        "T",
+        "p",
+        "qv",
+        "qc",
+        "qi",
+        "qs",
+        "qg",
+        "cloud_fraction",
+        "surface_temperature",
+        "surface_emissivity",
+        "dz",
+        "rho",
+        "pressure_interfaces",
+        "temperature_interfaces",
+        "ozone_vmr",
+        "top_pressure_pa",
+        "co2_vmr",
+        "n2o_vmr",
+        "ch4_vmr",
+        "cfc11_vmr",
+        "cfc12_vmr",
+    )
 
-    def __init__(self, T, p, qv, qc, qi, qs, qg, cloud_fraction, surface_temperature, surface_emissivity, dz, rho) -> None:
+    def __init__(
+        self,
+        T,
+        p,
+        qv,
+        qc,
+        qi,
+        qs,
+        qg,
+        cloud_fraction,
+        surface_temperature,
+        surface_emissivity,
+        dz,
+        rho,
+        top_pressure_pa: float | None = None,
+        pressure_interfaces=None,
+        temperature_interfaces=None,
+        co2_vmr: float | None = None,
+        n2o_vmr: float | None = None,
+        ch4_vmr: float | None = None,
+        cfc11_vmr: float | None = None,
+        cfc12_vmr: float | None = None,
+        ozone_vmr=None,
+    ) -> None:
         self.T = T
         self.p = p
         self.qv = qv
@@ -324,6 +370,57 @@ class RRTMGLWColumnState:
         self.surface_emissivity = surface_emissivity
         self.dz = dz
         self.rho = rho
+        if (pressure_interfaces is None) != (temperature_interfaces is None):
+            raise ValueError(
+                "pressure_interfaces and temperature_interfaces must be supplied together"
+            )
+        if pressure_interfaces is not None:
+            expected = tuple(p.shape[:-1]) + (int(p.shape[-1]) + 1,)
+            if tuple(pressure_interfaces.shape) != expected:
+                raise ValueError(
+                    "pressure_interfaces must have column-interface shape "
+                    f"{expected}, got {tuple(pressure_interfaces.shape)}"
+                )
+            if tuple(temperature_interfaces.shape) != expected:
+                raise ValueError(
+                    "temperature_interfaces must have column-interface shape "
+                    f"{expected}, got {tuple(temperature_interfaces.shape)}"
+                )
+        # Optional exact WRF mediation-layer P8W/T8W.  Production real-grid
+        # callers supply these dynamic leaves; None preserves the established
+        # midpoint reconstruction for bare and historical fixture callers.
+        self.pressure_interfaces = pressure_interfaces
+        self.temperature_interfaces = temperature_interfaces
+        if ozone_vmr is not None and tuple(ozone_vmr.shape) != tuple(p.shape):
+            raise ValueError(
+                "ozone_vmr must have the column-layer shape "
+                f"{tuple(p.shape)}, got {tuple(ozone_vmr.shape)}"
+            )
+        # WRF o3input=2 supplies O3RAD on model mass layers.  None keeps the
+        # historical INIRAD/O3DATA climatology path byte-identical.
+        self.ozone_vmr = ozone_vmr
+        # WRF `rrtmg_lwinit` uses the grid's p_top to set NLAYERS.  This is
+        # static metadata because it determines JAX array shapes.  None keeps
+        # the historical one-buffer-layer behavior for bare/fixture callers;
+        # the production coupler always supplies the exact grid value.
+        self.top_pressure_pa = None if top_pressure_pa is None else float(top_pressure_pa)
+        gases = (co2_vmr, n2o_vmr, ch4_vmr, cfc11_vmr, cfc12_vmr)
+        if any(value is None for value in gases) and not all(
+            value is None for value in gases
+        ):
+            raise ValueError("LW greenhouse-gas VMR metadata must be all supplied or all None")
+        resolved_gases = tuple(None if value is None else float(value) for value in gases)
+        if not all(value is None for value in resolved_gases) and any(
+            not np.isfinite(value) or value <= 0.0 for value in resolved_gases
+        ):
+            raise ValueError("LW greenhouse-gas VMR metadata must be finite and positive")
+        (
+            self.co2_vmr,
+            self.n2o_vmr,
+            self.ch4_vmr,
+            self.cfc11_vmr,
+            self.cfc12_vmr,
+        ) = resolved_gases
 
     def replace(self, **updates) -> "RRTMGLWColumnState":
         """Returns a same-layout state with named fields replaced."""
@@ -333,27 +430,53 @@ class RRTMGLWColumnState:
         return type(self)(**values)
 
     def tree_flatten(self):
-        """Presents all state arrays as JAX leaves."""
+        """Presents arrays as leaves and the shape-setting model top as static."""
 
-        return tuple(getattr(self, name) for name in self.__slots__), None
+        children = tuple(getattr(self, name) for name in self.__slots__[:15])
+        static = tuple(getattr(self, name) for name in self.__slots__[15:])
+        return children, static
 
     @classmethod
     def tree_unflatten(cls, aux, children):
         """Rebuilds the state after JAX transforms."""
 
-        del aux
-        return cls(*children)
+        return cls(
+            *children[:12],
+            top_pressure_pa=aux[0],
+            pressure_interfaces=children[12],
+            temperature_interfaces=children[13],
+            ozone_vmr=children[14],
+            co2_vmr=aux[1],
+            n2o_vmr=aux[2],
+            ch4_vmr=aux[3],
+            cfc11_vmr=aux[4],
+            cfc12_vmr=aux[5],
+        )
 
     def __eq__(self, other: object) -> bool:
         """Implements array-aware equality outside JIT for tests."""
 
         if not isinstance(other, RRTMGLWColumnState):
             return NotImplemented
-        return all(
-            left.shape == right.shape
-            and left.dtype == right.dtype
-            and np.array_equal(np.asarray(left), np.asarray(right))
-            for left, right in zip(_leaves(self), _leaves(other), strict=True)
+
+        def leaf_equal(left, right) -> bool:
+            if left is None or right is None:
+                return left is right
+            return (
+                left.shape == right.shape
+                and left.dtype == right.dtype
+                and np.array_equal(np.asarray(left), np.asarray(right))
+            )
+
+        return tuple(getattr(self, name) for name in self.__slots__[15:]) == tuple(
+            getattr(other, name) for name in self.__slots__[15:]
+        ) and all(
+            leaf_equal(left, right)
+            for left, right in zip(
+                (getattr(self, name) for name in self.__slots__[:15]),
+                (getattr(other, name) for name in self.__slots__[:15]),
+                strict=True,
+            )
         )
 
     def __hash__(self) -> int:
@@ -361,8 +484,14 @@ class RRTMGLWColumnState:
 
         parts = []
         for leaf in _leaves(self):
+            if leaf is None:
+                parts.append(None)
+                continue
             host = np.asarray(leaf)
             parts.append((tuple(host.shape), str(host.dtype), host.tobytes()))
+        parts.append(
+            tuple((name, getattr(self, name)) for name in self.__slots__[15:])
+        )
         return hash(tuple(parts))
 
 
@@ -595,7 +724,7 @@ _LW_CLOUD_OPTICS_FP32 = _env_bool("GPUWRF_RRTMG_LW_CLOUD_OPTICS_FP32", False)
 def _leaves(state: RRTMGLWColumnState):
     """Centralizes leaf iteration for equality and hashing."""
 
-    return (getattr(state, name) for name in RRTMGLWColumnState.__slots__)
+    return (getattr(state, name) for name in RRTMGLWColumnState.__slots__[:15])
 
 
 def _trunc_int(value):
@@ -867,6 +996,18 @@ def _clip_state(state: RRTMGLWColumnState) -> RRTMGLWColumnState:
     )
 
 
+def _lw_gas_vmr(state: RRTMGLWColumnState):
+    """Resolve optional static CLWRF gases without changing legacy callers."""
+
+    co2_vmr = CO2_VMR if state.co2_vmr is None else state.co2_vmr
+    n2o_vmr = N2O_VMR if state.n2o_vmr is None else state.n2o_vmr
+    ch4_vmr = CH4_VMR if state.ch4_vmr is None else state.ch4_vmr
+    cfc11_vmr = _CFC_VMR[1] if state.cfc11_vmr is None else state.cfc11_vmr
+    cfc12_vmr = _CFC_VMR[2] if state.cfc12_vmr is None else state.cfc12_vmr
+    cfc_vmr = (float(_CFC_VMR[0]), cfc11_vmr, cfc12_vmr, float(_CFC_VMR[3]))
+    return co2_vmr, n2o_vmr, ch4_vmr, cfc_vmr
+
+
 def _column_count(leading_shape: tuple[int, ...]) -> int:
     """Returns the static number of flattened columns for a leading shape."""
 
@@ -939,6 +1080,21 @@ def _flatten_lw_state(state: RRTMGLWColumnState, leading_shape: tuple[int, ...],
         rho=_flatten_layer_field(state.rho, leading_shape, ncol),
         surface_temperature=_flatten_surface_field(state.surface_temperature, leading_shape, ncol),
         surface_emissivity=_flatten_surface_field(state.surface_emissivity, leading_shape, ncol),
+        pressure_interfaces=(
+            None
+            if state.pressure_interfaces is None
+            else _flatten_layer_field(state.pressure_interfaces, leading_shape, ncol)
+        ),
+        temperature_interfaces=(
+            None
+            if state.temperature_interfaces is None
+            else _flatten_layer_field(state.temperature_interfaces, leading_shape, ncol)
+        ),
+        ozone_vmr=(
+            None
+            if state.ozone_vmr is None
+            else _flatten_layer_field(state.ozone_vmr, leading_shape, ncol)
+        ),
     )
 
 
@@ -958,6 +1114,21 @@ def _pad_lw_state(state: RRTMGLWColumnState, ncol: int, padded_ncol: int) -> RRT
         surface_emissivity=_pad_leading_columns(state.surface_emissivity, ncol, padded_ncol),
         dz=_pad_leading_columns(state.dz, ncol, padded_ncol),
         rho=_pad_leading_columns(state.rho, ncol, padded_ncol),
+        pressure_interfaces=(
+            None
+            if state.pressure_interfaces is None
+            else _pad_leading_columns(state.pressure_interfaces, ncol, padded_ncol)
+        ),
+        temperature_interfaces=(
+            None
+            if state.temperature_interfaces is None
+            else _pad_leading_columns(state.temperature_interfaces, ncol, padded_ncol)
+        ),
+        ozone_vmr=(
+            None
+            if state.ozone_vmr is None
+            else _pad_leading_columns(state.ozone_vmr, ncol, padded_ncol)
+        ),
     )
 
 
@@ -977,6 +1148,27 @@ def _slice_lw_state(state: RRTMGLWColumnState, start, tile_cols: int, padded_nco
         surface_emissivity=_slice_leading_columns(state.surface_emissivity, start, tile_cols, padded_ncol),
         dz=_slice_leading_columns(state.dz, start, tile_cols, padded_ncol),
         rho=_slice_leading_columns(state.rho, start, tile_cols, padded_ncol),
+        pressure_interfaces=(
+            None
+            if state.pressure_interfaces is None
+            else _slice_leading_columns(
+                state.pressure_interfaces, start, tile_cols, padded_ncol
+            )
+        ),
+        temperature_interfaces=(
+            None
+            if state.temperature_interfaces is None
+            else _slice_leading_columns(
+                state.temperature_interfaces, start, tile_cols, padded_ncol
+            )
+        ),
+        ozone_vmr=(
+            None
+            if state.ozone_vmr is None
+            else _slice_leading_columns(
+                state.ozone_vmr, start, tile_cols, padded_ncol
+            )
+        ),
     )
 
 
@@ -1110,6 +1302,80 @@ def _pressure_interfaces(p):
     return jnp.concatenate((bottom, middle, top), axis=-1)
 
 
+def _lw_buffer_layer_count(top_pressure_pa: float) -> int:
+    """Return WRF's static RRTMG-LW model-top buffer count.
+
+    Pristine WRF uses ``nint(p_top * 0.01 / deltap)`` with ``deltap=4 mb``
+    (`module_ra_rrtmg_lw.F`, `rrtmg_lwinit`).  Model-top pressure is positive,
+    so ``floor(x + 0.5)`` is Fortran NINT, unlike Python's ties-to-even round.
+    """
+
+    ptop = float(top_pressure_pa)
+    if not np.isfinite(ptop) or ptop <= 0.0:
+        raise ValueError(f"top_pressure_pa must be finite and positive, got {top_pressure_pa!r}")
+    count = int(np.floor(ptop * 0.01 / _LW_BUFFER_DELTAP_MB + 0.5))
+    if count < 1:
+        raise ValueError(
+            "WRF RRTMG-LW model-top buffer requires at least one layer; "
+            f"top_pressure_pa={ptop} gives {count}"
+        )
+    return count
+
+
+def _lw_extended_pressure_profiles(
+    p,
+    top_pressure_pa: float | None,
+    pressure_interfaces=None,
+):
+    """Build model plus above-top pressure profiles in WRF bottom-to-top order.
+
+    With explicit static ``top_pressure_pa``, the model-top interface is exact,
+    each intermediate buffer interface is 4 mb lower, and the final interface
+    is WRF's forced 0 mb.  ``None`` retains the historical single-layer path for
+    backward-compatible bare/fixture callers.
+    """
+
+    original_interfaces = (
+        _pressure_interfaces(p)
+        if pressure_interfaces is None
+        else jnp.asarray(pressure_interfaces, dtype=p.dtype)
+    )
+    if top_pressure_pa is None:
+        top_layer_pressure = 0.5 * original_interfaces[..., -1:]
+        pressure_interfaces = jnp.concatenate(
+            (original_interfaces, jnp.full_like(top_layer_pressure, 1.0e-3)),
+            axis=-1,
+        )
+        return original_interfaces, pressure_interfaces, top_layer_pressure
+
+    buffer_layers = _lw_buffer_layer_count(top_pressure_pa)
+    ptop = jnp.asarray(float(top_pressure_pa), dtype=p.dtype)
+    original_interfaces = original_interfaces.at[..., -1].set(ptop)
+    # WRF first subtracts 4 mb for every new level and then overwrites the final
+    # interface with exactly 0 mb.  Thus nbuf=13 at p_top=50 mb produces
+    # 46, 42, ..., 2, 0 mb above the exact 50-mb model top.
+    intermediate_pa = float(top_pressure_pa) - 100.0 * _LW_BUFFER_DELTAP_MB * np.arange(
+        1, buffer_layers, dtype=np.float64
+    )
+    buffer_interfaces_1d = jnp.asarray(
+        np.concatenate((intermediate_pa, np.asarray([0.0], dtype=np.float64))),
+        dtype=p.dtype,
+    )
+    buffer_interfaces = jnp.broadcast_to(
+        buffer_interfaces_1d,
+        original_interfaces.shape[:-1] + (buffer_layers,),
+    )
+    pressure_interfaces = jnp.concatenate(
+        (original_interfaces, buffer_interfaces), axis=-1
+    )
+    first = p.shape[-1]
+    buffer_layer_pressure = 0.5 * (
+        pressure_interfaces[..., first : first + buffer_layers]
+        + pressure_interfaces[..., first + 1 : first + buffer_layers + 1]
+    )
+    return original_interfaces, pressure_interfaces, buffer_layer_pressure
+
+
 def _temperature_interfaces(T):
     """Reconstructs WRF harness interface temperatures from midpoint temperatures."""
 
@@ -1119,10 +1385,11 @@ def _temperature_interfaces(T):
     return jnp.concatenate((bottom, middle, top), axis=-1)
 
 
-def _lw_buffer_temperatures(t_layer, t_level, pressure_interfaces_pa):
+def _lw_buffer_temperatures(
+    t_layer, t_level, pressure_interfaces_pa, original_layers: int
+):
     """Ports WRF LW wrapper top-buffer temperature adjustment."""
 
-    original_layers = t_layer.shape[-1] - 1
     dtype = t_layer.dtype
     pprof = jnp.asarray(_LW_BUFFER_PPROF, dtype=dtype)
     tprof = jnp.asarray(_LW_BUFFER_TPROF, dtype=dtype)
@@ -1165,18 +1432,27 @@ def _nearest_pressure_coefficients(state_p, tables: RRTMGTableBundle):
     return jnp.moveaxis(gathered, 0, -2)
 
 
-def _rrtmg_column_amounts(qv, pressure_interfaces):
+def _rrtmg_column_amounts(
+    qv,
+    pressure_interfaces,
+    co2_vmr=None,
+    n2o_vmr=None,
+    ch4_vmr=None,
+):
     """Computes RRTMG-style scaled molecular columns and precipitable water."""
 
+    co2_vmr = CO2_VMR if co2_vmr is None else co2_vmr
+    n2o_vmr = N2O_VMR if n2o_vmr is None else n2o_vmr
+    ch4_vmr = CH4_VMR if ch4_vmr is None else ch4_vmr
     h2ovmr = qv * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
     amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
     dp_mb = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) * 0.01, 1.0e-8)
     coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
     colh2o = 1.0e-20 * coldry * h2ovmr
-    colco2 = 1.0e-20 * coldry * CO2_VMR
+    colco2 = 1.0e-20 * coldry * co2_vmr
     colo3 = 1.0e-20 * coldry * O3_BACKGROUND_VMR
-    coln2o = 1.0e-20 * coldry * N2O_VMR
-    colch4 = 1.0e-20 * coldry * CH4_VMR
+    coln2o = 1.0e-20 * coldry * n2o_vmr
+    colch4 = 1.0e-20 * coldry * ch4_vmr
     colo2 = 1.0e-20 * coldry * O2_VMR
     absorber = colh2o + 0.03 * colco2 + 0.05 * colo3 + 0.02 * coln2o + 0.02 * colch4 + 0.0001 * colo2
     dry_plus_water = coldry + coldry * h2ovmr
@@ -1212,6 +1488,31 @@ def _lw_o3_profile_vmr(pressure_interfaces_pa):
     return (integrated / dp) * jnp.asarray(O3_MMR_TO_VMR, dtype=dtype)
 
 
+def _lw_o3_vmr_for_state(
+    state: RRTMGLWColumnState,
+    pressure_interfaces_pa,
+    original_layers: int,
+):
+    """Build WRF's ``o3input=2`` model profile plus shifted top buffer.
+
+    WRF takes ``O3RAD`` verbatim on model layers, then shifts its annual
+    ``INIRAD/O3DATA`` climatology above the model top so the first buffer layer
+    is continuous with the supplied top-model value.  A non-positive shifted
+    value falls back to the unshifted climatology.  Returning ``None`` keeps
+    omitted-leaf callers on the historical climatology expression exactly.
+    """
+
+    if state.ozone_vmr is None:
+        return None
+    climatology = _lw_o3_profile_vmr(pressure_interfaces_pa)
+    model = jnp.asarray(state.ozone_vmr, dtype=pressure_interfaces_pa.dtype)
+    shift = model[..., -1] - climatology[..., original_layers - 1]
+    buffer_climatology = climatology[..., original_layers:]
+    shifted = buffer_climatology + shift[..., None]
+    buffer = jnp.where(shifted <= 0.0, buffer_climatology, shifted)
+    return jnp.concatenate((model, buffer), axis=-1)
+
+
 def _lw_diffusivity(pwvcm):
     """Returns RRTMG LW band diffusivity secants."""
 
@@ -1243,9 +1544,25 @@ def _lw_planck_state(t_layer, t_level, t_surface, emissivity, tables: RRTMGTable
     return planklay, planklev, plankbnd
 
 
-def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle) -> _LWSetCoefState:
+def _lw_setcoef(
+    qv,
+    p_pa,
+    t_k,
+    pressure_interfaces_pa,
+    tables: RRTMGTableBundle,
+    *,
+    o3_vmr=None,
+    co2_vmr=None,
+    n2o_vmr=None,
+    ch4_vmr=None,
+    cfc_vmr=None,
+) -> _LWSetCoefState:
     """Ports WRF LW `setcoef` gas-column and interpolation state."""
 
+    co2_vmr = CO2_VMR if co2_vmr is None else co2_vmr
+    n2o_vmr = N2O_VMR if n2o_vmr is None else n2o_vmr
+    ch4_vmr = CH4_VMR if ch4_vmr is None else ch4_vmr
+    cfc_vmr = _CFC_VMR if cfc_vmr is None else cfc_vmr
     nt = _native_lw_tables()
     h2ovmr = jnp.maximum(qv, 1.0e-12) * WATER_VAPOR_MOLECULAR_WEIGHT_RATIO
     amm = (1.0 - h2ovmr) * DRY_AIR_MOLECULAR_WEIGHT + h2ovmr * 18.0160
@@ -1253,7 +1570,11 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     pz = pressure_interfaces_pa * 0.01
     dp_mb = jnp.maximum(pz[..., :-1] - pz[..., 1:], 1.0e-12)
     coldry = dp_mb * 1.0e3 * AVOGADRO / (1.0e2 * GRAVITY * amm * (1.0 + h2ovmr))
-    o3_vmr = _lw_o3_profile_vmr(pressure_interfaces_pa)
+    o3_vmr = (
+        _lw_o3_profile_vmr(pressure_interfaces_pa)
+        if o3_vmr is None
+        else jnp.asarray(o3_vmr, dtype=p_pa.dtype)
+    )
 
     plog = jnp.log(pavel)
     jp = _trunc_int(36.0 - 5.0 * (plog + 0.04))
@@ -1268,7 +1589,9 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
     ft1 = ((t_k - tref1) / 15.0) - (jt1 - 3).astype(jnp.float64)
 
     wkl_h2o = coldry * h2ovmr
-    wbroad = coldry * jnp.maximum(0.0, 1.0 - (CO2_VMR + o3_vmr + N2O_VMR + CH4_VMR + O2_VMR))
+    wbroad = coldry * jnp.maximum(
+        0.0, 1.0 - (co2_vmr + o3_vmr + n2o_vmr + ch4_vmr + O2_VMR)
+    )
     water = wkl_h2o / jnp.maximum(coldry, 1.0e-300)
     scalefac = pavel * (296.0 / 1013.0) / t_k
     lower = plog > 4.56
@@ -1299,14 +1622,14 @@ def _lw_setcoef(qv, p_pa, t_k, pressure_interfaces_pa, tables: RRTMGTableBundle)
         return jnp.take(chi[a_1b - 1], idx, axis=0) / jnp.take(chi[b_1b - 1], idx, axis=0)
 
     colh2o = 1.0e-20 * wkl_h2o
-    colco2 = 1.0e-20 * coldry * CO2_VMR
+    colco2 = 1.0e-20 * coldry * co2_vmr
     colo3 = 1.0e-20 * coldry * o3_vmr
-    coln2o = 1.0e-20 * coldry * N2O_VMR
+    coln2o = 1.0e-20 * coldry * n2o_vmr
     colco = 1.0e-32 * coldry
-    colch4 = 1.0e-20 * coldry * CH4_VMR
+    colch4 = 1.0e-20 * coldry * ch4_vmr
     colo2 = 1.0e-20 * coldry * O2_VMR
     colbrd = 1.0e-20 * wbroad
-    wx = coldry[..., None] * jnp.asarray(_CFC_VMR, dtype=jnp.float64) * 1.0e-20
+    wx = coldry[..., None] * jnp.asarray(cfc_vmr, dtype=jnp.float64) * 1.0e-20
 
     compfp = 1.0 - fp
     fac10 = compfp * ft
@@ -1586,10 +1909,25 @@ def _binary_band(
     return jnp.where(coef.lower_mask[..., None], low, high), jnp.where(coef.lower_mask[..., None], frac_low, frac_high)
 
 
-def _lw_fallback_taumol(qv, p_pa, pressure_interfaces_pa, tables: RRTMGTableBundle):
+def _lw_fallback_taumol(
+    qv,
+    p_pa,
+    pressure_interfaces_pa,
+    tables: RRTMGTableBundle,
+    *,
+    co2_vmr=None,
+    n2o_vmr=None,
+    ch4_vmr=None,
+):
     """Nearest-pressure LW gas fallback retained for rejected branches."""
 
-    gas_column, _ = _rrtmg_column_amounts(qv, pressure_interfaces_pa)
+    gas_column, _ = _rrtmg_column_amounts(
+        qv,
+        pressure_interfaces_pa,
+        co2_vmr=co2_vmr,
+        n2o_vmr=n2o_vmr,
+        ch4_vmr=ch4_vmr,
+    )
     gas_coeff = _nearest_pressure_coefficients(p_pa, tables)
     mask = tables.lw_gpoint_mask
     taug = gas_column[..., None, None] * jnp.maximum(gas_coeff, 0.0) * mask
@@ -1996,10 +2334,16 @@ def _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables: RRTMGTableBundle):
 
     del tables
     cloud_dtype = jnp.float32 if _LW_CLOUD_OPTICS_FP32 else None
-    cloud_ext = jnp.concatenate((state.cloud_fraction, jnp.zeros_like(state.cloud_fraction[..., -1:])), axis=-1)
-    qc_ext = jnp.concatenate((state.qc, jnp.zeros_like(state.qc[..., -1:])), axis=-1)
-    qi_ext = jnp.concatenate((state.qi, jnp.zeros_like(state.qi[..., -1:])), axis=-1)
-    qs_ext = jnp.concatenate((state.qs, jnp.zeros_like(state.qs[..., -1:])), axis=-1)
+    buffer_layers = p_ext.shape[-1] - state.p.shape[-1]
+
+    def append_clear_buffer(field):
+        zeros = jnp.zeros(field.shape[:-1] + (buffer_layers,), dtype=field.dtype)
+        return jnp.concatenate((field, zeros), axis=-1)
+
+    cloud_ext = append_clear_buffer(state.cloud_fraction)
+    qc_ext = append_clear_buffer(state.qc)
+    qi_ext = append_clear_buffer(state.qi)
+    qs_ext = append_clear_buffer(state.qs)
     if cloud_dtype is not None:
         cloud_ext = cloud_ext.astype(cloud_dtype)
         qc_ext = qc_ext.astype(cloud_dtype)
@@ -2492,23 +2836,65 @@ def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, buil
     """
 
     state = _clip_state(state)
+    co2_vmr, n2o_vmr, ch4_vmr, cfc_vmr = _lw_gas_vmr(state)
     original_layers = state.p.shape[-1]
-    original_interfaces = _pressure_interfaces(state.p)
-    top_pressure = 0.5 * original_interfaces[..., -1:]
-    pressure_interfaces = jnp.concatenate((original_interfaces, jnp.full_like(top_pressure, 1.0e-3)), axis=-1)
-    p_ext = jnp.concatenate((state.p, top_pressure), axis=-1)
-    t_ext = jnp.concatenate((state.T, state.T[..., -1:]), axis=-1)
-    t_interface = _temperature_interfaces(state.T)
-    t_interface_ext = jnp.concatenate((t_interface, t_interface[..., -1:]), axis=-1)
-    t_ext, t_interface_ext = _lw_buffer_temperatures(t_ext, t_interface_ext, pressure_interfaces)
-    qv_ext = jnp.concatenate((state.qv, state.qv[..., -1:]), axis=-1)
-    layer_mass = _pressure_layer_mass(state.p)
+    original_interfaces, pressure_interfaces, buffer_layer_pressure = (
+        _lw_extended_pressure_profiles(
+            state.p,
+            state.top_pressure_pa,
+            state.pressure_interfaces,
+        )
+    )
+    buffer_layers = buffer_layer_pressure.shape[-1]
+    p_ext = jnp.concatenate((state.p, buffer_layer_pressure), axis=-1)
+    t_ext = jnp.concatenate(
+        (state.T, jnp.repeat(state.T[..., -1:], buffer_layers, axis=-1)), axis=-1
+    )
+    t_interface = (
+        _temperature_interfaces(state.T)
+        if state.temperature_interfaces is None
+        else jnp.asarray(state.temperature_interfaces, dtype=state.T.dtype)
+    )
+    t_interface_ext = jnp.concatenate(
+        (t_interface, jnp.repeat(t_interface[..., -1:], buffer_layers, axis=-1)),
+        axis=-1,
+    )
+    t_ext, t_interface_ext = _lw_buffer_temperatures(
+        t_ext, t_interface_ext, pressure_interfaces, original_layers
+    )
+    o3_vmr_ext = _lw_o3_vmr_for_state(
+        state, pressure_interfaces, original_layers
+    )
+    qv_ext = jnp.concatenate(
+        (state.qv, jnp.repeat(state.qv[..., -1:], buffer_layers, axis=-1)), axis=-1
+    )
+    layer_mass = jnp.maximum(
+        (original_interfaces[..., :-1] - original_interfaces[..., 1:]) / GRAVITY,
+        MIN_LAYER_MASS,
+    )
     layer_mass_ext = jnp.maximum((pressure_interfaces[..., :-1] - pressure_interfaces[..., 1:]) / GRAVITY, MIN_LAYER_MASS)
-    _, pwvcm = _rrtmg_column_amounts(qv_ext, pressure_interfaces)
+    _, pwvcm = _rrtmg_column_amounts(
+        qv_ext,
+        pressure_interfaces,
+        co2_vmr=co2_vmr,
+        n2o_vmr=n2o_vmr,
+        ch4_vmr=ch4_vmr,
+    )
     mask = tables.lw_gpoint_mask
 
     secdiff = _lw_diffusivity(pwvcm)
-    coef = _lw_setcoef(qv_ext, p_ext, t_ext, pressure_interfaces, tables)
+    coef = _lw_setcoef(
+        qv_ext,
+        p_ext,
+        t_ext,
+        pressure_interfaces,
+        tables,
+        o3_vmr=o3_vmr_ext,
+        co2_vmr=co2_vmr,
+        n2o_vmr=n2o_vmr,
+        ch4_vmr=ch4_vmr,
+        cfc_vmr=cfc_vmr,
+    )
     cldfmc, taucmc = _lw_cldprmc_state(state, p_ext, layer_mass_ext, tables)
     planklay, planklev, plankbnd = _lw_planck_state(t_ext, t_interface_ext, state.surface_temperature, state.surface_emissivity, tables)
     if not build_taumol:
@@ -2530,7 +2916,15 @@ def _lw_solver_base(state: RRTMGLWColumnState, tables: RRTMGTableBundle, *, buil
         tau = branch_tau
         fracs = branch_fracs
     else:
-        fallback_tau, fallback_fracs = _lw_fallback_taumol(qv_ext, p_ext, pressure_interfaces, tables)
+        fallback_tau, fallback_fracs = _lw_fallback_taumol(
+            qv_ext,
+            p_ext,
+            pressure_interfaces,
+            tables,
+            co2_vmr=co2_vmr,
+            n2o_vmr=n2o_vmr,
+            ch4_vmr=ch4_vmr,
+        )
         accepted = jnp.asarray(_LW_TAUMOL_BRANCH_ACCEPTED, dtype=bool)
         accepted = accepted.reshape((1,) * (branch_tau.ndim - 2) + (16, 1))
         tau = jnp.where(accepted, branch_tau, fallback_tau)
@@ -2672,6 +3066,14 @@ def _lw_solver_fluxes(
     return state, flux_down_model, flux_up_model, original_layers, layer_mass
 
 
+def _lw_public_flux_profile(full_flux, original_layers: int):
+    """Keep model interfaces plus WRF's true-TOA endpoint in the public layout."""
+
+    return jnp.concatenate(
+        (full_flux[..., : original_layers + 1], full_flux[..., -1:]), axis=-1
+    )
+
+
 def _longwave_impl(
     state: RRTMGLWColumnState,
     tables: RRTMGTableBundle,
@@ -2690,8 +3092,12 @@ def _longwave_impl(
         clear_flux_down = None
         clear_flux_up = None
     if m9_flux_only:
-        flux_down = assert_physical_bounds(flux_down_model, 0.0, 2000.0, "rrtmg_lw.flux_down", enabled=debug)
-        flux_up = assert_physical_bounds(flux_up_model, 0.0, 2000.0, "rrtmg_lw.flux_up", enabled=debug)
+        flux_down = assert_physical_bounds(
+            flux_down_model, 0.0, 2000.0, "rrtmg_lw.flux_down", enabled=debug
+        )
+        flux_up = assert_physical_bounds(
+            flux_up_model, 0.0, 2000.0, "rrtmg_lw.flux_up", enabled=debug
+        )
         return RRTMGLWM9FluxResult(
             toa_down=flux_down[..., -1],
             toa_up=flux_up[..., -1],
@@ -2702,8 +3108,13 @@ def _longwave_impl(
     layer_net_heating = net_down[..., 1 : original_layers + 1] - net_down[..., :original_layers]
     heating_rate = layer_net_heating / (layer_mass * CP_AIR)
     surface_emission = STEFAN_BOLTZMANN * state.surface_emissivity * state.surface_temperature**4
-    flux_down = flux_down_model
-    flux_up = flux_up_model
+    # Internal WRF buffer interfaces are implementation detail.  Preserve the
+    # established nz+2 API: surface..model-top interfaces, then the true TOA.
+    flux_down = _lw_public_flux_profile(flux_down_model, original_layers)
+    flux_up = _lw_public_flux_profile(flux_up_model, original_layers)
+    if with_clear_sky:
+        clear_flux_down = _lw_public_flux_profile(clear_flux_down, original_layers)
+        clear_flux_up = _lw_public_flux_profile(clear_flux_up, original_layers)
 
     heating_rate = assert_finite(heating_rate, "rrtmg_lw.heating_rate", enabled=debug)
     flux_down = assert_physical_bounds(flux_down, 0.0, 2000.0, "rrtmg_lw.flux_down", enabled=debug)

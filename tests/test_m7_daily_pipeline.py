@@ -7,6 +7,9 @@ from types import SimpleNamespace
 
 import numpy as np
 
+from gpuwrf.io.wrfout_writer import bind_wrfout_domain_authority
+from test_m7_netcdf_writer import authenticated_source_grid
+
 from gpuwrf.integration.daily_pipeline import (
     DailyCase,
     DailyPipelineConfig,
@@ -87,12 +90,15 @@ def _synthetic_case(run_dir: Path) -> DailyCase:
         "cen_lon": -16.1,
         "soil_layers_stag": 4,
     }
+    source_grid = authenticated_source_grid(grid, "d02")
+    authority = bind_wrfout_domain_authority("d02", source_grid, grid)
     return DailyCase(
         state=state,
         grid=grid,
         namelist=namelist,
         run_start=datetime(2026, 5, 21, 18, tzinfo=timezone.utc),
         metadata={"run_id": "synthetic", "run_dir": str(run_dir), "grid": {"mass_shape": [2, 2, 3]}},
+        writer_domain_authority=authority,
     )
 
 
@@ -217,6 +223,8 @@ def test_compare_wrfouts_xarray_identical_final_file_passes(tmp_path: Path) -> N
         case.grid,
         case.namelist,
         path,
+        domain="d02",
+        domain_authority=case.writer_domain_authority,
         valid_time=datetime(2026, 5, 21, 19),
         lead_hours=1.0,
         run_start=case.run_start,

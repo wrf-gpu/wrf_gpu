@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-09T21:56:00+01:00",
+  "verdict": "PER_ROOT_HOUR_AOT_RUNTIME_RECONSTRUCTION_CONFIRMED",
+  "case": {
+    "cycle": "20250228_18z",
+    "forecast_hours": 18,
+    "domains": 9,
+    "output_dir": "<DATA_ROOT>/alisios/runs/20250228_18z/real1km_gpu/gpuwrf_output",
+    "log": "<DATA_ROOT>/alisios/runs/20250228_18z/real1km_gpu/gpu_real1km.log",
+    "deployed_source": "<USER_HOME>/src/alisios/external/wrf_gpu",
+    "deployed_git_commit": "07f4765e1f92599f1587f7fdcf84040010c1ec68",
+    "deployed_version": "0.23.3"
+  },
+  "configuration": {
+    "GPUWRF_NESTED_FUSE": "0",
+    "GPUWRF_NESTED_AOT": "1",
+    "GPUWRF_NESTED_PARALLEL_COMPILE": "0",
+    "GPUWRF_ALLOCATOR": "cuda_async",
+    "GPUWRF_FINITE_CHECK": "1",
+    "GPUWRF_NESTED_ASYNC_OUTPUT": "1",
+    "GPUWRF_TRAINING_OUTPUT_SUBSET": "1",
+    "gpu_cpuset": "12-15",
+    "parallel_cpu_wrf_cpuset": "0-11"
+  },
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "gpu_memory_mib": 32607,
+    "driver": "595.71.05",
+    "compute_capability": "12.0",
+    "cpu": "AMD Ryzen 9 9950X 16-Core Processor",
+    "logical_cpus": 32
+  },
+  "root_cause": {
+    "code_path": [
+      "execute_nested_pipeline segments at the root history cadence",
+      "each segment calls run_operational_domain_tree",
+      "run_operational_domain_tree reconstructs _operational_advance_factory",
+      "the factory-local _aot_calls memo is discarded at segment return"
+    ],
+    "observed_loads_at_ten_completed_root_segments": 90,
+    "expected_prepared_runtime_loads": 9,
+    "current_log_snapshot_loads": {
+      "total": 99,
+      "per_domain": 11
+    },
+    "active_blob_count": 9,
+    "active_blob_bytes_per_root_hour": 2009494602,
+    "active_blob_gib_per_root_hour": 1.871488
+  },
+  "hour_10_timeline": {
+    "previous_d09_20min_group_written": "2026-07-09T21:46:14.734690118+01:00",
+    "root_d01_history_written": "2026-07-09T21:46:45.538222470+01:00",
+    "aot_loads": {
+      "d01": "2026-07-09T21:47:26.246938675+01:00",
+      "d02": "2026-07-09T21:47:46.847991054+01:00",
+      "d03": "2026-07-09T21:48:21.447415484+01:00",
+      "d04": "2026-07-09T21:48:55.678106455+01:00",
+      "d05": "2026-07-09T21:49:34.174924497+01:00",
+      "d06": "2026-07-09T21:50:05.387782710+01:00",
+      "d07": "2026-07-09T21:50:35.587044090+01:00",
+      "d08": "2026-07-09T21:51:07.886687432+01:00",
+      "d09": "2026-07-09T21:51:39.289550352+01:00"
+    },
+    "next_d03_written": "2026-07-09T21:53:28.060641365+01:00",
+    "next_d09_written": "2026-07-09T21:53:41.912703739+01:00",
+    "d01_to_d09_load_wall_s": 253.042612,
+    "root_history_write_to_d09_load_wall_s": 293.751328,
+    "d09_group_to_next_d09_group_wall_s": 447.178014,
+    "next_d03_to_d09_write_span_s": 13.852062
+  },
+  "telemetry": {
+    "reload_partial_window": {
+      "local_time": "21:47:45-21:51:39",
+      "samples": 224,
+      "gpu_sm_average_percent": 0.80,
+      "gpu_sm_zero_percent": 81.7,
+      "gpu_power_average_w": 53.8,
+      "host_process_cpu_average_percent": 98.68,
+      "host_process_usr_average_percent": 97.96,
+      "host_process_rss_average_kib": 19285872
+    },
+    "compute_after_reload_window": {
+      "local_time": "21:51:40-21:53:27",
+      "samples": 103,
+      "gpu_sm_average_percent": 56.97,
+      "gpu_power_average_w": 179.7,
+      "host_process_cpu_average_percent": 99.95
+    },
+    "ordinary_compute_window": {
+      "local_time": "21:53:43-21:55:51",
+      "samples": 123,
+      "gpu_sm_average_percent": 62.95,
+      "gpu_power_average_w": 182.4,
+      "host_process_cpu_average_percent": 98.92
+    },
+    "service_memory_peak_bytes": 28036927488,
+    "service_swap_peak_bytes": 11724238848,
+    "memory_pressure_avg10_percent_at_snapshot": 0.64,
+    "interpretation": "Swap and memory churn amplify the cost, but the serialized host-side executable reload is primary: GPU SM is idle while one host core deserializes nine blobs. CPU WRF has a disjoint cpuset."
+  },
+  "raw_artifacts": {
+    "directory": "<DATA_ROOT>/alisios/scratch/gpu_benchmark/real1km_20250228_liveperf_20260709T2040Z",
+    "gpu_dmon_primary": "gpu_dmon.txt",
+    "gpu_dmon_hour_10": "gpu_dmon2.txt",
+    "pidstat_primary": "pidstat_gpuwrf.txt",
+    "pidstat_hour_10": "pidstat_gpuwrf2.txt",
+    "iostat": "iostat.txt",
+    "mpstat": "mpstat.txt",
+    "aot_load_timeline": "aot_path_load_timeline.tsv",
+    "memory_and_frame_timeline": "memory_frames_timeline.tsv"
+  },
+  "profiler_limits": {
+    "py_spy_attach": "denied by ptrace policy",
+    "perf_attach": "denied by kernel.perf_event_paranoid=4",
+    "nsight_systems": "not attached to the production process; launch-time capture is mandatory for the controlled A/B"
+  },
+  "decision": {
+    "next_change": "prepare one B=1 operational runtime before the segmented loop and reuse its advance/AOT-callable memo across segments",
+    "live_source_change": false,
+    "gpu_ab_allowed_now": false,
+    "reason": "Owner gate requires the active filler to be terminal, product 20260709_00z publish+verify to be complete, and both three-hour arms plus QA to fit before the next 18z GPU window.",
+    "separate_follow_up": "warm prepared fused runtime with watchdog; no cold fused compile during production/nightly"
+  }
+}

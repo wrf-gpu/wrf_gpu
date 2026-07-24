@@ -358,11 +358,11 @@ def test_gpu_lock_env_does_not_fragment_cheap_key():
         "GPUWRF_GPU_LOCK_FILE": "/tmp/wrf_gpu2_gpu.lock",
         "GPUWRF_GPU_LOCK_HOLDER_FILE": "/tmp/wrf_gpu2_gpu.lock.holder",
         "GPUWRF_GPU_LOCK_LABEL": "coldA",
-        "GPUWRF_GPU_LOCK_TOKEN": "<LOCK_TOKEN_A>",
+        "GPUWRF_GPU_LOCK_TOKEN": "gpuwrf-lock-111-222-333",
     }
     lock_b = dict(lock_a)
     lock_b["GPUWRF_GPU_LOCK_LABEL"] = "warmB"  # different invocation
-    lock_b["GPUWRF_GPU_LOCK_TOKEN"] = "<LOCK_TOKEN_B>"  # unique token
+    lock_b["GPUWRF_GPU_LOCK_TOKEN"] = "gpuwrf-lock-444-555-666"  # unique token
     key_none, _, _ = _lower_in_subprocess({})  # no lock env (the canonical key)
     key_a, _, _ = _lower_in_subprocess(lock_a)
     key_b, _, _ = _lower_in_subprocess(lock_b)
@@ -400,7 +400,7 @@ def test_gpu_lock_env_prefix_is_denylisted():
         base = ck.global_trace_env_hash()
         # A NEW (not individually denylisted) var under the inert prefix must also
         # be excluded by the prefix guard, so a future lock var cannot re-break it.
-        _os.environ["GPUWRF_GPU_LOCK_TOKEN"] = "<LOCK_TOKEN_C>"
+        _os.environ["GPUWRF_GPU_LOCK_TOKEN"] = "unique-per-run-xyz"
         _os.environ["GPUWRF_GPU_LOCK_SOMETHING_NEW"] = "future-bookkeeping"
         assert ck.global_trace_env_hash() == base, (
             "a GPUWRF_GPU_LOCK_* var leaked into global_trace_env_hash (prefix "
@@ -643,6 +643,51 @@ def _cache(monkeypatch, tmp_path):
 
 
 # --------------------------------------------------------------------------- #
+# KEY_SCHEMA v3: source location is inert; terrain identity/geometry is not.
+# --------------------------------------------------------------------------- #
+def test_v3_terrain_source_path_is_inert_but_content_and_geometry_remain_keyed():
+    from gpuwrf.contracts.grid import TerrainProvenance
+
+    assert ck.KEY_SCHEMA == "GPUWRF-AOTKEY-v3"
+    base = TerrainProvenance(
+        source_path="/namespace/a/terrain.nc",
+        sha256="a" * 64,
+        shape=(93, 195),
+        units="m",
+        projection_transform="lambert",
+        max_elevation_m=3715.0,
+        coastline_sanity_check_passed=True,
+    )
+    relocated = dataclasses.replace(base, source_path="/namespace/b/terrain.nc")
+    assert ck.canonical_digest(base) == ck.canonical_digest(relocated)
+
+    mutations = {
+        "sha256": "b" * 64,
+        "shape": (94, 195),
+        "units": "km",
+        "projection_transform": "mercator",
+        "max_elevation_m": 3716.0,
+        "coastline_sanity_check_passed": False,
+    }
+    base_digest = ck.canonical_digest(base)
+    for field, value in mutations.items():
+        changed = dataclasses.replace(base, **{field: value})
+        assert ck.canonical_digest(changed) != base_digest, field
+
+
+def test_v3_real_static_config_hash_is_terrain_path_invariant():
+    carry, namelist, clock_base = _build_call()
+    del carry, clock_base
+    relocated_terrain = dataclasses.replace(
+        namelist.grid.terrain,
+        source_path="/different/process/namespace/canary_terrain.nc",
+    )
+    relocated_grid = dataclasses.replace(namelist.grid, terrain=relocated_terrain)
+    relocated = dataclasses.replace(namelist, grid=relocated_grid)
+    assert ck.static_config_hash(relocated) == ck.static_config_hash(namelist)
+
+
+# --------------------------------------------------------------------------- #
 # (P0-1) Collision-overwrite is FAIL-CLOSED: a REAL two-HLO same-cheap_key
 #        collision does NOT overwrite k_<cheap_key>; the load fails OPEN.
 # --------------------------------------------------------------------------- #
@@ -673,6 +718,8 @@ def test_p0_1_collision_does_not_overwrite_cheap_key_blob_and_load_fails_open(_c
     )
     a_blob_sha = sa["blob_sha256"]
     assert blob_path.is_file()
+    a_hlo_blob, _ = aotp._aot_blob_paths("d01", str(_cache), hlo_sha256=hlo_a)
+    assert a_hlo_blob.is_file(), "safe writes must publish the exact-HLO address"
 
     # 2) Write program B under the SAME forged cheap_key -> COLLISION.
     sb = aotp._serialize_domain_blob(
@@ -699,7 +746,8 @@ def test_p0_1_collision_does_not_overwrite_cheap_key_blob_and_load_fails_open(_c
     # 5) Program B's HLO-addressed fallback DID land (keyed by exact HLO -> safe).
     b_blob_path, _ = aotp._aot_blob_paths("d01", str(_cache), hlo_sha256=hlo_b)
     assert b_blob_path.is_file(), "the hlo-addressed fallback for B should exist"
-    # And A's exact-HLO fallback is untouched/distinct from B's.
+    # And A's exact-HLO artifact survived cheap-key quarantine untouched.
+    assert a_hlo_blob.is_file(), "quarantine removed the unambiguous A HLO artifact"
     assert a_blob_sha != sb["blob_sha256"]
 
 
@@ -1252,6 +1300,46 @@ def test_serialize_domain_blob_threads_lowered_so_on_disk_meta_has_hlo(_cache):
         "on-disk meta.hlo_sha256 must equal the lowered digest; "
         f"got {on_disk_meta.hlo_sha256!r}"
     )
+
+
+def test_safe_serialize_publishes_cheap_and_exact_hlo_addresses(_cache):
+    """Dual addresses share bytes/inode and both pass their metadata contracts."""
+    from gpuwrf.runtime import aot_precompile as aotp
+
+    compiled, lowered, hlo = _compile_mini_with_lowered(mult=9)
+    cheap = "dualaddr" + "0" * 56
+    status = aotp._serialize_domain_blob(
+        "d04",
+        compiled,
+        str(_cache),
+        lowered=lowered,
+        cheap_key=cheap,
+        key_schema=ck.KEY_SCHEMA,
+    )
+    assert status["aot_written"] is True, status
+    assert status["aot_addresses"] == ["hlo", "cheap_key"], status
+    cheap_blob, cheap_meta = aotp._aot_blob_paths(
+        "d04", str(_cache), cheap_key=cheap
+    )
+    hlo_blob, hlo_meta = aotp._aot_blob_paths(
+        "d04", str(_cache), hlo_sha256=hlo
+    )
+    assert all(path.is_file() for path in (cheap_blob, cheap_meta, hlo_blob, hlo_meta))
+    assert cheap_blob.read_bytes() == hlo_blob.read_bytes()
+    if status["aot_alias_mode"] == "hardlink":
+        assert cheap_blob.stat().st_dev == hlo_blob.stat().st_dev
+        assert cheap_blob.stat().st_ino == hlo_blob.stat().st_ino
+    else:
+        assert status["aot_alias_mode"] == "copy"
+
+    cheap_call, cheap_status = aotp.load_domain_blob(
+        "d04", str(_cache), cheap_key=cheap, return_status=True
+    )
+    hlo_call, hlo_status = aotp.load_domain_blob(
+        "d04", str(_cache), hlo_sha256=hlo, return_status=True
+    )
+    assert cheap_call is not None and cheap_status["address"] == "cheap_key"
+    assert hlo_call is not None and hlo_status["address"] == "hlo"
 
 
 def test_fresh_process_cheap_key_load_succeeds_after_lowered_serialize(_cache):

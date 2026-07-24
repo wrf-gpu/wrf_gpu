@@ -264,7 +264,7 @@ def run_gate(*, output: str | Path | None = None) -> dict[str, Any]:
             "smooth_option": 1,
         },
         "wrf_reference": {
-            "root": "<DATA_ROOT>/src/wrf_pristine",
+            "root": "<USER_HOME>/src/wrf_pristine",
             "driver": "WRF/share/mediation_integrate.F::med_nest_feedback",
             "feedback": "WRF/share/interp_fcn.F::copy_fcn",
             "smoothing": "WRF/share/interp_fcn.F::sm121",

@@ -1,22 +1,21 @@
-"""WRF-faithful live-nesting construction for the GPU port (P0-1a).
+"""WRF-faithful live-nesting construction for the GPU port.
 
 This package implements, against recorded/controlled parent states, the three
 WRF down-nesting pieces:
 
   * :mod:`gpuwrf.nesting.interp` -- parent->child spatial interpolation operators
     (``share/interp_fcn.F`` / ``share/sint.F``): the WRF cell-centered ``sint``
-    registration (default) and the node-aligned bilinear baseline, plus a host
-    monotone-TR4 ``sint`` reference for fidelity measurement.
+    registration (default), a GPU-native full nonlinear SINT, the node-aligned
+    bilinear baseline, and a host monotone-TR4 reference for fidelity work.
   * :mod:`gpuwrf.nesting.boundary_construction` -- the child specified+relaxation
     ``*_bdy`` package built from a parent state (WRF ``med_nest_force`` /
     ``bdy_interp1``), matching the ``State.*_bdy`` / ``boundary_apply`` interface.
   * :mod:`gpuwrf.nesting.scheduler` -- the parent->child subcycling cadence and
-    the ``med_nest_force`` forcedown ordering (WRF ``frame/module_integrate.F``),
-    pure host; the runtime device hook is SPEC'd for the manager (P0-1b).
+    the ``med_nest_force`` forcedown ordering (WRF ``frame/module_integrate.F``).
 
-P0-1a SCOPE: prove construction + interpolation + scheduler are WRF-faithful vs
-recorded parent states.  NO live-skill claim, NO in-loop host/device transfer
-(both are P0-1b, after P0-6 + P0-4 close).
+The historical linear and host-reference surfaces remain available for released
+compatibility and proof work.  The default-off live-nest repair selects full
+device SINT without adding a host transfer or changing the carry interface.
 """
 
 from gpuwrf.nesting.interp import (
@@ -25,6 +24,7 @@ from gpuwrf.nesting.interp import (
     build_sint_weights,
     interp_bilinear,
     interp_sint_linear,
+    interp_sint_full,
     sint_block_reference,
     sint_to_child_reference,
 )
@@ -68,6 +68,7 @@ __all__ = [
     "build_sint_weights",
     "interp_bilinear",
     "interp_sint_linear",
+    "interp_sint_full",
     "sint_block_reference",
     "sint_to_child_reference",
     "NestForceWeights",

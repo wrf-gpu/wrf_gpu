@@ -49,7 +49,7 @@ def run_gate(*, output: str | Path | None = None) -> dict[str, Any]:
         "schema": "gpuwrf.v023.moving_nest_operational_gate",
         "schema_version": 1,
         "wrf_reference": {
-            "root": "<DATA_ROOT>/src/wrf_pristine",
+            "root": "<USER_HOME>/src/wrf_pristine",
             "moving_driver": "share/mediation_nest_move.F::med_nest_move/time_for_move2",
             "state_shift": "dyn_em/shift_domain_em.F (registry-wide array shift)",
             "exposed_fill": "nest re-initialization interpolation from parent (SINT registration)",

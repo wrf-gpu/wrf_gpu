@@ -1,5 +1,41 @@
 # Performance — measured, reproducible
 
+## v0.23.4 candidate — d03 regression measured, root-caused, not fixed
+
+An early short-call canary measured **22.948478 vs 10.814353 s/root timestep**,
+ratio **2.122039** (+112.2039%) against v0.23.3. **That measurement was
+superseded** — the short-call canary omitted `prepared_runtime` reuse and was
+dominated by AOT-reload jitter, not the real per-step cost. The definitive,
+production-faithful measurement (real `execute_nested_pipeline` entry point,
+segments 67/67/66, weighted 2+3, tight spreads) is:
+
+- v0.23.3: **1.9668543059 s/root-step**
+- v0.23.4 candidate: **2.9831176877 s/root-step**
+- ratio: **1.516694795 — a 51.67% regression**
+
+This is the release-authoritative figure; the 2.122039 figure above is
+historical/superseded and should not be read as current. Both pairs are finite
+and byte-repeatable within version. Peak VRAM is 13,362/12,938 MiB and peak
+host RSS 23,943,156/22,352,216 KiB (candidate/prior).
+
+A follow-up Nsight Compute hardware measurement of the isolated dominant
+kernel (`loop_select_subtract_fusion`) confirmed the regression is
+**occupancy/latency-bound, not memory-bandwidth-bound** (DRAM throughput 20.3%
+of peak, achieved occupancy 15.6%, register-limited to 2 of 24 possible
+concurrent blocks, dominant warp-stall reason `short_scoreboard`). This rules
+out a reduced-precision fix and identifies concurrent sibling-domain
+scheduling as the mechanistically-mapped next lever (design-scoped, not
+implemented). The investigation is closed; the regression ships as a known,
+understood limitation. Full trail: `.agent/decisions/VERSION-SPRINT-LEDGER.md`
+(2026-07-22 through 2026-07-24 entries), `RELEASE_NOTES_v0.23.4.md`.
+
+The accepted one-hour all-physics nine-domain
+stress replay used **5,744.407 s warm model wall**, **16,624 MiB peak VRAM**, and
+**35,773,432 kB peak host RSS**. This is a correctness/capacity workload, not a
+cross-version performance comparison. The optional maxdom9 diagnostic was
+aborted inconclusive after 3:12:04 with zero completed calls.
+
+
 **v0.14 headline: the GPU port runs the same 72 h forecast at parity with
 28-rank CPU-WRF (~1.05×–1.06×).** v0.14 is a **memory + WRF-identity release, not
 a performance release.** Completing the fully WRF-faithful dycore + physics

@@ -7,7 +7,7 @@ MYNN, and RRTMG kernels are column-batched in that convention.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import NamedTuple
 
 import jax
@@ -53,6 +53,8 @@ from gpuwrf.physics.rrtmg_sw import (
     solve_rrtmg_sw_column,
     solve_rrtmg_sw_m9_flux_slices,
 )
+from gpuwrf.physics.wrf_cam_ozone import wrf_cam_ozone_profile
+from gpuwrf.physics.wrf_clwrf_ghg import clwrf_ssp245_gases_for_time
 from gpuwrf.physics.thompson_column import (
     ThompsonColumnState,
     density_from_pressure_temperature,
@@ -1055,6 +1057,32 @@ def _rrtmg_column_inputs(
         theta = jnp.asarray(state.theta)
     T = _temperature_from_theta(theta, jnp.asarray(state.p))
     p_columns = _to_columns(state.p)
+    sw_p_columns = p_columns
+    sw_pressure_interfaces = None
+    sw_temperature_interfaces = None
+    lw_p_columns = p_columns
+    lw_pressure_interfaces = None
+    lw_temperature_interfaces = None
+    if getattr(grid, "metrics", None) is not None:
+        # WRF module_first_rk_step_part1 passes hydrostatic P3D/P8W to both
+        # RRTMG schemes, while T3D remains the nonhydrostatic phy_prep
+        # temperature and T8W is phy_prep's explicit interface interpolation.
+        p_hyd, p_hyd_w, _psfc = _wrf_hydrostatic_pressure_profiles_from_state(
+            state, grid.metrics
+        )
+        radiation_p_columns = _to_columns(p_hyd)
+        radiation_pressure_interfaces = _to_columns(p_hyd_w)
+        radiation_temperature_interfaces = _to_columns(
+            _wrf_phy_prep_temperature_interfaces(
+                jnp.asarray(T, dtype=jnp.float32), state, grid.metrics
+            )
+        )
+        sw_p_columns = radiation_p_columns
+        sw_pressure_interfaces = radiation_pressure_interfaces
+        sw_temperature_interfaces = radiation_temperature_interfaces
+        lw_p_columns = radiation_p_columns
+        lw_pressure_interfaces = radiation_pressure_interfaces
+        lw_temperature_interfaces = radiation_temperature_interfaces
     qv_columns = _to_columns(state.qv)
     qc_columns = _to_columns(state.qc)
     qi_columns = _to_columns(state.qi)
@@ -1114,10 +1142,44 @@ def _rrtmg_column_inputs(
     solar_source_scale = _solar_source_scale_for_time(
         time_utc, lead_seconds, clock_base=clock_base
     ).astype(state.t_skin.dtype)
+    # WRF `rrtmg_lwinit` sizes the above-model-top LW pressure buffer from the
+    # grid's exact p_top.  This Python float is static shape metadata in the LW
+    # column pytree; bare proof callers with no grid retain the legacy fallback.
+    top_pressure_pa = None
+    if grid is not None:
+        top_pressure_pa = float(grid.vertical.top_pressure_pa)
+
+    # WRF o3input=2: radiation_driver first interpolates the resident monthly
+    # CAM climatology in run date, exact mass-grid latitude, and hydrostatic
+    # P3D, then passes the same O3RAD model-layer VMR to BOTH RRTMG-LW and SW.
+    ozone_vmr = None
+    if grid is not None and static is not None and grid.metrics is not None:
+        p_hyd, _p_hyd_w, _psfc_hyd = _wrf_hydrostatic_pressure_profiles_from_state(
+            state, grid.metrics
+        )
+        ozone_julian, ozone_minute = _resolve_clock_parts(time_utc, clock_base)
+        ozone_vmr = wrf_cam_ozone_profile(
+            static.xlat_deg,
+            _to_columns(p_hyd),
+            julian_day_1based=ozone_julian,
+            utc_minute=ozone_minute,
+            lead_seconds=lead_seconds,
+        )
+
+    # WRF Registry defaults GHG_INPUT=1.  For real-grid dated production calls,
+    # reproduce CLWRF's host-side SSP245 interpolation once and carry the
+    # resulting scalars as static column metadata.  Bare/no-clock callers omit
+    # these leaves and retain the historical constants byte-identically.
+    ghg = None
+    if getattr(grid, "metrics", None) is not None and time_utc is not None:
+        ghg_time = _coerce_datetime_utc(time_utc)
+        if isinstance(lead_seconds, (int, float)):
+            ghg_time += timedelta(seconds=float(lead_seconds))
+        ghg = clwrf_ssp245_gases_for_time(ghg_time)
 
     sw_state = RRTMGSWColumnState(
         _to_columns(T),
-        p_columns,
+        sw_p_columns,
         qv_columns,
         qc_columns,
         qi_columns,
@@ -1129,10 +1191,16 @@ def _rrtmg_column_inputs(
         dz,
         rho,
         solar_source_scale=solar_source_scale,
+        pressure_interfaces=sw_pressure_interfaces,
+        temperature_interfaces=sw_temperature_interfaces,
+        co2_vmr=None if ghg is None else ghg.co2_vmr,
+        n2o_vmr=None if ghg is None else ghg.n2o_vmr,
+        ch4_vmr=None if ghg is None else ghg.ch4_vmr,
+        ozone_vmr=ozone_vmr,
     )
     lw_state = RRTMGLWColumnState(
         _to_columns(T),
-        p_columns,
+        lw_p_columns,
         qv_columns,
         qc_columns,
         qi_columns,
@@ -1143,6 +1211,15 @@ def _rrtmg_column_inputs(
         surface_emissivity,
         dz,
         rho,
+        top_pressure_pa=top_pressure_pa,
+        pressure_interfaces=lw_pressure_interfaces,
+        temperature_interfaces=lw_temperature_interfaces,
+        co2_vmr=None if ghg is None else ghg.co2_vmr,
+        n2o_vmr=None if ghg is None else ghg.n2o_vmr,
+        ch4_vmr=None if ghg is None else ghg.ch4_vmr,
+        cfc11_vmr=None if ghg is None else ghg.cfc11_vmr,
+        cfc12_vmr=None if ghg is None else ghg.cfc12_vmr,
+        ozone_vmr=ozone_vmr,
     )
     return sw_state, lw_state, surface_albedo, surface_emissivity, geometry, topography
 
@@ -1196,8 +1273,8 @@ def _total_or_legacy_field(state: State, total_name: str, legacy_name: str, dtyp
     return jnp.asarray(getattr(state, total_name), dtype=dtype)
 
 
-def _wrf_hydrostatic_pressure_from_state(state: State, metrics):
-    """Reconstruct WRF `phy_prep` `p_hyd`/`psfc` for surface physics."""
+def _wrf_hydrostatic_pressure_profiles_from_state(state: State, metrics):
+    """Reconstruct WRF ``phy_prep`` hydrostatic mass and interface pressure."""
 
     dtype = jnp.float32
     mut = _total_or_legacy_field(state, "mu_total", "mu", dtype)
@@ -1221,7 +1298,55 @@ def _wrf_hydrostatic_pressure_from_state(state: State, metrics):
     faces = jnp.stack(tuple(reversed(faces_top_to_bottom)), axis=0)
     p_hyd = (0.5 * (faces[:-1, :, :] + faces[1:, :, :])).astype(jnp.float64)
     psfc = faces[0, :, :].astype(jnp.float64)
+    return p_hyd, faces, psfc
+
+
+def _wrf_hydrostatic_pressure_from_state(state: State, metrics):
+    """Reconstruct WRF `phy_prep` `p_hyd`/`psfc` for surface physics."""
+
+    p_hyd, _p_hyd_w, psfc = _wrf_hydrostatic_pressure_profiles_from_state(
+        state, metrics
+    )
     return p_hyd, psfc
+
+
+def _wrf_phy_prep_temperature_interfaces(T, state: State, metrics):
+    """Reproduce WRF ``phy_prep`` T8W from T3D and full-level geometry.
+
+    Interior interfaces use WRF's static ``fzm/fzp`` (`FNM/FNP`) weights.
+    Bottom and top interfaces use the literal z-linear extrapolation in
+    ``module_big_step_utilities_em.F``.  The arithmetic follows the live T3D
+    dtype. Real-grid production supplies WRF-real32 T3D here and passes the
+    resulting dynamic array directly to RRTMG-LW instead of reconstructing
+    fp64 midpoints inside the kernel.
+    """
+
+    temperature = jnp.asarray(T)
+    if temperature.ndim != 3 or int(temperature.shape[0]) < 2:
+        raise ValueError(
+            "WRF phy_prep T8W requires T with shape (nz>=2, ny, nx), got "
+            f"{temperature.shape}"
+        )
+    dtype = temperature.dtype
+    ph_total = _total_or_legacy_field(state, "ph_total", "ph", dtype)
+    z_at_w = ph_total / jnp.asarray(WRF_PHYSICS_G_M_S2, dtype=dtype)
+    z_mass = 0.5 * (z_at_w[:-1] + z_at_w[1:])
+    fnm = jnp.asarray(metrics.fnm, dtype=dtype)
+    fnp = jnp.asarray(metrics.fnp, dtype=dtype)
+
+    middle = (
+        fnm[1:, None, None] * temperature[1:]
+        + fnp[1:, None, None] * temperature[:-1]
+    )
+
+    bottom_w1 = (z_at_w[0] - z_mass[1]) / (z_mass[0] - z_mass[1])
+    bottom_w2 = 1.0 - bottom_w1
+    bottom = bottom_w1 * temperature[0] + bottom_w2 * temperature[1]
+
+    top_w1 = (z_at_w[-1] - z_mass[-2]) / (z_mass[-1] - z_mass[-2])
+    top_w2 = 1.0 - top_w1
+    top = top_w1 * temperature[-1] + top_w2 * temperature[-2]
+    return jnp.concatenate((bottom[None, ...], middle, top[None, ...]), axis=0)
 
 
 def _wrf_phy_prep_rho_from_state(state: State, metrics):
@@ -1635,6 +1760,7 @@ def _surface_fluxes_from_state(state: State) -> SurfaceFluxes:
         # (elt_max + el(k) hurricane taper). Marine columns (xland=2) use the
         # faithful elt_max=350 vs 400 over land.
         xland=jnp.asarray(state.xland, dtype=jnp.float64),
+        t_skin=jnp.asarray(state.t_skin, dtype=jnp.float64),
     )
 
 
@@ -1921,7 +2047,12 @@ _MYNN_EDMF = True
 
 
 def mynn_adapter(
-    state: State, dt: float, grid: GridSpec | None = None, *, first_timestep=False
+    state: State,
+    dt: float,
+    grid: GridSpec | None = None,
+    *,
+    first_timestep=False,
+    restart: bool = False,
 ) -> State:
     """Advance the MYNN PBL using the surface fluxes ``surface_adapter`` wrote.
 
@@ -1936,7 +2067,9 @@ def mynn_adapter(
     :func:`_flatten_columns_to_batch`).
     """
 
-    state = _mynn_state_with_first_call_qke(state, grid, first_timestep)
+    state = _mynn_state_with_first_call_qke(
+        state, grid, first_timestep, restart=restart
+    )
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
     ny, nx = column.theta.shape[0], column.theta.shape[1]
@@ -1982,42 +2115,54 @@ def mynn_coldstart_qke_from_state(
     return _from_columns(_unflatten_batch_to_columns(qke_b, ny, nx))
 
 
-# WRF module_bl_mynnedmf.F:623: INITIALIZE_QKE = MAXVAL(qke) < 0.0002 -- the
-# scheme cold-starts the TKE state ONLY when the incoming field carries no real
-# turbulence.  Mirrored here so a mid-run re-init that loads a spun-up QKE
-# (e.g. the Switzerland h36 wrfout re-init, max qke ~25 m^2/s^2) keeps it,
-# exactly like WRF's INITIALIZE_QKE=.FALSE. branch.  v0.14 venting-residual
-# sprint: the unconditional seed overrode the loaded h36 QKE and inflated the
-# PBL sources 2-5x vs the WRF-native implied truth
-# (proofs/v014/switzerland_uv_lane_contributors).
-_MYNN_QKE_INIT_THRESHOLD = 0.0002
+# WRF module_bl_mynnedmf.F:620-633 gives restart and fresh start distinct
+# authority: restart skips the whole initialization block; a fresh,
+# non-restart/non-cycling first call unconditionally initializes QKE.  A caller
+# resuming a restart must say so explicitly; faithful fresh start is the default.
 
 
 def _mynn_state_with_first_call_qke(
-    state: State, grid: GridSpec | None, first_timestep
+    state: State,
+    grid: GridSpec | None,
+    first_timestep,
+    *,
+    restart: bool = False,
 ) -> State:
-    """Apply WRF's first MYNN ``mym_initialize`` ordering after surface fluxes."""
+    """Apply WRF's lifecycle-specific first-call MYNN QKE initialization.
+
+    ``restart=False, cycling=False`` is WRF's fresh cold-start default: the
+    first call always rebuilds QKE after the surface scheme has supplied the
+    current ``ust``.  A restart skips initialization.  ``restart`` is static
+    lifecycle authority, while ``first_timestep`` may be a traced scan scalar.
+    """
+
+    if not isinstance(restart, bool):
+        raise TypeError("MYNN restart lifecycle flag must be a Python bool")
+    if restart:
+        return state
 
     qke_live = jnp.asarray(state.qke)
-    needs_init = jnp.max(qke_live) < _MYNN_QKE_INIT_THRESHOLD
+
+    def seed(_unused):
+        return mynn_coldstart_qke_from_state(state, grid)
+
     if isinstance(first_timestep, bool):
         if not first_timestep:
             return state
-        qke_seed = jnp.where(
-            needs_init, mynn_coldstart_qke_from_state(state, grid), qke_live
-        )
+        qke_seed = seed(None)
     else:
-        flag = jnp.asarray(first_timestep, dtype=bool) & needs_init
-
-        def seed(_unused):
-            return mynn_coldstart_qke_from_state(state, grid)
-
+        flag = jnp.asarray(first_timestep, dtype=bool)
         qke_seed = jax.lax.cond(flag, seed, lambda _unused: qke_live, None)
     return state.replace(qke=qke_seed.astype(_output_dtype(state, "qke")))
 
 
 def mynn_adapter_with_source_leaves(
-    state: State, dt: float, grid: GridSpec | None = None, *, first_timestep=False
+    state: State,
+    dt: float,
+    grid: GridSpec | None = None,
+    *,
+    first_timestep=False,
+    restart: bool = False,
 ) -> MynnPBLSourceLeaves:
     """Advance MYNN and expose raw WRF MYNN source tendencies.
 
@@ -2029,7 +2174,9 @@ def mynn_adapter_with_source_leaves(
     multi-scheme state delta as a dry source.
     """
 
-    state = _mynn_state_with_first_call_qke(state, grid, first_timestep)
+    state = _mynn_state_with_first_call_qke(
+        state, grid, first_timestep, restart=restart
+    )
     column = _mynn_column_from_state(state, grid)
     surface = _surface_fluxes_from_state(state)
     ny, nx = column.theta.shape[0], column.theta.shape[1]

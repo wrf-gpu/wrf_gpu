@@ -1,6 +1,8 @@
 # Port-completion roadmap — closing every gap toward a complete WRF v4 port
 
-**Goal (v0.24 and beyond): make the support matrix all-green.** Today the operational
+**Goal (v0.24 and beyond): make the support matrix all-green.** v0.23.4 closes the
+project's first fully functional nine-nest correctness goal for the accepted
+all-physics fixture; it does not make every WRF scheme operational. Today the operational
 scan wires **51 physics-scheme codes**; **25 are reference-only** (a WRF oracle is staged
 but no JAX kernel is scan-wired yet) and **32 fail closed** (recognized WRF option, refused
 before any compute). This file is the *complete, code-grounded inventory* of everything that
@@ -16,14 +18,14 @@ SMS-3DTKE), and every out-of-scope feature — so that successive releases can d
 
 ## Scoreboard
 
-| Status | Count | Meaning | v0.24 target |
+| Status | Count | Meaning | Long-term target |
 |---|---:|---|---|
 | 🟢 **Operational** | 51 codes | Scan-wired, WRF-oracle-gated, runs a real forecast | grow |
 | 🟡 **Reference-only** | 25 codes | WRF oracle staged; **needs a JAX kernel + scan wiring** (the cheapest graduations) | → 0 |
 | 🔴 **Fail-closed** | 32 codes | Recognized WRF option, refused with a named reason; **needs oracle + kernel + wiring** | shrink hard |
 | ⚫ **Out-of-scope** | features | Whole subsystems deliberately not ported (Chem/Fire/Hydro/DA/…) | scope decisions per subsystem |
 
-## v0.24 roadmap at a glance (top level)
+## v0.24-and-beyond roadmap at a glance (top level)
 
 Effort: **S** ≈ 1–2 sprints · **M** ≈ 3–5 · **L** ≈ 5–10 · **XL** ≈ 10+. Full per-scheme detail
 is in the [physics-scheme tables](#physics-schemes-not-yet-operational-the-full-list) and the
@@ -64,7 +66,22 @@ Every scheme follows the project's validation pyramid; nothing is wired without 
 
 So: **🟡 reference-only = steps 2–4 remain (fastest wins).  🔴 fail-closed = steps 1–4.**
 
-## Priority tiers toward v0.24
+## v0.23.4 correctness milestone now closed
+
+The linear SP2→S2→V10→late-Ni chain culminates in an accepted one-hour
+all-physics d01-d09 replay: 27/27 outputs, all 177,497,511 numeric values
+finite, and every domain passing all 102 compared fields under frozen gates.
+This is the first nine-nest correctness goal, not universal scheme coverage or
+broad seasonal 24-72 hour skill. Nested radiation still uses a fixed 30-minute
+target and currently binds `topo_shading`/`slope_rad` disabled.
+The single-domain daily pipeline also still drops requested
+`moist_adv_opt`/`scalar_adv_opt` and runs `0/0`, while omitted
+`time_step_sound` selects 10 acoustic substeps where pristine WRF derives 4 on
+the tracked fixture. The residual dry-mass mismatch was not closed by a
+four-substep discriminator. These are explicit future dynamics/parity work, not
+v0.23.4 capabilities.
+
+## Priority tiers for v0.24 and beyond
 
 - **Tier A — graduate the reference-only tail (25 codes).** Oracles already exist; each is
   "port the kernel + wire it." Highest value-per-effort. Start with the ones with the widest
@@ -208,12 +225,12 @@ non-RK3 `rk_order`, and higher `w_damping` variants — each a bounded dycore ta
 
 | Capability | Status | To close |
 |---|---|---|
-| One-way live d01→d02→d03 | 🟢 operational | — |
+| One-way live d01→…→d09 | 🟢 operational on the v0.23.4 one-hour all-physics fixture | Extend frozen evidence across longer horizons/configurations; honor arbitrary nested `radt` |
 | Two-way feedback (`--feedback`) | opt-in, finite/stable | prove **24 h equivalence vs CPU-WRF** (KI-11) |
 | Moving / vortex-following nests (`vortex_interval`, `num_moves`) | opt-in driver (v0.23) | validate the moving-nest path against CPU-WRF; adaptive re-mesh |
 | Adaptive time-step (`use_adaptive_time_step`) | ⚫ out-of-scope | port the CFL-driven Δt controller |
 | Global / periodic nests | ⚫ out-of-scope | polar/periodic BC + global grid |
-| **Wide open-boundary 3 km-nest stability** (Ni boundary-NaN class, KI-7) | 🔴 open dycore-boundary | Large open-ocean lateral boundaries (nx≈160+, e.g. all-islands 268×118) can drive Thompson `Ni` non-finite in the boundary-relaxation zone beyond ~14–20 h (finite guard catches it, 0 bad frames). Root-cause the boundary-zone acoustic mass-pump for this geometry class (same family as the Canary-d03 fix, re-exposed by new geometry); levers `GPUWRF_NORMAL_BDY_RELAX_STRENGTH` / `GPUWRF_SPECIFIED_ADV_DEGRADE` are diagnostics, not a validated fix. Reproducer: CPU-vs-GPU at the crash window. |
+| **Long-run wide open-boundary 3 km-nest stability** | 🟡 revalidation needed after v0.23.4 late-Ni fix | The WRF-faithful pre-sedimentation ice mass/number balance closes the demonstrated late-Ni failure, and the one-hour nine-nest fixture is green. It does not by itself revalidate the older ~14–20 h wide-open-boundary report; rerun that long horizon before closing the class. Static `NSED_MAX` and widespread exact-zero carried Ni remain separate future items. |
 
 ## Data assimilation
 
@@ -265,9 +282,10 @@ plausibly **v1.0** boundaries). All fail closed with a named reason and a disabl
 ## The meta-gate — forecast-skill equivalence (KI-9)
 
 Closing the columns above makes the **coverage** complete; it does **not** by itself close the
-**24–72 h forecast-skill equivalence** vs CPU-WRF (T2/U10/V10), which remains the project's
-open credibility gate (dominated by lead-time wind divergence; hard dynamics-`ph'` / MYNN /
-`*_tendf` work). A "complete WRF v4 port" claim requires **both**: an all-green support matrix
+**Broad seasonal/configuration-independent 24–72 h forecast-skill equivalence**
+vs CPU-WRF (T2/U10/V10) remains open. v0.23.4 closes its specific 24-hour SP2
+chain and one-hour nine-nest fixture, but a "complete WRF v4 port" claim requires
+**both**: an all-green support matrix
 **and** the skill gate closed. See the [User's Guide → Validation](https://wrf-gpu.github.io/wrf_gpu/validation.html).
 
 ---

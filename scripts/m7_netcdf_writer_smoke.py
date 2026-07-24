@@ -22,8 +22,10 @@ from gpuwrf.io.wrfout_writer import (
     DOWNSTREAM_CRITICAL_VARIABLES,
     MINIMUM_WRFOUT_VARIABLES,
     WRFOUT_VARIABLE_SPECS,
+    bind_wrfout_domain_authority,
     write_wrfout_netcdf,
 )
+from gpuwrf.io.gen2_accessor import Gen2GridSpec
 
 
 SPRINT_DIR = ROOT / ".agent/sprints/2026-05-27-m7-netcdf-writer"
@@ -266,6 +268,21 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(jsonable(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _authenticated_test_grid(grid: SimpleNamespace) -> Gen2GridSpec:
+    return Gen2GridSpec(
+        id="d02", dx_m=float(grid.projection.dx_m), dy_m=float(grid.projection.dy_m),
+        e_we=int(grid.nx) + 1, e_sn=int(grid.ny) + 1, e_vert=int(grid.nz) + 1,
+        mass_nx=int(grid.nx), mass_ny=int(grid.ny), mass_nz=int(grid.nz),
+        grid_proj="lambert", map_proj_id=1, cen_lat=28.3, cen_lon=-16.1,
+        truelat1=25.0, truelat2=30.0, stand_lon=-16.4, parent_id=1,
+        parent_grid_ratio=3, i_parent_start=1, j_parent_start=1,
+        znu=tuple(float(i) for i in range(int(grid.nz))),
+        znw=tuple(float(i) for i in range(int(grid.nz) + 1)),
+        top_pressure_pa=5000.0, source_wrfout="authenticated-smoke-reference",
+        source_namelist="authenticated-smoke-namelist",
+    )
+
+
 def run(reference: Path, output_dir: Path, output_root: Path) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     output_root.mkdir(parents=True, exist_ok=True)
@@ -276,6 +293,10 @@ def run(reference: Path, output_dir: Path, output_root: Path) -> dict[str, Any]:
         grid,
         namelist,
         candidate,
+        domain="d02",
+        domain_authority=bind_wrfout_domain_authority(
+            "d02", _authenticated_test_grid(grid), grid,
+        ),
         valid_time=valid_time,
         lead_hours=0.0,
         run_start=run_start,

@@ -219,6 +219,12 @@ def build_parser() -> argparse.ArgumentParser:
         "positive duration it falls back to 1. An explicit --hours always wins.",
     )
     run.add_argument(
+        "--emit-initial-history",
+        action="store_true",
+        help="Nested runs only: emit the authenticated initialized state as the "
+        "lead-zero wrfout before the first numerical advance. Default off.",
+    )
+    run.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate the namelist, detect the input mode, resolve "
@@ -823,6 +829,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
         maxdom_source = "default"
     if max_dom < 1:
         return _fail(f"--max-dom must be >= 1, got {max_dom}")
+    if bool(getattr(args, "emit_initial_history", False)) and max_dom <= 1:
+        return _fail("--emit-initial-history requires a nested run (--max-dom > 1)")
 
     # --- Resolve the single-domain id. WRF's root domain d01 is the default
     # (the historical d02 default surprised WRF users). An explicit --domain wins;
@@ -915,6 +923,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
             "wrf_root_preflight": wrf_root_note,
             **run_metadata,
         }
+        if bool(getattr(args, "emit_initial_history", False)):
+            plan["emit_initial_history"] = True
         print(json.dumps(plan, indent=2, sort_keys=True, default=str))
         return 0
 
@@ -980,6 +990,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
             max_dom=int(max_dom),
             scratch_dir=scratch_dir,
             feedback=bool(getattr(args, "feedback", False)),
+            emit_initial_history=bool(getattr(args, "emit_initial_history", False)),
         )
         if nested_config.feedback:
             print(

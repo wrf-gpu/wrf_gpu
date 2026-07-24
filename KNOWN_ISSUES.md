@@ -1,4 +1,86 @@
-# Known Issues — v0.19.0
+# Known Issues — v0.23.4
+
+## v0.23.4 carried limitations
+
+- **Nested radiation cadence:** the nested pipeline targets a fixed 30-minute
+  interval instead of honoring arbitrary namelist `radt`. The one-hour
+  nine-domain gate is accepted, but this limits longer-horizon radiation-fidelity
+  claims.
+- **Nested terrain radiation:** `topo_shading=1` and `slope_rad=1` currently
+  bind disabled in the nested runtime. This is documented future work, not an
+  active v0.23.4 capability.
+- **Single-domain daily advection binding:** the accepted nested path honors
+  `moist_adv_opt`/`scalar_adv_opt`, but the single-domain daily pipeline
+  currently drops requested values and runs `0/0`. Operators must disclose the
+  effective behavior rather than claiming the requested limiter ran.
+- **Acoustic substep / dry-mass mismatch:** when `time_step_sound` is omitted,
+  pristine WRF derives 4 acoustic substeps on the tracked fixture while the
+  current runtime selects 10. A four-substep discriminator improved the initial
+  interior U/V result but did not pass the terminal comparison; the residual
+  dry-mass behavior remains unresolved and the default is unchanged.
+- **Broad 24-72 hour skill:** v0.23.4 passes its specific 24-hour SP2 chain and
+  one-hour nine-nest fixtures; seasonal/configuration-independent forecast-skill
+  equivalence remains open.
+- **Thompson follow-ups:** static `NSED_MAX=16` can silently cap demanded
+  sedimentation substeps, and widespread exact-zero carried Ni remains
+  unexplained. Both need separate future contracts; neither was changed here.
+- **AOT cache-key fragmentation:** fused-phase shape and namespace-specific
+  terrain provenance can miss an otherwise reusable executable key. The safe
+  result is a recompile; this is compile/warm-start debt, not a numerical
+  workaround.
+
+## Resolved in v0.23.4
+
+- The SP2 mass-flux seam, S2 child-boundary retention, V/V10 moist/scalar
+  transport ordering, and Thompson late-Ni mass/number balance are closed in one
+  linear correctness chain. The terminal all-physics d01-d09 fixture writes
+  27/27 outputs; all 177,497,511 numeric values are finite and all 9 × 102
+  compared fields pass the frozen gates.
+
+## v0.23.4 (prepared, pending publication) — d03 performance regression, understood, not fixed
+
+- **Symptom:** 3-domain (`maxdom3`) and 9-domain configurations that engage `d03` run
+  measurably slower than v0.23.3 — production-faithful measurement: v0.23.3
+  **1.9668543059 s/root-step** vs the v0.23.4 candidate **2.9831176877 s/root-step**
+  (**ratio 1.516694795, a 51.67% regression**). 2-domain (d01+d02) configurations are
+  unaffected (measured 0.960–1.018×, no regression).
+- **Ruled out:** not a measurement artifact (a canary-harness reload-cost confound was
+  found and excluded via a production-faithful re-measurement using the real
+  `execute_nested_pipeline` entry point); not a scalar-batching dispatch defect (the
+  dispatch-level fix that made this regression's root cause visible is itself bit-exact
+  and WRF-fidelity-clean on a long-horizon gate; it fixed a real but secondary dispatch
+  cost, not the dominant one); not scheduling/fusion overhead (a B1/B2/B3 architecture
+  retest closed with zero additional GPU time — the current default already issues an
+  identical dispatch sequence to the alternative it was compared against).
+- **Root cause:** a CPU component profile localized the added cost to inside the FCT
+  flux-limiter kernel's own flux-renormalization computation — 79.95% of the d03
+  activation cost increment is inside the limiter call itself, which is 5.237x slower
+  than the unlimited path on only 1.087x more HLO operations but 2.188x more estimated
+  bytes accessed and 1.903x more FLOPs (a memory-traffic/lowering inefficiency in the
+  kernel, not a dispatch or batching-width problem).
+- **Workaround:** none needed for 2-domain (d01+d02) use cases (unaffected). For
+  3-domain/9-domain d03 use cases, expect roughly 1.5x the v0.23.3 wall-clock until this
+  closes; there is no configuration flag that avoids the cost while still running d03.
+- **Follow-up:** a dedicated kernel-optimization sprint
+  (`worker/gpt/v0234-fct-limiter-optimization`) tested the known source-level
+  levers. Three fusion-boundary-control techniques were tried and cleanly falsified (an
+  `optimization_barrier` insertion that XLA saw through; a `lax.map`/`scan`
+  restructuring with a real numerical divergence, and separately re-adjudicated on CPU
+  performance grounds — 1.115x slower, not adopted; disabling XLA's multi-output-fusion
+  pass, which broke the diagnosed mega-fusion but made runtime *worse*, refuting a
+  register-pressure theory of the regression). The roll-substitution candidate passed
+  a small single-shape safety check but was rejected at production scale: it failed the
+  exact-output gate and remained 38.9% slower than v0.23.3. A follow-up Nsight Compute
+  hardware measurement of the isolated dominant kernel then settled the open bound
+  question: **occupancy/latency-bound, not memory-bandwidth-bound** (DRAM throughput
+  20.3% of peak, achieved occupancy 15.6%, register-limited to 2 of 24 possible
+  concurrent blocks). This rules out a reduced-precision fix and identifies concurrent
+  sibling-domain scheduling as the mechanistically-mapped next lever — design-scoped in
+  `RANK6_SIBLING_SCHEDULING_DESIGN.md`, not implemented or validated, no established
+  delivery schedule. **The investigation is closed; this regression ships as a known,
+  understood limitation, not an open blocker.** Full trail:
+  `.agent/decisions/VERSION-SPRINT-LEDGER.md` (2026-07-22 through 2026-07-24 entries),
+  `RELEASE_NOTES_v0.23.4.md`.
 
 ## Resolved in v0.19.0
 

@@ -6,6 +6,25 @@ the seconds-fast warm start, the opt-in throughput modes, VRAM sizing, and exact
 performance claims are measured versus projected.</p>
 
 <div class="admon honest">
+  <div class="admon-title">v0.23.4 candidate: d03 performance regression measured, root-caused, not fixed</div>
+  <p>A dispatch-level fix leaves <strong>2-domain (d01+d02) performance unaffected</strong>
+  (measured 0.960–1.018× v0.23.3), but the production-faithful maxdom3 canary measures
+  <strong>51.67% slower</strong> (1.9668543059 → 2.9831176877 s/root-step). 79.95% of the added
+  cost is inside the FCT flux-limiter kernel's flux-renormalization computation. Every quick-fix
+  candidate (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll
+  substitution) was falsified or rejected with evidence, and a Nsight Compute hardware
+  measurement confirmed the kernel is <strong>occupancy/latency-bound, not bandwidth-bound</strong>
+  (DRAM throughput 20.3% of peak, achieved occupancy 15.6%), ruling out a reduced-precision fix
+  and identifying concurrent sibling-domain scheduling as the mechanistically-mapped next lever
+  (design-scoped, not implemented). The investigation is closed; this regression ships as a known,
+  understood limitation. The accepted all-physics
+  nine-domain stress replay used
+  5,744.407 s warm model wall for one forecast hour, with 16,624 MiB peak VRAM and
+  35,773,432 kB peak host RSS. That stress workload proves correctness and capacity, not
+  cross-version performance.</p>
+</div>
+
+<div class="admon honest">
   <div class="admon-title">The honest one-paragraph summary</div>
   <p>On <em>tiny</em> single-domain grids the GPU is launch/occupancy-bound and can be
   <strong>slower</strong> than multi-rank CPU-WRF (~2.3× slower at 129²). The advantage
@@ -108,7 +127,7 @@ date/time</strong> — with only the initial/boundary <em>data values</em> diffe
   <code>jax.vmap</code>, which needs one shared program; different dates compile to different
   programs. <strong>For multi-day throughput, run the days sequentially</strong> (each is its own
   warm-cache hit). True multi-date batching (threading the date as a per-lane runtime input) is a
-  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/PORT_COMPLETION_ROADMAP.md">v0.24 roadmap</a> item.</p>
+  <a href="https://github.com/wrf-gpu/wrf_gpu/blob/main/docs/PORT_COMPLETION_ROADMAP.md">v0.24-and-beyond roadmap</a> item.</p>
 </div>
 <pre><code><span class="c"># B=4 IC/perturbation members, SAME date, run concurrently</span>
 export GPUWRF_BATCH_ENSEMBLE=4
@@ -204,7 +223,7 @@ Default numerics</a>.</p>
   projected</strong>. No competitive benchmark (e.g. vs AceCAST) has been run; that positioning is
   an expectation, not a measurement.</p>
 </div>
-<p>Cross-version note: single-card <em>nested</em> forecast throughput is essentially flat across
-v0.17→v0.23 at the ~674 s/forecast-hour compute floor. Do not read the version history as a
-per-card nest-speed multiplier; the wins are capability, compile/warm-start, byte-identical
-work-reductions, and batching.</p>
+<p>Cross-version note: do not carry the historical ~674 s/forecast-hour number across topology,
+physics, and release boundaries. v0.23.4's nine-nest stress workload is materially different. Do
+not read the version history as a per-card nest-speed multiplier; use a matched canary or observed
+case progress.</p>

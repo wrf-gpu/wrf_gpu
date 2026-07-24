@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.2</span>
+          <span class="brand-sub">User's Guide · v0.23.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -72,8 +72,21 @@
   <img src="_assets/logo.svg" alt="wrf_gpu logo — a smiling storm cloud whose lightning is a GPU circuit, built by a Claude-clay and a GPT-green robot">
   <div>
     <h1 style="margin-bottom:.2rem;">wrf_gpu User's Guide</h1>
-    <p class="hero-tag">A GPU-native, WRF-compatible regional weather model · v0.23.2</p>
+    <p class="hero-tag">A GPU-native, WRF-compatible regional weather model · published v0.23.3</p>
   </div>
+</div>
+
+<div class="admon note">
+  <div class="admon-title">v0.23.4 candidate — correctness-complete, d03 performance regression understood, not fixed</div>
+  <p>The accepted one-hour all-physics fixture now runs <strong>d01 through d09</strong>:
+  27/27 outputs landed, all 177,497,511 numeric values were finite, and every domain passed
+  all 102 compared fields under the frozen WRF gates. The SP2→S2→V10→late-Ni chain is a
+  correctness closure. It is <strong>not yet released</strong>: two-domain configurations are
+  unaffected, but the production-faithful maxdom3 canary is 51.67% slower than v0.23.3.
+  Every quick-fix candidate was tried and falsified/rejected with evidence, and a Nsight Compute
+  hardware measurement confirmed the regression is occupancy/latency-bound, not bandwidth-bound
+  (DRAM 20.3% of peak, occupancy 15.6%). The investigation is closed; this ships as a known,
+  understood limitation, not an open blocker.</p>
 </div>
 
 <p class="lead">wrf_gpu runs a standalone WRF&nbsp;v4 ARW forecast end-to-end on a single GPU.
@@ -95,8 +108,10 @@ core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</
 <div class="admon honest">
   <div class="admon-title">Read this first — what this software is</div>
   <p>wrf_gpu is a <strong>transparent research artifact</strong>: a clean JAX rewrite whose
-  dynamics/thermodynamics core is proven <strong>cell-for-cell identical to CPU-WRF v4</strong>
-  over 72&nbsp;h. It is honest about its edges — the broader 24–72&nbsp;h forecast-<em>skill</em>
+  sealed Switzerland identity fixture proves its dynamics/thermodynamics fields
+  <strong>cell-for-cell identical to CPU-WRF v4</strong> over 72&nbsp;h. It is honest about its
+  edges — that result is not universal control/configuration parity, and the broader
+  24–72&nbsp;h forecast-<em>skill</em>
   equivalence is an <strong>open credibility gate, not yet claimed closed</strong>. Priority order,
   in every design decision: <strong>stability&nbsp;&gt;&nbsp;identity&nbsp;&gt;&nbsp;speed&nbsp;&gt;&nbsp;memory</strong>.
   There is no masking, clamping, or <code>nan_to_num</code> anywhere on the result path.</p>
@@ -145,7 +160,7 @@ core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</
 <h2 id="what-it-is">What it is good for<a class="headerlink" href="#what-it-is" aria-label="Permalink">¶</a></h2>
 <ul>
   <li><strong>Running real regional ARW forecasts on a GPU</strong> from a standard WRF
-  namelist — single-domain or live-nested (d01→d02→d03, down to a 1&nbsp;km nest), with native
+  namelist — single-domain or live-nested (validated through d01→…→d09), with native
   init, restart, and a WRF-compatible <code>wrfout</code>.</li>
   <li><strong>Capability the CPU stack cannot reach on one box.</strong> A 1&nbsp;km single
   domain fits one RTX&nbsp;5090 bit-identically, and the all-7-island 1&nbsp;km nested case runs
@@ -163,9 +178,12 @@ core on the GPU, and writes a WRF-compatible <code>wrfout</code> history file.</
   <a href="physics.html">wired physics menu</a>). Every unsupported namelist option
   <strong>fails closed before any compute</strong> with a named reason — it never silently
   substitutes a scheme. See <a href="namelist.html">Namelist Compatibility</a>.</li>
-  <li><strong>Not proven for full 24 h/72 h forecast-skill equivalence.</strong> The
-  dynamics/thermodynamics core is cell-for-cell identical to CPU-WRF; broader T2/U10/V10 skill
+  <li><strong>Not proven for full 24 h/72 h forecast-skill equivalence.</strong> The sealed
+  identity fixtures have cell-for-cell dynamics/thermodynamics fields; broader T2/U10/V10 skill
   equivalence is the open gate (<a href="validation.html#skill-gate">details</a>).</li>
+  <li><strong>Nested radiation cadence is not yet namelist-faithful.</strong> The nested
+  pipeline targets a fixed 30-minute cadence rather than arbitrary <code>radt</code>, and nested
+  <code>topo_shading</code>/<code>slope_rad</code> currently bind disabled.</li>
   <li><strong>Not a blanket single-card speedup.</strong> On tiny geometries the GPU can be
   launch/occupancy-bound and slower than multi-rank CPU-WRF; the advantage grows with scale.</li>
   <li><strong>Not</strong> WPS/<code>real.exe</code>, DFI, FDDA/nudging, WRF-Chem, WRF-Fire,
@@ -185,9 +203,9 @@ deliberate boundary. Full detail on the <a href="namelist.html">Namelist Compati
 <tr><td><strong>Microphysics</strong></td><td>Kessler, Purdue-Lin, WSM3/5/6/7, Thompson (+aerosol-aware), Morrison, SBU-YLin, WDM5/6/7, Goddard GCE</td><td>Morrison-aerosol (mp=40), NSSL, MP tail</td><td>WRF-Chem coupling</td></tr>
 <tr><td><strong>PBL / sfc</strong></td><td>YSU, MYJ, MYNN-EDMF, ACM2, BouLac, GFS, GBM-TKE, MRF, Shin-Hong; MYNN-SL, revised-MM5, Pleim-Xiu, Janjic, GFS sfclay</td><td>CAM-UW (bl=9); reference-only PBL tail</td><td>—</td></tr>
 <tr><td><strong>Cumulus</strong></td><td>Kain-Fritsch, BMJ, Tiedtke, New-Tiedtke, Grell-Freitas</td><td>Reference-only / documented-boundary CU tail</td><td>—</td></tr>
-<tr><td><strong>Radiation</strong></td><td>RRTMG SW+LW (topo shading + slope), Dudhia SW + RRTM LW</td><td>Reference-only RA tail</td><td>—</td></tr>
+<tr><td><strong>Radiation</strong></td><td>RRTMG SW+LW, Dudhia SW + RRTM LW; nested RRTMG has a disclosed fixed-30-minute cadence and disabled topo/slope effects</td><td>Reference-only RA tail</td><td>—</td></tr>
 <tr><td><strong>Land</strong></td><td>Noah, Noah-MP, Pleim-Xiu LSM, thermal-diffusion slab</td><td>RUC LSM (reference-only); CLM4/CTSM (boundary)</td><td>—</td></tr>
-<tr><td><strong>Nesting</strong></td><td>One-way live d01→d02→d03, sub-cycling, restart; GWD default-on nested</td><td>—</td><td>Global nests</td></tr>
+<tr><td><strong>Nesting</strong></td><td>One-way live d01→…→d09 on the v0.23.4 fixture, sub-cycling, restart; GWD default-on nested</td><td>—</td><td>Global nests</td></tr>
 <tr><td><strong>Output</strong></td><td>Focused 104-variable WRF-compatible <code>wrfout</code>; opt-in 375-variable stream</td><td>—</td><td>CLI-exposed auxhist streams</td></tr>
 <tr><td><strong>Other</strong></td><td>Lateral-BC relaxation; opt-in two-way &amp; moving nests</td><td>Urban (BEP/BEM), lake (reference-only)</td><td>DFI, FDDA/nudging, WRF-Chem/Fire/Hydro</td></tr>
 </tbody>

@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.2</span>
+          <span class="brand-sub">User's Guide · v0.23.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -142,13 +142,30 @@ long each wait should take, roughly like this:</p>
 <h2 id="honesty">The agent stays honest<a class="headerlink" href="#honesty" aria-label="Permalink">¶</a></h2>
 <p>The operator runbook instructs the agent to relay the same honesty this guide holds:</p>
 <ul>
-  <li>the default path is <strong>fp64</strong> and byte-identical; opt-in modes stay opt-in;</li>
+  <li>v0.23.4 is a <strong>prepared candidate</strong>: 2-domain (d01+d02)
+  configurations have no measured regression, but 3-domain/9-domain configurations that engage
+  <code>d03</code> are 51.67% slower than v0.23.3 — measured, root-caused (occupancy/latency-
+  bound, not bandwidth-bound), and understood, but not fixed. The current
+  published release is v0.23.3, and the agent must disclose this before a 3+/9-domain run and
+  must not recommend or present v0.23.4 as shipped;</li>
+  <li>the default path is <strong>fp64</strong>; v0.23.4 correctness fixes intentionally change
+  ice-sensitive results, while opt-in modes stay opt-in;</li>
   <li>unsupported namelist options <strong>fail closed</strong> — the agent will not silently swap a
   scheme, and will ask you before changing your physics;</li>
-  <li>a successful run does <strong>not</strong> close the open 24–72 h forecast-skill gate — this
-  is a research artifact, not a validated operational WRF replacement;</li>
+  <li>v0.23.4 accepts a specific one-hour d01-d09 fixture, but a successful user run does
+  <strong>not</strong> close broad seasonal/configuration-independent 24–72 h forecast skill;</li>
+  <li>nested radiation uses a fixed 30-minute target and disables
+  <code>topo_shading</code>/<code>slope_rad</code>; the agent must disclose that mismatch;</li>
+  <li>the single-domain daily path currently runs moist/scalar advection as <code>0/0</code> even
+  when different values are requested, and omitted <code>time_step_sound</code> selects 10 acoustic
+  substeps where WRF derives 4 on the tracked fixture; the agent reports both rather than changing
+  controls or claiming parity;</li>
+  <li>the Thompson <code>NSED_MAX=16</code> cap and exact-zero carried Ni remain separate
+  fidelity debt, and known AOT cheap-key fragmentation can force a safe recompile rather than a
+  warm hit; the agent reports both without changing physics or hiding compile wall;</li>
   <li>there is no masking or clamping; if the finite guard aborts, the agent reports the exact
-  failure rather than hiding it.</li>
+  failure rather than hiding it. See <a href="performance.html">Performance &amp; GPU Modes</a>
+  for the current performance evidence.</li>
 </ul>
 
 <div class="admon honest">

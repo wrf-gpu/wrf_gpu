@@ -36,7 +36,7 @@ class NoahMPForcing(NamedTuple):
     psfc: jax.Array       # surface pressure [Pa]
     uu: jax.Array         # lowest-level u wind [m/s]
     vv: jax.Array         # lowest-level v wind [m/s]
-    qair: jax.Array       # lowest-level specific/mixing humidity [kg/kg]
+    qair: jax.Array       # lowest-level specific humidity [kg/kg]
     qc: jax.Array         # lowest-level cloud water [kg/kg]
     soldn: jax.Array      # downward shortwave at surface [W/m2]
     lwdn: jax.Array       # downward longwave at surface [W/m2]

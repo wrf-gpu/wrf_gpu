@@ -32,6 +32,7 @@ import calendar
 from collections import Counter, deque
 from dataclasses import dataclass, replace as dataclass_replace
 from datetime import datetime, timedelta, timezone
+from fractions import Fraction
 import math
 import os
 from pathlib import Path
@@ -53,6 +54,7 @@ from gpuwrf.io.gwdo_static import load_gwdo_statics
 from gpuwrf.io.wrfout_writer import (
     FULL_WRFOUT_VARIABLES,
     MINIMAL_TRAINING_SET,
+    bind_wrfout_domain_authority,
     prepare_wrfout_payload,
     write_prepared_wrfout,
 )
@@ -62,7 +64,9 @@ from gpuwrf.runtime.domain_tree import (
     DomainBundle,
     DomainTree,
     DomainTreeResult,
+    _prepare_operational_domain_tree_runtime,
     maybe_prewarm_defused_nest,
+    nested_aot_report,
     nested_precompile_report,
     run_domain_tree_callbacks,
     run_operational_domain_tree,
@@ -128,6 +132,10 @@ class NestedPipelineConfig:
     # Defaults to False to preserve the v0.11.0/v0.12.0-validated one-way wiring;
     # opt in for the two-way path.
     feedback: bool = False
+    # WRF history includes the initialized state at lead zero.  Keep this explicit
+    # and default-off so historical callers retain their exact post-step-only
+    # output count/bytes; corrected identity runs opt in through the CLI.
+    emit_initial_history: bool = False
     # Optional F1 homogeneous ensemble inputs.  Used only when
     # GPUWRF_BATCH_ENSEMBLE is a fixed supported B; unset repeats ``input_dir``
     # for all lanes (useful for bit-identity/perturbation gates).
@@ -231,6 +239,69 @@ def _output_cadence_steps_by_domain(
     return cadence_steps, interval_minutes
 
 
+def _positive_fraction(value: float, *, label: str) -> Fraction:
+    numeric = float(value)
+    if not math.isfinite(numeric) or numeric <= 0.0:
+        raise ValueError(f"{label} must be finite and positive, got {value!r}")
+    return Fraction(str(numeric))
+
+
+def _history_alarm_steps(
+    *,
+    total_steps: int,
+    dt_s: float,
+    interval_minutes: float,
+) -> tuple[tuple[int, ...], bool]:
+    """Return exact absolute alarm steps and whether cadence is integral.
+
+    Alarm ``i`` fires on ``ceil(i * interval / dt)``.  Exact decimal-rational
+    arithmetic prevents floating rounding from moving a rollover by one step.
+    Multiple sub-step alarms that land on the same model step are coalesced,
+    matching the scheduler's one-history-callback-per-completed-step boundary.
+    """
+
+    steps = int(total_steps)
+    if steps < 0 or steps != total_steps:
+        raise ValueError(f"total_steps must be a nonnegative integer, got {total_steps!r}")
+    dt = _positive_fraction(dt_s, label="dt_s")
+    interval = _positive_fraction(
+        interval_minutes, label="history_interval_minutes"
+    ) * 60
+    ratio = interval / dt
+    alarm_count = int((steps * dt) // interval)
+    alarms: list[int] = []
+    for alarm_index in range(1, alarm_count + 1):
+        alarm_ratio = alarm_index * ratio
+        alarm_step = -(-alarm_ratio.numerator // alarm_ratio.denominator)
+        if alarm_step > steps:
+            raise AssertionError("derived history alarm exceeds forecast step count")
+        if not alarms or alarms[-1] != alarm_step:
+            alarms.append(alarm_step)
+    return tuple(alarms), ratio.denominator == 1
+
+
+def _output_alarm_steps_by_domain(
+    names: tuple[str, ...],
+    dt_by_domain: dict[str, float],
+    interval_minutes_by_domain: dict[str, float],
+    total_steps_by_domain: dict[str, int],
+) -> tuple[dict[str, tuple[int, ...]], dict[str, tuple[int, ...]]]:
+    """Return all exact schedules and scheduler overrides for non-integral ones."""
+
+    schedules: dict[str, tuple[int, ...]] = {}
+    nonintegral: dict[str, tuple[int, ...]] = {}
+    for name in names:
+        alarms, integral = _history_alarm_steps(
+            total_steps=int(total_steps_by_domain[name]),
+            dt_s=float(dt_by_domain[name]),
+            interval_minutes=float(interval_minutes_by_domain[name]),
+        )
+        schedules[name] = alarms
+        if not integral:
+            nonintegral[name] = alarms
+    return schedules, nonintegral
+
+
 def _radiation_cadence_steps(dt_s: float) -> int:
     return max(1, int(round(_RADT_TARGET_S / float(dt_s))))
 
@@ -247,6 +318,11 @@ def _make_namelist(
     cu_physics: int,
     gwd_opt: int = 0,
     gwdo_statics: Any | None = None,
+    diff_opt: int = 0,
+    km_opt: int = 0,
+    h_sca_adv_order: int = 5,
+    moist_adv_opt: int = 0,
+    scalar_adv_opt: int = 0,
 ) -> OperationalNamelist:
     """Per-domain operational namelist (mirrors the v0.11.0 nesting proof config).
 
@@ -277,16 +353,55 @@ def _make_namelist(
         top_lid=True,
         # WRF Registry default hypsometric_opt=2 (LOG form); see daily_pipeline.
         hypsometric_opt=2,
+        # WRF Registry.EM_COMMON defaults h_sca_adv_order to 5.  The standalone
+        # daily path has always threaded that case value, but live nesting used
+        # OperationalNamelist's idealized compatibility default (2).  That sent
+        # rhs_ph through its periodic second-order branch on every real parent
+        # and child even though WRF selects the map-factored specified/nested
+        # order<=6 branch.  Bind the per-domain value here; explicit namelist
+        # overrides remain authoritative and omitted values resolve to WRF's 5.
+        h_sca_adv_order=int(h_sca_adv_order),
+        # These are per-domain dynamics controls, not compatibility defaults.
+        # WRF's option 1 selects ordinary scalar advection on RK1/RK2 and the
+        # positive-definite branch on final RK3.  The Tenerife authority sets
+        # both values explicitly on every domain.
+        moist_adv_opt=int(moist_adv_opt),
+        scalar_adv_opt=int(scalar_adv_opt),
         radiation_static=radiation_static,
         time_utc=run_start,
         gwd_opt=int(gwd_opt),
         gwdo_statics=gwdo_statics,
+        # WRF folds RTHRATEN/RTHBLTEN and the QV contribution to moist theta
+        # into the RK1-frozen ``t_tendf`` lane.  The single-domain real-case
+        # loader has selected this source-leaf path by default since v0.14;
+        # live nesting must not silently fall back to the legacy step-entry
+        # Euler increment.  Keep the same explicit rollback used there.
+        rad_rk_tendf=(
+            0 if os.environ.get("GPUWRF_PHYS_RK_TENDF", "1") == "0" else 1
+        ),
         # v0.20 S4: production opt-in for perturbation-authoritative mixed fp32.
         # Unset remains fp64_default; invalid strings fail closed in
         # OperationalNamelist.__post_init__.
         acoustic_precision_mode=os.environ.get("GPUWRF_ACOUSTIC_PRECISION_MODE", "fp64_default"),
+        # The standalone daily path already binds these per-domain WRF
+        # diffusion controls.  The nested path previously fell through to the
+        # OperationalNamelist 0/0 defaults even when namelist.input selected
+        # diff_opt=1/km_opt=4 on every domain, silently removing WRF's RK1
+        # forward horizontal-diffusion bundle from production nests.
+        diff_opt=int(diff_opt),
+        km_opt=int(km_opt),
     )
     if parent_dt_s is not None:
+        # This coherent WRF live-child boundary path completed its correctness
+        # gates and is the production configuration.  It was originally wired
+        # default-off while still a candidate, which left clean CLI/validation
+        # launches on the obsolete boundary path unless every supervisor
+        # remembered an environment opt-in.  Keep an exact explicit rollback,
+        # but make a fresh production-facing invocation select the accepted
+        # configuration by default.
+        nested_frozen_bundle = (
+            os.environ.get("GPUWRF_NESTED_FROZEN_WRF_BOUNDARY_BUNDLE", "1") == "1"
+        )
         namelist = with_live_child_boundary_config(
             namelist,
             parent_dt_s=float(parent_dt_s),
@@ -295,6 +410,7 @@ def _make_namelist(
             # w relaxation stays deferred to a longer stability gate.
             nested_w_relax=False,
             nested_ph_spec=True,
+            nested_frozen_wrf_boundary_bundle=nested_frozen_bundle,
         )
     namelist = dataclass_replace(namelist, cu_physics=int(cu_physics))
     return namelist
@@ -550,6 +666,17 @@ def _load_domains(
             cu_physics=_domain_cu_physics(run, name),
             gwd_opt=gwd_opt,
             gwdo_statics=gwdo_statics,
+            diff_opt=_domain_int(run, "dynamics", "diff_opt", name, 0),
+            km_opt=_domain_int(run, "dynamics", "km_opt", name, 0),
+            h_sca_adv_order=_domain_int(
+                run, "dynamics", "h_sca_adv_order", name, 5
+            ),
+            moist_adv_opt=_domain_int(
+                run, "dynamics", "moist_adv_opt", name, 0
+            ),
+            scalar_adv_opt=_domain_int(
+                run, "dynamics", "scalar_adv_opt", name, 0
+            ),
         )
         if noahmp_land is not None:
             namelist = dataclass_replace(
@@ -609,9 +736,14 @@ def _load_domains(
                 "dt_s": float(namelist.dt_s),
                 "radiation_cadence_steps": int(namelist.radiation_cadence_steps),
                 "boundary_update_cadence_s": float(namelist.boundary_config.update_cadence_s),
+                "nested_frozen_wrf_boundary_bundle": bool(
+                    namelist.boundary_config.nested_frozen_wrf_boundary_bundle
+                ),
                 "cu_physics": int(namelist.cu_physics),
                 "radiation_static_loaded": radiation_static is not None,
                 "gwd_opt": int(namelist.gwd_opt),
+                "moist_adv_opt": int(namelist.moist_adv_opt),
+                "scalar_adv_opt": int(namelist.scalar_adv_opt),
                 "gwdo_statics_loaded": namelist.gwdo_statics is not None,
             },
             "land_surface": {
@@ -1020,6 +1152,7 @@ def run_batched_operational_domain_tree(
     move: Any | None = None,
     output: Any | None = None,
     output_cadence_steps: dict[str, int] | None = None,
+    output_alarm_steps: dict[str, tuple[int, ...]] | None = None,
     block_between: bool = True,
     root_sync_cadence: int | None = None,
     carries: dict[str, Any] | None = None,
@@ -1038,6 +1171,7 @@ def run_batched_operational_domain_tree(
             move=move,
             output=output,
             output_cadence_steps=output_cadence_steps,
+            output_alarm_steps=output_alarm_steps,
             block_between=block_between,
             root_sync_cadence=root_sync_cadence,
             carries=carries,
@@ -1087,6 +1221,7 @@ def run_batched_operational_domain_tree(
         move=move,
         output=output,
         output_cadence_steps=output_cadence_steps,
+        output_alarm_steps=output_alarm_steps,
         block_between=block_between,
         root_sync_cadence=root_sync_cadence,
         edge_lookup=lookup,
@@ -1353,6 +1488,86 @@ def _resolve_full_wrfout_variables() -> bool:
 def _nested_perf_timers_from_env() -> bool:
     raw = os.environ.get("GPUWRF_NEST_PERF_TIMERS", "").strip().lower()
     return raw in {"1", "true", "yes", "on"}
+
+
+def _prepared_runtime_reuse_from_env() -> bool:
+    """Resolve the fail-closed A/B control for B=1 prepared-runtime reuse.
+
+    The production/default path is prepared reuse.  An explicit false value is
+    retained solely so the controlled v0.23.4 A/B can reproduce the released
+    per-segment runtime lifetime from the *same* source tree.  Unknown values
+    fail before the forecast instead of silently selecting either arm.
+    """
+
+    raw = os.environ.get("GPUWRF_PREPARED_RUNTIME_REUSE")
+    if raw is None:
+        return True
+    value = raw.strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(
+        "GPUWRF_PREPARED_RUNTIME_REUSE must be one of "
+        "1/true/yes/on or 0/false/no/off; got "
+        f"{raw!r}"
+    )
+
+
+def _nested_event_aware_fusion_k_from_env() -> int:
+    """Resolve the fail-closed, default-off B2 event-aware fusion depth."""
+
+    raw = os.environ.get("GPUWRF_NESTED_EVENT_AWARE_FUSION_K")
+    if raw is None:
+        return 0
+    value = raw.strip()
+    if value == "0":
+        return 0
+    if value == "1":
+        return 1
+    raise ValueError(
+        "GPUWRF_NESTED_EVENT_AWARE_FUSION_K must be 0 or 1; got "
+        f"{raw!r}"
+    )
+
+
+def _aggregate_nested_aot_reports(reports: list[dict[str, Any]]) -> dict[str, Any]:
+    """Fold per-factory legacy telemetry into one process-lifetime report."""
+
+    if not reports:
+        return nested_aot_report()
+    aggregate = dict(reports[-1])
+    for field in ("load_count", "load_wall_seconds", "cache_hit_count"):
+        aggregate[field] = sum(report.get(field, 0) for report in reports)
+    domains: dict[str, dict[str, Any]] = {}
+    count_fields = (
+        "load_count",
+        "load_wall_seconds",
+        "load_attempt_count",
+        "load_attempt_wall_seconds",
+        "cache_hit_count",
+    )
+    for report in reports:
+        for name, source in (report.get("domains") or {}).items():
+            target = domains.setdefault(str(name), {})
+            for key, value in source.items():
+                if key == "keys":
+                    target_keys = target.setdefault("keys", {})
+                    for key_name, key_source in (value or {}).items():
+                        key_target = target_keys.setdefault(str(key_name), {})
+                        for metric, metric_value in key_source.items():
+                            if metric in count_fields:
+                                key_target[metric] = key_target.get(metric, 0) + metric_value
+                            else:
+                                key_target[metric] = metric_value
+                elif key in count_fields:
+                    target[key] = target.get(key, 0) + value
+                else:
+                    target[key] = value
+    aggregate["domains"] = domains
+    aggregate["factory_report_count"] = len(reports)
+    aggregate["telemetry_scope"] = "process_lifetime_sum_of_per_factory_reports"
+    return aggregate
 
 
 def _nested_output_pipeline_from_env() -> bool:
@@ -1651,7 +1866,8 @@ class _PerDomainWrfoutWriter:
     When the ``GPUWRF_TRAINING_OUTPUT_SUBSET`` env flag is set, the per-domain
     wrfout is restricted to the compact, lossless-compressed
     ``MINIMAL_TRAINING_SET`` (#122 training output); otherwise the full
-    uncompressed wrfout is written exactly as before (byte-identical default).
+    uncompressed numerical/variable payload is written exactly as before; the
+    common writer additionally requires authenticated global GRID_ID metadata.
     """
 
     wants_carry = True
@@ -1708,7 +1924,11 @@ class _PerDomainWrfoutWriter:
         run = Gen2Run(input_dir)
         self.writer_diagnostics: dict[str, dict[str, Any]] = {}
         self.writer_static_latlon_metadata: dict[str, Any] = {}
+        self.domain_authorities = {}
         for domain, bundle in bundles.items():
+            self.domain_authorities[domain] = bind_wrfout_domain_authority(
+                domain, run.grid(domain), bundle.grid
+            )
             diagnostics, meta = _load_static_latlon_writer_diagnostics(
                 run, domain, grid=bundle.grid
             )
@@ -1849,6 +2069,8 @@ class _PerDomainWrfoutWriter:
                 grid,
                 namelist,
                 path,
+                domain=name,
+                domain_authority=self.domain_authorities[name],
                 valid_time=valid_time,
                 lead_hours=float(lead_hours),
                 run_start=self.run_start,
@@ -1870,7 +2092,11 @@ class _PerDomainWrfoutWriter:
             t0 = perf_timers.start()
             if self._variable_subset is None:
                 try:
-                    self._async_writer.submit(prepared)
+                    self._async_writer.submit(
+                        prepared,
+                        expected_domain=name,
+                        expected_domain_authority=self.domain_authorities[name],
+                    )
                 finally:
                     perf_timers.stop(
                         "queue_put",
@@ -1885,6 +2111,8 @@ class _PerDomainWrfoutWriter:
                 try:
                     self._async_writer.submit_subset(
                         prepared,
+                        expected_domain=name,
+                        expected_domain_authority=self.domain_authorities[name],
                         variable_subset=self._variable_subset,
                         target=path,
                         include_mandatory_coords=True,
@@ -1903,6 +2131,8 @@ class _PerDomainWrfoutWriter:
             try:
                 write_prepared_wrfout(
                     prepared,
+                    expected_domain=name,
+                    expected_domain_authority=self.domain_authorities[name],
                     variable_subset=self._variable_subset,
                     include_mandatory_coords=self._variable_subset is not None,
                     compress=self._variable_subset is not None,
@@ -1947,6 +2177,29 @@ class _BatchedPerDomainWrfoutWriter:
             "batch_size": int(self.batch_size),
             "lanes": tuple(lane_results),
         }
+
+
+def _emit_initial_history_frames(
+    writer: Any,
+    names: tuple[str, ...],
+    initial_carries: dict[str, Any],
+    *,
+    enabled: bool,
+) -> tuple[Any, ...]:
+    """Route each exact initialized carry through the normal writer at lead zero.
+
+    This helper deliberately does not participate in the domain-tree scheduler:
+    no step clock, carry, or numerical state is replaced.  The existing writer
+    derives the exact run-start valid time, path, GRID_ID authority, and schema
+    from ``own_step=0`` just as it does for every later history boundary.
+    """
+
+    if not bool(enabled):
+        return ()
+    missing = [name for name in names if name not in initial_carries]
+    if missing:
+        raise ValueError(f"initial history carries missing domains: {missing}")
+    return tuple(writer(name, 0, initial_carries[name]) for name in names)
 
 
 def _finite_stats_host(state: Any) -> dict[str, Any]:
@@ -2131,6 +2384,24 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     output_cadence, history_interval_minutes = _output_cadence_steps_by_domain(
         cadence_run, names, dt_by_domain
     )
+    total_steps_by_domain: dict[str, int] = {}
+    for name in names:
+        raw_total = float(config.hours) * 3600.0 / float(dt_by_domain[name])
+        rounded_total = int(round(raw_total))
+        if abs(raw_total - rounded_total) > 1.0e-9:
+            raise ValueError(
+                f"hours={config.hours} does not align with {name} dt="
+                f"{dt_by_domain[name]}s (would need {raw_total} steps)"
+            )
+        total_steps_by_domain[name] = rounded_total
+    output_alarm_schedule, nonintegral_output_alarms = (
+        _output_alarm_steps_by_domain(
+            names,
+            dt_by_domain,
+            history_interval_minutes,
+            total_steps_by_domain,
+        )
+    )
 
     feedback_enabled = bool(config.feedback)
     tree = DomainTree.from_domains(hierarchy, bundles, feedback_enabled=feedback_enabled)
@@ -2246,6 +2517,16 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     for domain, latlon_meta in writer.writer_static_latlon_metadata.items():
         meta.setdefault("domains", {}).setdefault(domain, {})["writer_static_latlon"] = latlon_meta
 
+    # WRF-compatible lead-zero history is an explicit corrected-validation opt-in.
+    # It uses the same authenticated per-domain writer before the first numerical
+    # advance; the domain-tree scheduler and every later callback remain untouched.
+    initial_history_results = _emit_initial_history_frames(
+        writer,
+        names,
+        initial_carries,
+        enabled=bool(config.emit_initial_history),
+    )
+
     # MEMORY-BOUNDED segmented host loop (v0.12.0 nested-OOM fix).  The whole
     # forecast was previously ONE run_operational_domain_tree call: a single host
     # recursion over all root_steps.  The recurring RRTMG g-point radiation
@@ -2279,6 +2560,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     event_tail_cap = _nested_event_tail_cap_from_env()
     event_counts: Counter = Counter()
     force_counts: Counter = Counter()
+    cascade_counts: Counter = Counter()
     events_tail: deque = deque(maxlen=event_tail_cap if event_tail_cap > 0 else None)
     final_states: dict[str, Any] = {}
     # Host-sync granularity for the live nest (v0.17 GPU-idle fix).  Default =
@@ -2286,6 +2568,20 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     # GPUWRF_NESTED_SYNC_MODE=advance reproduces the legacy per-advance baseline.
     # The per-segment block below is ALWAYS kept (peak-VRAM bound between hours).
     nested_block_between, nested_root_sync_cadence = _nested_sync_mode_from_env()
+    prepared_runtime_reuse = (
+        _prepared_runtime_reuse_from_env() if int(batch_size) == 1 else False
+    )
+    event_aware_fusion_k = (
+        _nested_event_aware_fusion_k_from_env() if int(batch_size) == 1 else 0
+    )
+    prepared_runtime = (
+        _prepare_operational_domain_tree_runtime(
+            tree, feedback_enabled=feedback_enabled
+        )
+        if prepared_runtime_reuse
+        else None
+    )
+    legacy_aot_reports: list[dict[str, Any]] = []
     start = 0
     async_writer_joined = False
     try:
@@ -2300,18 +2596,27 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             if int(batch_size) > 1:
                 run_kwargs["batch_namelists"] = batch_namelists
                 run_kwargs["batch_size"] = int(batch_size)
+            else:
+                run_kwargs["prepared_runtime"] = prepared_runtime
+                run_kwargs["event_aware_fusion_k"] = event_aware_fusion_k
             result = run_tree(
                 tree,
                 root_steps=seg,
                 feedback_enabled=feedback_enabled,
                 output=writer,
                 output_cadence_steps=output_cadence,
+                output_alarm_steps=nonintegral_output_alarms,
                 block_between=nested_block_between,
                 root_sync_cadence=nested_root_sync_cadence,
                 carries=carries,
                 initial_own_steps=own_steps,
                 **run_kwargs,
             )
+            if int(batch_size) == 1 and not prepared_runtime_reuse:
+                # The released lifetime reconstructs the factory each segment,
+                # and each factory resets its local telemetry. Capture the report
+                # before the next segment resets it, then fold all segments below.
+                legacy_aot_reports.append(nested_aot_report())
             # Block so this segment's device scratch (incl. the RRTMG transient) is
             # freed before the next segment allocates -- bounds peak VRAM to one
             # segment's working set regardless of forecast length.
@@ -2335,6 +2640,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
                 if event[0] == "force":
                     force_counts[f"{event[1]}->{event[2]}"] += 1
                 events_tail.append(event)
+            cascade_counts.update(result.cascade_counts)
             final_states = result.states
             start += seg
         jax.block_until_ready(tuple(state.theta for state in final_states.values()))
@@ -2400,6 +2706,7 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
         # authoritative aggregate lives in event_counts/force_counts below.
         events=tuple(events_tail),
         outputs=(),
+        cascade_counts=dict(cascade_counts),
     )
 
     final_finite = {name: _finite_stats_host(state) for name, state in result.states.items()}
@@ -2410,8 +2717,9 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     for name in names:
         outputs = writer.written.get(name, [])
         finite_ok = bool(final_finite[name]["all_finite"])
-        total_steps = int(math.floor(float(config.hours) * 3600.0 / float(dt_by_domain[name])))
-        expected_outputs = int(total_steps // int(output_cadence[name]))
+        expected_outputs = len(output_alarm_schedule[name]) + int(
+            bool(config.emit_initial_history)
+        )
         expected_output_files = expected_outputs * int(batch_size)
         output_ok = len(outputs) == expected_output_files
         all_finite = all_finite and finite_ok
@@ -2433,6 +2741,22 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
     perf_timer_summary = perf_timers.summary()
     if perf_timer_summary is not None:
         meta["nested_output_perf_timers"] = perf_timer_summary
+    if int(batch_size) == 1:
+        meta["nested_runtime"] = {
+            "prepared_runtime_reuse": bool(prepared_runtime_reuse),
+            "selection_env": "GPUWRF_PREPARED_RUNTIME_REUSE",
+        }
+        meta["nested_aot"] = (
+            nested_aot_report()
+            if prepared_runtime_reuse
+            else _aggregate_nested_aot_reports(legacy_aot_reports)
+        )
+        if event_aware_fusion_k:
+            meta["nested_event_aware_fusion"] = {
+                "k": int(event_aware_fusion_k),
+                "selection_env": "GPUWRF_NESTED_EVENT_AWARE_FUSION_K",
+                "cascade_counts": dict(cascade_counts),
+            }
     verdict = "PIPELINE_GREEN" if (all_finite and all_output_present) else "PIPELINE_PARTIAL"
 
     payload: dict[str, Any] = {
@@ -2486,4 +2810,11 @@ def execute_nested_pipeline(config: NestedPipelineConfig) -> dict[str, Any]:
             "No TOST/ensemble equivalence or CPU-speedup baseline is claimed by a standalone smoke.",
         ],
     }
+    if config.emit_initial_history:
+        payload["initial_history_output"] = {
+            "enabled": True,
+            "own_step": 0,
+            "domain_count": len(initial_history_results),
+            "uses_existing_authenticated_writer": True,
+        }
     return payload

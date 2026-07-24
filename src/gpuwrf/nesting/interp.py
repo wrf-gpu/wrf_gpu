@@ -2,17 +2,18 @@
 
 This module implements the WRF down-nest horizontal interpolation that fills a
 child grid (or its boundary ring) from a recorded/live parent state.  Two
-operators are provided, both as **static-index** device gathers (precompute the
-parent corner indices + weights ONCE on the host from the static nest geometry;
-the per-call op is a fused ``jnp.take`` with no host transfer):
+operators are provided as **static-index** device gathers (precompute the
+registration plan ONCE on the host from the static nest geometry; every per-call
+operation is JAX-resident with no host transfer):
 
   * :func:`build_bilinear_weights` / :func:`interp_bilinear` -- the plain
     bilinear interpolation the validated v0.1.0 hourly replay used
     (``integration/d02_replay._interp_parent_horizontal``), kept as the
     cross-check baseline.
 
-  * :func:`build_sint_weights` / :func:`interp_sint_linear` -- the WRF-faithful
-    **cell-centered** nest registration.  WRF's default EM-core down-nest
+  * :func:`build_sint_weights`, :func:`interp_sint_linear`, and
+    :func:`interp_sint_full` -- the WRF **cell-centered** nest registration.
+    WRF's default EM-core down-nest
     interpolation is ``SINT`` (``share/interp_fcn.F:2356-2358`` -- the
     ``interp_method_type`` default is ``SINT``), realized by ``bdy_interp1`` ->
     ``sintb`` (``share/sint.F``).  ``sint`` is a monotone 4th-order (TR4)
@@ -36,19 +37,19 @@ the per-call op is a fused ``jnp.take`` with no host transfer):
     ``x=(i_parent_start-1)+i/ratio`` (node-aligned), which is OFF by ``-1/3``
     parent cell from WRF.
 
-    For the (odd) 3:1 ratios used in our 9->3->1 km tower, ``rioff=rjoff=0``
-    (``sint.F:51-52`` set the staggered offset only for EVEN ratios), so a
-    staggered (u/v) field uses the SAME cell-centered offset as the mass field --
-    which is why the replay's "reuse the mass coordinate for u/v" was an
-    acceptable approximation for staggering but NOT for registration.
+    Staggered fields have TWO distinct source-index adjustments.  First,
+    ``bdy_interp1`` shifts the fine destination index by
+    ``ioff/joff=max((ratio-1)//2,1)`` before choosing the coarse center and
+    sub-cell.  Second, ``sint.F`` applies ``rioff/rjoff=1`` only for EVEN ratios
+    inside the ``XIG``/``XJG`` offset.  Both are required: odd-ratio U/V do not
+    share the mass destination registration even though their ``rioff/rjoff``
+    correction is zero.
 
-We expose the cell-centered registration as :func:`interp_sint_linear` (the
-linear / TR4-low-order limit of ``sint`` -- the part that is unconditionally
-WRF-correct).  The full monotone TR4 limiter (:func:`sint_block_reference`,
-NumPy host reference) is provided for proof-grade fidelity measurement but is NOT
-the default device path: the limiter only engages near sharp gradients and the
-P0-1a oracle measures how much it matters.  Bumping the device interp to the full
-TR4 limiter is a tracked P0-1b refinement (see proofs/p0_1/FINDINGS.md).
+The released path continues to expose :func:`interp_sint_linear` so its program
+is unchanged.  :func:`interp_sint_full` is the device-resident transcription of
+pristine WRF v4.7.1 ``share/sint.F``: donor transport, fourth-order TR4 residual
+advection, and its monotonic limiter in x and then y.  The live-nest candidate
+selects that full operator only behind its existing default-off feature flag.
 
 No State, dycore, or boundary code is edited here; this is pure interpolation.
 """
@@ -228,9 +229,8 @@ def build_sint_weights(
 
     Identical gather machinery to the bilinear build but with the WRF
     cell-centered ``-(ratio//2)/ratio`` registration offset on each axis.  This is
-    the linear/low-order limit of ``sint`` -- unconditionally WRF-faithful for the
-    grid alignment; the monotone TR4 limiter is the (small) residual measured by
-    the P0-1a oracle.
+    the linear/low-order limit of ``sint`` and remains the released-path plan;
+    :func:`interp_sint_full` adds the source-exact donor/TR4/limiter evaluation.
     """
 
     return _build(
@@ -292,6 +292,150 @@ def interp_sint_linear(field: jax.Array, weights: InterpWeights) -> jax.Array:
     """
 
     return _gather(field, weights)
+
+
+def _sint_limited_1d(stencil: jax.Array, a: jax.Array) -> jax.Array:
+    """One source-literal ``sint.F`` residual-advection/limiter pass.
+
+    ``stencil[..., 0:5]`` is ``Y(-2:2)`` and ``a`` broadcasts over the leading
+    dimensions.  Expression grouping follows tracked WRF v4.7.1
+    ``share/sint.F`` lines 242--246 and 276--328.  This helper is pure JAX: no
+    callback, host materialization, custom call, or data-dependent Python loop.
+    """
+
+    dtype = stencil.dtype
+    zero = jnp.asarray(0.0, dtype=dtype)
+    one = jnp.asarray(1.0, dtype=dtype)
+    one12 = one / jnp.asarray(12.0, dtype=dtype)
+    one24 = one / jnp.asarray(24.0, dtype=dtype)
+    ep = jnp.asarray(1.0e-10, dtype=dtype)
+    ym2, ym1, y0, yp1, yp2 = (stencil[..., idx] for idx in range(5))
+    a = a.astype(dtype)
+
+    sign_a = jnp.where(a >= zero, one, -one)
+    fl0 = (ym1 * jnp.maximum(zero, sign_a) - y0 * jnp.minimum(zero, sign_a)) * a
+    fl1 = (y0 * jnp.maximum(zero, sign_a) - yp1 * jnp.minimum(zero, sign_a)) * a
+    w = y0 - (fl1 - fl0)
+    mxm = jnp.maximum(jnp.maximum(ym1, y0), jnp.maximum(yp1, w))
+    mn = jnp.minimum(jnp.minimum(ym1, y0), jnp.minimum(yp1, w))
+
+    def tr4(v_m1, v_0, v_p1, v_p2):
+        return (
+            a * one12 * (jnp.asarray(7.0, dtype=dtype) * (v_p1 + v_0) - (v_p2 + v_m1))
+            - a * a * one24
+            * (jnp.asarray(15.0, dtype=dtype) * (v_p1 - v_0) - (v_p2 - v_m1))
+            - a * a * a * one12 * ((v_p1 + v_0) - (v_p2 + v_m1))
+            + a * a * a * a * one24
+            * (jnp.asarray(3.0, dtype=dtype) * (v_p1 - v_0) - (v_p2 - v_m1))
+        )
+
+    f0 = tr4(ym2, ym1, y0, yp1) - fl0
+    f1 = tr4(ym1, y0, yp1, yp2) - fl1
+    ov = (mxm - w) / (-jnp.minimum(zero, f1) + jnp.maximum(zero, f0) + ep)
+    un = (w - mn) / (jnp.maximum(zero, f1) - jnp.minimum(zero, f0) + ep)
+    f0 = (
+        jnp.maximum(zero, f0) * jnp.minimum(one, ov)
+        + jnp.minimum(zero, f0) * jnp.minimum(one, un)
+    )
+    f1 = (
+        jnp.maximum(zero, f1) * jnp.minimum(one, un)
+        + jnp.minimum(zero, f1) * jnp.minimum(one, ov)
+    )
+    return w - (f1 - f0)
+
+
+def _sint_axis_plan(
+    lower: jax.Array,
+    fraction: jax.Array,
+    *,
+    ratio: int,
+    staggered: bool,
+) -> tuple[jax.Array, jax.Array]:
+    """Central parent index and ``XIG``/``XJG`` for one child axis.
+
+    The released static weights retain the nest start through the continuous
+    coordinate ``lower + fraction``.  Recovering the integer start from that
+    coordinate avoids adding metadata or a carry/weights leaf.  The subcell
+    offset itself combines the literal ``bdy_interp1`` destination shift with
+    the separate ``sint.F:253-264`` even-ratio stagger correction.
+    """
+
+    rr = int(ratio)
+    if rr <= 1:
+        raise ValueError(f"full SINT requires parent_grid_ratio > 1, got {rr}")
+    nchild = int(lower.shape[0])
+    coord = lower.astype(fraction.dtype) + fraction
+    rr_value = jnp.asarray(float(rr), dtype=fraction.dtype)
+    base = jnp.rint(
+        coord[0]
+        + jnp.asarray(float(rr // 2), dtype=fraction.dtype) / rr_value
+    ).astype(jnp.int32)
+    destination_shift = max((rr - 1) // 2, 1) if bool(staggered) else 0
+    fine = (
+        jnp.arange(nchild, dtype=jnp.int32)
+        + jnp.asarray(destination_shift, dtype=jnp.int32)
+    )
+    central = base + fine // rr
+    subcell = fine % rr
+    offset = 1.0 if bool(staggered) and rr % 2 == 0 else 0.0
+    a = (
+        jnp.asarray(float(rr - 1) - offset, dtype=fraction.dtype)
+        / jnp.asarray(float(2 * rr), dtype=fraction.dtype)
+        - subcell.astype(fraction.dtype) / rr_value
+    )
+    return central, a
+
+
+def interp_sint_full(
+    field: jax.Array,
+    weights: InterpWeights,
+    *,
+    parent_grid_ratio: int,
+    xstag: bool = False,
+    ystag: bool = False,
+) -> jax.Array:
+    """Full pristine-WRF ``SINTB`` parent-to-child interpolation on device.
+
+    The implementation is the separable x-then-y algorithm in tracked WRF
+    v4.7.1 ``share/sint.F``.  Each requested child point gathers the five parent
+    cells needed by the fourth-order residual-advection stencil.  A valid WRF
+    nest therefore requires the same two-parent-cell interpolation halo as the
+    Fortran routine; indices are intentionally not clipped or repaired.
+
+    ``field`` may be ``(z, parent_y, parent_x)`` or ``(parent_y, parent_x)``.
+    ``weights`` must be the unsliced full-child SINT plan.  ``xstag``/``ystag``
+    implement both WRF's staggered destination-index shift and its distinct
+    even-ratio ``rioff/rjoff`` sub-cell correction.
+    """
+
+    if field.ndim not in (2, 3):
+        raise ValueError(f"interp expects 2D or 3D field, got {field.shape}")
+    was_2d = field.ndim == 2
+    source = field[None, ...] if was_2d else field
+    x_center, xig = _sint_axis_plan(
+        weights.x0,
+        weights.wx,
+        ratio=int(parent_grid_ratio),
+        staggered=bool(xstag),
+    )
+    y_center, xjg = _sint_axis_plan(
+        weights.y0,
+        weights.wy,
+        ratio=int(parent_grid_ratio),
+        staggered=bool(ystag),
+    )
+    offsets = jnp.arange(-2, 3, dtype=jnp.int32)
+
+    # x pass for every parent row: (z, parent_y, child_x, 5) -> (..., child_x)
+    x_stencil = jnp.take(source, x_center[:, None] + offsets[None, :], axis=2)
+    x_value = _sint_limited_1d(x_stencil, xig[None, None, :])
+
+    # y pass over the five already-x-interpolated parent rows.
+    # take -> (z, child_y, 5, child_x); move stencil axis last.
+    y_stencil = jnp.take(x_value, y_center[:, None] + offsets[None, :], axis=1)
+    y_stencil = jnp.moveaxis(y_stencil, 2, -1)
+    result = _sint_limited_1d(y_stencil, xjg[None, :, None])
+    return result[0] if was_2d else result
 
 
 # ---------------------------------------------------------------------------
@@ -406,8 +550,10 @@ def sint_block_reference(
     always has the halo because the nest is interior to the parent).
 
     This is the proof-grade fidelity reference -- it includes the DONOR flux and
-    the OV/UN monotone limiter exactly as WRF.  It is host-only NumPy; the device
-    path uses the linear registration (:func:`interp_sint_linear`).
+    the OV/UN monotone limiter exactly as WRF.  It is host-only NumPy; the live
+    nested candidate uses the independent device transcription
+    :func:`interp_sint_full`, while the released candidate-off program retains
+    :func:`interp_sint_linear`.
 
     ``dtype=np.float32`` evaluates every operation in WRF's REAL(4) precision with
     the exact ``sint.F`` expression grouping, reproducing the CPU-WRF interpolated
@@ -491,23 +637,27 @@ def sint_to_child_reference(
 ) -> np.ndarray:
     """Full-grid child field from the WRF monotone ``sint`` (host reference).
 
-    Maps each child mass point ``(nj, ni)`` (0-based) to its parent cell + sub-cell
-    via the WRF ``bdy_interp1`` index math (``ci=ipos+(ni1-1)//nri``,
-    ``ip=(ni1-1)%nri``, sub-cell ``ip+1+jp*nri``) and gathers from
+    Maps each child point ``(nj, ni)`` (0-based) to its parent cell + sub-cell
+    via the WRF ``bdy_interp1`` index math, including the staggered destination
+    shifts before ``ci/cj`` and ``ip/jp`` are selected, and gathers from
     :func:`sint_block_reference`.  ``coarse`` is ``(parent_ny, parent_nx)``.
-    Returns ``(child_ny, child_nx)``.  Host-only; used by the P0-1a fidelity proof
-    to bound the TR4-limiter residual vs the linear registration.
+    Returns ``(child_ny, child_nx)``.  Host-only; retained as a historical
+    fidelity reference.  The critic-repair acceptance oracle lives separately in
+    ``scripts/v0234_wrf_sint_source_oracle.py`` so the device implementation is
+    never used as its own reference.
     """
 
     rr = int(ratio)
     block = sint_block_reference(coarse, rr, xstag=xstag, ystag=ystag, dtype=dtype)
     out = np.zeros((int(child_ny), int(child_nx)), dtype=dtype)
+    ioff = max((rr - 1) // 2, 1) if bool(xstag) else 0
+    joff = max((rr - 1) // 2, 1) if bool(ystag) else 0
     for nj in range(int(child_ny)):
-        nj1 = nj + 1  # 1-based fine index
+        nj1 = nj + 1 + joff  # shifted 1-based fine index
         cj = int(j_parent_start) + (nj1 - 1) // rr - 1  # 0-based parent row
         jp = (nj1 - 1) % rr
         for ni in range(int(child_nx)):
-            ni1 = ni + 1
+            ni1 = ni + 1 + ioff
             ci = int(i_parent_start) + (ni1 - 1) // rr - 1  # 0-based parent col
             ip = (ni1 - 1) % rr
             sub = ip + jp * rr  # 0-based sub-cell (XIG row index ip, XJG block jp)
@@ -521,6 +671,7 @@ __all__ = [
     "build_sint_weights",
     "interp_bilinear",
     "interp_sint_linear",
+    "interp_sint_full",
     "slice_weights_rows",
     "slice_weights_cols",
     "sint_block_reference",

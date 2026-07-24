@@ -41,7 +41,11 @@ class PrescribedNoahMPState:
     source: dict[str, Any]
 
 
-_MODIFIED_IGBP_MODIS_NOAH_SFZ0_M = jnp.asarray(
+# ``run/LANDUSE.TBL`` stores summer and winter columns. WRF chooses ``ISN``
+# before the first surface-layer call (module_physics_init.F:1833-1835,
+# 1958-1972). Keeping summer unconditionally changes winter land drag before
+# Noah-MP has advanced even once.
+_MODIFIED_IGBP_MODIS_NOAH_SFZ0_SUMMER_M = jnp.asarray(
     [
         DEFAULT_WATER_ROUGHNESS_M,  # category 0 is mapped to water by WRF before lookup.
         0.5,
@@ -109,7 +113,20 @@ _MODIFIED_IGBP_MODIS_NOAH_SFZ0_M = jnp.asarray(
     dtype=jnp.float64,
 )
 
-_MODIFIED_IGBP_MODIS_NOAH_SLMO = jnp.asarray(
+_MODIFIED_IGBP_MODIS_NOAH_SFZ0_WINTER_M = jnp.asarray(
+    [
+        DEFAULT_WATER_ROUGHNESS_M,
+        0.5, 0.5, 0.5, 0.5, 0.2,
+        0.01, 0.01, 0.01, 0.15, 0.10,
+        0.30, 0.05, 0.8, 0.05, 0.001,
+        0.01, 0.0001, 0.30, 0.15, 0.05,
+        *([0.8] * 30),
+        *([0.8] * 11),
+    ],
+    dtype=jnp.float64,
+)
+
+_MODIFIED_IGBP_MODIS_NOAH_SLMO_SUMMER = jnp.asarray(
     [
         1.0,
         0.3,
@@ -177,6 +194,32 @@ _MODIFIED_IGBP_MODIS_NOAH_SLMO = jnp.asarray(
     dtype=jnp.float64,
 )
 
+_MODIFIED_IGBP_MODIS_NOAH_SLMO_WINTER = jnp.asarray(
+    [
+        1.0,
+        0.60, 0.50, 0.60, 0.60, 0.60,
+        0.20, 0.25, 0.20, 0.15, 0.30,
+        0.725, 0.60, 0.10, 0.40, 0.95,
+        0.05, 1.0, 0.60, 0.60, 0.05,
+        *([0.02] * 30),
+        *([0.10] * 11),
+    ],
+    dtype=jnp.float64,
+)
+
+
+def _seasonal_landuse_table(summer, winter, season: int):
+    """Select WRF ``LANDUSE.TBL`` column ``ISN`` (1 summer, 2 winter)."""
+
+    value = int(season)
+    if value == 1:
+        return summer
+    if value == 2:
+        return winter
+    raise ValueError(
+        f"WRF landuse season must be 1 (summer) or 2 (winter), got {season!r}"
+    )
+
 
 def _modified_igbp_modis_noah_lookup(lu_index, table):
     cat = jnp.rint(jnp.asarray(lu_index, dtype=jnp.float64)).astype(jnp.int32)
@@ -185,13 +228,22 @@ def _modified_igbp_modis_noah_lookup(lu_index, table):
     return table[jnp.clip(cat, 0, table.shape[0] - 1)], valid
 
 
-def roughness_from_prescribed_fields(xland, landmask, vegfra=None, cm=None, lu_index=None):
+def roughness_from_prescribed_fields(
+    xland,
+    landmask,
+    vegfra=None,
+    cm=None,
+    lu_index=None,
+    *,
+    season: int = 1,
+):
     """Return a bounded roughness surrogate from prescribed Gen2 fields.
 
     When ``LU_INDEX`` is available for the MODIFIED_IGBP_MODIS_NOAH table, WRF
-    cold-initialises ``ZNT`` from ``LANDUSE.TBL`` ``SFZ0/100`` before the first
-    MYNN surface-layer call. Older smoke callers without land-use categories keep
-    the legacy CM/VEGFRA fallback.
+    cold-initialises ``ZNT`` from seasonal ``LANDUSE.TBL`` ``SFZ0/100`` before
+    the first MYNN surface-layer call. ``season`` is WRF ``ISN`` (1 summer,
+    2 winter). Older smoke callers without land-use categories keep the legacy
+    CM/VEGFRA fallback.
     """
 
     xland = jnp.asarray(xland, dtype=jnp.float64)
@@ -212,12 +264,19 @@ def roughness_from_prescribed_fields(xland, landmask, vegfra=None, cm=None, lu_i
     surrogate = jnp.where((xland > 1.5) | (landmask < 0.5), water_z0, land_z0)
     fallback = jnp.where(usable_cm, neutral_z0, surrogate)
     if lu_index is not None:
-        table_z0, valid = _modified_igbp_modis_noah_lookup(lu_index, _MODIFIED_IGBP_MODIS_NOAH_SFZ0_M)
+        table = _seasonal_landuse_table(
+            _MODIFIED_IGBP_MODIS_NOAH_SFZ0_SUMMER_M,
+            _MODIFIED_IGBP_MODIS_NOAH_SFZ0_WINTER_M,
+            season,
+        )
+        table_z0, valid = _modified_igbp_modis_noah_lookup(lu_index, table)
         fallback = jnp.where(valid, table_z0, fallback)
     return jnp.clip(fallback, 1.0e-7, 10.0)
 
 
-def mavail_from_prescribed_fields(xland, landmask, smois, lu_index=None):
+def mavail_from_prescribed_fields(
+    xland, landmask, smois, lu_index=None, *, season: int = 1,
+):
     """Return WRF cold-start surface moisture availability for prescribed land."""
 
     xland = jnp.asarray(xland, dtype=jnp.float64)
@@ -226,7 +285,12 @@ def mavail_from_prescribed_fields(xland, landmask, smois, lu_index=None):
     top_soil = smois[0] if smois.ndim == 3 else smois
     fallback = jnp.where((xland > 1.5) | (landmask < 0.5), 1.0, top_soil)
     if lu_index is not None:
-        table_mavail, valid = _modified_igbp_modis_noah_lookup(lu_index, _MODIFIED_IGBP_MODIS_NOAH_SLMO)
+        table = _seasonal_landuse_table(
+            _MODIFIED_IGBP_MODIS_NOAH_SLMO_SUMMER,
+            _MODIFIED_IGBP_MODIS_NOAH_SLMO_WINTER,
+            season,
+        )
+        table_mavail, valid = _modified_igbp_modis_noah_lookup(lu_index, table)
         fallback = jnp.where(valid, table_mavail, fallback)
     return jnp.clip(fallback, 0.0, 1.0)
 
@@ -246,6 +310,7 @@ def prescribe_noah_mp_state(
     sst,
     vegfra=None,
     cm=None,
+    season: int = 1,
     source: dict[str, Any] | None = None,
 ) -> PrescribedNoahMPState:
     """Package bounded Gen2 land state for the sfclay lower boundary."""
@@ -258,8 +323,13 @@ def prescribe_noah_mp_state(
     landmask = jnp.asarray(landmask, dtype=jnp.float64)
     lakemask = jnp.asarray(lakemask, dtype=jnp.float64)
     lu_index = jnp.asarray(lu_index)
-    roughness = roughness_from_prescribed_fields(xland, landmask, vegfra=vegfra, cm=cm, lu_index=lu_index)
-    mavail = mavail_from_prescribed_fields(xland, landmask, smois, lu_index=lu_index)
+    roughness = roughness_from_prescribed_fields(
+        xland, landmask, vegfra=vegfra, cm=cm, lu_index=lu_index,
+        season=season,
+    )
+    mavail = mavail_from_prescribed_fields(
+        xland, landmask, smois, lu_index=lu_index, season=season,
+    )
     return PrescribedNoahMPState(
         t_skin=t_skin,
         soil_moisture=smois,

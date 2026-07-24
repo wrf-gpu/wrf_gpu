@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-LAKE_SOURCE = "<DATA_ROOT>/src/wrf_pristine/WRF/phys/module_sf_lake.F"
-REGISTRY_SOURCE = "<DATA_ROOT>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON"
+LAKE_SOURCE = "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_lake.F"
+REGISTRY_SOURCE = "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON"
 
 LAKE_CARRY_MEMBERS = (
     "lakedepth2d",

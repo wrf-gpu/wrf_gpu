@@ -18,7 +18,7 @@ THE LOAD-BEARING RISK = KEY COMPLETENESS
 ----------------------------------------
 If ``cheap_key`` misses ANY input baked into the lowered HLO, two distinct
 executables can share a key -> wrong blob loads -> SILENT WRONG RESULT. The key
-is split into two levels (the GPT-critic SAFETY design, KEY_SCHEMA v2):
+is split into two levels (the GPT-critic SAFETY design, KEY_SCHEMA v3):
 
 * ``program_key`` = the HLO-IDENTITY key, proven 1:1 vs ``hlo_sha256``. The
   lowered HLO of ``_advance_chunk_fori`` (a bare ``@jax.jit``, no static_argnames,
@@ -121,7 +121,11 @@ __all__ = [
 #   * adds compile-option / JAX-config determinants to the exec key (P1-4);
 #   * splits ``program_key`` (HLO identity, proven 1:1 vs hlo_sha256) from
 #     ``exec_key`` (the on-disk blob address = program_key + target/compile env).
-KEY_SCHEMA = "GPUWRF-AOTKEY-v2"
+# v3 (2026-07-22, consolidated performance sprint):
+#   * canonicalizes only ``TerrainProvenance.source_path`` because the release
+#     probes proved namespace-only path changes produce the same optimized HLO;
+#     content identity and geometry remain load-bearing key inputs.
+KEY_SCHEMA = "GPUWRF-AOTKEY-v3"
 
 
 # --------------------------------------------------------------------------- #
@@ -232,9 +236,21 @@ def _walk(h: "hashlib._Hash", obj: Any, depth: int) -> None:
 
     if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
         _upd(h, b"dc", cls_name.encode())
+        # TerrainProvenance.source_path identifies WHERE identical static terrain
+        # bytes were loaded from, not WHAT enters the traced program. Absolute
+        # nonce/namespace paths therefore fragmented cross-process AOT reuse while
+        # producing the exact same optimized HLO. KEY_SCHEMA v3 canonicalizes only
+        # this one provenance locator; every content/geometry field remains hashed.
+        terrain_provenance = (
+            type(obj).__module__ == "gpuwrf.contracts.grid"
+            and type(obj).__qualname__ == "TerrainProvenance"
+        )
         for field in dataclasses.fields(obj):
             _upd(h, b"k", field.name.encode())
-            _walk(h, getattr(obj, field.name), depth + 1)
+            if terrain_provenance and field.name == "source_path":
+                _walk(h, "<terrain-source-path>", depth + 1)
+            else:
+                _walk(h, getattr(obj, field.name), depth + 1)
         return
 
     # Registered pytree fallback (GridSpec, VerticalCoord, ... that expose

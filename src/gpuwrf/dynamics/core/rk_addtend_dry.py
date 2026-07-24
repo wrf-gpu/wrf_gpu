@@ -141,10 +141,9 @@ def _absolute_diagnostics(
     fields, NOT by re-deriving a synthetic pressure from absolute theta:
 
       ``p'``   = ``grid%p`` = ``state.p_perturbation`` (the WRF perturbation
-                 pressure diagnostic; this is the field passed to the PGF, not a
-                 second theta-derived pressure).  F7F: previously this re-derived
-                 ``p_abs`` from absolute θ, inventing a vertical pressure source
-                 that double-counted the buoyancy; removed.
+                 pressure diagnostic carried from the preceding
+                 ``calc_p_rho_phi`` call; this is distinct from the pressure
+                 work array used by the acoustic vertical-PGF cadence).
       ``al'``  = ``-1/(c1h*muts+c2h) * (alb*c1h*mu' + rdnw*(ph'(k+1)-ph'(k)))``
                  from the perturbation geopotential ``ph'`` and ``mu'``
                  (WRF ``calc_p_rho_phi``, ``module_big_step_utilities_em.F:1029``).
@@ -176,8 +175,6 @@ def _absolute_diagnostics(
     alt = _inverse_density_from_theta_pressure(
         state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)
     )
-    # WRF p for the horizontal PGF is grid%p = the perturbation-pressure
-    # diagnostic carried on the state, not a re-derived absolute-θ pressure.
     p_pert = state.p_perturbation.astype(jnp.float64)
     c1h = metrics.c1h[:, None, None]
     c2h = metrics.c2h[:, None, None]
@@ -483,6 +480,105 @@ def large_step_coriolis(
     return ru_cor, rv_cor
 
 
+def large_step_horizontal_curvature(
+    state: State,
+    metrics: DycoreMetrics,
+    *,
+    dx_m: float,
+    dy_m: float,
+    specified: bool = True,
+) -> tuple[jax.Array, jax.Array]:
+    """Return WRF's normal-map horizontal U/V curvature tendency.
+
+    Literal vector transcription of pristine WRF v4.7.1 ``curvature``:
+    ``vxgm`` and its boundary convention are at
+    ``module_big_step_utilities_em.F:4255-4340``, U is ``:4354-4393``, and V
+    is ``:4410-4446``. The authenticated Canary fixture executes the normal
+    (non-polar) branch. The returned arrays are coupled ``ru/rv_tend`` values
+    and therefore follow PGF and Coriolis in ``rk_tendency`` without a mass
+    conversion.
+
+    ``specified=True`` zeros the outer U-face columns and V-face rows exactly
+    as the nested WRF ownership clauses do. The caller keeps this source repair
+    on the authenticated nested path; periodic idealized programs retain their
+    previous bytes.
+    """
+
+    u = jnp.asarray(state.u, dtype=jnp.float64)
+    v = jnp.asarray(state.v, dtype=jnp.float64)
+    w = jnp.asarray(state.w, dtype=jnp.float64)
+    mu_total = jnp.asarray(state.mu_total, dtype=jnp.float64)
+    c1h = metrics.c1h[:, None, None]
+    c2h = metrics.c2h[:, None, None]
+    c1f = metrics.c1f[:, None, None]
+    c2f = metrics.c2f[:, None, None]
+
+    muu = 0.5 * sum(_x_face_pair_2d(mu_total))
+    muv = 0.5 * sum(_y_face_pair_2d(mu_total))
+    ru = u * (c1h * muu[None, :, :] + c2h) / metrics.msfuy[None, :, :]
+    rv = v * (c1h * muv[None, :, :] + c2h) / metrics.msfvx[None, :, :]
+    rw = w * (
+        c1f * mu_total[None, :, :] + c2f
+    ) / metrics.msfty[None, :, :]
+
+    rdx = jnp.asarray(1.0 / float(dx_m), dtype=jnp.float64)
+    rdy = jnp.asarray(1.0 / float(dy_m), dtype=jnp.float64)
+    reradius = jnp.asarray(1.0 / 6370.0e3, dtype=jnp.float64)
+    vxgm = (
+        0.5 * (u[:, :, :-1] + u[:, :, 1:])
+        * (metrics.msfvx[1:, :] - metrics.msfvx[:-1, :])[None, :, :]
+        * rdy
+        - 0.5 * (v[:, :-1, :] + v[:, 1:, :])
+        * (metrics.msfuy[:, 1:] - metrics.msfuy[:, :-1])[None, :, :]
+        * rdx
+    )
+
+    rv_u_quad = 0.25 * (
+        rv[:, :-1, :-1]
+        + rv[:, :-1, 1:]
+        + rv[:, 1:, :-1]
+        + rv[:, 1:, 1:]
+    )
+    rw_u_quad = 0.25 * (
+        rw[:-1, :, :-1]
+        + rw[1:, :, :-1]
+        + rw[:-1, :, 1:]
+        + rw[1:, :, 1:]
+    )
+    u_owned = (
+        0.5 * (vxgm[:, :, 1:] + vxgm[:, :, :-1]) * rv_u_quad
+        - u[:, :, 1:-1] * reradius * rw_u_quad
+    )
+    ru_curv = jnp.zeros_like(u).at[:, :, 1:-1].set(u_owned)
+
+    ru_v_quad = 0.25 * (
+        ru[:, :-1, :-1]
+        + ru[:, :-1, 1:]
+        + ru[:, 1:, :-1]
+        + ru[:, 1:, 1:]
+    )
+    rw_v_quad = 0.25 * (
+        rw[:-1, :-1, :]
+        + rw[1:, :-1, :]
+        + rw[:-1, 1:, :]
+        + rw[1:, 1:, :]
+    )
+    v_owned = (
+        -0.5 * (vxgm[:, 1:, :] + vxgm[:, :-1, :]) * ru_v_quad
+        - (metrics.msfvy[1:-1, :] / metrics.msfvx[1:-1, :])[None, :, :]
+        * v[:, 1:-1, :]
+        * reradius
+        * rw_v_quad
+    )
+    rv_curv = jnp.zeros_like(v).at[:, 1:-1, :].set(v_owned)
+
+    if not specified:
+        # The bound correction is nested-only. Keep the parameter explicit so
+        # an accidental broader call cannot silently claim periodic authority.
+        raise ValueError("horizontal curvature source repair is authorized for specified/nested domains only")
+    return ru_curv, rv_curv
+
+
 def _zeros_like(reference: jax.Array, candidate: jax.Array | None) -> jax.Array:
     return jnp.zeros_like(reference) if candidate is None else jnp.asarray(candidate, dtype=reference.dtype)
 
@@ -546,4 +642,10 @@ def rk_addtend_dry(
     return tendencies.replace(u=u, v=v, w=w, ph=ph, theta=theta, mu=mu)
 
 
-__all__ = ["DryPhysicsTendencies", "large_step_horizontal_pgf", "rk_addtend_dry"]
+__all__ = [
+    "DryPhysicsTendencies",
+    "large_step_coriolis",
+    "large_step_horizontal_curvature",
+    "large_step_horizontal_pgf",
+    "rk_addtend_dry",
+]

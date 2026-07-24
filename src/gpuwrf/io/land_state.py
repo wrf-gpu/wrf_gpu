@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import jax.numpy as jnp
+from netCDF4 import Dataset
 import numpy as np
 
 from gpuwrf.io.gen2_accessor import Gen2Run
@@ -58,6 +59,30 @@ def _summary(field: Any) -> dict[str, Any]:
     }
 
 
+def _landuse_season_for_run(run: Gen2Run, domain: str) -> tuple[int, int, float]:
+    """Return WRF ``ISN`` from wrfinput time and scalar ``CEN_LAT``.
+
+    This is the literal ``module_physics_init.F:1833-1835`` rule used before
+    ``ZNT=SFZ0(LU_INDEX,ISN)/100`` and ``MAVAIL=SLMO(LU_INDEX,ISN)``. Reading
+    the netCDF metadata avoids guessing a season from the host clock.
+    """
+
+    with Dataset(run.wrfinput_file(domain), "r") as dataset:
+        if "Times" not in dataset.variables or "CEN_LAT" not in dataset.ncattrs():
+            raise KeyError(
+                f"wrfinput {domain} lacks Times/CEN_LAT required for WRF landuse season"
+            )
+        raw = np.asarray(dataset.variables["Times"][0]).astype("S1")
+        timestamp = b"".join(raw.tolist()).decode("ascii").strip("\x00 ")
+        cen_lat = float(dataset.getncattr("CEN_LAT"))
+    start = datetime.strptime(timestamp[:19], "%Y-%m-%d_%H:%M:%S")
+    julday = int(start.timetuple().tm_yday)
+    season = 2 if julday < 105 or julday > 288 else 1
+    if cen_lat < 0.0:
+        season = 3 - season
+    return season, julday, cen_lat
+
+
 def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0) -> PrescribedNoahMPState:
     """Load the Option-A Noah-MP prescribed lower boundary from `wrfinput_d02`."""
 
@@ -69,6 +94,7 @@ def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0)
     absent_required = sorted(required - set(loaded))
     if absent_required:
         raise KeyError(f"required Gen2 land-state variables missing for {domain}: {absent_required}")
+    season, julday, cen_lat = _landuse_season_for_run(run, domain)
     roughness_note = (
         "ZNT loaded directly from wrfinput_d02."
         if "ZNT" in loaded
@@ -87,6 +113,9 @@ def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0)
         "missing_optional_variables": missing,
         "roughness_note": roughness_note,
         "mavail_note": mavail_note,
+        "landuse_season": season,
+        "landuse_julday": julday,
+        "landuse_cen_lat": cen_lat,
     }
     state = prescribe_noah_mp_state(
         t_skin=loaded["TSK"],
@@ -102,6 +131,7 @@ def load_prescribed_land_state(run: Gen2Run, domain: str = "d02", time: int = 0)
         sst=loaded["SST"],
         vegfra=loaded.get("VEGFRA"),
         cm=loaded.get("CM"),
+        season=season,
         source=source,
     )
     if "ZNT" in loaded:
@@ -134,6 +164,7 @@ def load_hourly_land_state(run: Gen2Run, domain: str = "d02", time: int = 0) -> 
     loadable = set(LAND_STATE_VARIABLES) | required
     loaded = {name: run.load(domain, name, time=time_index, lazy=False) for name in sorted(loadable & history_variables)}
     missing = sorted(loadable - set(loaded))
+    season, julday, cen_lat = _landuse_season_for_run(run, domain)
     source = {
         "run_id": run.run_id,
         "domain": domain,
@@ -143,6 +174,9 @@ def load_hourly_land_state(run: Gen2Run, domain: str = "d02", time: int = 0) -> 
         "missing_optional_variables": missing,
         "roughness_note": "ZNT absent from hourly wrfout; roughness_m cold-started from WRF LANDUSE.TBL SFZ0 by LU_INDEX.",
         "mavail_note": "MAVAIL absent from hourly wrfout; cold-started from WRF LANDUSE.TBL SLMO by LU_INDEX.",
+        "landuse_season": season,
+        "landuse_julday": julday,
+        "landuse_cen_lat": cen_lat,
     }
     state = prescribe_noah_mp_state(
         t_skin=loaded["TSK"],
@@ -158,6 +192,7 @@ def load_hourly_land_state(run: Gen2Run, domain: str = "d02", time: int = 0) -> 
         sst=loaded["SST"],
         vegfra=loaded.get("VEGFRA"),
         cm=loaded.get("CM"),
+        season=season,
         source=source,
     )
     water = (state.xland > 1.5) | (state.landmask < 0.5)

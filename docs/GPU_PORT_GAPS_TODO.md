@@ -1,6 +1,15 @@
 # GPU Port Gaps TODO
 
-Executive summary: the current code is a real single-domain GPU forecast path for Canary d02 replay, not yet a complete WRF v4 operational replacement. It runs a d02 state built from Gen2/CPU-WRF artifacts with RK3 split-explicit dynamics, Thompson, WRF revised surface layer, MYNN, RRTMG-style SW/LW radiation, and WRF-style lateral strip replay. The blocking gaps are live multi-domain nesting, removal of WPS/real.exe/CPU-WRF artifact dependency, prognostic Noah-MP land state, WRF-compatible restart/output completeness, d01 parent-domain physics, and closure of real-terrain/map-factor/boundary dynamics under the Canary hierarchy. The Canary corpus namelist is a five-domain 9/3/1 km nest (`max_dom=5`) with Thompson, MYNN, revised surface layer, Noah-MP, RRTMG, Kain-Fritsch only on d01, topographic/slope radiation enabled, and WRF specified/nested boundaries; the port currently owns only the d02 replay path.
+> **Historical inventory warning (superseded by v0.23.4):** this document
+> preserves an early pre-live-nesting gap analysis and must not be read as the
+> current capability matrix. v0.23.4 accepts a one-hour all-physics d01-d09
+> live-nested fixture (27/27 outputs, all 177,497,511 numeric values finite,
+> 9 × 102 compared fields green). Current open/operational status lives in
+> [`PORT_COMPLETION_ROADMAP.md`](PORT_COMPLETION_ROADMAP.md) and
+> [`WRF_PARITY_ROADMAP.md`](WRF_PARITY_ROADMAP.md). The historical task text
+> below remains useful for provenance only.
+
+Executive summary (historical): the then-current code was a real single-domain GPU forecast path for Canary d02 replay, not yet a complete WRF v4 operational replacement. It ran a d02 state built from Gen2/CPU-WRF artifacts with RK3 split-explicit dynamics, Thompson, WRF revised surface layer, MYNN, RRTMG-style SW/LW radiation, and WRF-style lateral strip replay. The blocking gaps at that time were live multi-domain nesting, removal of WPS/real.exe/CPU-WRF artifact dependency, prognostic Noah-MP land state, WRF-compatible restart/output completeness, d01 parent-domain physics, and closure of real-terrain/map-factor/boundary dynamics under the Canary hierarchy.
 
 ## Audit Context
 

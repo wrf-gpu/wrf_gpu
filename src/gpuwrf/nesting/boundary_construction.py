@@ -26,15 +26,13 @@ step ``cdt``.  The two-time leaf ``[nfld_ring, psca_ring]`` with
 with ``dtbc`` advancing ``0 -> parent_dt`` over the subcycle.
 
 The forced prognostic set is WRF ``inc/nest_forcedown_interp.inc`` (u_2, v_2, w_2,
-ph_2, t_2, mu_2, QVAPOR) plus the base-state leaves the boundary consumer needs
-(phb/pb/mub).  The mass coupling ``(c1*mut + c2)`` that WRF applies before
-interpolation (``couple_or_uncouple_em.F:270-345``) is an O(mu'-gradient) term that
-vanishes for a uniform-mass column and for a constant field; we interpolate the
-DECOUPLED prognostics (the same bounded approximation the validated v0.1.0 hourly
-replay used) and keep the mass-coupled IN-LOOP ph/w forcing on the child side via
-the existing ``boundary_apply.nested_ph_relax_tendency`` path.  The
-constant-field conservation gate (:func:`build_child_boundary_package` round-trip
-in the proof) asserts this term is bounded.
+ph_2, t_2, mu_2 and the moist/scalar families) plus the base-state leaves the
+boundary consumer needs (phb/pb/mub).  Pristine WRF couples BOTH parent and child
+prognostics before ``bdy_interp1`` and uncouples only the live states afterwards;
+the boundary records therefore remain in coupled mass/map space.  The optional
+``coupled_forcedown`` path below reproduces that ordering exactly while preserving
+the existing State/carry shapes.  The default-off path deliberately remains the
+released decoupled package byte-for-byte.
 
 This module does NOT edit ``boundary_apply.py``, ``lateral_bc.py``, the dycore, or
 any physics; it only READS the State interface and writes a new ``*_bdy`` package.
@@ -50,13 +48,14 @@ import jax.numpy as jnp
 
 import os
 
-from gpuwrf.contracts.grid import GridSpec
+from gpuwrf.contracts.grid import DycoreMetrics, GridSpec
 from gpuwrf.contracts.state import State
 from gpuwrf.nesting.interp import (
     InterpWeights,
     build_bilinear_weights,
     build_sint_weights,
     interp_bilinear,
+    interp_sint_full,
     interp_sint_linear,
     slice_weights_cols,
     slice_weights_rows,
@@ -90,11 +89,12 @@ _SIDES = ("W", "E", "S", "N")
 class NestForceWeights:
     """Per-staggering parent->child interp weights for one edge (all static).
 
-    The C-grid stagger only changes the parent extent each gather clamps to;
-    for the odd (3:1) ratios of our tower the WRF ``sint`` staggered offset
-    ``rioff/rjoff`` is ZERO (``sint.F:51-52`` -- staggered offset is set only for
-    EVEN ratios), so u/v reuse the mass cell-centered registration and only widen
-    the parent extent by one along the staggered axis.
+    The C-grid stagger changes both the parent extent and the full-SINT
+    destination registration.  ``bdy_interp1`` shifts staggered destinations by
+    ``ioff/joff=max((ratio-1)//2,1)`` for every ratio; ``sint.F`` separately
+    applies ``rioff/rjoff`` only for even ratios.  The static linear plans remain
+    candidate-off compatible; :func:`interp_sint_full` applies both source
+    adjustments for candidate-on U/V.
     """
 
     mass: InterpWeights          # parent (ny, nx)   -> child (ny, nx)
@@ -357,12 +357,64 @@ def _fit(strips: jax.Array, z_target: int, side_target: int, dtype) -> jax.Array
     return out
 
 
+def couple_state_for_forcedown(state: State, metrics: DycoreMetrics) -> dict[str, jax.Array]:
+    """Return pristine-WRF coupled forcedown operands without mutating ``state``.
+
+    This is the algebra in WRF v4.7.1
+    ``dyn_em/couple_or_uncouple_em.F:121-181,270-345`` for a nested/specified
+    domain.  U/V use the one-sided outer stagger face and centered interior face
+    mass divided by the matching map factor; W uses full-level mass divided by
+    ``msfty``; PH uses full-level mass; perturbation theta and every scalar use
+    half-level mass.  MU remains an uncoupled perturbation field.
+
+    The returned arrays are transient operands to SINT.  No new resident or carry
+    leaf is introduced.
+    """
+
+    mu_total = jnp.asarray(state.mu_total)
+    dtype = mu_total.dtype
+    c1h = metrics.c1h.astype(dtype)[:, None, None]
+    c2h = metrics.c2h.astype(dtype)[:, None, None]
+    c1f = metrics.c1f.astype(dtype)[:, None, None]
+    c2f = metrics.c2f.astype(dtype)[:, None, None]
+    mass_h = c1h * mu_total[None, :, :] + c2h
+    mass_f = c1f * mu_total[None, :, :] + c2f
+
+    # WRF calculate_full/couple_or_uncouple_em: centered interior faces and the
+    # sole adjacent mass point at the outer stagger boundary.
+    muu = 0.5 * (
+        jnp.concatenate((mu_total[:, :1], mu_total), axis=1)
+        + jnp.concatenate((mu_total, mu_total[:, -1:]), axis=1)
+    )
+    muv = 0.5 * (
+        jnp.concatenate((mu_total[:1, :], mu_total), axis=0)
+        + jnp.concatenate((mu_total, mu_total[-1:, :]), axis=0)
+    )
+    mass_u = c1h * muu[None, :, :] + c2h
+    mass_v = c1h * muv[None, :, :] + c2h
+
+    return {
+        "u": jnp.asarray(state.u) * mass_u / metrics.msfuy.astype(dtype)[None, :, :],
+        "v": jnp.asarray(state.v) * mass_v / metrics.msfvx.astype(dtype)[None, :, :],
+        "w": jnp.asarray(state.w) * mass_f / metrics.msfty.astype(dtype)[None, :, :],
+        "theta": (jnp.asarray(state.theta) - jnp.asarray(300.0, dtype=state.theta.dtype)) * mass_h,
+        "qv": jnp.asarray(state.qv) * mass_h,
+        "ph": jnp.asarray(state.ph_perturbation) * mass_f,
+        "mu": jnp.asarray(state.mu_perturbation),
+        "mass_h": mass_h,
+    }
+
+
 def build_child_boundary_package(
     child_state: State,
     parent_state: State,
     weights: NestForceWeights,
     *,
     bdy_width: int = 5,
+    parent_metrics: DycoreMetrics | None = None,
+    child_metrics: DycoreMetrics | None = None,
+    coupled_forcedown: bool = False,
+    parent_grid_ratio: int | None = None,
 ) -> State:
     """Construct the child specified+relaxation ``*_bdy`` package from a parent.
 
@@ -374,6 +426,11 @@ def build_child_boundary_package(
     target (WRF ``bdy_* + cdt*bdy_t* = psca``).  The caller drives the child for
     ``parent_grid_ratio`` substeps with ``update_cadence_s = parent_dt``.
 
+    With ``coupled_forcedown=True``, both metrics operands are mandatory and the
+    two records contain the coupled child/parent values that pristine WRF leaves
+    in ``*_bxs/bxe/bys/bye`` after ``med_nest_force``.  With the default false,
+    the released decoupled package is emitted exactly as before.
+
     The child prognostic INTERIOR is untouched -- only the boundary package is
     filled.  Returns a new ``child_state``.
     """
@@ -383,6 +440,20 @@ def build_child_boundary_package(
     reg = weights.registration
     side_len = int(max(child_state.u_bdy.shape[-1], child_state.v_bdy.shape[-1]))
     w = int(bdy_width)
+
+    if bool(coupled_forcedown) and (parent_metrics is None or child_metrics is None):
+        raise ValueError("coupled forcedown requires parent_metrics and child_metrics")
+    if bool(coupled_forcedown):
+        if parent_grid_ratio is None:
+            raise ValueError("coupled forcedown requires parent_grid_ratio for full SINT")
+        if reg != "sint":
+            raise ValueError("coupled forcedown requires pristine-WRF SINT registration")
+
+    child_fields = None
+    parent_fields = None
+    if bool(coupled_forcedown):
+        child_fields = couple_state_for_forcedown(child_state, child_metrics)
+        parent_fields = couple_state_for_forcedown(parent_state, parent_metrics)
 
     def two_time(old_leaf_full, child_field, new_strips, *, is_2d=False):
         ref = old_leaf_full[-1]
@@ -407,14 +478,47 @@ def build_child_boundary_package(
         ring3d = _child_ring_3d
         ring2d = _child_ring_2d
 
-    theta_new = ring3d(parent_state.theta, weights.mass, reg, w, side_len)
-    qv_new = ring3d(parent_state.qv, weights.mass, reg, w, side_len)
-    w_new = ring3d(parent_state.w, weights.mass, reg, w, side_len)
-    p_new = ring3d(parent_state.p_perturbation, weights.mass, reg, w, side_len)
-    ph_new = ring3d(parent_state.ph_perturbation, weights.mass, reg, w, side_len)
-    u_new = ring3d(parent_state.u, weights.u, reg, w, side_len)
-    v_new = ring3d(parent_state.v, weights.v, reg, w, side_len)
-    mu_new = ring2d(parent_state.mu_perturbation, weights.mass, reg, w, side_len)
+    # The released path above remains its exact ring-only/full-grid linear
+    # gather.  The default-off live-nest candidate must execute pristine SINT's
+    # full five-point x/y stencils; interpolating the full child grid first also
+    # preserves the exact WRF corner/subcell ownership without inventing an
+    # edge-local registration.  All operations remain JAX-resident.
+    def new_ring3d(parent_field, field_weights, *, xstag=False, ystag=False):
+        if bool(coupled_forcedown):
+            child = interp_sint_full(
+                parent_field,
+                field_weights,
+                parent_grid_ratio=int(parent_grid_ratio),
+                xstag=bool(xstag),
+                ystag=bool(ystag),
+            )
+            return field_sides_3d(child, w, side_len)
+        return ring3d(parent_field, field_weights, reg, w, side_len)
+
+    def new_ring2d(parent_field, field_weights):
+        if bool(coupled_forcedown):
+            child = interp_sint_full(
+                parent_field,
+                field_weights,
+                parent_grid_ratio=int(parent_grid_ratio),
+            )
+            return field_sides_2d(child, w, side_len)
+        return ring2d(parent_field, field_weights, reg, w, side_len)
+
+    theta_parent = parent_fields["theta"] if parent_fields is not None else parent_state.theta
+    qv_parent = parent_fields["qv"] if parent_fields is not None else parent_state.qv
+    w_parent = parent_fields["w"] if parent_fields is not None else parent_state.w
+    ph_parent = parent_fields["ph"] if parent_fields is not None else parent_state.ph_perturbation
+    u_parent = parent_fields["u"] if parent_fields is not None else parent_state.u
+    v_parent = parent_fields["v"] if parent_fields is not None else parent_state.v
+    theta_new = new_ring3d(theta_parent, weights.mass)
+    qv_new = new_ring3d(qv_parent, weights.mass)
+    w_new = new_ring3d(w_parent, weights.mass)
+    p_new = new_ring3d(parent_state.p_perturbation, weights.mass)
+    ph_new = new_ring3d(ph_parent, weights.mass)
+    u_new = new_ring3d(u_parent, weights.u, xstag=True)
+    v_new = new_ring3d(v_parent, weights.v, ystag=True)
+    mu_new = new_ring2d(parent_state.mu_perturbation, weights.mass)
 
     child_phb = child_state.ph_total - child_state.ph_perturbation
     child_pb = child_state.p_total - child_state.p_perturbation
@@ -436,19 +540,44 @@ def build_child_boundary_package(
     phb_new = field_sides_3d(child_phb, w, side_len)
     mub_new = field_sides_2d(child_mub, w, side_len)
 
-    return child_state.replace(
-        u_bdy=two_time(child_state.u_bdy, child_state.u, u_new),
-        v_bdy=two_time(child_state.v_bdy, child_state.v, v_new),
-        w_bdy=two_time(child_state.w_bdy, child_state.w, w_new),
-        theta_bdy=two_time(child_state.theta_bdy, child_state.theta, theta_new),
-        qv_bdy=two_time(child_state.qv_bdy, child_state.qv, qv_new),
-        ph_bdy=two_time(child_state.ph_bdy, child_state.ph_perturbation, ph_new),
+    child_u = child_fields["u"] if child_fields is not None else child_state.u
+    child_v = child_fields["v"] if child_fields is not None else child_state.v
+    child_w = child_fields["w"] if child_fields is not None else child_state.w
+    child_theta = child_fields["theta"] if child_fields is not None else child_state.theta
+    child_qv = child_fields["qv"] if child_fields is not None else child_state.qv
+    child_ph = child_fields["ph"] if child_fields is not None else child_state.ph_perturbation
+
+    updates = dict(
+        u_bdy=two_time(child_state.u_bdy, child_u, u_new),
+        v_bdy=two_time(child_state.v_bdy, child_v, v_new),
+        w_bdy=two_time(child_state.w_bdy, child_w, w_new),
+        theta_bdy=two_time(child_state.theta_bdy, child_theta, theta_new),
+        qv_bdy=two_time(child_state.qv_bdy, child_qv, qv_new),
+        ph_bdy=two_time(child_state.ph_bdy, child_ph, ph_new),
         phb_bdy=two_time(child_state.phb_bdy, child_phb, phb_new),
         p_bdy=two_time(child_state.p_bdy, child_state.p_perturbation, p_new),
         pb_bdy=two_time(child_state.pb_bdy, child_pb, pb_new),
         mu_bdy=two_time(child_state.mu_bdy, child_state.mu_perturbation, mu_new, is_2d=True),
         mub_bdy=two_time(child_state.mub_bdy, child_mub, mub_new, is_2d=True),
     )
+
+    # WRF couples every moist/scalar family before the same forcedown.  Populate
+    # every boundary leaf this State interface can represent; absent optional
+    # leaves stay absent and therefore do not alter the carry interface.
+    if bool(coupled_forcedown):
+        parent_mass_h = parent_fields["mass_h"]
+        child_mass_h = child_fields["mass_h"]
+        for field_name in ("qc", "qr", "qi", "qs", "qg", "Ni", "Nr"):
+            leaf_name = f"{field_name}_bdy"
+            leaf = getattr(child_state, leaf_name, None)
+            if leaf is None:
+                continue
+            child_scalar = jnp.asarray(getattr(child_state, field_name)) * child_mass_h
+            parent_scalar = jnp.asarray(getattr(parent_state, field_name)) * parent_mass_h
+            scalar_new = new_ring3d(parent_scalar, weights.mass)
+            updates[leaf_name] = two_time(leaf, child_scalar, scalar_new)
+
+    return child_state.replace(**updates)
 
 
 def interp_parent_field_to_child(
@@ -460,8 +589,9 @@ def interp_parent_field_to_child(
     """Interpolate one parent field to the FULL child grid (proof/diagnostic).
 
     ``staggering`` selects which precomputed gather to use ("mass", "u", "v").
-    Returns the full child-grid field (NOT sliced to the ring) so the P0-1a oracle
-    can compare interior + boundary against the recorded child wrfout.
+    Returns the full child-grid field (NOT sliced to the ring) for diagnostics and
+    released-path compatibility.  Candidate-on forcedown selects full nonlinear
+    SINT internally; proof code should use the independent source-literal oracle.
     """
 
     wsel = {"mass": weights.mass, "u": weights.u, "v": weights.v}[staggering]
@@ -472,6 +602,7 @@ __all__ = [
     "NestForceWeights",
     "build_nest_force_weights",
     "build_child_boundary_package",
+    "couple_state_for_forcedown",
     "interp_parent_field_to_child",
     "field_sides_3d",
     "field_sides_2d",

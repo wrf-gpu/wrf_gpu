@@ -19,9 +19,10 @@ into a REAL driver for the live nested runtime: a ``move`` callback for
    stale plans);
 5. **shift** the resident child state by ``parent_grid_ratio`` fine cells per
    parent-cell move (``shift_domain_em.F``) and **re-initialize the newly
-   exposed rows/columns from the parent** by the same cell-centered SINT-linear
-   interpolation the forcedown uses (WRF re-runs the nest-initialization
-   interpolation over the exposed region);
+   exposed rows/columns from the parent**.  The released path retains its
+   cell-centered SINT-linear fill; the live frozen-boundary candidate uses the
+   same full WRF SINT operator as forcedown (WRF re-runs nest interpolation over
+   the exposed region);
 6. shift the persistent per-domain scratch carried across steps
    (``*_save``/``ww``/``rthraten``/... in :class:`OperationalCarry`) exactly like
    WRF's registry-wide ``shift_domain_em`` array shift, with parent-interpolated
@@ -64,6 +65,7 @@ from gpuwrf.nesting.boundary_construction import (
     NestForceWeights,
     build_nest_force_weights,
 )
+from gpuwrf.nesting.interp import interp_sint_full
 from gpuwrf.nesting.moving import (
     _SHIFTABLE_STATE_FIELDS,
     MovingNestBounds,
@@ -285,7 +287,30 @@ def _stagger_for_trailing_dims(
     return None
 
 
-def _interp_by_stagger(field: jax.Array, weights: NestForceWeights, stagger: str) -> jax.Array:
+def _interp_by_stagger(
+    field: jax.Array,
+    weights: NestForceWeights,
+    stagger: str,
+    *,
+    full_sint: bool = False,
+    parent_grid_ratio: int | None = None,
+) -> jax.Array:
+    """Interpolate one fill leaf without changing the released-path operator."""
+
+    if bool(full_sint):
+        if parent_grid_ratio is None:
+            raise MovingNestError("full-SINT moving fill requires parent_grid_ratio")
+        if weights.registration != "sint":
+            raise MovingNestError("full-SINT moving fill requires SINT registration")
+        selected = {"mass": weights.mass, "u": weights.u, "v": weights.v}[stagger]
+        return interp_sint_full(
+            field,
+            selected,
+            parent_grid_ratio=int(parent_grid_ratio),
+            xstag=stagger == "u",
+            ystag=stagger == "v",
+        )
+
     from gpuwrf.nesting.boundary_construction import interp_parent_field_to_child
 
     return interp_parent_field_to_child(field, weights, staggering=stagger)
@@ -300,6 +325,7 @@ def build_parent_fill_state(
     child_ny: int,
     child_nx: int,
     fields: tuple[str, ...] = _SHIFTABLE_STATE_FIELDS,
+    full_sint: bool = False,
 ) -> SimpleNamespace:
     """Interpolate every shiftable field from the parent to the FULL child grid.
 
@@ -332,9 +358,13 @@ def build_parent_fill_state(
                 child_nx=int(child_value.shape[-1]),
             ).astype(child_value.dtype)
         else:
-            fill[name] = _interp_by_stagger(parent_value, new_weights, stagger).astype(
-                child_value.dtype
-            )
+            fill[name] = _interp_by_stagger(
+                parent_value,
+                new_weights,
+                stagger,
+                full_sint=bool(full_sint),
+                parent_grid_ratio=int(new_spec.parent_grid_ratio),
+            ).astype(child_value.dtype)
     return SimpleNamespace(**fill)
 
 
@@ -589,6 +619,8 @@ class MovingNestDriver:
         move: NestMove,
         new_spec: DomainNest,
         new_weights: NestForceWeights,
+        *,
+        full_sint: bool,
     ) -> Any:
         from gpuwrf.nesting.moving import shift_state_for_nest_move
 
@@ -603,6 +635,7 @@ class MovingNestDriver:
             new_spec=new_spec,
             child_ny=int(child.ny),
             child_nx=int(child.nx),
+            full_sint=bool(full_sint),
         )
         moved_state = shift_state_for_nest_move(
             child_state,
@@ -640,7 +673,13 @@ class MovingNestDriver:
                 )
             parent_value = getattr(parent_carry, name, None)
             fill = (
-                _interp_by_stagger(parent_value, new_weights, stagger).astype(child_value.dtype)
+                _interp_by_stagger(
+                    parent_value,
+                    new_weights,
+                    stagger,
+                    full_sint=bool(full_sint),
+                    parent_grid_ratio=int(new_spec.parent_grid_ratio),
+                ).astype(child_value.dtype)
                 if parent_value is not None and getattr(parent_value, "ndim", 0) >= 2
                 else None
             )
@@ -716,10 +755,20 @@ class MovingNestDriver:
                 else None
             )
             moved_carry = self._move_child_carry(
-                child_carry, parent_carry, corralled, new_spec, new_weights
+                child_carry,
+                parent_carry,
+                corralled,
+                new_spec,
+                new_weights,
+                full_sint=bool(current.coupled_forcedown),
             )
             new_edge = DomainEdge(
-                spec=new_spec, weights=new_weights, feedback_weights=new_feedback
+                spec=new_spec,
+                weights=new_weights,
+                feedback_weights=new_feedback,
+                parent_metrics=current.parent_metrics,
+                child_metrics=current.child_metrics,
+                coupled_forcedown=current.coupled_forcedown,
             )
             self._edges[key] = new_edge
             self._trackers[edge.spec.child].moves_applied += 1

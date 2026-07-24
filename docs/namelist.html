@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.2</span>
+          <span class="brand-sub">User's Guide · v0.23.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -185,8 +185,16 @@ them from the operational menu and the rest of your namelist is passed through:<
 <tr><td><code>sf_surface_physics</code></td><td><code>&amp;physics</code></td><td>Land-surface model (default <code>4</code> Noah-MP, <code>use_noahmp=True</code>).</td></tr>
 <tr><td><code>diff_opt</code> / <code>km_opt</code></td><td><code>&amp;dynamics</code></td><td>Horizontal diffusion closure (see <a href="dynamics.html#diffusion">Dynamics</a>; 3-D closures fail closed).</td></tr>
 <tr><td><code>history_interval</code></td><td><code>&amp;time_control</code></td><td>Output cadence, honored per domain (see <a href="output.html#cadence">Output</a>).</td></tr>
+<tr><td><code>radt</code></td><td><code>&amp;physics</code></td><td>Single-domain radiation cadence. <strong>v0.23.4 nested limitation:</strong> nested execution currently uses a fixed 30-minute target rather than arbitrary requested values.</td></tr>
 </tbody>
 </table>
+</div>
+
+<div class="admon warn">
+  <div class="admon-title">Nested radiation controls are not yet fully honored</div>
+  <p>On the v0.23.4 nested runtime, <code>topo_shading=1</code> and
+  <code>slope_rad=1</code> currently bind disabled. Together with the fixed 30-minute
+  <code>radt</code> target, this is a disclosed implementation gap, not an active capability.</p>
 </div>
 
 <div class="admon note">

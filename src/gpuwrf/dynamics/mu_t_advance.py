@@ -118,14 +118,25 @@ def _update_3d(base: jnp.ndarray, values: jnp.ndarray, ys: slice, xs: slice) -> 
     return base.at[:, ys, xs].set(values)
 
 
-def _empty_diagnostics(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
+def _empty_diagnostics(
+    inputs: AdvanceMuTInputs, *, observe_mass_primitive: bool = False,
+) -> dict[str, jnp.ndarray]:
     nz = int(inputs.theta.shape[0])
-    return {
+    result = {
         "dmdt": jnp.zeros_like(inputs.mu),
         "dvdxi": jnp.zeros_like(inputs.theta[:nz]),
         "wdtn": jnp.zeros_like(inputs.ww),
         "theta_tendency": jnp.zeros_like(inputs.theta),
     }
+    if bool(observe_mass_primitive):
+        result.update({
+            "raw_dvdxi": jnp.zeros_like(inputs.theta[:nz]),
+            "raw_dmdt": jnp.zeros_like(inputs.mu),
+            "raw_mu_tendency": jnp.zeros_like(inputs.mu),
+            "mu_scale": jnp.ones_like(inputs.mu),
+            "limited_mu_tendency": jnp.zeros_like(inputs.mu),
+        })
+    return result
 
 
 def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
@@ -136,7 +147,17 @@ def advance_mu_t_wrf(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     return _advance_mu_t_periodic(inputs)
 
 
-def _advance_mu_t_periodic(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
+def advance_mu_t_wrf_observed(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
+    """Recording-only lane exposing raw operands around the existing limiter."""
+
+    if bool(inputs.specified) or bool(inputs.nested):
+        return _advance_mu_t_specified_or_nested(inputs, observe_mass_primitive=True)
+    return _advance_mu_t_periodic(inputs, observe_mass_primitive=True)
+
+
+def _advance_mu_t_periodic(
+    inputs: AdvanceMuTInputs, *, observe_mass_primitive: bool = False,
+) -> dict[str, jnp.ndarray]:
     """Advance MU, MUTS, MUAVE, ``ww`` and theta like WRF ``advance_mu_t``.
 
     This is a comparator helper, not the production dycore path. It follows WRF
@@ -278,7 +299,7 @@ def _advance_mu_t_periodic(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
     theta_new = jnp.stack(theta_levels, axis=0)
     theta_tendency = jnp.stack(theta_tendency_levels, axis=0)
 
-    return {
+    result = {
         "mu": mu_new,
         "mudf": mudf_new,
         "muts": muts_new,
@@ -290,9 +311,20 @@ def _advance_mu_t_periodic(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
         "wdtn": wdtn,
         "theta_tendency": theta_tendency,
     }
+    if bool(observe_mass_primitive):
+        result.update({
+            "raw_dvdxi": dvdxi_stack,
+            "raw_dmdt": dmdt,
+            "raw_mu_tendency": mu_tendency,
+            "mu_scale": jnp.ones_like(mu_tendency),
+            "limited_mu_tendency": mu_tendency,
+        })
+    return result
 
 
-def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp.ndarray]:
+def _advance_mu_t_specified_or_nested(
+    inputs: AdvanceMuTInputs, *, observe_mass_primitive: bool = False,
+) -> dict[str, jnp.ndarray]:
     """WRF specified/nested ``advance_mu_t`` path with non-periodic lateral bounds.
 
     Source bounds are WRF ``module_small_step_em.F:1048-1063``.  For
@@ -319,7 +351,9 @@ def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp
             "muave": inputs.muave,
             "ww": inputs.ww,
             "theta": inputs.theta,
-        } | _empty_diagnostics(inputs)
+        } | _empty_diagnostics(
+            inputs, observe_mass_primitive=observe_mass_primitive,
+        )
 
     ys = slice(y0, y1)
     xs = slice(x0, x1)
@@ -360,10 +394,15 @@ def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp
         dvdxi_levels.append(dvdxi)
     dvdxi_active = jnp.stack(dvdxi_levels, axis=0)
     dmdt_active = jnp.sum(inputs.dnw[:nz, None, None] * dvdxi_active, axis=0)
+    if bool(observe_mass_primitive):
+        raw_dvdxi_active = dvdxi_active
+        raw_dmdt_active = dmdt_active
 
     mu_work_old = inputs.muts[ys, xs] - inputs.mut[ys, xs]
     mu_save = inputs.mu[ys, xs] - mu_work_old
     mu_tendency = dmdt_active + inputs.mu_tend[ys, xs]
+    if bool(observe_mass_primitive):
+        raw_mu_tendency_active = mu_tendency
     # Dry-mass positivity guard: scale the continuity tendency so MUTS stays >=
     # MIN_MUTS_FRACTION of the stage MUT (identity for physical substeps).  The
     # SAME scale multiplies every continuity term below (dmdt, dvdxi, mu_tend, the
@@ -379,6 +418,12 @@ def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp
     dvdxi_full = inputs.theta[:nz] * 0.0
     dvdxi_full = dvdxi_full.at[:, ys, xs].set(dvdxi_active)
     dmdt_full = jnp.zeros_like(inputs.mu).at[ys, xs].set(dmdt_active)
+    if bool(observe_mass_primitive):
+        raw_dvdxi_full = jnp.zeros_like(inputs.theta[:nz]).at[:, ys, xs].set(raw_dvdxi_active)
+        raw_dmdt_full = jnp.zeros_like(inputs.mu).at[ys, xs].set(raw_dmdt_active)
+        raw_mu_tendency_full = jnp.zeros_like(inputs.mu).at[ys, xs].set(raw_mu_tendency_active)
+        mu_scale_full = jnp.ones_like(inputs.mu).at[ys, xs].set(mu_scale)
+        limited_mu_tendency_full = jnp.zeros_like(inputs.mu).at[ys, xs].set(mu_tendency)
     mu_work_new = mu_work_old + float(inputs.dts) * mu_tendency
     mu_new_i = mu_save + mu_work_new
     mudf_i = mu_tendency
@@ -437,7 +482,7 @@ def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp
         theta_new = theta_new.at[k, ys, xs].set(theta_k)
         theta_tendency_full = theta_tendency_full.at[k, ys, xs].set(tendency)
 
-    return {
+    result = {
         "mu": mu_new,
         "mudf": mudf_new,
         "muts": muts_new,
@@ -449,3 +494,12 @@ def _advance_mu_t_specified_or_nested(inputs: AdvanceMuTInputs) -> dict[str, jnp
         "wdtn": wdtn_full,
         "theta_tendency": theta_tendency_full,
     }
+    if bool(observe_mass_primitive):
+        result.update({
+            "raw_dvdxi": raw_dvdxi_full,
+            "raw_dmdt": raw_dmdt_full,
+            "raw_mu_tendency": raw_mu_tendency_full,
+            "mu_scale": mu_scale_full,
+            "limited_mu_tendency": limited_mu_tendency_full,
+        })
+    return result

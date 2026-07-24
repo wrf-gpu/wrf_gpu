@@ -40,7 +40,14 @@ from gpuwrf.contracts.noahmp_state import NoahMPLandState, NoahMPStatic
 from gpuwrf.physics.mynn_surface_stub import SurfaceFluxes
 from gpuwrf.physics.noahmp.noahmp_driver import noah_mp_step
 from gpuwrf.physics.noahmp.types import NoahMPForcing
-from gpuwrf.physics.surface_constants import CP_D, EP1, P0_PA, R_D, R_D_OVER_CP
+from gpuwrf.physics.surface_constants import (
+    CP_D,
+    EP1,
+    P0_PA,
+    P608,
+    R_D,
+    R_D_OVER_CP,
+)
 from gpuwrf.physics.surface_layer import surface_layer_with_diagnostics
 
 # R_v / R_d for the WRF moist-potential-temperature decoupling. MUST match the
@@ -93,7 +100,17 @@ def assemble_noahmp_forcing(
     psfc = _surface(_get(state, "psfc", sfcprs))
     uu = _surface(_get(state, "u"))
     vv = _surface(_get(state, "v"))
-    qair = jnp.maximum(_surface(_get(state, "qv", _get(state, "qair"))), 0.0)
+    # WRF carries QV3D as a water-vapour mixing ratio, but the Noah-MP driver
+    # hands the land model specific humidity (module_sf_noahmpdrv.F):
+    #
+    #   Q_ML = QV3D / (1.0 + QV3D)
+    #
+    # Keep the unconverted mixing ratio for the moist-theta decoupling below;
+    # that WRF expression is defined in terms of the prognostic QVAPOR value.
+    # Do not clamp here: the pristine driver evaluates the source expression
+    # directly, including for a representable negative numerical QVAPOR.
+    qv_mixing_ratio = _surface(_get(state, "qv", _get(state, "qair")))
+    qair = qv_mixing_ratio / (1.0 + qv_mixing_ratio)
     # lowest-level air temperature: prescribed t_air/sfctmp if present, else from
     # theta via the Exner function at the lowest-level pressure (matches sfclay).
     t_air = _get(state, "t_air", _get(state, "sfctmp", None))
@@ -110,7 +127,7 @@ def assemble_noahmp_forcing(
         # lowest-level air temperature ~+4 K too warm (= the (1+R_v/R_d*q_v)
         # factor), biasing the whole Noah-MP land-tile surface energy balance.
         theta_m0 = _surface(_get(state, "theta"))
-        theta_dry0 = theta_m0 / (1.0 + RVOVRD * qair)
+        theta_dry0 = theta_m0 / (1.0 + RVOVRD * qv_mixing_ratio)
         sfctmp = theta_dry0 * (jnp.maximum(sfcprs, 1.0) / P0_PA) ** R_D_OVER_CP
     qc = _surface(_get(state, "qc", None)) if _get(state, "qc", None) is not None else jnp.zeros_like(qair)
     shape = sfctmp.shape
@@ -161,6 +178,37 @@ def assemble_noahmp_forcing(
     )
 
 
+def _mynn_pbl_surface_density(
+    forcing: NoahMPForcing,
+    qv_mixing_ratio: Any | None = None,
+):
+    """Reproduce MYNN's independent mean-tendency boundary density.
+
+    Noah-MP receives specific humidity, whereas MYNN's WRF driver expression
+    uses the atmospheric QVAPOR mixing ratio.  Operational callers pass that
+    original state value explicitly.  The inverse conversion is retained only
+    for focused/direct callers that have a forcing object but no State view.
+    """
+
+    qv = (
+        jnp.asarray(forcing.qair, dtype=jnp.float64)
+        / (1.0 - jnp.asarray(forcing.qair, dtype=jnp.float64))
+        if qv_mixing_ratio is None
+        else jnp.asarray(qv_mixing_ratio, dtype=jnp.float64)
+    )
+
+    return (
+        jnp.asarray(forcing.psfc, dtype=jnp.float64)
+        / (
+            R_D
+            * (
+                jnp.asarray(forcing.sfctmp, dtype=jnp.float64)
+                + P608 * qv
+            )
+        )
+    )
+
+
 def noahmp_surface_adapter(
     state: Any,
     land_state: NoahMPLandState,
@@ -192,16 +240,30 @@ def noahmp_surface_adapter(
     #         standalone surface slot ran the fixed first-call branch. ----
     diag = surface_layer_with_diagnostics(state, first_timestep=first_timestep)
     sf = diag.fluxes                          # SurfaceFluxes (kinematic)
-    rhosfc = jnp.asarray(sf.rhosfc, dtype=jnp.float64)
+    # WRF's surface driver supplies lowest-level RHO3D to sfclay.  That density
+    # is therefore the authority for converting physical HFX/QFX to the
+    # kinematic handles below (module_sf_mynn.F:322,1051-1052).
+    flux_density = jnp.asarray(sf.rhosfc, dtype=jnp.float64)
 
     # is_land mask (xland: 1 land / 2 water) — identical convention to sfclay.
-    xland = _surface(_get(state, "xland", jnp.ones_like(rhosfc)))
+    xland = _surface(_get(state, "xland", jnp.ones_like(flux_density)))
     is_land = (xland - 1.5) < 0.0
 
     # ---- 2. Noah-MP over land. sfclay SEEDS CH/CM into the land carry; Noah-MP
     #         RE-DERIVES the authoritative land-tile CH/CM internally (ADR §4). ----
     if forcing is None:
         forcing = assemble_noahmp_forcing(state, static, radiation, clock, dt)
+    # MYNN does *not* retain the surface driver's RHO3D at its mean-tendency
+    # boundary.  It recomputes a second density exactly as
+    #   psfc / (R_d * (tk(kts) + p608*qv(kts)))
+    # in module_bl_mynnedmf.F90:3960.  Keep this distinct from ``flux_density``:
+    # using either density for both roles creates a deterministic surface-drag
+    # error on the authenticated d03 fixture.
+    # The Noah-MP forcing now correctly carries specific humidity; MYNN's
+    # independent density boundary still consumes WRF QVAPOR (mixing ratio).
+    state_qv = _get(state, "qv", None)
+    qv_mixing_ratio = None if state_qv is None else _surface(state_qv)
+    pbl_density = _mynn_pbl_surface_density(forcing, qv_mixing_ratio)
     # seed sfclay CH/CM (opt_sfc=1 supplies the drag coeffs Noah-MP consumes).
     ch_seed = _surface(_get(diag, "ch", land_state.ch))
     cm_seed = _surface(_get(diag, "cm", land_state.cm))
@@ -216,13 +278,13 @@ def noahmp_surface_adapter(
     # rho*cpm with the WRF MYNN moist heat capacity (surface_layer.py): cpm =
     # CP_D*(1+0.84*qx) (module_sf_mynn.F:552). theta_flux = hfx/(rho*cpm) inverts the
     # MYNN-SL flux mapping, so the coefficient MUST match surface_layer.py (0.84).
-    qx = jnp.maximum(_surface(_get(state, "qv", jnp.zeros_like(rhosfc))), 0.0)
-    rho_cpm = rhosfc * (CP_D * (1.0 + 0.84 * qx))
+    qx = jnp.maximum(_surface(_get(state, "qv", jnp.zeros_like(flux_density))), 0.0)
+    rho_cpm = flux_density * (CP_D * (1.0 + 0.84 * qx))
 
     # blended physical fluxes (W/m2 and kg/m2/s)
     hfx_water = jnp.asarray(diag.hfx, dtype=jnp.float64)
     lh_water = jnp.asarray(diag.lh, dtype=jnp.float64)
-    qfx_water = rhosfc * jnp.asarray(sf.qv_flux, dtype=jnp.float64)
+    qfx_water = flux_density * jnp.asarray(sf.qv_flux, dtype=jnp.float64)
     znt_water = jnp.asarray(diag.znt, dtype=jnp.float64)
     tsk_water = _surface(_get(state, "t_skin", jnp.asarray(nm.tsk)))
 
@@ -235,9 +297,9 @@ def noahmp_surface_adapter(
 
     # ---- 4. rebuild kinematic handles from the BLENDED flux (surface_layer.py
     #         :710-715), so the MYNN bottom BC sees the land flux over land. ----
-    thx = jnp.asarray(_thx(state, rhosfc), dtype=jnp.float64)
+    thx = jnp.asarray(_thx(state, flux_density), dtype=jnp.float64)
     theta_flux = hfx / jnp.maximum(rho_cpm, 1.0e-12)
-    qv_flux = qfx / jnp.maximum(rhosfc, 1.0e-12)
+    qv_flux = qfx / jnp.maximum(flux_density, 1.0e-12)
     fltv = (1.0 + EP1 * qx) * theta_flux + EP1 * thx * qv_flux
 
     blended = SurfaceFluxes(
@@ -246,7 +308,7 @@ def noahmp_surface_adapter(
         qv_flux=qv_flux,
         tau_u=sf.tau_u,
         tau_v=sf.tau_v,
-        rhosfc=rhosfc,
+        rhosfc=pbl_density,
         fltv=fltv,
         xland=sf.xland,            # carry land/sea mask through to MYNN mixing length
     )

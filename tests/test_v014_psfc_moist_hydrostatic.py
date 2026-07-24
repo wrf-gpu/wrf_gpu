@@ -22,7 +22,9 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
+from gpuwrf.io.wrfout_writer import bind_wrfout_domain_authority
 from gpuwrf.runtime.operational_mode import _psfc_from_state
+from test_m7_netcdf_writer import authenticated_source_grid
 
 
 def _reference_p_hyd_w_sfc(p_top, c1h, c2h, dnw, mut, *q_species):
@@ -123,6 +125,10 @@ def test_writer_psfc_fallback_uses_metrics_moist_hydrostatic(tmp_path):
         grid,
         None,
         path,
+        domain="d01",
+        domain_authority=bind_wrfout_domain_authority(
+            "d01", authenticated_source_grid(grid, "d01"), grid
+        ),
         valid_time=datetime(2026, 5, 1, 19),
         lead_hours=1.0,
         run_start=datetime(2026, 5, 1, 18),

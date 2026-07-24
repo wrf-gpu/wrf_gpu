@@ -1,17 +1,13 @@
-"""Operational-path validation of the PD / monotonic scalar-advection wiring.
+"""Operational theta branch parity with pristine WRF ``rk_tendency``.
 
-Sprint: wire the proven positive-definite (``scalar_adv_opt=1``) / monotonic
-(``=2``) flux limiters into the OPERATIONAL RK3 scalar-advection path
-(``runtime.operational_mode._augment_large_step_tendencies``).
-
-The standalone limiter (``flux_advection.advect_scalar_flux_limited``) is already
-proven in ``test_pd_monotonic_advection.py`` (14 tests, WRF-Fortran parity).  This
-suite proves the OPERATIONAL WIRING: that ``_augment_large_step_tendencies``
-selects the limiter purely from ``namelist.scalar_adv_opt`` on the final RK3
-stage, that the resulting coupled theta tendency keeps a positive scalar
-non-negative (opt=1) / free of new extrema (opt=2) and conserves coupled mass,
-and -- the ABSOLUTE GUARDRAIL -- that ``scalar_adv_opt=0`` (the default) emits a
-coupled theta tendency BYTE-IDENTICAL to the plain ``advect_scalar_flux`` path.
+The standalone PD/monotonic tracer limiter remains proven in
+``test_pd_monotonic_advection.py`` and is used by the separate moist/other-scalar
+loops.  Potential temperature is different: pristine ``module_em.F`` calls
+ordinary ``advect_scalar`` for theta when ``scalar_adv_opt`` is 0, 1, or 2.
+Only WENO-family options alter the theta branch, and those options are not wired
+in this operational runtime.  This suite therefore proves that theta options
+0/1/2 are bit-identical to the ordinary h5/v3 tendency at every RK stage while
+the shared conservative flux operator remains unchanged.
 
 The grid / metrics come from the real Skamarock warm-bubble idealized setup
 (``build_warm_bubble_setup``), so the test exercises the actual operational
@@ -143,8 +139,8 @@ def test_operational_default_path_byte_identical_to_plain():
     np.testing.assert_array_equal(np.asarray(tend_op), np.asarray(plain))
 
 
-def test_operational_limiter_inactive_on_non_final_rk_stages():
-    """opt=1/2 on RK stages 1 and 2 must still use the plain path (WRF: rk3-only)."""
+def test_operational_theta_opts_1_and_2_are_plain_at_every_rk_stage():
+    """WRF limits moist/scalar tracers at RK3, never theta for options 1/2."""
 
     setup = _base_setup()
     nz, ny, nx = _blob_grid(setup)
@@ -155,18 +151,17 @@ def test_operational_limiter_inactive_on_non_final_rk_stages():
     nl0 = _namelist(setup.namelist, scalar_adv_opt=0)
     for opt in (1, 2):
         nlx = _namelist(setup.namelist, scalar_adv_opt=opt)
-        for rk in (1, 2):
+        for rk in (1, 2, 3):
             plain = _coupled_theta_tendency(state, nl0, rk_step=rk)
-            limited_stage = _coupled_theta_tendency(state, nlx, rk_step=rk)
+            option_tendency = _coupled_theta_tendency(state, nlx, rk_step=rk)
             np.testing.assert_array_equal(
-                np.asarray(limited_stage), np.asarray(plain),
-                err_msg=f"opt={opt} rk_step={rk} must equal plain (limiter is rk3-only)",
+                np.asarray(option_tendency), np.asarray(plain),
+                err_msg=f"theta opt={opt} rk_step={rk} must equal ordinary advect_scalar",
             )
 
 
 # ----------------------------------------------------------------------------
-# (a) POSITIVITY / (b) MONOTONICITY via a multi-step forward integration through
-# the operational augment.
+# Signed-theta and repeated-update guardrails.
 # ----------------------------------------------------------------------------
 
 
@@ -175,8 +170,6 @@ def _advect_n_steps(setup, blob, *, opt, n_steps, u_const, v_const):
     field = np.asarray(blob, dtype=np.float64)
     for _ in range(n_steps):
         st = _state_with_scalar(setup.state, field, u_const=u_const, v_const=v_const)
-        # field_old (WRF scalar_old / _1) is fixed at the START of each model step;
-        # for a single-RK-step forward integration origin == current state.
         tend = _coupled_theta_tendency(st, nl, rk_step=3)
         mass = _mass_h(st, nl)
         coupled_new = mass * jnp.asarray(field) + float(nl.dt_s) * tend
@@ -184,35 +177,27 @@ def _advect_n_steps(setup, blob, *, opt, n_steps, u_const, v_const):
     return field
 
 
-def test_operational_pd_keeps_scalar_nonnegative():
+def test_operational_signed_theta_is_not_sent_through_positive_definite_limiter():
     setup = _base_setup()
     nz, ny, nx = _blob_grid(setup)
     xs = np.arange(nx)
-    # sharp positive top-hat: high-order h5 undershoots below zero.
-    blob = (np.where(np.abs(xs - nx / 2) <= 4.0, 1.0, 0.0))[None, None, :] * np.ones((nz, ny, nx))
-
-    pd = _advect_n_steps(setup, blob, opt=1, n_steps=30, u_const=40.0, v_const=0.0)
-    plain = _advect_n_steps(setup, blob, opt=0, n_steps=30, u_const=40.0, v_const=0.0)
-
-    assert pd.min() >= -1.0e-12, f"PD operational path undershot: min={pd.min()}"
-    assert plain.min() < -1.0e-6, f"sanity: plain h5 must undershoot, got min={plain.min()}"
+    blob = (np.sin(2.0 * np.pi * xs / nx) - 0.25)[None, None, :] * np.ones((nz, ny, nx))
+    state = _state_with_scalar(setup.state, blob, u_const=40.0, v_const=0.0)
+    assert float(np.min(blob)) < 0.0
+    plain = _coupled_theta_tendency(state, _namelist(setup.namelist, scalar_adv_opt=0), rk_step=3)
+    opt1 = _coupled_theta_tendency(state, _namelist(setup.namelist, scalar_adv_opt=1), rk_step=3)
+    np.testing.assert_array_equal(np.asarray(opt1), np.asarray(plain))
 
 
-def test_operational_mono_introduces_no_new_extrema():
+def test_operational_theta_options_stay_identical_over_repeated_updates():
     setup = _base_setup()
     nz, ny, nx = _blob_grid(setup)
     xs = np.arange(nx)
     blob = (np.where(np.abs(xs - nx / 2) <= 4.0, 1.0, 0.0))[None, None, :] * np.ones((nz, ny, nx))
-    lo, hi = float(blob.min()), float(blob.max())
-
-    mono = _advect_n_steps(setup, blob, opt=2, n_steps=30, u_const=40.0, v_const=0.0)
-    plain = _advect_n_steps(setup, blob, opt=0, n_steps=30, u_const=40.0, v_const=0.0)
-
-    assert mono.min() >= lo - 1.0e-12, f"mono undershot below initial min: {mono.min()} < {lo}"
-    assert mono.max() <= hi + 1.0e-12, f"mono overshot above initial max: {mono.max()} > {hi}"
-    assert (plain.min() < lo - 1.0e-6) or (plain.max() > hi + 1.0e-6), (
-        f"sanity: plain h5 must over/undershoot; min={plain.min()} max={plain.max()}"
-    )
+    plain = _advect_n_steps(setup, blob, opt=0, n_steps=5, u_const=40.0, v_const=0.0)
+    for opt in (1, 2):
+        option = _advect_n_steps(setup, blob, opt=opt, n_steps=5, u_const=40.0, v_const=0.0)
+        np.testing.assert_array_equal(option, plain)
 
 
 # ----------------------------------------------------------------------------

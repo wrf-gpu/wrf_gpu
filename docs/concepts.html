@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.2</span>
+          <span class="brand-sub">User's Guide · v0.23.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -87,8 +87,9 @@ shared source.</p>
 <div class="admon honest">
   <div class="admon-title">Why this matters for you</div>
   <p>Because it is a rewrite validated against an oracle, wrf_gpu can be honest and precise about
-  <em>exactly</em> which parts match WRF and how well. The dynamics/thermodynamics core is proven
-  <strong>cell-for-cell identical</strong> to CPU-WRF v4; the broader forecast-<em>skill</em>
+  <em>exactly</em> which parts match WRF and how well. The sealed identity fixtures prove their
+  dynamics/thermodynamics fields <strong>cell-for-cell identical</strong> to CPU-WRF v4; this is
+  fixture-backed evidence, not universal control/configuration parity. The broader forecast-<em>skill</em>
   equivalence over 24–72&nbsp;h is a separate, still-open gate. The guide never blurs those two.
   See <a href="validation.html">Validation &amp; WRF Identity</a>.</p>
 </div>
@@ -157,10 +158,11 @@ commands on the <a href="validation.html">Validation</a> page.</p>
 <p>When two goals conflict, wrf_gpu resolves them in a fixed order:</p>
 <p style="font-size:1.15rem;text-align:center;font-family:var(--mono);margin:1rem 0;">
   stability&nbsp; &gt; &nbsp;identity&nbsp; &gt; &nbsp;speed&nbsp; &gt; &nbsp;memory</p>
-<p>A result is never destabilized or altered to go faster or fit in less memory. This is why the
-default path stays fp64 and byte-identical across releases, and why performance features
-(batched ensembles, fp32, fused warm-start) are <strong>opt-in or value-preserving</strong> — they
-never move the default numbers. See <a href="performance.html">Performance &amp; GPU Modes</a>.</p>
+<p>A result is never destabilized or altered to go faster or fit in less memory. The default path
+stays fp64 and performance features (batched ensembles, fp32, fused warm-start) are
+<strong>opt-in or value-preserving</strong>. Proven WRF-fidelity fixes may intentionally move
+results, as v0.23.4 does; affected trajectories must then be revalidated. See
+<a href="performance.html">Performance &amp; GPU Modes</a>.</p>
 
 <h2 id="agent-driven">Agent-driven development<a class="headerlink" href="#agent-driven" aria-label="Permalink">¶</a></h2>
 <p>wrf_gpu is built and extended by an AI manager agent that dispatches implementer and critic

@@ -8,6 +8,11 @@ they are stated up front and honestly here.
 All figures are measured on the reference workstation unless labelled
 **(projected)**.
 
+**v0.23.4 accepted nine-nest stress profile:** 5,744.407 s warm model wall for
+one forecast hour, 16,624 MiB peak VRAM, and 35,773,432 kB peak host RSS. This
+is a correctness/capacity run, not a new speed claim; use the matched release
+canary for regression comparisons.
+
 ## Reference workstation
 
 | Component | Spec |

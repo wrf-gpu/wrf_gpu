@@ -17,11 +17,14 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 import weakref
 
+from bisect import bisect_right
 from collections import Counter, deque
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace as dataclass_replace
+from operator import index as integer_index
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +68,19 @@ AvalStructureToken = tuple[str, str, int]
 AvalSignature = tuple[AvalLeafSignature, ...] | tuple[AvalStructureToken, tuple[AvalLeafSignature, ...]]
 
 
+def _coupled_forcedown_enabled(namelist: OperationalNamelist | None) -> bool:
+    """Resolve the live-nest candidate without widening legacy test fixtures."""
+
+    config = getattr(namelist, "boundary_config", None)
+    return bool(
+        namelist is not None
+        and bool(getattr(namelist, "run_boundary", False))
+        and config is not None
+        and bool(getattr(config, "nested_frozen_wrf_boundary_bundle", False))
+        and not bool(getattr(config, "force_geopotential", True))
+    )
+
+
 @dataclass(frozen=True)
 class DomainBundle:
     """Per-domain runtime bundle: state, namelist, grid, and metrics."""
@@ -90,6 +106,12 @@ class DomainEdge:
     spec: DomainNest
     weights: NestForceWeights
     feedback_weights: StateFeedbackWeights | None = None
+    # Static forcedown operands.  They are references to the already-resident
+    # per-domain metrics, not extra carry leaves.  ``coupled_forcedown`` is the
+    # one coherent candidate flag resolved when the tree is built.
+    parent_metrics: DycoreMetrics | None = None
+    child_metrics: DycoreMetrics | None = None
+    coupled_forcedown: bool = False
 
     @property
     def parent(self) -> str:
@@ -154,7 +176,14 @@ class DomainTree:
                 spec_zone=int(feedback_spec_zone),
             )
             edges_by_parent.setdefault(edge.parent, []).append(
-                DomainEdge(spec=edge, weights=weights, feedback_weights=feedback_weights)
+                DomainEdge(
+                    spec=edge,
+                    weights=weights,
+                    feedback_weights=feedback_weights,
+                    parent_metrics=parent.metrics,
+                    child_metrics=child.metrics,
+                    coupled_forcedown=_coupled_forcedown_enabled(child.namelist),
+                )
             )
         return cls(
             hierarchy=hierarchy,
@@ -186,6 +215,8 @@ class DomainTreeResult:
     * ``event_counts`` -- total count by event TYPE (``advance``/``force``/
       ``feedback``/``output``).  Empty when no cap is set.
     * ``force_counts`` -- count by ``parent->child`` force edge.  Empty when no cap.
+    * ``cascade_counts`` -- opt-in event-aware fusion groups by outcome/parent.
+      Empty unless ``event_aware_fusion_k=1`` is selected.
 
     The summary fields default empty so every existing consumer (and the
     bit-identical fp64 path, which sets no cap) is unaffected.
@@ -198,6 +229,24 @@ class DomainTreeResult:
     outputs: tuple[Any, ...]
     event_counts: dict[str, int] = field(default_factory=dict)
     force_counts: dict[str, int] = field(default_factory=dict)
+    cascade_counts: dict[str, int] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class _PreparedOperationalDomainTreeRuntime:
+    """Tree-bound operational callables that may outlive one host segment.
+
+    The advance closure owns the in-process AOT executable memo.  Keeping this
+    object alive across resumed B=1 segments therefore avoids deserializing the
+    same per-domain executable at every history boundary.  The tree identity and
+    effective feedback mode are retained so callers cannot silently reuse a
+    runtime under different nesting semantics.
+    """
+
+    tree: DomainTree
+    feedback_enabled: bool
+    advance: AdvanceFn
+    fused_cascade: FusedCascadeLookup | None
 
 
 def build_live_nested_boundary_config(
@@ -209,6 +258,7 @@ def build_live_nested_boundary_config(
     nested_ph_relax: bool = True,
     nested_w_relax: bool = True,
     nested_ph_spec: bool = True,
+    nested_frozen_wrf_boundary_bundle: bool = False,
 ) -> BoundaryConfig:
     """Boundary config for a live child edge: cadence equals the parent timestep."""
 
@@ -221,6 +271,7 @@ def build_live_nested_boundary_config(
         nested_ph_relax=bool(nested_ph_relax),
         nested_w_relax=bool(nested_w_relax),
         nested_ph_spec=bool(nested_ph_spec),
+        nested_frozen_wrf_boundary_bundle=bool(nested_frozen_wrf_boundary_bundle),
     )
 
 
@@ -231,6 +282,7 @@ def with_live_child_boundary_config(
     nested_ph_relax: bool = True,
     nested_w_relax: bool = True,
     nested_ph_spec: bool = True,
+    nested_frozen_wrf_boundary_bundle: bool | None = None,
 ) -> OperationalNamelist:
     """Return ``namelist`` with WRF live-nest child boundary cadence/toggles."""
 
@@ -242,6 +294,11 @@ def with_live_child_boundary_config(
         nested_ph_relax=nested_ph_relax,
         nested_w_relax=nested_w_relax,
         nested_ph_spec=nested_ph_spec,
+        nested_frozen_wrf_boundary_bundle=(
+            bool(namelist.boundary_config.nested_frozen_wrf_boundary_bundle)
+            if nested_frozen_wrf_boundary_bundle is None
+            else bool(nested_frozen_wrf_boundary_bundle)
+        ),
     )
     return dataclass_replace(namelist, boundary_config=cfg)
 
@@ -312,12 +369,14 @@ def run_domain_tree_callbacks(
     move: MoveFn | None = None,
     output: OutputFn | None = None,
     output_cadence_steps: dict[str, int] | None = None,
+    output_alarm_steps: dict[str, tuple[int, ...]] | None = None,
     block_between: bool = True,
     root_sync_cadence: int | None = None,
     edge_lookup: Callable[[DomainNest], DomainEdge] | None = None,
     fused_cascade: FusedCascadeLookup | None = None,
     initial_own_steps: dict[str, int] | None = None,
     max_event_tail: int | None = None,
+    event_aware_fusion_k: int = 0,
 ) -> DomainTreeResult:
     """Generic WRF-recursive domain-tree runner.
 
@@ -334,6 +393,13 @@ def run_domain_tree_callbacks(
     same global steps as a single full-length call -- the memory-bounded nested
     analogue of ``run_forecast_operational_segmented`` (peak VRAM independent of
     forecast length).  Defaults to ``0`` for every domain (a fresh full run).
+
+    ``output_alarm_steps`` optionally overrides the legacy repeated-modulus
+    cadence for selected domains with a finite, strictly increasing sequence of
+    absolute GLOBAL model steps.  This is required when a history interval is not
+    an integral number of timesteps: each absolute simulated-time alarm fires on
+    its first step at/after the alarm without accumulating rounded-cadence drift.
+    Domains absent from the map retain the exact legacy modulus path.
 
     ``max_event_tail`` is an OPT-IN host-RAM guard (default ``None`` =
     unbounded = bit-identical legacy behaviour).  When set to a positive int the
@@ -353,9 +419,23 @@ def run_domain_tree_callbacks(
     :class:`DomainEdge` or ``(edge, child_carry)`` before forcedown, matching WRF's
     ``med_nest_move`` placement: after parent advance, before rebuilding child
     boundary conditions.
+
+    ``event_aware_fusion_k=1`` is the default-off B2 scheduler candidate for a
+    flat fused parent plus leaf children.  It dispatches the existing one-parent-
+    step fused cascade only when every leaf's parent-ratio chunk has no history
+    alarm strictly inside it.  A group containing an intermediate leaf snapshot
+    executes the existing eager recursion, preserving the exact event/state/output
+    ABI.  ``0`` retains the released all-or-nothing alignment gate exactly; no
+    values other than ``0`` and ``1`` are accepted.
     """
 
     root_name = root or hierarchy.roots()[0]
+    try:
+        fusion_k = integer_index(event_aware_fusion_k)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("event_aware_fusion_k must be 0 or 1") from exc
+    if isinstance(event_aware_fusion_k, bool) or fusion_k not in (0, 1):
+        raise ValueError("event_aware_fusion_k must be 0 or 1")
     out = dict(carries)
     _cap = int(max_event_tail) if max_event_tail is not None else 0
     # ``events`` / ``outputs`` are append-only audit logs.  Default = plain lists
@@ -369,12 +449,39 @@ def run_domain_tree_callbacks(
     else:
         events = []
         outputs = []
+    cascade_counts: Counter = Counter()
     own_steps = {name: 0 for name in hierarchy.order}
     if initial_own_steps:
         for name, value in initial_own_steps.items():
             if name in own_steps:
                 own_steps[name] = int(value)
     output_cadence_steps = dict(output_cadence_steps or {})
+    raw_output_alarms = dict(output_alarm_steps or {})
+    unknown_alarm_domains = sorted(set(raw_output_alarms) - set(hierarchy.order))
+    if unknown_alarm_domains:
+        raise ValueError(f"output alarm domains are not in hierarchy: {unknown_alarm_domains}")
+    output_alarm_steps = {}
+    for name, raw_steps in raw_output_alarms.items():
+        raw_values = tuple(raw_steps)
+        try:
+            steps = tuple(int(value) for value in raw_values)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(
+                f"{name}: output alarm steps must be positive and strictly increasing"
+            ) from exc
+        if any(
+            isinstance(value, bool) or value != step
+            for value, step in zip(raw_values, steps)
+        ) or any(step <= 0 for step in steps) or any(
+            later <= earlier for earlier, later in zip(steps, steps[1:])
+        ):
+            raise ValueError(
+                f"{name}: output alarm steps must be positive and strictly increasing"
+            )
+        output_alarm_steps[name] = steps
+    output_alarm_sets = {
+        name: frozenset(steps) for name, steps in output_alarm_steps.items()
+    }
     dynamic_specs: dict[tuple[str, str], DomainNest] = {
         (edge.parent, edge.child): edge for edge in hierarchy.nests
     }
@@ -396,11 +503,46 @@ def run_domain_tree_callbacks(
         for spec in children:
             if children_for(spec.child):
                 continue
+            if spec.child in output_alarm_steps:
+                ratio = int(spec.parent_grid_ratio)
+                current = int(own_steps[spec.child])
+                if ratio <= 0 or current % ratio != 0 or any(
+                    step % ratio != 0
+                    for step in output_alarm_steps[spec.child]
+                    if step > current
+                ):
+                    return False
+                continue
             cadence = int(output_cadence_steps.get(spec.child, 0))
             if cadence <= 0:
                 continue
             ratio = int(spec.parent_grid_ratio)
             if ratio <= 0 or cadence % ratio != 0 or int(own_steps[spec.child]) % ratio != 0:
+                return False
+        return True
+
+    def fused_leaf_group_is_output_safe(children: tuple[DomainNest, ...]) -> bool:
+        """Whether one fused parent group crosses no intermediate leaf alarm."""
+
+        if output is None:
+            return True
+        for spec in children:
+            ratio = int(spec.parent_grid_ratio)
+            current = int(own_steps[spec.child])
+            end = current + ratio
+            next_alarm: int | None = None
+            if spec.child in output_alarm_steps:
+                alarm_index = bisect_right(output_alarm_steps[spec.child], current)
+                if alarm_index < len(output_alarm_steps[spec.child]):
+                    next_alarm = output_alarm_steps[spec.child][alarm_index]
+            else:
+                cadence = int(output_cadence_steps.get(spec.child, 0))
+                if cadence > 0:
+                    next_alarm = ((current // cadence) + 1) * cadence
+            # An endpoint alarm is safe: the normal post-cascade maybe_output()
+            # observes that exact carry.  Only an alarm hidden inside the chunk
+            # requires eager splitting.
+            if next_alarm is not None and next_alarm < end:
                 return False
         return True
 
@@ -418,7 +560,14 @@ def run_domain_tree_callbacks(
             and edge.spec.feedback == spec.feedback
         ):
             return edge
-        return DomainEdge(spec=spec, weights=edge.weights, feedback_weights=edge.feedback_weights)
+        return DomainEdge(
+            spec=spec,
+            weights=edge.weights,
+            feedback_weights=edge.feedback_weights,
+            parent_metrics=edge.parent_metrics,
+            child_metrics=edge.child_metrics,
+            coupled_forcedown=edge.coupled_forcedown,
+        )
 
     def maybe_adapt_dt(name: str, start_step: int) -> None:
         nonlocal out
@@ -474,10 +623,16 @@ def run_domain_tree_callbacks(
         return moved_edge
 
     def maybe_output(name: str) -> None:
-        cadence = int(output_cadence_steps.get(name, 0))
         current_step = int(own_steps[name])
-        if output is None or cadence <= 0 or current_step <= 0 or current_step % cadence != 0:
+        if output is None or current_step <= 0:
             return
+        if name in output_alarm_sets:
+            if current_step not in output_alarm_sets[name]:
+                return
+        else:
+            cadence = int(output_cadence_steps.get(name, 0))
+            if cadence <= 0 or current_step % cadence != 0:
+                return
         # Output callbacks that must read carry-resident physics state (e.g. the
         # evolved Noah-MP land carry for writer-side land diagnostics) opt in via
         # a truthy ``wants_carry`` attribute and receive the FULL carry; default
@@ -528,14 +683,23 @@ def run_domain_tree_callbacks(
             remaining = int(n_steps)
             while remaining > 0:
                 chunk = remaining
-                cadence = int(output_cadence_steps.get(name, 0))
-                if output is not None and cadence > 0:
-                    # Leaf children advance in parent-ratio chunks; split only
-                    # when a history alarm falls inside this chunk.
-                    next_alarm = ((int(own_steps[name]) // cadence) + 1) * cadence
-                    steps_to_alarm = next_alarm - int(own_steps[name])
-                    if 0 < steps_to_alarm <= remaining:
-                        chunk = steps_to_alarm
+                if output is not None:
+                    current_step = int(own_steps[name])
+                    next_alarm: int | None = None
+                    if name in output_alarm_steps:
+                        alarm_index = bisect_right(output_alarm_steps[name], current_step)
+                        if alarm_index < len(output_alarm_steps[name]):
+                            next_alarm = output_alarm_steps[name][alarm_index]
+                    else:
+                        cadence = int(output_cadence_steps.get(name, 0))
+                        if cadence > 0:
+                            next_alarm = ((current_step // cadence) + 1) * cadence
+                    if next_alarm is not None:
+                        # Leaf children advance in parent-ratio chunks; split only
+                        # when the next global history alarm falls in this chunk.
+                        steps_to_alarm = next_alarm - current_step
+                        if 0 < steps_to_alarm <= remaining:
+                            chunk = steps_to_alarm
                 start_step = own_steps[name] + 1
                 maybe_adapt_dt(name, start_step)
                 out[name] = advance(name, out[name], int(start_step), int(chunk))
@@ -549,9 +713,125 @@ def run_domain_tree_callbacks(
                 _sync_all_domains()
             return
 
+        event_aware_structure_safe = fusion_k == 1 and all(
+            int(spec.parent_grid_ratio) > 0 and not children_for(spec.child)
+            for spec in children
+        )
+        event_aware_cascade = (
+            fused_cascade(name)
+            if fusion_k == 1
+            and fused_cascade is not None
+            and move is None
+            and adaptive_dt is None
+            and not per_advance_block
+            and not bool(feedback_enabled)
+            and not any(bool(spec.feedback) for spec in children)
+            and event_aware_structure_safe
+            else None
+        )
+        if event_aware_cascade is not None:
+            child_specs = tuple(children)
+            fused_count_key = f"fused:{name}"
+            fallback_count_key = f"event_fallback:{name}"
+            for local in range(1, int(n_steps) + 1):
+                if fused_leaf_group_is_output_safe(child_specs):
+                    parent_start = own_steps[name] + 1
+                    maybe_adapt_dt(name, parent_start)
+                    child_starts = tuple(
+                        own_steps[spec.child] + 1 for spec in child_specs
+                    )
+                    new_parent, new_children = event_aware_cascade(
+                        out[name],
+                        tuple(out[spec.child] for spec in child_specs),
+                        int(parent_start),
+                        tuple(int(start) for start in child_starts),
+                    )
+
+                    out[name] = new_parent
+                    own_steps[name] += 1
+                    events.append(("advance", name, parent_start, 1, own_steps[name]))
+                    for spec in child_specs:
+                        events.append(
+                            ("force", spec.parent, spec.child, own_steps[spec.parent])
+                        )
+                    for spec, child_carry, child_start in zip(
+                        child_specs, new_children, child_starts
+                    ):
+                        out[spec.child] = child_carry
+                        own_steps[spec.child] += int(spec.parent_grid_ratio)
+                        events.append(
+                            (
+                                "advance",
+                                spec.child,
+                                child_start,
+                                int(spec.parent_grid_ratio),
+                                own_steps[spec.child],
+                            )
+                        )
+                        maybe_output(spec.child)
+                    maybe_output(name)
+                    cascade_counts[fused_count_key] += 1
+                else:
+                    # Preserve the released eager recursion for the one parent
+                    # group containing an intermediate leaf history snapshot.
+                    current_children = children_for(name)
+                    start_step = own_steps[name] + 1
+                    maybe_adapt_dt(name, start_step)
+                    out[name] = advance(name, out[name], int(start_step), 1)
+                    own_steps[name] += 1
+                    events.append(
+                        ("advance", name, start_step, 1, own_steps[name])
+                    )
+                    for spec in current_children:
+                        runtime_edge = maybe_move_child(spec)
+                        if force is not None:
+                            out[spec.child] = force(
+                                runtime_edge, out[spec.parent], out[spec.child]
+                            )
+                        events.append(
+                            (
+                                "force",
+                                runtime_edge.parent,
+                                runtime_edge.child,
+                                own_steps[runtime_edge.parent],
+                            )
+                        )
+                    for spec in current_children:
+                        current_spec = dynamic_specs[(spec.parent, spec.child)]
+                        integrate(
+                            current_spec.child,
+                            int(current_spec.parent_grid_ratio),
+                            reset_clock=False,
+                            depth=depth + 1,
+                        )
+                        if (
+                            bool(feedback_enabled or current_spec.feedback)
+                            and feedback is not None
+                        ):
+                            runtime_edge = resolve_edge(current_spec)
+                            out[spec.parent] = feedback(
+                                runtime_edge, out[spec.parent], out[spec.child]
+                            )
+                            events.append(
+                                (
+                                    "feedback",
+                                    spec.child,
+                                    spec.parent,
+                                    own_steps[spec.parent],
+                                )
+                            )
+                    maybe_output(name)
+                    cascade_counts[fallback_count_key] += 1
+                if depth == 0 and root_cadence and (
+                    local % root_cadence == 0 or local == int(n_steps)
+                ):
+                    _sync_all_domains()
+            return
+
         cascade = (
             fused_cascade(name)
-            if fused_cascade is not None
+            if fusion_k == 0
+            and fused_cascade is not None
             and move is None
             and adaptive_dt is None
             and fused_leaf_outputs_are_parent_ratio_aligned(tuple(children))
@@ -642,6 +922,7 @@ def run_domain_tree_callbacks(
             outputs=tuple(outputs),
             event_counts=dict(events.counts),
             force_counts=dict(events.force_counts),
+            cascade_counts=dict(cascade_counts),
         )
     return DomainTreeResult(
         carries=out,
@@ -649,6 +930,7 @@ def run_domain_tree_callbacks(
         own_steps=own_steps,
         events=tuple(events),
         outputs=tuple(outputs),
+        cascade_counts=dict(cascade_counts),
     )
 
 
@@ -684,10 +966,97 @@ def _nested_aot_verify_enabled() -> bool:
     )
 
 
-# Records the last AOT-load outcome per domain (diagnostics / GPU A/B). Maps
-# domain name -> {"loaded": bool, "source": str, "error": str|None, ...}.
+# Records the last AOT outcome plus cumulative real-load/cache-hit accounting.
+# ``domains`` preserves the legacy last-status surface. ``load_metrics`` is
+# process-local observability keyed by domain and exact cheap/HLO key. It counts
+# only successful loader calls as real loads; reuse of an already memoized
+# callable is counted separately and never emits another real-load log record.
 # Numerically inert.
-NESTED_AOT_STATUS: dict[str, object] = {"enabled": False, "domains": {}}
+NESTED_AOT_STATUS: dict[str, object] = {
+    "enabled": False,
+    "verify": False,
+    "domains": {},
+    "load_metrics": {},
+}
+
+
+def _reset_nested_aot_status(*, enabled: bool, verify: bool) -> None:
+    NESTED_AOT_STATUS.clear()
+    NESTED_AOT_STATUS.update(
+        {
+            "enabled": bool(enabled),
+            "verify": bool(verify),
+            "domains": {},
+            "load_metrics": {},
+        }
+    )
+
+
+def _nested_aot_key_token(
+    *, cheap_key: str | None = None, hlo_sha256: str | None = None
+) -> str:
+    if cheap_key:
+        return f"cheap_key:{cheap_key}"
+    if hlo_sha256:
+        return f"hlo_sha256:{hlo_sha256}"
+    return "legacy:domain"
+
+
+def _nested_aot_metric_entry(
+    name: str, key_token: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    metrics = NESTED_AOT_STATUS.setdefault("load_metrics", {})
+    if not isinstance(metrics, dict):
+        metrics = {}
+        NESTED_AOT_STATUS["load_metrics"] = metrics
+    domain = metrics.setdefault(
+        str(name),
+        {
+            "load_attempt_count": 0,
+            "load_attempt_wall_seconds": 0.0,
+            "load_count": 0,
+            "load_wall_seconds": 0.0,
+            "cache_hit_count": 0,
+            "keys": {},
+        },
+    )
+    keys = domain.setdefault("keys", {})
+    key = keys.setdefault(
+        str(key_token),
+        {
+            "load_attempt_count": 0,
+            "load_attempt_wall_seconds": 0.0,
+            "load_count": 0,
+            "load_wall_seconds": 0.0,
+            "cache_hit_count": 0,
+        },
+    )
+    return domain, key
+
+
+def _record_nested_aot_load(
+    name: str,
+    key_token: str,
+    *,
+    wall_seconds: float,
+    loaded: bool,
+) -> None:
+    """Record one actual loader invocation and whether it deserialized a call."""
+
+    domain, key = _nested_aot_metric_entry(name, key_token)
+    wall = max(0.0, float(wall_seconds))
+    for target in (domain, key):
+        target["load_attempt_count"] += 1
+        target["load_attempt_wall_seconds"] += wall
+        if loaded:
+            target["load_count"] += 1
+            target["load_wall_seconds"] += wall
+
+
+def _record_nested_aot_cache_hit(name: str, key_token: str) -> None:
+    domain, key = _nested_aot_metric_entry(name, key_token)
+    domain["cache_hit_count"] += 1
+    key["cache_hit_count"] += 1
 
 
 def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
@@ -702,14 +1071,13 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
     # would load one blob and then false-fallback every sibling shape.
     aot_on = _nested_aot_enabled()
     aot_verify = _nested_aot_verify_enabled()
-    NESTED_AOT_STATUS["enabled"] = aot_on
-    NESTED_AOT_STATUS["verify"] = aot_verify
-    NESTED_AOT_STATUS["domains"] = {}
+    _reset_nested_aot_status(enabled=aot_on, verify=aot_verify)
     # Memo of loaded advance callables keyed by (domain, cheap_key). Integration
     # can call one domain with multiple carry-shape variants, so memoizing only by
     # domain would load one blob and then false-fallback every sibling shape.
     _aot_calls: dict[tuple[str, str], Any] = {}
     _aot_attempted: set[tuple[str, str]] = set()
+    _aot_loaded_keys: set[tuple[str, str]] = set()
     # Verify-mode bookkeeping: keys whose blob HLO has been confirmed (lower-once)
     # and keys proven to FAIL verification (fail-closed -> never load again).
     _aot_verified: set[tuple[str, str]] = set()
@@ -740,6 +1108,15 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
             error = status.get("error")
             if error:
                 parts.append(f"error={str(error).replace(chr(10), ' | ')}")
+            if "real_load" in status:
+                parts.append(
+                    f"real_load={str(bool(status.get('real_load'))).lower()}"
+                )
+            if (
+                status.get("real_load")
+                and status.get("load_wall_seconds") is not None
+            ):
+                parts.append(f"load_wall_s={float(status['load_wall_seconds']):.6f}")
             sys.stderr.write(" ".join(parts) + "\n")
             sys.stderr.flush()
         except Exception:  # noqa: BLE001
@@ -899,9 +1276,27 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
             "cheap_key": ckey,
         }
         if key in _aot_attempted:
-            return _aot_calls.get(key), status
+            call = _aot_calls.get(key)
+            if call is not None:
+                _record_nested_aot_cache_hit(
+                    name, _nested_aot_key_token(cheap_key=ckey)
+                )
+            status.update(
+                {
+                    "loaded": call is not None,
+                    "source": (
+                        "aot_memory_cache"
+                        if key in _aot_loaded_keys
+                        else "compiled_memory_cache"
+                    ),
+                    "cached": True,
+                    "real_load": False,
+                }
+            )
+            return call, status
         _aot_attempted.add(key)
         call = None
+        load_t0 = time.perf_counter()
         try:
             from gpuwrf.runtime import aot_precompile
 
@@ -929,8 +1324,20 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
+        load_wall_seconds = time.perf_counter() - load_t0
         _aot_calls[key] = call
         status["loaded"] = call is not None
+        status["cached"] = False
+        status["real_load"] = call is not None
+        status["load_wall_seconds"] = float(load_wall_seconds)
+        _record_nested_aot_load(
+            name,
+            _nested_aot_key_token(cheap_key=ckey),
+            wall_seconds=load_wall_seconds,
+            loaded=call is not None,
+        )
+        if call is not None:
+            _aot_loaded_keys.add(key)
         # Surface the blob's recorded HLO as ``hlo_sha256`` too so the diagnostic
         # log line / report still shows WHICH program loaded (cheap_key is the
         # lookup address; the HLO is the program identity).
@@ -945,7 +1352,12 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
         error in the load path yields ``None`` and the caller compiles/captures."""
         key = (name, hlo_sha256)
         if key in _aot_attempted:
-            return _aot_calls.get(key)
+            call = _aot_calls.get(key)
+            if call is not None:
+                _record_nested_aot_cache_hit(
+                    name, _nested_aot_key_token(hlo_sha256=hlo_sha256)
+                )
+            return call
         _aot_attempted.add(key)
         call = None
         status: dict[str, Any] = {
@@ -955,6 +1367,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
             "error": None,
             "hlo_sha256": hlo_sha256,
         }
+        load_t0 = time.perf_counter()
         try:
             from gpuwrf.runtime import aot_precompile
 
@@ -983,8 +1396,20 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
+        load_wall_seconds = time.perf_counter() - load_t0
         _aot_calls[key] = call
         status["loaded"] = call is not None
+        status["cached"] = False
+        status["real_load"] = call is not None
+        status["load_wall_seconds"] = float(load_wall_seconds)
+        _record_nested_aot_load(
+            name,
+            _nested_aot_key_token(hlo_sha256=hlo_sha256),
+            wall_seconds=load_wall_seconds,
+            loaded=call is not None,
+        )
+        if call is not None:
+            _aot_loaded_keys.add(key)
         if call is not None and not status.get("source"):
             status["source"] = "aot_blob"
         _record_aot_status(name, status)
@@ -1023,9 +1448,11 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
             if hlo_sha256:
                 _aot_attempted.add((name, hlo_sha256))
                 _aot_calls[(name, hlo_sha256)] = compiled
+                _aot_loaded_keys.discard((name, hlo_sha256))
             if cheap_key:
                 _aot_attempted.add((name, cheap_key))
                 _aot_calls[(name, cheap_key)] = compiled
+                _aot_loaded_keys.discard((name, cheap_key))
             capture_status: dict[str, Any] = {
                 "name": name,
                 "loaded": False,
@@ -1154,10 +1581,12 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                                 cadence=int(cadence),
                             )
                         if verified_ok:
-                            ck_status["source"] = "aot_blob"
-                            ck_status["loaded"] = True
+                            if not ck_status.get("cached"):
+                                ck_status["source"] = "aot_blob"
+                                ck_status["loaded"] = True
                             _record_aot_status(name, ck_status)
-                            _log_aot_status(name, ck_status)
+                            if not ck_status.get("cached"):
+                                _log_aot_status(name, ck_status)
                             try:
                                 return aot_call(
                                     carry,
@@ -1169,6 +1598,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                                 )
                             except BaseException as exc:  # noqa: BLE001 - fail-open
                                 _aot_calls[ck_state] = None
+                                _aot_loaded_keys.discard(ck_state)
                                 status = {
                                     "name": name,
                                     "loaded": False,
@@ -1183,7 +1613,8 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                             _aot_calls[ck_state] = None
                     else:
                         _record_aot_status(name, ck_status)
-                        _log_aot_status(name, ck_status)
+                        if not ck_status.get("cached"):
+                            _log_aot_status(name, ck_status)
                     # MISS / exec-error / verify-fail: lower + compile + serialize
                     # the exact variant (also writes the cheap-key-addressed blob).
                     lowered, hlo_sha256, lower_error = _lower_advance_variant(
@@ -1206,6 +1637,44 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                         _record_aot_status(name, status)
                         _log_aot_status(name, status)
                     else:
+                        # The cheap key can over-fragment while the exact lowered
+                        # HLO is identical (for example a non-semantic namespace
+                        # path under an older schema). Dual-address writes make that
+                        # exact artifact available: retry it before paying compile.
+                        if hlo_sha256:
+                            hlo_call = _aot_advance_for(name, hlo_sha256)
+                            if hlo_call is not None:
+                                try:
+                                    out = hlo_call(
+                                        carry,
+                                        namelist,
+                                        start,
+                                        clock_base,
+                                        n_steps=int(n_steps),
+                                        cadence=int(cadence),
+                                    )
+                                except BaseException as exc:  # noqa: BLE001
+                                    _aot_calls[(name, hlo_sha256)] = None
+                                    _aot_loaded_keys.discard((name, hlo_sha256))
+                                    status = {
+                                        "name": name,
+                                        "loaded": False,
+                                        "source": "fallback:hlo-aot(exec-error)",
+                                        "error": f"{type(exc).__name__}: {exc}",
+                                        "hlo_sha256": hlo_sha256,
+                                        "cheap_key": ckey,
+                                    }
+                                    _record_aot_status(name, status)
+                                    _log_aot_status(name, status)
+                                else:
+                                    # Memoize the exact-HLO hit under the current
+                                    # over-fragmented cheap key too. Otherwise
+                                    # every later step in this process would miss
+                                    # that key and pay another lower-only pass.
+                                    _aot_attempted.add((name, ckey))
+                                    _aot_calls[(name, ckey)] = hlo_call
+                                    _aot_loaded_keys.add((name, ckey))
+                                    return out
                         return _compile_capture_and_call(
                             name,
                             lowered,
@@ -1261,6 +1730,7 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
                             )
                         except BaseException as exc:  # noqa: BLE001 - fail-open
                             _aot_calls[(name, hlo_sha256)] = None
+                            _aot_loaded_keys.discard((name, hlo_sha256))
                             status = {
                                 "name": name,
                                 "loaded": False,
@@ -1305,24 +1775,69 @@ def _operational_advance_factory(tree: DomainTree) -> AdvanceFn:
 
 
 def nested_aot_report() -> dict[str, object]:
-    """Snapshot of the last AOT-load outcome per domain (Step C diagnostics)."""
-    domains = NESTED_AOT_STATUS.get("domains") or {}
+    """Snapshot last outcomes and cumulative actual-load/cache-hit telemetry."""
+
+    statuses = NESTED_AOT_STATUS.get("domains") or {}
+    metrics = NESTED_AOT_STATUS.get("load_metrics") or {}
+    domain_names = set(statuses if isinstance(statuses, dict) else {})
+    domain_names.update(metrics if isinstance(metrics, dict) else {})
+    domains: dict[str, Any] = {}
+    for name in sorted(domain_names):
+        status = statuses.get(name, {}) if isinstance(statuses, dict) else {}
+        metric = metrics.get(name, {}) if isinstance(metrics, dict) else {}
+        merged = dict(status) if isinstance(status, dict) else {}
+        if isinstance(metric, dict):
+            merged.update(
+                {
+                    key: value
+                    for key, value in metric.items()
+                    if key != "keys"
+                }
+            )
+            merged["keys"] = {
+                str(key): dict(value) if isinstance(value, dict) else value
+                for key, value in (metric.get("keys") or {}).items()
+            }
+        domains[str(name)] = merged
+    load_count = sum(int(item.get("load_count", 0)) for item in domains.values())
+    load_wall_seconds = sum(
+        float(item.get("load_wall_seconds", 0.0)) for item in domains.values()
+    )
+    cache_hit_count = sum(
+        int(item.get("cache_hit_count", 0)) for item in domains.values()
+    )
     return {
         "enabled": bool(NESTED_AOT_STATUS.get("enabled")),
         "verify": bool(NESTED_AOT_STATUS.get("verify")),
-        "domains": dict(domains) if isinstance(domains, dict) else {},
+        "load_count": load_count,
+        "load_wall_seconds": load_wall_seconds,
+        "cache_hit_count": cache_hit_count,
+        "domains": domains,
     }
 
 
 def _operational_force(edge: DomainEdge, parent: OperationalCarry, child: OperationalCarry) -> OperationalCarry:
     child_state = child.state
     bdy_width = int(child_state.u_bdy.shape[2])
-    forced_state = build_child_boundary_package(
-        child_state,
-        parent.state,
-        edge.weights,
-        bdy_width=bdy_width,
-    )
+    if bool(edge.coupled_forcedown):
+        forced_state = build_child_boundary_package(
+            child_state,
+            parent.state,
+            edge.weights,
+            bdy_width=bdy_width,
+            parent_metrics=edge.parent_metrics,
+            child_metrics=edge.child_metrics,
+            coupled_forcedown=True,
+            parent_grid_ratio=int(edge.parent_grid_ratio),
+        )
+    else:
+        # Preserve the released call surface and operation graph exactly.
+        forced_state = build_child_boundary_package(
+            child_state,
+            parent.state,
+            edge.weights,
+            bdy_width=bdy_width,
+        )
     return child.replace(state=forced_state)
 
 
@@ -1613,12 +2128,26 @@ def _build_fused_cascade_program(
         new_children = []
         for idx in range(n_children):
             child_carry = child_carries[idx]
-            forced_state = build_child_boundary_package(
-                child_carry.state,
-                parent_new.state,
-                child_weights[idx],
-                bdy_width=int(child_bdy_widths[idx]),
-            )
+            if _coupled_forcedown_enabled(child_namelists[idx]):
+                forced_state = build_child_boundary_package(
+                    child_carry.state,
+                    parent_new.state,
+                    child_weights[idx],
+                    bdy_width=int(child_bdy_widths[idx]),
+                    parent_metrics=parent_namelist.metrics,
+                    child_metrics=child_namelists[idx].metrics,
+                    coupled_forcedown=True,
+                    parent_grid_ratio=int(child_ratios[idx]),
+                )
+            else:
+                # Keep candidate-off fused programs and test doubles on the
+                # released signature byte-for-byte.
+                forced_state = build_child_boundary_package(
+                    child_carry.state,
+                    parent_new.state,
+                    child_weights[idx],
+                    bdy_width=int(child_bdy_widths[idx]),
+                )
             child_forced = child_carry.replace(state=forced_state)
             child_new = _advance_chunk(
                 child_forced,
@@ -1684,6 +2213,64 @@ def _build_fused_cascade_program(
             _record_nested_aot_status(aot_name, status)
             _log_nested_aot_status(aot_name, status)
             return fused_jit(*args)
+
+        # A cheap-key miss does not imply a program miss. Once exact lowering is
+        # available, retry the HLO address emitted by dual-address capture before
+        # compiling the giant fused cascade again.
+        try:
+            from gpuwrf.runtime import aot_precompile as _aotp
+
+            loaded = _aotp.load_domain_blob(
+                aot_name, hlo_sha256=hlo_sha256, return_status=True
+            )
+            if isinstance(loaded, tuple) and len(loaded) == 2:
+                hlo_call, hlo_status = loaded
+                if not isinstance(hlo_status, dict):
+                    hlo_status = {
+                        "name": aot_name,
+                        "loaded": hlo_call is not None,
+                        "source": "aot_blob" if hlo_call is not None else "fallback:missing",
+                        "hlo_sha256": hlo_sha256,
+                    }
+            else:
+                hlo_call = loaded
+                hlo_status = {
+                    "name": aot_name,
+                    "loaded": hlo_call is not None,
+                    "source": "aot_blob" if hlo_call is not None else "fallback:missing",
+                    "hlo_sha256": hlo_sha256,
+                }
+            _record_nested_aot_status(aot_name, hlo_status)
+            _log_nested_aot_status(aot_name, hlo_status)
+            if hlo_call is not None:
+                try:
+                    out = hlo_call(*args)
+                except BaseException as exc:  # noqa: BLE001 - fail-open to compile
+                    hlo_status = {
+                        "name": aot_name,
+                        "loaded": False,
+                        "source": "fallback:fused-hlo-aot-exec-error",
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "hlo_sha256": hlo_sha256,
+                        "cheap_key": ckey,
+                    }
+                    _record_nested_aot_status(aot_name, hlo_status)
+                    _log_nested_aot_status(aot_name, hlo_status)
+                else:
+                    _store_cached_call(sig, hlo_call, ckey)
+                    return out
+        except BaseException as exc:  # noqa: BLE001 - fail-open to compile
+            hlo_status = {
+                "name": aot_name,
+                "loaded": False,
+                "source": "fallback:fused-hlo-load-exception",
+                "error": f"{type(exc).__name__}: {exc}",
+                "hlo_sha256": hlo_sha256,
+                "cheap_key": ckey,
+            }
+            _record_nested_aot_status(aot_name, hlo_status)
+            _log_nested_aot_status(aot_name, hlo_status)
+
         try:
             compiled = lowered.compile()
             _store_cached_call(sig, compiled, ckey)
@@ -2063,6 +2650,26 @@ def _operational_feedback(edge: DomainEdge, parent: OperationalCarry, child: Ope
     return parent.replace(state=fed)
 
 
+def _prepare_operational_domain_tree_runtime(
+    tree: DomainTree,
+    *,
+    feedback_enabled: bool | None = None,
+) -> _PreparedOperationalDomainTreeRuntime:
+    """Construct the tree-bound operational callbacks once for resumed segments."""
+
+    effective_feedback = (
+        tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled)
+    )
+    return _PreparedOperationalDomainTreeRuntime(
+        tree=tree,
+        feedback_enabled=effective_feedback,
+        advance=_operational_advance_factory(tree),
+        fused_cascade=(
+            None if effective_feedback else _operational_fused_cascade_factory(tree)
+        ),
+    )
+
+
 def run_operational_domain_tree(
     tree: DomainTree,
     *,
@@ -2073,11 +2680,14 @@ def run_operational_domain_tree(
     move: MoveFn | None = None,
     output: OutputFn | None = None,
     output_cadence_steps: dict[str, int] | None = None,
+    output_alarm_steps: dict[str, tuple[int, ...]] | None = None,
     block_between: bool = True,
     root_sync_cadence: int | None = None,
     carries: dict[str, Any] | None = None,
     initial_own_steps: dict[str, int] | None = None,
     max_event_tail: int | None = None,
+    prepared_runtime: _PreparedOperationalDomainTreeRuntime | None = None,
+    event_aware_fusion_k: int = 0,
 ) -> DomainTreeResult:
     """Run a live nested operational tree for ``root_steps`` root timesteps.
 
@@ -2089,6 +2699,11 @@ def run_operational_domain_tree(
     length while keeping the recursion cadence + radiation schedule byte-identical
     to a single full-length call.  When ``carries`` is ``None`` the initial
     carries are built fresh from each domain's bundle state (a cold start).
+
+    ``prepared_runtime`` is an internal B=1 optimization for segmented callers.
+    It reuses the exact tree-bound advance/AOT memo and fused lookup.  Omitting it
+    preserves legacy per-call construction; a tree-identity or feedback-mode
+    mismatch also falls back to fresh construction explicitly.
     """
 
     for name, bundle in tree.domains.items():
@@ -2111,14 +2726,27 @@ def run_operational_domain_tree(
     def lookup(spec: DomainNest) -> DomainEdge:
         return edge_by_pair[(spec.parent, spec.child)]
 
-    effective_feedback = tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled)
-    fused_cascade = None if effective_feedback else _operational_fused_cascade_factory(tree)
+    effective_feedback = (
+        tree.feedback_enabled if feedback_enabled is None else bool(feedback_enabled)
+    )
+    runtime = prepared_runtime
+    if (
+        runtime is None
+        or runtime.tree is not tree
+        or runtime.feedback_enabled != effective_feedback
+    ):
+        # Legacy callers and mismatched prepared runtimes explicitly take the old
+        # per-call construction path.  The identity/mode guard prevents a runtime
+        # prepared for another tree or one-way/two-way setting from being reused.
+        runtime = _prepare_operational_domain_tree_runtime(
+            tree, feedback_enabled=effective_feedback
+        )
 
     return run_domain_tree_callbacks(
         tree.hierarchy,
         carries,
         root_steps=int(root_steps),
-        advance=_operational_advance_factory(tree),
+        advance=runtime.advance,
         force=_operational_force,
         feedback=_operational_feedback,
         root=root,
@@ -2127,12 +2755,14 @@ def run_operational_domain_tree(
         move=move,
         output=output,
         output_cadence_steps=output_cadence_steps,
+        output_alarm_steps=output_alarm_steps,
         block_between=block_between,
         root_sync_cadence=root_sync_cadence,
         edge_lookup=lookup,
-        fused_cascade=fused_cascade,
+        fused_cascade=runtime.fused_cascade,
         initial_own_steps=initial_own_steps,
         max_event_tail=max_event_tail,
+        event_aware_fusion_k=event_aware_fusion_k,
     )
 
 

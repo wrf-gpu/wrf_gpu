@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import dataclasses
+from datetime import datetime, timezone
 
 import jax
 import jax.numpy as jnp
 import numpy as np
+import gpuwrf.coupling.physics_couplers as physics_couplers
 
 from gpuwrf.contracts.grid import (
     BCMetadata,
@@ -25,6 +27,7 @@ from gpuwrf.coupling.physics_couplers import (
 )
 from gpuwrf.runtime.operational_mode import OperationalNamelist, _physics_step_forcing
 from gpuwrf.runtime.operational_state import initial_operational_carry
+from gpuwrf.physics.wrf_clwrf_ghg import CLWRFGreenhouseGases
 
 jax.config.update("jax_enable_x64", True)
 
@@ -183,12 +186,48 @@ def test_grid_backed_mynn_column_view_uses_wrf_phy_prep_inputs() -> None:
     np.testing.assert_allclose(np.asarray(_from_columns(fallback.p)), np.asarray(state.p))
 
 
-def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature() -> None:
+def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature(monkeypatch) -> None:
     grid = _grid(ny=2, nx=2, nz=4)
     state = _state(grid)
+    gases = CLWRFGreenhouseGases(4.2e-4, 3.3e-7, 1.9e-6, 2.0e-10, 4.7e-10)
+    monkeypatch.setattr(
+        physics_couplers,
+        "clwrf_ssp245_gases_for_time",
+        lambda _time: gases,
+    )
 
-    sw_column, lw_column, *_ = _rrtmg_column_inputs(state, grid)
-    sw_fallback, lw_fallback, *_ = _rrtmg_column_inputs(state, None)
+    run_time = datetime(2025, 3, 1, tzinfo=timezone.utc)
+    sw_column, lw_column, *_ = _rrtmg_column_inputs(
+        state, grid, time_utc=run_time
+    )
+    sw_fallback, lw_fallback, *_ = _rrtmg_column_inputs(
+        state, None, time_utc=run_time
+    )
+
+    assert lw_column.top_pressure_pa == float(grid.vertical.top_pressure_pa)
+    assert lw_fallback.top_pressure_pa is None
+    assert lw_column.pressure_interfaces is not None
+    assert lw_column.temperature_interfaces is not None
+    assert sw_column.pressure_interfaces is not None
+    assert sw_column.temperature_interfaces is not None
+    assert lw_fallback.pressure_interfaces is None
+    assert lw_fallback.temperature_interfaces is None
+    assert sw_fallback.pressure_interfaces is None
+    assert sw_fallback.temperature_interfaces is None
+    assert (lw_column.co2_vmr, lw_column.n2o_vmr, lw_column.ch4_vmr) == gases[:3]
+    assert (lw_column.cfc11_vmr, lw_column.cfc12_vmr) == gases[3:]
+    assert (sw_column.co2_vmr, sw_column.n2o_vmr, sw_column.ch4_vmr) == gases[:3]
+    assert lw_fallback.co2_vmr is None
+    assert sw_fallback.co2_vmr is None
+    assert lw_column.ozone_vmr is not None
+    assert sw_column.ozone_vmr is not None
+    np.testing.assert_array_equal(
+        np.asarray(lw_column.ozone_vmr), np.asarray(sw_column.ozone_vmr)
+    )
+    assert tuple(lw_column.ozone_vmr.shape) == (grid.ny, grid.nx, grid.nz)
+    assert np.all(np.asarray(lw_column.ozone_vmr) > 0.0)
+    assert lw_fallback.ozone_vmr is None
+    assert sw_fallback.ozone_vmr is None
 
     rv_over_rd = 461.6 / 287.0
     exner = (np.asarray(state.p, dtype=np.float64) / 100000.0) ** (287.0 / 1004.0)
@@ -196,8 +235,32 @@ def test_grid_backed_rrtmg_column_view_uses_wrf_phy_prep_temperature() -> None:
     expected_t = dry_theta * exner
     moist_t = np.asarray(state.theta, dtype=np.float64) * exner
 
+    qtot = sum(
+        np.asarray(getattr(state, field), dtype=np.float32)
+        for field in ("qv", "qc", "qr", "qi", "qs", "qg")
+    )
+    mut = np.asarray(state.mu_total, dtype=np.float32)
+    c1h = np.asarray(grid.metrics.c1h, dtype=np.float32)
+    c2h = np.asarray(grid.metrics.c2h, dtype=np.float32)
+    dnw = np.asarray(grid.metrics.dnw, dtype=np.float32)
+    faces = np.empty((grid.nz + 1, grid.ny, grid.nx), dtype=np.float32)
+    faces[-1] = np.float32(grid.vertical.top_pressure_pa)
+    for k in range(grid.nz - 1, -1, -1):
+        faces[k] = faces[k + 1] - (np.float32(1.0) + qtot[k]) * (
+            c1h[k] * mut + c2h[k]
+        ) * dnw[k]
+    p_hyd = (np.float32(0.5) * (faces[:-1] + faces[1:])).astype(np.float64)
+
     np.testing.assert_allclose(np.asarray(_from_columns(sw_column.T)), expected_t, rtol=0.0, atol=1.0e-12)
     np.testing.assert_allclose(np.asarray(_from_columns(lw_column.T)), expected_t, rtol=0.0, atol=1.0e-12)
+    np.testing.assert_array_equal(np.asarray(_from_columns(sw_column.p)), p_hyd)
+    np.testing.assert_array_equal(np.asarray(_from_columns(lw_column.p)), p_hyd)
+    np.testing.assert_array_equal(
+        np.asarray(_from_columns(sw_column.pressure_interfaces)), faces
+    )
+    np.testing.assert_array_equal(
+        np.asarray(_from_columns(lw_column.pressure_interfaces)), faces
+    )
     np.testing.assert_allclose(np.asarray(_from_columns(sw_fallback.T)), moist_t, rtol=0.0, atol=1.0e-12)
     np.testing.assert_allclose(np.asarray(_from_columns(lw_fallback.T)), moist_t, rtol=0.0, atol=1.0e-12)
 

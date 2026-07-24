@@ -1579,11 +1579,11 @@ def _edmf_arrays_from_state(state, flux, fltv, pblh, dt, dx):
     fluxes WRF's main MYNN derives as
     ``flqv=qfx/rho`` (=qv_flux), ``flt=hfx/(rho*cpm)`` (=theta_flux), ``flq=flqv``.
 
-    ``ts`` (skin temperature) feeds only the superadiabatic activation guard. The
-    standalone column does not carry a reliable skin temperature, so we pass the
-    ``ts<=0`` sentinel: :func:`mynn_edmf.dmp_mf_columns` then uses the physically
-    equivalent buoyancy-flux activation criterion (``fltv>0`` <=> unstable surface
-    layer). ``dx`` is the grid spacing (m).
+    WRF computes ``th_sfc = ts/ex1(kts)`` in the MYNN driver and passes that
+    potential temperature as DMP_mf's misleadingly named ``ts`` argument.  The
+    operational surface contract supplies real ``State.t_skin``; standalone
+    analytic fixtures retain the ``ts<=0`` fallback implemented by callers that
+    do not provide a skin temperature. ``dx`` is the grid spacing (m).
     """
     from gpuwrf.physics import mynn_edmf as _edmf
 
@@ -1597,7 +1597,8 @@ def _edmf_arrays_from_state(state, flux, fltv, pblh, dt, dx):
     flqv = flux.qv_flux
     flq = flqv
     flt = flux.theta_flux
-    ts = -jnp.ones_like(fltv)  # sentinel -> buoyancy-flux activation criterion
+    ts = jnp.asarray(flux.t_skin, dtype=fltv.dtype)
+    ts = jnp.broadcast_to(ts, fltv.shape) / exner[..., 0]
 
     zw = jnp.concatenate(
         (_zero_edge_like(state.dz), jnp.cumsum(state.dz, axis=-1)), axis=-1

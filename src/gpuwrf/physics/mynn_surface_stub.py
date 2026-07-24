@@ -50,6 +50,10 @@ class SurfaceFluxes(NamedTuple):
     # that omits it keep the previous land behaviour; the operational coupler and
     # the savepoint harness pass the real per-column mask.
     xland: jax.Array = 1.0
+    # WRF MYNN-EDMF DMP_mf uses the actual skin temperature for its
+    # superadiabatic activation test.  ``-1`` retains the standalone fixture's
+    # no-skin fallback (the operational coupler always supplies State.t_skin).
+    t_skin: jax.Array = -1.0
 
 
 def bulk_surface_fluxes(
@@ -80,6 +84,7 @@ def bulk_surface_fluxes(
         tau_v=tau_v,
         rhosfc=rhosfc,
         fltv=fltv,
+        t_skin=-1.0,
     )
 
 

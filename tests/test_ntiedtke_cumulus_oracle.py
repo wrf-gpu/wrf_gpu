@@ -118,7 +118,7 @@ def test_ntiedtke_savepoints_cover_real_regimes() -> None:
 
 def test_ntiedtke_oracle_provenance() -> None:
     """The committed savepoints came from the checksummed pristine WRF source."""
-    wrf_root = Path(os.environ.get("GPUWRF_WRF_ROOT", "<DATA_ROOT>/src/wrf_pristine/WRF"))
+    wrf_root = Path(os.environ.get("GPUWRF_WRF_ROOT", "<USER_HOME>/src/wrf_pristine/WRF"))
     core = wrf_root / "phys" / "physics_mmm" / "cu_ntiedtke.F90"
     wrapper = wrf_root / "phys" / "module_cu_ntiedtke.F"
     if not core.exists():

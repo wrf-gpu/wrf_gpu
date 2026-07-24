@@ -38,7 +38,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from gpuwrf.io.wrfout_writer import PreparedWrfout, write_prepared_wrfout
+from gpuwrf.io.wrfout_writer import (
+    PreparedWrfout,
+    WrfoutDomainAuthority,
+    write_prepared_wrfout,
+)
 
 
 @dataclass(frozen=True)
@@ -52,6 +56,8 @@ class _WriteJob:
     """
 
     prepared: PreparedWrfout
+    expected_domain: str
+    expected_domain_authority: WrfoutDomainAuthority
     variable_subset: Optional[frozenset[str]] = None
     target: Optional[Path] = None
     include_mandatory_coords: bool = False
@@ -67,7 +73,11 @@ class AsyncWrfoutWriter:
             for hour in ...:
                 state = advance(state)
                 prepared = prepare_wrfout_payload(state, ...)
-                writer.submit(prepared)   # returns immediately; GPU continues
+                writer.submit(
+                    prepared,
+                    expected_domain=domain,
+                    expected_domain_authority=authority,
+                )  # returns immediately; GPU continues
         # __exit__ joins outstanding writes and re-raises any writer error.
     """
 
@@ -106,6 +116,8 @@ class AsyncWrfoutWriter:
                         t0 = time.perf_counter()
                         path = write_prepared_wrfout(
                             item.prepared,
+                            expected_domain=item.expected_domain,
+                            expected_domain_authority=item.expected_domain_authority,
                             variable_subset=item.variable_subset,
                             target_override=item.target,
                             include_mandatory_coords=item.include_mandatory_coords,
@@ -123,25 +135,39 @@ class AsyncWrfoutWriter:
             finally:
                 self._queue.task_done()
 
-    def submit(self, prepared: PreparedWrfout) -> None:
-        """Enqueue a prepared payload (full main wrfout stream) for background writing.
+    def submit(
+        self,
+        prepared: PreparedWrfout,
+        *,
+        expected_domain: str,
+        expected_domain_authority: WrfoutDomainAuthority,
+    ) -> None:
+        """Enqueue a prepared payload with independent final-boundary authority.
 
         Blocks (back-pressure) if ``max_pending`` writes are already queued.
         Re-raises a prior writer error promptly so the pipeline fails closed.
         """
 
-        self._enqueue(_WriteJob(prepared=prepared))
+        self._enqueue(
+            _WriteJob(
+                prepared=prepared,
+                expected_domain=expected_domain,
+                expected_domain_authority=expected_domain_authority,
+            )
+        )
 
     def submit_subset(
         self,
         prepared: PreparedWrfout,
         *,
+        expected_domain: str,
+        expected_domain_authority: WrfoutDomainAuthority,
         variable_subset: frozenset[str] | tuple[str, ...],
         target: Path,
         include_mandatory_coords: bool = False,
         compress: bool = False,
     ) -> None:
-        """Enqueue a secondary-stream (WRF ``auxhist`` / training) subset write.
+        """Enqueue a subset write with independent final-boundary authority.
 
         Reuses the same host-materialized ``prepared`` payload but writes only
         ``variable_subset`` to ``target`` -- so a subset frame costs no extra
@@ -154,6 +180,8 @@ class AsyncWrfoutWriter:
         self._enqueue(
             _WriteJob(
                 prepared=prepared,
+                expected_domain=expected_domain,
+                expected_domain_authority=expected_domain_authority,
                 variable_subset=frozenset(variable_subset),
                 target=Path(target),
                 include_mandatory_coords=include_mandatory_coords,

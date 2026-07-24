@@ -22,7 +22,7 @@
         <img src="_assets/logo.svg" alt="wrf_gpu logo">
         <span class="brand-text">
           <span class="brand-name">wrf_gpu</span>
-          <span class="brand-sub">User's Guide · v0.23.2</span>
+          <span class="brand-sub">User's Guide · v0.23.4</span>
         </span>
       </a>
       <div class="search-box">
@@ -74,8 +74,9 @@
 
 <p class="lead">wrf_gpu integrates a <strong>nonhydrostatic, split-explicit ARW dynamical core</strong> on
 the GPU — the same architecture as WRF's Advanced Research WRF core, re-implemented in JAX and
-validated cell-for-cell against CPU-WRF as the oracle. The dynamics/thermodynamics core is proven
-cell-for-cell identical to CPU-WRF v4; the priority order in every design decision is
+validated cell-for-cell against CPU-WRF as the oracle. Sealed identity fixtures prove their
+dynamics/thermodynamics fields cell-for-cell identical to CPU-WRF v4; this is not a universal
+control/configuration claim, and the path-specific gaps below remain open. The priority order is
 <strong>stability&nbsp;&gt;&nbsp;identity&nbsp;&gt;&nbsp;speed&nbsp;&gt;&nbsp;memory</strong>, with no
 masking, clamping, or <code>nan_to_num</code> on the result path.</p>
 
@@ -84,6 +85,14 @@ masking, clamping, or <code>nan_to_num</code> on the result path.</p>
 step</strong> advances the slow (meteorologically significant) modes, while the fast acoustic and
 gravity-wave modes are integrated with smaller <strong>acoustic sub-steps</strong> inside each RK3
 stage. Only <code>rk_order=3</code> is supported.</p>
+<div class="admon warn">
+  <div class="admon-title">Acoustic-substep fidelity gap</div>
+  <p>When <code>time_step_sound</code> is omitted, pristine WRF derives 4 acoustic substeps on the
+  tracked fixture while the current runtime selects 10. Testing 4 improved the initial interior
+  U/V comparison but did not pass the terminal gate; residual dry-mass behavior remains open.
+  The shipped default is unchanged, and operators must not silently tune this control to claim
+  parity.</p>
+</div>
 
 <h2 id="advection">Flux-form advection<a class="headerlink" href="#advection" aria-label="Permalink">¶</a></h2>
 <p>Prognostic variables are advanced with <strong>flux-form advection</strong>. The advection orders
@@ -100,6 +109,14 @@ flux-advection into RK3 is available and gated:</p>
 </div>
 <p>Active flux-form moisture advection makes WRF's <code>RQVFTEN</code> available, which the Tiedtke
 and New-Tiedtke cumulus schemes require (see <a href="physics.html">Physics Options</a>).</p>
+
+<div class="admon warn">
+  <div class="admon-title">Single-domain daily path does not yet bind these options</div>
+  <p>The accepted nested pipeline honors <code>moist_adv_opt</code> and
+  <code>scalar_adv_opt</code>. The separate single-domain daily pipeline currently drops requested
+  values and runs <code>0/0</code>. Do not claim that a daily-pipeline result used the requested
+  limiter without explicit effective-value evidence.</p>
+</div>
 
 <div class="admon note">
   <div class="admon-title">Default-off means byte-identical</div>

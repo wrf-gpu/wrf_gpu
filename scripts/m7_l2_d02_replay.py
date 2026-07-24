@@ -33,6 +33,7 @@ from gpuwrf.integration.daily_pipeline import (  # noqa: E402
     write_json,
 )
 from gpuwrf.io.data_inventory import parse_run_id, parse_wrfout_valid_time  # noqa: E402
+from gpuwrf.io.wrfout_writer import bind_wrfout_domain_authority  # noqa: E402
 from gpuwrf.runtime.operational_mode import OperationalNamelist  # noqa: E402
 from gpuwrf.validation.data_quality import compute_rmse_against_gen2  # noqa: E402
 
@@ -319,6 +320,9 @@ def build_l2_daily_case(config: DailyPipelineConfig) -> tuple[DailyCase, Path]:
             namelist=namelist,
             run_start=_coerce_run_start(str(replay.metadata["run_start_label"])),
             metadata=metadata,
+            writer_domain_authority=bind_wrfout_domain_authority(
+                config.domain, replay.run.grid(config.domain), replay.grid
+            ),
         ),
         run_dir,
     )

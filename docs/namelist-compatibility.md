@@ -310,14 +310,16 @@ runs):
   accept 0 (standard), 1 (positive-definite), 2 (monotonic); the WENO variants
   (3/4) are not wired.
 * **`gwd_opt`** 0/1 (see `GPUWRF_GWD_NESTED` above); 3 not wired.
-* **`slope_rad`** 0/1 and **`topo_shading`** 0/1 — RRTMG SW slope-radiation +
-  topographic-shadow ARE wired (IMPLEMENTED). `slope_rad=2` not separately wired.
+* **`slope_rad`** 0/1 and **`topo_shading`** 0/1 are recognized, but the v0.23.4
+  nested runtime currently binds both disabled. Treat this as a disclosed
+  implementation gap, not an active terrain-radiation capability.
 * **MYNN-EDMF sub-options** gated to the WRF default sub-config: `bl_mynn_edmf=1`,
   `edmf_mom=1`, `edmf_tke=0`, `mixscalars=1`, `mixqt=0`, `edmf_dd=0`,
   `mixlength` 1|2. `icloud_bl=1` (MYNN-radiation cloud-fraction coupling) and
   `bl_mynn_tkeadvect=.true.` are NOT scan-wired (fail closed if set).
-* **`radt`** — any positive interval honoured as the radiation cadence
-  (`radiation_cadence_steps = round(radt*60/dt)`). **`bldt` / `cudt`** — the
+* **`radt`** — single-domain execution derives its radiation cadence from the
+  namelist, but the v0.23.4 nested pipeline currently targets a fixed 1,800 s
+  interval. A different nested `radt` is not yet honored. **`bldt` / `cudt`** — the
   port runs PBL/cumulus **every dynamics step**; a positive interval is a
   non-fatal approximation warning (the run proceeds), not a rejection.
 

@@ -6,14 +6,31 @@ item is tracked with a proof object. This page is the honest map of what is and 
 
 <h2 id="not-claimed">What is NOT claimed</h2>
 <ul>
+  <li><strong>v0.23.4 (prepared) d03 performance regression is real and NOT fixed.</strong>
+  3-domain (<code>maxdom3</code>) and 9-domain configurations that engage <code>d03</code> measure a
+  real <strong>51.67%</strong> slower wall-clock than v0.23.3. The investigation is closed: every
+  quick-fix candidate was falsified/rejected with evidence, and a Nsight Compute hardware
+  measurement confirmed the kernel is occupancy/latency-bound, not bandwidth-bound (DRAM 20.3% of
+  peak, occupancy 15.6%) — ruling out a reduced-precision fix and identifying concurrent
+  sibling-domain scheduling as the next lever (design-scoped, unimplemented). 2-domain (d01+d02)
+  configurations are unaffected (measured 0.960–1.018×). This is a known, understood limitation,
+  not an open question. See <a href="performance.html">Performance</a>.</li>
   <li><strong>Not a universal WRF v4.</strong> Standard regional ARW configs and the common
   operational subset only. Every other scheme is classified (reference-only-with-oracle or
   documented-boundary) and <span class="pill closed">fails closed</span> with a named reason. See
   <a href="physics.html#scheme-triage">Physics → Scheme triage</a>.</li>
-  <li><strong>24 h/72 h forecast-skill equivalence is open</strong> — the credibility gate. The
-  dynamics/thermo core is cell-for-cell identical, but the 24 h equivalence demo is
-  <code>NOT_EQUIVALENT</code>, dominated by lead-time wind divergence. This is the gate for any
-  "operational replacement" claim. See <a href="validation.html#skill-gate">Validation</a>.</li>
+  <li><strong>Broad 24 h/72 h forecast-skill equivalence is open</strong> — the credibility
+  gate. v0.23.4 passes its specific 24-hour SP2 chain and one-hour nine-nest gates, but those do
+  not establish seasonal/configuration-independent equivalence. See
+  <a href="validation.html#skill-gate">Validation</a>.</li>
+  <li><strong>Nested radiation controls have fidelity gaps.</strong> The cadence is fixed at
+  30 minutes rather than arbitrary namelist <code>radt</code>; <code>topo_shading=1</code> and
+  <code>slope_rad=1</code> currently bind disabled on the nested runtime.</li>
+  <li><strong>Some accepted dynamics controls are path-specific.</strong> The nested path honors
+  <code>moist_adv_opt</code>/<code>scalar_adv_opt</code>, but the single-domain daily path currently
+  runs <code>0/0</code>. Omitting <code>time_step_sound</code> also selects 10 acoustic substeps in
+  the runtime where pristine WRF derives 4 on the tracked fixture; residual dry-mass behavior is
+  unresolved.</li>
   <li><strong>Single-card speedup is modest and scale-dependent</strong> — the GPU is
   host/launch-bound and slower than CPU on tiny geometries; ≥2–3× is not single-card reachable and
   fp32 cannot move it. See <a href="performance.html">Performance</a>.</li>
@@ -58,7 +75,14 @@ the repository. The current release carries these:</p>
 <table>
 <thead><tr><th>ID</th><th>Summary</th><th>Class</th></tr></thead>
 <tbody>
-<tr><td><strong>KI-9</strong></td><td>The credibility gate: 24–72 h forecast-skill equivalence open (cell-identity proven); 24 h demo <code>NOT_EQUIVALENT</code>, wind-divergence dominated.</td><td>Documented gap</td></tr>
+<tr><td><strong>v0.23.4 d03 regression</strong></td><td>3-domain/9-domain configurations engaging <code>d03</code> measure a real 51.67% regression vs v0.23.3; 2-domain (d01+d02) unaffected. Every quick-fix candidate (barrier, scan/map, register-pressure/fusion-disable, B1/B2/B3 scheduling, roll substitution) was falsified/rejected with evidence. A Nsight Compute hardware measurement confirmed the kernel is occupancy/latency-bound, not bandwidth-bound (DRAM 20.3% of peak, occupancy 15.6%), identifying concurrent sibling-domain scheduling as the mapped next lever (design-scoped, unimplemented). Investigation closed; ships as a known limitation.</td><td>Known limitation, understood</td></tr>
+<tr><td><strong>KI-9</strong></td><td>The credibility gate: broad seasonal/configuration-independent 24–72 h forecast-skill equivalence remains open; v0.23.4 closes narrower frozen gates.</td><td>Documented gap</td></tr>
+<tr><td>Nested radiation cadence</td><td>Fixed 30-minute target; arbitrary namelist <code>radt</code> is not honored.</td><td>Disclosed physics-fidelity gap</td></tr>
+<tr><td>Nested terrain radiation</td><td><code>topo_shading</code>/<code>slope_rad</code> currently bind disabled despite accepted namelist values.</td><td>Disclosed implementation gap</td></tr>
+<tr><td>Daily advection binding</td><td>The single-domain daily pipeline drops requested <code>moist_adv_opt</code>/<code>scalar_adv_opt</code> and runs <code>0/0</code>; the accepted nested path honors them.</td><td>Disclosed path-specific fidelity gap</td></tr>
+<tr><td>Acoustic substep / dry mass</td><td>With <code>time_step_sound</code> omitted, the runtime selects 10 substeps while pristine WRF derives 4 on the tracked fixture. A four-substep discriminator did not close the terminal comparison; dry-mass behavior remains open.</td><td>Deferred dynamics fidelity work</td></tr>
+<tr><td>Thompson sedimentation debt</td><td>Static <code>NSED_MAX=16</code> can silently cap demanded substeps; widespread exact-zero carried Ni remains unexplained. Neither was changed in v0.23.4.</td><td>Deferred future contract</td></tr>
+<tr><td>AOT key fragmentation</td><td>Fused-phase shape and terrain-staging provenance can produce different cheap keys for otherwise reusable executables, forcing a safe recompile. This affects compile/warm-start wall, not model numerics.</td><td>Performance debt</td></tr>
 <tr><td>Terrain ceiling</td><td>&gt; ~6000 m terrain diverges; finite guard fails closed. Deep fix is a future milestone.</td><td>Documented ceiling</td></tr>
 <tr><td>#123</td><td>Solo <code>cuda_async</code> fragmentation OOM mitigated, not fixed; co-resident mode solved by preflight.</td><td>Mitigated / carried</td></tr>
 <tr><td>Host RAM</td><td>~36 GB resident (physics tables baked as static-aux); precision-independent, no result impact; fix deferred.</td><td>Root-caused, deferred</td></tr>

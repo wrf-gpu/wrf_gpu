@@ -26,18 +26,23 @@ Pure CPU, no GPU: a synthetic in-place ``forecast_fn`` advances the state by a
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 from netCDF4 import Dataset, chartostring
 
 from gpuwrf.integration.daily_pipeline import (
     DailyCase,
     DailyPipelineConfig,
+    _emit_auxhist_frame,
     _run_forecast_sequence,
 )
+from gpuwrf.io.wrfout_writer import bind_wrfout_domain_authority, prepare_wrfout_payload
+from test_m7_netcdf_writer import authenticated_source_grid, writer_authority
 from gpuwrf.io.auxhist_stream import (
     AuxhistStreamConfig,
     auxhist_output_boundaries,
@@ -123,6 +128,9 @@ def _synthetic_case(run_dir: Path) -> DailyCase:
         namelist=namelist,
         run_start=datetime(2026, 5, 21, 18, tzinfo=timezone.utc),
         metadata={"run_id": "auxhist-proof", "run_dir": str(run_dir), "source": "synthetic"},
+        writer_domain_authority=bind_wrfout_domain_authority(
+            "d02", authenticated_source_grid(grid, "d02"), grid
+        ),
     )
 
 
@@ -196,6 +204,50 @@ def test_auxhist_config_follows_wrf_namelist_semantics() -> None:
     bounds = auxhist_output_boundaries(datetime(2026, 5, 21, 18, 0, 0), 1.0, aux)
     assert [k for k, _, _ in bounds] == [1, 2, 3, 4]
     assert [vt.strftime("%H:%M") for _, _, vt in bounds] == ["18:15", "18:30", "18:45", "19:00"]
+
+
+def _prepared_auxhist_case(tmp_path: Path):
+    run_dir = tmp_path / "authority-run"
+    run_dir.mkdir()
+    case = _synthetic_case(run_dir)
+    prepared = prepare_wrfout_payload(
+        case.state, case.grid, case.namelist, tmp_path / "prepared-main.nc",
+        domain="d02", domain_authority=case.writer_domain_authority,
+        valid_time=case.run_start + timedelta(minutes=15),
+        lead_hours=0.25, run_start=case.run_start,
+    )
+    config = DailyPipelineConfig(domain="d02", auxhist=None)
+    stream = AuxhistStreamConfig(stream_id=1, interval_minutes=15, variables=("T2",))
+    return case, prepared, config, stream
+
+
+def test_auxhist_boundary_rejects_fully_rehashed_prepared_cosubstitution(tmp_path: Path):
+    case, prepared, config, stream = _prepared_auxhist_case(tmp_path)
+    substituted = replace(
+        prepared, domain="d03", domain_authority=writer_authority(case.grid, "d03")
+    )
+    with pytest.raises(ValueError, match="WRFOUT_PREPARED_AUTHORITY_SUBSTITUTION"):
+        _emit_auxhist_frame(
+            stream=stream, config=config, state=case.state, case=case,
+            output_dir=tmp_path, lead_minutes=15.0, diagnostics=None,
+            writer=None, prepared=substituted,
+        )
+
+
+def test_auxhist_boundary_rejects_existing_target_without_truncation(tmp_path: Path):
+    case, prepared, config, stream = _prepared_auxhist_case(tmp_path)
+    target = tmp_path / stream.filename(case.run_start.replace(minute=15), "d02")
+    with Dataset(target, "w") as dataset:
+        dataset.setncattr("GRID_ID", np.int32(2))
+        dataset.setncattr("SENTINEL", "auxhist-preserve")
+    before = target.read_bytes()
+    with pytest.raises(FileExistsError, match="WRFOUT_TARGET_EXISTS"):
+        _emit_auxhist_frame(
+            stream=stream, config=config, state=case.state, case=case,
+            output_dir=tmp_path, lead_minutes=15.0, diagnostics=None,
+            writer=None, prepared=prepared,
+        )
+    assert target.read_bytes() == before
 
 
 # --------------------------------------------------------------------------- #

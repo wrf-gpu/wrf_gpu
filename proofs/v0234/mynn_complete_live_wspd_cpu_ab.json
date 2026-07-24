@@ -1,0 +1,71 @@
+{
+  "schema": "gpuwrf.v0234.mynn-complete-live-wspd-cpu-ab.v1",
+  "contract": {
+    "path": ".agent/sprints/2026-07-14-v0234-final-ni-fable5/contract-amendment-43.json",
+    "sha256": "76aaa660d35247db7e51d88c3fd4082daa4c2b44181b50b1ae8055d15c63a784"
+  },
+  "environment": {
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "true",
+    "JAX_CPU_ENABLE_ASYNC_DISPATCH": "false",
+    "cpu_affinity": [
+      12
+    ]
+  },
+  "candidate_source_sha256": {
+    "src/gpuwrf/coupling/noahmp_surface_hook.py": "608d7200f0f80c448b7cdb7d6e1a0156d247765d1000463cbba0cec09d5c40e1",
+    "src/gpuwrf/coupling/physics_couplers.py": "bbc6056815c11dafffd11fda20d2237814b0d2b0f38d0e38f2ba235dd15752c5",
+    "src/gpuwrf/physics/mynn_pbl.py": "c11e4591f6b7e8049db2f12476369ecf0ace4fc716d0386ab60a7c71f192c802",
+    "src/gpuwrf/physics/surface_layer.py": "97ee5ed5032f0490119de71bab28e066184dfcaf06dbcc9579a67de2a124cf2a",
+    "tests/test_v0234_mynn_surface_wspd_handoff.py": "3f691fe5fd7b8b82b2fbdb668f10c8c4f27f4764ecca5c76146029f638b50b1f"
+  },
+  "focused_tests": {
+    "command": "taskset -c 12 env JAX_PLATFORMS=cpu JAX_ENABLE_X64=true JAX_CPU_ENABLE_ASYNC_DISPATCH=false python -m pytest -q tests/test_m6_surface_layer_kernel.py tests/test_v014_mynn_surface_layer_regressions.py tests/test_v014_noahmp_surface_hook_decoupling.py tests/test_v0234_stage_omega_transport_ownership.py tests/test_v0234_mynn_surface_wspd_handoff.py",
+    "passed": 17,
+    "skipped": 1,
+    "failed": 0
+  },
+  "authenticated_live_step8800_ab": {
+    "input_carry_sha256": "3cdf748f41163ed20c86214a45cfb5825b9666773761cecf7b38d4c475475147",
+    "step": 8800,
+    "valid_time": "2025-03-01T14:40:00Z",
+    "candidate_stablehlo_sha256": "67efdfb668081817b2001563db532b14fb58f011046474b32bba9353f54b3dc1",
+    "candidate_stablehlo_bytes": 462454,
+    "forbidden_callback_or_transfer_tokens": [],
+    "ordinary_interface_leaf_count": 106,
+    "changed_u_values": 69763,
+    "changed_v_values": 69648,
+    "delta_u_rms": 0.00029564,
+    "delta_v_rms": 0.00045803,
+    "operationally_active": true
+  },
+  "direction_against_wrf_at_1500": {
+    "wrf_pair_path": "<DATA_ROOT>/wrf_downscale/artifacts/cpu_oracles/tenerife_operational_v2_fullbuffer_111x93/20250228_18z/corrected_ni_rca_max_22c2bd7a/nested_stage_omega_transport_470e6111_full18h_toolingrepair2/frame-pairs/d03-step-09000.json",
+    "wrf_pair_sha256": "38683937ed6be6eb96bb71c3bb7c5e8976d8d91c525021c184712c24eb169448",
+    "sea_bottom_u_error_delta_cosine": -0.12069,
+    "sea_bottom_u_direction_improves": true,
+    "sea_bottom_v_error_delta_cosine": -0.05117,
+    "sea_bottom_v_direction_improves": true,
+    "v10_proxy_error_delta_cosine": 0.06532,
+    "v10_proxy_direction_improves": false
+  },
+  "direction_against_retry20_at_1500": {
+    "sea_bottom_u_error_delta_cosine": 0.07615,
+    "sea_bottom_u_direction_improves": false,
+    "sea_bottom_v_error_delta_cosine": 0.13278,
+    "sea_bottom_v_direction_improves": false,
+    "v10_proxy_error_delta_cosine": 0.06820,
+    "v10_proxy_direction_improves": false
+  },
+  "gate": {
+    "source_discrepancy_proved": true,
+    "live_activation_proved": true,
+    "focused_cpu_tests_green": true,
+    "v10_incident_direction_green": false,
+    "gpu_admitted": false
+  },
+  "interpretation": "The source-literal complete handoff is active and slightly reduces instantaneous sea bottom-V error against WRF, but it moves the binding V10 proxy away from both WRF and the frozen Retry20 threshold. It cannot close the current 15:00 V10 regression and is rejected before GPU.",
+  "gpu_commands": 0,
+  "gpu_queries": 0,
+  "verdict": "MYNN_COMPLETE_LIVE_WSPD_CPU_AB_FALSIFIED_V10_DIRECTION"
+}
