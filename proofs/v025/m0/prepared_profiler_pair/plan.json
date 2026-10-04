@@ -1,0 +1,14 @@
+{
+  "schema": "wrf_gpu2.v025.m0.superseded_prepared_pair.v1",
+  "status": "MECHANICALLY_SUPERSEDED",
+  "old_plan_sha256": "213d09a6bc703294753c26613cfe93e14c2e6dcee453d92b4531a50fb6ab736e",
+  "old_run_ids": [
+    "m0-pair-profiled-20260728-r1",
+    "m0-pair-clean-20260728-r1"
+  ],
+  "old_cache_sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618",
+  "authorisation_eligible": false,
+  "replacement_plan": "proofs/v025/m0/autotune0_three_window_plan.json",
+  "superseded_by": ".agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+  "device_touched_by_supersession": false
+}

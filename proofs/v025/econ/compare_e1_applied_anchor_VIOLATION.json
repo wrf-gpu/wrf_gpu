@@ -1,0 +1,929 @@
+{
+  "all_bitwise_identical": false,
+  "fields": {
+    "[<flat index 0>][<flat index 0>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 2.927109688591334e-05,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 10>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.0012031190572088235,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 11>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 1.6940658945086007e-21,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 12>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 5.293955920339377e-23,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 13>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 14>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 15>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 16>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 17>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 18>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 19>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 1>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 3.942990079863762e-05,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 20>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 21>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 22>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 23>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 24>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 25>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 26>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 27>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 28>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 29>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 2>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 5.257874681913188e-05,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 30>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 31>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 32>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 33>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 34>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 35>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 36>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 37>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 38>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 39>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 3>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 6.254378945413919e-06,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 40>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 41>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 42>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 43>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 44>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 45>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 46>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 47>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 48>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 49>]": {
+      "bitwise": true,
+      "dtype": "int32",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 4>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 2.7625187814378505e-09,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 50>]": {
+      "bitwise": true,
+      "dtype": "float32",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 51>]": {
+      "bitwise": true,
+      "dtype": "float32",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 52>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 53>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 54>]": {
+      "bitwise": true,
+      "dtype": "float32",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 55>]": {
+      "bitwise": true,
+      "dtype": "float32",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 56>]": {
+      "bitwise": true,
+      "dtype": "float32",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 5>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.00441453541861847,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 64>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 65>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 66>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 67>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 68>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 69>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 6>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.004414535426121802,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 70>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 7>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.0035963412665296346,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 8>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.0035963412665296346,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 9>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.0012031190562993288,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 10>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 3.845473202090943e-07,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 11>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.00146075142583868,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 12>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.000163151717515575,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 13>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 4.119255553630685e-05,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 14>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 1>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 1.7596903489902616e-08,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 0>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 1>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 2>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 3>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": []
+    },
+    "[<flat index 24>][<flat index 4>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 2>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.00023228945713554827,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 3>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 2.6341442643795787e-05,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 4>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.0011142166887132543,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 5>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 0.0012031190562993288,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 6>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 10.473036155090085,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 7>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 5.411664353971446e-06,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 8>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 5.824321911873653e-06,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 9>]": {
+      "bitwise": false,
+      "dtype": "float64",
+      "max_abs_diff": 1.0191848093754619e-05,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    }
+  },
+  "left": "<DATA_ROOT>/wrf_gpu2/v025/econ/fixtures/pre_rk_step_r3.npz",
+  "max_abs_diff_overall": 10.473036155090085,
+  "only_left": [],
+  "only_right": [],
+  "right": "<DATA_ROOT>/wrf_gpu2/v025/econ/fixtures/post_rk_step_r3.npz"
+}

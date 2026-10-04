@@ -1,0 +1,48 @@
+{
+  "schema": "V022GateBCompilePathology",
+  "tag": "baseline",
+  "gate": "compile-pathology kill-gate (b): fp32-BouLac mixed fp32/fp64 fusion",
+  "case": "Switzerland d01 reinit-h36, 128x128x44, dt=18s (200 steps/fc-hr), RTX 5090, fp64",
+  "env": {
+    "GPUWRF_MYNN_BOULAC_FP32": "0",
+    "GPUWRF_MYNN_COND_NITER": "16",
+    "GPUWRF_MYNN_COND_UNROLL": null,
+    "GPUWRF_MYNN_BOULAC_ONZ": null,
+    "GPUWRF_THOMAS_UNROLL": null,
+    "XLA_FLAGS": null,
+    "XLA_PYTHON_CLIENT_ALLOCATOR": null,
+    "XLA_PYTHON_CLIENT_MEM_FRACTION": null
+  },
+  "build_real_case_s": 26.541,
+  "per_hour_wall_s": [
+    799.999,
+    579.639,
+    31.735
+  ],
+  "cold_wall_s": 799.999,
+  "steady_wall_s": 31.735,
+  "cold_compile_est_s": 768.264,
+  "steady_ms_per_step": 158.68,
+  "finite_log": [
+    {
+      "hour": 1,
+      "all_finite": true,
+      "min_finite_frac": 1.0,
+      "n_leaves": 64
+    },
+    {
+      "hour": 2,
+      "all_finite": true,
+      "min_finite_frac": 1.0,
+      "n_leaves": 64
+    },
+    {
+      "hour": 3,
+      "all_finite": true,
+      "min_finite_frac": 1.0,
+      "n_leaves": 64
+    }
+  ],
+  "completed": true,
+  "stalled": false
+}

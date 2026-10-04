@@ -1,0 +1,97 @@
+{
+  "schema": "OomFixReport",
+  "schema_version": 1,
+  "status": "PASS",
+  "fix": {
+    "rrtmg_lw_default_tile_cols": 2048,
+    "rrtmg_sw_default_tile_cols": 2048,
+    "mynn_coldstart_tiled": true,
+    "large_metadata_host_reductions_skipped": true
+  },
+  "root_cause": {
+    "radiation_residual_oom": false,
+    "residual_allocation_failure": "MYNN cold-start dense BouLac initialization over AC1_FIT d03 f64[144801,44] reduce/autotune",
+    "old_oom_peak_gib": 31.8,
+    "old_failed_alloc_gib": 2.09
+  },
+  "proofs": {
+    "tile_defaults": {
+      "path": "proofs/v018/oom_fix/tile_defaults.json",
+      "status": "PASS",
+      "switzerland_d01_one_tile": true,
+      "ac1fit_d03_n_tiles": 71
+    },
+    "bit_identity_recheck": {
+      "path": "proofs/v018/oom_fix/bit_identity_recheck_compare.json",
+      "status": "PASS",
+      "compared_field_count": 26,
+      "missing_field_count": 0,
+      "max_abs_diff_overall": 0.0
+    },
+    "mynn_coldstart_tile_identity": {
+      "path": "proofs/v018/oom_fix/mynn_coldstart_tile_identity.json",
+      "status": "PASS",
+      "jax_backend": "gpu",
+      "tile_cols": 16384,
+      "qke_max_abs_diff": 0.0,
+      "pblh_max_abs_diff": 0.0
+    },
+    "d03_radiation_peaks": {
+      "lw_2048": {
+        "path": "proofs/v018/oom_fix/d03_lw_default2048_peak_run.json",
+        "nvidia_smi_peak_gib": 7.896484375
+      },
+      "sw_2048": {
+        "path": "proofs/v018/oom_fix/d03_sw_default2048_peak_run.json",
+        "nvidia_smi_peak_gib": 5.904296875
+      }
+    },
+    "d03_prewarm": {
+      "path": "proofs/v018/oom_fix/prewarm_d03_tiled_run.json",
+      "status": "PASS",
+      "nvidia_smi_peak_gib": 13.5263671875
+    },
+    "ac1fit_warm_smoke": {
+      "path": "proofs/v018/oom_fix/real_ac1fit_halfhour_tiled_warm.json",
+      "run_path": "proofs/v018/oom_fix/real_ac1fit_halfhour_tiled_warm_run.json",
+      "status": "PASS",
+      "forecast_seconds": 1800.0,
+      "forecast_wall_s": 867.3437208429677,
+      "s_per_forecast_hour": 1734.6874416859355,
+      "d03_own_steps": 900,
+      "d03_radiation_cadence_steps": 900,
+      "d03_first_gate_reached": true,
+      "d03_ended_on_gate": true,
+      "all_domains_finite": true,
+      "nvidia_smi_peak_gib": 18.3447265625,
+      "nvidia_smi_peak_mib": 18785,
+      "overall_util_mean_pct": 69.57320962597855,
+      "overall_util_median_pct": 96.0,
+      "overall_util_p95_pct": 100.0,
+      "forecast_only_util_mean_pct": 75.59765748654638,
+      "forecast_only_util_median_pct": 97.0,
+      "forecast_only_util_p95_pct": 100.0,
+      "steady_after_120s_util_mean_pct": 85.04692082111437,
+      "steady_after_120s_util_median_pct": 97.0,
+      "steady_after_120s_util_p95_pct": 100.0,
+      "steady_after_120s_busy_ge_80_fraction": 0.8207478005865103,
+      "steady_after_120s_idle_lt_10_fraction": 0.07001466275659823
+    },
+    "small_case_non_regression": {
+      "old_run_path": "proofs/v018/oom_fix/switzerland_old_tile16384_recheck_run.json",
+      "new_run_path": "proofs/v018/oom_fix/switzerland_new_default2048_recheck_run.json",
+      "old_forecast_only_s": 24.150533893960528,
+      "new_forecast_only_s": 23.935977029963396,
+      "status": "PASS"
+    }
+  },
+  "fused_fork": {
+    "escalated": false,
+    "reason": "bit-identical default warm-cache AC1_FIT smoke reached high steady utilization; fused mode was not needed"
+  },
+  "checks": {
+    "py_compile": "PASS",
+    "git_diff_check": "PASS",
+    "pytest_tests_test_v014_mynn_coldstart_init": "PASS"
+  }
+}

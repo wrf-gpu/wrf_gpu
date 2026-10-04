@@ -1,0 +1,6 @@
+FIT-SWITZ BENCHMARK PLAN (resuming after resource contention)
+- GPU: multigrid waiter PID 3280903 queued on lock. On acquire, tries 390/360/320/300 (autotune-off) then 280/256/224/192. First 13h FIT_OK -> /tmp/fitswiss_winner.txt. Result JSONs: <DATA_ROOT>/wrf_gpu_validation/v017_fitswiss_<E>_gpu_bench/fitswiss_gpu_benchmark.json
+- CPU: when cores 4-15 free (ac1fit done), run 13h CPU 12-rank for the WINNING grid (and optionally neighbors). Use run_switzerland_cpu_reference_mpi.sh with NRANKS=12, taskset -c 4-15. Runroots in /tmp/runroot_<E>.txt. cpu_timing.json gives total_wall_s + mainloop_sum_s.
+- FACTOR = CPU 13h wall / GPU warm 13h wall. Report total-wall and mainloop-vs-warm.
+- Equivalence: /tmp/fitswiss_equiv.py <cpu_run_cpu_dir> <gpu_bench_wrfout_dir>
+- Deliverable: proofs/v017/fitting_switzerland_benchmark.md + touch proofs/v017/FIT_SWITZ_DONE

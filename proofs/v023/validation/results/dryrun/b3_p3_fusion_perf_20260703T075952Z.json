@@ -1,0 +1,8 @@
+{
+  "gate": "b3_p3_fusion_perf",
+  "generated_utc": "2026-07-03T07:59:52.401820+00:00",
+  "message": "B3 P3 fusion A/B commands staged only.",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

@@ -1,0 +1,56 @@
+{
+  "gate": "K1_BouLac_ONZ_full_pipeline_compile_pathology",
+  "verdict": "PATHOLOGICAL",
+  "dense": {
+    "algo": "dense",
+    "algo_desc": "dense_nznz_frozen_v014_default",
+    "hours": 1,
+    "compile_timeout_s": 1800,
+    "verdict": "COMPLETED",
+    "cold_compile_plus_run_s": 83.78,
+    "cold_compile_timed_out": false,
+    "compile_wall_s": 51.48,
+    "warm_run_walls_s": [
+      32.341,
+      32.3
+    ],
+    "warm_run_min_s": 32.3,
+    "steps_per_hour": 360,
+    "dt_s": 10.0,
+    "steady_s_per_step": 0.08972,
+    "peak_rss_gb": 8.257,
+    "state_npz": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/compile_pathology/killgate_dense_state.npz",
+    "n_leaves": 64,
+    "warm_input_mode": "fresh_real_case_per_call_to_avoid_reusing_jax_donated_arrays"
+  },
+  "onz": {
+    "algo": "onz",
+    "algo_desc": "O(nz)_boulac_forced_as_default_in_full_operational_jit",
+    "hours": 1,
+    "compile_timeout_s": 1800,
+    "verdict": "STILL-PATHOLOGICAL",
+    "cold_compile_timed_out": null,
+    "cold_compile_completed": false,
+    "cold_compile_plus_run_s": null,
+    "compile_wall_s": null,
+    "warm_run_walls_s": [],
+    "peak_rss_gb_observed_before_stop": 15.181,
+    "observed_elapsed_s_before_stop": 727,
+    "observed_vs_dense_compile_wall_x": 14.122,
+    "observed_vs_dense_cold_plus_run_x": 8.677,
+    "observed_vs_dense_peak_rss_x": 1.839,
+    "dense_reference": {
+      "cold_compile_plus_run_s": 83.78,
+      "compile_wall_s": 51.48,
+      "peak_rss_gb": 8.257,
+      "warm_run_min_s": 32.3
+    },
+    "slow_compile_alarm_observed": true,
+    "manual_stop": true,
+    "manual_stop_reason": "Relative verdict was conclusive before the 1800s cap: dense completed cold+run in 83.78s with 8.257 GiB peak RSS, while O(nz) was still compiling after 727s, had emitted XLA Very slow compile alarm, and had reached 15.181 GiB RSS. Stopped to protect the concurrent 12-rank corpus WRF and proceed to higher-value R0.",
+    "decision": "K1 O(nz) remains opt-in; not a clean default until the first-crossing search is restructured.",
+    "harness_note": "Fresh real-case inputs per call avoid JAX donated-array reuse; this is the fixed harness result."
+  },
+  "summary": "Dense full pipeline is bounded; O(nz) full pipeline remains an O(nz)-specific compile pathology under the fixed harness.",
+  "next": "Keep O(nz) opt-in or restructure the data-dependent first-crossing search before making it default."
+}

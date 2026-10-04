@@ -1,0 +1,8 @@
+{
+  "gate": "b4_f1_reconfirm",
+  "generated_utc": "2026-07-03T07:59:52.459596+00:00",
+  "message": "Would run proofs/v023/gpu_gates/g3_batch_sweep_driver.py for B values: 1 2 3 4 5",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

@@ -1,0 +1,5 @@
+# GPU A/B artifacts: keep proof md + results.tsv + proof JSON; exclude bulky NetCDF + samplers
+**/out/
+**/.scratch/
+**/nvidia_smi*.csv
+**/jax_cache/

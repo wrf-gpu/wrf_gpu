@@ -1,0 +1,28 @@
+{
+  "schema": "ADR031_S0S1_pinpoint_1h",
+  "method": "1h AB-hash, fresh isolated JAX_COMPILATION_CACHE_DIR per run, asset symlinks; trees base=499d3724 / s0=12ed00be / s0s1=worktree HEAD",
+  "comparisons": {
+    "CONTROL_base_vs_base2_same_tree": "34/60",
+    "S0_carry_leaf_base_vs_s0": "34/60",
+    "S0S1_full_base_vs_s0s1": "34/60",
+    "S1_seam_only_s0_vs_s0s1": "34/60"
+  },
+  "mismatch_leaves_all_four_identical": [
+    "Ng",
+    "Ni",
+    "Nr",
+    "fltv",
+    "graupel_acc",
+    "ice_acc",
+    "mu",
+    "mu_perturbation",
+    "..."
+  ],
+  "conclusion": "The cross-process AB-hash forecast is run-to-run NON-DETERMINISTIC (~34/60 leaf-hash mismatches for IDENTICAL code, isolated cache). S0+S1 adds ZERO mismatches over the identical-code control: base-vs-s0s1 == base-vs-base2 (same 34 leaves). S0+S1 is therefore byte-identical to the base graph up to the harness's intrinsic non-determinism floor (GPU atomic scatter/reductions in microphysics + surface reductions). The earlier 102/180 3h 'FAIL' was this same non-determinism floor, NOT a numerics change from the refactor.",
+  "corroborating_evidence": [
+    "proofs/perf/v015/ab_compare_streamA_vs_streamA_thomas45.json: bit_identical=false, 99 mismatches (IDENTICAL streamA config, two runs)",
+    "proofs/perf/v015/ab_compare_v014_base_vs_streamA{,_final}.json: SAME comparison gave 99 then 0 mismatches -> run-to-run flaky",
+    "1h HEAD-vs-HEAD gave 0/60 once (lucky) and the pinpoint control gave 34/60 (unlucky) -> confirms stochastic floor"
+  ],
+  "strict_tier_s_path": "XLA_FLAGS=--xla_gpu_deterministic_ops=true removes the atomic non-determinism; a deterministic base-vs-s0s1 run is queued to provide the 0/N strict proof."
+}

@@ -1,0 +1,69 @@
+{
+  "adapter_case": {
+    "checks": {
+      "dispatch_routes_bl9": true,
+      "finite": true,
+      "qke_changed": true,
+      "scan_adapter_registered": true,
+      "theta_changed": true,
+      "u_changed": true
+    }
+  },
+  "column_case": {
+    "checks": {
+      "finite": true,
+      "kvm_bounded": true,
+      "kvm_positive": true,
+      "pblh_below_top": true,
+      "pblh_positive": true,
+      "positive_hfx_warms_surface_theta": true,
+      "surface_drag_decelerates_u": true,
+      "tke_nonnegative": true
+    },
+    "metrics": {
+      "backend": "gpu",
+      "max_kvh_m2_s": 3.2950063034119457,
+      "max_kvm_m2_s": 13.180025213647783,
+      "max_tke_m2_s2": 0.18958186180556486,
+      "min_tke_m2_s2": 0.021347815031601294,
+      "pblh_m": [
+        800.0,
+        800.0
+      ],
+      "surface_theta_tendency_k_s": 0.0003549576828892972,
+      "surface_u_tendency_m_s2": -0.00025060812798020454
+    }
+  },
+  "feature": "F3 CAM-UW PBL bl_pbl_physics=9",
+  "gate": "PASS",
+  "landed": [
+    "bl_pbl_physics=9 accepted in registry/catalog",
+    "physics_dispatch routes option 9",
+    "PBL_SCAN_ADAPTERS[9] registered",
+    "JAX CAM-UW column finite on idealized moist boundary layer",
+    "State adapter updates u/v/theta/qv/qc/qi/qke without host transfer"
+  ],
+  "scaffold": [
+    "No full CAM cloud-number/dropmixnuc/sedimentation parity",
+    "No persistent CAM residual-stress or previous-step kvh/kvm carry yet",
+    "No pristine-WRF numerical CAM-UW savepoint parity claim"
+  ],
+  "wrf_numerical_savepoint": {
+    "parity_claim": false,
+    "reason": "No pristine-WRF CAM-UW single-column savepoint fixture is present in-tree; this gate only proves source presence plus idealized finite/plausible behavior.",
+    "status": "absent_fail_closed"
+  },
+  "wrf_reference": {
+    "missing": [],
+    "required_sources": [
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F",
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_eddy_diff.F",
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_diffusion_solver.F"
+    ],
+    "sha256": {
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F": "253886780ae99823608f28bbcf68e1bfdc97483fe6fe2d7df24866c2f2b1e42a",
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_diffusion_solver.F": "902050bd815678aad07757487bb68aa9bbd11341174a678b894f592f7d2d400e",
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_eddy_diff.F": "d1f5c261770d9d89bda0e48e3c9c7f9d96ea8989271960fb66d7e3af8b7f0d68"
+    }
+  }
+}

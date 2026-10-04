@@ -1,0 +1,10 @@
+P4 CFL-first ladder (<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/p4_cfl_ladder_20260621T085933Z):
+  ladder log : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/p4_cfl_ladder_20260621T085933Z/ladder.jsonl
+  namelists  : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/p4_cfl_ladder_20260621T085933Z/namelists/
+  per-rung   : <rung>_{blowup,cfl}.json (rung = dt<DT> or dt<DT>_ns<N>)
+  result tally:
+    dt=24 n_sound=None -> DRYRUN_GATES_EXERCISED
+    dt=24 n_sound=14 -> SKIP_NSOUND_PLUMBING_GAP
+    dt=24 n_sound=12 -> SKIP_NSOUND_PLUMBING_GAP
+    dt=24 n_sound=10 -> SKIP_NSOUND_PLUMBING_GAP
+  NOTE: DRY-RUN — gate logic exercised on existing wrfout; results are NOT a real ladder verdict.

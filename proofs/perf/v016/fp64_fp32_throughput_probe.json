@@ -1,0 +1,39 @@
+{
+  "device": "cuda:0",
+  "platform": "gpu",
+  "throughput_by_K": {
+    "128": {
+      "fp32_s": 0.0031104839872568846,
+      "fp64_s": 0.015065237996168435,
+      "dd_s": 0.0998333870084025,
+      "fp64_over_fp32": 4.843374233041581,
+      "dd_over_fp32": 32.09577268920291,
+      "fp64_over_dd": 0.15090380530613937
+    },
+    "512": {
+      "fp32_s": 0.012451557966414839,
+      "fp64_s": 0.05937600799370557,
+      "dd_s": 0.39946938800858334,
+      "fp64_over_fp32": 4.768560541087183,
+      "dd_over_fp32": 32.08187996121116,
+      "fp64_over_dd": 0.148637191674947
+    },
+    "2048": {
+      "fp32_s": 0.05583552998723462,
+      "fp64_s": 0.23766174301272258,
+      "dd_s": 1.6040435500326566,
+      "fp64_over_fp32": 4.256460770893693,
+      "dd_over_fp32": 28.72800796194431,
+      "fp64_over_dd": 0.1481641461716448
+    }
+  },
+  "k_scaling_fp32_512_over_128": 4.003093414859784,
+  "k_scaling_fp64_512_over_128": 3.9412592093670717,
+  "verdict": {
+    "true_fp64_penalty_x": 4.256460770893693,
+    "dd_cost_x_fp32": 28.72800796194431,
+    "dd_beats_fp64": false,
+    "fp64_over_dd": 0.1481641461716448,
+    "reading": "If true_fp64_penalty_x >> dd_cost_x_fp32, DD-fp32 wins on throughput-bound compute. If true_fp64_penalty_x is small (~3-4x), fp64 is cheap on this GPU and the fp32 win is VRAM/storage, not arithmetic speed."
+  }
+}

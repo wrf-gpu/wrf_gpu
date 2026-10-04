@@ -1,0 +1,105 @@
+{
+  "active_run_lengths": {
+    "busy_ge50": {
+      "count": 97,
+      "max_s": 46.006,
+      "mean_s": 11.650845360824743,
+      "median_s": 4.0009999999999994
+    },
+    "idle_lt10": {
+      "count": 103,
+      "max_s": 38.004,
+      "mean_s": 6.919388349514563,
+      "median_s": 4.0
+    },
+    "mid_10_49": {
+      "count": 53,
+      "max_s": 4.0009999999999994,
+      "mean_s": 2.302150943396226,
+      "median_s": 2.0
+    }
+  },
+  "analysis_generated_utc": "2026-06-15T17:18:08.051557+00:00",
+  "gpu_device_status_this_worker": {
+    "dev_nvidia_nodes_visible": false,
+    "jax_cuda_error": "CUDA_ERROR_NO_DEVICE; JAX saw only CpuDevice(id=0)",
+    "nvidia_smi_error": "NVIDIA-SMI could not communicate with the NVIDIA driver",
+    "nvidia_smi_rc": 9
+  },
+  "median_sample_cadence_s": 2.0,
+  "source_csv": "<USER_HOME>/src/wrf_gpu2/proofs/v017/gpu_util_log.csv",
+  "static_all7_counts_per_forecast_hour": {
+    "advance_chunk_calls": 5000,
+    "domain_steps": {
+      "d01": 200,
+      "d02": 600,
+      "d03_d09_each": 1800
+    },
+    "explicit_block_points_before_fix": 5000,
+    "force_boundary_package_builds": 4400,
+    "hourly_wrfout_files": 9,
+    "root_steps": 200
+  },
+  "summaries": {
+    "active_mem_gt10gib": {
+      "busy_ge50_pct_time": 57.51767444014611,
+      "busy_ge80_pct_time": 46.42126622839586,
+      "end": "2026-06-15 18:00:41.088000",
+      "idle_lt10_pct_time": 36.27246553541428,
+      "idle_lt20_pct_time": 38.105080151442124,
+      "mean_gpu_util_pct_time_weighted": 51.117577333150784,
+      "median_gpu_util_pct_sample": 78.0,
+      "min_mem_mib": 15775,
+      "name": "active_mem_gt10gib",
+      "peak_mem_mib": 22300,
+      "samples": 982,
+      "start": "2026-06-15 17:27:58.245000",
+      "weighted_span_s": 1964.843
+    },
+    "early_oscillatory_prefix_until_2026_06_15_17_30_24": {
+      "busy_ge50_pct_time": 34.247363374880145,
+      "busy_ge80_pct_time": 28.767976989453498,
+      "end": "2026-06-15 17:30:22.265000",
+      "idle_lt10_pct_time": 57.53252979043966,
+      "idle_lt20_pct_time": 61.642925626626486,
+      "mean_gpu_util_pct_time_weighted": 32.562265443089984,
+      "median_gpu_util_pct_sample": 5,
+      "min_mem_mib": 15798,
+      "name": "early_oscillatory_prefix",
+      "peak_mem_mib": 21224,
+      "samples": 73,
+      "start": "2026-06-15 17:27:58.245000",
+      "weighted_span_s": 146.02
+    },
+    "full_csv": {
+      "busy_ge50_pct_time": 37.53370581462043,
+      "busy_ge80_pct_time": 30.292639038664834,
+      "end": "2026-06-15 18:18:07.224000",
+      "idle_lt10_pct_time": 46.854793739843416,
+      "idle_lt20_pct_time": 59.07835956345097,
+      "mean_gpu_util_pct_time_weighted": 35.482434118603955,
+      "median_gpu_util_pct_sample": 11,
+      "min_mem_mib": 3592,
+      "name": "full_csv",
+      "peak_mem_mib": 22300,
+      "samples": 1505,
+      "start": "2026-06-15 17:27:58.245000",
+      "weighted_span_s": 3010.979
+    },
+    "post_run_mem_lt5gib_tail": {
+      "busy_ge50_pct_time": 0.0,
+      "busy_ge80_pct_time": 0.0,
+      "end": "2026-06-15 18:18:07.224000",
+      "idle_lt10_pct_time": 66.73042510725183,
+      "idle_lt20_pct_time": 98.47017978541989,
+      "mean_gpu_util_pct_time_weighted": 6.116652137007043,
+      "median_gpu_util_pct_sample": 4,
+      "min_mem_mib": 3592,
+      "name": "post_run_mem_lt5gib_tail",
+      "peak_mem_mib": 3738,
+      "samples": 523,
+      "start": "2026-06-15 18:00:43.088000",
+      "weighted_span_s": 1046.136
+    }
+  }
+}

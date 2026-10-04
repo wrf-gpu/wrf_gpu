@@ -1,0 +1,8 @@
+{
+  "gate": "c2_skill_gate",
+  "generated_utc": "2026-07-03T07:59:52.670484+00:00",
+  "message": "Would run or compare C2 cases: canary",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

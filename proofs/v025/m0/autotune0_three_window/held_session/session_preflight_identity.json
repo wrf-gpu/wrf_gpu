@@ -1,0 +1,152 @@
+{
+  "budget": {
+    "global_deadline_seconds": 4500.0,
+    "headroom_seconds": 280.0,
+    "reservation_seconds": 4220.0,
+    "reservations": {
+      "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR": 60.0,
+      "W1_CACHED_AND_CORRECTNESS": 360.0,
+      "W1_COLD_DECISION": 1800.0,
+      "W2_PROFILED_CAPTURE": 1400.0,
+      "W3_CLEAN_MATCHED_ARM": 600.0
+    },
+    "status": "PASS",
+    "worst_branch": "three threshold-censored cold attempts"
+  },
+  "cache": {
+    "observed_absent": true,
+    "required_state": "ABSENT",
+    "w1_seed_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r3/m0-autotune0-qualify-20260728-r3/unique-empty-cache"
+  },
+  "capture_capability_declaration": {
+    "available": [
+      "exact_kernels_per_step_denominator",
+      "integration_clipped_gpu_busy",
+      "event_level_family_join",
+      "kernel_duration_distribution",
+      "inter_kernel_gap_distribution",
+      "launch_latency_distribution",
+      "transfer_audit",
+      "profiler_perturbation",
+      "peak_vram"
+    ],
+    "content_sha256": "4ad9acbeec04e13a0ad19aac69a6a86ef54251e37d893fedb7da8dcb23cdcc0a",
+    "denominator_method": "exact-lowered-trip-count",
+    "denominator_steps": 360,
+    "missing": [
+      "achieved_dram_gb_per_s",
+      "occupancy_and_stall_counters",
+      "run_physics_false"
+    ],
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/capture_capability_declaration.json",
+    "sha256": "a1a62d7ac3c9b60680efef8916bd696780309f54d9f184924a29ea8788f078c0"
+  },
+  "config": {
+    "case_descriptor_sha256": "e919385108c4a2c8ba6be2a6e1de3d5b934752452107b3a60fe5848378d10e68",
+    "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/namelist.input",
+    "sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032"
+  },
+  "cpu_real_boundary_preflight": {
+    "content_sha256": "f35c28a524749d62568e621b97988938e1aaadf251d83c231bf9248730760546",
+    "observations": {
+      "compile_calls": 0,
+      "device_invocations": 0,
+      "exact_lower_calls": 1,
+      "fast_argument_builder_calls": 1,
+      "ledger_reads": 0,
+      "ledger_writes": 0,
+      "lock_checks": 0,
+      "native_loader_calls": 1,
+      "receipt_reads": 0,
+      "wrapper_calls": 0,
+      "wrapper_preparation_calls": 1
+    },
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/cpu_real_boundary_preflight.json",
+    "peak_rss_bytes": 4928925696,
+    "sha256": "db95824bf8951d5ec9d62bc6003c7b02bba029b18681e27c2bb7fa97b74dd3b0",
+    "wall_seconds": 63.999522761
+  },
+  "device_action": false,
+  "held_wrapper_command_normalized": [
+    "<REPO>/scripts/with_gpu_lock.sh",
+    "--timeout",
+    "0",
+    "--label",
+    "m0-core-w1-w2-w3-session",
+    "--",
+    "<PYTHON>",
+    "<REPO>/scripts/v025/m0_three_window_executor.py",
+    "--manager-core-session-held",
+    "--receipt",
+    ".agent/sprints/2026-07-30-v0250-m0-review10-device-session/GPU_COORDINATION_RECEIPT.json"
+  ],
+  "held_wrapper_command_sha256": "8886445d5ce752417276ad47728c8e7152787cf4e5fdd3f065f1a090a84702a9",
+  "identity_sha256": "973e19cffc4ea16cc600d9b8e38d912686f0968422e09fa48c91bcec39939cdc",
+  "input_manifest_sha256": "985d992220e3d79cbe896e6f02d961c198901b3faa27bceb037339b10a313b90",
+  "nsys_version": "NVIDIA Nsight Systems version 2025.5.2.266-255236693005v0",
+  "owner_command_normalized": [
+    "<PYTHON>",
+    "<REPO>/scripts/v025/m0_three_window_executor.py",
+    "--manager-core-session-owner",
+    "--receipt",
+    ".agent/sprints/2026-07-30-v0250-m0-review10-device-session/GPU_COORDINATION_RECEIPT.json"
+  ],
+  "owner_command_sha256": "18666dacca9919a53d307f5c0a241d5de7d98533b84c6943ee0d305e23a32248",
+  "receipt_path": ".agent/sprints/2026-07-30-v0250-m0-review10-device-session/GPU_COORDINATION_RECEIPT.json",
+  "schema": "wrf_gpu2.v025.m0.session_preflight_identity.v1",
+  "source_inputs": {
+    "namelist.input": "5ef3a96be3324deb712b0e0114288244bcf5f53edb21461fee7374aa766cef4b",
+    "wrfbdy_d01": "296cef912e17dc0dfff4b78103dedfb1329cd184de5bc2cd0d44cc6edf823599",
+    "wrfinput_d01": "1024ddb7d6badc958fb1a4f385117ce5c46d20249b75bcce2ea4261d34f648f0"
+  },
+  "source_inputs_sha256": "ef1440d9469e1afae0982916a9b199e88d5206b55239788ec50886d80fb39cf5",
+  "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+  "status": "PASS",
+  "tools": {
+    "mpirun": {
+      "bytes": 190592,
+      "device": 66319,
+      "inode": 101595489,
+      "invoked_path": "<USER_HOME>/src/canairy_meteo/Gen2/artifacts/envs/wrf-build/bin/mpirun",
+      "invoked_via_symlink": false,
+      "mtime_ns": 1776598360005129344,
+      "path": "<DATA_ROOT>/canairy_meteo/artifacts/envs/wrf-build/bin/mpirun",
+      "sha256": "155a11132d1b47ed9282978739bce46b478405266a0370110265beddb01dc84f"
+    },
+    "nsys": {
+      "bytes": 76353640,
+      "device": 66309,
+      "inode": 23597968,
+      "invoked_path": "/usr/local/bin/nsys",
+      "invoked_via_symlink": true,
+      "mtime_ns": 1760511009000000000,
+      "path": "/opt/nvidia/nsight-systems/2025.5.2/target-linux-x64/nsys",
+      "sha256": "dff002f06a6068fad71ea64ff84bde41278b5a93b0916d27989bc6c9bb84f535"
+    },
+    "python": {
+      "bytes": 32003680,
+      "device": 66309,
+      "inode": 24929485,
+      "invoked_path": "<USER_HOME>/miniconda3/bin/python",
+      "invoked_via_symlink": true,
+      "mtime_ns": 1769644101096190190,
+      "path": "<USER_HOME>/miniconda3/bin/python3.13",
+      "sha256": "3851f1998dcd3a08bd2554a3a0f1f439c9227e80afff2791d4df6da1b3456492"
+    },
+    "wrf_exe": {
+      "bytes": 42057744,
+      "device": 66319,
+      "inode": 104874085,
+      "invoked_path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/run/wrf.exe",
+      "invoked_via_symlink": true,
+      "mtime_ns": 1777370958000000000,
+      "path": "<DATA_ROOT>/canairy_meteo/artifacts/wrf_src/WRF/install_gen2_dmpar/bin/wrf",
+      "sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+    }
+  },
+  "wrf_source_authority": {
+    "content_sha256": "e33fb23d467a33ccf8101b3c014b85a0a0fcf5ab1f3efd04dea8fdbd7eb4d851",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/wrf_source_authority.json",
+    "sha256": "1c996a03b841eb927577b439f9be91e3e417785257fa01d75f7da0c83cf76d65"
+  }
+}

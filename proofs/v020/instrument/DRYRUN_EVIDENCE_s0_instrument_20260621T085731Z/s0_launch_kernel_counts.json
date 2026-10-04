@@ -1,0 +1,153 @@
+{
+  "stats_prefix": "<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/perf/v015/nsys_post",
+  "sources": {
+    "cuda_api_sum": "<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/perf/v015/nsys_post_cuda_api_sum.csv",
+    "cuda_gpu_kern_sum": "<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/perf/v015/nsys_post_cuda_gpu_kern_sum.csv",
+    "cuda_gpu_sum": null,
+    "cuda_gpu_mem_time_sum": null
+  },
+  "host_launches": {
+    "total_launch_calls": 1057172,
+    "by_api": [
+      {
+        "api": "cuLaunchKernelEx",
+        "calls": 1006942,
+        "time_ns": 14806756781.0
+      },
+      {
+        "api": "cuGraphLaunch",
+        "calls": 32136,
+        "time_ns": 381539228.0
+      },
+      {
+        "api": "cuLaunchKernel",
+        "calls": 12142,
+        "time_ns": 32375116.0
+      },
+      {
+        "api": "cuLaunchHostFunc",
+        "calls": 3252,
+        "time_ns": 27910264.0
+      },
+      {
+        "api": "cudaLaunchKernel",
+        "calls": 2700,
+        "time_ns": 18860793.0
+      }
+    ]
+  },
+  "gpu_kernels": {
+    "total_instances": 1021784,
+    "total_gpu_kernel_time_ns": 2315742748.0,
+    "top_by_time": [
+      {
+        "kernel": "void pcrGtsvBatchSharedMemKernelLoop<double>(pcrGtsvBatchGlobalMemParams_t<T1>)",
+        "instances": 1350,
+        "gpu_time_ns": 345376100.0
+      },
+      {
+        "kernel": "loop_or_select_fusion",
+        "instances": 5400,
+        "gpu_time_ns": 331606959.0
+      },
+      {
+        "kernel": "loop_add_fusion_7",
+        "instances": 405000,
+        "gpu_time_ns": 314309147.0
+      },
+      {
+        "kernel": "stream_executor::gpu::RedzoneAllocatorKernelImpl(unsigned char *, unsigned char, unsigned ",
+        "instances": 9716,
+        "gpu_time_ns": 305077148.0
+      },
+      {
+        "kernel": "loop_subtract_fusion",
+        "instances": 174151,
+        "gpu_time_ns": 166141163.0
+      },
+      {
+        "kernel": "loop_slice_fusion",
+        "instances": 4050,
+        "gpu_time_ns": 160170969.0
+      },
+      {
+        "kernel": "loop_multiply_fusion",
+        "instances": 118833,
+        "gpu_time_ns": 118653998.0
+      },
+      {
+        "kernel": "loop_select_fusion_9",
+        "instances": 59400,
+        "gpu_time_ns": 74804814.0
+      },
+      {
+        "kernel": "loop_multiply_fusion_7",
+        "instances": 71280,
+        "gpu_time_ns": 71531808.0
+      },
+      {
+        "kernel": "void pcrGtsvBatchFirstPass<double>(pcrGtsvBatchGlobalMemParams_t<T1>)",
+        "instances": 1350,
+        "gpu_time_ns": 61025367.0
+      },
+      {
+        "kernel": "loop_add_fusion_11",
+        "instances": 59400,
+        "gpu_time_ns": 45012781.0
+      },
+      {
+        "kernel": "loop_select_fusion_5",
+        "instances": 23760,
+        "gpu_time_ns": 36084398.0
+      },
+      {
+        "kernel": "loop_divide_multiply_select_fusion_1",
+        "instances": 278,
+        "gpu_time_ns": 19309053.0
+      },
+      {
+        "kernel": "loop_reverse_fusion_1",
+        "instances": 4050,
+        "gpu_time_ns": 18877218.0
+      },
+      {
+        "kernel": "input_concatenate_fusion",
+        "instances": 4052,
+        "gpu_time_ns": 13307583.0
+      },
+      {
+        "kernel": "loop_subtract_fusion_8",
+        "instances": 11610,
+        "gpu_time_ns": 10871186.0
+      },
+      {
+        "kernel": "input_reduce_fusion_22",
+        "instances": 270,
+        "gpu_time_ns": 9697360.0
+      },
+      {
+        "kernel": "loop_add_divide_multiply_select_sqrt_subtract_fusion",
+        "instances": 8,
+        "gpu_time_ns": 8339533.0
+      },
+      {
+        "kernel": "loop_divide_fusion",
+        "instances": 5415,
+        "gpu_time_ns": 7614246.0
+      },
+      {
+        "kernel": "loop_add_maximum_multiply_fusion",
+        "instances": 16,
+        "gpu_time_ns": 7218925.0
+      }
+    ]
+  },
+  "host_device_transfer": {
+    "total_memcpy_time_ns": 0.0,
+    "by_op": [],
+    "audit_note": "in-timestep H2D/D2H should be ~0; non-trivial copies are an audit flag"
+  },
+  "derived": {
+    "wall_s": null
+  }
+}

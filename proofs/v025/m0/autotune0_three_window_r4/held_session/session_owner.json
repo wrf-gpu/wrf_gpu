@@ -1,0 +1,117 @@
+{
+  "commands": [
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "16-27",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_w1_fast_pair.py",
+        "--prestage-cpu",
+        "--session-identity",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/session_preflight_identity.json",
+        "--cpu-run-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "--output",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/cpu_preflight.json"
+      ],
+      "command_normalized": [
+        "taskset",
+        "-c",
+        "16-27",
+        "<PYTHON>",
+        "<REPO>/scripts/v025/m0_w1_fast_pair.py",
+        "--prestage-cpu",
+        "--session-identity",
+        "<REPO>/proofs/v025/m0/autotune0_three_window_r4/held_session/session_preflight_identity.json",
+        "--cpu-run-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r4",
+        "--output",
+        "<REPO>/proofs/v025/m0/autotune0_three_window_r4/held_session/cpu_preflight.json"
+      ],
+      "command_sha256": "5b412328b6b691cb0d9b8187348d04483f15f276a564e9087d60b601667070c4",
+      "log_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/cpu_preflight.log",
+      "log_sha256": "1f7fe47d305a361ee2d02c9cb1b53577fa72f87341e1c1cef9455d749ee3b90b",
+      "returncode": 0,
+      "stage": "CPU_PREFLIGHT"
+    },
+    {
+      "command": [
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "m0-core-w1-w2-w3-session",
+        "--",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/scripts/v025/m0_three_window_executor.py",
+        "--manager-core-session-held",
+        "--receipt",
+        ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json"
+      ],
+      "command_normalized": [
+        "<REPO>/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "m0-core-w1-w2-w3-session",
+        "--",
+        "<PYTHON>",
+        "<REPO>/scripts/v025/m0_three_window_executor.py",
+        "--manager-core-session-held",
+        "--receipt",
+        ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json"
+      ],
+      "command_sha256": "8dd335f066787d934e766b5274fef02c8ea00eff0bcf8d2764e07af763a337ef",
+      "log_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/held_wrapper.log",
+      "log_sha256": "29ced189e5ee3b50d1ebbafcb536022fa98596e082ef18889217fe04ad23bfab",
+      "returncode": 124,
+      "stage": "HELD_ZERO_WAIT_WRAPPER"
+    }
+  ],
+  "elapsed_seconds": 50.88442811,
+  "finished_at_utc": "2026-08-08T23:11:49.133484+00:00",
+  "first_failure": {
+    "error": "SessionRefusal: held wrapper returned 124 without a session proof",
+    "kind": "SESSION_OWNER_REFUSAL",
+    "process_group_sweep_error": null,
+    "stage": "HELD_ZERO_WAIT_WRAPPER"
+  },
+  "owner_sha256": "3f5e5ad73e9185ba75af6c20fc779c62ff43692459d11eec7793d62dbaa07c29",
+  "prelock_revalidation": {
+    "content_sha256": "50a248d157ad6f546894eae74314c30c481debaaee066585fd237e19c6fe657e",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/prelock_revalidation.json",
+    "sha256": "257ccdb22ac727b8374ce1a148833938c1c04197e4974832659522d757d84563"
+  },
+  "process_group_proof": {
+    "active": [],
+    "all_registered_groups_empty": true,
+    "completed": [
+      {
+        "empty": true,
+        "process_group": 7954,
+        "stage": "CPU_PREFLIGHT"
+      },
+      {
+        "empty": true,
+        "process_group": 8308,
+        "stage": "HELD_ZERO_WAIT_WRAPPER"
+      }
+    ],
+    "registered": 2,
+    "status": "PASS"
+  },
+  "receipt_path": ".agent/sprints/2026-08-01-v0250-m0-r4-final-readiness/M0_CORE_W1_W2_W3_SESSION_RECEIPT_R4.json",
+  "receipt_refund_path": null,
+  "release_proof": null,
+  "retry_path": null,
+  "schema": "wrf_gpu2.v025.m0.core_session_owner.v1",
+  "session_proof": null,
+  "started_at_utc": "2026-08-08T23:10:58.249050+00:00",
+  "status": "BLOCKED",
+  "terminal_manifest": {
+    "cpu_closure_gate": "BLOCKED",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r4-final-session/proofs/v025/m0/autotune0_three_window_r4/held_session/m0_core_terminal.json",
+    "sha256": "23776209e136868559600253ff9823c3f745fe3e0213de5344eb7a576973e20d"
+  }
+}

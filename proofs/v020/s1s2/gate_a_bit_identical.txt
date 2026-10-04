@@ -1,0 +1,7 @@
+# GATE (a) — fp64_default BIT-IDENTICAL (CPU warm-bubble operational _advance_chunk, 6 steps)
+# Baseline captured on pre-change code; compared after S1 (legacy alias removal) + S2 (fp64 islands).
+# Command: python proofs/v020/s1s2/harness.py compare --steps 6
+
+[compare] 71/71 leaves BITWISE-EQUAL (6 steps)
+[compare] leaves only in baseline (removed): ['state.mu', 'state.p', 'state.ph']
+[compare] RESULT: BIT-IDENTICAL on all retained leaves

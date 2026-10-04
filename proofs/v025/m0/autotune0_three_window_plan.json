@@ -1,0 +1,521 @@
+{
+  "amendment": ".agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+  "device_touched": false,
+  "identity_and_cache_provenance": {
+    "clean_cache_snapshot": {
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2",
+      "status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+    },
+    "clean_identity": {
+      "path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+      "status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+    },
+    "profiled_cache_snapshot": {
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-profiled-20260728-r2",
+      "status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+    },
+    "profiled_identity": {
+      "path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.identity.json",
+      "status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+    },
+    "qualification_cache": {
+      "created_by": "W1 cold stage only after receipt and lock",
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache",
+      "pre_w1_required_state": "MUST_NOT_EXIST"
+    },
+    "qualification_manifest": {
+      "path": "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+      "status": "MISSING_UNTIL_W1"
+    },
+    "snapshot_rule": "derive identities and clone two private byte-identical snapshots from the W1-qualified cache only after the W1 manifest passes"
+  },
+  "live_execution_status": "REFUSED_PRE_GPU_UNTIL_MISSING_TIMING_BOUNDARIES_ARE_IMPLEMENTED",
+  "maximum_windows": 3,
+  "mechanical_order": [
+    "W1",
+    "W1_LOCK_RELEASE",
+    "CPU_PAIR",
+    "W2_PROFILED",
+    "W2_LOCK_RELEASE",
+    "W3_CLEAN",
+    "W3_LOCK_RELEASE"
+  ],
+  "post_w1_cpu_pair": {
+    "budget": {
+      "deadline_seconds": 600.0,
+      "headroom_seconds": 240.0,
+      "overhead_seconds": 0.0,
+      "stage_budget_seconds": 360.0
+    },
+    "clock_rule": "the pair clock begins at synchronized W1 warm-integration start and ends after the fresh CPU arm; compile/cache-load/I/O remain separate objects and may not be relabelled as integration",
+    "cpu_arm_max_seconds": 300.0,
+    "device_touched": false,
+    "gpu_arm_max_seconds": 300.0,
+    "id": "CPU_PAIR",
+    "pair_deadline_seconds_excluding_lock_queue": 600.0,
+    "prerequisite": "W1 wrapper returned, proving the canonical GPU lock was released",
+    "run_id": "m0-autotune0-cpu-reference-20260728-r2",
+    "sequence": [
+      "record synchronized W1 warm-integration end",
+      "lock wrapper returns",
+      "fresh CPU reference starts in a new CPU-pinned process",
+      "pair comparator runs after both arms"
+    ],
+    "stages": [
+      {
+        "command": [
+          "taskset",
+          "-c",
+          "0-3",
+          "env",
+          "JAX_PLATFORMS=cpu",
+          "CUDA_VISIBLE_DEVICES=",
+          "OMP_NUM_THREADS=1",
+          "MKL_NUM_THREADS=1",
+          "OPENBLAS_NUM_THREADS=1",
+          "NUMEXPR_NUM_THREADS=1",
+          "XLA_FLAGS=--xla_cpu_multi_thread_eigen=false",
+          "<USER_HOME>/miniconda3/bin/python",
+          "-m",
+          "gpuwrf",
+          "run",
+          "--namelist",
+          "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1/namelist.input",
+          "--input-dir",
+          "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+          "--output-dir",
+          "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-cpu-reference-20260728-r2",
+          "--domain",
+          "d01",
+          "--hours",
+          "1"
+        ],
+        "command_sha256": "d48431c7df536f9c82ab8db42637864bdb04e016bcbba2de03d926622651cbeb",
+        "gpu": false,
+        "name": "fresh_cpu_reference",
+        "timeout_seconds": 300.0
+      },
+      {
+        "command": [
+          "<USER_HOME>/miniconda3/bin/python",
+          "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/validate_fast_pair.py",
+          "proofs/v025/m0/autotune0_three_window/autotune0_fast_pair.json",
+          "--require-fresh-cpu"
+        ],
+        "command_sha256": "f8e16aa89eff8d782589a19f8ef152aeb3f75c0ad37e80c027ca1086ea6d6292",
+        "gpu": false,
+        "name": "pair_comparator",
+        "timeout_seconds": 60.0
+      }
+    ],
+    "status": "NOT_RUN"
+  },
+  "production_binding": {
+    "candidate_commit": "5638bedd1b92167ef4e150d6e03d1d2866accefa",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "xla_flag": "--xla_gpu_autotune_level=0"
+  },
+  "profiled_pair_order": [
+    "m0-autotune0-profiled-20260728-r2",
+    "m0-autotune0-clean-20260728-r2"
+  ],
+  "receipts_consumed": [],
+  "schema": "wrf_gpu2.v025.m0.autotune0_three_window_plan.v1",
+  "stale_pair": {
+    "authorisation_eligible": false,
+    "old_cache_sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618",
+    "old_plan_sha256": "213d09a6bc703294753c26613cfe93e14c2e6dcee453d92b4531a50fb6ab736e",
+    "run_ids": [
+      "m0-pair-profiled-20260728-r1",
+      "m0-pair-clean-20260728-r1"
+    ],
+    "status": "MECHANICALLY_SUPERSEDED"
+  },
+  "status": "CPU_REPAIR_GREEN_GPU_WINDOWS_MISSING",
+  "timing_boundaries": {
+    "cached_readiness": "fresh process launch to the same executable-ready event from the W1-populated cache",
+    "cold_readiness": "process launch to mechanically observed executable-ready event; excludes forecast integration",
+    "current_gate_eligibility": "MISSING",
+    "rule": "No subtraction, first-call wall clock, or relabelling may satisfy either missing boundary.",
+    "unresolved_instrumentation": [
+      "current product hook starts before the jitted call, so compile and execution are not separated by an executable-ready event",
+      "current clean arm exposes no mechanically equivalent default-off integration-only clock"
+    ],
+    "warm_profiled_clean_integration": "synchronized integration-only start/end around the same forecast range; excludes compile, cache load, input staging, output I/O, and lock queue"
+  },
+  "window_deadline_max_seconds": 1500.0,
+  "windows": [
+    {
+      "budget": {
+        "deadline_seconds": 1500.0,
+        "headroom_seconds": 0.0,
+        "overhead_seconds": 120.0,
+        "stage_budget_seconds": 1380.0
+      },
+      "deadline_seconds": 1500.0,
+      "id": "W1",
+      "label": "m0-autotune0-qualification",
+      "overhead_seconds": 120.0,
+      "prerequisites": [
+        "unique empty cache path does not exist",
+        "fresh receipt for W1 label",
+        "zero-wait canonical lock",
+        "XLA flag exactly --xla_gpu_autotune_level=0"
+      ],
+      "receipt": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W1_RECEIPT.json",
+      "receipt_scope": "fresh dual-manager affirmative receipt for this label and this one zero-wait canonical-lock wrapper invocation",
+      "run_id": "m0-autotune0-qualify-20260728-r2",
+      "stages": [
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W1:cold_empty_cache_readiness",
+            "--run-id",
+            "m0-autotune0-qualify-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W1_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.cold_empty_cache_readiness.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache"
+          ],
+          "command_sha256": "49d1916d897d7f86ff557a25f21ca87ac64da7482ef9bc21510dfecd3f51c37d",
+          "condition": "always",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.identity.json",
+          "name": "cold_empty_cache_readiness",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.cold_empty_cache_readiness.json",
+          "timeout_seconds": 600.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        },
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W1:cached_readiness",
+            "--run-id",
+            "m0-autotune0-qualify-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W1_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.cached_readiness.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache"
+          ],
+          "command_sha256": "8c8c47971d2e6110e880235c6862b08e65e72dfb131e98a212c04fc1ca4e7a7e",
+          "condition": "always",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.identity.json",
+          "name": "cached_readiness",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.cached_readiness.json",
+          "timeout_seconds": 60.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        },
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W1:warm_integration_only",
+            "--run-id",
+            "m0-autotune0-qualify-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W1_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.warm_integration_only.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache"
+          ],
+          "command_sha256": "62e669f9ac614bf2116c4c9cbe93208eb4e53d520a8fbf93a8b96e4093a64157",
+          "condition": "always",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.identity.json",
+          "name": "warm_integration_only",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-qualify-20260728-r2.warm_integration_only.json",
+          "timeout_seconds": 300.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        },
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W1:native_pallas_if_headroom",
+            "--run-id",
+            "m0-pallas-native-w1-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W1_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w1-20260728-r2.native_pallas_if_headroom.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w1-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache"
+          ],
+          "command_sha256": "f9e6946ee4e8e8aa7fba52730a4fae81116cb7ccf84bf3bd5536ecad83791863",
+          "condition": "only_if_qualification_green_and_window_headroom_remains",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w1-20260728-r2.identity.json",
+          "name": "native_pallas_if_headroom",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w1-20260728-r2.native_pallas_if_headroom.json",
+          "timeout_seconds": 420.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        }
+      ]
+    },
+    {
+      "budget": {
+        "deadline_seconds": 1500.0,
+        "headroom_seconds": 100.0,
+        "overhead_seconds": 180.0,
+        "stage_budget_seconds": 1220.0
+      },
+      "deadline_seconds": 1500.0,
+      "id": "W2",
+      "label": "m0-autotune0-profiled-census",
+      "overhead_seconds": 180.0,
+      "prerequisites": [
+        "W1 AUTOTUNE0_QUALIFIED manifest exists and is hash-valid",
+        "fresh profiled identity derived after W1",
+        "profiled cache snapshot created only after W1",
+        "fresh receipt for W2 label",
+        "zero-wait canonical lock"
+      ],
+      "receipt": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W2_PROFILED_RECEIPT.json",
+      "receipt_scope": "fresh dual-manager affirmative receipt for this label and this one zero-wait canonical-lock wrapper invocation",
+      "run_id": "m0-autotune0-profiled-20260728-r2",
+      "stages": [
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-profiled-20260728-r2",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W2:profiled_integration_census_vram_transfer",
+            "--run-id",
+            "m0-autotune0-profiled-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W2_PROFILED_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.profiled_integration_census_vram_transfer.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-profiled-20260728-r2"
+          ],
+          "command_sha256": "d71e2cd1ac18ea8f4a329af958236e776e892f6ac923a928f4870160646f0820",
+          "condition": "always",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.identity.json",
+          "name": "profiled_integration_census_vram_transfer",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.profiled_integration_census_vram_transfer.json",
+          "timeout_seconds": 1100.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        },
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-profiled-20260728-r2",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W2:profiled_artifact_integrity_after_release",
+            "--run-id",
+            "m0-autotune0-profiled-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W2_PROFILED_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.profiled_artifact_integrity_after_release.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-profiled-20260728-r2"
+          ],
+          "command_sha256": "4f01df038826af8b46dfc1f66199a41e670b1e62115038e46ce93665ab818597",
+          "condition": "always",
+          "gpu": false,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.identity.json",
+          "name": "profiled_artifact_integrity_after_release",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.profiled_artifact_integrity_after_release.json",
+          "timeout_seconds": 120.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        }
+      ]
+    },
+    {
+      "budget": {
+        "deadline_seconds": 1500.0,
+        "headroom_seconds": 0.0,
+        "overhead_seconds": 180.0,
+        "stage_budget_seconds": 1320.0
+      },
+      "deadline_seconds": 1500.0,
+      "id": "W3",
+      "label": "m0-autotune0-clean-matched-arm",
+      "overhead_seconds": 180.0,
+      "prerequisites": [
+        "W2 profiled result and identity are mechanically accepted",
+        "fresh clean identity derived after W1 and matches W2 binding",
+        "clean cache snapshot byte-identical to W2 snapshot",
+        "frozen order is exactly [profiled.run_id, clean.run_id]",
+        "fresh receipt for W3 label",
+        "zero-wait canonical lock"
+      ],
+      "receipt": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W3_CLEAN_RECEIPT.json",
+      "receipt_scope": "fresh dual-manager affirmative receipt for this label and this one zero-wait canonical-lock wrapper invocation",
+      "run_id": "m0-autotune0-clean-20260728-r2",
+      "stages": [
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W3:clean_cached_readiness",
+            "--run-id",
+            "m0-autotune0-clean-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W3_CLEAN_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.clean_cached_readiness.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2"
+          ],
+          "command_sha256": "b03eafe48436834900770042deee823fd2ee2bf54fc3a6d8a156ce72af1d8552",
+          "condition": "always",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+          "name": "clean_cached_readiness",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.clean_cached_readiness.json",
+          "timeout_seconds": 60.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        },
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W3:clean_integration_only",
+            "--run-id",
+            "m0-autotune0-clean-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W3_CLEAN_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.clean_integration_only.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2"
+          ],
+          "command_sha256": "809eea1881f8969bbfcf32dd1531f373f0f37d208f56b0749301affc66a33878",
+          "condition": "always",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+          "name": "clean_integration_only",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.clean_integration_only.json",
+          "timeout_seconds": 300.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        },
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W3:profiler_pair_compare_after_release",
+            "--run-id",
+            "m0-autotune0-clean-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W3_CLEAN_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.profiler_pair_compare_after_release.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2"
+          ],
+          "command_sha256": "f0b2e119571361c18ac4e4ad806de62715d05b3e6ead87bcc3fdda4bfb13680a",
+          "condition": "always",
+          "gpu": false,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+          "name": "profiler_pair_compare_after_release",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.profiler_pair_compare_after_release.json",
+          "timeout_seconds": 60.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        },
+        {
+          "cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2",
+          "command": [
+            "<USER_HOME>/miniconda3/bin/python",
+            "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/m0_three_window_executor.py",
+            "--manager-device-stage",
+            "W3:native_pallas_if_suppressed_in_w1",
+            "--run-id",
+            "m0-pallas-native-w3-20260728-r2",
+            "--receipt",
+            ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W3_CLEAN_RECEIPT.json",
+            "--result",
+            "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w3-20260728-r2.native_pallas_if_suppressed_in_w1.json",
+            "--xla-flag=--xla_gpu_autotune_level=0",
+            "--qualification-manifest",
+            "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+            "--identity-path",
+            "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w3-20260728-r2.identity.json",
+            "--cache-path",
+            "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2"
+          ],
+          "command_sha256": "01b237a4793a279d79e40a9bce69b996f3a25b6a9700a36e681090ad4039e5a3",
+          "condition": "only_if_W1_pallas_was_suppressed_and_all_W3_gates_are_green",
+          "gpu": true,
+          "identity_path": "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w3-20260728-r2.identity.json",
+          "name": "native_pallas_if_suppressed_in_w1",
+          "result": "proofs/v025/m0/autotune0_three_window/m0-pallas-native-w3-20260728-r2.native_pallas_if_suppressed_in_w1.json",
+          "timeout_seconds": 900.0,
+          "xla_flag": "--xla_gpu_autotune_level=0"
+        }
+      ]
+    }
+  ]
+}

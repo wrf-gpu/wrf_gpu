@@ -1,0 +1,33 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 9,
+ start_date = '2026-04-28_18:00:00', '2026-04-28_18:00:00', '2026-04-28_18:00:00', '2026-04-28_18:00:00', '2026-04-28_18:00:00', '2026-04-28_18:00:00', '2026-04-28_18:00:00', '2026-04-28_18:00:00', '2026-04-28_18:00:00',
+ end_date   = '2026-04-29_18:00:00', '2026-04-29_18:00:00', '2026-04-29_18:00:00', '2026-04-29_18:00:00', '2026-04-29_18:00:00', '2026-04-29_18:00:00', '2026-04-29_18:00:00', '2026-04-29_18:00:00', '2026-04-29_18:00:00',
+ interval_seconds = 21600,
+/
+&geogrid
+ parent_id         =      1,      1,      2,      2,      2,      2,      2,      2,      2,
+ parent_grid_ratio =      1,      3,      3,      3,      3,      3,      3,      3,      3,
+ i_parent_start    =      1,     22,     54,     93,     20,     43,     18,    137,    154,
+ j_parent_start    =      1,     18,     26,     14,     42,     24,     10,     28,     58,
+ e_we              =     94,    196,    103,     64,     58,     40,     40,    100,     76,
+ e_sn              =     60,     94,     70,     67,     55,     40,     40,     88,     76,
+ geog_data_res     = 'lowres', 'copdem30_canary+lowres', 'copdem30_canary+lowres', 'copdem30_canary+lowres', 'copdem30_canary+lowres', 'copdem30_canary+lowres', 'copdem30_canary+lowres', 'copdem30_canary+lowres', 'copdem30_canary+lowres',
+ dx = 9000,
+ dy = 9000,
+ map_proj = 'lambert',
+ ref_lat  = 28.3,
+ ref_lon  = -16.4,
+ truelat1 = 25.0,
+ truelat2 = 30.0,
+ stand_lon = -16.4,
+ geog_data_path = '<DATA_ROOT>/canairy_meteo/artifacts/wps_geog/WPS_GEOG_LOW_RES',
+/
+&ungrib
+ out_format = 'WPS',
+ prefix = 'AIFS',
+/
+&metgrid
+ fg_name = 'AIFS',
+ io_form_metgrid = 2,
+/

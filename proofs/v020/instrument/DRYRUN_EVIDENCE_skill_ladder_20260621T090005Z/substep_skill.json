@@ -1,0 +1,1499 @@
+{
+  "candidate_dir": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run",
+  "oracle_dir": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run",
+  "domains": {
+    "d01": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.1611799536933538,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.6199364801334708,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.3160409868887535,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 5.053242136540391e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d02": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.1796010124232184,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.7690005078674451,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.3151040752947505,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 4.086006034032384e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d03": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.8929778323740971,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 2.0711673725670856,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 3.5214680644968546,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.8445444836314315e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d04": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.6345777469078548,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 2.7395452812384473,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 2.821577446699214,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 2.735382969299933e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d05": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.2323146280054618,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.4941552497213706,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 3.3236225677703315,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 4.332091658509063e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d06": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.5230139786543624,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 2.3931615446347116,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 2.640712065281575,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d07": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.536307414971027,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.8991032972809874,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 2.685661430351345,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 4.980791497284414e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d08": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.0698439197082725,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.0336017987254276,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.2884938064007836,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 6.681356514619514e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    },
+    "d09": {
+      "case": "ADR-031 S4 -- long-horizon divergence-growth equivalence gate",
+      "leads": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "criterion": "Reduced-precision equivalence = bounded, non-escalating divergence from the fp64/CPU-WRF oracle over the forecast. Gate is on the SLOPE (saturating vs sustained-growth), not the endpoint value, normalized by the oracle's own internal-variability envelope.",
+      "per_field": {
+        "U10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 0.7500071700043819,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "V10": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 0.8407683262332842,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "T2": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1.0203231797019825,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QCLOUD": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 8.924613439740561e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        },
+        "QICE": {
+          "divergence_series": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "envelope": 1e-06,
+          "early_slope_per_lead": 0.0,
+          "late_slope_per_lead": 0.0,
+          "late_slope_ratio": 0.0,
+          "final_over_envelope": 0.0,
+          "max_over_envelope": 0.0,
+          "regime": "BOUNDED",
+          "passes": true,
+          "detail": {
+            "within_envelope": true,
+            "saturating": true,
+            "late_growth_in_envelope_units": 0.0,
+            "envelope_factor": 5.0,
+            "late_slope_tol": 0.25
+          }
+        }
+      },
+      "GATE_PASS": true,
+      "note_S4": "Scaffold metric + thresholds. Real fp32/fp64 (and fp32/CPU-WRF) 72 h series are supplied in S4; the envelope per field is the fp64-GPU run-to-run (or ensemble) variability measured then.",
+      "missing_fields": [],
+      "category_pass": {
+        "wind": true,
+        "temp": true,
+        "cloud": true
+      }
+    }
+  },
+  "GATE_PASS": true,
+  "scored_fields": [
+    "U10",
+    "V10",
+    "T2",
+    "QCLOUD",
+    "QICE"
+  ]
+}

@@ -1,0 +1,2882 @@
+{
+  "audit_verdict": {
+    "current_v017_fp32_dycore_does_not_remove_total_aliases": true,
+    "current_v017_fp32_dycore_rewidens_outer_carry_to_fp64": true,
+    "fp32_dycore_tested_path_was_not_persistent_state_fp32": true,
+    "hlo_temp_arena_remained_nearly_unchanged_in_v016_s2": true,
+    "launch_packaging_alone_is_falsified_as_2x_4x_small_grid_fix": true
+  },
+  "boulac_onz_v017": {
+    "artifact": ".wt-perf-boulac/proofs/perf/v017/boulac_onz_bench.json",
+    "bit_identity": {
+      "artifact": "proofs/perf/v017/boulac_onz_oracle.json",
+      "dispatch_vs_dense_max_abs": 0.0,
+      "no_clamps_or_tolerance_changes": true,
+      "production_vs_dense_max_abs": 0.0,
+      "regimes": 8,
+      "verdict": "PASS"
+    },
+    "comparisons": {
+      "canary_d03": {
+        "dense_peak_vram_gib": 3.12678861618042,
+        "dense_warm_ms_per_step": 38.44719162589172,
+        "production_onz_peak_vram_gib": 1.7319488525390625,
+        "production_onz_warm_ms_per_step": 39.81263250170741,
+        "vram_delta_gib": -1.3948397636413574,
+        "vram_ratio_onz_over_dense": 0.5539187789003898,
+        "warm_ms_delta": 1.3654408758156895
+      },
+      "swiss_147456": {
+        "capability_verdict": "ONZ unlocks this fp64 147456-column case where dense fails",
+        "dense": "OOM, 18.80 GiB allocation",
+        "production_onz": "FIT, 18.573930978775024 GiB peak, finite"
+      }
+    },
+    "selected_measurements": [
+      {
+        "case": "swiss-1km",
+        "mode": "dense",
+        "ncol": 147456,
+        "oom": true,
+        "peak_vram_gib": 4.196856498718262,
+        "ran_ok": false,
+        "warm_ms_per_step": null
+      },
+      {
+        "case": "swiss-1km",
+        "mode": "onz_chunk1_production",
+        "ncol": 147456,
+        "oom": false,
+        "peak_vram_gib": 18.573930978775024,
+        "ran_ok": true,
+        "warm_ms_per_step": 583.9760648741503
+      },
+      {
+        "case": "swiss-1km",
+        "mode": "onz_legacy_scan",
+        "ncol": 16384,
+        "oom": false,
+        "peak_vram_gib": 3.2496654987335205,
+        "ran_ok": true,
+        "warm_ms_per_step": 66.39803075086093
+      },
+      {
+        "case": "swiss-1km",
+        "mode": "onz_legacy_scan",
+        "ncol": 147456,
+        "oom": true,
+        "peak_vram_gib": 20.328131198883057,
+        "ran_ok": false,
+        "warm_ms_per_step": null
+      },
+      {
+        "case": "canary-d03",
+        "mode": "dense",
+        "ncol": 6975,
+        "oom": false,
+        "peak_vram_gib": 3.12678861618042,
+        "ran_ok": true,
+        "warm_ms_per_step": 38.44719162589172
+      },
+      {
+        "case": "canary-d03",
+        "mode": "onz_chunk1_production",
+        "ncol": 6975,
+        "oom": false,
+        "peak_vram_gib": 1.7319488525390625,
+        "ran_ok": true,
+        "warm_ms_per_step": 39.81263250170741
+      }
+    ],
+    "verdict": "PASS_PRODUCTION_ONZ_WITH_LEGACY_SCAN_REJECTED"
+  },
+  "code_pattern_counts": {
+    "astype_float64": {
+      "count": 61,
+      "samples": [
+        {
+          "line": 1008,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "updates[field] = value.astype(jnp.float64)"
+        },
+        {
+          "line": 1118,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "origin = jnp.asarray(origin, dtype=jnp.float64)"
+        },
+        {
+          "line": 1175,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "candidate64 = jnp.asarray(candidate, dtype=jnp.float64)"
+        },
+        {
+          "line": 1176,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "origin64 = jnp.asarray(origin, dtype=jnp.float64)"
+        },
+        {
+          "line": 1177,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mass64 = jnp.asarray(mass, dtype=jnp.float64)"
+        },
+        {
+          "line": 1181,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "lower = jnp.maximum(lower, jnp.asarray(lower_bound, dtype=jnp.float64))"
+        },
+        {
+          "line": 1183,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "upper = jnp.minimum(upper, jnp.asarray(upper_bound, dtype=jnp.float64))"
+        },
+        {
+          "line": 1217,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "after_mass = jnp.sum(limited.astype(jnp.float64) * mass64)"
+        },
+        {
+          "line": 1358,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "theta_pert = (state.theta - theta_offset).astype(jnp.float64)"
+        },
+        {
+          "line": 1359,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "theta_save_pert = (carry.t_save - theta_offset).astype(jnp.float64)"
+        },
+        {
+          "line": 1360,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "theta_ave_pert = (carry.t_2ave - theta_offset).astype(jnp.float64)"
+        },
+        {
+          "line": 1368,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_base = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 1369,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_base = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 1371,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)"
+        },
+        {
+          "line": 1373,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "c2a = CPOVCV * (p_base + state.p_perturbation.astype(jnp.float64)) / jnp.maximum("
+        },
+        {
+          "line": 1432,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_1=carry.ph_save.astype(jnp.float64) - ph_base,"
+        }
+      ]
+    },
+    "fp32_restore_outer_carry": {
+      "count": 2,
+      "samples": [
+        {
+          "line": 251,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "def _fp32_dycore_restore_carry_dtypes(new_carry, ref_carry):"
+        },
+        {
+          "line": 2168,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "next_carry = _fp32_dycore_restore_carry_dtypes(next_carry, carry)"
+        }
+      ]
+    },
+    "mu_total_minus_mu_perturbation": {
+      "count": 4,
+      "samples": [
+        {
+          "line": 3012,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mu_total = template.mu_total - template.mu_perturbation + mu_pert"
+        },
+        {
+          "line": 166,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+          "text": "mub = (state.mu_total - state.mu_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 252,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+          "text": "mut = (state.mu_total - state.mu_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 62,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/small_step_finish.py",
+          "text": "mu_base = state.mu_total - state.mu_perturbation"
+        }
+      ]
+    },
+    "mu_total_references": {
+      "count": 62,
+      "samples": [
+        {
+          "line": 1081,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "return jnp.asarray(state.mu_total) - jnp.asarray(state.mu_perturbation)"
+        },
+        {
+          "line": 1101,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "def _theta_mass_weights(theta: jax.Array, mu_total: jax.Array) -> jax.Array:"
+        },
+        {
+          "line": 1105,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mass_2d = jnp.asarray(mu_total, dtype=theta.dtype)"
+        },
+        {
+          "line": 1231,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "candidate_mu_total = jnp.asarray(candidate.mu_total)"
+        },
+        {
+          "line": 1238,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mu_total = jnp.where(valid_mu, candidate_mu_total, origin.mu_total)"
+        },
+        {
+          "line": 1240,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "return candidate.replace(mu=mu_total, mu_total=mu_total, mu_perturbation=mu_perturbation)"
+        },
+        {
+          "line": 1275,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mass = _theta_mass_weights(candidate.theta, candidate.mu_total)"
+        },
+        {
+          "line": 1362,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mu_total = mu_base + state.mu_perturbation"
+        },
+        {
+          "line": 1391,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "muu=_u_face_average_2d(mu_total),"
+        },
+        {
+          "line": 1392,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "muv=_v_face_average_2d(mu_total),"
+        },
+        {
+          "line": 2201,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "haloed.mu_total,"
+        },
+        {
+          "line": 2221,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "haloed.mu_total,"
+        },
+        {
+          "line": 2331,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mu_total = haloed.mu_total"
+        },
+        {
+          "line": 2332,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "muu = _u_face_average_2d(mu_total)"
+        },
+        {
+          "line": 2333,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "muv = _v_face_average_2d(mu_total)"
+        },
+        {
+          "line": 2336,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "mass_h = metrics.c1h[:, None, None] * mu_total[None, :, :] + metrics.c2h[:, None, None]"
+        }
+      ]
+    },
+    "p_total_minus_p_perturbation": {
+      "count": 5,
+      "samples": [
+        {
+          "line": 1368,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_base = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 1961,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_base = next_state.p_total - next_state.p_perturbation"
+        },
+        {
+          "line": 3010,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_total = template.p_total - template.p_perturbation + p_pert"
+        },
+        {
+          "line": 251,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+          "text": "pb = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 60,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/small_step_finish.py",
+          "text": "p_base = state.p_total - state.p_perturbation"
+        }
+      ]
+    },
+    "p_total_references": {
+      "count": 32,
+      "samples": [
+        {
+          "line": 1368,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_base = (state.p_total - state.p_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 1371,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)"
+        },
+        {
+          "line": 1961,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_base = next_state.p_total - next_state.p_perturbation"
+        },
+        {
+          "line": 1962,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_total = p_base + p_pert"
+        },
+        {
+          "line": 1964,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p=p_total, p_total=p_total, p_perturbation=p_pert,"
+        },
+        {
+          "line": 3010,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_total = template.p_total - template.p_perturbation + p_pert"
+        },
+        {
+          "line": 3025,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p=p_total,"
+        },
+        {
+          "line": 3026,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_total=p_total,"
+        },
+        {
+          "line": 3352,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "transitional ``p``/``p_total`` legacy aliases that ``State.replace`` keeps in"
+        },
+        {
+          "line": 3385,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "(``p=p_total`` etc.) before handing it to a ``donate_argnums`` forecast entry."
+        },
+        {
+          "line": 3994,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "p_total=_finite_or_origin(bounded.p_total, physical_origin.p_total),"
+        },
+        {
+          "line": 4131,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "The previous height extrapolation of ``p_total`` (phy_prep's OTHER ``p8w``"
+        },
+        {
+          "line": 4406,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "transitional legacy aliases (``State.replace(p=p_total, ...)``) carry"
+        },
+        {
+          "line": 141,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/coupled.py",
+          "text": "p_total=p_state,"
+        },
+        {
+          "line": 159,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+          "text": "``alt``  = full inverse density from the EOS (\u03b8_total, p_total)."
+        },
+        {
+          "line": 168,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+          "text": "state.theta.astype(jnp.float64), state.p_total.astype(jnp.float64)"
+        }
+      ]
+    },
+    "ph_total_minus_ph_perturbation": {
+      "count": 8,
+      "samples": [
+        {
+          "line": 1369,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_base = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 1458,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_base = state.ph_total - state.ph_perturbation"
+        },
+        {
+          "line": 1890,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "phb=state.ph_total - state.ph_perturbation,"
+        },
+        {
+          "line": 1893,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ht=(state.ph_total - state.ph_perturbation)[0, :, :] / GRAVITY_M_S2,"
+        },
+        {
+          "line": 1953,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "phb=next_state.ph_total - next_state.ph_perturbation,"
+        },
+        {
+          "line": 3011,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_total = template.ph_total - template.ph_perturbation + ph_pert"
+        },
+        {
+          "line": 176,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rk_addtend_dry.py",
+          "text": "phb = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 61,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/small_step_finish.py",
+          "text": "ph_base = state.ph_total - state.ph_perturbation"
+        }
+      ]
+    },
+    "ph_total_references": {
+      "count": 38,
+      "samples": [
+        {
+          "line": 1369,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_base = (state.ph_total - state.ph_perturbation).astype(jnp.float64)"
+        },
+        {
+          "line": 1458,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_base = state.ph_total - state.ph_perturbation"
+        },
+        {
+          "line": 1890,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "phb=state.ph_total - state.ph_perturbation,"
+        },
+        {
+          "line": 1893,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ht=(state.ph_total - state.ph_perturbation)[0, :, :] / GRAVITY_M_S2,"
+        },
+        {
+          "line": 1953,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "phb=next_state.ph_total - next_state.ph_perturbation,"
+        },
+        {
+          "line": 2320,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph = haloed.ph_total"
+        },
+        {
+          "line": 3011,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_total = template.ph_total - template.ph_perturbation + ph_pert"
+        },
+        {
+          "line": 3028,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph=ph_total,"
+        },
+        {
+          "line": 3029,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_total=ph_total,"
+        },
+        {
+          "line": 3995,
+          "path": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+          "text": "ph_total=_finite_or_origin(bounded.ph_total, physical_origin.ph_total),"
+        },
+        {
+          "line": 143,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/coupled.py",
+          "text": "ph_total=ph,"
+        },
+        {
+          "line": 89,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rhs_ph.py",
+          "text": "ph_total: jax.Array,"
+        },
+        {
+          "line": 116,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rhs_ph.py",
+          "text": "nzp1 = int(ph_total.shape[0])"
+        },
+        {
+          "line": 118,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rhs_ph.py",
+          "text": "ny = int(ph_total.shape[1])"
+        },
+        {
+          "line": 119,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rhs_ph.py",
+          "text": "nx = int(ph_total.shape[2])"
+        },
+        {
+          "line": 120,
+          "path": ".wt-fp32-dycore/src/gpuwrf/dynamics/core/rhs_ph.py",
+          "text": "a = ph_total[1:nz]  # faces 1..nz-1, (nz-1, ny, nx)"
+        }
+      ]
+    }
+  },
+  "fp32_dycore_v017": {
+    "artifact": ".wt-fp32-dycore/proofs/perf/v017/fp32_dycore.json",
+    "debug_carrysplit_artifact": ".wt-fp32dyc-debug/proofs/perf/v017/fp32_dycore_debug_carrysplit.json",
+    "debug_carrysplit_ratios": [
+      {
+        "field_divergence": {
+          "mu_total": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 5.6848176004554554e-09,
+            "rel_l2_delta": 1.9859983991423975e-10
+          },
+          "p_total": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 2.6264206400031273e-08,
+            "rel_l2_delta": 9.911793769044791e-11
+          },
+          "ph_total": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 7.972828225958753e-10,
+            "rel_l2_delta": 1.4699090122524177e-10
+          },
+          "qv": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 2.0996486593430958e-11,
+            "rel_l2_delta": 3.221264780814903e-10
+          },
+          "theta": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 1.365229523921714e-09,
+            "rel_l2_delta": 1.7381891264377317e-11
+          },
+          "u": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 1.7829083680776953e-08,
+            "rel_l2_delta": 2.283202254994401e-09
+          },
+          "v": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 4.025204078335919e-08,
+            "rel_l2_delta": 2.0373860251861157e-08
+          },
+          "w": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 8.326785244739033e-08,
+            "rel_l2_delta": 5.157444547493831e-09
+          }
+        },
+        "fp32dyc_compile_s": 98.54304552800022,
+        "fp32dyc_finite": true,
+        "fp32dyc_ms_per_step": 70.03539205632275,
+        "fp32dyc_peak_gib": 4.117832660675049,
+        "fp32dyc_speedup_over_fp64": 1.0148222978759247,
+        "fp64_compile_s": 9.554776823031716,
+        "fp64_finite": true,
+        "fp64_ms_per_step": 71.07347749923873,
+        "fp64_over_fp32dyc_vram": 1.0066393414053094,
+        "fp64_peak_gib": 4.145172357559204,
+        "mass_total_rel_delta": 1.6752576679072675e-10,
+        "ncol": 16384
+      },
+      {
+        "field_divergence": {
+          "mu_total": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 1.2844757744471336e-08,
+            "rel_l2_delta": 2.707045784022684e-10
+          },
+          "p_total": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 1.2141513711169705e-08,
+            "rel_l2_delta": 1.9855622691468804e-10
+          },
+          "ph_total": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 2.5579257178944957e-09,
+            "rel_l2_delta": 1.248275090486459e-10
+          },
+          "qv": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 4.7634280045561926e-11,
+            "rel_l2_delta": 2.7053366245187197e-10
+          },
+          "theta": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 6.785161316420887e-10,
+            "rel_l2_delta": 9.814718645740839e-12
+          },
+          "u": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 2.2720531642444793e-08,
+            "rel_l2_delta": 2.63986227820022e-09
+          },
+          "v": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 1.4385295420519143e-07,
+            "rel_l2_delta": 2.2996310585434917e-08
+          },
+          "w": {
+            "fp32_finite": true,
+            "rel_absmax_delta": 1.0412503876179044e-07,
+            "rel_l2_delta": 1.9046898144078672e-08
+          }
+        },
+        "fp32dyc_compile_s": 108.31706663797377,
+        "fp32dyc_finite": true,
+        "fp32dyc_ms_per_step": 258.5270039999159,
+        "fp32dyc_peak_gib": 12.015157461166382,
+        "fp32dyc_speedup_over_fp64": 0.989140480874848,
+        "fp64_compile_s": 7.956164286006242,
+        "fp64_finite": true,
+        "fp64_ms_per_step": 255.71952505561057,
+        "fp64_over_fp32dyc_vram": 1.0008323606386265,
+        "fp64_peak_gib": 12.025158405303955,
+        "mass_total_rel_delta": 2.2997369606091148e-10,
+        "ncol": 65536
+      },
+      {
+        "ncol": 147456
+      }
+    ],
+    "fp32dyc_unlocks_fp64_oom_ncols": [],
+    "ratios": [
+      {
+        "fp32dyc_peak_gib": 4.049851417541504,
+        "fp64_over_fp32dyc_vram": 1.0235358972650208,
+        "fp64_peak_gib": 4.145168304443359,
+        "mass_total_rel_delta": 3.007819826322641e-10,
+        "ncol": 16384,
+        "speedup": 1.042662294706728
+      },
+      {
+        "fp32dyc_peak_gib": 12.081558465957642,
+        "fp64_over_fp32dyc_vram": 0.9953313678572974,
+        "fp64_peak_gib": 12.025154113769531,
+        "mass_total_rel_delta": 1.8301327745961127e-10,
+        "ncol": 65536,
+        "speedup": 0.995625813328266
+      },
+      {
+        "ncol": 147456,
+        "status": "missing_or_oom"
+      }
+    ]
+  },
+  "hlo_memory_v016_s2": {
+    "artifact": "proofs/perf/v016/s2_hlo_stats_2x2_s1_final.json",
+    "dtype_token_ratio": {
+      "convert_count_fp64": 132,
+      "convert_count_mixed_s2": 697,
+      "f32_mixed_over_fp64": 16.784527972027973,
+      "f64_fp64_over_mixed": 1.9889397306837495
+    },
+    "ncol": 65536,
+    "ratios": {
+      "alias_size_in_bytes": {
+        "delta_gib": -0.28712916374206543,
+        "fp64_gib": 0.9831047356128693,
+        "mixed_over_fp64": 0.7079363435645861,
+        "mixed_s2_gib": 0.6959755718708038
+      },
+      "argument_size_in_bytes": {
+        "delta_gib": -0.28712916374206543,
+        "fp64_gib": 1.0427709221839905,
+        "mixed_over_fp64": 0.7246478995207317,
+        "mixed_s2_gib": 0.755641758441925
+      },
+      "generated_code_size_in_bytes": {
+        "delta_gib": -0.0033732056617736816,
+        "fp64_gib": 0.09766138345003128,
+        "mixed_over_fp64": 0.9654601896613558,
+        "mixed_s2_gib": 0.0942881777882576
+      },
+      "output_size_in_bytes": {
+        "delta_gib": -0.28712916374206543,
+        "fp64_gib": 0.9831051826477051,
+        "mixed_over_fp64": 0.7079364763709541,
+        "mixed_s2_gib": 0.6959760189056396
+      },
+      "temp_size_in_bytes": {
+        "delta_gib": -0.08789107948541641,
+        "fp64_gib": 7.657777048647404,
+        "mixed_over_fp64": 0.988522637976129,
+        "mixed_s2_gib": 7.569885969161987
+      }
+    }
+  },
+  "launch_flood_r2_xcheck": {
+    "artifact": ".wt-r2-xcheck/proofs/perf/v017/r2_xcheck_launch_flood.txt",
+    "rows": [
+      {
+        "event_ms_median": 1.053472,
+        "event_us_per_launch_or_node": 1.1903638418079097,
+        "host_ms_median": 1.059818,
+        "host_us_per_launch_or_node": 1.197534463276836,
+        "launches": 885,
+        "mode": "raw"
+      },
+      {
+        "event_ms_median": 6.226048,
+        "event_us_per_launch_or_node": 1.1789524711228934,
+        "host_ms_median": 6.234199,
+        "host_us_per_launch_or_node": 1.1804959288013634,
+        "launches": 5281,
+        "mode": "raw"
+      },
+      {
+        "event_ms_median": 0.333504,
+        "event_us_per_launch_or_node": 0.3768406779661017,
+        "host_ms_median": 0.338562,
+        "host_us_per_launch_or_node": 0.3825559322033898,
+        "launches": 885,
+        "mode": "graph"
+      },
+      {
+        "event_ms_median": 1.979712,
+        "event_us_per_launch_or_node": 0.3748744555955311,
+        "host_ms_median": 1.985695,
+        "host_us_per_launch_or_node": 0.37600738496496877,
+        "launches": 5281,
+        "mode": "graph"
+      }
+    ]
+  },
+  "memory_modes_from_state_contract": {
+    "bigswiss_211k_proxy": {
+      "modes": {
+        "alias_duplicate_bytes": {
+          "combined": {
+            "bytes": 303380640,
+            "gib": 0.2825452387332916
+          },
+          "mu_alias_plus_total": {
+            "bytes": 3370896,
+            "fields": [
+              "mu",
+              "mu_total"
+            ],
+            "gib": 0.003139391541481018
+          },
+          "p_alias_plus_total": {
+            "bytes": 148319424,
+            "fields": [
+              "p",
+              "p_total"
+            ],
+            "gib": 0.1381332278251648
+          },
+          "ph_alias_plus_total": {
+            "bytes": 151690320,
+            "fields": [
+              "ph",
+              "ph_total"
+            ],
+            "gib": 0.1412726193666458
+          }
+        },
+        "all_float64_state": {
+          "bytes": 2223447308,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 0,
+            "FP64": 61,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 2.070746671408415,
+          "ratio_vs_current_state": 1.5097928947738273,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "u",
+              "gib": 0.06921708583831787
+            },
+            {
+              "dtype": "FP64",
+              "field": "v",
+              "gib": 0.06921708583831787
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qv",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qc",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qr",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qi",
+              "gib": 0.0690666139125824
+            }
+          ]
+        },
+        "current_precision_matrix_state": {
+          "bytes": 1472683648,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 34,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 1.371543526649475,
+          "ratio_vs_current_state": 1.0,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.034608542919158936
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.034608542919158936
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0345333069562912
+            }
+          ]
+        },
+        "drop_alias_totals_and_store_dynamic_perturbations_fp32_target": {
+          "bytes": 1055535268,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 31,
+            "FP64": 24,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.9830438233911991,
+          "ratio_vs_current_state": 0.7167427094294728,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "w",
+              "gib": 0.03531815484166145
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "ph_perturbation",
+              "gib": 0.03531815484166145
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.034608542919158936
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.034608542919158936
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "p_perturbation",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.0345333069562912
+            }
+          ]
+        },
+        "drop_p_ph_mu_alias_totals_keep_current_dtypes": {
+          "bytes": 1169303008,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 28,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 1.0889982879161835,
+          "ratio_vs_current_state": 0.7939946977668894,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.034608542919158936
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.034608542919158936
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.0345333069562912
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.0345333069562912
+            }
+          ]
+        },
+        "separate_base_state_fp64": {
+          "bytes": 300009744,
+          "gib": 0.2794058471918106,
+          "ratio_vs_current_state": 0.20371635443052058,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "phb",
+              "gib": 0.0706363096833229
+            },
+            {
+              "dtype": "FP64",
+              "field": "pb",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "t0",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta_base",
+              "gib": 0.0690666139125824
+            },
+            {
+              "dtype": "FP64",
+              "field": "mub",
+              "gib": 0.001569695770740509
+            }
+          ]
+        }
+      },
+      "ncol": 210681,
+      "nx": 459,
+      "ny": 459,
+      "nz": 44
+    },
+    "canary_d03_native": {
+      "modes": {
+        "alias_duplicate_bytes": {
+          "combined": {
+            "bytes": 10044000,
+            "gib": 0.009354203939437866
+          },
+          "mu_alias_plus_total": {
+            "bytes": 111600,
+            "fields": [
+              "mu",
+              "mu_total"
+            ],
+            "gib": 0.0001039355993270874
+          },
+          "p_alias_plus_total": {
+            "bytes": 4910400,
+            "fields": [
+              "p",
+              "p_total"
+            ],
+            "gib": 0.004573166370391846
+          },
+          "ph_alias_plus_total": {
+            "bytes": 5022000,
+            "fields": [
+              "ph",
+              "ph_total"
+            ],
+            "gib": 0.004677101969718933
+          }
+        },
+        "all_float64_state": {
+          "bytes": 78713876,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 0,
+            "FP64": 61,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 0.07330800965428352,
+          "ratio_vs_current_state": 1.49291123041843,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "v",
+              "gib": 0.002317070960998535
+            },
+            {
+              "dtype": "FP64",
+              "field": "u",
+              "gib": 0.0023111701011657715
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qv",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qc",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qr",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qi",
+              "gib": 0.002286583185195923
+            }
+          ]
+        },
+        "current_precision_matrix_state": {
+          "bytes": 52725088,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 34,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 0.04910406470298767,
+          "ratio_vs_current_state": 1.0,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.0011585354804992676
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.0011555850505828857
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0011432915925979614
+            }
+          ]
+        },
+        "drop_alias_totals_and_store_dynamic_perturbations_fp32_target": {
+          "bytes": 38914588,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 31,
+            "FP64": 24,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.036242034286260605,
+          "ratio_vs_current_state": 0.7380658710327804,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "w",
+              "gib": 0.0011692754924297333
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "ph_perturbation",
+              "gib": 0.0011692754924297333
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.0011585354804992676
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.0011555850505828857
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "p_perturbation",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.0011432915925979614
+            }
+          ]
+        },
+        "drop_p_ph_mu_alias_totals_keep_current_dtypes": {
+          "bytes": 42681088,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 28,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.039749860763549805,
+          "ratio_vs_current_state": 0.809502451660204,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.0011585354804992676
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.0011555850505828857
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.0011432915925979614
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.0011432915925979614
+            }
+          ]
+        },
+        "separate_base_state_fp64": {
+          "bytes": 9932400,
+          "gib": 0.009250268340110779,
+          "ratio_vs_current_state": 0.1883809089137983,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "phb",
+              "gib": 0.0023385509848594666
+            },
+            {
+              "dtype": "FP64",
+              "field": "pb",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "t0",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta_base",
+              "gib": 0.002286583185195923
+            },
+            {
+              "dtype": "FP64",
+              "field": "mub",
+              "gib": 5.19677996635437e-05
+            }
+          ]
+        }
+      },
+      "ncol": 6975,
+      "nx": 93,
+      "ny": 75,
+      "nz": 44
+    },
+    "swiss_147k_tile": {
+      "modes": {
+        "alias_duplicate_bytes": {
+          "combined": {
+            "bytes": 212336640,
+            "gib": 0.19775390625
+          },
+          "mu_alias_plus_total": {
+            "bytes": 2359296,
+            "fields": [
+              "mu",
+              "mu_total"
+            ],
+            "gib": 0.002197265625
+          },
+          "p_alias_plus_total": {
+            "bytes": 103809024,
+            "fields": [
+              "p",
+              "p_total"
+            ],
+            "gib": 0.0966796875
+          },
+          "ph_alias_plus_total": {
+            "bytes": 106168320,
+            "fields": [
+              "ph",
+              "ph_total"
+            ],
+            "gib": 0.098876953125
+          }
+        },
+        "all_float64_state": {
+          "bytes": 1560283808,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 0,
+            "FP64": 61,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 1.453127533197403,
+          "ratio_vs_current_state": 1.509105150764061,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "u",
+              "gib": 0.048465728759765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "v",
+              "gib": 0.048465728759765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qv",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qc",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qr",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qi",
+              "gib": 0.04833984375
+            }
+          ]
+        },
+        "current_precision_matrix_state": {
+          "bytes": 1033913248,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 34,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 0.9629067480564117,
+          "ratio_vs_current_state": 1.0,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.024232864379882812
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.024232864379882812
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.024169921875
+            }
+          ]
+        },
+        "drop_alias_totals_and_store_dynamic_perturbations_fp32_target": {
+          "bytes": 741950368,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 31,
+            "FP64": 24,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.6909951269626617,
+          "ratio_vs_current_state": 0.717613754766396,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "w",
+              "gib": 0.02471923828125
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "ph_perturbation",
+              "gib": 0.02471923828125
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.024232864379882812
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.024232864379882812
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "p_perturbation",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.024169921875
+            }
+          ]
+        },
+        "drop_p_ph_mu_alias_totals_keep_current_dtypes": {
+          "bytes": 821576608,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 28,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.7651528418064117,
+          "ratio_vs_current_state": 0.7946281852846516,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.024232864379882812
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.024232864379882812
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.024169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.024169921875
+            }
+          ]
+        },
+        "separate_base_state_fp64": {
+          "bytes": 209977344,
+          "gib": 0.195556640625,
+          "ratio_vs_current_state": 0.2030899056629556,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "phb",
+              "gib": 0.0494384765625
+            },
+            {
+              "dtype": "FP64",
+              "field": "pb",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "t0",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta_base",
+              "gib": 0.04833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "mub",
+              "gib": 0.0010986328125
+            }
+          ]
+        }
+      },
+      "ncol": 147456,
+      "nx": 384,
+      "ny": 384,
+      "nz": 44
+    },
+    "swiss_16k_tile": {
+      "modes": {
+        "alias_duplicate_bytes": {
+          "combined": {
+            "bytes": 23592960,
+            "gib": 0.02197265625
+          },
+          "mu_alias_plus_total": {
+            "bytes": 262144,
+            "fields": [
+              "mu",
+              "mu_total"
+            ],
+            "gib": 0.000244140625
+          },
+          "p_alias_plus_total": {
+            "bytes": 11534336,
+            "fields": [
+              "p",
+              "p_total"
+            ],
+            "gib": 0.0107421875
+          },
+          "ph_alias_plus_total": {
+            "bytes": 11796480,
+            "fields": [
+              "ph",
+              "ph_total"
+            ],
+            "gib": 0.010986328125
+          }
+        },
+        "all_float64_state": {
+          "bytes": 178956960,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 0,
+            "FP64": 61,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 0.1666666567325592,
+          "ratio_vs_current_state": 1.5009730657650744,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "u",
+              "gib": 0.005413055419921875
+            },
+            {
+              "dtype": "FP64",
+              "field": "v",
+              "gib": 0.005413055419921875
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qv",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qc",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qr",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qi",
+              "gib": 0.00537109375
+            }
+          ]
+        },
+        "current_precision_matrix_state": {
+          "bytes": 119227296,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 34,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 0.11103907227516174,
+          "ratio_vs_current_state": 1.0,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.0027065277099609375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.0027065277099609375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.002685546875
+            }
+          ]
+        },
+        "drop_alias_totals_and_store_dynamic_perturbations_fp32_target": {
+          "bytes": 86786976,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 31,
+            "FP64": 24,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.08082666993141174,
+          "ratio_vs_current_state": 0.7279119707621315,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "w",
+              "gib": 0.00274658203125
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "ph_perturbation",
+              "gib": 0.00274658203125
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.0027065277099609375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.0027065277099609375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "p_perturbation",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.002685546875
+            }
+          ]
+        },
+        "drop_p_ph_mu_alias_totals_keep_current_dtypes": {
+          "bytes": 95634336,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 28,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.08906641602516174,
+          "ratio_vs_current_state": 0.8021177969179139,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.0027065277099609375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.0027065277099609375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.002685546875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.002685546875
+            }
+          ]
+        },
+        "separate_base_state_fp64": {
+          "bytes": 23330816,
+          "gib": 0.021728515625,
+          "ratio_vs_current_state": 0.19568351193672964,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "phb",
+              "gib": 0.0054931640625
+            },
+            {
+              "dtype": "FP64",
+              "field": "pb",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "t0",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta_base",
+              "gib": 0.00537109375
+            },
+            {
+              "dtype": "FP64",
+              "field": "mub",
+              "gib": 0.0001220703125
+            }
+          ]
+        }
+      },
+      "ncol": 16384,
+      "nx": 128,
+      "ny": 128,
+      "nz": 44
+    },
+    "swiss_65k_tile": {
+      "modes": {
+        "alias_duplicate_bytes": {
+          "combined": {
+            "bytes": 94371840,
+            "gib": 0.087890625
+          },
+          "mu_alias_plus_total": {
+            "bytes": 1048576,
+            "fields": [
+              "mu",
+              "mu_total"
+            ],
+            "gib": 0.0009765625
+          },
+          "p_alias_plus_total": {
+            "bytes": 46137344,
+            "fields": [
+              "p",
+              "p_total"
+            ],
+            "gib": 0.04296875
+          },
+          "ph_alias_plus_total": {
+            "bytes": 47185920,
+            "fields": [
+              "ph",
+              "ph_total"
+            ],
+            "gib": 0.0439453125
+          }
+        },
+        "all_float64_state": {
+          "bytes": 699030176,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 0,
+            "FP64": 61,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 0.6510225832462311,
+          "ratio_vs_current_state": 1.5070230884424916,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "u",
+              "gib": 0.02156829833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "v",
+              "gib": 0.02156829833984375
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qv",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qc",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qr",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qi",
+              "gib": 0.021484375
+            }
+          ]
+        },
+        "current_precision_matrix_state": {
+          "bytes": 463848352,
+          "dropped_fields": [],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 34,
+            "INT32": 1
+          },
+          "field_count": 62,
+          "gib": 0.43199244141578674,
+          "ratio_vs_current_state": 1.0,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_total",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "p",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_total",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.010784149169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.010784149169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0107421875
+            }
+          ]
+        },
+        "drop_alias_totals_and_store_dynamic_perturbations_fp32_target": {
+          "bytes": 334087072,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 31,
+            "FP64": 24,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.31114283204078674,
+          "ratio_vs_current_state": 0.72025063915717,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "w",
+              "gib": 0.010986328125
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "ph_perturbation",
+              "gib": 0.010986328125
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.010784149169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.010784149169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "p_perturbation",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.0107421875
+            }
+          ]
+        },
+        "drop_p_ph_mu_alias_totals_keep_current_dtypes": {
+          "bytes": 369476512,
+          "dropped_fields": [
+            "mu",
+            "mu_total",
+            "p",
+            "p_total",
+            "ph",
+            "ph_total"
+          ],
+          "dtype_counts": {
+            "FP32_GATED": 27,
+            "FP64": 28,
+            "INT32": 1
+          },
+          "field_count": 56,
+          "gib": 0.34410181641578674,
+          "ratio_vs_current_state": 0.7965459193870328,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "w",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "ph_perturbation",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "p_perturbation",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qke",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "qsq",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "u",
+              "gib": 0.010784149169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "v",
+              "gib": 0.010784149169921875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "theta",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qv",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qc",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qr",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qi",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qs",
+              "gib": 0.0107421875
+            },
+            {
+              "dtype": "FP32_GATED",
+              "field": "qg",
+              "gib": 0.0107421875
+            }
+          ]
+        },
+        "separate_base_state_fp64": {
+          "bytes": 93323264,
+          "gib": 0.0869140625,
+          "ratio_vs_current_state": 0.2011934797172676,
+          "top_fields_gib": [
+            {
+              "dtype": "FP64",
+              "field": "phb",
+              "gib": 0.02197265625
+            },
+            {
+              "dtype": "FP64",
+              "field": "pb",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "t0",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "theta_base",
+              "gib": 0.021484375
+            },
+            {
+              "dtype": "FP64",
+              "field": "mub",
+              "gib": 0.00048828125
+            }
+          ]
+        }
+      },
+      "ncol": 65536,
+      "nx": 256,
+      "ny": 256,
+      "nz": 44
+    }
+  },
+  "method": "static source-shape audit plus existing proof artifacts; no JAX import; no GPU run",
+  "schema": "gpuwrf.v017.fp32_memory_compute_reaudit.v1",
+  "source_files": {
+    "operational": ".wt-fp32-dycore/src/gpuwrf/runtime/operational_mode.py",
+    "precision": ".wt-fp32-dycore/src/gpuwrf/contracts/precision.py",
+    "state": ".wt-fp32-dycore/src/gpuwrf/contracts/state.py"
+  }
+}

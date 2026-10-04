@@ -1,0 +1,28 @@
+{
+  "grid": {
+    "name": "v017_bigswiss_460x460x44",
+    "cols": 211600,
+    "fp64_oom_target": true,
+    "_note": "is there a useful 1km/large grid fp64 OOMs on but fp32 fits? set from the capability sub-run; default True (a 1km nest exists)."
+  },
+  "fp64": {
+    "ms_per_step": null,
+    "wall_s": 0.0,
+    "steps": null,
+    "peak_vram_mib": null,
+    "fit": true,
+    "dominant_kernel_ms": null
+  },
+  "fp32": {
+    "ms_per_step": null,
+    "wall_s": 0.0,
+    "steps": null,
+    "peak_vram_mib": null,
+    "fit": true,
+    "dominant_kernel_ms": null
+  },
+  "notes": {
+    "fp32_arm": "JAX_ENABLE_X64=false + GPUWRF_THOMPSON_FP32=1 (aggressive proxy)",
+    "transient_fp32_fraction_source": "operator dtype/liveness audit (V020_G0_FP32_TRANSIENT_FRAC); -1/NaN treated conservatively by the verdict"
+  }
+}

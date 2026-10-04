@@ -1,0 +1,89 @@
+{
+  "x64_enabled": true,
+  "fp64_default": {
+    "mode": "fp64_default",
+    "carry_initial_dtypes": {
+      "p_perturbation": "float64",
+      "ph_perturbation": "float64",
+      "mu_perturbation": "float64",
+      "w": "float64",
+      "p_total": "float64",
+      "ph_total": "float64",
+      "mu_total": "float64",
+      "theta": "float64",
+      "u": "float64",
+      "v": "float64",
+      "qv": "float64"
+    },
+    "carry_after_one_step_dtypes": {
+      "p_perturbation": "float64",
+      "ph_perturbation": "float64",
+      "mu_perturbation": "float64",
+      "w": "float64",
+      "p_total": "float64",
+      "ph_total": "float64",
+      "mu_total": "float64",
+      "theta": "float64",
+      "u": "float64",
+      "v": "float64",
+      "qv": "float64"
+    },
+    "perts_fp32_initial": false,
+    "perts_fp32_after_step": false,
+    "totals_fp64": true,
+    "hlo_census": {
+      "f32_tokens": 12,
+      "f64_tokens": 8743,
+      "convert_ops": 12,
+      "while_ops": 10,
+      "hlo_chars": 3408801
+    }
+  },
+  "mixed_perturb_fp32_v020": {
+    "mode": "mixed_perturb_fp32_v020",
+    "carry_initial_dtypes": {
+      "p_perturbation": "float32",
+      "ph_perturbation": "float32",
+      "mu_perturbation": "float32",
+      "w": "float32",
+      "p_total": "float64",
+      "ph_total": "float64",
+      "mu_total": "float64",
+      "theta": "float64",
+      "u": "float64",
+      "v": "float64",
+      "qv": "float64",
+      "base.pb": "float64",
+      "base.phb": "float64",
+      "base.mub": "float64"
+    },
+    "carry_after_one_step_dtypes": {
+      "p_perturbation": "float32",
+      "ph_perturbation": "float32",
+      "mu_perturbation": "float32",
+      "w": "float32",
+      "p_total": "float64",
+      "ph_total": "float64",
+      "mu_total": "float64",
+      "theta": "float64",
+      "u": "float64",
+      "v": "float64",
+      "qv": "float64",
+      "base.pb": "float64",
+      "base.phb": "float64",
+      "base.mub": "float64"
+    },
+    "perts_fp32_initial": true,
+    "perts_fp32_after_step": true,
+    "totals_fp64": true,
+    "hlo_census": {
+      "f32_tokens": 128,
+      "f64_tokens": 8639,
+      "convert_ops": 151,
+      "while_ops": 10,
+      "hlo_chars": 3425959
+    }
+  },
+  "PROOF_fp32_takes_effect": true,
+  "note": "fp64_default carries the 4 acoustic perts in float64 (f32 tokens are incidental index/aux casts); mixed carries them float32 and they SURVIVE a real step while totals stay float64 -> genuine surgical fp32 storage, not the auto-promote no-op that fooled G0."
+}

@@ -1,0 +1,11 @@
+skill ladder (<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/skill_ladder_20260621T090005Z):
+  ladder log : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/skill_ladder_20260621T090005Z/ladder.jsonl
+  per-rung   : <rung>_{blowup,skill}.json
+  tally:
+    rung=substep hours=1 skill=PASS -> PASS
+    rung=step hours=1 skill=PASS -> PASS
+    rung=1 hours=1 skill=PASS -> PASS
+    rung=6 hours=6 skill=PASS -> PASS
+    rung=24 hours=24 skill=PASS -> PASS
+    rung=120 hours=120 skill=PASS -> PASS
+  NOTE: DRY-RUN — gates exercised on existing wrfout (self-compare must PASS); NOT a real ladder verdict.

@@ -1,0 +1,48 @@
+{
+  "source": "CPU-WRF 128 Switzerland 24h (anchor for GPU sweep)",
+  "case": "switzerland-128 dx=3000m e_vert=45",
+  "n_frames": 25,
+  "note": "Courant computed by re-evaluating the REAL CPU-WRF trajectory at each candidate dt; the GPU run will track this closely. Cz (vertical) is the binding term over steep terrain (min_dz~43m); CPU-WRF runs stably to dt=18 via the implicit vertical solver.",
+  "rungs": [
+    {
+      "dt_s": 10.0,
+      "n_sound": 10,
+      "worst_Cx": 0.2237,
+      "worst_Cy": 0.115,
+      "worst_C_horiz": 0.3387,
+      "worst_Cz": 0.8263,
+      "worst_C_total": 1.1129,
+      "min_dz_m": 42.73
+    },
+    {
+      "dt_s": 12.0,
+      "n_sound": 9,
+      "worst_Cx": 0.2685,
+      "worst_Cy": 0.138,
+      "worst_C_horiz": 0.4065,
+      "worst_Cz": 0.9915,
+      "worst_C_total": 1.3354,
+      "min_dz_m": 42.73
+    },
+    {
+      "dt_s": 15.0,
+      "n_sound": 8,
+      "worst_Cx": 0.3356,
+      "worst_Cy": 0.1725,
+      "worst_C_horiz": 0.5081,
+      "worst_Cz": 1.2394,
+      "worst_C_total": 1.6693,
+      "min_dz_m": 42.73
+    },
+    {
+      "dt_s": 18.0,
+      "n_sound": 7,
+      "worst_Cx": 0.4027,
+      "worst_Cy": 0.207,
+      "worst_C_horiz": 0.6097,
+      "worst_Cz": 1.4873,
+      "worst_C_total": 2.0032,
+      "min_dz_m": 42.73
+    }
+  ]
+}

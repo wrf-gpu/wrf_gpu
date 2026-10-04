@@ -1,0 +1,28 @@
+{
+  "all_finite": true,
+  "call_times_s": [
+    82.73693384195212,
+    27.700217159930617
+  ],
+  "digest": {
+    "bytes": 367594272,
+    "leaves": 178,
+    "sha256": "691af9062b48988ecee82bebdcd1ea5df259ccb8803d273317c6c452c04c0806",
+    "tag": "v0222_fixed3cache_gate2"
+  },
+  "digest_path": "<USER_HOME>/src/wrf_gpu2_wt/v023-gpu/proofs/v023/gate2_fix/ref_recap_fixed3cache/v0222_fixed3cache_gate2_state_digest.json",
+  "final_d01_own": 2,
+  "fixed_repeats": 2,
+  "fixed_root_steps": 2,
+  "input_dir": "<DATA_ROOT>/wrf_downscale/runs/20250121/cpu",
+  "maxdom": 3,
+  "rss_flat": true,
+  "rss_peak_mib": 12415.6796875,
+  "s_per_fc_hour": 2770.0217159930617,
+  "s_per_step": 13.850108579965308,
+  "state_meta": "<USER_HOME>/src/wrf_gpu2_wt/v023-gpu/proofs/v023/gate2_fix/ref_recap_fixed3cache/v0222_fixed3cache_gate2_state_meta.json",
+  "state_npz": "<USER_HOME>/src/wrf_gpu2_wt/v023-gpu/proofs/v023/gate2_fix/ref_recap_fixed3cache/v0222_fixed3cache_gate2_state.npz",
+  "tag": "v0222_fixed3cache_gate2",
+  "vram_flat": true,
+  "vram_peak_mib": 29151
+}

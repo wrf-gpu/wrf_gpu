@@ -1,0 +1,13 @@
+schema=gpuwrf.v023.camuw_oracle_build_manifest.v1
+compiler=GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+fflags=-w -ffree-form -ffree-line-length-none -fconvert=big-endian -frecord-marker=4 -O2 -I<USER_HOME>/src/wrf_pristine/WRF/phys -I<USER_HOME>/src/wrf_pristine/WRF/share -I<USER_HOME>/src/wrf_pristine/WRF/frame
+wrf_root=<USER_HOME>/src/wrf_pristine/WRF
+cpu_affinity=pid 629886's current affinity list: 4-31
+jax_platforms=cpu
+jax_platform_name=cpu
+cuda_visible_devices=
+omp_num_threads=2
+objects=prebuilt pristine-WRF objects, default WRF REAL ABI
+253886780ae99823608f28bbcf68e1bfdc97483fe6fe2d7df24866c2f2b1e42a  <USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F
+d1f5c261770d9d89bda0e48e3c9c7f9d96ea8989271960fb66d7e3af8b7f0d68  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_eddy_diff.F
+902050bd815678aad07757487bb68aa9bbd11341174a678b894f592f7d2d400e  <USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_diffusion_solver.F

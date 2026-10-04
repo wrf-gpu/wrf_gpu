@@ -1,0 +1,19 @@
+[with_gpu_lock] codex-mb-fixed-probe waiting for GPU lock (/tmp/wrf_gpu2_gpu.lock, timeout 18000s)...
+[with_gpu_lock] codex-mb-fixed-probe ACQUIRED GPU lock -> running: env OMP_NUM_THREADS=8 PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false JAX_COMPILATION_CACHE_DIR=/tmp/gpuwrf_mb_native_jit_fixed_probe GPUWRF_JAX_CACHE_DIR=/tmp/gpuwrf_mb_native_jit_fixed_probe GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo GPUWRF_NESTED_AOT=0 GPUWRF_PER_STEP_FINITE=1 GPUWRF_PER_STEP_DOMAINS=d01,d02 GPUWRF_PER_STEP_CELL=0,8,11 GPUWRF_PER_STEP_LOG=proofs/v022/nest_dycore/mb_native_jit_fixed_probe/per_step.jsonl python -m gpuwrf.cli run --namelist <DATA_ROOT>/wrf_downscale/fixture_montblanc_256/namelist.input --input-dir <DATA_ROOT>/wrf_downscale/fixture_montblanc_256 --output-dir proofs/v022/nest_dycore/mb_native_jit_fixed_probe/out --proof-dir proofs/v022/nest_dycore/mb_native_jit_fixed_probe/proof --scratch-dir proofs/v022/nest_dycore/mb_native_jit_fixed_probe/scratch --domain d01 --max-dom 2 --hours 1
+[with_gpu_lock] codex-mb-fixed-probe GPU memory at acquire: 0, NVIDIA GeForce RTX 5090, 28245, 32607, 3861
+gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=cuda_async (GPUWRF_ALLOCATOR=cuda_async (default); stream-ordered pool by default, GPUWRF_ALLOCATOR=platform for the no-fragment cudaMalloc fallback)
+gpuwrf: nested GPU preflight PASS: holder=holder=codex-mb-fixed-probe pid=2940472 since=2026-06-26T20:22:55Z token=gpuwrf-lock-2940472-26347-1782505375165621546 cmd=env OMP_NUM_THREADS=8 PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false JAX_COMPILATION_CACHE_DIR=/tmp/gpuwrf_mb_native_jit_fixed_probe GPUWRF_JAX_CACHE_DIR=/tmp/gpuwrf_mb_native_jit_fixed_probe GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo GPUWRF_NESTED_AOT=0 GPUWRF_PER_STEP_FINITE=1 GPUWRF_PER_STEP_DOMAINS=d01,d02 GPUWRF_PER_STEP_CELL=0,8,11 GPUWRF_PER_STEP_LOG=proofs/v022/nest_dycore/mb_native_jit_fixed_probe/per_step.jsonl python -m gpuwrf.cli run --namelist <DATA_ROOT>/wrf_downscale/fixture_montblanc_256/namelist.input --input-dir <DATA_ROOT>/wrf_downscale/fixture_montblanc_256 --output-dir proofs/v022/nest_dycore/mb_native_jit_fixed_probe/out --proof-dir proofs/v022/nest_dycore/mb_native_jit_fixed_probe/proof --scratch-dir proofs/v022/nest_dycore/mb_native_jit_fixed_probe/scratch --domain d01 --max-dom 2 --hours 1; free_vram=26.771 GiB / 31.843 GiB on NVIDIA GeForce RTX 5090 (index=0); threshold=24.0 GiB (source=max(default absolute floor, GPUWRF_MIN_FREE_VRAM_FRACTION * total VRAM); floor=24.0 GiB; fraction=0.5; fractional=15.921 GiB)
+gpuwrf: init mode = standalone_native_init_nested -- STANDALONE LIVE-NESTED (d01..d02; parent feeds each child LBC live; no CPU-WRF wrfout); hours=1; scratch=proofs/v022/nest_dycore/mb_native_jit_fixed_probe/scratch
+[parallel-compile] PREWARM_START de-fuse nest
+[parallel-compile] PREWARM_DONE active=False source=skip:fused-default workers=None wall_s=0.0 warm_all=None error=None
+E0626 21:30:07.009983 2941038 slow_operation_alarm.cc:73]
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0626 21:30:33.641457 2940480 slow_operation_alarm.cc:140] The operation took 2m26.631591426s
+
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+gpuwrf: error: nested forecast failed (_FirstNonFiniteHit: first non-finite: domain=d02 step=27 field=Ni idx=[0, 104, 19] value=nan)
+[with_gpu_lock] codex-mb-fixed-probe released GPU lock (rc=1)

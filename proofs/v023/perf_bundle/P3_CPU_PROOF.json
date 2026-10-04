@@ -1,0 +1,142 @@
+{
+  "bit_identity": {
+    "domains": {
+      "d01": {
+        "leaf_count": 71,
+        "sha256": "c4c09186f8e24f89e9503edf3f78ba9fc29b2f7ab706409428d1fda53bf48146"
+      },
+      "d02": {
+        "leaf_count": 71,
+        "sha256": "0eb789693024a0ead1bec2317262d64ef56db240caee7f5c3408545a89b78ca0"
+      }
+    },
+    "events": [
+      [
+        "advance",
+        "d01",
+        1,
+        1,
+        1
+      ],
+      [
+        "force",
+        "d01",
+        "d02",
+        1
+      ],
+      [
+        "advance",
+        "d02",
+        1,
+        3,
+        3
+      ]
+    ],
+    "events_identical": true,
+    "own_steps": {
+      "d01": 1,
+      "d02": 3
+    },
+    "own_steps_identical": true
+  },
+  "cpu_affinity": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "cpu_only": true,
+  "env": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "GPUWRF_NESTED_AOT": "0",
+    "GPUWRF_NESTED_FUSE_FINAL": "1",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_PLATFORM_NAME": "cpu"
+  },
+  "geometry": {
+    "domains": [
+      "d01",
+      "d02"
+    ],
+    "edge": "d01->d02",
+    "parent_grid_ratio": 3,
+    "root_steps": 1
+  },
+  "gpu_perf": {
+    "expected_win": "one root-cascade executable should reduce GPU top-level dispatch/host orchestration versus parent advance + boundary force + child advance",
+    "required_measurement": "warm GPU launch-count and wall-time comparison in the validation lane",
+    "status": "deferred"
+  },
+  "hlo_program_proof": {
+    "entry_count_fused": 1,
+    "entry_count_unfused_sum": 3,
+    "launch_marker_count_fused": 169,
+    "launch_marker_count_unfused_sum": 174,
+    "modules": {
+      "fused_root_cascade": {
+        "bytes": 2487748,
+        "entry_count": 1,
+        "full_path": "proofs/v023/perf_bundle/hlo/full/p3_fused_root_cascade.txt",
+        "launch_marker_count": 169,
+        "path": "proofs/v023/perf_bundle/hlo/p3_fused_root_cascade.txt",
+        "sha256": "53a1a33a5db4564e0c2348ccd3357e313ec0300e39f99ad759aa0924992469b7"
+      },
+      "unfused_boundary_force": {
+        "bytes": 241917,
+        "entry_count": 1,
+        "full_path": "proofs/v023/perf_bundle/hlo/full/p3_unfused_boundary_force.txt",
+        "launch_marker_count": 11,
+        "path": "proofs/v023/perf_bundle/hlo/p3_unfused_boundary_force.txt",
+        "sha256": "bd0bb06995a22911daad86e0b20b14f92933afe563f6b391520a10681dddd4ec"
+      },
+      "unfused_child_advance": {
+        "bytes": 1700799,
+        "entry_count": 1,
+        "full_path": "proofs/v023/perf_bundle/hlo/full/p3_unfused_child_advance.txt",
+        "launch_marker_count": 150,
+        "path": "proofs/v023/perf_bundle/hlo/p3_unfused_child_advance.txt",
+        "sha256": "c27d8b8e5832438494f71032a35951d8ab29097ffabc903fbbf87fc2c493902b"
+      },
+      "unfused_parent_advance": {
+        "bytes": 207566,
+        "entry_count": 1,
+        "full_path": "proofs/v023/perf_bundle/hlo/full/p3_unfused_parent_advance.txt",
+        "launch_marker_count": 13,
+        "path": "proofs/v023/perf_bundle/hlo/p3_unfused_parent_advance.txt",
+        "sha256": "fbcb188c451c78593bd7ba8b3048b4db9a513a1fb647d78d560b596fade45b85"
+      }
+    },
+    "top_level_program_delta": -2,
+    "top_level_programs_fused": 1,
+    "top_level_programs_unfused": 3
+  },
+  "jax_backend": "cpu",
+  "jax_devices": [
+    "cpu:0"
+  ],
+  "proof": "P3 flat 2-domain root fusion CPU proof"
+}

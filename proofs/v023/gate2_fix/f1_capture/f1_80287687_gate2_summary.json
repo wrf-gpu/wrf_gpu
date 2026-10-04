@@ -1,0 +1,28 @@
+{
+  "all_finite": true,
+  "call_times_s": [
+    787.4515195279382,
+    33.34481748903636
+  ],
+  "digest": {
+    "bytes": 367594272,
+    "leaves": 178,
+    "sha256": "80891e49b75f5ed35c85003c97cce50ecb0e0970155cd1e0f415af87c0bcd037",
+    "tag": "f1_80287687_gate2"
+  },
+  "digest_path": "<USER_HOME>/src/wrf_gpu2_wt/v023-gpu/proofs/v023/gate2_fix/f1_capture/f1_80287687_gate2_state_digest.json",
+  "final_d01_own": 2,
+  "fixed_repeats": 2,
+  "fixed_root_steps": 2,
+  "input_dir": "<DATA_ROOT>/wrf_downscale/runs/20250121/cpu",
+  "maxdom": 3,
+  "rss_flat": true,
+  "rss_peak_mib": 23151.1015625,
+  "s_per_fc_hour": 3334.481748903636,
+  "s_per_step": 16.67240874451818,
+  "state_meta": "<USER_HOME>/src/wrf_gpu2_wt/v023-gpu/proofs/v023/gate2_fix/f1_capture/f1_80287687_gate2_state_meta.json",
+  "state_npz": "<USER_HOME>/src/wrf_gpu2_wt/v023-gpu/proofs/v023/gate2_fix/f1_capture/f1_80287687_gate2_state.npz",
+  "tag": "f1_80287687_gate2",
+  "vram_flat": true,
+  "vram_peak_mib": 29125
+}

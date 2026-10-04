@@ -1,0 +1,23 @@
+# v0.17 RUC LSM WRF savepoint oracle build scratch.
+# Compiled Fortran oracle artifacts, intermediate column dumps, and the verbatim
+# pristine-WRF source/tables copied at build time are NOT committed; the extracted
+# savepoint JSON under proofs/v017/savepoints/ruclsm/fp64 IS (with sha256 of the
+# unmodified WRF sources in ruclsm_wrf_source_checksums.txt).
+build/
+build_*/
+*.o
+*.mod
+*.smod
+*.exe
+ruclsm_oracle
+fort.*
+_wrfstubs.*
+*.txt
+# Verbatim copies of pristine WRF physics source + parameter tables vendored at
+# build time only (provenance + sha256 recorded in the savepoint checksum file).
+module_sf_ruclsm.F
+module_model_constants.F
+module_wrf_error.F
+VEGPARM.TBL
+SOILPARM.TBL
+GENPARM.TBL

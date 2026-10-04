@@ -1,0 +1,329 @@
+{
+  "detected_moves": [
+    {
+      "dx_parent": 1,
+      "dy_parent": 0,
+      "frame": 14
+    },
+    {
+      "dx_parent": 1,
+      "dy_parent": 1,
+      "frame": 29
+    }
+  ],
+  "metadata_frozen_note": "wrfout I/J_PARENT_START stays at its initial value in this build; moves are detected from the data and cross-checked against the 'moving <id> <dx> <dy>' lines of the WRF run log",
+  "move_checks": [
+    {
+      "dx_parent": 1,
+      "dy_parent": 0,
+      "fields": {
+        "PH": {
+          "exposed_beats_null_ratio": 0.12392924699116394,
+          "exposed_rms_our_fill_vs_wrf": 0.2994246811122902,
+          "exposed_rms_stale_null": 2.4160937662571205,
+          "one_step_tendency_ref_rms": 5.6175988609059395,
+          "residual_vs_tendency_ratio": 0.9878932206306911,
+          "rms_no_shift_null": 10.224565272838339,
+          "rms_our_shift_vs_wrf_post": 5.54958783091167,
+          "shift_beats_null_ratio": 0.5427700525961926
+        },
+        "QVAPOR": {
+          "exposed_beats_null_ratio": 0.06427736104677821,
+          "exposed_rms_our_fill_vs_wrf": 1.513616590587816e-07,
+          "exposed_rms_stale_null": 2.354820680155604e-06,
+          "one_step_tendency_ref_rms": 5.179015832093037e-06,
+          "residual_vs_tendency_ratio": 1.0401416733529163,
+          "rms_no_shift_null": 2.4053909404173976e-05,
+          "rms_our_shift_vs_wrf_post": 5.3869101939144975e-06,
+          "shift_beats_null_ratio": 0.2239515458131612
+        },
+        "T": {
+          "exposed_beats_null_ratio": 0.1323839556326297,
+          "exposed_rms_our_fill_vs_wrf": 0.0006113532865707614,
+          "exposed_rms_stale_null": 0.004618031570738746,
+          "one_step_tendency_ref_rms": 0.0073822243794270555,
+          "residual_vs_tendency_ratio": 1.010764596867242,
+          "rms_no_shift_null": 0.06067911157013902,
+          "rms_our_shift_vs_wrf_post": 0.007461691048855115,
+          "shift_beats_null_ratio": 0.12296968191813655
+        },
+        "U": {
+          "one_step_tendency_ref_rms": 0.016251615408207847,
+          "residual_vs_tendency_ratio": 0.9865394247591431,
+          "rms_no_shift_null": 0.1010294964554982,
+          "rms_our_shift_vs_wrf_post": 0.016032859316220196,
+          "shift_beats_null_ratio": 0.15869483545612248
+        },
+        "V": {
+          "one_step_tendency_ref_rms": 0.016053775316611472,
+          "residual_vs_tendency_ratio": 1.0159806004312928,
+          "rms_no_shift_null": 0.06463806492089967,
+          "rms_our_shift_vs_wrf_post": 0.01631032428535999,
+          "shift_beats_null_ratio": 0.25233311525212926
+        }
+      },
+      "frame": 14
+    },
+    {
+      "dx_parent": 1,
+      "dy_parent": 1,
+      "fields": {
+        "PH": {
+          "exposed_beats_null_ratio": 0.07248940775858169,
+          "exposed_rms_our_fill_vs_wrf": 0.11309236739661073,
+          "exposed_rms_stale_null": 1.5601226564473103,
+          "one_step_tendency_ref_rms": 1.6623274915005677,
+          "residual_vs_tendency_ratio": 0.9937835473930839,
+          "rms_no_shift_null": 7.065619656741941,
+          "rms_our_shift_vs_wrf_post": 1.6519937114324807,
+          "shift_beats_null_ratio": 0.2338073363255784
+        },
+        "QVAPOR": {
+          "exposed_beats_null_ratio": 0.04663585320311428,
+          "exposed_rms_our_fill_vs_wrf": 1.7541185417727143e-07,
+          "exposed_rms_stale_null": 3.7613089957483113e-06,
+          "one_step_tendency_ref_rms": 5.824172596308099e-06,
+          "residual_vs_tendency_ratio": 1.060265777980465,
+          "rms_no_shift_null": 0.00010509706067665082,
+          "rms_our_shift_vs_wrf_post": 6.175170888917111e-06,
+          "shift_beats_null_ratio": 0.05875683724320403
+        },
+        "T": {
+          "exposed_beats_null_ratio": 0.06502655519032569,
+          "exposed_rms_our_fill_vs_wrf": 0.0007794766188268889,
+          "exposed_rms_stale_null": 0.01198705077557077,
+          "one_step_tendency_ref_rms": 0.00907666364701893,
+          "residual_vs_tendency_ratio": 1.091787211287934,
+          "rms_no_shift_null": 0.0860584990533507,
+          "rms_our_shift_vs_wrf_post": 0.009909785290977368,
+          "shift_beats_null_ratio": 0.1151517328327321
+        },
+        "U": {
+          "one_step_tendency_ref_rms": 0.014187886361960358,
+          "residual_vs_tendency_ratio": 1.0320411238856122,
+          "rms_no_shift_null": 0.21305040269503525,
+          "rms_our_shift_vs_wrf_post": 0.014642482186558918,
+          "shift_beats_null_ratio": 0.06872778460559152
+        },
+        "V": {
+          "one_step_tendency_ref_rms": 0.01184171509368586,
+          "residual_vs_tendency_ratio": 1.057447962421261,
+          "rms_no_shift_null": 0.2044916854883835,
+          "rms_our_shift_vs_wrf_post": 0.012521997497391203,
+          "shift_beats_null_ratio": 0.06123475126866484
+        }
+      },
+      "frame": 29
+    }
+  ],
+  "n_child_frames": 46,
+  "schema": "gpuwrf.v023.g2_wrf_moving_nest_fixture_compare",
+  "schema_version": 2,
+  "start_trajectory": [
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      13,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      15,
+      16
+    ]
+  ],
+  "summary": {
+    "max_exposed_vs_null_ratio": 0.1323839556326297,
+    "max_residual_vs_tendency_ratio": 1.091787211287934,
+    "max_shift_vs_null_ratio": 0.5427700525961926,
+    "n_moves_detected": 2
+  },
+  "verdict": "PASS",
+  "wrf_binary": "wrf_pristine_movenest_g2 (v4.7.1 serial STUBMPI + -DMOVE_NESTS, em_quarter_ss)",
+  "wrf_log_consistent_with_detected": true,
+  "wrf_log_moves": [
+    {
+      "dx_parent": 1,
+      "dy_parent": 0,
+      "grid_id": 2
+    },
+    {
+      "dx_parent": 1,
+      "dy_parent": 1,
+      "grid_id": 2
+    }
+  ]
+}

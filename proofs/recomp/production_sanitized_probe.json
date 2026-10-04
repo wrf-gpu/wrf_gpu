@@ -1,0 +1,310 @@
+{
+  "dt_s": 1.0,
+  "n_acoustic": 4,
+  "steps": 30,
+  "total_clip_count": 3069606,
+  "total_nonfinite_count": 0,
+  "per_step": [
+    {
+      "step": 1,
+      "clip_count": 20096,
+      "nonfinite_count": 0,
+      "changed_count": 20096,
+      "w_absmax_post_sanitize": 44.874946934535174,
+      "theta_min_post_sanitize": 289.9246520996094,
+      "theta_max_post_sanitize": 492.52825927734375,
+      "finite": true
+    },
+    {
+      "step": 2,
+      "clip_count": 79524,
+      "nonfinite_count": 0,
+      "changed_count": 79524,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 290.5660095214844,
+      "theta_max_post_sanitize": 492.52813720703125,
+      "finite": true
+    },
+    {
+      "step": 3,
+      "clip_count": 105722,
+      "nonfinite_count": 0,
+      "changed_count": 105722,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 290.3924255371094,
+      "theta_max_post_sanitize": 492.52801513671875,
+      "finite": true
+    },
+    {
+      "step": 4,
+      "clip_count": 115481,
+      "nonfinite_count": 0,
+      "changed_count": 115481,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 290.2342529296875,
+      "theta_max_post_sanitize": 492.5278625488281,
+      "finite": true
+    },
+    {
+      "step": 5,
+      "clip_count": 115276,
+      "nonfinite_count": 0,
+      "changed_count": 115276,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 290.44110107421875,
+      "theta_max_post_sanitize": 492.5277404785156,
+      "finite": true
+    },
+    {
+      "step": 6,
+      "clip_count": 120906,
+      "nonfinite_count": 0,
+      "changed_count": 120906,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.0284118652344,
+      "theta_max_post_sanitize": 492.5276184082031,
+      "finite": true
+    },
+    {
+      "step": 7,
+      "clip_count": 118539,
+      "nonfinite_count": 0,
+      "changed_count": 118539,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1390686035156,
+      "theta_max_post_sanitize": 492.5274963378906,
+      "finite": true
+    },
+    {
+      "step": 8,
+      "clip_count": 129333,
+      "nonfinite_count": 0,
+      "changed_count": 129333,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.13922119140625,
+      "theta_max_post_sanitize": 492.5273742675781,
+      "finite": true
+    },
+    {
+      "step": 9,
+      "clip_count": 122762,
+      "nonfinite_count": 0,
+      "changed_count": 122762,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.13934326171875,
+      "theta_max_post_sanitize": 492.5272521972656,
+      "finite": true
+    },
+    {
+      "step": 10,
+      "clip_count": 125311,
+      "nonfinite_count": 0,
+      "changed_count": 125311,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.13946533203125,
+      "theta_max_post_sanitize": 492.527099609375,
+      "finite": true
+    },
+    {
+      "step": 11,
+      "clip_count": 128096,
+      "nonfinite_count": 0,
+      "changed_count": 128096,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1396179199219,
+      "theta_max_post_sanitize": 492.5269775390625,
+      "finite": true
+    },
+    {
+      "step": 12,
+      "clip_count": 114557,
+      "nonfinite_count": 0,
+      "changed_count": 114557,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1397399902344,
+      "theta_max_post_sanitize": 492.52685546875,
+      "finite": true
+    },
+    {
+      "step": 13,
+      "clip_count": 120208,
+      "nonfinite_count": 0,
+      "changed_count": 120208,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1398620605469,
+      "theta_max_post_sanitize": 492.5267333984375,
+      "finite": true
+    },
+    {
+      "step": 14,
+      "clip_count": 112282,
+      "nonfinite_count": 0,
+      "changed_count": 112282,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1399841308594,
+      "theta_max_post_sanitize": 492.526611328125,
+      "finite": true
+    },
+    {
+      "step": 15,
+      "clip_count": 108293,
+      "nonfinite_count": 0,
+      "changed_count": 108293,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.14013671875,
+      "theta_max_post_sanitize": 492.5264892578125,
+      "finite": true
+    },
+    {
+      "step": 16,
+      "clip_count": 111331,
+      "nonfinite_count": 0,
+      "changed_count": 111331,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1402587890625,
+      "theta_max_post_sanitize": 492.5263366699219,
+      "finite": true
+    },
+    {
+      "step": 17,
+      "clip_count": 106260,
+      "nonfinite_count": 0,
+      "changed_count": 106260,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.140380859375,
+      "theta_max_post_sanitize": 492.5262145996094,
+      "finite": true
+    },
+    {
+      "step": 18,
+      "clip_count": 101972,
+      "nonfinite_count": 0,
+      "changed_count": 101972,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1405334472656,
+      "theta_max_post_sanitize": 492.5260925292969,
+      "finite": true
+    },
+    {
+      "step": 19,
+      "clip_count": 101965,
+      "nonfinite_count": 0,
+      "changed_count": 101965,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1406555175781,
+      "theta_max_post_sanitize": 492.5259704589844,
+      "finite": true
+    },
+    {
+      "step": 20,
+      "clip_count": 104633,
+      "nonfinite_count": 0,
+      "changed_count": 104633,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1407775878906,
+      "theta_max_post_sanitize": 492.5258483886719,
+      "finite": true
+    },
+    {
+      "step": 21,
+      "clip_count": 97152,
+      "nonfinite_count": 0,
+      "changed_count": 97152,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.14093017578125,
+      "theta_max_post_sanitize": 492.5257263183594,
+      "finite": true
+    },
+    {
+      "step": 22,
+      "clip_count": 99762,
+      "nonfinite_count": 0,
+      "changed_count": 99762,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.14105224609375,
+      "theta_max_post_sanitize": 492.52557373046875,
+      "finite": true
+    },
+    {
+      "step": 23,
+      "clip_count": 88689,
+      "nonfinite_count": 0,
+      "changed_count": 88689,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.14117431640625,
+      "theta_max_post_sanitize": 492.52545166015625,
+      "finite": true
+    },
+    {
+      "step": 24,
+      "clip_count": 95763,
+      "nonfinite_count": 0,
+      "changed_count": 95763,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1413269042969,
+      "theta_max_post_sanitize": 492.52532958984375,
+      "finite": true
+    },
+    {
+      "step": 25,
+      "clip_count": 80206,
+      "nonfinite_count": 0,
+      "changed_count": 80206,
+      "w_absmax_post_sanitize": 50.0,
+      "theta_min_post_sanitize": 291.1414489746094,
+      "theta_max_post_sanitize": 492.52520751953125,
+      "finite": true
+    },
+    {
+      "step": 26,
+      "clip_count": 88022,
+      "nonfinite_count": 0,
+      "changed_count": 88022,
+      "w_absmax_post_sanitize": 49.72645813000841,
+      "theta_min_post_sanitize": 291.1415710449219,
+      "theta_max_post_sanitize": 492.52508544921875,
+      "finite": true
+    },
+    {
+      "step": 27,
+      "clip_count": 81037,
+      "nonfinite_count": 0,
+      "changed_count": 81037,
+      "w_absmax_post_sanitize": 48.447088243683844,
+      "theta_min_post_sanitize": 291.1417236328125,
+      "theta_max_post_sanitize": 492.52496337890625,
+      "finite": true
+    },
+    {
+      "step": 28,
+      "clip_count": 88373,
+      "nonfinite_count": 0,
+      "changed_count": 88373,
+      "w_absmax_post_sanitize": 46.43503491364438,
+      "theta_min_post_sanitize": 291.141845703125,
+      "theta_max_post_sanitize": 492.5248107910156,
+      "finite": true
+    },
+    {
+      "step": 29,
+      "clip_count": 81994,
+      "nonfinite_count": 0,
+      "changed_count": 81994,
+      "w_absmax_post_sanitize": 44.50176812529265,
+      "theta_min_post_sanitize": 291.1419677734375,
+      "theta_max_post_sanitize": 492.5246887207031,
+      "finite": true
+    },
+    {
+      "step": 30,
+      "clip_count": 106061,
+      "nonfinite_count": 0,
+      "changed_count": 106061,
+      "w_absmax_post_sanitize": 42.458408957135006,
+      "theta_min_post_sanitize": 150.0,
+      "theta_max_post_sanitize": 492.5245666503906,
+      "finite": true
+    }
+  ],
+  "verdict": "GUARD_LOAD_BEARING"
+}

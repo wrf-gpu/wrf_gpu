@@ -1,0 +1,86 @@
+{
+  "proof": "v0.18 AC1_FIT d03 (1km) OOM root-cause: transient-buffer localization + tile-scan",
+  "date": "2026-06-18",
+  "mode": "measurement_only_no_src_edits",
+  "device": "RTX 5090 (32 GiB, sm_120), fp64, JAX 0.10.0",
+  "grid_d03": {"e_we": 520, "e_sn": 280, "e_vert": 45, "mass_cols": 144801, "mass_layers": 44, "doc_cols": 145600},
+  "method": {
+    "standalone_probe": "faithful d03-scale (144801 cols x 44 layers, fp64) invocation of solve_rrtmg_lw_column / solve_rrtmg_sw_column / step_mynn_pbl_column; device peak_bytes_in_use via jax memory_stats (BFC allocator; the production 'platform' allocator does NOT populate stats).",
+    "buffer_assignment": "XLA --xla_dump_to buffer-assignment.txt for the d03 LW program at tile=16384.",
+    "real_run_crosscheck": "python -m gpuwrf run --max-dom 3 --hours 1 on the OOM'd AC1_FIT case (BFC alloc, mem_fraction 0.92); nvidia-smi max-used poll."
+  },
+  "real_run_oom_REPRODUCED": {
+    "command": "python -m gpuwrf run --input-dir .../ac1fit_20260614T220802Z/run_cpu --max-dom 3 --hours 1 (fp64, BFC alloc, XLA_PYTHON_CLIENT_MEM_FRACTION=0.92)",
+    "outcome": "OOM during d0X cold compile / first integration (real_run_oom.log)",
+    "driver_level_event": "cuda_executor.cc:1206 Failed to allocate 12.72 GiB (13,659,682,048 bytes) CUDA_ERROR_OUT_OF_MEMORY -- MATCHES the reported ~13.7 GiB failing allocation",
+    "bfc_level_event": "GPU_0_bfc ran out of memory trying to allocate 2.09 GiB (rounded 2,242,678,016) repeatedly; BFC fragmentation map shows free holes too small for the 2.09 GiB block (***___***___***)",
+    "smi_peak_used_mib": 31792,
+    "interpretation": "The working set drove device usage to ~31.8 GiB of 32 GiB; the 12.72 GiB request is XLA reserving a large CONTIGUOUS scratch arena (whole-program temp, cf. the LW allocation-199 preallocated-temp arena pattern) that does not fit alongside the already-resident multi-domain state + other-process 2.9 GiB baseline. The recurring 2.09 GiB BFC requests are the per-step radiation/PBL transients that cannot find a contiguous block once fragmented. This is a WORKING-SET-too-large + FRAGMENTATION failure, NOT a single fundamental 12.72 GiB buffer.",
+    "note_baseline": "~2.9 GiB was held by OTHER processes (not this run) for the whole experiment, eating into the 32 GiB budget."
+  },
+  "blocker_found": {
+    "summary": "The committed v0.18.1 working tree CANNOT run the OOM command as-is: import dies at gpuwrf.physics import time.",
+    "cause_1": "data/fixtures/thompson-cold-collection-v1.npz has 16 keys (tcr_*/tcs_*/tmr_*/tms_*/tnr_*) but thompson_tables.COLD_TABLE_NAMES expects 18 (also tpi_qcfz, tni_qcfz) -> KeyError 'tpi_qcfz is not a file in the archive' at module import.",
+    "cause_2": "data/fixtures/thompson-aero-tables-v1.npz is ABSENT; thompson_aero_tables.THOMPSON_AERO_TABLES = load_thompson_aero_tables() runs at import -> FileNotFoundError.",
+    "impact": "Any `python -m gpuwrf ...` (mp=8 too, since physics/__init__ eagerly imports thompson) fails before any GPU allocation. The production OOM must have occurred on a tree where these assets matched the code.",
+    "workaround_for_measurement_only": "PYTHONPATH sitecustomize shim (proofs/v018/oom_rootcause/shim) injects the 2 missing cold keys as zeros and redirects the aero asset to a zero-stub. mp=8 never traces the aero path at runtime; the only effect is zeroing the freezeH2O cloud-water-freezing source term, IRRELEVANT to VRAM/OOM. No src/ edit."
+  },
+  "tile_sweep_d03": {
+    "note": "peak_gib and transient_gib are device high-water marks; transient = peak - base(resident inputs). All fp64.",
+    "lw":   {"16384": {"peak_gib": 6.014, "transient_gib": 5.064}, "8192": {"peak_gib": 4.019, "transient_gib": 3.069}, "4096": {"peak_gib": 2.622, "transient_gib": 1.672}, "2048": {"peak_gib": 2.179, "transient_gib": 1.229}},
+    "sw":   {"16384": {"peak_gib": 2.620, "transient_gib": 1.670}, "8192": {"peak_gib": 2.123, "transient_gib": 1.172}, "4096": {"peak_gib": 1.811, "transient_gib": 0.860}, "2048": {"peak_gib": 1.773, "transient_gib": 0.822}},
+    "mynn": {"16384": {"peak_gib": 4.720, "transient_gib": 3.320}, "8192": {"peak_gib": 4.308, "transient_gib": 2.908}, "4096": {"peak_gib": 4.131, "transient_gib": 2.731}, "2048": {"peak_gib": 3.852, "transient_gib": 2.452}}
+  },
+  "linear_fit_transient_vs_tile": {
+    "model": "transient_gib = floor_gib + slope_gib_per_col * tile_cols",
+    "lw":   {"floor_gib": 0.674, "slope_term_at_16384_gib": 4.448, "interpretation": "tiling-scaling term DOMINATES; finer tiling cuts peak ~linearly"},
+    "sw":   {"floor_gib": 0.659, "slope_term_at_16384_gib": 1.008, "interpretation": "mostly a fixed floor at small tiles"},
+    "mynn": {"floor_gib": 2.420, "slope_term_at_16384_gib": 0.923, "interpretation": "DOMINATED by an O(ncol) FLOOR that tiling does NOT remove (full padded scan carry+output state across ~30 leaves)"}
+  },
+  "tiling_verdict": "TILING WORKS. LW and SW per-call transients drop near-linearly with tile_cols (LW 5.06->1.23 GiB at 16384->2048). MYNN drops only weakly (3.32->2.45) because its dominant cost is a tiling-IMMUNE full-column padded scan carry+output state, NOT the dense (tile,nz,nz) BouLac term.",
+  "dominant_buffers_lw_tile16384": {
+    "source_file": "lw_d03_buffer-assignment.txt (allocation 199 = preallocated-temp arena, 4.89 GiB)",
+    "buffer_1": {"shape": "f64[16,45,16384,16]", "bytes_each": 1509949440, "gib_each": 1.406, "live_count": 2, "total_gib": 2.81, "hlo": "input_add_concatenate_reduce_fusion", "source": "rrtmg_lw._lw_cldprmc_state -> _lw_global_to_band: the McICA cloud arrays cldfmc(cldf_band) and taucmc, each (tile, nlay, 16 bands, 16 g-points). Built BEFORE the band lax.scan and pinned live across ALL 16 bands (every band does jnp.take(cldfmc/taucmc, band, axis=-2)).", "src_lines": "src/gpuwrf/physics/rrtmg_lw.py:1920-1946 (_lw_cldprmc_state), called at :2426 (_lw_solver_base build_taumol=False)"},
+    "buffer_2": {"shape": "f64[6300,16384]", "bytes_each": 825753600, "gib_each": 0.769, "hlo": "loop_dynamic_update_slice_fusion", "source": "rrtmg_lw._lw_mcica_random_cloud_mask: random_flat from a lax.scan of length 140*nlay = 140*45 = 6300, shape (6300, tile).", "src_lines": "src/gpuwrf/physics/rrtmg_lw.py:1893-1913"},
+    "buffer_family_3": {"shape": "f64[16384,45,16] / f64[45,16384,16]", "gib_each": 0.088, "total_family_gib": 7.0, "live_subset_gib": "~per-band working set (one band's taumol+rtrnmc) - O(tile) and freed by the band-scan carry barrier as designed", "source": "per-band _lw_taumol_band tau/frac + _lw_rtrnmc_band_fluxes temporaries inside the band lax.scan"}
+  },
+  "dominant_buffers_sw_tile16384": {
+    "source_file": "sw_d03_after_optimizations_hlo.txt (no buffer-assignment.txt emitted for this module variant)",
+    "buffer_1": {"shape": "f32[16384,45,14,12]", "bytes_each": 495452160, "gib_each": 0.461, "note": "14 bands x 12 g-points, fp32 (SW two-stream uses fp32 -> ~half LW per-element). The SW band-tiled two-stream optical-depth/flux stack."},
+    "buffer_2": {"shape": "f32[16384,45,12]", "note": "per-band g-point SW working arrays inside the band tiling"}
+  },
+  "dominant_buffers_mynn": {
+    "floor_source": "_tiled_mynn_step (src/gpuwrf/physics/mynn_pbl.py:1810-1844): pads ALL ~25-30 state leaves to (padded_ncol, nz) for BOTH the input padded_state AND init_state (tree_map zeros_like), and lax.scan scatters per-tile outputs into the full padded carry. ~30 leaves x 147456 x 45 x 8 B ~= 1.5 GiB x2 (in+out) ~= 2.4 GiB = the measured tiling-immune floor.",
+    "slope_source": "_boulac_length_dense (default; GPUWRF_MYNN_BOULAC_ONZ=0): dense (tile, nz, nz) PE-accumulation matrices = the O(tile) BouLac term (~0.92 GiB at tile=16384)."
+  },
+  "peak_decomposition_d03_default_tiles": {
+    "note": "Per-CALL transients (one physics scheme fires at a time within a domain step). The radiation step fires LW then SW; PBL fires every step. The PEAK during a d03 radiation step is resident-all-domains + the single largest concurrently-live transient (LW ~5.06 GiB) + dynamics scratch + small per-call residue.",
+    "resident_state_all_domains_gib": "~1.5-2.5 (d01 91x63 + d02 207x123 + d03 519x279, x45, ~67 fp64 leaves + operational carry scratch); cross-check from real run below",
+    "lw_transient_gib": 5.064,
+    "sw_transient_gib": 1.670,
+    "mynn_transient_gib": 3.320,
+    "dynamics_acoustic_scratch_gib": "~0.7 (v013 anchor; not radiation-bound)",
+    "microphysics_gib": "not measured here (Thompson stubbed); historically not the radiation-scale peak driver"
+  },
+  "failing_alloc_13_7gib_explanation": "REPRODUCED: the real run fails on a driver-level 12.72 GiB (13.66 GB) contiguous allocation = XLA reserving a whole-program preallocated-temp scratch arena (the same arena class as LW allocation-199, but for a much larger nested/d03 program), PLUS recurring BFC 2.09 GiB per-step transient requests that cannot find a contiguous hole. smi peaked at 31.8 GiB of 32 GiB (minus ~2.9 GiB held by other processes => effectively ~29 GiB available). It is NOT one fundamental 12.72 GiB buffer: it is (resident multi-domain state) + (a 5-GiB-class d03 LW transient) + (d03 dynamics/acoustic scratch) + (XLA arena padding) all summing to ~30 GiB, at which point the next large contiguous arena request (12.72 GiB) or per-step block (2.09 GiB) cannot be satisfied. The shipped mitigation (platform/cudaMalloc allocator + per-output-hour segmentation in nested_pipeline.py) reduces FRAGMENTATION but does not reduce the underlying ~5-GiB-class transient working set -- which finer tiling does.",
+  "limitation": "A buffer-assignment for the FULL nested program could not be captured because the nested run OOMs during compile/first-exec. The dominant-buffer naming is therefore from the standalone d03-scale LW/SW/MYNN programs (faithful: the coupler feeds the solvers flattened (ncol,nz) views, no extra full-ncol arrays). The real-run 12.72 GiB contiguous arena is consistent with the standalone LW preallocated-temp arena (allocation 199, 4.89 GiB at tile=16384) scaled up by the larger nested program + dynamics scratch; exact per-op attribution of the nested 12.72 GiB request would need an HLO dump from a config that compiles without OOM (e.g. tile=2048).",
+  "achievable_peak_estimate": {
+    "current_default_tile_16384_largest_single_transient_gib": 5.064,
+    "with_tile_2048_largest_single_transient_gib": 1.229,
+    "lever_1_finer_lw_sw_tile": "Set GPUWRF_RRTMG_LW/SW_COLUMN_TILE_COLS=2048: LW transient 5.06->1.23 GiB, SW 1.67->0.82 GiB. Bit-identical (proofs/v013 rrtmg_column_tile inertness). Pure env knob, no code change.",
+    "lever_2_mynn_floor": "MYNN floor 2.42 GiB is NOT a tile knob; needs buffer-donation / in-place scatter so the padded input and output carry alias (would roughly halve to ~1.5 GiB). Code change (out of measurement scope).",
+    "lever_3_cldfmc_taucmc_chunk": "The 2.81 GiB LW cldfmc+taucmc pair is the single biggest LW item and is NOT band-chunked (built up front, held across the band scan). Building per-band inside the existing band lax.scan (like _lw_taumol_band already is) would cut it to one band's (tile,nlay,16) ~= 0.18 GiB. Code change.",
+    "lever_4_dynamics_segmentation": "Already shipped (platform allocator + per-output-hour segmentation) to bound fragmentation.",
+    "realistic_d03_peak_with_env_only_tile2048_gib": "resident(~2.5) + max(LW 1.23) + dyn(0.7) ~= 4.5 GiB working set; comfortably < 32 GiB and not fragmentation-prone.",
+    "realistic_d03_peak_with_code_changes_gib": "resident(~2.5) + LW-per-band-cldfmc(~0.5) + MYNN-donated(~1.5) ~= 3-4 GiB; approaches but does not beat CPU-WRF ~10 GiB total RSS only because the GPU resident set + per-tile transients are already smaller than CPU's 12-rank halo+tile working set.",
+    "fits_32gib": true,
+    "approaches_cpu_10gib": true
+  },
+  "localized_dominant_buffer": "RRTMG-LW McICA cloud-optics pair cldfmc + taucmc, each f64[tile, nlay, 16 bands, 16 g-points] (1.41 GiB at tile=16384, 2.81 GiB for the pair), built in _lw_cldprmc_state (src/gpuwrf/physics/rrtmg_lw.py:1920-1946) and held live across the whole 16-band flux scan. Secondary: the McICA random mask f64[6300,tile] (0.77 GiB). MYNN secondary floor: full-column padded scan carry+output state (~2.4 GiB, tiling-immune).",
+  "achievable_peak_estimate_gib": 4.5,
+  "artifacts": [
+    "sweep_results.jsonl", "lw_d03_buffer-assignment.txt", "lw_d03_buffer-assignment-values.txt",
+    "sw_d03_after_optimizations_hlo.txt", "mem_sw_d03.prof",
+    "probe_standalone.py", "dump_buffer_assignment.py", "run_sweep.sh", "shim/sitecustomize.py"
+  ]
+}

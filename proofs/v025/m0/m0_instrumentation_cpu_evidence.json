@@ -1,0 +1,393 @@
+{
+  "adr": "ADR-036",
+  "artifacts": {
+    "proofs/v025/m0/m0_default_path_overhead.json": {
+      "bytes": 1063,
+      "sha256": "e597f0fa10b2af97d546984bb7c2ce3144c8453979e0d452108e4bf7118327ca"
+    },
+    "proofs/v025/m0/m0_instrumentation_cpu_tests.xml": {
+      "bytes": 80616,
+      "sha256": "91edef2f7cac9e4a5e1e5ee44208565f5fa64a8e3aea8f2b37304511b9930f09"
+    },
+    "proofs/v025/m0/m0_instrumentation_diff_validation.json": {
+      "bytes": 1249,
+      "sha256": "497dc607c224e406b1deb98ef2f58bde3bd62e7b027993f816e5870d3ffb34ea"
+    },
+    "proofs/v025/m0/prepared_profiler_pair/plan.json": {
+      "bytes": 10693,
+      "sha256": "213d09a6bc703294753c26613cfe93e14c2e6dcee453d92b4531a50fb6ab736e"
+    },
+    "scripts/v025/m0_evidence_v1.schema.json": {
+      "bytes": 9911,
+      "sha256": "a4ff26516cc64cdf02ccc7e0d68678d2ca7fe11165899ab8c28aef6d4ca3e386"
+    },
+    "scripts/v025/m0_vram_sampler.py": {
+      "bytes": 43822,
+      "sha256": "0c6485ce0b0ad372192e2056941151f6b2f05b31a5ea7f447af59aba84abc6bb"
+    },
+    "scripts/v025/validate_m0_evidence.py": {
+      "bytes": 12450,
+      "sha256": "23d6c82a62fc1c7e4e2478619d8fd449934c216ee37bab836c6ee40c3f55ab4c"
+    },
+    "src/gpuwrf/runtime/operational_mode.py": {
+      "bytes": 350289,
+      "sha256": "294edbec51d173b725d48b5e38a6a93135af2a35970556ceba536dbc41430b12"
+    }
+  },
+  "cpu_tests": {
+    "command": "python -m pytest -q tests/v025",
+    "environment": "taskset -c 0-3; JAX_PLATFORMS=cpu; CUDA_VISIBLE_DEVICES=''; OMP/OPENBLAS/MKL/NUMEXPR=1; XLA CPU Eigen threading disabled",
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "status": "PASS",
+    "tests": 621
+  },
+  "device_policy": {
+    "gpu_commands_executed": [],
+    "gpu_import_query_lock_request_test": "NONE",
+    "profiler_pair": "MISSING_NOT_RUN",
+    "runtime_vram_measurement": "MISSING_NOT_RUN",
+    "worker": "DevicePolicy=closed"
+  },
+  "external_prepared_cache_snapshots": {
+    "clean": {
+      "bytes": 2114753,
+      "directories": 2,
+      "files": 2020,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-clean-20260728-r1",
+      "schema": "wrf_gpu2.v025.m0.directory_tree_identity.v1",
+      "sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618"
+    },
+    "profiled": {
+      "bytes": 2114753,
+      "directories": 2,
+      "files": 2020,
+      "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-profiled-20260728-r1",
+      "schema": "wrf_gpu2.v025.m0.directory_tree_identity.v1",
+      "sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618"
+    }
+  },
+  "gates": {
+    "absolute_and_baseline_subtracted_residency_schema": "PASS",
+    "allocator_read_after_range_same_result_device": "PASS",
+    "atomic_no_replace_sidecar": "PASS",
+    "cadence_misses_process_tree_competing_contexts": "PASS",
+    "compile_latency_program_identity": "PASS_JITTED_BODY_UNCHANGED",
+    "default_off_jitted_body_ast_identity": "PASS",
+    "default_off_no_range_or_artifact_or_allocator_query": "PASS",
+    "default_off_original_direct_call": "PASS",
+    "default_path_runtime_overhead": "PASS",
+    "enabled_default_numerical_digest_identity": "PASS",
+    "external_sampler_no_jax": "PASS",
+    "hot_loop_callback_mutation_rejected": "PASS",
+    "monotonic_and_utc_enclosure": "PASS",
+    "profiler_matched_pair": "MISSING_PREPARED_SEPARATE_WINDOW",
+    "range_after_staging_through_final_sync": "PASS",
+    "real_vram_measurement": "MISSING_MANAGER_EXECUTOR_REQUIRED",
+    "run_pid_source_config_input_device_identity": "PASS",
+    "sampler_ram_scaling": "PASS_O_UNIQUE_PIDS",
+    "schema_mutations_fail_closed": "PASS",
+    "semantic_numerical_edit_mutation_rejected": "PASS"
+  },
+  "generated_at_utc": "2026-07-28T00:27:54.012070+00:00",
+  "manager_decision": "45b513aa",
+  "objective": "default-off whole-integration evidence hook, same-process allocator sidecar, external total-residency sampler, semantic diff/schema gates",
+  "performance": {
+    "compile_latency": {
+      "basis": "the entire pre-existing _run_forecast_operational_jit AST hash is unchanged; the evidence envelope is outside the jitted body",
+      "jitted_body_ast_sha256": "34f952b82e1024566ab14d60218aeb886613429fe0cdcb1683c8739c011ec697",
+      "status": "PASS_BY_IDENTITY"
+    },
+    "primary_runtime_gate": {
+      "added_ns_per_forecast_call": 230.76425999999998,
+      "alternating_order": true,
+      "default_off_ns_per_call_median": 313.3207,
+      "default_off_ns_per_call_samples": [
+        316.17298,
+        310.314775,
+        308.888415,
+        312.675045,
+        320.56821,
+        319.556255,
+        313.3207
+      ],
+      "device_policy": "CPU only; no device query/import/lock/request/test",
+      "direct_ns_per_call_median": 82.55644,
+      "direct_ns_per_call_samples": [
+        82.36688,
+        84.493055,
+        84.2118,
+        80.26072,
+        79.30846,
+        82.578085,
+        82.55644
+      ],
+      "iterations_per_repeat": 200000,
+      "max_added_ns_per_forecast_call": 10000,
+      "repeats": 7,
+      "schema": "wrf_gpu2.v025.m0.default_path_overhead.v1",
+      "scope": "Python dispatch envelope once per whole forecast integration; jitted timestep body separately pinned by semantic AST identity",
+      "startup_import": {
+        "added_ms": 0.0,
+        "added_top_level_imports": [],
+        "hook_only_imports": "lazy-enabled-path-only",
+        "max_added_ms": 0.0,
+        "method": "semantic-validator-top-level-import-identity"
+      },
+      "status": "PASS"
+    },
+    "ram_scaling": {
+      "forecast_default": "no sidecar/range/stats object is created",
+      "sampler": "samples are aggregated online; memory is O(unique observed PIDs), not O(samples or forecast length)",
+      "status": "PASS"
+    },
+    "vram_scaling": {
+      "basis": "jitted integration and original direct call are mechanically identical",
+      "status": "UNCHANGED_DEFAULT_PROGRAM"
+    }
+  },
+  "production_diff": {
+    "allowed_max_existing_files": 2,
+    "base": "a1fa459c",
+    "changed_files": [
+      "src/gpuwrf/runtime/operational_mode.py"
+    ],
+    "existing_files_changed": 1,
+    "physics_dycore_state_contract_output_public_api_changes": 0,
+    "semantic_validation": {
+      "added_imports": [],
+      "adr": ".agent/decisions/ADR-036-v025-m0-evidence-hook.md",
+      "adr_sha256": "826f80083152451bd7eb4309fbf3e8bbbf222873b39cf9c4a404affa421e5248",
+      "base": "a1fa459c",
+      "changed_src_files": [
+        "src/gpuwrf/runtime/operational_mode.py"
+      ],
+      "default_direct_call_ast_sha256": "21b8a3f7fe910268f53173cb121edd1536e75497f00a6111d897d749f96f68d7",
+      "default_off_jitted_body_ast_sha256": "34f952b82e1024566ab14d60218aeb886613429fe0cdcb1683c8739c011ec697",
+      "existing_definitions_unchanged": 150,
+      "existing_src_files_changed": 1,
+      "hot_loop_callback_tokens_added": [],
+      "new_private_constants": [
+        "_M0_EVIDENCE_CONFIG_SHA256",
+        "_M0_EVIDENCE_DEVICE_UUID",
+        "_M0_EVIDENCE_DEVICE_UUID_PATTERN",
+        "_M0_EVIDENCE_FLAG",
+        "_M0_EVIDENCE_INPUT_SHA256",
+        "_M0_EVIDENCE_PATH",
+        "_M0_EVIDENCE_RANGE",
+        "_M0_EVIDENCE_RUN_ID",
+        "_M0_EVIDENCE_RUN_ID_PATTERN",
+        "_M0_EVIDENCE_SCHEMA",
+        "_M0_EVIDENCE_SHA256_PATTERN",
+        "_M0_EVIDENCE_SOURCE_SHA256"
+      ],
+      "new_private_helpers": [
+        "_m0_evidence_allocator_stats",
+        "_m0_evidence_atomic_json",
+        "_m0_evidence_config_from_env",
+        "_m0_evidence_run"
+      ],
+      "schema": "wrf_gpu2.v025.m0.instrumentation_diff_validation.v1",
+      "status": "PASS"
+    }
+  },
+  "schema": "wrf_gpu2.v025.m0.instrumentation_cpu_evidence.v1",
+  "separate_profiler_pair": {
+    "budget": {
+      "allowed_next_path": "the separately coordinated reproduction window, or a new real production-derived short pair whose identity/event coverage and sum-of-caps budget are accepted before execution",
+      "arms": {
+        "profiled": {
+          "clock_source": "allocator monotonic enclosure and pipeline wall_clock_per_hour_s[0]",
+          "evidence_hook": "enabled",
+          "instrumentation": "nsys",
+          "integration_only_gate_eligible": false,
+          "resource_sidecars": "required"
+        },
+        "unprofiled": {
+          "clock_source": "pipeline wall_clock_per_hour_s[0]",
+          "evidence_hook": "default-off/unset",
+          "instrumentation": "none",
+          "integration_only_gate_eligible": false,
+          "resource_sidecars": "forbidden"
+        }
+      },
+      "calculation": {
+        "cached_load_cap_seconds": 60.0,
+        "fixed_overhead_seconds": 180.0,
+        "profiled_capture_cap_seconds": 1100.0,
+        "unprofiled_integration_cap_seconds": 300.0
+      },
+      "current_window_deadline_seconds": 1500.0,
+      "current_window_eligible": false,
+      "evidence_status": "MISSING_NOT_RUN",
+      "fail_closed": [
+        "either arm nonzero or missing pipeline payload",
+        "identity/cache/event mismatch",
+        "any GPUWRF_M0_* evidence variable in the clean arm",
+        "same run ID or reordered/unrecorded execution"
+      ],
+      "reason": "1100+180+360=1640s exceeds the current 1500s cap. Profiler perturbation remains MISSING here.",
+      "required_identity": [
+        "distinct run IDs",
+        "same workload_identity_sha256",
+        "same integration_scope_sha256",
+        "same event_mix_sha256",
+        "same source/config/input hashes",
+        "same physical GPU UUID",
+        "byte-identical prepared-cache snapshots",
+        "integration-only clocks",
+        "recorded arm order"
+      ],
+      "schema": "wrf_gpu2.v025.m0.profiler_matched_pair_plan.v1",
+      "status": "PREREGISTERED_SEPARATE_WINDOW",
+      "sum_of_frozen_caps_seconds": 1640.0
+    },
+    "clean": {
+      "command": [
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "baseline-census",
+        "--",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/step1_driver.py",
+        "--capture-clean",
+        "--out-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/profiler-pair/m0-pair-clean-20260728-r1",
+        "--run-id",
+        "m0-pair-clean-20260728-r1",
+        "--receipt",
+        ".agent/sprints/2026-07-27-v0250-m0-setup/M0_PROFILER_PAIR_CLEAN_RECEIPT.json",
+        "--evidence-identity",
+        "proofs/v025/m0/prepared_profiler_pair/clean_identity.json",
+        "--prepared-cache-dir",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-clean-20260728-r1",
+        "--prepared-cache-sha256",
+        "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618"
+      ],
+      "command_shell": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/with_gpu_lock.sh --timeout 0 --label baseline-census -- <USER_HOME>/miniconda3/bin/python <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/step1_driver.py --capture-clean --out-root <DATA_ROOT>/wrf_gpu2/v025/m0/raw/profiler-pair/m0-pair-clean-20260728-r1 --run-id m0-pair-clean-20260728-r1 --receipt .agent/sprints/2026-07-27-v0250-m0-setup/M0_PROFILER_PAIR_CLEAN_RECEIPT.json --evidence-identity proofs/v025/m0/prepared_profiler_pair/clean_identity.json --prepared-cache-dir <DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-clean-20260728-r1 --prepared-cache-sha256 825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618",
+      "evidence_hook": "default-off; every GPUWRF_M0_* variable must be unset",
+      "identity_path": "proofs/v025/m0/prepared_profiler_pair/clean_identity.json",
+      "identity_sha256": "bc794a2b093045ef44c5b23598968a179c7626053f1d065d6d35664bd79d1eb8",
+      "instrumentation": "none",
+      "prepared_cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-clean-20260728-r1",
+      "prepared_cache_sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618",
+      "raw_output": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/profiler-pair/m0-pair-clean-20260728-r1",
+      "receipt_path": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_PROFILER_PAIR_CLEAN_RECEIPT.json",
+      "run_id": "m0-pair-clean-20260728-r1"
+    },
+    "device_touched": false,
+    "device_uuid_source": "caller-supplied expected physical UUID; external sampler must match it inside the separately coordinated window",
+    "distinct_run_ids": true,
+    "execution_preconditions": [
+      "independent GPT implementation review accepted",
+      "fresh affirmative coordination receipts for each arm",
+      "zero-wait canonical lock acquired separately for each arm",
+      "manager-owned device executor only",
+      "identity re-derived before lock and again before receipt spend",
+      "each private cache snapshot re-hashed before lock and receipt spend",
+      "cached executable readiness/hit must be proved before integration timing",
+      "profiled arm first; clean arm starts only after first wrapper releases"
+    ],
+    "frozen_arm_order": [
+      "m0-pair-profiled-20260728-r1",
+      "m0-pair-clean-20260728-r1"
+    ],
+    "identical_fields": {
+      "config_sha256": "a7e5ae24c6cc9ccc2fc4320cb698d3512710f5d3d7ec2ff07596754e7920d032",
+      "device_uuid": "GPU-cec852c8-a76b-e606-d152-2f2a16e0c6b5",
+      "event_mix_sha256": "0528266f72203e02fb1715274f2003c522a054872288ab7be6b4fb57eda33741",
+      "input_manifest_sha256": "985d992220e3d79cbe896e6f02d961c198901b3faa27bceb037339b10a313b90",
+      "integration_scope_sha256": "55093ff0afb6b39da276880db7d9fe6c86e523914b3cd0f2c149bfd459c7ad28",
+      "source_sha256": "206beeac98857d3cd525190fec57f0ae5f6b934bca825b59373bd6c78ef24cbf",
+      "workload_identity_sha256": "869b08f268af94770c413ebc9a30e50b3dbe92d2b96e0ecc01f0f17c7c3a2834"
+    },
+    "prepared_cache": {
+      "clean_identity": {
+        "bytes": 2114753,
+        "directories": 2,
+        "files": 2020,
+        "schema": "wrf_gpu2.v025.m0.directory_tree_identity.v1",
+        "sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618"
+      },
+      "clean_snapshot": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-clean-20260728-r1",
+      "disk_scaling": "two finite snapshots, proportional to seed bytes",
+      "profiled_identity": {
+        "bytes": 2114753,
+        "directories": 2,
+        "files": 2020,
+        "schema": "wrf_gpu2.v025.m0.directory_tree_identity.v1",
+        "sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618"
+      },
+      "profiled_snapshot": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-profiled-20260728-r1",
+      "ram_scaling": "streaming file copy; no cache payload retained in RAM",
+      "seed": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/w1b_arms/jaxcache_5623902916f6",
+      "seed_identity": {
+        "bytes": 2114753,
+        "directories": 2,
+        "files": 2020,
+        "schema": "wrf_gpu2.v025.m0.directory_tree_identity.v1",
+        "sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618"
+      },
+      "status": "BYTE_IDENTICAL_SNAPSHOTS_PREPARED_WARM_HIT_UNPROVEN",
+      "writable_private_snapshot_per_arm": true
+    },
+    "profiled": {
+      "command": [
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "baseline-census",
+        "--",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/step1_driver.py",
+        "--capture",
+        "--out-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/profiler-pair/m0-pair-profiled-20260728-r1",
+        "--run-id",
+        "m0-pair-profiled-20260728-r1",
+        "--receipt",
+        ".agent/sprints/2026-07-27-v0250-m0-setup/M0_PROFILER_PAIR_PROFILED_RECEIPT.json",
+        "--evidence-identity",
+        "proofs/v025/m0/prepared_profiler_pair/profiled_identity.json",
+        "--prepared-cache-dir",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-profiled-20260728-r1",
+        "--prepared-cache-sha256",
+        "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618"
+      ],
+      "command_shell": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/with_gpu_lock.sh --timeout 0 --label baseline-census -- <USER_HOME>/miniconda3/bin/python <USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/scripts/v025/step1_driver.py --capture --out-root <DATA_ROOT>/wrf_gpu2/v025/m0/raw/profiler-pair/m0-pair-profiled-20260728-r1 --run-id m0-pair-profiled-20260728-r1 --receipt .agent/sprints/2026-07-27-v0250-m0-setup/M0_PROFILER_PAIR_PROFILED_RECEIPT.json --evidence-identity proofs/v025/m0/prepared_profiler_pair/profiled_identity.json --prepared-cache-dir <DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-profiled-20260728-r1 --prepared-cache-sha256 825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618",
+      "evidence_hook": "enabled",
+      "identity_path": "proofs/v025/m0/prepared_profiler_pair/profiled_identity.json",
+      "identity_sha256": "a11b9da29dd17a2151c653341c1a8c009aea8218167fa911113c612e4f3905f2",
+      "instrumentation": "nsys",
+      "prepared_cache_path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/prepared-profiler-pair-cache/m0-pair-20260728-r1/m0-pair-profiled-20260728-r1",
+      "prepared_cache_sha256": "825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618",
+      "raw_output": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/profiler-pair/m0-pair-profiled-20260728-r1",
+      "receipt_path": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_PROFILER_PAIR_PROFILED_RECEIPT.json",
+      "run_id": "m0-pair-profiled-20260728-r1"
+    },
+    "profiler_gate_evidence_status": "MISSING",
+    "prohibitions": [
+      "do not execute from this CPU-only sprint",
+      "do not reuse either receipt or run directory",
+      "do not label first-call wall time integration-only",
+      "do not use profiled timing for clean runtime gates"
+    ],
+    "schema": "wrf_gpu2.v025.m0.prepared_profiler_pair.v1",
+    "status": "PREPARED_NOT_AUTHORISED_NOT_RUN",
+    "timing_boundary": {
+      "clean_observable": "pipeline wall_clock_per_hour_s[0]",
+      "known_gap": "both first-call clocks can include cached executable readiness; the current census validator requires compile/I/O-excluded integration-only time. Therefore this prepared pair remains MISSING until a future approved executor supplies that exact clean clock; no subtraction or relabelling is authorised.",
+      "profiled_observable": "forecast allocator monotonic enclosure plus NVTX range"
+    }
+  },
+  "status": "CPU_IDENTITY_GREEN_GPU_EVIDENCE_MISSING",
+  "terminal_sprint_verdict": "implementation CPU-terminal and critic-ready; M0 remains open because the real profiler/VRAM/device gates were intentionally not run",
+  "unresolved": {
+    "gpu_runtime_evidence": "intentionally absent under DevicePolicy=closed; manager executor follows critic",
+    "profiler_clean_clock": "both first-call clocks can include cached executable readiness; the current census validator requires compile/I/O-excluded integration-only time. Therefore this prepared pair remains MISSING until a future approved executor supplies that exact clean clock; no subtraction or relabelling is authorised."
+  }
+}

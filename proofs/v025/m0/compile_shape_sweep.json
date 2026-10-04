@@ -1,0 +1,977 @@
+{
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "GPUWRF_JAX_CACHE": "0",
+    "GPUWRF_JAX_CACHE_LOCK": "0",
+    "GPUWRF_WRF_ROOT": "<USER_HOME>/src/wrf_pristine/WRF",
+    "JAX_PLATFORMS": "cpu",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONPATH": "src",
+    "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false",
+    "affinity": "0-3"
+  },
+  "generated_at_utc": "2026-07-27T19:37:25.463350+00:00",
+  "invariants": {
+    "all_invariants_hold": true,
+    "all_runs_succeeded": true,
+    "forced_operator_failures": [],
+    "forced_operators": [
+      "kain_fritsch_cumulus",
+      "gwdo_gravity_wave_drag"
+    ],
+    "frozen_a6_inventory": {
+      "matches_frozen": true,
+      "mismatches": [],
+      "required_count": 49,
+      "required_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "source": "manager adjudication, main 6a497c0e",
+      "why_not_just_cross_shape_equality": "four shapes can agree on a WRONG inventory. An operator dropped from the harness would be dropped identically at every shape, every cross-shape check would pass, and the sweep would compare a consistent but unfrozen subset. The digest is required against the frozen constant."
+    },
+    "identical_operator_digest": true,
+    "note": "the smaller domains run cu=0/gwd=0 in production; the diagnostic inventory FORCES cumulus and GWD in at every shape, and their LOWERED status is checked rather than assumed from list membership",
+    "operator_digests_seen": [
+      "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e"
+    ]
+  },
+  "per_shape": {
+    "d01": {
+      "compile_seconds": {
+        "bootstrap_ci95": {
+          "high": 39.979078727032174,
+          "low": 35.008273016952444,
+          "n": 3
+        },
+        "cv_percent": 5.650424524060949,
+        "mean": 37.98830320767107,
+        "median": 38.97755787902861,
+        "n": 3,
+        "values": [
+          35.008273016952444,
+          39.979078727032174,
+          38.97755787902861
+        ]
+      },
+      "lower_seconds": {
+        "bootstrap_ci95": {
+          "high": 5.449291312019341,
+          "low": 4.921216120972531,
+          "n": 3
+        },
+        "cv_percent": 4.608120635095313,
+        "mean": 5.263869100672309,
+        "median": 5.421099869025056,
+        "n": 3,
+        "values": [
+          4.921216120972531,
+          5.421099869025056,
+          5.449291312019341
+        ]
+      },
+      "runs": 3,
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 120,
+        "ny": 70,
+        "nz": 44,
+        "ra_lw_physics": 4
+      }
+    },
+    "d02": {
+      "compile_seconds": {
+        "bootstrap_ci95": {
+          "high": 51.250001862994395,
+          "low": 46.41529419296421,
+          "n": 3
+        },
+        "cv_percent": 4.197835846996327,
+        "mean": 49.26966328965985,
+        "median": 50.143693813020946,
+        "n": 3,
+        "values": [
+          46.41529419296421,
+          51.250001862994395,
+          50.143693813020946
+        ]
+      },
+      "lower_seconds": {
+        "bootstrap_ci95": {
+          "high": 5.620335470041027,
+          "low": 5.441583979947609,
+          "n": 3
+        },
+        "cv_percent": 1.321266787909052,
+        "mean": 5.528647938010788,
+        "median": 5.524024364043726,
+        "n": 3,
+        "values": [
+          5.524024364043726,
+          5.620335470041027,
+          5.441583979947609
+        ]
+      },
+      "runs": 3,
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 267,
+        "ny": 117,
+        "nz": 44,
+        "ra_lw_physics": 4
+      }
+    },
+    "d03": {
+      "compile_seconds": {
+        "bootstrap_ci95": {
+          "high": 40.839504829986254,
+          "low": 38.17181783307751,
+          "n": 3
+        },
+        "cv_percent": 2.8681788489824207,
+        "mean": 39.30013361700791,
+        "median": 38.88907818795997,
+        "n": 3,
+        "values": [
+          38.17181783307751,
+          40.839504829986254,
+          38.88907818795997
+        ]
+      },
+      "lower_seconds": {
+        "bootstrap_ci95": {
+          "high": 5.759503345936537,
+          "low": 5.482796809039428,
+          "n": 3
+        },
+        "cv_percent": 2.2833378057978866,
+        "mean": 5.57950046332553,
+        "median": 5.496201235000626,
+        "n": 3,
+        "values": [
+          5.482796809039428,
+          5.759503345936537,
+          5.496201235000626
+        ]
+      },
+      "runs": 3,
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 102,
+        "ny": 69,
+        "nz": 44,
+        "ra_lw_physics": 4
+      }
+    },
+    "d06": {
+      "compile_seconds": {
+        "bootstrap_ci95": {
+          "high": 40.615106016004574,
+          "low": 33.02677500604477,
+          "n": 3
+        },
+        "cv_percent": 8.60271284851932,
+        "mean": 37.44533663033993,
+        "median": 38.69412886897044,
+        "n": 3,
+        "values": [
+          33.02677500604477,
+          40.615106016004574,
+          38.69412886897044
+        ]
+      },
+      "lower_seconds": {
+        "bootstrap_ci95": {
+          "high": 5.388016678058193,
+          "low": 5.286322083964478,
+          "n": 3
+        },
+        "cv_percent": 0.7841576750090299,
+        "mean": 5.333591948680502,
+        "median": 5.326437084018835,
+        "n": 3,
+        "values": [
+          5.286322083964478,
+          5.388016678058193,
+          5.326437084018835
+        ]
+      },
+      "runs": 3,
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 39,
+        "ny": 39,
+        "nz": 44,
+        "ra_lw_physics": 4
+      }
+    }
+  },
+  "purpose": "DIAGNOSTIC shape sweep. Qualifies nothing, nominates no case. Tests whether compile time is grid-sensitive at a constant operator inventory.",
+  "rotation": [
+    [
+      "d01",
+      "d02",
+      "d03",
+      "d06"
+    ],
+    [
+      "d02",
+      "d03",
+      "d06",
+      "d01"
+    ],
+    [
+      "d03",
+      "d06",
+      "d01",
+      "d02"
+    ]
+  ],
+  "runs": [
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d01",
+        "--run-dir",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+        "--previous",
+        "wrfout_d01_2026-07-26_00:00:00",
+        "--snapshot",
+        "wrfout_d01_2026-07-26_01:00:18",
+        "--expect-sha256",
+        "c2faec387602bf4c63dd6253fae4315b26116b2f86d5616089870c5c23e11275",
+        "--expect-sha256",
+        "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5",
+        "--repeat-tag",
+        "r1",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d01_r1.json"
+      ],
+      "compile_seconds_total": 35.008273016952444,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 4.921216120972531,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d01",
+        "d02",
+        "d03",
+        "d06"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d01_r1.json",
+      "repeat": 1,
+      "returncode": 0,
+      "shape": "d01",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 120,
+        "ny": 70,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d02",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+        "--previous",
+        "wrfout_d02_2026-07-26_00:00:00",
+        "--snapshot",
+        "wrfout_d02_2026-07-26_01:00:00",
+        "--expect-sha256",
+        "dc988da08df12c75d52783e7936ee64d306357b4a59a790caadf7de291932629",
+        "--expect-sha256",
+        "495ad6650c0dd0a0bf36502ef2329fc2ee38c6108f8810256f316fc60322cf4c",
+        "--repeat-tag",
+        "r1",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d02_r1.json"
+      ],
+      "compile_seconds_total": 46.41529419296421,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.524024364043726,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d01",
+        "d02",
+        "d03",
+        "d06"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d02_r1.json",
+      "repeat": 1,
+      "returncode": 0,
+      "shape": "d02",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 267,
+        "ny": 117,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d03",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+        "--previous",
+        "wrfout_d03_2026-07-04_06:00:00",
+        "--snapshot",
+        "wrfout_d03_2026-07-04_06:20:00",
+        "--expect-sha256",
+        "5a8da349917bbf11e19305f32827ff62ebdfa9eb99c9198467339b4a1a5079d1",
+        "--expect-sha256",
+        "5599af599cba8458d9d3089da8666e29d634f0a01859c1168e31b559a58d352e",
+        "--repeat-tag",
+        "r1",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d03_r1.json"
+      ],
+      "compile_seconds_total": 38.17181783307751,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.482796809039428,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d01",
+        "d02",
+        "d03",
+        "d06"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d03_r1.json",
+      "repeat": 1,
+      "returncode": 0,
+      "shape": "d03",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 102,
+        "ny": 69,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d06",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+        "--previous",
+        "wrfout_d06_2026-07-04_06:00:00",
+        "--snapshot",
+        "wrfout_d06_2026-07-04_06:20:00",
+        "--expect-sha256",
+        "a20c48601be9ea857a9e123bdebe6ed1e9a29c96e040ec8fe30b369f173df575",
+        "--expect-sha256",
+        "f52062665eaff8337aa57a8adc3d0a6abb2c8676fca1b188170dd187e450f2e5",
+        "--repeat-tag",
+        "r1",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d06_r1.json"
+      ],
+      "compile_seconds_total": 33.02677500604477,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.286322083964478,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d01",
+        "d02",
+        "d03",
+        "d06"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d06_r1.json",
+      "repeat": 1,
+      "returncode": 0,
+      "shape": "d06",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 39,
+        "ny": 39,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d02",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+        "--previous",
+        "wrfout_d02_2026-07-26_00:00:00",
+        "--snapshot",
+        "wrfout_d02_2026-07-26_01:00:00",
+        "--expect-sha256",
+        "dc988da08df12c75d52783e7936ee64d306357b4a59a790caadf7de291932629",
+        "--expect-sha256",
+        "495ad6650c0dd0a0bf36502ef2329fc2ee38c6108f8810256f316fc60322cf4c",
+        "--repeat-tag",
+        "r2",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d02_r2.json"
+      ],
+      "compile_seconds_total": 51.250001862994395,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.620335470041027,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d02",
+        "d03",
+        "d06",
+        "d01"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d02_r2.json",
+      "repeat": 2,
+      "returncode": 0,
+      "shape": "d02",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 267,
+        "ny": 117,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d03",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+        "--previous",
+        "wrfout_d03_2026-07-04_06:00:00",
+        "--snapshot",
+        "wrfout_d03_2026-07-04_06:20:00",
+        "--expect-sha256",
+        "5a8da349917bbf11e19305f32827ff62ebdfa9eb99c9198467339b4a1a5079d1",
+        "--expect-sha256",
+        "5599af599cba8458d9d3089da8666e29d634f0a01859c1168e31b559a58d352e",
+        "--repeat-tag",
+        "r2",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d03_r2.json"
+      ],
+      "compile_seconds_total": 40.839504829986254,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.759503345936537,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d02",
+        "d03",
+        "d06",
+        "d01"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d03_r2.json",
+      "repeat": 2,
+      "returncode": 0,
+      "shape": "d03",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 102,
+        "ny": 69,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d06",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+        "--previous",
+        "wrfout_d06_2026-07-04_06:00:00",
+        "--snapshot",
+        "wrfout_d06_2026-07-04_06:20:00",
+        "--expect-sha256",
+        "a20c48601be9ea857a9e123bdebe6ed1e9a29c96e040ec8fe30b369f173df575",
+        "--expect-sha256",
+        "f52062665eaff8337aa57a8adc3d0a6abb2c8676fca1b188170dd187e450f2e5",
+        "--repeat-tag",
+        "r2",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d06_r2.json"
+      ],
+      "compile_seconds_total": 40.615106016004574,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.388016678058193,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d02",
+        "d03",
+        "d06",
+        "d01"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d06_r2.json",
+      "repeat": 2,
+      "returncode": 0,
+      "shape": "d06",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 39,
+        "ny": 39,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d01",
+        "--run-dir",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+        "--previous",
+        "wrfout_d01_2026-07-26_00:00:00",
+        "--snapshot",
+        "wrfout_d01_2026-07-26_01:00:18",
+        "--expect-sha256",
+        "c2faec387602bf4c63dd6253fae4315b26116b2f86d5616089870c5c23e11275",
+        "--expect-sha256",
+        "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5",
+        "--repeat-tag",
+        "r2",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d01_r2.json"
+      ],
+      "compile_seconds_total": 39.979078727032174,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.421099869025056,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d02",
+        "d03",
+        "d06",
+        "d01"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d01_r2.json",
+      "repeat": 2,
+      "returncode": 0,
+      "shape": "d01",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 120,
+        "ny": 70,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d03",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+        "--previous",
+        "wrfout_d03_2026-07-04_06:00:00",
+        "--snapshot",
+        "wrfout_d03_2026-07-04_06:20:00",
+        "--expect-sha256",
+        "5a8da349917bbf11e19305f32827ff62ebdfa9eb99c9198467339b4a1a5079d1",
+        "--expect-sha256",
+        "5599af599cba8458d9d3089da8666e29d634f0a01859c1168e31b559a58d352e",
+        "--repeat-tag",
+        "r3",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d03_r3.json"
+      ],
+      "compile_seconds_total": 38.88907818795997,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.496201235000626,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d03",
+        "d06",
+        "d01",
+        "d02"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d03_r3.json",
+      "repeat": 3,
+      "returncode": 0,
+      "shape": "d03",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 102,
+        "ny": 69,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d06",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+        "--previous",
+        "wrfout_d06_2026-07-04_06:00:00",
+        "--snapshot",
+        "wrfout_d06_2026-07-04_06:20:00",
+        "--expect-sha256",
+        "a20c48601be9ea857a9e123bdebe6ed1e9a29c96e040ec8fe30b369f173df575",
+        "--expect-sha256",
+        "f52062665eaff8337aa57a8adc3d0a6abb2c8676fca1b188170dd187e450f2e5",
+        "--repeat-tag",
+        "r3",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d06_r3.json"
+      ],
+      "compile_seconds_total": 38.69412886897044,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.326437084018835,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d03",
+        "d06",
+        "d01",
+        "d02"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d06_r3.json",
+      "repeat": 3,
+      "returncode": 0,
+      "shape": "d06",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 39,
+        "ny": 39,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d01",
+        "--run-dir",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+        "--previous",
+        "wrfout_d01_2026-07-26_00:00:00",
+        "--snapshot",
+        "wrfout_d01_2026-07-26_01:00:18",
+        "--expect-sha256",
+        "c2faec387602bf4c63dd6253fae4315b26116b2f86d5616089870c5c23e11275",
+        "--expect-sha256",
+        "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5",
+        "--repeat-tag",
+        "r3",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d01_r3.json"
+      ],
+      "compile_seconds_total": 38.97755787902861,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.449291312019341,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d03",
+        "d06",
+        "d01",
+        "d02"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d01_r3.json",
+      "repeat": 3,
+      "returncode": 0,
+      "shape": "d01",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 120,
+        "ny": 70,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0-3",
+        "<USER_HOME>/miniconda3/bin/python",
+        "scripts/v025/build_hlo_census.py",
+        "--domain",
+        "d02",
+        "--run-dir",
+        "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+        "--previous",
+        "wrfout_d02_2026-07-26_00:00:00",
+        "--snapshot",
+        "wrfout_d02_2026-07-26_01:00:00",
+        "--expect-sha256",
+        "dc988da08df12c75d52783e7936ee64d306357b4a59a790caadf7de291932629",
+        "--expect-sha256",
+        "495ad6650c0dd0a0bf36502ef2329fc2ee38c6108f8810256f316fc60322cf4c",
+        "--repeat-tag",
+        "r3",
+        "--out",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d02_r3.json"
+      ],
+      "compile_seconds_total": 50.143693813020946,
+      "forced_operators_lowered": {
+        "gwdo_gravity_wave_drag": true,
+        "kain_fritsch_cumulus": true
+      },
+      "lower_seconds_total": 5.441583979947609,
+      "operator_digest": "abd39cd2a8cce2876cf4d824658ce08840fa4d93ab4d20846250306df980fd9e",
+      "operators_lowered": 48,
+      "operators_total": 49,
+      "order": [
+        "d03",
+        "d06",
+        "d01",
+        "d02"
+      ],
+      "out": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/shape_sweep/census_d02_r3.json",
+      "repeat": 3,
+      "returncode": 0,
+      "shape": "d02",
+      "snapshot_config": {
+        "bl_pbl_physics": 5,
+        "cu_physics": 1,
+        "gwd_opt": 1,
+        "mp_physics": 8,
+        "nx": 267,
+        "ny": 117,
+        "nz": 44,
+        "ra_lw_physics": 4
+      },
+      "status": "OK"
+    }
+  ],
+  "schema": "wrf_gpu2.v025.m0.compile_shape_sweep.v1",
+  "shapes": {
+    "d01": {
+      "bytes": [
+        9573975,
+        13054055
+      ],
+      "exists": true,
+      "previous": "wrfout_d01_2026-07-26_00:00:00",
+      "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+      "sha256": [
+        "c2faec387602bf4c63dd6253fae4315b26116b2f86d5616089870c5c23e11275",
+        "176f7c956bdd18b9fe8394a0f7037d563f0f519604d3280e62e669358fe625b5"
+      ],
+      "snapshot": "wrfout_d01_2026-07-26_01:00:18"
+    },
+    "d02": {
+      "bytes": [
+        26815025,
+        39351702
+      ],
+      "exists": true,
+      "previous": "wrfout_d02_2026-07-26_00:00:00",
+      "run_dir": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case",
+      "sha256": [
+        "dc988da08df12c75d52783e7936ee64d306357b4a59a790caadf7de291932629",
+        "495ad6650c0dd0a0bf36502ef2329fc2ee38c6108f8810256f316fc60322cf4c"
+      ],
+      "snapshot": "wrfout_d02_2026-07-26_01:00:00"
+    },
+    "d03": {
+      "bytes": [
+        8099436,
+        11148064
+      ],
+      "exists": true,
+      "previous": "wrfout_d03_2026-07-04_06:00:00",
+      "run_dir": "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+      "sha256": [
+        "5a8da349917bbf11e19305f32827ff62ebdfa9eb99c9198467339b4a1a5079d1",
+        "5599af599cba8458d9d3089da8666e29d634f0a01859c1168e31b559a58d352e"
+      ],
+      "snapshot": "wrfout_d03_2026-07-04_06:20:00"
+    },
+    "d06": {
+      "bytes": [
+        3149749,
+        3903600
+      ],
+      "exists": true,
+      "previous": "wrfout_d06_2026-07-04_06:00:00",
+      "run_dir": "<DATA_ROOT>/alisios/runs/20260704_00z/real1km/real1km_9nest_case",
+      "sha256": [
+        "a20c48601be9ea857a9e123bdebe6ed1e9a29c96e040ec8fe30b369f173df575",
+        "f52062665eaff8337aa57a8adc3d0a6abb2c8676fca1b188170dd187e450f2e5"
+      ],
+      "snapshot": "wrfout_d06_2026-07-04_06:20:00"
+    }
+  },
+  "verdict_compile": {
+    "band": "PARTIAL_SENSITIVITY",
+    "max_median": 50.143693813020946,
+    "min_median": 38.69412886897044,
+    "next_action": "neither upheld nor falsified. Report the measured slope; infer NO cheaper case. Step 1 proceeds unchanged with the slope carried as a caveat.",
+    "spread_ratio": 1.2958992818476949
+  },
+  "verdict_lower": {
+    "band": "GRID_INDEPENDENT",
+    "max_median": 5.524024364043726,
+    "min_median": 5.326437084018835,
+    "next_action": "hypothesis upheld. The fully representative d01 case is the right optimisation target; proceed to Step 1 attribution. No case substitution implied or requested.",
+    "spread_ratio": 1.0370955813254081
+  }
+}

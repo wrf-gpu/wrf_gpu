@@ -1,0 +1,5 @@
+S0 instrument artifacts (<USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/s0_instrument_20260621T085731Z):
+  nsys report     : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/s0_instrument_20260621T085731Z/nsys_all7.nsys-rep
+  launch/kernel   : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/s0_instrument_20260621T085731Z/s0_launch_kernel_counts.json
+  per-domain CFL  : <USER_HOME>/src/wrf_gpu2/.claude/worktrees/agent-a477c998a695df484/proofs/v020/instrument/s0_instrument_20260621T085731Z/s0_per_domain_cfl.json
+  gpu rc / wall   : 0 / 0s

@@ -1,0 +1,55 @@
+{
+  "schema": "V025OperationalRestartRoadmapAudit",
+  "schema_version": 1,
+  "generated_at": "2026-07-31T08:02:38+01:00",
+  "status": "SERIALIZER_FOUNDATION_PRESENT_NETCDF_ROUNDTRIP_REGRESSED_OPERATIONAL_RESTART_MISSING",
+  "device_action": "NONE",
+  "current_capability": {
+    "full_carry_pickle_serializer_exists": true,
+    "wrf_named_netcdf_serializer_exists": true,
+    "cpu_structural_roundtrip_tests_exist": true,
+    "cpu_restart_suite_passed": 10,
+    "cpu_restart_suite_failed": 4,
+    "netcdf_roundtrip_currently_green": false,
+    "public_cli_restart_enabled": false,
+    "public_cli_restart_at_hour_value": null,
+    "single_domain_production_writer_or_reader_call": false,
+    "nested_production_writer_or_reader_call": false,
+    "crash_resume_entry_point": false,
+    "real_gpu_interrupted_resume_proof": false,
+    "multi_domain_d01_d02_checkpoint_set_proof": false,
+    "accumulator_continuity_proof": false,
+    "aot_prepared_state_restart_proof": false,
+    "restart_wall_clock_measurement": false,
+    "storage_budget_rotation_receipt_proof": false
+  },
+  "source_evidence": {
+    "src/gpuwrf/cli.py": {
+      "sha256": "be23fc098d45e57176716f0f41d039baec4986a2e2f315a8f09d571f2d3c56da",
+      "finding": "DailyPipelineConfig is constructed with restart_at_hour=None."
+    },
+    "src/gpuwrf/io/restart.py": {
+      "sha256": "ae75c224262071b8805b4740c81345ef90fdb37c4368e1e94e481699f185fd1e",
+      "finding": "Full OperationalCarry pickle serializer/reader exists but has no production caller."
+    },
+    "src/gpuwrf/io/wrfrst_netcdf.py": {
+      "sha256": "c5bae6e316f5f537b9405f9bdaae3de067cfd2183a16d725245b5a0b94b00dce",
+      "finding": "WRF-named NetCDF full-carry serializer/reader exists but has no production caller."
+    },
+    "src/gpuwrf/integration/daily_pipeline.py": {
+      "sha256": "f00f54740f7434fc03228a35a539a04b28c532728197d9997adfbddee115d495",
+      "finding": "Optional in-process restart probe writes and immediately reloads runtime.checkpoint; it is not a crash-resume path."
+    },
+    "docs/VALIDATION.md": {
+      "sha256": "b3c07a0bdf106ddc3c282fee5bedd56f5ed1dffa366b09d68255014186a20f62",
+      "finding": "Current targeted CPU result is 10 passed / 4 NetCDF failures; multi-hour forecast-continuity acceptance is open."
+    }
+  },
+  "validation": {
+    "command": "env JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES='' pytest -q tests/test_p0_5_restart_full_carry.py tests/test_v0110_wrfrst_netcdf.py tests/test_m7_restart_checkpoint_roundtrip.py",
+    "result": "10 passed, 4 failed",
+    "failure_scope": "Four tests in tests/test_v0110_wrfrst_netcdf.py fail because _restart_dimension_sizes assumes every *_bdy State leaf has a dimension-0 array.",
+    "interpretation": "This is a current serializer regression and strengthens, rather than weakens, the operational release blocker."
+  },
+  "acceptance_route": "Frozen in .agent/decisions/V0250-ROADMAP.md; no implementation or GPU run is authorized by this audit."
+}

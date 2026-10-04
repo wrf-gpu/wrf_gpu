@@ -1,0 +1,12 @@
+# Falsification of the cheap coupling-layer band-aid: strong (weight 0.7)
+# end-of-step pin of the NORMAL component spec+relax zone toward the boundary.
+# The spike is UNCHANGED (v row1 -17, u col1 -10, u|max| 61 m/s) because the
+# acoustic/RK loop regenerates it WITHIN the step. => the fix must live inside
+# the acoustic substep loop (WRF spec_bdyupdate/advance_uv with spec_zone),
+# not in boundary_apply.py. Run stays finite.
+[pin=0.7 lead=0.5h]
+ staggered v[z=0] S rows0-4: [ -4.02 -17.06 -13.29 -10.18  -8.32]
+ staggered v[z=0] N rows-5..-1: [ 1.52  3.49  6.82 11.57 -2.67]
+ staggered u[z=0] W cols0-4: [ 3.52 -9.98 -6.47 -3.5  -2.14]
+ staggered u[z=0] E cols-5..-1: [ 4.42  6.59 10.26 15.65  1.89]
+ finite: True  v|max|=27.44 u|max|=61.05 theta_finite=True

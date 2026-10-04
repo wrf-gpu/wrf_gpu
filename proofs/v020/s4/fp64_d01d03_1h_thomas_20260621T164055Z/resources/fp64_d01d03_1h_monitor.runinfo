@@ -1,0 +1,10 @@
+started=2026-06-21T17:40:55+01:00
+label=fp64_d01d03_1h
+interval=2
+target_pid=3140664
+match_regex=
+no_gpu=0
+gpu_csv=proofs/v020/s4/fp64_d01d03_1h_thomas_20260621T164055Z/resources/fp64_d01d03_1h_gpu_usage.csv
+process_csv=proofs/v020/s4/fp64_d01d03_1h_thomas_20260621T164055Z/resources/fp64_d01d03_1h_process_usage.csv
+system_memory_csv=proofs/v020/s4/fp64_d01d03_1h_thomas_20260621T164055Z/resources/fp64_d01d03_1h_system_memory.csv
+ended=2026-06-21T18:04:38+01:00

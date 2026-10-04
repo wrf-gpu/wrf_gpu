@@ -1,0 +1,3804 @@
+{
+  "arm": "production_chunk",
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "execute_seconds": 55.960117308975896,
+  "fixture": {
+    "acoustic_precision_mode": "mixed_perturb_fp32",
+    "acoustic_substeps": 10,
+    "bl_pbl_physics": 5,
+    "boundary_leaf_names": [
+      "mu_bdy",
+      "mub_bdy",
+      "p_bdy",
+      "pb_bdy",
+      "ph_bdy",
+      "phb_bdy",
+      "qv_bdy",
+      "theta_bdy",
+      "u_bdy",
+      "v_bdy",
+      "w_bdy"
+    ],
+    "boundary_window_cadence_s": 3600.0,
+    "cu_physics": 0,
+    "domain": "d01",
+    "dt_s": 10.0,
+    "force_fp64": true,
+    "grid_shape": [
+      44,
+      70,
+      120
+    ],
+    "mp_physics": 8,
+    "ra_lw_physics": 4,
+    "ra_sw_physics": 4,
+    "radiation_cadence_steps": 180,
+    "radiation_fires_at_steps": [
+      180
+    ],
+    "run_boundary": true,
+    "run_dir": "<DATA_ROOT>/wrf_gpu2/v025/m0/cpu_arms/fastbind_r1",
+    "run_physics": true,
+    "start_step": 180,
+    "steps": 2,
+    "use_noahmp": false
+  },
+  "generated_at": "2026-09-18T00:01:33+0100",
+  "harness_sha256": "14831b13d996c46d03cdd8a3bff48151c7e5c506c78de799f4dcd80e44f77236",
+  "input_leaves": {
+    "[<flat index 0>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7494d317e35cf8ccc3271eaff9764f9df243e8af2f8f08cb66591c664c385095",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 10>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "1a2fb5117ac768cb074c797e831766970615749598cc3d8c35266437df8dae68",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 15>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 16>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 17>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 18>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 19>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "88d90dd7d8a9f812b3f0f5c77b5a9d1e9c9f88ba94320ccc6b02d0b78a48d187",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 20>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1ab01e261c31b5ee70d3a2c5d90b46cac06f5dbaf8eac1d22df04c73f476135a",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 21>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 22>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 23>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 24>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 25>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 26>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 27>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 28>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "8656fff798b25b27e39316c1e7d9934c732dca2218e4225ce04a07fea66f1dc1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 29>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c1cf82bc4cedf2391e6324ff7b424f77dc1bda79dce4e7ac8be77d40fee93217",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 2>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "faffdb78b2821bcf7bfd1ccb78133ce57fe9f9b4afe6baa228c917559cc95da6",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 30>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "12ab5599d45d865988262f2489a3984658e29e2a33c507df5fd379c92360d842",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 31>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "efab90353a4ad3fd49058e95992edd9563938521de7485df164e6f76933e692f",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 32>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "cff18d3f40affcd108230c93af947f6ccc8152331013c488db899d1202c5545d",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 33>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4391921adc28bd483ebe7fc7d238018da9126c43c85549a95619ce2268a9fa11",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 34>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 35>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 36>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 37>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 38>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d782e76c40b007fa108115431fd2af55a67479cb6e2d42666d61213f83eb30eb",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 39>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "078f1b7c6566b5073e23a3c9a2b566c4ce359ed9b629ed20d7b3a051a951351e",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "408c884a72d52301a2db1dcb3b7184a5119b3a2d1eefd9e1442dac6352aca9dd",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 40>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c670dad3f82190a928ce394163f0ed8291c6383ba16b9a61d7fc11a39855d345",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 41>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "abd3bdfc9aa9795587f41b07550549e7a0a85686cacb37f86cb8be494861711c",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 42>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "23a1bf311079887f8a29597e645526c1cceb0cb78203af0cfc124b42a6e7fe7d",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 43>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "8b9650a3a95ea1395a86e24ca1a7a62f47d86cf14f60ce6fc05916a43b80a549",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 44>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "058428984c879005ac8b3b2cc8c688846385a07176dcdb3a33c80fd51e2fbd80",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 45>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ef9b868a042a1c5af06778f2af99072185bb20f264bcf1b0901191e5a78bfbce",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 46>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "69259ed25f66edc0c977f955deae8ea32516ce676d0896a6b15ecf26f522ff0e",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 47>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "457eecf58e3fdd69731d27edb9ef98dd374cc38dcd78d820ba5af0b9f0f26347",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 48>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "07a41a61e4e7f4fc0cd12a4f4ce56e80c78f97d516871c4e9f8b4436c8c0f13d",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 49>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d7c2e66774cdb8c7ee1ca86380ee6b09fd01333193964aec2bc5c59b4cb83a4a",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4e942a05b4b9f4733de242890b192dfa81756dcf270ccde01469f12dcd49170f",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 50>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 51>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 52>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 53>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 54>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 55>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 56>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 57>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 58>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 59>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "9f802ebc4c4ae8d2d44273493745b53d4547942328a153f3bd65ab0bee5916a2",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 60>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 61>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 62>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 63>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 6>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "1f9a516342ee9fe4d694d610a21fe8b221578d6c94e9e15cd7228af731370634",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "fd6569db75e0df2e89d3e299c972a181cea62dcbe8856430555757f70afec5fa",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 8>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "cc3a19e7090f1a1b48605624aef722cc9abd5e6eace54475999b8c418cca80a2",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 9>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "87f3141979acabb95e7c5fc6f09231e2beb2af83934c52e59f11bf7180625f46",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 10>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "408c884a72d52301a2db1dcb3b7184a5119b3a2d1eefd9e1442dac6352aca9dd",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "fd6569db75e0df2e89d3e299c972a181cea62dcbe8856430555757f70afec5fa",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b4db383e73c5dbb4f790330295916312614f6690170c412ff88135788404f953",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "3a690223d48212cb61111c822026ffb6670a53d8be54a6be0fd61bf85a307805",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f21f64150f2f3db20bc5e02c3860b5b42eebd22408e4beb3ba823267d8334bfa",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b6af5238582dbee7185ab99dae8cec7a8e09724637b8860cc75c029bef9b659b",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7a2129f029e59227ec46827d409209d825898b84160c2f586f9c3615dfc38aa1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f39bbd95f59e971080a9f011457d4ca9e0770b8d906c5bf909e3e4998adceb0b",
+      "shape": []
+    },
+    "[<flat index 24>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7cf48001e4d70168295225c13cc5b75639506d4c9c2ea6635ccc19d0d163d6a3",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "3a690223d48212cb61111c822026ffb6670a53d8be54a6be0fd61bf85a307805",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "87f3141979acabb95e7c5fc6f09231e2beb2af83934c52e59f11bf7180625f46",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 6>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "3a690223d48212cb61111c822026ffb6670a53d8be54a6be0fd61bf85a307805",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7494d317e35cf8ccc3271eaff9764f9df243e8af2f8f08cb66591c664c385095",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 8>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "88d90dd7d8a9f812b3f0f5c77b5a9d1e9c9f88ba94320ccc6b02d0b78a48d187",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 9>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "faffdb78b2821bcf7bfd1ccb78133ce57fe9f9b4afe6baa228c917559cc95da6",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    }
+  },
+  "jax_version": "0.10.0",
+  "jaxpr_converts": {
+    "by_nesting": {
+      "scan": 397,
+      "scan/scan": 1965,
+      "scan/scan/scan": 32,
+      "top": 1695
+    },
+    "by_source_site": {
+      "None:None:None": {
+        "count": 2782,
+        "elements": 3063313,
+        "nestings": {
+          "scan": 204,
+          "scan/scan": 1727,
+          "scan/scan/scan": 24,
+          "top": 827
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x57x1x1": 32,
+          "70x120": 1,
+          "70x120x44": 3,
+          "8400x1": 9,
+          "scalar": 2737
+        },
+        "transitions": {
+          "bool->bool": 2,
+          "float64->float32": 82,
+          "float64->float64": 622,
+          "int32->int64": 43,
+          "int64->float64": 72,
+          "int64->int32": 1951,
+          "int64->int64": 6,
+          "int64->uint32": 2,
+          "uint32->int32": 2
+        }
+      },
+      "gpuwrf/contracts/precision.py:0:force_fp64_island.<locals>._up": {
+        "count": 24,
+        "elements": 7963200,
+        "nestings": {
+          "scan": 6,
+          "top": 18
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 21,
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 24
+        }
+      },
+      "gpuwrf/contracts/state.py:0:State.replace": {
+        "count": 15,
+        "elements": 4510800,
+        "nestings": {
+          "top": 15
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_carry_from_finished_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 6,
+          "45x70x120": 6,
+          "70x120": 3
+        },
+        "transitions": {
+          "float64->float32": 15
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:_apply_side_relax": {
+        "count": 96,
+        "elements": 27216000,
+        "nestings": {
+          "top": 96
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "1x70x120": 24,
+          "44x70x120": 24,
+          "45x70x120": 48
+        },
+        "transitions": {
+          "float32->float64": 48,
+          "float64->float32": 48
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:_apply_side_spec": {
+        "count": 32,
+        "elements": 9072000,
+        "nestings": {
+          "top": 32
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "1x70x120": 8,
+          "44x70x120": 8,
+          "45x70x120": 16
+        },
+        "transitions": {
+          "float32->float64": 16,
+          "float64->float32": 16
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:_base_geopotential": {
+        "count": 1,
+        "elements": 378000,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:_base_mu": {
+        "count": 1,
+        "elements": 8400,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:_base_pressure": {
+        "count": 1,
+        "elements": 369600,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:_relax_row": {
+        "count": 192,
+        "elements": 615600,
+        "nestings": {
+          "top": 192
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "1x120": 24,
+          "1x70": 24,
+          "44x120": 24,
+          "44x70": 24,
+          "45x120": 48,
+          "45x70": 48
+        },
+        "transitions": {
+          "float32->float64": 192
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:apply_lateral_boundaries": {
+        "count": 3,
+        "elements": 756000,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 1,
+          "45x70x120": 1,
+          "70x120": 1
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:interpolate_boundary_leaf": {
+        "count": 34,
+        "elements": 34,
+        "nestings": {
+          "top": 34
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_core_state_from_prep",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 34
+        },
+        "transitions": {
+          "float64->int32": 17,
+          "int32->float64": 17
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_compute_solar_geometry": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "float64->float64": 1
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_fortran_int": {
+        "count": 12,
+        "elements": 100800,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 12
+        },
+        "transitions": {
+          "float64->int32": 12
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_mynn_state_with_first_call_qke": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "bool->int32": 1
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_rrtmg_column_inputs": {
+        "count": 1,
+        "elements": 369600,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 1
+        },
+        "transitions": {
+          "float64->float32": 1
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_surface_radiation_properties": {
+        "count": 1,
+        "elements": 8400,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 1
+        },
+        "transitions": {
+          "float64->int32": 1
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_total_or_legacy_field": {
+        "count": 12,
+        "elements": 1579200,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 4,
+          "70x120": 8
+        },
+        "transitions": {
+          "float64->float32": 12
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_wrf_hydrostatic_pressure_profiles_from_state": {
+        "count": 30,
+        "elements": 1890665,
+        "nestings": {
+          "top": 30
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "44": 15,
+          "44x70x120": 5,
+          "70x120": 5,
+          "scalar": 5
+        },
+        "transitions": {
+          "float32->float64": 10,
+          "float64->float32": 20
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_wrf_hydrostatic_pressure_profiles_from_state.<locals>.<genexpr>": {
+        "count": 30,
+        "elements": 11088000,
+        "nestings": {
+          "top": 30
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 30
+        },
+        "transitions": {
+          "float64->float32": 30
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_wrf_phy_prep_rho_from_state": {
+        "count": 21,
+        "elements": 2218137,
+        "nestings": {
+          "top": 21
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "44": 6,
+          "44x70x120": 6,
+          "45": 6,
+          "scalar": 3
+        },
+        "transitions": {
+          "float32->float64": 3,
+          "float64->float32": 18
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_wrf_phy_prep_temperature_interfaces": {
+        "count": 2,
+        "elements": 88,
+        "nestings": {
+          "top": 2
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "44": 2
+        },
+        "transitions": {
+          "float64->float32": 2
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_wrf_topographic_shadow_mask": {
+        "count": 3,
+        "elements": 8590,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "1x120": 1,
+          "70x1": 1,
+          "70x120": 1
+        },
+        "transitions": {
+          "int32->float64": 2,
+          "int64->int32": 1
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_wrf_topographic_shadow_mask.<locals>.x_interp_shadow": {
+        "count": 6,
+        "elements": 50400,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 6
+        },
+        "transitions": {
+          "int32->float64": 6
+        }
+      },
+      "gpuwrf/coupling/physics_couplers.py:0:_wrf_topographic_shadow_mask.<locals>.y_interp_shadow": {
+        "count": 6,
+        "elements": 50400,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 6
+        },
+        "transitions": {
+          "int32->float64": 6
+        }
+      },
+      "gpuwrf/dynamics/acoustic_wrf.py:0:diagnose_pressure_al_alt": {
+        "count": 15,
+        "elements": 2343600,
+        "nestings": {
+          "top": 15
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1x70x120": 3,
+          "45x70x120": 6,
+          "70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 15
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_mass_scalar": {
+        "count": 9,
+        "elements": 3326400,
+        "nestings": {
+          "top": 9
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 9
+        },
+        "transitions": {
+          "float32->float64": 9
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_u_face": {
+        "count": 3,
+        "elements": 1118040,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x121": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_v_face": {
+        "count": 3,
+        "elements": 1124640,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x71x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_w_face": {
+        "count": 9,
+        "elements": 3402000,
+        "nestings": {
+          "top": 9
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 9
+        },
+        "transitions": {
+          "float32->float64": 9
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:compute_advection_tendencies": {
+        "count": 12,
+        "elements": 4460280,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 6,
+          "44x70x121": 3,
+          "44x71x120": 3
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:_absolute_diagnostics": {
+        "count": 9,
+        "elements": 2268000,
+        "nestings": {
+          "top": 9
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 3,
+          "45x70x120": 3,
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 9
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:large_step_coriolis": {
+        "count": 3,
+        "elements": 1134000,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:large_step_horizontal_curvature": {
+        "count": 3,
+        "elements": 1134000,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:large_step_horizontal_pgf": {
+        "count": 3,
+        "elements": 25200,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/core/small_step_finish.py:0:small_step_finish_wrf": {
+        "count": 6,
+        "elements": 2268000,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_carry_from_finished_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/dynamics/core/small_step_prep.py:0:small_step_prep_wrf": {
+        "count": 12,
+        "elements": 2268000,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 6,
+          "70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/explicit_diffusion.py:0:wrf_nested_horizontal_diffusion_momentum_tendency": {
+        "count": 6,
+        "elements": 2136128,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_diffopt1_dry_forward_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "43x68x118": 4,
+          "45x70x120": 2
+        },
+        "transitions": {
+          "float32->float64": 5,
+          "float64->float32": 1
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:_mass_factor_or_one": {
+        "count": 3,
+        "elements": 25200,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 3
+        },
+        "transitions": {
+          "float64->float32": 3
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:_vertical_flux_div_w": {
+        "count": 12,
+        "elements": 2116800,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "41x70x120": 6,
+          "70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:_vertical_flux_div_w.<locals>._flux3_at": {
+        "count": 12,
+        "elements": 100800,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 12
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:advect_w_flux": {
+        "count": 6,
+        "elements": 50400,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "1x70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:flux5_face_periodic": {
+        "count": 12,
+        "elements": 4536000,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 12
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/physics/gwd_gwdo.py:0:gwdo_columns": {
+        "count": 6,
+        "elements": 403245,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "1x45": 1,
+          "8400": 4,
+          "8400x44": 1
+        },
+        "transitions": {
+          "bool->int32": 1,
+          "float64->int32": 1,
+          "int32->float64": 3,
+          "int64->int32": 1
+        }
+      },
+      "gpuwrf/physics/mynn_edmf.py:0:_single_column_dmp_mf": {
+        "count": 10,
+        "elements": 2856069,
+        "nestings": {
+          "top": 10
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "44": 1,
+          "8": 3,
+          "8400": 4,
+          "8400x8x42": 1,
+          "scalar": 1
+        },
+        "transitions": {
+          "bool->float64": 3,
+          "float32->float64": 1,
+          "float64->float64": 3,
+          "int64->float64": 3
+        }
+      },
+      "gpuwrf/physics/mynn_edmf.py:0:_single_column_dmp_mf.<locals>.plume_scan.<locals>.step": {
+        "count": 1,
+        "elements": 67200,
+        "nestings": {
+          "scan": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "8400x8": 1
+        },
+        "transitions": {
+          "float64->float64": 1
+        }
+      },
+      "gpuwrf/physics/mynn_edmf.py:0:_wrf_superadiabatic_gate": {
+        "count": 1,
+        "elements": 8400,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "8400": 1
+        },
+        "transitions": {
+          "float64->float64": 1
+        }
+      },
+      "gpuwrf/physics/mynn_pbl.py:0:_boulac_length_dense": {
+        "count": 12,
+        "elements": 195148800,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "8400x44x44": 12
+        },
+        "transitions": {
+          "bool->int32": 12
+        }
+      },
+      "gpuwrf/physics/mynn_pbl.py:0:_scale_aware_psig_bl": {
+        "count": 2,
+        "elements": 2,
+        "nestings": {
+          "top": 2
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "scalar": 2
+        },
+        "transitions": {
+          "float64->float64": 2
+        }
+      },
+      "gpuwrf/physics/mynn_sgs_cloud.py:0:dmp_shallow_cu_overwrite": {
+        "count": 1,
+        "elements": 8400,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "8400x1": 1
+        },
+        "transitions": {
+          "float64->float64": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_interp_lw_planck": {
+        "count": 6,
+        "elements": 237568,
+        "nestings": {
+          "scan": 6
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024": 2,
+          "1024x57": 2,
+          "1024x58": 2
+        },
+        "transitions": {
+          "float64->int32": 3,
+          "int32->float64": 3
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_kiss_uint_to_float": {
+        "count": 2,
+        "elements": 2048,
+        "nestings": {
+          "scan/scan": 2
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024": 2
+        },
+        "transitions": {
+          "int32->float64": 2
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_coef_as_dtype.<locals>.<genexpr>": {
+        "count": 34,
+        "elements": 2159616,
+        "nestings": {
+          "scan/scan": 34
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x57": 33,
+          "1024x57x4": 1
+        },
+        "transitions": {
+          "float64->float32": 34
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_extended_pressure_profiles": {
+        "count": 1,
+        "elements": 46080,
+        "nestings": {
+          "scan": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_lookup_terms": {
+        "count": 8,
+        "elements": 131072,
+        "nestings": {
+          "scan/scan/scan": 8
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x16": 8
+        },
+        "transitions": {
+          "float64->int32": 4,
+          "int32->float64": 4
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_mcica_random_cloud_mask": {
+        "count": 6,
+        "elements": 8233984,
+        "nestings": {
+          "scan": 6
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024": 4,
+          "1024x57": 1,
+          "1024x57x140": 1
+        },
+        "transitions": {
+          "bool->float64": 1,
+          "float32->uint32": 4,
+          "float64->float32": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_o3_vmr_for_state": {
+        "count": 1,
+        "elements": 45056,
+        "nestings": {
+          "scan": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x44": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_setcoef": {
+        "count": 5,
+        "elements": 291840,
+        "nestings": {
+          "scan": 5
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x57": 5
+        },
+        "transitions": {
+          "int32->float64": 5
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_solver_base": {
+        "count": 1,
+        "elements": 46080,
+        "nestings": {
+          "scan": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_lw_taumol_band": {
+        "count": 5,
+        "elements": 1984528,
+        "nestings": {
+          "scan/scan": 5
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x57": 2,
+          "1024x57x16": 2,
+          "16": 1
+        },
+        "transitions": {
+          "float32->float64": 2,
+          "float64->float32": 3
+        }
+      },
+      "gpuwrf/physics/rrtmg_lw.py:0:_trunc_int": {
+        "count": 53,
+        "elements": 3093504,
+        "nestings": {
+          "scan": 6,
+          "scan/scan": 47
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x57": 53
+        },
+        "transitions": {
+          "float32->int32": 4,
+          "float64->int32": 49
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_binary_params": {
+        "count": 7,
+        "elements": 7,
+        "nestings": {
+          "scan": 7
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "scalar": 7
+        },
+        "transitions": {
+          "float64->float32": 7
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_continuum_terms": {
+        "count": 20,
+        "elements": 1680,
+        "nestings": {
+          "scan/scan": 20
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "10x12": 10,
+          "4x12": 10
+        },
+        "transitions": {
+          "float64->float32": 20
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_interp_source": {
+        "count": 7,
+        "elements": 7168,
+        "nestings": {
+          "scan": 7
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x1": 7
+        },
+        "transitions": {
+          "float32->float64": 7
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_kissvec_step": {
+        "count": 4,
+        "elements": 4096,
+        "nestings": {
+          "scan": 2,
+          "scan/scan": 2
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024": 4
+        },
+        "transitions": {
+          "int32->float64": 2,
+          "uint32->int32": 2
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_mcica_random_overlap_mask": {
+        "count": 6,
+        "elements": 7841960,
+        "nestings": {
+          "scan": 6
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x4": 2,
+          "1024x45": 2,
+          "1024x45x14x12": 1,
+          "14x12": 1
+        },
+        "transitions": {
+          "bool->float64": 1,
+          "float32->float64": 2,
+          "float32->uint32": 1,
+          "float64->float32": 2
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_reftra_eddington": {
+        "count": 2,
+        "elements": 2048,
+        "nestings": {
+          "scan/scan": 2
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x1x1x1": 2
+        },
+        "transitions": {
+          "float64->float32": 2
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_shortwave_impl": {
+        "count": 6,
+        "elements": 7925928,
+        "nestings": {
+          "scan": 6
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45": 4,
+          "1024x45x14x12": 1,
+          "14x12": 1
+        },
+        "transitions": {
+          "float64->float32": 6
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_solar_source_scale": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "scan": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "float64->float32": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_source_active": {
+        "count": 28,
+        "elements": 1290240,
+        "nestings": {
+          "scan": 28
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45": 28
+        },
+        "transitions": {
+          "bool->int32": 14,
+          "int32->int64": 14
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_source_indices": {
+        "count": 21,
+        "elements": 960512,
+        "nestings": {
+          "scan": 21
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x44": 7,
+          "1024x45": 14
+        },
+        "transitions": {
+          "bool->int32": 14,
+          "int32->int64": 7
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_band_scan_optics_fluxes": {
+        "count": 12,
+        "elements": 322,
+        "nestings": {
+          "scan": 12
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "14": 11,
+          "14x12": 1
+        },
+        "transitions": {
+          "float64->float32": 12
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_band_scan_optics_fluxes.<locals>.body": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "scan/scan": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "int64->int32": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_band_tile_fluxes": {
+        "count": 11,
+        "elements": 4474880,
+        "nestings": {
+          "scan/scan": 11
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x1x1": 1,
+          "1024x1x12": 1,
+          "1024x1x1x1": 1,
+          "1024x45x1x12": 5,
+          "1024x46x1x12": 3
+        },
+        "transitions": {
+          "bool->float32": 1,
+          "float32->float64": 6,
+          "float64->float32": 4
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_extended_profiles": {
+        "count": 2,
+        "elements": 92160,
+        "nestings": {
+          "scan": 2
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45": 2
+        },
+        "transitions": {
+          "float32->float64": 2
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_o3_vmr_for_state": {
+        "count": 1,
+        "elements": 45056,
+        "nestings": {
+          "scan": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x44": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_setcoef": {
+        "count": 11,
+        "elements": 415862,
+        "nestings": {
+          "scan": 11
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45": 8,
+          "1024x46": 1,
+          "59": 2
+        },
+        "transitions": {
+          "float64->float32": 7,
+          "int32->float32": 4
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_taumol_band": {
+        "count": 91,
+        "elements": 299067,
+        "nestings": {
+          "scan/scan": 91
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1175x12": 14,
+          "12": 22,
+          "14x12": 14,
+          "4x12": 9,
+          "585x12": 14,
+          "9x12": 3,
+          "scalar": 15
+        },
+        "transitions": {
+          "float64->float32": 91
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_sw_transmittance_lookup": {
+        "count": 12,
+        "elements": 6635520,
+        "nestings": {
+          "scan/scan": 12
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45x1x12": 12
+        },
+        "transitions": {
+          "float32->int32": 6,
+          "int32->float32": 6
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_trunc_int": {
+        "count": 23,
+        "elements": 744448,
+        "nestings": {
+          "scan": 12,
+          "scan/scan": 11
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024": 7,
+          "1024x45": 16
+        },
+        "transitions": {
+          "float32->int32": 23
+        }
+      },
+      "gpuwrf/physics/rrtmg_sw.py:0:_wrf_o3_vmr": {
+        "count": 6,
+        "elements": 93308,
+        "nestings": {
+          "scan": 6
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1024x45": 1,
+          "1024x46": 1,
+          "31": 4
+        },
+        "transitions": {
+          "float32->float64": 1,
+          "float64->float32": 5
+        }
+      },
+      "gpuwrf/physics/surface_layer.py:0:_psih_unstable_full": {
+        "count": 24,
+        "elements": 24,
+        "nestings": {
+          "scan": 6,
+          "top": 18
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "scalar": 24
+        },
+        "transitions": {
+          "float64->float64": 24
+        }
+      },
+      "gpuwrf/physics/surface_layer.py:0:_psim_unstable_full": {
+        "count": 32,
+        "elements": 32,
+        "nestings": {
+          "scan": 8,
+          "top": 24
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "scalar": 32
+        },
+        "transitions": {
+          "float64->float64": 32
+        }
+      },
+      "gpuwrf/physics/surface_layer.py:0:_table_lookup": {
+        "count": 64,
+        "elements": 537600,
+        "nestings": {
+          "scan": 16,
+          "top": 48
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120": 64
+        },
+        "transitions": {
+          "float64->int32": 32,
+          "int32->float64": 32
+        }
+      },
+      "gpuwrf/physics/surface_layer.py:0:surface_layer_with_diagnostics": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "float64->float64": 1
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_cast_state": {
+        "count": 1,
+        "elements": 369600,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120x44": 1
+        },
+        "transitions": {
+          "float32->float64": 1
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_cloud_water_freezing_rates": {
+        "count": 1,
+        "elements": 369600,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120x44": 1
+        },
+        "transitions": {
+          "float64->int32": 1
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_cold_collection_rates": {
+        "count": 1,
+        "elements": 369600,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120x44": 1
+        },
+        "transitions": {
+          "float64->int32": 1
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_ice_sources_with_process_flags": {
+        "count": 3,
+        "elements": 1108800,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120x44": 3
+        },
+        "transitions": {
+          "float64->int32": 3
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_lookup_digit_index": {
+        "count": 10,
+        "elements": 3696000,
+        "nestings": {
+          "top": 10
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120x44": 10
+        },
+        "transitions": {
+          "float64->int32": 10
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_restore_state": {
+        "count": 1,
+        "elements": 369600,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120x44": 1
+        },
+        "transitions": {
+          "float64->float32": 1
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_sed_one_species.<locals>.body": {
+        "count": 8,
+        "elements": 33604,
+        "nestings": {
+          "scan": 8
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120": 4,
+          "scalar": 4
+        },
+        "transitions": {
+          "bool->float64": 4,
+          "int32->float64": 4
+        }
+      },
+      "gpuwrf/physics/thompson_column.py:0:_warm_rain_collection": {
+        "count": 3,
+        "elements": 739201,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "70x120x44": 2,
+          "scalar": 1
+        },
+        "transitions": {
+          "float64->float64": 1,
+          "float64->int32": 2
+        }
+      },
+      "gpuwrf/physics/thompson_saturation.py:0:saturation_mixing_ratio_liquid": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "float64->float64": 1
+        }
+      },
+      "gpuwrf/physics/wrf_cam_ozone.py:0:wrf_cam_ozone_profile": {
+        "count": 2,
+        "elements": 378000,
+        "nestings": {
+          "top": 2
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 1,
+          "70x120x44": 1
+        },
+        "transitions": {
+          "float64->float32": 2
+        }
+      },
+      "gpuwrf/physics/wrf_cam_ozone.py:0:wrf_ozn_time_indices_factors": {
+        "count": 7,
+        "elements": 7,
+        "nestings": {
+          "top": 7
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing.<locals>._refresh_rthraten",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 7
+        },
+        "transitions": {
+          "float32->int32": 1,
+          "float64->float32": 3,
+          "int32->float32": 2,
+          "int64->int32": 1
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_acoustic_core_state_from_prep": {
+        "count": 9,
+        "elements": 2268000,
+        "nestings": {
+          "top": 9
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_core_state_from_prep",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 3,
+          "45x70x120": 3,
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 9
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_apply_mixed_perturb_fp32_storage": {
+        "count": 16,
+        "elements": 4158000,
+        "nestings": {
+          "top": 16
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_apply_mixed_perturb_fp32_storage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 5,
+          "45x70x120": 6,
+          "70x120": 5
+        },
+        "transitions": {
+          "float32->float64": 12,
+          "float64->float32": 4
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_augment_large_step_tendencies": {
+        "count": 15,
+        "elements": 5619480,
+        "nestings": {
+          "top": 15
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 3,
+          "44x70x121": 3,
+          "44x71x120": 3,
+          "45x70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 15
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_carry_from_finished_stage": {
+        "count": 6,
+        "elements": 1159200,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_carry_from_finished_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 3,
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_enforce_operational_precision": {
+        "count": 4,
+        "elements": 1134000,
+        "nestings": {
+          "top": 4
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_enforce_operational_precision",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 1,
+          "45x70x120": 2,
+          "70x120": 1
+        },
+        "transitions": {
+          "float32->float64": 4
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_first_limited_cell_xyz": {
+        "count": 4,
+        "elements": 1108803,
+        "nestings": {
+          "top": 4
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_first_limited_cell_xyz",
+          "line": 0
+        },
+        "shapes": {
+          "3": 1,
+          "369600": 3
+        },
+        "transitions": {
+          "bool->int32": 2,
+          "int32->int64": 1,
+          "int64->int32": 1
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_physics_boundary_step_with_limiter_diagnostics": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_boundary_step_with_limiter_diagnostics",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "int32->float64": 1
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_physics_step_forcing": {
+        "count": 1,
+        "elements": 1,
+        "nestings": {
+          "top": 1
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_physics_step_forcing",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 1
+        },
+        "transitions": {
+          "bool->int32": 1
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_positive_definite_theta_increment_limiter": {
+        "count": 2,
+        "elements": 739200,
+        "nestings": {
+          "top": 2
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_positive_definite_theta_increment_limiter",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 2
+        },
+        "transitions": {
+          "bool->int32": 1,
+          "int32->int64": 1
+        }
+      }
+    },
+    "by_transition": {
+      "bool->bool": 2,
+      "bool->float32": 1,
+      "bool->float64": 9,
+      "bool->int32": 46,
+      "float32->float64": 505,
+      "float32->int32": 34,
+      "float32->uint32": 5,
+      "float64->float32": 453,
+      "float64->float64": 690,
+      "float64->int32": 136,
+      "int32->float32": 12,
+      "int32->float64": 87,
+      "int32->int64": 66,
+      "int64->float64": 75,
+      "int64->int32": 1956,
+      "int64->int64": 6,
+      "int64->uint32": 2,
+      "uint32->int32": 4
+    },
+    "convert_elements": 374910828,
+    "convert_sites": 4089,
+    "entry": "operational_mode._physics_boundary_step (one step, traced radiation predicate)",
+    "float_to_float_elements": 134494987,
+    "float_to_float_sites": 1648,
+    "trace_seconds": 3.853373786987504
+  },
+  "label": "pre_production_chunk_mixed",
+  "output_leaves": {
+    "[<flat index 0>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "feea91841cd131c46062df83e8ff6b20528f967b41460e5e6db2f9cd10080631",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 10>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "a69665447373506517d5069db8776e099836380535deb988668cb7f7ebf7e6d0",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 15>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 16>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 17>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 18>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 19>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "085147461cd30044895b8bb2883b3eb3a5cd68d408f322ce02f1d2cbf5ddec48",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 20>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2f53780d81c27d5eadef1e7e43b37828c65a1b242b275f978afca444dc0b829d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 21>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "489cb1052ffb5dd1ddd11bc39d133c83650ef3d0e3eb46e25b704c1eda14d976",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 22>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1b006af8bb975fbba9383d0796c2af66aac478182785fcbbb50ead7d6827bff0",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 23>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "8d269c17d4d7b1b352d8c22fb2461273a37158006fe51f5ce73129bfa79b3ffd",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 24>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "028d29acc80303183a75b836edfc921d6e7335df495190e6666491e4350b69e6",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 25>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "45eef704e2a75b025599bf8c7bfd20a17e3733ce6f147a91ec6e352b96cadea7",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 26>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2ed87f85ce09fbb2af7e78efeab26b361fe010dcca2221281046391bc0498af7",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 27>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b0157c12fc0045660d283f9672d0df634dd5307c77e0797a86268461f83271b2",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 28>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "8656fff798b25b27e39316c1e7d9934c732dca2218e4225ce04a07fea66f1dc1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 29>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c1cf82bc4cedf2391e6324ff7b424f77dc1bda79dce4e7ac8be77d40fee93217",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 2>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "fd16ee95c7c0eecd22b1805e6a39e78fda2aa24e29f11b7707035ce330c1be61",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 30>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "12ab5599d45d865988262f2489a3984658e29e2a33c507df5fd379c92360d842",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 31>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "efab90353a4ad3fd49058e95992edd9563938521de7485df164e6f76933e692f",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 32>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "cff18d3f40affcd108230c93af947f6ccc8152331013c488db899d1202c5545d",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 33>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4391921adc28bd483ebe7fc7d238018da9126c43c85549a95619ce2268a9fa11",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 34>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 35>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 36>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 37>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 38>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d782e76c40b007fa108115431fd2af55a67479cb6e2d42666d61213f83eb30eb",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 39>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "078f1b7c6566b5073e23a3c9a2b566c4ce359ed9b629ed20d7b3a051a951351e",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "efcfed8014b436fa3f932087afbef95ff627e5576a0ba41c2f8690e90c50e3d0",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 40>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c670dad3f82190a928ce394163f0ed8291c6383ba16b9a61d7fc11a39855d345",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 41>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "abd3bdfc9aa9795587f41b07550549e7a0a85686cacb37f86cb8be494861711c",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 42>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "23a1bf311079887f8a29597e645526c1cceb0cb78203af0cfc124b42a6e7fe7d",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 43>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "8b9650a3a95ea1395a86e24ca1a7a62f47d86cf14f60ce6fc05916a43b80a549",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 44>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "058428984c879005ac8b3b2cc8c688846385a07176dcdb3a33c80fd51e2fbd80",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 45>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ef9b868a042a1c5af06778f2af99072185bb20f264bcf1b0901191e5a78bfbce",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 46>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "69259ed25f66edc0c977f955deae8ea32516ce676d0896a6b15ecf26f522ff0e",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 47>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "457eecf58e3fdd69731d27edb9ef98dd374cc38dcd78d820ba5af0b9f0f26347",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 48>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "07a41a61e4e7f4fc0cd12a4f4ce56e80c78f97d516871c4e9f8b4436c8c0f13d",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 49>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d7c2e66774cdb8c7ee1ca86380ee6b09fd01333193964aec2bc5c59b4cb83a4a",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "82cf29d9b53acd31f6516ac68b7c78e1945bf6529a4eef28e4400d327343f3fb",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 50>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 51>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 52>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 53>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 54>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 55>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 56>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 57>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 58>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 59>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4642c51b4e922cb91135873854b458ce6db791e1532c105b2dd7f0eadda27bf0",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 60>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 61>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 62>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 63>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 6>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "3a9fca8dbd586c97ad36871d37577b58665a8a1ca7a15df084d5a2b53dcbc53e",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2ed708ac7a0e8260eddfcbbba3bf84ec4d4fa2bffe010d555c59993c9f8691fd",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 8>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "dd7f12b6f36cbf11a734e7c1e2f624ba4742665e87ddb67eca9554190ab5e87b",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 9>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "438af444257750554b217c0f0f9feec762ff6ccbd37141a00cadc738b83276e0",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 10>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2c13bee73b207c1052614a2320bb5aa41981cd6062194f70fb1fa82d22c32fd1",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ee431e097915cedd94b2617ee653d43afdb247c9023789a83047d457f7263c84",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7ec58e6d9dfe9b51dd9158ea18d8ad1c726526fb1a7c5c6fca6e14fc2ed7938c",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "63fa0c1df9e822f565c78c07a01936c5dacb981bb957b980f061a9a286b2468a",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "5ecd2097d3eb01211a396a1fd630b718485b7a268de4abe62fe93625a35a3f11",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f3d3e466e731032e82a017445fce924d974c77b25b7787aa9f749e44b1fb5f91",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f21f64150f2f3db20bc5e02c3860b5b42eebd22408e4beb3ba823267d8334bfa",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b6af5238582dbee7185ab99dae8cec7a8e09724637b8860cc75c029bef9b659b",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7a2129f029e59227ec46827d409209d825898b84160c2f586f9c3615dfc38aa1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f39bbd95f59e971080a9f011457d4ca9e0770b8d906c5bf909e3e4998adceb0b",
+      "shape": []
+    },
+    "[<flat index 24>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7cf48001e4d70168295225c13cc5b75639506d4c9c2ea6635ccc19d0d163d6a3",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "601d48d99252b6b04b4f62f9668cf2ce8553cea5c980f7e3627979881c4407b2",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "71aef7d3f85ac14ba30eb0b6961102c22814202527ec4f16af5e9a70a2159347",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "9d8f84094dbc2b0fe753668c0752436abb1e6a4552212d2456945eb0d10764f7",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "cc6d0d1a5cca72731397a554c5e8ba51962985f23798b24ba7d5a3eb4f7788b7",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 6>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "71a9afd4b5bb3b7f3fd3f175f3a04f8a4410de553f849a35812cb50243c38122",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ad9a14acef5f63b5707575cb23c513612cfa0e999f866892ad565e4baa9b886f",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 8>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f28bc15edcd4c8b5200decea6ebfdfe8d4567abe74f1b39932425fcc07ead481",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 9>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "b1c8f35300d4399ff66aeb4a55ecb544fc5d90a7642fa57c26f219501d2f2a16",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    }
+  },
+  "platforms": [
+    "cpu"
+  ],
+  "program": {
+    "argument_bytes": 159444308,
+    "compile_seconds": 119.69187387797865,
+    "converts_in_loop": {
+      "computations_reachable_from_loop": 5066,
+      "computations_total": 6123,
+      "in_loop": 4248,
+      "in_loop_by_in_out_dtype": {},
+      "in_loop_by_transition": {
+        "-> f32[1,10,12]": 1,
+        "-> f32[1,1175,12]": 1,
+        "-> f32[1,12]": 1,
+        "-> f32[1,4,12]": 1,
+        "-> f32[1,585,12]": 1,
+        "-> f32[1,70,120]": 16,
+        "-> f32[1024,1,12]": 2,
+        "-> f32[1024,45,1,12]": 188,
+        "-> f32[1024,45]": 34,
+        "-> f32[1024,46]": 3,
+        "-> f32[1024,4]": 4,
+        "-> f32[1024,57]": 4,
+        "-> f32[1024]": 5,
+        "-> f32[14,12,1024,45]": 1,
+        "-> f32[14,12]": 2,
+        "-> f32[1]": 2,
+        "-> f32[44,70,120]": 126,
+        "-> f32[45,70,120]": 143,
+        "-> f32[70,120]": 149,
+        "-> f64[1,1,120]": 10,
+        "-> f64[1,70,120]": 34,
+        "-> f64[1,70,1]": 10,
+        "-> f64[1024,16]": 3,
+        "-> f64[1024,44]": 2,
+        "-> f64[1024,45,1,12]": 2,
+        "-> f64[1024,45]": 16,
+        "-> f64[1024,46,1,12]": 2,
+        "-> f64[1024,57,140]": 64,
+        "-> f64[1024,57]": 8,
+        "-> f64[1024,58]": 1,
+        "-> f64[1024]": 10,
+        "-> f64[41,70,120]": 6,
+        "-> f64[43,68,118]": 4,
+        "-> f64[44,1,120]": 10,
+        "-> f64[44,70,120]": 72,
+        "-> f64[44,70,1]": 10,
+        "-> f64[45,1,120]": 20,
+        "-> f64[45,70,120]": 196,
+        "-> f64[45,70,1]": 20,
+        "-> f64[70,120]": 157,
+        "-> f64[8400]": 33,
+        "-> f64[]": 290,
+        "-> s32[1024,16]": 24,
+        "-> s32[1024,1]": 14,
+        "-> s32[1024,44]": 7,
+        "-> s32[1024,45,1,12]": 1980,
+        "-> s32[1024,45]": 28,
+        "-> s32[1024,57]": 42,
+        "-> s32[1024,58]": 11,
+        "-> s32[1024]": 10,
+        "-> s32[70,120,44]": 283,
+        "-> s32[70,120]": 28,
+        "-> s32[8400,1]": 15,
+        "-> s32[8400,44,44]": 2,
+        "-> s32[8400,44]": 1,
+        "-> s32[8400]": 15,
+        "-> s32[]": 100,
+        "-> s64[1024,45]": 1,
+        "-> s64[8400]": 15,
+        "-> u32[1024,1]": 4,
+        "-> u32[1024,4]": 4
+      },
+      "in_loop_converted_elements": 2086787728,
+      "loop_bodies_detected": 36,
+      "nesting": {
+        "inner_loop_roots": 31,
+        "inner_loops": {
+          "by_in_out_dtype": {},
+          "by_transition": {
+            "-> f32[1,10,12]": 1,
+            "-> f32[1,1175,12]": 1,
+            "-> f32[1,12]": 1,
+            "-> f32[1,4,12]": 1,
+            "-> f32[1,585,12]": 1,
+            "-> f32[1024,1,12]": 2,
+            "-> f32[1024,45,1,12]": 188,
+            "-> f32[14,12]": 2,
+            "-> f32[1]": 2,
+            "-> f64[1024,16]": 3,
+            "-> f64[1024,45,1,12]": 2,
+            "-> f64[1024,46,1,12]": 2,
+            "-> f64[1024]": 2,
+            "-> f64[70,120]": 30,
+            "-> f64[]": 24,
+            "-> s32[1024,16]": 24,
+            "-> s32[1024,45,1,12]": 1980,
+            "-> s32[1024,45]": 1,
+            "-> s32[1024]": 2,
+            "-> s32[70,120]": 6,
+            "-> s32[]": 1
+          },
+          "converts": 2276,
+          "elements": 1201894879
+        },
+        "outer_body_only": {
+          "by_in_out_dtype": {},
+          "by_transition": {
+            "-> f32[1,70,120]": 16,
+            "-> f32[1024,45]": 34,
+            "-> f32[1024,46]": 3,
+            "-> f32[1024,4]": 4,
+            "-> f32[1024,57]": 4,
+            "-> f32[1024]": 5,
+            "-> f32[14,12,1024,45]": 1,
+            "-> f32[44,70,120]": 126,
+            "-> f32[45,70,120]": 143,
+            "-> f32[70,120]": 149,
+            "-> f64[1,1,120]": 10,
+            "-> f64[1,70,120]": 34,
+            "-> f64[1,70,1]": 10,
+            "-> f64[1024,44]": 2,
+            "-> f64[1024,45]": 16,
+            "-> f64[1024,57,140]": 64,
+            "-> f64[1024,57]": 8,
+            "-> f64[1024,58]": 1,
+            "-> f64[1024]": 8,
+            "-> f64[41,70,120]": 6,
+            "-> f64[43,68,118]": 4,
+            "-> f64[44,1,120]": 10,
+            "-> f64[44,70,120]": 72,
+            "-> f64[44,70,1]": 10,
+            "-> f64[45,1,120]": 20,
+            "-> f64[45,70,120]": 196,
+            "-> f64[45,70,1]": 20,
+            "-> f64[70,120]": 127,
+            "-> f64[8400]": 33,
+            "-> f64[]": 266,
+            "-> s32[1024,1]": 14,
+            "-> s32[1024,44]": 7,
+            "-> s32[1024,45]": 27,
+            "-> s32[1024,57]": 42,
+            "-> s32[1024,58]": 11,
+            "-> s32[1024]": 8,
+            "-> s32[70,120,44]": 283,
+            "-> s32[70,120]": 22,
+            "-> s32[8400,1]": 15,
+            "-> s32[8400,44,44]": 2,
+            "-> s32[8400,44]": 1,
+            "-> s32[8400]": 15,
+            "-> s32[]": 99,
+            "-> s64[1024,45]": 1,
+            "-> s64[8400]": 15,
+            "-> u32[1024,1]": 4,
+            "-> u32[1024,4]": 4
+          },
+          "converts": 1972,
+          "elements": 884892849
+        },
+        "outer_loop_roots": [
+          "wide.region_131.254.sunk.clone.clone",
+          "wide.region_139.276.sunk.clone.clone",
+          "wide.wide.wide.region_144.580.clone.clone.sunk.clone.sunk.clone",
+          "wide.wide.wide.wide.region_389.721.clone.sunk.clone.sunk.clone.sunk.clone",
+          "wide.wide.wide.wide.wide.wide.wide.wide.region_0.1986.clone.sunk.clone.sunk.clone.clone.clone.clone.clone.clone"
+        ]
+      },
+      "outside_loop": 589,
+      "total": 4837
+    },
+    "converts_optimized": {
+      "by_transition": {
+        "f32->f64": 6,
+        "f64->f32": 1
+      },
+      "f32_to_f64": 6,
+      "f64_to_f32": 1,
+      "other": 0,
+      "total": 7
+    },
+    "instructions": {
+      "by_op": {
+        "abs": 1055,
+        "add": 53686,
+        "and": 3844,
+        "bitcast": 23013,
+        "bitcast-convert": 7,
+        "broadcast": 59703,
+        "ceil": 45,
+        "clamp": 7532,
+        "compare": 18774,
+        "concatenate": 1015,
+        "conditional": 4,
+        "constant": 33615,
+        "convert": 4830,
+        "copy": 2376,
+        "cosine": 7,
+        "custom-call": 5,
+        "divide": 1988,
+        "dynamic-slice": 5720,
+        "dynamic-update-slice": 1294,
+        "exponential": 23,
+        "floor": 644,
+        "fusion": 5758,
+        "gather": 939,
+        "get-tuple-element": 3878,
+        "iota": 194,
+        "is-finite": 349,
+        "log": 63,
+        "maximum": 9256,
+        "minimum": 3556,
+        "multiply": 90583,
+        "negate": 2030,
+        "not": 89,
+        "or": 146,
+        "pad": 258,
+        "parameter": 97629,
+        "power": 183,
+        "reduce": 117,
+        "reduce-window": 141,
+        "remainder": 63,
+        "reverse": 3677,
+        "round-nearest-even": 1,
+        "select": 20427,
+        "shift-left": 10,
+        "shift-right-logical": 21,
+        "sign": 908,
+        "sine": 10,
+        "slice": 34645,
+        "sqrt": 77,
+        "subtract": 38851,
+        "tanh": 9,
+        "transpose": 1213,
+        "tuple": 147,
+        "while": 36,
+        "xor": 18
+      },
+      "instructions": 534462
+    },
+    "label": "pre_production_chunk_mixed",
+    "lower_seconds": 9.868472338013817,
+    "optimized_hlo_bytes": 92735582,
+    "optimized_hlo_sha256": "0df776dcc3be07c97589625d750079c1e1233846fe0c63ceab755a9cd9e1d70d",
+    "output_bytes": 142131552,
+    "stablehlo_bytes": 199964323,
+    "stablehlo_convert_ops": 1459,
+    "stablehlo_sha256": "79249cc2348e6386748aac9f608a9b5ef202b0afe769927b35773d775864c896",
+    "static_launch_proxy": 5763,
+    "temporary_bytes": 3055897248
+  },
+  "schema": "wrf_gpu2.v025.econ.loop_conversion_census.v1",
+  "seconds_total": 232.14908602001378,
+  "source_tree": "<DATA_ROOT>/wrf_gpu2/v025/econ/pre_src_4bae18f19/src",
+  "source_tree_python_sha256": "14222f38b91b3b5c46d9f97f4118248237fc8e03ae54f539f81fe9905c1a6541"
+}

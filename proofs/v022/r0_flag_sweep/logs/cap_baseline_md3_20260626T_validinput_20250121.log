@@ -1,0 +1,48 @@
+MARKER:PROCESS_START epoch=1782478507.855 tag=r0_baseline_cap maxdom=3 kwarm=6 mode=fixed fixed_root_steps=1 fixed_repeats=3 defuse=0 fuse=(unset) aot=1 parallel=0
+MARKER:LOADED wall_s=167.0 root_dt=18.0 names=('d01', 'd02', 'd03')
+MARKER:PREWARM_DONE wall_s=0.0 active=False source=skip:fused-default
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:missing path=/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_e9369055b7a92665178b128fde9f64aecde231305c13c433cb02bc2a7157a74c.xlaexec error=missing AOT artifact(s): /tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_e9369055b7a92665178b128fde9f64aecde231305c13c433cb02bc2a7157a74c.xlaexec, /tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_e9369055b7a92665178b128fde9f64aecde231305c13c433cb02bc2a7157a74c.meta
+E0626 14:03:11.837008 1959126 slow_operation_alarm.cc:73] 
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0626 14:03:38.130686 1958999 slow_operation_alarm.cc:140] The operation took 2m26.293736441s
+
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:jit-compiled+aot-captured hlo=d4195d3eff4c
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:missing path=/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_7a7cc83a20e81dfc79606d8e9489ba0fdab2df71c8409d8858aaf00b786dd9b4.xlaexec cheap_key=7a7cc83a20e8 error=missing AOT artifact(s): /tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_7a7cc83a20e81dfc79606d8e9489ba0fdab2df71c8409d8858aaf00b786dd9b4.xlaexec, /tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_7a7cc83a20e81dfc79606d8e9489ba0fdab2df71c8409d8858aaf00b786dd9b4.meta
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:fused-jit-compiled+aot-captured hlo=99f2f0fc95bb cheap_key=7a7cc83a20e8
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:missing path=/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_e18433439300d966f9aa568fd5f179f1b5649b4f41c2374618302da167731a58.xlaexec cheap_key=e18433439300 error=missing AOT artifact(s): /tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_e18433439300d966f9aa568fd5f179f1b5649b4f41c2374618302da167731a58.xlaexec, /tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_e18433439300d966f9aa568fd5f179f1b5649b4f41c2374618302da167731a58.meta
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:fused-jit-compiled+aot-captured hlo=99f2f0fc95bb cheap_key=e18433439300
+CALL FIXED_FIRST root_steps=1 wall_s=1121.7621 finite=True vram_mib=17208 rss_peak_mib=22858 d01_own=1
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_e9369055b7a92665178b128fde9f64aecde231305c13c433cb02bc2a7157a74c.xlaexec hlo=d4195d3eff4c
+CALL FIXED_2 root_steps=1 wall_s=35.7310 finite=True vram_mib=17252 rss_peak_mib=22858 d01_own=1
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_e9369055b7a92665178b128fde9f64aecde231305c13c433cb02bc2a7157a74c.xlaexec hlo=d4195d3eff4c
+CALL FIXED_3 root_steps=1 wall_s=33.8668 finite=True vram_mib=17252 rss_peak_mib=22858 d01_own=1
+SUMMARY tag=r0_baseline_cap maxdom=3 mode=fixed fixed_root_steps=1 fixed_repeats=3 first_s=1121.7621 wall_total_s=1191.3598 call_times_s=1121.7621,35.7310,33.8668 s_per_step=34.7989 s_per_fc_hour=6959.7752 vram_peak_mib=17252 rss_peak_mib=22858 vram_flat=True rss_flat=True all_finite=True final_d01_own=1
+BIT_ID tag=r0_baseline_cap fixed_mode=True digest_sha256=d7908da589dfcd9787c44302f8b1cfed1d5b32cf510fb6d9a056e0c16bb0c37d digest_leaves=171 digest_bytes=344432672 digest_path=<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v021/canary_gate/ts_proof_r0_baseline_cap/warmK_state_digest.json
+	Command being timed: "env OMP_NUM_THREADS=8 PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false JAX_COMPILATION_CACHE_DIR=/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121 GPUWRF_JAX_CACHE_DIR=/tmp/gpuwrf_r0_baseline_md3_20260626T_validinput_20250121 GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo CANARY_INPUT_DIR=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu CANARY_MAXDOM=3 MAXDOM=3 CANARY_KWARM=6 CANARY_SINGLE_SHAPE_TIMING=1 CANARY_FIXED_ROOT_STEPS=1 CANARY_FIXED_REPEATS=3 GPUWRF_NESTED_AOT=1 GPUWRF_NESTED_PARALLEL_COMPILE=0 CANARY_TAG=r0_baseline_cap python proofs/v021/canary_gate/perstep_timing_driver.py"
+	User time (seconds): 2080.82
+	System time (seconds): 89.83
+	Percent of CPU this job got: 157%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 22:56.61
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23406696
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 407
+	Minor (reclaiming a frame) page faults: 38626862
+	Voluntary context switches: 7163051
+	Involuntary context switches: 354780
+	Swaps: 0
+	File system inputs: 95736
+	File system outputs: 80
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

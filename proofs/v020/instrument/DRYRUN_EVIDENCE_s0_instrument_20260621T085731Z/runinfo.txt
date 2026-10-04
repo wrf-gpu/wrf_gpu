@@ -1,0 +1,7 @@
+probe=S0_instrument
+benchmark=nested_all7_max_dom9 (the stability/skill gate)
+input=<DATA_ROOT>/wrf_downscale/canary_all7/run
+measures=nsys_warm_trace + per_domain_CFL + launch/kernel-count
+nsys_duration_s=900
+forecast_hours=1
+warm=persistent_xla_cache (JAX_COMPILATION_CACHE_DIR=<DATA_ROOT>/gpuwrf_jax_cache)

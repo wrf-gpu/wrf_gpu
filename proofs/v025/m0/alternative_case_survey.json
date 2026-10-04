@@ -1,0 +1,204 @@
+{
+  "all_domains_of_the_largest_configuration": [
+    {
+      "cu_physics": 1,
+      "domain": "d01",
+      "e_sn": 71,
+      "e_vert": 45,
+      "e_we": 121,
+      "gwd_opt": 1,
+      "mass_cells": 8400
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d02",
+      "e_sn": 118,
+      "e_vert": 45,
+      "e_we": 268,
+      "gwd_opt": 0,
+      "mass_cells": 31239
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d03",
+      "e_sn": 70,
+      "e_vert": 45,
+      "e_we": 103,
+      "gwd_opt": 0,
+      "mass_cells": 7038
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d04",
+      "e_sn": 67,
+      "e_vert": 45,
+      "e_we": 64,
+      "gwd_opt": 0,
+      "mass_cells": 4158
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d05",
+      "e_sn": 55,
+      "e_vert": 45,
+      "e_we": 58,
+      "gwd_opt": 0,
+      "mass_cells": 3078
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d06",
+      "e_sn": 40,
+      "e_vert": 45,
+      "e_we": 40,
+      "gwd_opt": 0,
+      "mass_cells": 1521
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d07",
+      "e_sn": 40,
+      "e_vert": 45,
+      "e_we": 40,
+      "gwd_opt": 0,
+      "mass_cells": 1521
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d08",
+      "e_sn": 88,
+      "e_vert": 45,
+      "e_we": 100,
+      "gwd_opt": 0,
+      "mass_cells": 8613
+    },
+    {
+      "cu_physics": 0,
+      "domain": "d09",
+      "e_sn": 76,
+      "e_vert": 45,
+      "e_we": 76,
+      "gwd_opt": 0,
+      "mass_cells": 5625
+    }
+  ],
+  "compile_cost_by_family_seconds": {
+    "dycore.advection": 5.7,
+    "dycore.damping": 0.1,
+    "dycore.diffusion": 0.8,
+    "dycore.eos": 0.2,
+    "dycore.geopotential": 0.1,
+    "dycore.mass": 0.1,
+    "dycore.momentum": 0.2,
+    "dycore.pgf": 0.5,
+    "dycore.small_step": 0.1,
+    "dycore.vertical_coordinate": 0.1,
+    "dycore.vertical_implicit": 1.5,
+    "physics.cumulus": 3.8,
+    "physics.gwd": 0.5,
+    "physics.microphysics": 5.2,
+    "physics.pbl": 2.5,
+    "physics.radiation": 20.2,
+    "physics.surface_layer": 1.2
+  },
+  "compile_cost_source": "proofs/v025/m0/hlo_dtype_transfer_census.json -- 48 operators lowered and compiled at real production shape on the XLA:CPU backend",
+  "compile_cost_total_seconds": 42.9,
+  "corpus": {
+    "configurations": [
+      {
+        "config_id": "810e5e99d4affe4d",
+        "count": 69,
+        "example_files": [
+          {
+            "path": "<DATA_ROOT>/alisios/runs/20260704_00z/gpu_day01_crash_reproducer/day01_case/namelist.input",
+            "sha256": "4a764296c23435350c9e6b024ba6a30992faf8048c0158df6b488488959e2355"
+          },
+          {
+            "path": "<DATA_ROOT>/alisios/runs/20260704_00z/preprocess/cpu_case/namelist.input",
+            "sha256": "d79f22587e04920f294816e615491b839a6ca7b52bfbf099c6abbaebedfdd0e0"
+          },
+          {
+            "path": "<DATA_ROOT>/alisios/runs/20260704_00z/preprocess/gpu_cases/day01/namelist.input",
+            "sha256": "4a764296c23435350c9e6b024ba6a30992faf8048c0158df6b488488959e2355"
+          }
+        ],
+        "fields": {
+          "bl_pbl_physics": "5,5",
+          "cu_physics": "1,0",
+          "damp_opt": "3",
+          "diff_6th_opt": "2,2",
+          "diff_opt": "1,1",
+          "dx": "9000,3000",
+          "e_sn": "71,118",
+          "e_vert": "45,45",
+          "e_we": "121,268",
+          "gwd_opt": "1,0",
+          "km_opt": "4,4",
+          "max_dom": "2",
+          "mp_physics": "8,8",
+          "ra_lw_physics": "4,4",
+          "ra_sw_physics": "4,4",
+          "radt": "30,30",
+          "sf_sfclay_physics": "5,5",
+          "sf_surface_physics": "4,4"
+        }
+      },
+      {
+        "config_id": "9eaa917368618b28",
+        "count": 13,
+        "example_files": [
+          {
+            "path": "<DATA_ROOT>/alisios/runs/20250228_18z/real1km/real1km_9nest_case/namelist.input",
+            "sha256": "daf580ebcb66674927fac3e2edbb4c4801f4758e0af6a5654885fa1490b91ca8"
+          },
+          {
+            "path": "<DATA_ROOT>/alisios/runs/20250228_18z/real1km_gpu/real1km_9nest_case/namelist.input",
+            "sha256": "daf580ebcb66674927fac3e2edbb4c4801f4758e0af6a5654885fa1490b91ca8"
+          },
+          {
+            "path": "<DATA_ROOT>/alisios/runs/20250410_18z/real1km/real1km_9nest_case/namelist.input",
+            "sha256": "f24873c3833c1f5cd85eecf3bb35d9a7b0e7a5ef90d7c3d9a59a205925a9054d"
+          }
+        ],
+        "fields": {
+          "bl_pbl_physics": "5,5,5,5,5,5,5,5,5",
+          "cu_physics": "1,0,0,0,0,0,0,0,0",
+          "damp_opt": "3",
+          "diff_6th_opt": "2,2,2,2,2,2,2,2,2",
+          "diff_opt": "1,1,1,1,1,1,1,1,1",
+          "dx": "9000,3000,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0",
+          "e_sn": "71,118,70,67,55,40,40,88,76",
+          "e_vert": "45,45,45,45,45,45,45,45,45",
+          "e_we": "121,268,103,64,58,40,40,100,76",
+          "gwd_opt": "1,0,0,0,0,0,0,0,0",
+          "km_opt": "4,4,4,4,4,4,4,4,4",
+          "max_dom": "9",
+          "mp_physics": "8,8,8,8,8,8,8,8,8",
+          "ra_lw_physics": "4,4,4,4,4,4,4,4,4",
+          "ra_sw_physics": "4,4,4,4,4,4,4,4,4",
+          "radt": "30,30,30,30,30,30,30,30,30",
+          "sf_sfclay_physics": "5,5,5,5,5,5,5,5,5",
+          "sf_surface_physics": "4,4,4,4,4,4,4,4,4"
+        }
+      }
+    ],
+    "distinct_configurations": 2,
+    "namelists_found": 82
+  },
+  "generated_at_utc": "2026-07-27T18:18:02.289261+00:00",
+  "grid_size_independence": {
+    "claim": "compile cost is driven by the scheme set rather than by grid size, so a smaller real domain would not materially reduce cold compile",
+    "evidence_for": "the A6 census shows compile concentrated in a few scheme families (radiation 47.1%), and XLA compile work scales with program structure rather than with array extents for a fixed program",
+    "how_to_settle_it_on_cpu": "rerun build_hlo_census.py at 2-3 real domain shapes (e.g. d06 40x40, d03 103x70, d02 268x118) and compare total lower+compile seconds. CPU-only, no GPU needed, and it directly tests the hypothesis.",
+    "status": "HYPOTHESIS, NOT PROVEN",
+    "why_it_is_not_proven": "the A6 census was run at ONE shape (120x70x44). No shape sweep was performed, so the grid-size sensitivity of compile time is unmeasured. Earlier wording in v1 of this object asserted this as established; it is demoted here to a hypothesis."
+  },
+  "reproduce": {
+    "command": "python scripts/v025/survey_production_cases.py",
+    "note": "every number below is produced by rerunning that one command",
+    "root": "<DATA_ROOT>/alisios/runs",
+    "source": "scripts/v025/survey_production_cases.py",
+    "source_sha256": "ae427265998d72ed0fa142f4710606a29a4d68d3ad18a09826a2e1ca81edb57c"
+  },
+  "schema": "wrf_gpu2.v025.m0.alternative_case_survey.v2"
+}

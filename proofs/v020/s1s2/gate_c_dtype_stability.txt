@@ -1,0 +1,12 @@
+# GATE (c) — dtype-stability unit test (PASSES on fp64_default; FIRES on injected promotion)
+# Command: python -m pytest tests/test_v020_dtype_stability.py -v
+
+tests/test_v020_dtype_stability.py::test_fp64_default_advance_chunk_is_dtype_stable PASSED [ 12%]
+tests/test_v020_dtype_stability.py::test_named_per_field_dtype_report_covers_prognostics PASSED [ 25%]
+tests/test_v020_dtype_stability.py::test_injected_f64_to_f32_downcast_is_caught PASSED [ 37%]
+tests/test_v020_dtype_stability.py::test_injected_f32_to_f64_upcast_is_caught PASSED [ 50%]
+tests/test_v020_dtype_stability.py::test_fori_loop_rejects_dtype_unstable_carry_second_layer PASSED [ 62%]
+tests/test_v020_dtype_stability.py::test_convert_counter_detects_explicit_convert_direction PASSED [ 75%]
+tests/test_v020_dtype_stability.py::test_convert_counter_pure_fp64_has_no_float_converts PASSED [ 87%]
+tests/test_v020_dtype_stability.py::test_convert_counter_parses_stablehlo_and_classic_text PASSED [100%]
+============================== 8 passed in 8.29s ===============================

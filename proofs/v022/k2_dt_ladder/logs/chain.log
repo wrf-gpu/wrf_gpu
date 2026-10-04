@@ -1,0 +1,338 @@
+=== chain start 2026-06-26T11:35:08Z ===
+waiting: 0/4 rungs done, sweep_alive=1805647 11:35:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:36:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:37:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:38:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:39:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:40:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:41:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:42:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:43:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:44:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:45:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:46:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:47:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:48:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:49:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:50:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:51:08
+waiting: 0/4 rungs done, sweep_alive=1805647 11:52:08
+waiting: 0/4 rungs done, sweep_alive=none 11:53:08
+waiting: 0/4 rungs done, sweep_alive=none 11:54:08
+waiting: 0/4 rungs done, sweep_alive=none 11:55:08
+waiting: 0/4 rungs done, sweep_alive=none 11:56:08
+waiting: 0/4 rungs done, sweep_alive=none 11:57:08
+waiting: 0/4 rungs done, sweep_alive=1850973 11:58:08
+waiting: 0/4 rungs done, sweep_alive=1850973 11:59:08
+waiting: 0/4 rungs done, sweep_alive=1850973 12:00:08
+waiting: 0/4 rungs done, sweep_alive=1850973 12:01:08
+waiting: 0/4 rungs done, sweep_alive=1850973 12:02:08
+waiting: 1/4 rungs done, sweep_alive=1850973 12:03:08
+waiting: 1/4 rungs done, sweep_alive=1850973 12:04:08
+waiting: 1/4 rungs done, sweep_alive=1850973 12:05:09
+waiting: 1/4 rungs done, sweep_alive=1850973 12:06:09
+waiting: 1/4 rungs done, sweep_alive=1850973 12:07:09
+waiting: 2/4 rungs done, sweep_alive=1850973 12:08:09
+waiting: 2/4 rungs done, sweep_alive=1850973 12:09:09
+waiting: 2/4 rungs done, sweep_alive=1850973 12:10:09
+waiting: 2/4 rungs done, sweep_alive=1850973 12:11:09
+waiting: 2/4 rungs done, sweep_alive=1850973 12:12:09
+waiting: 3/4 rungs done, sweep_alive=1850973 12:13:09
+waiting: 3/4 rungs done, sweep_alive=1850973 12:14:09
+waiting: 3/4 rungs done, sweep_alive=1850973 12:15:09
+waiting: 3/4 rungs done, sweep_alive=1850973 12:16:09
+sweep complete: 4/4 rungs, no live sweep proc
+{
+  "cfl_horiz_target": 1.0,
+  "cfl_total_target": 1.6,
+  "mass_drift_max": 0.005,
+  "r1_s_per_step": 0.096308622452812,
+  "rungs": [
+    {
+      "tag": "R1",
+      "dt_s": 10.0,
+      "n_sound": 10,
+      "worst_C_total": 0.6274050195749341,
+      "worst_C_horiz": 0.2358143933614095,
+      "worst_Cx": 0.15559385935465495,
+      "worst_Cy": 0.08022053400675455,
+      "worst_Cz": 0.3957474255299308,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.000479785948815207,
+      "s_per_step": 0.096308622452812,
+      "within_band": true,
+      "worst_rmse_over_band": null,
+      "gates": {
+        "cfl_horiz_safe": true,
+        "cfl_total_safe": true,
+        "finite": true,
+        "bounded": true,
+        "conserving": true,
+        "within_band": true,
+        "run_ok": true
+      },
+      "passes_all": true,
+      "speedup_vs_R1": 1.0
+    },
+    {
+      "tag": "R2",
+      "dt_s": 12.0,
+      "n_sound": 9,
+      "worst_C_total": 0.7557702532665309,
+      "worst_C_horiz": 0.28286105346679685,
+      "worst_Cx": 0.18668363952636718,
+      "worst_Cy": 0.09617741394042968,
+      "worst_Cz": 0.4778637286083277,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.00046968329488075787,
+      "s_per_step": 0.09527070547667488,
+      "within_band": true,
+      "worst_rmse_over_band": 0.14805855839837886,
+      "gates": {
+        "cfl_horiz_safe": true,
+        "cfl_total_safe": true,
+        "finite": true,
+        "bounded": true,
+        "conserving": true,
+        "within_band": true,
+        "run_ok": true
+      },
+      "passes_all": true,
+      "speedup_vs_R1": 1.0108943979258267
+    },
+    {
+      "tag": "R3",
+      "dt_s": 15.0,
+      "n_sound": 8,
+      "worst_C_total": 1.1394147992110497,
+      "worst_C_horiz": 0.5123291587829589,
+      "worst_Cx": 0.36400810241699216,
+      "worst_Cy": 0.1483210563659668,
+      "worst_Cz": 0.6270856404280907,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.0005662303739818668,
+      "s_per_step": 0.09964336333747875,
+      "within_band": true,
+      "worst_rmse_over_band": 0.47503929978833725,
+      "gates": {
+        "cfl_horiz_safe": true,
+        "cfl_total_safe": true,
+        "finite": true,
+        "bounded": true,
+        "conserving": true,
+        "within_band": true,
+        "run_ok": true
+      },
+      "passes_all": true,
+      "speedup_vs_R1": 0.966533236404592
+    },
+    {
+      "tag": "R4",
+      "dt_s": 18.0,
+      "n_sound": 7,
+      "worst_C_total": 1.1439332100139943,
+      "worst_C_horiz": 0.42370244979858396,
+      "worst_Cx": 0.2798906478881836,
+      "worst_Cy": 0.14381180191040038,
+      "worst_Cz": 0.7262277160869923,
+      "finite": true,
+      "bounded": true,
+      "mass_rel_drift_max_abs": 0.0004499595079317641,
+      "s_per_step": 0.09624264423997374,
+      "within_band": true,
+      "worst_rmse_over_band": 0.5049179721779125,
+      "gates": {
+        "cfl_horiz_safe": true,
+        "cfl_total_safe": true,
+        "finite": true,
+        "bounded": true,
+        "conserving": true,
+        "within_band": true,
+        "run_ok": true
+      },
+      "passes_all": true,
+      "speedup_vs_R1": 1.0006855403169697
+    }
+  ],
+  "best_safe_rung": "R4",
+  "best_safe_detail": {
+    "tag": "R4",
+    "dt_s": 18.0,
+    "n_sound": 7,
+    "worst_C_total": 1.1439332100139943,
+    "worst_C_horiz": 0.42370244979858396,
+    "worst_Cx": 0.2798906478881836,
+    "worst_Cy": 0.14381180191040038,
+    "worst_Cz": 0.7262277160869923,
+    "finite": true,
+    "bounded": true,
+    "mass_rel_drift_max_abs": 0.0004499595079317641,
+    "s_per_step": 0.09624264423997374,
+    "within_band": true,
+    "worst_rmse_over_band": 0.5049179721779125,
+    "gates": {
+      "cfl_horiz_safe": true,
+      "cfl_total_safe": true,
+      "finite": true,
+      "bounded": true,
+      "conserving": true,
+      "within_band": true,
+      "run_ok": true
+    },
+    "passes_all": true,
+    "speedup_vs_R1": 1.0006855403169697
+  }
+}
+best rung picked: R4 1.8 7
+firing Canary validation: scale=1.8 nsound=7
+[with_gpu_lock] k2-canary-validate waiting for GPU lock (/tmp/wrf_gpu2_gpu.lock, timeout 21600s)...
+[with_gpu_lock] k2-canary-validate ACQUIRED GPU lock -> running: bash -lc 
+set -euo pipefail
+cd "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile"
+CANARY_INPUT="<DATA_ROOT>/wrf_downscale/runs/20240901/cpu"
+SCALE="1.8"
+NSOUND="7"
+HOURS="1"
+MAXDOM="3"
+LADDER_DIR="<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder"
+LOG_DIR="<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/logs"
+
+# Build a scaled-namelist input dir: symlink wrfinput/wrfbdy, edit only the root
+# domains.time_step. The validation run R1c uses the unscaled root dt.
+build_input () {
+  local tag="$1" factor="$2"
+  local dst="$LADDER_DIR/canary_runs/$tag/input"
+  rm -rf "$dst"; mkdir -p "$dst"
+  for f in "$CANARY_INPUT"/wrfinput_d* "$CANARY_INPUT"/wrfbdy_d*; do
+    [ -e "$f" ] && ln -sf "$f" "$dst/$(basename "$f")"
+  done
+  taskset -c 0-3 env PYTHONPATH=src K2_FACTOR="$factor" K2_MAXDOM="$MAXDOM" \
+    python proofs/v022/k2_dt_ladder/scale_namelist.py \
+      "$CANARY_INPUT/namelist.input" "$dst/namelist.input"
+}
+
+run_canary () {
+  local tag="$1" nsound="$2"
+  local input="$LADDER_DIR/canary_runs/$tag/input"
+  local out="$LADDER_DIR/canary_runs/$tag/out"
+  local proof="$LADDER_DIR/canary_runs/$tag/proof"
+  local scratch="$LADDER_DIR/canary_runs/$tag/scratch"
+  mkdir -p "$out" "$proof" "$scratch"
+  echo "=== CANARY $tag : n_sound=$nsound maxdom=$MAXDOM hours=$HOURS ==="
+  taskset -c 0-7 env \
+    OMP_NUM_THREADS=8 PYTHONPATH=src JAX_ENABLE_X64=true \
+    XLA_PYTHON_CLIENT_PREALLOCATE=false \
+    GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo \
+    GPUWRF_ACOUSTIC_SUBSTEPS="$nsound" \
+    python -m gpuwrf.cli run \
+      --namelist "$input/namelist.input" \
+      --input-dir "$input" \
+      --output-dir "$out" \
+      --proof-dir "$proof" \
+      --scratch-dir "$scratch" \
+      --domain d01 --max-dom "$MAXDOM" --hours "$HOURS" \
+      2>&1 | tee "$LOG_DIR/canary_${tag}.log"
+}
+
+build_input R1c 1.0
+build_input BESTc "$SCALE"
+
+run_canary R1c 10
+run_canary BESTc "$NSOUND"
+
+# Per-domain Courant + compare for each domain.
+taskset -c 0-3 env PYTHONPATH=src JAX_ENABLE_X64=true \
+  python proofs/v022/k2_dt_ladder/canary_courant_report.py \
+    --r1-dir "$LADDER_DIR/canary_runs/R1c/out" \
+    --best-dir "$LADDER_DIR/canary_runs/BESTc/out" \
+    --scale "$SCALE" --nsound "$NSOUND" --maxdom "$MAXDOM" \
+    --out "$LADDER_DIR/canary_runs/canary_validation.json" \
+    2>&1 | tee "$LOG_DIR/canary_report.log"
+
+echo "=== CANARY VALIDATION DONE ==="
+
+[with_gpu_lock] k2-canary-validate GPU memory at acquire: 0, NVIDIA GeForce RTX 5090, 28599, 32607, 3507
+{'src': '<DATA_ROOT>/wrf_downscale/runs/20240901/cpu/namelist.input', 'dst': '<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/canary_runs/R1c/input/namelist.input', 'factor': 1.0, 'old_dt': 18, 'new_dt': 18, 'max_dom': 3}
+{'src': '<DATA_ROOT>/wrf_downscale/runs/20240901/cpu/namelist.input', 'dst': '<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/canary_runs/BESTc/input/namelist.input', 'factor': 1.8, 'old_dt': 18, 'new_dt': 32, 'max_dom': 3}
+=== CANARY R1c : n_sound=10 maxdom=3 hours=1 ===
+gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=cuda_async (GPUWRF_ALLOCATOR=cuda_async (default); stream-ordered pool by default, GPUWRF_ALLOCATOR=platform for the no-fragment cudaMalloc fallback)
+gpuwrf: nested GPU preflight PASS: holder=holder=k2-canary-validate pid=1897105 since=2026-06-26T12:17:09Z token=gpuwrf-lock-1897105-24996-1782476229324302648 cmd=bash -lc 
+set -euo pipefail
+cd "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile"
+CANARY_INPUT="<DATA_ROOT>/wrf_downscale/runs/20240901/cpu"
+SCALE="1.8"
+NSOUND="7"
+HOURS="1"
+MAXDOM="3"
+LADDER_DIR="<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder"
+LOG_DIR="<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/logs"
+
+# Build a scaled-namelist input dir: symlink wrfinput/wrfbdy, edit only the root
+# domains.time_step. The validation run R1c uses the unscaled root dt.
+build_input () {
+  local tag="$1" factor="$2"
+  local dst="$LADDER_DIR/canary_runs/$tag/input"
+  rm -rf "$dst"; mkdir -p "$dst"
+  for f in "$CANARY_INPUT"/wrfinput_d* "$CANARY_INPUT"/wrfbdy_d*; do
+    [ -e "$f" ] && ln -sf "$f" "$dst/$(basename "$f")"
+  done
+  taskset -c 0-3 env PYTHONPATH=src K2_FACTOR="$factor" K2_MAXDOM="$MAXDOM" \
+    python proofs/v022/k2_dt_ladder/scale_namelist.py \
+      "$CANARY_INPUT/namelist.input" "$dst/namelist.input"
+}
+
+run_canary () {
+  local tag="$1" nsound="$2"
+  local input="$LADDER_DIR/canary_runs/$tag/input"
+  local out="$LADDER_DIR/canary_runs/$tag/out"
+  local proof="$LADDER_DIR/canary_runs/$tag/proof"
+  local scratch="$LADDER_DIR/canary_runs/$tag/scratch"
+  mkdir -p "$out" "$proof" "$scratch"
+  echo "=== CANARY $tag : n_sound=$nsound maxdom=$MAXDOM hours=$HOURS ==="
+  taskset -c 0-7 env \
+    OMP_NUM_THREADS=8 PYTHONPATH=src JAX_ENABLE_X64=true \
+    XLA_PYTHON_CLIENT_PREALLOCATE=false \
+    GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo \
+    GPUWRF_ACOUSTIC_SUBSTEPS="$nsound" \
+    python -m gpuwrf.cli run \
+      --namelist "$input/namelist.input" \
+      --input-dir "$input" \
+      --output-dir "$out" \
+      --proof-dir "$proof" \
+      --scratch-dir "$scratch" \
+      --domain d01 --max-dom "$MAXDOM" --hours "$HOURS" \
+      2>&1 | tee "$LOG_DIR/canary_${tag}.log"
+}
+
+build_input R1c 1.0
+build_input BESTc "$SCALE"
+
+run_canary R1c 10
+run_canary BESTc "$NSOUND"
+
+# Per-domain Courant + compare for each domain.
+taskset -c 0-3 env PYTHONPATH=src JAX_ENABLE_X64=true \
+  python proofs/v022/k2_dt_ladder/canary_courant_report.py \
+    --r1-dir "$LADDER_DIR/canary_runs/R1c/out" \
+    --best-dir "$LADDER_DIR/canary_runs/BESTc/out" \
+    --scale "$SCALE" --nsound "$NSOUND" --maxdom "$MAXDOM" \
+    --out "$LADDER_DIR/canary_runs/canary_validation.json" \
+    2>&1 | tee "$LOG_DIR/canary_report.log"
+
+echo "=== CANARY VALIDATION DONE ==="; free_vram=27.061 GiB / 31.843 GiB on NVIDIA GeForce RTX 5090 (index=0); threshold=24.0 GiB (source=max(default absolute floor, GPUWRF_MIN_FREE_VRAM_FRACTION * total VRAM); floor=24.0 GiB; fraction=0.5; fractional=15.921 GiB)
+gpuwrf: warning: physics.cudt (domain 1): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 2): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 3): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 4): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 5): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 6): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 7): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 8): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 9): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: init mode = standalone_native_init_nested -- STANDALONE LIVE-NESTED (d01..d03; parent feeds each child LBC live; no CPU-WRF wrfout); hours=1; scratch=<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/canary_runs/R1c/scratch
+gpuwrf: error: nested forecast failed (FileNotFoundError: <USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/canary_runs/R1c/input/wrfinput_d01)
+[with_gpu_lock] k2-canary-validate released GPU lock (rc=1)
+=== chain done 2026-06-26T12:17:20Z ===

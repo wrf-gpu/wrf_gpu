@@ -1,0 +1,78 @@
+fixture_id: g3-urban-bep-bem-lake-reference-only-v1
+source: <USER_HOME>/src/wrf_pristine/WRF
+source_commit: f52c197ed39d12e087d02c50f412d90d418f6186
+scenario: >
+  v0.23 G3 reference-only oracle inventory for WRF BEP
+  (sf_urban_physics=2), BEP+BEM (sf_urban_physics=3), and the WRF
+  lake model (sf_lake_physics=1). No large WRF output is committed.
+created_utc: 2026-07-03T00:00:00Z
+variables:
+  - name: sf_urban_physics_2_catalog_status
+    units: enum
+    shape: scalar
+    dtype: string
+    absolute_tolerance: exact
+    relative_tolerance: exact
+    notes: Expected REFERENCE_ONLY; operational validator must fail-close.
+  - name: sf_urban_physics_3_catalog_status
+    units: enum
+    shape: scalar
+    dtype: string
+    absolute_tolerance: exact
+    relative_tolerance: exact
+    notes: Expected REFERENCE_ONLY; operational validator must fail-close.
+  - name: sf_lake_physics_1_catalog_status
+    units: enum
+    shape: scalar
+    dtype: string
+    absolute_tolerance: exact
+    relative_tolerance: exact
+    notes: Expected REFERENCE_ONLY; operational validator must fail-close.
+  - name: bep_registry_members
+    units: names
+    shape: vector
+    dtype: string
+    absolute_tolerance: exact
+    relative_tolerance: exact
+    notes: Must be a subset of Registry.EM_COMMON package bepscheme.
+  - name: bep_bem_registry_members
+    units: names
+    shape: vector
+    dtype: string
+    absolute_tolerance: exact
+    relative_tolerance: exact
+    notes: Must be a subset of Registry.EM_COMMON package bep_bemscheme.
+  - name: lake_reference_inventory
+    units: names
+    shape: vector
+    dtype: string
+    absolute_tolerance: exact
+    relative_tolerance: exact
+    notes: Checks sf_lake_physics/lake_depth Registry entries plus module_sf_lake object/source presence.
+  - name: numerical_wrf_fortran_parity
+    units: status
+    shape: scalar
+    dtype: string
+    absolute_tolerance: not_applicable
+    relative_tolerance: not_applicable
+    notes: >
+      No parity tolerance is claimed in this fixture. gfortran is available
+      through the wrfbuild conda environment and compile-only probes pass, but
+      a numerical standalone WRF oracle is deferred to the urban/lake milestone
+      because the BEP/BEM/lake driver needs the full WRF initialization,
+      static-table, and state-carry ABI.
+files:
+  - path: proofs/v023/feature_sprints/g3_urban_lake_oracle_check.py
+    role: oracle_inventory_and_fail_closed_gate
+  - path: proofs/v023/feature_sprints/g3_urban_lake_oracle_check.json
+    role: generated_validation_log
+  - path: <USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bep.F
+    role: external_wrf_source_not_committed
+  - path: <USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_bem.F
+    role: external_wrf_source_not_committed
+  - path: <USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_lake.F
+    role: external_wrf_source_not_committed
+license_notes: >
+  WRF source and object files remain external under the local pristine-WRF tree.
+  This manifest commits only metadata, paths, checksums through the generated
+  proof JSON, and fail-closed validation results.

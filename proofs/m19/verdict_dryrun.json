@@ -1,0 +1,70 @@
+{
+  "scope": "M19 harness DRY-RUN proof -- NO GPU, synthetic scores. Proves case discovery, scorer-wiring import, corpus-path resolution, and BOTH fail-fast control-flow branches.",
+  "gpu_used": false,
+  "wiring": {
+    "manifest_loaded": true,
+    "n_cases": 3,
+    "case_ids": [
+      "case1",
+      "case2",
+      "case3"
+    ],
+    "case1_has_L2_and_L3": true,
+    "all_gpu_init_sources_exist": true,
+    "all_truth_files_exist": true,
+    "scorer_importable": true,
+    "scorer_module_path": "src/gpuwrf/runtime/operational_mode.py (run_forecast_operational_segmented + compute_m9_diagnostics)",
+    "tost_scorer_present_on_branch": false
+  },
+  "simulated_pass_path": {
+    "verdict": "PASS",
+    "stopped_at": null,
+    "cases_run": [
+      "case1",
+      "case2",
+      "case3"
+    ],
+    "timeline": [
+      "run case1 on BOTH levels (L2 + L3)",
+      "case1 PASSED both levels -> run cases 2 and 3 to confirm",
+      "final verdict = PASS"
+    ]
+  },
+  "simulated_fail_path": {
+    "verdict": "FAIL",
+    "stopped_at": "case1",
+    "cases_run": [
+      "case1"
+    ],
+    "timeline": [
+      "run case1 on BOTH levels (L2 + L3)",
+      "case1 FAILED on level L3 -> STOP (cases 2/3 NOT run), emit probe-pointer"
+    ],
+    "probe_pointer_file": "proofs/m19/verdict_probe_pointer.json"
+  },
+  "thresholds": {
+    "rmse_ceiling_formula": {
+      "T2": "4.0 + 1.0*(lead_h/24)",
+      "U10": "5.0 + 1.0*(lead_h/24)",
+      "V10": "6.0 + 1.0*(lead_h/24)"
+    },
+    "sanity": {
+      "T2": {
+        "abs_mean_max": 330.0,
+        "abs_mean_min": 250.0,
+        "std_max": 30.0
+      },
+      "U10": {
+        "abs_mean_max": 40.0,
+        "std_max": 40.0
+      },
+      "V10": {
+        "abs_mean_max": 40.0,
+        "std_max": 40.0
+      }
+    },
+    "TUNABLE": true,
+    "anchor": "validated +3h RMSE T2 1.83 / U10 1.90 / V10 2.75; ceilings ~2x +3h with lead-growth slack"
+  },
+  "generated_utc": "2026-05-30T09:32:40.079243+00:00"
+}

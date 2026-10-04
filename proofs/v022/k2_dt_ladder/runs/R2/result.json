@@ -1,0 +1,111 @@
+{
+  "tag": "R2",
+  "dt_s": 12.0,
+  "n_sound": 9,
+  "hours": 2,
+  "domain": "d01",
+  "input_dir": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input",
+  "radiation": {
+    "radt_target_s": 1800.0,
+    "radiation_cadence_steps": 150
+  },
+  "wall_s_total": 277.2309003730188,
+  "verdict": "PIPELINE_GREEN",
+  "wrfout_files": [
+    "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out/wrfout_d01_2023-01-15_01:00:00",
+    "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out/wrfout_d01_2023-01-15_02:00:00"
+  ],
+  "per_hour_wall_s": [
+    228.66907652898226,
+    28.58121164300246
+  ],
+  "steady_per_hour_wall_s": 28.58121164300246,
+  "s_per_step": 0.09527070547667488,
+  "steps_per_hour": 300.0,
+  "courant": {
+    "dt_s": 12.0,
+    "worst": {
+      "Cx": 0.18668363952636718,
+      "Cy": 0.09617741394042968,
+      "Cz": 0.4778637286083277,
+      "C_total": 0.7557702532665309
+    },
+    "per_file": [
+      {
+        "file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out/wrfout_d01_2023-01-15_01:00:00",
+        "dt_s": 12.0,
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "n_frames": 1,
+        "worst": {
+          "Cx": 0.18172911071777345,
+          "Cy": 0.09617741394042968,
+          "Cz": 0.4778637286083277,
+          "C_total": 0.7557702532665309
+        },
+        "frames": [
+          {
+            "frame": 0,
+            "max_abs_U": 45.43227767944336,
+            "max_abs_V": 24.044353485107422,
+            "max_abs_W": 3.3009557723999023,
+            "Cx": 0.18172911071777345,
+            "Cy": 0.09617741394042968,
+            "Cz": 0.4778637286083277,
+            "C_total": 0.7557702532665309,
+            "min_dz_m": 44.305849415568446
+          }
+        ]
+      },
+      {
+        "file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out/wrfout_d01_2023-01-15_02:00:00",
+        "dt_s": 12.0,
+        "dx_m": 3000.0,
+        "dy_m": 3000.0,
+        "n_frames": 1,
+        "worst": {
+          "Cx": 0.18668363952636718,
+          "Cy": 0.090846923828125,
+          "Cz": 0.4748829738953342,
+          "C_total": 0.7524135372498264
+        },
+        "frames": [
+          {
+            "frame": 0,
+            "max_abs_U": 46.6709098815918,
+            "max_abs_V": 22.71173095703125,
+            "max_abs_W": 5.125878810882568,
+            "Cx": 0.18668363952636718,
+            "Cy": 0.090846923828125,
+            "Cz": 0.4748829738953342,
+            "C_total": 0.7524135372498264,
+            "min_dz_m": 44.41918544205464
+          }
+        ]
+      }
+    ]
+  },
+  "finite_bounded": {
+    "file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out/wrfout_d01_2023-01-15_02:00:00",
+    "all_finite": true,
+    "violations": [],
+    "max_abs": {
+      "U": 46.6709098815918,
+      "V": 22.71173095703125,
+      "W": 5.125878810882568,
+      "T": 195.24832153320312,
+      "QVAPOR": 0.0072334082797169685,
+      "PH": 4388.30224609375,
+      "MU": 1736.3739013671875
+    },
+    "bounded": true
+  },
+  "mass_conservation": {
+    "frames": 2,
+    "total_first": 1393917525.9872055,
+    "total_last": 1393262826.2108078,
+    "rel_drift_last": -0.00046968329488075787,
+    "rel_drift_max_abs": 0.00046968329488075787
+  },
+  "status": "OK"
+}

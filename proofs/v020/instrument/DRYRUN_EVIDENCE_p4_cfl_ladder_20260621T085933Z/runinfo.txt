@@ -1,0 +1,8 @@
+probe=P4_cfl_first_ladder
+benchmark=nested_all7_max_dom9
+input=<DATA_ROOT>/wrf_downscale/canary_all7/run
+hours_per_rung=6
+dt_rungs=24
+policy=CFL_first (raise dt first; cut n_sound only on a passing dt; stop at first fail; never widen)
+n_sound_plumbing=GAP (nested_pipeline.py:213 hardcodes acoustic_substeps=10; no env override yet)
+ref=V0200-ROADMAP.md §8.3

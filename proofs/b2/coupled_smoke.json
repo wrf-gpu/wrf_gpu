@@ -1,0 +1,115 @@
+{
+  "all_pbl_fields_fp64": true,
+  "all_surface_handles_fp64": true,
+  "bands": {
+    "hfx_W_m2": [
+      -8.752078253867852,
+      352.5268827827215
+    ],
+    "lh_W_m2": [
+      237.18614389430238,
+      457.3483191993987
+    ],
+    "pblh_m": [
+      47.665737317984934,
+      243.86897482233695
+    ],
+    "t2_K": [
+      299.39714800294814,
+      301.53831372067856
+    ],
+    "theta_flux": [
+      -0.007989602964058817,
+      0.26575120406194475
+    ],
+    "u10_m_s": [
+      2.8077937124258843,
+      4.462274810646666
+    ],
+    "ustar_m_s": [
+      0.22424087233158724,
+      0.47771683978035895
+    ],
+    "v10_m_s": [
+      -2.7200795648360576,
+      -1.07498986461363
+    ]
+  },
+  "checks": {
+    "all_finite": true,
+    "edge_no_wrap": true,
+    "force_fp64_no_downcast": true,
+    "hfx_finite_band": true,
+    "pbl_fp64": true,
+    "pblh_positive": true,
+    "surface_fp64": true,
+    "t2_band": true,
+    "ustar_positive": true,
+    "x64": true
+  },
+  "diagnostics_fp64": {
+    "hfx": "float64",
+    "lh": "float64",
+    "pblh": "float64",
+    "t2": "float64",
+    "u10": "float64",
+    "ustar": "float64",
+    "v10": "float64"
+  },
+  "dt_s": 20.0,
+  "edge_reconstruction_finite": true,
+  "finite": {
+    "diag_hfx": true,
+    "diag_lh": true,
+    "diag_pblh": true,
+    "diag_t2": true,
+    "diag_u10": true,
+    "diag_ustar": true,
+    "diag_v10": true,
+    "pbl_qke": true,
+    "pbl_qv": true,
+    "pbl_theta": true,
+    "pbl_u": true,
+    "pbl_v": true,
+    "pbl_w": true,
+    "surf_fltv": true,
+    "surf_qv_flux": true,
+    "surf_rhosfc": true,
+    "surf_tau_u": true,
+    "surf_tau_v": true,
+    "surf_theta_flux": true,
+    "surf_ustar": true
+  },
+  "force_fp64_path_keeps_fp64": true,
+  "grid": {
+    "nx": 8,
+    "ny": 6,
+    "nz": 20
+  },
+  "kind": "jax-integration-smoke (NOT a WRF parity claim)",
+  "pass": true,
+  "pbl_field_dtypes": {
+    "qke": "float64",
+    "qv": "float64",
+    "theta": "float64",
+    "u": "float64",
+    "v": "float64",
+    "w": "float64"
+  },
+  "proof": "b2-coupled-smoke",
+  "surface_handle_dtypes": {
+    "fltv": "float64",
+    "qv_flux": "float64",
+    "rhosfc": "float64",
+    "tau_u": "float64",
+    "tau_v": "float64",
+    "theta_flux": "float64",
+    "ustar": "float64"
+  },
+  "u_face_shape": [
+    20,
+    6,
+    9
+  ],
+  "x64_enabled": true
+}

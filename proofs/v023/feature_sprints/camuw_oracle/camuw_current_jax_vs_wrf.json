@@ -1,0 +1,341 @@
+{
+  "cases": [
+    {
+      "case": 1,
+      "metrics": {
+        "kvh": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 609.8479505567743,
+          "max_abs": 609.8479505567743,
+          "max_rel_to_oracle_scale": 6.098479505567743e+32,
+          "oracle_scale": 1e-30,
+          "rms": 147.99280721243557,
+          "wrf_at_argmax": 0.0
+        },
+        "kvm": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 451.287483412013,
+          "max_abs": 451.287483412013,
+          "max_rel_to_oracle_scale": 4.512874834120129e+32,
+          "oracle_scale": 1e-30,
+          "rms": 111.23291310193889,
+          "wrf_at_argmax": 0.0
+        },
+        "pblh": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 1570.177001953125,
+          "max_abs": 1384.6212005615234,
+          "max_rel_to_oracle_scale": 7.46202053601862,
+          "oracle_scale": 185.5558013916016,
+          "rms": 1384.6212005615234,
+          "wrf_at_argmax": 185.5558013916016
+        },
+        "qc": {
+          "argmax_flat": 2,
+          "jax_at_argmax": -2.5382598586468228e-09,
+          "max_abs": 2.5382598586468228e-09,
+          "max_rel_to_oracle_scale": 2.5382598586468223e+21,
+          "oracle_scale": 1e-30,
+          "rms": 8.761075635972671e-10,
+          "wrf_at_argmax": 0.0
+        },
+        "qi": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.0,
+          "max_abs": 0.0,
+          "max_rel_to_oracle_scale": 0.0,
+          "oracle_scale": 1e-30,
+          "rms": 0.0,
+          "wrf_at_argmax": 0.0
+        },
+        "qv": {
+          "argmax_flat": 0,
+          "jax_at_argmax": -5.975033296262208e-06,
+          "max_abs": 6.2199943255009745e-06,
+          "max_rel_to_oracle_scale": 25.391770865880385,
+          "oracle_scale": 2.449610292387661e-07,
+          "rms": 1.9766393048792343e-06,
+          "wrf_at_argmax": 2.449610292387661e-07
+        },
+        "smaw": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 4.964,
+          "max_abs": 4.964,
+          "max_rel_to_oracle_scale": 483.52405556024763,
+          "oracle_scale": 0.01026629377156496,
+          "rms": 1.7351177893941332,
+          "wrf_at_argmax": 0.0
+        },
+        "theta": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.0008756457522357172,
+          "max_abs": 0.0002032339383693701,
+          "max_rel_to_oracle_scale": 0.30224623389761884,
+          "oracle_scale": 0.0006724118138663471,
+          "rms": 6.006495343525762e-05,
+          "wrf_at_argmax": 0.0006724118138663471
+        },
+        "tke": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.4827606196201408,
+          "max_abs": 0.48273907527317655,
+          "max_rel_to_oracle_scale": 22406.762946906663,
+          "oracle_scale": 2.154434696421959e-05,
+          "rms": 0.2269674689074003,
+          "wrf_at_argmax": 2.154434696421959e-05
+        },
+        "u": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.0012369281482334405,
+          "max_abs": 0.0017713380963924497,
+          "max_rel_to_oracle_scale": 3.31456796883093,
+          "oracle_scale": 0.0005344099481590092,
+          "rms": 0.0005273112614969442,
+          "wrf_at_argmax": -0.0005344099481590092
+        },
+        "v": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.00041444564100940885,
+          "max_abs": 0.0005246739686944447,
+          "max_rel_to_oracle_scale": 4.759883232499339,
+          "oracle_scale": 0.0001102283276850358,
+          "rms": 0.00015606175014533044,
+          "wrf_at_argmax": -0.0001102283276850358
+        }
+      },
+      "regime": "unstable_moist_cloud"
+    },
+    {
+      "case": 2,
+      "metrics": {
+        "kvh": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 0.0025,
+          "max_abs": 0.0025,
+          "max_rel_to_oracle_scale": 2.5e+27,
+          "oracle_scale": 1e-30,
+          "rms": 0.0023483410915693106,
+          "wrf_at_argmax": 0.0
+        },
+        "kvm": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 0.01,
+          "max_abs": 0.01,
+          "max_rel_to_oracle_scale": 1e+28,
+          "oracle_scale": 1e-30,
+          "rms": 0.009393364366277242,
+          "wrf_at_argmax": 0.0
+        },
+        "pblh": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 597.3299560546875,
+          "max_abs": 411.77415466308594,
+          "max_rel_to_oracle_scale": 2.219139210819216,
+          "oracle_scale": 185.5558013916016,
+          "rms": 411.77415466308594,
+          "wrf_at_argmax": 185.5558013916016
+        },
+        "qc": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.0,
+          "max_abs": 0.0,
+          "max_rel_to_oracle_scale": 0.0,
+          "oracle_scale": 1e-30,
+          "rms": 0.0,
+          "wrf_at_argmax": 0.0
+        },
+        "qi": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.0,
+          "max_abs": 0.0,
+          "max_rel_to_oracle_scale": 0.0,
+          "oracle_scale": 1e-30,
+          "rms": 0.0,
+          "wrf_at_argmax": 0.0
+        },
+        "qv": {
+          "argmax_flat": 0,
+          "jax_at_argmax": -1.9834136084107926e-11,
+          "max_abs": 1.9834136084107926e-11,
+          "max_rel_to_oracle_scale": 1.9834136084107923e+19,
+          "oracle_scale": 1e-30,
+          "rms": 5.169190879269429e-12,
+          "wrf_at_argmax": 0.0
+        },
+        "smaw": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.0,
+          "max_abs": 0.01026629377156496,
+          "max_rel_to_oracle_scale": 1.0,
+          "oracle_scale": 0.01026629377156496,
+          "rms": 0.00248994197669312,
+          "wrf_at_argmax": 0.01026629377156496
+        },
+        "theta": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 2.2106515208027606e-07,
+          "max_abs": 2.2106515208027606e-07,
+          "max_rel_to_oracle_scale": 0.002442851505036637,
+          "oracle_scale": 9.049471555044875e-05,
+          "rms": 1.3219955207349022e-07,
+          "wrf_at_argmax": 0.0
+        },
+        "tke": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.1982553756745809,
+          "max_abs": 0.19823383132761668,
+          "max_rel_to_oracle_scale": 9201.199352054597,
+          "oracle_scale": 2.154434696421959e-05,
+          "rms": 0.1958347693587906,
+          "wrf_at_argmax": 2.154434696421959e-05
+        },
+        "u": {
+          "argmax_flat": 0,
+          "jax_at_argmax": -0.00012735299167235443,
+          "max_abs": 7.699716881563615e-07,
+          "max_rel_to_oracle_scale": 0.006009630654497311,
+          "oracle_scale": 0.0001281229633605108,
+          "rms": 1.9346970938901553e-07,
+          "wrf_at_argmax": -0.0001281229633605108
+        },
+        "v": {
+          "argmax_flat": 0,
+          "jax_at_argmax": -2.7452481959866494e-05,
+          "max_abs": 1.7741046923757745e-07,
+          "max_rel_to_oracle_scale": 0.00642096127202802,
+          "oracle_scale": 2.762989242910407e-05,
+          "rms": 4.473348342044414e-08,
+          "wrf_at_argmax": -2.762989242910407e-05
+        }
+      },
+      "regime": "stable_nocturnal"
+    },
+    {
+      "case": 3,
+      "metrics": {
+        "kvh": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 9.265836225184,
+          "max_abs": 9.265836225184,
+          "max_rel_to_oracle_scale": 9.265836225183999e+30,
+          "oracle_scale": 1e-30,
+          "rms": 2.2472965255264072,
+          "wrf_at_argmax": 0.0
+        },
+        "kvm": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 37.063344900736,
+          "max_abs": 37.063344900736,
+          "max_rel_to_oracle_scale": 3.7063344900735996e+31,
+          "oracle_scale": 1e-30,
+          "rms": 8.989186102105629,
+          "wrf_at_argmax": 0.0
+        },
+        "pblh": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 800.0,
+          "max_abs": 614.4441986083984,
+          "max_rel_to_oracle_scale": 3.3113715335240856,
+          "oracle_scale": 185.5558013916016,
+          "rms": 614.4441986083984,
+          "wrf_at_argmax": 185.5558013916016
+        },
+        "qc": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 3.510287213934895e-13,
+          "max_abs": 3.510287213934895e-13,
+          "max_rel_to_oracle_scale": 3.510287213934895e+17,
+          "oracle_scale": 1e-30,
+          "rms": 1.5366308964207958e-13,
+          "wrf_at_argmax": 0.0
+        },
+        "qi": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.0,
+          "max_abs": 0.0,
+          "max_rel_to_oracle_scale": 0.0,
+          "oracle_scale": 1e-30,
+          "rms": 0.0,
+          "wrf_at_argmax": 0.0
+        },
+        "qv": {
+          "argmax_flat": 0,
+          "jax_at_argmax": -4.2810620122281835e-08,
+          "max_abs": 9.00160099415644e-08,
+          "max_rel_to_oracle_scale": 1.9069011035853038,
+          "oracle_scale": 4.720538981928257e-08,
+          "rms": 2.895514301078822e-08,
+          "wrf_at_argmax": 4.720538981928257e-08
+        },
+        "smaw": {
+          "argmax_flat": 1,
+          "jax_at_argmax": 1.0,
+          "max_abs": 1.0,
+          "max_rel_to_oracle_scale": 97.40613528610952,
+          "oracle_scale": 0.01026629377156496,
+          "rms": 0.3412410575639071,
+          "wrf_at_argmax": 0.0
+        },
+        "theta": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 6.149282591536576e-05,
+          "max_abs": 2.499643698570253e-05,
+          "max_rel_to_oracle_scale": 0.6849016496913242,
+          "oracle_scale": 3.649638892966323e-05,
+          "rms": 8.389084836603763e-06,
+          "wrf_at_argmax": 3.649638892966323e-05
+        },
+        "tke": {
+          "argmax_flat": 0,
+          "jax_at_argmax": 0.22244342571002834,
+          "max_abs": 0.22242188136306412,
+          "max_rel_to_oracle_scale": 10323.909178238628,
+          "oracle_scale": 2.154434696421959e-05,
+          "rms": 0.18737212185375854,
+          "wrf_at_argmax": 2.154434696421959e-05
+        },
+        "u": {
+          "argmax_flat": 0,
+          "jax_at_argmax": -0.00012407154885244094,
+          "max_abs": 0.00019998641924809195,
+          "max_rel_to_oracle_scale": 0.6171316212969956,
+          "oracle_scale": 0.0003240579681005329,
+          "rms": 6.455124947135267e-05,
+          "wrf_at_argmax": -0.0003240579681005329
+        },
+        "v": {
+          "argmax_flat": 0,
+          "jax_at_argmax": -7.557208743780297e-06,
+          "max_abs": 5.949343277523722e-05,
+          "max_rel_to_oracle_scale": 0.8872910299950396,
+          "oracle_scale": 6.705064151901752e-05,
+          "rms": 1.9212745795192786e-05,
+          "wrf_at_argmax": -6.705064151901752e-05
+        }
+      },
+      "regime": "neutral_low_cloud"
+    }
+  ],
+  "git_head": "53bd20bf789495f0735754456b2b8ea7aa5fb7b9",
+  "jax_platform": "cpu",
+  "jax_x64": true,
+  "oracle": {
+    "full_wrf_exe": false,
+    "self_compare": false,
+    "type": "standalone driver linked against unmodified pristine-WRF CAM-UW objects",
+    "wrf_sources_sha256": {
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_bl_camuwpbl_driver.F": "253886780ae99823608f28bbcf68e1bfdc97483fe6fe2d7df24866c2f2b1e42a",
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_diffusion_solver.F": "902050bd815678aad07757487bb68aa9bbd11341174a678b894f592f7d2d400e",
+      "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cam_bl_eddy_diff.F": "d1f5c261770d9d89bda0e48e3c9c7f9d96ea8989271960fb66d7e3af8b7f0d68"
+    }
+  },
+  "reason": "The current src/gpuwrf/physics/bl_camuw.py endpoint is a v0.22 CAM-style scaffold, not a WRF Fortran CAM-UW transcription.",
+  "schema": "gpuwrf.v023.camuw_current_jax_vs_wrf.v1",
+  "verdict": "FAIL",
+  "worst_by_abs": {
+    "case": 1,
+    "field": "pblh",
+    "max_abs": 1384.6212005615234,
+    "max_rel_to_oracle_scale": 7.46202053601862
+  }
+}

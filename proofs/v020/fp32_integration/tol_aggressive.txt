@@ -1,0 +1,21 @@
+=== precision compare [aggressive] lead=1.0h -> /tmp/v020_fp32_tol/tol_aggressive.json ===
+OVERALL tolerance pass = True   hard gates = True
+  OK U       (                    wind) rmse=0.001824 bias=0 p95=0.002512 max=0.213
+  OK V       (                    wind) rmse=0.00167 bias=1e-06 p95=0.003135 max=0.1214
+  OK W       (                    wind) rmse=0.000529 bias=0 p95=0.000919 max=0.04138
+  OK U10     (                    wind) rmse=0.001162 bias=1.3e-05 p95=0.002288 max=0.02597
+  OK V10     (                    wind) rmse=0.001609 bias=5e-06 p95=0.003459 max=0.03044
+  OK T       (             temperature) rmse=0.001508 bias=1e-06 p95=0.001678 max=0.1945
+  OK T2      (             temperature) rmse=0.000794 bias=5e-06 p95=0.00061 max=0.1285
+  OK P       (pressure_mass_geopotential) rmse=0.1014 bias=5e-05 p95=0.04398 max=9.797
+  OK PB      (pressure_mass_geopotential) rmse=0.000448 bias=0 p95=0 max=0.01562
+  OK PH      (pressure_mass_geopotential) rmse=0.04351 bias=0.000149 p95=0.04971 max=4.233
+  OK PHB     (pressure_mass_geopotential) rmse=0.001288 bias=0 p95=0 max=0.03125
+  OK MU      (pressure_mass_geopotential) rmse=0.0688 bias=2.8e-05 p95=0.08896 max=3
+  OK MUB     (pressure_mass_geopotential) rmse=0.000674 bias=1e-06 p95=0 max=0.01562
+  OK PSFC    (pressure_mass_geopotential) rmse=0.069 bias=0.000196 p95=0.08594 max=3.008
+  OK QVAPOR  (                  qvapor) rmse=1e-06 bias=0 p95=0 max=0.000525
+  OK QCLOUD  (         cloud_radiation) rmse=0 bias=0 p95=0 max=9e-06
+  OK QICE    (         cloud_radiation) rmse=0 bias=0 p95=0 max=9e-06
+  OK QSNOW   (         cloud_radiation) rmse=0 bias=0 p95=0 max=2e-06
+  OK QGRAUP  (         cloud_radiation) rmse=0 bias=0 p95=0 max=0

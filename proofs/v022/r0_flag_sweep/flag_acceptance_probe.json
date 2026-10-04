@@ -1,0 +1,96 @@
+{
+  "schema": "v022_r0_flag_acceptance_probe",
+  "jax_expected": "0.10.0",
+  "results": [
+    {
+      "setting": "baseline",
+      "env": {},
+      "accepted": true,
+      "rc": 0,
+      "stdout_tail": [
+        "jax 0.10.0",
+        "2.0"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "setting": "mfe1",
+      "env": {
+        "JAX_MEMORY_FITTING_EFFORT": "1.0"
+      },
+      "accepted": true,
+      "rc": 0,
+      "stdout_tail": [
+        "jax 0.10.0",
+        "2.0"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "setting": "mfe05",
+      "env": {
+        "JAX_MEMORY_FITTING_EFFORT": "0.5"
+      },
+      "accepted": true,
+      "rc": 0,
+      "stdout_tail": [
+        "jax 0.10.0",
+        "2.0"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "setting": "mfl_O3",
+      "env": {
+        "JAX_MEMORY_FITTING_LEVEL": "O3"
+      },
+      "accepted": true,
+      "rc": 0,
+      "stdout_tail": [
+        "jax 0.10.0",
+        "2.0"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "setting": "mfe1_mfl_O3",
+      "env": {
+        "JAX_MEMORY_FITTING_EFFORT": "1.0",
+        "JAX_MEMORY_FITTING_LEVEL": "O3"
+      },
+      "accepted": true,
+      "rc": 0,
+      "stdout_tail": [
+        "jax 0.10.0",
+        "2.0"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "setting": "llvm_cheap",
+      "env": {
+        "XLA_FLAGS": "--xla_llvm_disable_expensive_passes=true"
+      },
+      "accepted": true,
+      "rc": 0,
+      "stdout_tail": [
+        "jax 0.10.0",
+        "2.0"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "setting": "noremat",
+      "env": {
+        "JAX_COMPILER_ENABLE_REMAT_PASS": "false"
+      },
+      "accepted": true,
+      "rc": 0,
+      "stdout_tail": [
+        "jax 0.10.0",
+        "2.0"
+      ],
+      "stderr_tail": []
+    }
+  ]
+}

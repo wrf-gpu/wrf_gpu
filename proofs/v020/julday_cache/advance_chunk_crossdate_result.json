@@ -1,0 +1,48 @@
+{
+  "case": "v017_bigswiss_d01_real_operational_advance_chunk",
+  "physics": "RRTMG SW+LW (ra_sw=4/ra_lw=4) + fp64_default",
+  "n_steps": 2,
+  "jax_version": "0.10.0",
+  "hlo_sha256_A": "49c769b4e531744d58e8ee12adf16131149464a0a5a17b981b0e316b739b545a",
+  "hlo_sha256_B": "49c769b4e531744d58e8ee12adf16131149464a0a5a17b981b0e316b739b545a",
+  "hlo_sha256_C": "49c769b4e531744d58e8ee12adf16131149464a0a5a17b981b0e316b739b545a",
+  "hlo_identical_across_dates_AB": true,
+  "hlo_identical_across_dates_AC_leap": true,
+  "harness_ok": true,
+  "cross_date_cache_hit": true,
+  "entry_results": [
+    {
+      "label": "A_cold",
+      "date": "2023-01-15T00:00:00+00:00",
+      "before": 219,
+      "after": 220,
+      "new": 1,
+      "warm_hit": false
+    },
+    {
+      "label": "A_warm",
+      "date": "2023-01-15T00:00:00+00:00",
+      "before": 220,
+      "after": 220,
+      "new": 0,
+      "warm_hit": true
+    },
+    {
+      "label": "B_other_date",
+      "date": "2023-07-15T00:00:00+00:00",
+      "before": 220,
+      "after": 220,
+      "new": 0,
+      "warm_hit": true
+    },
+    {
+      "label": "C_leap",
+      "date": "2024-07-15T00:00:00+00:00",
+      "before": 220,
+      "after": 220,
+      "new": 0,
+      "warm_hit": true
+    }
+  ],
+  "verdict": "FIXED"
+}

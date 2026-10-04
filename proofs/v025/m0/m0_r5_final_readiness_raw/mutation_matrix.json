@@ -1,0 +1,103 @@
+{
+  "one_mutation_per_gate": true,
+  "results": {
+    "H0_ROOTS": {
+      "fails": true,
+      "mutation": "point the fixed R5 proof root at the occupied proofs/v025/m0/autotune0_three_window",
+      "observed": "BLOCKED",
+      "reason": "the generation is no longer vacant"
+    },
+    "H1_REAL_C1_BOUNDARY": {
+      "fails": true,
+      "mutation": "restore the fixed R3 C1 CPU root in the real _c1_command",
+      "observed": {
+        "expected_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+        "matches_fixed_r5_root": false,
+        "owner_cpu_preflight_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+        "status": "BLOCKED",
+        "supplied_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3"
+      },
+      "reason": "the root the real _c1_command hands the real child is not the fixed R5 root the outer owner pre-staged the CPU arm into, so the in-lock comparison and the pre-lock staging name different generations -- the exact divergence class that blocked 5356a37d"
+    },
+    "H2_PRODUCTION_ANALYSER": {
+      "fails": true,
+      "mutation": "use every leaf as the numerator instead of source-named leaves",
+      "observed": {
+        "binding_numerator": 2574776,
+        "required_numerator": 2567009
+      },
+      "reason": "the binding 99.7% figure is the source-named deepest-leaf numerator 2,567,009, not all leaves 2,574,776"
+    },
+    "H3_PACKET_BINDING": {
+      "fails": true,
+      "mutation": "point the outer owner command at an Opus worker worktree",
+      "observed": {
+        "declared_sha256": "a214ab5220d5bff3a48151a938d1fd8886faa6025c462dac8dfd704f6953cad1",
+        "every_repository_path_below_stable_worktree": false,
+        "recomputed_sha256": "a214ab5220d5bff3a48151a938d1fd8886faa6025c462dac8dfd704f6953cad1",
+        "reproduces": true,
+        "resolved_paths": [
+          {
+            "below_stable_worktree": false,
+            "is_interpreter": true,
+            "path": "<USER_HOME>/miniconda3/bin/python3.13"
+          },
+          {
+            "below_stable_worktree": false,
+            "is_interpreter": false,
+            "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-w2-launch-readiness-opus/scripts/v025/m0_three_window_executor.py"
+          }
+        ]
+      },
+      "reason": "an executable path does not resolve below the stable worktree"
+    },
+    "H4_RETAINED_IDENTITY": {
+      "fails": true,
+      "mutation": "flip one retained R3/R4 file hash",
+      "observed": {
+        "expected_aggregate_sha256": "af70c3bda4a962f9f75554efda24012a164695f90fe979000831583d75372480",
+        "mutated_aggregate_sha256": "aa5652fc521224e6d49f46db1590ae47bdb6fe90df7015ad490ffe0df2c7885a"
+      },
+      "reason": "the before/after aggregate no longer matches"
+    },
+    "H5_DEVICE_DENIAL": {
+      "fails": true,
+      "mutation": "load an accelerator module into the readiness process",
+      "observed": [
+        "pynvml"
+      ],
+      "reason": "an accelerator module was reachable during CPU-only work"
+    },
+    "H6_SUITE_AND_TREE": {
+      "fails": true,
+      "mutation": "one failing test in the full tests/v025 JUnit",
+      "observed": "BLOCKED",
+      "reason": "the full suite is not green"
+    },
+    "H7_KERNEL_LOCK_AUTHORITY": {
+      "fails": true,
+      "mutation": "empty holder sidecar, fuser and path-mapped lslocks while a real private flock remains held",
+      "observed": {
+        "legacy_observations": {
+          "authoritative": false,
+          "cannot_promote_vacancy": true,
+          "fuser": {
+            "returncode": 1,
+            "stderr": "",
+            "stdout": ""
+          },
+          "holder_sidecar": {
+            "text": ""
+          },
+          "lslocks": {
+            "matching_lines": []
+          }
+        },
+        "matching_record_count": 1,
+        "verdict": "BLOCKED_OCCUPIED"
+      },
+      "reason": "legacy cross-user views cannot promote an exact matching kernel record to vacant"
+    }
+  },
+  "status": "PASS"
+}

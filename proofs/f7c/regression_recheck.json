@@ -1,0 +1,10 @@
+{
+  "schema": "f7c_regression_recheck",
+  "gates": {
+    "flat_rest_zero": true,
+    "analytic_dipole_sign_order": true,
+    "conservation_300step_dry_theta_drift_zero": true,
+    "w_bounded": true
+  },
+  "note": "AC4 Sprint A/B oracle gates re-run unchanged after F7C rk_addtend_dry + large-step PGF cadence fix. flat-rest exact 0 confirms the large-step PGF produces zero tendency at the reference rest state (balanced)."
+}

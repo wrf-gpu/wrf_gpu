@@ -1,0 +1,1981 @@
+{
+  "leaves": [
+    {
+      "array": "arr_0000",
+      "bytes": 1952192,
+      "dtype": "float64",
+      "key": "d01/0000/0",
+      "shape": [
+        44,
+        59,
+        94
+      ]
+    },
+    {
+      "array": "arr_0001",
+      "bytes": 1964160,
+      "dtype": "float64",
+      "key": "d01/0001/1",
+      "shape": [
+        44,
+        60,
+        93
+      ]
+    },
+    {
+      "array": "arr_0002",
+      "bytes": 1975320,
+      "dtype": "float64",
+      "key": "d01/0002/2",
+      "shape": [
+        45,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0003",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0003/3",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0004",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0004/4",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0005",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0005/5",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0006",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0006/6",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0007",
+      "bytes": 1975320,
+      "dtype": "float64",
+      "key": "d01/0007/7",
+      "shape": [
+        45,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0008",
+      "bytes": 1975320,
+      "dtype": "float64",
+      "key": "d01/0008/8",
+      "shape": [
+        45,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0009",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0009/9",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0010",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0010/10",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0011",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0011/11",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0012",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0012/12",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0013",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0013/13",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0014",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0014/14",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0015",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0015/15",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0016",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0016/16",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0017",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0017/17",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0018",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0018/18",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0019",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0019/19",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0020",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0020/20",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0021",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0021/21",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0022",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0022/22",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0023",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0023/23",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0024",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0024/24",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0025",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0025/25",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0026",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0026/26",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0027",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0027/27",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0028",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0028/28",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0029",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0029/29",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0030",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0030/30",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0031",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0031/31",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0032",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0032/32",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0033",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0033/33",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0034",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0034/34",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0035",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0035/35",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0036",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0036/36",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0037",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0037/37",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0038",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0038/38",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0039",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0039/39",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0040",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0040/40",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0041",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0041/41",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0042",
+      "bytes": 3384000,
+      "dtype": "float64",
+      "key": "d01/0042/42",
+      "shape": [
+        5,
+        4,
+        5,
+        45,
+        94
+      ]
+    },
+    {
+      "array": "arr_0043",
+      "bytes": 75200,
+      "dtype": "float64",
+      "key": "d01/0043/43",
+      "shape": [
+        5,
+        4,
+        5,
+        1,
+        94
+      ]
+    },
+    {
+      "array": "arr_0044",
+      "bytes": 3384000,
+      "dtype": "float64",
+      "key": "d01/0044/44",
+      "shape": [
+        5,
+        4,
+        5,
+        45,
+        94
+      ]
+    },
+    {
+      "array": "arr_0045",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0045/45",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0046",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0046/46",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0047",
+      "bytes": 3384000,
+      "dtype": "float64",
+      "key": "d01/0047/47",
+      "shape": [
+        5,
+        4,
+        5,
+        45,
+        94
+      ]
+    },
+    {
+      "array": "arr_0048",
+      "bytes": 75200,
+      "dtype": "float64",
+      "key": "d01/0048/48",
+      "shape": [
+        5,
+        4,
+        5,
+        1,
+        94
+      ]
+    },
+    {
+      "array": "arr_0049",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0049/49",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0050",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0050/50",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0051",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0051/51",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0052",
+      "bytes": 43896,
+      "dtype": "float64",
+      "key": "d01/0052/52",
+      "shape": [
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0053",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0053/53",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0054",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0054/54",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0055",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0055/55",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0056",
+      "bytes": 1931424,
+      "dtype": "float64",
+      "key": "d01/0056/56",
+      "shape": [
+        44,
+        59,
+        93
+      ]
+    },
+    {
+      "array": "arr_0057",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0057/64",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0058",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0058/65",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0059",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0059/66",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0060",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0060/67",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0061",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0061/68",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0062",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0062/69",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0063",
+      "bytes": 3308800,
+      "dtype": "float64",
+      "key": "d01/0063/70",
+      "shape": [
+        5,
+        4,
+        5,
+        44,
+        94
+      ]
+    },
+    {
+      "array": "arr_0064",
+      "bytes": 6416256,
+      "dtype": "float64",
+      "key": "d02/0000/0",
+      "shape": [
+        44,
+        93,
+        196
+      ]
+    },
+    {
+      "array": "arr_0065",
+      "bytes": 6452160,
+      "dtype": "float64",
+      "key": "d02/0001/1",
+      "shape": [
+        44,
+        94,
+        195
+      ]
+    },
+    {
+      "array": "arr_0066",
+      "bytes": 6528600,
+      "dtype": "float64",
+      "key": "d02/0002/2",
+      "shape": [
+        45,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0067",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0003/3",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0068",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0004/4",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0069",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0005/5",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0070",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0006/6",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0071",
+      "bytes": 6528600,
+      "dtype": "float64",
+      "key": "d02/0007/7",
+      "shape": [
+        45,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0072",
+      "bytes": 6528600,
+      "dtype": "float64",
+      "key": "d02/0008/8",
+      "shape": [
+        45,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0073",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0009/9",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0074",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0010/10",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0075",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0011/11",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0076",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0012/12",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0077",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0013/13",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0078",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0014/14",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0079",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0015/15",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0080",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0016/16",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0081",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0017/17",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0082",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0018/18",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0083",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0019/19",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0084",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0020/20",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0085",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0021/21",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0086",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0022/22",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0087",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0023/23",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0088",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0024/24",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0089",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0025/25",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0090",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0026/26",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0091",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0027/27",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0092",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0028/28",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0093",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0029/29",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0094",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0030/30",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0095",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0031/31",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0096",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0032/32",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0097",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0033/33",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0098",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0034/34",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0099",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0035/35",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0100",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0036/36",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0101",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0037/37",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0102",
+      "bytes": 2759680,
+      "dtype": "float64",
+      "key": "d02/0038/38",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        196
+      ]
+    },
+    {
+      "array": "arr_0103",
+      "bytes": 2759680,
+      "dtype": "float64",
+      "key": "d02/0039/39",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        196
+      ]
+    },
+    {
+      "array": "arr_0104",
+      "bytes": 2759680,
+      "dtype": "float64",
+      "key": "d02/0040/40",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        196
+      ]
+    },
+    {
+      "array": "arr_0105",
+      "bytes": 2759680,
+      "dtype": "float64",
+      "key": "d02/0041/41",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        196
+      ]
+    },
+    {
+      "array": "arr_0106",
+      "bytes": 2822400,
+      "dtype": "float64",
+      "key": "d02/0042/42",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        196
+      ]
+    },
+    {
+      "array": "arr_0107",
+      "bytes": 62720,
+      "dtype": "float64",
+      "key": "d02/0043/43",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        196
+      ]
+    },
+    {
+      "array": "arr_0108",
+      "bytes": 2822400,
+      "dtype": "float64",
+      "key": "d02/0044/44",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        196
+      ]
+    },
+    {
+      "array": "arr_0109",
+      "bytes": 2759680,
+      "dtype": "float64",
+      "key": "d02/0045/45",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        196
+      ]
+    },
+    {
+      "array": "arr_0110",
+      "bytes": 2759680,
+      "dtype": "float64",
+      "key": "d02/0046/46",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        196
+      ]
+    },
+    {
+      "array": "arr_0111",
+      "bytes": 2822400,
+      "dtype": "float64",
+      "key": "d02/0047/47",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        196
+      ]
+    },
+    {
+      "array": "arr_0112",
+      "bytes": 62720,
+      "dtype": "float64",
+      "key": "d02/0048/48",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        196
+      ]
+    },
+    {
+      "array": "arr_0113",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0049/49",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0114",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0050/50",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0115",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0051/51",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0116",
+      "bytes": 145080,
+      "dtype": "float64",
+      "key": "d02/0052/52",
+      "shape": [
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0117",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0053/53",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0118",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0054/54",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0119",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0055/55",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0120",
+      "bytes": 6383520,
+      "dtype": "float64",
+      "key": "d02/0056/56",
+      "shape": [
+        44,
+        93,
+        195
+      ]
+    },
+    {
+      "array": "arr_0121",
+      "bytes": 2501664,
+      "dtype": "float64",
+      "key": "d03/0000/0",
+      "shape": [
+        44,
+        69,
+        103
+      ]
+    },
+    {
+      "array": "arr_0122",
+      "bytes": 2513280,
+      "dtype": "float64",
+      "key": "d03/0001/1",
+      "shape": [
+        44,
+        70,
+        102
+      ]
+    },
+    {
+      "array": "arr_0123",
+      "bytes": 2533680,
+      "dtype": "float64",
+      "key": "d03/0002/2",
+      "shape": [
+        45,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0124",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0003/3",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0125",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0004/4",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0126",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0005/5",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0127",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0006/6",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0128",
+      "bytes": 2533680,
+      "dtype": "float64",
+      "key": "d03/0007/7",
+      "shape": [
+        45,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0129",
+      "bytes": 2533680,
+      "dtype": "float64",
+      "key": "d03/0008/8",
+      "shape": [
+        45,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0130",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0009/9",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0131",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0010/10",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0132",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0011/11",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0133",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0012/12",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0134",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0013/13",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0135",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0014/14",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0136",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0015/15",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0137",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0016/16",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0138",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0017/17",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0139",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0018/18",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0140",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0019/19",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0141",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0020/20",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0142",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0021/21",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0143",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0022/22",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0144",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0023/23",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0145",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0024/24",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0146",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0025/25",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0147",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0026/26",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0148",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0027/27",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0149",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0028/28",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0150",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0029/29",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0151",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0030/30",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0152",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0031/31",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0153",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0032/32",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0154",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0033/33",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0155",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0034/34",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0156",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0035/35",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0157",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0036/36",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0158",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0037/37",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0159",
+      "bytes": 1450240,
+      "dtype": "float64",
+      "key": "d03/0038/38",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        103
+      ]
+    },
+    {
+      "array": "arr_0160",
+      "bytes": 1450240,
+      "dtype": "float64",
+      "key": "d03/0039/39",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        103
+      ]
+    },
+    {
+      "array": "arr_0161",
+      "bytes": 1450240,
+      "dtype": "float64",
+      "key": "d03/0040/40",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        103
+      ]
+    },
+    {
+      "array": "arr_0162",
+      "bytes": 1450240,
+      "dtype": "float64",
+      "key": "d03/0041/41",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        103
+      ]
+    },
+    {
+      "array": "arr_0163",
+      "bytes": 1483200,
+      "dtype": "float64",
+      "key": "d03/0042/42",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        103
+      ]
+    },
+    {
+      "array": "arr_0164",
+      "bytes": 32960,
+      "dtype": "float64",
+      "key": "d03/0043/43",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        103
+      ]
+    },
+    {
+      "array": "arr_0165",
+      "bytes": 1483200,
+      "dtype": "float64",
+      "key": "d03/0044/44",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        103
+      ]
+    },
+    {
+      "array": "arr_0166",
+      "bytes": 1450240,
+      "dtype": "float64",
+      "key": "d03/0045/45",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        103
+      ]
+    },
+    {
+      "array": "arr_0167",
+      "bytes": 1450240,
+      "dtype": "float64",
+      "key": "d03/0046/46",
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        103
+      ]
+    },
+    {
+      "array": "arr_0168",
+      "bytes": 1483200,
+      "dtype": "float64",
+      "key": "d03/0047/47",
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        103
+      ]
+    },
+    {
+      "array": "arr_0169",
+      "bytes": 32960,
+      "dtype": "float64",
+      "key": "d03/0048/48",
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        103
+      ]
+    },
+    {
+      "array": "arr_0170",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0049/49",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0171",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0050/50",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0172",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0051/51",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0173",
+      "bytes": 56304,
+      "dtype": "float64",
+      "key": "d03/0052/52",
+      "shape": [
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0174",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0053/53",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0175",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0054/54",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0176",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0055/55",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    },
+    {
+      "array": "arr_0177",
+      "bytes": 2477376,
+      "dtype": "float64",
+      "key": "d03/0056/56",
+      "shape": [
+        44,
+        69,
+        102
+      ]
+    }
+  ],
+  "npz": "<USER_HOME>/src/wrf_gpu2_wt/v023-gpu/proofs/v023/gate2_fix/fixed_capture3_fresh/v023_fixed3_fresh_gate2_state.npz",
+  "tag": "v023_fixed3_fresh_gate2"
+}

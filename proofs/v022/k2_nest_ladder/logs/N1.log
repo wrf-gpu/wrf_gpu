@@ -1,0 +1,109 @@
+gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=cuda_async (GPUWRF_ALLOCATOR=cuda_async (default); stream-ordered pool by default, GPUWRF_ALLOCATOR=platform for the no-fragment cudaMalloc fallback)
+gpuwrf: nested GPU preflight PASS: holder=holder=k2-nest-ladder pid=2067763 since=2026-06-26T13:46:59Z token=gpuwrf-lock-2067763-12894-1782481619371762482 cmd=env K2_NEST_INPUT_DIR=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu K2_NEST_MAXDOM=3 K2_NEST_RUNG_TIMEOUT=5400 K2_NEST_MANAGER_PANE=0:1.0 proofs/v022/k2_nest_ladder/run_nest_ladder.sh; free_vram=27.165 GiB / 31.843 GiB on NVIDIA GeForce RTX 5090 (index=0); threshold=24.0 GiB (source=max(default absolute floor, GPUWRF_MIN_FREE_VRAM_FRACTION * total VRAM); floor=24.0 GiB; fraction=0.5; fractional=15.921 GiB)
+gpuwrf: warning: physics.cudt (domain 1): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 2): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 3): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 4): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 5): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 6): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 7): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 8): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 9): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: init mode = standalone_native_init_nested -- STANDALONE LIVE-NESTED (d01..d03; parent feeds each child LBC live; no CPU-WRF wrfout); hours=3; scratch=proofs/v022/k2_nest_ladder/runs/N1/scratch
+[parallel-compile] PREWARM_START de-fuse nest
+[parallel-compile] PREWARM_DONE active=False source=skip:fused-default workers=None wall_s=0.0 warm_all=None error=None
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:missing path=/tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_2990bf8628f3321b2a1eb5079aab8c7a01906d4e2f27d4e119b28eac54676adb.xlaexec error=missing AOT artifact(s): /tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_2990bf8628f3321b2a1eb5079aab8c7a01906d4e2f27d4e119b28eac54676adb.xlaexec, /tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_2990bf8628f3321b2a1eb5079aab8c7a01906d4e2f27d4e119b28eac54676adb.meta
+E0626 14:56:14.443490 2068448 slow_operation_alarm.cc:73]
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+E0626 14:56:44.955213 2067886 slow_operation_alarm.cc:140] The operation took 2m30.51178258s
+
+********************************
+[Compiling module jit__advance_chunk_fori for GPU] Very slow compile? If you want to file a bug, run with envvar XLA_FLAGS=--xla_dump_to=/tmp/foo and attach the results.
+********************************
+[gpuwrf:nested-aot] domain=d01 loaded=false source=fallback:jit-compiled+aot-captured hlo=4b2887649f1d
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:missing path=/tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_776fa7b9060c97fe105f84f5bee061b6ea30f2559f92a7d272a83591420184e4.xlaexec cheap_key=776fa7b9060c error=missing AOT artifact(s): /tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_776fa7b9060c97fe105f84f5bee061b6ea30f2559f92a7d272a83591420184e4.xlaexec, /tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_776fa7b9060c97fe105f84f5bee061b6ea30f2559f92a7d272a83591420184e4.meta
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:fused-jit-compiled+aot-captured hlo=cac8b692cc0d cheap_key=776fa7b9060c
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:missing path=/tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_a846302fbfbf8116cf5753691de4171c982739433e8c05564af8ef4ac84bdcf0.xlaexec cheap_key=a846302fbfbf error=missing AOT artifact(s): /tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_a846302fbfbf8116cf5753691de4171c982739433e8c05564af8ef4ac84bdcf0.xlaexec, /tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/fused_d02/k_a846302fbfbf8116cf5753691de4171c982739433e8c05564af8ef4ac84bdcf0.meta
+[gpuwrf:nested-aot] domain=fused/d02 loaded=false source=fallback:fused-jit-compiled+aot-captured hlo=cac8b692cc0d cheap_key=a846302fbfbf
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=/tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_2990bf8628f3321b2a1eb5079aab8c7a01906d4e2f27d4e119b28eac54676adb.xlaexec hlo=4b2887649f1d
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=/tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_2990bf8628f3321b2a1eb5079aab8c7a01906d4e2f27d4e119b28eac54676adb.xlaexec hlo=4b2887649f1d
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob path=/tmp/gpuwrf_k2_nest_N1_dt54_ns10/aot/0.21.0-jax0.10.0-jaxlib0.10.0-cuda_sm120/d01/k_2990bf8628f3321b2a1eb5079aab8c7a01906d4e2f27d4e119b28eac54676adb.xlaexec hlo=4b2887649f1d
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+[gpuwrf:nested-aot] domain=d01 loaded=true source=aot_blob
+gpuwrf: error: nested forecast failed (NonFiniteStateError: non-finite prognostic state detected: domain=d03 field=Ni level=0 step=720 sim_time_s=4320 first_index=(0, 12, 11))

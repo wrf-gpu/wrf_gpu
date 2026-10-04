@@ -1,0 +1,206 @@
+{
+  "all_failures_suppress_every_later_stage": true,
+  "plan_sha256": "cc8192617deae60ea17d55e21979e82f2e44d66c6322b895f16325875e3a945c",
+  "scenarios": [
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W1:cold_empty_cache_readiness",
+      "later_stage_count": 11,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W1:cached_readiness",
+      "later_stage_count": 10,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W1:warm_integration_only",
+      "later_stage_count": 9,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W1:native_pallas_if_headroom",
+      "later_stage_count": 8,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "CPU_PAIR:fresh_cpu_reference",
+      "later_stage_count": 7,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference",
+        "CPU_PAIR:pair_comparator"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "CPU_PAIR:pair_comparator",
+      "later_stage_count": 6,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference",
+        "CPU_PAIR:pair_comparator",
+        "W2:profiled_integration_census_vram_transfer"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W2:profiled_integration_census_vram_transfer",
+      "later_stage_count": 5,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference",
+        "CPU_PAIR:pair_comparator",
+        "W2:profiled_integration_census_vram_transfer",
+        "W2:profiled_artifact_integrity_after_release"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W2:profiled_artifact_integrity_after_release",
+      "later_stage_count": 4,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference",
+        "CPU_PAIR:pair_comparator",
+        "W2:profiled_integration_census_vram_transfer",
+        "W2:profiled_artifact_integrity_after_release",
+        "W3:clean_cached_readiness"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W3:clean_cached_readiness",
+      "later_stage_count": 3,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference",
+        "CPU_PAIR:pair_comparator",
+        "W2:profiled_integration_census_vram_transfer",
+        "W2:profiled_artifact_integrity_after_release",
+        "W3:clean_cached_readiness",
+        "W3:clean_integration_only"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W3:clean_integration_only",
+      "later_stage_count": 2,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference",
+        "CPU_PAIR:pair_comparator",
+        "W2:profiled_integration_census_vram_transfer",
+        "W2:profiled_artifact_integrity_after_release",
+        "W3:clean_cached_readiness",
+        "W3:clean_integration_only",
+        "W3:profiler_pair_compare_after_release"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W3:profiler_pair_compare_after_release",
+      "later_stage_count": 1,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    },
+    {
+      "device_touched": false,
+      "executed_stub_stage_keys": [
+        "W1:cold_empty_cache_readiness",
+        "W1:cached_readiness",
+        "W1:warm_integration_only",
+        "W1:native_pallas_if_headroom",
+        "CPU_PAIR:fresh_cpu_reference",
+        "CPU_PAIR:pair_comparator",
+        "W2:profiled_integration_census_vram_transfer",
+        "W2:profiled_artifact_integrity_after_release",
+        "W3:clean_cached_readiness",
+        "W3:clean_integration_only",
+        "W3:profiler_pair_compare_after_release",
+        "W3:native_pallas_if_suppressed_in_w1"
+      ],
+      "failed_stage_status": "FAILED",
+      "failure_key": "W3:native_pallas_if_suppressed_in_w1",
+      "later_stage_count": 0,
+      "later_stages_all_suppressed": true,
+      "receipts_consumed": []
+    }
+  ],
+  "schema": "wrf_gpu2.v025.m0.autotune0_failure_matrix.v1",
+  "status": "CPU_REPAIR_GREEN_GPU_WINDOWS_MISSING"
+}

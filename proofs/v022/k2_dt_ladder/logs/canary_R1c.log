@@ -1,0 +1,76 @@
+gpuwrf: nested run -- re-exec with XLA_PYTHON_CLIENT_ALLOCATOR=cuda_async (GPUWRF_ALLOCATOR=cuda_async (default); stream-ordered pool by default, GPUWRF_ALLOCATOR=platform for the no-fragment cudaMalloc fallback)
+gpuwrf: nested GPU preflight PASS: holder=holder=k2-canary-validate pid=1897105 since=2026-06-26T12:17:09Z token=gpuwrf-lock-1897105-24996-1782476229324302648 cmd=bash -lc 
+set -euo pipefail
+cd "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile"
+CANARY_INPUT="<DATA_ROOT>/wrf_downscale/runs/20240901/cpu"
+SCALE="1.8"
+NSOUND="7"
+HOURS="1"
+MAXDOM="3"
+LADDER_DIR="<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder"
+LOG_DIR="<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/logs"
+
+# Build a scaled-namelist input dir: symlink wrfinput/wrfbdy, edit only the root
+# domains.time_step. The validation run R1c uses the unscaled root dt.
+build_input () {
+  local tag="$1" factor="$2"
+  local dst="$LADDER_DIR/canary_runs/$tag/input"
+  rm -rf "$dst"; mkdir -p "$dst"
+  for f in "$CANARY_INPUT"/wrfinput_d* "$CANARY_INPUT"/wrfbdy_d*; do
+    [ -e "$f" ] && ln -sf "$f" "$dst/$(basename "$f")"
+  done
+  taskset -c 0-3 env PYTHONPATH=src K2_FACTOR="$factor" K2_MAXDOM="$MAXDOM" \
+    python proofs/v022/k2_dt_ladder/scale_namelist.py \
+      "$CANARY_INPUT/namelist.input" "$dst/namelist.input"
+}
+
+run_canary () {
+  local tag="$1" nsound="$2"
+  local input="$LADDER_DIR/canary_runs/$tag/input"
+  local out="$LADDER_DIR/canary_runs/$tag/out"
+  local proof="$LADDER_DIR/canary_runs/$tag/proof"
+  local scratch="$LADDER_DIR/canary_runs/$tag/scratch"
+  mkdir -p "$out" "$proof" "$scratch"
+  echo "=== CANARY $tag : n_sound=$nsound maxdom=$MAXDOM hours=$HOURS ==="
+  taskset -c 0-7 env \
+    OMP_NUM_THREADS=8 PYTHONPATH=src JAX_ENABLE_X64=true \
+    XLA_PYTHON_CLIENT_PREALLOCATE=false \
+    GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo \
+    GPUWRF_ACOUSTIC_SUBSTEPS="$nsound" \
+    python -m gpuwrf.cli run \
+      --namelist "$input/namelist.input" \
+      --input-dir "$input" \
+      --output-dir "$out" \
+      --proof-dir "$proof" \
+      --scratch-dir "$scratch" \
+      --domain d01 --max-dom "$MAXDOM" --hours "$HOURS" \
+      2>&1 | tee "$LOG_DIR/canary_${tag}.log"
+}
+
+build_input R1c 1.0
+build_input BESTc "$SCALE"
+
+run_canary R1c 10
+run_canary BESTc "$NSOUND"
+
+# Per-domain Courant + compare for each domain.
+taskset -c 0-3 env PYTHONPATH=src JAX_ENABLE_X64=true \
+  python proofs/v022/k2_dt_ladder/canary_courant_report.py \
+    --r1-dir "$LADDER_DIR/canary_runs/R1c/out" \
+    --best-dir "$LADDER_DIR/canary_runs/BESTc/out" \
+    --scale "$SCALE" --nsound "$NSOUND" --maxdom "$MAXDOM" \
+    --out "$LADDER_DIR/canary_runs/canary_validation.json" \
+    2>&1 | tee "$LOG_DIR/canary_report.log"
+
+echo "=== CANARY VALIDATION DONE ==="; free_vram=27.061 GiB / 31.843 GiB on NVIDIA GeForce RTX 5090 (index=0); threshold=24.0 GiB (source=max(default absolute floor, GPUWRF_MIN_FREE_VRAM_FRACTION * total VRAM); floor=24.0 GiB; fraction=0.5; fractional=15.921 GiB)
+gpuwrf: warning: physics.cudt (domain 1): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 2): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 3): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 4): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 5): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 6): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 7): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 8): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: warning: physics.cudt (domain 9): cudt=5 cadence not honored; the GPU port runs the cumulus scheme EVERY dynamics step -- more frequently than the requested 5-minute sub-stepping interval, a conservative approximation (more up-to-date convective tendencies, never a different scheme). The run proceeds. Set cudt=0 to request this exactly.
+gpuwrf: init mode = standalone_native_init_nested -- STANDALONE LIVE-NESTED (d01..d03; parent feeds each child LBC live; no CPU-WRF wrfout); hours=1; scratch=<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/canary_runs/R1c/scratch
+gpuwrf: error: nested forecast failed (FileNotFoundError: <USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/canary_runs/R1c/input/wrfinput_d01)

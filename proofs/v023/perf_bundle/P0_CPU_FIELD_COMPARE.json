@@ -1,0 +1,79 @@
+{
+  "fields": {
+    "swdnb": {
+      "after_sha256": "56925fa3c8b79ce7d1a8d7cc6f98846a4d205b77b723a7cbf8241af6a519aecb",
+      "array_equal": true,
+      "before_sha256": "56925fa3c8b79ce7d1a8d7cc6f98846a4d205b77b723a7cbf8241af6a519aecb",
+      "byte_identical": true,
+      "dtype": "float64",
+      "shape": [
+        2,
+        3
+      ]
+    },
+    "swdnt": {
+      "after_sha256": "9d7fb0ddd10ef556625ae91c9829669020a3bd5ad87c55d1fa01eca04055fba6",
+      "array_equal": true,
+      "before_sha256": "9d7fb0ddd10ef556625ae91c9829669020a3bd5ad87c55d1fa01eca04055fba6",
+      "byte_identical": true,
+      "dtype": "float64",
+      "shape": [
+        2,
+        3
+      ]
+    },
+    "swdown": {
+      "after_sha256": "56925fa3c8b79ce7d1a8d7cc6f98846a4d205b77b723a7cbf8241af6a519aecb",
+      "array_equal": true,
+      "before_sha256": "56925fa3c8b79ce7d1a8d7cc6f98846a4d205b77b723a7cbf8241af6a519aecb",
+      "byte_identical": true,
+      "dtype": "float64",
+      "shape": [
+        2,
+        3
+      ]
+    },
+    "swnorm": {
+      "after_sha256": "56925fa3c8b79ce7d1a8d7cc6f98846a4d205b77b723a7cbf8241af6a519aecb",
+      "array_equal": true,
+      "before_sha256": "56925fa3c8b79ce7d1a8d7cc6f98846a4d205b77b723a7cbf8241af6a519aecb",
+      "byte_identical": true,
+      "dtype": "float64",
+      "shape": [
+        2,
+        3
+      ]
+    },
+    "swupb": {
+      "after_sha256": "682c4ea7cff88ef7a8e4d610741e657d970eb7761af9c1898737dba8bdb0402d",
+      "array_equal": true,
+      "before_sha256": "682c4ea7cff88ef7a8e4d610741e657d970eb7761af9c1898737dba8bdb0402d",
+      "byte_identical": true,
+      "dtype": "float64",
+      "shape": [
+        2,
+        3
+      ]
+    },
+    "swupt": {
+      "after_sha256": "c5f357de7f08cc4f5dfc8fb17a18d8b799a9eefeaf9e9412a4a9a9162b2c3292",
+      "array_equal": true,
+      "before_sha256": "c5f357de7f08cc4f5dfc8fb17a18d8b799a9eefeaf9e9412a4a9a9162b2c3292",
+      "byte_identical": true,
+      "dtype": "float64",
+      "shape": [
+        2,
+        3
+      ]
+    }
+  },
+  "requested_attrs": [
+    "swdown",
+    "swdnb",
+    "swupb",
+    "swdnt",
+    "swupt",
+    "swnorm"
+  ],
+  "verdict": "PASS"
+}

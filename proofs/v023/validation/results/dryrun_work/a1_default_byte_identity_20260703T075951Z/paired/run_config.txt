@@ -1,0 +1,11 @@
+gate=a1_default_byte_identity
+session=proofs/v023/validation/results/dryrun_work/a1_default_byte_identity_20260703T075951Z/paired
+base_ref=v0.22.2
+candidate_ref=HEAD
+case=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu
+hours=1
+max_dom=3
+domains=d01 d02 d03
+base_env=GPUWRF_BATCH_ENSEMBLE= GPUWRF_SINGLE_SCAN= GPUWRF_FUSED_CASCADE_LOW_EFFORT= GPUWRF_ACOUSTIC_PRECISION_MODE=fp64_default
+candidate_env=GPUWRF_BATCH_ENSEMBLE= GPUWRF_SINGLE_SCAN= GPUWRF_FUSED_CASCADE_LOW_EFFORT= GPUWRF_ACOUSTIC_PRECISION_MODE=fp64_default
+dryrun=1

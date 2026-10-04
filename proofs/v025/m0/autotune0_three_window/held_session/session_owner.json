@@ -1,0 +1,123 @@
+{
+  "commands": [
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "16-27",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/scripts/v025/m0_w1_fast_pair.py",
+        "--prestage-cpu",
+        "--session-identity",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/session_preflight_identity.json",
+        "--cpu-run-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3",
+        "--output",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/cpu_preflight.json"
+      ],
+      "command_normalized": [
+        "taskset",
+        "-c",
+        "16-27",
+        "<PYTHON>",
+        "<REPO>/scripts/v025/m0_w1_fast_pair.py",
+        "--prestage-cpu",
+        "--session-identity",
+        "<REPO>/proofs/v025/m0/autotune0_three_window/held_session/session_preflight_identity.json",
+        "--cpu-run-root",
+        "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3",
+        "--output",
+        "<REPO>/proofs/v025/m0/autotune0_three_window/held_session/cpu_preflight.json"
+      ],
+      "command_sha256": "603156ba84b43c1a3b2f25ecc05e6c3c23f56a07cf9d21b447de0fe3229b54e3",
+      "log_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/cpu_preflight.log",
+      "log_sha256": "f89c9be17149d82fc343122de3dffc065f550b3bfb6b49faa5a03458823b8935",
+      "returncode": 0,
+      "stage": "CPU_PREFLIGHT"
+    },
+    {
+      "command": [
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "m0-core-w1-w2-w3-session",
+        "--",
+        "<USER_HOME>/miniconda3/bin/python",
+        "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/scripts/v025/m0_three_window_executor.py",
+        "--manager-core-session-held",
+        "--receipt",
+        ".agent/sprints/2026-07-30-v0250-m0-review10-device-session/GPU_COORDINATION_RECEIPT.json"
+      ],
+      "command_normalized": [
+        "<REPO>/scripts/with_gpu_lock.sh",
+        "--timeout",
+        "0",
+        "--label",
+        "m0-core-w1-w2-w3-session",
+        "--",
+        "<PYTHON>",
+        "<REPO>/scripts/v025/m0_three_window_executor.py",
+        "--manager-core-session-held",
+        "--receipt",
+        ".agent/sprints/2026-07-30-v0250-m0-review10-device-session/GPU_COORDINATION_RECEIPT.json"
+      ],
+      "command_sha256": "8886445d5ce752417276ad47728c8e7152787cf4e5fdd3f065f1a090a84702a9",
+      "log_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/held_wrapper.log",
+      "log_sha256": "426192ec751c8068af10f6684e1a93fd3ef3920c4adff87ee3a8139d59545ebd",
+      "returncode": 1,
+      "stage": "HELD_ZERO_WAIT_WRAPPER"
+    }
+  ],
+  "elapsed_seconds": 85.819744063,
+  "finished_at_utc": "2026-07-30T06:25:58.948498+00:00",
+  "first_failure": {
+    "error": "SessionRefusal: held session failed; post-lock census/finalizer suppressed",
+    "kind": "SESSION_OWNER_REFUSAL",
+    "process_group_sweep_error": null,
+    "stage": "HELD_ZERO_WAIT_WRAPPER"
+  },
+  "owner_sha256": "b5efd239ea7c1926e8499de580942518242ea73d9e93309257a7cdb83969616b",
+  "prelock_revalidation": {
+    "content_sha256": "a259d4831b0c1e6164ffb8cd603063449015676f29ffe885afa3827a13513e66",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/prelock_revalidation.json",
+    "sha256": "24e9667a4c5f54e408b925c2e5ccd028c5bfe6d249dcca2c3f76eaeba08fa7c0"
+  },
+  "process_group_proof": {
+    "active": [],
+    "all_registered_groups_empty": true,
+    "completed": [
+      {
+        "empty": true,
+        "process_group": 2983287,
+        "stage": "CPU_PREFLIGHT"
+      },
+      {
+        "empty": true,
+        "process_group": 2983997,
+        "stage": "HELD_ZERO_WAIT_WRAPPER"
+      }
+    ],
+    "registered": 2,
+    "status": "PASS"
+  },
+  "receipt_path": ".agent/sprints/2026-07-30-v0250-m0-review10-device-session/GPU_COORDINATION_RECEIPT.json",
+  "receipt_refund_path": null,
+  "release_proof": {
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/session_lock_release.json",
+    "sha256": "670f1ace4a2ce425029748a51a34931f4cde519133f446c8860f76d18740e101"
+  },
+  "retry_path": null,
+  "schema": "wrf_gpu2.v025.m0.core_session_owner.v1",
+  "session_proof": {
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/m0_core_session.json",
+    "sha256": "fe3a614f6d138d72cd448d8c6c5d83c3ef18c7745e9f63fa46a63a44d7c0585a"
+  },
+  "started_at_utc": "2026-07-30T06:24:33.128742+00:00",
+  "status": "BLOCKED",
+  "terminal_manifest": {
+    "cpu_closure_gate": "BLOCKED",
+    "path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-review10-device-session/proofs/v025/m0/autotune0_three_window/held_session/m0_core_terminal.json",
+    "sha256": "927f8ff186dc1a918c75783c41369bb59b344984fbce6847618141b09cd4c8d4"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "gate": "a3_m1_fp32_release_gates",
+  "generated_utc": "2026-07-03T07:59:51.985908+00:00",
+  "message": "A3 fp64_default pair and optional killgate were staged only.",
+  "schema": "v023-validation-gate-status-v1",
+  "status": "NO_GPU_EXECUTED",
+  "verdict": "DRY_RUN"
+}

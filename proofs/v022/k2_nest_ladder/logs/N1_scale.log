@@ -1,0 +1,1 @@
+{'src': '<DATA_ROOT>/wrf_downscale/runs/20250121/cpu/namelist.input', 'dst': 'proofs/v022/k2_nest_ladder/runs/N1/input/namelist.input', 'factor': 3.0, 'old_dt': 18, 'new_dt': 54, 'max_dom': 3}

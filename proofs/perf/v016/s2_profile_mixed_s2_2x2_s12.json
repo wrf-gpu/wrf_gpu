@@ -1,0 +1,17 @@
+{
+  "schema": "ADR031S2WarmProfileRun",
+  "precision": "mixed_s2",
+  "tile_factor": [
+    2,
+    2
+  ],
+  "ny": 256,
+  "nx": 256,
+  "ncol": 65536,
+  "steps": 12,
+  "hours": 0.06,
+  "wall_s": 2.755258457036689,
+  "ms_per_step": 229.60487141972408,
+  "device": "cuda:0",
+  "finite": true
+}

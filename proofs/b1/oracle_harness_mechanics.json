@@ -1,0 +1,78 @@
+{
+  "boundary": "mp_gt_driver_pre -> mp_gt_driver_post (full driver incl. sedimentation)",
+  "dt_s": 60.0,
+  "harness_mechanics_pass": true,
+  "moist_cells": 512,
+  "n_cells": 512,
+  "n_columns": 16,
+  "note": "MECHANICS self-test only: post=kernel-own-output, so per-field parity is trivially exact; this validates harness reshape/mask/tolerance/closure wiring, NOT physics. Real physics parity = run_oracle_parity (PENDING-ORACLE).",
+  "pass": true,
+  "per_field": {
+    "ni": {
+      "abs_tol": 0.001,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "nr": {
+      "abs_tol": 0.001,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 0.0001
+    },
+    "qc": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qg": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qi": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qr": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qs": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    },
+    "qv": {
+      "abs_tol": 1e-09,
+      "enforced_cells": 512,
+      "max_abs_err": 0.0,
+      "max_rel_err": 0.0,
+      "pass": true,
+      "rel_tol": 1e-06
+    }
+  },
+  "water_closure_max_rel_residual": 0.00014269969568471473,
+  "water_closure_pass": true
+}

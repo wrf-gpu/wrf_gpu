@@ -1,0 +1,504 @@
+{
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "carry_overs": [
+    "Two-way feedback (child->parent copy_fcn area-average + WRF sm121 feedback-zone smoother) is ENABLED.",
+    "In-loop nested w relaxation is OFF (deferred to a longer stability gate).",
+    "No TOST/ensemble equivalence or CPU-speedup baseline is claimed by a standalone smoke."
+  ],
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domains": [
+    "d01",
+    "d02"
+  ],
+  "feedback": true,
+  "gpu_preflight": {
+    "action": "Run nested GPU forecasts through `scripts/with_gpu_lock.sh --label <name> -- <cmd>`; set GPUWRF_MIN_FREE_VRAM_GIB for an explicit GiB threshold override or GPUWRF_MIN_FREE_VRAM_FRACTION to tune the card-relative threshold; set GPUWRF_FORCE_GPU_RUN=1 or pass --force-gpu-run only for a deliberate override.",
+    "forced": false,
+    "lock": {
+      "fd": "9",
+      "holder": "holder=codex-g0-two-way-feedback pid=219504 since=2026-06-27T09:27:42Z token=gpuwrf-lock-219504-30377-1782552090763245389 cmd=taskset -c 0-3 env OMP_NUM_THREADS=4 PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false GPUWRF_CANAIRY_ROOT=<DATA_ROOT>/canairy_meteo python -m gpuwrf run --input-dir proofs/v022/k2_nest_ladder/runs/N2/input --output-dir proofs/v022/feature_push/g0_two_way_gpu_smoke/out --proof-dir proofs/v022/feature_push/g0_two_way_gpu_smoke/proofs --max-dom 2 --hours 1 --feedback",
+      "holder_file": "/tmp/wrf_gpu2_gpu.lock.holder",
+      "lock_file": "/tmp/wrf_gpu2_gpu.lock",
+      "ok": true,
+      "reason": "",
+      "token_present": true
+    },
+    "min_free_vram_fraction": 0.5,
+    "min_free_vram_gib": 24.0,
+    "schema": "GpuwrfNestedGpuPreflight",
+    "schema_version": 1,
+    "status": "PASS",
+    "vram": {
+      "free_gib": 26.858,
+      "free_mib": 27503,
+      "index": "0",
+      "name": "NVIDIA GeForce RTX 5090",
+      "ok": true,
+      "total_gib": 31.843,
+      "total_mib": 32607,
+      "used_gib": 4.495,
+      "used_mib": 4603,
+      "uuid": "GPU-cec852c8-a76b-e606-d152-2f2a16e0c6b5"
+    },
+    "vram_threshold": {
+      "absolute_floor_gib": 24.0,
+      "fraction": 0.5,
+      "fractional_gib": 15.921,
+      "min_free_gib": 24.0,
+      "source": "max(default absolute floor, GPUWRF_MIN_FREE_VRAM_FRACTION * total VRAM)"
+    }
+  },
+  "hierarchy": {
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": true,
+        "i_parent_start": 22,
+        "j_parent_start": 18,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      }
+    ],
+    "event_counts": {
+      "advance": 120,
+      "feedback": 60,
+      "force": 60,
+      "output": 6
+    },
+    "force_counts": {
+      "d01->d02": 60
+    },
+    "observed_own_steps": {
+      "d01": 60,
+      "d02": 180
+    },
+    "order": [
+      "d01",
+      "d02"
+    ],
+    "output_cadence_steps": {
+      "d01": 18,
+      "d02": 54
+    },
+    "persistent_state_bytes": {
+      "d01": 67013648,
+      "d02": 115194448
+    }
+  },
+  "hours": 1,
+  "init_mode": "standalone_native_init_nested",
+  "input_dir": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input",
+  "max_dom": 2,
+  "metadata": {
+    "domains": {
+      "d01": {
+        "grid": {
+          "dx_m": 9000.0,
+          "dy_m": 9000.0,
+          "mass_shape": [
+            44,
+            59,
+            93
+          ],
+          "wrf_staggered_extent": [
+            45,
+            60,
+            94
+          ]
+        },
+        "ic_source": "wrfinput_d01",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 20.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 522,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
+        "live_nest_base_init": {
+          "enabled": false
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 21600.0,
+          "cu_physics": 1,
+          "dt_s": 60.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 30,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 10.659179075249515,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfbdy_d01",
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01"
+          ],
+          "domain": "d01",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 30.64828109741211,
+              "min": 25.88818359375,
+              "shape": [
+                59,
+                93
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 30.64828109741211,
+              "min": 25.886817932128906,
+              "shape": [
+                59,
+                94
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 30.688735961914062,
+              "min": 25.847694396972656,
+              "shape": [
+                60,
+                93
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.0758056640625,
+              "min": -20.724212646484375,
+              "shape": [
+                59,
+                93
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.028839111328125,
+              "min": -20.77117919921875,
+              "shape": [
+                59,
+                94
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.07415771484375,
+              "min": -20.725830078125,
+              "shape": [
+                60,
+                93
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d01"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      },
+      "d02": {
+        "grid": {
+          "dx_m": 3000.0,
+          "dy_m": 3000.0,
+          "mass_shape": [
+            44,
+            93,
+            195
+          ],
+          "wrf_staggered_extent": [
+            45,
+            94,
+            196
+          ]
+        },
+        "ic_source": "wrfinput_d02",
+        "land_surface": {
+          "noahmp_energy_params_loaded": true,
+          "noahmp_julian": 20.75,
+          "noahmp_land_seeded": true,
+          "noahmp_n_land_cells": 1146,
+          "noahmp_rad_params_loaded": true,
+          "noahmp_static_loaded": true,
+          "noahmp_yearlen": 365.0,
+          "provenance": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02",
+          "sf_surface_physics": 4,
+          "use_noahmp": true
+        },
+        "lbc_source": "live parent boundary package (build_child_boundary_package)",
+        "live_nest_base_init": {
+          "base_state_source": "HT/MUB/PHB are independently blended like med_nest_initial; final PB/MUB/PHB are WRF start_domain_em recompute from blended HT",
+          "blend_width": 5,
+          "child_domain": "d02",
+          "cpu_wrfout_dependency": false,
+          "enabled": true,
+          "i_parent_start": 22,
+          "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+          "j_parent_start": 18,
+          "note": "The host SINT reference runs before OperationalCarry creation. The forecast loop remains device-resident; no CPU-WRF history file is read.",
+          "parent_domain": "d01",
+          "parent_grid_ratio": 3,
+          "pre_start_blended_mub_max_pa": 95115.171875,
+          "pre_start_blended_phb_max_m2_s2": 195220.53125,
+          "production_inputs": [
+            "parent native initialized terrain",
+            "wrfinput_d02",
+            "namelist.input"
+          ],
+          "source": "native live-nest parent SINT/TR4 interpolation + WRF blend_terrain pre-start path",
+          "spec_bdy_width": 5,
+          "start_domain_perturb_init": {
+            "cpu_wrfout_dependency": false,
+            "hypsometric_opt": 2,
+            "libm_provider": "glibc-libm-float32",
+            "surfaces": [
+              "start_domain hypsometric AL/ALT + calc_p_rho_phi pressure",
+              "press_adj MU correction",
+              "set_w_surface(fill_w_flag=.true.)"
+            ],
+            "timestep_loop_transfer": false,
+            "use_theta_m_qvf": 1.0,
+            "w_needs_to_be_set": true,
+            "w_surface_input_max_abs": 0.0,
+            "wrf_reference": "dyn_em/start_em.F (AL/ALT + p from calc_p_rho_phi equations; press_adj); dyn_em/module_bc_em.F::set_w_surface"
+          },
+          "theta_qv_adjust": {
+            "final_base_state_unchanged": true,
+            "perturbation_pressure_unchanged": true,
+            "surface": "post_blend_terrain_pre_start_domain (adjust_tempqv current MUB)",
+            "theta_m_conversion_applied": true,
+            "timestep_loop_transfer": false,
+            "use_theta_m": 1,
+            "wrf_reference": "dyn_em/module_initialize_real.F:4918-4928 theta_m; dyn_em/nest_init_utils.F::adjust_tempqv(nest%mub, nest%mub_save, ...)"
+          },
+          "timestep_loop_transfer": false,
+          "transient_adjust_mub": {
+            "blend_width": 5,
+            "child_domain": "d02",
+            "consumer": "dyn_em/nest_init_utils.F::adjust_tempqv current MUB argument",
+            "final_base_state_unchanged": true,
+            "i_parent_start": 22,
+            "interpolation": "gpuwrf.nesting.interp.sint_to_child_reference (WRF sint.F host reference, init-only)",
+            "j_parent_start": 18,
+            "parent_domain": "d01",
+            "parent_grid_ratio": 3,
+            "spec_bdy_width": 5,
+            "surface": "post_blend_terrain_pre_start_domain",
+            "timestep_loop_transfer": false,
+            "wrf_reference": "share/mediation_integrate.F med_nest_initial: copy_3d_field(mub_save,mub); blend_terrain(mub_fine,mub); adjust_tempqv(mub,mub_save,...)"
+          }
+        },
+        "namelist": {
+          "boundary_update_cadence_s": 60.0,
+          "cu_physics": 0,
+          "dt_s": 20.0,
+          "gwd_opt": 0,
+          "gwdo_statics_loaded": false,
+          "radiation_cadence_steps": 90,
+          "radiation_static_loaded": true
+        },
+        "qke_coldstart": {
+          "note": "parent wrfout carried no real QKE (MAXVAL<0.0002); seeded WRF cold-start background TKE profile",
+          "qke_max": 16.371908930500418,
+          "qke_max_skipped": false,
+          "seeded": true,
+          "wrf_ref": "phys/module_bl_mynnedmf.F:618-691 (mym_initialize INITIALIZE_QKE)"
+        },
+        "standalone_native_init": true,
+        "wrfbdy_path": null,
+        "writer_static_latlon": {
+          "candidate_files": [
+            "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02"
+          ],
+          "domain": "d02",
+          "errors": {},
+          "fields": {
+            "XLAT": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.784961700439453,
+              "min": 27.254615783691406,
+              "shape": [
+                93,
+                195
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02"
+            },
+            "XLAT_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.784961700439453,
+              "min": 27.254230499267578,
+              "shape": [
+                93,
+                196
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02"
+            },
+            "XLAT_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": 29.7984619140625,
+              "min": 27.241111755371094,
+              "shape": [
+                94,
+                195
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02"
+            },
+            "XLONG": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.731719970703125,
+              "min": -18.76300048828125,
+              "shape": [
+                93,
+                195
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02"
+            },
+            "XLONG_U": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.7161865234375,
+              "min": -18.778564453125,
+              "shape": [
+                93,
+                196
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02"
+            },
+            "XLONG_V": {
+              "dtype": "float32",
+              "finite_fraction": 1.0,
+              "max": -12.73126220703125,
+              "min": -18.7633056640625,
+              "shape": [
+                94,
+                195
+              ],
+              "source_file": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input/wrfinput_d02"
+            }
+          },
+          "loaded_fields": [
+            "XLAT",
+            "XLAT_U",
+            "XLAT_V",
+            "XLONG",
+            "XLONG_U",
+            "XLONG_V"
+          ],
+          "missing_fields": [],
+          "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+          "status": "loaded"
+        }
+      }
+    },
+    "edges": [
+      {
+        "child": "d02",
+        "feedback": true,
+        "i_parent_start": 22,
+        "j_parent_start": 18,
+        "parent": "d01",
+        "parent_grid_ratio": 3
+      }
+    ],
+    "parallel_compile": {
+      "nested_precompile": {
+        "active": false,
+        "attempted": true,
+        "error": null,
+        "report": null,
+        "source": "skip:fused-default",
+        "verify": null,
+        "workers": null
+      }
+    }
+  },
+  "nesting_mode": "two_way",
+  "output_dir": "proofs/v022/feature_push/g0_two_way_gpu_smoke/out",
+  "per_domain": {
+    "d01": {
+      "dt_s": 60.0,
+      "expected_wrfout_count": 3,
+      "final_state_finite": true,
+      "history_interval_min": 18.0,
+      "own_steps": 60,
+      "wrfout_count": 3,
+      "wrfout_files": [
+        "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d01_2025-01-21_18:18:00",
+        "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d01_2025-01-21_18:36:00",
+        "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d01_2025-01-21_18:54:00"
+      ]
+    },
+    "d02": {
+      "dt_s": 20.0,
+      "expected_wrfout_count": 3,
+      "final_state_finite": true,
+      "history_interval_min": 18.0,
+      "own_steps": 180,
+      "wrfout_count": 3,
+      "wrfout_files": [
+        "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d02_2025-01-21_18:18:00",
+        "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d02_2025-01-21_18:36:00",
+        "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d02_2025-01-21_18:54:00"
+      ]
+    }
+  },
+  "root_steps": 60,
+  "run_id": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_nest_ladder/runs/N2/input",
+  "run_start_utc": "2025-01-21T18:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "scratch_dir": "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/.scratch",
+  "verdict": "PIPELINE_GREEN",
+  "wall_clock_forecast_only_s": 1213.1521026739501,
+  "wall_clock_total_s": 1313.154193236027,
+  "wrfout_files": [
+    "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d01_2025-01-21_18:18:00",
+    "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d01_2025-01-21_18:36:00",
+    "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d01_2025-01-21_18:54:00",
+    "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d02_2025-01-21_18:18:00",
+    "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d02_2025-01-21_18:36:00",
+    "proofs/v022/feature_push/g0_two_way_gpu_smoke/out/wrfout_d02_2025-01-21_18:54:00"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "cpu_closure_gate": "BLOCKED",
+  "device_action": "HELD_WRAPPER_MAY_HAVE_RUN",
+  "first_failure": {
+    "error": "SessionRefusal: held session failed; post-lock census/finalizer suppressed",
+    "kind": "SESSION_OWNER_REFUSAL",
+    "process_group_sweep_error": null,
+    "stage": "HELD_ZERO_WAIT_WRAPPER"
+  },
+  "later_stages_suppressed": true,
+  "manifest_sha256": "384cea802ed322f27c3aca0bef58e4c5589c505898db9723a782236b26dff5fd",
+  "may_open_m1": false,
+  "receipt_consumed": true,
+  "release_proof_path": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/proofs/v025/m0/autotune0_three_window_r5/held_session/session_lock_release.json",
+  "schema": "wrf_gpu2.v025.m0.core_session_owner.v1",
+  "status": "M0_CORE_BLOCKED"
+}

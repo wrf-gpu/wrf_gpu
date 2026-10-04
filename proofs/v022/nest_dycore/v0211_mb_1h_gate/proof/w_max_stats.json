@@ -1,0 +1,54 @@
+{
+  "gate": "v0211_mb_1h_gate",
+  "criterion": "d01 max_abs_w_m_s < 5.0 and not monotonically diverging; all produced W fields finite",
+  "records": [
+    {
+      "file": "proofs/v022/nest_dycore/v0211_mb_1h_gate/out/wrfout_d01_2024-08-06_12:20:06",
+      "domain": "d01",
+      "max_abs_w_m_s": 2.311203718185425,
+      "max_index_kji": [
+        11,
+        33,
+        61
+      ],
+      "edge_distance_cells": 33,
+      "edge_max_abs_w_m_s": 0.8980915546417236,
+      "interior_max_abs_w_m_s": 2.311203718185425,
+      "finite": true
+    },
+    {
+      "file": "proofs/v022/nest_dycore/v0211_mb_1h_gate/out/wrfout_d01_2024-08-06_12:40:12",
+      "domain": "d01",
+      "max_abs_w_m_s": 4.129059791564941,
+      "max_index_kji": [
+        12,
+        32,
+        61
+      ],
+      "edge_distance_cells": 32,
+      "edge_max_abs_w_m_s": 1.0584869384765625,
+      "interior_max_abs_w_m_s": 4.129059791564941,
+      "finite": true
+    },
+    {
+      "file": "proofs/v022/nest_dycore/v0211_mb_1h_gate/out/wrfout_d02_2024-08-06_13:00:00",
+      "domain": "d02",
+      "max_abs_w_m_s": 8.035907745361328,
+      "max_index_kji": [
+        11,
+        27,
+        117
+      ],
+      "edge_distance_cells": 27,
+      "edge_max_abs_w_m_s": 4.579975128173828,
+      "interior_max_abs_w_m_s": 8.035907745361328,
+      "finite": true
+    }
+  ],
+  "d01_max_abs_w_sequence_m_s": [
+    2.311203718185425,
+    4.129059791564941
+  ],
+  "d01_bounded_below_5_m_s": true,
+  "all_produced_w_finite": true
+}

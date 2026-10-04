@@ -1,0 +1,199 @@
+{
+  "branch": "integration/v022-feature-push-gpt",
+  "commit": "f7997681717ccb3a8ff8b87269f5f96e391cdf4b",
+  "grid": {
+    "dx_m": 1000.0,
+    "nx": 8,
+    "ny": 6,
+    "nz": 4
+  },
+  "jax_backend": "gpu",
+  "jax_devices": [
+    "cuda:0"
+  ],
+  "known_scaffold": [
+    "momentum diffusion uses conservative variable-K staggered scalar flux divergence; exact WRF deformation-stress tensor parity remains to port",
+    "dry BN2 reduction is used; moist calculate_N2 parity/oracle remains to thread",
+    "km_opt=5 implicit vertical TKE dissipation/nonlocal flux extras are represented by the explicit dry idealized reduction"
+  ],
+  "landed": [
+    "WRF 3-D Smagorinsky km_opt=3 coefficients",
+    "WRF TKE km_opt=2 coefficients and dry TKE RHS/update",
+    "SMS km_opt=5 coefficient blend using WRF pthl/pu functions",
+    "diff_opt=2 runtime branch for km_opt=2/3/5",
+    "namelist/catalog recognition for km_opt=2/3/5"
+  ],
+  "results": {
+    "km_opt_2": {
+      "bn2": {
+        "max": 6.548066165738127e-07,
+        "mean": 6.539025039564607e-07,
+        "min": 6.529997093316892e-07
+      },
+      "field_delta_norms": {
+        "theta": {
+          "l2": 2.6839823051303378,
+          "max_abs": 3.630309568811245
+        },
+        "u": {
+          "l2": 4.033489847071651,
+          "max_abs": 7.5213734028017685
+        },
+        "v": {
+          "l2": 3.964210729567393,
+          "max_abs": 7.043466050712967
+        },
+        "w": {
+          "l2": 0.6708782727198855,
+          "max_abs": 2.0852403940805426
+        }
+      },
+      "finite_tendency_deltas": true,
+      "nonzero_tendency_deltas": true,
+      "pass": true,
+      "qke_after_one_dt": {
+        "max": 0.16967176991955166,
+        "mean": 0.15807522164581797,
+        "min": 0.14652353605430601
+      },
+      "qke_finite_and_bounded": true,
+      "qke_tendency": {
+        "max": 2.333680269503376,
+        "mean": -28.561691822937764,
+        "min": -64.21321190054397
+      },
+      "xkhh": {
+        "max": 185.52998183156456,
+        "mean": 179.9572347066079,
+        "min": 174.34732813616972
+      },
+      "xkhv": {
+        "max": 36.37805367937111,
+        "mean": 33.86352994268467,
+        "min": 31.413627635425573
+      },
+      "xkmh": {
+        "max": 61.84332727718818,
+        "mean": 59.98574490220263,
+        "min": 58.1157760453899
+      },
+      "xkmv": {
+        "max": 23.980130041644017,
+        "mean": 22.553432870124,
+        "min": 21.150425136469057
+      }
+    },
+    "km_opt_3": {
+      "bn2": {
+        "max": 6.548066165738127e-07,
+        "mean": 6.539025039564607e-07,
+        "min": 6.529997093316892e-07
+      },
+      "field_delta_norms": {
+        "theta": {
+          "l2": 0.8289548447818372,
+          "max_abs": 1.4275898732622556
+        },
+        "u": {
+          "l2": 0.7821707288729408,
+          "max_abs": 1.750329103677504
+        },
+        "v": {
+          "l2": 0.9993287447108085,
+          "max_abs": 2.286613755932796
+        },
+        "w": {
+          "l2": 0.16147859835623346,
+          "max_abs": 1.0584765886072403
+        }
+      },
+      "finite_tendency_deltas": true,
+      "nonzero_tendency_deltas": true,
+      "pass": true,
+      "wrf_formula_oracle_max_abs": 0.0,
+      "xkhh": {
+        "max": 74.21389057523682,
+        "mean": 25.63899558362621,
+        "min": 3.0
+      },
+      "xkhv": {
+        "max": 166.98125379428285,
+        "mean": 57.68774006315896,
+        "min": 6.75
+      },
+      "xkmh": {
+        "max": 24.73796352507894,
+        "mean": 8.546331861208735,
+        "min": 1.0
+      },
+      "xkmv": {
+        "max": 55.66041793142762,
+        "mean": 19.22924668771965,
+        "min": 2.25
+      }
+    },
+    "km_opt_5": {
+      "bn2": {
+        "max": 6.548066165738127e-07,
+        "mean": 6.539025039564607e-07,
+        "min": 6.529997093316892e-07
+      },
+      "field_delta_norms": {
+        "theta": {
+          "l2": 1.8027617346057319,
+          "max_abs": 3.6591767229215364
+        },
+        "u": {
+          "l2": 3.124246631435674,
+          "max_abs": 6.6868342328342045
+        },
+        "v": {
+          "l2": 2.8028139214114693,
+          "max_abs": 4.765380926031599
+        },
+        "w": {
+          "l2": 0.8388779277031954,
+          "max_abs": 2.7154037237040356
+        }
+      },
+      "finite_tendency_deltas": true,
+      "nonzero_tendency_deltas": true,
+      "pass": true,
+      "qke_after_one_dt": {
+        "max": 0.1686932150431133,
+        "mean": 0.15728105848269855,
+        "min": 0.14572541683649004
+      },
+      "qke_finite_and_bounded": true,
+      "qke_tendency": {
+        "max": -4.735042364315642,
+        "mean": -40.47413926972898,
+        "min": -76.2083697332654
+      },
+      "xkhh": {
+        "max": 239.12973254344874,
+        "mean": 124.93190922708295,
+        "min": 72.19770718715931
+      },
+      "xkhv": {
+        "max": 231.63648021794458,
+        "mean": 224.27950640335027,
+        "min": 216.8924043799495
+      },
+      "xkmh": {
+        "max": 79.70991084781625,
+        "mean": 41.64396974236099,
+        "min": 24.065902395719768
+      },
+      "xkmv": {
+        "max": 221.03759220306722,
+        "mean": 214.31502809715997,
+        "min": 207.55155174673035
+      }
+    }
+  },
+  "schema": "gpuwrf.v022.f1_3d_tke_smag_oracle.v1",
+  "status": "pass",
+  "wrf_reference": "<USER_HOME>/src/wrf_pristine/WRF/dyn_em/module_diffusion_em.F",
+  "wrf_reference_sha256": "a7d4570c97e51c635e86a0dbd628c6846457ac5b93d5a7af798b118c7d8d2d54"
+}

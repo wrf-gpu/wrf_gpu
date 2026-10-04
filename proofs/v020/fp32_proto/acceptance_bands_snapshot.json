@@ -1,0 +1,193 @@
+{
+  "bands": {
+    "cloud_radiation": {
+      "120h": {
+        "cloud_fraction_abs_diff": 0.2,
+        "column_condensate_nrmse": 0.6,
+        "swdown_lwdown_bias_abs": 70.0
+      },
+      "24h": {
+        "cloud_fraction_abs_diff": 0.1,
+        "column_condensate_nrmse": 0.25,
+        "swdown_lwdown_bias_abs": 30.0
+      },
+      "48_72h": {
+        "cloud_fraction_abs_diff": 0.15,
+        "column_condensate_nrmse": 0.4,
+        "swdown_lwdown_bias_abs": 50.0
+      }
+    },
+    "cumulative": {
+      "120h": {
+        "domain_total_ratio": 5.0
+      },
+      "24h": {
+        "domain_total_ratio": 3.0
+      },
+      "48_72h": {
+        "domain_total_ratio": 4.0
+      }
+    },
+    "pressure_mass_geopotential": {
+      "120h": {
+        "dry_mass_relative_drift": 0.0007,
+        "geopotential_boundary_ring_growth": 0.0,
+        "psfc_bias_abs": 250.0,
+        "psfc_rmse_increase": 500.0
+      },
+      "24h": {
+        "dry_mass_relative_drift": 0.0001,
+        "geopotential_boundary_ring_growth": 0.0,
+        "psfc_bias_abs": 75.0,
+        "psfc_rmse_increase": 150.0
+      },
+      "48_72h": {
+        "dry_mass_relative_drift": 0.0003,
+        "geopotential_boundary_ring_growth": 0.0,
+        "psfc_bias_abs": 150.0,
+        "psfc_rmse_increase": 300.0
+      }
+    },
+    "qvapor": {
+      "120h": {
+        "domain_mean_water_vapor_rel_diff": 0.5,
+        "qvapor_p999": 0.04
+      },
+      "24h": {
+        "domain_mean_water_vapor_rel_diff": 0.2,
+        "qvapor_p999": 0.04
+      },
+      "48_72h": {
+        "domain_mean_water_vapor_rel_diff": 0.35,
+        "qvapor_p999": 0.04
+      }
+    },
+    "temperature": {
+      "120h": {
+        "bias_abs": 1.0,
+        "domain_mean_theta_drift": 1.0,
+        "p95_abs_diff": 4.0,
+        "rmse_increase": 1.5
+      },
+      "24h": {
+        "bias_abs": 0.3,
+        "domain_mean_theta_drift": 0.3,
+        "p95_abs_diff": 1.5,
+        "rmse_increase": 0.6
+      },
+      "48_72h": {
+        "bias_abs": 0.6,
+        "domain_mean_theta_drift": 0.6,
+        "p95_abs_diff": 2.5,
+        "rmse_increase": 1.0
+      }
+    },
+    "wind": {
+      "120h": {
+        "bias_abs": 0.6,
+        "domain_mean_speed_drift": 0.6,
+        "p95_abs_diff": 5.0,
+        "rmse_increase": 0.8
+      },
+      "24h": {
+        "bias_abs": 0.2,
+        "domain_mean_speed_drift": 0.2,
+        "p95_abs_diff": 2.0,
+        "rmse_increase": 0.25
+      },
+      "48_72h": {
+        "bias_abs": 0.35,
+        "domain_mean_speed_drift": 0.35,
+        "p95_abs_diff": 3.0,
+        "rmse_increase": 0.5
+      }
+    }
+  },
+  "field_groups": {
+    "CLOUD_FRACTION": "cloud_radiation",
+    "GRAUPELNC": "cumulative",
+    "ICENC": "cumulative",
+    "LWDOWN": "cloud_radiation",
+    "MU": "pressure_mass_geopotential",
+    "MUB": "pressure_mass_geopotential",
+    "P": "pressure_mass_geopotential",
+    "PB": "pressure_mass_geopotential",
+    "PH": "pressure_mass_geopotential",
+    "PHB": "pressure_mass_geopotential",
+    "PSFC": "pressure_mass_geopotential",
+    "QCLOUD": "cloud_radiation",
+    "QGRAUP": "cloud_radiation",
+    "QICE": "cloud_radiation",
+    "QSNOW": "cloud_radiation",
+    "QVAPOR": "qvapor",
+    "RAINC": "cumulative",
+    "RAINNC": "cumulative",
+    "RTHRATEN": "cloud_radiation",
+    "SNOWNC": "cumulative",
+    "SWDOWN": "cloud_radiation",
+    "T": "temperature",
+    "T2": "temperature",
+    "THETA": "temperature",
+    "U": "wind",
+    "U10": "wind",
+    "V": "wind",
+    "V10": "wind",
+    "W": "wind"
+  },
+  "lead_tiers": [
+    [
+      24.0,
+      "24h"
+    ],
+    [
+      72.0,
+      "48_72h"
+    ],
+    [
+      120.0,
+      "120h"
+    ]
+  ],
+  "protected_finite_fields": [
+    "MU",
+    "MUB",
+    "P",
+    "PB",
+    "PH",
+    "PHB",
+    "PSFC",
+    "QCLOUD",
+    "QGRAUP",
+    "QICE",
+    "QKE",
+    "QSNOW",
+    "T",
+    "T2",
+    "THETA",
+    "U",
+    "V",
+    "W"
+  ],
+  "sources": [
+    "proofs/v020/fp32_analysis/FINAL_FP32_SPRINT_PLAN.md#section-1",
+    "proofs/v020/fp32_analysis/GPT_FP32_PLAN.md#section-7"
+  ],
+  "universal_bounds": {
+    "PSFC": [
+      50000.0,
+      110000.0
+    ],
+    "QKE": [
+      0.0,
+      150.0
+    ],
+    "T2": [
+      180.0,
+      330.0
+    ],
+    "THETA": [
+      150.0,
+      1000.0
+    ]
+  }
+}

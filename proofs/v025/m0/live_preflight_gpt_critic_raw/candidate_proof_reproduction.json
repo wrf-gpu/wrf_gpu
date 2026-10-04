@@ -1,0 +1,67 @@
+{
+  "candidate": {
+    "implementation_proof_commit": "a5e8f5d8b96650a4a87b4c4179ed57d12a9eadf6",
+    "terminal_commit": "57e8dac77f7ecddaa7e6a34ee2f144e15c623c60",
+    "terminal_descends_from_implementation": true,
+    "terminal_only_changes": [
+      {
+        "path": ".agent/sprints/2026-07-29-v0250-m0-live-preflight-repair/DONE",
+        "status": "A"
+      },
+      {
+        "path": ".agent/sprints/2026-07-29-v0250-m0-live-preflight-repair/OPUS_M0_LIVE_PREFLIGHT_REPAIR_REPORT.md",
+        "status": "M"
+      }
+    ]
+  },
+  "candidate_proof": {
+    "path": "proofs/v025/m0/m0_live_preflight_repair_cpu_evidence.json",
+    "file_sha256_claimed": "957ccc563601b3ad2e89c0450fb1c1fe2cc1974286eaabe8fa2dfd0b211ff6bc",
+    "file_sha256_recomputed": "957ccc563601b3ad2e89c0450fb1c1fe2cc1974286eaabe8fa2dfd0b211ff6bc",
+    "internal_evidence_sha256_claimed": "3b8ef04d7f35e25a8eda1244b51ffaf9d53e4455af203461a267aad7c9401033",
+    "internal_evidence_sha256_recomputed": "3b8ef04d7f35e25a8eda1244b51ffaf9d53e4455af203461a267aad7c9401033",
+    "internal_content_address_matches": true,
+    "authority_sha256_in_proof": "8136100b71ad99adf5bca6228fbfeff3f96500e4957aeb71245bff0ecf06e670",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7"
+  },
+  "clean_clone_regeneration": {
+    "checkout_commit": "a5e8f5d8b96650a4a87b4c4179ed57d12a9eadf6",
+    "checkout_branch": "worker/opus/v0250-m0-live-preflight-repair",
+    "tree_was_clean_before_first_run": true,
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "GPUWRF_WRF_ROOT": "<USER_HOME>/src/wrf_pristine/WRF",
+      "GPUWRF_WRF_SRC": "<USER_HOME>/src/wrf_pristine/WRF",
+      "JAX_PLATFORMS": "cpu"
+    },
+    "run_1_file_sha256": "3536d250f6220df0e0d8aa58db97dbe2aef0b062aac46e6ec39941ac4c1c14fb",
+    "run_2_file_sha256": "3536d250f6220df0e0d8aa58db97dbe2aef0b062aac46e6ec39941ac4c1c14fb",
+    "runs_are_byte_identical": true,
+    "regenerated_internal_evidence_sha256": "b9d95388586341db665a101642441d3d8349cfc3bd3f158a78bea502534468e2",
+    "regenerated_authority_sha256": "d580dfc745e37bb0ee9dcb60e0e3aa6c0a2f901a4da8ac020a8ba3754c9a31b1",
+    "matches_frozen_candidate_bytes": false,
+    "difference_fields": [
+      "gate_a_source_authority.authority.external_fallback_path",
+      "gate_a_source_authority.mutations.checkout_relative_default.error",
+      "gate_a_source_authority.resolver_snapshot.central_resolver_default",
+      "gate_a_source_authority.resolver_snapshot.extract_rrtmg_tables_precedence[2]"
+    ],
+    "observation": "The generator is deterministic within one checkout but its content address binds the absolute checkout path, so the frozen candidate bytes do not regenerate in an independent clean checkout."
+  },
+  "normalization_audit": {
+    "implementation": "re.sub(r\"/tmp/m0-authority-[a-z]+-[A-Za-z0-9_]+/WRF\", \"<MUTATION_TREE>\", text)",
+    "only_mutation_fixture_suffixes_are_removed": true,
+    "wrong_root_is_not_normalized": true,
+    "filename_is_not_normalized": true,
+    "hash_is_not_normalized": true,
+    "mechanism_is_not_normalized": true,
+    "exception_class_is_not_normalized": true
+  },
+  "candidate_report_discrepancies": {
+    "reported_gate_a_mutation_count": 14,
+    "proof_gate_a_mutation_count": 15,
+    "reported_authority_sha256": "8366fbcfff84e52b392a8b6b885da33b385b14344ca05eb7436117f3c22b1d39",
+    "proof_authority_sha256": "8136100b71ad99adf5bca6228fbfeff3f96500e4957aeb71245bff0ecf06e670"
+  },
+  "device_action": false
+}

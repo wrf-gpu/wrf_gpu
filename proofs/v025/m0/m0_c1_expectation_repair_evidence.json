@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "generated_at": "2026-07-29T04:07:57+01:00",
+  "purpose": "bind the repaired post-cold C1 stage expectation to the accepted Amendment-6 protocol and final main production tree",
+  "source_head_before_commit": "2b4842dffb9b9b8484149d5a854fbd1fbbbfac12",
+  "production_src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+  "test": {
+    "path": "tests/v025/test_m0_amendment5_and_long_run_controls.py",
+    "git_blob": "9cee16a104da34a0fe52bf31ce36cae167a29174",
+    "sha256": "3a0511dc6397f3046c122ba3af839278a03de5a5796b799fe457aad78065eff7"
+  },
+  "protocol": {
+    "path": "scripts/v025/m0_core_session_protocol.py",
+    "git_blob": "138bf9c45c0d1bbeb21e9c80b18f4599b3779cdd",
+    "sha256": "880ddc820b53bdd17838b73df8f83069c38751a50ed36cd6d9d7c1cb0ece5dfd"
+  },
+  "junit": {
+    "path": "proofs/v025/m0/m0_c1_expectation_repair_tests.xml",
+    "sha256": "c180a96ef43ca64013aa404452e3ebf2da4cfe3e77c250d5df73ed019d6e7a8f",
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "command": "python3 -m pytest -q tests/v025/test_m0_amendment5_and_long_run_controls.py --junitxml=proofs/v025/m0/m0_c1_expectation_repair_tests.xml",
+  "return_code": 0,
+  "scope": "two stale expected stage-list entries only; no protocol, executor, validator or production change"
+}

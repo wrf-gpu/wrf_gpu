@@ -1,0 +1,10 @@
+{
+  "feature": "F3 CAM-UW PBL bl_pbl_physics=9",
+  "gate": "GPU_BLOCKED",
+  "timestamp_utc": "2026-06-27T10:45:39Z",
+  "attempted_command": "scripts/with_gpu_lock.sh --timeout 7200 --label gpt-f3-camuw-pbl -- env PYTHONPATH=src JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false JAX_ENABLE_COMPILATION_CACHE=false TF_CPP_MIN_LOG_LEVEL=3 python proofs/v022/feature_push/f3_camuw_pbl_oracle_check.py",
+  "holder": "holder=v0220-release-gate-rerun pid=310837 since=2026-06-27T09:53:35Z token=gpuwrf-lock-310837-27979-1782554015689263597",
+  "action": "Canceled only this agent's waiting wrapper after the holder stayed active; did not kill or bypass the holder.",
+  "cpu_substitute_artifact": "proofs/v022/feature_push/f3_camuw_pbl_oracle.json",
+  "cpu_substitute_gate": "PASS"
+}

@@ -1,0 +1,2473 @@
+{
+  "arm": "rk_step_r3",
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "execute_seconds": 5.223455501021817,
+  "fixture": {
+    "acoustic_substeps": 4,
+    "dt_s": 54.0,
+    "entry": "operational_mode._rk_scan_step",
+    "lead_seconds": 3618.0,
+    "run_physics": false,
+    "step_index": 67
+  },
+  "generated_at": "2026-09-17T23:58:07+0100",
+  "harness_sha256": "53fd897fae7c92ef4cc13817aaaddf8ecb017fd38a6558b00c216d8e6169c0dc",
+  "input_leaves": {
+    "[<flat index 0>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c130ceace22b5ea2e1fc837cf18be932fa570a066300778a06b7935cb5283c77",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 10>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "e9a094b3634e12c399fa6e8a787301d461dca6b35cd4e529ae60aff7f4ef0145",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "9f8bafbfe87cf3ea21e875465b8e51b99263baa10083860de0c12e57992b81a6",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "3d7a459ee8afabea72f16da0be4a4bd0018b8d90e37c7f821caddc2d0013a4a6",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 15>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 16>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 17>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4254cb8d819294487c66f18a07345c4f04054fc9c8bb9ba3e93bfae05865dc2b",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 18>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 19>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "03499972056014b33713b9b3a1ea2008336a9a5aa8ee8ca2a33bbfd9f41f6007",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 20>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "a71403261f1f3a793f858bab0af39a4055c91cf16fd794b17431143ee3391669",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 21>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "362eba06c68369f5f162e63571722ba6c72953484154d338ce6834dd91100cd1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 22>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "29db3e1905fd868ed4c360f5ab24e79a474837b6dcfa407cbe76b805f9465e18",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 23>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "9f5c06cacdf970035a54d8c65218f94277bc42b187289e68fb773879fc255fe2",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 24>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 25>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 26>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "944ccfd3ed551206d919eb5b22bf01eff2f17538e9a0da6ea5a661f4c2cc2f9f",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 27>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "29db3e1905fd868ed4c360f5ab24e79a474837b6dcfa407cbe76b805f9465e18",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 28>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1f6dc719b4ed887a68db48f88c00cbd70217061801f9687546013bc105b0f9ce",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 29>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "6f199cca47a680326f72160bbc58119e030ebfcc45490a7bece94c6ba7da6f03",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 2>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "ae4951a000ea2bc120f312cf27e72dfb10b4d7bd3f2c47f5f4387e6caa593d28",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 30>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "12ab5599d45d865988262f2489a3984658e29e2a33c507df5fd379c92360d842",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 31>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "efab90353a4ad3fd49058e95992edd9563938521de7485df164e6f76933e692f",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 32>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1c133f54bb6d7c7c6385ccb8b56d1c3f6f9f1283471e4554b2529a75c0a66622",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 33>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4391921adc28bd483ebe7fc7d238018da9126c43c85549a95619ce2268a9fa11",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 34>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "584d7fde5d590df9e61632429daac5b4219b9fc743146f4d5a478a2668c04ed7",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 35>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 36>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 37>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 38>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "57e4faba51942c8bbb89b9e0db29ad2733f7b47e26a2f7fd0a50235287e74cad",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 39>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "fdcb5fa2a33612da793b68ef109c5e1cfc62c759e2653afb25f2bb910545d7b7",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "87fe182ade6767e0aee56fe763d34a758e4ab493df9ce960fc9e5b11dfee3a40",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 40>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "5c16a82dc676b6370880bfe5f5d5351350e6c24af606e6912341db86dd7909f0",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 41>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "6867cce5881c24171bef423a2b56963825bb4001ae99be1d99a3c3da4a460ffe",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 42>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "9384f3eb8bc343e0273b6b4ce086b4a9d976d88adc8d8378e38d562f09b0ae56",
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 43>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "623249a51b2eeee8d83338cd98e3857e01142cc0d1561ffe272442e10c504286",
+      "shape": [
+        28,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 44>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "449fe8350d57cd917005a56df1e9b18b57b356fce44a1feac21b7f9869ea9b2c",
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 45>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "121bf6b6f8ec50aeeade29392de91d679ac54a66b878c95fe556d88b81580bbe",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 46>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "fd0aa4ecc029eb2bff8d054ea3e40255edac7eeaed3596c1cd3de835afc0be9d",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 47>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b002d294d0a616bc8c9325193096e0892f87a66a4d47893cbfb3e33fb6cfbcf6",
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 48>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ce4aeaf14041a8ff1b41915a7c20a95f452cf4df2257aa16864d2a7cee614322",
+      "shape": [
+        28,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 49>]": {
+      "dtype": "int32",
+      "finite": true,
+      "sha256": "066c740eb4cc1403c65e6cd80854aba90328891e476656026c6e18a7bf78deab",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "de8d9c4ca659c06369561dfb6ee4bf374df934d082aab926bbf920f2dccc36f7",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 50>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 51>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 52>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 53>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 54>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 55>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 56>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "01745a329d548f59f21954f9800a11c12823ff6481cc3ea89cdb60717ebb43f5",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 64>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 65>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 66>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 67>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 68>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 69>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 6>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "4d8d507efb8c7cca9d7c295d956104e39a290d30ecf12e0978f2056a48266335",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 70>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "0312bc993f3410c9f218d8af198b53d045288468c0ae8f62892680457625613b",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 8>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "c25e3eaa3f0369bc4dc63cfa9192540a94e14fb2eb7fbd6c29bd057f270864ca",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 9>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "0fa48722cb97b35ecd98cf50ec4c0440dd77d51956521e5be7f665a2a4e22487",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 10>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "87fe182ade6767e0aee56fe763d34a758e4ab493df9ce960fc9e5b11dfee3a40",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "0312bc993f3410c9f218d8af198b53d045288468c0ae8f62892680457625613b",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec75965c9919a88ff648c5ce7e552e88f2d1e5534daa233dd0ce88560b28d1b2",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "3a690223d48212cb61111c822026ffb6670a53d8be54a6be0fd61bf85a307805",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f21f64150f2f3db20bc5e02c3860b5b42eebd22408e4beb3ba823267d8334bfa",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b6af5238582dbee7185ab99dae8cec7a8e09724637b8860cc75c029bef9b659b",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7a2129f029e59227ec46827d409209d825898b84160c2f586f9c3615dfc38aa1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1aed1c775dedb71deef134b42bd96c0273e65bd445ed640ec4facb4cb1b2015a",
+      "shape": []
+    },
+    "[<flat index 24>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c396e761a3d6509b7a11c59d60470c434ad4980357f774b11e83c1865d7aabef",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "3a690223d48212cb61111c822026ffb6670a53d8be54a6be0fd61bf85a307805",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "0fa48722cb97b35ecd98cf50ec4c0440dd77d51956521e5be7f665a2a4e22487",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 6>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "3a690223d48212cb61111c822026ffb6670a53d8be54a6be0fd61bf85a307805",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c130ceace22b5ea2e1fc837cf18be932fa570a066300778a06b7935cb5283c77",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 8>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "03499972056014b33713b9b3a1ea2008336a9a5aa8ee8ca2a33bbfd9f41f6007",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 9>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "ae4951a000ea2bc120f312cf27e72dfb10b4d7bd3f2c47f5f4387e6caa593d28",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    }
+  },
+  "jax_version": "0.10.0",
+  "jaxpr_converts": {
+    "by_nesting": {
+      "scan": 78,
+      "top": 1351
+    },
+    "by_source_site": {
+      "None:None:None": {
+        "count": 853,
+        "elements": 2268847,
+        "nestings": {
+          "top": 853
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "45x70x120": 6,
+          "scalar": 847
+        },
+        "transitions": {
+          "float32->float64": 6,
+          "float64->float32": 18,
+          "float64->float64": 271,
+          "int64->float32": 30,
+          "int64->float64": 384,
+          "int64->int32": 144
+        }
+      },
+      "gpuwrf/contracts/precision.py:0:force_fp64_island.<locals>._up": {
+        "count": 24,
+        "elements": 7963200,
+        "nestings": {
+          "scan": 6,
+          "top": 18
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 21,
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 24
+        }
+      },
+      "gpuwrf/contracts/state.py:0:State.replace": {
+        "count": 15,
+        "elements": 4510800,
+        "nestings": {
+          "top": 15
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_carry_from_finished_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 6,
+          "45x70x120": 6,
+          "70x120": 3
+        },
+        "transitions": {
+          "float64->float32": 15
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:_full_ring_target_from_leaf": {
+        "count": 180,
+        "elements": 513000,
+        "nestings": {
+          "top": 180
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_core_state_from_prep",
+          "line": 0
+        },
+        "shapes": {
+          "1x120": 30,
+          "1x70": 30,
+          "44x120": 30,
+          "44x70": 30,
+          "45x120": 30,
+          "45x70": 30
+        },
+        "transitions": {
+          "float64->float32": 180
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:interpolate_boundary_leaf": {
+        "count": 72,
+        "elements": 72,
+        "nestings": {
+          "top": 72
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_specified_bdy_relax",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 72
+        },
+        "transitions": {
+          "float64->int32": 36,
+          "int32->float64": 36
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:spec_bdyupdate_ph_inloop": {
+        "count": 6,
+        "elements": 2268000,
+        "nestings": {
+          "scan": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_scan.<locals>.body",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/coupling/boundary_apply.py:0:specified_relax_dry_tendencies": {
+        "count": 6,
+        "elements": 1159200,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_specified_bdy_relax",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 3,
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/dynamics/acoustic_wrf.py:0:diagnose_pressure_al_alt": {
+        "count": 18,
+        "elements": 2343603,
+        "nestings": {
+          "top": 18
+        },
+        "operational_mode_frame": null,
+        "shapes": {
+          "1x70x120": 3,
+          "45x70x120": 6,
+          "70x120": 6,
+          "scalar": 3
+        },
+        "transitions": {
+          "float32->float64": 15,
+          "float64->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_mass_scalar": {
+        "count": 9,
+        "elements": 3326400,
+        "nestings": {
+          "top": 9
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 9
+        },
+        "transitions": {
+          "float32->float64": 9
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_u_face": {
+        "count": 3,
+        "elements": 1118040,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x121": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_v_face": {
+        "count": 3,
+        "elements": 1124640,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x71x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/advection.py:0:advect_w_face": {
+        "count": 9,
+        "elements": 3402000,
+        "nestings": {
+          "top": 9
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 9
+        },
+        "transitions": {
+          "float32->float64": 9
+        }
+      },
+      "gpuwrf/dynamics/core/acoustic.py:0:_optional_or": {
+        "count": 27,
+        "elements": 27,
+        "nestings": {
+          "scan": 27
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_scan.<locals>.body",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 27
+        },
+        "transitions": {
+          "float64->float64": 27
+        }
+      },
+      "gpuwrf/dynamics/core/acoustic.py:0:_specified_w_zero_grad_work": {
+        "count": 15,
+        "elements": 1135128,
+        "nestings": {
+          "scan": 15
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_scan.<locals>.body",
+          "line": 0
+        },
+        "shapes": {
+          "120": 6,
+          "45x70x120": 3,
+          "68": 6
+        },
+        "transitions": {
+          "float32->float64": 3,
+          "int64->int32": 12
+        }
+      },
+      "gpuwrf/dynamics/core/acoustic.py:0:_specified_w_zero_grad_work.<locals>._work_for_physical": {
+        "count": 12,
+        "elements": 50760,
+        "nestings": {
+          "scan": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_scan.<locals>.body",
+          "line": 0
+        },
+        "shapes": {
+          "45x120": 6,
+          "45x68": 6
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/core/acoustic.py:0:acoustic_substep_core.<locals>._pin_ring": {
+        "count": 12,
+        "elements": 1140,
+        "nestings": {
+          "scan": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_scan.<locals>.body",
+          "line": 0
+        },
+        "shapes": {
+          "120": 6,
+          "70": 6
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:_absolute_diagnostics": {
+        "count": 12,
+        "elements": 2268003,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 3,
+          "45x70x120": 3,
+          "70x120": 3,
+          "scalar": 3
+        },
+        "transitions": {
+          "float32->float64": 9,
+          "float64->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:large_step_coriolis": {
+        "count": 3,
+        "elements": 1134000,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:large_step_horizontal_curvature": {
+        "count": 3,
+        "elements": 1134000,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:large_step_horizontal_pgf": {
+        "count": 3,
+        "elements": 25200,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 3
+        }
+      },
+      "gpuwrf/dynamics/core/rk_addtend_dry.py:0:large_step_horizontal_pgf.<locals>._dpn_faces": {
+        "count": 18,
+        "elements": 18,
+        "nestings": {
+          "top": 18
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 18
+        },
+        "transitions": {
+          "float64->float64": 18
+        }
+      },
+      "gpuwrf/dynamics/core/small_step_finish.py:0:small_step_finish_wrf": {
+        "count": 6,
+        "elements": 2268000,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_carry_from_finished_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/dynamics/core/small_step_prep.py:0:small_step_prep_wrf": {
+        "count": 12,
+        "elements": 2268000,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_rk_scan_step.<locals>.advance_stage",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 6,
+          "70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/explicit_diffusion.py:0:_vertical_face_average_pair": {
+        "count": 12,
+        "elements": 12,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_diffopt1_dry_forward_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "scalar": 12
+        },
+        "transitions": {
+          "float64->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/explicit_diffusion.py:0:wrf_nested_horizontal_diffusion_momentum_tendency": {
+        "count": 6,
+        "elements": 2136128,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_diffopt1_dry_forward_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "43x68x118": 4,
+          "45x70x120": 2
+        },
+        "transitions": {
+          "float32->float64": 5,
+          "float64->float32": 1
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:_mass_factor_or_one": {
+        "count": 3,
+        "elements": 25200,
+        "nestings": {
+          "top": 3
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 3
+        },
+        "transitions": {
+          "float64->float32": 3
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:_vertical_flux_div_w": {
+        "count": 12,
+        "elements": 2116800,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "41x70x120": 6,
+          "70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:_vertical_flux_div_w.<locals>._flux3_at": {
+        "count": 12,
+        "elements": 100800,
+        "nestings": {
+          "top": 12
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "70x120": 12
+        },
+        "transitions": {
+          "float32->float64": 12
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:advect_w_flux": {
+        "count": 6,
+        "elements": 50400,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "1x70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/dynamics/flux_advection.py:0:specified_flux_faces": {
+        "count": 24,
+        "elements": 9072000,
+        "nestings": {
+          "top": 24
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 24
+        },
+        "transitions": {
+          "float32->float64": 24
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_acoustic_core_state_from_prep": {
+        "count": 15,
+        "elements": 3402000,
+        "nestings": {
+          "top": 15
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_acoustic_core_state_from_prep",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 6,
+          "45x70x120": 3,
+          "70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 15
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_augment_large_step_tendencies": {
+        "count": 6,
+        "elements": 2268000,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_augment_large_step_tendencies",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 6
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_carry_from_finished_stage": {
+        "count": 6,
+        "elements": 1159200,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_carry_from_finished_stage",
+          "line": 0
+        },
+        "shapes": {
+          "45x70x120": 3,
+          "70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      },
+      "gpuwrf/runtime/operational_mode.py:0:_refresh_grid_p_from_finished": {
+        "count": 6,
+        "elements": 2242800,
+        "nestings": {
+          "top": 6
+        },
+        "operational_mode_frame": {
+          "file": "gpuwrf/runtime/operational_mode.py",
+          "function": "_refresh_grid_p_from_finished",
+          "line": 0
+        },
+        "shapes": {
+          "44x70x120": 3,
+          "45x70x120": 3
+        },
+        "transitions": {
+          "float32->float64": 6
+        }
+      }
+    },
+    "by_transition": {
+      "float32->float64": 236,
+      "float64->float32": 217,
+      "float64->float64": 334,
+      "float64->int32": 36,
+      "int32->float64": 36,
+      "int64->float32": 30,
+      "int64->float64": 384,
+      "int64->int32": 156
+    },
+    "convert_elements": 62855418,
+    "convert_sites": 1429,
+    "entry": "operational_mode._rk_scan_step",
+    "float_to_float_elements": 62853660,
+    "float_to_float_sites": 787,
+    "trace_seconds": 0.0023343460052274168
+  },
+  "label": "pre_rk_step_r3_mixed",
+  "output_leaves": {
+    "[<flat index 0>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "80baf5e645370149156d9b049afa1b580872d71931a886c4a00f308130280bda",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 10>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "371777950b4acfdf9125adbc954c878febcfb9e0477d63042edc24a403c55c9a",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f66769fd99cf5cfe24311c6eb8c8e0b7f8bb21ef0cb41c7a15eb57870b1bdc45",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "10a739c8f5d96b921aaf5bd7253e904529ce5a76a5429da115727da87f55d894",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 15>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 16>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 17>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4254cb8d819294487c66f18a07345c4f04054fc9c8bb9ba3e93bfae05865dc2b",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 18>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 19>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "907a2d297ae93c1e747084c5006a6aac1c74a65b555782f64174222ef0ffb45b",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 20>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "a71403261f1f3a793f858bab0af39a4055c91cf16fd794b17431143ee3391669",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 21>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "362eba06c68369f5f162e63571722ba6c72953484154d338ce6834dd91100cd1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 22>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "29db3e1905fd868ed4c360f5ab24e79a474837b6dcfa407cbe76b805f9465e18",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 23>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "9f5c06cacdf970035a54d8c65218f94277bc42b187289e68fb773879fc255fe2",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 24>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 25>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 26>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "944ccfd3ed551206d919eb5b22bf01eff2f17538e9a0da6ea5a661f4c2cc2f9f",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 27>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "29db3e1905fd868ed4c360f5ab24e79a474837b6dcfa407cbe76b805f9465e18",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 28>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1f6dc719b4ed887a68db48f88c00cbd70217061801f9687546013bc105b0f9ce",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 29>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "6f199cca47a680326f72160bbc58119e030ebfcc45490a7bece94c6ba7da6f03",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 2>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "8b3ed78a5405521da93a710d25db81f0852d7aa7cc3ba751e61260d86949c699",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 30>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "12ab5599d45d865988262f2489a3984658e29e2a33c507df5fd379c92360d842",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 31>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "efab90353a4ad3fd49058e95992edd9563938521de7485df164e6f76933e692f",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 32>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1c133f54bb6d7c7c6385ccb8b56d1c3f6f9f1283471e4554b2529a75c0a66622",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 33>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4391921adc28bd483ebe7fc7d238018da9126c43c85549a95619ce2268a9fa11",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 34>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "584d7fde5d590df9e61632429daac5b4219b9fc743146f4d5a478a2668c04ed7",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 35>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 36>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 37>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 38>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "57e4faba51942c8bbb89b9e0db29ad2733f7b47e26a2f7fd0a50235287e74cad",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 39>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "fdcb5fa2a33612da793b68ef109c5e1cfc62c759e2653afb25f2bb910545d7b7",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b273a4fd780bab3a73dbc02764ee9dc4b6a70267c74d99ca5d077f30340fa268",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 40>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "5c16a82dc676b6370880bfe5f5d5351350e6c24af606e6912341db86dd7909f0",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 41>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "6867cce5881c24171bef423a2b56963825bb4001ae99be1d99a3c3da4a460ffe",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 42>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "9384f3eb8bc343e0273b6b4ce086b4a9d976d88adc8d8378e38d562f09b0ae56",
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 43>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "623249a51b2eeee8d83338cd98e3857e01142cc0d1561ffe272442e10c504286",
+      "shape": [
+        28,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 44>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "449fe8350d57cd917005a56df1e9b18b57b356fce44a1feac21b7f9869ea9b2c",
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 45>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "121bf6b6f8ec50aeeade29392de91d679ac54a66b878c95fe556d88b81580bbe",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 46>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "fd0aa4ecc029eb2bff8d054ea3e40255edac7eeaed3596c1cd3de835afc0be9d",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 47>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b002d294d0a616bc8c9325193096e0892f87a66a4d47893cbfb3e33fb6cfbcf6",
+      "shape": [
+        28,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 48>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ce4aeaf14041a8ff1b41915a7c20a95f452cf4df2257aa16864d2a7cee614322",
+      "shape": [
+        28,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 49>]": {
+      "dtype": "int32",
+      "finite": true,
+      "sha256": "066c740eb4cc1403c65e6cd80854aba90328891e476656026c6e18a7bf78deab",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "59bbd7a9a2b5f56b2bfeb3ef9c42757ed53688241cfb9c5e08e0d0de60f12995",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 50>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 51>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 52>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d603ff7c620bd463dd9308de84e6513cec587d750dd3669b418491c7709a76e8",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 53>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 54>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 55>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 56>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "028fddbef9ad1caa6ddb5c339067c47908b70028f0cd544c81bdfc89f6b7401d",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "96b9a1d9900948b161cd9a6d837b493295078ddedd06c64850ca244d0c586b40",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 64>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 65>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 66>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 67>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 68>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 69>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 6>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "44da0f59440d79b02554652217bed118fb23b6e3a84c479e6bfba21e29608db4",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 70>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec141f3f38c390038beb2c4dc71aa5c82d75a1ed52d1eaee5a06a9d078d1850f",
+      "shape": [
+        28,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1a3dd5a94a5cfe6ff94b2d8a2029d51066a54f2c3aecf7ed7cd2f8c127a4ccc5",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 8>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "839a1af234f686304fa4cced93204accc6cb9b4cc55ff658cd285a0710759372",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 9>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "596193278d23b3fb863b902cd871c1c026de403b5c1443ac89f8d59829d004e3",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 10>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "4f1337681043e7d17eec16fdc45d7d4790c8ae771b4806d47fbc10df17f6c792",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 11>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "bb05d894107068d4f0801c75885e1cd5fa34117c17392c06057515343673a621",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 12>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "a75f7d9b94dca92037be22dee738ff10533e363d46ab7813b6f63e57b9e69c76",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 13>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "ec6c1ff5ab819b84b3ee0ab2f52ca5292ddd9dc6a66c764c416fb63edf7bd7f2",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 14>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "2dac3308bf3f4cdb752c435ae1627e655034ae8b96ace099f2dfd088b632ab42",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f59e37cd2e05dc283d1cad0ff86cd8d96a4484532c73dbca086efb6c8d09bf52",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 0>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f21f64150f2f3db20bc5e02c3860b5b42eebd22408e4beb3ba823267d8334bfa",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 1>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "b6af5238582dbee7185ab99dae8cec7a8e09724637b8860cc75c029bef9b659b",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "7a2129f029e59227ec46827d409209d825898b84160c2f586f9c3615dfc38aa1",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 24>][<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "1aed1c775dedb71deef134b42bd96c0273e65bd445ed640ec4facb4cb1b2015a",
+      "shape": []
+    },
+    "[<flat index 24>][<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c396e761a3d6509b7a11c59d60470c434ad4980357f774b11e83c1865d7aabef",
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 2>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "c8e3c7bcbd30d6db505c559d26e95d388d04fbdca1d9eeda527bc01515ce1214",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 3>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f483e9bc6a73bb9c30e08a0163faf411358fb9f5b23ecf721235a4322cddfa70",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 4>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "f8c11dd8ebd81b518a9b71e57a72244b42882002f13d7d6d7ce5984fca22728f",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 5>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "cb646ef67e4772b4c3748ef5682c8e0f33050f110d4f9f46b31083e8f1786e4c",
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 6>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "d65a1d69e00a18c30cc875081f4f8a0637ca33fb87e75603c01bcbab51056697",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 7>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "653ab73ef81de5d275023f2ea9f4b8694b3204269efbcba84f21e81132e3d78f",
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 8>]": {
+      "dtype": "float64",
+      "finite": true,
+      "sha256": "0113fbf3b0380bb2375f7ecd334412d8121a167fd72ad83c490912fde1089a3c",
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 9>]": {
+      "dtype": "float32",
+      "finite": true,
+      "sha256": "b1ea735a268a98ec7eefb67c98b30e8c6e507aafcd22d3715763e0f35a95d51c",
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    }
+  },
+  "platforms": [
+    "cpu"
+  ],
+  "program": {
+    "argument_bytes": 472710128,
+    "compile_seconds": 59.79371522399015,
+    "converts_in_loop": {
+      "computations_reachable_from_loop": 546,
+      "computations_total": 3537,
+      "in_loop": 0,
+      "in_loop_by_in_out_dtype": {},
+      "in_loop_by_transition": {},
+      "in_loop_converted_elements": 0,
+      "loop_bodies_detected": 8,
+      "nesting": {
+        "inner_loop_roots": 4,
+        "inner_loops": {
+          "by_in_out_dtype": {},
+          "by_transition": {},
+          "converts": 0,
+          "elements": 0
+        },
+        "outer_body_only": {
+          "by_in_out_dtype": {},
+          "by_transition": {},
+          "converts": 0,
+          "elements": 0
+        },
+        "outer_loop_roots": [
+          "region_542.718",
+          "region_544.721",
+          "wide.wide.wide.region_1472.1759.clone.clone.sunk.clone.clone",
+          "wide.wide.wide.region_966.1250.clone.clone.sunk.clone.clone"
+        ]
+      },
+      "outside_loop": 1306,
+      "total": 1306
+    },
+    "converts_optimized": {
+      "by_transition": {
+        "f32->f64": 1,
+        "f64->f32": 2
+      },
+      "f32_to_f64": 1,
+      "f64_to_f32": 2,
+      "other": 0,
+      "total": 3
+    },
+    "instructions": {
+      "by_op": {
+        "abs": 138,
+        "add": 15026,
+        "and": 1374,
+        "bitcast": 10660,
+        "broadcast": 21077,
+        "clamp": 141,
+        "compare": 5176,
+        "concatenate": 503,
+        "constant": 12912,
+        "convert": 1306,
+        "copy": 480,
+        "divide": 1310,
+        "dynamic-slice": 455,
+        "dynamic-update-slice": 1222,
+        "floor": 221,
+        "fusion": 3498,
+        "gather": 132,
+        "get-tuple-element": 1244,
+        "iota": 1078,
+        "is-finite": 282,
+        "log": 7,
+        "maximum": 1137,
+        "minimum": 871,
+        "multiply": 29862,
+        "negate": 723,
+        "or": 1002,
+        "pad": 554,
+        "parameter": 29525,
+        "power": 9,
+        "reduce": 10,
+        "reduce-window": 12,
+        "reverse": 11,
+        "select": 5112,
+        "sign": 891,
+        "sine": 3,
+        "slice": 23215,
+        "sqrt": 2,
+        "subtract": 16409,
+        "transpose": 131,
+        "tuple": 17,
+        "while": 8
+      },
+      "instructions": 187746
+    },
+    "label": "pre_rk_step_r3_mixed",
+    "lower_seconds": 7.862067096983083,
+    "optimized_hlo_bytes": 24996500,
+    "optimized_hlo_sha256": "540ee4db38149e37ca4d834dd6df63c691be045ab53eefd7a65c5e5a6650fab7",
+    "output_bytes": 485705952,
+    "stablehlo_bytes": 7808928,
+    "stablehlo_convert_ops": 612,
+    "stablehlo_sha256": "47a1de3a763f7ab99783fab8ffea4f8d9103c7ce4b449c8f4a550128111f6da0",
+    "static_launch_proxy": 3498,
+    "temporary_bytes": 1330066824
+  },
+  "schema": "wrf_gpu2.v025.econ.loop_conversion_census.v1",
+  "seconds_total": 91.82457141100895,
+  "source_tree": "<DATA_ROOT>/wrf_gpu2/v025/econ/pre_src_4bae18f19/src",
+  "source_tree_python_sha256": "14222f38b91b3b5c46d9f97f4118248237fc8e03ae54f539f81fe9905c1a6541"
+}

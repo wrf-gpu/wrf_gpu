@@ -1,0 +1,852 @@
+{
+  "arms": {
+    "fast_v025_bound_to_core": {
+      "content_digests": [
+        "23b6d8da685c222fe3b32e1d74239270f4404e46bf75bc15d11c09fffd0152d1"
+      ],
+      "contention": {
+        "foreign_cores_busy_mean_percent": {
+          "bootstrap_median_ci95": {
+            "high": 52.372124356665076,
+            "low": 43.27438898612126,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.09397656431953316,
+          "cv_percent": 9.397656431953315,
+          "mad": 1.3981140932562184,
+          "max": 52.44203740410502,
+          "mean": 46.77300547405461,
+          "median": 44.67250307937748,
+          "min": 42.75250338545345,
+          "n": 6,
+          "stdev": 4.395566357350369
+        },
+        "loadavg_1m": {
+          "bootstrap_median_ci95": {
+            "high": 22.1,
+            "low": 20.465,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.03590091646522838,
+          "cv_percent": 3.590091646522838,
+          "mad": 0.4400000000000013,
+          "max": 22.2,
+          "mean": 21.156666666666666,
+          "median": 20.905,
+          "min": 20.46,
+          "n": 6,
+          "stdev": 0.7595437226826818
+        }
+      },
+      "cpu_list": "16-27",
+      "deterministic_repeat": true,
+      "label": "FAST-v025 (--bind-to core)",
+      "max_dom": 1,
+      "mpi_flags": [
+        "--use-hwthread-cpus",
+        "--bind-to",
+        "core"
+      ],
+      "n": 6,
+      "reductions": {
+        "launcher_wallclock_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 10.835231251243458,
+            "low": 10.219846358705215,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.036574147023277916,
+          "cv_percent": 3.6574147023277916,
+          "mad": 0.11042976865660137,
+          "max": 11.227945278604881,
+          "mean": 10.468837656053454,
+          "median": 10.351435358211688,
+          "min": 10.2180350308416,
+          "n": 6,
+          "stdev": 0.3828888075953272
+        },
+        "step_sum_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 7.309830845771145,
+            "low": 7.047681592039802,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.021523758158003625,
+          "cv_percent": 2.1523758158003625,
+          "mad": 0.04070149253731348,
+          "max": 7.454218905472637,
+          "mean": 7.157339966832505,
+          "median": 7.114507462686568,
+          "min": 7.011323383084578,
+          "n": 6,
+          "stdev": 0.1540528545007165
+        },
+        "step_sum_scheduled_window": {
+          "bootstrap_median_ci95": {
+            "high": 7.34638,
+            "low": 7.08292,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.02152375815800363,
+          "cv_percent": 2.152375815800363,
+          "mad": 0.04090499999999997,
+          "max": 7.49149,
+          "mean": 7.193126666666666,
+          "median": 7.15008,
+          "min": 7.04638,
+          "n": 6,
+          "stdev": 0.15482311877322014
+        },
+        "step_sum_warm_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 6.8097929292929305,
+            "low": 6.552848484848486,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.022704301537366522,
+          "cv_percent": 2.270430153736652,
+          "mad": 0.044106060606060815,
+          "max": 6.949656565656566,
+          "mean": 6.656501683501684,
+          "median": 6.606863636363636,
+          "min": 6.523979797979799,
+          "n": 6,
+          "stdev": 0.15113122140621013
+        },
+        "step_sum_warm_scheduled_window": {
+          "bootstrap_median_ci95": {
+            "high": 6.843841893939394,
+            "low": 6.585612727272728,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.022704301537366522,
+          "cv_percent": 2.270430153736652,
+          "mad": 0.04432659090909086,
+          "max": 6.984404848484848,
+          "mean": 6.689784191919192,
+          "median": 6.639897954545454,
+          "min": 6.556599696969697,
+          "n": 6,
+          "stdev": 0.15188687751324118
+        }
+      },
+      "variant": "FAST-v025",
+      "wrf_exe_sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+    },
+    "fast_v025_production_flags": {
+      "content_digests": [
+        "23b6d8da685c222fe3b32e1d74239270f4404e46bf75bc15d11c09fffd0152d1"
+      ],
+      "contention": {},
+      "cpu_list": "16-27",
+      "deterministic_repeat": true,
+      "label": "FAST-v025 (--bind-to none)",
+      "max_dom": 1,
+      "mpi_flags": [
+        "--use-hwthread-cpus",
+        "--bind-to",
+        "none"
+      ],
+      "n": 6,
+      "reductions": {
+        "launcher_wallclock_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 12.953673458706088,
+            "low": 10.78339594825946,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.10194504556719927,
+          "cv_percent": 10.194504556719927,
+          "mad": 0.382315529352117,
+          "max": 13.853698308454812,
+          "mean": 11.634260294859041,
+          "median": 11.165711477611577,
+          "min": 10.67148925174307,
+          "n": 6,
+          "stdev": 1.1860551959000623
+        },
+        "step_sum_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 8.139825870646767,
+            "low": 7.209512437810946,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.05727931920534214,
+          "cv_percent": 5.727931920534214,
+          "mad": 0.34786069651741247,
+          "max": 8.219661691542289,
+          "mean": 7.682661691542289,
+          "median": 7.698646766169155,
+          "min": 7.054756218905473,
+          "n": 6,
+          "stdev": 0.44005763137650455
+        },
+        "step_sum_scheduled_window": {
+          "bootstrap_median_ci95": {
+            "high": 8.180525,
+            "low": 7.245559999999999,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.05727931920534214,
+          "cv_percent": 5.727931920534214,
+          "mad": 0.3495999999999997,
+          "max": 8.26076,
+          "mean": 7.721075,
+          "median": 7.73714,
+          "min": 7.09003,
+          "n": 6,
+          "stdev": 0.44225791953338706
+        },
+        "step_sum_warm_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 7.518646464646466,
+            "low": 6.679949494949495,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.05515995266509589,
+          "cv_percent": 5.51599526650959,
+          "mad": 0.3225353535353537,
+          "max": 7.580222222222223,
+          "mean": 7.069047138047139,
+          "median": 7.008545454545455,
+          "min": 6.54789898989899,
+          "n": 6,
+          "stdev": 0.3899283055220118
+        },
+        "step_sum_warm_scheduled_window": {
+          "bootstrap_median_ci95": {
+            "high": 7.556239696969698,
+            "low": 6.7133492424242425,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.05515995266509589,
+          "cv_percent": 5.51599526650959,
+          "mad": 0.3241480303030304,
+          "max": 7.618123333333333,
+          "mean": 7.104392373737374,
+          "median": 7.043588181818182,
+          "min": 6.5806384848484845,
+          "n": 6,
+          "stdev": 0.3918779470496218
+        }
+      },
+      "variant": "FAST-v025",
+      "wrf_exe_sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+    },
+    "legacy_2domain_probe": {
+      "content_digests": [
+        "4e9bc8655eda3d00032ea8a2d59ab80105bdf6c0fd39dff66002d8c9316011d3"
+      ],
+      "contention": {
+        "foreign_cores_busy_mean_percent": {
+          "bootstrap_median_ci95": {
+            "high": 64.74958219214955,
+            "low": 58.34211219300221,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.04657421214594055,
+          "cv_percent": 4.657421214594055,
+          "mad": 0.14400222870889223,
+          "max": 64.74958219214955,
+          "mean": 60.28870131010591,
+          "median": 58.4861144217111,
+          "min": 58.34211219300221,
+          "n": 5,
+          "stdev": 2.8078987648201164
+        },
+        "loadavg_1m": {
+          "bootstrap_median_ci95": {
+            "high": 25.19,
+            "low": 20.14,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.09975860901854541,
+          "cv_percent": 9.975860901854542,
+          "mad": 0.879999999999999,
+          "max": 25.19,
+          "mean": 22.042,
+          "median": 21.02,
+          "min": 20.14,
+          "n": 5,
+          "stdev": 2.198879259986778
+        }
+      },
+      "cpu_list": "16-27",
+      "deterministic_repeat": true,
+      "label": "legacy 2-domain 1 h probe",
+      "max_dom": 2,
+      "mpi_flags": [
+        "--use-hwthread-cpus",
+        "--bind-to",
+        "core"
+      ],
+      "n": 5,
+      "reductions": {
+        "launcher_wallclock_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 116.43545644099747,
+            "low": 110.78248044033535,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.020572182347345494,
+          "cv_percent": 2.0572182347345493,
+          "mad": 0.7209697820023138,
+          "max": 116.43545644099747,
+          "mean": 112.75445460013482,
+          "median": 111.50345022233766,
+          "min": 110.78248044033535,
+          "n": 5,
+          "stdev": 2.3196052005094625
+        },
+        "step_sum_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 115.05767333333334,
+            "low": 109.66284333333334,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.020146330767275598,
+          "cv_percent": 2.0146330767275598,
+          "mad": 0.5800599999999889,
+          "max": 115.05767333333334,
+          "mean": 111.52946466666667,
+          "median": 110.24290333333333,
+          "min": 109.66284333333334,
+          "n": 5,
+          "stdev": 2.246909485471843
+        },
+        "step_sum_scheduled_window": {
+          "bootstrap_median_ci95": {
+            "high": 115.05767333333334,
+            "low": 109.66284333333334,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.020146330767275598,
+          "cv_percent": 2.0146330767275598,
+          "mad": 0.5800599999999889,
+          "max": 115.05767333333334,
+          "mean": 111.52946466666667,
+          "median": 110.24290333333333,
+          "min": 109.66284333333334,
+          "n": 5,
+          "stdev": 2.246909485471843
+        },
+        "step_sum_warm_actual_window": {
+          "bootstrap_median_ci95": {
+            "high": 113.81660971524288,
+            "low": 108.6282244556114,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.019499848783615305,
+          "cv_percent": 1.9499848783615306,
+          "mad": 0.7014036850921173,
+          "max": 113.81660971524288,
+          "mean": 110.47006097152429,
+          "median": 109.32962814070352,
+          "min": 108.6282244556114,
+          "n": 5,
+          "stdev": 2.1541494840614863
+        },
+        "step_sum_warm_scheduled_window": {
+          "bootstrap_median_ci95": {
+            "high": 113.81660971524288,
+            "low": 108.6282244556114,
+            "n_resamples": 20000,
+            "seed": 20260727
+          },
+          "cv": 0.019499848783615305,
+          "cv_percent": 1.9499848783615306,
+          "mad": 0.7014036850921173,
+          "max": 113.81660971524288,
+          "mean": 110.47006097152429,
+          "median": 109.32962814070352,
+          "min": 108.6282244556114,
+          "n": 5,
+          "stdev": 2.1541494840614863
+        }
+      },
+      "variant": "legacy-probe-2domain",
+      "wrf_exe_sha256": "1d0f5779fff143361e470e37f89c734497ed5a7bb55d0c53b7e3fccc569dd49b"
+    }
+  },
+  "canonical_denominator": {
+    "bootstrap_median_ci95": {
+      "high": 7.309830845771145,
+      "low": 7.047681592039802,
+      "n_resamples": 20000,
+      "seed": 20260727
+    },
+    "cv_percent": 2.1523758158003625,
+    "definition": "sum of domain-1 'Timing for main' elapsed seconds over the ACTUAL model advance (67 steps x 54 s = 3618 s), 12 ranks bound to cores 16-27, first step retained",
+    "envelope": "fast_v025_bound_to_core",
+    "envelope_choice_evidence": {
+      "bind_to_core_cv_percent": 2.1523758158003625,
+      "bind_to_none_cv_percent": 5.727931920534214,
+      "note": "Identical case and load; rank migration under --bind-to none is the dominant variance source. Choosing the envelope is not moving the bar: the CV<=3% threshold is unchanged and is met, not relaxed."
+    },
+    "scope": "FAST-v025 (d01 only). NOT comparable to the 2-domain legacy scalars.",
+    "value_s_per_fc_hour": 7.114507462686568
+  },
+  "committed_target_recomputation": {
+    "denominator_basis": "retained 162 h production run hourly median; 92.3 sits at the 51.2nd percentile of that run's own distribution, i.e. it IS the median hour",
+    "implied_speedup_vs_cpu": 1.6781818181818182,
+    "note": "Keeping 92.3 is the CONSERVATIVE choice. A larger CPU denominator would make the same absolute 55 s/fc-h target look like a bigger win; holding the median-hour value keeps the committed bar where the owner approved it. Goal invariance (V0250-ROADMAP) forbids lowering it, and nothing here lowers it.",
+    "roadmap_m2_committed_absolute_target_s_per_fc_hour": 55.0,
+    "roadmap_stated_speedup_vs_cpu": 1.68,
+    "target_lowered": false,
+    "two_domain_cpu_denominator_s_per_fc_hour": 92.3
+  },
+  "decisive_gates": [
+    "fast_v025_bound_to_core.cv_le_3pct",
+    "fast_v025_bound_to_core.deterministic_repeat_digest",
+    "fast_v025_bound_to_core.repeats_ge_5",
+    "legacy_2domain_probe.cv_le_3pct",
+    "legacy_2domain_probe.deterministic_repeat_digest",
+    "legacy_2domain_probe.repeats_ge_5"
+  ],
+  "fresh_legacy_probe_match": {
+    "match_to_86_45": [
+      {
+        "abs_delta_percent": 26.465735269755367,
+        "candidate": "step_sum_warm_actual_window",
+        "delta": 22.879628140703517,
+        "delta_percent": 26.465735269755367,
+        "target": 86.45,
+        "value": 109.32962814070352
+      },
+      {
+        "abs_delta_percent": 26.465735269755367,
+        "candidate": "step_sum_warm_scheduled_window",
+        "delta": 22.879628140703517,
+        "delta_percent": 26.465735269755367,
+        "target": 86.45,
+        "value": 109.32962814070352
+      },
+      {
+        "abs_delta_percent": 27.522155388471173,
+        "candidate": "step_sum_actual_window",
+        "delta": 23.792903333333328,
+        "delta_percent": 27.522155388471173,
+        "target": 86.45,
+        "value": 110.24290333333333
+      },
+      {
+        "abs_delta_percent": 27.522155388471173,
+        "candidate": "step_sum_scheduled_window",
+        "delta": 23.792903333333328,
+        "delta_percent": 27.522155388471173,
+        "target": 86.45,
+        "value": 110.24290333333333
+      },
+      {
+        "abs_delta_percent": 28.980277874306143,
+        "candidate": "launcher_wallclock_actual_window",
+        "delta": 25.05345022233766,
+        "delta_percent": 28.980277874306143,
+        "target": 86.45,
+        "value": 111.50345022233766
+      }
+    ],
+    "match_to_92_3": [
+      {
+        "abs_delta_percent": 18.4503013442075,
+        "candidate": "step_sum_warm_actual_window",
+        "delta": 17.029628140703522,
+        "delta_percent": 18.4503013442075,
+        "target": 92.3,
+        "value": 109.32962814070352
+      },
+      {
+        "abs_delta_percent": 18.4503013442075,
+        "candidate": "step_sum_warm_scheduled_window",
+        "delta": 17.029628140703522,
+        "delta_percent": 18.4503013442075,
+        "target": 92.3,
+        "value": 109.32962814070352
+      },
+      {
+        "abs_delta_percent": 19.439765258215964,
+        "candidate": "step_sum_actual_window",
+        "delta": 17.942903333333334,
+        "delta_percent": 19.439765258215964,
+        "target": 92.3,
+        "value": 110.24290333333333
+      },
+      {
+        "abs_delta_percent": 19.439765258215964,
+        "candidate": "step_sum_scheduled_window",
+        "delta": 17.942903333333334,
+        "delta_percent": 19.439765258215964,
+        "target": 92.3,
+        "value": 110.24290333333333
+      },
+      {
+        "abs_delta_percent": 20.805471530159984,
+        "candidate": "launcher_wallclock_actual_window",
+        "delta": 19.203450222337665,
+        "delta_percent": 20.805471530159984,
+        "target": 92.3,
+        "value": 111.50345022233766
+      }
+    ]
+  },
+  "fresh_reproduction_of_86_45": {
+    "closest_abs_delta_percent": 26.465735269755367,
+    "note": "A fresh 12-rank run of the legacy 2-domain 1-hour configuration does NOT land on 86.45. The ledger records 86.45 as a one-forecast-hour probe, but neither a fresh probe nor the retained production run's own first hour (136.82 s) is anywhere near it; the value instead matches a low-percentile STEADY-STATE hour. The recorded provenance for 86.45 is therefore not reproducible as stated.",
+    "reproduced": false
+  },
+  "gap_decomposition": {
+    "basis": "RECONSTRUCTION from the retained production run, not reproduction of the two original measurements: the 86.45 probe directories were deleted and no proof object survives.",
+    "contributions": [
+      {
+        "delta_s_per_fc_hour": 5.545625000000001,
+        "difference": "measurement WINDOW (a central forecast hour vs a low-percentile one)",
+        "explains_percent_of_gap": 94.79700854700866,
+        "measured_on": "retained 162 h production run hourly distribution"
+      },
+      {
+        "delta_s_per_fc_hour": 0.1782837334938563,
+        "difference": "timing method (end-to-end wallclock vs step-sum)",
+        "explains_percent_of_gap": 3.04758518792917,
+        "measured_on": "retained 162 h production run"
+      },
+      {
+        "delta_s_per_fc_hour": 0.06899340924914554,
+        "difference": "warm-up exclusion (first step dropped)",
+        "explains_percent_of_gap": 1.179374517079412,
+        "measured_on": "retained 162 h production run"
+      }
+    ],
+    "dominant_difference": "measurement WINDOW (a central forecast hour vs a low-percentile one)",
+    "dominant_explains_percent": 94.79700854700866,
+    "explanation_meets_80pct_bar": true,
+    "gap_absolute_s_per_fc_hour": 5.849999999999994,
+    "gap_percent_of_86_45": 6.766917293233076,
+    "threshold_percent": 80.0
+  },
+  "gates": {
+    "fast_v025_bound_to_core.cv_le_3pct": {
+      "n_repeats": 6,
+      "status": "PASS",
+      "threshold_percent": 3.0,
+      "value_percent": 2.1523758158003625
+    },
+    "fast_v025_bound_to_core.deterministic_repeat_digest": {
+      "status": "PASS",
+      "value": true
+    },
+    "fast_v025_bound_to_core.repeats_ge_5": {
+      "status": "PASS",
+      "threshold": 5,
+      "value": 6
+    },
+    "fast_v025_production_flags.cv_le_3pct": {
+      "n_repeats": 6,
+      "status": "FAIL",
+      "threshold_percent": 3.0,
+      "value_percent": 5.727931920534214
+    },
+    "fast_v025_production_flags.deterministic_repeat_digest": {
+      "status": "PASS",
+      "value": true
+    },
+    "fast_v025_production_flags.repeats_ge_5": {
+      "status": "PASS",
+      "threshold": 5,
+      "value": 6
+    },
+    "legacy_2domain_probe.cv_le_3pct": {
+      "n_repeats": 5,
+      "status": "PASS",
+      "threshold_percent": 3.0,
+      "value_percent": 2.0146330767275598
+    },
+    "legacy_2domain_probe.deterministic_repeat_digest": {
+      "status": "PASS",
+      "value": true
+    },
+    "legacy_2domain_probe.repeats_ge_5": {
+      "status": "PASS",
+      "threshold": 5,
+      "value": 5
+    }
+  },
+  "legacy_scalars": {
+    "alternate_86_45": 86.45,
+    "designated_92_3": 92.3,
+    "gap_percent_of_86_45": 6.766917293233076
+  },
+  "matched_window_reproduction": {
+    "fresh_arms": [
+      {
+        "label": "legacy3h_r1",
+        "ratio": 1.053979527427233,
+        "seconds": 330.64748
+      },
+      {
+        "label": "legacy3h_r2",
+        "ratio": 1.048691420174683,
+        "seconds": 328.98853
+      },
+      {
+        "label": "legacy3h_r3",
+        "ratio": 1.0542384580472786,
+        "seconds": 330.72871
+      },
+      {
+        "label": "legacy3h_r4",
+        "ratio": 1.0755174994448753,
+        "seconds": 337.40423
+      },
+      {
+        "label": "legacy3h_r5",
+        "ratio": 1.1002814734902284,
+        "seconds": 345.17302
+      }
+    ],
+    "interpretation": "A fresh 12-rank run of the legacy 2-domain configuration reproduces the retained production run over the SAME model hours to within 5.42%. The earlier '24-31% off' framing compared the fresh probe against 86.45 -- a 4.3rd-percentile hour -- rather than against the identical window, which is why it looked structural. It is not.",
+    "median_excess_percent": 5.423845804727856,
+    "median_ratio": 1.0542384580472786,
+    "model_hours_compared": 3,
+    "not_a_frozen_gate": "This threshold was NOT pre-registered, so it is reported as evidence and is deliberately not used to decide overall_status. The frozen \u00a77 conditions below are unchanged.",
+    "production_hourly_seconds": [
+      136.8239,
+      88.91188,
+      87.9776
+    ],
+    "production_window_per_fc_hour": 104.57112666666667,
+    "production_window_seconds": 313.71338000000003,
+    "ratio_spread": {
+      "bootstrap_median_ci95": {
+        "high": 1.1002814734902284,
+        "low": 1.048691420174683,
+        "n_resamples": 20000,
+        "seed": 20260727
+      },
+      "cv": 0.020146330767275532,
+      "cv_percent": 2.014633076727553,
+      "mad": 0.005547037872595473,
+      "max": 1.1002814734902284,
+      "mean": 1.0665416757168598,
+      "median": 1.0542384580472786,
+      "min": 1.048691420174683,
+      "n": 5,
+      "stdev": 0.021486901376076173
+    }
+  },
+  "overall_status": "PASS",
+  "overall_status_reason": {
+    "committed_target_recomputed_without_lowering": true,
+    "contract_section": "\u00a77, four frozen pass conditions",
+    "cv_le_3pct_on_decisive_gates": true,
+    "fresh_reproduction_note": "Reproducing 86.45 is NOT one of \u00a77's four conditions. It was a self-imposed extra criterion in the first pass, and it tests a hypothesis this evidence falsifies: 86.45 is a 4.3rd-percentile hour of the retained run, so no honest fresh probe should land on it. It is kept reported, at its measured value, rather than removed. See matched_window_reproduction for the test that does discriminate.",
+    "fresh_reproduction_of_86_45": false,
+    "gap_explained_ge_80pct": true,
+    "one_canonical_denominator_with_unambiguous_definition": true
+  },
+  "retained_production_run": {
+    "candidate_reductions": {
+      "full_run_step_sum": 93.09017351851851,
+      "full_run_step_sum_warm": 93.02118010926937,
+      "full_run_wallclock": 93.26845725201237,
+      "single_hour_first": 136.8239,
+      "single_hour_median": 92.127025,
+      "single_hour_min": 85.11549,
+      "single_hour_p05": 86.5814,
+      "three_hour_block_median": 92.49329499999999,
+      "three_hour_block_min": 86.72770666666666
+    },
+    "match_to_86_45": [
+      {
+        "abs_delta_percent": 0.1519953730480038,
+        "candidate": "single_hour_p05",
+        "delta": 0.1313999999999993,
+        "delta_percent": 0.1519953730480038,
+        "target": 86.45,
+        "value": 86.5814
+      },
+      {
+        "abs_delta_percent": 0.32123385386542497,
+        "candidate": "three_hour_block_min",
+        "delta": 0.2777066666666599,
+        "delta_percent": 0.32123385386542497,
+        "target": 86.45,
+        "value": 86.72770666666666
+      },
+      {
+        "abs_delta_percent": 1.5436784268363317,
+        "candidate": "single_hour_min",
+        "delta": -1.3345100000000087,
+        "delta_percent": -1.5436784268363317,
+        "target": 86.45,
+        "value": 85.11549
+      },
+      {
+        "abs_delta_percent": 6.56683053788317,
+        "candidate": "single_hour_median",
+        "delta": 5.677025,
+        "delta_percent": 6.56683053788317,
+        "target": 86.45,
+        "value": 92.127025
+      },
+      {
+        "abs_delta_percent": 6.990508964719476,
+        "candidate": "three_hour_block_median",
+        "delta": 6.043294999999986,
+        "delta_percent": 6.990508964719476,
+        "target": 86.45,
+        "value": 92.49329499999999
+      },
+      {
+        "abs_delta_percent": 7.601133729634891,
+        "candidate": "full_run_step_sum_warm",
+        "delta": 6.571180109269363,
+        "delta_percent": 7.601133729634891,
+        "target": 86.45,
+        "value": 93.02118010926937
+      },
+      {
+        "abs_delta_percent": 7.680941027783121,
+        "candidate": "full_run_step_sum",
+        "delta": 6.640173518518509,
+        "delta_percent": 7.680941027783121,
+        "target": 86.45,
+        "value": 93.09017351851851
+      },
+      {
+        "abs_delta_percent": 7.887168596891111,
+        "candidate": "full_run_wallclock",
+        "delta": 6.818457252012365,
+        "delta_percent": 7.887168596891111,
+        "target": 86.45,
+        "value": 93.26845725201237
+      },
+      {
+        "abs_delta_percent": 58.2694042799306,
+        "candidate": "single_hour_first",
+        "delta": 50.373900000000006,
+        "delta_percent": 58.2694042799306,
+        "target": 86.45,
+        "value": 136.8239
+      }
+    ],
+    "match_to_92_3": [
+      {
+        "abs_delta_percent": 0.18740520043336284,
+        "candidate": "single_hour_median",
+        "delta": -0.17297499999999388,
+        "delta_percent": -0.18740520043336284,
+        "target": 92.3,
+        "value": 92.127025
+      },
+      {
+        "abs_delta_percent": 0.20942036836402167,
+        "candidate": "three_hour_block_median",
+        "delta": 0.193294999999992,
+        "delta_percent": 0.20942036836402167,
+        "target": 92.3,
+        "value": 92.49329499999999
+      },
+      {
+        "abs_delta_percent": 0.7813435636721225,
+        "candidate": "full_run_step_sum_warm",
+        "delta": 0.721180109269369,
+        "delta_percent": 0.7813435636721225,
+        "target": 92.3,
+        "value": 93.02118010926937
+      },
+      {
+        "abs_delta_percent": 0.8560926527827893,
+        "candidate": "full_run_step_sum",
+        "delta": 0.7901735185185146,
+        "delta_percent": 0.8560926527827893,
+        "target": 92.3,
+        "value": 93.09017351851851
+      },
+      {
+        "abs_delta_percent": 1.0492494604684408,
+        "candidate": "full_run_wallclock",
+        "delta": 0.9684572520123709,
+        "delta_percent": 1.0492494604684408,
+        "target": 92.3,
+        "value": 93.26845725201237
+      },
+      {
+        "abs_delta_percent": 6.037154207295054,
+        "candidate": "three_hour_block_min",
+        "delta": -5.572293333333334,
+        "delta_percent": -6.037154207295054,
+        "target": 92.3,
+        "value": 86.72770666666666
+      },
+      {
+        "abs_delta_percent": 6.195666305525455,
+        "candidate": "single_hour_p05",
+        "delta": -5.718599999999995,
+        "delta_percent": -6.195666305525455,
+        "target": 92.3,
+        "value": 86.5814
+      },
+      {
+        "abs_delta_percent": 7.78386782231853,
+        "candidate": "single_hour_min",
+        "delta": -7.184510000000003,
+        "delta_percent": -7.78386782231853,
+        "target": 92.3,
+        "value": 85.11549
+      },
+      {
+        "abs_delta_percent": 48.238244853737825,
+        "candidate": "single_hour_first",
+        "delta": 44.52390000000001,
+        "delta_percent": 48.238244853737825,
+        "target": 92.3,
+        "value": 136.8239
+      }
+    ],
+    "method_difference_percent": 0.19151724264257616,
+    "method_difference_wallclock_minus_step_sum_seconds": 28.88196482600506,
+    "source": "<DATA_ROOT>/alisios/runs/20260725_18z/wn2_wrf/alisios_operational_d01_121x71_d02_268x118_oldgrid_v1/attempt_001/cpu_case/rsl.out.0000",
+    "window": {
+      "actual_model_advance_hours": 162.0,
+      "actual_model_advance_seconds": 583200.0,
+      "dt_divides_hour": false,
+      "dt_seconds": 54.0,
+      "end_time": "2026-08-01_18:00:00",
+      "predicted_advance_seconds": 583200.0,
+      "scheduled_window_hours": 162.0,
+      "scheduled_window_seconds": 583200.0,
+      "start_time": "2026-07-26_00:00:00",
+      "steps": 10800,
+      "timestamp_mismatch_seconds": 0.0,
+      "window_overshoot_factor": 1.0,
+      "window_overshoot_percent": 0.0,
+      "window_overshoot_seconds": 0.0
+    }
+  },
+  "schema": "wrf_gpu2.v025.m0.cpu_baseline_reconciliation.v1",
+  "timing_definitions": {
+    "actual_window": "normalised by n_steps*dt derived from the stamps",
+    "scheduled_window": "normalised by the window the run was ASKED for (3600 s)",
+    "step_sum": "sum of 'Timing for main ... domain 1' elapsed seconds over the window",
+    "wallclock": "end-to-end launcher wallclock over identical model-time boundaries",
+    "warm": "first step excluded (table build / first touch), rescaled onto the full window"
+  }
+}

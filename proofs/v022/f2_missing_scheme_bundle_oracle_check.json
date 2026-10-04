@@ -1,0 +1,239 @@
+{
+  "full_bundle_landed": false,
+  "gate_pass": true,
+  "generated_utc": "2026-06-27T15:14:18.413259+00:00",
+  "proof": "v022-f2-missing-scheme-bundle-oracle-gate",
+  "registry": "<USER_HOME>/src/wrf_pristine/WRF/Registry/Registry.EM_COMMON",
+  "schemes": {
+    "morrison_aero": {
+      "accepted_by_reference_validator": false,
+      "catalog_alternative": "Use one of mp_physics=0/1/2/3/4/6/8/10/13/14/16/24/26/28/97 (8=Thompson is the operational default; 13=SBU-YLin; 24=WSM7 / 26=WDM7 add a precipitating hail class; 28=aerosol-aware Thompson; 97=Goddard GCE single-moment 3-ice).",
+      "catalog_reason": "ORACLE-ABSENT / fail-closed: Morrison aerosol microphysics is recognized from phys/module_mp_morr_two_moment_aero.F selected by mp_physics=40 (the aerosol-coupled extension of Morrison module_mp_morr_two_moment.F), but no local single-column WRF oracle artifact is present in this worktree. The JAX endpoint is NOT YET IMPLEMENTED: it extends Morrison with aerosol activation/effectiveness, CCN diagnostics, and the CESM_RCP4.5 aerosol-data dependency beyond the current operational mp=10 interface.",
+      "catalog_status": "recognized_fail_closed",
+      "code": 40,
+      "coverage": "fail_closed_oracle_absent",
+      "gate_ok": true,
+      "id": "morrison_aero",
+      "key": "mp_physics",
+      "label": "Aerosol-coupled Morrison microphysics",
+      "oracle": {
+        "all_finite": false,
+        "file_count": 0,
+        "files": [],
+        "kind": "single_column_savepoints",
+        "nontrivial": false,
+        "numeric_count": 0,
+        "present": false,
+        "raincv_values": [],
+        "schemas": []
+      },
+      "registry_packages": {
+        "morr_tm_aero": {
+          "line": "package   morr_tm_aero    mp_physics==40               -             moist:qv,qc,qr,qi,qs,qg;scalar:qnc,qni,qns,qnr,qng;state:rqrcuten,rqscuten,rqicuten,EFCG,EFIG,EFSG,WACT,CCN1_GS,CCN2_GS,CCN3_GS,CCN4_GS,CCN5_GS,CCN6_GS,CCN7_GS,re_cloud,re_ice,re_snow,mskf_refl_10cm",
+          "line_number": 3047,
+          "present": true
+        }
+      },
+      "scan_unwired_reason": "Morrison aerosol (mp=40, phys/module_mp_morr_two_moment_aero.F) is recognized but no local single-column WRF oracle artifact is present in this worktree; fail-closed until the aerosol/CCN state path and external aerosol-data dependency are wired",
+      "scan_wired": false,
+      "wrf_sources": [
+        {
+          "bytes": 164266,
+          "exists": true,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_morr_two_moment.F",
+          "relative_path": "phys/module_mp_morr_two_moment.F",
+          "sha256": "2dcd1c70127ea57c8a2437baf2b8a2388b1722e4d4ead9411834946439b8c273"
+        },
+        {
+          "bytes": 216635,
+          "exists": true,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_morr_two_moment_aero.F",
+          "relative_path": "phys/module_mp_morr_two_moment_aero.F",
+          "sha256": "d512aa16ad862b04c7278540a207a56aa10955e052bd9b9bc870e9a4f0812180"
+        }
+      ]
+    },
+    "new_tiedtke": {
+      "accepted_by_reference_validator": true,
+      "catalog_alternative": "Use cu_physics=6 (modified Tiedtke with active flux-form moisture advection for RQVFTEN) or 1/3.",
+      "catalog_reason": "New Tiedtke has module-specific v0.13 single-column fp64 pristine-WRF savepoints from phys/module_cu_ntiedtke.F, but no faithful traceable JAX kernel or CU scan adapter is wired yet, so it is fail-closed in the operational GPU scan.",
+      "catalog_status": "reference_only",
+      "code": 16,
+      "coverage": "reference_only_oracle_present",
+      "gate_ok": true,
+      "id": "new_tiedtke",
+      "key": "cu_physics",
+      "label": "New-Tiedtke cumulus",
+      "oracle": {
+        "all_finite": true,
+        "file_count": 5,
+        "files": [
+          "proofs/v013/savepoints/cumulus/ntiedtke_case_1.json",
+          "proofs/v013/savepoints/cumulus/ntiedtke_case_2.json",
+          "proofs/v013/savepoints/cumulus/ntiedtke_case_3.json",
+          "proofs/v013/savepoints/cumulus/ntiedtke_case_4.json",
+          "proofs/v013/savepoints/cumulus/ntiedtke_case_5.json"
+        ],
+        "kind": "single_column_savepoints",
+        "nontrivial": true,
+        "numeric_count": 4070,
+        "present": true,
+        "raincv_values": [
+          0.09363633990287781,
+          0.0,
+          0.1664068460464478,
+          0.0,
+          0.0
+        ],
+        "schemas": [
+          "wrf-v013-cumulus-column-savepoint-v1"
+        ]
+      },
+      "registry_packages": {
+        "ntiedtkescheme": {
+          "line": "package   ntiedtkescheme cu_physics==16              -             -",
+          "line_number": 3211,
+          "present": true
+        }
+      },
+      "scan_unwired_reason": "New Tiedtke has a module-specific single-column fp64 pristine-WRF oracle staged (proofs/v013/savepoints/cumulus/ntiedtke_case_*.json from phys/module_cu_ntiedtke.F), but no faithful traceable JAX kernel or CU scan adapter is wired yet",
+      "scan_wired": false,
+      "wrf_sources": [
+        {
+          "bytes": 18968,
+          "exists": true,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_cu_ntiedtke.F",
+          "relative_path": "phys/module_cu_ntiedtke.F",
+          "sha256": "447406d1550d4095e4e6f129ee74a7ec0ccdebd21383ba0cc6fe3d282ac58d2f"
+        }
+      ]
+    },
+    "nssl_2mom": {
+      "accepted_by_reference_validator": false,
+      "catalog_alternative": "Use one of mp_physics=0/1/2/3/4/6/8/10/13/14/16/24/26/28/97 (8=Thompson is the operational default; 13=SBU-YLin; 24=WSM7 / 26=WDM7 add a precipitating hail class; 28=aerosol-aware Thompson; 97=Goddard GCE single-moment 3-ice).",
+      "catalog_reason": "ORACLE-ABSENT / fail-closed: NSSL 2-moment 4-ice with predicted CCN is recognized from phys/module_mp_nssl_2mom.F and the WRF Registry nssl_2mom package (mp_physics=18), but no local single-column WRF oracle artifact is present in this worktree. The JAX endpoint is NOT YET IMPLEMENTED: it needs NSSL number/hail-volume state (qh/qnh/qvolg/qvolh), qnn CCN controls, and a source-specific oracle before scan wiring.",
+      "catalog_status": "recognized_fail_closed",
+      "code": 18,
+      "coverage": "fail_closed_oracle_absent",
+      "gate_ok": true,
+      "id": "nssl_2mom",
+      "key": "mp_physics",
+      "label": "NSSL 2-moment microphysics",
+      "oracle": {
+        "all_finite": false,
+        "file_count": 0,
+        "files": [],
+        "kind": "single_column_savepoints",
+        "nontrivial": false,
+        "numeric_count": 0,
+        "present": false,
+        "raincv_values": [],
+        "schemas": []
+      },
+      "registry_packages": {
+        "nssl2mconc": {
+          "line": "package   nssl2mconc      nssl_2moment_on==1           -             scalar:qndrop,qnr,qni,qns,qng;state:re_cloud,re_ice,re_snow",
+          "line_number": 3055,
+          "present": true
+        },
+        "nssl_2mom": {
+          "line": "package   nssl_2mom       mp_physics==18               -             moist:qv,qc,qr,qi,qs,qg",
+          "line_number": 3037,
+          "present": true
+        },
+        "nssl_ccn_opt": {
+          "line": "package   nssl_ccn_opt    nssl_ccn_on==1               -             scalar:qnn",
+          "line_number": 3060,
+          "present": true
+        },
+        "nssl_graupelvol": {
+          "line": "package   nssl_graupelvol nssl_density_on==1           -             scalar:qvolg",
+          "line_number": 3061,
+          "present": true
+        },
+        "nssl_hail": {
+          "line": "package   nssl_hail       nssl_hail_on==1              -             moist:qh;scalar:qnh",
+          "line_number": 3058,
+          "present": true
+        },
+        "nssl_hailvol": {
+          "line": "package   nssl_hailvol    nssl_density_on==2           -             scalar:qvolg,qvolh",
+          "line_number": 3062,
+          "present": true
+        }
+      },
+      "scan_unwired_reason": "NSSL 2-moment (mp=18, phys/module_mp_nssl_2mom.F) is recognized but no local single-column WRF oracle artifact is present in this worktree; fail-closed until the oracle and qh/qnh/qvolg/qvolh/qnn state path are wired",
+      "scan_wired": false,
+      "wrf_sources": [
+        {
+          "bytes": 909007,
+          "exists": true,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F",
+          "relative_path": "phys/module_mp_nssl_2mom.F",
+          "sha256": "29f42e76fbeca027a3ffb2ac805b148aaa1425c7f99ed1d8f19a90ebc1d015f8"
+        }
+      ]
+    },
+    "ruc_lsm": {
+      "accepted_by_reference_validator": true,
+      "catalog_alternative": "Use sf_surface_physics=4 (Noah-MP, GPU-operational), 2 (Noah classic), 1 (slab) or 7 (Pleim-Xiu).",
+      "catalog_reason": "RUC multi-layer soil/snow LSM has a v0.17 single-column fp64 pristine-WRF oracle staged (LSMRUC->SOILVEGIN->SFCTMP, proofs/v017/oracle/ruclsm), but its faithful traceable JAX column kernel (the ~7.5k-LOC soil/snow solver) is not yet ported, so it is fail-closed in the operational GPU scan.",
+      "catalog_status": "reference_only",
+      "code": 3,
+      "coverage": "reference_only_oracle_present",
+      "gate_ok": true,
+      "id": "ruc_lsm",
+      "key": "sf_surface_physics",
+      "label": "RUC land-surface model",
+      "oracle": {
+        "all_green": true,
+        "field_count": 28,
+        "kind": "single_column_metrics",
+        "metrics_exists": true,
+        "metrics_path": "proofs/v018/ruc_lsm_parity_metrics.json",
+        "metrics_sha256": "b38bff2882c11e21f923db0b12e9c70d8a26077610e61ab763d4e20f0df90227",
+        "n_columns": 5,
+        "n_steps": 6,
+        "present": true,
+        "raw_savepoint_path": "proofs/v017/savepoints/ruclsm/fp64/ruclsm_fp64.json",
+        "raw_savepoint_present": false,
+        "schema": "wrf-v018-ruc-lsm-parity-v1",
+        "worst_abs": {
+          "abs_tol": 0.0005,
+          "field": "lh",
+          "max_abs": 0.0002897803869483795,
+          "max_rel": 7.612217979025318e-07,
+          "pass": true,
+          "rel_tol": 0.0001
+        },
+        "worst_rel": {
+          "abs_tol": 3e-05,
+          "field": "sh2o",
+          "max_abs": 2.2930633854056914e-05,
+          "max_rel": 5.960929348270716e-05,
+          "pass": true,
+          "rel_tol": 0.0001
+        }
+      },
+      "registry_packages": {
+        "ruclsmscheme": {
+          "line": "package   ruclsmscheme   sf_surface_physics==3       -             state:smfr3d,keepfr3dflag,soilt1,rhosnf,snowfallac,precipfr,acrunoff",
+          "line_number": 3157,
+          "present": true
+        }
+      },
+      "scan_unwired_reason": "RUC multi-layer soil/snow LSM has a single-column fp64 pristine-WRF oracle staged (proofs/v017/oracle/ruclsm, LSMRUC->SOILVEGIN->SFCTMP); traceable JAX column kernel is a Tier-3 carry-over (~7.5k-LOC soil/snow solver)",
+      "scan_wired": false,
+      "wrf_sources": [
+        {
+          "bytes": 288509,
+          "exists": true,
+          "path": "<USER_HOME>/src/wrf_pristine/WRF/phys/module_sf_ruclsm.F",
+          "relative_path": "phys/module_sf_ruclsm.F",
+          "sha256": "3265f810d08dcbddfaf198371dc7f652e78e8d3a788f703a515c555a3bbb2a12"
+        }
+      ]
+    }
+  },
+  "wrf_root": "<USER_HOME>/src/wrf_pristine/WRF"
+}

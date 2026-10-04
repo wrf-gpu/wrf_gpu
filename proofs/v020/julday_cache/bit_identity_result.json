@@ -1,0 +1,203 @@
+{
+  "date": "2023-01-15T00:00:00+00:00",
+  "n_steps": 3,
+  "radt_steps": 2,
+  "fields": {
+    "[<flat index 0>]": {
+      "bit_identical": true
+    },
+    "[<flat index 1>]": {
+      "bit_identical": true
+    },
+    "[<flat index 2>]": {
+      "bit_identical": true
+    },
+    "[<flat index 3>]": {
+      "bit_identical": true
+    },
+    "[<flat index 4>]": {
+      "bit_identical": true
+    },
+    "[<flat index 5>]": {
+      "bit_identical": true
+    },
+    "[<flat index 6>]": {
+      "bit_identical": true
+    },
+    "[<flat index 7>]": {
+      "bit_identical": true
+    },
+    "[<flat index 8>]": {
+      "bit_identical": true
+    },
+    "[<flat index 9>]": {
+      "bit_identical": true
+    },
+    "[<flat index 10>]": {
+      "bit_identical": true
+    },
+    "[<flat index 11>]": {
+      "bit_identical": true
+    },
+    "[<flat index 12>]": {
+      "bit_identical": true
+    },
+    "[<flat index 13>]": {
+      "bit_identical": true
+    },
+    "[<flat index 14>]": {
+      "bit_identical": true
+    },
+    "[<flat index 15>]": {
+      "bit_identical": true
+    },
+    "[<flat index 16>]": {
+      "bit_identical": true
+    },
+    "[<flat index 17>]": {
+      "bit_identical": true
+    },
+    "[<flat index 18>]": {
+      "bit_identical": true
+    },
+    "[<flat index 19>]": {
+      "bit_identical": true
+    },
+    "[<flat index 20>]": {
+      "bit_identical": true
+    },
+    "[<flat index 21>]": {
+      "bit_identical": true
+    },
+    "[<flat index 22>]": {
+      "bit_identical": true
+    },
+    "[<flat index 23>]": {
+      "bit_identical": true
+    },
+    "[<flat index 24>]": {
+      "bit_identical": true
+    },
+    "[<flat index 25>]": {
+      "bit_identical": true
+    },
+    "[<flat index 26>]": {
+      "bit_identical": true
+    },
+    "[<flat index 27>]": {
+      "bit_identical": true
+    },
+    "[<flat index 28>]": {
+      "bit_identical": true
+    },
+    "[<flat index 29>]": {
+      "bit_identical": true
+    },
+    "[<flat index 30>]": {
+      "bit_identical": true
+    },
+    "[<flat index 31>]": {
+      "bit_identical": true
+    },
+    "[<flat index 32>]": {
+      "bit_identical": true
+    },
+    "[<flat index 33>]": {
+      "bit_identical": true
+    },
+    "[<flat index 34>]": {
+      "bit_identical": true
+    },
+    "[<flat index 35>]": {
+      "bit_identical": true
+    },
+    "[<flat index 36>]": {
+      "bit_identical": true
+    },
+    "[<flat index 37>]": {
+      "bit_identical": true
+    },
+    "[<flat index 38>]": {
+      "bit_identical": true
+    },
+    "[<flat index 39>]": {
+      "bit_identical": true
+    },
+    "[<flat index 40>]": {
+      "bit_identical": true
+    },
+    "[<flat index 41>]": {
+      "bit_identical": true
+    },
+    "[<flat index 42>]": {
+      "bit_identical": true
+    },
+    "[<flat index 43>]": {
+      "bit_identical": true
+    },
+    "[<flat index 44>]": {
+      "bit_identical": true
+    },
+    "[<flat index 45>]": {
+      "bit_identical": true
+    },
+    "[<flat index 46>]": {
+      "bit_identical": true
+    },
+    "[<flat index 47>]": {
+      "bit_identical": true
+    },
+    "[<flat index 48>]": {
+      "bit_identical": true
+    },
+    "[<flat index 49>]": {
+      "bit_identical": true
+    },
+    "[<flat index 50>]": {
+      "bit_identical": true
+    },
+    "[<flat index 51>]": {
+      "bit_identical": true
+    },
+    "[<flat index 52>]": {
+      "bit_identical": true
+    },
+    "[<flat index 53>]": {
+      "bit_identical": true
+    },
+    "[<flat index 54>]": {
+      "bit_identical": true
+    },
+    "[<flat index 55>]": {
+      "bit_identical": true
+    },
+    "[<flat index 56>]": {
+      "bit_identical": true
+    },
+    "[<flat index 57>]": {
+      "bit_identical": true
+    },
+    "[<flat index 58>]": {
+      "bit_identical": true
+    },
+    "[<flat index 59>]": {
+      "bit_identical": true
+    },
+    "[<flat index 60>]": {
+      "bit_identical": true
+    },
+    "[<flat index 61>]": {
+      "bit_identical": true
+    },
+    "[<flat index 62>]": {
+      "bit_identical": true
+    },
+    "[<flat index 63>]": {
+      "bit_identical": true
+    }
+  },
+  "all_bit_identical": true,
+  "n_identical": 64,
+  "n_fields": 64,
+  "verdict": "BIT_IDENTICAL"
+}

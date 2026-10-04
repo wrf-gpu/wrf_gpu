@@ -1,0 +1,94 @@
+{
+  "bar_not_moved": "§5.3: 'If this exact configuration fails an economy or diagnostic threshold, it is not adopted and the bar is not moved.' §1 requires a named contract amendment plus a prior roadmap entry to change a frozen threshold. This worker proposes no change.",
+  "case": "FAST-v025 (ALISIOS 20260725_18z d01, 121x71 namelist / 120x70 mass, 44 levels, dt=54 s, 1 forecast hour)",
+  "cold_definition": {
+    "as_implemented": "cold_env = GPUWRF_JAX_CACHE=1 with GPUWRF_JAX_CACHE_DIR pointed at a fresh empty dir",
+    "definition": "fresh process, production-normal cache mechanism ENABLED, unique EMPTY cache directory, no executable/artifact already available",
+    "source": "manager decision main b6e09683 (frozen)"
+  },
+  "compile_attribution_found_in_the_stage_1_log": {
+    "compile_seconds": 346.36,
+    "module": "jit__run_forecast_operational_jit",
+    "quoted": "The operation took 5m46.359945286s",
+    "share_of_the_600s_bar": 0.577,
+    "significance": "A SINGLE XLA module accounts for 346.4 s -- 58% of the 600 s bar -- inside a cold compile that exceeded 601.4 s. This is a real GPU compile attribution obtained WITHOUT a new window: it was already in the committed log and this worker overlooked it while reporting that the decisive attribution 'needs a coordinated window'. That claim was too strong: one large datum was already in hand.",
+    "source": "XLA slow_operation_alarm in raw/w1b_gpu_arm.json -> payload.detail",
+    "what_it_does_not_settle": "The remaining >255 s is unattributed, and the module-level number does not say WHICH operators inside jit__run_forecast_operational_jit dominate. XLA_FLAGS=--xla_dump_to would give that and is a GPU-window measurement."
+  },
+  "consequences": [
+    "§5.3 cold-compile gate: FAIL. FAST-v025 is NOT adopted on this evidence.",
+    "§8 F_measured / R_achievable / T_ceiling / E_baseline: still MISSING (no ncu capture).",
+    "§9 GPU kernel census: still MISSING (no nsys capture).",
+    "The A6 static census remains the pre-registered reference those captures must reconcile against."
+  ],
+  "contract_section": "§5.3 economy gate: cold JAX compile through executable readiness <= 600 s",
+  "generated_at_utc": "2026-07-27T17:58:12.003616+00:00",
+  "result": {
+    "consequences_correction": "The earlier consequence line 'nsys and ncu did not run' is replaced: ncu never ran; nsys STARTED unintentionally, touched the GPU, produced no usable capture, and needed a separate kill. §8 F_measured and §9 kernel census remain MISSING either way.",
+    "is_lower_bound": true,
+    "killed_at_seconds": 601.4,
+    "killed_by": "scripts/v025/run_gpu_arm.py internal early stop (COLD_COMPILE_MAX_SECONDS)",
+    "lower_bound_note": "the pass was killed AT the bar, so the true cold-compile time is >601.4 s and is not otherwise measured by this window",
+    "measured": "cold compile did not complete within 600 s",
+    "verdict": "FAIL"
+  },
+  "schema": "wrf_gpu2.v025.m0.fast_cold_compile_gate.v1",
+  "supporting_cpu_evidence": {
+    "compile_cost_is_radiation_dominated": {
+      "dycore_share": 0.222,
+      "physics_share": 0.778,
+      "radiation_share": 0.471,
+      "rrtmg_sw_share": 0.366,
+      "source": "proofs/v025/m0/hlo_dtype_transfer_census.json (A6, XLA:CPU, 48 operators at real shape)"
+    },
+    "project_history": {
+      ".agent/decisions/VERSION-SPRINT-LEDGER.md:4256": "startup/cold-compile 971s, legitimate one-time AOT cost",
+      ".agent/decisions/VERSION-SPRINT-LEDGER.md:516": "<=409 s cold per domain shape, <=22 s warm cache-hit",
+      ".agent/decisions/VERSION-SPRINT-LEDGER.md:851": "cold compile hit its honest 7200s",
+      "docs/PERFORMANCE.md:72": "first fused segment including one-time compile 7348 s/forecast-hour",
+      "reading": "a >600 s cold compile for this model is consistent with recorded history; whether the bar or the model should move is the manager's decision"
+    }
+  },
+  "why_this_supersedes_attempt_1": "Attempt 1 measured 655 s with GPUWRF_JAX_CACHE=0, i.e. caching DISABLED -- stricter than §5.3 asks and a configuration production never runs. That number was reported as an upper bound under a self-inflicted worst case and explicitly not as the case's cold compile. THIS measurement uses the manager's frozen definition, so the FAIL is now a clean gate result rather than a measurement artefact.",
+  "window": {
+    "abort_rationale": "the pre-registered early stop fired and both managers were told the window would abort if it did; continuing into nsys/ncu would have been the 'one more thing' behaviour §13 forbids",
+    "aborted_on_early_stop": true,
+    "attempt": 2,
+    "evidence_correction": {
+      "artifact_left_behind": {
+        "bytes": 8941065,
+        "parser_behaviour_on_it": "scripts/v025/parse_profiler.py raises ProfilerParseError('no cuda_gpu_kern_sum header row found') -- it fails closed on the real empty capture, which is the first validation of that parser against real nsys output rather than a fixture.",
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+        "scope_correction_note": "An earlier revision called this artifact 'unusable' without qualification. That was too broad and would have discarded compile evidence already paid for with a coordinated window -- and led to requesting a new window for data already on disk.",
+        "unusable_for": "§9 CUDA kernel census -- cuda_gpu_kern_sum is empty",
+        "usable": "SCOPED: unusable for the §9 CUDA kernel census; USABLE for NVTX compile analysis",
+        "usable_for": "XLA compile structure: nvtx_sum yields 107,412 ranges over 50 modules, including the front-end pass breakdown. Mined in proofs/v025/m0/nvtx_compile_evidence.json.",
+        "usable_verified_by_measurement": "nsys stats --report cuda_gpu_kern_sum reports 'does not contain CUDA kernel data' -- the run was killed during initialisation before any forecast kernel launched. Not an assumption."
+      },
+      "corrected_on": "manager evidence correction, before M0 handoff",
+      "gpu_returned_after": "verified: no M0 process, flock free, largest holder 765 MiB (plasmashell); both 0:2 and 0:3 received FERTIG 0:27",
+      "w1b_nsys_output_dir": "contains only .scratch/ and proofs/; no wrfout, no completed run",
+      "what_actually_happened": [
+        "Stage 1 returned rc=1 with status EARLY_STOP at 601.4 s.",
+        "The scratch shell driver logged that and launched Stage 2 nsys ANYWAY (no `exit`).",
+        "nsys started at ~18:55:31Z, attached, and the child reached forecast initialisation (`init mode = cpu_wrf_replay`, scratch dir created under raw/w1b_nsys/).",
+        "It was terminated by a SEPARATE kill, not by the driver.",
+        "GPU WAS touched by this unintended stage."
+      ],
+      "what_was_wrong": "This object and W1_ATTEMPT_REPORT.md said nsys and ncu 'did not run'. 'No usable nsys capture' is true; 'nsys did not run' is FALSE."
+    },
+    "gpu_returned_immediately": true,
+    "label": "v0250-m0-baseline-census",
+    "ncu_captured": false,
+    "nsys_captured": false,
+    "opened_utc": "2026-07-27T17:45:28Z",
+    "receipt_fingerprint": "460208e4cb84bcedf6e47a3d6a8e14ba84fdebe07b1c9052dbd4140939b51283",
+    "receipt_status": {
+      "correction": "Earlier framing said 'ABORTED RATHER THAN SPENT'. That is wrong and is replaced. The WINDOW stopped early; the single-use RECEIPT was consumed at authorisation and remains SPENT. Stopping early does not refund coordination -- that is the whole point of consuming at authorisation rather than on success.",
+      "fingerprint": "460208e4cb84bcedf6e47a3d6a8e14ba84fdebe07b1c9052dbd4140939b51283",
+      "spent": true
+    },
+    "stage_2_nsys_STARTED_unintentionally": true,
+    "window_minutes_used_of_35_50": 13
+  }
+}

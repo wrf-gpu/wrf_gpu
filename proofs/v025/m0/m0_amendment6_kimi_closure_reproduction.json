@@ -1,0 +1,115 @@
+{
+  "schema": "wrf_gpu2.v025.m0.amendment6_kimi_closure_reproduction.v1",
+  "date": "2026-07-29",
+  "reviewer": "Kimi K3 thinking-max (independent, device-denied)",
+  "base_commit": "d0b812055b24caa8108d9c1275783dc2262944f5",
+  "candidate_commit": "a73faa27aab6e5e40b5f62e5fe4eb2a34bab7d4d",
+  "review_head": "d836f9ec0aa7f3056e182b3a63a7eca1b41e527b",
+  "worktree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-amendment6-kimi-closure",
+  "cpu_test_environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "affinity": "16-27"
+  },
+  "device_policy": {
+    "device_touched": false,
+    "device_queries": [],
+    "device_imports": [],
+    "gpu_compiles": [],
+    "gpu_runs": [],
+    "coordination_requests": [],
+    "locks_acquired": [],
+    "receipts_read": [],
+    "receipts_spent": [],
+    "full_cpu_oracles": [],
+    "nvidia_smi": []
+  },
+  "reproduced_hashes": {
+    "compact_proof_sha256": "6e75f0528e57780d863d47efd5e4a4e9b951b2a7b09d26a082e9bad92cdc71d4",
+    "junit_sha256": "debaa87b3a808925f3a2caf48107fbc39004dc6faab5b9e6f27e14387e8e429d",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "source_hashes_verified": 20,
+    "source_hashes_mismatched": 0
+  },
+  "commands": [
+    {
+      "command": "git diff --name-only d0b81205..a73faa27",
+      "returncode": 0,
+      "result": "23 files; only scripts/v025/**, tests/v025/**, proofs/v025/m0/** and the GPT sprint report; zero src/gpuwrf/**, roadmap/ledger/skill/contract/receipt/lock edits"
+    },
+    {
+      "command": "git ls-tree HEAD src/gpuwrf; sha256sum of the 20 proof-listed sources and the JUnit XML",
+      "returncode": 0,
+      "result": "tree a6885ceded260df2f5777d7366d75a5d38947cb7; all 20 source hashes and JUnit hash debaa87b... byte-identical to the proof"
+    },
+    {
+      "command": "python scripts/v025/build_m0_held_session_repair_evidence.py --validate-only (ambient PATH)",
+      "returncode": 2,
+      "result": "BLOCKED: current source/input/config/cache/tool identity changed (nsys rediscovered as /usr/local/cuda-13.1 dispatcher instead of recorded /opt/nvidia/nsight-systems/2025.5.2 binary); fail-closed refusal, finding F1"
+    },
+    {
+      "command": "PATH=\"/usr/local/bin:$PATH\" python scripts/v025/build_m0_held_session_repair_evidence.py --validate-only",
+      "returncode": 0,
+      "result": "PASS; re-derived current plan, normalized commands, JUnit hash/counts/skips (859 tests, 857 passed, 2 intentional device-guard skips), all 9 attack categories REPRODUCED_AND_REJECTED, 20 source hashes, real preflight identities, frozen production tree; proof_sha256 6e75f052..."
+    },
+    {
+      "command": "python -m pytest tests/v025/test_m0_held_session_repair.py tests/v025/test_m0_three_window_executor.py tests/v025/test_m0_step1_evidence_boundary.py -q -p no:cacheprovider",
+      "returncode": 0,
+      "result": "97 passed in 4.16s; covers every test referenced by the proof attack map (B1, B2, M1-M7, non-attack controls)"
+    }
+  ],
+  "check_results": {
+    "1_validator_and_focused_tests": "PASS (rc 0) after one fail-closed environmental refusal (F1)",
+    "2_outer_owner_sequence": "PASS: identities -> fresh 12-rank CPU-WRF (420s cap, outside lock, before receipt spend) -> pre-lock revalidation -> one zero-wait wrapper label m0-core-w1-w2-w3-session -> release proof (exactly one ordered acquire/release, empty holder file, empty process group) -> fresh JAX-free W3 pair-post, W2 export/census, finalizer",
+    "3_callback_graph": "PASS: W1 cold decision -> W1 cached/correctness -> C1 -> W2 -> W3; any definitive failure suppresses all later stages",
+    "4_budget_and_rejections": "PASS: 1800+360+60+1400+600 = 4220 <= 4500, headroom 280, hard-pinned; deadline/label/holder/queue/orphan/stale/duplicate-spend rejections mutation-tested green",
+    "5_sqlite_preambles_manifest": "PASS: one fresh private SQLite (CREATE_ONCE + READ_EXISTING), exact verified preambles, stale-export marker refused, bidirectional terminal binding with immediate pre-publish re-hash",
+    "6_deferred_unreachable": "PASS: no Pallas/live-buffer import or dump flag reachable from M0-CORE; MISSING, waived=false, named M1/M2 owners; promotion/waiver refused",
+    "7_frozen_tree_and_missing_evidence": "PASS: src/gpuwrf a6885ced... unchanged; device_policy fields enforced empty; runtime/correctness/profiler/transfer/VRAM/scaling honestly MISSING"
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "session_fatal": false,
+      "owner": "M1 tooling",
+      "summary": "compact-proof validator rediscovers nsys via shutil.which; reproduction is PATH-order sensitive (BLOCKED under ambient PATH, PASS under candidate ordering). Fail-closed only; never a false-pass.",
+      "evidence": "command rows 3-4 above; /usr/local/cuda/bin/nsys (743-byte CUDA 13.1 dispatcher) vs recorded /opt/nvidia/nsight-systems/2025.5.2 nsys (76,353,640 bytes)",
+      "recommended_fix": "re-probe tools through the recorded invoked_path (as revalidate_session_preflight_inputs does) or record the probing PATH"
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "session_fatal": false,
+      "owner": "M1 tooling",
+      "summary": "proof JUnit re-derivation reads the recorded absolute path in the sibling GPT worktree; repo-local copy hashes identically (debaa87b...) but deletion of that worktree makes the proof non-revalidatable",
+      "recommended_fix": "prefer the repo-local proofs/v025/m0/m0_held_session_repair_tests.xml or record both paths"
+    },
+    {
+      "id": "F3",
+      "severity": "minor",
+      "session_fatal": false,
+      "owner": "M1 tooling",
+      "summary": "outer owner wrapper wait equals the inner 4500s global deadline with no sweep/publish slack; a deadline-boundary inner session can be killed before writing its own BLOCKED proof. Always fails closed; can only lose diagnostics.",
+      "recommended_fix": "owner wait = deadline + small fixed slack; the held-lock budget stays 4500s because the inner self-enforces it"
+    },
+    {
+      "id": "F4",
+      "severity": "informational",
+      "session_fatal": false,
+      "owner": "M1 tooling",
+      "summary": "cold_dump_flags in m0_window_parent.py is retained but uncalled; no M0-CORE reachability"
+    }
+  ],
+  "unresolved_device_risks": [
+    "W1/W2/W3 runtime, compile latency, correctness, profiler perturbation, transfer, GPU VRAM and host RSS remain MISSING until the separately coordinated device session",
+    "multi-size VRAM scaling remains MISSING_DEFERRED_RELEASE_GATE",
+    "the CPU boundary cannot bound device behavior; the first real session can still falsify every device gate"
+  ],
+  "verdict": "ACCEPT_AMENDMENT6_CPU_BOUNDARY"
+}

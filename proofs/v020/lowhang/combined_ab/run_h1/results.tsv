@@ -1,0 +1,4 @@
+arm	rc	s_per_fc_h	forecast_only_s	wall_s	peak_VRAM_MiB	finite	outputs_present	oom
+v019_baseline	0	1282.0	1282.0	1520	13809	True	True	no
+combined	0	1171.6	1171.6	1342	13774	True	True	no
+combined_K3	0	1448.1	1448.1	1810	13774	True	True	no

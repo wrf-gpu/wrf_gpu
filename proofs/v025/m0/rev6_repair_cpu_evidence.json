@@ -1,0 +1,211 @@
+{
+  "checks": {
+    "aggregate_transfer_false_pass_closed": true,
+    "dry_real_runner_path": true,
+    "frozen_rho_bar_enforced": true,
+    "h1_upper_bound_typed": true,
+    "live_existing_artifact_export_and_parser": true,
+    "outer_log_hashed": true,
+    "outer_rc_zero_preserved": true,
+    "production_source_unchanged": true,
+    "timestamped_transfer_detected": true
+  },
+  "dry_path": {
+    "a6_role": "DIAGNOSTIC",
+    "analysis_gate_status": "PARTIAL",
+    "analysis_returncode": 1,
+    "capture_log_sha256": "e0feb11f13d37d46ef969ee98893f799fe255b5c9996eb2f23bcc5953593ccb5",
+    "capture_run_id": "dryrun-rev6-proof",
+    "census_gates_not_ok": [
+      "production_representativeness",
+      "transfer_audit",
+      "profiler_perturbation",
+      "vram"
+    ],
+    "census_status": "BLOCKED",
+    "execution_status": "COMPLETED",
+    "gate_status": "PARTIAL",
+    "h1_measurement_kind": "upper_bound",
+    "h1_product_compile_gate_eligible": false,
+    "hlo_candidates_manifested": 2,
+    "manifest_run_id": "dryrun-rev6-proof",
+    "passed": true,
+    "production_representativeness_status": "MISSING",
+    "transfer_status": "MISSING",
+    "wrapper_log_sha256": "23adb4b4a7ad9bff9bcc7c9099408a6963ba1aba761c3dc2150cd94b4e3da5ea",
+    "wrapper_returncode": 0
+  },
+  "execution_environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "JAX_PLATFORMS": "cpu",
+    "device_actions": "NONE"
+  },
+  "gates_deliberately_missing": {
+    "matched_two_domain_production_reference": "no successful matched production CUDA trace exists",
+    "profiler_perturbation": "sum of frozen caps is 1640 s, above the 1500 s window",
+    "real_production_integration_scope": "requires an instrumentation boundary in the forecast process or an approved equivalent; src/gpuwrf is frozen in M0",
+    "vram": "forecast-process allocator sidecar and lock-owner sampler are not wired"
+  },
+  "generated_at_utc": "2026-07-27T23:10:11.162910+00:00",
+  "h1_upper_bound": {
+    "asymmetry": "an upper bound on T_off plus a lower bound on T_on yields a conservative lower bound on removable share. It can support H1 when large enough, but cannot refute H1 or supply exact product compile time.",
+    "bands": {
+      "NOT_SUPPORTED": "removable < 30% -- reachable ONLY with an exact T_on",
+      "PARTIAL_SUPPORT": "30% <= removable < 70%",
+      "SUPPORTED": "removable >= 70%"
+    },
+    "decisive": true,
+    "exact_executable_readiness_identified": false,
+    "hypothesis": "H1",
+    "measurement_complete": true,
+    "measurement_kind": "upper_bound",
+    "product_compile_gate_eligible": false,
+    "product_compile_gate_ineligibility_reason": "the origin is the nsys profiling session, not the application process launch, and no executable-ready boundary was mechanically identified",
+    "reason": "at least 76.7% of the cold compile is removable by disabling autotune (>= the 70% dominance bar). Autotune search is the dominant cold-compile cost. T_off itself is a conservative upper bound, so this lower bound remains valid for H1. It is still not a \u00a75.3 compile measurement.",
+    "removable_lower_bound": 0.7672098436980379,
+    "t_off_basis": "nsys-session-origin-to-last-compile-range-end",
+    "t_off_seconds": 140.0,
+    "t_off_upper_bound_seconds": 140.0,
+    "t_on_basis": "process-launch-to-kill",
+    "t_on_lower_bound_seconds": 601.4,
+    "t_on_seconds_exact": null,
+    "verdict": "SUPPORTED"
+  },
+  "live_existing_artifact": {
+    "device_action": "NONE; nsys stats read an existing report/SQLite only",
+    "export_overall_status": "BLOCKED",
+    "first_row": {
+      "bytes": 33000.0,
+      "context": "1",
+      "destination_memory_kind": null,
+      "device": "NVIDIA GeForce RTX 5090 (0)",
+      "duration_ns": 1440.0,
+      "end_ns": 4558749825.0,
+      "name": "[CUDA memset]",
+      "source_memory_kind": "Device",
+      "start_ns": 4558748385.0,
+      "stream": "31"
+    },
+    "passed": true,
+    "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+    "reports": {
+      "cuda_gpu_kern_sum": {
+        "data_rows": 0,
+        "sha256": "1eaa3959160b7f252825f3d852c67749269f4485695c0f7f873fba248067e51f",
+        "status": "EMPTY"
+      },
+      "cuda_gpu_mem_time_sum": {
+        "data_rows": 1,
+        "sha256": "3bc194b7277af6dc1089344cd13e34c9222829d1979410484126364d1f12389c",
+        "status": "OK"
+      },
+      "cuda_gpu_trace": {
+        "data_rows": 8,
+        "sha256": "1b8e0f448b9b9cb008b85e166b41b9913f2428ca9baf29377a16f6794392742c",
+        "status": "OK"
+      },
+      "nvtx_gpu_proj_sum": {
+        "data_rows": 0,
+        "sha256": "e6ca6f4be80dd28904a07908ddf44e1a8e3c2c3ff6665125effc93d739ee0b67",
+        "status": "EMPTY"
+      },
+      "nvtx_pushpop_trace": {
+        "data_rows": 157080,
+        "sha256": "73d441e93b41fdf8b979c895098ea8211ba062722a498a841af1b04b5b66961e",
+        "status": "OK"
+      }
+    },
+    "required_unusable": [
+      "cuda_gpu_kern_sum"
+    ],
+    "source_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+    "status": "OK",
+    "timestamped_rows_parsed": 8
+  },
+  "outer_runner": {
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "returncode": 0
+  },
+  "production_rho_mutation": {
+    "frozen_minimum": 0.8,
+    "input_rho_between_old_and_frozen_bars": 0.7714285714285715,
+    "passed": true,
+    "status": "FAILED"
+  },
+  "production_source_diff": {
+    "command": "git diff --exit-code a1fa459c -- src/gpuwrf",
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  "profiler_matched_pair_plan": {
+    "allowed_next_path": "the separately coordinated reproduction window, or a new real production-derived short pair whose identity/event coverage and sum-of-caps budget are accepted before execution",
+    "calculation": {
+      "cached_load_cap_seconds": 60.0,
+      "fixed_overhead_seconds": 180.0,
+      "profiled_capture_cap_seconds": 1100.0,
+      "unprofiled_integration_cap_seconds": 300.0
+    },
+    "current_window_deadline_seconds": 1500.0,
+    "current_window_eligible": false,
+    "reason": "1100+180+360=1640s exceeds the current 1500s cap. Profiler perturbation remains MISSING here.",
+    "required_identity": [
+      "distinct run IDs",
+      "same workload_identity_sha256",
+      "same integration_scope_sha256",
+      "same event_mix_sha256",
+      "integration-only clocks",
+      "recorded arm order"
+    ],
+    "schema": "wrf_gpu2.v025.m0.profiler_matched_pair_plan.v1",
+    "status": "PREREGISTERED_SEPARATE_WINDOW",
+    "sum_of_frozen_caps_seconds": 1640.0
+  },
+  "reproduce": "taskset -c 0-3 env JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 XLA_FLAGS=--xla_cpu_multi_thread_eigen=false PYTHONPATH=src python scripts/v025/build_rev6_repair_evidence.py",
+  "schema": "wrf_gpu2.v025.m0.rev6_repair_cpu_evidence.v1",
+  "source_hashes": {
+    "scripts/v025/baseline_census.py": "a4f7c1ea8a8922ba036de4b6349a6b5e6affe94e2f4983521f0e3f69230909ba",
+    "scripts/v025/build_rev6_repair_evidence.py": "496a6b0b81f3d2e2a74a44ba5e3491ee20865bf58466e69f3e91333b4adffd90",
+    "scripts/v025/build_step1_mechanism_evidence.py": "1f6a910b3f7715d3484cd0bfcbd290dcbb6e4789b931d93273cc6ade840ea550",
+    "scripts/v025/h1_discriminator.py": "bcf83effcb968252492b8ed488d90416a6d5b21aec9cd43ed454b34ae04dc50b",
+    "scripts/v025/nsys_export.py": "6e8dc1473d75fa748651ee2a9c8481d504e85ffe51174a9273c9808cfd22c25c",
+    "scripts/v025/nvtx_exclusive.py": "0e11bca7fb0a0e6c30852b92a22521908a2b8bc9fd63fe41571925f72da3229f",
+    "scripts/v025/parse_profiler.py": "e3703582ec7165eac7b10d05f7c25a51dcaffe4858ca448607206474b16ea6d0",
+    "scripts/v025/step1_driver.py": "b98832f38eb15ad780de50d99615ca250f8ef349fc95dc92ed8bc0e1cf84f7cf",
+    "scripts/v025/step1_dryrun.py": "e36219bf0863308ebb21094a197f045ae2dbe83c7b97a8f1c4d6597e0a5b14c6",
+    "scripts/v025/step1_stub.py": "70ac7faebf116ff022d00f86602180b917872c2f273e050f758b368d239f7e35",
+    "tests/v025/test_h1_discriminator.py": "dbc4e08d53a00c9b970b0854a68fb51f9a3edbd9a0b5251fff286a7b74c528f3",
+    "tests/v025/test_nsys_export_and_census.py": "05c95a9f8f3a6dfdfd1970496404218d7c5f705a74ba6ba9caa9bb87ef9eed9c",
+    "tests/v025/test_step1_boundary.py": "bf33d39eae3c5c39596a8d2d38c93b8e041ce71a32d815f1e088bcb2e74633b3",
+    "tests/v025/test_step1_driver.py": "3c6e439169eafba0e7260b2ff21bf0b0a6c79568eb8a44aa8557edd229ff4697"
+  },
+  "status": "CPU_REPAIR_GREEN_REQUIRED_GPU_EVIDENCE_MISSING",
+  "transfer_mutations": {
+    "aggregate_false_pass_closed": true,
+    "aggregate_htod_status": "MISSING",
+    "timestamped_copy_failed_gate": true,
+    "timestamped_htod_status": "FAILED"
+  },
+  "vram_measurement_plan": {
+    "bindings": [
+      "run_id",
+      "forecast_pid",
+      "source_sha256",
+      "config_sha256",
+      "input_manifest_sha256",
+      "timestamps"
+    ],
+    "decomposition": "forecast-process peak_bytes_in_use and peak_bytes_reserved sidecar",
+    "forbidden": "the capture/orchestration parent must not import JAX or query allocator statistics; doing so would inspect or initialize the wrong allocator",
+    "product_metric": "baseline-subtracted peak total device residency sampled by the lock owner",
+    "sampler_requirements": [
+      "lock_owner_parent role",
+      "declared cadence",
+      "sampling misses",
+      "absolute and baseline-subtracted peaks",
+      "unexpected competing contexts"
+    ],
+    "schema": "wrf_gpu2.v025.m0.vram_measurement_plan.v1",
+    "status": "MISSING_INSTRUMENTATION_BOUNDARY"
+  }
+}

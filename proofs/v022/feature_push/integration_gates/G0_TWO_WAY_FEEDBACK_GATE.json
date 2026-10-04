@@ -1,0 +1,130 @@
+{
+  "argv": [
+    "scripts/v022_two_way_feedback_gate.py",
+    "--output",
+    "proofs/v022/feature_push/integration_gates/G0_TWO_WAY_FEEDBACK_GATE.json"
+  ],
+  "conservation": {
+    "abs_residual": 0.0,
+    "child_overlap_integral": 13608.0,
+    "conserved": true,
+    "leaf": "theta",
+    "n_parent_cells": 36,
+    "parent_overlap_integral": 13608.0,
+    "rel_residual": 0.0,
+    "rel_tol": 1e-12,
+    "stagger": ""
+  },
+  "finite": {
+    "child": true,
+    "parent": true
+  },
+  "fixture": {
+    "child_shape": [
+      3,
+      24,
+      24
+    ],
+    "i_parent_start": 2,
+    "j_parent_start": 2,
+    "kind": "idealized_minimal_two_domain_nest",
+    "native_subcycle_steps": 6,
+    "parent_grid_ratio": 3,
+    "parent_shape": [
+      3,
+      16,
+      16
+    ],
+    "root_steps": 2,
+    "smooth_option": 1
+  },
+  "parent_reflects_child": {
+    "boundary_ring_expected_child_feedback_mean": 14.0,
+    "boundary_ring_mean_abs_delta_from_initial_parent": 13.0,
+    "boundary_ring_parent_mean": 14.0,
+    "feedback_boundary_ring_cell_count": 20,
+    "feedback_overlap_parent_cell_count": 36,
+    "outside_overlap_max_abs_change": 0.0,
+    "overlap_max_abs_error_vs_copyfcn_then_sm121": 0.0,
+    "passed": true
+  },
+  "scheduler": {
+    "event_counts": {
+      "advance": 4,
+      "feedback": 2,
+      "force": 2
+    },
+    "events": [
+      [
+        "advance",
+        "d01",
+        1,
+        1,
+        1
+      ],
+      [
+        "force",
+        "d01",
+        "d02",
+        1
+      ],
+      [
+        "advance",
+        "d02",
+        1,
+        3,
+        3
+      ],
+      [
+        "feedback",
+        "d02",
+        "d01",
+        1
+      ],
+      [
+        "advance",
+        "d01",
+        2,
+        1,
+        2
+      ],
+      [
+        "force",
+        "d01",
+        "d02",
+        2
+      ],
+      [
+        "advance",
+        "d02",
+        4,
+        3,
+        6
+      ],
+      [
+        "feedback",
+        "d02",
+        "d01",
+        2
+      ]
+    ],
+    "own_steps": {
+      "d01": 2,
+      "d02": 6
+    }
+  },
+  "schema": "gpuwrf.v022.two_way_feedback_gate",
+  "schema_version": 1,
+  "transfer_audit": {
+    "gpu_used": false,
+    "host_device_transfer_inside_timestep_loop": false,
+    "note": "CPU JAX/dummy-state gate; production GPU smoke must use scripts/with_gpu_lock.sh."
+  },
+  "verdict": "PASS",
+  "wrf_reference": {
+    "driver": "WRF/share/mediation_integrate.F::med_nest_feedback",
+    "feedback": "WRF/share/interp_fcn.F::copy_fcn",
+    "root": "<USER_HOME>/src/wrf_pristine",
+    "smoothing": "WRF/share/interp_fcn.F::sm121"
+  }
+}

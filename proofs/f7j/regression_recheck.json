@@ -1,0 +1,10 @@
+{
+  "sprint": "F7J",
+  "tests": [
+    "tests/test_m4_acoustic.py",
+    "tests/test_m4_dycore_step.py",
+    "tests/test_m4_tier2_invariants.py"
+  ],
+  "result": "..........                                                               [100%]\n10 passed in 33.83s",
+  "note": "AC4 no-regression after rhs_ph + advect_w fix; no clamps/caps/diffusion-fudge added; production change limited to rhs_ph operator + advect_w fold into rw_tend."
+}

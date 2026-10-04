@@ -1,0 +1,8 @@
+# GATE (d) — nested fused cascade (GPUWRF_NESTED_FUSE default-on) STILL TRACES (+runs on CPU)
+# 3-level nest d01(root)->d02(fused parent)->d03(leaf); fused program for d02 lowers to HLO.
+# Command: python proofs/v020/s1s2/harness.py nested
+
+[nested] fused cascade default-enabled: True
+[nested] fused cascade LOWERS to HLO: 5823109 chars  (TRACE OK)
+[nested] own_steps={'d01': 1, 'd02': 3, 'd03': 9}  finite_after_run=True
+[nested] RESULT: TRACES (and runs on CPU)

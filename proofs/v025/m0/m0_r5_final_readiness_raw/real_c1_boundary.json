@@ -1,0 +1,213 @@
+{
+  "failed_at_5356a37d": "the real C1 child refused because _c1_command supplied a root the outer owner did not use; the R5 route has no derived namespace, so one fixed value crosses the whole boundary",
+  "green": {
+    "c1_child": {
+      "child_side_root_self_check": "none: deleting the fingerprint namespace also deleted the child's derived-root refusal, so in-session C1 ignores --cpu-run-root. The invariant is structural -- one fixed constant feeds both commands -- and H1 is what measures it",
+      "cpu_preflight_root_supplied_by_owner": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+      "error": null,
+      "expected_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+      "matches_fixed_r5_root": true,
+      "returncode": 0,
+      "stdout_bytes": 22937,
+      "supplied_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5"
+    },
+    "c1_command": [
+      "taskset",
+      "-c",
+      "16-27",
+      "<USER_HOME>/miniconda3/bin/python",
+      "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/v025/m0_w1_fast_pair.py",
+      "--w1-result",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/real/generation/proof/m0-autotune0-qualify-20260728-r3.window.json",
+      "--in-session-held-lock",
+      "--pre-staged-cpu",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/real/session/cpu_preflight.json",
+      "--session-identity",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/real/session/session_preflight_identity.json",
+      "--prepare-session-pair",
+      "--receipt",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/real/synthetic_session_receipt.json",
+      "--cpu-run-root",
+      "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+      "--output",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/real/session/c1_fast_pair.json"
+    ],
+    "canonical_ledger_untouched": true,
+    "cpu_preflight_command": [
+      "taskset",
+      "-c",
+      "16-27",
+      "<USER_HOME>/miniconda3/bin/python",
+      "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/v025/m0_w1_fast_pair.py",
+      "--prestage-cpu",
+      "--session-identity",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/real/session/session_preflight_identity.json",
+      "--cpu-run-root",
+      "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+      "--output",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/real/session/cpu_preflight.json"
+    ],
+    "cpu_preflight_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+    "every_registered_process_group_empty": true,
+    "held_child": {
+      "error": null,
+      "first_failure": null,
+      "process_group_proof": {
+        "active": [],
+        "all_registered_groups_empty": true,
+        "completed": [],
+        "registered": 0,
+        "status": "PASS"
+      },
+      "stage_order_executed": [
+        "W1_CACHED_AND_CORRECTNESS",
+        "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+        "W2_PROFILED_CAPTURE",
+        "W3_CLEAN_MATCHED_ARM"
+      ],
+      "status": "PASS"
+    },
+    "isolated": [
+      "physical flock wrapper process",
+      "CUDA/W1/W2/W3 device execution",
+      "physical 12-rank CPU-WRF launcher",
+      "environment identity/revalidation probes",
+      "canonical /tmp lock-holder release proof"
+    ],
+    "owner_error": null,
+    "owner_status": "PASS",
+    "real": [
+      "run_session_owner",
+      "held session entrypoint run_held_session",
+      "_c1_command",
+      "m0_w1_fast_pair CLI argparse and path validation",
+      "validate_cpu_preflight",
+      "in-session held-lock provenance",
+      "run_fast_pair.compare_arms on real netCDF bytes",
+      "economy gates",
+      "_post_w1_qualification",
+      "prepare_m0_matched_pair.prepare"
+    ],
+    "restore_r3_cpu_root": false,
+    "stages_reached": [
+      "W1",
+      "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+      "W2",
+      "W3"
+    ],
+    "status": "PASS",
+    "synthetic_ledger_path": "/tmp/m0-r5-readiness-84el2ju7/h1/real/synthetic_spend_ledger.json",
+    "synthetic_ledger_spends": 3,
+    "w2_and_w3_reachable": true
+  },
+  "r3_root_mutation": {
+    "c1_child": {
+      "child_side_root_self_check": "none: deleting the fingerprint namespace also deleted the child's derived-root refusal, so in-session C1 ignores --cpu-run-root. The invariant is structural -- one fixed constant feeds both commands -- and H1 is what measures it",
+      "cpu_preflight_root_supplied_by_owner": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+      "error": null,
+      "expected_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+      "matches_fixed_r5_root": false,
+      "returncode": 0,
+      "stdout_bytes": 23033,
+      "supplied_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3"
+    },
+    "c1_command": [
+      "taskset",
+      "-c",
+      "16-27",
+      "<USER_HOME>/miniconda3/bin/python",
+      "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/v025/m0_w1_fast_pair.py",
+      "--w1-result",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/generation/proof/m0-autotune0-qualify-20260728-r3.window.json",
+      "--in-session-held-lock",
+      "--pre-staged-cpu",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/session/cpu_preflight.json",
+      "--session-identity",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/session/session_preflight_identity.json",
+      "--prepare-session-pair",
+      "--receipt",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/synthetic_session_receipt.json",
+      "--cpu-run-root",
+      "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r3",
+      "--output",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/session/c1_fast_pair.json"
+    ],
+    "canonical_ledger_untouched": true,
+    "cpu_preflight_command": [
+      "taskset",
+      "-c",
+      "16-27",
+      "<USER_HOME>/miniconda3/bin/python",
+      "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-r5-lock-authority/scripts/v025/m0_w1_fast_pair.py",
+      "--prestage-cpu",
+      "--session-identity",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/session/session_preflight_identity.json",
+      "--cpu-run-root",
+      "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+      "--output",
+      "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/session/cpu_preflight.json"
+    ],
+    "cpu_preflight_cpu_run_root": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-c1-prelock-cpu-r5",
+    "every_registered_process_group_empty": true,
+    "held_child": {
+      "error": null,
+      "first_failure": null,
+      "process_group_proof": {
+        "active": [],
+        "all_registered_groups_empty": true,
+        "completed": [],
+        "registered": 0,
+        "status": "PASS"
+      },
+      "stage_order_executed": [
+        "W1_CACHED_AND_CORRECTNESS",
+        "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+        "W2_PROFILED_CAPTURE",
+        "W3_CLEAN_MATCHED_ARM"
+      ],
+      "status": "PASS"
+    },
+    "isolated": [
+      "physical flock wrapper process",
+      "CUDA/W1/W2/W3 device execution",
+      "physical 12-rank CPU-WRF launcher",
+      "environment identity/revalidation probes",
+      "canonical /tmp lock-holder release proof"
+    ],
+    "owner_error": null,
+    "owner_status": "PASS",
+    "real": [
+      "run_session_owner",
+      "held session entrypoint run_held_session",
+      "_c1_command",
+      "m0_w1_fast_pair CLI argparse and path validation",
+      "validate_cpu_preflight",
+      "in-session held-lock provenance",
+      "run_fast_pair.compare_arms on real netCDF bytes",
+      "economy gates",
+      "_post_w1_qualification",
+      "prepare_m0_matched_pair.prepare"
+    ],
+    "restore_r3_cpu_root": true,
+    "stages_reached": [
+      "W1",
+      "C1_SAME_RESULT_AND_FRESH_CPU_COMPARATOR",
+      "W2",
+      "W3"
+    ],
+    "status": "BLOCKED",
+    "synthetic_ledger_path": "/tmp/m0-r5-readiness-84el2ju7/h1/r3-root/synthetic_spend_ledger.json",
+    "synthetic_ledger_spends": 3,
+    "w2_and_w3_reachable": true
+  },
+  "r3_root_mutation_refused": true,
+  "schema": "wrf_gpu2.v025.m0.r5_real_c1_boundary.v1",
+  "status": "PASS",
+  "traversal": [
+    "run_session_owner",
+    "real held-session child entrypoint",
+    "real _c1_command",
+    "real m0_w1_fast_pair.py CLI/path validation",
+    "pre-staged comparison fixture"
+  ]
+}

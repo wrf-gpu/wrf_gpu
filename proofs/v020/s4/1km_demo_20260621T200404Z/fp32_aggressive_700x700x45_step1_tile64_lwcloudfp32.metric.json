@@ -1,0 +1,10 @@
+{
+  "json": "proofs/v020/s4/1km_demo_20260621T200404Z/fp32_aggressive_700x700x45_step1_tile64_lwcloudfp32.json",
+  "log": "proofs/v020/s4/1km_demo_20260621T200404Z/fp32_aggressive_700x700x45_step1_tile64_lwcloudfp32.log",
+  "oom_log_detected": false,
+  "peak_vram_mib": 31789,
+  "rc": 0,
+  "started_utc": "2026-06-21T20:30:58Z",
+  "tag": "fp32_aggressive_700x700x45_step1_tile64_lwcloudfp32",
+  "vram_csv": "proofs/v020/s4/1km_demo_20260621T200404Z/fp32_aggressive_700x700x45_step1_tile64_lwcloudfp32.vram.csv"
+}

@@ -1,0 +1,16 @@
+== morraero oracle build: mode=fp32 2026-07-02T23:35:25+01:00 host=user-battlestation ==
+compiler : GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+FFLAGS   : -O2 -ffree-form -ffree-line-length-none -ffpe-summary=none -cpp 
+WRF tree : <USER_HOME>/src/wrf_pristine/WRF (sources copied verbatim; sha256 in wrf_source_checksums.txt)
+driver   : proofs/v023/oracle/morraero/morraero_oracle_driver.f90
+entry    : MORR_TWO_MOMENT_INIT_AERO(0); MP_MORR_TWO_MOMENT_AERO (aercu_opt=2)
+cases    : 1-6 -> morr_aero_case_{1..6}.json (schema wrf-v023-f2-morraero-column-savepoint-v1)
+
+== morraero oracle build: mode=fp64 2026-07-02T23:35:41+01:00 host=user-battlestation ==
+compiler : GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+FFLAGS   : -O2 -ffree-form -ffree-line-length-none -ffpe-summary=none -cpp -fdefault-real-8 -fdefault-double-8
+WRF tree : <USER_HOME>/src/wrf_pristine/WRF (sources copied verbatim; sha256 in wrf_source_checksums.txt)
+driver   : proofs/v023/oracle/morraero/morraero_oracle_driver.f90
+entry    : MORR_TWO_MOMENT_INIT_AERO(0); MP_MORR_TWO_MOMENT_AERO (aercu_opt=2)
+cases    : 1-6 -> morr_aero_fp64_case_{1..6}.json (schema wrf-v023-f2-morraero-column-savepoint-v1)
+

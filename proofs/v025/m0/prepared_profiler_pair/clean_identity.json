@@ -1,0 +1,10 @@
+{
+  "schema": "wrf_gpu2.v025.m0.superseded_prepared_identity.v1",
+  "status": "MECHANICALLY_SUPERSEDED",
+  "arm": "clean",
+  "old_run_id": "m0-pair-clean-20260728-r1",
+  "old_identity_sha256": "bc794a2b093045ef44c5b23598968a179c7626053f1d065d6d35664bd79d1eb8",
+  "authorisation_eligible": false,
+  "replacement_plan": "proofs/v025/m0/autotune0_three_window_plan.json",
+  "reason": "Amendment 3 requires successful autotune0 W1 qualification before fresh identities or cache snapshots are created."
+}

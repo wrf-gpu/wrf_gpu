@@ -1,0 +1,6 @@
+{"rung":"substep","hours":1,"blowup_rc":0,"skill":"PASS","result":"PASS"}
+{"rung":"step","hours":1,"blowup_rc":0,"skill":"PASS","result":"PASS"}
+{"rung":"1","hours":1,"blowup_rc":0,"skill":"PASS","result":"PASS"}
+{"rung":"6","hours":6,"blowup_rc":0,"skill":"PASS","result":"PASS"}
+{"rung":"24","hours":24,"blowup_rc":0,"skill":"PASS","result":"PASS"}
+{"rung":"120","hours":120,"blowup_rc":0,"skill":"PASS","result":"PASS"}

@@ -1,0 +1,78 @@
+{
+  "schema": "wrf_gpu2.v025.m0.kimi_c1_c2_review_reproduction.v1",
+  "reviewer": "Kimi K3 thinking-max (independent, device-denied)",
+  "date": "2026-07-28",
+  "candidate": "37795f0a on worker/gpt/v0250-m0-c1-c2",
+  "base": "33bee653eef4a9946a33b8dfd4ca3dd1781e852a",
+  "review_worktree": "v0250-m0-c1-c2-kimi-review (merge 9f1aad63 of candidate into reviewer/kimi/v0250-m0-c1-c2)",
+  "device_action": false,
+  "python": "3.13.11 (<USER_HOME>/miniconda3/bin/python, pytest 9.0.3, jax 0.10.0)",
+  "cpu_pins": {
+    "JAX_PLATFORMS": "cpu",
+    "CUDA_VISIBLE_DEVICES": "",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false"
+  },
+  "commands": [
+    {
+      "cmd": "pytest tests/v025 -q -p no:cacheprovider --junitxml=/tmp/kimi_review_tests.xml",
+      "rc": 0,
+      "result": "789 passed, 2 skipped in 56.91s; skips are the two intentional coordinated-device entrypoint guards (test_cpu_guard m0_exact_boundary_child.py, pallas_sm120_spike.py)"
+    },
+    {
+      "cmd": "python scripts/v025/build_m0_c1_c2_cpu_residual_evidence.py --validate-only --closure-output proofs/v025/m0/m0_c1_c2_cpu_closure_evidence.json --manifest-output proofs/v025/m0/m0_c1_c2_cpu_closure_manifest.json",
+      "rc": 0,
+      "result": "PASS; files_verified=13; cpu_closure_gate=BLOCKED; closure_sha256=8feb519f2588291b4da8048dde92a583fbf1309c8e096795bd6040d575f9306b; manifest_sha256=5c686e7aacdfbd01676d35fd626fefbab2ea2806f197eebb8349328867abf43d"
+    },
+    {
+      "cmd": "python /tmp/kimi_review_repro/reproduce.py (11 independent validator checks)",
+      "rc": 0,
+      "result": "all_pass=true"
+    }
+  ],
+  "validator_checks": {
+    "representative_long_run_fixtures": "PASS (6 validators exercised)",
+    "source_contract": "PASS",
+    "c1_source_mutation_matrix": "PASS 38/38 rejected (reproduced 4 independent invocations)",
+    "amendment5_plan_gate": "PASS (1 lock acquisition, 3 windows, one session receipt)",
+    "cold_two_of_three_and_boundaries": "PASS (pass_two/fail_two/pass_third/fail_third correct; readiness==600.0 -> PASS_COLD; 600.001 -> refused; third process after agreement -> refused)",
+    "memory_preflight": "PASS (MemAvailable 81,644,666,880 >= required 43,278,925,824)",
+    "clock_continuity": "PASS",
+    "inhibitor": "PASS (/usr/bin/systemd-inhibit --what=sleep:idle:handle-lid-switch --mode=block)",
+    "c2_complete_census_arithmetic": "PASS (all 7 independent arithmetic recomputations)",
+    "c2_fail_closed_matrix": "PASS 23/23 rejected",
+    "real_incomplete_w1b_postlock": "PASS: BLOCKED_AS_REQUIRED; export rows nvtx_pushpop=157080, cuda_api_trace=2831, cuda_gpu_trace=8, cuda_gpu_kern_sum=0 (EMPTY), required_unusable=[cuda_gpu_kern_sum]; 12 gates not pass; release_before_analysis=true; accelerator_modules_imported=[]; lock env absent"
+  },
+  "reproduced_proof_hashes": {
+    "accepted_exact_boundary": "ac596a79680f1ce41b88e311d97507ed199bdb1feb587f323ca89baf7cfcd16e",
+    "c1_residual_evidence": "e67bfca4997430d222575f61d3f6166e81b1259c73683aaf83531e30438004f6",
+    "c2_cpu_evidence": "55b0d7d29781ef847163c9efa121d254ba28373ad8fc7a5ac80cd9e328a08bea",
+    "combined_closure": "8feb519f2588291b4da8048dde92a583fbf1309c8e096795bd6040d575f9306b",
+    "manifest": "5c686e7aacdfbd01676d35fd626fefbab2ea2806f197eebb8349328867abf43d",
+    "junit": "4642e195f39e4702455641e69723807b8c74b5612720a3c643e18efead1911cd",
+    "r8_stderr": "7761b21356c3e0d2461f42dff5454d968132632609d9fd556c6c6793e1f0ffc3",
+    "r8_stdout": "7c79951762db2b0ea7c92175b648f563e4dc0b634dcafe7f4f9eae017a6f75eb",
+    "r8_time": "8caff058bb58151d5de864da434a20fc286b49ffab98c572769856b1c2bea6a5",
+    "r8_process_tree_rss": "3af95c06eaef969be35fe826c2627154fe8ae5b51da0cc9c482d985044e9042f",
+    "w1b_nsys_rep": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+    "amendment_5_git_blob_stripped": "153fa5c60efccccc2665b7e454ccfd36bc970eb8af6f308bb9388d4219080da8",
+    "manager_amendment_01_git_blob_stripped": "4b62b5458e7970db14c5eec66b0eade5086ffc483927e44b07a9439b1aab1c02",
+    "roadmap_78aa07a9_git_blob_stripped": "01c0fc4715add2d36587659c2319ddf27a026e37397f8f0cf4b754a8565a7328"
+  },
+  "integrity_checks": {
+    "production_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7 (git rev-parse HEAD:src/gpuwrf; git status --porcelain src/gpuwrf empty)",
+    "manifest_source_identity": "21/21 on-disk script SHA-256 match, no mismatches",
+    "proof_files_byte_identical_to_candidate_worktree": true,
+    "r8_wrfout_dir_still_empty": true,
+    "r8_refusal_boundary": "stderr contains BoundaryRefusal at _publish_exact_wrfout line 551 after synchronized exact invocation; child rc=1; elapsed 1:16:44; max RSS 20,899,988 KiB; exit 1",
+    "candidate_diff_scope": "only scripts/v025/**, tests/v025/**, proofs/v025/m0/**, .agent/sprints/2026-07-27-v0250-m0-setup/** (ownership respected)",
+    "no_full_real_fast_oracle_run_by_reviewer": true
+  },
+  "named_defect_probe": {
+    "cmd": "python scripts/v025/m0_three_window_executor.py --manager-core-session-held --receipt /nonexistent",
+    "result": "argparse rejects the mode: 'one of the arguments --print-plan --dry-run-all --manager-device-stage --manager-post-stage --manager-window-graph is required'; the frozen prospective Amendment-5 session command has no implemented entrypoint"
+  }
+}

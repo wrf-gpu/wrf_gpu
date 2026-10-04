@@ -1,0 +1,3 @@
+# Kill-gate run artifacts: large serialized executables + meta + inputs +
+# verdict are reproducible by re-running the two scripts; never commit them.
+out/

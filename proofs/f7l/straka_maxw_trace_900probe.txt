@@ -1,0 +1,7 @@
+DEVICE=cuda:0  nu=75.0  substeps=10  dt=0.1  smdiv=None  emdiv=None  damp_opt=3 dampcoef=0.2 zdamp=3000.0 w_damping=1
+acoustic CFL = c*dt_sound/dx = 0.0340  (dt_sound=0.0100s)
+t=   60.0 finite=True maxw=7.29888986633563 thmin=-14.915395747257435 front=1550.0
+t=  120.0 finite=True maxw=14.619675099902253 thmin=-14.79947374561192 front=2050.0
+t=  180.0 finite=True maxw=21.19516490885937 thmin=-14.685410702126319 front=2350.0
+t=  240.0 finite=True maxw=23.904433800852537 thmin=-14.245381557074438 front=2650.0
+t=  300.0 finite=False maxw=None thmin=None front=None

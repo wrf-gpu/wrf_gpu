@@ -1,0 +1,864 @@
+{
+  "all_bitwise_identical": true,
+  "fields": {
+    "[<flat index 0>][<flat index 0>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 10>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 11>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 12>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 13>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 14>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 15>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 16>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 17>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 18>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 19>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 1>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 20>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 21>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 22>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 23>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 24>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 25>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 26>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 27>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 28>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 29>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 2>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 30>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 31>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 32>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 33>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 34>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 35>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 36>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 37>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 38>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 39>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 3>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 40>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 41>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 42>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 43>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 44>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 45>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 46>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        44,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 47>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        45,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 48>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        2,
+        4,
+        5,
+        1,
+        121
+      ]
+    },
+    "[<flat index 0>][<flat index 49>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 4>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 50>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 51>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 52>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 53>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 54>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 55>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 56>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 57>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 58>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 59>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 5>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 60>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 61>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 62>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 63>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 6>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 7>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 8>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 0>][<flat index 9>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 10>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 11>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 12>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 13>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 14>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 1>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        120
+      ]
+    },
+    "[<flat index 2>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 3>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 4>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 5>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        70,
+        120
+      ]
+    },
+    "[<flat index 6>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    },
+    "[<flat index 7>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        70,
+        121
+      ]
+    },
+    "[<flat index 8>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        44,
+        71,
+        120
+      ]
+    },
+    "[<flat index 9>]": {
+      "bitwise": true,
+      "dtype": "float64",
+      "max_abs_diff": 0.0,
+      "nan_mismatch": false,
+      "shape": [
+        45,
+        70,
+        120
+      ]
+    }
+  },
+  "left": "<DATA_ROOT>/wrf_gpu2/v025/econ/fixtures/pre_production_chunk_exec.npz",
+  "max_abs_diff_overall": 0.0,
+  "only_left": [],
+  "only_right": [],
+  "right": "<DATA_ROOT>/wrf_gpu2/v025/econ/fixtures/post_production_chunk.npz"
+}

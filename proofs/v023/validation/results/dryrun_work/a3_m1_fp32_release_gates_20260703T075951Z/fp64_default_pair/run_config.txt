@@ -1,0 +1,11 @@
+gate=a3_m1_fp32_release_gates
+session=proofs/v023/validation/results/dryrun_work/a3_m1_fp32_release_gates_20260703T075951Z/fp64_default_pair
+base_ref=v0.22.2
+candidate_ref=HEAD
+case=<DATA_ROOT>/wrf_downscale/runs/20250121/cpu
+hours=1
+max_dom=3
+domains=d01 d02 d03
+base_env=GPUWRF_ACOUSTIC_PRECISION_MODE=fp64_default GPUWRF_FP32_MODE= GPUWRF_FORCE_FP64=1
+candidate_env=GPUWRF_ACOUSTIC_PRECISION_MODE=fp64_default GPUWRF_FP32_MODE= GPUWRF_FORCE_FP64=1
+dryrun=1

@@ -1,0 +1,129 @@
+{
+  "autotune_cache_write_timing": {
+    "active_seconds_excluding_largest_gap": 26.059600353240967,
+    "bearing_on_H1": "presence and bracketing only. This is exactly why H1 needs the direct autotune-OFF discriminator rather than an inference from cache timestamps.",
+    "clusters_5s_stitch": [
+      {
+        "duration_s": 11.921063423156738,
+        "end_offset_s": 11.921063423156738,
+        "files": 12,
+        "start_offset_s": 0.0
+      },
+      {
+        "duration_s": 14.138536930084229,
+        "end_offset_s": 222.44607949256897,
+        "files": 1554,
+        "start_offset_s": 208.30754256248474
+      }
+    ],
+    "files": 1566,
+    "first_write_utc": "2026-07-27T17:45:43.336617+00:00",
+    "interpretation": "the span is NOT a measure of autotune duration. It is dominated by a single 196.4 s interval with no autotune writes at all, and the writes fall into two clusters. What happened inside that gap is UNATTRIBUTED: it could be one expensive autotuning whose results were flushed at the end, or non-autotune compile work. Both are consistent with these mtimes, so neither is claimed.",
+    "largest_gap_with_no_writes_seconds": 196.386479139328,
+    "last_write_utc": "2026-07-27T17:49:25.782696+00:00",
+    "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/w1b_arms/jaxcache_5623902916f6/xla_gpu_per_fusion_autotune_cache_dir",
+    "span_seconds": 222.44607949256897,
+    "status": "MEASURED"
+  },
+  "exclusive_attribution": {
+    "SCOPE": "this is the WARM Stage 2 process (~20 s of compile), NOT the cold >601.4 s Stage 1 compile. The family shares below describe the warm process only and are NOT evidence about the cold compile. Per standing manager instruction the two must not be equated.",
+    "attributed_share": 1.0,
+    "bearing_on_H1": "NONE for the cold compile. Worth recording that in the WARM process autotune is 2.70% of compile while codegen is 70.10% -- but a warm process skips exactly the work H1 is about, so this neither supports nor undermines it.",
+    "by_family_seconds": {
+      "autotune": 0.5376058629999995,
+      "buffer_and_schedule": 0.031123045000000033,
+      "codegen": 13.949612416999997,
+      "compile_frame": 1.3422424239999997,
+      "hlo_pass": 3.640806359999984,
+      "pass_pipeline": 0.3994490680000003,
+      "runtime": 0.032339578999999945
+    },
+    "cross_check": {
+      "against": "nsys DurNonChild column",
+      "outcome": "PASSED on every range (a failure raises and blocks this object)",
+      "tolerance": 0.02
+    },
+    "family_share_of_compile": {
+      "autotune": 0.027014230818031396,
+      "buffer_and_schedule": 0.001563906161101483,
+      "codegen": 0.7009559894902321,
+      "compile_frame": 0.06744652384062633,
+      "hlo_pass": 0.18294737863153918,
+      "pass_pipeline": 0.020071971058469536
+    },
+    "inclusive_inflation_factor": 2.81803378928939,
+    "inclusive_sum_seconds_for_contrast": 56.081237236,
+    "max_unknown_share": 0.05,
+    "method": "exclusive (self) time: duration minus direct children. Inclusive nvtx_sum durations are NOT used, because nesting would double-count. Thunk execution is excluded from the compile denominator.",
+    "non_compile_seconds": {
+      "runtime": 0.032339578999999945
+    },
+    "ranges": 157080,
+    "ranges_parsed": 157080,
+    "reason": "100.0% of exclusive compile time attributed to named families",
+    "source_nsys_rep": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep",
+    "source_nsys_rep_sha256": "10de8b71ed115bbc37ac40d3c765ff740e0bc97d86a13692eb1c70e602139c9c",
+    "status": "OK",
+    "top_passes_seconds": {
+      "autotuner": 0.5370564839999997,
+      "batched_gather_scatter_normalizer": 0.400374339,
+      "call-inliner": 1.483876671,
+      "composite-rewriter": 0.021915476,
+      "conditional-canonicalizer": 0.038661927,
+      "convert-memory-placement-to-internal-annotations": 0.021525152,
+      "copy-insertion": 0.014776391000000002,
+      "cudnn-custom-call-converter": 0.037796935000000004,
+      "cudnn-fused-convolution-rewriter": 0.020908613000000027,
+      "dce": 0.015075389000000005,
+      "flatten-call-graph": 0.13593477099999998,
+      "hlo_host_device_type_call_wrapper": 0.012245398,
+      "layout-assignment": 0.014995215000000006,
+      "operand_converter": 0.049316043000000004,
+      "operand_upcaster": 0.043038543,
+      "priority-fusion": 0.04163925999999999,
+      "result_caster": 0.040933185000000004,
+      "sharding-remover": 0.037233474,
+      "sub-byte-size-setter": 0.629888777,
+      "topk-decomposer": 0.11030446899999999,
+      "topk-rewriter": 0.039153056,
+      "topk-specializer": 0.054098173,
+      "topk-splitter": 0.058642397,
+      "windowed-einsum-handler": 0.058288463,
+      "zero_sized_hlo_elimination": 0.05451890399999999
+    },
+    "total_exclusive_compile_seconds": 19.90083917699998,
+    "unknown_share": 0.0
+  },
+  "generated_at_utc": "2026-07-27T18:58:34.019034+00:00",
+  "h1_rule": {
+    "bands": {
+      "NOT_SUPPORTED": "T_off > 420.98 s",
+      "PARTIAL": "180.42 s < T_off <= 420.98 s",
+      "SUPPORTED": "T_off <= 180.42 s"
+    },
+    "t_off_budget_seconds": 600.0,
+    "t_on_lower_bound_seconds": 601.4,
+    "why_feasible": "only the autotune-OFF arm is measured, and it is bounded by construction. The autotune-ON compile is never required to finish."
+  },
+  "purpose": "proves the Step 1 measurement chain works, using evidence already on disk. CPU-only. No GPU was requested, coordinated, imported or touched.",
+  "reproduce": {
+    "command": "python scripts/v025/build_step1_mechanism_evidence.py",
+    "generator": "scripts/v025/build_step1_mechanism_evidence.py",
+    "generator_sha256": "252d9c04e5cc1988c2ad5b723b297f83efc016008315b3eb4763396e439acb4a",
+    "note": "no number in this object is hand-written; rerun the command to regenerate",
+    "trace_export": "nsys stats --report nvtx_pushpop_trace --format csv --output - <DATA_ROOT>/wrf_gpu2/v025/m0/raw/nsys_baseline.nsys-rep"
+  },
+  "schema": "wrf_gpu2.v025.m0.step1_mechanism_evidence.v1",
+  "xla_flag_preflight": {
+    "binary": "<USER_HOME>/miniconda3/lib/python3.13/site-packages/jaxlib/libjax_common.so",
+    "flags": {
+      "xla_dump_hlo_pass_re": true,
+      "xla_dump_to": true,
+      "xla_gpu_autotune_level": true,
+      "xla_gpu_per_fusion_autotune_cache_dir": true
+    },
+    "method": "exact-line match of the flag name in the binary's string table",
+    "status": "OK",
+    "why": "a Step 1 that dies on an unknown flag inside a coordinated GPU window spends the window for nothing, which is how W1 attempt 1 was lost"
+  }
+}

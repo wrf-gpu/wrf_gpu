@@ -1,0 +1,42 @@
+{
+  "gate": "Canary native-dt max-dom3 1h release no-regression gate",
+  "schema": "gpuwrf_release_gate_summary",
+  "verdict": "PIPELINE_GREEN",
+  "all_domains_finite": true,
+  "all_outputs_present": true,
+  "domains": [
+    "d01",
+    "d02",
+    "d03"
+  ],
+  "root_steps": 200,
+  "wall_clock_total_s": 1938.6404802129837,
+  "wall_clock_forecast_only_s": 1762.1130486199982,
+  "per_domain": {
+    "d01": {
+      "dt_s": 18.0,
+      "own_steps": 200,
+      "history_interval_min": 20.0,
+      "final_state_finite": true,
+      "wrfout_count": 2,
+      "expected_wrfout_count": 2
+    },
+    "d02": {
+      "dt_s": 6.0,
+      "own_steps": 600,
+      "history_interval_min": 20.0,
+      "final_state_finite": true,
+      "wrfout_count": 3,
+      "expected_wrfout_count": 3
+    },
+    "d03": {
+      "dt_s": 2.0,
+      "own_steps": 1800,
+      "history_interval_min": 20.0,
+      "final_state_finite": true,
+      "wrfout_count": 3,
+      "expected_wrfout_count": 3
+    }
+  },
+  "note": "PIPELINE_GREEN; all domains finite and all expected outputs present."
+}

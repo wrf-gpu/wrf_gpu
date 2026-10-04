@@ -1,0 +1,310 @@
+{
+  "attack_matrix": {
+    "rejected": 9,
+    "rejection_fraction": 1.0,
+    "required_attacks": [
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A6",
+      "A11",
+      "A12r",
+      "A14",
+      "A15"
+    ],
+    "results": [
+      {
+        "attack_id": "A1_import_time_call",
+        "reason": "top-level statement model differs from immutable candidate; every import-time statement kind/order/body is pinned",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A2_import_time_subscript_assignment",
+        "reason": "top-level statement model differs from immutable candidate; every import-time statement kind/order/body is pinned",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A3_default_branch_truthiness",
+        "reason": "default-off branch condition/body/orelse is not the reviewed direct return",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A4_default_branch_else_hijack",
+        "reason": "default-off branch condition/body/orelse is not the reviewed direct return",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A6_atomic_replace",
+        "reason": "reviewed ADR helper body changed: _m0_evidence_atomic_json",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A11_guard_body_removal",
+        "reason": "non-'1' evidence guard shape/body/orelse changed",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A12r_helper_dynamic_jax_access",
+        "reason": "reviewed ADR helper body changed: _m0_evidence_run",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A14_helper_global_write",
+        "reason": "reviewed ADR helper body changed: _m0_evidence_run",
+        "status": "REJECTED"
+      },
+      {
+        "attack_id": "A15_constant_retarget",
+        "reason": "reviewed ADR constant value changed: _M0_EVIDENCE_RANGE",
+        "status": "REJECTED"
+      }
+    ],
+    "total": 9
+  },
+  "benchmark": {
+    "added_ns_per_forecast_call": 243.22794999999996,
+    "alternating_order": true,
+    "default_off_ns_per_call_median": 315.405785,
+    "default_off_ns_per_call_samples": [
+      319.081715,
+      312.27076,
+      311.330755,
+      315.202385,
+      317.2031,
+      315.405785,
+      324.72841
+    ],
+    "device_policy": "CPU only; no device query/import/lock/request/test",
+    "direct_ns_per_call_median": 72.177835,
+    "direct_ns_per_call_samples": [
+      72.295635,
+      71.36468,
+      72.177835,
+      73.817045,
+      74.47205,
+      70.07487,
+      70.041315
+    ],
+    "iterations_per_repeat": 200000,
+    "max_added_ns_per_forecast_call": 10000,
+    "repeats": 7,
+    "schema": "wrf_gpu2.v025.m0.default_path_overhead.v1",
+    "scope": "Python dispatch envelope once per whole forecast integration; jitted timestep body separately pinned by semantic AST identity",
+    "startup_import": {
+      "added_ms": 0.0,
+      "added_top_level_imports": [],
+      "hook_only_imports": "lazy-enabled-path-only",
+      "max_added_ms": 0.0,
+      "method": "semantic-validator-top-level-import-identity"
+    },
+    "status": "PASS"
+  },
+  "checks": {
+    "benchmark_without_external_pythonpath_green": true,
+    "cpu_pins_active": true,
+    "dry_windows_end_to_end": true,
+    "failure_matrix_suppresses_later_stages": true,
+    "fresh_pair_objects_absent_before_w1": true,
+    "full_v025_pytest_green": true,
+    "mandatory_attacks_100_percent_rejected": true,
+    "no_device_or_receipt_action": true,
+    "production_tree_exact_candidate": true,
+    "sampler_limitations_machine_visible": true,
+    "sampler_miss_threshold_five_percent": true,
+    "stale_pair_fully_refused": true,
+    "stale_tombstones_not_authorisable": true,
+    "three_windows_capped": true,
+    "validator_bound_pass": true
+  },
+  "deferred_identity_cache_state": {
+    "all_deferred_objects_absent": true,
+    "records": {
+      "clean_cache_snapshot": {
+        "exists": false,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-clean-20260728-r2",
+        "required_status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+      },
+      "clean_identity": {
+        "exists": false,
+        "path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-clean-20260728-r2.identity.json",
+        "required_status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+      },
+      "profiled_cache_snapshot": {
+        "exists": false,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-qualified-pair-cache-r2/m0-autotune0-profiled-20260728-r2",
+        "required_status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+      },
+      "profiled_identity": {
+        "exists": false,
+        "path": "proofs/v025/m0/autotune0_three_window/m0-autotune0-profiled-20260728-r2.identity.json",
+        "required_status": "MUST_NOT_EXIST_UNTIL_W1_QUALIFIES"
+      },
+      "qualification_cache": {
+        "exists": false,
+        "path": "<DATA_ROOT>/wrf_gpu2/v025/m0/raw/autotune0-three-window-r2/m0-autotune0-qualify-20260728-r2/unique-empty-cache",
+        "required_status": "MUST_NOT_EXIST"
+      },
+      "qualification_manifest": {
+        "exists": false,
+        "path": "proofs/v025/m0/autotune0_three_window/autotune0_qualification.json",
+        "required_status": "MISSING_UNTIL_W1"
+      }
+    }
+  },
+  "device_policy": {
+    "coordination_requests": [],
+    "device_actions": [],
+    "policy": "closed",
+    "receipt_consumptions": [],
+    "receipt_reads": []
+  },
+  "generated_at_utc": "2026-07-28T02:07:02.456448+00:00",
+  "gpu_evidence_status": "MISSING",
+  "production_identity": {
+    "candidate_commit": "5638bedd1b92167ef4e150d6e03d1d2866accefa",
+    "candidate_src_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "working_diff_returncode": 0
+  },
+  "proof_sha256": {
+    "proofs/v025/m0/adr036_gate_repair_cpu_tests.xml": "e1a023a03c7f183504021df5b67b0231748e6cc719242c726913765aad7b351d",
+    "proofs/v025/m0/autotune0_three_window_dry_run.json": "12fde55703a93c1f003de221292d15baab13efb8a37d8d176c09456d2852aeeb",
+    "proofs/v025/m0/autotune0_three_window_failure_matrix.json": "2cc38b65ef81f67a231ce09b2365e84f17b9323a712d1b229759bb31d543db26",
+    "proofs/v025/m0/autotune0_three_window_plan.json": "6aa7a8bdf1361d07c7b972e3b46223132b5b14848e6255a96c7af13c66b8f28c",
+    "proofs/v025/m0/m0_default_path_overhead.json": "e649ad448229a5835a1a94a6f4c0b6bf669879328ee1d628c605348cb97941ed",
+    "proofs/v025/m0/m0_instrumentation_diff_validation.json": "7c26df5c323230246e0a5b55b07a32a454dc41e50295fd123beea769de80f6d5"
+  },
+  "pytest": {
+    "errors": 0,
+    "failures": 0,
+    "green": true,
+    "path": "proofs/v025/m0/adr036_gate_repair_cpu_tests.xml",
+    "sha256": "e1a023a03c7f183504021df5b67b0231748e6cc719242c726913765aad7b351d",
+    "skipped": 0,
+    "tests": 664
+  },
+  "reproduce": {
+    "builder": "<USER_HOME>/miniconda3/bin/python scripts/v025/build_adr036_gate_repair_evidence.py",
+    "environment": "taskset -c 0-3 env JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 XLA_FLAGS=--xla_cpu_multi_thread_eigen=false",
+    "external_pythonpath_required": false,
+    "tests": "<USER_HOME>/miniconda3/bin/python -m pytest -q tests/v025 --junitxml=proofs/v025/m0/adr036_gate_repair_cpu_tests.xml"
+  },
+  "sampler_policy": {
+    "baseline_counted_as_stream_sample": false,
+    "jax_import_check": "sys.modules prefix scan before baseline or stream",
+    "limitations": [
+      "Polling can miss a residency spike shorter than sample_cadence_ms.",
+      "The metric is invalid if inferred or malformed misses exceed 5% of stream samples plus misses.",
+      "Pre-launch competing contexts are rejected, but a context that appears and disappears wholly between process-telemetry samples cannot be observed."
+    ],
+    "maximum_miss_fraction": 0.05
+  },
+  "schema": "wrf_gpu2.v025.m0.adr036_gate_repair_cpu_evidence.v1",
+  "source_sha256": {
+    "scripts/v025/baseline_census.py": "0c74a7dda26fb751e75c7e815a485e348955750f7a8352e8ac96c57e07e4a5b6",
+    "scripts/v025/benchmark_m0_default_path.py": "ae238b7773873044de298fd157b02ca8d9162268dc28c39a8e0ccbdd3f0bbc5c",
+    "scripts/v025/m0_stale_pair.py": "f6c48a66e267d8302c1a1155aa6669f0c846cae1c2a7e0c29d7f5eb2184c040c",
+    "scripts/v025/m0_three_window_executor.py": "4354281856754b414c952a9a4252e8179f136d95b32496d4f39770c1084bb10b",
+    "scripts/v025/m0_vram_sampler.py": "66b1f34857ff929af53a6b073bc402a1d819434e6a3fa302719ab0df1f31a24c",
+    "scripts/v025/prepare_m0_matched_pair.py": "b09c3e0a2c357c04425cc70c0ed9b8b627ac8a0725a0d087713b72dd91fe3c04",
+    "scripts/v025/validate_m0_evidence.py": "7005087df061177e964505cac926f96d9864dc85585831294d0485d3144714eb",
+    "scripts/v025/validate_m0_instrumentation_diff.py": "63fc438e5cd75a16c5506c7c120194dcfedf21e8b4fed45b834f7467b8507571",
+    "tests/v025/test_m0_instrumentation_diff_attacks.py": "1f46db519991a6ac660984751bfb5dc1d679f685461480f65a38a9095354b14b",
+    "tests/v025/test_m0_step1_evidence_boundary.py": "10aea4886013e7bd84d37ac994bf0cbdcf510d3126fce372e2e062d8a82392b9",
+    "tests/v025/test_m0_three_window_executor.py": "81aaaa4c4d7f8d99a58b03ed7d544ec40365eae3ba05c376f620bab99dc13147",
+    "tests/v025/test_m0_vram_sampler.py": "6f2d4ec8150e913bbd91f46582dbd3e11577631806d9a2b07c463eae38255dc8"
+  },
+  "stale_pair": {
+    "all_refused_before_receipt_spend": true,
+    "checks": [
+      {
+        "name": "run_id:m0-pair-clean-20260728-r1",
+        "reason": "mechanically superseded M0 prepared pair refused before receipt consumption: run_id=m0-pair-clean-20260728-r1; superseded_by=.agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+        "status": "REJECTED"
+      },
+      {
+        "name": "run_id:m0-pair-profiled-20260728-r1",
+        "reason": "mechanically superseded M0 prepared pair refused before receipt consumption: run_id=m0-pair-profiled-20260728-r1; superseded_by=.agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+        "status": "REJECTED"
+      },
+      {
+        "name": "cache_sha256",
+        "reason": "mechanically superseded M0 prepared pair refused before receipt consumption: prepared_cache_sha256=825980d919b383833d88c80e416c20cb3f47c0e36b434ed65167288d7409c618; superseded_by=.agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+        "status": "REJECTED"
+      },
+      {
+        "name": "profiled_identity",
+        "reason": "mechanically superseded M0 prepared pair refused before receipt consumption: identity_sha256=a11b9da29dd17a2151c653341c1a8c009aea8218167fa911113c612e4f3905f2; superseded_by=.agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+        "status": "REJECTED"
+      },
+      {
+        "name": "clean_identity",
+        "reason": "mechanically superseded M0 prepared pair refused before receipt consumption: identity_sha256=bc794a2b093045ef44c5b23598968a179c7626053f1d065d6d35664bd79d1eb8; superseded_by=.agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+        "status": "REJECTED"
+      },
+      {
+        "name": "plan",
+        "reason": "mechanically superseded M0 prepared pair refused before receipt consumption: plan_sha256=213d09a6bc703294753c26613cfe93e14c2e6dcee453d92b4531a50fb6ab736e; superseded_by=.agent/patches/2026-07-28-v025-m0-autotune0-candidate-amendment.md",
+        "status": "REJECTED"
+      }
+    ],
+    "rejected": 6,
+    "total": 6
+  },
+  "status": "CPU_REPAIR_GREEN_GPU_WINDOWS_MISSING",
+  "three_window_plan": {
+    "canonical_sha256": "cc8192617deae60ea17d55e21979e82f2e44d66c6322b895f16325875e3a945c",
+    "live_execution_status": "REFUSED_PRE_GPU_UNTIL_MISSING_TIMING_BOUNDARIES_ARE_IMPLEMENTED",
+    "path": "proofs/v025/m0/autotune0_three_window_plan.json",
+    "sha256": "6aa7a8bdf1361d07c7b972e3b46223132b5b14848e6255a96c7af13c66b8f28c",
+    "windows": [
+      {
+        "budget": {
+          "deadline_seconds": 1500.0,
+          "headroom_seconds": 0.0,
+          "overhead_seconds": 120.0,
+          "stage_budget_seconds": 1380.0
+        },
+        "id": "W1",
+        "label": "m0-autotune0-qualification",
+        "receipt": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W1_RECEIPT.json",
+        "run_id": "m0-autotune0-qualify-20260728-r2"
+      },
+      {
+        "budget": {
+          "deadline_seconds": 1500.0,
+          "headroom_seconds": 100.0,
+          "overhead_seconds": 180.0,
+          "stage_budget_seconds": 1220.0
+        },
+        "id": "W2",
+        "label": "m0-autotune0-profiled-census",
+        "receipt": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W2_PROFILED_RECEIPT.json",
+        "run_id": "m0-autotune0-profiled-20260728-r2"
+      },
+      {
+        "budget": {
+          "deadline_seconds": 1500.0,
+          "headroom_seconds": 0.0,
+          "overhead_seconds": 180.0,
+          "stage_budget_seconds": 1320.0
+        },
+        "id": "W3",
+        "label": "m0-autotune0-clean-matched-arm",
+        "receipt": ".agent/sprints/2026-07-27-v0250-m0-setup/M0_AUTOTUNE0_W3_CLEAN_RECEIPT.json",
+        "run_id": "m0-autotune0-clean-20260728-r2"
+      }
+    ]
+  },
+  "unresolved_gpu_measurement_boundaries": {
+    "cached_readiness": "fresh process launch to the same executable-ready event from the W1-populated cache",
+    "cold_readiness": "process launch to mechanically observed executable-ready event; excludes forecast integration",
+    "current_gate_eligibility": "MISSING",
+    "rule": "No subtraction, first-call wall clock, or relabelling may satisfy either missing boundary.",
+    "unresolved_instrumentation": [
+      "current product hook starts before the jitted call, so compile and execution are not separated by an executable-ready event",
+      "current clean arm exposes no mechanically equivalent default-off integration-only clock"
+    ],
+    "warm_profiled_clean_integration": "synchronized integration-only start/end around the same forecast range; excludes compile, cache load, input staging, output I/O, and lock queue"
+  }
+}

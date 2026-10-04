@@ -1,0 +1,37 @@
+{
+  "verdict": "G0-KILL",
+  "action": "KILL the fp32 rewrite as a speed/capability lever (both gates failed). Write the EXACT-cause honest negative (transient still fp64-island/qke-dominated AND ms/step <= ~1.2x even with p'/ph'/mu'/w fp32, AND no fp64-OOM grid fp32 unlocks). Redirect entirely to structural P3/P4 + multi-GPU/tiling. Do NOT report a vague 'fp32 didn't help'.",
+  "metrics": {
+    "ms_per_step_fp64": NaN,
+    "ms_per_step_fp32": NaN,
+    "warm_speedup_x": NaN,
+    "peak_vram_mib_fp64": NaN,
+    "peak_vram_mib_fp32": NaN,
+    "vram_lower": false,
+    "dominant_kernel_ms_fp64": NaN,
+    "dominant_kernel_ms_fp32": NaN,
+    "dominant_kernel_faster": false,
+    "transient_fp32_fraction": NaN,
+    "transient_majority_fp32_able": false,
+    "bottleneck_moved_to_named_nondycore": false,
+    "fp32_fit": true,
+    "fp64_oom_target_exists": true,
+    "on_2x_trajectory": false
+  },
+  "gates": {
+    "G0_SPEED_GO": false,
+    "G0_CAPABILITY_GO": false,
+    "G0_KILL": true
+  },
+  "criteria_ref": "FINAL_FP32_SPRINT_PLAN.md \u00a72 + V0200-ROADMAP.md \u00a78.4",
+  "grid": {
+    "name": "v017_bigswiss_460x460x44",
+    "cols": 211600,
+    "fp64_oom_target": true,
+    "_note": "is there a useful 1km/large grid fp64 OOMs on but fp32 fits? set from the capability sub-run; default True (a 1km nest exists)."
+  },
+  "notes": {
+    "fp32_arm": "JAX_ENABLE_X64=false + GPUWRF_THOMPSON_FP32=1 (aggressive proxy)",
+    "transient_fp32_fraction_source": "operator dtype/liveness audit (V020_G0_FP32_TRANSIENT_FRAC); -1/NaN treated conservatively by the verdict"
+  }
+}

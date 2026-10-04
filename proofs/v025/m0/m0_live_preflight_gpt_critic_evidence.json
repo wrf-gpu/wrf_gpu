@@ -1,0 +1,170 @@
+{
+  "amendment_2_proposed": false,
+  "artifacts": {
+    ".agent/sprints/2026-07-30-v0250-m0-live-preflight-gpt-critic/PATCH_PROPOSALS.md": "7ba91405034dd87f66f02d41c3824951188d5ae19b434f20fddcd96b5d81b9c7",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/candidate_proof_reproduction.json": "9a4ea30ceda3c518fa7c401438ff4cc512218ae3eb964aca98abf3c09c7c3831",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/commands.md": "954cdc670e727d7af9dd1cc0fef76e08421264618136e4837e5eb75eddc0f8ea",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/critic_attacks_candidate.junit.xml": "330961cb38e71d7a26287addf68cd2bd7d8272e3a5cdefc1e336bc7aed11bd2e",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/focused_candidate_baseline.junit.xml": "0d4c1ff6a6dd9f20e9026c82c13211c23626b7b6db8a19fcf111dc99f66213df",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/full_candidate_baseline.junit.xml": "f5770df01f2ac12009f13920027a1a071a292e1a57c11f748d2d8a8634e6086c",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/full_with_critic.junit.xml": "bb15f82509303ad2c1a4e006ce6d8a7c9d1dab48d420baa4c0539c7f354c1554",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/retained_profiler_audit.json": "c9651cf6f855d19db3038d86480665ae92e71b4fcc584dcd6d93f1b2738913bb",
+    "proofs/v025/m0/live_preflight_gpt_critic_raw/source_and_authorization_attacks.json": "e3f0ec9a529c9ccc7299490aa1805ac9b30336d31f54004efc5a54dea50ebc59",
+    "tests/v025/test_m0_live_preflight_gpt_critic.py": "96ee536e7abfafe658df14df483ec17cc966db903730ec370c233f047dcff3f0"
+  },
+  "candidate": {
+    "implementation_proof_commit": "a5e8f5d8b96650a4a87b4c4179ed57d12a9eadf6",
+    "manager_base": "c8f38a88",
+    "proof_internal_sha256": "3b8ef04d7f35e25a8eda1244b51ffaf9d53e4455af203461a267aad7c9401033",
+    "proof_sha256": "957ccc563601b3ad2e89c0450fb1c1fe2cc1974286eaabe8fa2dfd0b211ff6bc",
+    "review09_correction": "46ef9f39",
+    "src_gpuwrf_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+    "terminal_commit": "57e8dac77f7ecddaa7e6a34ee2f144e15c623c60",
+    "terminal_only_changes_report_and_done": true
+  },
+  "criteria": {
+    "C1_candidate_and_proof_authority": {
+      "facts": {
+        "candidate_file_sha_matches": true,
+        "candidate_internal_sha_matches": true,
+        "clean_clone_run_1_sha256": "3536d250f6220df0e0d8aa58db97dbe2aef0b062aac46e6ec39941ac4c1c14fb",
+        "clean_clone_run_2_sha256": "3536d250f6220df0e0d8aa58db97dbe2aef0b062aac46e6ec39941ac4c1c14fb",
+        "clean_clone_runs_match_each_other": true,
+        "clean_clone_runs_match_candidate": false,
+        "normalizer_masks_load_bearing_values": false,
+        "report_authority_sha_matches_proof": false,
+        "report_gate_a_count_matches_proof": false,
+        "src_tree_matches": true
+      },
+      "status": "FAIL"
+    },
+    "C2_source_authority_and_exact_boundary": {
+      "facts": {
+        "bound_exact_cpu_lowering_ok": true,
+        "bound_native_lw_call_ok": true,
+        "candidate_gate_a_mutation_set_equal": true,
+        "candidate_gate_a_mutations_refused": 15,
+        "canonical_root_acceptable_for_exact_session_only": true,
+        "outer_preflight_load_fast_call_arguments_calls": 0,
+        "outer_preflight_native_lw_calls": 0,
+        "outer_preflight_status": "PASS",
+        "original_missing_root_failure_reproduced": true
+      },
+      "status": "FAIL"
+    },
+    "C3_single_label_and_spend_authority": {
+      "facts": {
+        "committed_ledger_byte_identical": true,
+        "committed_ledger_sha256": "b4544ff8e3f2ef8b087a16a9e2f8743cbf8a22d59d456ff7845b9af9daed4ce0",
+        "receipt_label": "baseline-census",
+        "temporary_receipt_spent": true,
+        "unknown_lock_label": "invented-lock-label",
+        "unknown_lock_label_authorised": true
+      },
+      "status": "FAIL"
+    },
+    "C4_real_profiler_attribution": {
+      "facts": {
+        "candidate_ambiguous_vendor_mutation_exercises_classifier": false,
+        "old_unknown_device_time_share": 1.0,
+        "old_unknown_launch_share": 1.0,
+        "retained_mynn_source_hlo_rows": 9,
+        "retained_nvtx_rows": 513,
+        "retained_thompson_source_hlo_rows": 29,
+        "source_vendor_conflict_refused": false
+      },
+      "status": "FAIL"
+    },
+    "C5_w2_capability_truth": {
+      "facts": {
+        "achieved_dram_gbps": "MISSING",
+        "candidate_busy_fraction": 0.9789,
+        "candidate_busy_span_integration_scoped": false,
+        "candidate_launches_per_step": 1588.2,
+        "candidate_step_denominator": "steps_assumed=200",
+        "integration_range_occurrences_in_retained_v015": 0,
+        "nsys_150_step_launches_per_step": 13958.3,
+        "occupancy_and_stalls": "MISSING",
+        "run_physics_false": "SEPARATE_COMPILED_PROGRAM"
+      },
+      "status": "FAIL"
+    },
+    "C6_mutation_power_and_regression": {
+      "facts": {
+        "candidate_focused": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 34,
+          "skipped": 0
+        },
+        "candidate_full_baseline": {
+          "errors": 0,
+          "failed": 0,
+          "passed": 909,
+          "skipped": 2
+        },
+        "critic_focused": {
+          "errors": 0,
+          "failed": 5,
+          "passed": 1,
+          "skipped": 0
+        },
+        "full_with_critic": {
+          "errors": 0,
+          "failed": 5,
+          "passed": 910,
+          "skipped": 2
+        }
+      },
+      "status": "FAIL"
+    },
+    "C7_decision_ready_next_contract": {
+      "reason": "The repair is rejected; the frozen contract forbids an Amendment 2 proposal unless the repair is accepted.",
+      "status": "NOT_APPLICABLE"
+    }
+  },
+  "device_action": false,
+  "device_denial": {
+    "AllowedCPUs": "0-3",
+    "CUDA_VISIBLE_DEVICES": "",
+    "DevicePolicy": "closed",
+    "JAX_PLATFORMS": "cpu",
+    "MemoryMax": "24G"
+  },
+  "evidence_sha256": "92d4cb390e693ad254bfcd87f8a761f277b8bb2ff523889ccf2665357c862cd4",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "P0",
+      "summary": "The outer preflight returns PASS without executing the actual production native-LW loader or FAST readiness/lowering path."
+    },
+    {
+      "id": "F2",
+      "severity": "P0",
+      "summary": "run_gpu_arm.authorise accepts and spends a valid receipt under an unknown canonical-lock label."
+    },
+    {
+      "id": "F3",
+      "severity": "P1",
+      "summary": "The W2 kernels/step denominator is assumed and the busy span is not bound to the required integration range."
+    },
+    {
+      "id": "F4",
+      "severity": "P1",
+      "summary": "Retained TSL NVTX/HLO source metadata was overlooked, and the attribution mutation/nested-conflict semantics false-pass."
+    },
+    {
+      "id": "F5",
+      "severity": "P2",
+      "summary": "The proof is same-checkout deterministic but does not reproduce the frozen bytes from a distinct clean checkout; report count/hash fields also disagree with the proof."
+    }
+  ],
+  "gpu_queries": 0,
+  "gpu_receipt_or_lock_actions": 0,
+  "next_manager_decision": "Dispatch a new frozen CPU-only repair for F1/F2 and corrected proof generation; do not coordinate W2.",
+  "real_coordination_receipt_actions": 0,
+  "schema": "wrf_gpu2.v025.m0.live_preflight_gpt_critic.v1",
+  "sprint": "2026-07-30-v0250-m0-live-preflight-gpt-critic",
+  "src_gpuwrf_modified_by_critic": false,
+  "terminal_verdict": "REJECT_M0_LIVE_PREFLIGHT_REPAIR"
+}

@@ -1,0 +1,5 @@
+{"B": 1, "d01_3Dcells": 158400, "d01_steps_per_measure": 400, "d02_3Dcells": 309672, "d02_steps_per_measure": 1200, "fits": true, "peak_vram_mib": 9425, "warm_wall_s": 96.39574396098033}
+{"B": 2, "d01_3Dcells": 158400, "d01_steps_per_measure": 400, "d02_3Dcells": 309672, "d02_steps_per_measure": 1200, "fits": true, "peak_vram_mib": 10801, "warm_wall_s": 188.48866910801735}
+{"B": 3, "d01_3Dcells": 158400, "d01_steps_per_measure": 400, "d02_3Dcells": 309672, "d02_steps_per_measure": 1200, "fits": true, "peak_vram_mib": 15374, "warm_wall_s": 249.15046821301803}
+{"B": 4, "d01_3Dcells": 158400, "d01_steps_per_measure": 400, "d02_3Dcells": 309672, "d02_steps_per_measure": 1200, "fits": true, "peak_vram_mib": 18320, "warm_wall_s": 308.80506396701094}
+{"B": 5, "d01_3Dcells": 158400, "d01_steps_per_measure": 400, "d02_3Dcells": 309672, "d02_steps_per_measure": 1200, "fits": true, "peak_vram_mib": 14989, "warm_wall_s": 386.839142039069}

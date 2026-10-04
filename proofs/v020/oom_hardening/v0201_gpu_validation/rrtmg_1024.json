@@ -1,0 +1,66 @@
+{
+  "env": {
+    "JAX_PLATFORMS": null,
+    "JAX_PLATFORM_NAME": null,
+    "XLA_PYTHON_CLIENT_ALLOCATOR": "cuda_async",
+    "XLA_PYTHON_CLIENT_PREALLOCATE": "false"
+  },
+  "rows": [
+    {
+      "column_mode": "tiled",
+      "kind": "lw",
+      "memory": {
+        "available": true,
+        "bytes_in_use_gib": 0.58,
+        "device": "cuda:0",
+        "largest_alloc_gib": 0.271,
+        "num_allocs": 531,
+        "peak_gib": 0.851,
+        "platform": "gpu",
+        "raw": {
+          "bytes_in_use": 622405592,
+          "bytes_limit": 0,
+          "bytes_reserved": 0,
+          "largest_alloc_size": 290863992,
+          "largest_free_block_bytes": 0,
+          "num_allocs": 531,
+          "peak_bytes_in_use": 913269656,
+          "peak_bytes_reserved": 0
+        }
+      },
+      "ncol": 144801,
+      "nlev": 16,
+      "nrep": 1,
+      "tile_cols": 1024
+    },
+    {
+      "column_mode": "tiled",
+      "kind": "sw",
+      "memory": {
+        "available": true,
+        "bytes_in_use_gib": 0.587,
+        "device": "cuda:0",
+        "largest_alloc_gib": 0.271,
+        "num_allocs": 906,
+        "peak_gib": 1.511,
+        "platform": "gpu",
+        "raw": {
+          "bytes_in_use": 630514456,
+          "bytes_limit": 0,
+          "bytes_reserved": 0,
+          "largest_alloc_size": 290863992,
+          "largest_free_block_bytes": 0,
+          "num_allocs": 906,
+          "peak_bytes_in_use": 1622709312,
+          "peak_bytes_reserved": 0
+        }
+      },
+      "ncol": 144801,
+      "nlev": 16,
+      "nrep": 1,
+      "tile_cols": 1024
+    }
+  ],
+  "schema": "GpuwrfRrtmgTransientReproducer",
+  "schema_version": 1
+}

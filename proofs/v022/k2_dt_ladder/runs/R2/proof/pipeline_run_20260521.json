@@ -1,0 +1,999 @@
+{
+  "all_finite_check": {
+    "all_finite": true,
+    "field_count": 64,
+    "fields": {
+      "Nc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "Ng": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "Nh": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "Ni": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "Nn": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "Nr": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "Ns": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "cldfra_bl": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "fltv": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.09036767053632064,
+        "min": -0.2738660122602237,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "graupel_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "hail_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "ice_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "lakemask": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "lu_index": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 17.0,
+        "min": 1.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "mavail": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.10000000149011612,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "mu_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1793.3593750000002,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          1,
+          129
+        ]
+      },
+      "mu_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1736.3739333584454,
+        "min": 78.60645260295306,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "mu_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 96570.6862151048,
+        "min": 63171.27894689646,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "mub_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 94865.3359375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          1,
+          129
+        ]
+      },
+      "nifa": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "nwfa": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "p_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2116.40625,
+        "min": -0.0478515625,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          44,
+          129
+        ]
+      },
+      "p_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2116.40625,
+        "min": -14.012171481335827,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "p_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 101591.3515625,
+        "min": 5224.148809575424,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "pb_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 99571.9609375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          44,
+          129
+        ]
+      },
+      "ph_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 4397.072954385965,
+        "min": -1144.0833684210525,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          45,
+          129
+        ]
+      },
+      "ph_perturbation": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 4388.302035087719,
+        "min": -1144.0833684210522,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          128,
+          128
+        ]
+      },
+      "ph_total": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 199602.06774561404,
+        "min": 112.12501525878906,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          128,
+          128
+        ]
+      },
+      "phb_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 195220.46875,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          45,
+          129
+        ]
+      },
+      "qc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0002041104028810383,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qc_bl": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qg": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qh": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qi": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qi_bl": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qke": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 28.370529820692155,
+        "min": 9.999999999999999e-06,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qr": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qs": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qsq": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qv": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.007233408250659905,
+        "min": 9.995684133685629e-07,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qv_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.006910186260938644,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          44,
+          129
+        ]
+      },
+      "qv_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 5.55109735752083e-05,
+        "min": -2.8422871002732426e-05,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "qvolg": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "qvolh": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "rain_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "rainc_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "rhosfc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.2661807537078857,
+        "min": 0.8931869268417358,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "roughness_m": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.8,
+        "min": 0.0001,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "snow_acc": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "soil_moisture": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.0,
+        "min": 0.24914196133613586,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "t_skin": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 287.16766357421875,
+        "min": 256.59234619140625,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "tau_u": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.7081861150608177,
+        "min": -3.1047102014838783,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "tau_v": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.44468437393285454,
+        "min": -3.2143983668222096,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "theta": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 495.2497343395565,
+        "min": 276.6074797260656,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          128
+        ]
+      },
+      "theta_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 495.24603271484375,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          44,
+          129
+        ]
+      },
+      "theta_flux": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.08098597764129527,
+        "min": -0.2722511878219151,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "u": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 46.670908982056304,
+        "min": -12.959831956409365,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          128,
+          129
+        ]
+      },
+      "u_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 46.48776626586914,
+        "min": -1.877709984779358,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          44,
+          129
+        ]
+      },
+      "ustar": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 1.9175797408850643,
+        "min": 0.003009302652063177,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      },
+      "v": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 22.711730976760215,
+        "min": -18.140508130301136,
+        "nonfinite_count": 0,
+        "shape": [
+          44,
+          129,
+          128
+        ]
+      },
+      "v_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 22.127294540405273,
+        "min": -18.676645278930664,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          44,
+          129
+        ]
+      },
+      "w": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 5.125878751312989,
+        "min": -3.0953776599473395,
+        "nonfinite_count": 0,
+        "shape": [
+          45,
+          128,
+          128
+        ]
+      },
+      "w_bdy": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 0.0,
+        "min": 0.0,
+        "nonfinite_count": 0,
+        "shape": [
+          2,
+          4,
+          5,
+          45,
+          129
+        ]
+      },
+      "xland": {
+        "dtype": "float64",
+        "finite": true,
+        "max": 2.0,
+        "min": 1.0,
+        "nonfinite_count": 0,
+        "shape": [
+          128,
+          128
+        ]
+      }
+    }
+  },
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "device": "cuda:0",
+  "domain": "d01",
+  "hours": 2,
+  "metadata": {
+    "boundary": {
+      "bdy_width": 5,
+      "coupling": "decoupled by IC hybrid dry-mass term (c1h*muT+c2h etc.)",
+      "interval_seconds": 10800.0,
+      "padded_side_length": 129,
+      "schema": "wrfbdy-decoupled-leaf-v1",
+      "side_order": [
+        "W",
+        "E",
+        "S",
+        "N"
+      ],
+      "source": "wrfbdy native lateral forcing (standalone; no CPU wrfout replay)",
+      "terminal_level_synthesized": true,
+      "theta_bdy_convention": "moist theta_m (matches operational State.theta)",
+      "times": 9,
+      "use_theta_m": 1,
+      "variables": [
+        "U",
+        "V",
+        "W",
+        "T",
+        "QVAPOR",
+        "PH",
+        "MU"
+      ],
+      "wrfbdy_path": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfbdy_d01",
+      "wrfbdy_records": 8
+    },
+    "domain": "d01",
+    "grid": {
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "mass_shape": [
+        44,
+        128,
+        128
+      ],
+      "wrf_staggered_extent": [
+        45,
+        129,
+        129
+      ]
+    },
+    "gwdo_static": {
+      "requested": false
+    },
+    "init_mode": "standalone_native_init",
+    "land_state_refresh": {
+      "cadence": "hourly forecast output boundary",
+      "enabled": true,
+      "records": []
+    },
+    "namelist": {
+      "acoustic_substeps": 9,
+      "damp_opt": 3,
+      "dampcoef": 0.2,
+      "diff_6th_factor": 0.12,
+      "diff_6th_opt": 2,
+      "disable_guards": false,
+      "dt_s": 12.0,
+      "force_fp64": true,
+      "gwd_opt": 0,
+      "radiation_cadence_steps": 150,
+      "rk_order": 3,
+      "run_boundary": true,
+      "run_physics": true,
+      "slope_rad": 0,
+      "top_lid": false,
+      "topo_shading": 0,
+      "topo_shadow_length_m": 25000.0,
+      "use_flux_advection": true,
+      "use_vertical_solver": true,
+      "w_damping": 1,
+      "zdamp": 5000.0
+    },
+    "radiation_static": {
+      "domain": "d01",
+      "dx_m": 3000.0,
+      "dy_m": 3000.0,
+      "slope_aspect_ref": "WRF dyn_em/start_em.F slope/slp_azi initialization",
+      "terrain_shape": [
+        128,
+        128
+      ],
+      "terrain_source": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01",
+      "uses_dycore_map_rotation": true,
+      "uses_real_xlat_xlong": true,
+      "xlat_source": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01",
+      "xlong_source": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+    },
+    "run_dir": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input",
+    "run_id": "run_gpu_input",
+    "source": "gpuwrf.integration.d02_replay.build_replay_case",
+    "standalone_native_init": true,
+    "writer_static_latlon": {
+      "candidate_files": [
+        "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+      ],
+      "domain": "d01",
+      "errors": {},
+      "fields": {
+        "XLAT": {
+          "dtype": "float32",
+          "finite_fraction": 1.0,
+          "max": 48.423423767089844,
+          "min": 44.8479118347168,
+          "shape": [
+            128,
+            128
+          ],
+          "source_file": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+        },
+        "XLAT_U": {
+          "dtype": "float32",
+          "finite_fraction": 1.0,
+          "max": 48.42342758178711,
+          "min": 44.84747314453125,
+          "shape": [
+            128,
+            129
+          ],
+          "source_file": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+        },
+        "XLAT_V": {
+          "dtype": "float32",
+          "finite_fraction": 1.0,
+          "max": 48.43738555908203,
+          "min": 44.833953857421875,
+          "shape": [
+            129,
+            128
+          ],
+          "source_file": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+        },
+        "XLONG": {
+          "dtype": "float32",
+          "finite_fraction": 1.0,
+          "max": 11.21978759765625,
+          "min": 5.880218505859375,
+          "shape": [
+            128,
+            128
+          ],
+          "source_file": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+        },
+        "XLONG_U": {
+          "dtype": "float32",
+          "finite_fraction": 1.0,
+          "max": 11.24078369140625,
+          "min": 5.859222412109375,
+          "shape": [
+            128,
+            129
+          ],
+          "source_file": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+        },
+        "XLONG_V": {
+          "dtype": "float32",
+          "finite_fraction": 1.0,
+          "max": 11.220489501953125,
+          "min": 5.8795166015625,
+          "shape": [
+            129,
+            128
+          ],
+          "source_file": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input/wrfinput_d01"
+        }
+      },
+      "loaded_fields": [
+        "XLAT",
+        "XLAT_U",
+        "XLAT_V",
+        "XLONG",
+        "XLONG_U",
+        "XLONG_V"
+      ],
+      "missing_fields": [],
+      "note": "host-only wrfout diagnostics; not part of State/GridSpec/OperationalNamelist",
+      "status": "loaded"
+    }
+  },
+  "output_dir": "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out",
+  "repeatability_status": "NOT_RUN",
+  "restart_probe_status": "NOT_RUN",
+  "run_dir": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input",
+  "run_id": "<DATA_ROOT>/wrf_gpu_switzerland_128/run_gpu_input",
+  "run_start_utc": "2023-01-15T00:00:00+00:00",
+  "schema": "M7DailyPipelineRun",
+  "schema_version": 1,
+  "speedup_status": "FAIL",
+  "station_score_summary": {
+    "acceptance": {
+      "finite_scores": false,
+      "joined_rows_at_least_100": false
+    },
+    "joined_rows": 0,
+    "scores": {},
+    "status": "NOT_RUN"
+  },
+  "verdict": "PIPELINE_GREEN",
+  "wall_clock_forecast_only_s": 257.2502881719847,
+  "wall_clock_per_forecast_hour_s": 138.61106147951796,
+  "wall_clock_per_hour_s": [
+    228.66907652898226,
+    28.58121164300246
+  ],
+  "wall_clock_total_s": 277.2221229590359,
+  "wrfout_files": [
+    "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out/wrfout_d01_2023-01-15_01:00:00",
+    "<USER_HOME>/src/wrf_gpu2_wt/parallel-compile/proofs/v022/k2_dt_ladder/runs/R2/out/wrfout_d01_2023-01-15_02:00:00"
+  ],
+  "wrfout_inventory_status": "PASS"
+}

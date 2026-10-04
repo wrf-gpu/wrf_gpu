@@ -1,0 +1,65 @@
+{
+  "added_imports": [],
+  "adr": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair/.agent/decisions/ADR-036-v025-m0-evidence-hook.md",
+  "adr_sha256": "826f80083152451bd7eb4309fbf3e8bbbf222873b39cf9c4a404affa421e5248",
+  "base": "a1fa459c",
+  "binding_note": "PASS is bound to immutable candidate production commit/tree and this validator's content hash; no HEAD hash is recorded, avoiding a self-referential committed proof.",
+  "candidate_operational_blob": "2965ac26669e980032339405e2ba8ce660e4dca3",
+  "candidate_operational_source_sha256": "294edbec51d173b725d48b5e38a6a93135af2a35970556ceba536dbc41430b12",
+  "candidate_production_commit": "5638bedd1b92167ef4e150d6e03d1d2866accefa",
+  "candidate_src_tree": "a6885ceded260df2f5777d7366d75a5d38947cb7",
+  "changed_src_files": [
+    "src/gpuwrf/runtime/operational_mode.py"
+  ],
+  "default_direct_call_ast_sha256": "21b8a3f7fe910268f53173cb121edd1536e75497f00a6111d897d749f96f68d7",
+  "default_off_jitted_body_ast_sha256": "34f952b82e1024566ab14d60218aeb886613429fe0cdcb1683c8739c011ec697",
+  "existing_definitions_unchanged": 150,
+  "existing_src_files_changed": 1,
+  "hot_loop_callback_tokens_added": [],
+  "new_private_constants": [
+    "_M0_EVIDENCE_CONFIG_SHA256",
+    "_M0_EVIDENCE_DEVICE_UUID",
+    "_M0_EVIDENCE_DEVICE_UUID_PATTERN",
+    "_M0_EVIDENCE_FLAG",
+    "_M0_EVIDENCE_INPUT_SHA256",
+    "_M0_EVIDENCE_PATH",
+    "_M0_EVIDENCE_RANGE",
+    "_M0_EVIDENCE_RUN_ID",
+    "_M0_EVIDENCE_RUN_ID_PATTERN",
+    "_M0_EVIDENCE_SCHEMA",
+    "_M0_EVIDENCE_SHA256_PATTERN",
+    "_M0_EVIDENCE_SOURCE_SHA256"
+  ],
+  "new_private_helpers": [
+    "_m0_evidence_allocator_stats",
+    "_m0_evidence_atomic_json",
+    "_m0_evidence_config_from_env",
+    "_m0_evidence_run"
+  ],
+  "reviewed_private_constant_values": {
+    "_M0_EVIDENCE_CONFIG_SHA256": "GPUWRF_M0_CONFIG_SHA256",
+    "_M0_EVIDENCE_DEVICE_UUID": "GPUWRF_M0_DEVICE_UUID",
+    "_M0_EVIDENCE_DEVICE_UUID_PATTERN": "^GPU-[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+    "_M0_EVIDENCE_FLAG": "GPUWRF_M0_EVIDENCE",
+    "_M0_EVIDENCE_INPUT_SHA256": "GPUWRF_M0_INPUT_MANIFEST_SHA256",
+    "_M0_EVIDENCE_PATH": "GPUWRF_M0_EVIDENCE_PATH",
+    "_M0_EVIDENCE_RANGE": "GPUWRF_M0_FORECAST_INTEGRATION",
+    "_M0_EVIDENCE_RUN_ID": "GPUWRF_M0_RUN_ID",
+    "_M0_EVIDENCE_RUN_ID_PATTERN": "^[A-Za-z0-9][A-Za-z0-9._-]{7,127}$",
+    "_M0_EVIDENCE_SCHEMA": "wrf_gpu2.v025.m0.forecast_allocator.v1",
+    "_M0_EVIDENCE_SHA256_PATTERN": "^[0-9a-f]{64}$",
+    "_M0_EVIDENCE_SOURCE_SHA256": "GPUWRF_M0_SOURCE_SHA256"
+  },
+  "reviewed_private_helper_ast_sha256": {
+    "_m0_evidence_allocator_stats": "c800754a3227ca9ac2639dd4abe841aaaea85c50fe11ecb2fec739204292ccdc",
+    "_m0_evidence_atomic_json": "d771ebf4c6021f787c2987b00f4574a4b6c37a6473f4a7bbaf88bc3a6a1b3b05",
+    "_m0_evidence_config_from_env": "4fd14353ac79d0b1fcf72214052c66c8459fe7cdd8587d76425a470ac15f6ade",
+    "_m0_evidence_run": "ba91b89c2925c254a29a967b88f9ebc1f0454b91148b47e32ba3b9ace569581a"
+  },
+  "schema": "wrf_gpu2.v025.m0.instrumentation_diff_validation.v2",
+  "status": "PASS",
+  "top_level_statement_count": 233,
+  "top_level_statement_model_sha256": "ffd47b9ac043f277cc0f6ed9e14238327189a876a407d57a97cfb185c7007cc4",
+  "validator_sha256": "63fc438e5cd75a16c5506c7c120194dcfedf21e8b4fed45b834f7467b8507571",
+  "working_production_source_matches_candidate": true
+}

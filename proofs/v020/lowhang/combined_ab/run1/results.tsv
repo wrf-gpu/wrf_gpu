@@ -1,0 +1,8 @@
+arm	rc	s_per_fc_h	forecast_only_s	wall_s	peak_VRAM_MiB	finite	outputs_present	oom
+warmup	0	4512.2	4512.2	4769	13769	True	True	no
+v019_baseline	0	912.1	1824.3	2010	14996	True	True	no
+alloc_only	0	869.2	1738.3	1893	14874	True	True	no
+async_only	0	917.4	1834.7	2019	14991	True	True	no
+combined	0	870.7	1741.5	1934	14873	True	True	no
+combined_K2	0	889.1	1778.2	1937	14875	True	True	no
+combined_K3	0	844.5	1688.9	1863	14877	True	True	no

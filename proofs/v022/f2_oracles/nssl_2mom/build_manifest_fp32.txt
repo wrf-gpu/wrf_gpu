@@ -1,0 +1,13 @@
+oracle: nssl2mom single-column (WRF mp_physics=18 default config)
+mode: fp32
+date: 2026-07-02T22:38:26Z
+gfortran: GNU Fortran (conda-forge gcc 14.3.0-19) 14.3.0
+fflags: -O2 -ffree-form -ffree-line-length-none -ffpe-summary=none -cpp 
+pinning: taskset -c 4-31, OMP_NUM_THREADS=4
+wrf_source: <USER_HOME>/src/wrf_pristine/WRF/phys/module_mp_nssl_2mom.F (copied verbatim)
+namelist.input: empty (module defaults; no nssl_mp_params group)
+outputs: nssl_case_{1..6}.json
+checksums:
+29f42e76fbeca027a3ffb2ac805b148aaa1425c7f99ed1d8f19a90ebc1d015f8  module_mp_nssl_2mom.F
+6ac0b4dba70aec34a0e88254fef65c490840cb55cc742b4b0a8b64a1929dd149  nssl2mom_stub_modules.f90
+d7625e51c072df4a47e6b3d65caed2b1cf51a65738529a5ddf03db4151579967  nssl2mom_oracle_driver.f90

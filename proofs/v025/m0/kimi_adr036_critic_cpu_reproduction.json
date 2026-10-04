@@ -1,0 +1,72 @@
+{
+  "schema": "wrf_gpu2.v025.m0.kimi_adr036_critic_reproduction.v1",
+  "reviewer": "Kimi K3 thinking-max (independent, device-denied)",
+  "date_utc": "2026-07-28",
+  "candidate": {
+    "worktree": "<USER_HOME>/src/wrf_gpu2_wt/v0250-m0-rev6-repair",
+    "commit": "5638bedd1b92167ef4e150d6e03d1d2866accefa",
+    "base_commit": "a1fa459cbcf193c240fa376a5b0e7e4b0e97741a",
+    "base_src_gpuwrf_tree": "796aa24528876ef06c0cec198c1a0d16fbe94d10",
+    "src_diff_files": ["src/gpuwrf/runtime/operational_mode.py"],
+    "src_diff_stat": "+207/-1"
+  },
+  "execution_control": {
+    "device_policy": "closed",
+    "env": ["JAX_PLATFORMS=cpu", "CUDA_VISIBLE_DEVICES=\"\""],
+    "gpu_commands_executed": [],
+    "nvidia_smi_invocations": 0,
+    "jax_devices_observed": ["CpuDevice(id=0)"],
+    "candidate_worktree_modified": false
+  },
+  "reproduced_gates": {
+    "pytest_tests_v025": {"rc": 0, "result": "621 passed in 45.77s", "worker_claim": "621 passed in 45.56s"},
+    "validate_m0_instrumentation_diff": {"rc": 0, "status": "PASS", "jitted_body_ast_sha256": "34f952b82e1024566ab14d60218aeb886613429fe0cdcb1683c8739c011ec697", "ast_recomputed_at_base_and_candidate": "identical"},
+    "benchmark_m0_default_path": {"rc": 0, "status": "PASS", "added_ns_per_call_median": 249.35, "cap_ns": 10000, "worker_claim_ns": 230.764},
+    "build_m0_instrumentation_evidence": {"rc": 0, "status": "CPU_IDENTITY_GREEN_GPU_EVIDENCE_MISSING"},
+    "validate_cancellation_map": {"rc": 0, "status": "PASS"},
+    "validate_fast_pair": {"rc": 1, "status": "MISSING", "honest": true},
+    "validate_pallas_viability": {"rc": 1, "status": "MISSING", "honest": true},
+    "recompute_efficiency": {"rc": 1, "status": "MISSING", "honest": true},
+    "validate_kernel_census": {"rc": 1, "status": "MISSING", "honest": true},
+    "validate_m0_manifest": {"rc": 1, "status": "MISSING", "honest": true},
+    "close_sprint": {"rc": 1, "status": "MISSING", "honest": true}
+  },
+  "proof_hash_reverification": {
+    "proofs/v025/m0/m0_instrumentation_cpu_tests.xml": {"expected": "91edef2f7cac9e4a5e1e5ee44208565f5fa64a8e3aea8f2b37304511b9930f09", "match": true},
+    "proofs/v025/m0/m0_instrumentation_diff_validation.json": {"expected": "497dc607c224e406b1deb98ef2f58bde3bd62e7b027993f816e5870d3ffb34ea", "match": true},
+    "proofs/v025/m0/m0_default_path_overhead.json": {"expected": "e597f0fa10b2af97d546984bb7c2ce3144c8453979e0d452108e4bf7118327ca", "match": true},
+    "proofs/v025/m0/m0_instrumentation_cpu_evidence.json": {"expected": "286b1d731b48997ecbb5008ac9cf0ebe0636d9b607cbd6666c1e868d15cd8b68", "match": true},
+    "proofs/v025/m0/prepared_profiler_pair/plan.json": {"expected": "213d09a6bc703294753c26613cfe93e14c2e6dcee453d92b4531a50fb6ab736e", "match": true},
+    "scripts/v025/m0_evidence_v1.schema.json": {"expected": "a4ff26516cc64cdf02ccc7e0d68678d2ca7fe11165899ab8c28aef6d4ca3e386", "match": true}
+  },
+  "independent_negative_checks": {
+    "location": "/tmp/kimi_critic_m0/test_m0_negative_critic.py",
+    "tests": 32,
+    "passed": 32,
+    "fail_open_gaps_found": 0,
+    "scope": "flag value edges, run-id/sha256/UUID pattern rejection, atomic no-replace byte integrity, allocator-stat rejection, default-path non-entry of hook"
+  },
+  "validator_attack_battery": {
+    "attacks_run_in_tmp": 15,
+    "correctly_rejected": ["token-blocklisted numerical edits", "pre-existing definition mutation", "new public function", "frozen-statement reorder"],
+    "blindly_accepted": ["A1/A2/A17 module-level import-time side effects", "A3/A4/A11 default-branch condition/orelse/guard weakening", "A6 os.link->os.replace in unpinned helper", "A12r getattr token-blocklist evasion", "A14 numerical-global mutation in unpinned helper", "A15 unpinned _M0_EVIDENCE_* constant values"],
+    "exercised_by_actual_candidate_diff": false
+  },
+  "findings_summary": {
+    "blockers": 0,
+    "major": [
+      "M1 semantic diff validator blind spots (M1a module-level side effects, M1b wrapper condition/orelse/guard unpinned, M1c three helper bodies unpinned + getattr evasion)",
+      "M2 sampler miss-accounting and monotonic-enclosure gates untested (m0_vram_sampler.py:1040-1072)",
+      "M3 prepared profiler pair bound to W1b-rejected FAST configuration; manager adjudication required before receipts are spent"
+    ],
+    "minor": ["validator PASS not commit-bound", "profiler_gate accepts either arm order", "benchmark startup gate placeholder + not self-contained", "sampler sub-cadence competitor caveat + lenient miss threshold + hardcoded jax_imported flag", "non-'1' flag value raises (fail-closed behavior change, acceptable)", "no prepare --print-plan mode"]
+  },
+  "verdict": "ACCEPT_WITH_REQUIRED_REPAIRS",
+  "required_repairs": {
+    "R1": "harden validate_m0_instrumentation_diff.py (model all top-level statements; pin If-condition/no-orelse/guard; pin helper bodies and _M0_EVIDENCE_* values; bind PASS to HEAD commit); gate: PASS on unmodified 5638bedd + attack battery now fails closed",
+    "R2": "add behavioral tests for sampler miss-accounting and monotonic-enclosure gates; gate: tests/v025 green and tests fail when comparisons inverted",
+    "R3": "manager adjudication of W1b-bound prepared pair + pin profiled-first order before receipts are spent",
+    "R4_recommended": "benchmark self-containment, sampler caveats in sidecar, prepare --print-plan mode"
+  },
+  "gpu_performance_claim": "NONE — CPU/static evidence only; all device gates remain honestly MISSING"
+}

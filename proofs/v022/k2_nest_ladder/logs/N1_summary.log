@@ -1,0 +1,311 @@
+{
+  "schema": "v022_k2_nest_ladder_rung",
+  "tag": "N1",
+  "root_dt_s_requested": 54.0,
+  "n_sound": 10,
+  "hours": 3,
+  "maxdom": 3,
+  "run_dir": "proofs/v022/k2_nest_ladder/runs/N1",
+  "cli_rc": 1,
+  "failure_summary": "gpuwrf: error: nested forecast failed (NonFiniteStateError: non-finite prognostic state detected: domain=d03 field=Ni level=0 step=720 sim_time_s=4320 first_index=(0, 12, 11))",
+  "payload_present": false,
+  "domains": {
+    "d01": {
+      "wrfout_files": [
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:18:00",
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:36:00",
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:54:00"
+      ],
+      "final_wrfout": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:54:00",
+      "dt_s": 54.0,
+      "courant": {
+        "worst": {
+          "Cx": 0.5215801849365235,
+          "Cy": 0.21345291137695313,
+          "Cz": 0.6556227799238019,
+          "C_total": 1.3906558762372785
+        },
+        "per_file": [
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:18:00",
+            "dt_s": 54.0,
+            "worst": {
+              "Cx": 0.37312078857421876,
+              "Cy": 0.1771439323425293,
+              "Cz": 0.4374981465038973,
+              "C_total": 0.9877628674206453
+            },
+            "dx_m": 9000.0,
+            "dy_m": 9000.0
+          },
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:36:00",
+            "dt_s": 54.0,
+            "worst": {
+              "Cx": 0.37737508392333985,
+              "Cy": 0.1867873077392578,
+              "Cz": 0.5709882647730146,
+              "C_total": 1.1351506564356122
+            },
+            "dx_m": 9000.0,
+            "dy_m": 9000.0
+          },
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:54:00",
+            "dt_s": 54.0,
+            "worst": {
+              "Cx": 0.5215801849365235,
+              "Cy": 0.21345291137695313,
+              "Cz": 0.6556227799238019,
+              "C_total": 1.3906558762372785
+            },
+            "dx_m": 9000.0,
+            "dy_m": 9000.0
+          }
+        ]
+      },
+      "finite_bounded": {
+        "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d01_2025-01-21_18:54:00",
+        "all_finite": true,
+        "violations": [],
+        "max_abs": {
+          "U": 86.9300308227539,
+          "V": 35.57548522949219,
+          "W": 4.484890937805176,
+          "T": 183.2098388671875,
+          "QVAPOR": 0.01192752830684185,
+          "PH": 6625.71875,
+          "MU": 1528.935791015625,
+          "PSFC": 101672.0703125
+        },
+        "bounded": true
+      },
+      "conservation": {
+        "note": "Open-boundary run: drift is a runaway detector, not exact closed-domain conservation.",
+        "dry_mass": {
+          "frames": 3,
+          "first": 526664949.02349854,
+          "last": 526632454.5570679,
+          "rel_drift_last": -6.169855520272004e-05,
+          "rel_drift_max_abs": 6.169855520272004e-05
+        },
+        "theta_mass_energy_proxy": {
+          "frames": 3,
+          "first": 181734800997.172,
+          "last": 181748181715.71097,
+          "rel_drift_last": 7.36277172316554e-05,
+          "rel_drift_max_abs": 7.36277172316554e-05
+        },
+        "water_mass_proxy": {
+          "frames": 3,
+          "first": 1118921.8405855198,
+          "last": 1126911.5857374961,
+          "rel_drift_last": 0.007140574848190834,
+          "rel_drift_max_abs": 0.007140574848190834
+        }
+      }
+    },
+    "d02": {
+      "wrfout_files": [
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:18:00",
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:36:00",
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:54:00"
+      ],
+      "final_wrfout": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:54:00",
+      "dt_s": 18.0,
+      "courant": {
+        "worst": {
+          "Cx": 0.3550356674194336,
+          "Cy": 0.18576834869384765,
+          "Cz": 1.3983989753184174,
+          "C_total": 1.9317956656870696
+        },
+        "per_file": [
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:18:00",
+            "dt_s": 18.0,
+            "worst": {
+              "Cx": 0.3550356674194336,
+              "Cy": 0.17790621185302735,
+              "Cz": 1.1784495269750699,
+              "C_total": 1.7113914062475308
+            },
+            "dx_m": 3000.0,
+            "dy_m": 3000.0
+          },
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:36:00",
+            "dt_s": 18.0,
+            "worst": {
+              "Cx": 0.3499588623046875,
+              "Cy": 0.18191399002075195,
+              "Cz": 1.330155316302576,
+              "C_total": 1.8620281686280156
+            },
+            "dx_m": 3000.0,
+            "dy_m": 3000.0
+          },
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:54:00",
+            "dt_s": 18.0,
+            "worst": {
+              "Cx": 0.34762834167480466,
+              "Cy": 0.18576834869384765,
+              "Cz": 1.3983989753184174,
+              "C_total": 1.9317956656870696
+            },
+            "dx_m": 3000.0,
+            "dy_m": 3000.0
+          }
+        ]
+      },
+      "finite_bounded": {
+        "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d02_2025-01-21_18:54:00",
+        "all_finite": true,
+        "violations": [],
+        "max_abs": {
+          "U": 57.93805694580078,
+          "V": 30.96139144897461,
+          "W": 6.869334697723389,
+          "T": 182.99490356445312,
+          "QVAPOR": 0.012121307663619518,
+          "PH": 6598.765625,
+          "MU": 1459.56005859375,
+          "PSFC": 101625.9453125
+        },
+        "bounded": true
+      },
+      "conservation": {
+        "note": "Open-boundary run: drift is a runaway detector, not exact closed-domain conservation.",
+        "dry_mass": {
+          "frames": 3,
+          "first": 1739456125.6541138,
+          "last": 1738937924.4418945,
+          "rel_drift_last": -0.00029790990676719216,
+          "rel_drift_max_abs": 0.00029790990676719216
+        },
+        "theta_mass_energy_proxy": {
+          "frames": 3,
+          "first": 600128679148.5333,
+          "last": 600171271048.717,
+          "rel_drift_last": 7.097127943318007e-05,
+          "rel_drift_max_abs": 7.097127943318007e-05
+        },
+        "water_mass_proxy": {
+          "frames": 3,
+          "first": 3831265.3883939963,
+          "last": 3856455.889657822,
+          "rel_drift_last": 0.006574982077758162,
+          "rel_drift_max_abs": 0.006574982077758162
+        }
+      }
+    },
+    "d03": {
+      "wrfout_files": [
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:18:00",
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:36:00",
+        "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:54:00"
+      ],
+      "final_wrfout": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:54:00",
+      "dt_s": 6.0,
+      "courant": {
+        "worst": {
+          "Cx": 0.3369349822998047,
+          "Cy": 0.1787790069580078,
+          "Cz": 1.051395686773225,
+          "C_total": 1.5652499767817698
+        },
+        "per_file": [
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:18:00",
+            "dt_s": 6.0,
+            "worst": {
+              "Cx": 0.33555303955078125,
+              "Cy": 0.17213426971435547,
+              "Cz": 1.0001699712970809,
+              "C_total": 1.5078572805622175
+            },
+            "dx_m": 1000.0,
+            "dy_m": 1000.0
+          },
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:36:00",
+            "dt_s": 6.0,
+            "worst": {
+              "Cx": 0.3369349822998047,
+              "Cy": 0.1787790069580078,
+              "Cz": 1.0401182486951193,
+              "C_total": 1.5558322379529317
+            },
+            "dx_m": 1000.0,
+            "dy_m": 1000.0
+          },
+          {
+            "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:54:00",
+            "dt_s": 6.0,
+            "worst": {
+              "Cx": 0.33551344299316405,
+              "Cy": 0.17834084701538086,
+              "Cz": 1.051395686773225,
+              "C_total": 1.5652499767817698
+            },
+            "dx_m": 1000.0,
+            "dy_m": 1000.0
+          }
+        ]
+      },
+      "finite_bounded": {
+        "file": "proofs/v022/k2_nest_ladder/runs/N1/out/wrfout_d03_2025-01-21_18:54:00",
+        "all_finite": true,
+        "violations": [],
+        "max_abs": {
+          "U": 55.918907165527344,
+          "V": 29.723474502563477,
+          "W": 10.413084983825684,
+          "T": 181.05517578125,
+          "QVAPOR": 0.011804282665252686,
+          "PH": 6533.65625,
+          "MU": 1497.977294921875,
+          "PSFC": 101454.375
+        },
+        "bounded": true
+      },
+      "conservation": {
+        "note": "Open-boundary run: drift is a runaway detector, not exact closed-domain conservation.",
+        "dry_mass": {
+          "frames": 3,
+          "first": 657618705.1799316,
+          "last": 657291287.9574585,
+          "rel_drift_last": -0.0004978830740277675,
+          "rel_drift_max_abs": 0.0004978830740277675
+        },
+        "theta_mass_energy_proxy": {
+          "frames": 3,
+          "first": 227133445176.2002,
+          "last": 227140846587.44263,
+          "rel_drift_last": 3.258617962092703e-05,
+          "rel_drift_max_abs": 0.00021920255019059476
+        },
+        "water_mass_proxy": {
+          "frames": 3,
+          "first": 1310092.3241018234,
+          "last": 1316707.2031249418,
+          "rel_drift_last": 0.005049170124444059,
+          "rel_drift_max_abs": 0.005049170124444059
+        }
+      }
+    }
+  },
+  "worst_C_total": 1.9317956656870696,
+  "worst_Cz": 1.3983989753184174,
+  "cz_gt_1": true,
+  "gates": {
+    "run_ok": false,
+    "finite_bounded": true,
+    "cfl_horiz_target_le_1": true,
+    "cfl_total_target_le_1p6": false,
+    "within_operational_band_vs_N1": null
+  },
+  "passes_all": false,
+  "verdict": "FAIL"
+}

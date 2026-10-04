@@ -1,0 +1,628 @@
+{
+  "run_dir": "<DATA_ROOT>/wrf_downscale/canary_all7/cpu_run",
+  "domains": {
+    "d01": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d01_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d01_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d02": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d02_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d02_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d03": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d03_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d03_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d04": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d04_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d04_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d05": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d05_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d05_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d06": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d06_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d06_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d07": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d07_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d07_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d08": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d08_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d08_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    },
+    "d09": {
+      "n_files": 9,
+      "blowup": false,
+      "files": [
+        {
+          "file": "wrfout_d09_2026-04-28_18:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-28_19:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-28_20:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-28_21:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-28_22:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-28_23:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-29_00:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-29_01:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        },
+        {
+          "file": "wrfout_d09_2026-04-29_02:00:00",
+          "nonfinite_fields": [],
+          "envelope_breaches": [],
+          "carveout_nonfinite": [],
+          "blowup": false
+        }
+      ]
+    }
+  },
+  "BLOWUP": false,
+  "files_checked": 81
+}
