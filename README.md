@@ -35,14 +35,20 @@ benchmark. Three and four cases perform within 0.5%.
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/release/img/parallel_dark.png"><img src="docs/release/img/parallel.png" width="100%" alt="Measured Tenerife throughput, GPU memory and board energy on RTX 5090"></picture></p>
 
-Tested hardware: RTX 5090 (sm_120, CUDA 13). Other hardware and multi-GPU
-scaling are untested.
+Release-validated hardware: RTX 5090 (sm_120, CUDA 13).
+**B200: tested with earlier versions; not yet validated with v0.3.0.**
+The [historical B200 evidence](docs/release/B200_EXTRAPOLATION.md) retains the
+old-version measurements and their limits; the
+[v0.22.1 notes](release_notes/RELEASE_NOTES_v0.22.1.md) also document defects
+observed during an earlier B200 nested run. Neither establishes v0.3.0 validation.
+B300 operation and multi-GPU scaling remain untested.
 
 ## Design direction
 
 JAX was chosen as a foundation for scalable operation. Future
 development will target multi-GPU execution and data-centre GPUs, including
-B200/B300. Multi-GPU execution is not implemented; B200/B300 operation is untested.
+B200/B300. Multi-GPU execution is not implemented. Earlier B200 tests do not
+validate this release; B300 operation remains untested.
 B200 projections are **inferences [I]**, confined to the [methods](docs/release/METHODS.md),
 rather than release results.
 
@@ -105,6 +111,26 @@ separately. The dedicated glacier runtime is unported. [Known issues](KNOWN_ISSU
 cover glacier, writer and allocation limitations.
 Version 0.3 adds default fused fp32 kernels, WRF-order snow/water/albedo fixes,
 and full history; see the [changelog](CHANGELOG.md) and [release notes](release_notes/README.md).
+
+## Autonomous AI rewrite / development workflow
+
+This is an autonomous AI rewrite under human direction, organized as a network
+of managers, implementation workers, testers and reviewers. Managers own scope
+and integration; workers implement bounded changes; testers retain execution
+evidence; reviewers challenge correctness and scientific claims before release.
+
+According to the project owner's attribution, development began with **GPT 5.5
+and Opus 4.8** and was completed with **Opus 5.5 and GPT 6.1 Sol**, with occasional
+contributions from **Fable 5.1 and GPT 6 Astra**. These are the owner-reported
+model names, not an audited per-commit model-provenance record or a claim about
+provider releases.
+
+To continue as a manager with Claude/Opus or another agent, read
+[AGENTS.md](AGENTS.md), then load the portable
+[manager skill](docs/agent-workflow/manager/SKILL.md). It links worker, tester and
+reviewer instructions, repository-relative commands, scientific gates and safe
+handoffs. Discover the available runtime and tools first; no particular agent
+host, orchestrator or GPU is required to begin a scoped bug investigation.
 
 ## Get involved
 
